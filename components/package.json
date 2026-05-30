@@ -1,0 +1,48 @@
+{
+  "name": "@fristil/components",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tokens.css": "./src/tokens/tokens.css",
+    "./utilities.css": "./src/tokens/utilities.css",
+    "./tokens": {
+      "import": "./dist/tokens/tokens.js",
+      "types": "./dist/tokens/tokens.d.ts"
+    },
+    "./tailwind": {
+      "import": "./dist/tailwind/preset.js",
+      "types": "./dist/tailwind/preset.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src/tokens"
+  ],
+  "scripts": {
+    "generate": "bun scripts/generate-tokens.ts",
+    "build": "bun run generate && tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "lit": ">=3.0.0",
+    "tailwindcss": ">=4.3.0"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    },
+    "lit": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "lit": "3.3.3",
+    "tailwindcss": "4.3.0"
+  }
+}

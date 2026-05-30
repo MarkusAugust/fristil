@@ -1,0 +1,17 @@
+{
+  "name": "fristil-monorepo",
+  "private": true,
+  "workspaces": [
+    "components",
+    "documentation"
+  ],
+  "scripts": {
+    "dev": "bun --filter @fristil/documentation dev",
+    "build": "tsc -b && bun --filter @fristil/documentation build",
+    "typecheck": "tsc -b",
+    "lint": "biome check ."
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14"
+  }
+}
