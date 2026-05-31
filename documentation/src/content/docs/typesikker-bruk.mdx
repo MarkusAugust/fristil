@@ -1,0 +1,70 @@
+---
+title: Typesikker bruk
+description: Bruk Fristil button med TypeScript-autocomplete uten framework-binding.
+---
+
+Denne siden viser Button mønsteret for TypeScript: du beholder ren HTML/CSS-API, men får autocomplete og tryggere kode i editoren. Vi bruker button som eksempel.
+
+## Hva er poenget?
+
+`class="ds-button"` og `data-variant="..."` er frie strenger i ren HTML. Da er det lett å skrive feil variant.
+
+Button eksporterer en liten typed kontrakt:
+
+- `ButtonVariant` for lovlige varianter
+- `getButtonStyleAttributes()` for korrekt style-attributtsett
+- `isButtonVariant()` for runtime-sjekk av ukjente strenger
+
+## 1) Vanlig CSS-import
+
+```ts
+import "@fristil/designsystem/button.css"
+```
+
+## 2) TypeScript API
+
+```ts
+import {
+  getButtonStyleAttributes,
+  type ButtonVariant,
+} from "@fristil/designsystem/button"
+
+const variant: ButtonVariant = "secondary"
+const fristilAttributes = getButtonStyleAttributes(variant)
+
+// fristilAttributes blir:
+// { class: "ds-button", "data-variant": "secondary" }
+```
+
+## 3) Kombiner med egne HTML-attributter
+
+```ts
+const fristilAttributes = getButtonStyleAttributes("danger")
+
+const attrs = {
+  ...fristilAttributes,
+  id: "delete-button",
+  disabled: false,
+  "aria-label": "Slett element",
+}
+```
+
+`getButtonStyleAttributes()` returnerer bare Fristil sin stil-del. Alt annet eier appen din.
+
+## 4) Runtime input (for eksempel fra API)
+
+```ts
+import { isButtonVariant, getButtonStyleAttributes } from "@fristil/designsystem/button"
+
+const incoming = String(payload.variant)
+const variant = isButtonVariant(incoming) ? incoming : "primary"
+const fristilAttributes = getButtonStyleAttributes(variant)
+```
+
+## Når bør du bruke dette?
+
+- Når du vil ha bedre DX i TypeScript
+- Når du vil være framework-uavhengig
+- Når du vil unngå skrivefeil i variant-navn
+
+Hvis du skriver ren HTML uten TypeScript, kan du fortsatt bruke API-et direkte med `class="ds-button"` og `data-variant` som før.

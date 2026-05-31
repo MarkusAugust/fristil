@@ -1,0 +1,32 @@
+---
+import type { Props } from "@astrojs/starlight/props";
+import Default from "@astrojs/starlight/components/Header.astro";
+import FristilLogo from "./FristilLogo.astro";
+---
+
+<style>
+  :global(header) {
+    --sl-color-bg: transparent;
+  }
+</style>
+
+<header>
+  <div style="display: flex; align-items: center; gap: 2rem; justify-content: space-between; padding: 0 1.5rem;">
+    <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+      <FristilLogo size="sm" />
+    </a>
+    <slot />
+  </div>
+</header>
+
+<style>
+  header {
+    background: var(--sl-color-bg, transparent);
+    border-bottom: 1px solid var(--sl-color-border);
+    padding: 1rem 0;
+  }
+
+  a {
+    color: inherit;
+  }
+</style>

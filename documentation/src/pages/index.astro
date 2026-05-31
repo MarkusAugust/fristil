@@ -1,0 +1,93 @@
+---
+import "@fristil/designsystem/button.css"
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/utilities.css"
+import FristilLogo from "../components/FristilLogo.astro"
+import "../styles/global.css"
+---
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fristil – Designsystem</title>
+</head>
+<body class="min-h-screen bg-white text-zinc-950 antialiased transition-colors dark:bg-zinc-950 dark:text-zinc-50">
+  <div class="flex min-h-screen flex-col">
+  <header class="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/85">
+    <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-8">
+      <a href="/" class="inline-flex items-center text-inherit no-underline">
+          <FristilLogo size="sm" />
+        </a>
+        <nav>
+          <ul class="flex items-center gap-4 text-sm font-medium sm:gap-8 sm:text-base">
+            <li><a class="transition-opacity hover:opacity-60" href="/introduksjon/">Docs</a></li>
+            <li><a class="transition-opacity hover:opacity-60" href="/components/button/">Komponenter</a></li>
+            <li><a class="transition-opacity hover:opacity-60" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a></li>
+          </ul>
+        </nav>
+      </div>
+  </header>
+
+  <main class="flex-1">
+  <section class="relative overflow-hidden py-16 sm:py-24">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(0,242,254,0.18),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(177,92,255,0.18),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(79,172,254,0.14),transparent_45%)]"></div>
+    <div class="mx-auto flex w-full max-w-6xl flex-col items-center px-4 text-center sm:px-8">
+      <FristilLogo size="lg" className="mb-8" />
+      <h1 class="bg-linear-to-br from-cyan-300 via-blue-400 to-fuchsia-400 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-6xl flex flex-col gap-2 mb-8">
+        <span>Rammeverksuavhengig</span><span>designsystem</span>
+         
+      </h1>
+      <p class="mt-4 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-xl dark:text-zinc-300 mb-6">
+        En moderne, universell design system for web. Frihet under ansvar – team beholder kontroll, systemet håndterer tyngden.
+      </p>
+      <div class="mt-8 flex w-full max-w-xl flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href="/introduksjon/" class="inline-flex w-full items-center justify-center rounded-lg bg-linear-to-br from-cyan-300 via-blue-400 to-fuchsia-400 px-8 py-3 text-base font-semibold text-zinc-950 shadow-[0_10px_26px_rgba(79,172,254,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(79,172,254,0.4)] sm:w-auto">
+          Kom i gang
+        </a>
+        <a href="/components/button/" class="inline-flex w-full items-center justify-center rounded-lg border border-zinc-300 bg-zinc-100 px-8 py-3 text-base font-semibold text-zinc-900 transition hover:border-blue-400 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-blue-400 dark:hover:bg-zinc-800 sm:w-auto">
+          Se komponenter
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-20 pt-6 sm:pt-10">
+    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
+      <h2 class="mb-8 text-center text-3xl font-extrabold tracking-tight sm:mb-12">Arkitektur</h2>
+      <div class="grid gap-5 md:grid-cols-3">
+        <article class="group rounded-xl border border-zinc-200 bg-zinc-50 p-8 transition hover:-translate-y-1 hover:border-blue-400 hover:shadow-[0_12px_30px_rgba(79,172,254,0.18)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:shadow-[0_12px_30px_rgba(79,172,254,0.28)]">
+          <div class="mb-3 text-4xl">🎨</div>
+          <h3 class="mb-2 text-xl font-bold">Pure CSS</h3>
+          <p class="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+            Global CSS + klasser. Zero JavaScript. Fungerer i alle rammeverk og miljøer.
+          </p>
+        </article>
+        <article class="group rounded-xl border border-zinc-200 bg-zinc-50 p-8 transition hover:-translate-y-1 hover:border-cyan-400 hover:shadow-[0_12px_30px_rgba(0,242,254,0.18)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:shadow-[0_12px_30px_rgba(0,242,254,0.28)]">
+          <div class="mb-3 text-4xl">⚡</div>
+          <h3 class="mb-2 text-xl font-bold">Light DOM</h3>
+          <p class="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+            Web Components i Light DOM. Automatisk A11y, native form-elementer i ekte DOM.
+          </p>
+        </article>
+        <article class="group rounded-xl border border-zinc-200 bg-zinc-50 p-8 transition hover:-translate-y-1 hover:border-fuchsia-400 hover:shadow-[0_12px_30px_rgba(177,92,255,0.18)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:shadow-[0_12px_30px_rgba(177,92,255,0.28)]">
+          <div class="mb-3 text-4xl">🔒</div>
+          <h3 class="mb-2 text-xl font-bold">Shadow DOM</h3>
+          <p class="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+            Visuell isolasjon. Moderne APIer: Temporal, Popover. Ingen tunge dependencies.
+          </p>
+        </article>
+      </div>
+    </div>
+  </main>
+  </section>
+
+  <footer class="mt-8 border-t border-zinc-200 bg-zinc-50 py-10 text-center text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
+      <p>&copy; 2026 Fristil. Designsystem for alle.</p>
+    </div>
+  </footer>
+  </div>
+</body>
+</html>

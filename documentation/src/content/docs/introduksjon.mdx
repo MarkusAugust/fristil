@@ -2,4 +2,68 @@
 title: Introduksjon
 ---
 
-Fristil er et rammeverksuavhengig designsystem.
+Fristil er et rammeverksuavhengig designsystem bygget for team som vil levere raskt uten å gi opp kvalitet, tilgjengelighet eller kontroll.
+
+Målet er enkelt: gi produktteam felles språk, stabile byggeklosser og høy fart i utvikling, uansett om de bruker React, Vue, Astro, Lit eller ren HTML.
+
+## Tre kategorier komponenter
+
+Fristil er organisert i tre tydelige nivåer, slik at du kan velge riktig verktøy til riktig jobb:
+
+1. **pure-css**
+	Native HTML + CSS-klasser + data-attributter. Null JavaScript-runtime. Perfekt for grunnleggende UI som knapper, typografi, spacing og fargebruk.
+
+2. **light-dom**
+	Web Components i Light DOM for sammensatte felter og bedre ergonomi, men fortsatt tett på vanlig DOM og native validering.
+
+3. **shadow-dom**
+	Web Components med full visuell isolasjon for mer avanserte, interaktive komponenter der robusthet og kapsling er viktigst.
+
+Denne oppdelingen gjør at du slipper "one size fits all". Du velger nivå etter kompleksitet, ikke etter trend.
+
+## DX: utvikleropplevelse først
+
+God DX i Fristil handler om forutsigbarhet og flyt:
+
+- Design tokens er én kilde til sannhet.
+- CSS kan brukes direkte, uten tung integrasjon.
+- TypeScript-støtte og testoppsett er lagt opp for trygg iterasjon.
+- Dokumentasjonen viser både prinsipper og praktisk bruk.
+
+Resultatet er mindre friksjon i hverdagen og færre overraskelser i produksjon.
+
+## Tailwind-støtte
+
+Fristil fungerer også godt med Tailwind. Du kan kombinere utility-klasser med Fristil-komponenter og tokens uten å miste konsistens i uttrykket.
+
+For team som bruker Tailwind i dag betyr dette lav terskel for adopsjon: behold arbeidsflyten dere liker, og bygg videre på et felles designsystem i stedet for å starte fra null.
+
+Eksempel i praksis:
+
+```astro
+---
+import "@fristil/designsystem/tokens.css";
+import "@fristil/designsystem/button.css";
+---
+
+<section class="mx-auto max-w-3xl p-6">
+	<h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
+	<div class="flex flex-wrap gap-3">
+		<button class="ds-button">Lagre</button>
+		<button class="ds-button" data-variant="secondary">Avbryt</button>
+	</div>
+</section>
+```
+
+Her brukes Tailwind til layout og spacing, mens Fristil leverer komponentstil og tokens.
+
+## Frihet og hastighet
+
+Fristil er laget for **frihet under ansvar**. Team kan beholde egne valg i applikasjonene sine, samtidig som de bygger på et felles fundament.
+
+Det gir to store gevinster:
+
+- **Frihet:** bruk komponenter og stilnivå som passer konteksten din.
+- **Hastighet:** gjenbruk mønstre, reduser dobbeltarbeid og lever funksjonalitet raskere.
+
+Kort sagt: Fristil hjelper deg å bevege deg fort, uten å miste retning.

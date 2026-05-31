@@ -12,6 +12,10 @@
     "./tokens.css": "./src/tokens/tokens.css",
     "./utilities.css": "./src/tokens/utilities.css",
     "./button.css": "./src/components/pure-css/button/button.css",
+    "./button": {
+      "import": "./dist/components/pure-css/button/button.js",
+      "types": "./dist/components/pure-css/button/button.d.ts"
+    },
     "./tokens": {
       "import": "./dist/tokens/tokens.js",
       "types": "./dist/tokens/tokens.d.ts"

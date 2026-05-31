@@ -1,0 +1,48 @@
+---
+export interface Props {
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const { size = "md", className = "" } = Astro.props;
+
+const sizeMap = {
+  sm: { svg: 40, text: "1.4rem", subtitle: "0.65rem" },
+  md: { svg: 60, text: "2.2rem", subtitle: "0.8rem" },
+  lg: { svg: 80, text: "3rem", subtitle: "1rem" },
+};
+
+const s = sizeMap[size];
+---
+
+<div class:list={["fristil-logo-wrapper", className]} style={`display: flex; align-items: center; gap: 16px; font-family: 'Inter', system-ui, sans-serif;`}>
+  <svg width={s.svg} height={s.svg} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+    <defs>
+      <linearGradient id="fristilGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00f2fe" />
+        <stop offset="50%" stop-color="#4facfe" />
+        <stop offset="100%" stop-color="#b15cff" />
+      </linearGradient>
+    </defs>
+    <path d="M25,75 C10,50 30,25 50,40 C65,25 85,35 80,55 C75,70 55,55 50,60 C40,70 35,85 25,75 Z" 
+          stroke="url(#fristilGradient)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M35,60 C25,45 40,35 50,45 C60,55 50,70 35,60 Z" 
+          fill="url(#fristilGradient)" opacity="0.3" />
+  </svg>
+
+  <div style="display: flex; flex-direction: column; line-height: 1;">
+    <span style={`font-size: ${s.text}; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #00f2fe, #4facfe, #b15cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;`}>
+      Fristil
+    </span>
+    <span style={`font-size: ${s.subtitle}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.6; margin-top: 4px;`}>
+      Designsystem
+    </span>
+  </div>
+</div>
+
+<style>
+  .fristil-logo-wrapper {
+    cursor: default;
+    user-select: none;
+  }
+</style>
