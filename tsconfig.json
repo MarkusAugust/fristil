@@ -2,5 +2,6 @@
   "compilerOptions": {
     "composite": true
   },
-  "references": [{ "path": "./components" }]
+  "files": [],
+  "references": [{ "path": "./designsystem" }]
 }

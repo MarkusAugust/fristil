@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss"
-import { Breakpoints, Containers, cssTokens } from "../tokens/tokens.js"
+import { Breakpoints, Containers, type cssTokens } from "../tokens/tokens.js"
 
 const v = (token: keyof typeof cssTokens) => `var(${token})`
 

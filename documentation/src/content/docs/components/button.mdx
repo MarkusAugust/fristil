@@ -1,0 +1,106 @@
+---
+title: Button
+description: En klikkbar knapp for å utløse handlinger. pure-css — ren CSS, ingen JavaScript.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/designsystem"
+
+`ds-button` er en **pure-css**-komponent: ren CSS-klasse, null JavaScript, fungerer i alle rammeverk.
+
+## Import
+
+```html
+<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
+<link rel="stylesheet" href="@fristil/designsystem/button.css" />
+```
+
+Via bundler:
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/button.css"
+```
+
+---
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <button class="ds-button">Primær</button>
+      <button class="ds-button" data-variant="secondary">Sekundær</button>
+      <button class="ds-button" data-variant="ghost">Ghost</button>
+      <button class="ds-button" data-variant="danger">Danger</button>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <button class="ds-button">Primær</button>
+    <button class="ds-button" data-variant="secondary">Sekundær</button>
+    <button class="ds-button" data-variant="ghost">Ghost</button>
+    <button class="ds-button" data-variant="danger">Danger</button>
+    ```
+  </TabItem>
+</Tabs>
+
+| Variant | Bruk |
+|---------|------|
+| *(ingen)* | Primær handling — én per side |
+| `secondary` | Sekundær handling ved siden av primær |
+| `ghost` | Lav vekt — verktøylinjer, inline-handlinger |
+| `danger` | Destruktive handlinger — slett, avbryt |
+
+---
+
+## Deaktivert
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <button class="ds-button" disabled>Primær</button>
+      <button class="ds-button" data-variant="secondary" disabled>Sekundær</button>
+      <button class="ds-button" data-variant="ghost" disabled>Ghost</button>
+      <button class="ds-button" data-variant="danger" disabled>Danger</button>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <button class="ds-button" disabled>Primær</button>
+    ```
+  </TabItem>
+</Tabs>
+
+For ikke-`<button>`-elementer (f.eks. `<a>`), bruk `aria-disabled="true"` i stedet for `disabled`:
+
+```html
+<a class="ds-button" aria-disabled="true" href="/handling">Primær</a>
+```
+
+---
+
+## Som lenke
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <a class="ds-button" href="#">Gå videre</a>
+      <a class="ds-button" data-variant="secondary" href="#">Les mer</a>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <a class="ds-button" href="/neste">Gå videre</a>
+    <a class="ds-button" data-variant="secondary" href="/mer">Les mer</a>
+    ```
+  </TabItem>
+</Tabs>
+
+---
+
+## Tilgjengelighet
+
+- Bruk alltid `<button>` for handlinger og `<a>` for navigasjon
+- `<button>` har `type="button"` som standard i skjemaer — sett `type="submit"` eksplisitt ved behov
+- Teksten i knappen skal beskrive handlingen, ikke resultatet: *«Slett bruker»*, ikke *«OK»*
+- Unngå å deaktivere knapper som eneste feilhåndtering — vis heller en feilmelding

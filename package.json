@@ -2,7 +2,7 @@
   "name": "fristil-monorepo",
   "private": true,
   "workspaces": [
-    "components",
+    "designsystem",
     "documentation"
   ],
   "scripts": {
@@ -12,6 +12,7 @@
     "lint": "biome check ."
   },
   "devDependencies": {
-    "@types/bun": "1.3.14"
+    "@types/bun": "1.3.14",
+    "typescript": "6.0.3"
   }
 }

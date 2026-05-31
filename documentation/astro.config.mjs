@@ -6,6 +6,10 @@ export default defineConfig({
   integrations: [
     startlight({
       title: "Fristil",
+      customCss: [
+        "@fristil/designsystem/tokens.css",
+        "@fristil/designsystem/button.css",
+      ],
       sidebar: [
         {
           label: "Start her",
