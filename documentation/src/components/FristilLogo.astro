@@ -7,42 +7,96 @@ export interface Props {
 const { size = "md", className = "" } = Astro.props;
 
 const sizeMap = {
-  sm: { svg: 40, text: "1.4rem", subtitle: "0.65rem" },
-  md: { svg: 60, text: "2.2rem", subtitle: "0.8rem" },
-  lg: { svg: 80, text: "3rem", subtitle: "1rem" },
+  sm: { svg: 40, gap: "12px", textSize: "1.4rem", subtitleSize: "0.65rem" },
+  md: { svg: 60, gap: "16px", textSize: "2.2rem", subtitleSize: "0.8rem" },
+  lg: { svg: 80, gap: "18px", textSize: "3rem", subtitleSize: "1rem" },
 };
 
 const s = sizeMap[size];
+const gradientId = `fristilGradient-${size}`;
+const glowId = `fristilGlow-${size}`;
 ---
 
-<div class:list={["fristil-logo-wrapper", className]} style={`display: flex; align-items: center; gap: 16px; font-family: 'Inter', system-ui, sans-serif;`}>
-  <svg width={s.svg} height={s.svg} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+<div
+  class:list={["fristil-logo-wrapper", className]}
+  style={`display: flex; align-items: center; gap: ${s.gap}; font-family: 'Inter', sans-serif;`}
+>
+  <svg
+    width={s.svg}
+    height={s.svg}
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style="flex-shrink: 0;"
+  >
     <defs>
-      <linearGradient id="fristilGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id={gradientId} x1="8%" y1="10%" x2="88%" y2="90%">
         <stop offset="0%" stop-color="#00f2fe" />
         <stop offset="50%" stop-color="#4facfe" />
         <stop offset="100%" stop-color="#b15cff" />
       </linearGradient>
+      <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#4facfe" stop-opacity="0.28" />
+        <stop offset="65%" stop-color="#4facfe" stop-opacity="0.08" />
+        <stop offset="100%" stop-color="#4facfe" stop-opacity="0" />
+      </radialGradient>
     </defs>
-    <path d="M25,75 C10,50 30,25 50,40 C65,25 85,35 80,55 C75,70 55,55 50,60 C40,70 35,85 25,75 Z" 
-          stroke="url(#fristilGradient)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M35,60 C25,45 40,35 50,45 C60,55 50,70 35,60 Z" 
-          fill="url(#fristilGradient)" opacity="0.3" />
+    <ellipse cx="50" cy="52" rx="24" ry="24" fill={`url(#${glowId})`} />
+    <path
+      d="M21 63C17 48 25 32 39 27C49 23 60 26 68 34C75 41 78 52 74 63C70 73 61 80 50 81C38 82 26 75 21 63Z"
+      fill="none"
+      stroke={`url(#${gradientId})`}
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.95"
+    />
+    <path
+      d="M28 67C35 57 42 50 50 44C57 39 66 33 73 26"
+      fill="none"
+      stroke={`url(#${gradientId})`}
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M28 32C35 41 42 48 50 54C58 60 66 66 73 74"
+      fill="none"
+      stroke={`url(#${gradientId})`}
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M38 22C46 33 53 43 62 50C69 56 75 61 81 67"
+      fill="none"
+      stroke={`url(#${gradientId})`}
+      stroke-width="4.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.82"
+    />
+    <path
+      d="M18 52C28 49 36 49 43 52C47 54 50 58 50 62C50 66 47 70 42 72"
+      fill="none"
+      stroke={`url(#${gradientId})`}
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.72"
+    />
   </svg>
 
   <div style="display: flex; flex-direction: column; line-height: 1;">
-    <span style={`font-size: ${s.text}; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #00f2fe, #4facfe, #b15cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;`}>
+    <span
+      style={`font-size: ${s.textSize}; font-weight: 800; letter-spacing: -0.03em; color: currentColor;`}
+    >
       Fristil
     </span>
-    <span style={`font-size: ${s.subtitle}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.6; margin-top: 4px;`}>
-      Designsystem
+    <span
+      style={`font-size: ${s.subtitleSize}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: currentColor; opacity: 0.6; margin-top: 4px;`}
+    >
+      Design System
     </span>
   </div>
 </div>
-
-<style>
-  .fristil-logo-wrapper {
-    cursor: default;
-    user-select: none;
-  }
-</style>

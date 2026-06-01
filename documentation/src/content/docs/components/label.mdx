@@ -1,0 +1,144 @@
+---
+title: Label
+description: Etikett for skjemaelementer. Støtter obligatorisk- og valgfri-markering. pure-css — ren CSS, ingen JavaScript.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+`ds-label` stiler HTML-elementet `<label>` med konsistent typografi og støtte for obligatorisk/valgfri-markering via dataattributter.
+
+## Import
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/label.css"
+```
+
+---
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <label class="ds-label" for="ex-default">Fullt navn</label>
+      <label class="ds-label" data-required="symbol" for="ex-symbol">E-postadresse</label>
+      <label class="ds-label" data-required="text" for="ex-text">Telefonnummer</label>
+      <label class="ds-label" data-optional="" for="ex-optional">Adresse</label>
+      <label class="ds-label" aria-disabled="true" for="ex-disabled">Brukernavn (deaktivert)</label>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <!-- Standard -->
+    <label class="ds-label" for="navn">Fullt navn</label>
+
+    <!-- Obligatorisk — stjerne -->
+    <label class="ds-label" data-required="symbol" for="epost">E-postadresse</label>
+
+    <!-- Obligatorisk — tekst -->
+    <label class="ds-label" data-required="text" for="tlf">Telefonnummer</label>
+
+    <!-- Valgfri -->
+    <label class="ds-label" data-optional="" for="adresse">Adresse</label>
+
+    <!-- Deaktivert -->
+    <label class="ds-label" aria-disabled="true" for="brukernavn">Brukernavn</label>
+    ```
+  </TabItem>
+</Tabs>
+
+| Attributt | Effekt |
+|---|---|
+| *(ingen)* | Standard labelstil |
+| `data-required="symbol"` | Legger til ` *` i farefargen |
+| `data-required="text"` | Legger til ` (påkrevd)` i farefargen |
+| `data-optional=""` | Legger til ` (valgfri)` i dempet farge |
+| `aria-disabled="true"` | Dempet tekstfarge |
+
+---
+
+## TypeScript-API
+
+```ts
+import {
+  getLabelStyleAttributes,
+  type LabelRequiredMarker,
+} from "@fristil/designsystem/label"
+
+const required: LabelRequiredMarker = "text"
+const fristilAttributes = getLabelStyleAttributes({ required })
+
+// fristilAttributes blir:
+// { class: "ds-label", "data-required": "text" }
+```
+
+## Kombiner med egne HTML-attributter
+
+```ts
+const fristilAttributes = getLabelStyleAttributes({ required: "symbol" })
+
+const attrs = {
+  ...fristilAttributes,
+  htmlFor: "email",
+  id: "email-label",
+}
+```
+
+`getLabelStyleAttributes()` returnerer bare Fristil sin stil-del. Alt annet eier appen din.
+
+## Runtime input (for eksempel fra API)
+
+```ts
+import {
+  isLabelRequiredMarker,
+  getLabelStyleAttributes,
+} from "@fristil/designsystem/label"
+
+const incoming = String(payload.requiredMarker)
+const required = isLabelRequiredMarker(incoming) ? incoming : undefined
+const fristilAttributes = getLabelStyleAttributes({ required })
+```
+
+### Bruk i React
+
+```tsx
+import { getLabelStyleAttributes, type LabelRequiredMarker } from "@fristil/designsystem/label"
+
+type Props = {
+  htmlFor: string
+  required?: LabelRequiredMarker
+  children: React.ReactNode
+}
+
+function MyLabel({ required, htmlFor, children }: Props) {
+  const fristilAttributes = getLabelStyleAttributes({ required })
+
+  return (
+    <label htmlFor={htmlFor} {...fristilAttributes}>
+      {children}
+    </label>
+  )
+}
+```
+
+---
+
+## I et skjema
+
+`ds-label` er designet for å stå rett over skjemafeltet det hører til:
+
+```html
+<div style="display: flex; flex-direction: column; gap: 0.25rem;">
+  <label class="ds-label" data-required="symbol" for="epost">E-postadresse</label>
+  <input id="epost" type="email" required />
+</div>
+```
+
+---
+
+## Tilgjengelighet
+
+- Bruk alltid `for`-attributtet som peker til `id` på tilhørende skjemafelt
+- `data-required` er visuell markering — kommuniser obligatoriske felt semantisk via `required` og/eller `aria-required="true"` på `<input>`
+- `*`-symbolet i `::after` trenger ikke ekstra aria-label siden `required` på input formidler dette til skjermlesere

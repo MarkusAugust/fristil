@@ -1,0 +1,61 @@
+---
+title: Select
+description: Nedtrekksmeny med pure-css styling og valid/invalid state.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+`ds-select` er en pure-css stil for `<select>` med samme state-mønster som input.
+
+## Import
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/select.css"
+```
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: grid; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <select class="ds-select"><option>Standard</option></select>
+      <select class="ds-select" data-state="invalid"><option>Ugyldig</option></select>
+      <select class="ds-select" data-state="success"><option>Gyldig</option></select>
+      <select class="ds-select" disabled><option>Disabled</option></select>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <select class="ds-select"></select>
+    <select class="ds-select" data-state="invalid"></select>
+    <select class="ds-select" data-state="success"></select>
+    <select class="ds-select" disabled></select>
+    ```
+  </TabItem>
+</Tabs>
+
+## TypeScript-API
+
+```ts
+import {
+  getSelectStyleAttributes,
+  type SelectState,
+} from "@fristil/designsystem/select"
+
+const state: SelectState = "invalid"
+const fristilAttributes = getSelectStyleAttributes(state)
+
+// fristilAttributes blir:
+// { class: "ds-select", "data-state": "invalid" }
+```
+
+## Runtime input (for eksempel fra API)
+
+```ts
+import { isSelectState, getSelectStyleAttributes } from "@fristil/designsystem/select"
+
+const incoming = String(payload.state)
+const state = isSelectState(incoming) ? incoming : "default"
+const fristilAttributes = getSelectStyleAttributes(state)
+```

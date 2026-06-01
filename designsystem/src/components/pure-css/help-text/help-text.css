@@ -1,0 +1,20 @@
+.ds-help-text {
+  display: block;
+  margin-top: var(--size-1);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  color: var(--semantic-disabled-foreground);
+}
+
+.ds-help-text[data-variant="default"] {
+  color: var(--semantic-page-foreground);
+}
+
+.ds-help-text[data-variant="success"] {
+  color: var(--semantic-success-foreground);
+}
+
+.ds-help-text[data-variant="warning"] {
+  color: var(--semantic-warning-foreground);
+}

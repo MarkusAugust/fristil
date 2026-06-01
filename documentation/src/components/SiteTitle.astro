@@ -1,0 +1,9 @@
+---
+import FristilLogo from "./FristilLogo.astro";
+
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title inline-flex items-center no-underline text-inherit">
+	<FristilLogo size="sm" />
+</a>

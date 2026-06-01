@@ -1,0 +1,17 @@
+.ds-error-text {
+  display: block;
+  margin-top: var(--size-1);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--semantic-danger-foreground);
+}
+
+.ds-error-text[hidden] {
+  display: none;
+}
+
+.ds-error-text[data-variant="warning"] {
+  color: var(--semantic-warning-foreground);
+}

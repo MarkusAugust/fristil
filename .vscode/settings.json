@@ -5,5 +5,25 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always",
     "source.fixAll.biome": "always"
-  }
+  },
+  "lit-plugin.rules.no-boolean-in-attribute-binding": "warning",
+  "lit-plugin.rules.no-complex-attribute-binding": "warning",
+  "lit-plugin.rules.no-expressionless-property-binding": "warning",
+  "lit-plugin.rules.no-incompatible-property-type": "warning",
+  "lit-plugin.rules.no-incompatible-type-binding": "warning",
+  "lit-plugin.rules.no-invalid-attribute-name": "warning",
+  "lit-plugin.rules.no-invalid-boolean-binding": "warning",
+  "lit-plugin.rules.no-invalid-css": "warning",
+  "lit-plugin.rules.no-invalid-tag-name": "warning",
+  "lit-plugin.rules.no-missing-element-type-definition": "warning",
+  "lit-plugin.rules.no-missing-import": "warning",
+  "lit-plugin.rules.no-noncallable-event-binding": "error",
+  "lit-plugin.rules.no-nullable-attribute-binding": "warning",
+  "lit-plugin.rules.no-unclosed-tag": "error",
+  "lit-plugin.rules.no-unknown-attribute": "warning",
+  "lit-plugin.rules.no-unknown-event": "warning",
+  "lit-plugin.rules.no-unknown-property": "warning",
+  "lit-plugin.rules.no-unknown-slot": "warning",
+  "lit-plugin.rules.no-unknown-tag-name": "warning",
+  "lit-plugin.securitySystem": "ClosureSafeTypes"
 }

@@ -1,0 +1,32 @@
+.ds-label {
+  display: block;
+  font-family: inherit;
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--semantic-page-foreground);
+}
+
+.ds-label[data-required]::after {
+  content: " *";
+  color: var(--semantic-danger-foreground);
+  font-weight: 700;
+}
+
+.ds-label[data-required="text"]::after {
+  content: " (påkrevd)";
+  color: var(--semantic-danger-foreground);
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+}
+
+.ds-label[data-optional]::after {
+  content: " (valgfri)";
+  color: var(--semantic-disabled-foreground);
+  font-weight: 400;
+  font-size: var(--font-size-xs);
+}
+
+.ds-label[aria-disabled="true"] {
+  color: var(--semantic-disabled-foreground);
+}

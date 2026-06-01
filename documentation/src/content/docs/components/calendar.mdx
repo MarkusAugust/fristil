@@ -1,0 +1,70 @@
+---
+title: Calendar (Shadow DOM)
+description: Standalone popup-kalender i Shadow DOM som sender valgt dato via event.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+import CalendarDemo from "../../../components/CalendarDemo.astro"
+
+`<ds-calendar>` er en standalone shadow-dom popup-kalender.
+Den eier kalender-UI og sender valgt dato via event, men eier ikke input-feltet.
+
+## Når Bruker Du Hva?
+
+- Bruk [Calendar (Shadow DOM)](../calendar/) når du vil ha popup-kalender som egen komponent.
+- Bruk [Date Field (Light DOM)](../date-field/) når du vil ha input + calendar ferdig koblet.
+- Bruk [Input](../input/) når du kun trenger native date/time/datetime-local-atferd uten custom popup.
+
+## Import
+
+```ts
+import { defineDsCalendar } from "@fristil/designsystem/calendar"
+
+defineDsCalendar()
+```
+
+## Slik ser det ut
+
+<Tabs>
+  <TabItem label="Forhåndsvisning">
+    <CalendarDemo />
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <ds-calendar id="invoice-calendar" value="2026-05-31"></ds-calendar>
+
+    <script type="module">
+      import { defineDsCalendar } from "@fristil/designsystem/calendar"
+
+      defineDsCalendar()
+
+      const calendar = document.getElementById("invoice-calendar")
+      calendar.addEventListener("date-select", (event) => {
+        console.log("Valgt dato:", event.detail.value)
+      })
+    </script>
+    ```
+  </TabItem>
+</Tabs>
+
+## Hvordan den brukes
+
+1. `ds-calendar` viser trigger-knapp og popup-kalender.
+2. Når bruker velger en dag, sender komponenten event `date-select`.
+3. Appen bestemmer hva som skal oppdateres (input, state, API-kall, osv.).
+
+## ds-calendar API
+
+| Attributt | Type | Effekt |
+|---|---|---|
+| `value` | string | Valgt dato i `YYYY-MM-DD` |
+| `open` | boolean | Åpner/lukker popup |
+| `disabled` | boolean | Deaktiverer trigger |
+
+## Events
+
+| Event | Detail | Når |
+|---|---|---|
+| `date-select` | `{ value: string }` | Når en dag velges i popup |
+| `input` | `Event` | Samtidig med dato-valg |
+| `change` | `Event` | Samtidig med dato-valg |

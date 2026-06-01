@@ -1,0 +1,61 @@
+---
+title: Textarea
+description: Flerlinje tekstfelt. pure-css med valid/invalid state.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+`ds-textarea` er en pure-css stil for `<textarea>` med samme state-mønster som input.
+
+## Import
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/textarea.css"
+```
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: grid; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <textarea class="ds-textarea" placeholder="Standard"></textarea>
+      <textarea class="ds-textarea" data-state="invalid">Ugyldig</textarea>
+      <textarea class="ds-textarea" data-state="success">Gyldig</textarea>
+      <textarea class="ds-textarea" disabled>Disabled</textarea>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <textarea class="ds-textarea"></textarea>
+    <textarea class="ds-textarea" data-state="invalid"></textarea>
+    <textarea class="ds-textarea" data-state="success"></textarea>
+    <textarea class="ds-textarea" disabled></textarea>
+    ```
+  </TabItem>
+</Tabs>
+
+## TypeScript-API
+
+```ts
+import {
+  getTextareaStyleAttributes,
+  type TextareaState,
+} from "@fristil/designsystem/textarea"
+
+const state: TextareaState = "success"
+const fristilAttributes = getTextareaStyleAttributes(state)
+
+// fristilAttributes blir:
+// { class: "ds-textarea", "data-state": "success" }
+```
+
+## Runtime input (for eksempel fra API)
+
+```ts
+import { isTextareaState, getTextareaStyleAttributes } from "@fristil/designsystem/textarea"
+
+const incoming = String(payload.state)
+const state = isTextareaState(incoming) ? incoming : "default"
+const fristilAttributes = getTextareaStyleAttributes(state)
+```

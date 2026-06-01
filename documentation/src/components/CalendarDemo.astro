@@ -1,0 +1,19 @@
+---
+---
+
+<div class="calendar-demo">
+  <ds-calendar id="invoice-calendar" value="2026-05-31"></ds-calendar>
+</div>
+
+<script>
+  import { defineDsCalendar } from "@fristil/designsystem/calendar"
+
+  defineDsCalendar()
+
+  const calendar = document.getElementById("invoice-calendar")
+  if (calendar) {
+    calendar.addEventListener("date-select", (event) => {
+      console.log("Valgt dato:", event.detail.value)
+    })
+  }
+</script>

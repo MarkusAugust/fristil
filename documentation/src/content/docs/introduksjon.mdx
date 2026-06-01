@@ -13,13 +13,71 @@ Fristil er organisert i tre tydelige nivåer, slik at du kan velge riktig verkt�
 1. **pure-css**
 	Native HTML + CSS-klasser + data-attributter. Null JavaScript-runtime. Perfekt for grunnleggende UI som knapper, typografi, spacing og fargebruk.
 
+	Eksempel:
+
+	```html
+	<button class="ds-button" data-variant="secondary">Lagre</button>
+	```
+
+	Fordeler:
+
+	- Minst mulig runtime og minst mulig magi.
+	- Fungerer i alle rammeverk og også i ren HTML.
+	- Enkelt å style, debugge og gradvis ta i bruk.
+
 2. **light-dom**
 	Web Components i Light DOM for sammensatte felter og bedre ergonomi, men fortsatt tett på vanlig DOM og native validering.
+
+	Eksempel:
+
+	```html
+	<ds-date-field
+	  label="Fødselsdato"
+	  value="2026-05-31"
+	  help-text="Skriv dato som DD-MM-YYYY eller åpne kalenderen."
+	  error-text="Skriv en gyldig dato."
+	></ds-date-field>
+	```
+
+	Fordeler:
+
+	- Gir bedre ergonomi enn ren HTML når flere deler hører sammen.
+	- Beholder vanlig DOM, så skjemaer, testverktøy og app-logikk er enkle å koble til.
+	- Passer godt når komponenten skal hjelpe med wiring, men ikke kapsle bort alt.
 
 3. **shadow-dom**
 	Web Components med full visuell isolasjon for mer avanserte, interaktive komponenter der robusthet og kapsling er viktigst.
 
+	Eksempel:
+
+	```html
+	<ds-calendar value="2026-05-31"></ds-calendar>
+	```
+
+	Fordeler:
+
+	- Beskytter intern markup og stil mot lekkasje fra appen rundt.
+	- Egner seg for popup-er og mer avansert interaksjon.
+	- Gjør komplekse komponenter mer robuste på tvers av produkter og rammeverk.
+
 Denne oppdelingen gjør at du slipper "one size fits all". Du velger nivå etter kompleksitet, ikke etter trend.
+
+## Hvorfor dele det opp slik?
+
+Mange designsystemer prøver å løse alt med én komponentmodell. Det gir ofte enten for mye JavaScript for enkle behov, eller for lite struktur for komplekse behov.
+
+Fristil deler derfor komponentene i lag:
+
+- Enkle ting skal være enkle: en knapp trenger ikke web component-runtime.
+- Sammensatte skjemaelementer skal være lette å bruke uten å bli vanskelige å integrere.
+- Komplekse popup-er og widgets trenger sterkere kapsling enn vanlig DOM kan gi alene.
+
+Fordelen med denne oppdelingen er at team kan velge riktig nivå per problem:
+
+- Du får lavere kompleksitet i vanlige flater.
+- Du får bedre gjenbruk i sammensatte mønstre.
+- Du får mer robust oppførsel i avanserte interaktive komponenter.
+- Du unngår at hele systemet blir dratt mot den mest kompliserte komponenttypen.
 
 ## DX: utvikleropplevelse først
 

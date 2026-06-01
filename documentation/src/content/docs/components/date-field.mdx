@@ -1,0 +1,150 @@
+---
+title: Date Field (Light DOM)
+description: Light DOM wrapper som kobler nøytral ds-input med ds-calendar popup.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+import DateFieldDemo from "../../../components/DateFieldDemo.astro"
+
+`<ds-date-field>` er måten å bruke input + vår egen kalender sammen. Wrapperen rendrer i Light DOM, så form-integrasjon og app-logikk er enkel, mens den bruker `ds-calendar` som shadow-dom barn for popupen.
+
+## Når Bruker Du Hva?
+
+- Bruk [Date Field (Light DOM)](../date-field/) som standard når du vil ha komplett datofelt med label/help/error og kalender.
+- Bruk [Input](../input/) når native date/time/datetime-local picker er nok.
+- Bruk [Calendar (Shadow DOM)](../calendar/) når kalenderen skal styres separat fra input-feltet.
+
+## Import
+
+```ts
+import "@fristil/designsystem/input.css"
+import "@fristil/designsystem/label.css"
+import "@fristil/designsystem/help-text.css"
+import "@fristil/designsystem/error-text.css"
+import { defineDsDateField } from "@fristil/designsystem/date-field"
+
+defineDsDateField()
+```
+
+## Slik ser det ut
+
+<Tabs>
+  <TabItem label="Forhåndsvisning">
+    <DateFieldDemo />
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <ds-date-field
+      label="Fødselsdato"
+      value="2026-05-31"
+      error-text="Skriv en gyldig dato."
+      help-text="Velg dato i kalenderpopup eller skriv manuelt. Prøv også en ugyldig dato som 32-06-2026."
+    ></ds-date-field>
+    ```
+  </TabItem>
+</Tabs>
+
+## Hva wrapperen gjør
+
+1. Rendrer `label` + nøytral `ds-input` (`type="text"`) + `ds-calendar` sammen.
+2. Synker verdi begge veier:
+   - Bruker skriver `DD-MM-YYYY` → konverteres til ISO for kalender
+   - Kalender velger dato (ISO) → vises som `DD-MM-YYYY` i input
+3. Ved ugyldig dato på `blur` vises invalid-state og `error-text`.
+4. Håndterer `invalid`, `help-text`, `error-text` og `aria-describedby`.
+
+Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste dato-trigger i denne komposisjonen.
+
+## Bruk i en app
+
+<Tabs>
+  <TabItem label="Vanilla JS">
+    ```js
+    // main.js – kjør én gang ved oppstart
+    import { defineDsDateField } from '@fristil/designsystem/date-field'
+    import '@fristil/designsystem/input.css'
+    import '@fristil/designsystem/label.css'
+    import '@fristil/designsystem/help-text.css'
+    import '@fristil/designsystem/error-text.css'
+
+    defineDsDateField()
+    ```
+
+    ```html
+    <form id="booking-form">
+      <ds-date-field
+        id="travel-date"
+        label="Reisedato"
+        name="travel-date"
+        help-text="Velg dato i kalenderen"
+        error-text="Velg en gyldig dato."
+      ></ds-date-field>
+      <button class="ds-button" type="submit">Book</button>
+    </form>
+
+    <script type="module">
+      const form = document.getElementById('booking-form')
+      const dateField = document.getElementById('travel-date')
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        const isoDate = dateField.value  // "YYYY-MM-DD" eller ""
+        if (!isoDate) {
+          dateField.setAttribute('invalid', '')
+        } else {
+          dateField.removeAttribute('invalid')
+          // prosesser skjemaet med isoDate...
+          console.log(isoDate)
+        }
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { useState } from 'react'
+
+    export function BookingForm() {
+      const [date, setDate] = useState('')  // ISO-format: "YYYY-MM-DD"
+
+      const invalid = false  // sett basert på din valideringslogikk
+
+      return (
+        <form onSubmit={(e) => { e.preventDefault(); console.log(date) }}>
+          <ds-date-field
+            label="Reisedato"
+            name="travel-date"
+            value={date}
+            invalid={invalid}
+            help-text="Velg dato i kalenderen"
+            error-text="Velg en gyldig dato."
+            onInput={(e) => {
+              const el = e.currentTarget as HTMLElement & { value: string }
+              setDate(el.value)  // alltid ISO-format
+            }}
+          />
+          <button className="ds-button" type="submit">Book</button>
+        </form>
+      )
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+## Attributter
+
+| Attributt | Type | Effekt |
+|---|---|---|
+| `label` | string | Synlig labeltekst |
+| `value` | string | Datoverdi (`YYYY-MM-DD`, ISO) |
+| `name` | string | Name på input-feltet |
+| `placeholder` | string | Placeholder i input (default: `DD-MM-YYYY`) |
+| `help-text` | string | Hjelpetekst under feltet |
+| `error-text` | string | Feilmelding under feltet |
+| `invalid` | boolean | Setter invalid-state + viser feilmelding |
+| `required` | boolean | Markerer label som påkrevd |
+| `optional` | boolean | Markerer label som valgfri |
+| `disabled` | boolean | Deaktiverer input og kalender |
+| `readonly` | boolean | Gjør input skrivebeskyttet |
+| `control-id` | string | Setter id på input |
+| `described-by` | string | Ekstra ids for `aria-describedby` |

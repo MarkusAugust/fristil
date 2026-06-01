@@ -12,6 +12,54 @@
     "./tokens.css": "./src/tokens/tokens.css",
     "./utilities.css": "./src/tokens/utilities.css",
     "./button.css": "./src/components/pure-css/button/button.css",
+    "./link.css": "./src/components/pure-css/link/link.css",
+    "./badge.css": "./src/components/pure-css/badge/badge.css",
+    "./label.css": "./src/components/pure-css/label/label.css",
+    "./input.css": "./src/components/pure-css/input/input.css",
+    "./textarea.css": "./src/components/pure-css/textarea/textarea.css",
+    "./select.css": "./src/components/pure-css/select/select.css",
+    "./help-text.css": "./src/components/pure-css/help-text/help-text.css",
+    "./error-text.css": "./src/components/pure-css/error-text/error-text.css",
+    "./label": {
+      "import": "./dist/components/pure-css/label/label.js",
+      "types": "./dist/components/pure-css/label/label.d.ts"
+    },
+    "./input": {
+      "import": "./dist/components/pure-css/input/input.js",
+      "types": "./dist/components/pure-css/input/input.d.ts"
+    },
+    "./textarea": {
+      "import": "./dist/components/pure-css/textarea/textarea.js",
+      "types": "./dist/components/pure-css/textarea/textarea.d.ts"
+    },
+    "./select": {
+      "import": "./dist/components/pure-css/select/select.js",
+      "types": "./dist/components/pure-css/select/select.d.ts"
+    },
+    "./help-text": {
+      "import": "./dist/components/pure-css/help-text/help-text.js",
+      "types": "./dist/components/pure-css/help-text/help-text.d.ts"
+    },
+    "./error-text": {
+      "import": "./dist/components/pure-css/error-text/error-text.js",
+      "types": "./dist/components/pure-css/error-text/error-text.d.ts"
+    },
+    "./calendar": {
+      "import": "./dist/components/shadow-dom/calendar/ds-calendar.js",
+      "types": "./dist/components/shadow-dom/calendar/ds-calendar.d.ts"
+    },
+    "./datepicker": {
+      "import": "./dist/components/shadow-dom/datepicker/ds-datepicker.js",
+      "types": "./dist/components/shadow-dom/datepicker/ds-datepicker.d.ts"
+    },
+    "./field": {
+      "import": "./dist/components/light-dom/field/ds-field.js",
+      "types": "./dist/components/light-dom/field/ds-field.d.ts"
+    },
+    "./date-field": {
+      "import": "./dist/components/light-dom/date-field/ds-date-field.js",
+      "types": "./dist/components/light-dom/date-field/ds-date-field.d.ts"
+    },
     "./button": {
       "import": "./dist/components/pure-css/button/button.js",
       "types": "./dist/components/pure-css/button/button.d.ts"
@@ -51,6 +99,7 @@
   },
   "devDependencies": {
     "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "^4.1.7",
     "lit": "3.3.3",
     "playwright": "1.60.0",
     "tailwindcss": "4.3.0",

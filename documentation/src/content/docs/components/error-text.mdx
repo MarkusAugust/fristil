@@ -1,0 +1,57 @@
+---
+title: Error Text
+description: Feil- og varseltekst under felter. pure-css med warning-variant.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+`ds-error-text` er en pure-css tekstkomponent for valideringsfeil og varsler.
+
+## Import
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/error-text.css"
+```
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: grid; gap: 0.5rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <p class="ds-error-text">Error (default)</p>
+      <p class="ds-error-text" data-variant="warning">Warning</p>
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <p class="ds-error-text">Error</p>
+    <p class="ds-error-text" data-variant="warning">Warning</p>
+    ```
+  </TabItem>
+</Tabs>
+
+## TypeScript-API
+
+```ts
+import {
+  getErrorTextStyleAttributes,
+  type ErrorTextVariant,
+} from "@fristil/designsystem/error-text"
+
+const variant: ErrorTextVariant = "warning"
+const fristilAttributes = getErrorTextStyleAttributes(variant)
+
+// fristilAttributes blir:
+// { class: "ds-error-text", "data-variant": "warning" }
+```
+
+## Runtime input (for eksempel fra API)
+
+```ts
+import { isErrorTextVariant, getErrorTextStyleAttributes } from "@fristil/designsystem/error-text"
+
+const incoming = String(payload.variant)
+const variant = isErrorTextVariant(incoming) ? incoming : "error"
+const fristilAttributes = getErrorTextStyleAttributes(variant)
+```

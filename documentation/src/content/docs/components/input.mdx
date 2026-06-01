@@ -1,0 +1,143 @@
+---
+title: Input
+description: Tekstfelt for skjema. pure-css med varianter for valid/invalid state.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+`ds-input` er en pure-css stil for `<input>` med state-varianter og `date`-variant.
+
+## Når Bruker Du Hva?
+
+- Bruk [Input](../input/) når du vil bruke native browser picker (`type="date"`, `type="time"`, `type="datetime-local"`).
+- Bruk [Calendar (Shadow DOM)](../calendar/) når du trenger en standalone popup-kalender og håndterer synk selv.
+- Bruk [Date Field (Light DOM)](../date-field/) når du vil ha ferdig kobling mellom input, label, help/error og `ds-calendar`.
+
+Støttede input-varianter: `text`, `password`, `email`, `number`, `date`, `datetime-local`, `week`, `month`, `tel`, `url`, `search`, `time`.
+
+For `date`, `time` og `datetime-local` legges det på et lite ikon i feltet. Native picker-atferd beholdes.
+
+Viktig: for at ikon-klikk skal åpne native picker, må `type` matche varianten:
+
+- `data-variant="date"` + `type="date"`
+- `data-variant="time"` + `type="time"`
+- `data-variant="datetime-local"` + `type="datetime-local"`
+
+## Do / Don't
+
+```html
+<!-- Do: variant og type matcher -->
+<input class="ds-input" data-variant="date" type="date" />
+
+<!-- Don't: variant og type matcher ikke -->
+<input class="ds-input" data-variant="date" type="text" />
+```
+
+Når variant og type ikke matcher, ser du fortsatt ikonet, men ikon-klikk åpner ikke native picker.
+
+## Import
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/input.css"
+```
+
+## Varianter
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <div class="not-content" style="display: grid; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
+      <input class="ds-input" placeholder="Standard" />
+      <input class="ds-input" data-variant="date" type="date" value="2026-05-31" />
+      <input class="ds-input" data-state="invalid" value="Ugyldig verdi" />
+      <input class="ds-input" data-state="success" value="Gyldig verdi" />
+      <input class="ds-input" disabled value="Disabled" />
+    </div>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <input class="ds-input" />
+    <input class="ds-input" data-variant="date" type="date" />
+    <input class="ds-input" data-state="invalid" />
+    <input class="ds-input" data-state="success" />
+    <input class="ds-input" disabled />
+    ```
+  </TabItem>
+</Tabs>
+
+## TypeScript-API
+
+```ts
+import {
+  getInputAttributes,
+  getInputStyleAttributes,
+  type InputState,
+  type InputVariant,
+} from "@fristil/designsystem/input"
+
+const state: InputState = "invalid"
+const variant: InputVariant = "date"
+const fristilAttributes = getInputStyleAttributes({ state, variant })
+
+// fristilAttributes blir:
+// { class: "ds-input", "data-state": "invalid", "data-variant": "date" }
+
+const inputAttributes = getInputAttributes({ state, variant })
+
+// inputAttributes blir:
+// { class: "ds-input", "data-state": "invalid", "data-variant": "date", type: "date" }
+```
+
+## Kombiner med egne HTML-attributter
+
+```ts
+const fristilAttributes = getInputStyleAttributes({
+  state: "success",
+  variant: "date",
+})
+
+const attrs = {
+  ...fristilAttributes,
+  id: "email",
+  type: "date",
+  placeholder: "navn@firma.no",
+}
+```
+
+## Runtime input (for eksempel fra API)
+
+Når state/variant kommer fra API, er verdiene bare vanlige strenger.
+Da bør du validere dem før de brukes i UI.
+
+Steg for steg:
+
+1. Les råverdier fra API (`payload`).
+2. Sjekk om state er gyldig med `isInputState(...)`.
+3. Sjekk om variant er gyldig med `isInputVariant(...)`.
+4. Bruk trygg fallback hvis noe er ugyldig.
+5. Lag Fristil-attributtene med de validerte verdiene.
+
+```ts
+import { isInputState, getInputStyleAttributes } from "@fristil/designsystem/input"
+import { isInputVariant } from "@fristil/designsystem/input"
+
+// Dette kan komme fra backend, query params eller localStorage
+const payload = {
+  state: "invalid",
+  variant: "date",
+}
+
+const incomingState = String(payload.state)
+const incomingVariant = String(payload.variant)
+
+// Valider og bruk fallback ved ukjent verdi
+const state = isInputState(incomingState) ? incomingState : "default"
+const variant = isInputVariant(incomingVariant) ? incomingVariant : "text"
+
+const fristilAttributes = getInputStyleAttributes({ state, variant })
+
+// Resultat i dette eksemplet:
+// { class: "ds-input", "data-state": "invalid", "data-variant": "date" }
+```
+
+Hvis `payload.variant` for eksempel er `"birthday"` (ugyldig), blir den automatisk til `"text"`.
