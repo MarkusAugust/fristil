@@ -69,7 +69,7 @@
 		@apply min-h-screen;
 	}
 
-	.header {
+	header.header {
 		@apply border-b border-zinc-200/80 bg-white/88 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/84;
 	}
 

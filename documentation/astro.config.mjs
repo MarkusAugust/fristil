@@ -14,6 +14,10 @@ export default defineConfig({
   integrations: [
     startlight({
       title: "Fristil - Dokumentasjon",
+      defaultLocale: "root",
+      locales: {
+        root: { label: "Norsk", lang: "nb" },
+      },
       components: {
         SiteTitle: "./src/components/SiteTitle.astro",
       },
