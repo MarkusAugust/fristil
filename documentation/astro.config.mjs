@@ -1,9 +1,13 @@
 import startlight from "@astrojs/starlight"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
+import remarkGfm from "remark-gfm"
 
 // https://astro.build/config
 export default defineConfig({
+  markdown: {
+    remarkPlugins: [remarkGfm],
+  },
   vite: {
     plugins: [tailwindcss()],
   },
@@ -66,9 +70,7 @@ export default defineConfig({
             },
             {
               label: "Shadow DOM",
-              items: [
-                { label: "Calendar", slug: "components/calendar" },
-              ],
+              items: [{ label: "Calendar", slug: "components/calendar" }],
             },
           ],
         },

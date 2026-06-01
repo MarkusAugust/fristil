@@ -40,7 +40,8 @@ defineDsCalendar()
 
       const calendar = document.getElementById("invoice-calendar")
       calendar.addEventListener("date-select", (event) => {
-        console.log("Valgt dato:", event.detail.value)
+        const dateSelectEvent = event as CustomEvent<{ value: string }>
+        console.log("Valgt dato:", dateSelectEvent.detail.value)
       })
     </script>
     ```
