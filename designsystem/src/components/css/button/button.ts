@@ -1,6 +1,11 @@
-export const BUTTON_CLASS = "ds-button" as const
+export const BUTTON_CLASS = "fs-button" as const
 
-export const buttonVariants = ["primary", "secondary", "ghost", "danger"] as const
+export const buttonVariants = [
+  "primary",
+  "secondary",
+  "ghost",
+  "danger",
+] as const
 
 export type ButtonVariant = (typeof buttonVariants)[number]
 export type NonPrimaryButtonVariant = Exclude<ButtonVariant, "primary">

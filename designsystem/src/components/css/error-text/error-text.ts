@@ -1,4 +1,4 @@
-export const ERROR_TEXT_CLASS = "ds-error-text" as const
+export const ERROR_TEXT_CLASS = "fs-error-text" as const
 
 export const errorTextVariants = ["error", "warning"] as const
 

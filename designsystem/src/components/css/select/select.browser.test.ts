@@ -14,13 +14,13 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-select", () => {
+describe("fs-select", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <select id="default" class="ds-select"><option>Velg</option></select>
-      <select id="invalid" class="ds-select" data-state="invalid"><option>Velg</option></select>
-      <select id="success" class="ds-select" data-state="success"><option>Velg</option></select>
-      <select id="disabled" class="ds-select" disabled><option>Velg</option></select>
+      <select id="default" class="fs-select"><option>Velg</option></select>
+      <select id="invalid" class="fs-select" data-state="invalid"><option>Velg</option></select>
+      <select id="success" class="fs-select" data-state="success"><option>Velg</option></select>
+      <select id="disabled" class="fs-select" disabled><option>Velg</option></select>
     `
   })
 

@@ -1,4 +1,4 @@
-.ds-link {
+.fs-link {
   color: var(--semantic-interactive-main);
   font-family: inherit;
   font-size: inherit;
@@ -12,21 +12,21 @@
     text-decoration-color 120ms ease;
 }
 
-.ds-link:hover {
+.fs-link:hover {
   color: var(--semantic-interactive-foreground);
 }
 
-.ds-link:visited {
+.fs-link:visited {
   color: var(--palette-denim-70);
 }
 
-.ds-link:focus-visible {
+.fs-link:focus-visible {
   outline: 2px solid var(--semantic-interactive-main);
   outline-offset: 2px;
   border-radius: var(--size-0-5);
 }
 
-.ds-link[aria-disabled="true"] {
+.fs-link[aria-disabled="true"] {
   color: var(--semantic-disabled-foreground);
   text-decoration: none;
   cursor: not-allowed;

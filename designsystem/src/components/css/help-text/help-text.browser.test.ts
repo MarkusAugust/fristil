@@ -14,13 +14,13 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-help-text", () => {
+describe("fs-help-text", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <p id="muted" class="ds-help-text">Muted help</p>
-      <p id="default" class="ds-help-text" data-variant="default">Default help</p>
-      <p id="success" class="ds-help-text" data-variant="success">Success help</p>
-      <p id="warning" class="ds-help-text" data-variant="warning">Warning help</p>
+      <p id="muted" class="fs-help-text">Muted help</p>
+      <p id="default" class="fs-help-text" data-variant="default">Default help</p>
+      <p id="success" class="fs-help-text" data-variant="success">Success help</p>
+      <p id="warning" class="fs-help-text" data-variant="warning">Warning help</p>
     `
   })
 

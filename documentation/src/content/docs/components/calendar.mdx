@@ -3,10 +3,10 @@ title: Calendar (Sammensatt)
 description: Standalone popup-kalender som sender valgt dato via event.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import CalendarDemo from "../../../components/CalendarDemo.astro"
 
-`<ds-calendar>` er en sammensatt popup-kalender.
+`<fs-calendar>` er en sammensatt popup-kalender.
 Den eier kalender-UI og sender valgt dato via event, men eier ikke input-feltet.
 
 ## Når Bruker Du Hva?
@@ -31,7 +31,7 @@ defineDsCalendar()
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <ds-calendar id="invoice-calendar" value="2026-05-31"></ds-calendar>
+    <fs-calendar id="invoice-calendar" value="2026-05-31"></fs-calendar>
 
     <script type="module">
       import { defineDsCalendar } from "@fristil/designsystem/calendar"
@@ -50,11 +50,11 @@ defineDsCalendar()
 
 ## Hvordan den brukes
 
-1. `ds-calendar` viser trigger-knapp og popup-kalender.
+1. `fs-calendar` viser trigger-knapp og popup-kalender.
 2. Når bruker velger en dag, sender komponenten event `date-select`.
 3. Appen bestemmer hva som skal oppdateres (input, state, API-kall, osv.).
 
-## ds-calendar API
+## fs-calendar API
 
 | Attributt | Type | Effekt |
 |---|---|---|

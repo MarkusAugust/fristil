@@ -20,6 +20,8 @@
     "./select.css": "./src/components/css/select/select.css",
     "./help-text.css": "./src/components/css/help-text/help-text.css",
     "./error-text.css": "./src/components/css/error-text/error-text.css",
+    "./field.css": "./src/components/ramme/field/field.css",
+    "./date-field.css": "./src/components/sammensatt/date-field/date-field.css",
     "./label": {
       "import": "./dist/components/css/label/label.js",
       "types": "./dist/components/css/label/label.d.ts"
@@ -45,16 +47,16 @@
       "types": "./dist/components/css/error-text/error-text.d.ts"
     },
     "./calendar": {
-      "import": "./dist/components/sammensatt/calendar/ds-calendar.js",
-      "types": "./dist/components/sammensatt/calendar/ds-calendar.d.ts"
+      "import": "./dist/components/sammensatt/calendar/fs-calendar.js",
+      "types": "./dist/components/sammensatt/calendar/fs-calendar.d.ts"
     },
     "./field": {
-      "import": "./dist/components/ramme/field/ds-field.js",
-      "types": "./dist/components/ramme/field/ds-field.d.ts"
+      "import": "./dist/components/ramme/field/fs-field.js",
+      "types": "./dist/components/ramme/field/fs-field.d.ts"
     },
     "./date-field": {
-      "import": "./dist/components/sammensatt/date-field/ds-date-field.js",
-      "types": "./dist/components/sammensatt/date-field/ds-date-field.d.ts"
+      "import": "./dist/components/sammensatt/date-field/fs-date-field.js",
+      "types": "./dist/components/sammensatt/date-field/fs-date-field.d.ts"
     },
     "./button": {
       "import": "./dist/components/css/button/button.js",

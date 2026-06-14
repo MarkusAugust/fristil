@@ -1,4 +1,4 @@
-.ds-textarea {
+.fs-textarea {
   display: block;
   width: 100%;
   min-height: calc(var(--size-4) * 5);
@@ -13,22 +13,22 @@
   resize: vertical;
 }
 
-.ds-textarea::placeholder {
+.fs-textarea::placeholder {
   color: var(--semantic-disabled-foreground);
 }
 
-.ds-textarea:hover {
+.fs-textarea:hover {
   border-color: var(--palette-graphite-50);
 }
 
-.ds-textarea:focus-visible {
+.fs-textarea:focus-visible {
   outline: 2px solid var(--semantic-interactive-main);
   outline-offset: 2px;
   border-color: var(--semantic-interactive-main);
 }
 
-.ds-textarea:disabled,
-.ds-textarea[aria-disabled="true"] {
+.fs-textarea:disabled,
+.fs-textarea[aria-disabled="true"] {
   background: var(--semantic-disabled-background);
   color: var(--semantic-disabled-foreground);
   border-color: var(--semantic-disabled-background);
@@ -36,20 +36,20 @@
   pointer-events: none;
 }
 
-.ds-textarea[data-state="invalid"] {
+.fs-textarea[data-state="invalid"] {
   border-color: var(--semantic-danger-foreground);
   background: var(--semantic-danger-background);
 }
 
-.ds-textarea[data-state="invalid"]:focus-visible {
+.fs-textarea[data-state="invalid"]:focus-visible {
   outline-color: var(--semantic-danger-foreground);
 }
 
-.ds-textarea[data-state="success"] {
+.fs-textarea[data-state="success"] {
   border-color: var(--semantic-success-foreground);
   background: var(--semantic-success-background);
 }
 
-.ds-textarea[data-state="success"]:focus-visible {
+.fs-textarea[data-state="success"]:focus-visible {
   outline-color: var(--semantic-success-foreground);
 }

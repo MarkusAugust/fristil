@@ -35,13 +35,13 @@ Bruk dette for enkle, stateless elementer: knapper, badges, typografi, input-sty
 
 ```css
 /* src/designsystem/pure-css/my-component/my-component.css */
-.ds-my-component {
+.fs-my-component {
   color: var(--semantic-page-foreground);
   padding: var(--size-2) var(--size-4);
   font-size: var(--font-size-m);
 }
 
-.ds-my-component[data-variant="primary"] {
+.fs-my-component[data-variant="primary"] {
   background: var(--semantic-interactive-main);
   color: var(--palette-graphite-0);
 }
@@ -57,7 +57,7 @@ Bruk dette for enkle, stateless elementer: knapper, badges, typografi, input-sty
 
 ```html
 <link rel="stylesheet" href="@fristil/designsystem/my-component.css" />
-<div class="ds-my-component" data-variant="primary">Innhold</div>
+<div class="fs-my-component" data-variant="primary">Innhold</div>
 ```
 
 Ingen JavaScript. Ingen import. Bare CSS.
@@ -73,11 +73,11 @@ Light DOM betyr at komponentens HTML havner i den vanlige DOM-en. Tokens på `:r
 **1. Opprett TypeScript-fil i `src/designsystem/light-dom/my-wrapper/`:**
 
 ```ts
-// src/designsystem/light-dom/my-wrapper/ds-my-wrapper.ts
+// src/designsystem/light-dom/my-wrapper/fs-my-wrapper.ts
 import { LitElement, html } from "lit"
 import { customElement, property } from "lit/decorators.js"
 
-@customElement("ds-my-wrapper")
+@customElement("fs-my-wrapper")
 export class DsMyWrapper extends LitElement {
   // Light DOM: overstyrer createRenderRoot
   override createRenderRoot() {
@@ -88,8 +88,8 @@ export class DsMyWrapper extends LitElement {
 
   render() {
     return html`
-      <div class="ds-my-wrapper">
-        ${this.label ? html`<span class="ds-my-wrapper__label">${this.label}</span>` : ""}
+      <div class="fs-my-wrapper">
+        ${this.label ? html`<span class="fs-my-wrapper__label">${this.label}</span>` : ""}
         <slot></slot>
       </div>
     `
@@ -98,7 +98,7 @@ export class DsMyWrapper extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ds-my-wrapper": DsMyWrapper
+    "fs-my-wrapper": DsMyWrapper
   }
 }
 ```
@@ -106,14 +106,14 @@ declare global {
 **2. Eksporter fra `src/index.ts`:**
 
 ```ts
-export * from "./ds-my-wrapper.js"
+export * from "./fs-my-wrapper.js"
 ```
 
 **3. Legg til CSS-fil for styling (samme som pure-css):**
 
 ```css
 /* src/designsystem/pure-css/my-wrapper/my-wrapper.css */
-.ds-my-wrapper {
+.fs-my-wrapper {
   display: flex;
   flex-direction: column;
   gap: var(--size-2);
@@ -125,9 +125,9 @@ export * from "./ds-my-wrapper.js"
 ```html
 <script type="module" src="@fristil/designsystem"></script>
 
-<ds-my-wrapper label="E-post">
-  <input class="ds-input" type="email" />
-</ds-my-wrapper>
+<fs-my-wrapper label="E-post">
+  <input class="fs-input" type="email" />
+</fs-my-wrapper>
 ```
 
 ---
@@ -141,11 +141,11 @@ Shadow DOM isolerer stilene. CSS custom properties **piercer** Shadow DOM automa
 **1. Opprett TypeScript-fil i `src/designsystem/shadow-dom/my-widget/`:**
 
 ```ts
-// src/designsystem/shadow-dom/my-widget/ds-my-widget.ts
+// src/designsystem/shadow-dom/my-widget/fs-my-widget.ts
 import { LitElement, html, css } from "lit"
 import { customElement, property } from "lit/decorators.js"
 
-@customElement("ds-my-widget")
+@customElement("fs-my-widget")
 export class DsMyWidget extends LitElement {
   // Shadow DOM: IKKE overstyr createRenderRoot
 
@@ -174,7 +174,7 @@ export class DsMyWidget extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ds-my-widget": DsMyWidget
+    "fs-my-widget": DsMyWidget
   }
 }
 ```
@@ -182,19 +182,19 @@ declare global {
 **2. Eksporter fra `src/index.ts`:**
 
 ```ts
-export * from "./ds-my-widget.js"
+export * from "./fs-my-widget.js"
 ```
 
 **Bruk hos konsument:**
 
 ```html
-<ds-my-widget open>Innhold</ds-my-widget>
+<fs-my-widget open>Innhold</fs-my-widget>
 ```
 
 **Bruk i Astro docs** (`client:only` er påkrevd for alle Lit-komponenter):
 
 ```astro
-<ds-my-widget client:only="lit" open>Innhold</ds-my-widget>
+<fs-my-widget client:only="lit" open>Innhold</fs-my-widget>
 ```
 
 ---

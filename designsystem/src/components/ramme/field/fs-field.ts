@@ -1,6 +1,6 @@
-import { LitElement, html } from "lit"
+import { html, LitElement } from "lit"
 
-export const DS_FIELD_TAG = "ds-field" as const
+export const DS_FIELD_TAG = "fs-field" as const
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
@@ -56,17 +56,20 @@ export class DsField extends LitElement {
 
   private syncA11y() {
     const label = this.querySelector("label") as HTMLLabelElement | null
-    const control = this.querySelector("input:not([type='hidden']), textarea, select") as
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | HTMLSelectElement
-      | null
-    const help = this.querySelector(".ds-help-text, [data-role='help']") as HTMLElement | null
-    const error = this.querySelector(".ds-error-text, [data-role='error']") as HTMLElement | null
+    const control = this.querySelector(
+      "input:not([type='hidden']), textarea, select",
+    ) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+    const help = this.querySelector(
+      ".fs-help-text, [data-role='help']",
+    ) as HTMLElement | null
+    const error = this.querySelector(
+      ".fs-error-text, [data-role='error']",
+    ) as HTMLElement | null
 
     if (!control) return
 
-    const controlId = this.controlId || control.id || uniqueId("ds-field-control")
+    const controlId =
+      this.controlId || control.id || uniqueId("fs-field-control")
     control.id = controlId
 
     if (label) {
@@ -95,10 +98,10 @@ export class DsField extends LitElement {
       control.removeAttribute("aria-disabled")
     }
 
-    const helpId = help ? help.id || uniqueId("ds-field-help") : ""
+    const helpId = help ? help.id || uniqueId("fs-field-help") : ""
     if (help && !help.id) help.id = helpId
 
-    const errorId = error ? error.id || uniqueId("ds-field-error") : ""
+    const errorId = error ? error.id || uniqueId("fs-field-error") : ""
     if (error && !error.id) error.id = errorId
 
     if (error) {
@@ -110,9 +113,9 @@ export class DsField extends LitElement {
     if (this.invalid) {
       control.setAttribute("aria-invalid", "true")
       if (
-        control.classList.contains("ds-input") ||
-        control.classList.contains("ds-textarea") ||
-        control.classList.contains("ds-select")
+        control.classList.contains("fs-input") ||
+        control.classList.contains("fs-textarea") ||
+        control.classList.contains("fs-select")
       ) {
         if (!control.hasAttribute("data-state")) {
           control.setAttribute("data-state", "invalid")
@@ -141,7 +144,7 @@ export class DsField extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ds-field": DsField
+    "fs-field": DsField
   }
 }
 

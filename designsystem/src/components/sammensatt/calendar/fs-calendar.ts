@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit"
 
-export const DS_CALENDAR_TAG = "ds-calendar" as const
+export const DS_CALENDAR_TAG = "fs-calendar" as const
 
 type CalendarCell = {
   date: Date
@@ -41,11 +41,19 @@ function startOfMonth(date: Date): Date {
 }
 
 function addDays(date: Date, delta: number): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + delta))
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate() + delta,
+    ),
+  )
 }
 
 function addMonths(date: Date, delta: number): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + delta, 1))
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + delta, 1),
+  )
 }
 
 function mondayBasedWeekday(date: Date): number {
@@ -54,10 +62,15 @@ function mondayBasedWeekday(date: Date): number {
 
 function getToday(): Date {
   const today = new Date()
-  return new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+  return new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  )
 }
 
-function getCalendarCells(monthDate: Date, selectedIso?: string): CalendarCell[] {
+function getCalendarCells(
+  monthDate: Date,
+  selectedIso?: string,
+): CalendarCell[] {
   const selectedDate = parseIsoDate(selectedIso)
   const todayIso = formatIsoDate(getToday())
   const monthStart = startOfMonth(monthDate)
@@ -81,7 +94,11 @@ export class DsCalendar extends LitElement {
     open: { type: Boolean, reflect: true },
     disabled: { type: Boolean, reflect: true },
     value: { type: String, reflect: true },
-    triggerHidden: { type: Boolean, reflect: true, attribute: "trigger-hidden" },
+    triggerHidden: {
+      type: Boolean,
+      reflect: true,
+      attribute: "trigger-hidden",
+    },
   }
 
   static styles = css`
@@ -254,7 +271,9 @@ export class DsCalendar extends LitElement {
   }
 
   render() {
-    const monthCells = this.open ? getCalendarCells(this.viewMonth, this.value) : []
+    const monthCells = this.open
+      ? getCalendarCells(this.viewMonth, this.value)
+      : []
 
     return html`
       <button
@@ -280,7 +299,8 @@ export class DsCalendar extends LitElement {
 
         <div class="weekday-row" aria-hidden="true">
           ${[0, 1, 2, 3, 4, 5, 6].map(
-            (index) => html`<div class="weekday">${weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + index)))}</div>`,
+            (index) =>
+              html`<div class="weekday">${weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + index)))}</div>`,
           )}
         </div>
 
@@ -313,7 +333,9 @@ export class DsCalendar extends LitElement {
     this.open = true
     this.requestUpdate()
     queueMicrotask(() => {
-      const selected = this.renderRoot.querySelector<HTMLButtonElement>(`.day[data-selected="true"]`)
+      const selected = this.renderRoot.querySelector<HTMLButtonElement>(
+        `.day[data-selected="true"]`,
+      )
       selected?.focus()
     })
   }
@@ -349,7 +371,13 @@ export class DsCalendar extends LitElement {
     this.value = iso
     this.viewMonth = parseIsoDate(iso) ?? this.viewMonth
 
-    this.dispatchEvent(new CustomEvent("date-select", { detail: { value: iso }, bubbles: true, composed: true }))
+    this.dispatchEvent(
+      new CustomEvent("date-select", {
+        detail: { value: iso },
+        bubbles: true,
+        composed: true,
+      }),
+    )
     this.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
     this.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
 
@@ -378,7 +406,8 @@ export class DsCalendar extends LitElement {
     if (event.key === "ArrowUp") nextDate = addDays(targetDate, -7)
     if (event.key === "ArrowDown") nextDate = addDays(targetDate, 7)
     if (event.key === "Home") nextDate = startOfMonth(targetDate)
-    if (event.key === "End") nextDate = addDays(addMonths(startOfMonth(targetDate), 1), -1)
+    if (event.key === "End")
+      nextDate = addDays(addMonths(startOfMonth(targetDate), 1), -1)
 
     if (!nextDate) return
 
@@ -404,7 +433,7 @@ export class DsCalendar extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ds-calendar": DsCalendar
+    "fs-calendar": DsCalendar
   }
 }
 

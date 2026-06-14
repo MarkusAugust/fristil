@@ -3,9 +3,9 @@ title: Link
 description: Klikkbar lenkestil for navigasjon. pure-css - ren CSS, ingen JavaScript.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 
-`ds-link` er en **pure-css**-komponent for navigasjonstekst med tydelig hover/fokus.
+`fs-link` er en **pure-css**-komponent for navigasjonstekst med tydelig hover/fokus.
 Standardfargen er `--semantic-interactive-main`.
 
 ## Import
@@ -29,12 +29,12 @@ import "@fristil/designsystem/link.css"
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <a class="ds-link" href="#">Standard</a>
+      <a class="fs-link" href="#">Standard</a>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <a class="ds-link" href="/profil">Standard</a>
+    <a class="fs-link" href="/profil">Standard</a>
     ```
   </TabItem>
 </Tabs>
@@ -46,7 +46,7 @@ import "@fristil/designsystem/link.css"
 Bruk `aria-disabled="true"` for lenker som ikke skal være klikkbare ennå.
 
 ```html
-<a class="ds-link" aria-disabled="true" href="/kommer-snart">Kommer snart</a>
+<a class="fs-link" aria-disabled="true" href="/kommer-snart">Kommer snart</a>
 ```
 
 Dette slår av klikk (`pointer-events: none`) og viser deaktivert visuell tilstand.
@@ -57,5 +57,5 @@ Dette slår av klikk (`pointer-events: none`) og viser deaktivert visuell tilsta
 
 - Bruk `<a>` for navigasjon mellom sider eller ressurser
 - Hold lenketeksten konkret: *"Se faktura"* er bedre enn *"Klikk her"*
-- Bruk `:focus-visible`-stilen som følger med `ds-link`; ikke fjern outline
+- Bruk `:focus-visible`-stilen som følger med `fs-link`; ikke fjern outline
 - Hvis lenken er deaktivert, bruk `aria-disabled="true"` og vurder å gi forklaring i UI

@@ -1,4 +1,4 @@
-.ds-select {
+.fs-select {
   display: block;
   width: 100%;
   padding: var(--size-2) calc(var(--size-4) + var(--size-2)) var(--size-2) var(--size-3);
@@ -20,18 +20,18 @@
   background-repeat: no-repeat;
 }
 
-.ds-select:hover {
+.fs-select:hover {
   border-color: var(--palette-graphite-50);
 }
 
-.ds-select:focus-visible {
+.fs-select:focus-visible {
   outline: 2px solid var(--semantic-interactive-main);
   outline-offset: 2px;
   border-color: var(--semantic-interactive-main);
 }
 
-.ds-select:disabled,
-.ds-select[aria-disabled="true"] {
+.fs-select:disabled,
+.fs-select[aria-disabled="true"] {
   background-color: var(--semantic-disabled-background);
   color: var(--semantic-disabled-foreground);
   border-color: var(--semantic-disabled-background);
@@ -39,20 +39,20 @@
   pointer-events: none;
 }
 
-.ds-select[data-state="invalid"] {
+.fs-select[data-state="invalid"] {
   border-color: var(--semantic-danger-foreground);
   background-color: var(--semantic-danger-background);
 }
 
-.ds-select[data-state="invalid"]:focus-visible {
+.fs-select[data-state="invalid"]:focus-visible {
   outline-color: var(--semantic-danger-foreground);
 }
 
-.ds-select[data-state="success"] {
+.fs-select[data-state="success"] {
   border-color: var(--semantic-success-foreground);
   background-color: var(--semantic-success-background);
 }
 
-.ds-select[data-state="success"]:focus-visible {
+.fs-select[data-state="success"]:focus-visible {
   outline-color: var(--semantic-success-foreground);
 }

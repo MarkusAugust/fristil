@@ -3,9 +3,9 @@ title: Error Text
 description: Feil- og varseltekst under felter. pure-css med warning-variant.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 
-`ds-error-text` er en pure-css tekstkomponent for valideringsfeil og varsler.
+`fs-error-text` er en pure-css tekstkomponent for valideringsfeil og varsler.
 
 ## Import
 
@@ -19,14 +19,14 @@ import "@fristil/designsystem/error-text.css"
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: grid; gap: 0.5rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <p class="ds-error-text">Error (default)</p>
-      <p class="ds-error-text" data-variant="warning">Warning</p>
+      <p class="fs-error-text">Error (default)</p>
+      <p class="fs-error-text" data-variant="warning">Warning</p>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <p class="ds-error-text">Error</p>
-    <p class="ds-error-text" data-variant="warning">Warning</p>
+    <p class="fs-error-text">Error</p>
+    <p class="fs-error-text" data-variant="warning">Warning</p>
     ```
   </TabItem>
 </Tabs>
@@ -43,7 +43,7 @@ const variant: ErrorTextVariant = "warning"
 const fristilAttributes = getErrorTextStyleAttributes(variant)
 
 // fristilAttributes blir:
-// { class: "ds-error-text", "data-variant": "warning" }
+// { class: "fs-error-text", "data-variant": "warning" }
 ```
 
 ## Runtime input (for eksempel fra API)

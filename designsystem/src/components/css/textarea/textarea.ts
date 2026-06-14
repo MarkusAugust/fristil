@@ -1,4 +1,4 @@
-export const TEXTAREA_CLASS = "ds-textarea" as const
+export const TEXTAREA_CLASS = "fs-textarea" as const
 
 export const textareaStates = ["default", "invalid", "success"] as const
 

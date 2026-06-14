@@ -14,14 +14,14 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-button variants", () => {
+describe("fs-button variants", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <button id="primary" class="ds-button">Primary</button>
-      <button id="secondary" class="ds-button" data-variant="secondary">Secondary</button>
-      <button id="ghost" class="ds-button" data-variant="ghost">Ghost</button>
-      <button id="danger" class="ds-button" data-variant="danger">Danger</button>
-      <button id="disabled" class="ds-button" disabled>Disabled</button>
+      <button id="primary" class="fs-button">Primary</button>
+      <button id="secondary" class="fs-button" data-variant="secondary">Secondary</button>
+      <button id="ghost" class="fs-button" data-variant="ghost">Ghost</button>
+      <button id="danger" class="fs-button" data-variant="danger">Danger</button>
+      <button id="disabled" class="fs-button" disabled>Disabled</button>
     `
   })
 

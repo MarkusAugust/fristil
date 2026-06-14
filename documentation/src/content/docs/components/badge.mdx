@@ -3,9 +3,9 @@ title: Badge
 description: Liten statusindikator for å fremheve tilstand, kategori eller antall. pure-css — ren CSS, ingen JavaScript.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 
-`ds-badge` er en **pure-css**-komponent for kompakte statusindikatorer. Fargen styres med `data-color`.
+`fs-badge` er en **pure-css**-komponent for kompakte statusindikatorer. Fargen styres med `data-color`.
 
 ## Import
 
@@ -28,20 +28,20 @@ import "@fristil/designsystem/badge.css"
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <span class="ds-badge">Info</span>
-      <span class="ds-badge" data-color="success">Aktiv</span>
-      <span class="ds-badge" data-color="warning">Advarsel</span>
-      <span class="ds-badge" data-color="danger">Feil</span>
-      <span class="ds-badge" data-color="neutral">Inaktiv</span>
+      <span class="fs-badge">Info</span>
+      <span class="fs-badge" data-color="success">Aktiv</span>
+      <span class="fs-badge" data-color="warning">Advarsel</span>
+      <span class="fs-badge" data-color="danger">Feil</span>
+      <span class="fs-badge" data-color="neutral">Inaktiv</span>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <span class="ds-badge">Info</span>
-    <span class="ds-badge" data-color="success">Aktiv</span>
-    <span class="ds-badge" data-color="warning">Advarsel</span>
-    <span class="ds-badge" data-color="danger">Feil</span>
-    <span class="ds-badge" data-color="neutral">Inaktiv</span>
+    <span class="fs-badge">Info</span>
+    <span class="fs-badge" data-color="success">Aktiv</span>
+    <span class="fs-badge" data-color="warning">Advarsel</span>
+    <span class="fs-badge" data-color="danger">Feil</span>
+    <span class="fs-badge" data-color="neutral">Inaktiv</span>
     ```
   </TabItem>
 </Tabs>

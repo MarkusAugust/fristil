@@ -16,7 +16,7 @@ Fristil er organisert i tre tydelige kategorier, slik at du kan velge riktig ver
 	Eksempel:
 
 	```html
-	<button class="ds-button" data-variant="secondary">Lagre</button>
+	<button class="fs-button" data-variant="secondary">Lagre</button>
 	```
 
 	Fordeler:
@@ -31,12 +31,12 @@ Fristil er organisert i tre tydelige kategorier, slik at du kan velge riktig ver
 	Eksempel:
 
 	```html
-	<ds-field required-marker="symbol" invalid>
+	<fs-field required-marker="symbol" invalid>
 	  <label>E-post</label>
-	  <input class="ds-input" type="email" value="ola@" />
-	  <p class="ds-help-text">Vi sender aldri spam.</p>
-	  <p class="ds-error-text">Skriv en gyldig e-post.</p>
-	</ds-field>
+	  <input class="fs-input" type="email" value="ola@" />
+	  <p class="fs-help-text">Vi sender aldri spam.</p>
+	  <p class="fs-error-text">Skriv en gyldig e-post.</p>
+	</fs-field>
 	```
 
 	Fordeler:
@@ -51,12 +51,12 @@ Fristil er organisert i tre tydelige kategorier, slik at du kan velge riktig ver
 	Eksempel:
 
 	```html
-	<ds-date-field
+	<fs-date-field
 	  label="Fødselsdato"
 	  value="2026-05-31"
 	  help-text="Skriv dato som DD-MM-YYYY eller åpne kalenderen."
 	  error-text="Skriv en gyldig dato."
-	></ds-date-field>
+	></fs-date-field>
 	```
 
 	Fordeler:
@@ -112,8 +112,8 @@ import "@fristil/designsystem/button.css";
 <section class="mx-auto max-w-3xl p-6">
 	<h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
 	<div class="flex flex-wrap gap-3">
-		<button class="ds-button">Lagre</button>
-		<button class="ds-button" data-variant="secondary">Avbryt</button>
+		<button class="fs-button">Lagre</button>
+		<button class="fs-button" data-variant="secondary">Avbryt</button>
 	</div>
 </section>
 ```

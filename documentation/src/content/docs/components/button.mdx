@@ -5,7 +5,7 @@ description: En klikkbar knapp for å utløse handlinger. pure-css — ren CSS, 
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 
-`ds-button` er en **pure-css**-komponent: ren CSS-klasse, null JavaScript, fungerer i alle rammeverk.
+`fs-button` er en **pure-css**-komponent: ren CSS-klasse, null JavaScript, fungerer i alle rammeverk.
 
 ## Import
 
@@ -28,18 +28,18 @@ import "@fristil/designsystem/button.css"
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <button class="ds-button">Primær</button>
-      <button class="ds-button" data-variant="secondary">Sekundær</button>
-      <button class="ds-button" data-variant="ghost">Ghost</button>
-      <button class="ds-button" data-variant="danger">Danger</button>
+      <button class="fs-button">Primær</button>
+      <button class="fs-button" data-variant="secondary">Sekundær</button>
+      <button class="fs-button" data-variant="ghost">Ghost</button>
+      <button class="fs-button" data-variant="danger">Danger</button>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <button class="ds-button">Primær</button>
-    <button class="ds-button" data-variant="secondary">Sekundær</button>
-    <button class="ds-button" data-variant="ghost">Ghost</button>
-    <button class="ds-button" data-variant="danger">Danger</button>
+    <button class="fs-button">Primær</button>
+    <button class="fs-button" data-variant="secondary">Sekundær</button>
+    <button class="fs-button" data-variant="ghost">Ghost</button>
+    <button class="fs-button" data-variant="danger">Danger</button>
     ```
   </TabItem>
 </Tabs>
@@ -58,15 +58,15 @@ import "@fristil/designsystem/button.css"
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <button class="ds-button" disabled>Primær</button>
-      <button class="ds-button" data-variant="secondary" disabled>Sekundær</button>
-      <button class="ds-button" data-variant="ghost" disabled>Ghost</button>
-      <button class="ds-button" data-variant="danger" disabled>Danger</button>
+      <button class="fs-button" disabled>Primær</button>
+      <button class="fs-button" data-variant="secondary" disabled>Sekundær</button>
+      <button class="fs-button" data-variant="ghost" disabled>Ghost</button>
+      <button class="fs-button" data-variant="danger" disabled>Danger</button>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <button class="ds-button" disabled>Primær</button>
+    <button class="fs-button" disabled>Primær</button>
     ```
   </TabItem>
 </Tabs>
@@ -74,7 +74,7 @@ import "@fristil/designsystem/button.css"
 For ikke-`<button>`-elementer (f.eks. `<a>`), bruk `aria-disabled="true"` i stedet for `disabled`:
 
 ```html
-<a class="ds-button" aria-disabled="true" href="/handling">Primær</a>
+<a class="fs-button" aria-disabled="true" href="/handling">Primær</a>
 ```
 
 ---
@@ -84,14 +84,14 @@ For ikke-`<button>`-elementer (f.eks. `<a>`), bruk `aria-disabled="true"` i sted
 <Tabs>
   <TabItem label="Eksempel">
     <div class="not-content" style="display: flex; gap: 0.75rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <a class="ds-button" href="#">Gå videre</a>
-      <a class="ds-button" data-variant="secondary" href="#">Les mer</a>
+      <a class="fs-button" href="#">Gå videre</a>
+      <a class="fs-button" data-variant="secondary" href="#">Les mer</a>
     </div>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <a class="ds-button" href="/neste">Gå videre</a>
-    <a class="ds-button" data-variant="secondary" href="/mer">Les mer</a>
+    <a class="fs-button" href="/neste">Gå videre</a>
+    <a class="fs-button" data-variant="secondary" href="/mer">Les mer</a>
     ```
   </TabItem>
 </Tabs>

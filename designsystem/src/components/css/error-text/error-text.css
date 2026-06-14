@@ -1,4 +1,4 @@
-.ds-error-text {
+.fs-error-text {
   display: block;
   margin-top: var(--size-1);
   font-family: inherit;
@@ -8,10 +8,10 @@
   color: var(--semantic-danger-foreground);
 }
 
-.ds-error-text[hidden] {
+.fs-error-text[hidden] {
   display: none;
 }
 
-.ds-error-text[data-variant="warning"] {
+.fs-error-text[data-variant="warning"] {
   color: var(--semantic-warning-foreground);
 }

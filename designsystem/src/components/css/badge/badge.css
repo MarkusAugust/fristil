@@ -1,4 +1,4 @@
-.ds-badge {
+.fs-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--size-1);
@@ -14,22 +14,22 @@
   color: var(--semantic-interactive-main);
 }
 
-.ds-badge[data-color="success"] {
+.fs-badge[data-color="success"] {
   background: var(--semantic-success-background);
   color: var(--semantic-success-foreground);
 }
 
-.ds-badge[data-color="warning"] {
+.fs-badge[data-color="warning"] {
   background: var(--semantic-warning-background);
   color: var(--semantic-warning-foreground);
 }
 
-.ds-badge[data-color="danger"] {
+.fs-badge[data-color="danger"] {
   background: var(--semantic-danger-background);
   color: var(--semantic-danger-foreground);
 }
 
-.ds-badge[data-color="neutral"] {
+.fs-badge[data-color="neutral"] {
   background: var(--semantic-disabled-background);
   color: var(--semantic-disabled-foreground);
 }

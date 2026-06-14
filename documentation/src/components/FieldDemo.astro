@@ -1,0 +1,37 @@
+---
+---
+
+<div class="field-demo not-content" style="max-width: 34rem; padding: 1.5rem; background: #ffffff; border: 1px solid #b2b2b2; border-radius: 0.25rem; display: grid; gap: 1rem;">
+  <fs-field id="demo-email-field" required-marker="text">
+    <label>E-post</label>
+    <input id="demo-email-input" class="fs-input" type="email" placeholder="ola@eksempel.no" />
+    <p class="fs-help-text">Vi sender aldri spam.</p>
+    <p class="fs-error-text">Skriv en gyldig e-post.</p>
+  </fs-field>
+
+  <fs-field optional>
+    <label>Melding</label>
+    <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
+    <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
+  </fs-field>
+</div>
+
+<script>
+  import { defineDsField } from "@fristil/designsystem/field"
+  defineDsField()
+
+  const field = document.getElementById("demo-email-field") as HTMLElement & { invalid: boolean }
+  const input = document.getElementById("demo-email-input") as HTMLInputElement
+
+  input.addEventListener("blur", () => {
+    const valid = input.value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
+    field.toggleAttribute("invalid", !valid)
+  })
+
+  input.addEventListener("input", () => {
+    if (field.hasAttribute("invalid")) {
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
+      field.toggleAttribute("invalid", !valid)
+    }
+  })
+</script>

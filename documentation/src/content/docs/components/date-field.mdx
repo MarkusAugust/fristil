@@ -3,10 +3,10 @@ title: Date Field (Sammensatt)
 description: Sammensatt komponent som kombinerer input, label, help/error og kalender-popup i én enhet.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 
-`<ds-date-field>` er en sammensatt komponent som eier alt internt: input, label, help/error og `ds-calendar` som popup. Du trenger ikke sette opp HTML selv.
+`<fs-date-field>` er en sammensatt komponent som eier alt internt: input, label, help/error og `fs-calendar` som popup. Du trenger ikke sette opp HTML selv.
 
 ## Når Bruker Du Hva?
 
@@ -17,11 +17,8 @@ import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 ## Import
 
 ```ts
-import "@fristil/designsystem/input.css"
-import "@fristil/designsystem/label.css"
-import "@fristil/designsystem/help-text.css"
-import "@fristil/designsystem/error-text.css"
 import { defineDsDateField } from "@fristil/designsystem/date-field"
+import "@fristil/designsystem/date-field.css"
 
 defineDsDateField()
 ```
@@ -34,26 +31,26 @@ defineDsDateField()
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <ds-date-field
+    <fs-date-field
       label="Fødselsdato"
       value="2026-05-31"
       error-text="Skriv en gyldig dato."
       help-text="Velg dato i kalenderpopup eller skriv manuelt. Prøv også en ugyldig dato som 32-06-2026."
-    ></ds-date-field>
+    ></fs-date-field>
     ```
   </TabItem>
 </Tabs>
 
 ## Hva wrapperen gjør
 
-1. Rendrer `label` + nøytral `ds-input` (`type="text"`) + `ds-calendar` sammen.
+1. Rendrer `label` + nøytral `fs-input` (`type="text"`) + `fs-calendar` sammen.
 2. Synker verdi begge veier:
    - Bruker skriver `DD-MM-YYYY` → konverteres til ISO for kalender
    - Kalender velger dato (ISO) → vises som `DD-MM-YYYY` i input
 3. Ved ugyldig dato på `blur` vises invalid-state og `error-text`.
 4. Håndterer `invalid`, `help-text`, `error-text` og `aria-describedby`.
 
-Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste dato-trigger i denne komposisjonen.
+Kalender-ikon inne i input brukes ikke her. `fs-calendar` ved siden av er eneste dato-trigger i denne komposisjonen.
 
 ## Bruk i en app
 
@@ -62,24 +59,21 @@ Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste
     ```js
     // main.js – kjør én gang ved oppstart
     import { defineDsDateField } from '@fristil/designsystem/date-field'
-    import '@fristil/designsystem/input.css'
-    import '@fristil/designsystem/label.css'
-    import '@fristil/designsystem/help-text.css'
-    import '@fristil/designsystem/error-text.css'
+    import '@fristil/designsystem/date-field.css'
 
     defineDsDateField()
     ```
 
     ```html
     <form id="booking-form">
-      <ds-date-field
+      <fs-date-field
         id="travel-date"
         label="Reisedato"
         name="travel-date"
         help-text="Velg dato i kalenderen"
         error-text="Velg en gyldig dato."
-      ></ds-date-field>
-      <button class="ds-button" type="submit">Book</button>
+      ></fs-date-field>
+      <button class="fs-button" type="submit">Book</button>
     </form>
 
     <script type="module">
@@ -102,6 +96,12 @@ Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste
   </TabItem>
   <TabItem label="React">
     ```tsx
+    // main.ts – kjør én gang ved oppstart
+    import { defineDsDateField } from '@fristil/designsystem/date-field'
+    import '@fristil/designsystem/date-field.css'
+    defineDsDateField()
+
+    // BookingForm.tsx
     import { useState } from 'react'
 
     export function BookingForm() {
@@ -111,7 +111,7 @@ Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste
 
       return (
         <form onSubmit={(e) => { e.preventDefault(); console.log(date) }}>
-          <ds-date-field
+          <fs-date-field
             label="Reisedato"
             name="travel-date"
             value={date}
@@ -123,7 +123,7 @@ Kalender-ikon inne i input brukes ikke her. `ds-calendar` ved siden av er eneste
               setDate(el.value)  // alltid ISO-format
             }}
           />
-          <button className="ds-button" type="submit">Book</button>
+          <button className="fs-button" type="submit">Book</button>
         </form>
       )
     }

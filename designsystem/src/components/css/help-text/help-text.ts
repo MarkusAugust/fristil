@@ -1,6 +1,11 @@
-export const HELP_TEXT_CLASS = "ds-help-text" as const
+export const HELP_TEXT_CLASS = "fs-help-text" as const
 
-export const helpTextVariants = ["muted", "default", "success", "warning"] as const
+export const helpTextVariants = [
+  "muted",
+  "default",
+  "success",
+  "warning",
+] as const
 
 export type HelpTextVariant = (typeof helpTextVariants)[number]
 export type NonDefaultHelpTextVariant = Exclude<HelpTextVariant, "muted">

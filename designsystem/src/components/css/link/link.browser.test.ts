@@ -14,11 +14,11 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-link variants", () => {
+describe("fs-link variants", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <a id="default" class="ds-link" href="#">Default</a>
-      <a id="disabled" class="ds-link" aria-disabled="true" href="#">Disabled</a>
+      <a id="default" class="fs-link" href="#">Default</a>
+      <a id="disabled" class="fs-link" aria-disabled="true" href="#">Disabled</a>
     `
   })
 

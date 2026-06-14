@@ -14,13 +14,13 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-textarea", () => {
+describe("fs-textarea", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <textarea id="default" class="ds-textarea"></textarea>
-      <textarea id="invalid" class="ds-textarea" data-state="invalid"></textarea>
-      <textarea id="success" class="ds-textarea" data-state="success"></textarea>
-      <textarea id="disabled" class="ds-textarea" disabled></textarea>
+      <textarea id="default" class="fs-textarea"></textarea>
+      <textarea id="invalid" class="fs-textarea" data-state="invalid"></textarea>
+      <textarea id="success" class="fs-textarea" data-state="success"></textarea>
+      <textarea id="disabled" class="fs-textarea" disabled></textarea>
     `
   })
 

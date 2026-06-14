@@ -14,11 +14,11 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-error-text", () => {
+describe("fs-error-text", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <p id="error" class="ds-error-text">Feilmelding</p>
-      <p id="warning" class="ds-error-text" data-variant="warning">Varsel</p>
+      <p id="error" class="fs-error-text">Feilmelding</p>
+      <p id="warning" class="fs-error-text" data-variant="warning">Varsel</p>
     `
   })
 

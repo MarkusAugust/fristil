@@ -1,4 +1,4 @@
-export const INPUT_CLASS = "ds-input" as const
+export const INPUT_CLASS = "fs-input" as const
 
 export const inputStates = ["default", "invalid", "success"] as const
 export const inputVariants = [
@@ -70,7 +70,9 @@ export function getInputStyleAttributes(
 /**
  * Returns Fristil style attributes plus native input type.
  */
-export function getInputAttributes(options: InputStyleOptions = {}): InputAttributes {
+export function getInputAttributes(
+  options: InputStyleOptions = {},
+): InputAttributes {
   const variant = options.variant ?? "text"
   return {
     ...getInputStyleAttributes(options),

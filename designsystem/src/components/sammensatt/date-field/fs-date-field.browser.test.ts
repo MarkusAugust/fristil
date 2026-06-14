@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsDateField } from "./ds-date-field"
+import { defineDsDateField } from "./fs-date-field"
 
-describe("ds-date-field", () => {
+describe("fs-date-field", () => {
   beforeAll(() => {
     defineDsDateField()
   })
@@ -12,13 +12,13 @@ describe("ds-date-field", () => {
   })
 
   it("renders input and calendar together", async () => {
-    document.body.innerHTML = `<ds-date-field label="Fødselsdato"></ds-date-field>`
+    document.body.innerHTML = `<fs-date-field label="Fødselsdato"></fs-date-field>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-date-field") as HTMLElement
-    const input = el.querySelector("input.ds-input") as HTMLInputElement
-    const calendar = el.querySelector("ds-calendar") as HTMLElement
+    const el = document.querySelector("fs-date-field") as HTMLElement
+    const input = el.querySelector("input.fs-input") as HTMLInputElement
+    const calendar = el.querySelector("fs-calendar") as HTMLElement
 
     expect(input).toBeTruthy()
     expect(calendar).toBeTruthy()
@@ -27,15 +27,15 @@ describe("ds-date-field", () => {
   })
 
   it("updates input value when date is selected from calendar popup", async () => {
-    document.body.innerHTML = `<ds-date-field value="2026-05-31"></ds-date-field>`
+    document.body.innerHTML = `<fs-date-field value="2026-05-31"></fs-date-field>`
 
     await Promise.resolve()
-    await customElements.whenDefined("ds-calendar")
+    await customElements.whenDefined("fs-calendar")
     await Promise.resolve()
 
-    const el = document.querySelector("ds-date-field") as HTMLElement
-    const input = el.querySelector("input.ds-input") as HTMLInputElement
-    const calendar = el.querySelector("ds-calendar") as HTMLElement & {
+    const el = document.querySelector("fs-date-field") as HTMLElement
+    const input = el.querySelector("input.fs-input") as HTMLInputElement
+    const calendar = el.querySelector("fs-calendar") as HTMLElement & {
       shadowRoot: ShadowRoot
     }
 
@@ -55,13 +55,13 @@ describe("ds-date-field", () => {
   })
 
   it("applies invalid state and toggles error visibility", async () => {
-    document.body.innerHTML = `<ds-date-field invalid error-text="Skriv en gyldig dato"></ds-date-field>`
+    document.body.innerHTML = `<fs-date-field invalid error-text="Skriv en gyldig dato"></fs-date-field>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-date-field") as HTMLElement
-    const input = el.querySelector("input.ds-input") as HTMLInputElement
-    const error = el.querySelector(".ds-error-text") as HTMLElement
+    const el = document.querySelector("fs-date-field") as HTMLElement
+    const input = el.querySelector("input.fs-input") as HTMLInputElement
+    const error = el.querySelector(".fs-error-text") as HTMLElement
 
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(error.hidden).toBe(false)
@@ -74,13 +74,13 @@ describe("ds-date-field", () => {
   })
 
   it("shows error feedback when the user leaves an invalid typed date", async () => {
-    document.body.innerHTML = `<ds-date-field error-text="Skriv en gyldig dato"></ds-date-field>`
+    document.body.innerHTML = `<fs-date-field error-text="Skriv en gyldig dato"></fs-date-field>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-date-field") as HTMLElement
-    const input = el.querySelector("input.ds-input") as HTMLInputElement
-    const error = el.querySelector(".ds-error-text") as HTMLElement
+    const el = document.querySelector("fs-date-field") as HTMLElement
+    const input = el.querySelector("input.fs-input") as HTMLInputElement
+    const error = el.querySelector(".fs-error-text") as HTMLElement
 
     input.value = "32-06-2026"
     input.dispatchEvent(new Event("input", { bubbles: true }))

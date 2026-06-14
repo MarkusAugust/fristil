@@ -7,7 +7,7 @@ Denne siden viser Button mønsteret for TypeScript: du beholder ren HTML/CSS-API
 
 ## Hva er poenget?
 
-`class="ds-button"` og `data-variant="..."` er frie strenger i ren HTML. Da er det lett å skrive feil variant.
+`class="fs-button"` og `data-variant="..."` er frie strenger i ren HTML. Da er det lett å skrive feil variant.
 
 Button eksporterer en liten typed kontrakt:
 
@@ -33,7 +33,7 @@ const variant: ButtonVariant = "secondary"
 const fristilAttributes = getButtonStyleAttributes(variant)
 
 // fristilAttributes blir:
-// { class: "ds-button", "data-variant": "secondary" }
+// { class: "fs-button", "data-variant": "secondary" }
 ```
 
 ## 3) Kombiner med egne HTML-attributter
@@ -67,4 +67,4 @@ const fristilAttributes = getButtonStyleAttributes(variant)
 - Når du vil være framework-uavhengig
 - Når du vil unngå skrivefeil i variant-navn
 
-Hvis du skriver ren HTML uten TypeScript, kan du fortsatt bruke API-et direkte med `class="ds-button"` og `data-variant` som før.
+Hvis du skriver ren HTML uten TypeScript, kan du fortsatt bruke API-et direkte med `class="fs-button"` og `data-variant` som før.

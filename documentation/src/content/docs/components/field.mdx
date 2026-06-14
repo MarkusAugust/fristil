@@ -3,16 +3,17 @@ title: Field (Ramme)
 description: Rammekomponent som kobler label, control, help og error automatisk for bedre tilgjengelighet.
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+import FieldDemo from "../../../components/FieldDemo.astro"
 
-`<ds-field>` er en rammekomponent bygget med Lit. Du legger dine egne native elementer inn i den, og komponenten tar seg av a11y-wiring.
+`<fs-field>` er en rammekomponent bygget med Lit. Du legger dine egne native elementer inn i den, og komponenten tar seg av a11y-wiring.
 
 ## Hvorfor `defineDsField()`?
 
 `defineDsField()` registrerer custom elementet i nettleseren:
 
-- Før registrering: `<ds-field>` er bare en ukjent HTML-tag.
-- Etter registrering: `<ds-field>` blir en ekte web component med logikken sin.
+- Før registrering: `<fs-field>` er bare en ukjent HTML-tag.
+- Etter registrering: `<fs-field>` blir en ekte web component med logikken sin.
 
 Du trenger å kalle `defineDsField()` **én gang** når appen starter.
 Hvis du kaller den flere ganger, skjer ingenting (den er beskyttet mot dobbel registrering).
@@ -21,10 +22,7 @@ Hvis du kaller den flere ganger, skjer ingenting (den er beskyttet mot dobbel re
 
 ```ts
 import { defineDsField } from "@fristil/designsystem/field"
-import "@fristil/designsystem/label.css"
-import "@fristil/designsystem/input.css"
-import "@fristil/designsystem/help-text.css"
-import "@fristil/designsystem/error-text.css"
+import "@fristil/designsystem/field.css"
 
 // Kall én gang i app-entry (main.ts, app.ts, e.l.)
 defineDsField()
@@ -32,43 +30,30 @@ defineDsField()
 
 ## Kom i gang (3 steg)
 
-1. Importer CSS-filene du trenger (`label`, `input`, `help-text`, `error-text`).
+1. Importer `field.css` (inkluderer label, input, textarea, select, help-text og error-text).
 2. Kjør `defineDsField()` én gang i app-start.
-3. Bruk `<ds-field>` rundt `label` + ett felt (`input`, `select` eller `textarea`).
+3. Bruk `<fs-field>` rundt `label` + ett felt (`input`, `select` eller `textarea`).
 
 ## Slik ser det ut
 
 <Tabs>
   <TabItem label="Forhåndsvisning">
-    <div class="not-content" style="display: grid; gap: 1rem; max-width: 34rem; padding: 1.5rem; background: #ffffff; border: 1px solid #b2b2b2; border-radius: 0.25rem;">
-      <div style="display: grid; gap: 0.25rem;">
-        <label class="ds-label" data-required="text" for="preview-email">E-post</label>
-        <input id="preview-email" class="ds-input" type="email" data-state="invalid" aria-invalid="true" aria-describedby="preview-email-help preview-email-error" value="ola@" />
-        <p class="ds-help-text" id="preview-email-help">Vi sender aldri spam.</p>
-        <p class="ds-error-text" id="preview-email-error">Skriv en gyldig e-post.</p>
-      </div>
-
-      <div style="display: grid; gap: 0.25rem;">
-        <label class="ds-label" data-optional="" for="preview-message">Melding</label>
-        <textarea id="preview-message" class="ds-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
-        <p class="ds-help-text">Du kan skrive opptil 500 tegn.</p>
-      </div>
-    </div>
+    <FieldDemo />
   </TabItem>
-  <TabItem label="Med ds-field">
+  <TabItem label="Med fs-field">
     ```html
-    <ds-field required-marker="text" invalid>
+    <fs-field required-marker="text" invalid>
       <label>E-post</label>
-      <input class="ds-input" type="email" value="ola@" />
-      <p class="ds-help-text">Vi sender aldri spam.</p>
-      <p class="ds-error-text">Skriv en gyldig e-post.</p>
-    </ds-field>
+      <input class="fs-input" type="email" value="ola@" />
+      <p class="fs-help-text">Vi sender aldri spam.</p>
+      <p class="fs-error-text">Skriv en gyldig e-post.</p>
+    </fs-field>
 
-    <ds-field optional>
+    <fs-field optional>
       <label>Melding</label>
-      <textarea class="ds-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
-      <p class="ds-help-text">Du kan skrive opptil 500 tegn.</p>
-    </ds-field>
+      <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
+      <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
+    </fs-field>
     ```
   </TabItem>
 </Tabs>
@@ -80,15 +65,15 @@ Komponenten gjør dette automatisk:
 3. Setter `aria-describedby` på kontrollen.
 4. Setter `aria-invalid="true"` når `invalid` er satt.
 5. Setter `data-required`/`data-optional` på label via wrapper-attributter.
-6. Viser eller skjuler `ds-error-text` automatisk basert på `invalid`.
+6. Viser eller skjuler `fs-error-text` automatisk basert på `invalid`.
 
 ## Minste eksempel
 
 ```html
-<ds-field>
+<fs-field>
   <label>Navn</label>
-  <input class="ds-input" type="text" />
-</ds-field>
+  <input class="fs-input" type="text" />
+</fs-field>
 ```
 
 Dette gir deg automatisk kobling mellom label og input uten at du manuelt må holde styr på `for`/`id`.
@@ -100,22 +85,19 @@ Dette gir deg automatisk kobling mellom label og input uten at du manuelt må ho
     ```js
     // main.js – kjør én gang ved oppstart
     import { defineDsField } from '@fristil/designsystem/field'
-    import '@fristil/designsystem/label.css'
-    import '@fristil/designsystem/input.css'
-    import '@fristil/designsystem/help-text.css'
-    import '@fristil/designsystem/error-text.css'
+    import '@fristil/designsystem/field.css'
 
     defineDsField()
     ```
 
     ```html
     <form id="contact-form">
-      <ds-field id="name-field" required-marker="symbol">
+      <fs-field id="name-field" required-marker="symbol">
         <label>Navn</label>
-        <input class="ds-input" type="text" name="name" />
-        <p class="ds-error-text">Navn er påkrevd.</p>
-      </ds-field>
-      <button class="ds-button" type="submit">Send</button>
+        <input class="fs-input" type="text" name="name" />
+        <p class="fs-error-text">Navn er påkrevd.</p>
+      </fs-field>
+      <button class="fs-button" type="submit">Send</button>
     </form>
 
     <script type="module">
@@ -137,6 +119,12 @@ Dette gir deg automatisk kobling mellom label og input uten at du manuelt må ho
   </TabItem>
   <TabItem label="React">
     ```tsx
+    // main.ts – kjør én gang ved oppstart
+    import { defineDsField } from '@fristil/designsystem/field'
+    import '@fristil/designsystem/field.css'
+    defineDsField()
+
+    // ContactForm.tsx
     import { useState } from 'react'
 
     export function ContactForm() {
@@ -147,19 +135,19 @@ Dette gir deg automatisk kobling mellom label og input uten at du manuelt må ho
 
       return (
         <form onSubmit={(e) => e.preventDefault()}>
-          <ds-field required-marker="symbol" invalid={invalid}>
+          <fs-field required-marker="symbol" invalid={invalid}>
             <label>Navn</label>
             <input
-              className="ds-input"
+              className="fs-input"
               type="text"
               name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => setTouched(true)}
             />
-            <p className="ds-error-text">Navn er påkrevd.</p>
-          </ds-field>
-          <button className="ds-button" type="submit">Send</button>
+            <p className="fs-error-text">Navn er påkrevd.</p>
+          </fs-field>
+          <button className="fs-button" type="submit">Send</button>
         </form>
       )
     }
@@ -180,21 +168,21 @@ Dette gir deg automatisk kobling mellom label og input uten at du manuelt må ho
 
 ## Når vises feilmeldingen?
 
-Feilmeldingen vises bare når `invalid` er satt på `<ds-field>`.
+Feilmeldingen vises bare når `invalid` er satt på `<fs-field>`.
 
 Det betyr:
 
-- `invalid` = `false` eller ikke satt: `ds-error-text` skjules.
-- `invalid` = `true`: `ds-error-text` vises og kobles til feltet via `aria-describedby`.
+- `invalid` = `false` eller ikke satt: `fs-error-text` skjules.
+- `invalid` = `true`: `fs-error-text` vises og kobles til feltet via `aria-describedby`.
 
 Eksempel:
 
 ```html
-<ds-field invalid>
+<fs-field invalid>
   <label>E-post</label>
-  <input class="ds-input" type="email" value="ola@" />
-  <p class="ds-error-text">Skriv en gyldig e-post.</p>
-</ds-field>
+  <input class="fs-input" type="email" value="ola@" />
+  <p class="fs-error-text">Skriv en gyldig e-post.</p>
+</fs-field>
 ```
 
 Når feltet ikke er invalid, trenger du fortsatt å ha feilmeldingselementet i markup hvis du vil bruke samme struktur senere. Komponenten skjuler det for deg til det faktisk trengs.

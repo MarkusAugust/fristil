@@ -1,4 +1,4 @@
-export const LABEL_CLASS = "ds-label" as const
+export const LABEL_CLASS = "fs-label" as const
 
 export const labelRequiredMarkers = ["symbol", "text"] as const
 
@@ -10,7 +10,9 @@ export type LabelStyleAttributes = {
   "data-optional"?: ""
 }
 
-export function isLabelRequiredMarker(value: string): value is LabelRequiredMarker {
+export function isLabelRequiredMarker(
+  value: string,
+): value is LabelRequiredMarker {
   return (labelRequiredMarkers as readonly string[]).includes(value)
 }
 

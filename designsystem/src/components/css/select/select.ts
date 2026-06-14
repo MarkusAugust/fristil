@@ -1,4 +1,4 @@
-export const SELECT_CLASS = "ds-select" as const
+export const SELECT_CLASS = "fs-select" as const
 
 export const selectStates = ["default", "invalid", "success"] as const
 

@@ -1,8 +1,8 @@
 import { html, LitElement } from "lit"
 
-import { defineDsCalendar } from "../calendar/ds-calendar.js"
+import { defineDsCalendar } from "../calendar/fs-calendar.js"
 
-export const DS_DATE_FIELD_TAG = "ds-date-field" as const
+export const DS_DATE_FIELD_TAG = "fs-date-field" as const
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
@@ -78,7 +78,7 @@ export class DsDateField extends LitElement {
   /** True when the user has typed a date that is not a valid calendar date. */
   private _inputInvalid = false
 
-  private readonly uid = uniqueId("ds-date-field")
+  private readonly uid = uniqueId("fs-date-field")
 
   constructor() {
     super()
@@ -91,12 +91,12 @@ export class DsDateField extends LitElement {
 
   render() {
     return html`
-      <div class="ds-date-field">
-        <label class="ds-label" for=${this.inputId}>${this.label}</label>
+      <div class="fs-date-field">
+        <label class="fs-label" for=${this.inputId}>${this.label}</label>
         <div style="position: relative; display: inline-grid; width: 100%;">
           <input
             id=${this.inputId}
-            class="ds-input"
+            class="fs-input"
             type="text"
             .value=${isoToDisplay(this.value)}
             name=${this.name ?? ""}
@@ -111,7 +111,7 @@ export class DsDateField extends LitElement {
           />
           <button
             type="button"
-            class="ds-date-field__icon-btn"
+            class="fs-date-field__icon-btn"
             aria-label="Åpne kalender"
             tabindex="-1"
             ?disabled=${this.disabled}
@@ -151,19 +151,19 @@ export class DsDateField extends LitElement {
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
           </button>
-          <ds-calendar
+          <fs-calendar
             id=${this.calendarId}
             .value=${this.value}
             ?disabled=${this.disabled}
             trigger-hidden
             style="position: absolute; inset-block-start: 100%; inset-inline-start: 0; width: 0; height: 0; overflow: visible;"
-          ></ds-calendar>
+          ></fs-calendar>
         </div>
 
-        ${this.helpText ? html`<p class="ds-help-text" id=${this.helpId}>${this.helpText}</p>` : null}
+        ${this.helpText ? html`<p class="fs-help-text" id=${this.helpId}>${this.helpText}</p>` : null}
         ${
           this.errorText
-            ? html`<p class="ds-error-text" id=${this.errorId} ?hidden=${!(this.invalid || this._inputInvalid)}>${this.errorText}</p>`
+            ? html`<p class="fs-error-text" id=${this.errorId} ?hidden=${!(this.invalid || this._inputInvalid)}>${this.errorText}</p>`
             : null
         }
       </div>
@@ -358,7 +358,7 @@ export class DsDateField extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ds-date-field": DsDateField
+    "fs-date-field": DsDateField
   }
 }
 

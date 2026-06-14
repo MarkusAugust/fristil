@@ -14,16 +14,16 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-input", () => {
+describe("fs-input", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <input id="default" class="ds-input" />
-      <input id="date" class="ds-input" type="date" data-variant="date" value="2026-05-31" />
-      <input id="time" class="ds-input" type="time" data-variant="time" value="10:30" />
-      <input id="datetime" class="ds-input" type="datetime-local" data-variant="datetime-local" value="2026-05-31T10:30" />
-      <input id="invalid" class="ds-input" data-state="invalid" />
-      <input id="success" class="ds-input" data-state="success" />
-      <input id="disabled" class="ds-input" disabled />
+      <input id="default" class="fs-input" />
+      <input id="date" class="fs-input" type="date" data-variant="date" value="2026-05-31" />
+      <input id="time" class="fs-input" type="time" data-variant="time" value="10:30" />
+      <input id="datetime" class="fs-input" type="datetime-local" data-variant="datetime-local" value="2026-05-31T10:30" />
+      <input id="invalid" class="fs-input" data-state="invalid" />
+      <input id="success" class="fs-input" data-state="success" />
+      <input id="disabled" class="fs-input" disabled />
     `
   })
 

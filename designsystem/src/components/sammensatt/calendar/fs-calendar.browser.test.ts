@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsCalendar } from "./ds-calendar"
+import { defineDsCalendar } from "./fs-calendar"
 
-describe("ds-calendar", () => {
+describe("fs-calendar", () => {
   beforeAll(() => {
     defineDsCalendar()
   })
@@ -12,11 +12,13 @@ describe("ds-calendar", () => {
   })
 
   it("opens popup calendar from trigger button", async () => {
-    document.body.innerHTML = `<ds-calendar value="2026-05-31"></ds-calendar>`
+    document.body.innerHTML = `<fs-calendar value="2026-05-31"></fs-calendar>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-calendar") as HTMLElement & { shadowRoot: ShadowRoot }
+    const el = document.querySelector("fs-calendar") as HTMLElement & {
+      shadowRoot: ShadowRoot
+    }
     const trigger = el.shadowRoot.querySelector(".trigger") as HTMLButtonElement
     const popup = el.shadowRoot.querySelector(".popup") as HTMLElement
 
@@ -30,11 +32,14 @@ describe("ds-calendar", () => {
   })
 
   it("selects a day and emits date-select", async () => {
-    document.body.innerHTML = `<ds-calendar value="2026-05-31"></ds-calendar>`
+    document.body.innerHTML = `<fs-calendar value="2026-05-31"></fs-calendar>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-calendar") as HTMLElement & { shadowRoot: ShadowRoot; value: string }
+    const el = document.querySelector("fs-calendar") as HTMLElement & {
+      shadowRoot: ShadowRoot
+      value: string
+    }
     const trigger = el.shadowRoot.querySelector(".trigger") as HTMLButtonElement
 
     const selected: string[] = []
@@ -46,7 +51,9 @@ describe("ds-calendar", () => {
     trigger.click()
     await Promise.resolve()
 
-    const day = el.shadowRoot.querySelector('.day[data-date="2026-05-15"]') as HTMLButtonElement
+    const day = el.shadowRoot.querySelector(
+      '.day[data-date="2026-05-15"]',
+    ) as HTMLButtonElement
     day.click()
     await Promise.resolve()
 
@@ -57,11 +64,13 @@ describe("ds-calendar", () => {
   })
 
   it("supports keyboard escape to close popup", async () => {
-    document.body.innerHTML = `<ds-calendar value="2026-05-31"></ds-calendar>`
+    document.body.innerHTML = `<fs-calendar value="2026-05-31"></fs-calendar>`
 
     await Promise.resolve()
 
-    const el = document.querySelector("ds-calendar") as HTMLElement & { shadowRoot: ShadowRoot }
+    const el = document.querySelector("fs-calendar") as HTMLElement & {
+      shadowRoot: ShadowRoot
+    }
     const trigger = el.shadowRoot.querySelector(".trigger") as HTMLButtonElement
     const popup = el.shadowRoot.querySelector(".popup") as HTMLElement
 
@@ -69,7 +78,9 @@ describe("ds-calendar", () => {
     await Promise.resolve()
     expect(popup.hidden).toBe(false)
 
-    popup.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    popup.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    )
     await Promise.resolve()
 
     expect(popup.hidden).toBe(true)

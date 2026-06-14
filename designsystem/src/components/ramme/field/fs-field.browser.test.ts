@@ -2,9 +2,9 @@
 
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsField } from "./ds-field"
+import { defineDsField } from "./fs-field"
 
-describe("ds-field", () => {
+describe("fs-field", () => {
   beforeAll(() => {
     defineDsField()
   })
@@ -15,10 +15,10 @@ describe("ds-field", () => {
 
   it("wires label[for] to the control id", async () => {
     document.body.innerHTML = `
-      <ds-field>
+      <fs-field>
         <label id="label">E-post</label>
-        <input id="email" class="ds-input" type="email" />
-      </ds-field>
+        <input id="email" class="fs-input" type="email" />
+      </fs-field>
     `
 
     await Promise.resolve()
@@ -29,20 +29,20 @@ describe("ds-field", () => {
 
   it("adds ids and aria-describedby for help and error text", async () => {
     document.body.innerHTML = `
-      <ds-field invalid>
+      <fs-field invalid>
         <label for="email">E-post</label>
-        <input id="email" class="ds-input" type="email" />
-        <p class="ds-help-text">Hjelp</p>
-        <p class="ds-error-text">Feil</p>
-      </ds-field>
+        <input id="email" class="fs-input" type="email" />
+        <p class="fs-help-text">Hjelp</p>
+        <p class="fs-error-text">Feil</p>
+      </fs-field>
     `
 
     await Promise.resolve()
 
-    const field = document.querySelector("ds-field") as HTMLElement
+    const field = document.querySelector("fs-field") as HTMLElement
     const input = field.querySelector("input") as HTMLInputElement
-    const help = field.querySelector(".ds-help-text") as HTMLElement
-    const error = field.querySelector(".ds-error-text") as HTMLElement
+    const help = field.querySelector(".fs-help-text") as HTMLElement
+    const error = field.querySelector(".fs-error-text") as HTMLElement
 
     expect(help.id.length).toBeGreaterThan(0)
     expect(error.id.length).toBeGreaterThan(0)
@@ -55,20 +55,20 @@ describe("ds-field", () => {
 
   it("hides error text until invalid is true", async () => {
     document.body.innerHTML = `
-      <ds-field>
+      <fs-field>
         <label for="email">E-post</label>
-        <input id="email" class="ds-input" type="email" />
-        <p class="ds-error-text">Skriv en gyldig e-post.</p>
-      </ds-field>
+        <input id="email" class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
     `
 
     await Promise.resolve()
 
-    const error = document.querySelector(".ds-error-text") as HTMLElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
     expect(error.hidden).toBe(true)
     expect(error.getAttribute("aria-hidden")).toBe("true")
 
-    const field = document.querySelector("ds-field") as DsField
+    const field = document.querySelector("fs-field") as DsField
     field.invalid = true
 
     await Promise.resolve()
@@ -79,10 +79,10 @@ describe("ds-field", () => {
 
   it("applies required marker and optional marker on label", async () => {
     document.body.innerHTML = `
-      <ds-field required-marker="text">
+      <fs-field required-marker="text">
         <label id="label">Navn</label>
-        <input class="ds-input" />
-      </ds-field>
+        <input class="fs-input" />
+      </fs-field>
     `
 
     await Promise.resolve()
@@ -91,10 +91,10 @@ describe("ds-field", () => {
     expect(label.getAttribute("data-required")).toBe("text")
 
     document.body.innerHTML = `
-      <ds-field optional>
+      <fs-field optional>
         <label id="label-2">Telefon</label>
-        <input class="ds-input" />
-      </ds-field>
+        <input class="fs-input" />
+      </fs-field>
     `
 
     await Promise.resolve()

@@ -1,4 +1,4 @@
-.ds-button {
+.fs-button {
   display: inline-flex;
   align-items: center;
   gap: var(--size-2);
@@ -17,18 +17,18 @@
   user-select: none;
 }
 
-.ds-button:hover {
+.fs-button:hover {
   background: var(--semantic-interactive-foreground);
   border-color: var(--semantic-interactive-foreground);
 }
 
-.ds-button:focus-visible {
+.fs-button:focus-visible {
   outline: 2px solid var(--semantic-interactive-main);
   outline-offset: 2px;
 }
 
-.ds-button:disabled,
-.ds-button[aria-disabled="true"] {
+.fs-button:disabled,
+.fs-button[aria-disabled="true"] {
   background: var(--semantic-disabled-background);
   color: var(--semantic-disabled-foreground);
   border-color: var(--semantic-disabled-background);
@@ -37,35 +37,35 @@
 }
 
 /* Sekundær — omriss, gjennomsiktig bakgrunn */
-.ds-button[data-variant="secondary"] {
+.fs-button[data-variant="secondary"] {
   background: transparent;
   color: var(--semantic-interactive-main);
   border-color: var(--semantic-interactive-main);
 }
 
-.ds-button[data-variant="secondary"]:hover {
+.fs-button[data-variant="secondary"]:hover {
   background: var(--semantic-interactive-background);
 }
 
 /* Ghost — ingen kant, ingen bakgrunn */
-.ds-button[data-variant="ghost"] {
+.fs-button[data-variant="ghost"] {
   background: transparent;
   color: var(--semantic-interactive-main);
   border-color: transparent;
 }
 
-.ds-button[data-variant="ghost"]:hover {
+.fs-button[data-variant="ghost"]:hover {
   background: var(--semantic-interactive-background);
 }
 
 /* Danger */
-.ds-button[data-variant="danger"] {
+.fs-button[data-variant="danger"] {
   background: var(--semantic-danger-background);
   color: var(--semantic-danger-foreground);
   border-color: var(--semantic-danger-foreground);
 }
 
-.ds-button[data-variant="danger"]:hover {
+.fs-button[data-variant="danger"]:hover {
   background: var(--palette-burgundy-30);
   border-color: var(--palette-burgundy-70);
 }

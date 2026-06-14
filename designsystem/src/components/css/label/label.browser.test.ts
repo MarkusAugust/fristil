@@ -14,14 +14,14 @@ function css(id: string, pseudo?: string) {
   return getComputedStyle(element, pseudo)
 }
 
-describe("ds-label", () => {
+describe("fs-label", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <label id="default" class="ds-label" for="a">Navn</label>
-      <label id="required-symbol" class="ds-label" data-required="symbol" for="b">E-post</label>
-      <label id="required-text" class="ds-label" data-required="text" for="e">Telefon</label>
-      <label id="optional" class="ds-label" data-optional="" for="c">Adresse</label>
-      <label id="disabled" class="ds-label" aria-disabled="true" for="d">Beskrivelse</label>
+      <label id="default" class="fs-label" for="a">Navn</label>
+      <label id="required-symbol" class="fs-label" data-required="symbol" for="b">E-post</label>
+      <label id="required-text" class="fs-label" data-required="text" for="e">Telefon</label>
+      <label id="optional" class="fs-label" data-optional="" for="c">Adresse</label>
+      <label id="disabled" class="fs-label" aria-disabled="true" for="d">Beskrivelse</label>
     `
   })
 

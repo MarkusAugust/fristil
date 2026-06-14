@@ -14,14 +14,14 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("ds-badge", () => {
+describe("fs-badge", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <span id="default" class="ds-badge">Info</span>
-      <span id="success" class="ds-badge" data-color="success">Aktiv</span>
-      <span id="warning" class="ds-badge" data-color="warning">Advarsel</span>
-      <span id="danger" class="ds-badge" data-color="danger">Feil</span>
-      <span id="neutral" class="ds-badge" data-color="neutral">Inaktiv</span>
+      <span id="default" class="fs-badge">Info</span>
+      <span id="success" class="fs-badge" data-color="success">Aktiv</span>
+      <span id="warning" class="fs-badge" data-color="warning">Advarsel</span>
+      <span id="danger" class="fs-badge" data-color="danger">Feil</span>
+      <span id="neutral" class="fs-badge" data-color="neutral">Inaktiv</span>
     `
   })
 
