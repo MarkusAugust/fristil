@@ -66,15 +66,15 @@ export default defineConfig({
               ],
             },
             {
-              label: "Light DOM",
-              items: [
-                { label: "Field", slug: "components/field" },
-                { label: "Date Field", slug: "components/date-field" },
-              ],
+              label: "Ramme",
+              items: [{ label: "Field", slug: "components/field" }],
             },
             {
-              label: "Shadow DOM",
-              items: [{ label: "Calendar", slug: "components/calendar" }],
+              label: "Sammensatt",
+              items: [
+                { label: "Date Field", slug: "components/date-field" },
+                { label: "Calendar", slug: "components/calendar" },
+              ],
             },
           ],
         },

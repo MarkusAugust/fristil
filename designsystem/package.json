@@ -11,58 +11,54 @@
     },
     "./tokens.css": "./src/tokens/tokens.css",
     "./utilities.css": "./src/tokens/utilities.css",
-    "./button.css": "./src/components/pure-css/button/button.css",
-    "./link.css": "./src/components/pure-css/link/link.css",
-    "./badge.css": "./src/components/pure-css/badge/badge.css",
-    "./label.css": "./src/components/pure-css/label/label.css",
-    "./input.css": "./src/components/pure-css/input/input.css",
-    "./textarea.css": "./src/components/pure-css/textarea/textarea.css",
-    "./select.css": "./src/components/pure-css/select/select.css",
-    "./help-text.css": "./src/components/pure-css/help-text/help-text.css",
-    "./error-text.css": "./src/components/pure-css/error-text/error-text.css",
+    "./button.css": "./src/components/css/button/button.css",
+    "./link.css": "./src/components/css/link/link.css",
+    "./badge.css": "./src/components/css/badge/badge.css",
+    "./label.css": "./src/components/css/label/label.css",
+    "./input.css": "./src/components/css/input/input.css",
+    "./textarea.css": "./src/components/css/textarea/textarea.css",
+    "./select.css": "./src/components/css/select/select.css",
+    "./help-text.css": "./src/components/css/help-text/help-text.css",
+    "./error-text.css": "./src/components/css/error-text/error-text.css",
     "./label": {
-      "import": "./dist/components/pure-css/label/label.js",
-      "types": "./dist/components/pure-css/label/label.d.ts"
+      "import": "./dist/components/css/label/label.js",
+      "types": "./dist/components/css/label/label.d.ts"
     },
     "./input": {
-      "import": "./dist/components/pure-css/input/input.js",
-      "types": "./dist/components/pure-css/input/input.d.ts"
+      "import": "./dist/components/css/input/input.js",
+      "types": "./dist/components/css/input/input.d.ts"
     },
     "./textarea": {
-      "import": "./dist/components/pure-css/textarea/textarea.js",
-      "types": "./dist/components/pure-css/textarea/textarea.d.ts"
+      "import": "./dist/components/css/textarea/textarea.js",
+      "types": "./dist/components/css/textarea/textarea.d.ts"
     },
     "./select": {
-      "import": "./dist/components/pure-css/select/select.js",
-      "types": "./dist/components/pure-css/select/select.d.ts"
+      "import": "./dist/components/css/select/select.js",
+      "types": "./dist/components/css/select/select.d.ts"
     },
     "./help-text": {
-      "import": "./dist/components/pure-css/help-text/help-text.js",
-      "types": "./dist/components/pure-css/help-text/help-text.d.ts"
+      "import": "./dist/components/css/help-text/help-text.js",
+      "types": "./dist/components/css/help-text/help-text.d.ts"
     },
     "./error-text": {
-      "import": "./dist/components/pure-css/error-text/error-text.js",
-      "types": "./dist/components/pure-css/error-text/error-text.d.ts"
+      "import": "./dist/components/css/error-text/error-text.js",
+      "types": "./dist/components/css/error-text/error-text.d.ts"
     },
     "./calendar": {
-      "import": "./dist/components/shadow-dom/calendar/ds-calendar.js",
-      "types": "./dist/components/shadow-dom/calendar/ds-calendar.d.ts"
-    },
-    "./datepicker": {
-      "import": "./dist/components/shadow-dom/datepicker/ds-datepicker.js",
-      "types": "./dist/components/shadow-dom/datepicker/ds-datepicker.d.ts"
+      "import": "./dist/components/sammensatt/calendar/ds-calendar.js",
+      "types": "./dist/components/sammensatt/calendar/ds-calendar.d.ts"
     },
     "./field": {
-      "import": "./dist/components/light-dom/field/ds-field.js",
-      "types": "./dist/components/light-dom/field/ds-field.d.ts"
+      "import": "./dist/components/ramme/field/ds-field.js",
+      "types": "./dist/components/ramme/field/ds-field.d.ts"
     },
     "./date-field": {
-      "import": "./dist/components/light-dom/date-field/ds-date-field.js",
-      "types": "./dist/components/light-dom/date-field/ds-date-field.d.ts"
+      "import": "./dist/components/sammensatt/date-field/ds-date-field.js",
+      "types": "./dist/components/sammensatt/date-field/ds-date-field.d.ts"
     },
     "./button": {
-      "import": "./dist/components/pure-css/button/button.js",
-      "types": "./dist/components/pure-css/button/button.d.ts"
+      "import": "./dist/components/css/button/button.js",
+      "types": "./dist/components/css/button/button.d.ts"
     },
     "./tokens": {
       "import": "./dist/tokens/tokens.js",

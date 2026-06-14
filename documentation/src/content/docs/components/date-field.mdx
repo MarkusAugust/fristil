@@ -1,18 +1,18 @@
 ---
-title: Date Field (Light DOM)
-description: Light DOM wrapper som kobler nøytral ds-input med ds-calendar popup.
+title: Date Field (Sammensatt)
+description: Sammensatt komponent som kombinerer input, label, help/error og kalender-popup i én enhet.
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components"
 import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 
-`<ds-date-field>` er måten å bruke input + vår egen kalender sammen. Wrapperen rendrer i Light DOM, så form-integrasjon og app-logikk er enkel, mens den bruker `ds-calendar` som shadow-dom barn for popupen.
+`<ds-date-field>` er en sammensatt komponent som eier alt internt: input, label, help/error og `ds-calendar` som popup. Du trenger ikke sette opp HTML selv.
 
 ## Når Bruker Du Hva?
 
-- Bruk [Date Field (Light DOM)](../date-field/) som standard når du vil ha komplett datofelt med label/help/error og kalender.
+- Bruk [Date Field](../date-field/) som standard når du vil ha komplett datofelt med label/help/error og kalender.
 - Bruk [Input](../input/) når native date/time/datetime-local picker er nok.
-- Bruk [Calendar (Shadow DOM)](../calendar/) når kalenderen skal styres separat fra input-feltet.
+- Bruk [Calendar](../calendar/) når kalenderen skal styres separat fra input-feltet.
 
 ## Import
 

@@ -1,18 +1,18 @@
 ---
-title: Calendar (Shadow DOM)
-description: Standalone popup-kalender i Shadow DOM som sender valgt dato via event.
+title: Calendar (Sammensatt)
+description: Standalone popup-kalender som sender valgt dato via event.
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components"
 import CalendarDemo from "../../../components/CalendarDemo.astro"
 
-`<ds-calendar>` er en standalone shadow-dom popup-kalender.
+`<ds-calendar>` er en sammensatt popup-kalender.
 Den eier kalender-UI og sender valgt dato via event, men eier ikke input-feltet.
 
 ## Når Bruker Du Hva?
 
-- Bruk [Calendar (Shadow DOM)](../calendar/) når du vil ha popup-kalender som egen komponent.
-- Bruk [Date Field (Light DOM)](../date-field/) når du vil ha input + calendar ferdig koblet.
+- Bruk [Calendar](../calendar/) når du vil ha popup-kalender som egen komponent.
+- Bruk [Date Field](../date-field/) når du vil ha input + calendar ferdig koblet.
 - Bruk [Input](../input/) når du kun trenger native date/time/datetime-local-atferd uten custom popup.
 
 ## Import

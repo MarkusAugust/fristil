@@ -1,6 +1,6 @@
 import { html, LitElement } from "lit"
 
-import { defineDsCalendar } from "../../shadow-dom/calendar/ds-calendar.js"
+import { defineDsCalendar } from "../calendar/ds-calendar.js"
 
 export const DS_DATE_FIELD_TAG = "ds-date-field" as const
 

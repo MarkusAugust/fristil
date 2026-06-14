@@ -1,11 +1,11 @@
 ---
-title: Field (Light DOM)
-description: Light DOM wrapper som kobler label, control, help og error automatisk for bedre tilgjengelighet.
+title: Field (Ramme)
+description: Rammekomponent som kobler label, control, help og error automatisk for bedre tilgjengelighet.
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components"
 
-`<ds-field>` er en light-dom komponent bygget med Lit. Den rendrer i vanlig DOM og bevarer native input/select/textarea, men håndterer a11y-wiring.
+`<ds-field>` er en rammekomponent bygget med Lit. Du legger dine egne native elementer inn i den, og komponenten tar seg av a11y-wiring.
 
 ## Hvorfor `defineDsField()`?
 

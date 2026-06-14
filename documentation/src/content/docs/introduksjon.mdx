@@ -8,9 +8,9 @@ Målet er enkelt: gi produktteam felles språk, stabile byggeklosser og høy far
 
 ## Tre kategorier komponenter
 
-Fristil er organisert i tre tydelige nivåer, slik at du kan velge riktig verktøy til riktig jobb:
+Fristil er organisert i tre tydelige kategorier, slik at du kan velge riktig verktøy til riktig jobb:
 
-1. **pure-css**
+1. **css**
 	Native HTML + CSS-klasser + data-attributter. Null JavaScript-runtime. Perfekt for grunnleggende UI som knapper, typografi, spacing og fargebruk.
 
 	Eksempel:
@@ -25,8 +25,28 @@ Fristil er organisert i tre tydelige nivåer, slik at du kan velge riktig verkt�
 	- Fungerer i alle rammeverk og også i ren HTML.
 	- Enkelt å style, debugge og gradvis ta i bruk.
 
-2. **light-dom**
-	Web Components i Light DOM for sammensatte felter og bedre ergonomi, men fortsatt tett på vanlig DOM og native validering.
+2. **ramme**
+	Web Components som koordinerer native HTML-elementer du selv legger inn. Du bringer label, input og hjelpetekst — komponenten tar seg av a11y-wiring.
+
+	Eksempel:
+
+	```html
+	<ds-field required-marker="symbol" invalid>
+	  <label>E-post</label>
+	  <input class="ds-input" type="email" value="ola@" />
+	  <p class="ds-help-text">Vi sender aldri spam.</p>
+	  <p class="ds-error-text">Skriv en gyldig e-post.</p>
+	</ds-field>
+	```
+
+	Fordeler:
+
+	- Du eier HTML-strukturen og kan tilpasse den fritt.
+	- Beholder vanlig DOM, så skjemaer, testverktøy og app-logikk er enkle å koble til.
+	- Passer godt når komponenten skal hjelpe med wiring, men ikke kapsle bort alt.
+
+3. **sammensatt**
+	Web Components som eier alt internt: markup, stil og interaksjon. Du sender inn attributter — komponenten gjør resten.
 
 	Eksempel:
 
@@ -41,36 +61,21 @@ Fristil er organisert i tre tydelige nivåer, slik at du kan velge riktig verkt�
 
 	Fordeler:
 
-	- Gir bedre ergonomi enn ren HTML når flere deler hører sammen.
-	- Beholder vanlig DOM, så skjemaer, testverktøy og app-logikk er enkle å koble til.
-	- Passer godt når komponenten skal hjelpe med wiring, men ikke kapsle bort alt.
+	- Enklest mulig API — ingen HTML å sette opp manuelt.
+	- Egner seg for komplekse interaksjoner som popup-er og kombinerte kontroller.
+	- Gjør avanserte komponenter robuste og konsistente på tvers av produkter.
 
-3. **shadow-dom**
-	Web Components med full visuell isolasjon for mer avanserte, interaktive komponenter der robusthet og kapsling er viktigst.
-
-	Eksempel:
-
-	```html
-	<ds-calendar value="2026-05-31"></ds-calendar>
-	```
-
-	Fordeler:
-
-	- Beskytter intern markup og stil mot lekkasje fra appen rundt.
-	- Egner seg for popup-er og mer avansert interaksjon.
-	- Gjør komplekse komponenter mer robuste på tvers av produkter og rammeverk.
-
-Denne oppdelingen gjør at du slipper "one size fits all". Du velger nivå etter kompleksitet, ikke etter trend.
+Denne oppdelingen gjør at du slipper "one size fits all". Du velger kategori etter kompleksitet, ikke etter trend.
 
 ## Hvorfor dele det opp slik?
 
 Mange designsystemer prøver å løse alt med én komponentmodell. Det gir ofte enten for mye JavaScript for enkle behov, eller for lite struktur for komplekse behov.
 
-Fristil deler derfor komponentene i lag:
+Fristil deler derfor komponentene i kategorier:
 
 - Enkle ting skal være enkle: en knapp trenger ikke web component-runtime.
-- Sammensatte skjemaelementer skal være lette å bruke uten å bli vanskelige å integrere.
-- Komplekse popup-er og widgets trenger sterkere kapsling enn vanlig DOM kan gi alene.
+- Rammekomponenter lar deg beholde HTML-kontrollen mens de tar hånd om wiring.
+- Sammensatte komponenter kapsler kompleks interaksjon bak et enkelt attributt-API.
 
 Fordelen med denne oppdelingen er at team kan velge riktig nivå per problem:
 
