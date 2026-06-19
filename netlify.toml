@@ -1,6 +1,7 @@
 [build]
-  command = "bun install && bun run build"
+  base = "."
+  command = "npm install && npm run -w @fristil/designsystem build && npm run -w @fristil/documentation build"
   publish = "documentation/dist"
 
 [build.environment]
-  BUN_VERSION = "1.1.38"
+  NODE_VERSION = "22.23.0"
