@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "npm install && npm run -w @fristil/designsystem build && npm run -w @fristil/documentation build"
+  command = "bun install && bun --filter @fristil/designsystem build && cd documentation && npx astro build"
   publish = "documentation/dist"
 
 [build.environment]
