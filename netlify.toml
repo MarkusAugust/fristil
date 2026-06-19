@@ -1,0 +1,6 @@
+[build]
+  command = "bun install && bun run build"
+  publish = "documentation/dist"
+
+[build.environment]
+  BUN_VERSION = "1.1.38"
