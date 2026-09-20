@@ -1,104 +1,106 @@
-.fs-input {
-  /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-     Uten border-box legges padding og ramme utenpå width, og feltet
-     blir bredere enn boksen det ligger i. */
-  box-sizing: border-box;
+@layer fristil {
+  .fs-input {
+    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
+       Uten border-box legges padding og ramme utenpå width, og feltet
+       blir bredere enn boksen det ligger i. */
+    box-sizing: border-box;
 
-  display: block;
-  width: 100%;
-  padding: var(--size-2) var(--size-3);
-  font-family: inherit;
-  font-size: var(--font-size-m);
-  line-height: 1.5;
-  color: var(--semantic-page-foreground);
-  background: var(--semantic-page-background);
-  border: 1px solid var(--semantic-field-border);
-  border-radius: var(--size-1);
-}
+    display: block;
+    width: 100%;
+    padding: var(--fs-input-padding, var(--size-2) var(--size-3));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--fs-input-radius, var(--size-1));
+  }
 
-.fs-input::placeholder {
-  color: var(--semantic-muted-foreground);
-}
+  .fs-input::placeholder {
+    color: var(--semantic-muted-foreground);
+  }
 
-.fs-input:hover {
-  border-color: var(--semantic-field-border-hover);
-}
+  .fs-input:hover {
+    border-color: var(--semantic-field-border-hover);
+  }
 
-.fs-input:focus-visible {
-  outline: 2px solid var(--semantic-interactive-main);
-  outline-offset: 2px;
-  border-color: var(--semantic-interactive-main);
-}
+  .fs-input:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+    border-color: var(--semantic-interactive-main);
+  }
 
-.fs-input:disabled,
-.fs-input[aria-disabled="true"] {
-  background: var(--semantic-disabled-background);
-  color: var(--semantic-disabled-foreground);
-  border-color: var(--semantic-disabled-background);
-  /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-     deaktivert felt, og pointer-events ville bare hindret markøren i å
-     vises — elementet blir da ikke truffet av musa i det hele tatt. */
-  cursor: not-allowed;
-}
+  .fs-input:disabled,
+  .fs-input[aria-disabled="true"] {
+    background: var(--semantic-disabled-background);
+    color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-background);
+    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
+       deaktivert felt, og pointer-events ville bare hindret markøren i å
+       vises — elementet blir da ikke truffet av musa i det hele tatt. */
+    cursor: not-allowed;
+  }
 
-/* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-   fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-   Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-.fs-input[aria-disabled="true"] {
-  pointer-events: none;
-}
+  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
+     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
+     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
+  .fs-input[aria-disabled="true"] {
+    pointer-events: none;
+  }
 
-.fs-input[data-state="invalid"] {
-  border-color: var(--semantic-danger-foreground);
-  background: var(--semantic-danger-background);
-}
+  .fs-input[data-state="invalid"] {
+    border-color: var(--semantic-danger-foreground);
+    background: var(--semantic-danger-background);
+  }
 
-.fs-input[data-state="invalid"]:focus-visible {
-  outline-color: var(--semantic-danger-foreground);
-}
+  .fs-input[data-state="invalid"]:focus-visible {
+    outline-color: var(--semantic-danger-foreground);
+  }
 
-.fs-input[data-state="success"] {
-  border-color: var(--semantic-success-foreground);
-  background: var(--semantic-success-background);
-}
+  .fs-input[data-state="success"] {
+    border-color: var(--semantic-success-foreground);
+    background: var(--semantic-success-background);
+  }
 
-.fs-input[data-state="success"]:focus-visible {
-  outline-color: var(--semantic-success-foreground);
-}
+  .fs-input[data-state="success"]:focus-visible {
+    outline-color: var(--semantic-success-foreground);
+  }
 
-.fs-input[data-variant="date"],
-.fs-input[data-variant="time"],
-.fs-input[data-variant="datetime-local"] {
-  position: relative;
-  min-height: calc(var(--size-4) * 2.5);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  padding-inline-end: calc(var(--size-6) + var(--size-2));
-  background-repeat: no-repeat;
-  background-position: right var(--size-2) center;
-  background-size: 0.95rem 0.95rem;
-}
+  .fs-input[data-variant="date"],
+  .fs-input[data-variant="time"],
+  .fs-input[data-variant="datetime-local"] {
+    position: relative;
+    min-height: calc(var(--size-4) * 2.5);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    padding-inline-end: calc(var(--size-6) + var(--size-2));
+    background-repeat: no-repeat;
+    background-position: right var(--size-2) center;
+    background-size: 0.95rem 0.95rem;
+  }
 
-.fs-input[data-variant="date"],
-.fs-input[data-variant="datetime-local"] {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
-}
+  .fs-input[data-variant="date"],
+  .fs-input[data-variant="datetime-local"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  }
 
-.fs-input[data-variant="time"] {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E");
-}
+  .fs-input[data-variant="time"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E");
+  }
 
-.fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
-.fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
-.fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: var(--size-2);
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  width: var(--size-6);
-  height: var(--size-6);
-  min-width: var(--size-6);
-  min-height: var(--size-6);
-  cursor: pointer;
+  .fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
+  .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
+  .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: var(--size-2);
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    width: var(--size-6);
+    height: var(--size-6);
+    min-width: var(--size-6);
+    min-height: var(--size-6);
+    cursor: pointer;
+  }
 }

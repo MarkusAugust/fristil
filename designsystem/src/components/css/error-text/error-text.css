@@ -1,19 +1,21 @@
-.fs-error-text {
-  display: block;
-  /* Hele margin settes, ikke bare toppen: uten dette arver <p>
-     nettleserens 1em i bunn hos konsumenter uten reset. */
-  margin: var(--size-1) 0 0;
-  font-family: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--semantic-danger-foreground);
-}
+@layer fristil {
+  .fs-error-text {
+    display: block;
+    /* Hele margin settes, ikke bare toppen: uten dette arver <p>
+       nettleserens 1em i bunn hos konsumenter uten reset. */
+    margin: var(--size-1) 0 0;
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--semantic-danger-foreground);
+  }
 
-.fs-error-text[hidden] {
-  display: none;
-}
+  .fs-error-text[hidden] {
+    display: none;
+  }
 
-.fs-error-text[data-variant="warning"] {
-  color: var(--semantic-warning-foreground);
+  .fs-error-text[data-variant="warning"] {
+    color: var(--semantic-warning-foreground);
+  }
 }
