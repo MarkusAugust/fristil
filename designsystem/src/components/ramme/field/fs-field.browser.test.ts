@@ -2,11 +2,11 @@
 
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsField } from "./fs-field"
+import { defineFsField } from "./fs-field"
 
 describe("fs-field", () => {
   beforeAll(() => {
-    defineDsField()
+    defineFsField()
   })
 
   beforeEach(() => {
@@ -68,7 +68,7 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(true)
     expect(error.getAttribute("aria-hidden")).toBe("true")
 
-    const field = document.querySelector("fs-field") as DsField
+    const field = document.querySelector("fs-field") as FsField
     field.invalid = true
 
     await Promise.resolve()

@@ -1,8 +1,8 @@
 import { html, LitElement } from "lit"
 
-import { defineDsCalendar } from "../calendar/fs-calendar.js"
+import { defineFsCalendar } from "../calendar/fs-calendar.js"
 
-export const DS_DATE_FIELD_TAG = "fs-date-field" as const
+export const FS_DATE_FIELD_TAG = "fs-date-field" as const
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
@@ -44,7 +44,7 @@ function mergeTokens(...values: Array<string | null | undefined>): string {
   return [...set].join(" ")
 }
 
-export class DsDateField extends LitElement {
+export class FsDateField extends LitElement {
   static properties = {
     label: { type: String },
     value: { type: String, reflect: true },
@@ -82,7 +82,7 @@ export class DsDateField extends LitElement {
 
   constructor() {
     super()
-    defineDsCalendar()
+    defineFsCalendar()
   }
 
   createRenderRoot() {
@@ -358,12 +358,12 @@ export class DsDateField extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "fs-date-field": DsDateField
+    "fs-date-field": FsDateField
   }
 }
 
-export function defineDsDateField(tagName = DS_DATE_FIELD_TAG): void {
+export function defineFsDateField(tagName = FS_DATE_FIELD_TAG): void {
   if (!customElements.get(tagName)) {
-    customElements.define(tagName, DsDateField)
+    customElements.define(tagName, FsDateField)
   }
 }

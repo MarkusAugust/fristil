@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit"
 
-export const DS_CALENDAR_TAG = "fs-calendar" as const
+export const FS_CALENDAR_TAG = "fs-calendar" as const
 
 type CalendarCell = {
   date: Date
@@ -89,7 +89,7 @@ function getCalendarCells(
   })
 }
 
-export class DsCalendar extends LitElement {
+export class FsCalendar extends LitElement {
   static properties = {
     open: { type: Boolean, reflect: true },
     disabled: { type: Boolean, reflect: true },
@@ -433,12 +433,12 @@ export class DsCalendar extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "fs-calendar": DsCalendar
+    "fs-calendar": FsCalendar
   }
 }
 
-export function defineDsCalendar(tagName = DS_CALENDAR_TAG): void {
+export function defineFsCalendar(tagName = FS_CALENDAR_TAG): void {
   if (!customElements.get(tagName)) {
-    customElements.define(tagName, DsCalendar)
+    customElements.define(tagName, FsCalendar)
   }
 }

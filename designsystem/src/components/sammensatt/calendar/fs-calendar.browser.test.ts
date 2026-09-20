@@ -1,10 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsCalendar } from "./fs-calendar"
+import { defineFsCalendar } from "./fs-calendar"
 
 describe("fs-calendar", () => {
   beforeAll(() => {
-    defineDsCalendar()
+    defineFsCalendar()
   })
 
   beforeEach(() => {
