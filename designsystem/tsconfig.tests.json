@@ -6,5 +6,9 @@
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["src/**/*.browser.test.ts", "src/types/**/*.d.ts"]
+  "include": [
+    "src/**/*.browser.test.ts",
+    "src/testing/**/*.ts",
+    "src/types/**/*.d.ts"
+  ]
 }

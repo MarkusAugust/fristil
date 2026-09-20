@@ -16,9 +16,12 @@ for (const key of Object.keys(cssTokens) as (keyof typeof cssTokens)[]) {
   sections[section].push(`  ${key}: ${cssTokens[key]};`)
 }
 
-const lines = ["/* Generated — edit tokens.ts, not this file */", ":root {"]
-for (const [section, props] of Object.entries(sections)) {
-  lines.push(`\n  /* ${section} */`)
+const lines = ["/* Generert — rediger tokens.ts, ikke denne fila */", ":root {"]
+for (const [index, [section, props]] of Object.entries(sections).entries()) {
+  // Tom linje mellom gruppene, men ikke rett etter `:root {` — da ville
+  // biome flagget fila hver gang den genereres på nytt.
+  if (index > 0) lines.push("")
+  lines.push(`  /* ${section} */`)
   lines.push(...props)
 }
 lines.push("}")

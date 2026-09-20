@@ -15,5 +15,5 @@
     "lib": ["ES2021", "DOM", "DOM.Iterable"]
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/*.browser.test.ts"]
+  "exclude": ["dist", "node_modules", "src/testing/**", "**/*.browser.test.ts"]
 }

@@ -2,8 +2,15 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./textarea.css"
+import "../label/label.css"
 
 function css(id: string) {
   const element = document.getElementById(id)
@@ -53,5 +60,20 @@ describe("fs-textarea", () => {
     expect(textarea.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(textarea.color).toBe("rgb(117, 117, 117)")
     expect(textarea.pointerEvents).toBe("none")
+  })
+})
+
+describe("fs-textarea tilgjengelighet", () => {
+  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+    monter(`
+      <label class="fs-label" for="a11y-melding">Melding til saksbehandler</label>
+      <textarea class="fs-textarea" id="a11y-melding" rows="3"></textarea>
+
+      <label class="fs-label" for="a11y-begrunnelse">Begrunnelse</label>
+      <textarea class="fs-textarea" id="a11y-begrunnelse" rows="3" data-state="invalid" aria-invalid="true">For kort</textarea>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

@@ -1,6 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
 import { defineFsDateField } from "./fs-date-field"
+import "../../../tokens/tokens.css"
+import "./date-field.css"
 
 describe("fs-date-field", () => {
   beforeAll(() => {
@@ -89,5 +95,45 @@ describe("fs-date-field", () => {
 
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(error.hidden).toBe(false)
+  })
+})
+
+describe("fs-date-field tilgjengelighet", () => {
+  it("gir ingen brudd med hjelpetekst og feilmelding", async () => {
+    monter(`
+      <fs-date-field
+        label="Reisedato"
+        value="2026-05-31"
+        help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+        error-text="Skriv en dato som finnes."
+        invalid
+      ></fs-date-field>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
+  })
+
+  it("flytter fokus til inputfeltet når en dato velges i kalenderen", async () => {
+    const flate = monter(
+      `<fs-date-field label="Reisedato" value="2026-05-31"></fs-date-field>`,
+    )
+    await ventPaTegning()
+
+    const felt = flate.querySelector("fs-date-field") as HTMLElement
+    const input = felt.querySelector("input") as HTMLInputElement
+    const kalender = felt.querySelector("fs-calendar") as HTMLElement & {
+      shadowRoot: ShadowRoot
+    }
+
+    kalender.shadowRoot.querySelector<HTMLButtonElement>(".trigger")?.click()
+    await ventPaTegning()
+
+    kalender.shadowRoot
+      .querySelector<HTMLButtonElement>('.day[data-selected="true"]')
+      ?.click()
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(input)
   })
 })
