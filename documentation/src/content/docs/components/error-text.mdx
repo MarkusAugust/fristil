@@ -94,7 +94,7 @@ De tre tingene som må stemme samtidig, gjør [`fs.field`](../../typesikker-bruk
 ```tsx
 const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
-<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<input {...fs.input({ type: "email" })} {...felt.control} />
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
 

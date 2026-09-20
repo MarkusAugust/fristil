@@ -173,6 +173,31 @@ Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "202
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
   </TabItem>
+  <TabItem label="Astro">
+    `<fs-date-field>` eier interaksjonen sin, så den må registreres i nettleseren. Astro pakker `<script>`-tagger og kjører dem på klienten:
+
+    ```astro
+    ---
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/date-field.css"
+    ---
+
+    <fs-date-field
+      label="Reisedato"
+      name="reisedato"
+      help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+      error-text="Velg en dato fram i tid."
+      required
+    ></fs-date-field>
+
+    <script>
+      import { defineFsDateField } from "@fristil/designsystem/date-field"
+      defineFsDateField()
+    </script>
+    ```
+
+    `customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret.
+  </TabItem>
   <TabItem label="Datastar">
     [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.
 

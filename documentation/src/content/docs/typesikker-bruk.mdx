@@ -123,12 +123,14 @@ const felt = fs.field({
 })
 
 <label {...felt.label}>E-postadresse</label>
-<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<input {...fs.input({ type: "email" })} {...felt.control} />
 <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
 
-Du får `for`, `id`, `aria-describedby` og `aria-invalid` ferdig utregnet, og `felt.state` sendes rett inn i `fs.input`.
+Du får `for`, `id`, `aria-describedby`, `aria-invalid` og `data-state` ferdig utregnet.
+
+Legg merke til at `fs.input` bare får `type`. Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke — sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
 
 Legg merke til én detalj: feilmeldingen tas med i `aria-describedby` **bare når feltet faktisk er ugyldig**. Ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
 

@@ -33,7 +33,7 @@ Bygger du markupen i et rammeverk og vil heller eie den selv, gir [`fs.field`](.
 const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
 
 <label {...felt.label}>E-postadresse</label>
-<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<input {...fs.input({ type: "email" })} {...felt.control} />
 <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
@@ -217,6 +217,43 @@ Punkt 6 betyr at feilmeldingen kan ligge i markupen hele tiden. Den er skjult ti
 
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
+  </TabItem>
+  <TabItem label="Astro">
+    Trenger feltet bare å vises i én tilstand, gjør `fs.field()` koblingen ved bygging. Da sendes ingen JavaScript for feltet i det hele tatt:
+
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/field.css"
+
+    const navn = fs.field({ id: "navn", required: "symbol", error: true })
+    ---
+
+    <label {...navn.label}>Fullt navn</label>
+    <input {...fs.input({ type: "text" })} {...navn.control} name="navn" required />
+    <p {...fs.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
+    ```
+
+    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<fs-field>` og registrerer den i en `<script>`-tagg — Astro pakker den og kjører den på klienten:
+
+    ```astro
+    ---
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/field.css"
+    ---
+
+    <fs-field required-marker="symbol">
+      <label>Fullt navn</label>
+      <input class="fs-input" type="text" name="navn" required />
+      <p class="fs-error-text">Fyll inn navnet ditt.</p>
+    </fs-field>
+
+    <script>
+      import { defineFsField } from "@fristil/designsystem/field"
+      defineFsField()
+    </script>
+    ```
   </TabItem>
   <TabItem label="Datastar">
     [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.

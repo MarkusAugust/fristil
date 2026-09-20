@@ -183,7 +183,53 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
 ## Astro
 
-Astro rendrer på serveren som standard, og `customElements` finnes bare i nettleseren. Registreringen hører derfor hjemme i en `<script>`-tagg, som Astro pakker og kjører på klienten:
+En `.astro`-fil er HTML med et frontmatter-felt over. Stilarkene importeres der, og `fs` brukes rett i malen — Astro støtter spredning som JSX.
+
+```astro
+---
+import { fs } from "@fristil/designsystem"
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/button.css"
+import "@fristil/designsystem/badge.css"
+---
+
+<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+<span {...fs.badge({ color: "success" })}>Innvilget</span>
+```
+
+Dette kjøres ved bygging. Ut kommer ren HTML:
+
+```html
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<span class="fs-badge" data-color="success">Innvilget</span>
+```
+
+Null JavaScript sendt til nettleseren — `fs` er borte når siden er bygget. Det gjelder alle `css`-komponentene.
+
+### Et helt felt, uten JavaScript
+
+`fs.field()` regner ut tilgjengelighetskoblingen i frontmatteret, så den også blir statisk HTML:
+
+```astro
+---
+import { fs } from "@fristil/designsystem"
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/field.css"
+
+const epost = fs.field({ id: "epost", required: "symbol", help: true, error: true })
+---
+
+<label {...epost.label}>E-postadresse</label>
+<input {...fs.input({ type: "email" })} {...epost.control} name="epost" required />
+<p {...fs.helpText()} {...epost.help}>Vi sender kvittering hit.</p>
+<p {...fs.errorText()} {...epost.error}>Skriv en gyldig adresse.</p>
+```
+
+Her brukes ikke `<fs-field>` i det hele tatt. Koblingen gjøres ved bygging, og siden trenger ingen kjøretid.
+
+### Når du vil ha web-komponentene
+
+Trenger du at feltet skal kunne bli ugyldig mens brukeren står i det, må komponenten registreres i nettleseren. Astro pakker `<script>`-tagger og kjører dem på klienten:
 
 ```astro
 ---
@@ -194,6 +240,7 @@ import "@fristil/designsystem/field.css"
 <fs-field required-marker="symbol">
   <label>Fullt navn</label>
   <input class="fs-input" type="text" name="navn" required />
+  <p class="fs-error-text">Fyll inn navnet ditt.</p>
 </fs-field>
 
 <script>
@@ -202,7 +249,13 @@ import "@fristil/designsystem/field.css"
 </script>
 ```
 
-HTML-en sendes som den er fra serveren, og komponenten tar over når skriptet er lastet. Bruker du Lit-integrasjonen i Astro i stedet, må komponentene settes inn med `client:only="lit"` — de skal ikke serverrendres.
+HTML-en sendes som den er fra serveren, og komponenten tar over når skriptet er lastet. `customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret.
+
+Bruker du Lit-integrasjonen i Astro i stedet, må komponentene settes inn med `client:only="lit"` — de skal ikke serverrendres.
+
+### Astro og Datastar
+
+De to kombineres godt, og er kanskje den reneste måten å bruke Fristil på: Astro bygger HTML-en, Datastar gir den oppførsel, og ingen av delene krever en komponentmodell i nettleseren. Se seksjonen under.
 
 ## HTML med Datastar
 
