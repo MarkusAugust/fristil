@@ -31,13 +31,13 @@ import "@fristil/designsystem/avatar.css"
 ## Med navn ved siden av
 
 <Eksempel stiler={["avatar"]} kode={`
-<span style="display: inline-flex; align-items: center; gap: var(--size-2);">
-  <span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
-  Ola Nordmann
-</span>
+<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
+<span>Ola Nordmann</span>
 `} />
 
 Står navnet der allerede, er bildet pynt. `aria-hidden="true"` hindrer at initialene leses opp som «O N» foran navnet.
+
+Bildet og navnet er to elementer ved siden av hverandre. Hvordan de stilles opp er appens oppsett, ikke komponentens: en flex-rad med `gap`, en tabellcelle, eller hva siden ellers bruker.
 
 Står bildet alene, må det si hvem det er:
 

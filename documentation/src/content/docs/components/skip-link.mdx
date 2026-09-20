@@ -14,13 +14,22 @@ import "@fristil/designsystem/skip-link.css"
 
 ## Slik ser den ut når den har fokus
 
-<Eksempel stiler={["skip-link"]} layout="stabel" maxWidth="32rem" kode={`
-<div style="position: relative; min-height: var(--size-16);">
-  <a class="fs-skip-link" href="#innhold" style="transform: none; position: static;">Hopp til hovedinnhold</a>
-</div>
+Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvinger den fram, slik at du ser hvordan den ser ut når den er synlig. Markupen er den samme som i en ekte side:
+
+<Eksempel
+  stiler={["skip-link"]}
+  layout="stabel"
+  maxWidth="32rem"
+  visningsCss={`
+    /* Bare for å vise lenken. I en ekte side kommer den fram av seg selv
+       når den får fokus, og trenger ingenting her. */
+    .fs-skip-link { position: static; transform: none; }
+  `}
+  kode={`
+<a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
 `} />
 
-I en ekte side står den slik, øverst i `<body>`:
+Plasseringen er det eneste som kommer i tillegg. Lenken skal være det første i `<body>`, og målet må kunne få fokus:
 
 ```html
 <body>

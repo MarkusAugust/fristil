@@ -31,13 +31,15 @@ import "@fristil/designsystem/spinner.css"
 Den som hører siden får ingenting av en ring. Enten bærer en synlig tekst beskjeden, eller så gjør ringen det selv med `aria-label`.
 
 <Eksempel stiler={["spinner"]} kode={`
-<p role="status" style="display: flex; align-items: center; gap: var(--size-2); margin: 0;">
+<p role="status">
   <span class="fs-spinner" data-size="small" aria-hidden="true"></span>
   Henter søknadene dine
 </p>
 `} />
 
 Er teksten synlig, sett `aria-hidden="true"` på ringen. Ellers leses ventingen opp to ganger.
+
+Ringen er `inline-block`, så den står på linje med teksten av seg selv. Vil du ha dem på samme grunnlinje med en fast avstand, er det appens oppsett: `display: flex`, `align-items: center` og `gap` på avsnittet.
 
 Står ringen alene, snur det:
 

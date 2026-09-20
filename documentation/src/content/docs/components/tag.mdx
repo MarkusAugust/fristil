@@ -27,11 +27,19 @@ import "@fristil/designsystem/tag.css"
 
 ## Filtre som kan slås av og på
 
-<Eksempel stiler={["tag"]} kode={`
-<button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
-<button class="fs-tag" data-selectable aria-pressed="false" type="button">Under behandling</button>
-<button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og det er `aria-pressed` som sier hvilken som er hvilken:
+
+<Eksempel stiler={["tag", "heading"]} layout="stabel" maxWidth="30rem" kode={`
+<h3 class="fs-heading" data-size="xs" id="filtre">Vis saker med status</h3>
+
+<div role="group" aria-labelledby="filtre">
+  <button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
+  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Under behandling</button>
+  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+</div>
 `} />
+
+`<div role="group">` med en ledetekst er det som binder de tre sammen. Uten den er det tre løse knapper, og den som hører siden vet ikke at de hører til samme spørsmål.
 
 `data-selectable` gir hover og fokusmarkering. Elementet må være en `<button>`, og `aria-pressed` setter du selv:
 

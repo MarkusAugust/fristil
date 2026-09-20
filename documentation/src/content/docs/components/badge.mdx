@@ -32,18 +32,16 @@ import "@fristil/designsystem/badge.css"
 
 ## I en liste
 
-<Eksempel stiler={["badge"]} layout="stabel" maxWidth="26rem" kode={`
-<ul style="list-style: none; margin: 0; padding: 0;">
-  <li style="display: flex; justify-content: space-between; padding-block: var(--size-2); border-bottom: 1px solid var(--semantic-divider-30);">
-    Faktura 2026-0481
-    <span class="fs-badge" data-color="success">Betalt</span>
-  </li>
-  <li style="display: flex; justify-content: space-between; padding-block: var(--size-2);">
-    Faktura 2026-0482
-    <span class="fs-badge" data-color="danger">Forfalt</span>
-  </li>
+Merket står som regel sammen med det det sier noe om. Her i en [List](../list/) med skille mellom radene:
+
+<Eksempel stiler={["badge", "list"]} layout="stabel" maxWidth="26rem" kode={`
+<ul class="fs-list" data-variant="divided">
+  <li>Faktura 2026-0481 <span class="fs-badge" data-color="success">Betalt</span></li>
+  <li>Faktura 2026-0482 <span class="fs-badge" data-color="danger">Forfalt</span></li>
 </ul>
 `} />
+
+Skal merket stå til høyre i raden, er det appens oppsett som avgjør det, med `display: flex` og `justify-content: space-between` på `li`-elementet.
 
 ## TypeScript
 
