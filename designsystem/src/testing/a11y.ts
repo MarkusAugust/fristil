@@ -93,9 +93,17 @@ export async function forventIngenTilgjengelighetsbrudd(
  *
  * Lit oppdaterer asynkront, og axe leser utregnet stil. Uten denne pausen
  * kan axe rekke å måle et element som ennå ikke har fått stilene sine.
+ *
+ * Gir du den et element som er en Lit-komponent, ventes det også på at
+ * komponenten er ferdig med sin egen oppdatering. Testene kalte den allerede
+ * slik, men argumentet ble ignorert, og ventingen var bare to bilder.
  */
-export function ventPaTegning(): Promise<void> {
-  return new Promise((resolve) => {
+export async function ventPaTegning(element?: Element): Promise<void> {
+  const oppdatering = (element as { updateComplete?: Promise<unknown> })
+    ?.updateComplete
+  if (oppdatering) await oppdatering
+
+  await new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
   })
 }
