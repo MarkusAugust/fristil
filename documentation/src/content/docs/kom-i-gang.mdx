@@ -14,7 +14,7 @@ npm install @fristil/designsystem
 
 Ingen påkrevde avhengigheter. `lit` trengs bare til `ramme`- og `sammensatt`-komponentene, `tailwindcss` bare til forhåndsinnstillingen. Begge er valgfrie `peerDependencies`.
 
-## Importer tokens først
+## Importer tokens
 
 `tokens.css` definerer alle CSS-variablene. Alle andre stilark bygger på den, så den lastes først.
 
@@ -61,7 +61,7 @@ Med `tokens.css` og `button.css` importert:
 
 Ingen registrering, ingen oppstartskode — CSS-komponentene er bare klasser.
 
-## Web components må registreres
+## Registrer web components
 
 `ramme`- og `sammensatt`-komponentene er egendefinerte elementer, og må registreres én gang når appen starter:
 
@@ -85,7 +85,7 @@ Flere kall er ufarlige — funksjonen sjekker selv om elementet er registrert.
 
 Får du en tom side, har `define`-funksjonen nesten alltid ikke kjørt.
 
-## Hva du kan importere
+## Inngangspunkter
 
 **Stilark**
 

@@ -51,7 +51,7 @@ En web component som bygger alt selv. Du sender inn attributter.
 
 Ingen HTML å sette opp, men du bestemmer mindre over strukturen. For komponenter der interaksjonen er det vanskelige — et datofelt som holder tekst og kalender i synk, en dialog.
 
-## Hvorfor tre og ikke én
+## Hvorfor tre kategorier
 
 De fleste designsystemer har én komponentmodell for alt. Da drar enten en knapp med seg like mye maskineri som en datovelger, eller datovelgeren får like lite struktur som en knapp.
 
@@ -63,7 +63,7 @@ Her står prisen i forhold til problemet:
 
 Det gjør det også lett å ta i bruk gradvis: begynn med `tokens.css` og noen knapper.
 
-## Hvor Shadow DOM passer inn
+## Shadow DOM
 
 Shadow DOM er et valg per komponent, ikke en egen kategori. `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM fordi skjemaelementene må være synlige utenfra. `<fs-calendar>` skjermes fordi kalenderpanelet har mange interne elementer ingen app bør style ved et uhell.
 
@@ -83,7 +83,7 @@ Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`, o
 
 De samme verdiene finnes som TypeScript-konstanter og som Tailwind-forhåndsinnstilling. Se [Design tokens](../design-tokens/).
 
-## Tailwind er valgfritt
+## Tailwind
 
 Fristil forutsetter ikke Tailwind, men står ikke i veien. La Tailwind styre oppsettet og Fristil styre komponentene:
 

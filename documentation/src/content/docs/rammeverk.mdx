@@ -206,7 +206,7 @@ Kjøres ved bygging. Ut kommer ren HTML:
 
 Null JavaScript sendt til nettleseren — `fs` er borte når siden er bygget.
 
-### Et helt felt, uten JavaScript
+### Felt uten JavaScript
 
 `fs.field()` regner ut koblingen i frontmatteret, så den også blir statisk HTML:
 
@@ -227,7 +227,7 @@ const epost = fs.field({ id: "epost", required: "symbol", help: true, error: tru
 
 Ingen `<fs-field>`, ingen kjøretid.
 
-### Når du vil ha web-komponentene
+### Web-komponenter i Astro
 
 Skal feltet kunne bli ugyldig mens brukeren står i det, må komponenten registreres. Astro pakker `<script>`-tagger og kjører dem på klienten:
 
