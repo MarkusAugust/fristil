@@ -93,7 +93,7 @@ export class FsDateField extends LitElement {
     return html`
       <div class="fs-date-field">
         <label class="fs-label" for=${this.inputId}>${this.label}</label>
-        <div style="position: relative; display: inline-grid; width: 100%;">
+        <div class="fs-date-field__field">
           <input
             id=${this.inputId}
             class="fs-input"
@@ -101,7 +101,6 @@ export class FsDateField extends LitElement {
             .value=${isoToDisplay(this.value)}
             name=${this.name ?? ""}
             placeholder=${this.placeholder}
-            style="padding-inline-end: var(--size-10);"
             ?required=${this.required}
             ?disabled=${this.disabled}
             ?readonly=${this.readonly}
@@ -116,22 +115,6 @@ export class FsDateField extends LitElement {
             tabindex="-1"
             ?disabled=${this.disabled}
             @click=${this.handleIconClick}
-            style="
-              position: absolute;
-              inset-block-start: 50%;
-              inset-inline-end: var(--size-2);
-              transform: translateY(-50%);
-              display: inline-grid;
-              place-items: center;
-              width: var(--size-7);
-              height: var(--size-7);
-              padding: 0;
-              border: none;
-              background: transparent;
-              cursor: pointer;
-              color: var(--semantic-page-foreground);
-              border-radius: var(--size-1);
-            "
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +139,7 @@ export class FsDateField extends LitElement {
             .value=${this.value}
             ?disabled=${this.disabled}
             trigger-hidden
-            style="position: absolute; inset-block-start: 100%; inset-inline-start: 0; width: 0; height: 0; overflow: visible;"
+            class="fs-date-field__calendar"
           ></fs-calendar>
         </div>
 
