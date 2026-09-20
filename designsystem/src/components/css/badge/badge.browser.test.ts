@@ -2,6 +2,12 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./badge.css"
 
@@ -40,7 +46,7 @@ describe("fs-badge", () => {
   it("applies warning colors", () => {
     const badge = css("warning")
     expect(badge.backgroundColor).toBe("rgb(249, 237, 226)")
-    expect(badge.color).toBe("rgb(159, 117, 9)")
+    expect(badge.color).toBe("rgb(137, 101, 8)")
   })
 
   it("applies danger colors", () => {
@@ -52,6 +58,21 @@ describe("fs-badge", () => {
   it("applies neutral colors", () => {
     const badge = css("neutral")
     expect(badge.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(badge.color).toBe("rgb(117, 117, 117)")
+    expect(badge.color).toBe("rgb(77, 77, 77)")
+  })
+})
+
+describe("fs-badge tilgjengelighet", () => {
+  it("har nok kontrast i alle fargevarianter", async () => {
+    monter(`
+      <span class="fs-badge">Under behandling</span>
+      <span class="fs-badge" data-color="success">Innvilget</span>
+      <span class="fs-badge" data-color="warning">Mangler vedlegg</span>
+      <span class="fs-badge" data-color="danger">Avslått</span>
+      <span class="fs-badge" data-color="neutral">Arkivert</span>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

@@ -108,11 +108,20 @@ export const cssTokens = {
   "--semantic-danger-background": "var(--palette-burgundy-10)",
   "--semantic-danger-foreground": "#a82e39",
   "--semantic-warning-background": "var(--palette-ochre-10)",
-  "--semantic-warning-foreground": "#9f7509",
+  "--semantic-warning-foreground": "#896508",
   "--semantic-success-background": "var(--palette-forest-10)",
   "--semantic-success-foreground": "#316f2a",
+
+  // Deaktiverte kontroller. WCAG 1.4.3 unntar inaktive komponenter fra
+  // kontrastkravet, så denne er bevisst dempet — bruk den kun på noe som
+  // faktisk er slått av, aldri på tekst brukeren skal lese.
   "--semantic-disabled-background": "var(--palette-graphite-10)",
   "--semantic-disabled-foreground": "var(--palette-graphite-50)",
+
+  // Nøytral status — informasjon brukeren skal lese, ikke en avslått
+  // kontroll. Derfor mørkere enn disabled: 6,71:1 mot egen bakgrunn.
+  "--semantic-neutral-background": "var(--palette-graphite-10)",
+  "--semantic-neutral-foreground": "var(--palette-graphite-70)",
 
   // Semantic — interaktiv
   "--semantic-interactive-background": "var(--palette-azure-10)",

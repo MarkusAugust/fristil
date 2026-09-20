@@ -36,6 +36,10 @@ export const fristilPreset = {
         DEFAULT: v("--semantic-disabled-foreground"),
         bg: v("--semantic-disabled-background"),
       },
+      neutral: {
+        DEFAULT: v("--semantic-neutral-foreground"),
+        bg: v("--semantic-neutral-background"),
+      },
       divider: {
         DEFAULT: v("--semantic-divider-30"),
         strong: v("--semantic-divider-100"),

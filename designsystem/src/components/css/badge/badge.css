@@ -30,6 +30,6 @@
 }
 
 .fs-badge[data-color="neutral"] {
-  background: var(--semantic-disabled-background);
-  color: var(--semantic-disabled-foreground);
+  background: var(--semantic-neutral-background);
+  color: var(--semantic-neutral-foreground);
 }
