@@ -1,213 +1,228 @@
 # @fristil/designsystem
 
-Design tokens og komponenter for Fristil designsystem.
+Design tokens og komponenter for Fristil — et rammeverksuavhengig designsystem.
+
+Se [dokumentasjonssiden](../documentation) for bruksanvisning. Denne fila handler om å utvikle selve pakken.
 
 ---
 
-## Kom i gang
+## Installere
 
 ```bash
 npm install @fristil/designsystem
 ```
 
-Importer tokens i rot-CSS eller `<head>`:
+`lit` og `tailwindcss` er valgfrie `peerDependencies`. `lit` trengs bare hvis du bruker en `ramme`- eller `sammensatt`-komponent.
 
-```html
-<link rel="stylesheet" href="node_modules/@fristil/designsystem/tokens.css" />
-```
-
-Eller via bundler:
+Importer tokens først — alle andre stilark bygger på dem:
 
 ```js
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/utilities.css" // valgfritt: .link, .srOnly
+import "@fristil/designsystem/button.css"
 ```
 
 ---
 
-## Legge til en ny komponent
+## Mappestruktur
 
-### pure-css — Plain CSS-klasse
+```
+src/
+├── index.ts                  # re-eksporterer alt
+├── tokens/
+│   ├── tokens.ts             # eneste kilde for alle verdier
+│   ├── tokens.css            # GENERERT — rediger aldri for hånd
+│   └── utilities.css         # .link, .srOnly
+├── tailwind/preset.ts
+└── components/
+    ├── css/                  # CSS-klasse, ingen JavaScript
+    ├── ramme/                # web component som kobler dine elementer
+    └── sammensatt/           # web component som bygger alt selv
+```
 
-Bruk dette for enkle, stateless elementer: knapper, badges, typografi, input-styling.
+Hver komponent har sin egen mappe med CSS, eventuell TypeScript og en `*.browser.test.ts`.
 
-**1. Opprett CSS-fil i `src/designsystem/pure-css/my-component/`:**
+---
+
+## Kommandoer
+
+```bash
+bun run generate         # skriver tokens.css fra tokens.ts
+bun run build            # generate + tsc -b
+bun run typecheck        # tsc --noEmit
+bun run test:browser     # Vitest i nettleser via Playwright
+```
+
+---
+
+## Design tokens
+
+`src/tokens/tokens.ts` er den eneste fila som redigeres. Kjør `bun run generate` etterpå — endringer gjort direkte i `tokens.css` blir overskrevet.
+
+Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier; de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter skal bruke det semantiske laget, slik at de følger med når paletten justeres.
+
+Avstand og utstrekning går gjennom én skala, `--size-*`. Det finnes ingen egen `--spacing-*`.
+
+---
+
+## Legge til en komponent
+
+### Kategori `css`
+
+For alt der utfordringen er utseende, ikke oppførsel.
+
+**1. Lag CSS-fila** i `src/components/css/min-komponent/min-komponent.css`:
 
 ```css
-/* src/designsystem/pure-css/my-component/my-component.css */
-.fs-my-component {
-  color: var(--semantic-page-foreground);
-  padding: var(--size-2) var(--size-4);
-  font-size: var(--font-size-m);
+.fs-min-komponent {
+	color: var(--semantic-page-foreground);
+	padding: var(--size-2) var(--size-4);
+	font-size: var(--font-size-m);
+	border-radius: var(--size-1);
 }
 
-.fs-my-component[data-variant="primary"] {
-  background: var(--semantic-interactive-main);
-  color: var(--palette-graphite-0);
+.fs-min-komponent[data-variant="primary"] {
+	background: var(--semantic-interactive-main);
+	color: var(--palette-graphite-0);
 }
 ```
 
-**2. Legg til eksport i `package.json`:**
+Bruk alltid tokens. Hardkodede farger og pikselverdier hører ikke hjemme her.
+
+**2. Eksporter fila** i `package.json`:
 
 ```json
-"./my-component.css": "./src/designsystem/pure-css/my-component/my-component.css"
+"./min-komponent.css": "./src/components/css/min-komponent/min-komponent.css"
 ```
 
-**Bruk hos konsument:**
-
-```html
-<link rel="stylesheet" href="@fristil/designsystem/my-component.css" />
-<div class="fs-my-component" data-variant="primary">Innhold</div>
-```
-
-Ingen JavaScript. Ingen import. Bare CSS.
-
----
-
-### light-dom — Light DOM Web Component (Lit)
-
-Bruk dette for elementer som trenger logikk, slots eller automatisk a11y — men der native `<input>` og CSS-klasser fra pure-css skal fungere inne i komponenten.
-
-Light DOM betyr at komponentens HTML havner i den vanlige DOM-en. Tokens på `:root` er synlige uten noe ekstra.
-
-**1. Opprett TypeScript-fil i `src/designsystem/light-dom/my-wrapper/`:**
+**3. Lag TypeScript-hjelperne** i samme mappe, etter samme form som de andre komponentene:
 
 ```ts
-// src/designsystem/light-dom/my-wrapper/fs-my-wrapper.ts
-import { LitElement, html } from "lit"
-import { customElement, property } from "lit/decorators.js"
+// src/components/css/min-komponent/min-komponent.ts
+export const MIN_KOMPONENT_CLASS = "fs-min-komponent" as const
 
-@customElement("fs-my-wrapper")
-export class DsMyWrapper extends LitElement {
-  // Light DOM: overstyrer createRenderRoot
-  override createRenderRoot() {
-    return this
-  }
+export const minKomponentVariants = ["primary", "secondary"] as const
 
-  @property() label?: string
+export type MinKomponentVariant = (typeof minKomponentVariants)[number]
 
-  render() {
-    return html`
-      <div class="fs-my-wrapper">
-        ${this.label ? html`<span class="fs-my-wrapper__label">${this.label}</span>` : ""}
-        <slot></slot>
-      </div>
-    `
-  }
+export function isMinKomponentVariant(
+	value: string,
+): value is MinKomponentVariant {
+	return (minKomponentVariants as readonly string[]).includes(value)
+}
+
+export function getMinKomponentStyleAttributes(
+	variant: MinKomponentVariant = "primary",
+) {
+	if (variant === "primary") {
+		return { class: MIN_KOMPONENT_CLASS }
+	}
+	return { class: MIN_KOMPONENT_CLASS, "data-variant": variant }
+}
+```
+
+Tre deler hver gang: en type med de gyldige verdiene, en funksjon som lager attributtene, og en vaktfunksjon for verdier som kommer utenfra. Standardvarianten skal ikke gi noe `data-`-attributt.
+
+**4. Eksporter fra `src/index.ts`** og legg inn en `exports`-oppføring for TypeScript-modulen i `package.json`.
+
+### Kategori `ramme`
+
+For komponenter som skal koble sammen elementer utvikleren selv legger inn — typisk tilgjengelighetskobling i skjema.
+
+```ts
+// src/components/ramme/min-ramme/fs-min-ramme.ts
+import { html, LitElement } from "lit"
+
+export const FS_MIN_RAMME_TAG = "fs-min-ramme" as const
+
+export class FsMinRamme extends LitElement {
+	static properties = {
+		invalid: { type: Boolean, reflect: true },
+	}
+
+	invalid = false
+
+	// Vanlig DOM: elementene må være synlige for FormData og testverktøy
+	createRenderRoot() {
+		return this
+	}
+
+	render() {
+		return html`<slot @slotchange=${this.handleSlotChange}></slot>`
+	}
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
-    "fs-my-wrapper": DsMyWrapper
-  }
+	interface HTMLElementTagNameMap {
+		"fs-min-ramme": FsMinRamme
+	}
+}
+
+export function defineFsMinRamme(tagName = FS_MIN_RAMME_TAG): void {
+	if (!customElements.get(tagName)) {
+		customElements.define(tagName, FsMinRamme)
+	}
 }
 ```
 
-**2. Eksporter fra `src/index.ts`:**
+To ting er viktige her. `createRenderRoot()` returnerer `this`, slik at innholdet blir liggende i vanlig DOM. Og registreringen skjer i en eksportert `defineFs*`-funksjon, ikke med `@customElement`-dekoratoren — da bestemmer konsumenten når elementet registreres, og biblioteket får ingen bivirkninger ved import.
+
+### Kategori `sammensatt`
+
+For komponenter som bygger alt selv, der flere deler må holdes i synk.
+
+Shadow DOM er et valg per komponent, ikke noe kategorien krever. La `createRenderRoot()` stå urørt når komponenten skal skjermes — som `fs-calendar` — og returner `this` når skjemaelementene må være synlige utenfra, som i `fs-date-field`.
 
 ```ts
-export * from "./fs-my-wrapper.js"
-```
+export class FsMinWidget extends LitElement {
+	static properties = {
+		open: { type: Boolean, reflect: true },
+	}
 
-**3. Legg til CSS-fil for styling (samme som pure-css):**
+	open = false
 
-```css
-/* src/designsystem/pure-css/my-wrapper/my-wrapper.css */
-.fs-my-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-2);
+	static styles = css`
+		:host {
+			display: block;
+			background: var(--semantic-page-background);
+			border: 1px solid var(--semantic-divider-30);
+			padding: var(--size-4);
+		}
+	`
 }
 ```
 
-**Bruk hos konsument:**
-
-```html
-<script type="module" src="@fristil/designsystem"></script>
-
-<fs-my-wrapper label="E-post">
-  <input class="fs-input" type="email" />
-</fs-my-wrapper>
-```
+CSS-variabler arves gjennom skyggegrensen, så tokens fra `:root` fungerer inne i `css\`\`` uten videre.
 
 ---
 
-### shadow-dom — Shadow DOM Web Component (Lit)
+## Navnekonvensjoner
 
-Bruk dette for visuelt isolerte, komplekse interaktive komponenter: datepicker, modal, tooltip.
-
-Shadow DOM isolerer stilene. CSS custom properties **piercer** Shadow DOM automatisk — tokens fra `:root` fungerer inne i komponenten via `var()` i `css\`\``.
-
-**1. Opprett TypeScript-fil i `src/designsystem/shadow-dom/my-widget/`:**
-
-```ts
-// src/designsystem/shadow-dom/my-widget/fs-my-widget.ts
-import { LitElement, html, css } from "lit"
-import { customElement, property } from "lit/decorators.js"
-
-@customElement("fs-my-widget")
-export class DsMyWidget extends LitElement {
-  // Shadow DOM: IKKE overstyr createRenderRoot
-
-  // css`` henter tokens fra :root via CSS custom property inheritance
-  static styles = css`
-    :host {
-      display: block;
-      background: var(--semantic-page-background);
-      border: 1px solid var(--semantic-divider-30);
-      padding: var(--size-4);
-      font-size: var(--font-size-m);
-      border-radius: var(--size-1);
-    }
-
-    :host([hidden]) {
-      display: none;
-    }
-  `
-
-  @property({ type: Boolean }) open = false
-
-  render() {
-    return html`<slot></slot>`
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-my-widget": DsMyWidget
-  }
-}
-```
-
-**2. Eksporter fra `src/index.ts`:**
-
-```ts
-export * from "./fs-my-widget.js"
-```
-
-**Bruk hos konsument:**
-
-```html
-<fs-my-widget open>Innhold</fs-my-widget>
-```
-
-**Bruk i Astro docs** (`client:only` er påkrevd for alle Lit-komponenter):
-
-```astro
-<fs-my-widget client:only="lit" open>Innhold</fs-my-widget>
-```
+| Ting | Form | Eksempel |
+| --- | --- | --- |
+| CSS-klasse | `fs-` + kebab-case | `fs-date-field` |
+| Egendefinert element | `fs-` + kebab-case | `<fs-date-field>` |
+| Klasse | `Fs` + PascalCase | `FsDateField` |
+| Registreringsfunksjon | `defineFs` + PascalCase | `defineFsDateField()` |
+| Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_DATE_FIELD_TAG` |
+| Variant | `data-variant` | `data-variant="secondary"` |
+| Tilstand | `data-state` | `data-state="invalid"` |
 
 ---
 
-## Tilgjengelige tokens
+## Tester
 
-```js
-import "@fristil/designsystem/tokens.css"        // CSS custom properties (:root)
-import "@fristil/designsystem/utilities.css"     // .link, .srOnly
+Hver komponent har en `*.browser.test.ts` ved siden av seg, som kjøres i ekte Chromium via Playwright:
 
-import { cssTokens, type CssToken } from "@fristil/designsystem/tokens"
-import { Breakpoints, Containers } from "@fristil/designsystem/tokens"
-import { fristilPreset } from "@fristil/designsystem/tailwind" // Tailwind v3 preset
+```bash
+bun run test:browser
 ```
 
-Se `src/tokens/tokens.ts` for alle tilgjengelige CSS custom properties.
+Test det komponenten lover utad — klasser, attributter, `aria-*`-koblinger og hendelser — ikke interne detaljer.
+
+---
+
+## Dokumentasjon
+
+Nye komponenter trenger en side under `documentation/src/content/docs/components/`, og en oppføring i sidebaren i `documentation/astro.config.mjs`. Har komponenten et eget stilark, må det også inn i `customCss` samme sted, ellers mangler stilene i eksemplene.
+
+Dokumentasjonen er på norsk. Se språkavsnittet i `.claude/CLAUDE.md` for hva som forventes av tekst og eksempler.
