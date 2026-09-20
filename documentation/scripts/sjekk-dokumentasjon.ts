@@ -98,7 +98,8 @@ for (const fil of new Bun.Glob("**/*.mdx").scanSync(
   // `visningsCss` er CSS, og kan inneholde ordet uten at det er markup.
   const utenVisningsCss = tekst.replace(/visningsCss=\{`[\s\S]*?`\}/g, " ")
 
-  if (utenVisningsCss.includes('style="')) {
+  // `style = '…'` og `style='…'` er like gyldige som `style="…"`.
+  if (/\bstyle\s*=/.test(utenVisningsCss)) {
     avvik.push({
       hvor: fil,
       hva: "har et style-attributt i et eksempel. Bruk visningsCss, eller en klasse fra systemet.",

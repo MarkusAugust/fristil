@@ -25,7 +25,11 @@ const FARGER = [
 
 type Kjøring = { kode: number; ut: string; feil: string }
 
+let antallKjøringer = 0
+
 async function kjør(argumenter: string[]): Promise<Kjøring> {
+  antallKjøringer += 1
+
   const prosess = Bun.spawn(["node", cli, ...argumenter], {
     stdout: "pipe",
     stderr: "pipe",
@@ -136,4 +140,6 @@ if (feil.length > 0) {
   process.exit(1)
 }
 
-console.log("Kommandolinjeverktøyet svarer som det skal på seks kjøringer.")
+console.log(
+  `Kommandolinjeverktøyet svarer som det skal på ${antallKjøringer} kjøringer.`,
+)
