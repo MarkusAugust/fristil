@@ -34,6 +34,18 @@ Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, m
 Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
 
+## I vanlig DOM
+
+I JSX sprer du objektet rett inn i elementet. Uten JSX gjør `fs.setAttributes` jobben:
+
+```ts
+const felt = document.querySelector<HTMLInputElement>("#epost")
+
+fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
+```
+
+Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet — ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
+
 ## Standardverdier
 
 ```ts
@@ -122,6 +134,15 @@ const felt = fs.field({
 <input {...fs.input({ type: "email" })} {...felt.control} />
 <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+```
+
+Uten JSX:
+
+```ts
+fs.setAttributes(ledetekst, felt.label)
+fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
+fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
 ```
 
 Du får `for`, `id`, `aria-describedby`, `aria-invalid` og `data-state` ferdig utregnet.
