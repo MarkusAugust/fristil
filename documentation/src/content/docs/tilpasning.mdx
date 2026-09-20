@@ -82,6 +82,13 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 | `--fs-textarea-padding` | `var(--size-2) var(--size-3)` |
 | `--fs-textarea-radius` | `var(--size-1)` |
 | `--fs-select-radius` | `var(--size-1)` |
+| `--fs-date-field-icon-size` | `var(--size-7)` |
+| `--fs-date-field-icon-space` | `var(--size-10)` |
+| `--fs-calendar-trigger-size` | `var(--size-10)` |
+| `--fs-calendar-radius` | `var(--size-1)` |
+| `--fs-calendar-popup-width` | `min(20rem, 92vw)` |
+| `--fs-calendar-popup-padding` | `var(--size-3)` |
+| `--fs-calendar-day-size` | `var(--size-8)` |
 
 Standardverdiene peker på `--size-*`-skalaen. Endrer du skalaen, følger komponentene med — setter du variabelen, gjelder din verdi bare for den komponenten.
 
@@ -108,10 +115,32 @@ For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne
 ```css
 /* Variabler arves gjennom skyggegrensen */
 :root { --semantic-interactive-main: #7c3aed; }
+:root { --fs-calendar-day-size: 2.75rem; }
 
 /* Utpekte deler kan styles utenfra */
 fs-calendar::part(trigger) { border-radius: 9999px; }
-fs-calendar::part(popup) { box-shadow: none; }
+fs-calendar::part(day-selected) { background: #7c3aed; }
 ```
 
-Komponenten eksponerer `trigger` (knappen) og `popup` (kalenderpanelet).
+Disse delene er eksponert:
+
+| Del | Hva det er |
+| --- | --- |
+| `trigger` | Knappen som åpner kalenderen |
+| `popup` | Panelet |
+| `popup-header`, `month-label`, `month-controls`, `month-button` | Toppen med måned og pilene |
+| `weekday-row`, `weekday` | Ukedagsnavnene |
+| `day-grid`, `day` | Rutenettet og hver dagknapp |
+| `day-today`, `day-selected`, `day-outside` | Dagknappen i hver av sine tilstander |
+
+Tilstandene er egne delnavn fordi `::part()` er strengere enn vanlige selektorer. To ting virker ikke:
+
+```css
+/* Attributtselektor etter ::part() treffer ikke */
+fs-calendar::part(day)[data-selected="true"] { … }
+
+/* En del har ingen etterkommere utenfra */
+fs-calendar::part(popup) .day { … }
+```
+
+Bruk `::part(day-selected)` i stedet. Pseudoklasser virker som normalt: `::part(day):hover`.
