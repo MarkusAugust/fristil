@@ -2,8 +2,15 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./select.css"
+import "../label/label.css"
 
 function css(id: string) {
   const element = document.getElementById(id)
@@ -53,5 +60,25 @@ describe("fs-select", () => {
     expect(select.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(select.color).toBe("rgb(117, 117, 117)")
     expect(select.pointerEvents).toBe("none")
+  })
+})
+
+describe("fs-select tilgjengelighet", () => {
+  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+    monter(`
+      <label class="fs-label" for="a11y-fylke">Fylke</label>
+      <select class="fs-select" id="a11y-fylke">
+        <option value="">Velg fylke</option>
+        <option value="vestland">Vestland</option>
+      </select>
+
+      <label class="fs-label" for="a11y-kommune">Kommune</label>
+      <select class="fs-select" id="a11y-kommune" data-state="invalid" aria-invalid="true">
+        <option value="">Velg kommune</option>
+      </select>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

@@ -2,6 +2,12 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./button.css"
 
@@ -64,5 +70,21 @@ describe("fs-button variants", () => {
     expect(disabled.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(disabled.color).toBe("rgb(117, 117, 117)")
     expect(disabled.pointerEvents).toBe("none")
+  })
+})
+
+describe("fs-button tilgjengelighet", () => {
+  it("har nok kontrast i alle varianter", async () => {
+    monter(`
+      <button class="fs-button">Send søknad</button>
+      <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+      <button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
+      <button class="fs-button" data-variant="danger">Slett søknad</button>
+      <button class="fs-button" disabled>Send søknad</button>
+      <a class="fs-button" href="/oversikt">Gå til oversikten</a>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

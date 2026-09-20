@@ -2,8 +2,15 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./label.css"
+import "../input/input.css"
 
 function css(id: string, pseudo?: string) {
   const element = document.getElementById(id)
@@ -51,5 +58,26 @@ describe("fs-label", () => {
   it("optional: ::after has muted color", () => {
     const after = css("optional", "::after")
     expect(after.color).toBe("rgb(117, 117, 117)")
+  })
+})
+
+describe("fs-label tilgjengelighet", () => {
+  it("kobler ledetekst til felt i alle markeringer", async () => {
+    monter(`
+      <label class="fs-label" for="a11y-navn">Fullt navn</label>
+      <input class="fs-input" id="a11y-navn" type="text" />
+
+      <label class="fs-label" data-required="symbol" for="a11y-epost">E-postadresse</label>
+      <input class="fs-input" id="a11y-epost" type="email" required />
+
+      <label class="fs-label" data-required="text" for="a11y-tlf">Telefonnummer</label>
+      <input class="fs-input" id="a11y-tlf" type="tel" required />
+
+      <label class="fs-label" data-optional="" for="a11y-adresse">Adresse</label>
+      <input class="fs-input" id="a11y-adresse" type="text" />
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

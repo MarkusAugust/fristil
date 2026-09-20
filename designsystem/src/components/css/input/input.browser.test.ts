@@ -2,8 +2,15 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+
 import "../../../tokens/tokens.css"
 import "./input.css"
+import "../label/label.css"
 
 function css(id: string) {
   const element = document.getElementById(id)
@@ -75,5 +82,26 @@ describe("fs-input", () => {
     expect(input.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(input.color).toBe("rgb(117, 117, 117)")
     expect(input.pointerEvents).toBe("none")
+  })
+})
+
+describe("fs-input tilgjengelighet", () => {
+  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+    monter(`
+      <label class="fs-label" for="a11y-standard">E-postadresse</label>
+      <input class="fs-input" id="a11y-standard" type="email" />
+
+      <label class="fs-label" for="a11y-gyldig">Bekreft e-postadresse</label>
+      <input class="fs-input" id="a11y-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
+
+      <label class="fs-label" for="a11y-ugyldig">Reserve-e-post</label>
+      <input class="fs-input" id="a11y-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
+
+      <label class="fs-label" for="a11y-dato">Reisedato</label>
+      <input class="fs-input" id="a11y-dato" type="date" data-variant="date" value="2026-05-31" />
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })

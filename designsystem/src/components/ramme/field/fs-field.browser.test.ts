@@ -1,8 +1,14 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
 import { defineFsField } from "./fs-field"
+import "../../../tokens/tokens.css"
+import "./field.css"
 
 describe("fs-field", () => {
   beforeAll(() => {
@@ -101,5 +107,39 @@ describe("fs-field", () => {
 
     const label2 = document.getElementById("label-2") as HTMLLabelElement
     expect(label2.hasAttribute("data-optional")).toBe(true)
+  })
+})
+
+describe("fs-field tilgjengelighet", () => {
+  it("gir ingen brudd for et felt med hjelpetekst og feilmelding", async () => {
+    monter(`
+      <fs-field required-marker="symbol" invalid>
+        <label>E-postadresse</label>
+        <input class="fs-input" type="email" value="ola@" required />
+        <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
+        <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
+      </fs-field>
+
+      <fs-field optional>
+        <label>Melding til saksbehandler</label>
+        <textarea class="fs-textarea" rows="3"></textarea>
+        <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
+  })
+
+  it("gir ingen brudd for et felt uten hjelpetekst", async () => {
+    monter(`
+      <fs-field>
+        <label>Fullt navn</label>
+        <input class="fs-input" type="text" />
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
   })
 })
