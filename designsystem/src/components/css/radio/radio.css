@@ -63,4 +63,14 @@
     gap: var(--size-2);
     line-height: 1.5;
   }
+
+  /* Høykontrast: prikken er en gradient, og gradienter fjernes i modusen.
+     Nettleserens egen radioknapp tegnes riktig i alle temaer. */
+  @media (forced-colors: active) {
+    .fs-radio,
+    .fs-radio:checked {
+      appearance: auto;
+      background-image: none;
+    }
+  }
 }

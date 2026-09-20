@@ -66,4 +66,12 @@
     min-inline-size: var(--fs-pagination-size, var(--size-10));
     color: var(--semantic-muted-foreground);
   }
+
+  /* Høykontrast: gjeldende side skilles bare med farge. */
+  @media (forced-colors: active) {
+    .fs-pagination [aria-current="page"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
 }

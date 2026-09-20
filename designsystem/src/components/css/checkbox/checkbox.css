@@ -75,4 +75,22 @@
     gap: var(--size-2);
     line-height: 1.5;
   }
+
+  /*
+   * Høykontrast: la nettleseren tegne boksen selv.
+   *
+   * Målt i modusen: gradienter og box-shadow fjernes, egne farger overstyres,
+   * og bare systemfarger, rammer, masker og data-URL-bilder overlever. Haken
+   * vår er hvit og malt inn i bildet, så den ville blitt usynlig mot den
+   * påtvungne flaten. Nettleserens egen avkryssingsboks er riktig i alle
+   * temaer brukeren kan velge, og koster oss ingenting å falle tilbake på.
+   */
+  @media (forced-colors: active) {
+    .fs-checkbox,
+    .fs-checkbox:checked,
+    .fs-checkbox:indeterminate {
+      appearance: auto;
+      background-image: none;
+    }
+  }
 }

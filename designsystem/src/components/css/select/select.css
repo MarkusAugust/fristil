@@ -82,4 +82,14 @@
   .fs-select[data-state="success"]:focus-visible {
     outline-color: var(--semantic-success-foreground);
   }
+
+  /* Høykontrast: pilen er to gradienter, og de fjernes i modusen. Da er
+     nettleserens egen pil bedre enn ingen. */
+  @media (forced-colors: active) {
+    .fs-select {
+      appearance: auto;
+      background-image: none;
+      padding-inline-end: var(--size-3);
+    }
+  }
 }

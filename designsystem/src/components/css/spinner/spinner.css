@@ -36,4 +36,13 @@
       animation-duration: 2400ms;
     }
   }
+
+  /* Høykontrast: alle fire kantene tvinges til samme farge, og ringen blir en
+     jevn sirkel. Den snurrer fortsatt, men `Highlight` gir tilbake punktet
+     som viser at det skjer noe. */
+  @media (forced-colors: active) {
+    .fs-spinner {
+      border-block-start-color: Highlight;
+    }
+  }
 }

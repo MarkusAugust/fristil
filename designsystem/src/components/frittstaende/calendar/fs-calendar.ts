@@ -264,6 +264,22 @@ export class FsCalendar extends LitElement {
       border-color: var(--semantic-interactive-main);
     }
 
+    /*
+     * Høykontrast: egne farger overstyres i modusen, så valgt dag og de andre
+     * blir like. Systemfargene slipper gjennom, og Highlight med
+     * HighlightText er paret operativsystemet bruker til noe som er valgt.
+     *
+     * Merk: ingen backtick-tegn i kommentarer her. De lukker malen, og resten
+     * av fila blir lest som JavaScript.
+     */
+    @media (forced-colors: active) {
+      .day[data-selected="true"] {
+        background: Highlight;
+        color: HighlightText;
+        border-color: Highlight;
+      }
+    }
+
     :host([disabled]) .trigger {
       background: var(--semantic-disabled-background);
       color: var(--semantic-disabled-foreground);
