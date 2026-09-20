@@ -2,9 +2,9 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview maxWidth="30rem">
+<Preview id="demo-calendar" maxWidth="30rem">
 	<fs-calendar id="demo-kalender" value="2026-05-31"></fs-calendar>
-	<p style="margin: 0;">
+	<p>
 		Valgt dato: <output id="demo-kalender-resultat" style="font-weight: 600;">2026-05-31</output>
 	</p>
 </Preview>
@@ -14,8 +14,10 @@ import Preview from "./Preview.astro"
 
 	defineFsCalendar()
 
-	const kalender = document.getElementById("demo-kalender")
-	const resultat = document.getElementById("demo-kalender-resultat")
+	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	const flate = document.getElementById("demo-calendar")?.shadowRoot
+	const kalender = flate?.getElementById("demo-kalender")
+	const resultat = flate?.getElementById("demo-kalender-resultat")
 
 	kalender?.addEventListener("date-select", (hendelse) => {
 		const valg = hendelse as CustomEvent<{ value: string }>

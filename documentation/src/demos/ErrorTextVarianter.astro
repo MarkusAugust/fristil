@@ -1,0 +1,12 @@
+---
+import Preview from "../components/Preview.astro"
+---
+
+<Preview stiler={["error-text"]} layout="stabel" maxWidth="30rem">
+	<p class="fs-error-text">
+		Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
+	</p>
+	<p class="fs-error-text" data-variant="warning">
+		Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.
+	</p>
+</Preview>

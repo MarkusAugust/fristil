@@ -2,7 +2,7 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview layout="stabel" maxWidth="34rem">
+<Preview id="demo-field" stiler={["field"]} layout="stabel" maxWidth="34rem">
 	<fs-field id="demo-epost-felt" required-marker="text">
 		<label>E-postadresse</label>
 		<input
@@ -27,8 +27,11 @@ import Preview from "./Preview.astro"
 
 	defineFsField()
 
-	const felt = document.getElementById("demo-epost-felt")
-	const input = document.getElementById("demo-epost-input") as HTMLInputElement | null
+	// Forhåndsvisningen ligger i en shadow root, så document.getElementById
+	// når ikke inn. Vi går via vertselementet.
+	const flate = document.getElementById("demo-field")?.shadowRoot
+	const felt = flate?.getElementById("demo-epost-felt")
+	const input = flate?.getElementById("demo-epost-input") as HTMLInputElement | null
 
 	if (felt && input) {
 		const erGyldig = () =>

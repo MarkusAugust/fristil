@@ -99,7 +99,7 @@
 	}
 
 	.sidebar-content a[aria-current="page"] {
-		@apply rounded-md bg-sky-500 text-white shadow-[0_10px_24px_-16px_rgba(2,132,199,0.8)] ring-1 ring-sky-400/40 dark:bg-sky-400 dark:text-zinc-950 dark:ring-sky-300/30;
+		@apply rounded-md bg-sky-700 text-white shadow-[0_10px_24px_-16px_rgba(2,132,199,0.8)] ring-1 ring-sky-600/40 dark:bg-sky-400 dark:text-zinc-950 dark:ring-sky-300/30;
 	}
 
 	.sidebar-content a:hover,
@@ -131,7 +131,11 @@
 		@apply rounded-2xl border border-zinc-200/80 bg-white/88 px-4 py-5 shadow-[0_18px_48px_-34px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:shadow-[0_22px_62px_-40px_rgba(2,6,23,0.85)];
 	}
 
-	.sl-markdown-content :is(h1, h2, h3) {
+	/* Innhold merket .not-content — som forhåndsvisningene av komponenter —
+	   skal ikke arve dokumentasjonens typografi. En regel som treffer <p>
+	   direkte slår den arvede fargen fra forhåndsvisningen, uansett
+	   spesifisitet. */
+	.sl-markdown-content :is(h1, h2, h3):not(.not-content, .not-content *) {
 		@apply tracking-tight text-zinc-950 dark:text-zinc-50;
 	}
 
@@ -147,8 +151,8 @@
 		@apply mt-10 text-xl font-bold;
 	}
 
-	.sl-markdown-content p,
-	.sl-markdown-content li {
+	.sl-markdown-content p:not(.not-content, .not-content *),
+	.sl-markdown-content li:not(.not-content, .not-content *) {
 		@apply text-[1.02rem] leading-8 text-zinc-700 dark:text-zinc-300;
 	}
 
@@ -156,51 +160,43 @@
 		@apply mt-6;
 	}
 
-	.sl-markdown-content ul,
-	.sl-markdown-content ol {
+	.sl-markdown-content ul:not(.not-content, .not-content *),
+	.sl-markdown-content ol:not(.not-content, .not-content *) {
 		@apply pl-6;
 	}
 
-	.sl-markdown-content li + li {
+	.sl-markdown-content li:not(.not-content, .not-content *) + li {
 		@apply mt-2;
 	}
 
-	.sl-markdown-content code:not(pre code) {
+	.sl-markdown-content code:not(pre code):not(.not-content, .not-content *) {
 		@apply rounded-md border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-[0.9em] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100;
 	}
 
 	.expressive-code .frame,
-	.sl-markdown-content table,
+	.sl-markdown-content table:not(.not-content, .not-content *),
 	.sl-tabs,
 	.starlight-aside {
 		@apply overflow-hidden rounded-2xl border border-zinc-200/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
 	}
 
-	.sl-markdown-content table {
+	.sl-markdown-content table:not(.not-content, .not-content *) {
 		@apply bg-white/70 dark:bg-zinc-900/50;
 	}
 
-	.sl-markdown-content table :is(th, td) {
+	.sl-markdown-content table:not(.not-content, .not-content *) :is(th, td) {
 		@apply px-4 py-3 align-top;
 	}
 
-	.sl-markdown-content table th {
+	.sl-markdown-content table:not(.not-content, .not-content *) th {
 		@apply border-b border-zinc-200/80 text-sm font-semibold text-zinc-900 dark:border-zinc-700/80 dark:text-zinc-100;
 	}
 
-	.sl-markdown-content table td {
+	.sl-markdown-content table:not(.not-content, .not-content *) td {
 		@apply border-t border-zinc-200/60 text-zinc-700 dark:border-zinc-700/60 dark:text-zinc-300;
 	}
 
 	.pagination-links a {
 		@apply rounded-2xl border border-zinc-200/80 bg-white/88 px-5 py-4 transition-colors hover:border-sky-300 hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:hover:border-sky-500 dark:hover:bg-zinc-900;
-	}
-
-	.date-field-demo {
-		@apply grid max-w-136 gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-6 shadow-[0_18px_44px_-30px_rgba(15,23,42,0.18)] dark:border-zinc-800 dark:bg-zinc-950/80;
-	}
-
-	.calendar-demo {
-		@apply inline-block rounded-2xl border border-zinc-200 bg-zinc-50 p-6 shadow-[0_18px_44px_-30px_rgba(15,23,42,0.18)] dark:border-zinc-800 dark:bg-zinc-950/80;
 	}
 }

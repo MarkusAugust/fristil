@@ -21,11 +21,11 @@ import "@fristil/designsystem/help-text.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="30rem">
-      <p class="fs-help-text" style="margin: 0;">Du finner nummeret øverst til høyre på fakturaen.</p>
-      <p class="fs-help-text" data-variant="default" style="margin: 0;">Endringen gjelder fra neste månedsskifte.</p>
-      <p class="fs-help-text" data-variant="success" style="margin: 0;">Vedlegget er lastet opp.</p>
-      <p class="fs-help-text" data-variant="warning" style="margin: 0;">Søknadsfristen går ut om tre dager.</p>
+    <Preview stiler={["help-text"]} layout="stabel" maxWidth="30rem">
+      <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
+      <p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
+      <p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
+      <p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
     </Preview>
   </TabItem>
   <TabItem label="Kode">
@@ -51,10 +51,10 @@ Hjelpeteksten må knyttes til feltet med `aria-describedby`, ellers leses den ik
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="30rem">
+    <Preview stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem">
       <label class="fs-label" for="demo-kid">KID-nummer</label>
       <input class="fs-input" id="demo-kid" inputmode="numeric" placeholder="0000 0000 0000 000" />
-      <p class="fs-help-text" style="margin: 0;">Du finner nummeret øverst til høyre på fakturaen.</p>
+      <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
     </Preview>
   </TabItem>
   <TabItem label="Kode">

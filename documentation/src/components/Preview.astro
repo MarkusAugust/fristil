@@ -1,24 +1,75 @@
 ---
+import badge from "@fristil/designsystem/badge.css?inline"
+import button from "@fristil/designsystem/button.css?inline"
+import dateField from "@fristil/designsystem/date-field.css?inline"
+import errorText from "@fristil/designsystem/error-text.css?inline"
+import field from "@fristil/designsystem/field.css?inline"
+import helpText from "@fristil/designsystem/help-text.css?inline"
+import input from "@fristil/designsystem/input.css?inline"
+import label from "@fristil/designsystem/label.css?inline"
+import link from "@fristil/designsystem/link.css?inline"
+import select from "@fristil/designsystem/select.css?inline"
+import textarea from "@fristil/designsystem/textarea.css?inline"
+
+const STILARK = {
+  badge,
+  button,
+  "date-field": dateField,
+  "error-text": errorText,
+  field,
+  "help-text": helpText,
+  input,
+  label,
+  link,
+  select,
+  textarea,
+} as const
+
+export type Stilark = keyof typeof STILARK
+
 interface Props {
+  /** Stilarkene eksempelet trenger — de samme du ville importert i en app. */
+  stiler?: Stilark[]
   /** `rad` legger innholdet side om side, `stabel` under hverandre. */
   layout?: "rad" | "stabel"
   /** Valgfri maksbredde, for eksempel "34rem". */
   maxWidth?: string
+  /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
+  id?: string
 }
 
-const { layout = "rad", maxWidth } = Astro.props
----
+const { stiler = [], layout = "rad", maxWidth, id } = Astro.props
 
-<div
-	class="fs-preview not-content"
-	data-layout={layout}
-	style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
->
-	<slot />
-</div>
+for (const navn of stiler) {
+  if (!(navn in STILARK)) {
+    throw new Error(
+      `Preview: ukjent stilark «${navn}». Gyldige: ${Object.keys(STILARK).join(", ")}`,
+    )
+  }
+}
 
-<style>
-	.fs-preview {
+/*
+ * Forhåndsvisningen ligger i en shadow root, opprettet deklarativt av
+ * nettleseren. Det er ikke pynt:
+ *
+ * Uten den treffer dokumentasjonssidens CSS elementene i eksempelet. En regel
+ * som treffer <p> direkte slår den arvede tekstfargen fra flaten, uansett
+ * spesifisitet, og teksten ble lysegrå på hvit bakgrunn i mørkt tema. Å
+ * gardere seg element for element er en kamp som må kjempes på nytt hver gang
+ * noen legger til en regel.
+ *
+ * Isolasjonen gjør også eksempelet ærlig: det viser nøyaktig det en konsument
+ * får med stilarkene under, og ingenting dokumentasjonssiden tilfeldigvis
+ * gjør. CSS-variablene fra :root arves inn gjennom skyggegrensen, så tokens
+ * trenger ikke gjentas her.
+ */
+const stilark = [
+  `
+	:host {
+		display: block;
+	}
+
+	.flate {
 		display: flex;
 		gap: var(--size-3);
 		padding: var(--size-6);
@@ -27,15 +78,43 @@ const { layout = "rad", maxWidth } = Astro.props
 		color: var(--semantic-page-foreground);
 		border: 1px solid var(--semantic-divider-30);
 		border-radius: var(--size-1);
+		font-family: inherit;
+		font-size: var(--font-size-m);
+		line-height: 1.6;
 	}
 
-	.fs-preview[data-layout="rad"] {
+	.flate[data-layout="rad"] {
 		flex-wrap: wrap;
 		align-items: center;
 	}
 
-	.fs-preview[data-layout="stabel"] {
+	.flate[data-layout="stabel"] {
 		flex-direction: column;
 		align-items: stretch;
 	}
-</style>
+
+	/* Nettleserens egne marger på avsnitt og lister, ikke dokumentasjonens. */
+	p, ul, ol {
+		margin: 0;
+	}
+
+	ul, ol {
+		padding-inline-start: var(--size-5);
+	}
+	`,
+  ...stiler.map((navn) => STILARK[navn]),
+].join("\n")
+---
+
+<div class="fs-preview not-content" id={id}>
+	<template shadowrootmode="open">
+		<style set:html={stilark}></style>
+		<div
+			class="flate"
+			data-layout={layout}
+			style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
+		>
+			<slot />
+		</div>
+	</template>
+</div>

@@ -4,7 +4,8 @@ description: Feilmelding under et skjemafelt. CSS-komponent — én klasse, inge
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import ErrorTextKoblet from "../../../demos/ErrorTextKoblet.astro"
+import ErrorTextVarianter from "../../../demos/ErrorTextVarianter.astro"
 
 `fs-error-text` er meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører hjemme rett under feltet, ikke øverst på siden, slik at brukeren ser den samtidig som han ser hva som er feil.
 
@@ -21,10 +22,7 @@ import "@fristil/designsystem/error-text.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="30rem">
-      <p class="fs-error-text" style="margin: 0;">Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.</p>
-      <p class="fs-error-text" data-variant="warning" style="margin: 0;">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
-    </Preview>
+    <ErrorTextVarianter />
   </TabItem>
   <TabItem label="Kode">
     ```html
@@ -49,11 +47,7 @@ Feilmeldingen må knyttes til feltet med `aria-describedby`, og feltet må merke
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="30rem">
-      <label class="fs-label" for="demo-feil-epost">E-postadresse</label>
-      <input class="fs-input" id="demo-feil-epost" type="email" data-state="invalid" value="ola@" />
-      <p class="fs-error-text" style="margin: 0;">Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.</p>
-    </Preview>
+    <ErrorTextKoblet />
   </TabItem>
   <TabItem label="Kode">
     ```html
