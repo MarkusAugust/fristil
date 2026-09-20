@@ -60,7 +60,8 @@ describe("fs-select", () => {
     expect(select.backgroundColor).toBe("rgb(229, 229, 229)")
     expect(select.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(select.color).toBe("rgb(117, 117, 117)")
-    expect(select.pointerEvents).toBe("none")
+    // Markøren vises bare hvis elementet treffes av pekeren
+    expect(select.pointerEvents).toBe("auto")
   })
 })
 
@@ -92,5 +93,25 @@ describe("fs-select uten CSS-reset", () => {
     )
 
     expect(finnOverflyt(boks)).toEqual([])
+  })
+})
+
+describe("fs-select deaktivert", () => {
+  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
+    monter(`<select class="fs-select" disabled><option>Av</option></select>`)
+
+    const element = document.querySelector("select") as HTMLElement
+    const ramme = element.getBoundingClientRect()
+
+    expect(getComputedStyle(element).cursor).toBe("not-allowed")
+
+    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
+    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    expect(
+      document.elementFromPoint(
+        ramme.x + ramme.width / 2,
+        ramme.y + ramme.height / 2,
+      ),
+    ).toBe(element)
   })
 })

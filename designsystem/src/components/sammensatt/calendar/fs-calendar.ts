@@ -252,8 +252,9 @@ export class FsCalendar extends LitElement {
       background: var(--semantic-disabled-background);
       color: var(--semantic-disabled-foreground);
       border-color: var(--semantic-disabled-background);
+      /* Knappen er en ekte <button disabled>; pointer-events: none ville
+         bare hindret markøren i å vises. */
       cursor: not-allowed;
-      pointer-events: none;
     }
 
     :host([trigger-hidden]) .trigger {
