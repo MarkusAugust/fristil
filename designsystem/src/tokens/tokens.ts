@@ -164,6 +164,15 @@ export const cssTokens = {
   // Semantic — skillelinjer
   "--semantic-divider-30": "var(--palette-graphite-30)",
   "--semantic-divider-100": "var(--palette-graphite-100)",
+
+  /**
+   * Skyggen under flater som ligger over siden, som kalenderpanelet.
+   *
+   * Hører til det semantiske laget fordi den må snu med temaet: en svak
+   * sort skygge er usynlig mot en nesten sort flate, og panelet mistet
+   * dybden si i mørkt tema.
+   */
+  "--semantic-shadow-overlay": "0 16px 40px rgba(0, 0, 0, 0.12)",
 } as const
 
 export type CssToken = keyof typeof cssTokens
@@ -220,6 +229,9 @@ export const darkTokens = {
   // Skillelinjer
   "--semantic-divider-30": "var(--palette-graphite-70)",
   "--semantic-divider-100": "var(--palette-graphite-30)",
+
+  // Skygge — kraftigere, siden flaten under er nesten sort
+  "--semantic-shadow-overlay": "0 16px 40px rgba(0, 0, 0, 0.6)",
 } as const satisfies Partial<Record<CssToken, string>>
 
 export type DarkToken = keyof typeof darkTokens
