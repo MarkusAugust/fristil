@@ -12,7 +12,8 @@
     "typecheck:tests": "bun --filter @fristil/designsystem typecheck:tests",
     "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:tailwind",
     "test:docs": "bun --filter @fristil/documentation test:docs",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "sjekk": "bun --filter @fristil/designsystem nettlesere && bun run lint && bun run typecheck && bun run typecheck:tests && bun run test && bun run build && bun run test:docs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
