@@ -1,3 +1,5 @@
+import { attributter, lagVakt } from "../shared.js"
+
 export const ERROR_TEXT_CLASS = "fs-error-text" as const
 
 export const errorTextVariants = ["error", "warning"] as const
@@ -5,25 +7,31 @@ export const errorTextVariants = ["error", "warning"] as const
 export type ErrorTextVariant = (typeof errorTextVariants)[number]
 export type NonDefaultErrorTextVariant = Exclude<ErrorTextVariant, "error">
 
-export type ErrorTextStyleAttributes = {
+export type ErrorTextOptions = {
+  /** Om feilen stopper innsending eller bare advarer. Standard: `error`. */
+  variant?: ErrorTextVariant
+}
+
+export type ErrorTextAttributes = {
   class: typeof ERROR_TEXT_CLASS
   "data-variant"?: NonDefaultErrorTextVariant
 }
 
-export function isErrorTextVariant(value: string): value is ErrorTextVariant {
-  return (errorTextVariants as readonly string[]).includes(value)
-}
-
 /**
- * Returns only the Fristil error-text style attributes.
- * Other HTML attributes (id, aria-*, etc.) are owned by the app.
+ * Attributtene for en feilmelding under et felt.
+ *
+ * ```ts
+ * <p {...errorText({ variant: "warning" })}>…</p>
+ * ```
  */
-export function getErrorTextStyleAttributes(
-  variant: ErrorTextVariant = "error",
-): ErrorTextStyleAttributes {
-  if (variant === "error") {
-    return { class: ERROR_TEXT_CLASS }
-  }
-
-  return { class: ERROR_TEXT_CLASS, "data-variant": variant }
-}
+export const errorText = Object.assign(
+  ({ variant = "error" }: ErrorTextOptions = {}): ErrorTextAttributes =>
+    attributter({
+      class: ERROR_TEXT_CLASS,
+      "data-variant": variant === "error" ? undefined : variant,
+    }),
+  {
+    variants: errorTextVariants,
+    isVariant: lagVakt(errorTextVariants),
+  },
+)

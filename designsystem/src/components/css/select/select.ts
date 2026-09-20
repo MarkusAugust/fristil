@@ -1,29 +1,40 @@
+import {
+  attributter,
+  type FieldState,
+  fieldStates,
+  isFieldState,
+  type NonDefaultFieldState,
+} from "../shared.js"
+
 export const SELECT_CLASS = "fs-select" as const
 
-export const selectStates = ["default", "invalid", "success"] as const
-
-export type SelectState = (typeof selectStates)[number]
-export type NonDefaultSelectState = Exclude<SelectState, "default">
-
-export type SelectStyleAttributes = {
-  class: typeof SELECT_CLASS
-  "data-state"?: NonDefaultSelectState
+export type SelectOptions = {
+  /** Valideringstilstand. Standard: `default`. */
+  state?: FieldState
 }
 
-export function isSelectState(value: string): value is SelectState {
-  return (selectStates as readonly string[]).includes(value)
+export type SelectAttributes = {
+  class: typeof SELECT_CLASS
+  "data-state"?: NonDefaultFieldState
+  "aria-invalid"?: "true"
 }
 
 /**
- * Returns only the Fristil select style attributes.
- * Other HTML attributes (id, multiple, aria-*, disabled, etc.) are owned by the app.
+ * Attributtene for en nedtrekksliste.
+ *
+ * ```ts
+ * <select {...select({ state: "invalid" })} />
+ * ```
  */
-export function getSelectStyleAttributes(
-  state: SelectState = "default",
-): SelectStyleAttributes {
-  if (state === "default") {
-    return { class: SELECT_CLASS }
-  }
-
-  return { class: SELECT_CLASS, "data-state": state }
-}
+export const select = Object.assign(
+  ({ state = "default" }: SelectOptions = {}): SelectAttributes =>
+    attributter({
+      class: SELECT_CLASS,
+      "data-state": state === "default" ? undefined : state,
+      "aria-invalid": state === "invalid" ? ("true" as const) : undefined,
+    }),
+  {
+    states: fieldStates,
+    isState: isFieldState,
+  },
+)

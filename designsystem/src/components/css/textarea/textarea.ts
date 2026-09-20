@@ -1,29 +1,40 @@
+import {
+  attributter,
+  type FieldState,
+  fieldStates,
+  isFieldState,
+  type NonDefaultFieldState,
+} from "../shared.js"
+
 export const TEXTAREA_CLASS = "fs-textarea" as const
 
-export const textareaStates = ["default", "invalid", "success"] as const
-
-export type TextareaState = (typeof textareaStates)[number]
-export type NonDefaultTextareaState = Exclude<TextareaState, "default">
-
-export type TextareaStyleAttributes = {
-  class: typeof TEXTAREA_CLASS
-  "data-state"?: NonDefaultTextareaState
+export type TextareaOptions = {
+  /** Valideringstilstand. Standard: `default`. */
+  state?: FieldState
 }
 
-export function isTextareaState(value: string): value is TextareaState {
-  return (textareaStates as readonly string[]).includes(value)
+export type TextareaAttributes = {
+  class: typeof TEXTAREA_CLASS
+  "data-state"?: NonDefaultFieldState
+  "aria-invalid"?: "true"
 }
 
 /**
- * Returns only the Fristil textarea style attributes.
- * Other HTML attributes (id, rows, aria-*, disabled, etc.) are owned by the app.
+ * Attributtene for et flerlinjet tekstfelt.
+ *
+ * ```ts
+ * <textarea {...textarea({ state: "invalid" })} />
+ * ```
  */
-export function getTextareaStyleAttributes(
-  state: TextareaState = "default",
-): TextareaStyleAttributes {
-  if (state === "default") {
-    return { class: TEXTAREA_CLASS }
-  }
-
-  return { class: TEXTAREA_CLASS, "data-state": state }
-}
+export const textarea = Object.assign(
+  ({ state = "default" }: TextareaOptions = {}): TextareaAttributes =>
+    attributter({
+      class: TEXTAREA_CLASS,
+      "data-state": state === "default" ? undefined : state,
+      "aria-invalid": state === "invalid" ? ("true" as const) : undefined,
+    }),
+  {
+    states: fieldStates,
+    isState: isFieldState,
+  },
+)
