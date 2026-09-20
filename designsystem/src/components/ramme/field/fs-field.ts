@@ -77,6 +77,11 @@ export class FsField extends LitElement {
         label.htmlFor = controlId
       }
 
+      // Markeringen under settes som data-required, og CSS-regelen for den
+      // er .fs-label[data-required]. Uten klassen treffer ingen regel, og
+      // ledeteksten blir stående ustilet med et attributt som ikke gjør noe.
+      label.classList.add("fs-label")
+
       if (this.requiredMarker === "symbol" || this.requiredMarker === "text") {
         label.setAttribute("data-required", this.requiredMarker)
         label.removeAttribute("data-optional")
