@@ -13,6 +13,8 @@ Tre ting gjelder uansett hvor du er:
 2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"` gjør feltet ugyldig. Skal attributtet bort, må det fjernes helt.
 3. **Les verdien fra elementet, ikke fra hendelsen.** `element.value` på `<fs-date-field>` er alltid ISO, uansett hva brukeren skrev.
 
+React har i tillegg sin egen inngang, `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for `class` og `for`. Uten den skriver React ut «Invalid DOM property» i konsollen for hvert element. De andre rammeverkene tar HTML-navnene som de er.
+
 ## Ren HTML
 
 Ingen byggverktøy, ingen pakkebehandler i nettleseren.
@@ -69,6 +71,14 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
     defineFsField()
     defineFsDateField()
+    ```
+
+    Bruker du CSS-komponentene, importer `fs` fra React-inngangen:
+
+    ```tsx
+    import { fs } from "@fristil/designsystem/react"
+
+    <button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
     ```
 
     Importerer du dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
@@ -267,3 +277,4 @@ Dette er den delen av systemet som overlever lengst. Klassen og dataattributtet 
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 | Vue advarer om ukjent komponent | `isCustomElement` mangler i Vite-konfigurasjonen |
 | Stilene mangler | `tokens.css` er ikke importert, eller importeres etter komponentens eget stilark |
+| React: «Invalid DOM property `class`» | Importer `fs` fra `@fristil/designsystem/react` |
