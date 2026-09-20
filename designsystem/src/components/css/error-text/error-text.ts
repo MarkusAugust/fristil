@@ -1,4 +1,4 @@
-import { attributter, lagVakt } from "../shared.js"
+import { attributes, createGuard } from "../shared.js"
 
 export const ERROR_TEXT_CLASS = "fs-error-text" as const
 
@@ -26,12 +26,12 @@ export type ErrorTextAttributes = {
  */
 export const errorText = Object.assign(
   ({ variant = "error" }: ErrorTextOptions = {}): ErrorTextAttributes =>
-    attributter({
+    attributes({
       class: ERROR_TEXT_CLASS,
       "data-variant": variant === "error" ? undefined : variant,
     }),
   {
     variants: errorTextVariants,
-    isVariant: lagVakt(errorTextVariants),
+    isVariant: createGuard(errorTextVariants),
   },
 )

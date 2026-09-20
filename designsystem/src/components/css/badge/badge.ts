@@ -1,4 +1,4 @@
-import { attributter, lagVakt } from "../shared.js"
+import { attributes, createGuard } from "../shared.js"
 
 export const BADGE_CLASS = "fs-badge" as const
 
@@ -32,12 +32,12 @@ export type BadgeAttributes = {
  */
 export const badge = Object.assign(
   ({ color = "info" }: BadgeOptions = {}): BadgeAttributes =>
-    attributter({
+    attributes({
       class: BADGE_CLASS,
       "data-color": color === "info" ? undefined : color,
     }),
   {
     colors: badgeColors,
-    isColor: lagVakt(badgeColors),
+    isColor: createGuard(badgeColors),
   },
 )

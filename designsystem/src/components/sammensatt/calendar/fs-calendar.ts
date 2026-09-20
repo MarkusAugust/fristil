@@ -11,17 +11,17 @@ type CalendarCell = {
 }
 
 /**
- * Deler dagene inn i uker på sju.
+ * Deler dagene inn i weeks på sju.
  *
  * role="grid" krever role="row" mellom seg og cellene sine. Uten radene
  * melder skjermlesere rutenettet som tomt, og cellene som løsrevne knapper.
  */
-function splitIWeker(celler: CalendarCell[]): CalendarCell[][] {
-  const uker: CalendarCell[][] = []
-  for (let i = 0; i < celler.length; i += 7) {
-    uker.push(celler.slice(i, i + 7))
+function splitInWeeks(cells: CalendarCell[]): CalendarCell[][] {
+  const weeks: CalendarCell[][] = []
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7))
   }
-  return uker
+  return weeks
 }
 
 const weekdayFormatter = new Intl.DateTimeFormat("nb-NO", {
@@ -327,7 +327,7 @@ export class FsCalendar extends LitElement {
         </div>
 
         <div class="day-grid" role="grid" aria-label=${monthFormatter.format(this.viewMonth)}>
-          ${splitIWeker(monthCells).map(
+          ${splitInWeeks(monthCells).map(
             (uke) => html`
               <div class="week" role="row">
                 ${uke.map(
@@ -374,7 +374,7 @@ export class FsCalendar extends LitElement {
     // Panelet skjules med [hidden]. Står fokus på en dag inne i det, mister
     // nettleseren fokus til <body>, og en tastaturbruker havner på toppen av
     // siden. Fokus skal derfor tilbake til knappen som åpnet panelet.
-    // Lukkes panelet fordi brukeren klikket eller tabbet ut, står fokus
+    // Lukkes panelet fordi brukeren klikket eller tabbet result, står fokus
     // allerede et annet sted, og da skal vi ikke rive det til oss.
     const fokusStoInniPanelet =
       (this.renderRoot as ShadowRoot).activeElement !== null

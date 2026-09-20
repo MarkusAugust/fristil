@@ -1,6 +1,6 @@
 import {
-  attributter,
-  lagVakt,
+  attributes,
+  createGuard,
   type RequiredMarker,
   requiredMarkers,
 } from "../shared.js"
@@ -30,7 +30,7 @@ export type LabelAttributes = {
  * Attributtene for en ledetekst.
  *
  * Markeringen er bare visuell — sett `required` på selve feltet i tillegg,
- * ellers får skjermleseren ikke vite at det må fylles ut.
+ * ellers får skjermleseren ikke vite at det må fylles result.
  *
  * ```ts
  * <label {...label({ required: "symbol" })} htmlFor="epost">E-postadresse</label>
@@ -38,7 +38,7 @@ export type LabelAttributes = {
  */
 export const label = Object.assign(
   ({ required, optional, disabled }: LabelOptions = {}): LabelAttributes =>
-    attributter({
+    attributes({
       class: LABEL_CLASS,
       "data-required": required,
       "data-optional": optional && !required ? ("" as const) : undefined,
@@ -46,6 +46,6 @@ export const label = Object.assign(
     }),
   {
     markers: requiredMarkers,
-    isMarker: lagVakt(requiredMarkers),
+    isMarker: createGuard(requiredMarkers),
   },
 )

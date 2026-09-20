@@ -1,4 +1,4 @@
-import { attributter, lagVakt } from "../shared.js"
+import { attributes, createGuard } from "../shared.js"
 
 export const HELP_TEXT_CLASS = "fs-help-text" as const
 
@@ -31,12 +31,12 @@ export type HelpTextAttributes = {
  */
 export const helpText = Object.assign(
   ({ variant = "muted" }: HelpTextOptions = {}): HelpTextAttributes =>
-    attributter({
+    attributes({
       class: HELP_TEXT_CLASS,
       "data-variant": variant === "muted" ? undefined : variant,
     }),
   {
     variants: helpTextVariants,
-    isVariant: lagVakt(helpTextVariants),
+    isVariant: createGuard(helpTextVariants),
   },
 )

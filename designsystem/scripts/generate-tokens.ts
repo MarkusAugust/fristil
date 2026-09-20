@@ -26,8 +26,8 @@ for (const [index, [section, props]] of Object.entries(sections).entries()) {
 }
 lines.push("}")
 
-const morke = Object.entries(darkTokens).map(
-  ([navn, verdi]) => `    ${navn}: ${verdi};`,
+const darkLines = Object.entries(darkTokens).map(
+  ([name, value]) => `    ${name}: ${value};`,
 )
 
 /*
@@ -42,12 +42,12 @@ lines.push(
   "",
   "@media (prefers-color-scheme: dark) {",
   '  :root:not([data-theme="light"]) {',
-  ...morke,
+  ...darkLines,
   "  }",
   "}",
   "",
   '[data-theme="dark"] {',
-  ...morke.map((l) => l.slice(2)),
+  ...darkLines.map((l) => l.slice(2)),
   "}",
 )
 
