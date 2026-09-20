@@ -10,5 +10,6 @@
     "src/**/*.browser.test.ts",
     "src/testing/**/*.ts",
     "src/types/**/*.d.ts"
-  ]
+  ],
+  "exclude": ["dist", "node_modules"]
 }
