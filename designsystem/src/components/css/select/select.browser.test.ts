@@ -2,6 +2,9 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import selectCss from "./select.css?inline"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -80,5 +83,16 @@ describe("fs-select tilgjengelighet", () => {
 
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-select uten CSS-reset", () => {
+  it("holder seg innenfor boksen sin", () => {
+    const { boks } = monterIsolert(
+      selectCss,
+      `<select class="fs-select"><option>Vestland</option></select>`,
+    )
+
+    expect(finnOverflyt(boks)).toEqual([])
   })
 })

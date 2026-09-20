@@ -93,14 +93,9 @@ const stilark = [
 		align-items: stretch;
 	}
 
-	/* Nettleserens egne marger på avsnitt og lister, ikke dokumentasjonens. */
-	p, ul, ol {
-		margin: 0;
-	}
-
-	ul, ol {
-		padding-inline-start: var(--size-5);
-	}
+	/* Bevisst ingen reset her. Flaten skal vise nøyaktig det en konsument får
+	   med stilarkene under og nettleserens egne standardverdier. Ser noe rart
+	   ut, er det komponenten som mangler noe — ikke forhåndsvisningen. */
 	`,
   ...stiler.map((navn) => STILARK[navn]),
 ].join("\n")

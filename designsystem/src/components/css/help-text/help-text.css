@@ -1,6 +1,8 @@
 .fs-help-text {
   display: block;
-  margin-top: var(--size-1);
+  /* Hele margin settes, ikke bare toppen: uten dette arver <p>
+     nettleserens 1em i bunn hos konsumenter uten reset. */
+  margin: var(--size-1) 0 0;
   font-family: inherit;
   font-size: var(--font-size-xs);
   line-height: 1.4;
