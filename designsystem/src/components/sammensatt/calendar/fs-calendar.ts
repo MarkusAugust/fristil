@@ -11,7 +11,7 @@ type CalendarCell = {
 }
 
 /**
- * Deler dagene inn i weeks på sju.
+ * Deler dagene inn i uker på sju.
  *
  * role="grid" krever role="row" mellom seg og cellene sine. Uten radene
  * melder skjermlesere rutenettet som tomt, og cellene som løsrevne knapper.
@@ -22,6 +22,22 @@ function splitInWeeks(cells: CalendarCell[]): CalendarCell[][] {
     weeks.push(cells.slice(i, i + 7))
   }
   return weeks
+}
+
+/**
+ * Delnavnene på én dagknapp.
+ *
+ * Tilstanden må være egne delnavn og ikke bare `data-*`. En attributtselektor
+ * etter `::part()` treffer ikke — `::part(day)[data-selected="true"]` er målt
+ * uten virkning — så uten `day-selected` ville en konsument ikke hatt noen vei
+ * til den valgte dagen utenfra.
+ */
+function dayParts(cell: CalendarCell): string {
+  const names = ["day"]
+  if (!cell.inMonth) names.push("day-outside")
+  if (cell.isToday) names.push("day-today")
+  if (cell.isSelected) names.push("day-selected")
+  return names.join(" ")
 }
 
 const weekdayFormatter = new Intl.DateTimeFormat("nb-NO", {
@@ -126,16 +142,16 @@ export class FsCalendar extends LitElement {
     .trigger {
       display: inline-grid;
       place-items: center;
-      min-width: var(--size-10);
-      min-height: var(--size-10);
-      padding: 0 var(--size-3);
+      min-width: var(--fs-calendar-trigger-size, var(--size-10));
+      min-height: var(--fs-calendar-trigger-size, var(--size-10));
+      padding: var(--fs-calendar-trigger-padding, 0 var(--size-3));
       font-family: inherit;
       font-size: var(--font-size-m);
       line-height: 1;
       color: var(--semantic-page-foreground);
       background: var(--semantic-page-background);
       border: 1px solid var(--semantic-field-border);
-      border-radius: var(--size-1);
+      border-radius: var(--fs-calendar-radius, var(--size-1));
       cursor: pointer;
     }
 
@@ -156,12 +172,12 @@ export class FsCalendar extends LitElement {
       inset-inline-start: 0;
       inset-block-start: calc(100% + var(--size-1));
       z-index: 30;
-      width: min(20rem, 92vw);
-      padding: var(--size-3);
+      width: var(--fs-calendar-popup-width, min(20rem, 92vw));
+      padding: var(--fs-calendar-popup-padding, var(--size-3));
       border: 1px solid var(--semantic-field-border);
-      border-radius: var(--size-1);
+      border-radius: var(--fs-calendar-radius, var(--size-1));
       background: var(--semantic-page-background);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--semantic-shadow-overlay);
     }
 
     .popup[hidden] {
@@ -193,12 +209,12 @@ export class FsCalendar extends LitElement {
       border: 1px solid var(--semantic-field-border);
       background: var(--semantic-page-background);
       color: var(--semantic-page-foreground);
-      border-radius: var(--size-1);
+      border-radius: var(--fs-calendar-radius, var(--size-1));
     }
 
     .month-button {
-      min-width: var(--size-8);
-      min-height: var(--size-8);
+      min-width: var(--fs-calendar-day-size, var(--size-8));
+      min-height: var(--fs-calendar-day-size, var(--size-8));
       cursor: pointer;
     }
 
@@ -226,7 +242,7 @@ export class FsCalendar extends LitElement {
     }
 
     .day {
-      min-height: var(--size-8);
+      min-height: var(--fs-calendar-day-size, var(--size-8));
       cursor: pointer;
       font-size: var(--font-size-xs);
     }
@@ -312,22 +328,22 @@ export class FsCalendar extends LitElement {
       </button>
 
       <div class="popup" part="popup" ?hidden=${!this.open} @keydown=${this.handlePopupKeydown}>
-        <div class="popup-header">
-          <div class="month-label" aria-live="polite">${monthFormatter.format(this.viewMonth)}</div>
-          <div class="month-controls">
-            <button class="month-button" type="button" aria-label="Forrige måned" @click=${this.goToPreviousMonth}>‹</button>
-            <button class="month-button" type="button" aria-label="Neste måned" @click=${this.goToNextMonth}>›</button>
+        <div class="popup-header" part="popup-header">
+          <div class="month-label" part="month-label" aria-live="polite">${monthFormatter.format(this.viewMonth)}</div>
+          <div class="month-controls" part="month-controls">
+            <button class="month-button" part="month-button" type="button" aria-label="Forrige måned" @click=${this.goToPreviousMonth}>‹</button>
+            <button class="month-button" part="month-button" type="button" aria-label="Neste måned" @click=${this.goToNextMonth}>›</button>
           </div>
         </div>
 
-        <div class="weekday-row" aria-hidden="true">
+        <div class="weekday-row" part="weekday-row" aria-hidden="true">
           ${[0, 1, 2, 3, 4, 5, 6].map(
             (index) =>
-              html`<div class="weekday">${weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + index)))}</div>`,
+              html`<div class="weekday" part="weekday">${weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + index)))}</div>`,
           )}
         </div>
 
-        <div class="day-grid" role="grid" aria-label=${monthFormatter.format(this.viewMonth)}>
+        <div class="day-grid" part="day-grid" role="grid" aria-label=${monthFormatter.format(this.viewMonth)}>
           ${splitInWeeks(monthCells).map(
             (uke) => html`
               <div class="week" role="row">
@@ -335,6 +351,7 @@ export class FsCalendar extends LitElement {
                   (cell) => html`
                     <button
                       class="day"
+                      part=${dayParts(cell)}
                       type="button"
                       role="gridcell"
                       data-date=${cell.iso}
