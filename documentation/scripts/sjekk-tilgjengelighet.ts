@@ -88,8 +88,33 @@ for (const url of sider) {
       (t) => document.documentElement.setAttribute("data-theme", t),
       tema,
     )
-    // Lit oppdaterer asynkront, og axe leser utregnet stil.
-    await side.waitForTimeout(150)
+
+    /*
+     * Vent til siden faktisk har tegnet ferdig i det nye temaet.
+     *
+     * Lit oppdaterer asynkront, og axe leser utregnet stil. Men den verste
+     * kilden til ustabilitet var CSS-overganger: sidemenyens lenker har
+     * `transition-colors`, så rett etter et temabytte målte axe en farge midt
+     * i overgangen. Overganger og animasjoner slås derfor av før målingen.
+     * En tilgjengelighetsport som feiler tilfeldig blir ignorert.
+     */
+    await side.addStyleTag({
+      content: `*, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+      }`,
+    })
+
+    await side.evaluate(async () => {
+      const komponenter = [...document.querySelectorAll("*")].filter(
+        (el): el is HTMLElement & { updateComplete: Promise<unknown> } =>
+          "updateComplete" in el,
+      )
+      await Promise.all(komponenter.map((el) => el.updateComplete))
+      await new Promise((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
+      )
+    })
     await side.addScriptTag({ content: axeKilde })
 
     const funn = await side.evaluate(async (regler) => {

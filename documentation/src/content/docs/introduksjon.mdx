@@ -69,6 +69,16 @@ Shadow DOM er et valg per komponent, ikke en egen kategori. `<fs-field>` og `<fs
 
 Regelen: skjemafelt i vanlig DOM, innkapslede widgets kan skjermes.
 
+Valget avgjør også om komponenten trenger en CSS-import:
+
+| Komponent | DOM | Stilark |
+| --- | --- | --- |
+| `<fs-field>` | vanlig | `field.css` |
+| `<fs-date-field>` | vanlig | `date-field.css` |
+| `<fs-calendar>` | Shadow | ingen |
+
+En Shadow DOM-komponent tar med stilene sine. En komponent i vanlig DOM gjør det ikke — barna er *dine* elementer med systemets klasser, og de klassene må lastes på siden. Det er derfor to `sammensatt`-komponenter oppfører seg ulikt her.
+
 ## Design tokens
 
 Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`, og fungerer i all CSS:
