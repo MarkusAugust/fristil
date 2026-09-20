@@ -1,0 +1,269 @@
+---
+title: Rammeverk
+description: Oppsett av Fristil i ren HTML, React, Vue, Svelte og Astro — samme komponenter, samme API.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+
+CSS-komponentene er klasser og krever ingenting av rammeverket. Det er web-komponentene som av og til trenger litt oppsett, og denne siden samler det.
+
+Tre ting gjelder uansett hvor du er:
+
+1. **`define`-funksjonen må kjøre én gang** når appen starter, før elementet brukes.
+2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"` gjør feltet ugyldig. Skal attributtet bort, må det fjernes helt.
+3. **Les verdien fra elementet, ikke fra hendelsen.** `element.value` på `<fs-date-field>` er alltid ISO, uansett hva brukeren skrev.
+
+## Ren HTML
+
+Ingen byggverktøy, ingen pakkebehandler i nettleseren.
+
+```html
+<!doctype html>
+<html lang="nb">
+  <head>
+    <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
+    <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/ramme/field/field.css" />
+  </head>
+  <body>
+    <form id="skjema">
+      <fs-field required-marker="symbol">
+        <label>Fullt navn</label>
+        <input class="fs-input" type="text" name="navn" required />
+        <p class="fs-error-text">Fyll inn navnet ditt.</p>
+      </fs-field>
+
+      <button class="fs-button" type="submit">Send</button>
+    </form>
+
+    <script type="module">
+      import { defineFsField } from "/node_modules/@fristil/designsystem/dist/components/ramme/field/fs-field.js"
+      defineFsField()
+
+      document.getElementById("skjema").addEventListener("submit", (hendelse) => {
+        hendelse.preventDefault()
+        console.log(Object.fromEntries(new FormData(hendelse.currentTarget)))
+      })
+    </script>
+  </body>
+</html>
+```
+
+`new FormData(...)` plukker opp feltet uten videre, fordi `<fs-field>` holder elementene i vanlig DOM.
+
+:::caution[TypeScript hører ikke hjemme i `<script type="module">`]
+En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. Skriver du `hendelse as CustomEvent<…>` der, får du `SyntaxError` og hele skriptet stopper. Type-syntaks krever et byggesteg.
+:::
+
+## React
+
+<Tabs>
+  <TabItem label="Oppsett">
+    ```tsx
+    // main.tsx
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/field.css"
+    import "@fristil/designsystem/date-field.css"
+
+    import { defineFsField } from "@fristil/designsystem/field"
+    import { defineFsDateField } from "@fristil/designsystem/date-field"
+
+    defineFsField()
+    defineFsDateField()
+    ```
+
+    Importerer du dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
+  </TabItem>
+  <TabItem label="TypeScript-typer">
+    React kjenner ikke `<fs-field>` fra før. Legg til en typedeklarasjon i prosjektet — for eksempel `src/fristil.d.ts`:
+
+    ```ts
+    import type { DetailedHTMLProps, HTMLAttributes } from "react"
+
+    type FristilElement<T> = DetailedHTMLProps<HTMLAttributes<T>, T> & {
+    	[attributt: string]: unknown
+    }
+
+    declare module "react" {
+    	namespace JSX {
+    		interface IntrinsicElements {
+    			"fs-field": FristilElement<HTMLElement>
+    			"fs-date-field": FristilElement<HTMLElement>
+    			"fs-calendar": FristilElement<HTMLElement>
+    		}
+    	}
+    }
+    ```
+
+    Uten denne fila klager TypeScript på at `fs-field` ikke finnes.
+  </TabItem>
+  <TabItem label="Bruk">
+    ```tsx
+    import { useState } from "react"
+
+    export function Kontaktskjema() {
+      const [navn, setNavn] = useState("")
+      const [berørt, setBerørt] = useState(false)
+
+      const ugyldig = berørt && navn.trim() === ""
+
+      return (
+        <form onSubmit={(e) => e.preventDefault()}>
+          <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+            <label>Fullt navn</label>
+            <input
+              className="fs-input"
+              type="text"
+              value={navn}
+              onChange={(e) => setNavn(e.target.value)}
+              onBlur={() => setBerørt(true)}
+            />
+            <p className="fs-error-text">Fyll inn navnet ditt.</p>
+          </fs-field>
+
+          <button className="fs-button" type="submit">Send</button>
+        </form>
+      )
+    }
+    ```
+
+    `invalid={ugyldig ? "" : undefined}` er mønsteret å huske. React fjerner attributtet når verdien er `undefined`, mens `false` i eldre React-versjoner ble til strengen `"false"` — som er et attributt som finnes, og dermed sant.
+  </TabItem>
+</Tabs>
+
+## Vue
+
+<Tabs>
+  <TabItem label="Oppsett">
+    Fortell Vue at `fs-`-elementer ikke er Vue-komponenter, ellers advarer kompilatoren om hver av dem:
+
+    ```ts
+    // vite.config.ts
+    import vue from "@vitejs/plugin-vue"
+    import { defineConfig } from "vite"
+
+    export default defineConfig({
+    	plugins: [
+    		vue({
+    			template: {
+    				compilerOptions: {
+    					isCustomElement: (tag) => tag.startsWith("fs-"),
+    				},
+    			},
+    		}),
+    	],
+    })
+    ```
+
+    ```ts
+    // main.ts
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/field.css"
+    import { defineFsField } from "@fristil/designsystem/field"
+
+    defineFsField()
+    ```
+  </TabItem>
+  <TabItem label="Bruk">
+    ```vue
+    <script setup lang="ts">
+    import { computed, ref } from "vue"
+
+    const navn = ref("")
+    const berørt = ref(false)
+    const ugyldig = computed(() => berørt.value && navn.value.trim() === "")
+    </script>
+
+    <template>
+      <form @submit.prevent>
+        <fs-field required-marker="symbol" :invalid="ugyldig || null">
+          <label>Fullt navn</label>
+          <input class="fs-input" type="text" v-model="navn" @blur="berørt = true" />
+          <p class="fs-error-text">Fyll inn navnet ditt.</p>
+        </fs-field>
+
+        <button class="fs-button" type="submit">Send</button>
+      </form>
+    </template>
+    ```
+
+    I Vue er det `null` som fjerner et attributt, der React bruker `undefined`.
+  </TabItem>
+</Tabs>
+
+## Svelte
+
+Svelte setter attributter direkte på DOM-elementer og trenger ingen egen konfigurasjon for egendefinerte elementer.
+
+```svelte
+<script lang="ts">
+  import "@fristil/designsystem/tokens.css"
+  import "@fristil/designsystem/field.css"
+  import { defineFsField } from "@fristil/designsystem/field"
+
+  defineFsField()
+
+  let navn = $state("")
+  let berørt = $state(false)
+
+  let ugyldig = $derived(berørt && navn.trim() === "")
+</script>
+
+<form onsubmit={(hendelse) => hendelse.preventDefault()}>
+  <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+    <label>Fullt navn</label>
+    <input class="fs-input" type="text" bind:value={navn} onblur={() => (berørt = true)} />
+    <p class="fs-error-text">Fyll inn navnet ditt.</p>
+  </fs-field>
+
+  <button class="fs-button" type="submit">Send</button>
+</form>
+```
+
+Kjører appen med serverrendering, må `defineFsField()` flyttes inn i en `onMount`, eller inn i en fil som bare lastes i nettleseren. `customElements` finnes ikke på serveren.
+
+## Astro
+
+Astro rendrer på serveren som standard, og `customElements` finnes bare i nettleseren. Registreringen hører derfor hjemme i en `<script>`-tagg, som Astro pakker og kjører på klienten:
+
+```astro
+---
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/field.css"
+---
+
+<fs-field required-marker="symbol">
+  <label>Fullt navn</label>
+  <input class="fs-input" type="text" name="navn" required />
+</fs-field>
+
+<script>
+  import { defineFsField } from "@fristil/designsystem/field"
+  defineFsField()
+</script>
+```
+
+HTML-en sendes som den er fra serveren, og komponenten tar over når skriptet er lastet. Bruker du Lit-integrasjonen i Astro i stedet, må komponentene settes inn med `client:only="lit"` — de skal ikke serverrendres.
+
+## Uten noe rammeverk i det hele tatt
+
+CSS-komponentene krever verken JavaScript eller byggesteg. Ett stilark, én klasse:
+
+```html
+<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
+<link rel="stylesheet" href="@fristil/designsystem/button.css" />
+
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+```
+
+Dette er den delen av systemet som overlever lengst. Klassen og dataattributtet er en kontrakt nettleseren forstår direkte, og den endres ikke fordi et rammeverk gjør det.
+
+## Kjente fallgruver
+
+| Symptom | Årsak |
+| --- | --- |
+| Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
+| `customElements is not defined` | Registreringen kjøres under serverrendering |
+| Feltet er alltid ugyldig | `invalid="false"` er satt — attributtet må fjernes, ikke settes til `false` |
+| `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
+| Vue advarer om ukjent komponent | `isCustomElement` mangler i Vite-konfigurasjonen |
+| Stilene mangler | `tokens.css` er ikke importert, eller importeres etter komponentens eget stilark |
