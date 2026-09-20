@@ -168,8 +168,14 @@ Punkt 6 betyr at feilmeldingen kan ligge i markupen hele tiden. Den er skjult ti
     defineFsField()
     ```
 
+    ```ts
+    // src/fristil.d.ts – gir <fs-field> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     // Kontaktskjema.tsx
+    import { fs } from "@fristil/designsystem/react"
     import { useState } from "react"
 
     export function Kontaktskjema() {
@@ -180,26 +186,37 @@ Punkt 6 betyr at feilmeldingen kan ligge i markupen hele tiden. Den er skjult ti
 
       return (
         <form onSubmit={(e) => e.preventDefault()}>
-          <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+          <fs-field required-marker="symbol" invalid={ugyldig || undefined}>
             <label>Fullt navn</label>
             <input
-              className="fs-input"
-              type="text"
+              {...fs.input({ type: "text" })}
               name="navn"
               value={navn}
               onChange={(e) => setNavn(e.target.value)}
               onBlur={() => setBerørt(true)}
             />
-            <p className="fs-error-text">Fyll inn navnet ditt.</p>
+            <p {...fs.errorText()}>Fyll inn navnet ditt.</p>
           </fs-field>
 
-          <button className="fs-button" type="submit">Send</button>
+          <button {...fs.button()} type="submit">Send</button>
         </form>
       )
     }
     ```
 
-    Legg merke til `invalid={ugyldig ? "" : undefined}` framfor `invalid={ugyldig}`. Boolske HTML-attributter er sanne så lenge de finnes, uansett verdi — `invalid="false"` ville altså gjort feltet ugyldig. Med `undefined` fjerner React attributtet helt.
+    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
+
+    | | React 18 (setter attributt) | React 19 (setter egenskap) |
+    | --- | --- | --- |
+    | `invalid=""` | virker | **aldri ugyldig** |
+    | `invalid={ugyldig}` | **alltid ugyldig** | virker |
+    | `invalid={ugyldig \|\| undefined}` | virker | virker |
+
+    React 18 stringifiserer `false` til attributtet `invalid="false"` — et attributt som finnes, og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+
+    Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
+    :::
   </TabItem>
   <TabItem label="Vue">
     ```ts
