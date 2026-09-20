@@ -19,6 +19,8 @@
     );
     background-repeat: no-repeat;
     background-size: var(--fs-switch-height, var(--size-6)) 100%;
+    /* background-position har ingen logisk variant, så begge retningene
+       skrives for hånd. Av er på starten, på er på slutten. */
     background-position: left center;
     cursor: pointer;
     transition:
@@ -35,6 +37,10 @@
     outline-offset: 2px;
   }
 
+  .fs-switch:dir(rtl) {
+    background-position: right center;
+  }
+
   .fs-switch:checked {
     background-color: var(--semantic-interactive-main);
     border-color: var(--semantic-interactive-main);
@@ -44,6 +50,10 @@
       var(--semantic-interactive-contrast) 0 34%,
       transparent 36%
     );
+  }
+
+  .fs-switch:checked:dir(rtl) {
+    background-position: left center;
   }
 
   .fs-switch:disabled {
@@ -70,5 +80,22 @@
     align-items: center;
     gap: var(--size-2);
     line-height: 1.5;
+  }
+
+  /*
+   * Høykontrast: knappen er en gradient, og forsvinner i modusen. Uten den er
+   * av og på helt like. Her faller vi tilbake til en vanlig avkryssingsboks.
+   * Bryteren mister formen sin, men `role="switch"` står fortsatt, så den
+   * leses opp som på og av, og tilstanden er synlig igjen.
+   */
+  @media (forced-colors: active) {
+    .fs-switch,
+    .fs-switch:checked {
+      appearance: auto;
+      inline-size: auto;
+      block-size: auto;
+      background-image: none;
+      border: 0;
+    }
   }
 }

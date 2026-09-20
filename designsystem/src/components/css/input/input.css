@@ -80,6 +80,14 @@
     background-size: 0.95rem 0.95rem;
   }
 
+  /* background-position har ingen logisk variant, så retningen må snus for
+     hånd. Alt annet her er logiske egenskaper, som snur av seg selv. */
+  .fs-input[data-variant="date"]:dir(rtl),
+  .fs-input[data-variant="time"]:dir(rtl),
+  .fs-input[data-variant="datetime-local"]:dir(rtl) {
+    background-position: left var(--size-2) center;
+  }
+
   .fs-input[data-variant="date"],
   .fs-input[data-variant="datetime-local"] {
     background-image: var(--semantic-icon-calendar);
@@ -93,7 +101,7 @@
   .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
   .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
     position: absolute;
-    right: var(--size-2);
+    inset-inline-end: var(--size-2);
     top: 50%;
     transform: translateY(-50%);
     opacity: 0;
@@ -102,5 +110,22 @@
     min-width: var(--size-6);
     min-height: var(--size-6);
     cursor: pointer;
+  }
+
+  /* Høykontrast: ikonet er malt inn i bildet med fast farge, og kan bli
+     usynlig i et mørkt tema. Nettleserens egen knapp er skjult bak vårt ikon,
+     og hentes fram igjen her. */
+  @media (forced-colors: active) {
+    .fs-input[data-variant="date"],
+    .fs-input[data-variant="time"],
+    .fs-input[data-variant="datetime-local"] {
+      background-image: none;
+    }
+
+    .fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
+    .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
+    .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
+      opacity: 1;
+    }
   }
 }

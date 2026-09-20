@@ -46,4 +46,13 @@
     color: var(--semantic-disabled-foreground);
     cursor: not-allowed;
   }
+
+  /* Høykontrast: den valgte lappen skilles bare med farge. Systemfargene
+     slipper gjennom der våre egne ikke gjør det. */
+  @media (forced-colors: active) {
+    .fs-tag[aria-pressed="true"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
 }

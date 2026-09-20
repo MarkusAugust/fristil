@@ -76,6 +76,7 @@ export default defineConfig({
             { label: "Design tokens", slug: "design-tokens" },
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
+            { label: "Tilgjengelighet", slug: "tilgjengelighet" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
           ],
         },

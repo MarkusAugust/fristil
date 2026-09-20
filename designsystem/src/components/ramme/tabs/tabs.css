@@ -55,4 +55,14 @@
     outline: 2px solid var(--semantic-interactive-main);
     outline-offset: 2px;
   }
+
+  /* Høykontrast: streken under den valgte fanen tvinges til samme farge som
+     de gjennomsiktige strekene under de andre. `Highlight` slipper gjennom,
+     og gir tilbake forskjellen. */
+  @media (forced-colors: active) {
+    .fs-tabs__list button[aria-selected="true"] {
+      border-block-end-color: Highlight;
+      color: Highlight;
+    }
+  }
 }

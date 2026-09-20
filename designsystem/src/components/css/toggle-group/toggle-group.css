@@ -66,4 +66,17 @@
     background: var(--semantic-disabled-background);
     cursor: not-allowed;
   }
+
+  /*
+   * Høykontrast: det valgte alternativet skilles bare med bakgrunnsfarge, og
+   * egne farger overstyres i modusen. Systemfargene slipper gjennom, og
+   * `Highlight` med `HighlightText` er nettopp paret operativsystemet bruker
+   * til å vise noe som er valgt.
+   */
+  @media (forced-colors: active) {
+    .fs-toggle-group__option:has(input:checked) {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
 }

@@ -36,4 +36,12 @@
       transition: opacity 120ms ease;
     }
   }
+
+  /* Høykontrast: boblen har ingen ramme, og flatene tvinges til samme farge
+     som siden. Uten en kant flyter teksten rett oppå innholdet under. */
+  @media (forced-colors: active) {
+    .fs-tooltip__bubble {
+      border: 1px solid CanvasText;
+    }
+  }
 }
