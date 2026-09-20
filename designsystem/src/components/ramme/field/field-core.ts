@@ -46,6 +46,7 @@ export type FieldAttributes = {
     id: string
     "aria-describedby"?: string
     "aria-invalid"?: "true"
+    "data-state"?: "invalid"
     disabled?: true
   }
   help: { id: string }
@@ -115,6 +116,10 @@ export function computeFieldAttributes(
         ...describedBy,
       ]),
       "aria-invalid": invalid ? ("true" as const) : undefined,
+      // Fargen følger med her, ikke fra input()/textarea()/select(). Ellers
+      // ville begge satt aria-invalid, og i maler som skriver ut attributtene
+      // bokstavelig — Astro, ren HTML — ble de stående dobbelt.
+      "data-state": invalid ? ("invalid" as const) : undefined,
       disabled: disabled ? (true as const) : undefined,
     }),
     help: { id: helpId },
