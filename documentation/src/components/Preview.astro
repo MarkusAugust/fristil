@@ -1,0 +1,41 @@
+---
+interface Props {
+  /** `rad` legger innholdet side om side, `stabel` under hverandre. */
+  layout?: "rad" | "stabel"
+  /** Valgfri maksbredde, for eksempel "34rem". */
+  maxWidth?: string
+}
+
+const { layout = "rad", maxWidth } = Astro.props
+---
+
+<div
+	class="fs-preview not-content"
+	data-layout={layout}
+	style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
+>
+	<slot />
+</div>
+
+<style>
+	.fs-preview {
+		display: flex;
+		gap: var(--size-3);
+		padding: var(--size-6);
+		max-width: var(--fs-preview-max-width, none);
+		background: var(--semantic-page-background);
+		color: var(--semantic-page-foreground);
+		border: 1px solid var(--semantic-divider-30);
+		border-radius: var(--size-1);
+	}
+
+	.fs-preview[data-layout="rad"] {
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.fs-preview[data-layout="stabel"] {
+		flex-direction: column;
+		align-items: stretch;
+	}
+</style>

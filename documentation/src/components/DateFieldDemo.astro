@@ -1,17 +1,18 @@
 ---
+import Preview from "./Preview.astro"
 ---
 
-<div class="date-field-demo">
-  <fs-date-field
-    label="Fødselsdato"
-    value="2026-05-31"
-    error-text="Skriv en gyldig dato."
-    help-text="Velg dato i kalenderpopup eller skriv manuelt. Prøv også en ugyldig dato som 32-06-2026."
-  ></fs-date-field>
-</div>
+<Preview layout="stabel" maxWidth="30rem">
+	<fs-date-field
+		label="Reisedato"
+		value="2026-05-31"
+		help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+		error-text="Skriv en dato som finnes, for eksempel 31-05-2026."
+	></fs-date-field>
+</Preview>
 
 <script>
-  import { defineDsDateField } from "@fristil/designsystem/date-field"
+	import { defineFsDateField } from "@fristil/designsystem/date-field"
 
-  defineDsDateField()
+	defineFsDateField()
 </script>

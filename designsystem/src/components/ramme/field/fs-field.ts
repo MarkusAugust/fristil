@@ -1,6 +1,6 @@
 import { html, LitElement } from "lit"
 
-export const DS_FIELD_TAG = "fs-field" as const
+export const FS_FIELD_TAG = "fs-field" as const
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
@@ -17,7 +17,7 @@ function mergeTokens(...values: Array<string | null | undefined>): string {
   return [...set].join(" ")
 }
 
-export class DsField extends LitElement {
+export class FsField extends LitElement {
   static properties = {
     invalid: { type: Boolean, reflect: true },
     disabled: { type: Boolean, reflect: true },
@@ -144,12 +144,12 @@ export class DsField extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "fs-field": DsField
+    "fs-field": FsField
   }
 }
 
-export function defineDsField(tagName = DS_FIELD_TAG): void {
+export function defineFsField(tagName = FS_FIELD_TAG): void {
   if (!customElements.get(tagName)) {
-    customElements.define(tagName, DsField)
+    customElements.define(tagName, FsField)
   }
 }

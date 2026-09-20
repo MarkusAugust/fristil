@@ -1,37 +1,47 @@
 ---
+import Preview from "./Preview.astro"
 ---
 
-<div class="field-demo not-content" style="max-width: 34rem; padding: 1.5rem; background: #ffffff; border: 1px solid #b2b2b2; border-radius: 0.25rem; display: grid; gap: 1rem;">
-  <fs-field id="demo-email-field" required-marker="text">
-    <label>E-post</label>
-    <input id="demo-email-input" class="fs-input" type="email" placeholder="ola@eksempel.no" />
-    <p class="fs-help-text">Vi sender aldri spam.</p>
-    <p class="fs-error-text">Skriv en gyldig e-post.</p>
-  </fs-field>
+<Preview layout="stabel" maxWidth="34rem">
+	<fs-field id="demo-epost-felt" required-marker="text">
+		<label>E-postadresse</label>
+		<input
+			id="demo-epost-input"
+			class="fs-input"
+			type="email"
+			placeholder="ola@eksempel.no"
+		/>
+		<p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
+		<p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
+	</fs-field>
 
-  <fs-field optional>
-    <label>Melding</label>
-    <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
-    <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
-  </fs-field>
-</div>
+	<fs-field optional>
+		<label>Melding til saksbehandler</label>
+		<textarea class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
+		<p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
+	</fs-field>
+</Preview>
 
 <script>
-  import { defineDsField } from "@fristil/designsystem/field"
-  defineDsField()
+	import { defineFsField } from "@fristil/designsystem/field"
 
-  const field = document.getElementById("demo-email-field") as HTMLElement & { invalid: boolean }
-  const input = document.getElementById("demo-email-input") as HTMLInputElement
+	defineFsField()
 
-  input.addEventListener("blur", () => {
-    const valid = input.value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
-    field.toggleAttribute("invalid", !valid)
-  })
+	const felt = document.getElementById("demo-epost-felt")
+	const input = document.getElementById("demo-epost-input") as HTMLInputElement | null
 
-  input.addEventListener("input", () => {
-    if (field.hasAttribute("invalid")) {
-      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
-      field.toggleAttribute("invalid", !valid)
-    }
-  })
+	if (felt && input) {
+		const erGyldig = () =>
+			input.value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
+
+		input.addEventListener("blur", () => {
+			felt.toggleAttribute("invalid", !erGyldig())
+		})
+
+		input.addEventListener("input", () => {
+			if (felt.hasAttribute("invalid")) {
+				felt.toggleAttribute("invalid", !erGyldig())
+			}
+		})
+	}
 </script>

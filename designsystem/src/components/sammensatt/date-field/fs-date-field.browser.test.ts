@@ -1,10 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { defineDsDateField } from "./fs-date-field"
+import { defineFsDateField } from "./fs-date-field"
 
 describe("fs-date-field", () => {
   beforeAll(() => {
-    defineDsDateField()
+    defineFsDateField()
   })
 
   beforeEach(() => {
