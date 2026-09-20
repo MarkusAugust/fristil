@@ -44,6 +44,7 @@ export default defineConfig({
             { label: "Kom i gang", slug: "kom-i-gang" },
             { label: "Rammeverk", slug: "rammeverk" },
             { label: "Design tokens", slug: "design-tokens" },
+            { label: "Tilpasning", slug: "tilpasning" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
           ],
         },
