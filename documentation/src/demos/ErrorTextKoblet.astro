@@ -1,0 +1,19 @@
+---
+import Preview from "../components/Preview.astro"
+---
+
+<Preview stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem">
+	<label class="fs-label" for="demo-feil-epost">E-postadresse</label>
+	<input
+		class="fs-input"
+		id="demo-feil-epost"
+		type="email"
+		data-state="invalid"
+		aria-invalid="true"
+		aria-describedby="demo-feil-epost-feil"
+		value="ola@"
+	/>
+	<p class="fs-error-text" id="demo-feil-epost-feil">
+		Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
+	</p>
+</Preview>

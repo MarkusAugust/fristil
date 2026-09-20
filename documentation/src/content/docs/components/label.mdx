@@ -21,7 +21,7 @@ import "@fristil/designsystem/label.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
+    <Preview stiler={["label"]} layout="stabel" maxWidth="26rem">
       <label class="fs-label" for="ex-standard">Fullt navn</label>
       <label class="fs-label" data-required="symbol" for="ex-symbol">E-postadresse</label>
       <label class="fs-label" data-required="text" for="ex-tekst">Telefonnummer</label>
@@ -60,10 +60,10 @@ Ledeteksten skal peke på feltet sitt med `for`, som må matche `id` på feltet.
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
+    <Preview stiler={["label", "input", "help-text"]} layout="stabel" maxWidth="26rem">
       <label class="fs-label" data-required="symbol" for="demo-epost">E-postadresse</label>
       <input class="fs-input" id="demo-epost" type="email" required placeholder="ola@eksempel.no" />
-      <p class="fs-help-text" style="margin: 0;">Vi bruker adressen til å sende kvittering.</p>
+      <p class="fs-help-text">Vi bruker adressen til å sende kvittering.</p>
     </Preview>
   </TabItem>
   <TabItem label="Kode">
