@@ -50,18 +50,17 @@ for (const navn of stiler) {
 
 /*
  * Forhåndsvisningen ligger i en shadow root, opprettet deklarativt av
- * nettleseren. Det er ikke pynt:
- *
- * Uten den treffer dokumentasjonssidens CSS elementene i eksempelet. En regel
- * som treffer <p> direkte slår den arvede tekstfargen fra flaten, uansett
- * spesifisitet, og teksten ble lysegrå på hvit bakgrunn i mørkt tema. Å
- * gardere seg element for element er en kamp som må kjempes på nytt hver gang
- * noen legger til en regel.
+ * nettleseren. Det er ikke pynt: uten den treffer dokumentasjonssidens CSS
+ * elementene i eksempelet, og en regel som treffer <p> direkte slår den
+ * arvede tekstfargen uansett spesifisitet.
  *
  * Isolasjonen gjør også eksempelet ærlig: det viser nøyaktig det en konsument
  * får med stilarkene under, og ingenting dokumentasjonssiden tilfeldigvis
- * gjør. CSS-variablene fra :root arves inn gjennom skyggegrensen, så tokens
- * trenger ikke gjentas her.
+ * gjør.
+ *
+ * Flaten følger temaet. CSS-variablene settes på :root av tokens.css og arves
+ * inn gjennom skyggegrensen, så både lyst og mørkt tema slår gjennom uten at
+ * noe gjentas her.
  */
 const stilark = [
   `

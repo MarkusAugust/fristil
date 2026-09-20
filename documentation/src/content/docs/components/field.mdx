@@ -46,7 +46,9 @@ import "@fristil/designsystem/field.css"
 defineFsField()
 ```
 
-`defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart — flere kall er ufarlige. `field.css` samler stilene for ledetekst, felt, hjelpetekst og feilmelding.
+`defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart — flere kall er ufarlige.
+
+Stilarket må importeres i tillegg fordi komponenten kjører i vanlig DOM: barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem. [Calendar](../calendar/) bruker Shadow DOM og trenger derfor ingen import.
 
 <Tabs>
   <TabItem label="Eksempel">

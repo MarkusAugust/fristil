@@ -107,6 +107,8 @@ Får du en tom side, har `define`-funksjonen nesten alltid ikke kjørt.
 
 `field.css` og `date-field.css` samler stilene de trenger.
 
+Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, der barna er dine egne elementer med systemets klasser — og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
+
 **JavaScript og TypeScript**
 
 Hele komponent-API-et ligger i ett navnerom:
