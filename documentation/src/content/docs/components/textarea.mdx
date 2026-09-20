@@ -19,11 +19,18 @@ import "@fristil/designsystem/textarea.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
-      <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort begrunnelse"></textarea>
-      <textarea class="fs-textarea" rows="2" data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
-      <textarea class="fs-textarea" rows="2" data-state="invalid">For kort</textarea>
-      <textarea class="fs-textarea" rows="2" disabled>Saken er avsluttet og kan ikke endres.</textarea>
+    <Preview stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem">
+      <label class="fs-label" for="ex-begrunnelse">Begrunnelse</label>
+      <textarea class="fs-textarea" id="ex-begrunnelse" rows="3" placeholder="Skriv en kort begrunnelse"></textarea>
+
+      <label class="fs-label" for="ex-melding">Melding til saksbehandler</label>
+      <textarea class="fs-textarea" id="ex-melding" rows="2" data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
+
+      <label class="fs-label" for="ex-kort">Utfyllende svar</label>
+      <textarea class="fs-textarea" id="ex-kort" rows="2" data-state="invalid" aria-invalid="true">For kort</textarea>
+
+      <label class="fs-label" for="ex-avsluttet">Merknad</label>
+      <textarea class="fs-textarea" id="ex-avsluttet" rows="2" disabled>Saken er avsluttet og kan ikke endres.</textarea>
     </Preview>
   </TabItem>
   <TabItem label="Kode">

@@ -19,20 +19,27 @@ import "@fristil/designsystem/select.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
-      <select class="fs-select">
+    <Preview stiler={["select", "label"]} layout="stabel" maxWidth="26rem">
+      <label class="fs-label" for="ex-fylke">Fylke</label>
+      <select class="fs-select" id="ex-fylke">
         <option value="">Velg fylke</option>
         <option>Innlandet</option>
         <option selected>Vestland</option>
         <option>Troms</option>
       </select>
-      <select class="fs-select" data-state="success">
+
+      <label class="fs-label" for="ex-bekreftet">Bekreftet fylke</label>
+      <select class="fs-select" id="ex-bekreftet" data-state="success">
         <option selected>Vestland</option>
       </select>
-      <select class="fs-select" data-state="invalid">
-        <option value="" selected>Velg fylke</option>
+
+      <label class="fs-label" for="ex-mangler">Kommune</label>
+      <select class="fs-select" id="ex-mangler" data-state="invalid" aria-invalid="true">
+        <option value="" selected>Velg kommune</option>
       </select>
-      <select class="fs-select" disabled>
+
+      <label class="fs-label" for="ex-laast-fylke">Registrert fylke</label>
+      <select class="fs-select" id="ex-laast-fylke" disabled>
         <option selected>Vestland</option>
       </select>
     </Preview>

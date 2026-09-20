@@ -21,11 +21,18 @@ import "@fristil/designsystem/input.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
-      <input class="fs-input" placeholder="ola@eksempel.no" />
-      <input class="fs-input" data-state="success" value="ola@eksempel.no" />
-      <input class="fs-input" data-state="invalid" value="ola@" />
-      <input class="fs-input" value="ola@eksempel.no" disabled />
+    <Preview stiler={["input", "label"]} layout="stabel" maxWidth="26rem">
+      <label class="fs-label" for="ex-standard">E-postadresse</label>
+      <input class="fs-input" id="ex-standard" type="email" placeholder="ola@eksempel.no" />
+
+      <label class="fs-label" for="ex-gyldig">Bekreft e-postadresse</label>
+      <input class="fs-input" id="ex-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
+
+      <label class="fs-label" for="ex-ugyldig">Reserve-e-post</label>
+      <input class="fs-input" id="ex-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
+
+      <label class="fs-label" for="ex-laast">Registrert e-postadresse</label>
+      <input class="fs-input" id="ex-laast" type="email" value="ola@eksempel.no" disabled />
     </Preview>
   </TabItem>
   <TabItem label="Kode">
@@ -46,9 +53,12 @@ import "@fristil/designsystem/input.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <Preview layout="stabel" maxWidth="26rem">
-      <input class="fs-input" data-variant="date" type="date" value="2026-05-31" />
-      <input class="fs-input" data-variant="time" type="time" value="14:30" />
+    <Preview stiler={["input", "label"]} layout="stabel" maxWidth="26rem">
+      <label class="fs-label" for="ex-dato">Reisedato</label>
+      <input class="fs-input" id="ex-dato" data-variant="date" type="date" value="2026-05-31" />
+
+      <label class="fs-label" for="ex-tid">Avreisetidspunkt</label>
+      <input class="fs-input" id="ex-tid" data-variant="time" type="time" value="14:30" />
     </Preview>
   </TabItem>
   <TabItem label="Kode">
