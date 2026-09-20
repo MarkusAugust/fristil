@@ -13,17 +13,17 @@
   line-height: 1.5;
   color: var(--semantic-page-foreground);
   background: var(--semantic-page-background);
-  border: 1px solid var(--palette-graphite-30);
+  border: 1px solid var(--semantic-field-border);
   border-radius: var(--size-1);
   resize: vertical;
 }
 
 .fs-textarea::placeholder {
-  color: var(--semantic-disabled-foreground);
+  color: var(--semantic-muted-foreground);
 }
 
 .fs-textarea:hover {
-  border-color: var(--palette-graphite-50);
+  border-color: var(--semantic-field-border-hover);
 }
 
 .fs-textarea:focus-visible {

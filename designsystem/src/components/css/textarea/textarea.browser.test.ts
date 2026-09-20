@@ -36,7 +36,7 @@ describe("fs-textarea", () => {
     const textarea = css("default")
 
     expect(textarea.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(textarea.borderTopColor).toBe("rgb(178, 178, 178)")
+    expect(textarea.borderTopColor).toBe("rgb(117, 117, 117)")
     expect(textarea.color).toBe("rgb(26, 26, 26)")
   })
 

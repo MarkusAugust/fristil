@@ -134,7 +134,7 @@ export class FsCalendar extends LitElement {
       line-height: 1;
       color: var(--semantic-page-foreground);
       background: var(--semantic-page-background);
-      border: 1px solid var(--palette-graphite-30);
+      border: 1px solid var(--semantic-field-border);
       border-radius: var(--size-1);
       cursor: pointer;
     }
@@ -158,7 +158,7 @@ export class FsCalendar extends LitElement {
       z-index: 30;
       width: min(20rem, 92vw);
       padding: var(--size-3);
-      border: 1px solid var(--palette-graphite-30);
+      border: 1px solid var(--semantic-field-border);
       border-radius: var(--size-1);
       background: var(--semantic-page-background);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
@@ -190,7 +190,7 @@ export class FsCalendar extends LitElement {
     .month-button,
     .day {
       font-family: inherit;
-      border: 1px solid var(--palette-graphite-30);
+      border: 1px solid var(--semantic-field-border);
       background: var(--semantic-page-background);
       color: var(--semantic-page-foreground);
       border-radius: var(--size-1);
@@ -221,7 +221,7 @@ export class FsCalendar extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--semantic-disabled-foreground);
+      color: var(--semantic-muted-foreground);
       padding-block: var(--size-1);
     }
 
@@ -244,7 +244,7 @@ export class FsCalendar extends LitElement {
 
     .day[data-selected="true"] {
       background: var(--semantic-interactive-main);
-      color: var(--palette-graphite-0);
+      color: var(--semantic-interactive-contrast);
       border-color: var(--semantic-interactive-main);
     }
 

@@ -112,11 +112,21 @@ export const cssTokens = {
   "--semantic-success-background": "var(--palette-forest-10)",
   "--semantic-success-foreground": "#316f2a",
 
-  // Deaktiverte kontroller. WCAG 1.4.3 unntar inaktive komponenter fra
-  // kontrastkravet, så denne er bevisst dempet — bruk den kun på noe som
-  // faktisk er slått av, aldri på tekst brukeren skal lese.
+  /**
+   * Deaktiverte kontroller. WCAG 1.4.3 unntar inaktive komponenter fra
+   * kontrastkravet, men teksten bør fortsatt kunne leses — et avslått felt
+   * viser ofte innhold brukeren trenger. Bruk den bare på noe som faktisk er
+   * slått av; dempet tekst som skal leses bruker `muted-foreground`.
+   */
   "--semantic-disabled-background": "var(--palette-graphite-10)",
   "--semantic-disabled-foreground": "var(--palette-graphite-50)",
+
+  /**
+   * Dempet tekst som likevel skal leses: hjelpetekst, plassholdere,
+   * «(valgfri)»-markeringen, ukedagene i kalenderen. Holder 4,5:1 mot
+   * sideflaten i begge temaer.
+   */
+  "--semantic-muted-foreground": "var(--palette-graphite-50)",
 
   // Nøytral status — informasjon brukeren skal lese, ikke en avslått
   // kontroll. Derfor mørkere enn disabled: 6,71:1 mot egen bakgrunn.
@@ -127,6 +137,29 @@ export const cssTokens = {
   "--semantic-interactive-background": "var(--palette-azure-10)",
   "--semantic-interactive-main": "var(--palette-azure-70)",
   "--semantic-interactive-foreground": "var(--palette-azure-100)",
+  /** Tekst oppå `interactive-main`. Snur med temaet. */
+  "--semantic-interactive-contrast": "var(--palette-graphite-0)",
+  "--semantic-interactive-visited": "var(--palette-denim-70)",
+
+  // Semantic — skjemafelt
+  /**
+   * Rammen rundt input, textarea, select og kalenderpanelet.
+   *
+   * graphite-50, ikke graphite-30. WCAG 1.4.11 krever 3:1 for grafiske
+   * avgrensninger, og graphite-30 gir bare 2,12:1 mot hvit flate — feltet
+   * var så vidt synlig for den som ser dårlig.
+   */
+  "--semantic-field-border": "var(--palette-graphite-50)",
+  "--semantic-field-border-hover": "var(--palette-graphite-70)",
+
+  // Semantic — farefylte handlinger
+  /**
+   * Fylt flate på danger-knappen når den holdes over, med `danger-contrast`
+   * som tekst. Før mørknet bakgrunnen mens teksten ble stående, og hover
+   * havnet på 3,52:1 — svakere enn hviletilstanden.
+   */
+  "--semantic-danger-main": "#a82e39",
+  "--semantic-danger-contrast": "var(--palette-graphite-0)",
 
   // Semantic — skillelinjer
   "--semantic-divider-30": "var(--palette-graphite-30)",
@@ -134,3 +167,59 @@ export const cssTokens = {
 } as const
 
 export type CssToken = keyof typeof cssTokens
+
+/**
+ * Verdiene som overstyres i mørkt tema.
+ *
+ * Bare det semantiske laget snur. Paletten er råverdier og er den samme i
+ * begge temaer — det er hva fargene *betyr* som endrer seg, ikke hvilke
+ * farger som finnes.
+ *
+ * Alle par er kontrollert mot WCAG AA. Se `tokens.browser.test.ts`.
+ */
+export const darkTokens = {
+  // Side — nær sort flate, dempet hvit tekst
+  "--semantic-page-background": "var(--palette-graphite-100)",
+  "--semantic-page-foreground": "var(--palette-graphite-5)",
+
+  // Status — mørk flate, lys tekst. Speilvendt av lyst tema.
+  "--semantic-danger-background": "var(--palette-burgundy-100)",
+  "--semantic-danger-foreground": "var(--palette-burgundy-30)",
+  "--semantic-warning-background": "var(--palette-ochre-100)",
+  "--semantic-warning-foreground": "var(--palette-ochre-30)",
+  "--semantic-success-background": "var(--palette-forest-100)",
+  "--semantic-success-foreground": "var(--palette-forest-30)",
+
+  // Deaktivert — graphite-50 på graphite-70 ga 1,83:1 og var uleselig.
+  // graphite-30 gir 3,99:1: fortsatt tydelig av, men mulig å lese.
+  "--semantic-disabled-background": "var(--palette-graphite-70)",
+  "--semantic-disabled-foreground": "var(--palette-graphite-30)",
+
+  // Dempet, lesbar tekst — 8,21:1 mot den mørke flaten
+  "--semantic-muted-foreground": "var(--palette-graphite-30)",
+
+  // Nøytral status — skal fortsatt leses, holder 6,71:1
+  "--semantic-neutral-background": "var(--palette-graphite-70)",
+  "--semantic-neutral-foreground": "var(--palette-graphite-10)",
+
+  // Interaktiv — lys blå på mørk flate, mørk tekst oppå den
+  "--semantic-interactive-background": "var(--palette-azure-100)",
+  "--semantic-interactive-main": "var(--palette-azure-30)",
+  "--semantic-interactive-foreground": "var(--palette-azure-10)",
+  "--semantic-interactive-contrast": "var(--palette-graphite-100)",
+  "--semantic-interactive-visited": "var(--palette-denim-30)",
+
+  // Skjemafelt — rammen må være lysere enn flaten, ikke mørkere
+  "--semantic-field-border": "var(--palette-graphite-50)",
+  "--semantic-field-border-hover": "var(--palette-graphite-30)",
+
+  // Farefylte handlinger
+  "--semantic-danger-main": "var(--palette-burgundy-30)",
+  "--semantic-danger-contrast": "var(--palette-graphite-100)",
+
+  // Skillelinjer
+  "--semantic-divider-30": "var(--palette-graphite-70)",
+  "--semantic-divider-100": "var(--palette-graphite-30)",
+} as const satisfies Partial<Record<CssToken, string>>
+
+export type DarkToken = keyof typeof darkTokens

@@ -36,7 +36,7 @@ describe("fs-select", () => {
     const select = css("default")
 
     expect(select.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(select.borderTopColor).toBe("rgb(178, 178, 178)")
+    expect(select.borderTopColor).toBe("rgb(117, 117, 117)")
     expect(select.color).toBe("rgb(26, 26, 26)")
   })
 

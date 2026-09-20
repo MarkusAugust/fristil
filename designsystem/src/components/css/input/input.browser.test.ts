@@ -39,7 +39,7 @@ describe("fs-input", () => {
     const input = css("default")
 
     expect(input.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(input.borderTopColor).toBe("rgb(178, 178, 178)")
+    expect(input.borderTopColor).toBe("rgb(117, 117, 117)")
     expect(input.color).toBe("rgb(26, 26, 26)")
   })
 

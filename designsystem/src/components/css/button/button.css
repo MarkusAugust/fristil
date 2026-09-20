@@ -15,7 +15,7 @@
   border: 1px solid var(--semantic-interactive-main);
   border-radius: var(--size-1);
   background: var(--semantic-interactive-main);
-  color: var(--palette-graphite-0);
+  color: var(--semantic-interactive-contrast);
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
@@ -71,6 +71,7 @@
 }
 
 .fs-button[data-variant="danger"]:hover {
-  background: var(--palette-burgundy-30);
-  border-color: var(--palette-burgundy-70);
+  background: var(--semantic-danger-main);
+  border-color: var(--semantic-danger-main);
+  color: var(--semantic-danger-contrast);
 }

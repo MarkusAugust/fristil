@@ -13,18 +13,18 @@
   line-height: 1.5;
   color: var(--semantic-page-foreground);
   background-color: var(--semantic-page-background);
-  border: 1px solid var(--palette-graphite-30);
+  border: 1px solid var(--semantic-field-border);
   border-radius: var(--size-1);
   appearance: none;
   background-image:
     linear-gradient(
       45deg,
       transparent 50%,
-      var(--semantic-disabled-foreground) 50%
+      var(--semantic-muted-foreground) 50%
     ),
     linear-gradient(
       135deg,
-      var(--semantic-disabled-foreground) 50%,
+      var(--semantic-muted-foreground) 50%,
       transparent 50%
     );
   background-position:
@@ -37,7 +37,7 @@
 }
 
 .fs-select:hover {
-  border-color: var(--palette-graphite-50);
+  border-color: var(--semantic-field-border-hover);
 }
 
 .fs-select:focus-visible {

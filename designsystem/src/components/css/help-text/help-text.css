@@ -6,7 +6,7 @@
   font-family: inherit;
   font-size: var(--font-size-xs);
   line-height: 1.4;
-  color: var(--semantic-disabled-foreground);
+  color: var(--semantic-muted-foreground);
 }
 
 .fs-help-text[data-variant="default"] {

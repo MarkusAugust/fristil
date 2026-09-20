@@ -28,5 +28,5 @@
 }
 
 .fs-label[aria-disabled="true"] {
-  color: var(--semantic-disabled-foreground);
+  color: var(--semantic-muted-foreground);
 }
