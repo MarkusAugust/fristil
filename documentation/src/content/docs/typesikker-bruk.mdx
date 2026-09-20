@@ -26,14 +26,14 @@ import { fs } from "@fristil/designsystem"
 
 Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle, så du lærer den én gang.
 
-Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et virker i React, Vue, Svelte og ren HTML — alle kan spre et objekt inn i et element.
+Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et virker i React, Astro og ren HTML — alle kan spre et objekt inn i et element.
 
 :::note[Bruker du React?]
 Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
 
 `fs` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem — de havner riktig i DOM-en — men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
 
-Vue, Svelte, Solid og Preact tar `class` og `for` som de er, og bruker hovedinngangen.
+Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
 
 ## Standardverdier gir ingen attributter
@@ -176,7 +176,7 @@ Da får attributtene autofullføring og sjekk, også de med bindestrek:
 <fs-date-field helpText="DD-MM-ÅÅÅÅ" />  // feil: attributtet heter help-text
 ```
 
-Vue og Svelte trenger ikke dette. Vue godtar elementene når `fs-` er satt opp i `isCustomElement`, og Svelte klager ikke på ukjente tagger.
+Ren HTML, Astro og Datastar trenger ikke dette — der er `<fs-field>` bare en HTML-tagg.
 
 ## Det typene ikke fanger
 
