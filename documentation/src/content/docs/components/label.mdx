@@ -44,15 +44,25 @@ Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjem
 
 ## TypeScript
 
-```tsx
-import { fs } from "@fristil/designsystem/react"
+```ts
+import { fs } from "@fristil/designsystem"
 
-<label {...fs.label({ required: "symbol" })} htmlFor="epost">
-  E-postadresse
-</label>
+const ledetekst = document.querySelector<HTMLLabelElement>("#epost-label")
+
+fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
+ledetekst.htmlFor = "epost"
 ```
 
-[`fs.field`](../../typesikker-bruk/#fsfield) gjør både dette og koblingen til kontrollen i én operasjon.
+`for` setter du selv — funksjonen returnerer bare Fristils egne attributter.
+
+Setter du opp et helt felt, gjør [`fs.field`](../../typesikker-bruk/#fsfield) både markeringen og koblingen til kontrollen:
+
+```ts
+const felt = fs.field({ id: "epost", required: "symbol" })
+
+fs.setAttributes(ledetekst, felt.label)
+fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+```
 
 ## Tilgjengelighet
 

@@ -65,16 +65,26 @@ Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene f
 ## TypeScript
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { fs, type FieldState } from "@fristil/designsystem"
 
-fs.input({ type: "date" })
-// { class: "fs-input", type: "date", "data-variant": "date" }
+const felt = document.querySelector<HTMLInputElement>("#epost")
 
-fs.input({ state: "invalid" })
-// { class: "fs-input", type: "text", "data-state": "invalid", "aria-invalid": "true" }
+fs.setAttributes(felt, fs.input({ type: "email" }))
 ```
 
-Én verdi styrer både HTML-typen og ikonvarianten, og `state` setter `aria-invalid` sammen med fargen. Begge fellene over forsvinner.
+`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt — fellen over er ikke mulig å gå i.
+
+Ved validering kaller du den på nytt med ny tilstand:
+
+```ts
+felt.addEventListener("blur", () => {
+  const tilstand: FieldState = felt.validity.valid ? "default" : "invalid"
+
+  fs.setAttributes(felt, fs.input({ type: "email", state: tilstand }))
+})
+```
+
+`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` begge — uten det ville feltet blitt stående rødt etter at feilen var rettet.
 
 Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 

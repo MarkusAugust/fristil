@@ -38,9 +38,12 @@ Merk at `pointer-events: none` stopper musa, ikke tastaturet. Skal lenken ikke k
 ```ts
 import { fs } from "@fristil/designsystem"
 
-fs.link({ disabled: true })
-// { class: "fs-link", "aria-disabled": "true" }
+const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
+
+fs.setAttributes(lenke, fs.link({ disabled: !klar }))
 ```
+
+Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false` — da fjernes `aria-disabled`, og lenken virker igjen.
 
 ## Tilgjengelighet
 

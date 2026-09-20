@@ -43,13 +43,18 @@ import "@fristil/designsystem/textarea.css"
 ## TypeScript
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { fs, type FieldState } from "@fristil/designsystem"
 
-fs.textarea({ state: "invalid" })
-// { class: "fs-textarea", "data-state": "invalid", "aria-invalid": "true" }
+const felt = document.querySelector<HTMLTextAreaElement>("#begrunnelse")
+
+felt.addEventListener("blur", () => {
+  const tilstand: FieldState = felt.value.trim().length >= 20 ? "success" : "invalid"
+
+  fs.setAttributes(felt, fs.textarea({ state: tilstand }))
+})
 ```
 
-`state` er samme type som i [Input](../input/) og [Select](../select/). Se [Typesikker bruk](../../typesikker-bruk/).
+`state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `fs.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
 
 ## Tilgjengelighet
 

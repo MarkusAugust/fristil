@@ -46,16 +46,18 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 
 ## TypeScript
 
-```tsx
+```ts
 import { fs } from "@fristil/designsystem"
 
-const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
+function oppdater(erGyldig: boolean) {
+  const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
-<input {...fs.input({ type: "email" })} {...felt.control} />
-<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+  fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+  fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
+}
 ```
 
-`felt.error` inneholder `hidden` når feltet ikke er ugyldig, og feilmeldingen tas da heller ikke med i `aria-describedby` — en skjult melding skal ikke pekes på.
+[`fs.field`](../../typesikker-bruk/#fsfield) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby` — en skjult melding skal ikke pekes på.
 
 ## Ordlyd i meldingen
 

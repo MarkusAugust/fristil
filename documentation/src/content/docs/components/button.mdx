@@ -49,16 +49,26 @@ Navigerer du brukeren, skal elementet være en `<a>` selv om det ser ut som en k
 ## TypeScript
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { fs, type ButtonVariant } from "@fristil/designsystem"
 
-fs.button({ variant: "secondary" })
-// { class: "fs-button", "data-variant": "secondary" }
+const knapp = document.querySelector<HTMLButtonElement>("#send")
 
-fs.button()
-// { class: "fs-button" } — primær er standard og trenger ikke attributtet
+fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
 ```
 
-Kommer varianten utenfra: `fs.button.isVariant(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
+`fs.button()` uten argument gir primærknappen — den trenger ikke noe `data-variant`.
+
+Kommer varianten fra et API eller en URL, valider den:
+
+```ts
+const variant: ButtonVariant = fs.button.isVariant(svar.variant)
+  ? svar.variant
+  : "primary"
+
+fs.setAttributes(knapp, fs.button({ variant }))
+```
+
+Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Tilgjengelighet
 

@@ -45,17 +45,19 @@ Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 ```ts
 import { fs } from "@fristil/designsystem"
 
-fs.helpText({ variant: "warning" })
-// { class: "fs-help-text", "data-variant": "warning" }
-```
-
-Koblingen gjør [`fs.field`](../../typesikker-bruk/#fsfield):
-
-```tsx
 const felt = fs.field({ id: "kid", help: true })
 
-<input {...fs.input()} {...felt.control} inputMode="numeric" />
-<p {...fs.helpText()} {...felt.help}>Du finner nummeret øverst på fakturaen.</p>
+fs.setAttributes(ledetekst, felt.label)
+fs.setAttributes(input, { ...fs.input(), ...felt.control })
+fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
+```
+
+[`fs.field`](../../typesikker-bruk/#fsfield) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.
+
+Trenger du bare klassen:
+
+```ts
+fs.setAttributes(hjelpetekst, fs.helpText({ variant: "warning" }))
 ```
 
 ## Tilgjengelighet

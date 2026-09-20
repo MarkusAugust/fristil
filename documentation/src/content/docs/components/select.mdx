@@ -45,11 +45,18 @@ Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da stopper `
 ## TypeScript
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { fs, type FieldState } from "@fristil/designsystem"
 
-fs.select({ state: "invalid" })
-// { class: "fs-select", "data-state": "invalid", "aria-invalid": "true" }
+const felt = document.querySelector<HTMLSelectElement>("#fylke")
+
+felt.addEventListener("change", () => {
+  const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
+
+  fs.setAttributes(felt, fs.select({ state: tilstand }))
+})
 ```
+
+`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
 
 ## Tilgjengelighet
 
