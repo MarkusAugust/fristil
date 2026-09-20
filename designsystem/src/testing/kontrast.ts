@@ -74,6 +74,13 @@ export const PAR: Array<[navn: string, forgrunn: string, bakgrunn: string]> = [
     "--semantic-interactive-main",
     "--semantic-interactive-background",
   ],
+  // Avataren skriver initialer i interactive-foreground på
+  // interactive-background. Paret manglet i lista, og ble derfor ikke målt.
+  [
+    "initialer i avatar",
+    "--semantic-interactive-foreground",
+    "--semantic-interactive-background",
+  ],
   [
     "fare-merke",
     "--semantic-danger-foreground",

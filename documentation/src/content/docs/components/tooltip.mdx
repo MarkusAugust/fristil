@@ -16,8 +16,19 @@ import "@fristil/designsystem/tooltip.css"
 
 ## En knapp med forklaring
 
-<Eksempel stiler={["tooltip", "button"]} layout="stabel" maxWidth="30rem" kode={`
-<span class="fs-tooltip" style="margin-top: var(--size-8);">
+Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen under, eller gå til den med Tab, så kommer den fram:
+
+<Eksempel
+  stiler={["tooltip", "button"]}
+  layout="stabel"
+  maxWidth="30rem"
+  visningsCss={`
+    /* Boblen ligger over utløseren, og trenger litt luft i denne boksen for
+       å ikke bli klippet. I en ekte side er det plassen på siden som avgjør. */
+    .fs-tooltip { margin-block-start: var(--size-8); }
+  `}
+  kode={`
+<span class="fs-tooltip">
   <button class="fs-button" data-variant="ghost" type="button" aria-describedby="arkiv-hint">
     Arkiver
   </button>

@@ -222,11 +222,15 @@ export function buildTheme(input: ThemeInput): Theme {
       kontrastfarge,
     ])
 
-    // Hover-flaten på knappen, med den samme teksten oppå.
+    /*
+     * Hover-flaten på knappen, med den samme teksten oppå. Den brukes også
+     * som tekst i avataren, oppå interactive-background, så den flaten må
+     * med her.
+     */
     sett(
       "--semantic-interactive-foreground",
       palett.interactive[trinn.interaktivHover],
-      [flate, kontrastfarge],
+      [flate, kontrastfarge, verdier["--semantic-interactive-background"]],
     )
 
     sett(

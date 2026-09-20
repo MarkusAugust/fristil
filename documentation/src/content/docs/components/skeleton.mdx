@@ -14,11 +14,19 @@ import "@fristil/designsystem/skeleton.css"
 
 ## Former
 
-<Eksempel stiler={["skeleton"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel
+  stiler={["skeleton"]}
+  layout="stabel"
+  maxWidth="26rem"
+  visningsCss={`
+    .sak-siste-linje { inline-size: 70%; }
+    .sak-bilde { --fs-skeleton-height: var(--size-12); }
+  `}
+  kode={`
 <div class="fs-skeleton" data-variant="circle" aria-hidden="true"></div>
 <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
-<div class="fs-skeleton" data-variant="text" aria-hidden="true" style="width: 70%;"></div>
-<div class="fs-skeleton" aria-hidden="true" style="height: var(--size-12);"></div>
+<div class="fs-skeleton sak-siste-linje" data-variant="text" aria-hidden="true"></div>
+<div class="fs-skeleton sak-bilde" aria-hidden="true"></div>
 `} />
 
 | `data-variant` | Brukes til |
@@ -27,7 +35,19 @@ import "@fristil/designsystem/skeleton.css"
 | `text` | Én tekstlinje |
 | `circle` | Profilbilde |
 
-Sett bredden på de siste linjene til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
+Formene fyller bredden de får. `sak-siste-linje` og `sak-bilde` over er dine egne klasser, og de to reglene er alt som skal til:
+
+```css
+.sak-siste-linje {
+	inline-size: 70%;
+}
+
+.sak-bilde {
+	--fs-skeleton-height: var(--size-12);
+}
+```
+
+Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
 
 ## Ventingen må meldes ett sted
 
