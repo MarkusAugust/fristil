@@ -1,0 +1,103 @@
+---
+title: Eget tema
+description: Lag et fargetema av merkefargene dine, med kontrasten kontrollert i begge temaer.
+---
+
+Fristil har én innebygd palett. Har organisasjonen din egne farger, kan du overstyre tokenene for hånd, men da eier du kontrasten selv: hver farge inngår i flere par, og hvert par må holde 4,5:1 i både lyst og mørkt tema. Det er mange par, og det er lett å gå glipp av ett.
+
+Generatoren tar merkefargene dine og bygger resten.
+
+## Lag temaet
+
+```bash
+npx @fristil/designsystem tema \
+  --interaktiv=#7c3aed \
+  --fare=#b3261e \
+  --suksess=#2b6940 \
+  --advarsel=#8a5a00 \
+  --noytral=#1a1a1a \
+  --ut=tema.css
+```
+
+Eller med en fil, som kan ligge i repoet:
+
+```json
+// fristil.tema.json
+{
+  "interaktiv": "#7c3aed",
+  "fare": "#b3261e",
+  "suksess": "#2b6940",
+  "advarsel": "#8a5a00",
+  "noytral": "#1a1a1a"
+}
+```
+
+```bash
+npx @fristil/designsystem tema fristil.tema.json --ut=tema.css
+```
+
+| Farge | Brukes til |
+| --- | --- |
+| `--interaktiv` | Lenker, knapper og fokusmarkering |
+| `--fare` | Feil, sletting og avslag |
+| `--suksess` | Fullført og godkjent |
+| `--advarsel` | Noe som krever oppmerksomhet |
+| `--noytral` | Flater, tekst og skillelinjer. Valgfri, nesten uten kulør. |
+| `--besokt` | Besøkte lenker. Valgfri, utledes fra `--interaktiv`. |
+
+## Ta det i bruk
+
+Legg fila etter `tokens.css`. Den overstyrer fargene, mens størrelser, skriftstørrelser og ikoner fortsatt kommer derfra:
+
+```css
+@import "@fristil/designsystem/tokens.css";
+@import "./tema.css";
+```
+
+Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt `data-theme`.
+
+## Hva generatoren gjør
+
+**Skalaene bygges i OKLCH.** I HSL betyr lyshet noe ulikt for hver kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort, med samme tall. En skala bygget på HSL blir derfor ujevn, og kontrasten varierer med hvilken farge du valgte. I OKLCH er lysheten den samme opplevde lysheten uansett kulør.
+
+**Kuløren og metningen er dine, lysheten er skalaens.** Gir du en lys lilla eller en mørk lilla, får du den samme lilla skalaen: trinnene har faste lysheter, og det er det som gjør at kontrasten kan garanteres. Metningen følger derimot med, så en dus merkefarge gir en dus skala.
+
+**Kontrasten kontrolleres, og rettes.** Hver farge måles mot alle flatene den havner på. Lenkefargen er for eksempel både tekst på sideflaten, flate under teksten på en primærknapp, og farge på et interaktivt merke. Holder en av dem ikke, mørknes eller lysnes fargen til den gjør det, og kjøringen sier fra:
+
+```
+  justert --semantic-interactive-main i light tema: 4.19:1 ble 4.57:1
+```
+
+Er kravet umulig å oppfylle, avsluttes kjøringen med feil framfor å levere et tema som ser riktig ut.
+
+## Det generatoren ikke gjør
+
+Den velger ikke farger for deg. Gir du en kulør som ligner for mye på en annen, for eksempel en oransje fare og en gul advarsel, blir de to like i bruk selv om begge holder kontrastkravet. Fargene må være til å skille fra hverandre, og det er en vurdering, ikke en utregning.
+
+Den rører heller ikke ikonene i `tokens.css`. De er tegnet i nøytrale farger og virker i begge temaer.
+
+## Programmatisk
+
+Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et byggesteg eller en temavelger:
+
+```ts
+import { buildTheme } from "@fristil/designsystem/tema"
+
+const tema = buildTheme({
+  interactive: "#7c3aed",
+  danger: "#b3261e",
+  success: "#2b6940",
+  warning: "#8a5a00",
+})
+
+tema.css          // ferdig CSS
+tema.light        // tokenene som objekt
+tema.adjustments  // hva som ble flyttet, og hvor mye
+tema.problems     // tomt når temaet holder
+```
+
+Fargeregningen er også tilgjengelig i `@fristil/designsystem/farge`, med `contrastRatio`, `buildScale` og `adjustForContrast`, hvis du vil regne selv.
+
+## Kontrollen
+
+Tre genererte temaer kjøres gjennom nøyaktig den samme lista med kontrastpar som Fristils egne farger måles mot, i begge temaer, i nettleseren. Regner generatoren feil, eller glemmer den et par systemet faktisk bruker, blir testen rød. Se [Tilgjengelighet](../tilgjengelighet/).
