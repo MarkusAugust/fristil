@@ -10,6 +10,20 @@ type CalendarCell = {
   isSelected: boolean
 }
 
+/**
+ * Deler dagene inn i uker på sju.
+ *
+ * role="grid" krever role="row" mellom seg og cellene sine. Uten radene
+ * melder skjermlesere rutenettet som tomt, og cellene som løsrevne knapper.
+ */
+function splitIWeker(celler: CalendarCell[]): CalendarCell[][] {
+  const uker: CalendarCell[][] = []
+  for (let i = 0; i < celler.length; i += 7) {
+    uker.push(celler.slice(i, i + 7))
+  }
+  return uker
+}
+
 const weekdayFormatter = new Intl.DateTimeFormat("nb-NO", {
   weekday: "short",
   timeZone: "UTC",
@@ -195,6 +209,12 @@ export class FsCalendar extends LitElement {
       gap: var(--size-1);
     }
 
+    /* Ukeradene finnes for ARIA-strukturens skyld. display: contents lar
+       dagene ligge rett i rutenettet, så oppsettet er uendret. */
+    .week {
+      display: contents;
+    }
+
     .weekday {
       text-align: center;
       font-size: var(--font-size-xxs);
@@ -211,9 +231,11 @@ export class FsCalendar extends LitElement {
       font-size: var(--font-size-xs);
     }
 
+    /* Dagene fra nabomåneden er dempet, men fullt klikkbare. De er altså
+       ikke deaktiverte kontroller, og må derfor ha lesbar kontrast. */
     .day[data-outside="true"] {
-      color: var(--semantic-disabled-foreground);
-      background: var(--semantic-disabled-background);
+      color: var(--semantic-neutral-foreground);
+      background: var(--semantic-neutral-background);
     }
 
     .day[data-today="true"] {
@@ -305,21 +327,27 @@ export class FsCalendar extends LitElement {
         </div>
 
         <div class="day-grid" role="grid" aria-label=${monthFormatter.format(this.viewMonth)}>
-          ${monthCells.map(
-            (cell) => html`
-              <button
-                class="day"
-                type="button"
-                role="gridcell"
-                data-date=${cell.iso}
-                data-outside=${String(!cell.inMonth)}
-                data-today=${String(cell.isToday)}
-                data-selected=${String(cell.isSelected)}
-                aria-selected=${String(cell.isSelected)}
-                @click=${this.selectCalendarDate}
-              >
-                ${cell.date.getUTCDate()}
-              </button>
+          ${splitIWeker(monthCells).map(
+            (uke) => html`
+              <div class="week" role="row">
+                ${uke.map(
+                  (cell) => html`
+                    <button
+                      class="day"
+                      type="button"
+                      role="gridcell"
+                      data-date=${cell.iso}
+                      data-outside=${String(!cell.inMonth)}
+                      data-today=${String(cell.isToday)}
+                      data-selected=${String(cell.isSelected)}
+                      aria-selected=${String(cell.isSelected)}
+                      @click=${this.selectCalendarDate}
+                    >
+                      ${cell.date.getUTCDate()}
+                    </button>
+                  `,
+                )}
+              </div>
             `,
           )}
         </div>
@@ -341,8 +369,24 @@ export class FsCalendar extends LitElement {
   }
 
   closePopup() {
+    if (!this.open) return
+
+    // Panelet skjules med [hidden]. Står fokus på en dag inne i det, mister
+    // nettleseren fokus til <body>, og en tastaturbruker havner på toppen av
+    // siden. Fokus skal derfor tilbake til knappen som åpnet panelet.
+    // Lukkes panelet fordi brukeren klikket eller tabbet ut, står fokus
+    // allerede et annet sted, og da skal vi ikke rive det til oss.
+    const fokusStoInniPanelet =
+      (this.renderRoot as ShadowRoot).activeElement !== null
+
     this.open = false
     this.requestUpdate()
+
+    if (fokusStoInniPanelet) {
+      queueMicrotask(() => {
+        this.renderRoot.querySelector<HTMLButtonElement>(".trigger")?.focus()
+      })
+    }
   }
 
   private togglePopup = () => {
@@ -371,6 +415,11 @@ export class FsCalendar extends LitElement {
     this.value = iso
     this.viewMonth = parseIsoDate(iso) ?? this.viewMonth
 
+    // Lukk før hendelsene sendes. closePopup køer et mikrotaskkall som
+    // flytter fokus til knappen; en lytter som selv vil flytte fokus — slik
+    // fs-date-field gjør til inputfeltet — køer sitt etterpå og vinner.
+    this.closePopup()
+
     this.dispatchEvent(
       new CustomEvent("date-select", {
         detail: { value: iso },
@@ -380,8 +429,6 @@ export class FsCalendar extends LitElement {
     )
     this.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
     this.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
-
-    this.closePopup()
   }
 
   private handlePopupKeydown = (event: KeyboardEvent) => {
