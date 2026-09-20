@@ -113,6 +113,7 @@ bun run dev
 bun run typecheck        # tsc -b
 bun run typecheck:tests  # typesjekk av testene
 bun run test             # nettlesertester, inkludert axe
+bun run test:docs        # axe mot den bygde dokumentasjonen, begge temaer
 bun run lint             # biome check .
 ```
 
@@ -212,6 +213,17 @@ describe("fs-min-komponent tilgjengelighet", () => {
 Skriv markupen slik komponenten faktisk skal brukes — et felt med ledetekst, et merke med tekst i. Tester du markup ingen ville skrevet, tester du ingenting.
 
 Axe fanger kontrast, manglende ledetekster og feil bruk av `aria-*`. Den fanger ikke fokushåndtering. Flytter komponenten fokus — slik `fs-calendar` gjør når panelet lukkes — må det ha sin egen test.
+
+### Dokumentasjonssiden
+
+Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. Dokumentasjonen for et designsystem er et produkt i seg selv, og har sin egen sjekk:
+
+```bash
+bun run build
+bun run test:docs
+```
+
+Den kjører axe mot hver bygde side i både lyst og mørkt tema.
 
 ## Dokumentasjon
 
