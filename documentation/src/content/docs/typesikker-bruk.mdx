@@ -9,7 +9,7 @@ Klasser og dataattributter gjør komponentene rammeverksuavhengige, men alt er s
 <button class="fs-button" data-variant="secundary">Lagre utkast</button>
 ```
 
-Knappen får primærstilen. Ingen feilmelding — bare en variant som stille aldri ble brukt. Derfor finnes `fs`.
+Knappen får primærstilen. Ingen feilmelding, bare en variant som stille aldri ble brukt. Derfor finnes `fs`.
 
 ## Navnerommet `fs`
 
@@ -22,14 +22,14 @@ import { fs } from "@fristil/designsystem"
 <a {...fs.link()} href="/kvittering">Se kvittering</a>
 ```
 
-Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet — samme form for alle.
+Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle.
 
 Returverdiene er vanlige objekter. Derfor virker samme API i React, Astro, Datastar og ren HTML.
 
 :::note[Bruker du React?]
 Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
 
-`fs` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem — de havner riktig i DOM-en — men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
+`fs` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem, og de havner riktig i DOM-en, men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
 
 Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
@@ -44,7 +44,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
 ```
 
-Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet — ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
+Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
 
 ## Standardverdier
 
@@ -53,7 +53,7 @@ fs.button()
 // { class: "fs-button" }
 
 fs.button({ variant: "primary" })
-// { class: "fs-button" } — primær er standard i CSS-en
+// { class: "fs-button" }, primær er standard i CSS-en
 
 fs.button({ variant: "danger" })
 // { class: "fs-button", "data-variant": "danger" }
@@ -93,7 +93,7 @@ fs.input({ type: "date" })
 // { class: "fs-input", type: "date", "data-variant": "date" }
 
 fs.input({ type: "email" })
-// { class: "fs-input", type: "email" } — e-post har ikke noe ikon
+// { class: "fs-input", type: "email" }, e-post har ikke noe ikon
 ```
 
 Én verdi styrer begge. Det samme gjelder tilstand: `state: "invalid"` gir både `data-state` og `aria-invalid`.
@@ -147,9 +147,9 @@ fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
 
 Du får `for`, `id`, `aria-describedby`, `aria-invalid` og `data-state` ferdig utregnet.
 
-Legg merke til at `fs.input` bare får `type`. Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke — sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
+Legg merke til at `fs.input` bare får `type`. Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
 
-Feilmeldingen tas med i `aria-describedby` **bare når feltet er ugyldig** — ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
+Feilmeldingen tas med i `aria-describedby` **bare når feltet er ugyldig**. Ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
 
 :::note[Samme kjerne som `<fs-field>`]
 [Field](../components/field/) gjør samme utregning, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted.
@@ -173,7 +173,7 @@ export function Knapp({ variant, ...rest }: Props) {
 }
 ```
 
-Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
+Bytter teamet rammeverk, er det disse tolv linjene som skrives om, ikke designsystemet.
 
 `ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
 
@@ -195,11 +195,11 @@ Da får attributtene autofullføring og sjekk:
 <fs-date-field helpText="DD-MM-ÅÅÅÅ" />  // feil: attributtet heter help-text
 ```
 
-Ren HTML, Astro og Datastar trenger ikke dette — der er `<fs-field>` bare en HTML-tagg.
+Ren HTML, Astro og Datastar trenger ikke dette. Der er `<fs-field>` bare en HTML-tagg.
 
 ## Hva typene ikke fanger
 
-**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer — returverdien er bare et objekt med HTML-attributter.
+**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer, for returverdien er bare et objekt med HTML-attributter.
 
 **Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen, ikke `"date"`.
 

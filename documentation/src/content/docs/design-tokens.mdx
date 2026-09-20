@@ -6,7 +6,7 @@ description: Farger, størrelser og typografi som CSS-variabler, TypeScript-kons
 import Preview from "../../components/Preview.astro"
 import Tokenprover from "../../components/Tokenprover.astro"
 
-Alle verdier — farger, avstander, skriftstørrelser — er CSS-variabler i `tokens.css`.
+Alle verdier er CSS-variabler i `tokens.css`, både farger, avstander og skriftstørrelser.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -22,7 +22,7 @@ import "@fristil/designsystem/tokens.css"
 
 ## To lag med farger
 
-**Palett** — `--palette-{farge}-{trinn}` — er råverdiene. **Semantisk** — `--semantic-{sammenheng}-{rolle}` — peker på en palettfarge og sier hva den betyr.
+**Palett** (`--palette-{farge}-{trinn}`) er råverdiene. **Semantisk** (`--semantic-{sammenheng}-{rolle}`) peker på en palettfarge og sier hva den betyr.
 
 Bruk det semantiske laget. Da følger komponenten din med når paletten justeres.
 
@@ -49,9 +49,9 @@ Bruk det semantiske laget. Da følger komponenten din med når paletten justeres
 | Nøytral | `--semantic-neutral-background`, `-foreground` | Dempet, men lesbar informasjon |
 | Skillelinjer | `--semantic-divider-30`, `--semantic-divider-100` | Rammer og streker, svak og sterk |
 
-Bruk `background` og `foreground` som par — da er kontrasten kontrollert mot WCAG AA av testene i designsystemet.
+Bruk `background` og `foreground` som par. Da er kontrasten kontrollert mot WCAG AA av testene i designsystemet.
 
-**`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3 — derfor bevisst dempet. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder 6,7:1.
+**`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3, og derfor bevisst dempet. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder 6,7:1.
 
 Er elementet slått av, bruk `disabled`. Kan brukeren lese eller trykke på det, bruk `neutral`.
 
@@ -74,7 +74,7 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
 
 | Variabel | Verdi | Tailwind |
 | --- | --- | --- |
-| `--size-px` | 1px | — |
+| `--size-px` | 1px | ingen |
 | `--size-0-5` | 0.125rem | `0.5` |
 | `--size-1` | 0.25rem | `1` |
 | `--size-2` | 0.5rem | `2` |
@@ -92,14 +92,14 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
 Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhold til brødteksten.
 
 <Preview layout="stabel" maxWidth="34rem">
-  <p style="margin: 0; font-size: var(--font-size-xxs);">xxs — 0.625rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xs);">xs — 0.75rem</p>
-  <p style="margin: 0; font-size: var(--font-size-s);">s — 0.875rem</p>
-  <p style="margin: 0; font-size: var(--font-size-m);">m — 1rem, brødtekst</p>
-  <p style="margin: 0; font-size: var(--font-size-l);">l — 1.125rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xl);">xl — 1.375rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xxl);">xxl — 1.875rem</p>
-  <p style="margin: 0; font-size: var(--font-size-mega);">mega — 2.625rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xxs);">xxs, 0.625rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xs);">xs, 0.75rem</p>
+  <p style="margin: 0; font-size: var(--font-size-s);">s, 0.875rem</p>
+  <p style="margin: 0; font-size: var(--font-size-m);">m, 1rem, brødtekst</p>
+  <p style="margin: 0; font-size: var(--font-size-l);">l, 1.125rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xl);">xl, 1.375rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xxl);">xxl, 1.875rem</p>
+  <p style="margin: 0; font-size: var(--font-size-mega);">mega, 2.625rem</p>
 </Preview>
 
 `--font-size-m` er brødteksten. `--font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.

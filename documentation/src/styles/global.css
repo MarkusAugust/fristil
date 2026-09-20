@@ -131,7 +131,7 @@
 		@apply rounded-2xl border border-zinc-200/80 bg-white/88 px-4 py-5 shadow-[0_18px_48px_-34px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:shadow-[0_22px_62px_-40px_rgba(2,6,23,0.85)];
 	}
 
-	/* Innhold merket .not-content — som forhåndsvisningene av komponenter —
+	/* Innhold merket .not-content, som forhåndsvisningene av komponenter,
 	   skal ikke arve dokumentasjonens typografi. En regel som treffer <p>
 	   direkte slår den arvede fargen fra forhåndsvisningen, uansett
 	   spesifisitet. */

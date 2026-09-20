@@ -159,7 +159,7 @@ describe("fs-field ledetekst", () => {
     expect(label.classList.contains("fs-label")).toBe(true)
     expect(label.getAttribute("data-required")).toBe("text")
 
-    // Attributtet alene er dødt uten klassen — markeringen kommer fra ::after
+    // Attributtet alene er dødt uten klassen. Markeringen kommer fra ::after
     const markering = getComputedStyle(label, "::after").content
     expect(markering).toContain("påkrevd")
   })

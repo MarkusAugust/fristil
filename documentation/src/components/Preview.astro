@@ -28,7 +28,7 @@ const STILARK = {
 export type Stilark = keyof typeof STILARK
 
 interface Props {
-  /** Stilarkene eksempelet trenger — de samme du ville importert i en app. */
+  /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
   stiler?: Stilark[]
   /** `rad` legger innholdet side om side, `stabel` under hverandre. */
   layout?: "rad" | "stabel"
@@ -94,7 +94,7 @@ const stilark = [
 
 	/* Bevisst ingen reset her. Flaten skal vise nøyaktig det en konsument får
 	   med stilarkene under og nettleserens egne standardverdier. Ser noe rart
-	   ut, er det komponenten som mangler noe — ikke forhåndsvisningen. */
+	   ut, er det komponenten som mangler noe, ikke forhåndsvisningen. */
 	`,
   ...stiler.map((navn) => STILARK[navn]),
 ].join("\n")

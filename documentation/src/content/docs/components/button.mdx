@@ -1,6 +1,6 @@
 ---
 title: Button
-description: Knapp for handlinger. CSS-komponent — én klasse, ingen JavaScript.
+description: Knapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
 import Eksempel from "../../../components/Eksempel.astro"
@@ -25,7 +25,7 @@ import "@fristil/designsystem/button.css"
 | --- | --- |
 | *(utelatt)* | Hovedhandlingen på siden. Bruk bare én. |
 | `secondary` | Alternativ handling ved siden av hovedhandlingen |
-| `ghost` | Lav vekt — verktøylinjer, handlinger i tabeller og kort |
+| `ghost` | Lav vekt, for verktøylinjer, handlinger i tabeller og kort |
 | `danger` | Sletter eller kan ikke angres |
 
 ## Deaktivert
@@ -35,7 +35,7 @@ import "@fristil/designsystem/button.css"
 <button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
 `} />
 
-`disabled` finnes bare på `<button>`. Ser knappen ut som en lenke i markupen, bruk `aria-disabled="true"` — da beholder skjermlesere elementet og kan si at det er utilgjengelig.
+`disabled` finnes bare på `<button>`. Ser knappen ut som en lenke i markupen, bruk `aria-disabled="true"`. Da beholder skjermlesere elementet og kan si at det er utilgjengelig.
 
 ## Lenke som ser ut som knapp
 
@@ -56,7 +56,7 @@ const knapp = document.querySelector<HTMLButtonElement>("#send")
 fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
 ```
 
-`fs.button()` uten argument gir primærknappen — den trenger ikke noe `data-variant`.
+`fs.button()` uten argument gir primærknappen, som ikke trenger noe `data-variant`.
 
 Kommer varianten fra et API eller en URL, valider den:
 

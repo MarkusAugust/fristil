@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { fs } from "./fs"
 
-describe("fs — felles form", () => {
+describe("fs: felles form", () => {
   it("gir samme form for alle komponentene: valgobjekt inn, attributter ut", () => {
     expect(fs.button()).toEqual({ class: "fs-button" })
     expect(fs.badge()).toEqual({ class: "fs-badge" })
@@ -156,7 +156,7 @@ describe("fs.field sammen med feltfunksjonene", () => {
     const felles = Object.keys(input).filter((navn) => navn in felt.control)
 
     // I JSX overskriver den siste spredningen den første, men i maler som
-    // skriver ut attributtene bokstavelig — Astro, ren HTML — blir de
+    // skriver ut attributtene bokstavelig, som Astro og ren HTML, blir de
     // stående dobbelt. Da er markupen ugyldig.
     expect(felles, "Disse settes av begge").toEqual([])
   })

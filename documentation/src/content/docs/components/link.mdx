@@ -1,6 +1,6 @@
 ---
 title: Link
-description: Lenkestil for navigasjon i løpende tekst. CSS-komponent — én klasse, ingen JavaScript.
+description: Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
 import Eksempel from "../../../components/Eksempel.astro"
@@ -29,7 +29,7 @@ import "@fristil/designsystem/link.css"
 <a class="fs-link" aria-disabled="true" href="#">Se årsoppgave</a>
 `} />
 
-`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, så skjermlesere kan lese den og si at den er utilgjengelig — det er forskjellen fra å fjerne `href`.
+`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, så skjermlesere kan lese den og si at den er utilgjengelig. Det er forskjellen fra å fjerne `href`.
 
 Merk at `pointer-events: none` stopper musa, ikke tastaturet. Skal lenken ikke kunne følges i det hele tatt, må du også fjerne `href`.
 
@@ -43,7 +43,7 @@ const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
 fs.setAttributes(lenke, fs.link({ disabled: !klar }))
 ```
 
-Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false` — da fjernes `aria-disabled`, og lenken virker igjen.
+Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false`. Da fjernes `aria-disabled`, og lenken virker igjen.
 
 ## Tilgjengelighet
 

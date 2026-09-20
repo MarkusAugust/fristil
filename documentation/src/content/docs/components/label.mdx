@@ -5,7 +5,7 @@ description: Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. C
 
 import Eksempel from "../../../components/Eksempel.astro"
 
-Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere — den setter `for`, `id` og `aria-describedby` for deg.
+Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere. Den setter `for`, `id` og `aria-describedby` for deg.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -53,7 +53,7 @@ fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
 ledetekst.htmlFor = "epost"
 ```
 
-`for` setter du selv — funksjonen returnerer bare Fristils egne attributter.
+`for` setter du selv. Funksjonen returnerer bare Fristils egne attributter.
 
 Setter du opp et helt felt, gjør [`fs.field`](../../typesikker-bruk/#fsfield) både markeringen og koblingen til kontrollen:
 
@@ -67,5 +67,5 @@ fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
 ## Tilgjengelighet
 
 - `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
-- Stjernen legges til med `::after` og leses ikke opp. Det er meningen — `required` formidler det samme, og en opplest «stjerne» ved hvert felt blir støy.
+- Stjernen legges til med `::after` og leses ikke opp. Det er meningen, for `required` formidler det samme, og en opplest «stjerne» ved hvert felt blir støy.
 - Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.srOnly` fra `utilities.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.

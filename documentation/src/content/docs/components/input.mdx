@@ -34,7 +34,7 @@ import "@fristil/designsystem/input.css"
 | `invalid` | Valideringen har feilet |
 | `success` | Verdien er bekreftet gyldig |
 
-`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg — eller [Field](../field/), som setter begge.
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
 
 ## Dato og klokkeslett
 
@@ -72,7 +72,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email" }))
 ```
 
-`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt — fellen over er ikke mulig å gå i.
+`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Fellen over er ikke mulig å gå i.
 
 Ved validering kaller du den på nytt med ny tilstand:
 
@@ -84,12 +84,12 @@ felt.addEventListener("blur", () => {
 })
 ```
 
-`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` begge — uten det ville feltet blitt stående rødt etter at feilen var rettet.
+`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` begge. Uten det ville feltet blitt stående rødt etter at feilen var rettet.
 
 Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Tilgjengelighet
 
-- Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning — den forsvinner idet brukeren skriver.
+- Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning, siden den forsvinner idet brukeren skriver.
 - Bruk riktig `type`. Det bestemmer mobiltastaturet og hva nettleseren tilbyr av autofyll.
 - Sett `autocomplete` på felt som spør om personopplysninger, for eksempel `autocomplete="email"`.

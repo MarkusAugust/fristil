@@ -8,7 +8,7 @@ import kilde from "./react?raw"
 /**
  * JSX-deklarasjonene er håndskrevet, og kan derfor komme i utakt med
  * komponentene de beskriver. Legger noen til en egenskap på `<fs-date-field>`
- * uten å legge den inn her, er den usynlig for TypeScript — og da er vi
+ * uten å legge den inn her, er den usynlig for TypeScript, og da er vi
  * tilbake til at skrivefeil går rett gjennom.
  *
  * Testen leser `static properties` fra komponentene og krever at hvert
@@ -55,7 +55,7 @@ describe("JSX-deklarasjonene følger komponentene", () => {
       ...attributtnavn(FsDateField),
     ])
 
-    // Bare attributtblokkene — taggnavnene i IntrinsicElements står under
+    // Bare attributtblokkene. Taggnavnene i IntrinsicElements står under
     // `declare module`, og skal ikke med.
     const attributtblokker = kilde.slice(0, kilde.indexOf("declare module"))
     const deklarerte = [

@@ -2,8 +2,8 @@
  * Monterer markup i en shadow root, uten noen CSS-reset.
  *
  * Et designsystem kan ikke regne med at konsumenten har en reset. Testsider
- * og rammeverk har som regel en — Tailwind setter for eksempel
- * `box-sizing: border-box` på alt — og den skjuler feil i komponentene våre.
+ * og rammeverk har som regel en. Tailwind setter for eksempel
+ * `box-sizing: border-box` på alt, og det skjuler feil i komponentene våre.
  * `.fs-textarea` hadde `width: 100%` uten `box-sizing`, og ble derfor bredere
  * enn boksen sin hos alle uten reset. Ingen test fanget det, fordi alle
  * testene kjørte på sider som tilfeldigvis hadde en.

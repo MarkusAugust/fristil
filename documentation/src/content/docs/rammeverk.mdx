@@ -1,6 +1,6 @@
 ---
 title: Rammeverk
-description: Oppsett av Fristil i ren HTML, React, Astro og Datastar — samme komponenter, samme API.
+description: Oppsett av Fristil i ren HTML, React, Astro og Datastar, med de samme komponentene og det samme API-et.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
@@ -117,12 +117,12 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     ```
 
     :::caution[Bare én kopi av `@types/react`]
-    Typene virker ved at pakken utvider Reacts `JSX.IntrinsicElements`. Har prosjektet to installasjoner av `@types/react` — lett å få til i et monorepo — utvider pakken den ene mens koden din bruker den andre, og elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
+    Typene virker ved at pakken utvider Reacts `JSX.IntrinsicElements`. Har prosjektet to installasjoner av `@types/react`, noe som lett skjer i et monorepo, utvider pakken den ene mens koden din bruker den andre, og elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
     :::
   </TabItem>
   <TabItem label="Bruk">
     ```tsx
-    // main.tsx – kjøres én gang når appen starter
+    // main.tsx, kjøres én gang når appen starter
     import { defineFsField } from "@fristil/designsystem/field"
     import "@fristil/designsystem/field.css"
 
@@ -130,7 +130,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     ```
 
     ```ts
-    // src/fristil.d.ts – gir <fs-field> typer i JSX
+    // src/fristil.d.ts, gir <fs-field> typer i JSX
     import "@fristil/designsystem/react-jsx"
     ```
 
@@ -165,7 +165,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     }
     ```
 
-    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    :::caution[Bare `invalid={ugyldig || undefined}` virker]
     React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
 
     | | React 18 (setter attributt) | React 19 (setter egenskap) |
@@ -174,7 +174,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     | `invalid={ugyldig}` | **alltid ugyldig** | virker |
     | `invalid={ugyldig \|\| undefined}` | virker | virker |
 
-    React 18 stringifiserer `false` til attributtet `invalid="false"` — et attributt som finnes, og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+    React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
 
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
@@ -183,7 +183,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
 ## Astro
 
-En `.astro`-fil er HTML med frontmatter over. Stilarkene importeres der, og `fs` brukes rett i malen — Astro støtter spredning som JSX.
+En `.astro`-fil er HTML med frontmatter over. Stilarkene importeres der, og `fs` brukes rett i malen, siden Astro støtter spredning som JSX.
 
 ```astro
 ---
@@ -204,7 +204,7 @@ Kjøres ved bygging. Ut kommer ren HTML:
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-Null JavaScript sendt til nettleseren — `fs` er borte når siden er bygget.
+Null JavaScript sendt til nettleseren. `fs` er borte når siden er bygget.
 
 ### Felt uten JavaScript
 
@@ -257,7 +257,7 @@ Astro bygger HTML-en, Datastar gir den oppførsel, og ingen av delene krever en 
 
 ## HTML med Datastar
 
-[Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg. Samme premiss som Fristil.
+[Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter. Ett skript, ingen byggesteg. Samme premiss som Fristil.
 
 ```html
 <script
@@ -298,17 +298,17 @@ Tre attributter gjør hele jobben:
 - `data-computed:ugyldig` utleder valideringen av den.
 - `data-bind:navn` binder feltet begge veier, og `data-on:blur` markerer at brukeren har forlatt det.
 
-`data-attr:invalid` knytter Datastar til komponenten: den **setter attributtet når uttrykket er sant og fjerner det når det er usant** — nøyaktig det `<fs-field>` forventer.
+`data-attr:invalid` knytter Datastar til komponenten: den **setter attributtet når uttrykket er sant og fjerner det når det er usant**, nøyaktig slik `<fs-field>` forventer.
 
 :::note[Ingen av React-fellene her]
 React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer egendefinerte elementer ulikt. Datastar jobber direkte på attributtene.
 :::
 
-`fs` brukes eventuelt på serveren eller i byggesteget — Datastar trenger den ikke i nettleseren.
+`fs` brukes eventuelt på serveren eller i byggesteget. Datastar trenger den ikke i nettleseren.
 
 ### HTML fra serveren
 
-Datastar kan la serveren sende HTML underveis, over Server-Sent Events — se [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript).
+Datastar kan la serveren sende HTML underveis, over Server-Sent Events. Se [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript).
 
 Et egendefinert element oppgraderer seg selv når det settes inn i dokumentet, så lenge `defineFsField()` har kjørt én gang. Serveren kan derfor sende dette som ren HTML:
 
@@ -321,7 +321,7 @@ Et egendefinert element oppgraderer seg selv når det settes inn i dokumentet, s
 </fs-field>
 ```
 
-Komponenten kobler da `for` og `id`, setter `fs-label`, legger på `aria-invalid` og bygger `aria-describedby` — uten JavaScript sendt med for akkurat dette feltet.
+Komponenten kobler da `for` og `id`, setter `fs-label`, legger på `aria-invalid` og bygger `aria-describedby`, uten at det sendes JavaScript med for akkurat dette feltet.
 
 Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
@@ -331,7 +331,7 @@ Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen,
 | --- | --- |
 | Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
 | `customElements is not defined` | Registreringen kjøres under serverrendering |
-| Feltet er alltid ugyldig | `invalid="false"` er satt — attributtet må fjernes, ikke settes til `false` |
+| Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 | Stilene mangler | `tokens.css` er ikke importert, eller importeres etter komponentens eget stilark |
 | React: «Invalid DOM property `class`» | Importer `fs` fra `@fristil/designsystem/react` |
