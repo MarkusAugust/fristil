@@ -129,7 +129,5 @@ I vanlig JavaScript — for eksempel i en `<script type="module">` i en HTML-fil
 - Panelet skal aldri være eneste vei til datoen. La brukeren kunne skrive den også — noen skriver raskere enn de klikker, og en skjermleserbruker gjør det nesten alltid. Det er derfor [Date Field](../date-field/) alltid har et tekstfelt ved siden av.
 - Knappen har en fast `aria-label` — «Åpne kalender» — inne i Shadow DOM. Den kan ikke overstyres utenfra. Har du flere kalendere på samme side, bør du gi hver av dem en synlig ledetekst i nærheten, slik at det går fram hvilken dato de gjelder.
 - Piltastene flytter mellom dagene i panelet, og `Escape` lukker det.
-
-:::caution[Kjent mangel]
-Når panelet lukkes med `Escape`, flyttes ikke fokus tilbake til knappen. En tastaturbruker havner da på starten av siden og må navigere seg tilbake. Bruk kalenderen med det forbeholdet inntil det er rettet.
-:::
+- Lukkes panelet med `Escape` eller ved at en dag velges, flyttes fokus tilbake til knappen. Lukkes det fordi brukeren klikket eller tabbet et annet sted, blir fokus stående der det er.
+- Dagene fra nabomåneden er dempet, men klikkbare, og bruker derfor `neutral`-tokenene framfor `disabled` — de må være lesbare.
