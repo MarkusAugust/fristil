@@ -96,9 +96,11 @@ interface Props {
   maxWidth?: string
   /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
   id?: string
+  /** CSS som legges sist, for eksempel utility-klasser kompilert av Tailwind. */
+  ekstraCss?: string
 }
 
-const { stiler = [], layout = "rad", maxWidth, id } = Astro.props
+const { stiler = [], layout = "rad", maxWidth, id, ekstraCss } = Astro.props
 
 for (const navn of stiler) {
   if (!(navn in STILARK)) {
@@ -157,6 +159,7 @@ const stilark = [
 	   ut, er det komponenten som mangler noe, ikke forhåndsvisningen. */
 	`,
   ...stiler.map((navn) => STILARK[navn]),
+  ekstraCss ?? "",
 ].join("\n")
 ---
 

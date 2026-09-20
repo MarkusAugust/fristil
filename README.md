@@ -84,6 +84,8 @@ import { fs } from "@fristil/designsystem"
 
 Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er lik for alle. Skriv `fs.` i editoren for å se hva som finnes, og `fs.button.` for å se lovlige verdier og vakten som validerer verdier utenfra.
 
+Bruker du Tailwind, importer `@fristil/designsystem/tailwind.css` og sett lagrekkefølgen `@layer theme, base, fristil, components, utilities;` først i CSS-en din. Da kan utility-klasser overstyre komponentene, og Preflight lar dem være. Se «Tailwind» i dokumentasjonen.
+
 `fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>`, så kontrakten finnes ett sted. Se «Typesikker bruk» og «Rammeverk» i dokumentasjonen. Rammeverk-siden dekker ren HTML, React, Astro og Datastar.
 
 `@fristil/designsystem/react-jsx` gir `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` typer i JSX. Uten den kjenner ikke TypeScript elementene, og attributter som `required-marker` og `help-text` er ukontrollerte strenger.
