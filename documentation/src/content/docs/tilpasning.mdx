@@ -3,7 +3,7 @@ title: Tilpasning
 description: Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.
 ---
 
-Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Det er din fil, så den overlever oppgraderinger av pakken — i motsetning til å endre noe inne i `node_modules`.
+Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
 
 Fire veier, i den rekkefølgen du bør prøve dem:
 
@@ -25,12 +25,10 @@ Vil du ha andre farger enn Fristils, overstyrer du variablene i din egen CSS. La
 }
 ```
 
-Det er din fil, så den overlever oppgraderinger av pakken.
-
-Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet — du trenger verken `!important` eller lange selektorer.
+Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
 
 :::caution[Overstyrer du, eier du kontrasten]
-Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger — og paret den inngår i, må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
+Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
 :::
 
 ### Per tema
@@ -90,11 +88,11 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 | `--fs-calendar-popup-padding` | `var(--size-3)` |
 | `--fs-calendar-day-size` | `var(--size-8)` |
 
-Standardverdiene peker på `--size-*`-skalaen. Endrer du skalaen, følger komponentene med — setter du variabelen, gjelder din verdi bare for den komponenten.
+Standardverdiene peker på `--size-*`-skalaen. Endrer du skalaen, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
 
 ## Når variabelen ikke rekker
 
-Alt Fristil sender ut — tokens og komponent-CSS — ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
+Alt Fristil sender ut, både tokens og komponent-CSS, ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
 
 ```css
 .fs-button {
@@ -105,7 +103,7 @@ Alt Fristil sender ut — tokens og komponent-CSS — ligger i `@layer fristil`.
 Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="danger"]:hover`, eller ty til `!important`.
 
 :::caution[`!important` snur rekkefølgen]
-For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke — la det være.
+For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
 :::
 
 ### Shadow DOM
@@ -122,25 +120,6 @@ fs-calendar::part(trigger) { border-radius: 9999px; }
 fs-calendar::part(day-selected) { background: #7c3aed; }
 ```
 
-Disse delene er eksponert:
+Hele lista over deler står på [Calendar](../components/calendar/#deler-du-kan-style), sammen med de to formene som ikke virker: attributtselektor etter `::part()` og etterkommere av en del.
 
-| Del | Hva det er |
-| --- | --- |
-| `trigger` | Knappen som åpner kalenderen |
-| `popup` | Panelet |
-| `popup-header`, `month-label`, `month-controls`, `month-button` | Toppen med måned og pilene |
-| `weekday-row`, `weekday` | Ukedagsnavnene |
-| `day-grid`, `day` | Rutenettet og hver dagknapp |
-| `day-today`, `day-selected`, `day-outside` | Dagknappen i hver av sine tilstander |
-
-Tilstandene er egne delnavn fordi `::part()` er strengere enn vanlige selektorer. To ting virker ikke:
-
-```css
-/* Attributtselektor etter ::part() treffer ikke */
-fs-calendar::part(day)[data-selected="true"] { … }
-
-/* En del har ingen etterkommere utenfra */
-fs-calendar::part(popup) .day { … }
-```
-
-Bruk `::part(day-selected)` i stedet. Pseudoklasser virker som normalt: `::part(day):hover`.
+Pseudoklasser virker som normalt: `::part(day):hover`.

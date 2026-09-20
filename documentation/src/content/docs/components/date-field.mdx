@@ -21,7 +21,7 @@ Standardvalget for datoer i skjema.
 ## Kom i gang
 
 ```ts
-// main.ts – kjøres én gang når appen starter
+// main.ts, kjøres én gang når appen starter
 import { defineFsDateField } from "@fristil/designsystem/date-field"
 import "@fristil/designsystem/date-field.css"
 
@@ -48,7 +48,7 @@ Prøv gjerne å skrive `32-06-2026` i feltet over og klikke utenfor. Da ser du h
 
 ## To formater
 
-`value` er alltid ISO — `ÅÅÅÅ-MM-DD`. Feltet viser `DD-MM-ÅÅÅÅ`. Komponenten oversetter begge veier, så du forholder deg bare til ISO.
+`value` er alltid ISO, altså `ÅÅÅÅ-MM-DD`. Feltet viser `DD-MM-ÅÅÅÅ`. Komponenten oversetter begge veier, så du forholder deg bare til ISO.
 
 Parse aldri teksten i feltet selv. Les `value`.
 
@@ -56,7 +56,7 @@ Parse aldri teksten i feltet selv. Les `value`.
 
 Komponenten sjekker om datoen finnes, når feltet mister fokus. Er den umulig, som `32-06-2026`, vises `error-text`.
 
-Alt annet — fortid, intervall, virkedag — er din regel, satt med `invalid`:
+Alt annet er din egen regel, satt med `invalid`. Det gjelder fortid, intervall og virkedag:
 
 ```js
 const felt = document.getElementById("reisedato")
@@ -111,7 +111,7 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.tsx – kjøres én gang når appen starter
+    // main.tsx, kjøres én gang når appen starter
     import { defineFsDateField } from "@fristil/designsystem/date-field"
     import "@fristil/designsystem/date-field.css"
 
@@ -119,7 +119,7 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
     ```
 
     ```ts
-    // src/fristil.d.ts – gir <fs-date-field> typer i JSX
+    // src/fristil.d.ts, gir <fs-date-field> typer i JSX
     import "@fristil/designsystem/react-jsx"
     ```
 
@@ -154,9 +154,9 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
     }
     ```
 
-    `e.currentTarget.value` er ISO — les den, ikke teksten i feltet.
+    `e.currentTarget.value` er ISO. Les den, ikke teksten i feltet.
 
-    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    :::caution[Bare `invalid={ugyldig || undefined}` virker]
     React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
 
     | | React 18 (setter attributt) | React 19 (setter egenskap) |
@@ -194,7 +194,7 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
     `customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret.
   </TabItem>
   <TabItem label="Datastar">
-    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.
+    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter. Ett skript, ingen byggesteg.
 
     ```html
     <script
@@ -226,7 +226,7 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
     </script>
     ```
 
-    Bruk `evt.currentTarget`, ikke `evt.target`. Komponenten rendrer et `<input>` inni seg, og hendelsen bobler derfra — `evt.target` er altså tekstfeltet, og verdien der er `DD-MM-ÅÅÅÅ`. `currentTarget` er `<fs-date-field>` selv, og den gir alltid ISO.
+    Bruk `evt.currentTarget`, ikke `evt.target`. Komponenten rendrer et `<input>` inni seg, og hendelsen bobler derfra. `evt.target` er altså tekstfeltet, og verdien der er `DD-MM-ÅÅÅÅ`. `currentTarget` er `<fs-date-field>` selv, og den gir alltid ISO.
 
     `data-attr:invalid` setter og fjerner attributtet etter uttrykket, så du slipper å tenke på hvordan rammeverket oversetter boolske verdier.
   </TabItem>
@@ -257,7 +257,35 @@ ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
 | `input` | Når verdien endres, enten brukeren skriver eller velger i kalenderen |
 | `change` | Samtidig med `input` |
 
-Begge bobler. Les alltid `element.value` — den er ISO uansett hvordan datoen ble satt.
+Begge bobler. Les alltid `element.value`, som er ISO uansett hvordan datoen ble satt.
+
+## Deler du kan style
+
+`<fs-date-field>` kjører i vanlig DOM. Markupen den rendrer er dermed alminnelige elementer du treffer med vanlige selektorer:
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-date-field` | Hele feltet |
+| `.fs-date-field__field` | Tekstfeltet og ikonknappen |
+| `.fs-date-field__icon-btn` | Knappen som åpner kalenderen |
+| `.fs-date-field__calendar` | Festet kalenderpanelet henger under |
+| `.fs-label`, `.fs-input`, `.fs-help-text`, `.fs-error-text` | De vanlige komponentklassene |
+
+```css
+.fs-date-field__icon-btn {
+	color: #7c3aed;
+}
+```
+
+Kalenderen den åpner er derimot en `<fs-calendar>` med Shadow DOM. Delene inni den nås gjennom datofeltet:
+
+```css
+fs-date-field fs-calendar::part(day-selected) {
+	background: #7c3aed;
+}
+```
+
+Se [Calendar](../calendar/#deler-du-kan-style) for hele lista.
 
 ## Tastatur
 

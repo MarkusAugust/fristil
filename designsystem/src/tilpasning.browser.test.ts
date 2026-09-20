@@ -65,7 +65,7 @@ describe("en konsument kan tilpasse systemet", () => {
   it("kan overstyre en regel systemet ikke har eksponert, med lav spesifisitet", () => {
     document.body.innerHTML = '<button class="fs-button" disabled>Av</button>'
 
-    // Systemets regel er .fs-button:disabled — 0,2,0. Konsumentens er
+    // Systemets regel er .fs-button:disabled, altså 0,2,0. Konsumentens er
     // 0,1,0 og ville tapt uten @layer, uansett rekkefølge. Det er nettopp
     // dette layeret er til for.
     apply(".fs-button { background: rgb(1, 2, 3); }")
@@ -89,7 +89,7 @@ describe("en konsument kan tilpasse systemet", () => {
  * `<fs-date-field>` rendrer i vanlig DOM, og la tidligere oppsettet sitt i
  * `style=`-attributter. Inline stil taper bare for `!important`, så
  * komponenten var i praksis låst. `<fs-calendar>` har shadow DOM, der
- * konsumentens selektorer ikke når inn i det hele tatt — der er
+ * konsumentens selektorer ikke når inn i det hele tatt. Der er
  * komponentvariabler og `::part()` de eneste veiene.
  */
 describe("de sammensatte komponentene kan tilpasses", () => {
@@ -113,7 +113,7 @@ describe("de sammensatte komponentene kan tilpasses", () => {
   it("lar konsumenten flytte ikonet i fs-date-field", () => {
     const button = document.querySelector(".fs-date-field__icon-btn") as HTMLElement
 
-    // Uten inline stil på elementet holder det med én klasse — 0,1,0
+    // Uten inline stil på elementet holder det med én klasse, altså 0,1,0
     apply(".fs-date-field__icon-btn { inset-inline-end: 40px; }")
 
     expect(getComputedStyle(button).insetInlineEnd).toBe("40px")
@@ -135,8 +135,21 @@ describe("de sammensatte komponentene kan tilpasses", () => {
     expect(getComputedStyle(knapp).backgroundColor).toBe("rgb(9, 9, 9)")
   })
 
+  it("når kalenderdelene også gjennom fs-date-field", async () => {
+    // fs-date-field har ikke shadow DOM selv, men rendrer en fs-calendar
+    // som har det. Delene skal kunne nås gjennom datofeltet.
+    apply("fs-date-field fs-calendar::part(trigger) { border-radius: 7px; }")
+
+    const felt = document.querySelector("fs-date-field") as HTMLElement
+    const kalender = felt.querySelector("fs-calendar") as LitElement
+    await kalender.updateComplete
+    const trigger = kalender.shadowRoot?.querySelector(".trigger") as HTMLElement
+
+    expect(getComputedStyle(trigger).borderRadius).toBe("7px")
+  })
+
   it("eksponerer dagens tilstand som egne delnavn", () => {
-    // ::part(day)[data-selected] treffer ikke — målt. Derfor delnavn.
+    // ::part(day)[data-selected] treffer ikke. Det er målt, og derfor delnavn.
     apply("fs-calendar::part(day-today) { outline: 3px solid rgb(8, 8, 8); }")
 
     const calendar = document.getElementById("alene") as HTMLElement
