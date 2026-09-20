@@ -1,0 +1,33 @@
+@layer fristil {
+  .fs-heading {
+    margin: 0;
+    font-family: inherit;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--semantic-page-foreground);
+    text-wrap: balance;
+    font-size: var(--font-size-xl);
+  }
+
+  .fs-heading[data-size="mega"] {
+    font-size: var(--font-size-mega);
+  }
+
+  .fs-heading[data-size="xl"] {
+    font-size: var(--font-size-xxl);
+  }
+
+  .fs-heading[data-size="m"] {
+    font-size: var(--font-size-l);
+  }
+
+  .fs-heading[data-size="s"] {
+    font-size: var(--font-size-m);
+  }
+
+  .fs-heading[data-size="xs"] {
+    font-size: var(--font-size-s);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}

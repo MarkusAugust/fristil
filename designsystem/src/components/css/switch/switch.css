@@ -1,0 +1,74 @@
+@layer fristil {
+  .fs-switch {
+    box-sizing: border-box;
+    appearance: none;
+    flex: none;
+    display: inline-block;
+    inline-size: var(--fs-switch-width, var(--size-10));
+    block-size: var(--fs-switch-height, var(--size-6));
+    margin: 0;
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--size-4);
+    background-color: var(--semantic-neutral-background);
+    /* Knappen er en gradient, ikke et pseudoelement: Firefox rendrer ikke
+       ::before og ::after på et <input>. */
+    background-image: radial-gradient(
+      circle at center,
+      var(--semantic-page-foreground) 0 34%,
+      transparent 36%
+    );
+    background-repeat: no-repeat;
+    background-size: var(--fs-switch-height, var(--size-6)) 100%;
+    background-position: left center;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease,
+      background-position 120ms ease;
+  }
+
+  .fs-switch:hover:not(:disabled) {
+    border-color: var(--semantic-field-border-hover);
+  }
+
+  .fs-switch:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-switch:checked {
+    background-color: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+    background-position: right center;
+    background-image: radial-gradient(
+      circle at center,
+      var(--semantic-interactive-contrast) 0 34%,
+      transparent 36%
+    );
+  }
+
+  .fs-switch:disabled {
+    background-color: var(--semantic-disabled-background);
+    border-color: var(--semantic-disabled-background);
+    background-image: radial-gradient(
+      circle at center,
+      var(--semantic-disabled-foreground) 0 34%,
+      transparent 36%
+    );
+    cursor: not-allowed;
+  }
+
+  /* Brukeren har bedt om mindre bevegelse. Bryteren skal fortsatt bytte
+     tilstand, den skal bare ikke gli. */
+  @media (prefers-reduced-motion: reduce) {
+    .fs-switch {
+      transition: none;
+    }
+  }
+
+  .fs-switch-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2);
+    line-height: 1.5;
+  }
+}

@@ -1,0 +1,45 @@
+@layer fristil {
+  .fs-dialog {
+    box-sizing: border-box;
+    inline-size: var(
+      --fs-dialog-width,
+      min(32rem, calc(100vw - var(--size-8)))
+    );
+    max-block-size: calc(100vh - var(--size-16));
+    padding: var(--fs-dialog-padding, var(--size-5));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-divider-30);
+    border-radius: var(--fs-dialog-radius, var(--size-2));
+    box-shadow: var(--semantic-shadow-overlay);
+  }
+
+  /* Flaten bak dialogen. Den finnes bare når dialogen er åpnet med
+     showModal(); et vanlig show() gir ingen ::backdrop. */
+  .fs-dialog::backdrop {
+    background: var(--semantic-overlay-backdrop);
+  }
+
+  .fs-dialog__title {
+    margin: 0 0 var(--size-2);
+    font-size: var(--font-size-l);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .fs-dialog__body {
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  .fs-dialog__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--size-2);
+    margin-block-start: var(--size-5);
+  }
+}

@@ -1,0 +1,30 @@
+@import "../input/input.css";
+
+@layer fristil {
+  .fs-search {
+    /* Feltet er en fs-input med plass til forstørrelsesglasset. Klassene
+       brukes sammen, så tilstandene og variablene fra input gjelder også her. */
+    padding-inline-start: var(--fs-search-icon-space, var(--size-10));
+    background-image: var(--semantic-icon-search);
+    background-repeat: no-repeat;
+    background-position: left var(--size-3) center;
+    background-size: var(--fs-search-icon-size, var(--size-5));
+  }
+
+  /* Nettleserens eget kryss i et type="search"-felt. Safari og Chrome tegner
+     det ulikt, og Firefox ikke i det hele tatt. */
+  .fs-search::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
+
+  .fs-search-row {
+    display: flex;
+    align-items: stretch;
+    gap: var(--size-2);
+  }
+
+  .fs-search-row .fs-search {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+}

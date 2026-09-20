@@ -42,7 +42,7 @@ Importer tokens i appen:
 
 ```js
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/utilities.css" // valgfri: .link, .srOnly
+import "@fristil/designsystem/sr-only.css" // valgfri: .fs-sr-only
 ```
 
 `tokens.css` må lastes først, siden alle andre stilark bygger på variablene der.
@@ -64,20 +64,14 @@ import "@fristil/designsystem/field.css"
 defineFsField()
 ```
 
-Tilgjengelige JS-subpaths er blant annet:
+Hvert stilark og hver komponent har sitt eget inngangspunkt, oppkalt etter komponenten:
 
-- `@fristil/designsystem/button`
-- `@fristil/designsystem/label`
-- `@fristil/designsystem/input`
-- `@fristil/designsystem/textarea`
-- `@fristil/designsystem/select`
-- `@fristil/designsystem/help-text`
-- `@fristil/designsystem/error-text`
-- `@fristil/designsystem/field`
-- `@fristil/designsystem/date-field`
-- `@fristil/designsystem/calendar`
-- `@fristil/designsystem/tokens`
-- `@fristil/designsystem/tailwind`
+```ts
+import "@fristil/designsystem/checkbox.css"
+import { checkbox } from "@fristil/designsystem/checkbox"
+```
+
+Web-komponentene ligger under de samme navnene: `/field`, `/tabs`, `/error-summary`, `/date-field`, `/calendar`, `/popover`, `/toast` og `/suggestion`. I tillegg finnes `/tokens`, `/tailwind`, `/react`, `/react-jsx`, `/dom` og `/field-core`.
 
 Hele komponent-API-et ligger i ett navnerom:
 
@@ -136,7 +130,7 @@ bun run lint             # biome check .
 
 ```ts
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/utilities.css"
+import "@fristil/designsystem/sr-only.css"
 
 // CSS-komponent: stilark pluss typet hjelper
 import "@fristil/designsystem/button.css"
@@ -154,10 +148,12 @@ Tokens finnes både som CSS custom properties og TypeScript-eksporter.
 Komponentene ligger under `designsystem/src/components/`, delt etter kategori:
 
 - `css/<komponent>/`: CSS-klasse, ingen JavaScript
-- `ramme/<komponent>/`: web component som kobler dine elementer
-- `frittstaende/<komponent>/`: web component som bygger alt selv
+- `ramme/<komponent>/`: web component som kobler dine elementer, som `<fs-field>` og `<fs-tabs>`
+- `frittstaende/<komponent>/`: web component som bygger alt selv, som `<fs-date-field>` og `<fs-suggestion>`
 
-Husk å oppdatere `exports` i `designsystem/package.json` for nye subpaths, både CSS og JS ved behov, og å eksportere fra `designsystem/src/index.ts` hvis komponenten skal med i toppnivå-API-et. Har komponenten et eget stilark, må det også inn i `customCss` i `documentation/astro.config.mjs`, ellers mangler stilene i eksemplene på dokumentasjonssiden.
+Husk å oppdatere `exports` i `designsystem/package.json` for nye subpaths, både CSS og JS ved behov, og å eksportere fra `designsystem/src/index.ts` hvis komponenten skal med i toppnivå-API-et. Har komponenten et eget stilark, må det også inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene på dokumentasjonssiden.
+
+To sjekker holder dette på plass, og begge kjøres av `bun run test` og `bun run test:docs`: `pakke-css.browser.test.ts` krever at stilarket ligger i laget og bare bruker `fs-`-prefikserte klasser, og `sjekk-dokumentasjon.ts` krever at komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har.
 
 ### Navnekonvensjoner
 

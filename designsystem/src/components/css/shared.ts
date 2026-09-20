@@ -6,10 +6,10 @@
  * bare trenger å lære den én gang.
  */
 
-/** Fjerner attributes uten value, så `{...spredning}` ikke setter tomme felt. */
-export function attributes<T extends Record<string, unknown>>(verdier: T): T {
+/** Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt. */
+export function attributes<T extends Record<string, unknown>>(values: T): T {
   const result = {} as T
-  for (const [name, value] of Object.entries(verdier)) {
+  for (const [name, value] of Object.entries(values)) {
     if (value !== undefined) {
       ;(result as Record<string, unknown>)[name] = value
     }
@@ -17,7 +17,7 @@ export function attributes<T extends Record<string, unknown>>(verdier: T): T {
   return result
 }
 
-/** Lager en typevakt for en liste av allowed strenger. */
+/** Lager en typevakt for en liste av lovlige strenger. */
 export function createGuard<T extends string>(allowed: readonly T[]) {
   return (value: string): value is T =>
     (allowed as readonly string[]).includes(value)
@@ -27,7 +27,7 @@ export function createGuard<T extends string>(allowed: readonly T[]) {
  * Valideringstilstand for skjemakontroller.
  *
  * Input, textarea og select hadde hver sin identiske type. Nå er det én, så
- * en value kan sendes mellom dem uten konvertering.
+ * en verdi kan sendes mellom dem uten konvertering.
  */
 export const fieldStates = ["default", "invalid", "success"] as const
 export type FieldState = (typeof fieldStates)[number]

@@ -1,0 +1,64 @@
+@layer fristil {
+  .fs-avatar {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--fs-avatar-size, var(--size-10));
+    block-size: var(--fs-avatar-size, var(--size-10));
+    overflow: hidden;
+    font-family: inherit;
+    font-size: var(--font-size-s);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--semantic-interactive-foreground);
+    background: var(--semantic-interactive-background);
+    border-radius: 50%;
+    /* Bildet kan være hva som helst. Ringen holder formen tydelig også mot en
+       lys flate i bildet. */
+    box-shadow: inset 0 0 0 1px var(--semantic-divider-30);
+  }
+
+  .fs-avatar img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .fs-avatar[data-size="small"] {
+    inline-size: var(--size-6);
+    block-size: var(--size-6);
+    font-size: var(--font-size-xs);
+  }
+
+  .fs-avatar[data-size="large"] {
+    inline-size: var(--size-16);
+    block-size: var(--size-16);
+    font-size: var(--font-size-l);
+  }
+
+  .fs-avatar[data-variant="square"] {
+    border-radius: var(--fs-avatar-radius, var(--size-1));
+  }
+
+  /* Flere profilbilder som overlapper. Rekkefølgen snus i CSS, så det
+     første bildet ligger øverst uten at markupen må skrives baklengs. */
+  .fs-avatar-stack {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fs-avatar-stack > * + * {
+    margin-inline-end: var(--fs-avatar-stack-overlap, calc(var(--size-2) * -1));
+  }
+
+  .fs-avatar-stack .fs-avatar {
+    box-shadow:
+      inset 0 0 0 1px var(--semantic-divider-30),
+      0 0 0 2px var(--semantic-page-background);
+  }
+}

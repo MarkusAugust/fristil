@@ -1,0 +1,63 @@
+@import "../../css/label/label.css";
+@import "../../css/input/input.css";
+@import "../../css/help-text/help-text.css";
+@import "../../css/error-text/error-text.css";
+@import "../../css/sr-only/sr-only.css";
+
+@layer fristil {
+  fs-suggestion {
+    display: block;
+  }
+
+  .fs-suggestion__field {
+    position: relative;
+    display: block;
+  }
+
+  .fs-suggestion__list {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(100% + var(--size-1));
+    z-index: 30;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-block-size: var(--fs-suggestion-max-height, calc(var(--size-10) * 4));
+    overflow-y: auto;
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--fs-suggestion-radius, var(--size-1));
+    box-shadow: var(--semantic-shadow-overlay);
+  }
+
+  .fs-suggestion__list[hidden] {
+    display: none;
+  }
+
+  .fs-suggestion__option {
+    padding: var(--fs-suggestion-option-padding, var(--size-2) var(--size-3));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    cursor: pointer;
+  }
+
+  .fs-suggestion__option:hover {
+    background: var(--semantic-interactive-background);
+  }
+
+  /* Markeringen følger aria-selected, altså den samme opplysningen
+     skjermleseren leser. Da kan ikke det synlige og det opplesne komme i
+     utakt. */
+  .fs-suggestion__option[aria-selected="true"] {
+    background: var(--semantic-interactive-main);
+    color: var(--semantic-interactive-contrast);
+  }
+
+  .fs-suggestion__empty {
+    padding: var(--fs-suggestion-option-padding, var(--size-2) var(--size-3));
+    font-size: var(--font-size-m);
+    color: var(--semantic-muted-foreground);
+  }
+}

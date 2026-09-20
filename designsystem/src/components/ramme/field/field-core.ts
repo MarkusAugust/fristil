@@ -2,7 +2,7 @@ import type { FieldState, RequiredMarker } from "../../css/shared.js"
 import { attributes } from "../../css/shared.js"
 
 /**
- * Regner result koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
+ * Regner ut koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
  *
  * Dette er den ene implementasjonen av tilgjengelighetskontrakten i systemet.
  * `<fs-field>` bruker den på elementer som allerede står i DOM-en, og
@@ -55,12 +55,12 @@ export type FieldAttributes = {
   state: FieldState
 }
 
-let teller = 0
+let counter = 0
 
 /** Lager en id som er unik innenfor dokumentet. */
 export function createFieldId(): string {
-  teller += 1
-  return `fs-field-${teller}-${Math.random().toString(36).slice(2, 8)}`
+  counter += 1
+  return `fs-field-${counter}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**

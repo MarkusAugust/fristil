@@ -1,0 +1,39 @@
+@layer fristil {
+  .fs-spinner {
+    box-sizing: border-box;
+    display: inline-block;
+    inline-size: var(--fs-spinner-size, var(--size-6));
+    block-size: var(--fs-spinner-size, var(--size-6));
+    border: var(--fs-spinner-thickness, 2px) solid
+      var(--semantic-neutral-background);
+    border-block-start-color: var(--semantic-interactive-main);
+    border-radius: 50%;
+    animation: fs-spinner-rotate 800ms linear infinite;
+  }
+
+  .fs-spinner[data-size="small"] {
+    inline-size: var(--size-4);
+    block-size: var(--size-4);
+  }
+
+  .fs-spinner[data-size="large"] {
+    inline-size: var(--size-10);
+    block-size: var(--size-10);
+    border-width: 3px;
+  }
+
+  @keyframes fs-spinner-rotate {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Brukeren har bedt om mindre bevegelse. Da snurrer den saktere framfor å
+     stå stille: en indikator som ikke beveger seg sier ikke lenger at noe
+     pågår. */
+  @media (prefers-reduced-motion: reduce) {
+    .fs-spinner {
+      animation-duration: 2400ms;
+    }
+  }
+}

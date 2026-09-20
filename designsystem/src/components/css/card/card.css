@@ -1,0 +1,48 @@
+@layer fristil {
+  .fs-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2);
+    padding: var(--fs-card-padding, var(--size-4));
+    font-family: inherit;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-divider-30);
+    border-radius: var(--fs-card-radius, var(--size-2));
+  }
+
+  .fs-card__title {
+    margin: 0;
+    font-size: var(--font-size-l);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .fs-card p {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .fs-card[data-variant="filled"] {
+    background: var(--semantic-neutral-background);
+    border-color: transparent;
+  }
+
+  /* Hele kortet er klikkbart. Elementet er da en <a> eller en <button>, og
+     fokusmarkeringen kommer derfra, ikke herfra. */
+  .fs-card[data-interactive] {
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .fs-card[data-interactive]:hover {
+    border-color: var(--semantic-interactive-main);
+  }
+
+  .fs-card[data-interactive]:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+}
