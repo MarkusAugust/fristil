@@ -1,0 +1,7 @@
+[build]
+  base = "."
+  command = "bun install && bun --filter @fristil/designsystem build && cd documentation && npx astro build"
+  publish = "documentation/dist"
+
+[build.environment]
+  NODE_VERSION = "22.23.0"
