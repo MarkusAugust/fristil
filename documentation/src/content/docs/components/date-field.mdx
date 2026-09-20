@@ -123,8 +123,14 @@ Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "202
     defineFsDateField()
     ```
 
+    ```ts
+    // src/fristil.d.ts – gir <fs-date-field> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     // Bestillingsskjema.tsx
+    import { fs } from "@fristil/designsystem/react"
     import { useState } from "react"
 
     export function Bestillingsskjema() {
@@ -138,7 +144,7 @@ Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "202
             label="Reisedato"
             name="reisedato"
             value={dato}
-            invalid={ugyldig ? "" : undefined}
+            invalid={ugyldig || undefined}
             help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
             error-text="Velg en dato fram i tid."
             onChange={(e) => {
@@ -153,7 +159,19 @@ Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "202
     }
     ```
 
-    To ting er verdt å merke seg. `invalid={ugyldig ? "" : undefined}` framfor `invalid={ugyldig}`: et boolsk HTML-attributt er sant så lenge det finnes, så `invalid="false"` ville gjort feltet ugyldig. Og `e.currentTarget.value` er ISO — les den, ikke teksten i feltet.
+    `e.currentTarget.value` er ISO — les den, ikke teksten i feltet.
+
+    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
+
+    | | React 18 (setter attributt) | React 19 (setter egenskap) |
+    | --- | --- | --- |
+    | `invalid=""` | virker | **aldri ugyldig** |
+    | `invalid={ugyldig}` | **alltid ugyldig** | virker |
+    | `invalid={ugyldig \|\| undefined}` | virker | virker |
+
+    Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
+    :::
   </TabItem>
   <TabItem label="Vue">
     ```ts

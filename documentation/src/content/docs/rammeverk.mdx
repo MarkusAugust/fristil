@@ -111,6 +111,21 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
   </TabItem>
   <TabItem label="Bruk">
     ```tsx
+    // main.tsx – kjøres én gang når appen starter
+    import { defineFsField } from "@fristil/designsystem/field"
+    import "@fristil/designsystem/field.css"
+
+    defineFsField()
+    ```
+
+    ```ts
+    // src/fristil.d.ts – gir <fs-field> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
+    ```tsx
+    // Kontaktskjema.tsx
+    import { fs } from "@fristil/designsystem/react"
     import { useState } from "react"
 
     export function Kontaktskjema() {
@@ -121,25 +136,37 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
       return (
         <form onSubmit={(e) => e.preventDefault()}>
-          <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+          <fs-field required-marker="symbol" invalid={ugyldig || undefined}>
             <label>Fullt navn</label>
             <input
-              className="fs-input"
-              type="text"
+              {...fs.input({ type: "text" })}
+              name="navn"
               value={navn}
               onChange={(e) => setNavn(e.target.value)}
               onBlur={() => setBerørt(true)}
             />
-            <p className="fs-error-text">Fyll inn navnet ditt.</p>
+            <p {...fs.errorText()}>Fyll inn navnet ditt.</p>
           </fs-field>
 
-          <button className="fs-button" type="submit">Send</button>
+          <button {...fs.button()} type="submit">Send</button>
         </form>
       )
     }
     ```
 
-    `invalid={ugyldig ? "" : undefined}` er mønsteret å huske. React fjerner attributtet når verdien er `undefined`, mens `false` i eldre React-versjoner ble til strengen `"false"` — som er et attributt som finnes, og dermed sant.
+    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
+
+    | | React 18 (setter attributt) | React 19 (setter egenskap) |
+    | --- | --- | --- |
+    | `invalid=""` | virker | **aldri ugyldig** |
+    | `invalid={ugyldig}` | **alltid ugyldig** | virker |
+    | `invalid={ugyldig \|\| undefined}` | virker | virker |
+
+    React 18 stringifiserer `false` til attributtet `invalid="false"` — et attributt som finnes, og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+
+    Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
+    :::
   </TabItem>
 </Tabs>
 
@@ -222,7 +249,7 @@ Svelte setter attributter direkte på DOM-elementer og trenger ingen egen konfig
 </script>
 
 <form onsubmit={(hendelse) => hendelse.preventDefault()}>
-  <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+  <fs-field required-marker="symbol" invalid={ugyldig || undefined}>
     <label>Fullt navn</label>
     <input class="fs-input" type="text" bind:value={navn} onblur={() => (berørt = true)} />
     <p class="fs-error-text">Fyll inn navnet ditt.</p>
