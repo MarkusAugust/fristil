@@ -1,0 +1,70 @@
+---
+import { readFile } from "node:fs/promises"
+import { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
+import { compile } from "tailwindcss"
+import Preview, { type Stilark } from "./Preview.astro"
+
+interface Props {
+  /** Fristil-stilarkene eksempelet trenger. */
+  stiler?: Stilark[]
+  /** `rad` legger innholdet side om side, `stabel` under hverandre. */
+  layout?: "rad" | "stabel"
+  /** Valgfri maksbredde. */
+  maxWidth?: string
+  /** Markupen. Vises både levende og som kode. */
+  kode: string
+}
+
+const { stiler = [], layout = "rad", maxWidth, kode } = Astro.props
+
+/*
+ * Eksempelet kompileres av en ekte Tailwind under bygging.
+ *
+ * Forhåndsvisningen ligger i en shadow root, og dokumentasjonssidens egne
+ * utility-klasser når ikke inn dit. Å skrive dem av for hånd ville gjort
+ * eksempelet til en tegning av noe som kanskje virker. Her er det Tailwind
+ * selv som lager klassene, av nøyaktig den markupen som står i kodefanen.
+ */
+async function lastStilark(id: string, basedir: string) {
+  const url = id.startsWith(".")
+    ? new URL(id, `file://${basedir}/`)
+    : new URL(import.meta.resolve(id))
+  const sti = fileURLToPath(url)
+
+  return { path: sti, base: dirname(sti), content: await readFile(sti, "utf8") }
+}
+
+/** Klassenavnene i markupen, som er det Tailwind skal lage regler for. */
+const klasser = [...kode.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
+  treff[1].split(/\s+/).filter(Boolean),
+)
+
+const compiler = await compile(
+  `
+	@import "tailwindcss/theme.css" layer(theme);
+	@import "tailwindcss/utilities.css" layer(utilities);
+	@import "@fristil/designsystem/tailwind.css";
+	`,
+  { base: process.cwd(), loadStylesheet: lastStilark },
+)
+
+const tailwindCss = compiler.build(klasser)
+---
+
+<Tabs>
+	<TabItem label="Eksempel">
+		<Preview
+			stiler={stiler}
+			layout={layout}
+			maxWidth={maxWidth}
+			ekstraCss={tailwindCss}
+		>
+			<Fragment set:html={kode} />
+		</Preview>
+	</TabItem>
+	<TabItem label="Kode">
+		<Code code={kode.trim()} lang="html" />
+	</TabItem>
+</Tabs>
