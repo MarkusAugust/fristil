@@ -142,3 +142,36 @@ describe("fs.field", () => {
     expect(fs.field().control.id).not.toBe(fs.field().control.id)
   })
 })
+
+describe("fs.field sammen med feltfunksjonene", () => {
+  it("overlapper ikke med input(), så attributter ikke settes dobbelt", () => {
+    const felt = fs.field({
+      id: "epost",
+      help: true,
+      error: true,
+      invalid: true,
+    })
+    const input = fs.input({ type: "email" })
+
+    const felles = Object.keys(input).filter((navn) => navn in felt.control)
+
+    // I JSX overskriver den siste spredningen den første, men i maler som
+    // skriver ut attributtene bokstavelig — Astro, ren HTML — blir de
+    // stående dobbelt. Da er markupen ugyldig.
+    expect(felles, "Disse settes av begge").toEqual([])
+  })
+
+  it("lar control bære både tilstandsfargen og aria-invalid", () => {
+    const felt = fs.field({ id: "epost", invalid: true })
+
+    expect(felt.control["data-state"]).toBe("invalid")
+    expect(felt.control["aria-invalid"]).toBe("true")
+  })
+
+  it("setter ingen av dem når feltet er gyldig", () => {
+    const felt = fs.field({ id: "epost" })
+
+    expect(felt.control["data-state"]).toBeUndefined()
+    expect(felt.control["aria-invalid"]).toBeUndefined()
+  })
+})

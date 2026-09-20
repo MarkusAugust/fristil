@@ -120,12 +120,10 @@ export class FsField extends LitElement {
       control.classList.contains("fs-textarea") ||
       control.classList.contains("fs-select")
 
-    if (this.invalid && erSystemfelt && !control.hasAttribute("data-state")) {
-      control.setAttribute("data-state", "invalid")
-    } else if (
-      !this.invalid &&
-      control.getAttribute("data-state") === "invalid"
-    ) {
+    const tilstand = beregnet.control["data-state"]
+    if (tilstand && erSystemfelt && !control.hasAttribute("data-state")) {
+      control.setAttribute("data-state", tilstand)
+    } else if (!tilstand && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
     }
   }
