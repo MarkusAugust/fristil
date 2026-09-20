@@ -1,61 +1,74 @@
 ---
 title: Link
-description: Klikkbar lenkestil for navigasjon. pure-css - ren CSS, ingen JavaScript.
+description: Lenkestil for navigasjon i løpende tekst. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../../components/Preview.astro"
 
-`fs-link` er en **pure-css**-komponent for navigasjonstekst med tydelig hover/fokus.
-Standardfargen er `--semantic-interactive-main`.
+`fs-link` gir `<a>` den lenkestilen resten av systemet bruker, med tydelig understrek, hover og fokusmarkering. Standardfargen er `--semantic-interactive-main`.
 
-## Import
+Skal lenken se ut som en knapp — for eksempel som hovedhandlingen i et skjema — bruker du [Button](../button/) på `<a>`-elementet i stedet.
 
-```html
-<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
-<link rel="stylesheet" href="@fristil/designsystem/link.css" />
-```
-
-Via bundler:
+## Importer
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/link.css"
 ```
 
----
+Uten byggesteg:
 
-## Bruk
+```html
+<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
+<link rel="stylesheet" href="@fristil/designsystem/link.css" />
+```
+
+## I løpende tekst
 
 <Tabs>
   <TabItem label="Eksempel">
-    <div class="not-content" style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <a class="fs-link" href="#">Standard</a>
-    </div>
+    <Preview layout="stabel" maxWidth="32rem">
+      <p style="margin: 0;">
+        Søknaden er sendt. Du finner den igjen under <a class="fs-link" href="#">Mine søknader</a>, og vi sender deg en e-post når den er behandlet.
+      </p>
+    </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <a class="fs-link" href="/profil">Standard</a>
+    <p>
+      Søknaden er sendt. Du finner den igjen under
+      <a class="fs-link" href="/mine-soknader">Mine søknader</a>,
+      og vi sender deg en e-post når den er behandlet.
+    </p>
     ```
   </TabItem>
 </Tabs>
 
----
+## Lenke som ikke er klikkbar ennå
 
-## Deaktivert lenke
+<Tabs>
+  <TabItem label="Eksempel">
+    <Preview>
+      <a class="fs-link" href="#">Se kvittering</a>
+      <a class="fs-link" aria-disabled="true" href="#">Se årsoppgave</a>
+    </Preview>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <a class="fs-link" href="/kvittering">Se kvittering</a>
+    <a class="fs-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>
+    ```
+  </TabItem>
+</Tabs>
 
-Bruk `aria-disabled="true"` for lenker som ikke skal være klikkbare ennå.
+`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, slik at en skjermleser kan lese den og fortelle at den er utilgjengelig — det er forskjellen fra å fjerne `href`.
 
-```html
-<a class="fs-link" aria-disabled="true" href="/kommer-snart">Kommer snart</a>
-```
-
-Dette slår av klikk (`pointer-events: none`) og viser deaktivert visuell tilstand.
-
----
+Merk at `pointer-events: none` stopper musa, men ikke tastaturet. Er det viktig at lenken ikke kan følges i det hele tatt, må du også fjerne `href` eller stoppe klikket i JavaScript.
 
 ## Tilgjengelighet
 
-- Bruk `<a>` for navigasjon mellom sider eller ressurser
-- Hold lenketeksten konkret: *"Se faktura"* er bedre enn *"Klikk her"*
-- Bruk `:focus-visible`-stilen som følger med `fs-link`; ikke fjern outline
-- Hvis lenken er deaktivert, bruk `aria-disabled="true"` og vurder å gi forklaring i UI
+- Lenketeksten skal gi mening lest alene. Mange skjermlesere kan liste opp alle lenker på siden, og da hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.
+- Ikke fjern `outline` på `:focus-visible`. Den følger med `fs-link` og er det eneste tastaturbrukere har å navigere etter.
+- Åpner lenken i ny fane, si det i teksten eller med `aria-label`. Uventet fanebytte er vanskelig å oppdage for den som ikke ser skjermen.
+- Er lenken deaktivert, forklar hvorfor i teksten rundt. `aria-disabled` sier at noe ikke går, ikke hva brukeren skal gjøre i stedet.

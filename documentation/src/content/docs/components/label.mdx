@@ -1,144 +1,152 @@
 ---
 title: Label
-description: Etikett for skjemaelementer. Støtter obligatorisk- og valgfri-markering. pure-css — ren CSS, ingen JavaScript.
+description: Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../../components/Preview.astro"
 
-`fs-label` stiler HTML-elementet `<label>` med konsistent typografi og støtte for obligatorisk/valgfri-markering via dataattributter.
+`fs-label` gir `<label>` riktig typografi og en fast måte å markere påkrevde og valgfrie felt på, via dataattributter.
 
-## Import
+Setter du opp et helt felt med ledetekst, hjelpetekst og feilmelding, er det som regel enklere å bruke [Field](../field/). Den setter `for`, `id` og `aria-describedby` for deg. Denne siden handler om selve ledeteksten.
+
+## Importer
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/label.css"
 ```
 
----
-
-## Varianter
+## Markering
 
 <Tabs>
   <TabItem label="Eksempel">
-    <div class="not-content" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <label class="fs-label" for="ex-default">Fullt navn</label>
+    <Preview layout="stabel" maxWidth="26rem">
+      <label class="fs-label" for="ex-standard">Fullt navn</label>
       <label class="fs-label" data-required="symbol" for="ex-symbol">E-postadresse</label>
-      <label class="fs-label" data-required="text" for="ex-text">Telefonnummer</label>
-      <label class="fs-label" data-optional="" for="ex-optional">Adresse</label>
-      <label class="fs-label" aria-disabled="true" for="ex-disabled">Brukernavn (deaktivert)</label>
-    </div>
+      <label class="fs-label" data-required="text" for="ex-tekst">Telefonnummer</label>
+      <label class="fs-label" data-optional="" for="ex-valgfri">Adresse</label>
+      <label class="fs-label" aria-disabled="true" for="ex-deaktivert">Organisasjonsnummer</label>
+    </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <!-- Standard -->
     <label class="fs-label" for="navn">Fullt navn</label>
 
-    <!-- Obligatorisk — stjerne -->
     <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
 
-    <!-- Obligatorisk — tekst -->
-    <label class="fs-label" data-required="text" for="tlf">Telefonnummer</label>
+    <label class="fs-label" data-required="text" for="telefon">Telefonnummer</label>
 
-    <!-- Valgfri -->
     <label class="fs-label" data-optional="" for="adresse">Adresse</label>
 
-    <!-- Deaktivert -->
-    <label class="fs-label" aria-disabled="true" for="brukernavn">Brukernavn</label>
+    <label class="fs-label" aria-disabled="true" for="orgnr">Organisasjonsnummer</label>
     ```
   </TabItem>
 </Tabs>
 
-| Attributt | Effekt |
-|---|---|
-| *(ingen)* | Standard labelstil |
+| Attributt | Hva det gjør |
+| --- | --- |
+| *(utelatt)* | Vanlig ledetekst |
 | `data-required="symbol"` | Legger til ` *` i farefargen |
 | `data-required="text"` | Legger til ` (påkrevd)` i farefargen |
 | `data-optional=""` | Legger til ` (valgfri)` i dempet farge |
-| `aria-disabled="true"` | Dempet tekstfarge |
+| `aria-disabled="true"` | Demper tekstfargen |
 
----
+Velg én av `data-required` og `data-optional` og hold deg til den gjennom hele skjemaet. Markerer du både det påkrevde og det valgfrie, må brukeren lese begge deler for å finne ut hva som gjelder.
 
-## TypeScript-API
+## Sammen med et felt
+
+Ledeteksten skal peke på feltet sitt med `for`, som må matche `id` på feltet. Uten den koblingen leser ikke skjermleseren opp ledeteksten når feltet får fokus, og et klikk på teksten flytter ikke fokus til feltet.
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <Preview layout="stabel" maxWidth="26rem">
+      <label class="fs-label" data-required="symbol" for="demo-epost">E-postadresse</label>
+      <input class="fs-input" id="demo-epost" type="email" required placeholder="ola@eksempel.no" />
+      <p class="fs-help-text" style="margin: 0;">Vi bruker adressen til å sende kvittering.</p>
+    </Preview>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
+    <input class="fs-input" id="epost" type="email" required aria-describedby="epost-hjelp" />
+    <p class="fs-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
+    ```
+  </TabItem>
+</Tabs>
+
+Dette er nøyaktig den koblingen [Field](../field/) gjør automatisk. Skriver du den for hånd, må du holde styr på `id`-ene selv.
+
+## TypeScript
 
 ```ts
 import {
-  getLabelStyleAttributes,
-  type LabelRequiredMarker,
+	getLabelStyleAttributes,
+	type LabelRequiredMarker,
 } from "@fristil/designsystem/label"
 
-const required: LabelRequiredMarker = "text"
-const fristilAttributes = getLabelStyleAttributes({ required })
+const markering: LabelRequiredMarker = "text"
 
-// fristilAttributes blir:
+getLabelStyleAttributes({ required: markering })
 // { class: "fs-label", "data-required": "text" }
+
+getLabelStyleAttributes({ optional: true })
+// { class: "fs-label", "data-optional": "" }
 ```
 
-## Kombiner med egne HTML-attributter
+Hjelperen returnerer bare Fristils egne attributter — `for`, `id` og resten eier du selv:
 
 ```ts
-const fristilAttributes = getLabelStyleAttributes({ required: "symbol" })
-
-const attrs = {
-  ...fristilAttributes,
-  htmlFor: "email",
-  id: "email-label",
+const attributter = {
+	...getLabelStyleAttributes({ required: "symbol" }),
+	htmlFor: "epost",
+	id: "epost-label",
 }
 ```
 
-`getLabelStyleAttributes()` returnerer bare Fristil sin stil-del. Alt annet eier appen din.
-
-## Runtime input (for eksempel fra API)
+Kommer markeringen utenfra, valider den først:
 
 ```ts
 import {
-  isLabelRequiredMarker,
-  getLabelStyleAttributes,
+	getLabelStyleAttributes,
+	isLabelRequiredMarker,
 } from "@fristil/designsystem/label"
 
-const incoming = String(payload.requiredMarker)
-const required = isLabelRequiredMarker(incoming) ? incoming : undefined
-const fristilAttributes = getLabelStyleAttributes({ required })
+const fraServer = String(svar.requiredMarker)
+const markering = isLabelRequiredMarker(fraServer) ? fraServer : undefined
+
+getLabelStyleAttributes({ required: markering })
 ```
 
-### Bruk i React
+## I React
+
+Samme hjelper, spredt inn i et vanlig `<label>`. Ingen Fristil-spesifikk komponent trengs:
 
 ```tsx
-import { getLabelStyleAttributes, type LabelRequiredMarker } from "@fristil/designsystem/label"
+import {
+	getLabelStyleAttributes,
+	type LabelRequiredMarker,
+} from "@fristil/designsystem/label"
 
 type Props = {
-  htmlFor: string
-  required?: LabelRequiredMarker
-  children: React.ReactNode
+	htmlFor: string
+	required?: LabelRequiredMarker
+	optional?: boolean
+	children: React.ReactNode
 }
 
-function MyLabel({ required, htmlFor, children }: Props) {
-  const fristilAttributes = getLabelStyleAttributes({ required })
-
-  return (
-    <label htmlFor={htmlFor} {...fristilAttributes}>
-      {children}
-    </label>
-  )
+export function Ledetekst({ htmlFor, required, optional, children }: Props) {
+	return (
+		<label htmlFor={htmlFor} {...getLabelStyleAttributes({ required, optional })}>
+			{children}
+		</label>
+	)
 }
 ```
-
----
-
-## I et skjema
-
-`fs-label` er designet for å stå rett over skjemafeltet det hører til:
-
-```html
-<div style="display: flex; flex-direction: column; gap: 0.25rem;">
-  <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
-  <input id="epost" type="email" required />
-</div>
-```
-
----
 
 ## Tilgjengelighet
 
-- Bruk alltid `for`-attributtet som peker til `id` på tilhørende skjemafelt
-- `data-required` er visuell markering — kommuniser obligatoriske felt semantisk via `required` og/eller `aria-required="true"` på `<input>`
-- `*`-symbolet i `::after` trenger ikke ekstra aria-label siden `required` på input formidler dette til skjermlesere
+- `for` må alltid peke på `id`-en til feltet. Det er koblingen som gjør at klikk på ledeteksten flytter fokus, og at skjermleseren leser riktig tekst.
+- `data-required` er bare visuelt. Skjermleseren får ikke vite at feltet er påkrevd med mindre du også setter `required` eller `aria-required="true"` på selve feltet.
+- Stjernen legges til med `::after` og leses ikke opp. Det er meningen — `required` på feltet formidler det samme, og en opplest «stjerne» ved hvert felt blir bare støy.
+- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.srOnly` fra `utilities.css` framfor `placeholder`, som forsvinner så fort brukeren begynner å skrive.

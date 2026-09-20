@@ -1,143 +1,140 @@
 ---
 title: Input
-description: Tekstfelt for skjema. pure-css med varianter for valid/invalid state.
+description: Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../../components/Preview.astro"
 
-`fs-input` er en pure-css stil for `<input>` med state-varianter og `date`-variant.
+`fs-input` gir `<input>` felles utseende, fokusmarkering og tilstander. Det er ren CSS på et vanlig input-element, så nettleserens egen validering, autofyll og tastaturhåndtering virker akkurat som før.
 
-## Når Bruker Du Hva?
-
-- Bruk [Input](../input/) når du vil bruke native browser picker (`type="date"`, `type="time"`, `type="datetime-local"`).
-- Bruk [Calendar (Shadow DOM)](../calendar/) når du trenger en standalone popup-kalender og håndterer synk selv.
-- Bruk [Date Field (Light DOM)](../date-field/) når du vil ha ferdig kobling mellom input, label, help/error og `fs-calendar`.
-
-Støttede input-varianter: `text`, `password`, `email`, `number`, `date`, `datetime-local`, `week`, `month`, `tel`, `url`, `search`, `time`.
-
-For `date`, `time` og `datetime-local` legges det på et lite ikon i feltet. Native picker-atferd beholdes.
-
-Viktig: for at ikon-klikk skal åpne native picker, må `type` matche varianten:
-
-- `data-variant="date"` + `type="date"`
-- `data-variant="time"` + `type="time"`
-- `data-variant="datetime-local"` + `type="datetime-local"`
-
-## Do / Don't
-
-```html
-<!-- Do: variant og type matcher -->
-<input class="fs-input" data-variant="date" type="date" />
-
-<!-- Don't: variant og type matcher ikke -->
-<input class="fs-input" data-variant="date" type="text" />
-```
-
-Når variant og type ikke matcher, ser du fortsatt ikonet, men ikon-klikk åpner ikke native picker.
-
-## Import
+## Importer
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/input.css"
 ```
 
-## Varianter
+## Tilstander
+
+`data-state` sier hva valideringen har konkludert med. Utelater du attributtet, er feltet i normaltilstand.
 
 <Tabs>
   <TabItem label="Eksempel">
-    <div class="not-content" style="display: grid; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <input class="fs-input" placeholder="Standard" />
-      <input class="fs-input" data-variant="date" type="date" value="2026-05-31" />
-      <input class="fs-input" data-state="invalid" value="Ugyldig verdi" />
-      <input class="fs-input" data-state="success" value="Gyldig verdi" />
-      <input class="fs-input" disabled value="Disabled" />
-    </div>
+    <Preview layout="stabel" maxWidth="26rem">
+      <input class="fs-input" placeholder="ola@eksempel.no" />
+      <input class="fs-input" data-state="success" value="ola@eksempel.no" />
+      <input class="fs-input" data-state="invalid" value="ola@" />
+      <input class="fs-input" value="ola@eksempel.no" disabled />
+    </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <input class="fs-input" />
-    <input class="fs-input" data-variant="date" type="date" />
-    <input class="fs-input" data-state="invalid" />
-    <input class="fs-input" data-state="success" />
-    <input class="fs-input" disabled />
+    <input class="fs-input" type="email" placeholder="ola@eksempel.no" />
+    <input class="fs-input" type="email" data-state="success" />
+    <input class="fs-input" type="email" data-state="invalid" aria-invalid="true" />
+    <input class="fs-input" type="email" disabled />
     ```
   </TabItem>
 </Tabs>
 
-## TypeScript-API
+`data-state="invalid"` er bare farge. Skjermlesere trenger `aria-invalid="true"` i tillegg — eller [Field](../field/), som setter begge for deg.
+
+## Dato og klokkeslett
+
+`data-variant` legger et ikon inne i feltet for dato- og tidstyper. Nettleserens egen velger beholdes som den er.
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <Preview layout="stabel" maxWidth="26rem">
+      <input class="fs-input" data-variant="date" type="date" value="2026-05-31" />
+      <input class="fs-input" data-variant="time" type="time" value="14:30" />
+    </Preview>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <input class="fs-input" data-variant="date" type="date" />
+    <input class="fs-input" data-variant="time" type="time" />
+    <input class="fs-input" data-variant="datetime-local" type="datetime-local" />
+    ```
+  </TabItem>
+</Tabs>
+
+:::caution[`data-variant` og `type` må være like]
+Ikonet styres av `data-variant`, mens velgeren som åpnes styres av `type`. Setter du bare den ene, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
+
+```html
+<!-- Riktig -->
+<input class="fs-input" data-variant="date" type="date" />
+
+<!-- Feil: ikonet vises, men åpner ingenting -->
+<input class="fs-input" data-variant="date" type="text" />
+```
+:::
+
+Støttede verdier for `data-variant`: `text`, `password`, `email`, `number`, `date`, `datetime-local`, `week`, `month`, `tel`, `url`, `search` og `time`. Bare `date`, `time` og `datetime-local` påvirker utseendet — resten finnes for at TypeScript-hjelperen skal kunne sette `type` for deg.
+
+## Hvilken komponent skal du bruke til dato?
+
+| Situasjon | Komponent |
+| --- | --- |
+| Nettleserens egen datovelger holder | **Input** med `type="date"` |
+| Du trenger et kalenderpanel du styrer selv | [Calendar](../calendar/) |
+| Du vil ha ledetekst, hjelpetekst, feilmelding og kalender ferdig koblet | [Date Field](../date-field/) |
+
+## TypeScript
 
 ```ts
 import {
-  getInputAttributes,
-  getInputStyleAttributes,
-  type InputState,
-  type InputVariant,
+	getInputAttributes,
+	getInputStyleAttributes,
 } from "@fristil/designsystem/input"
 
-const state: InputState = "invalid"
-const variant: InputVariant = "date"
-const fristilAttributes = getInputStyleAttributes({ state, variant })
-
-// fristilAttributes blir:
+getInputStyleAttributes({ state: "invalid", variant: "date" })
 // { class: "fs-input", "data-state": "invalid", "data-variant": "date" }
 
-const inputAttributes = getInputAttributes({ state, variant })
-
-// inputAttributes blir:
-// { class: "fs-input", "data-state": "invalid", "data-variant": "date", type: "date" }
+getInputAttributes({ variant: "date" })
+// { class: "fs-input", "data-variant": "date", type: "date" }
 ```
 
-## Kombiner med egne HTML-attributter
+Forskjellen er `type`: `getInputStyleAttributes` gir bare Fristils stil-attributter, mens `getInputAttributes` også setter `type` slik at variant og type ikke kan komme i utakt. Bruk den siste med mindre du har grunn til å styre `type` selv.
+
+Resten av elementet eier du:
 
 ```ts
-const fristilAttributes = getInputStyleAttributes({
-  state: "success",
-  variant: "date",
-})
-
-const attrs = {
-  ...fristilAttributes,
-  id: "email",
-  type: "date",
-  placeholder: "navn@firma.no",
+const attributter = {
+	...getInputAttributes({ variant: "email", state: "success" }),
+	id: "epost",
+	name: "epost",
+	placeholder: "ola@eksempel.no",
+	required: true,
 }
 ```
 
-## Runtime input (for eksempel fra API)
+## Verdier som kommer utenfra
 
-Når state/variant kommer fra API, er verdiene bare vanlige strenger.
-Da bør du validere dem før de brukes i UI.
-
-Steg for steg:
-
-1. Les råverdier fra API (`payload`).
-2. Sjekk om state er gyldig med `isInputState(...)`.
-3. Sjekk om variant er gyldig med `isInputVariant(...)`.
-4. Bruk trygg fallback hvis noe er ugyldig.
-5. Lag Fristil-attributtene med de validerte verdiene.
+Kommer tilstand eller variant fra et API, en URL-parameter eller `localStorage`, er det vanlige strenger som TypeScript ikke kan garantere noe om. Valider dem før de treffer skjermen:
 
 ```ts
-import { isInputState, getInputStyleAttributes } from "@fristil/designsystem/input"
-import { isInputVariant } from "@fristil/designsystem/input"
+import {
+	getInputStyleAttributes,
+	isInputState,
+	isInputVariant,
+} from "@fristil/designsystem/input"
 
-// Dette kan komme fra backend, query params eller localStorage
-const payload = {
-  state: "invalid",
-  variant: "date",
-}
+const svar = await hentFeltoppsett()
 
-const incomingState = String(payload.state)
-const incomingVariant = String(payload.variant)
+const tilstand = isInputState(svar.state) ? svar.state : "default"
+const variant = isInputVariant(svar.variant) ? svar.variant : "text"
 
-// Valider og bruk fallback ved ukjent verdi
-const state = isInputState(incomingState) ? incomingState : "default"
-const variant = isInputVariant(incomingVariant) ? incomingVariant : "text"
-
-const fristilAttributes = getInputStyleAttributes({ state, variant })
-
-// Resultat i dette eksemplet:
-// { class: "fs-input", "data-state": "invalid", "data-variant": "date" }
+getInputStyleAttributes({ state: tilstand, variant })
 ```
 
-Hvis `payload.variant` for eksempel er `"birthday"` (ugyldig), blir den automatisk til `"text"`.
+Er `svar.variant` for eksempel `"birthday"`, faller den tilbake til `"text"` i stedet for å sette et `data-variant` ingen CSS-regel treffer.
+
+## Tilgjengelighet
+
+- Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en. `placeholder` er ikke en erstatning — den forsvinner idet brukeren begynner å skrive.
+- Sett `aria-invalid="true"` sammen med `data-state="invalid"`, og koble feilmeldingen til feltet med `aria-describedby`.
+- Bruk riktig `type` (`email`, `tel`, `url`, `number`). Det bestemmer hvilket tastatur mobilbrukere får opp, og hva nettleseren tilbyr av autofyll.
+- Sett `autocomplete` på felt som spør om personopplysninger, for eksempel `autocomplete="email"`. Det sparer brukeren for skriving og reduserer feil.

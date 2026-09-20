@@ -1,150 +1,245 @@
 ---
-title: Date Field (Sammensatt)
-description: Sammensatt komponent som kombinerer input, label, help/error og kalender-popup i én enhet.
+title: Date Field
+description: Ferdig datofelt med ledetekst, hjelpetekst, feilmelding og kalender i ett element. Sammensatt komponent.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 
-`<fs-date-field>` er en sammensatt komponent som eier alt internt: input, label, help/error og `fs-calendar` som popup. Du trenger ikke sette opp HTML selv.
+`<fs-date-field>` er et komplett datofelt. Den bygger ledetekst, tekstfelt, hjelpetekst, feilmelding og [Calendar](../calendar/) selv, og holder dem i synk. Du sender inn attributter — ingen HTML å sette sammen.
 
-## Når Bruker Du Hva?
+## Hvilken komponent skal du bruke til dato?
 
-- Bruk [Date Field](../date-field/) som standard når du vil ha komplett datofelt med label/help/error og kalender.
-- Bruk [Input](../input/) når native date/time/datetime-local picker er nok.
-- Bruk [Calendar](../calendar/) når kalenderen skal styres separat fra input-feltet.
+| Situasjon | Komponent |
+| --- | --- |
+| Nettleserens egen datovelger holder | [Input](../input/) med `type="date"` |
+| Du trenger et kalenderpanel du styrer selv | [Calendar](../calendar/) |
+| Du vil ha felt, ledetekst, hjelpetekst og kalender ferdig koblet | **Date Field** |
 
-## Import
+Dette er standardvalget for datoer i skjema. Gå til de to andre først når du vet hvorfor dette ikke passer.
+
+## Kom i gang
 
 ```ts
-import { defineDsDateField } from "@fristil/designsystem/date-field"
+// main.ts – kjøres én gang når appen starter
+import { defineFsDateField } from "@fristil/designsystem/date-field"
 import "@fristil/designsystem/date-field.css"
 
-defineDsDateField()
+defineFsDateField()
 ```
 
-## Slik ser det ut
-
 <Tabs>
-  <TabItem label="Forhåndsvisning">
+  <TabItem label="Eksempel">
     <DateFieldDemo />
   </TabItem>
   <TabItem label="Kode">
     ```html
     <fs-date-field
-      label="Fødselsdato"
+      label="Reisedato"
       value="2026-05-31"
-      error-text="Skriv en gyldig dato."
-      help-text="Velg dato i kalenderpopup eller skriv manuelt. Prøv også en ugyldig dato som 32-06-2026."
+      help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+      error-text="Skriv en dato som finnes, for eksempel 31-05-2026."
     ></fs-date-field>
     ```
   </TabItem>
 </Tabs>
 
-## Hva wrapperen gjør
+Prøv gjerne å skrive `32-06-2026` i feltet over og klikke utenfor. Da ser du hvordan feilmeldingen slår inn.
 
-1. Rendrer `label` + nøytral `fs-input` (`type="text"`) + `fs-calendar` sammen.
-2. Synker verdi begge veier:
-   - Bruker skriver `DD-MM-YYYY` → konverteres til ISO for kalender
-   - Kalender velger dato (ISO) → vises som `DD-MM-YYYY` i input
-3. Ved ugyldig dato på `blur` vises invalid-state og `error-text`.
-4. Håndterer `invalid`, `help-text`, `error-text` og `aria-describedby`.
+## To formater, og hvorfor
 
-Kalender-ikon inne i input brukes ikke her. `fs-calendar` ved siden av er eneste dato-trigger i denne komposisjonen.
+Komponenten holder to representasjoner av datoen samtidig:
 
-## Bruk i en app
+- **`value` er alltid ISO** — `ÅÅÅÅ-MM-DD`. Det er dette du leser og skriver fra koden, og det som sendes med skjemaet.
+- **Feltet viser `DD-MM-ÅÅÅÅ`** — måten datoer skrives på norsk.
+
+Komponenten oversetter mellom dem begge veier. Skriver brukeren `31-05-2026`, blir `value` til `2026-05-31`. Velger han 31. mai i kalenderen, står det `31-05-2026` i feltet. Du forholder deg bare til ISO.
+
+Det betyr også at du aldri skal parse teksten i feltet selv. Les `value`.
+
+## Validering
+
+Komponenten sjekker på egen hånd om det brukeren har skrevet er en dato som finnes, og gjør det når feltet mister fokus — ikke mens han skriver. Er datoen umulig, som `32-06-2026`, settes feltet i ugyldig tilstand og `error-text` vises.
+
+Den kontrollerer altså bare at datoen er ekte. Alt annet — at den er i fortiden, at den er innenfor et intervall, at den er en virkedag — er din regel, og settes med `invalid`-attributtet:
+
+```js
+const felt = document.getElementById("reisedato")
+
+felt.addEventListener("change", () => {
+	const forTidlig = felt.value !== "" && felt.value < "2026-06-01"
+	felt.toggleAttribute("invalid", forTidlig)
+})
+```
+
+Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "2026-06-01"` er sant.
+
+## I en app
 
 <Tabs>
-  <TabItem label="Vanilla JS">
-    ```js
-    // main.js – kjør én gang ved oppstart
-    import { defineDsDateField } from '@fristil/designsystem/date-field'
-    import '@fristil/designsystem/date-field.css'
-
-    defineDsDateField()
-    ```
-
+  <TabItem label="Ren HTML">
     ```html
-    <form id="booking-form">
+    <form id="bestilling">
       <fs-date-field
-        id="travel-date"
+        id="reisedato"
+        name="reisedato"
         label="Reisedato"
-        name="travel-date"
-        help-text="Velg dato i kalenderen"
-        error-text="Velg en gyldig dato."
+        help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+        error-text="Velg en dato fram i tid."
+        required
       ></fs-date-field>
-      <button class="fs-button" type="submit">Book</button>
+
+      <button class="fs-button" type="submit">Bestill</button>
     </form>
 
     <script type="module">
-      const form = document.getElementById('booking-form')
-      const dateField = document.getElementById('travel-date')
+      import { defineFsDateField } from "@fristil/designsystem/date-field"
+      defineFsDateField()
 
-      form.addEventListener('submit', (e) => {
-        e.preventDefault()
-        const isoDate = dateField.value  // "YYYY-MM-DD" eller ""
-        if (!isoDate) {
-          dateField.setAttribute('invalid', '')
-        } else {
-          dateField.removeAttribute('invalid')
-          // prosesser skjemaet med isoDate...
-          console.log(isoDate)
-        }
+      const skjema = document.getElementById("bestilling")
+      const reisedato = document.getElementById("reisedato")
+
+      skjema.addEventListener("submit", (hendelse) => {
+        hendelse.preventDefault()
+
+        const dato = reisedato.value // "ÅÅÅÅ-MM-DD" eller ""
+        const iDag = new Date().toISOString().slice(0, 10)
+        const ugyldig = dato === "" || dato < iDag
+
+        reisedato.toggleAttribute("invalid", ugyldig)
+        if (ugyldig) return
+
+        console.log("Bestiller reise", dato)
       })
     </script>
     ```
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.ts – kjør én gang ved oppstart
-    import { defineDsDateField } from '@fristil/designsystem/date-field'
-    import '@fristil/designsystem/date-field.css'
-    defineDsDateField()
+    // main.tsx – kjøres én gang når appen starter
+    import { defineFsDateField } from "@fristil/designsystem/date-field"
+    import "@fristil/designsystem/date-field.css"
 
-    // BookingForm.tsx
-    import { useState } from 'react'
+    defineFsDateField()
+    ```
 
-    export function BookingForm() {
-      const [date, setDate] = useState('')  // ISO-format: "YYYY-MM-DD"
+    ```tsx
+    // Bestillingsskjema.tsx
+    import { useState } from "react"
 
-      const invalid = false  // sett basert på din valideringslogikk
+    export function Bestillingsskjema() {
+      const [dato, setDato] = useState("") // alltid ISO
+      const iDag = new Date().toISOString().slice(0, 10)
+      const ugyldig = dato !== "" && dato < iDag
 
       return (
-        <form onSubmit={(e) => { e.preventDefault(); console.log(date) }}>
+        <form onSubmit={(e) => e.preventDefault()}>
           <fs-date-field
             label="Reisedato"
-            name="travel-date"
-            value={date}
-            invalid={invalid}
-            help-text="Velg dato i kalenderen"
-            error-text="Velg en gyldig dato."
-            onInput={(e) => {
-              const el = e.currentTarget as HTMLElement & { value: string }
-              setDate(el.value)  // alltid ISO-format
+            name="reisedato"
+            value={dato}
+            invalid={ugyldig ? "" : undefined}
+            help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+            error-text="Velg en dato fram i tid."
+            onChange={(e) => {
+              const element = e.currentTarget as HTMLElement & { value: string }
+              setDato(element.value)
             }}
           />
-          <button className="fs-button" type="submit">Book</button>
+
+          <button className="fs-button" type="submit">Bestill</button>
         </form>
       )
     }
     ```
+
+    To ting er verdt å merke seg. `invalid={ugyldig ? "" : undefined}` framfor `invalid={ugyldig}`: et boolsk HTML-attributt er sant så lenge det finnes, så `invalid="false"` ville gjort feltet ugyldig. Og `e.currentTarget.value` er ISO — les den, ikke teksten i feltet.
+  </TabItem>
+  <TabItem label="Vue">
+    ```ts
+    // main.ts – kjøres én gang når appen starter
+    import { defineFsDateField } from "@fristil/designsystem/date-field"
+    import "@fristil/designsystem/date-field.css"
+
+    defineFsDateField()
+    ```
+
+    ```vue
+    <script setup lang="ts">
+    import { computed, ref } from "vue"
+
+    const dato = ref("") // alltid ISO
+    const iDag = new Date().toISOString().slice(0, 10)
+    const ugyldig = computed(() => dato.value !== "" && dato.value < iDag)
+
+    function oppdater(hendelse: Event) {
+      const element = hendelse.currentTarget as HTMLElement & { value: string }
+      dato.value = element.value
+    }
+    </script>
+
+    <template>
+      <form @submit.prevent>
+        <fs-date-field
+          label="Reisedato"
+          name="reisedato"
+          :value="dato"
+          :invalid="ugyldig || null"
+          help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+          error-text="Velg en dato fram i tid."
+          @change="oppdater"
+        />
+
+        <button class="fs-button" type="submit">Bestill</button>
+      </form>
+    </template>
+    ```
+
+    Legg til `fs-` i `compilerOptions.isCustomElement` i Vite-konfigurasjonen, så slutter Vue å advare om at komponenten er ukjent.
   </TabItem>
 </Tabs>
 
 ## Attributter
 
-| Attributt | Type | Effekt |
-|---|---|---|
-| `label` | string | Synlig labeltekst |
-| `value` | string | Datoverdi (`YYYY-MM-DD`, ISO) |
-| `name` | string | Name på input-feltet |
-| `placeholder` | string | Placeholder i input (default: `DD-MM-YYYY`) |
-| `help-text` | string | Hjelpetekst under feltet |
-| `error-text` | string | Feilmelding under feltet |
-| `invalid` | boolean | Setter invalid-state + viser feilmelding |
-| `required` | boolean | Markerer label som påkrevd |
-| `optional` | boolean | Markerer label som valgfri |
-| `disabled` | boolean | Deaktiverer input og kalender |
-| `readonly` | boolean | Gjør input skrivebeskyttet |
-| `control-id` | string | Setter id på input |
-| `described-by` | string | Ekstra ids for `aria-describedby` |
+| Attributt | Type | Hva det gjør |
+| --- | --- | --- |
+| `label` | streng | Synlig ledetekst. Standard: `Dato` |
+| `value` | streng | Datoen som `ÅÅÅÅ-MM-DD`. Speiles til attributtet. |
+| `name` | streng | Navnet feltet sendes under i skjemaet |
+| `placeholder` | streng | Standard: `DD-MM-YYYY` |
+| `help-text` | streng | Forklarende tekst under feltet |
+| `error-text` | streng | Feilmeldingen som vises når feltet er ugyldig |
+| `invalid` | boolsk | Setter ugyldig tilstand og viser `error-text` |
+| `required` | boolsk | Markerer ledeteksten som påkrevd og setter `required` på feltet |
+| `optional` | boolsk | Markerer ledeteksten som valgfri |
+| `disabled` | boolsk | Deaktiverer både feltet og kalenderen |
+| `readonly` | boolsk | Gjør feltet skrivebeskyttet |
+| `control-id` | streng | Bestemmer `id`-en på feltet i stedet for å la komponenten lage en |
+| `described-by` | streng | Legger til ekstra `id`-er i `aria-describedby` |
+
+## Hendelser
+
+| Hendelse | Når den sendes |
+| --- | --- |
+| `input` | Når verdien endres, enten brukeren skriver eller velger i kalenderen |
+| `change` | Samtidig med `input` |
+
+Begge bobler. Les alltid `element.value` — den er ISO uansett hvordan datoen ble satt.
+
+## Tastatur
+
+| Tast | Virkning |
+| --- | --- |
+| `Mellomrom` eller `Pil ned` i feltet | Åpner kalenderpanelet |
+| Piltaster i panelet | Flytter mellom dagene |
+| `Escape` i panelet | Lukker panelet |
+
+Velger brukeren en dag i panelet, flyttes fokus tilbake til tekstfeltet automatisk. Da kan han rette datoen videre uten å ta hånden fra tastaturet.
+
+## Tilgjengelighet
+
+- Komponenten setter `for`, `aria-describedby` og `aria-invalid` selv. Du trenger ikke røre dem.
+- `error-text` må si hva brukeren skal gjøre. «Skriv en dato som finnes, for eksempel 31-05-2026» hjelper der «Ugyldig dato» bare bekrefter at noe er galt.
+- `help-text` bør nevne formatet. Brukere som skriver raskere enn de klikker, treffer ofte `31.05.2026` eller `2026-05-31` på første forsøk.
+- Kalenderen er et tillegg, ikke veien inn. Feltet kan alltid fylles ut med tastatur alene.
+- Se forbeholdet om fokus ved lukking av kalenderpanelet på [Calendar](../calendar/#tilgjengelighet).

@@ -1,13 +1,16 @@
 ---
 title: Error Text
-description: Feil- og varseltekst under felter. pure-css med warning-variant.
+description: Feilmelding under et skjemafelt. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../../components/Preview.astro"
 
-`fs-error-text` er en pure-css tekstkomponent for valideringsfeil og varsler.
+`fs-error-text` er meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører hjemme rett under feltet, ikke øverst på siden, slik at brukeren ser den samtidig som han ser hva som er feil.
 
-## Import
+Skal teksten forklare hva feltet forventer før brukeren har gjort noe, er det [Help Text](../help-text/) du er ute etter.
+
+## Importer
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -18,40 +21,96 @@ import "@fristil/designsystem/error-text.css"
 
 <Tabs>
   <TabItem label="Eksempel">
-    <div class="not-content" style="display: grid; gap: 0.5rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <p class="fs-error-text">Error (default)</p>
-      <p class="fs-error-text" data-variant="warning">Warning</p>
-    </div>
+    <Preview layout="stabel" maxWidth="30rem">
+      <p class="fs-error-text" style="margin: 0;">Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.</p>
+      <p class="fs-error-text" data-variant="warning" style="margin: 0;">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
+    </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <p class="fs-error-text">Error</p>
-    <p class="fs-error-text" data-variant="warning">Warning</p>
+    <p class="fs-error-text">
+      Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
+    </p>
+    <p class="fs-error-text" data-variant="warning">
+      Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.
+    </p>
     ```
   </TabItem>
 </Tabs>
 
-## TypeScript-API
+| `data-variant` | Når du bruker den |
+| --- | --- |
+| *(utelatt)* | Feil som stopper innsending. |
+| `warning` | Noe ser rart ut, men brukeren får lov til å fortsette. |
+
+## Koblet til feltet
+
+Feilmeldingen må knyttes til feltet med `aria-describedby`, og feltet må merkes med `aria-invalid="true"`. Uten begge deler er feilen bare en rød setning som skjermleseren aldri kommer til.
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <Preview layout="stabel" maxWidth="30rem">
+      <label class="fs-label" for="demo-feil-epost">E-postadresse</label>
+      <input class="fs-input" id="demo-feil-epost" type="email" data-state="invalid" value="ola@" />
+      <p class="fs-error-text" style="margin: 0;">Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.</p>
+    </Preview>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <label class="fs-label" for="epost">E-postadresse</label>
+    <input
+      class="fs-input"
+      id="epost"
+      type="email"
+      data-state="invalid"
+      aria-invalid="true"
+      aria-describedby="epost-feil"
+    />
+    <p class="fs-error-text" id="epost-feil">
+      Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
+    </p>
+    ```
+  </TabItem>
+</Tabs>
+
+Tre ting må stemme samtidig: `data-state` på feltet for fargen, `aria-invalid` for skjermleseren, og `aria-describedby` for selve teksten. [Field](../field/) setter alle tre når du gir den `invalid` — det er grunnen til at den komponenten finnes.
+
+## TypeScript
+
+```ts
+import { getErrorTextStyleAttributes } from "@fristil/designsystem/error-text"
+
+getErrorTextStyleAttributes("warning")
+// { class: "fs-error-text", "data-variant": "warning" }
+
+getErrorTextStyleAttributes()
+// { class: "fs-error-text" } — "error" er standard
+```
+
+Verdier som kommer utenfra, validerer du først:
 
 ```ts
 import {
-  getErrorTextStyleAttributes,
-  type ErrorTextVariant,
+	getErrorTextStyleAttributes,
+	isErrorTextVariant,
 } from "@fristil/designsystem/error-text"
 
-const variant: ErrorTextVariant = "warning"
-const fristilAttributes = getErrorTextStyleAttributes(variant)
+const fraServer = String(svar.variant)
+const variant = isErrorTextVariant(fraServer) ? fraServer : "error"
 
-// fristilAttributes blir:
-// { class: "fs-error-text", "data-variant": "warning" }
+getErrorTextStyleAttributes(variant)
 ```
 
-## Runtime input (for eksempel fra API)
+## Slik skriver du feilmeldingen
 
-```ts
-import { isErrorTextVariant, getErrorTextStyleAttributes } from "@fristil/designsystem/error-text"
+- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» bare bekrefter at noe gikk galt.
+- Ta med et eksempel på riktig verdi når formatet er uvanlig.
+- Ikke legg skylden på brukeren, og dropp utropstegnet.
+- Unngå begreper hentet rett fra koden. «Feltet kan ikke være tomt» er tydeligere enn «required constraint violation».
 
-const incoming = String(payload.variant)
-const variant = isErrorTextVariant(incoming) ? incoming : "error"
-const fristilAttributes = getErrorTextStyleAttributes(variant)
-```
+## Tilgjengelighet
+
+- Vis feilen når brukeren har forlatt feltet, ikke mens han skriver. En melding som dukker opp etter første tastetrykk rekker aldri å bli riktig.
+- Kommer feilmeldingen til syne mens siden ellers står stille, legg `role="alert"` på elementet, så leses den opp med én gang.
+- Sendes et skjema inn med flere feil, flytt fokus til det første feltet som feilet. Ellers må tastaturbrukere lete seg gjennom hele skjemaet for å finne problemet.
+- Fjern aldri feilmeldingen uten å fjerne `aria-invalid` samtidig. Da sitter skjermleseren igjen med et felt merket som ugyldig, uten noen forklaring.
