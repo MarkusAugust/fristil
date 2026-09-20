@@ -1,4 +1,5 @@
 node_modules
 PLAN.md
+.claude
 dist
 *.tsbuildinfo
