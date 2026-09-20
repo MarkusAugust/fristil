@@ -1,132 +1,109 @@
 ---
 title: Introduksjon
+description: Hva Fristil er, hvordan komponentene er delt inn, og hvorfor de er delt inn slik.
 ---
 
-Fristil er et rammeverksuavhengig designsystem bygget for team som vil levere raskt uten å gi opp kvalitet, tilgjengelighet eller kontroll.
+Fristil er et designsystem som ikke krever et bestemt rammeverk. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet ditt React, Vue, Svelte, Astro eller ingenting i det hele tatt, er det samme system og samme API.
 
-Målet er enkelt: gi produktteam felles språk, stabile byggeklosser og høy fart i utvikling, uansett om de bruker React, Vue, Astro, Lit eller ren HTML.
+Bakgrunnen er enkel: et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
-## Tre kategorier komponenter
+## Tre kategorier
 
-Fristil er organisert i tre tydelige kategorier, slik at du kan velge riktig verktøy til riktig jobb:
+Komponentene er delt i tre etter hvor mye de tar over for deg.
 
-1. **css**
-	Native HTML + CSS-klasser + data-attributter. Null JavaScript-runtime. Perfekt for grunnleggende UI som knapper, typografi, spacing og fargebruk.
+### css
 
-	Eksempel:
+En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
 
-	```html
-	<button class="fs-button" data-variant="secondary">Lagre</button>
-	```
+```html
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+```
 
-	Fordeler:
+Varianter styres med `data-`-attributter. Dette dekker knapper, lenker, merker, ledetekster og skjemafelt — alt der utfordringen er utseende, ikke oppførsel.
 
-	- Minst mulig runtime og minst mulig magi.
-	- Fungerer i alle rammeverk og også i ren HTML.
-	- Enkelt å style, debugge og gradvis ta i bruk.
+### ramme
 
-2. **ramme**
-	Web Components som koordinerer native HTML-elementer du selv legger inn. Du bringer label, input og hjelpetekst — komponenten tar seg av a11y-wiring.
+En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men kobler sammen det du gir den.
 
-	Eksempel:
+```html
+<fs-field required-marker="symbol" invalid>
+  <label>E-postadresse</label>
+  <input class="fs-input" type="email" value="ola@" />
+  <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
+  <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
+</fs-field>
+```
 
-	```html
-	<fs-field required-marker="symbol" invalid>
-	  <label>E-post</label>
-	  <input class="fs-input" type="email" value="ola@" />
-	  <p class="fs-help-text">Vi sender aldri spam.</p>
-	  <p class="fs-error-text">Skriv en gyldig e-post.</p>
-	</fs-field>
-	```
+`<fs-field>` setter `for`, `id`, `aria-describedby` og `aria-invalid` på elementene over. Du eier strukturen; komponenten eier koblingen mellom delene. Siden elementene blir liggende i vanlig DOM, finner `FormData`, testverktøy og skjemabiblioteker dem som før.
 
-	Fordeler:
+### sammensatt
 
-	- Du eier HTML-strukturen og kan tilpasse den fritt.
-	- Beholder vanlig DOM, så skjemaer, testverktøy og app-logikk er enkle å koble til.
-	- Passer godt når komponenten skal hjelpe med wiring, men ikke kapsle bort alt.
+En web component som bygger alt selv. Du sender inn attributter.
 
-3. **sammensatt**
-	Web Components som eier alt internt: markup, stil og interaksjon. Du sender inn attributter — komponenten gjør resten.
+```html
+<fs-date-field
+  label="Reisedato"
+  value="2026-05-31"
+  help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+  error-text="Skriv en dato som finnes."
+></fs-date-field>
+```
 
-	Eksempel:
+Her er det ingen HTML å sette opp. Til gjengjeld bestemmer du mindre over strukturen. Kategorien er for komponenter der interaksjonen er det vanskelige — et datofelt som må holde tekst og kalender i synk, en dialog, en kombinert kontroll.
 
-	```html
-	<fs-date-field
-	  label="Fødselsdato"
-	  value="2026-05-31"
-	  help-text="Skriv dato som DD-MM-YYYY eller åpne kalenderen."
-	  error-text="Skriv en gyldig dato."
-	></fs-date-field>
-	```
+## Hvorfor tre og ikke én
 
-	Fordeler:
+De fleste designsystemer har én komponentmodell for alt. Da havner du i én av to grøfter: enten drar en knapp med seg like mye maskineri som en datovelger, eller så får datovelgeren like lite struktur som en knapp.
 
-	- Enklest mulig API — ingen HTML å sette opp manuelt.
-	- Egner seg for komplekse interaksjoner som popup-er og kombinerte kontroller.
-	- Gjør avanserte komponenter robuste og konsistente på tvers av produkter.
+Inndelingen betyr at prisen står i forhold til problemet:
 
-Denne oppdelingen gjør at du slipper "one size fits all". Du velger kategori etter kompleksitet, ikke etter trend.
+- En knapp koster én CSS-klasse.
+- Et skjemafelt koster en web component som gjør tilgjengelighetskoblingen, men lar deg beholde HTML-en.
+- Et datofelt koster en komponent som eier alt, fordi det er den eneste måten å holde flere deler i synk på.
 
-## Hvorfor dele det opp slik?
+Det er også lettere å ta i bruk gradvis. Du kan begynne med `tokens.css` og noen knapper, og hente inn resten når du trenger det.
 
-Mange designsystemer prøver å løse alt med én komponentmodell. Det gir ofte enten for mye JavaScript for enkle behov, eller for lite struktur for komplekse behov.
+## Hvor Shadow DOM passer inn
 
-Fristil deler derfor komponentene i kategorier:
+Shadow DOM er et valg per komponent, ikke en egen kategori.
 
-- Enkle ting skal være enkle: en knapp trenger ikke web component-runtime.
-- Rammekomponenter lar deg beholde HTML-kontrollen mens de tar hånd om wiring.
-- Sammensatte komponenter kapsler kompleks interaksjon bak et enkelt attributt-API.
+`<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, fordi skjemaelementene må være synlige for `FormData`, valideringsbiblioteker og testverktøy. `<fs-calendar>` bruker Shadow DOM, fordi kalenderpanelet har mange interne elementer som ingen app bør style ved et uhell.
 
-Fordelen med denne oppdelingen er at team kan velge riktig nivå per problem:
+Regelen er: skjemafelt holder seg i vanlig DOM, innkapslede widgets kan skjermes.
 
-- Du får lavere kompleksitet i vanlige flater.
-- Du får bedre gjenbruk i sammensatte mønstre.
-- Du får mer robust oppførsel i avanserte interaktive komponenter.
-- Du unngår at hele systemet blir dratt mot den mest kompliserte komponenttypen.
+## Design tokens
 
-## DX: utvikleropplevelse først
+Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`. De fungerer i all CSS, uavhengig av rammeverk og byggverktøy:
 
-God DX i Fristil handler om forutsigbarhet og flyt:
+```css
+.min-komponent {
+	color: var(--semantic-interactive-main);
+	padding: var(--size-4);
+	font-size: var(--font-size-m);
+}
+```
 
-- Design tokens er én kilde til sannhet.
-- CSS kan brukes direkte, uten tung integrasjon.
-- TypeScript-støtte og testoppsett er lagt opp for trygg iterasjon.
-- Dokumentasjonen viser både prinsipper og praktisk bruk.
+De samme verdiene finnes som TypeScript-konstanter, og som en Tailwind-forhåndsinnstilling for dem som bruker Tailwind. Se [Design tokens](../design-tokens/).
 
-Resultatet er mindre friksjon i hverdagen og færre overraskelser i produksjon.
+## Tailwind er valgfritt
 
-## Tailwind-støtte
+Fristil forutsetter ikke Tailwind, men står ikke i veien for det heller. Bruker du Tailwind i dag, kan du la det styre oppsettet og la Fristil styre komponentene:
 
-Fristil fungerer også godt med Tailwind. Du kan kombinere utility-klasser med Fristil-komponenter og tokens uten å miste konsistens i uttrykket.
-
-For team som bruker Tailwind i dag betyr dette lav terskel for adopsjon: behold arbeidsflyten dere liker, og bygg videre på et felles designsystem i stedet for å starte fra null.
-
-Eksempel i praksis:
-
-```astro
----
-import "@fristil/designsystem/tokens.css";
-import "@fristil/designsystem/button.css";
----
-
+```html
 <section class="mx-auto max-w-3xl p-6">
-	<h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
-	<div class="flex flex-wrap gap-3">
-		<button class="fs-button">Lagre</button>
-		<button class="fs-button" data-variant="secondary">Avbryt</button>
-	</div>
+  <h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
+  <div class="flex flex-wrap gap-3">
+    <button class="fs-button">Send søknad</button>
+    <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+  </div>
 </section>
 ```
 
-Her brukes Tailwind til layout og spacing, mens Fristil leverer komponentstil og tokens.
+Vil du at Tailwind-klassene skal bruke Fristils egne verdier, finnes `fristilPreset`. Det er en bekvemmelighet, ikke et krav — `var()` fungerer uansett.
 
-## Frihet og hastighet
+## Videre
 
-Fristil er laget for **frihet under ansvar**. Team kan beholde egne valg i applikasjonene sine, samtidig som de bygger på et felles fundament.
-
-Det gir to store gevinster:
-
-- **Frihet:** bruk komponenter og stilnivå som passer konteksten din.
-- **Hastighet:** gjenbruk mønstre, reduser dobbeltarbeid og lever funksjonalitet raskere.
-
-Kort sagt: Fristil hjelper deg å bevege deg fort, uten å miste retning.
+- [Kom i gang](../kom-i-gang/) — installasjon og oppsett, med og uten byggverktøy
+- [Rammeverk](../rammeverk/) — oppsett for React, Vue, Svelte, Astro og ren HTML
+- [Design tokens](../design-tokens/) — farger, størrelser og typografi
+- [Typesikker bruk](../typesikker-bruk/) — mønsteret som gir autofullføring på varianter

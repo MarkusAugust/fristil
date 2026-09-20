@@ -1,70 +1,123 @@
 ---
 title: Typesikker bruk
-description: Bruk Fristil button med TypeScript-autocomplete uten framework-binding.
+description: Få autofullføring og skrivefeil fanget i editoren, uten å binde deg til et rammeverk.
 ---
 
-Denne siden viser Button mønsteret for TypeScript: du beholder ren HTML/CSS-API, men får autocomplete og tryggere kode i editoren. Vi bruker button som eksempel.
+CSS-komponentene styres med klasser og dataattributter. Det gjør dem uavhengige av rammeverk, men det betyr også at alt er strenger:
 
-## Hva er poenget?
-
-`class="fs-button"` og `data-variant="..."` er frie strenger i ren HTML. Da er det lett å skrive feil variant.
-
-Button eksporterer en liten typed kontrakt:
-
-- `ButtonVariant` for lovlige varianter
-- `getButtonStyleAttributes()` for korrekt style-attributtsett
-- `isButtonVariant()` for runtime-sjekk av ukjente strenger
-
-## 1) Vanlig CSS-import
-
-```ts
-import "@fristil/designsystem/button.css"
+```html
+<button class="fs-button" data-variant="secundary">Lagre utkast</button>
 ```
 
-## 2) TypeScript API
+Knappen over får primærstilen. Ingen feilmelding, ingen advarsel — bare en variant som stille aldri ble brukt. Slike feil overlever kodegjennomgang fordi de ser riktige ut.
+
+Hver CSS-komponent eksporterer derfor tre ting som gjør den samme kontrakten typet.
+
+## De tre delene
+
+**En type med de gyldige verdiene.** `ButtonVariant` er `"primary" | "secondary" | "ghost" | "danger"`. Editoren foreslår dem, og `"secundary"` blir rød.
+
+**En funksjon som lager attributtene.** `getButtonStyleAttributes()` returnerer objektet du sprer inn i elementet.
+
+**En vaktfunksjon for verdier utenfra.** `isButtonVariant()` sjekker om en vilkårlig streng er en gyldig variant.
 
 ```ts
 import {
-  getButtonStyleAttributes,
-  type ButtonVariant,
+	getButtonStyleAttributes,
+	isButtonVariant,
+	type ButtonVariant,
 } from "@fristil/designsystem/button"
-
-const variant: ButtonVariant = "secondary"
-const fristilAttributes = getButtonStyleAttributes(variant)
-
-// fristilAttributes blir:
-// { class: "fs-button", "data-variant": "secondary" }
 ```
 
-## 3) Kombiner med egne HTML-attributter
+## Lage attributtene
 
 ```ts
-const fristilAttributes = getButtonStyleAttributes("danger")
+getButtonStyleAttributes("secondary")
+// { class: "fs-button", "data-variant": "secondary" }
 
-const attrs = {
-  ...fristilAttributes,
-  id: "delete-button",
-  disabled: false,
-  "aria-label": "Slett element",
+getButtonStyleAttributes("primary")
+// { class: "fs-button" }
+```
+
+Primærvarianten gir ikke noe `data-variant`, fordi den er standard i CSS-en. Det er én ting mindre å holde styr på: du sier alltid hvilken variant du vil ha, og funksjonen vet når attributtet kan utelates.
+
+## Bare Fristils del
+
+Funksjonene returnerer utelukkende Fristils egne attributter. Alt annet på elementet eier appen din:
+
+```ts
+const attributter = {
+	...getButtonStyleAttributes("danger"),
+	type: "submit",
+	"aria-label": "Slett søknaden permanent",
+	onClick: slettSøknad,
 }
 ```
 
-`getButtonStyleAttributes()` returnerer bare Fristil sin stil-del. Alt annet eier appen din.
+Det betyr at det ikke finnes noe «Fristil-knappekomponent-API» å lære. Du lager et vanlig `<button>`, og henter stil-delen fra en funksjon.
 
-## 4) Runtime input (for eksempel fra API)
+## Verdier som kommer utenfra
+
+Kommer varianten fra et API, en URL-parameter eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vaktfunksjonen gjør den om til en gyldig verdi eller en trygg reserve:
 
 ```ts
-import { isButtonVariant, getButtonStyleAttributes } from "@fristil/designsystem/button"
+import {
+	getButtonStyleAttributes,
+	isButtonVariant,
+} from "@fristil/designsystem/button"
 
-const incoming = String(payload.variant)
-const variant = isButtonVariant(incoming) ? incoming : "primary"
-const fristilAttributes = getButtonStyleAttributes(variant)
+const svar = await hentKnappeoppsett()
+const variant = isButtonVariant(svar.variant) ? svar.variant : "primary"
+
+getButtonStyleAttributes(variant)
 ```
 
-## Når bør du bruke dette?
+Etter `isButtonVariant(...)` vet TypeScript at `svar.variant` er en `ButtonVariant`, ikke bare en `string`. Er verdien ukjent, får du primærknappen i stedet for et dataattributt ingen CSS-regel treffer.
 
-- Når du vil ha bedre DX i TypeScript
-- Når du vil være framework-uavhengig
-- Når du vil unngå skrivefeil i variant-navn
+## Samme mønster overalt
 
-Hvis du skriver ren HTML uten TypeScript, kan du fortsatt bruke API-et direkte med `class="fs-button"` og `data-variant` som før.
+Alle CSS-komponentene følger den samme formen. Kan du én, kan du resten:
+
+| Komponent | Lag attributter | Valider verdi | Type |
+| --- | --- | --- | --- |
+| [Button](../components/button/) | `getButtonStyleAttributes` | `isButtonVariant` | `ButtonVariant` |
+| [Input](../components/input/) | `getInputStyleAttributes`, `getInputAttributes` | `isInputState`, `isInputVariant` | `InputState`, `InputVariant` |
+| [Label](../components/label/) | `getLabelStyleAttributes` | `isLabelRequiredMarker` | `LabelRequiredMarker` |
+| [Select](../components/select/) | `getSelectStyleAttributes` | `isSelectState` | `SelectState` |
+| [Textarea](../components/textarea/) | `getTextareaStyleAttributes` | `isTextareaState` | `TextareaState` |
+| [Help Text](../components/help-text/) | `getHelpTextStyleAttributes` | `isHelpTextVariant` | `HelpTextVariant` |
+| [Error Text](../components/error-text/) | `getErrorTextStyleAttributes` | `isErrorTextVariant` | `ErrorTextVariant` |
+
+[Input](../components/input/) har i tillegg `getInputAttributes`, som også setter `type`. Det holder `type="date"` og `data-variant="date"` i takt — et par som må stemme for at ikonet i feltet skal åpne datovelgeren.
+
+## I praksis: en gjenbrukbar knapp i React
+
+```tsx
+import {
+	getButtonStyleAttributes,
+	type ButtonVariant,
+} from "@fristil/designsystem/button"
+import type { ComponentProps } from "react"
+
+type Props = ComponentProps<"button"> & {
+	variant?: ButtonVariant
+}
+
+export function Knapp({ variant = "primary", ...rest }: Props) {
+	return <button {...getButtonStyleAttributes(variant)} {...rest} />
+}
+```
+
+Komponenten er tolv linjer og har ingen Fristil-avhengighet utover den ene importen. Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
+
+Samme mønster i Vue, Svelte eller Angular ser praktisk talt likt ut. Funksjonen returnerer et objekt, og alle rammeverk kan spre et objekt inn i et element.
+
+## Når du kan hoppe over det
+
+Hjelperne er valgfrie. Skriver du HTML for hånd, i en mal uten TypeScript, eller i et oppsett uten byggesteg, er dette like gyldig:
+
+```html
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+```
+
+Resultatet er identisk. Forskjellen er bare hvor tidlig du får vite at du skrev `secundary`.

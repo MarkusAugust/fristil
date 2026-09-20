@@ -1,0 +1,133 @@
+---
+title: Kom i gang
+description: Installer Fristil, importer det du trenger, og få den første komponenten på skjermen.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../components/Preview.astro"
+
+## Installer
+
+```bash
+npm install @fristil/designsystem
+```
+
+Pakken har ingen påkrevde avhengigheter. `lit` trengs bare hvis du bruker en `ramme`- eller `sammensatt`-komponent, og `tailwindcss` bare hvis du vil ha Tailwind-forhåndsinnstillingen. Begge er valgfrie `peerDependencies`, så pakkebehandleren maser ikke om dem.
+
+## Importer tokens først
+
+`tokens.css` definerer alle farger, størrelser og skriftstørrelser som CSS-variabler. Alle andre stilark bygger på den, så den må lastes først.
+
+<Tabs>
+  <TabItem label="Med byggverktøy">
+    ```js
+    // main.js eller main.ts, øverst
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/button.css"
+    ```
+  </TabItem>
+  <TabItem label="Uten byggverktøy">
+    ```html
+    <head>
+      <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
+      <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
+    </head>
+    ```
+
+    Serverer du filene fra en CDN som støtter npm-pakker, bruker du stien `@fristil/designsystem/tokens.css` direkte.
+  </TabItem>
+</Tabs>
+
+Du importerer bare stilarkene for komponentene du faktisk bruker. Det finnes ingen samlet CSS-fil, og det er med vilje — da slipper du å sende ned CSS for en datovelger på en side som bare har knapper.
+
+## Første komponent
+
+Med `tokens.css` og `button.css` importert er du i gang:
+
+<Tabs>
+  <TabItem label="Eksempel">
+    <Preview>
+      <button class="fs-button">Send søknad</button>
+      <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+    </Preview>
+  </TabItem>
+  <TabItem label="Kode">
+    ```html
+    <button class="fs-button">Send søknad</button>
+    <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+    ```
+  </TabItem>
+</Tabs>
+
+Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
+
+## Web components må registreres
+
+`ramme`- og `sammensatt`-komponentene er egendefinerte HTML-elementer, og nettleseren må få vite at de finnes. Det gjør du én gang når appen starter:
+
+```ts
+// main.ts – kjøres én gang
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/field.css"
+import { defineFsField } from "@fristil/designsystem/field"
+
+defineFsField()
+```
+
+Kaller du `defineFsField()` flere ganger, skjer ingenting ekstra — funksjonen sjekker selv om elementet allerede er registrert.
+
+```html
+<fs-field required-marker="symbol">
+  <label>Fullt navn</label>
+  <input class="fs-input" type="text" name="navn" required />
+</fs-field>
+```
+
+Får du en tom side i stedet for komponenten, er det nesten alltid fordi `define`-funksjonen ikke har kjørt. Sjekk at oppstartsfila faktisk lastes.
+
+## Hva du kan importere
+
+**Stilark**
+
+| Import | Innhold |
+| --- | --- |
+| `@fristil/designsystem/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
+| `@fristil/designsystem/utilities.css` | `.link` og `.srOnly` |
+| `@fristil/designsystem/button.css` | [Button](../components/button/) |
+| `@fristil/designsystem/link.css` | [Link](../components/link/) |
+| `@fristil/designsystem/badge.css` | [Badge](../components/badge/) |
+| `@fristil/designsystem/label.css` | [Label](../components/label/) |
+| `@fristil/designsystem/input.css` | [Input](../components/input/) |
+| `@fristil/designsystem/textarea.css` | [Textarea](../components/textarea/) |
+| `@fristil/designsystem/select.css` | [Select](../components/select/) |
+| `@fristil/designsystem/help-text.css` | [Help Text](../components/help-text/) |
+| `@fristil/designsystem/error-text.css` | [Error Text](../components/error-text/) |
+| `@fristil/designsystem/field.css` | [Field](../components/field/), med ledetekst, felt og tekster samlet |
+| `@fristil/designsystem/date-field.css` | [Date Field](../components/date-field/) |
+
+`field.css` og `date-field.css` inneholder stilene de trenger, så du slipper å importere ledetekst, felt og tekster hver for seg.
+
+**JavaScript og TypeScript**
+
+| Import | Innhold |
+| --- | --- |
+| `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
+| `@fristil/designsystem/calendar` | `defineFsCalendar`, klassen `FsCalendar` |
+| `@fristil/designsystem/date-field` | `defineFsDateField`, klassen `FsDateField` |
+| `@fristil/designsystem/button` | `getButtonStyleAttributes`, `isButtonVariant`, `ButtonVariant` |
+| `@fristil/designsystem/input` | `getInputAttributes`, `getInputStyleAttributes`, `isInputState`, `isInputVariant` |
+| `@fristil/designsystem/label` | `getLabelStyleAttributes`, `isLabelRequiredMarker` |
+| `@fristil/designsystem/select` | `getSelectStyleAttributes`, `isSelectState` |
+| `@fristil/designsystem/textarea` | `getTextareaStyleAttributes`, `isTextareaState` |
+| `@fristil/designsystem/help-text` | `getHelpTextStyleAttributes`, `isHelpTextVariant` |
+| `@fristil/designsystem/error-text` | `getErrorTextStyleAttributes`, `isErrorTextVariant` |
+| `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
+| `@fristil/designsystem/tailwind` | `fristilPreset` |
+
+TypeScript-hjelperne er valgfrie. Du kan skrive `class="fs-button" data-variant="secondary"` for hånd og få nøyaktig samme resultat — hjelperne finnes for å fange skrivefeil i editoren. Se [Typesikker bruk](../typesikker-bruk/).
+
+## Videre
+
+- [Rammeverk](../rammeverk/) — konkret oppsett for React, Vue, Svelte, Astro og ren HTML
+- [Design tokens](../design-tokens/) — hvilke variabler som finnes, og hva de heter
+- [Button](../components/button/) — den enkleste komponenten å begynne med

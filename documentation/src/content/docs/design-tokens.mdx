@@ -1,0 +1,223 @@
+---
+title: Design tokens
+description: Farger, størrelser og typografi som CSS-variabler, TypeScript-konstanter og Tailwind-forhåndsinnstilling.
+---
+
+import Preview from "../../components/Preview.astro"
+
+Alle verdier i Fristil — farger, avstander, skriftstørrelser — er CSS-variabler i `tokens.css`. Det er den ene måten alt henter verdiene sine fra, enten du skriver ren CSS, bruker Tailwind eller setter stiler fra JavaScript.
+
+```js
+import "@fristil/designsystem/tokens.css"
+```
+
+```css
+.min-komponent {
+	color: var(--semantic-interactive-main);
+	padding: var(--size-4);
+	font-size: var(--font-size-m);
+}
+```
+
+:::note[tokens.css redigeres ikke for hånd]
+Fila er generert fra `designsystem/src/tokens/tokens.ts`. Endrer du en verdi, endrer du den der og kjører `bun --filter @fristil/designsystem generate`. Redigerer du `tokens.css` direkte, blir endringen overskrevet neste gang noen bygger.
+:::
+
+## To lag med farger
+
+Fargene finnes i to lag, og du skal nesten alltid bruke det ytterste.
+
+**Palett** — `--palette-{farge}-{trinn}` — er råverdiene. Seks fargeskalaer med trinn fra 5 (lysest) til 100 (mørkest).
+
+**Semantisk** — `--semantic-{sammenheng}-{rolle}` — peker på en palettfarge og sier hva den betyr. `--semantic-interactive-main` er `--palette-azure-70` i dag, men det er en beslutning som kan endres ett sted.
+
+Bruker du den semantiske varianten, følger komponenten din med når paletten justeres. Bruker du palettfargen direkte, gjør den ikke det.
+
+### Semantiske farger
+
+<Preview layout="stabel" maxWidth="34rem">
+  <div style="display: grid; gap: var(--size-2);">
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-interactive-main); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-interactive-main</code>
+    </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-interactive-background); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-interactive-background</code>
+    </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-success-foreground); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-success-foreground</code>
+    </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-warning-foreground); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-warning-foreground</code>
+    </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-danger-foreground); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-danger-foreground</code>
+    </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-disabled-foreground); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-disabled-foreground</code>
+    </div>
+  </div>
+</Preview>
+
+| Gruppe | Variabler | Brukes til |
+| --- | --- | --- |
+| Side | `--semantic-page-background`, `--semantic-page-foreground` | Bakgrunn og tekst på en vanlig flate |
+| Interaktiv | `--semantic-interactive-main`, `-background`, `-foreground` | Lenker, knapper, fokusmarkering |
+| Suksess | `--semantic-success-background`, `-foreground` | Fullført, godkjent |
+| Advarsel | `--semantic-warning-background`, `-foreground` | Krever oppmerksomhet |
+| Fare | `--semantic-danger-background`, `-foreground` | Feil, sletting, avslag |
+| Deaktivert | `--semantic-disabled-background`, `-foreground` | Utilgjengelige elementer |
+| Skillelinjer | `--semantic-divider-30`, `--semantic-divider-100` | Rammer og streker, svak og sterk |
+
+Paret `background` og `foreground` er laget for å brukes sammen. Bruker du dem som par, er kontrasten allerede kontrollert.
+
+### Palett
+
+Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse. `azure` mangler trinn `5` og `50`, og `graphite` har i tillegg `0`, som er ren hvit.
+
+<Preview layout="stabel" maxWidth="34rem">
+  <div style="display: grid; gap: var(--size-2);">
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">burgundy</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-5);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-50);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-burgundy-100);"></span>
+    </div>
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">forest</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-5);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-50);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-forest-100);"></span>
+    </div>
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">ochre</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-5);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-50);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-ochre-100);"></span>
+    </div>
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">denim</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-5);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-50);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-denim-100);"></span>
+    </div>
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">azure</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-azure-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-azure-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-azure-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-azure-100);"></span>
+    </div>
+    <div style="display: flex; gap: var(--size-1); align-items: center;">
+      <code style="font-size: var(--font-size-xs); width: 5.5rem;">graphite</code>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-0); border: 1px solid var(--semantic-divider-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-5);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-10);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-30);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-50);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-70);"></span>
+      <span style="flex: 1; height: var(--size-6); background: var(--palette-graphite-100);"></span>
+    </div>
+  </div>
+</Preview>
+
+## Størrelser
+
+Én skala, `--size-*`, brukes til alt som handler om avstand og utstrekning: `padding`, `margin`, `gap`, `width`, `height`. Det finnes ingen egen `--spacing-*`-skala.
+
+Skalaen har fire piksler som grunnenhet, som Tailwind, så `--size-4` tilsvarer `p-4`.
+
+| Variabel | Verdi | Tailwind |
+| --- | --- | --- |
+| `--size-px` | 1px | — |
+| `--size-0-5` | 0.125rem | `0.5` |
+| `--size-1` | 0.25rem | `1` |
+| `--size-2` | 0.5rem | `2` |
+| `--size-3` | 0.75rem | `3` |
+| `--size-4` | 1rem | `4` |
+| `--size-5` | 1.25rem | `5` |
+| `--size-6` | 1.5rem | `6` |
+| `--size-8` | 2rem | `8` |
+| `--size-10` | 2.5rem | `10` |
+| `--size-12` | 3rem | `12` |
+| `--size-16` | 4rem | `16` |
+
+## Typografi
+
+Skriftstørrelsene følger en egen rytme i stedet for å telle oppover, slik at navnene sier hvor stor teksten er i forhold til brødteksten.
+
+<Preview layout="stabel" maxWidth="34rem">
+  <p style="margin: 0; font-size: var(--font-size-xxs);">xxs — 0.625rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xs);">xs — 0.75rem</p>
+  <p style="margin: 0; font-size: var(--font-size-s);">s — 0.875rem</p>
+  <p style="margin: 0; font-size: var(--font-size-m);">m — 1rem, brødtekst</p>
+  <p style="margin: 0; font-size: var(--font-size-l);">l — 1.125rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xl);">xl — 1.375rem</p>
+  <p style="margin: 0; font-size: var(--font-size-xxl);">xxl — 1.875rem</p>
+  <p style="margin: 0; font-size: var(--font-size-mega);">mega — 2.625rem</p>
+</Preview>
+
+`--font-size-m` er brødteksten. `--font-size-reference` er `16px` og forteller hvilken grunnstørrelse rem-verdiene er regnet ut fra.
+
+## Fra TypeScript
+
+Alle variabelnavnene finnes som en typet oppslagstabell, så editoren fanger skrivefeil:
+
+```ts
+import { cssTokens, type CssToken } from "@fristil/designsystem/tokens"
+
+const token: CssToken = "--semantic-interactive-main"
+element.style.setProperty(token, "red")
+
+cssTokens["--palette-azure-70"]
+// "#1362ae"
+```
+
+`CssToken` er unionen av alle gyldige navn. Skriver du `--semantic-interactiv-main`, får du feil i editoren i stedet for en `var()` som stille faller tilbake til ingenting.
+
+## Brekkpunkter og containere
+
+Brekkpunkter og containerbredder er ikke CSS-variabler. De brukes når oppsettet bygges, ikke når det tegnes, og eksporteres derfor som konstanter:
+
+```ts
+import { Breakpoints, Containers } from "@fristil/designsystem/tokens"
+
+Breakpoints.md   // "768px"
+Containers.aside // "384px"
+```
+
+Brekkpunktene følger Tailwind: `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1280px, `2xl` 1536px.
+
+## Med Tailwind
+
+`fristilPreset` kobler Tailwind-klassene til de samme variablene:
+
+```ts
+// tailwind.config.ts
+import { fristilPreset } from "@fristil/designsystem/tailwind"
+
+export default {
+	presets: [fristilPreset],
+}
+```
+
+Da gir `text-interactive`, `bg-danger-bg` og `border-divider` de samme verdiene som `var(--semantic-interactive-main)` og de andre. Brekkpunkter, containerbredder og hele paletten følger med.
+
+Forhåndsinnstillingen er et tillegg, ikke et krav. Velger du den bort, skriver du `var()` i stedet — verdiene er de samme.

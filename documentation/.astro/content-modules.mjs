@@ -12,6 +12,9 @@ export default new Map([
 ["src/content/docs/components/link.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Flink.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/components/select.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Fselect.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/components/textarea.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Ftextarea.mdx&astroContentModuleFlag=true")],
+["src/content/docs/design-tokens.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fdesign-tokens.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/introduksjon.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fintroduksjon.mdx&astroContentModuleFlag=true")],
+["src/content/docs/kom-i-gang.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fkom-i-gang.mdx&astroContentModuleFlag=true")],
+["src/content/docs/rammeverk.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Frammeverk.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/typesikker-bruk.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Ftypesikker-bruk.mdx&astroContentModuleFlag=true")]]);
 		

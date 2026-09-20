@@ -33,19 +33,18 @@ export default defineConfig({
         "@fristil/designsystem/select.css",
         "@fristil/designsystem/help-text.css",
         "@fristil/designsystem/error-text.css",
+        "@fristil/designsystem/field.css",
+        "@fristil/designsystem/date-field.css",
       ],
       sidebar: [
         {
           label: "Start her",
           items: [
-            {
-              label: "Introduksjon",
-              slug: "introduksjon",
-            },
-            {
-              label: "Typesikker bruk",
-              slug: "typesikker-bruk",
-            },
+            { label: "Introduksjon", slug: "introduksjon" },
+            { label: "Kom i gang", slug: "kom-i-gang" },
+            { label: "Rammeverk", slug: "rammeverk" },
+            { label: "Design tokens", slug: "design-tokens" },
+            { label: "Typesikker bruk", slug: "typesikker-bruk" },
           ],
         },
         {
