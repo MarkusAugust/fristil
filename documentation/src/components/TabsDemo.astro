@@ -1,0 +1,29 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-tabs" stiler={["tabs", "paragraph"]} maxWidth="34rem">
+	<fs-tabs label="Deler av saken">
+		<div class="fs-tabs__list">
+			<button>Søknaden</button>
+			<button>Vedlegg</button>
+			<button>Meldinger</button>
+		</div>
+
+		<div class="fs-tabs__panel">
+			<p class="fs-paragraph">Søknaden ble sendt 4. mars 2026. Saksnummer 2026-0481.</p>
+		</div>
+		<div class="fs-tabs__panel">
+			<p class="fs-paragraph">Tre vedlegg er lastet opp. Siste kom 6. mars.</p>
+		</div>
+		<div class="fs-tabs__panel">
+			<p class="fs-paragraph">Ingen meldinger i denne saken ennå.</p>
+		</div>
+	</fs-tabs>
+</Preview>
+
+<script>
+	import { defineFsTabs } from "@fristil/designsystem/tabs"
+
+	defineFsTabs()
+</script>

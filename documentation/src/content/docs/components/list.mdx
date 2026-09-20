@@ -1,0 +1,89 @@
+---
+title: List
+description: Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen, så skjermleseren fortsatt sier hvor mange elementer den har.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/list.css"
+```
+
+## Varianter
+
+<Eksempel stiler={["list"]} layout="stabel" maxWidth="32rem" kode={`
+<ul class="fs-list">
+  <li>Fødselsattest</li>
+  <li>Bekreftelse fra arbeidsgiver</li>
+  <li>Kopi av leiekontrakt</li>
+</ul>
+
+<ol class="fs-list">
+  <li>Fyll ut skjemaet</li>
+  <li>Last opp vedlegg</li>
+  <li>Send søknaden</li>
+</ol>
+
+<ul class="fs-list" data-variant="divided">
+  <li>Faktura 2026-0481, forfaller 4. mars</li>
+  <li>Faktura 2026-0482, forfaller 4. april</li>
+</ul>
+`} />
+
+| `data-variant` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Punkter eller tall, med innrykk |
+| `plain` | Uten punkter, for lister som bærer sin egen struktur |
+| `divided` | Uten punkter, med strek mellom radene |
+
+## Hvorfor varianten finnes
+
+Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvinner opplysningen om at dette er en liste med fire elementer. Varianten fjerner utseendet, ikke betydningen.
+
+<Eksempel stiler={["list", "card"]} layout="stabel" maxWidth="32rem" kode={`
+<ul class="fs-list" data-variant="plain">
+  <li>
+    <div class="fs-card">
+      <h3 class="fs-card__title">Søknad om bostøtte</h3>
+      <p>Sendt 4. mars.</p>
+    </div>
+  </li>
+  <li>
+    <div class="fs-card">
+      <h3 class="fs-card__title">Søknad om barnehageplass</h3>
+      <p>Under behandling.</p>
+    </div>
+  </li>
+</ul>
+`} />
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const liste = document.querySelector<HTMLUListElement>("#vedlegg")
+
+fs.setAttributes(liste, fs.list({ variant: "divided" }))
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-list` | Listen. Varianten kommer fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-list-gap` | `var(--size-1)` |
+
+`--fs-list-gap` er avstanden mellom elementene, og blir til luft over og under hver rad i `divided`. Se [Tilpasning](../../tilpasning/).
+
+## Tilgjengelighet
+
+- Bruk `<ol>` når rekkefølgen betyr noe, som i en oppskrift eller en saksgang. Bruk `<ul>` ellers.
+- Ikke legg annet enn `<li>` rett inni listen. Et `<div>` mellom bryter koblingen mellom listen og elementene.
+- Lister av lenker bør ligge i en liste også når de ser ut som en meny. Da sier skjermleseren hvor mange valg det er.

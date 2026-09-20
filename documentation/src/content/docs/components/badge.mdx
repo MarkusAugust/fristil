@@ -66,6 +66,19 @@ fs.setAttributes(merke, fs.badge({ color: farge }))
 
 `fs.setAttributes` rydder også bort attributter fra forrige kall, så merket kan skifte farge uten at den gamle blir stående. Se [Typesikker bruk](../../typesikker-bruk/).
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-badge` | Selve merket. Fargen kommer fra `data-color`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-badge-padding` | `var(--size-0-5) var(--size-2)` |
+| `--fs-badge-radius` | `var(--size-4)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
 ## Tilgjengelighet
 
 - Fargen alene sier ingenting til en skjermleser. Teksten må bære betydningen: «Avslått», ikke bare et rødt punkt.

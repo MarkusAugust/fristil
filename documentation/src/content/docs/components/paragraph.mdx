@@ -1,0 +1,77 @@
+---
+title: Paragraph
+description: Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Brødtekst med lesbar linjelengde. Bredden er begrenset til 70 tegn, fordi lengre linjer gjør det vanskelig å finne tilbake til starten av neste. Det er den vanligste grunnen til at en tekst er tung å lese selv når skriften er stor nok.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/paragraph.css"
+```
+
+## Ingress og brødtekst
+
+<Eksempel stiler={["paragraph", "heading"]} layout="stabel" maxWidth="34rem" kode={`
+<h2 class="fs-heading">Bostøtte</h2>
+
+<p class="fs-paragraph" data-variant="lead">
+  En støtteordning for deg som har lave inntekter og høye boutgifter.
+</p>
+
+<p class="fs-paragraph">
+  Du kan søke hver måned. Fristen er den 25., og svaret kommer rundt den 20. måneden etter. Har du fått bostøtte før, blir søknaden fornyet automatisk.
+</p>
+
+<p class="fs-paragraph" data-size="small">
+  Sist oppdatert 4. mars 2026.
+</p>
+`} />
+
+| Attributt | Brukes til |
+| --- | --- |
+| *(utelatt)* | Brødtekst |
+| `data-variant="lead"` | Ingressen rett under overskriften |
+| `data-size="large"` | Tekst som skal løftes fram |
+| `data-size="small"` | Bisetninger, datoer, kildehenvisninger |
+
+Avsnitt som følger hverandre får luft mellom seg av seg selv.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ingress = document.querySelector<HTMLParagraphElement>("#ingress")
+
+fs.setAttributes(ingress, fs.paragraph({ variant: "lead" }))
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-paragraph` | Avsnittet. Størrelsen kommer fra `data-size`, ingressen fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-paragraph-width` | `70ch` |
+| `--fs-paragraph-gap` | `var(--size-3)` |
+
+Står avsnittet i en spalte som allerede er smal nok, kan grensen fjernes:
+
+```css
+.fs-card .fs-paragraph {
+	--fs-paragraph-width: none;
+}
+```
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Ikke bruk `<br>` for å lage avsnitt. Et nytt `<p>` er det skjermlesere kan hoppe mellom.
+- `data-size="small"` skal ikke brukes på noe brukeren må lese. Vilkår i liten skrift er like vanskelige på skjerm som på papir.
+- La linjelengden stå. Den er den enkleste forskjellen mellom en tekst som leses og en som skummes.

@@ -41,15 +41,23 @@ Bruk det semantiske laget. Da følger komponenten din med når paletten justeres
 | Gruppe | Variabler | Brukes til |
 | --- | --- | --- |
 | Side | `--semantic-page-background`, `--semantic-page-foreground` | Bakgrunn og tekst på en vanlig flate |
-| Interaktiv | `--semantic-interactive-main`, `-background`, `-foreground` | Lenker, knapper, fokusmarkering |
-| Suksess | `--semantic-success-background`, `-foreground` | Fullført, godkjent |
-| Advarsel | `--semantic-warning-background`, `-foreground` | Krever oppmerksomhet |
-| Fare | `--semantic-danger-background`, `-foreground` | Feil, sletting, avslag |
-| Deaktivert | `--semantic-disabled-background`, `-foreground` | Kontroller som er slått av |
-| Nøytral | `--semantic-neutral-background`, `-foreground` | Dempet, men lesbar informasjon |
+| Interaktiv | `--semantic-interactive-main`, `--semantic-interactive-background`, `--semantic-interactive-foreground`, `--semantic-interactive-contrast`, `--semantic-interactive-visited` | Lenker, knapper, fokusmarkering. `--semantic-interactive-contrast` er teksten oppå `main`. |
+| Suksess | `--semantic-success-background`, `--semantic-success-foreground` | Fullført, godkjent |
+| Advarsel | `--semantic-warning-background`, `--semantic-warning-foreground` | Krever oppmerksomhet |
+| Fare | `--semantic-danger-background`, `--semantic-danger-foreground` | Feil, sletting, avslag |
+| Deaktivert | `--semantic-disabled-background`, `--semantic-disabled-foreground` | Kontroller som er slått av |
+| Nøytral | `--semantic-neutral-background`, `--semantic-neutral-foreground` | Dempet, men lesbar informasjon |
 | Skillelinjer | `--semantic-divider-30`, `--semantic-divider-100` | Rammer og streker, svak og sterk |
+| Dempet tekst | `--semantic-muted-foreground` | Hjelpetekst, plassholdere, ukedager i kalenderen |
+| Skjemafelt | `--semantic-field-border`, `--semantic-field-border-hover` | Rammen rundt felt. Holder 3:1 mot flaten, som WCAG 1.4.11 krever. |
+| Farefylt handling | `--semantic-danger-main`, `--semantic-danger-contrast` | Fylt flate på en sletteknapp, og teksten oppå |
+| Over siden | `--semantic-shadow-overlay`, `--semantic-overlay-backdrop` | Skyggen under et panel, og flaten bak en dialog |
+| Ikoner | `--semantic-icon-calendar`, `--semantic-icon-clock`, `--semantic-icon-search`, `--semantic-icon-check`, `--semantic-icon-dash` | Ikoner tegnet inn i en bakgrunn |
+| Standardverdier | `--semantic-size-default`, `--semantic-spacing-default` | Fallhøyde for størrelse og avstand |
 
 Bruk `background` og `foreground` som par. Da er kontrasten kontrollert mot WCAG AA av testene i designsystemet.
+
+**Ikoner som tokens.** Et ikon som er tegnet inn i en bakgrunn kan ikke lese en CSS-variabel: streken er malt inn i selve bildet. Derfor ligger de fem ikonene i det semantiske laget, slik at de snur med temaet på samme måte som fargene. Bruker du dem selv, sett dem som `background-image`.
 
 **`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3, og derfor bevisst dempet. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder 6,7:1.
 
@@ -82,6 +90,7 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
 | `--size-4` | 1rem | `4` |
 | `--size-5` | 1.25rem | `5` |
 | `--size-6` | 1.5rem | `6` |
+| `--size-7` | 1.75rem | `7` |
 | `--size-8` | 2rem | `8` |
 | `--size-10` | 2.5rem | `10` |
 | `--size-12` | 3rem | `12` |

@@ -1,0 +1,114 @@
+---
+title: Fieldset
+description: Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+`<fieldset>` med `<legend>` er den ene måten å gi et sett radioknapper eller avkryssingsbokser en felles ledetekst som skjermlesere leser opp før hvert alternativ. En overskrift over gruppen ser likedan ut, men høres ikke.
+
+Komponenten er i praksis to ting: en nullstilling av nettleserens ramme fra 1996, og samme markering av påkrevd og valgfritt som på en vanlig [Label](../label/).
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/fieldset.css"
+import "@fristil/designsystem/radio.css"
+```
+
+## En gruppe valg
+
+<Eksempel stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<fieldset class="fs-fieldset">
+  <legend class="fs-legend" data-required="symbol">Hvem søker du på vegne av?</legend>
+
+  <div class="fs-radio-row">
+    <input class="fs-radio" type="radio" id="selv" name="soker" value="selv" checked />
+    <label class="fs-label" for="selv">Meg selv</label>
+  </div>
+
+  <div class="fs-radio-row">
+    <input class="fs-radio" type="radio" id="annen" name="soker" value="annen" />
+    <label class="fs-label" for="annen">En annen person</label>
+  </div>
+</fieldset>
+`} />
+
+| Attributt på `.fs-legend` | Effekt |
+| --- | --- |
+| *(utelatt)* | Vanlig ledetekst |
+| `data-required="symbol"` | ` *` i farefargen |
+| `data-required="text"` | ` (påkrevd)` i farefargen |
+| `data-optional=""` | ` (valgfri)` i dempet farge |
+
+Velg én av `data-required` og `data-optional`, og hold deg til den gjennom skjemaet.
+
+## Hjelpetekst og feilmelding
+
+Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skjermlesere går via `aria-describedby` på `<fieldset>`, ikke på hver knapp.
+
+<Eksempel stiler={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stabel" maxWidth="28rem" kode={`
+<fieldset class="fs-fieldset" data-state="invalid" aria-describedby="levering-hjelp levering-feil">
+  <legend class="fs-legend" data-required="symbol">Leveringsmåte</legend>
+  <p class="fs-help-text" id="levering-hjelp">Vi sender innen tre virkedager.</p>
+
+  <div class="fs-radio-row">
+    <input class="fs-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" />
+    <label class="fs-label" for="lev-post">Vanlig post</label>
+  </div>
+
+  <div class="fs-radio-row">
+    <input class="fs-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" />
+    <label class="fs-label" for="lev-hentes">Hentes på kontoret</label>
+  </div>
+
+  <p class="fs-error-text" id="levering-feil">Velg hvordan du vil ha varen levert.</p>
+</fieldset>
+`} />
+
+`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser.
+
+## Slå av hele gruppen
+
+`disabled` på `<fieldset>` slår av alt inni, også felt som legges til senere:
+
+```html
+<fieldset class="fs-fieldset" disabled>
+  <legend class="fs-legend" aria-disabled="true">Leveringsmåte</legend>
+</fieldset>
+```
+
+Merk at `disabled` på gruppen ikke setter `disabled` på hver kontroll. Egenskapen `knapp.disabled` står fortsatt til `false`, mens `knapp.matches(":disabled")` er sann. Sjekker du i JavaScript, bruk den siste.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const gruppe = document.querySelector<HTMLFieldSetElement>("#levering")
+const tittel = document.querySelector<HTMLLegendElement>("#levering-tittel")
+
+fs.setAttributes(gruppe, fs.fieldset({ state: "invalid" }))
+fs.setAttributes(tittel, fs.legend({ required: "symbol" }))
+```
+
+Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-fieldset` | Gruppen. Tilstanden kommer fra `data-state`. |
+| `.fs-legend` | Ledeteksten på gruppen |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-fieldset-gap` | `var(--size-2)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- `<legend>` må være det første elementet inne i `<fieldset>`. Står det lenger ned, kobles det ikke til gruppen.
+- Bruk gruppen der alternativene hører til samme spørsmål. Et enkelt avkryssingsfelt for «Jeg godtar vilkårene» trenger den ikke.
+- Ikke legg hele skjemaet i én gruppe. Da leses ledeteksten opp foran hvert eneste felt.
+- Gruppens feilmelding skal peke på hva brukeren skal gjøre: «Velg hvordan du vil ha varen levert», ikke «Feltet er påkrevd».

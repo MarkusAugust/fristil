@@ -45,6 +45,14 @@ fs.setAttributes(lenke, fs.link({ disabled: !klar }))
 
 Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false`. Da fjernes `aria-disabled`, og lenken virker igjen.
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-link` | Lenken. Besøkt og deaktivert skiller seg med `:visited` og `aria-disabled`. |
+
+Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+
 ## Tilgjengelighet
 
 - Lenketeksten skal gi mening lest alene. Skjermlesere kan liste opp alle lenker på siden, og der hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.

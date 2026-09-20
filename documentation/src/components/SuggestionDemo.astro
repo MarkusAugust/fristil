@@ -1,0 +1,25 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-suggestion" stiler={["suggestion"]} maxWidth="30rem">
+	<fs-suggestion
+		label="Kommune"
+		name="kommune"
+		placeholder="Begynn å skrive"
+		help-text="Vi fyller ut resten av adressen for deg."
+	>
+		<option>Bergen</option>
+		<option>Bodø</option>
+		<option>Oslo</option>
+		<option>Stavanger</option>
+		<option>Tromsø</option>
+		<option>Trondheim</option>
+	</fs-suggestion>
+</Preview>
+
+<script>
+	import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+
+	defineFsSuggestion()
+</script>

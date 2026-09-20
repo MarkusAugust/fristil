@@ -1,0 +1,90 @@
+---
+title: Search
+description: Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Et `fs-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/search.css"
+import "@fristil/designsystem/button.css"
+```
+
+## Søkefelt med knapp
+
+<Eksempel stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<form class="fs-search-row" role="search">
+  <label class="fs-label fs-sr-only" for="sok">Søk i saker</label>
+  <input class="fs-input fs-search" type="search" id="sok" name="q" placeholder="Søk i saker" />
+  <button class="fs-button" type="submit">Søk</button>
+</form>
+`} />
+
+`type="search"` gir nettleserens eget kryss for å tømme feltet, og «Søk» i stedet for «Enter» på mobiltastaturet. Hvordan krysset ser ut, og om Escape tømmer feltet, varierer mellom nettleserne.
+
+`role="search"` på skjemaet gjør at skjermlesere kan hoppe rett til søket på siden.
+
+## Ledeteksten kan ikke droppes
+
+Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp. Ser feltet så åpenbart ut som et søk at en synlig ledetekst blir støy, skjul den med [`.fs-sr-only`](../sr-only/) framfor å la den være.
+
+## Søk mens brukeren skriver
+
+```html
+<input class="fs-input fs-search" type="search" id="sok" name="q" />
+<p class="fs-sr-only" role="status" id="treff"></p>
+
+<script type="module">
+  const felt = document.getElementById("sok")
+  const status = document.getElementById("treff")
+  let tidsavbrudd
+
+  felt.addEventListener("input", () => {
+    clearTimeout(tidsavbrudd)
+    tidsavbrudd = setTimeout(async () => {
+      const svar = await fetch(`/api/sok?q=${encodeURIComponent(felt.value)}`)
+      const saker = await svar.json()
+
+      tegnResultater(saker)
+      status.textContent = `${saker.length} treff`
+    }, 300)
+  })
+</script>
+```
+
+Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antall treff opp for hvert tastetrykk.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLInputElement>("#sok")
+
+fs.setAttributes(felt, fs.search())
+```
+
+`fs.search()` setter både `fs-input` og `fs-search`, og `type="search"`. `fs.search.row` gir klassen på raden med feltet og knappen.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-search` | Søkefeltet. Brukes sammen med `.fs-input`. |
+| `.fs-search-row` | Raden med feltet og knappen |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-search-icon-space` | `var(--size-10)` |
+| `--fs-search-icon-size` | `var(--size-5)` |
+
+Ikonet kommer fra `--semantic-icon-search` og snur med temaet. Se [Tilpasning](../../tilpasning/).
+
+## Tilgjengelighet
+
+- Meld antall treff i et felt med `role="status"`. Uten det vet ikke den som hører siden om søket ga noe.
+- Ikke fjern nettleserens kryss uten å gi noe annet. Å tømme feltet for hånd er tungvint på mobil.
+- Er søket hovedfunksjonen på siden, la feltet ha fokus fra start. Er det ett av flere verktøy, la være: fokus som hopper er forvirrende.

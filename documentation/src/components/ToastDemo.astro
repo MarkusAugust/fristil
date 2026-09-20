@@ -1,0 +1,23 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-toast" stiler={["toast", "button"]} maxWidth="30rem">
+	<button class="fs-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
+	<fs-toast id="demo-toast-kø" label="Meldinger"></fs-toast>
+</Preview>
+
+<script>
+	import { defineFsToast } from "@fristil/designsystem/toast"
+
+	defineFsToast()
+
+	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	const flate = document.getElementById("demo-toast")?.shadowRoot
+	const knapp = flate?.getElementById("demo-toast-knapp")
+	const meldinger = flate?.getElementById("demo-toast-kø")
+
+	knapp?.addEventListener("click", () => {
+		meldinger?.show("Søknaden er lagret", { color: "success" })
+	})
+</script>

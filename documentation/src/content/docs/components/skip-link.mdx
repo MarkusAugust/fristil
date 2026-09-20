@@ -1,0 +1,74 @@
+---
+title: Skip Link
+description: Lenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Den som navigerer med tastatur må ellers gjennom hele menyen på hver eneste side. Lenken ligger utenfor skjermen til den får fokus, og er som regel det første elementet i `<body>`.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/skip-link.css"
+```
+
+## Slik ser den ut når den har fokus
+
+<Eksempel stiler={["skip-link"]} layout="stabel" maxWidth="32rem" kode={`
+<div style="position: relative; min-height: var(--size-16);">
+  <a class="fs-skip-link" href="#innhold" style="transform: none; position: static;">Hopp til hovedinnhold</a>
+</div>
+`} />
+
+I en ekte side står den slik, øverst i `<body>`:
+
+```html
+<body>
+  <a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
+
+  <header>…</header>
+
+  <main id="hovedinnhold" tabindex="-1">…</main>
+</body>
+```
+
+`tabindex="-1"` på målet er nødvendig. Uten det flytter nettleseren visningen dit, men ikke fokus, og neste tabbetrykk fortsetter i menyen brukeren nettopp hoppet over.
+
+## Hvorfor den ikke kan skjules
+
+Lenken flyttes utenfor skjermen med `transform`, ikke med `display: none` eller `visibility: hidden`. De to siste tar elementet ut av tastaturrekkefølgen, og da finnes lenken ikke for den som trenger den.
+
+Den kommer til syne på `:focus`, ikke `:focus-visible`. Nettleseren regner ikke fokus satt fra kode som synlig fokus, og lenken ville da blitt stående skjult for den som hopper dit fra et skript.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const lenke = document.createElement("a")
+lenke.href = "#hovedinnhold"
+lenke.textContent = "Hopp til hovedinnhold"
+
+fs.setAttributes(lenke, fs.skipLink())
+document.body.prepend(lenke)
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-skip-link` | Lenken |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-skip-link-padding` | `var(--size-2) var(--size-4)` |
+| `--fs-skip-link-radius` | `var(--size-1)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Lenken skal være det første elementet som får fokus på siden. Står den etter menyen, hjelper den ingen.
+- Teksten skal si hvor man havner. «Hopp til hovedinnhold», ikke «Hopp».
+- Har siden både meny og søk i toppen, kan én lenke til være berettiget, for eksempel til søket. Flere enn to blir en meny i seg selv.
+- Test den med Tab som første tastetrykk etter at siden er lastet. Det er den eneste måten å se at den virker.

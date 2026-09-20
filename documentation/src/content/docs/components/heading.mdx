@@ -1,0 +1,73 @@
+---
+title: Heading
+description: Overskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Størrelsen og nivået er to forskjellige ting. Nivået er `<h1>` til `<h6>` og bestemmer strukturen skjermlesere navigerer etter. `data-size` bestemmer bare hvor stor teksten ser ut.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/heading.css"
+```
+
+## Størrelser
+
+<Eksempel stiler={["heading"]} layout="stabel" maxWidth="32rem" kode={`
+<h1 class="fs-heading" data-size="mega">Søknad om bostøtte</h1>
+<h2 class="fs-heading" data-size="xl">Om søkeren</h2>
+<h2 class="fs-heading">Boforhold</h2>
+<h3 class="fs-heading" data-size="m">Vedlegg</h3>
+<h4 class="fs-heading" data-size="s">Fødselsattest</h4>
+<h5 class="fs-heading" data-size="xs">Sist endret</h5>
+`} />
+
+| `data-size` | Font |
+| --- | --- |
+| `mega` | `--font-size-mega` |
+| `xl` | `--font-size-xxl` |
+| *(utelatt)* | `--font-size-xl` |
+| `m` | `--font-size-l` |
+| `s` | `--font-size-m` |
+| `xs` | `--font-size-s`, i versaler |
+
+## Nivå følger strukturen, ikke utseendet
+
+En `<h2>` som skal se liten ut er riktig. En `<h4>` valgt fordi den var liten nok, hopper over et nivå, og da blir innholdsfortegnelsen skjermleseren bygger feil:
+
+```html
+<h2 class="fs-heading" data-size="s">Vedlegg</h2>
+```
+
+Siden skal ha én `<h1>`, og nivåene under skal følge hverandre uten hopp.
+
+## TypeScript
+
+```ts
+import { fs, type HeadingSize } from "@fristil/designsystem"
+
+const tittel = document.querySelector<HTMLHeadingElement>("#seksjon")
+
+fs.setAttributes(tittel, fs.heading({ size: "m" }))
+```
+
+Kommer størrelsen fra innhold utenfra, valider den med `fs.heading.isSize(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-heading` | Overskriften. Størrelsen kommer fra `data-size`. |
+
+Klassen har ingen egne variabler: størrelsene er `--font-size`-tokenene direkte, så en endring i skalaen slår gjennom overalt på én gang.
+
+Overskriftene bruker `text-wrap: balance`, så en overskrift over to linjer ikke ender med ett ord alene på den siste.
+
+Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+
+## Tilgjengelighet
+
+- Skjermlesere kan liste opp alle overskrifter og hoppe mellom dem. Det er den vanligste måten å finne fram på en lang side.
+- Ikke bruk en overskrift for å gjøre tekst stor. Bruk [Paragraph](../paragraph/) med `data-size="large"`.
+- En overskrift uten innhold under seg er ikke en overskrift.

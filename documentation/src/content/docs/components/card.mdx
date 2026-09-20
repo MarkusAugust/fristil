@@ -1,0 +1,81 @@
+---
+title: Card
+description: Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+En ramme rundt innhold som hører sammen, som én sak i en liste over saker. Kortet er en beholder, ikke en komponent med oppførsel: det er innholdet som bestemmer hva brukeren kan gjøre.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/card.css"
+```
+
+## Varianter
+
+<Eksempel stiler={["card", "badge", "button"]} layout="stabel" maxWidth="32rem" kode={`
+<div class="fs-card">
+  <h3 class="fs-card__title">Søknad om bostøtte</h3>
+  <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
+  <span class="fs-badge" data-color="success">Innvilget</span>
+</div>
+
+<div class="fs-card" data-variant="filled">
+  <h3 class="fs-card__title">Søknad om barnehageplass</h3>
+  <p>Vi mangler fødselsattest før vi kan behandle søknaden.</p>
+  <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
+</div>
+`} />
+
+| `data-variant` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Omriss på sideflaten. Standardvalget. |
+| `filled` | Dempet flate, når kortet skal skille seg fra hvitt uten ramme |
+
+## Hele kortet som lenke
+
+<Eksempel stiler={["card"]} layout="stabel" maxWidth="32rem" kode={`
+<a class="fs-card" data-interactive href="#">
+  <h3 class="fs-card__title">Se hele saken</h3>
+  <p>Alle dokumenter, meldinger og vedtak samlet.</p>
+</a>
+`} />
+
+`data-interactive` gir hover og fokusmarkering, men gjør ingenting klikkbart av seg selv. Elementet må være en `<a>` eller en `<button>`. Et `<div>` med en klikklytter kan hverken nås med tastatur eller meldes som noe å trykke på.
+
+Har kortet flere handlinger, skal ikke hele kortet være en lenke. Da havner knappene inni en lenke, og brukeren kan ikke trykke på dem uten å navigere. Lag heller én tydelig lenke i overskriften.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const kort = document.createElement("a")
+kort.href = `/sak/${sak.id}`
+
+fs.setAttributes(kort, fs.card({ interactive: true }))
+```
+
+`fs.card.title` gir klassen på overskriften. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-card` | Selve kortet. Varianten kommer fra `data-variant`. |
+| `.fs-card__title` | Overskriften inne i kortet |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-card-padding` | `var(--size-4)` |
+| `--fs-card-radius` | `var(--size-2)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Overskriften i kortet skal være et ekte overskriftselement, og på riktig nivå for siden. Klassen setter bare størrelsen.
+- Er kortene en liste, marker dem som en liste med `<ul>` og `<li>`. Da sier skjermleseren hvor mange det er og hvor i rekken brukeren er.
+- Ikke skjul viktig informasjon bak hover. Den finnes ikke på berøringsskjerm.
+- Rekkefølgen i markupen er rekkefølgen tastaturet følger. Flytter du noe visuelt med CSS, flytter du ikke fokus.

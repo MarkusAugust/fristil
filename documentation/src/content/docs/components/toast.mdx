@@ -1,0 +1,90 @@
+---
+title: Toast
+description: Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.
+---
+
+import ToastDemo from "../../../components/ToastDemo.astro"
+
+Elementet er beholderen, ikke meldingen. Du legger det inn én gang i appen og kaller `show()` når noe skal meldes.
+
+Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding som dukker opp i hjørnet skal ikke avbryte det skjermleseren holder på med. Er beskjeden så viktig at den må avbryte, hører den hjemme i en [Alert](../alert/) i selve siden.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsToast } from "@fristil/designsystem/toast"
+import "@fristil/designsystem/toast.css"
+
+defineFsToast()
+```
+
+## Meldinger
+
+<ToastDemo />
+
+```html
+<fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+<script type="module">
+  import { defineFsToast } from "@fristil/designsystem/toast"
+  defineFsToast()
+
+  const meldinger = document.getElementById("meldinger")
+
+  document.getElementById("lagre").addEventListener("click", async () => {
+    await lagre()
+    meldinger.show("Søknaden er lagret", { color: "success" })
+  })
+</script>
+```
+
+## Attributter og metoder
+
+| Navn | Hva det er |
+| --- | --- |
+| `duration` | Standard levetid i millisekunder. `0` lar meldingene bli stående. |
+| `label` | Tekst som sier hva regionen er. Blir `aria-label`. |
+| `show(tekst, valg)` | Viser en melding og returnerer elementet |
+| `dismiss(melding)` | Fjerner én melding |
+| `clear()` | Fjerner alle |
+
+Valgene til `show()`:
+
+| Valg | Standard | Effekt |
+| --- | --- | --- |
+| `color` | `neutral` | `success`, `warning` eller `danger` gir en farget kant |
+| `duration` | fra elementet | Millisekunder før meldingen forsvinner |
+| `closeLabel` | `Lukk melding` | Tekst på lukkeknappen |
+
+## Meldinger som forsvinner
+
+En melding som forsvinner av seg selv er en tilgjengelighetsfelle: den som leser sakte, bruker forstørrelse eller skjermleser rekker ikke å lese den. Komponenten gjør to ting med det:
+
+- Lukkeknappen er alltid der.
+- Tiden stopper mens musa er over meldingen, eller mens fokus er inne i den.
+
+Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvittering skal stå i siden.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-toast` | Én melding. Fargen kommer fra `data-color`. |
+| `.fs-toast__close` | Lukkeknappen |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-toast-space` | `var(--size-4)` |
+| `--fs-toast-width` | `min(24rem, calc(100vw - var(--size-8)))` |
+| `--fs-toast-padding` | `var(--size-3) var(--size-4)` |
+| `--fs-toast-radius` | `var(--size-1)` |
+
+Beholderen slipper klikk gjennom når den er tom, så den ikke stenger for knapper under seg.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Én ting om gangen. Fem meldinger oppå hverandre leses opp etter hverandre, og ingen av dem får oppmerksomhet.
+- Ikke legg viktige handlinger i en melding som forsvinner. Angre-knappen bør stå i siden.
+- Feil som stopper brukeren hører i en [Alert](../alert/) eller en [Error Summary](../error-summary/), ikke i hjørnet.
+- Teksten skal si hva som skjedde, ikke bare «Ferdig».
