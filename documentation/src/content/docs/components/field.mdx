@@ -218,44 +218,43 @@ Punkt 6 betyr at feilmeldingen kan ligge i markupen hele tiden. Den er skjult ti
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
   </TabItem>
-  <TabItem label="Vue">
-    ```ts
-    // main.ts – kjøres én gang når appen starter
-    import { defineFsField } from "@fristil/designsystem/field"
-    import "@fristil/designsystem/field.css"
+  <TabItem label="Datastar">
+    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.
 
-    defineFsField()
+    ```html
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.3/bundles/datastar.js"
+    ></script>
     ```
 
-    ```vue
-    <script setup lang="ts">
-    import { computed, ref } from "vue"
+    ```html
+    <form
+      data-signals="{navn: '', beroert: false}"
+      data-computed:ugyldig="$beroert && $navn.trim() === ''"
+    >
+      <fs-field required-marker="symbol" data-attr:invalid="$ugyldig">
+        <label>Fullt navn</label>
+        <input
+          class="fs-input"
+          type="text"
+          name="navn"
+          data-bind:navn
+          data-on:blur="$beroert = true"
+        />
+        <p class="fs-error-text">Fyll inn navnet ditt.</p>
+      </fs-field>
 
-    const navn = ref("")
-    const berørt = ref(false)
-    const ugyldig = computed(() => berørt.value && navn.value.trim() === "")
+      <button class="fs-button" type="submit">Send</button>
+    </form>
+
+    <script type="module">
+      import { defineFsField } from "@fristil/designsystem/field"
+      defineFsField()
     </script>
-
-    <template>
-      <form @submit.prevent>
-        <fs-field required-marker="symbol" :invalid="ugyldig || null">
-          <label>Fullt navn</label>
-          <input
-            class="fs-input"
-            type="text"
-            name="navn"
-            v-model="navn"
-            @blur="berørt = true"
-          />
-          <p class="fs-error-text">Fyll inn navnet ditt.</p>
-        </fs-field>
-
-        <button class="fs-button" type="submit">Send</button>
-      </form>
-    </template>
     ```
 
-    I Vue fjerner `null` attributtet, på samme måte som `undefined` gjør i React. Legg til `fs-` i `compilerOptions.isCustomElement` i Vite-konfigurasjonen så Vue slutter å advare om ukjente komponenter.
+    `data-attr:invalid` setter attributtet når uttrykket er sant og fjerner det når det er usant — nøyaktig det `<fs-field>` forventer av et boolsk attributt. Ingen av forbeholdene fra React-fanen gjelder her.
   </TabItem>
 </Tabs>
 

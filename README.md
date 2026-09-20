@@ -90,7 +90,7 @@ import { fs } from "@fristil/designsystem"
 
 Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er lik for alle. Skriv `fs.` i editoren for å se hva som finnes, og `fs.button.` for å se lovlige verdier og vakten som validerer verdier utenfra.
 
-`fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>` — kontrakten finnes ett sted. Se «Typesikker bruk» i dokumentasjonen.
+`fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>` — kontrakten finnes ett sted. Se «Typesikker bruk» og «Rammeverk» i dokumentasjonen — sistnevnte dekker ren HTML, React, Astro og Datastar.
 
 `@fristil/designsystem/react-jsx` gir `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` typer i JSX — uten den kjenner ikke TypeScript elementene, og attributter som `required-marker` og `help-text` er ukontrollerte strenger.
 

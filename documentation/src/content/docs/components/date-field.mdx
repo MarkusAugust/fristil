@@ -173,47 +173,42 @@ Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "202
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
   </TabItem>
-  <TabItem label="Vue">
-    ```ts
-    // main.ts – kjøres én gang når appen starter
-    import { defineFsDateField } from "@fristil/designsystem/date-field"
-    import "@fristil/designsystem/date-field.css"
+  <TabItem label="Datastar">
+    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.
 
-    defineFsDateField()
+    ```html
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.3/bundles/datastar.js"
+    ></script>
     ```
 
-    ```vue
-    <script setup lang="ts">
-    import { computed, ref } from "vue"
+    ```html
+    <form data-signals="{dato: '2026-05-31'}">
+      <fs-date-field
+        label="Reisedato"
+        name="reisedato"
+        value="2026-05-31"
+        help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
+        error-text="Velg en dato fram i tid."
+        data-on:change="$dato = evt.currentTarget.value"
+        data-attr:invalid="$dato !== '' && $dato < new Date().toISOString().slice(0, 10)"
+      ></fs-date-field>
 
-    const dato = ref("") // alltid ISO
-    const iDag = new Date().toISOString().slice(0, 10)
-    const ugyldig = computed(() => dato.value !== "" && dato.value < iDag)
+      <p>Valgt dato: <span data-text="$dato"></span></p>
 
-    function oppdater(hendelse: Event) {
-      const element = hendelse.currentTarget as HTMLElement & { value: string }
-      dato.value = element.value
-    }
+      <button class="fs-button" type="submit">Bestill</button>
+    </form>
+
+    <script type="module">
+      import { defineFsDateField } from "@fristil/designsystem/date-field"
+      defineFsDateField()
     </script>
-
-    <template>
-      <form @submit.prevent>
-        <fs-date-field
-          label="Reisedato"
-          name="reisedato"
-          :value="dato"
-          :invalid="ugyldig || null"
-          help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
-          error-text="Velg en dato fram i tid."
-          @change="oppdater"
-        />
-
-        <button class="fs-button" type="submit">Bestill</button>
-      </form>
-    </template>
     ```
 
-    Legg til `fs-` i `compilerOptions.isCustomElement` i Vite-konfigurasjonen, så slutter Vue å advare om at komponenten er ukjent.
+    Bruk `evt.currentTarget`, ikke `evt.target`. Komponenten rendrer et `<input>` inni seg, og hendelsen bobler derfra — `evt.target` er altså tekstfeltet, og verdien der er `DD-MM-ÅÅÅÅ`. `currentTarget` er `<fs-date-field>` selv, og den gir alltid ISO.
+
+    `data-attr:invalid` setter og fjerner attributtet etter uttrykket, så du slipper å tenke på hvordan rammeverket oversetter boolske verdier.
   </TabItem>
 </Tabs>
 
