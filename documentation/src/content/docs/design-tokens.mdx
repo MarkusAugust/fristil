@@ -20,10 +20,6 @@ import "@fristil/designsystem/tokens.css"
 }
 ```
 
-:::note[tokens.css redigeres ikke for hånd]
-Fila er generert fra `designsystem/src/tokens/tokens.ts`. Endrer du en verdi, endrer du den der og kjører `bun --filter @fristil/designsystem generate`. Redigerer du `tokens.css` direkte, blir endringen overskrevet neste gang noen bygger.
-:::
-
 ## To lag med farger
 
 **Palett** — `--palette-{farge}-{trinn}` — er råverdiene. **Semantisk** — `--semantic-{sammenheng}-{rolle}` — peker på en palettfarge og sier hva den betyr.
@@ -71,6 +67,51 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
   azure: [10, 30, 70, 100],
   graphite: [0, 5, 10, 30, 50, 70, 100],
 }} />
+
+## Egne farger
+
+Vil du ha andre farger enn Fristils, overstyrer du variablene i din egen CSS. Last den etter `tokens.css`:
+
+```css
+:root {
+	--semantic-interactive-main: #7c3aed;
+	--semantic-interactive-contrast: #ffffff;
+}
+```
+
+Det er din fil, så den overlever oppgraderinger av pakken.
+
+Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet — du trenger verken `!important` eller lange selektorer.
+
+:::caution[Overstyrer du, eier du kontrasten]
+Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger — og paret den inngår i, må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
+:::
+
+### Per tema
+
+Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
+
+```css
+:root {
+	--semantic-interactive-main: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--semantic-interactive-main: #c4b5fd;
+	}
+}
+
+[data-theme="dark"] {
+	--semantic-interactive-main: #c4b5fd;
+}
+```
+
+De to siste blokkene må begge være med, siden Fristil støtter både systemvalget og et eksplisitt `data-theme`.
+
+### Hvilket lag?
+
+Overstyr **semantiske** verdier når du vil endre hva en farge betyr. Overstyr **palett**-verdier når du vil bytte hele skalaen; da følger alle semantiske verdier som peker på den, med.
 
 ## Størrelser
 
