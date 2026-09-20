@@ -33,6 +33,7 @@ src/
 │   ├── tokens.css            # GENERERT — rediger aldri for hånd
 │   └── utilities.css         # .link, .srOnly
 ├── tailwind/preset.ts
+├── testing/                  # hjelpere for tester, bygges ikke
 └── components/
     ├── css/                  # CSS-klasse, ingen JavaScript
     ├── ramme/                # web component som kobler dine elementer
@@ -49,8 +50,11 @@ Hver komponent har sin egen mappe med CSS, eventuell TypeScript og en `*.browser
 bun run generate         # skriver tokens.css fra tokens.ts
 bun run build            # generate + tsc -b
 bun run typecheck        # tsc --noEmit
+bun run typecheck:tests  # typesjekk av testene
 bun run test:browser     # Vitest i nettleser via Playwright
 ```
+
+Fra rot kan du kjøre `bun run test` og `bun run typecheck:tests` i stedet.
 
 ---
 
@@ -218,6 +222,43 @@ bun run test:browser
 ```
 
 Test det komponenten lover utad — klasser, attributter, `aria-*`-koblinger og hendelser — ikke interne detaljer.
+
+### Tilgjengelighetstester
+
+Systemet lover at tilgjengelighet er løst sentralt. Hver komponent har derfor
+en test som kjører axe mot WCAG 2.1 nivå A og AA:
+
+```ts
+import {
+	forventIngenTilgjengelighetsbrudd,
+	monter,
+	ventPaTegning,
+} from "../../../testing/a11y"
+
+describe("fs-min-komponent tilgjengelighet", () => {
+	it("har nok kontrast i alle varianter", async () => {
+		monter(`
+			<span class="fs-min-komponent">Innhold</span>
+			<span class="fs-min-komponent" data-variant="primary">Innhold</span>
+		`)
+
+		await ventPaTegning()
+		await forventIngenTilgjengelighetsbrudd()
+	})
+})
+```
+
+`monter` setter opp en flate med designsystemets sidefarger. Den delen er
+ikke pynt: axe regner ut kontrast ved å lete oppover etter en bakgrunnsfarge,
+og finner den ingen, melder den «incomplete» i stedet for å gi et svar.
+
+Skriv markupen slik komponenten faktisk skal brukes — et felt med ledetekst,
+et merke med tekst i. Tester du markup ingen ville skrevet, tester du
+ingenting.
+
+Axe fanger kontrast, manglende ledetekster og feil bruk av `aria-*`. Den
+fanger ikke fokushåndtering. Flytter komponenten fokus — slik `fs-calendar`
+gjør når panelet lukkes — må det ha sin egen test.
 
 ---
 

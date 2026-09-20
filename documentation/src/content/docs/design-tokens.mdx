@@ -61,6 +61,10 @@ Bruker du den semantiske varianten, følger komponenten din med når paletten ju
       <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-disabled-foreground); border: 1px solid var(--semantic-divider-30);"></span>
       <code style="font-size: var(--font-size-s);">--semantic-disabled-foreground</code>
     </div>
+    <div style="display: flex; align-items: center; gap: var(--size-3);">
+      <span style="width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); background: var(--semantic-neutral-foreground); border: 1px solid var(--semantic-divider-30);"></span>
+      <code style="font-size: var(--font-size-s);">--semantic-neutral-foreground</code>
+    </div>
   </div>
 </Preview>
 
@@ -71,10 +75,21 @@ Bruker du den semantiske varianten, følger komponenten din med når paletten ju
 | Suksess | `--semantic-success-background`, `-foreground` | Fullført, godkjent |
 | Advarsel | `--semantic-warning-background`, `-foreground` | Krever oppmerksomhet |
 | Fare | `--semantic-danger-background`, `-foreground` | Feil, sletting, avslag |
-| Deaktivert | `--semantic-disabled-background`, `-foreground` | Utilgjengelige elementer |
+| Deaktivert | `--semantic-disabled-background`, `-foreground` | Kontroller som er slått av |
+| Nøytral | `--semantic-neutral-background`, `-foreground` | Dempet, men lesbar informasjon |
 | Skillelinjer | `--semantic-divider-30`, `--semantic-divider-100` | Rammer og streker, svak og sterk |
 
-Paret `background` og `foreground` er laget for å brukes sammen. Bruker du dem som par, er kontrasten allerede kontrollert.
+Paret `background` og `foreground` er laget for å brukes sammen. Bruker du dem som par, er kontrasten kontrollert mot WCAG AA av testene i designsystemet.
+
+### Deaktivert eller nøytral?
+
+De to parene ser nesten like ut, men kravene til dem er forskjellige, og det er derfor de er skilt.
+
+**`disabled`** er for kontroller som er slått av. WCAG 1.4.3 unntar inaktive komponenter fra kontrastkravet, så denne er bevisst dempet — den skal signalisere «dette kan du ikke bruke».
+
+**`neutral`** er for informasjon brukeren faktisk skal lese, men som ikke skal rope: et statusmerke som sier «Arkivert», eller dagene fra nabomåneden i kalenderen. De er dempet, men fullt klikkbare eller lesbare, og har derfor 6,7:1 i kontrast.
+
+Regelen er enkel: er elementet slått av, bruk `disabled`. Kan brukeren lese eller trykke på det, bruk `neutral`.
 
 ### Palett
 

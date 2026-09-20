@@ -51,7 +51,7 @@ Uten byggesteg:
 | `success` | `success-background` / `success-foreground` | Fullført, godkjent, aktiv |
 | `warning` | `warning-background` / `warning-foreground` | Krever oppmerksomhet, men er ikke en feil |
 | `danger` | `danger-background` / `danger-foreground` | Avslått, utløpt, kritisk |
-| `neutral` | `disabled-background` / `disabled-foreground` | Inaktiv, arkivert, ukjent |
+| `neutral` | `neutral-background` / `neutral-foreground` | Inaktiv, arkivert, ukjent |
 
 ## I en liste
 
@@ -89,5 +89,6 @@ Merket står nærmest alltid sammen med tekst som forklarer hva det hører til.
 ## Tilgjengelighet
 
 - Fargen alene forteller ingenting til en skjermleser, og skiller ikke for alle seende heller. Teksten i merket må stå på egne bein: skriv «Avslått», ikke bare et rødt punkt.
+- Alle fem fargeparene er kontrollert mot WCAG AA, og en test i `badge.browser.test.ts` sier fra hvis en tokenendring bryter det.
 - Bruk `<span>` når merket står inni en tekstlinje, `<div>` når det står for seg selv.
 - Endrer merket seg mens brukeren ser på siden — for eksempel fra «Under behandling» til «Innvilget» — legg `role="status"` og `aria-live="polite"` på elementet rundt, så blir endringen lest opp.
