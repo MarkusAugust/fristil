@@ -53,7 +53,7 @@ export const fs = {
    * <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
    * ```
    *
-   * Samme utregning som `<fs-field>` gjør — her som data, så du kan eie
+   * Samme utregning som `<fs-field>` gjør, men som data, så du kan eie
    * markupen selv uten å registrere et custom element.
    */
   field: computeFieldAttributes,
@@ -68,8 +68,8 @@ export const fs = {
   /**
    * Bruker et attributtsett på et element i vanlig DOM.
    *
-   * I JSX sprer du objektet. Uten JSX gjør denne jobben — og rydder bort
-   * attributes fra forrige tilstand.
+   * I JSX sprer du objektet. Uten JSX gjør denne jobben det, og rydder bort
+   * attributter fra forrige tilstand.
    */
   setAttributes,
 

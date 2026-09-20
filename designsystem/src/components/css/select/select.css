@@ -54,7 +54,7 @@
     border-color: var(--semantic-disabled-background);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
-       vises — elementet blir da ikke truffet av musa i det hele tatt. */
+       vises. Elementet blir da ikke truffet av musa i det hele tatt. */
     cursor: not-allowed;
   }
 

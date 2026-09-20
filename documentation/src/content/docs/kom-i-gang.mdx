@@ -59,14 +59,14 @@ Med `tokens.css` og `button.css` importert:
   </TabItem>
 </Tabs>
 
-Ingen registrering, ingen oppstartskode — CSS-komponentene er bare klasser.
+Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
 
 ## Registrer web components
 
 `ramme`- og `sammensatt`-komponentene er egendefinerte elementer, og må registreres én gang når appen starter:
 
 ```ts
-// main.ts – kjøres én gang
+// main.ts, kjøres én gang
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
 import { defineFsField } from "@fristil/designsystem/field"
@@ -74,7 +74,7 @@ import { defineFsField } from "@fristil/designsystem/field"
 defineFsField()
 ```
 
-Flere kall er ufarlige — funksjonen sjekker selv om elementet er registrert.
+Flere kall er ufarlige, for funksjonen sjekker selv om elementet er registrert.
 
 ```html
 <fs-field required-marker="symbol">
@@ -107,7 +107,7 @@ Får du en tom side, har `define`-funksjonen nesten alltid ikke kjørt.
 
 `field.css` og `date-field.css` samler stilene de trenger.
 
-Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, der barna er dine egne elementer med systemets klasser — og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
+Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, der barna er dine egne elementer med systemets klasser, og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
 
 **JavaScript og TypeScript**
 
@@ -121,27 +121,27 @@ fs.input({ type: "email", state: "invalid" })
 fs.badge({ color: "success" })
 ```
 
-Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra `@fristil/designsystem/react` — samme kall, men `className` og `htmlFor` i returverdien. Se [Typesikker bruk](../typesikker-bruk/).
+Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra `@fristil/designsystem/react`. Kallene er de samme, men returverdien bruker `className` og `htmlFor`. Se [Typesikker bruk](../typesikker-bruk/).
 
 | Import | Innhold |
 | --- | --- |
 | `@fristil/designsystem` | `fs` med alle komponentene, alle typene, og web component-registreringene |
 | `@fristil/designsystem/react` | Samme `fs`, men med `className` og `htmlFor` |
 | `@fristil/designsystem/react-jsx` | Typer for `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` i JSX |
-| `@fristil/designsystem/dom` | `setAttributes` — bruk et attributtsett på et element uten JSX |
+| `@fristil/designsystem/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
 | `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
 | `@fristil/designsystem/calendar` | `defineFsCalendar`, klassen `FsCalendar` |
 | `@fristil/designsystem/date-field` | `defineFsDateField`, klassen `FsDateField` |
-| `@fristil/designsystem/field-core` | `computeFieldAttributes` — det `fs.field` og `<fs-field>` deler |
+| `@fristil/designsystem/field-core` | `computeFieldAttributes`: det `fs.field` og `<fs-field>` deler |
 | `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
 | `@fristil/designsystem/tailwind` | `fristilPreset` |
 
-Hver komponent finnes også som eget inngangspunkt — `@fristil/designsystem/button`, `/badge`, `/link` og så videre — med en funksjon som heter det samme som komponenten.
+Hver komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten.
 
 `fs` er valgfritt. `class="fs-button" data-variant="secondary"` for hånd gir samme resultat; funksjonene finnes for å fange skrivefeil.
 
 ## Videre
 
-- [Rammeverk](../rammeverk/) — konkret oppsett for ren HTML, React, Astro og Datastar
-- [Design tokens](../design-tokens/) — hvilke variabler som finnes, og hva de heter
-- [Button](../components/button/) — den enkleste komponenten å begynne med
+- [Rammeverk](../rammeverk/): konkret oppsett for ren HTML, React, Astro og Datastar
+- [Design tokens](../design-tokens/): hvilke variabler som finnes, og hva de heter
+- [Button](../components/button/): den enkleste komponenten å begynne med

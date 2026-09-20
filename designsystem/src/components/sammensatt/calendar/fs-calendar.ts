@@ -28,8 +28,8 @@ function splitInWeeks(cells: CalendarCell[]): CalendarCell[][] {
  * Delnavnene på én dagknapp.
  *
  * Tilstanden må være egne delnavn og ikke bare `data-*`. En attributtselektor
- * etter `::part()` treffer ikke — `::part(day)[data-selected="true"]` er målt
- * uten virkning — så uten `day-selected` ville en konsument ikke hatt noen vei
+ * etter `::part()` treffer ikke. `::part(day)[data-selected="true"]` er målt
+ * uten virkning, så uten `day-selected` ville en konsument ikke hatt noen vei
  * til den valgte dagen utenfra.
  */
 function dayParts(cell: CalendarCell): string {
@@ -434,8 +434,8 @@ export class FsCalendar extends LitElement {
     this.viewMonth = parseIsoDate(iso) ?? this.viewMonth
 
     // Lukk før hendelsene sendes. closePopup køer et mikrotaskkall som
-    // flytter fokus til knappen; en lytter som selv vil flytte fokus — slik
-    // fs-date-field gjør til inputfeltet — køer sitt etterpå og vinner.
+    // flytter fokus til knappen. En lytter som selv vil flytte fokus, slik
+    // fs-date-field gjør til inputfeltet, køer sitt etterpå og vinner.
     this.closePopup()
 
     this.dispatchEvent(

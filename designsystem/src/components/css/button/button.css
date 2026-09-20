@@ -40,7 +40,7 @@
     border-color: var(--semantic-disabled-background);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
-       vises — elementet blir da ikke truffet av musa i det hele tatt. */
+       vises. Elementet blir da ikke truffet av musa i det hele tatt. */
     cursor: not-allowed;
   }
 
@@ -51,7 +51,7 @@
     pointer-events: none;
   }
 
-  /* Sekundær — omriss, gjennomsiktig bakgrunn */
+  /* Sekundær: omriss, gjennomsiktig bakgrunn */
   .fs-button[data-variant="secondary"] {
     background: transparent;
     color: var(--semantic-interactive-main);
@@ -62,7 +62,7 @@
     background: var(--semantic-interactive-background);
   }
 
-  /* Ghost — ingen kant, ingen bakgrunn */
+  /* Ghost: ingen kant, ingen bakgrunn */
   .fs-button[data-variant="ghost"] {
     background: transparent;
     color: var(--semantic-interactive-main);

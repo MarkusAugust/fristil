@@ -29,7 +29,7 @@ export type LabelAttributes = {
 /**
  * Attributtene for en ledetekst.
  *
- * Markeringen er bare visuell — sett `required` på selve feltet i tillegg,
+ * Markeringen er bare visuell, så sett `required` på selve feltet i tillegg,
  * ellers får skjermleseren ikke vite at det må fylles result.
  *
  * ```ts

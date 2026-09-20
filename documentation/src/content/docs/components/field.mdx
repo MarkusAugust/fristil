@@ -23,7 +23,7 @@ Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `ar
 
 ## Uten custom element
 
-Samme kobling finnes som en ren funksjon, [`fs.field`](../../typesikker-bruk/#fsfield). Den regner ut attributtene der du rendrer — ved bygging i Astro, eller på hver render i React — så nettleseren trenger ingen registrert komponent:
+Samme kobling finnes som en ren funksjon, [`fs.field`](../../typesikker-bruk/#fsfield). Den regner ut attributtene der du rendrer, enten ved bygging i Astro eller på hver render i React, så nettleseren trenger ingen registrert komponent:
 
 ```tsx
 const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
@@ -39,14 +39,14 @@ De to deler kode, så kontrakten kan ikke gå fra hverandre. Forskjellen er når
 ## Kom i gang
 
 ```ts
-// main.ts – kjøres én gang når appen starter
+// main.ts, kjøres én gang når appen starter
 import { defineFsField } from "@fristil/designsystem/field"
 import "@fristil/designsystem/field.css"
 
 defineFsField()
 ```
 
-`defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart — flere kall er ufarlige.
+`defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart. Flere kall er ufarlige.
 
 Stilarket må importeres i tillegg fordi komponenten kjører i vanlig DOM: barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem. [Calendar](../calendar/) bruker Shadow DOM og trenger derfor ingen import.
 
@@ -96,7 +96,7 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 5. Setter `data-required` eller `data-optional` på ledeteksten ut fra attributtene på `<fs-field>`.
 6. Viser eller skjuler `fs-error-text` ut fra `invalid`.
 
-Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til feltet er ugyldig.
+Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
 
 ## Attributter
 
@@ -155,7 +155,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.tsx – kjøres én gang når appen starter
+    // main.tsx, kjøres én gang når appen starter
     import { defineFsField } from "@fristil/designsystem/field"
     import "@fristil/designsystem/field.css"
 
@@ -163,7 +163,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     ```
 
     ```ts
-    // src/fristil.d.ts – gir <fs-field> typer i JSX
+    // src/fristil.d.ts, gir <fs-field> typer i JSX
     import "@fristil/designsystem/react-jsx"
     ```
 
@@ -198,7 +198,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     }
     ```
 
-    :::caution[`invalid={ugyldig || undefined}` — ikke noe annet]
+    :::caution[Bare `invalid={ugyldig || undefined}` virker]
     React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
 
     | | React 18 (setter attributt) | React 19 (setter egenskap) |
@@ -207,7 +207,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     | `invalid={ugyldig}` | **alltid ugyldig** | virker |
     | `invalid={ugyldig \|\| undefined}` | virker | virker |
 
-    React 18 stringifiserer `false` til attributtet `invalid="false"` — et attributt som finnes, og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+    React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
 
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
@@ -229,7 +229,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     <p {...fs.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
     ```
 
-    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<fs-field>` og registrerer den i en `<script>`-tagg — Astro pakker den og kjører den på klienten:
+    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<fs-field>` og registrerer den i en `<script>`-tagg. Astro pakker den og kjører den på klienten:
 
     ```astro
     ---
@@ -250,7 +250,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     ```
   </TabItem>
   <TabItem label="Datastar">
-    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg.
+    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter. Ett skript, ingen byggesteg.
 
     ```html
     <script
@@ -285,7 +285,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
     </script>
     ```
 
-    `data-attr:invalid` setter attributtet når uttrykket er sant og fjerner det når det er usant — nøyaktig det `<fs-field>` forventer av et boolsk attributt. Ingen av forbeholdene fra React-fanen gjelder her.
+    `data-attr:invalid` setter attributtet når uttrykket er sant og fjerner det når det er usant, nøyaktig slik `<fs-field>` forventer av et boolsk attributt. Ingen av forbeholdene fra React-fanen gjelder her.
   </TabItem>
 </Tabs>
 
@@ -293,5 +293,5 @@ Feilmeldingen kan derfor ligge i markupen hele tiden — den er skjult til felte
 
 - Komponenten gjør koblingen, ikke innholdet. Ledeteksten og feilmeldingen må du fortsatt skrive godt.
 - Sett `required` på `<input>` i tillegg til `required-marker`.
-- Sett `invalid` når brukeren har forlatt feltet, ikke for hvert tastetrykk — meldingen leses opp hver gang den dukker opp.
+- Sett `invalid` når brukeren har forlatt feltet, ikke for hvert tastetrykk. Meldingen leses opp hver gang den dukker opp.
 - Én kontroll per `<fs-field>`. Komponenten kobler seg til den første den finner. Grupper hører hjemme i en `<fieldset>` med `<legend>`.

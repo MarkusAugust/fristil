@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "react"
 /**
  * Typer for Fristils egendefinerte elementer i JSX.
  *
- * Uten disse kjenner ikke TypeScript `<fs-field>` i det hele tatt — den sier
+ * Uten disse kjenner ikke TypeScript `<fs-field>` i det hele tatt, men sier
  * «Property 'fs-field' does not exist on type JSX.IntrinsicElements». Og
  * attributtene er bindestreksstrenger uten autofullføring, så `required-marker`
  * og `help-text` er nettopp der en skrivefeil er lett å gjøre og vanskelig å
@@ -34,8 +34,8 @@ import type { HTMLAttributes } from "react"
  *     invalid={false}  ALLTID ugyldig    virker
  *     invalid={undefined}  virker        virker
  *
- * React 18 stringifiserer til `invalid="false"` — et attributt som finnes,
- * og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+ * React 18 stringifiserer til `invalid="false"`. Attributtet finnes da,
+ * og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
  *
  * Skriv derfor `invalid={ugyldig || undefined}`. Typen her gjør at de to
  * andre variantene blir kompileringsfeil i stedet for noe du må huske.

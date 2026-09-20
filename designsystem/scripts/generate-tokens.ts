@@ -21,19 +21,19 @@ for (const key of Object.keys(cssTokens) as (keyof typeof cssTokens)[]) {
  *
  * Uten det måtte en konsument som vil ha egne farger slå spesifisiteten vår.
  * Den mørke mediespørringen bruker :root:not([data-theme="light"]), altså
- * 0,2,0 — en vanlig :root i konsumentens CSS taper mot den. Overstyringen
+ * 0,2,0, og en vanlig :root i konsumentens CSS taper mot den. Overstyringen
  * virket da i lyst tema og med data-theme, men røk stille for alle som har
  * operativsystemet i mørkt. CSS uten layer slår alltid CSS i et layer,
  * uansett spesifisitet, så nå holder en enkel :root.
  */
 const lines = [
-  "/* Generert — rediger tokens.ts, ikke denne fila */",
+  "/* Generert. Rediger tokens.ts, ikke denne fila. */",
   "",
   "@layer fristil {",
   "  :root {",
 ]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
-  // Tom linje mellom gruppene, men ikke rett etter `:root {` — da ville
+  // Tom linje mellom gruppene, men ikke rett etter `:root {`, for da ville
   // biome flagget fila hver gang den genereres på nytt.
   if (index > 0) lines.push("")
   lines.push(`    /* ${section} */`)
@@ -73,5 +73,5 @@ await Bun.write(
 )
 
 console.log(
-  `✓ tokens.css generert — ${Object.keys(cssTokens).length} verdier, ${Object.keys(darkTokens).length} overstyrt i mørkt tema`,
+  `✓ tokens.css generert: ${Object.keys(cssTokens).length} verdier, ${Object.keys(darkTokens).length} overstyrt i mørkt tema`,
 )

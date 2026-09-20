@@ -117,8 +117,8 @@ export function computeFieldAttributes(
       ]),
       "aria-invalid": invalid ? ("true" as const) : undefined,
       // Fargen følger med her, ikke fra input()/textarea()/select(). Ellers
-      // ville begge satt aria-invalid, og i maler som skriver result attributtene
-      // bokstavelig — Astro, ren HTML — ble de stående dobbelt.
+      // ville begge satt aria-invalid, og i maler som skriver ut attributtene
+      // bokstavelig, som Astro og ren HTML, ble de stående dobbelt.
       "data-state": invalid ? ("invalid" as const) : undefined,
       disabled: disabled ? (true as const) : undefined,
     }),

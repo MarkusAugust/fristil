@@ -305,7 +305,7 @@ export class FsDateField extends LitElement {
       this.value = iso
       this.requestUpdate()
     }
-    // Don't update this.value on invalid input — keep last known good ISO
+    // Ugyldig inndata skal ikke endre this.value. Behold siste gyldige ISO.
     this.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
     this.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
   }

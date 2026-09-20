@@ -3,7 +3,7 @@ import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
 import Preview, { type Stilark } from "./Preview.astro"
 
 interface Props {
-  /** Stilarkene eksempelet trenger — de samme du ville importert i en app. */
+  /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
   stiler?: Stilark[]
   /** `rad` legger innholdet side om side, `stabel` under hverandre. */
   layout?: "rad" | "stabel"
@@ -18,8 +18,8 @@ const { stiler, layout, maxWidth, kode } = Astro.props
 /*
  * Markupen står ett sted.
  *
- * Før ble den skrevet to ganger — én gang i forhåndsvisningen og én gang i
- * kodefanen — og de hadde allerede drevet fra hverandre: badge-siden viste
+ * Før ble den skrevet to ganger, én gang i forhåndsvisningen og én gang i
+ * kodefanen, og de hadde allerede drevet fra hverandre: badge-siden viste
  * <div> i forhåndsvisningen og <ul> i koden. Her er det samme streng som
  * rendres og vises, så de kan ikke gå i utakt.
  */

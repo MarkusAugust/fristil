@@ -23,7 +23,7 @@ import { setAttributes } from "./dom.js"
  * Samme API som `fs`, men med `className` og `htmlFor`.
  *
  * Resten av systemet returnerer `class` og `for`, slik attributtene faktisk
- * heter i HTML. React godtar dem — de havner riktig i DOM-en — men
+ * heter i HTML. React godtar dem, og de havner riktig i DOM-en, men
  * utviklingsbygget skriver «Invalid DOM property `class`. Did you mean
  * `className`?» i konsollen for hvert element. Med et helt felt blir det to
  * advarsler per felt, og det er ikke en utvikleropplevelse vi kan by på.
@@ -35,8 +35,8 @@ import { setAttributes } from "./dom.js"
  * ```
  *
  * Kallstedene er identiske med resten av systemet; bare importstien er en
- * annen. Dette er ren omdøping av to nøkler — pakken får ingen avhengighet
- * til React av det.
+ * annen. Dette er ren omdøping av to nøkler, så pakken får ingen
+ * avhengighet til React av det.
  *
  * Vue, Svelte, Solid og Preact tar `class` og `for` som de er. Der bruker du
  * `@fristil/designsystem` direkte.
@@ -66,8 +66,8 @@ export function toReactAttributes<T extends Record<string, unknown>>(
  * Pakker inn en byggefunksjon så returverdien får React-navnene.
  *
  * Signaturen er skrevet som en snitt-type for at TypeScript skal kunne utlede
- * både valgtypen og de ekstra feltene — `variants`, `isVariant` og de andre
- * som henger på funksjonen — i samme slengen.
+ * både valgtypen og de ekstra feltene som henger på funksjonen, altså
+ * `variants`, `isVariant` og de andre, i samme slengen.
  */
 function forReact<Valg, Ut extends Record<string, unknown>, Ekstra>(
   fn: ((valg?: Valg) => Ut) & Ekstra,

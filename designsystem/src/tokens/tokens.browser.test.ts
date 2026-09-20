@@ -8,7 +8,7 @@ import { cssTokens, darkTokens } from "./tokens"
  *
  * Verdiene i `tokens.ts` er `var()`-henvisninger, så de kan ikke regnes på
  * direkte. Testen setter dem på et element og leser hva nettleseren faktisk
- * kommer fram til — da fanges også feil som oppstår når en henvisning peker
+ * kommer fram til. Da fanges også feil som oppstår når en henvisning peker
  * på noe som ikke finnes.
  */
 
@@ -54,7 +54,7 @@ function farge(
  * Parene som må holde 4,5:1.
  *
  * `disabled` står ikke her: WCAG 1.4.3 unntar inaktive komponenter. Den har
- * sin egen, lavere terskel lenger ned — teksten i et avslått felt skal
+ * sin egen, lavere terskel lenger ned, for teksten i et avslått felt skal
  * fortsatt kunne leses.
  */
 const PAR: Array<[navn: string, forgrunn: string, bakgrunn: string]> = [
@@ -116,7 +116,7 @@ const PAR: Array<[navn: string, forgrunn: string, bakgrunn: string]> = [
   ],
 
   // Hover-tilstandene. Danger-knappen lå på 3,52:1 fordi bakgrunnen
-  // mørknet mens teksten ble stående — svakere enn hviletilstanden.
+  // mørknet mens teksten ble stående, og ble svakere enn hviletilstanden.
   [
     "primærknapp, hover",
     "--semantic-interactive-contrast",
@@ -160,7 +160,7 @@ describe.each(["light", "dark"] as const)("tokens i %s tema", (tema) => {
   })
 
   it("har en synlig feltramme mot flaten", () => {
-    // Rammen er ikke tekst, så kravet er 3:1 — den er en grafisk avgrensning.
+    // Rammen er ikke tekst, men en grafisk avgrensning, så kravet er 3:1.
     const forhold = kontrast(
       farge("--semantic-field-border", tema),
       farge("--semantic-page-background", tema),
