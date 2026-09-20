@@ -1,0 +1,36 @@
+@layer fristil {
+  /* Lenken ligger utenfor skjermen til den får fokus. Den kan ikke skjules
+     med display eller visibility, for da kan tastaturet heller ikke nå den,
+     og hele poenget forsvinner. */
+  .fs-skip-link {
+    position: absolute;
+    inset-inline-start: var(--size-2);
+    inset-block-start: var(--size-2);
+    z-index: 100;
+    transform: translateY(calc(-100% - var(--size-4)));
+    display: inline-block;
+    padding: var(--fs-skip-link-padding, var(--size-2) var(--size-4));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-interactive-contrast);
+    background: var(--semantic-interactive-main);
+    border-radius: var(--fs-skip-link-radius, var(--size-1));
+    text-decoration: underline;
+  }
+
+  /* `:focus` og ikke `:focus-visible`. Nettleseren regner ikke fokus satt
+     fra kode som «synlig fokus», og lenken ville da blitt stående skjult for
+     den som hopper dit fra et skript. */
+  .fs-skip-link:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--semantic-page-foreground);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fs-skip-link {
+      transition: transform 120ms ease;
+    }
+  }
+}

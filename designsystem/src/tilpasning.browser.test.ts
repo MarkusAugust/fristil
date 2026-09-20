@@ -105,13 +105,17 @@ describe("de frittstående komponentene kan tilpasses", () => {
     defineFsCalendar()
     await customElements.whenDefined("fs-date-field")
     await customElements.whenDefined("fs-calendar")
-    for (const element of document.querySelectorAll("fs-date-field, fs-calendar")) {
+    for (const element of document.querySelectorAll(
+      "fs-date-field, fs-calendar",
+    )) {
       await (element as LitElement).updateComplete
     }
   })
 
   it("lar konsumenten flytte ikonet i fs-date-field", () => {
-    const button = document.querySelector(".fs-date-field__icon-btn") as HTMLElement
+    const button = document.querySelector(
+      ".fs-date-field__icon-btn",
+    ) as HTMLElement
 
     // Uten inline stil på elementet holder det med én klasse, altså 0,1,0
     apply(".fs-date-field__icon-btn { inset-inline-end: 40px; }")
@@ -131,7 +135,9 @@ describe("de frittstående komponentene kan tilpasses", () => {
     apply("fs-calendar::part(month-button) { background-color: rgb(9, 9, 9); }")
 
     const calendar = document.getElementById("alene") as HTMLElement
-    const knapp = calendar.shadowRoot?.querySelector(".month-button") as HTMLElement
+    const knapp = calendar.shadowRoot?.querySelector(
+      ".month-button",
+    ) as HTMLElement
     expect(getComputedStyle(knapp).backgroundColor).toBe("rgb(9, 9, 9)")
   })
 
@@ -143,7 +149,9 @@ describe("de frittstående komponentene kan tilpasses", () => {
     const felt = document.querySelector("fs-date-field") as HTMLElement
     const kalender = felt.querySelector("fs-calendar") as LitElement
     await kalender.updateComplete
-    const trigger = kalender.shadowRoot?.querySelector(".trigger") as HTMLElement
+    const trigger = kalender.shadowRoot?.querySelector(
+      ".trigger",
+    ) as HTMLElement
 
     expect(getComputedStyle(trigger).borderRadius).toBe("7px")
   })

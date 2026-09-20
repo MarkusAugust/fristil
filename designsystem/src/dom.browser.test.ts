@@ -77,3 +77,38 @@ describe("fs.setAttributes", () => {
     expect(kontroll.getAttribute("data-state")).toBe("invalid")
   })
 })
+
+describe("boolske attributter", () => {
+  it("setter et boolsk attributt som tom streng, slik HTML forventer", () => {
+    const element = document.createElement("input")
+
+    fs.setAttributes(element, fs.switch({ disabled: true }))
+
+    expect(element.getAttribute("disabled")).toBe("")
+    expect(element.disabled).toBe(true)
+    expect(element.getAttribute("role")).toBe("switch")
+  })
+
+  it("fjerner det boolske attributtet når det ikke er med lenger", () => {
+    const element = document.createElement("input")
+
+    fs.setAttributes(element, fs.switch({ disabled: true }))
+    fs.setAttributes(element, fs.switch())
+
+    expect(element.hasAttribute("disabled")).toBe(false)
+  })
+
+  it("tar imot attributtene fra et helt felt", () => {
+    const element = document.createElement("input")
+    const field = fs.field({ id: "epost", disabled: true })
+
+    fs.setAttributes(element, {
+      ...fs.input({ type: "email" }),
+      ...field.control,
+    })
+
+    expect(element.disabled).toBe(true)
+    expect(element.id).toBe("epost")
+    expect(element.type).toBe("email")
+  })
+})

@@ -1,0 +1,34 @@
+@layer fristil {
+  fs-popover {
+    display: contents;
+  }
+
+  .fs-popover {
+    /* Panelet ligger i topplaget, så posisjonen er mot vindusruten. Verdiene
+       settes av komponenten, som regner dem ut mot knappen. */
+    position: fixed;
+    inset: auto;
+    inset-block-start: var(--fs-popover-top, 0);
+    inset-inline-start: var(--fs-popover-left, 0);
+    margin: 0;
+    box-sizing: border-box;
+    inline-size: max-content;
+    max-inline-size: var(
+      --fs-popover-width,
+      min(20rem, calc(100vw - var(--size-8)))
+    );
+    padding: var(--fs-popover-padding, var(--size-3));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-divider-30);
+    border-radius: var(--fs-popover-radius, var(--size-1));
+    box-shadow: var(--semantic-shadow-overlay);
+  }
+
+  .fs-popover:not(:popover-open) {
+    display: none;
+  }
+}

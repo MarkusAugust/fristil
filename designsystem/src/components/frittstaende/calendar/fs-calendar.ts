@@ -392,7 +392,7 @@ export class FsCalendar extends LitElement {
     // Panelet skjules med [hidden]. Står fokus på en dag inne i det, mister
     // nettleseren fokus til <body>, og en tastaturbruker havner på toppen av
     // siden. Fokus skal derfor tilbake til knappen som åpnet panelet.
-    // Lukkes panelet fordi brukeren klikket eller tabbet result, står fokus
+    // Lukkes panelet fordi brukeren klikket eller tabbet ut, står fokus
     // allerede et annet sted, og da skal vi ikke rive det til oss.
     const fokusStoInniPanelet =
       (this.renderRoot as ShadowRoot).activeElement !== null

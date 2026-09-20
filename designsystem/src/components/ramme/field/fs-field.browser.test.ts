@@ -6,7 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { defineFsField } from "./fs-field"
+import { defineFsField, type FsField } from "./fs-field"
 import "../../../tokens/tokens.css"
 import "./field.css"
 

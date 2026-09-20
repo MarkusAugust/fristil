@@ -1,0 +1,69 @@
+@layer fristil {
+  .fs-pagination {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fs-pagination-gap, var(--size-1));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: inherit;
+    font-size: var(--font-size-m);
+  }
+
+  .fs-pagination a,
+  .fs-pagination button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 40 piksler i begge retninger. WCAG 2.2 krever 24, og et nummer i en
+       lang rekke er lett å bomme på med finger. */
+    min-inline-size: var(--fs-pagination-size, var(--size-10));
+    min-block-size: var(--fs-pagination-size, var(--size-10));
+    padding-inline: var(--size-2);
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1;
+    color: var(--semantic-interactive-main);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--fs-pagination-radius, var(--size-1));
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .fs-pagination a:hover,
+  .fs-pagination button:hover:not(:disabled) {
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-pagination a:focus-visible,
+  .fs-pagination button:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-pagination [aria-current="page"] {
+    color: var(--semantic-interactive-contrast);
+    background: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+    font-weight: 600;
+  }
+
+  .fs-pagination button:disabled,
+  .fs-pagination [aria-disabled="true"] {
+    color: var(--semantic-disabled-foreground);
+    cursor: not-allowed;
+  }
+
+  /* Hoppet i nummerrekken, som «1 2 … 9 10». */
+  .fs-pagination__gap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--fs-pagination-size, var(--size-10));
+    color: var(--semantic-muted-foreground);
+  }
+}
