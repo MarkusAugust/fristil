@@ -89,6 +89,10 @@
     "./react": {
       "import": "./dist/react.js",
       "types": "./dist/react.d.ts"
+    },
+    "./react-jsx": {
+      "import": "./dist/jsx/react.js",
+      "types": "./dist/jsx/react.d.ts"
     }
   },
   "files": [
@@ -116,6 +120,7 @@
     }
   },
   "devDependencies": {
+    "@types/react": "19",
     "@vitest/browser": "4.1.7",
     "@vitest/browser-playwright": "^4.1.7",
     "axe-core": "^4.13.0",
