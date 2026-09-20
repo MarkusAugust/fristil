@@ -1,61 +1,81 @@
 ---
 title: Textarea
-description: Flerlinje tekstfelt. pure-css med valid/invalid state.
+description: Flerlinjet tekstfelt, med samme tilstander som Input. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import Preview from "../../../components/Preview.astro"
 
-`fs-textarea` er en pure-css stil for `<textarea>` med samme state-mønster som input.
+`fs-textarea` gir `<textarea>` samme utseende og tilstander som [Input](../input/). Bruk det når svaret kan bli lengre enn én linje — en begrunnelse, en melding, en beskrivelse.
 
-## Import
+## Importer
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/textarea.css"
 ```
 
-## Varianter
+## Tilstander
 
 <Tabs>
   <TabItem label="Eksempel">
-    <div class="not-content" style="display: grid; gap: 0.75rem; padding: 1.5rem; background: #ffffff; border-radius: 0.25rem; border: 1px solid #b2b2b2;">
-      <textarea class="fs-textarea" placeholder="Standard"></textarea>
-      <textarea class="fs-textarea" data-state="invalid">Ugyldig</textarea>
-      <textarea class="fs-textarea" data-state="success">Gyldig</textarea>
-      <textarea class="fs-textarea" disabled>Disabled</textarea>
-    </div>
+    <Preview layout="stabel" maxWidth="26rem">
+      <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort begrunnelse"></textarea>
+      <textarea class="fs-textarea" rows="2" data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
+      <textarea class="fs-textarea" rows="2" data-state="invalid">For kort</textarea>
+      <textarea class="fs-textarea" rows="2" disabled>Saken er avsluttet og kan ikke endres.</textarea>
+    </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <textarea class="fs-textarea"></textarea>
-    <textarea class="fs-textarea" data-state="invalid"></textarea>
-    <textarea class="fs-textarea" data-state="success"></textarea>
-    <textarea class="fs-textarea" disabled></textarea>
+    <textarea class="fs-textarea" rows="3" name="begrunnelse"
+      placeholder="Skriv en kort begrunnelse"></textarea>
+
+    <textarea class="fs-textarea" rows="3" name="begrunnelse"
+      data-state="invalid" aria-invalid="true"></textarea>
+
+    <textarea class="fs-textarea" rows="3" name="begrunnelse" disabled></textarea>
     ```
   </TabItem>
 </Tabs>
 
-## TypeScript-API
+| `data-state` | Når du bruker den |
+| --- | --- |
+| *(utelatt)* | Normaltilstand |
+| `invalid` | Valideringen har feilet. Sett `aria-invalid="true"` i tillegg. |
+| `success` | Innholdet er bekreftet gyldig. |
+
+Sett `rows` til omtrent så mye tekst du faktisk forventer. Et felt med tre rader signaliserer noe annet til brukeren enn et felt med ti.
+
+## TypeScript
+
+```ts
+import { getTextareaStyleAttributes } from "@fristil/designsystem/textarea"
+
+getTextareaStyleAttributes("success")
+// { class: "fs-textarea", "data-state": "success" }
+
+getTextareaStyleAttributes()
+// { class: "fs-textarea" }
+```
+
+Verdier som kommer utenfra, validerer du først:
 
 ```ts
 import {
-  getTextareaStyleAttributes,
-  type TextareaState,
+	getTextareaStyleAttributes,
+	isTextareaState,
 } from "@fristil/designsystem/textarea"
 
-const state: TextareaState = "success"
-const fristilAttributes = getTextareaStyleAttributes(state)
+const fraServer = String(svar.state)
+const tilstand = isTextareaState(fraServer) ? fraServer : "default"
 
-// fristilAttributes blir:
-// { class: "fs-textarea", "data-state": "success" }
+getTextareaStyleAttributes(tilstand)
 ```
 
-## Runtime input (for eksempel fra API)
+## Tilgjengelighet
 
-```ts
-import { isTextareaState, getTextareaStyleAttributes } from "@fristil/designsystem/textarea"
-
-const incoming = String(payload.state)
-const state = isTextareaState(incoming) ? incoming : "default"
-const fristilAttributes = getTextareaStyleAttributes(state)
-```
+- Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en.
+- Har feltet en øvre grense, si det før brukeren skriver — i hjelpeteksten, ikke bare i en teller. `maxlength` alene hindrer innskriving uten å forklare hvorfor.
+- Bruker du en tegnteller som oppdateres mens brukeren skriver, legg den i et element med `aria-live="polite"`, og la den bare melde fra ved runde tall eller når grensen nærmer seg. Ellers avbryter den opplesingen for hvert tastetrykk.
+- Ikke slå av muligheten til å endre størrelsen på feltet med `resize: none`. Det er ofte den eneste måten brukeren kan få oversikt over lang tekst.

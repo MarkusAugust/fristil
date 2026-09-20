@@ -1,188 +1,235 @@
 ---
-title: Field (Ramme)
-description: Rammekomponent som kobler label, control, help og error automatisk for bedre tilgjengelighet.
+title: Field
+description: Rammekomponent som kobler ledetekst, felt, hjelpetekst og feilmelding sammen for deg.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import FieldDemo from "../../../components/FieldDemo.astro"
 
-`<fs-field>` er en rammekomponent bygget med Lit. Du legger dine egne native elementer inn i den, og komponenten tar seg av a11y-wiring.
+`<fs-field>` er en **rammekomponent**. Du legger inn dine egne `<label>`, `<input>` og tekster som vanlig HTML, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` for deg.
 
-## Hvorfor `defineDsField()`?
+Den lager ingen markup selv og bruker ikke Shadow DOM. Elementene dine blir liggende i vanlig DOM, der skjemabiblioteker, testverktøy og `FormData` finner dem.
 
-`defineDsField()` registrerer custom elementet i nettleseren:
+## Hvorfor det er verdt en web component
 
-- Før registrering: `<fs-field>` er bare en ukjent HTML-tag.
-- Etter registrering: `<fs-field>` blir en ekte web component med logikken sin.
+Et felt med ledetekst, hjelpetekst og feilmelding krever fem koblinger som alle må stemme samtidig:
 
-Du trenger å kalle `defineDsField()` **én gang** når appen starter.
-Hvis du kaller den flere ganger, skjer ingenting (den er beskyttet mot dobbel registrering).
-
-## Import
-
-```ts
-import { defineDsField } from "@fristil/designsystem/field"
-import "@fristil/designsystem/field.css"
-
-// Kall én gang i app-entry (main.ts, app.ts, e.l.)
-defineDsField()
+```html
+<label for="epost">E-postadresse</label>
+<input id="epost" aria-invalid="true" aria-describedby="epost-hjelp epost-feil" />
+<p id="epost-hjelp">Vi sender kvittering hit.</p>
+<p id="epost-feil">Skriv en gyldig e-postadresse.</p>
 ```
 
-## Kom i gang (3 steg)
+Hver `id` må være unik på siden, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må skrus av og på i takt med valideringen. Det er fem steder å gjøre feil per felt, ganget med antall felt i skjemaet.
 
-1. Importer `field.css` (inkluderer label, input, textarea, select, help-text og error-text).
-2. Kjør `defineDsField()` én gang i app-start.
-3. Bruk `<fs-field>` rundt `label` + ett felt (`input`, `select` eller `textarea`).
+`<fs-field>` gjør den koblingen én gang, i systemet, i stedet for i hver app.
 
-## Slik ser det ut
+## Kom i gang
+
+```ts
+// main.ts – kjøres én gang når appen starter
+import { defineFsField } from "@fristil/designsystem/field"
+import "@fristil/designsystem/field.css"
+
+defineFsField()
+```
+
+`defineFsField()` registrerer `<fs-field>` i nettleseren. Før registreringen er taggen bare en ukjent HTML-tag uten oppførsel; etter den er den en web component. Kall den én gang ved oppstart — flere kall er ufarlige, for funksjonen sjekker selv om elementet allerede finnes.
+
+`field.css` inneholder stilene for ledetekst, felt, hjelpetekst og feilmelding samlet, så du slipper å importere dem hver for seg.
+
+Deretter skriver du HTML-en som vanlig, med `<fs-field>` rundt:
 
 <Tabs>
-  <TabItem label="Forhåndsvisning">
+  <TabItem label="Eksempel">
     <FieldDemo />
   </TabItem>
-  <TabItem label="Med fs-field">
+  <TabItem label="Kode">
     ```html
     <fs-field required-marker="text" invalid>
-      <label>E-post</label>
+      <label>E-postadresse</label>
       <input class="fs-input" type="email" value="ola@" />
-      <p class="fs-help-text">Vi sender aldri spam.</p>
-      <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
+      <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
     </fs-field>
 
     <fs-field optional>
-      <label>Melding</label>
-      <textarea class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
+      <label>Melding til saksbehandler</label>
+      <textarea class="fs-textarea" rows="3"></textarea>
       <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
     </fs-field>
     ```
   </TabItem>
 </Tabs>
 
-Komponenten gjør dette automatisk:
+Legg merke til at `<label>` ikke har `for`, og at tekstene ikke har `id`. Det er med vilje — komponenten fyller ut begge deler når siden lastes.
 
-1. Setter `label[for]` til control-id.
-2. Genererer id på help/error ved behov.
-3. Setter `aria-describedby` på kontrollen.
-4. Setter `aria-invalid="true"` når `invalid` er satt.
-5. Setter `data-required`/`data-optional` på label via wrapper-attributter.
-6. Viser eller skjuler `fs-error-text` automatisk basert på `invalid`.
-
-## Minste eksempel
+## Minste mulige bruk
 
 ```html
 <fs-field>
-  <label>Navn</label>
+  <label>Fullt navn</label>
   <input class="fs-input" type="text" />
 </fs-field>
 ```
 
-Dette gir deg automatisk kobling mellom label og input uten at du manuelt må holde styr på `for`/`id`.
+Dette alene gir deg en fungerende kobling mellom ledetekst og felt. Klikk på teksten flytter fokus til feltet, og skjermleseren leser riktig ledetekst.
 
-## Bruk i en app
+## Hva komponenten gjør
+
+Den leter etter et `<label>` og én kontroll (`input`, `select` eller `textarea`) blant barna sine, og gjør så følgende hver gang innholdet eller attributtene endrer seg:
+
+1. Gir kontrollen en `id` hvis den mangler, og setter `label[for]` til den.
+2. Gir hjelpetekst og feilmelding `id` ved behov.
+3. Setter `aria-describedby` på kontrollen, med begge tekstene når begge finnes.
+4. Setter `aria-invalid="true"` på kontrollen når `invalid` er satt.
+5. Setter `data-required` eller `data-optional` på ledeteksten ut fra attributtene på `<fs-field>`.
+6. Viser eller skjuler `fs-error-text` ut fra `invalid`.
+
+Punkt 6 betyr at feilmeldingen kan ligge i markupen hele tiden. Den er skjult til feltet faktisk er ugyldig, så du slipper å legge den til og fjerne den fra DOM-en selv.
+
+## Attributter
+
+| Attributt | Type | Hva det gjør |
+| --- | --- | --- |
+| `invalid` | boolsk | Setter `aria-invalid` på kontrollen og viser feilmeldingen |
+| `disabled` | boolsk | Setter `disabled` på kontrollen og demper ledeteksten |
+| `optional` | boolsk | Setter `data-optional` på ledeteksten |
+| `required-marker` | `none \| symbol \| text` | Setter `data-required` på ledeteksten |
+| `control-id` | streng | Bestemmer `id`-en på kontrollen i stedet for å la komponenten lage en |
+| `described-by` | streng | Legger til ekstra `id`-er i `aria-describedby`, i tillegg til hjelp og feil |
+
+`required-marker` er bare visuelt. Skal skjemaet faktisk kreve feltet, må `required` stå på selve `<input>`-elementet.
+
+## I en app
 
 <Tabs>
-  <TabItem label="Vanilla JS">
-    ```js
-    // main.js – kjør én gang ved oppstart
-    import { defineDsField } from '@fristil/designsystem/field'
-    import '@fristil/designsystem/field.css'
-
-    defineDsField()
-    ```
-
+  <TabItem label="Ren HTML">
     ```html
-    <form id="contact-form">
-      <fs-field id="name-field" required-marker="symbol">
-        <label>Navn</label>
-        <input class="fs-input" type="text" name="name" />
-        <p class="fs-error-text">Navn er påkrevd.</p>
+    <form id="kontaktskjema">
+      <fs-field id="navn-felt" required-marker="symbol">
+        <label>Fullt navn</label>
+        <input class="fs-input" type="text" name="navn" required />
+        <p class="fs-error-text">Fyll inn navnet ditt.</p>
       </fs-field>
+
       <button class="fs-button" type="submit">Send</button>
     </form>
 
     <script type="module">
-      const form = document.getElementById('contact-form')
-      const nameField = document.getElementById('name-field')
+      import { defineFsField } from "@fristil/designsystem/field"
+      defineFsField()
 
-      form.addEventListener('submit', (e) => {
-        e.preventDefault()
-        const input = nameField.querySelector('input')
-        if (!input.value.trim()) {
-          nameField.setAttribute('invalid', '')
-        } else {
-          nameField.removeAttribute('invalid')
-          // prosesser skjemaet...
+      const skjema = document.getElementById("kontaktskjema")
+      const navnFelt = document.getElementById("navn-felt")
+      const navnInput = navnFelt.querySelector("input")
+
+      skjema.addEventListener("submit", (hendelse) => {
+        hendelse.preventDefault()
+
+        const tomt = navnInput.value.trim() === ""
+        navnFelt.toggleAttribute("invalid", tomt)
+
+        if (tomt) {
+          navnInput.focus()
+          return
         }
+
+        const data = new FormData(skjema)
+        console.log(Object.fromEntries(data))
       })
     </script>
     ```
+
+    `new FormData(skjema)` plukker opp feltet uten videre. Det er hele poenget med at komponenten holder seg i vanlig DOM.
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.ts – kjør én gang ved oppstart
-    import { defineDsField } from '@fristil/designsystem/field'
-    import '@fristil/designsystem/field.css'
-    defineDsField()
+    // main.tsx – kjøres én gang når appen starter
+    import { defineFsField } from "@fristil/designsystem/field"
+    import "@fristil/designsystem/field.css"
 
-    // ContactForm.tsx
-    import { useState } from 'react'
+    defineFsField()
+    ```
 
-    export function ContactForm() {
-      const [name, setName] = useState('')
-      const [touched, setTouched] = useState(false)
+    ```tsx
+    // Kontaktskjema.tsx
+    import { useState } from "react"
 
-      const invalid = touched && !name.trim()
+    export function Kontaktskjema() {
+      const [navn, setNavn] = useState("")
+      const [berørt, setBerørt] = useState(false)
+
+      const ugyldig = berørt && navn.trim() === ""
 
       return (
         <form onSubmit={(e) => e.preventDefault()}>
-          <fs-field required-marker="symbol" invalid={invalid}>
-            <label>Navn</label>
+          <fs-field required-marker="symbol" invalid={ugyldig ? "" : undefined}>
+            <label>Fullt navn</label>
             <input
               className="fs-input"
               type="text"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => setTouched(true)}
+              name="navn"
+              value={navn}
+              onChange={(e) => setNavn(e.target.value)}
+              onBlur={() => setBerørt(true)}
             />
-            <p className="fs-error-text">Navn er påkrevd.</p>
+            <p className="fs-error-text">Fyll inn navnet ditt.</p>
           </fs-field>
+
           <button className="fs-button" type="submit">Send</button>
         </form>
       )
     }
     ```
+
+    Legg merke til `invalid={ugyldig ? "" : undefined}` framfor `invalid={ugyldig}`. Boolske HTML-attributter er sanne så lenge de finnes, uansett verdi — `invalid="false"` ville altså gjort feltet ugyldig. Med `undefined` fjerner React attributtet helt.
+  </TabItem>
+  <TabItem label="Vue">
+    ```ts
+    // main.ts – kjøres én gang når appen starter
+    import { defineFsField } from "@fristil/designsystem/field"
+    import "@fristil/designsystem/field.css"
+
+    defineFsField()
+    ```
+
+    ```vue
+    <script setup lang="ts">
+    import { computed, ref } from "vue"
+
+    const navn = ref("")
+    const berørt = ref(false)
+    const ugyldig = computed(() => berørt.value && navn.value.trim() === "")
+    </script>
+
+    <template>
+      <form @submit.prevent>
+        <fs-field required-marker="symbol" :invalid="ugyldig || null">
+          <label>Fullt navn</label>
+          <input
+            class="fs-input"
+            type="text"
+            name="navn"
+            v-model="navn"
+            @blur="berørt = true"
+          />
+          <p class="fs-error-text">Fyll inn navnet ditt.</p>
+        </fs-field>
+
+        <button class="fs-button" type="submit">Send</button>
+      </form>
+    </template>
+    ```
+
+    I Vue fjerner `null` attributtet, på samme måte som `undefined` gjør i React. Legg til `fs-` i `compilerOptions.isCustomElement` i Vite-konfigurasjonen så Vue slutter å advare om ukjente komponenter.
   </TabItem>
 </Tabs>
 
-## Attributter
+## Tilgjengelighet
 
-| Attributt | Type | Effekt |
-|---|---|---|
-| `invalid` | boolean | Setter `aria-invalid` og invalid state på kontroll |
-| `disabled` | boolean | Setter disabled/aria-disabled på kontroll og label |
-| `optional` | boolean | Setter `data-optional` på label |
-| `required-marker` | `none \| symbol \| text` | Setter `data-required` på label |
-| `control-id` | string | Tvinger id på kontroll |
-| `described-by` | string | Legger til ekstra `aria-describedby`-id(er) |
-
-## Når vises feilmeldingen?
-
-Feilmeldingen vises bare når `invalid` er satt på `<fs-field>`.
-
-Det betyr:
-
-- `invalid` = `false` eller ikke satt: `fs-error-text` skjules.
-- `invalid` = `true`: `fs-error-text` vises og kobles til feltet via `aria-describedby`.
-
-Eksempel:
-
-```html
-<fs-field invalid>
-  <label>E-post</label>
-  <input class="fs-input" type="email" value="ola@" />
-  <p class="fs-error-text">Skriv en gyldig e-post.</p>
-</fs-field>
-```
-
-Når feltet ikke er invalid, trenger du fortsatt å ha feilmeldingselementet i markup hvis du vil bruke samme struktur senere. Komponenten skjuler det for deg til det faktisk trengs.
+- Komponenten gjør koblingen, ikke innholdet. Du må fortsatt skrive en ledetekst som forklarer hva feltet spør om, og en feilmelding som sier hva brukeren skal gjøre.
+- `required-marker` er visuelt. Sett `required` på `<input>` i tillegg, ellers vet ikke skjermleseren at feltet må fylles ut.
+- Sett `invalid` når brukeren har forlatt feltet, ikke for hvert tastetrykk. Feilmeldingen blir lest opp hver gang den dukker opp.
+- Ikke legg flere kontroller inn i samme `<fs-field>`. Komponenten kobler seg til den første den finner, og resten blir stående uten kobling. Grupper av felt hører hjemme i en `<fieldset>` med `<legend>`.
