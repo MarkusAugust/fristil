@@ -38,4 +38,3 @@ export const isFieldState = lagVakt(fieldStates)
 export const requiredMarkers = ["symbol", "text"] as const
 export type RequiredMarker = (typeof requiredMarkers)[number]
 export const isRequiredMarker = lagVakt(requiredMarkers)
-
