@@ -16,18 +16,33 @@ for (const key of Object.keys(cssTokens) as (keyof typeof cssTokens)[]) {
   sections[section].push(`  ${key}: ${cssTokens[key]};`)
 }
 
-const lines = ["/* Generert — rediger tokens.ts, ikke denne fila */", ":root {"]
+/*
+ * Alt legges i et cascade layer.
+ *
+ * Uten det måtte en konsument som vil ha egne farger slå spesifisiteten vår.
+ * Den mørke mediespørringen bruker :root:not([data-theme="light"]), altså
+ * 0,2,0 — en vanlig :root i konsumentens CSS taper mot den. Overstyringen
+ * virket da i lyst tema og med data-theme, men røk stille for alle som har
+ * operativsystemet i mørkt. CSS uten layer slår alltid CSS i et layer,
+ * uansett spesifisitet, så nå holder en enkel :root.
+ */
+const lines = [
+  "/* Generert — rediger tokens.ts, ikke denne fila */",
+  "",
+  "@layer fristil {",
+  "  :root {",
+]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
   // Tom linje mellom gruppene, men ikke rett etter `:root {` — da ville
   // biome flagget fila hver gang den genereres på nytt.
   if (index > 0) lines.push("")
-  lines.push(`  /* ${section} */`)
-  lines.push(...props)
+  lines.push(`    /* ${section} */`)
+  lines.push(...props.map((line) => `  ${line}`))
 }
-lines.push("}")
+lines.push("  }")
 
 const darkLines = Object.entries(darkTokens).map(
-  ([name, value]) => `    ${name}: ${value};`,
+  ([name, value]) => `      ${name}: ${value};`,
 )
 
 /*
@@ -40,14 +55,15 @@ const darkLines = Object.entries(darkTokens).map(
  */
 lines.push(
   "",
-  "@media (prefers-color-scheme: dark) {",
-  '  :root:not([data-theme="light"]) {',
+  "  @media (prefers-color-scheme: dark) {",
+  '    :root:not([data-theme="light"]) {',
   ...darkLines,
+  "    }",
   "  }",
-  "}",
   "",
-  '[data-theme="dark"] {',
+  '  [data-theme="dark"] {',
   ...darkLines.map((l) => l.slice(2)),
+  "  }",
   "}",
 )
 
