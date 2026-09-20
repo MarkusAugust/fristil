@@ -95,52 +95,40 @@ Støttede verdier for `data-variant`: `text`, `password`, `email`, `number`, `da
 ## TypeScript
 
 ```ts
-import {
-	getInputAttributes,
-	getInputStyleAttributes,
-} from "@fristil/designsystem/input"
+import { fs } from "@fristil/designsystem"
 
-getInputStyleAttributes({ state: "invalid", variant: "date" })
-// { class: "fs-input", "data-state": "invalid", "data-variant": "date" }
+fs.input({ type: "email" })
+// { class: "fs-input", type: "email" }
 
-getInputAttributes({ variant: "date" })
-// { class: "fs-input", "data-variant": "date", type: "date" }
+fs.input({ type: "date" })
+// { class: "fs-input", type: "date", "data-variant": "date" }
+
+fs.input({ state: "invalid" })
+// { class: "fs-input", type: "text", "data-state": "invalid", "aria-invalid": "true" }
 ```
 
-Forskjellen er `type`: `getInputStyleAttributes` gir bare Fristils stil-attributter, mens `getInputAttributes` også setter `type` slik at variant og type ikke kan komme i utakt. Bruk den siste med mindre du har grunn til å styre `type` selv.
+Dette løser de to fellene på denne siden. `type` styrer både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Og `state: "invalid"` setter `aria-invalid` sammen med fargen, så skjermleseren aldri blir glemt.
 
 Resten av elementet eier du:
 
 ```ts
-const attributter = {
-	...getInputAttributes({ variant: "email", state: "success" }),
-	id: "epost",
-	name: "epost",
-	placeholder: "ola@eksempel.no",
-	required: true,
-}
+<input {...fs.input({ type: "email", state })} id="epost" name="epost" required />
 ```
 
 ## Verdier som kommer utenfra
 
-Kommer tilstand eller variant fra et API, en URL-parameter eller `localStorage`, er det vanlige strenger som TypeScript ikke kan garantere noe om. Valider dem før de treffer skjermen:
+Kommer tilstand eller type fra et API, en URL-parameter eller `localStorage`, er det vanlige strenger. Valider dem før de treffer skjermen:
 
 ```ts
-import {
-	getInputStyleAttributes,
-	isInputState,
-	isInputVariant,
-} from "@fristil/designsystem/input"
-
 const svar = await hentFeltoppsett()
 
-const tilstand = isInputState(svar.state) ? svar.state : "default"
-const variant = isInputVariant(svar.variant) ? svar.variant : "text"
+const state = fs.input.isState(svar.state) ? svar.state : "default"
+const type = fs.input.isType(svar.type) ? svar.type : "text"
 
-getInputStyleAttributes({ state: tilstand, variant })
+fs.input({ type, state })
 ```
 
-Er `svar.variant` for eksempel `"birthday"`, faller den tilbake til `"text"` i stedet for å sette et `data-variant` ingen CSS-regel treffer.
+Er `svar.type` for eksempel `"birthday"`, faller den tilbake til `"text"` i stedet for å sette en `type` nettleseren ikke kjenner.
 
 ## Tilgjengelighet
 

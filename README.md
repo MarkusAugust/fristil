@@ -79,7 +79,18 @@ Tilgjengelige JS-subpaths er blant annet:
 - `@fristil/designsystem/tokens`
 - `@fristil/designsystem/tailwind`
 
-CSS-komponentene eksporterer hjelpefunksjoner, ikke registreringsfunksjoner — de er jo bare klasser. Se «Typesikker bruk» i dokumentasjonen.
+Hele komponent-API-et ligger i ett navnerom:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+<input {...fs.input({ type: "email", state: "invalid" })} />
+```
+
+Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er lik for alle. Skriv `fs.` i editoren for å se hva som finnes, og `fs.button.` for å se lovlige verdier og vakten som validerer verdier utenfra.
+
+`fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>` — kontrakten finnes ett sted. Se «Typesikker bruk» i dokumentasjonen.
 
 ## Lokal utvikling
 
@@ -123,9 +134,9 @@ bun run lint             # biome check .
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/utilities.css"
 
-// CSS-komponent: klasse pluss valgfri typet hjelper
+// CSS-komponent: stilark pluss typet hjelper
 import "@fristil/designsystem/button.css"
-import { getButtonStyleAttributes } from "@fristil/designsystem/button"
+import { fs } from "@fristil/designsystem"
 
 // Web component: stilark pluss registreringsfunksjon
 import "@fristil/designsystem/field.css"

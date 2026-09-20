@@ -57,27 +57,23 @@ Sett `rows` til omtrent så mye tekst du faktisk forventer. Et felt med tre rade
 ## TypeScript
 
 ```ts
-import { getTextareaStyleAttributes } from "@fristil/designsystem/textarea"
+import { fs } from "@fristil/designsystem"
 
-getTextareaStyleAttributes("success")
+fs.textarea({ state: "success" })
 // { class: "fs-textarea", "data-state": "success" }
 
-getTextareaStyleAttributes()
+fs.textarea()
 // { class: "fs-textarea" }
 ```
+
+`state` er den samme typen som i [Input](../input/) og [Select](../select/), så en verdi kan sendes mellom dem uten konvertering.
 
 Verdier som kommer utenfra, validerer du først:
 
 ```ts
-import {
-	getTextareaStyleAttributes,
-	isTextareaState,
-} from "@fristil/designsystem/textarea"
+const state = fs.textarea.isState(svar.state) ? svar.state : "default"
 
-const fraServer = String(svar.state)
-const tilstand = isTextareaState(fraServer) ? fraServer : "default"
-
-getTextareaStyleAttributes(tilstand)
+fs.textarea({ state })
 ```
 
 ## Tilgjengelighet

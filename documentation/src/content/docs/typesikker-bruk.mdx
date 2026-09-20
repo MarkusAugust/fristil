@@ -1,123 +1,164 @@
 ---
 title: Typesikker bruk
-description: Få autofullføring og skrivefeil fanget i editoren, uten å binde deg til et rammeverk.
+description: Ett navnerom, én form. Autofullføring på hele systemet, uten å binde deg til et rammeverk.
 ---
 
-CSS-komponentene styres med klasser og dataattributter. Det gjør dem uavhengige av rammeverk, men det betyr også at alt er strenger:
+Komponentene styres med klasser og dataattributter. Det gjør dem uavhengige av rammeverk, men det betyr også at alt er strenger:
 
 ```html
 <button class="fs-button" data-variant="secundary">Lagre utkast</button>
 ```
 
-Knappen over får primærstilen. Ingen feilmelding, ingen advarsel — bare en variant som stille aldri ble brukt. Slike feil overlever kodegjennomgang fordi de ser riktige ut.
+Knappen over får primærstilen. Ingen feilmelding, ingen advarsel — bare en variant som stille aldri ble brukt.
 
-Hver CSS-komponent eksporterer derfor tre ting som gjør den samme kontrakten typet.
+Derfor finnes `fs`.
 
-## De tre delene
-
-**En type med de gyldige verdiene.** `ButtonVariant` er `"primary" | "secondary" | "ghost" | "danger"`. Editoren foreslår dem, og `"secundary"` blir rød.
-
-**En funksjon som lager attributtene.** `getButtonStyleAttributes()` returnerer objektet du sprer inn i elementet.
-
-**En vaktfunksjon for verdier utenfra.** `isButtonVariant()` sjekker om en vilkårlig streng er en gyldig variant.
+## Én inngang
 
 ```ts
-import {
-	getButtonStyleAttributes,
-	isButtonVariant,
-	type ButtonVariant,
-} from "@fristil/designsystem/button"
+import { fs } from "@fristil/designsystem"
+
+<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+<input {...fs.input({ type: "email", state: "invalid" })} />
+<span {...fs.badge({ color: "success" })}>Innvilget</span>
+<a {...fs.link()} href="/kvittering">Se kvittering</a>
 ```
 
-## Lage attributtene
+Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle, så du lærer den én gang.
+
+Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et virker i React, Vue, Svelte og ren HTML — alle kan spre et objekt inn i et element.
+
+## Standardverdier gir ingen attributter
 
 ```ts
-getButtonStyleAttributes("secondary")
-// { class: "fs-button", "data-variant": "secondary" }
-
-getButtonStyleAttributes("primary")
+fs.button()
 // { class: "fs-button" }
+
+fs.button({ variant: "primary" })
+// { class: "fs-button" } — primær er standard i CSS-en
+
+fs.button({ variant: "danger" })
+// { class: "fs-button", "data-variant": "danger" }
 ```
 
-Primærvarianten gir ikke noe `data-variant`, fordi den er standard i CSS-en. Det er én ting mindre å holde styr på: du sier alltid hvilken variant du vil ha, og funksjonen vet når attributtet kan utelates.
+Du sier alltid hvilken variant du vil ha, og funksjonen vet når attributtet kan utelates. Det er én ting mindre å holde styr på.
 
-## Bare Fristils del
-
-Funksjonene returnerer utelukkende Fristils egne attributter. Alt annet på elementet eier appen din:
+## Lovlige verdier og vakter ligger på komponenten
 
 ```ts
-const attributter = {
-	...getButtonStyleAttributes("danger"),
-	type: "submit",
-	"aria-label": "Slett søknaden permanent",
-	onClick: slettSøknad,
-}
+fs.button.variants
+// readonly ["primary", "secondary", "ghost", "danger"]
+
+fs.button.isVariant("ghost")  // true
+fs.button.isVariant("gost")   // false
 ```
 
-Det betyr at det ikke finnes noe «Fristil-knappekomponent-API» å lære. Du lager et vanlig `<button>`, og henter stil-delen fra en funksjon.
+Skriv `fs.button.` og editoren viser både variantene og vakten. Samme mønster overalt: `fs.badge.colors` og `fs.badge.isColor`, `fs.input.types` og `fs.input.isType`.
 
-## Verdier som kommer utenfra
-
-Kommer varianten fra et API, en URL-parameter eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vaktfunksjonen gjør den om til en gyldig verdi eller en trygg reserve:
+Kommer verdien fra et API, en URL-parameter eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vakten gjør den om til en gyldig verdi eller en trygg reserve:
 
 ```ts
-import {
-	getButtonStyleAttributes,
-	isButtonVariant,
-} from "@fristil/designsystem/button"
-
 const svar = await hentKnappeoppsett()
-const variant = isButtonVariant(svar.variant) ? svar.variant : "primary"
+const variant = fs.button.isVariant(svar.variant) ? svar.variant : "primary"
 
-getButtonStyleAttributes(variant)
+fs.button({ variant })
 ```
 
-Etter `isButtonVariant(...)` vet TypeScript at `svar.variant` er en `ButtonVariant`, ikke bare en `string`. Er verdien ukjent, får du primærknappen i stedet for et dataattributt ingen CSS-regel treffer.
+Etter `isVariant(...)` vet TypeScript at verdien er en `ButtonVariant`, ikke bare en `string`.
 
-## Samme mønster overalt
+## `fs.input` kan ikke komme i utakt
 
-Alle CSS-komponentene følger den samme formen. Kan du én, kan du resten:
+Skriver du et datofelt for hånd, må `type` og `data-variant` stemme overens — ellers får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
 
-| Komponent | Lag attributter | Valider verdi | Type |
-| --- | --- | --- | --- |
-| [Button](../components/button/) | `getButtonStyleAttributes` | `isButtonVariant` | `ButtonVariant` |
-| [Input](../components/input/) | `getInputStyleAttributes`, `getInputAttributes` | `isInputState`, `isInputVariant` | `InputState`, `InputVariant` |
-| [Label](../components/label/) | `getLabelStyleAttributes` | `isLabelRequiredMarker` | `LabelRequiredMarker` |
-| [Select](../components/select/) | `getSelectStyleAttributes` | `isSelectState` | `SelectState` |
-| [Textarea](../components/textarea/) | `getTextareaStyleAttributes` | `isTextareaState` | `TextareaState` |
-| [Help Text](../components/help-text/) | `getHelpTextStyleAttributes` | `isHelpTextVariant` | `HelpTextVariant` |
-| [Error Text](../components/error-text/) | `getErrorTextStyleAttributes` | `isErrorTextVariant` | `ErrorTextVariant` |
+```ts
+fs.input({ type: "date" })
+// { class: "fs-input", type: "date", "data-variant": "date" }
 
-[Input](../components/input/) har i tillegg `getInputAttributes`, som også setter `type`. Det holder `type="date"` og `data-variant="date"` i takt — et par som må stemme for at ikonet i feltet skal åpne datovelgeren.
+fs.input({ type: "email" })
+// { class: "fs-input", type: "email" } — e-post har ikke noe ikon
+```
+
+Én verdi styrer begge. Feilen er ikke lenger mulig å gjøre.
+
+Det samme gjelder tilstand: `state: "invalid"` gir både `data-state` for fargen og `aria-invalid` for skjermleseren. To ting som alltid må følges ad, satt ett sted.
+
+## Ett begrep, én betydning
+
+| Valg | Hva det betyr | Hvor |
+| --- | --- | --- |
+| `variant` | Visuell vekt eller betydning | `button`, `helpText`, `errorText` |
+| `color` | Hva en status betyr | `badge` |
+| `state` | Valideringstilstand | `input`, `textarea`, `select` |
+| `type` | HTML-typen på feltet | `input` |
+
+`state` er én type på tvers av de tre feltkomponentene, så en verdi kan sendes mellom dem uten konvertering:
+
+```ts
+const tilstand = fs.isState(fraServer) ? fraServer : "default"
+
+fs.input({ state: tilstand })
+fs.textarea({ state: tilstand })
+fs.select({ state: tilstand })
+```
+
+## `fs.field` kobler et helt felt
+
+Et felt med ledetekst, hjelpetekst og feilmelding krever fem koblinger som alle må stemme samtidig. `fs.field` regner dem ut for deg:
+
+```ts
+const felt = fs.field({
+	id: "epost",
+	required: "symbol",
+	help: true,
+	error: true,
+	invalid: !erGyldig,
+})
+
+<label {...felt.label}>E-postadresse</label>
+<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+```
+
+Du får `for`, `id`, `aria-describedby` og `aria-invalid` ferdig utregnet, og `felt.state` sendes rett inn i `fs.input`.
+
+Legg merke til én detalj: feilmeldingen tas med i `aria-describedby` **bare når feltet faktisk er ugyldig**. Ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
+
+:::note[Samme kjerne som `<fs-field>`]
+[Field](../components/field/) gjør nøyaktig den samme utregningen, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted i systemet og kan ikke gå fra hverandre.
+
+Velg `<fs-field>` når du vil skrive vanlig HTML og la komponenten koble den. Velg `fs.field` når du bygger markupen i et rammeverk og heller vil ha koblingen som data.
+:::
 
 ## I praksis: en gjenbrukbar knapp i React
 
 ```tsx
-import {
-	getButtonStyleAttributes,
-	type ButtonVariant,
-} from "@fristil/designsystem/button"
+import { fs, type ButtonVariant } from "@fristil/designsystem"
 import type { ComponentProps } from "react"
 
 type Props = ComponentProps<"button"> & {
 	variant?: ButtonVariant
 }
 
-export function Knapp({ variant = "primary", ...rest }: Props) {
-	return <button {...getButtonStyleAttributes(variant)} {...rest} />
+export function Knapp({ variant, ...rest }: Props) {
+	return <button {...fs.button({ variant })} {...rest} />
 }
 ```
 
-Komponenten er tolv linjer og har ingen Fristil-avhengighet utover den ene importen. Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
-
-Samme mønster i Vue, Svelte eller Angular ser praktisk talt likt ut. Funksjonen returnerer et objekt, og alle rammeverk kan spre et objekt inn i et element.
+Elleve linjer, én import. Bytter teamet rammeverk, er det disse elleve linjene som skrives om — ikke designsystemet.
 
 ## Når du kan hoppe over det
 
-Hjelperne er valgfrie. Skriver du HTML for hånd, i en mal uten TypeScript, eller i et oppsett uten byggesteg, er dette like gyldig:
+`fs` er valgfritt. Skriver du HTML for hånd, i en mal uten TypeScript, eller i et oppsett uten byggesteg, er dette like gyldig:
 
 ```html
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
 Resultatet er identisk. Forskjellen er bare hvor tidlig du får vite at du skrev `secundary`.
+
+Vil du bare ha én komponent, finnes de som egne inngangspunkter også:
+
+```ts
+import { button } from "@fristil/designsystem/button"
+```

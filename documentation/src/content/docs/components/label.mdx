@@ -80,64 +80,51 @@ Dette er nøyaktig den koblingen [Field](../field/) gjør automatisk. Skriver du
 ## TypeScript
 
 ```ts
-import {
-	getLabelStyleAttributes,
-	type LabelRequiredMarker,
-} from "@fristil/designsystem/label"
+import { fs } from "@fristil/designsystem"
 
-const markering: LabelRequiredMarker = "text"
-
-getLabelStyleAttributes({ required: markering })
+fs.label({ required: "text" })
 // { class: "fs-label", "data-required": "text" }
 
-getLabelStyleAttributes({ optional: true })
+fs.label({ optional: true })
 // { class: "fs-label", "data-optional": "" }
 ```
 
-Hjelperen returnerer bare Fristils egne attributter — `for`, `id` og resten eier du selv:
+Funksjonen returnerer bare Fristils egne attributter — `for` og `id` eier du selv:
 
-```ts
-const attributter = {
-	...getLabelStyleAttributes({ required: "symbol" }),
-	htmlFor: "epost",
-	id: "epost-label",
-}
+```tsx
+<label {...fs.label({ required: "symbol" })} htmlFor="epost">
+  E-postadresse
+</label>
 ```
 
 Kommer markeringen utenfra, valider den først:
 
 ```ts
-import {
-	getLabelStyleAttributes,
-	isLabelRequiredMarker,
-} from "@fristil/designsystem/label"
+const required = fs.label.isMarker(svar.marker) ? svar.marker : undefined
 
-const fraServer = String(svar.requiredMarker)
-const markering = isLabelRequiredMarker(fraServer) ? fraServer : undefined
-
-getLabelStyleAttributes({ required: markering })
+fs.label({ required })
 ```
+
+Setter du opp et helt felt, gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) både dette og koblingen til kontrollen i én operasjon.
 
 ## I React
 
-Samme hjelper, spredt inn i et vanlig `<label>`. Ingen Fristil-spesifikk komponent trengs:
+Samme funksjon, spredt inn i et vanlig `<label>`. Ingen Fristil-spesifikk komponent trengs:
 
 ```tsx
-import {
-	getLabelStyleAttributes,
-	type LabelRequiredMarker,
-} from "@fristil/designsystem/label"
+import { fs } from "@fristil/designsystem"
+import type { RequiredMarker } from "@fristil/designsystem"
 
 type Props = {
 	htmlFor: string
-	required?: LabelRequiredMarker
+	required?: RequiredMarker
 	optional?: boolean
 	children: React.ReactNode
 }
 
 export function Ledetekst({ htmlFor, required, optional, children }: Props) {
 	return (
-		<label htmlFor={htmlFor} {...getLabelStyleAttributes({ required, optional })}>
+		<label {...fs.label({ required, optional })} htmlFor={htmlFor}>
 			{children}
 		</label>
 	)

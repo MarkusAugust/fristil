@@ -71,27 +71,23 @@ Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da vil `requ
 ## TypeScript
 
 ```ts
-import { getSelectStyleAttributes } from "@fristil/designsystem/select"
+import { fs } from "@fristil/designsystem"
 
-getSelectStyleAttributes("invalid")
-// { class: "fs-select", "data-state": "invalid" }
+fs.select({ state: "invalid" })
+// { class: "fs-select", "data-state": "invalid", "aria-invalid": "true" }
 
-getSelectStyleAttributes()
+fs.select()
 // { class: "fs-select" }
 ```
+
+`state` er den samme typen som i [Input](../input/) og [Textarea](../textarea/), så en verdi kan sendes mellom dem uten konvertering.
 
 Verdier som kommer fra et API eller en URL, validerer du først:
 
 ```ts
-import {
-	getSelectStyleAttributes,
-	isSelectState,
-} from "@fristil/designsystem/select"
+const state = fs.select.isState(svar.state) ? svar.state : "default"
 
-const fraServer = String(svar.state)
-const tilstand = isSelectState(fraServer) ? fraServer : "default"
-
-getSelectStyleAttributes(tilstand)
+fs.select({ state })
 ```
 
 ## Tilgjengelighet

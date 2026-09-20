@@ -109,22 +109,31 @@ Får du en tom side i stedet for komponenten, er det nesten alltid fordi `define
 
 **JavaScript og TypeScript**
 
+Hele komponent-API-et ligger i ett navnerom:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+fs.button({ variant: "secondary" })
+fs.input({ type: "email", state: "invalid" })
+fs.badge({ color: "success" })
+```
+
+Skriv `fs.` i editoren, så ser du hva som finnes. Se [Typesikker bruk](../typesikker-bruk/).
+
 | Import | Innhold |
 | --- | --- |
+| `@fristil/designsystem` | `fs` med alle komponentene, alle typene, og web component-registreringene |
 | `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
 | `@fristil/designsystem/calendar` | `defineFsCalendar`, klassen `FsCalendar` |
 | `@fristil/designsystem/date-field` | `defineFsDateField`, klassen `FsDateField` |
-| `@fristil/designsystem/button` | `getButtonStyleAttributes`, `isButtonVariant`, `ButtonVariant` |
-| `@fristil/designsystem/input` | `getInputAttributes`, `getInputStyleAttributes`, `isInputState`, `isInputVariant` |
-| `@fristil/designsystem/label` | `getLabelStyleAttributes`, `isLabelRequiredMarker` |
-| `@fristil/designsystem/select` | `getSelectStyleAttributes`, `isSelectState` |
-| `@fristil/designsystem/textarea` | `getTextareaStyleAttributes`, `isTextareaState` |
-| `@fristil/designsystem/help-text` | `getHelpTextStyleAttributes`, `isHelpTextVariant` |
-| `@fristil/designsystem/error-text` | `getErrorTextStyleAttributes`, `isErrorTextVariant` |
+| `@fristil/designsystem/field-core` | `computeFieldAttributes` — det `fs.field` og `<fs-field>` deler |
 | `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
 | `@fristil/designsystem/tailwind` | `fristilPreset` |
 
-TypeScript-hjelperne er valgfrie. Du kan skrive `class="fs-button" data-variant="secondary"` for hånd og få nøyaktig samme resultat — hjelperne finnes for å fange skrivefeil i editoren. Se [Typesikker bruk](../typesikker-bruk/).
+Vil du bare ha én komponent, finnes de som egne inngangspunkter også — `@fristil/designsystem/button`, `/badge`, `/link`, `/label`, `/input`, `/textarea`, `/select`, `/help-text` og `/error-text` eksporterer hver sin funksjon med samme navn som komponenten.
+
+`fs` er valgfritt. Du kan skrive `class="fs-button" data-variant="secondary"` for hånd og få nøyaktig samme resultat — funksjonene finnes for å fange skrivefeil i editoren.
 
 ## Videre
 
