@@ -6,19 +6,9 @@ description: Frittstående kalenderpanel som melder fra om valgt dato. Sammensat
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import CalendarDemo from "../../../components/CalendarDemo.astro"
 
-`<fs-calendar>` er en knapp som åpner et kalenderpanel. Den eier kalenderen og datovalget, men ikke noe inndatafelt — når brukeren velger en dag, sender den en hendelse, og appen bestemmer hva som skal skje.
+En knapp som åpner et kalenderpanel. Den eier kalenderen og datovalget, men ikke noe inndatafelt — når brukeren velger en dag, sender den en hendelse, og appen bestemmer resten. Bruker Shadow DOM, så stilene inni er skjermet.
 
-Komponenten bruker Shadow DOM, så stilene inni er skjermet fra CSS-en rundt.
-
-## Hvilken komponent skal du bruke til dato?
-
-| Situasjon | Komponent |
-| --- | --- |
-| Nettleserens egen datovelger holder | [Input](../input/) med `type="date"` |
-| Du trenger et kalenderpanel du styrer selv | **Calendar** |
-| Du vil ha felt, ledetekst, hjelpetekst og kalender ferdig koblet | [Date Field](../date-field/) |
-
-Velg **Calendar** når datoen skal påvirke noe annet enn et tekstfelt — filtrere en liste, hoppe til en uke i en timeplan, sette et intervall sammen med en annen kalender.
+**Velg Calendar** når datoen skal påvirke noe annet enn et tekstfelt: filtrere en liste, hoppe til en uke, sette et intervall. Skal den ned i et felt, er [Date Field](../date-field/) den koblingen ferdig løst.
 
 ## Kom i gang
 
@@ -29,7 +19,7 @@ import { defineFsCalendar } from "@fristil/designsystem/calendar"
 defineFsCalendar()
 ```
 
-Kalenderen tar med seg sine egne stiler i Shadow DOM, så den trenger ingen egen CSS-import utover `tokens.css`.
+Kalenderen tar med seg stilene sine i Shadow DOM, så den trenger ingen CSS-import utover `tokens.css`.
 
 <Tabs>
   <TabItem label="Eksempel">
@@ -38,82 +28,43 @@ Kalenderen tar med seg sine egne stiler i Shadow DOM, så den trenger ingen egen
   <TabItem label="Kode">
     ```html
     <fs-calendar id="fakturadato" value="2026-05-31"></fs-calendar>
-    <p>Valgt dato: <output id="fakturadato-resultat">2026-05-31</output></p>
+    <p>Valgt dato: <output id="resultat">2026-05-31</output></p>
 
     <script type="module">
       import { defineFsCalendar } from "@fristil/designsystem/calendar"
       defineFsCalendar()
 
-      const kalender = document.getElementById("fakturadato")
-      const resultat = document.getElementById("fakturadato-resultat")
-
-      kalender.addEventListener("date-select", (hendelse) => {
-        resultat.textContent = hendelse.detail.value
-      })
+      document.getElementById("fakturadato")
+        .addEventListener("date-select", (hendelse) => {
+          document.getElementById("resultat").textContent = hendelse.detail.value
+        })
     </script>
     ```
   </TabItem>
 </Tabs>
 
-## Slik henger det sammen
-
-1. Komponenten viser en knapp med kalenderikon.
-2. Trykk på knappen åpner panelet, og `open`-attributtet settes.
-3. Når brukeren velger en dag, oppdaterer komponenten `value` og sender `date-select`.
-4. Appen din bestemmer hva som skal skje videre — oppdatere et felt, hente data, filtrere en liste.
-
-Komponenten lagrer altså datoen, men gjør ingenting med den. Det er med vilje: den vet ikke hva dato betyr i din applikasjon.
-
-## Koblet til et tekstfelt
-
-Det vanligste er at datoen skal ned i et `<input>`. Da lytter du på `date-select` og skriver verdien inn selv:
-
-```html
-<label class="fs-label" for="fakturadato">Fakturadato</label>
-<div style="display: flex; gap: var(--size-2);">
-  <input class="fs-input" id="fakturadato" name="fakturadato" type="text" />
-  <fs-calendar id="fakturadato-kalender"></fs-calendar>
-</div>
-
-<script type="module">
-  import { defineFsCalendar } from "@fristil/designsystem/calendar"
-  defineFsCalendar()
-
-  const felt = document.getElementById("fakturadato")
-  const kalender = document.getElementById("fakturadato-kalender")
-
-  kalender.addEventListener("date-select", (hendelse) => {
-    felt.value = hendelse.detail.value
-  })
-
-  felt.addEventListener("change", () => {
-    kalender.value = felt.value
-  })
-</script>
-```
-
-Merk at du må synkronisere begge veier selv, og at formatet brukeren skriver ikke nødvendigvis er ISO. Skal du gjøre dette, er [Date Field](../date-field/) som regel et bedre valg — den er nettopp denne koblingen, ferdig løst.
+Komponenten lagrer datoen, men gjør ingenting med den. Det er med vilje — den vet ikke hva dato betyr i applikasjonen din.
 
 ## Attributter
 
-| Attributt | Type | Hva det gjør |
+| Attributt | Type | Effekt |
 | --- | --- | --- |
-| `value` | streng | Valgt dato som `ÅÅÅÅ-MM-DD`. Speiles tilbake til attributtet når brukeren velger. |
-| `open` | boolsk | Om panelet er åpent. Kan settes for å åpne det fra koden. |
-| `disabled` | boolsk | Deaktiverer knappen. |
-| `trigger-hidden` | boolsk | Skjuler knappen, slik at panelet kan styres helt fra koden. |
+| `value` | streng | Valgt dato som `ÅÅÅÅ-MM-DD`. Speiles tilbake når brukeren velger. |
+| `open` | boolsk | Om panelet er åpent |
+| `disabled` | boolsk | Deaktiverer knappen |
+| `trigger-hidden` | boolsk | Skjuler knappen, så panelet styres fra koden |
 
 ## Hendelser
 
-| Hendelse | `detail` | Når den sendes |
+| Hendelse | `detail` | Når |
 | --- | --- | --- |
-| `date-select` | `{ value: string }` | Når en dag velges. `value` er alltid `ÅÅÅÅ-MM-DD`. |
-| `input` | — | Samtidig med `date-select`, for kode som lytter på vanlige skjemahendelser. |
-| `change` | — | Samtidig med `date-select`. |
+| `date-select` | `{ value: string }` | En dag velges. `value` er alltid `ÅÅÅÅ-MM-DD`. |
+| `input` | — | Samtidig med `date-select` |
+| `change` | — | Samtidig med `date-select` |
 
-Alle tre bobler og krysser skyggegrensen, så du kan lytte på et element lenger opp i treet.
+Alle tre bobler og krysser skyggegrensen, så du kan lytte lenger opp i treet.
 
-I TypeScript er `date-select` en `CustomEvent`, og typen må oppgis for å komme til `detail`:
+I TypeScript må typen oppgis for å komme til `detail`:
 
 ```ts
 kalender.addEventListener("date-select", (hendelse) => {
@@ -122,12 +73,17 @@ kalender.addEventListener("date-select", (hendelse) => {
 })
 ```
 
-I vanlig JavaScript — for eksempel i en `<script type="module">` i en HTML-fil — skriver du bare `hendelse.detail.value`. `as`-syntaksen over er TypeScript og vil gi `SyntaxError` i nettleseren.
+I en `<script type="module">` i en HTML-fil skriver du bare `hendelse.detail.value` — `as` er TypeScript og gir `SyntaxError` i nettleseren.
 
-## Tilgjengelighet
+## Tastatur og tilgjengelighet
 
-- Panelet skal aldri være eneste vei til datoen. La brukeren kunne skrive den også — noen skriver raskere enn de klikker, og en skjermleserbruker gjør det nesten alltid. Det er derfor [Date Field](../date-field/) alltid har et tekstfelt ved siden av.
-- Knappen har en fast `aria-label` — «Åpne kalender» — inne i Shadow DOM. Den kan ikke overstyres utenfra. Har du flere kalendere på samme side, bør du gi hver av dem en synlig ledetekst i nærheten, slik at det går fram hvilken dato de gjelder.
-- Piltastene flytter mellom dagene i panelet, og `Escape` lukker det.
-- Lukkes panelet med `Escape` eller ved at en dag velges, flyttes fokus tilbake til knappen. Lukkes det fordi brukeren klikket eller tabbet et annet sted, blir fokus stående der det er.
-- Dagene fra nabomåneden er dempet, men klikkbare, og bruker derfor `neutral`-tokenene framfor `disabled` — de må være lesbare.
+| Tast | Virkning |
+| --- | --- |
+| Piltaster i panelet | Flytter mellom dagene |
+| `Escape` | Lukker panelet og gir fokus tilbake til knappen |
+
+Lukkes panelet fordi brukeren klikket eller tabbet et annet sted, blir fokus stående der.
+
+- Panelet skal aldri være eneste vei til datoen. La brukeren skrive den også — det er derfor [Date Field](../date-field/) alltid har et tekstfelt ved siden av.
+- Knappen har en fast `aria-label` inne i Shadow DOM som ikke kan overstyres. Har du flere kalendere på samme side, gi hver av dem en synlig ledetekst i nærheten.
+- Dagene fra nabomåneden er dempet, men klikkbare, og bruker derfor `neutral`-tokenene framfor `disabled`.

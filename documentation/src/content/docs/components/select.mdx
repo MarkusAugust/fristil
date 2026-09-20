@@ -1,14 +1,11 @@
 ---
 title: Select
-description: Nedtrekksliste for skjema, med samme tilstander som Input. CSS-komponent — én klasse, ingen JavaScript.
+description: Nedtrekksliste. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-select` gir `<select>` samme utseende og tilstander som [Input](../input/). Det er et ekte select-element, så nettleserens egen nedtrekksliste brukes — den som allerede fungerer med tastatur, skjermleser og mobilens innebygde velger.
-
-## Importer
+Samme utseende og tilstander som [Input](../input/), på et ekte `<select>` — så nettleserens egen liste brukes, den som allerede virker med tastatur, skjermleser og mobilens innebygde velger.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -17,82 +14,46 @@ import "@fristil/designsystem/select.css"
 
 ## Tilstander
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["select", "label"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" for="ex-fylke">Fylke</label>
-      <select class="fs-select" id="ex-fylke">
-        <option value="">Velg fylke</option>
-        <option>Innlandet</option>
-        <option selected>Vestland</option>
-        <option>Troms</option>
-      </select>
+<Eksempel stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="fylke">Fylke</label>
+<select class="fs-select" id="fylke" name="fylke">
+  <option value="">Velg fylke</option>
+  <option>Innlandet</option>
+  <option selected>Vestland</option>
+  <option>Troms</option>
+</select>
 
-      <label class="fs-label" for="ex-bekreftet">Bekreftet fylke</label>
-      <select class="fs-select" id="ex-bekreftet" data-state="success">
-        <option selected>Vestland</option>
-      </select>
+<label class="fs-label" for="kommune">Kommune</label>
+<select class="fs-select" id="kommune" data-state="invalid" aria-invalid="true">
+  <option value="" selected>Velg kommune</option>
+</select>
 
-      <label class="fs-label" for="ex-mangler">Kommune</label>
-      <select class="fs-select" id="ex-mangler" data-state="invalid" aria-invalid="true">
-        <option value="" selected>Velg kommune</option>
-      </select>
+<label class="fs-label" for="registrert">Registrert fylke</label>
+<select class="fs-select" id="registrert" disabled>
+  <option selected>Vestland</option>
+</select>
+`} />
 
-      <label class="fs-label" for="ex-laast-fylke">Registrert fylke</label>
-      <select class="fs-select" id="ex-laast-fylke" disabled>
-        <option selected>Vestland</option>
-      </select>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <select class="fs-select" name="fylke">
-      <option value="">Velg fylke</option>
-      <option value="innlandet">Innlandet</option>
-      <option value="vestland">Vestland</option>
-      <option value="troms">Troms</option>
-    </select>
-
-    <select class="fs-select" data-state="invalid" aria-invalid="true" name="fylke">
-      <option value="">Velg fylke</option>
-    </select>
-    ```
-  </TabItem>
-</Tabs>
-
-| `data-state` | Når du bruker den |
+| `data-state` | Brukes til |
 | --- | --- |
 | *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet. Sett `aria-invalid="true"` i tillegg. |
-| `success` | Valget er bekreftet gyldig. Bruk sparsomt — en grønn ramme på hvert felt blir støy. |
+| `invalid` | Valideringen har feilet |
+| `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
 
-Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da vil `required` faktisk stoppe innsending til brukeren har valgt noe.
+Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da stopper `required` faktisk innsending til brukeren har valgt noe.
 
-## TypeScript
+## Med TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
 
 fs.select({ state: "invalid" })
 // { class: "fs-select", "data-state": "invalid", "aria-invalid": "true" }
-
-fs.select()
-// { class: "fs-select" }
-```
-
-`state` er den samme typen som i [Input](../input/) og [Textarea](../textarea/), så en verdi kan sendes mellom dem uten konvertering.
-
-Verdier som kommer fra et API eller en URL, validerer du først:
-
-```ts
-const state = fs.select.isState(svar.state) ? svar.state : "default"
-
-fs.select({ state })
 ```
 
 ## Tilgjengelighet
 
-- Hvert felt trenger en synlig `<label>` med `for`. En `<option>` som sier «Velg fylke» er en ledetekst i forkledning, ikke en erstatning.
-- Har listen flere enn rundt sju valg som hører logisk sammen, grupper dem med `<optgroup label="...">`.
-- Ikke send skjemaet automatisk når brukeren endrer valget. Tastaturbrukere blar gjennom valgene med piltastene, og ville da sendt skjemaet på det første alternativet de passerer.
-- Trenger du søk, flervalg med merkelapper eller egne ikoner i listen, er `<select>` feil verktøy. Bygg det som en egen `sammensatt`-komponent i stedet for å style om dette elementet.
+- En `<option>` som sier «Velg fylke» er en ledetekst i forkledning, ikke en erstatning for `<label>`.
+- Har listen flere enn rundt sju valg som hører logisk sammen, grupper dem med `<optgroup label="…">`.
+- Ikke send skjemaet automatisk ved endring. Tastaturbrukere blar gjennom valgene med piltastene og ville sendt skjemaet på det første de passerer.
+- Trenger du søk, flervalg eller ikoner i listen, er `<select>` feil verktøy. Bygg det som en `sammensatt`-komponent framfor å style om dette elementet.

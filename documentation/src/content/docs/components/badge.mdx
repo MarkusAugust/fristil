@@ -1,94 +1,63 @@
 ---
 title: Badge
-description: Kompakt statusmerke for tilstand, kategori eller antall. CSS-komponent — én klasse, ingen JavaScript.
+description: Kompakt statusmerke. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-badge` er et lite merke du setter ved siden av noe annet for å vise hvilken tilstand det er i — en søknad som er innvilget, en faktura som har forfalt. Fargen styres med `data-color`.
-
-## Importer
+Et lite merke som viser hvilken tilstand noe er i. Fargen styres med `data-color`.
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/badge.css"
 ```
 
-Uten byggesteg:
-
-```html
-<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
-<link rel="stylesheet" href="@fristil/designsystem/badge.css" />
-```
-
 ## Farger
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["badge"]}>
-      <span class="fs-badge">Under behandling</span>
-      <span class="fs-badge" data-color="success">Innvilget</span>
-      <span class="fs-badge" data-color="warning">Mangler vedlegg</span>
-      <span class="fs-badge" data-color="danger">Avslått</span>
-      <span class="fs-badge" data-color="neutral">Arkivert</span>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <span class="fs-badge">Under behandling</span>
-    <span class="fs-badge" data-color="success">Innvilget</span>
-    <span class="fs-badge" data-color="warning">Mangler vedlegg</span>
-    <span class="fs-badge" data-color="danger">Avslått</span>
-    <span class="fs-badge" data-color="neutral">Arkivert</span>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["badge"]} kode={`
+<span class="fs-badge">Under behandling</span>
+<span class="fs-badge" data-color="success">Innvilget</span>
+<span class="fs-badge" data-color="warning">Mangler vedlegg</span>
+<span class="fs-badge" data-color="danger">Avslått</span>
+<span class="fs-badge" data-color="neutral">Arkivert</span>
+`} />
 
-| `data-color` | Tokens | Når du bruker den |
-| --- | --- | --- |
-| *(utelatt)* | `interactive-background` / `interactive-main` | Nøytral informasjon, pågående tilstand |
-| `success` | `success-background` / `success-foreground` | Fullført, godkjent, aktiv |
-| `warning` | `warning-background` / `warning-foreground` | Krever oppmerksomhet, men er ikke en feil |
-| `danger` | `danger-background` / `danger-foreground` | Avslått, utløpt, kritisk |
-| `neutral` | `neutral-background` / `neutral-foreground` | Inaktiv, arkivert, ukjent |
+| `data-color` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Nøytral informasjon, pågående tilstand |
+| `success` | Fullført, godkjent, aktiv |
+| `warning` | Krever oppmerksomhet, men er ikke en feil |
+| `danger` | Avslått, utløpt, kritisk |
+| `neutral` | Inaktiv, arkivert, ukjent |
 
 ## I en liste
 
-Merket står nærmest alltid sammen med tekst som forklarer hva det hører til.
+<Eksempel stiler={["badge"]} layout="stabel" maxWidth="26rem" kode={`
+<ul style="list-style: none; margin: 0; padding: 0;">
+  <li style="display: flex; justify-content: space-between; padding-block: var(--size-2); border-bottom: 1px solid var(--semantic-divider-30);">
+    Faktura 2026-0481
+    <span class="fs-badge" data-color="success">Betalt</span>
+  </li>
+  <li style="display: flex; justify-content: space-between; padding-block: var(--size-2);">
+    Faktura 2026-0482
+    <span class="fs-badge" data-color="danger">Forfalt</span>
+  </li>
+</ul>
+`} />
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["badge"]} layout="stabel" maxWidth="26rem">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--size-4); padding-block: var(--size-2); border-bottom: 1px solid var(--semantic-divider-30);">
-        <span>Faktura 2026-0481</span>
-        <span class="fs-badge" data-color="success">Betalt</span>
-      </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--size-4); padding-block: var(--size-2);">
-        <span>Faktura 2026-0482</span>
-        <span class="fs-badge" data-color="danger">Forfalt</span>
-      </div>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <ul>
-      <li>
-        Faktura 2026-0481
-        <span class="fs-badge" data-color="success">Betalt</span>
-      </li>
-      <li>
-        Faktura 2026-0482
-        <span class="fs-badge" data-color="danger">Forfalt</span>
-      </li>
-    </ul>
-    ```
-  </TabItem>
-</Tabs>
+## Med TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+fs.badge({ color: "success" })
+// { class: "fs-badge", "data-color": "success" }
+```
+
+Se [Typesikker bruk](../../typesikker-bruk/) for mønsteret og vaktene.
 
 ## Tilgjengelighet
 
-- Fargen alene forteller ingenting til en skjermleser, og skiller ikke for alle seende heller. Teksten i merket må stå på egne bein: skriv «Avslått», ikke bare et rødt punkt.
-- Alle fem fargeparene er kontrollert mot WCAG AA, og en test i `badge.browser.test.ts` sier fra hvis en tokenendring bryter det.
-- Bruk `<span>` når merket står inni en tekstlinje, `<div>` når det står for seg selv.
-- Endrer merket seg mens brukeren ser på siden — for eksempel fra «Under behandling» til «Innvilget» — legg `role="status"` og `aria-live="polite"` på elementet rundt, så blir endringen lest opp.
+- Fargen alene sier ingenting til en skjermleser. Teksten må bære betydningen: «Avslått», ikke bare et rødt punkt.
+- `<span>` inni en tekstlinje, `<div>` når merket står alene.
+- Endrer merket seg mens siden står stille, legg `role="status"` og `aria-live="polite"` på elementet rundt.

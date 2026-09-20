@@ -3,15 +3,9 @@ title: Error Text
 description: Feilmelding under et skjemafelt. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import ErrorTextKoblet from "../../../demos/ErrorTextKoblet.astro"
-import ErrorTextVarianter from "../../../demos/ErrorTextVarianter.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-error-text` er meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører hjemme rett under feltet, ikke øverst på siden, slik at brukeren ser den samtidig som han ser hva som er feil.
-
-Skal teksten forklare hva feltet forventer før brukeren har gjort noe, er det [Help Text](../help-text/) du er ute etter.
-
-## Importer
+Meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører rett under feltet, ikke øverst på siden. Skal teksten forklare hva feltet forventer før brukeren har gjort noe, bruk [Help Text](../help-text/).
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -20,78 +14,41 @@ import "@fristil/designsystem/error-text.css"
 
 ## Varianter
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <ErrorTextVarianter />
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <p class="fs-error-text">
-      Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
-    </p>
-    <p class="fs-error-text" data-variant="warning">
-      Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.
-    </p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
+<p class="fs-error-text">Skriv en e-postadresse med krøllalfa, for eksempel ola&#64;eksempel.no.</p>
+<p class="fs-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
+`} />
 
-| `data-variant` | Når du bruker den |
+| `data-variant` | Brukes til |
 | --- | --- |
-| *(utelatt)* | Feil som stopper innsending. |
-| `warning` | Noe ser rart ut, men brukeren får lov til å fortsette. |
+| *(utelatt)* | Feil som stopper innsending |
+| `warning` | Noe ser rart ut, men brukeren får fortsette |
 
 ## Koblet til feltet
 
-Feilmeldingen må knyttes til feltet med `aria-describedby`, og feltet må merkes med `aria-invalid="true"`. Uten begge deler er feilen bare en rød setning som skjermleseren aldri kommer til.
+Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjermleseren, og `aria-describedby` for selve teksten.
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <ErrorTextKoblet />
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <label class="fs-label" for="epost">E-postadresse</label>
-    <input
-      class="fs-input"
-      id="epost"
-      type="email"
-      data-state="invalid"
-      aria-invalid="true"
-      aria-describedby="epost-feil"
-    />
-    <p class="fs-error-text" id="epost-feil">
-      Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no.
-    </p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<label class="fs-label" for="epost">E-postadresse</label>
+<input
+  class="fs-input"
+  id="epost"
+  type="email"
+  data-state="invalid"
+  aria-invalid="true"
+  aria-describedby="epost-feil"
+  value="ola&#64;"
+/>
+<p class="fs-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+`} />
 
-Tre ting må stemme samtidig: `data-state` på feltet for fargen, `aria-invalid` for skjermleseren, og `aria-describedby` for selve teksten. [Field](../field/) setter alle tre når du gir den `invalid` — det er grunnen til at den komponenten finnes.
+[Field](../field/) setter alle tre når du gir den `invalid` — det er grunnen til at den komponenten finnes.
 
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-fs.errorText({ variant: "warning" })
-// { class: "fs-error-text", "data-variant": "warning" }
-
-fs.errorText()
-// { class: "fs-error-text" } — "error" er standard
-```
-
-Verdier som kommer utenfra, validerer du først:
-
-```ts
-const variant = fs.errorText.isVariant(svar.variant) ? svar.variant : "error"
-
-fs.errorText({ variant })
-```
-
-De tre tingene som må stemme samtidig, gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) i én operasjon:
+## Med TypeScript
 
 ```tsx
+import { fs } from "@fristil/designsystem"
+
 const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
 <input {...fs.input({ type: "email" })} {...felt.control} />
@@ -100,16 +57,15 @@ const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
 `felt.error` inneholder `hidden` når feltet ikke er ugyldig, og feilmeldingen tas da heller ikke med i `aria-describedby` — en skjult melding skal ikke pekes på.
 
-## Slik skriver du feilmeldingen
+## Slik skriver du meldingen
 
-- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» bare bekrefter at noe gikk galt.
-- Ta med et eksempel på riktig verdi når formatet er uvanlig.
+- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.
+- Ta med et eksempel når formatet er uvanlig.
 - Ikke legg skylden på brukeren, og dropp utropstegnet.
-- Unngå begreper hentet rett fra koden. «Feltet kan ikke være tomt» er tydeligere enn «required constraint violation».
 
 ## Tilgjengelighet
 
-- Vis feilen når brukeren har forlatt feltet, ikke mens han skriver. En melding som dukker opp etter første tastetrykk rekker aldri å bli riktig.
-- Kommer feilmeldingen til syne mens siden ellers står stille, legg `role="alert"` på elementet, så leses den opp med én gang.
-- Sendes et skjema inn med flere feil, flytt fokus til det første feltet som feilet. Ellers må tastaturbrukere lete seg gjennom hele skjemaet for å finne problemet.
-- Fjern aldri feilmeldingen uten å fjerne `aria-invalid` samtidig. Da sitter skjermleseren igjen med et felt merket som ugyldig, uten noen forklaring.
+- Vis feilen når brukeren har forlatt feltet, ikke mens han skriver.
+- Dukker meldingen opp mens siden ellers står stille, legg `role="alert"` på elementet.
+- Sendes et skjema inn med flere feil, flytt fokus til det første som feilet.
+- Fjern aldri meldingen uten å fjerne `aria-invalid` samtidig.

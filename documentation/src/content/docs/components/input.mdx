@@ -1,14 +1,11 @@
 ---
 title: Input
-description: Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent — én klasse, ingen JavaScript.
+description: Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-input` gir `<input>` felles utseende, fokusmarkering og tilstander. Det er ren CSS på et vanlig input-element, så nettleserens egen validering, autofyll og tastaturhåndtering virker akkurat som før.
-
-## Importer
+Ren CSS på et vanlig `<input>`, så nettleserens egen validering, autofyll og tastaturhåndtering virker som før.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -17,88 +14,58 @@ import "@fristil/designsystem/input.css"
 
 ## Tilstander
 
-`data-state` sier hva valideringen har konkludert med. Utelater du attributtet, er feltet i normaltilstand.
+<Eksempel stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="epost">E-postadresse</label>
+<input class="fs-input" id="epost" type="email" placeholder="ola&#64;eksempel.no" />
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["input", "label"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" for="ex-standard">E-postadresse</label>
-      <input class="fs-input" id="ex-standard" type="email" placeholder="ola@eksempel.no" />
+<label class="fs-label" for="bekreft">Bekreft e-postadresse</label>
+<input class="fs-input" id="bekreft" type="email" data-state="success" value="ola&#64;eksempel.no" />
 
-      <label class="fs-label" for="ex-gyldig">Bekreft e-postadresse</label>
-      <input class="fs-input" id="ex-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
+<label class="fs-label" for="reserve">Reserve-e-post</label>
+<input class="fs-input" id="reserve" type="email" data-state="invalid" aria-invalid="true" value="ola&#64;" />
 
-      <label class="fs-label" for="ex-ugyldig">Reserve-e-post</label>
-      <input class="fs-input" id="ex-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
+<label class="fs-label" for="registrert">Registrert e-postadresse</label>
+<input class="fs-input" id="registrert" type="email" value="ola&#64;eksempel.no" disabled />
+`} />
 
-      <label class="fs-label" for="ex-laast">Registrert e-postadresse</label>
-      <input class="fs-input" id="ex-laast" type="email" value="ola@eksempel.no" disabled />
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <input class="fs-input" type="email" placeholder="ola@eksempel.no" />
-    <input class="fs-input" type="email" data-state="success" />
-    <input class="fs-input" type="email" data-state="invalid" aria-invalid="true" />
-    <input class="fs-input" type="email" disabled />
-    ```
-  </TabItem>
-</Tabs>
+| `data-state` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Normaltilstand |
+| `invalid` | Valideringen har feilet |
+| `success` | Verdien er bekreftet gyldig |
 
-`data-state="invalid"` er bare farge. Skjermlesere trenger `aria-invalid="true"` i tillegg — eller [Field](../field/), som setter begge for deg.
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg — eller [Field](../field/), som setter begge.
 
 ## Dato og klokkeslett
 
-`data-variant` legger et ikon inne i feltet for dato- og tidstyper. Nettleserens egen velger beholdes som den er.
+<Eksempel stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="dato">Reisedato</label>
+<input class="fs-input" id="dato" data-variant="date" type="date" value="2026-05-31" />
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["input", "label"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" for="ex-dato">Reisedato</label>
-      <input class="fs-input" id="ex-dato" data-variant="date" type="date" value="2026-05-31" />
-
-      <label class="fs-label" for="ex-tid">Avreisetidspunkt</label>
-      <input class="fs-input" id="ex-tid" data-variant="time" type="time" value="14:30" />
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <input class="fs-input" data-variant="date" type="date" />
-    <input class="fs-input" data-variant="time" type="time" />
-    <input class="fs-input" data-variant="datetime-local" type="datetime-local" />
-    ```
-  </TabItem>
-</Tabs>
+<label class="fs-label" for="tid">Avreisetidspunkt</label>
+<input class="fs-input" id="tid" data-variant="time" type="time" value="14:30" />
+`} />
 
 :::caution[`data-variant` og `type` må være like]
-Ikonet styres av `data-variant`, mens velgeren som åpnes styres av `type`. Setter du bare den ene, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
+Ikonet styres av `data-variant`, velgeren av `type`. Setter du bare den ene, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
 
-```html
-<!-- Riktig -->
-<input class="fs-input" data-variant="date" type="date" />
-
-<!-- Feil: ikonet vises, men åpner ingenting -->
-<input class="fs-input" data-variant="date" type="text" />
-```
+`fs.input({ type: "date" })` setter begge, og fjerner feilen helt.
 :::
 
-Støttede verdier for `data-variant`: `text`, `password`, `email`, `number`, `date`, `datetime-local`, `week`, `month`, `tel`, `url`, `search` og `time`. Bare `date`, `time` og `datetime-local` påvirker utseendet — resten finnes for at TypeScript-hjelperen skal kunne sette `type` for deg.
+Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene finnes for at TypeScript-hjelperen skal kunne sette `type` for deg.
 
-## Hvilken komponent skal du bruke til dato?
+## Hvilken komponent til dato?
 
 | Situasjon | Komponent |
 | --- | --- |
 | Nettleserens egen datovelger holder | **Input** med `type="date"` |
 | Du trenger et kalenderpanel du styrer selv | [Calendar](../calendar/) |
-| Du vil ha ledetekst, hjelpetekst, feilmelding og kalender ferdig koblet | [Date Field](../date-field/) |
+| Du vil ha felt, ledetekst, hjelpetekst og kalender ferdig koblet | [Date Field](../date-field/) |
 
-## TypeScript
+## Med TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
-
-fs.input({ type: "email" })
-// { class: "fs-input", type: "email" }
 
 fs.input({ type: "date" })
 // { class: "fs-input", type: "date", "data-variant": "date" }
@@ -107,32 +74,12 @@ fs.input({ state: "invalid" })
 // { class: "fs-input", type: "text", "data-state": "invalid", "aria-invalid": "true" }
 ```
 
-Dette løser de to fellene på denne siden. `type` styrer både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Og `state: "invalid"` setter `aria-invalid` sammen med fargen, så skjermleseren aldri blir glemt.
+Én verdi styrer både HTML-typen og ikonvarianten, og `state` setter `aria-invalid` sammen med fargen. Begge fellene over forsvinner.
 
-Resten av elementet eier du:
-
-```ts
-<input {...fs.input({ type: "email", state })} id="epost" name="epost" required />
-```
-
-## Verdier som kommer utenfra
-
-Kommer tilstand eller type fra et API, en URL-parameter eller `localStorage`, er det vanlige strenger. Valider dem før de treffer skjermen:
-
-```ts
-const svar = await hentFeltoppsett()
-
-const state = fs.input.isState(svar.state) ? svar.state : "default"
-const type = fs.input.isType(svar.type) ? svar.type : "text"
-
-fs.input({ type, state })
-```
-
-Er `svar.type` for eksempel `"birthday"`, faller den tilbake til `"text"` i stedet for å sette en `type` nettleseren ikke kjenner.
+Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Tilgjengelighet
 
-- Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en. `placeholder` er ikke en erstatning — den forsvinner idet brukeren begynner å skrive.
-- Sett `aria-invalid="true"` sammen med `data-state="invalid"`, og koble feilmeldingen til feltet med `aria-describedby`.
-- Bruk riktig `type` (`email`, `tel`, `url`, `number`). Det bestemmer hvilket tastatur mobilbrukere får opp, og hva nettleseren tilbyr av autofyll.
-- Sett `autocomplete` på felt som spør om personopplysninger, for eksempel `autocomplete="email"`. Det sparer brukeren for skriving og reduserer feil.
+- Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning — den forsvinner idet brukeren skriver.
+- Bruk riktig `type`. Det bestemmer mobiltastaturet og hva nettleseren tilbyr av autofyll.
+- Sett `autocomplete` på felt som spør om personopplysninger, for eksempel `autocomplete="email"`.

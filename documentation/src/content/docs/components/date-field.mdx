@@ -6,7 +6,7 @@ description: Ferdig datofelt med ledetekst, hjelpetekst, feilmelding og kalender
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 
-`<fs-date-field>` er et komplett datofelt. Den bygger ledetekst, tekstfelt, hjelpetekst, feilmelding og [Calendar](../calendar/) selv, og holder dem i synk. Du sender inn attributter — ingen HTML å sette sammen.
+Et komplett datofelt: ledetekst, tekstfelt, hjelpetekst, feilmelding og [Calendar](../calendar/), bygget og holdt i synk av komponenten. Du sender inn attributter.
 
 ## Hvilken komponent skal du bruke til dato?
 
@@ -16,7 +16,7 @@ import DateFieldDemo from "../../../components/DateFieldDemo.astro"
 | Du trenger et kalenderpanel du styrer selv | [Calendar](../calendar/) |
 | Du vil ha felt, ledetekst, hjelpetekst og kalender ferdig koblet | **Date Field** |
 
-Dette er standardvalget for datoer i skjema. Gå til de to andre først når du vet hvorfor dette ikke passer.
+Standardvalget for datoer i skjema.
 
 ## Kom i gang
 
@@ -46,22 +46,17 @@ defineFsDateField()
 
 Prøv gjerne å skrive `32-06-2026` i feltet over og klikke utenfor. Da ser du hvordan feilmeldingen slår inn.
 
-## To formater, og hvorfor
+## To formater
 
-Komponenten holder to representasjoner av datoen samtidig:
+`value` er alltid ISO — `ÅÅÅÅ-MM-DD`. Feltet viser `DD-MM-ÅÅÅÅ`. Komponenten oversetter begge veier, så du forholder deg bare til ISO.
 
-- **`value` er alltid ISO** — `ÅÅÅÅ-MM-DD`. Det er dette du leser og skriver fra koden, og det som sendes med skjemaet.
-- **Feltet viser `DD-MM-ÅÅÅÅ`** — måten datoer skrives på norsk.
-
-Komponenten oversetter mellom dem begge veier. Skriver brukeren `31-05-2026`, blir `value` til `2026-05-31`. Velger han 31. mai i kalenderen, står det `31-05-2026` i feltet. Du forholder deg bare til ISO.
-
-Det betyr også at du aldri skal parse teksten i feltet selv. Les `value`.
+Parse aldri teksten i feltet selv. Les `value`.
 
 ## Validering
 
-Komponenten sjekker på egen hånd om det brukeren har skrevet er en dato som finnes, og gjør det når feltet mister fokus — ikke mens han skriver. Er datoen umulig, som `32-06-2026`, settes feltet i ugyldig tilstand og `error-text` vises.
+Komponenten sjekker om datoen finnes, når feltet mister fokus. Er den umulig, som `32-06-2026`, vises `error-text`.
 
-Den kontrollerer altså bare at datoen er ekte. Alt annet — at den er i fortiden, at den er innenfor et intervall, at den er en virkedag — er din regel, og settes med `invalid`-attributtet:
+Alt annet — fortid, intervall, virkedag — er din regel, satt med `invalid`:
 
 ```js
 const felt = document.getElementById("reisedato")
@@ -72,7 +67,7 @@ felt.addEventListener("change", () => {
 })
 ```
 
-Siden `value` er ISO, kan datoer sammenlignes som strenger. `"2026-05-31" < "2026-06-01"` er sant.
+ISO lar datoer sammenlignes som strenger: `"2026-05-31" < "2026-06-01"` er sant.
 
 ## I en app
 
@@ -272,7 +267,7 @@ Begge bobler. Les alltid `element.value` — den er ISO uansett hvordan datoen b
 | Piltaster i panelet | Flytter mellom dagene |
 | `Escape` i panelet | Lukker panelet |
 
-Velger brukeren en dag i panelet, flyttes fokus tilbake til tekstfeltet automatisk. Da kan han rette datoen videre uten å ta hånden fra tastaturet.
+Velges en dag i panelet, går fokus tilbake til tekstfeltet.
 
 ## Tilgjengelighet
 

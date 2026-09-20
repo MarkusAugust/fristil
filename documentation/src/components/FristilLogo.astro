@@ -1,20 +1,20 @@
 ---
 export interface Props {
-  size?: "sm" | "md" | "lg";
-  className?: string;
+  size?: "sm" | "md" | "lg"
+  className?: string
 }
 
-const { size = "md", className = "" } = Astro.props;
+const { size = "md", className = "" } = Astro.props
 
 const sizeMap = {
   sm: { svg: 40, gap: "12px", textSize: "1.4rem", subtitleSize: "0.65rem" },
   md: { svg: 60, gap: "16px", textSize: "2.2rem", subtitleSize: "0.8rem" },
   lg: { svg: 80, gap: "18px", textSize: "3rem", subtitleSize: "1rem" },
-};
+}
 
-const s = sizeMap[size];
-const gradientId = `fristilGradient-${size}`;
-const glowId = `fristilGlow-${size}`;
+const s = sizeMap[size]
+const gradientId = `fristilGradient-${size}`
+const glowId = `fristilGlow-${size}`
 ---
 
 <div

@@ -5,7 +5,7 @@ description: Hva Fristil er, hvordan komponentene er delt inn, og hvorfor de er 
 
 Fristil er et designsystem som ikke krever et bestemt rammeverk. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet ditt React, Astro, Datastar eller ingenting i det hele tatt, er det samme system og samme API.
 
-Bakgrunnen er enkel: et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
 ## Tre kategorier
 
@@ -19,7 +19,7 @@ En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
-Varianter styres med `data-`-attributter. Dette dekker knapper, lenker, merker, ledetekster og skjemafelt — alt der utfordringen er utseende, ikke oppførsel.
+Varianter styres med `data-`-attributter. Dekker knapper, lenker, merker, ledetekster og skjemafelt — alt der utfordringen er utseende, ikke oppførsel.
 
 ### ramme
 
@@ -34,7 +34,7 @@ En web component du legger dine egne HTML-elementer inn i. Den lager ingen marku
 </fs-field>
 ```
 
-`<fs-field>` setter `for`, `id`, `aria-describedby` og `aria-invalid` på elementene over. Du eier strukturen; komponenten eier koblingen mellom delene. Siden elementene blir liggende i vanlig DOM, finner `FormData`, testverktøy og skjemabiblioteker dem som før.
+Komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid`. Du eier strukturen, den eier koblingen. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
 
 ### sammensatt
 
@@ -49,31 +49,29 @@ En web component som bygger alt selv. Du sender inn attributter.
 ></fs-date-field>
 ```
 
-Her er det ingen HTML å sette opp. Til gjengjeld bestemmer du mindre over strukturen. Kategorien er for komponenter der interaksjonen er det vanskelige — et datofelt som må holde tekst og kalender i synk, en dialog, en kombinert kontroll.
+Ingen HTML å sette opp, men du bestemmer mindre over strukturen. For komponenter der interaksjonen er det vanskelige — et datofelt som holder tekst og kalender i synk, en dialog.
 
 ## Hvorfor tre og ikke én
 
-De fleste designsystemer har én komponentmodell for alt. Da havner du i én av to grøfter: enten drar en knapp med seg like mye maskineri som en datovelger, eller så får datovelgeren like lite struktur som en knapp.
+De fleste designsystemer har én komponentmodell for alt. Da drar enten en knapp med seg like mye maskineri som en datovelger, eller datovelgeren får like lite struktur som en knapp.
 
-Inndelingen betyr at prisen står i forhold til problemet:
+Her står prisen i forhold til problemet:
 
 - En knapp koster én CSS-klasse.
 - Et skjemafelt koster en web component som gjør tilgjengelighetskoblingen, men lar deg beholde HTML-en.
 - Et datofelt koster en komponent som eier alt, fordi det er den eneste måten å holde flere deler i synk på.
 
-Det er også lettere å ta i bruk gradvis. Du kan begynne med `tokens.css` og noen knapper, og hente inn resten når du trenger det.
+Det gjør det også lett å ta i bruk gradvis: begynn med `tokens.css` og noen knapper.
 
 ## Hvor Shadow DOM passer inn
 
-Shadow DOM er et valg per komponent, ikke en egen kategori.
+Shadow DOM er et valg per komponent, ikke en egen kategori. `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM fordi skjemaelementene må være synlige utenfra. `<fs-calendar>` skjermes fordi kalenderpanelet har mange interne elementer ingen app bør style ved et uhell.
 
-`<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, fordi skjemaelementene må være synlige for `FormData`, valideringsbiblioteker og testverktøy. `<fs-calendar>` bruker Shadow DOM, fordi kalenderpanelet har mange interne elementer som ingen app bør style ved et uhell.
-
-Regelen er: skjemafelt holder seg i vanlig DOM, innkapslede widgets kan skjermes.
+Regelen: skjemafelt i vanlig DOM, innkapslede widgets kan skjermes.
 
 ## Design tokens
 
-Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`. De fungerer i all CSS, uavhengig av rammeverk og byggverktøy:
+Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`, og fungerer i all CSS:
 
 ```css
 .min-komponent {
@@ -83,11 +81,11 @@ Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`. D
 }
 ```
 
-De samme verdiene finnes som TypeScript-konstanter, og som en Tailwind-forhåndsinnstilling for dem som bruker Tailwind. Se [Design tokens](../design-tokens/).
+De samme verdiene finnes som TypeScript-konstanter og som Tailwind-forhåndsinnstilling. Se [Design tokens](../design-tokens/).
 
 ## Tailwind er valgfritt
 
-Fristil forutsetter ikke Tailwind, men står ikke i veien for det heller. Bruker du Tailwind i dag, kan du la det styre oppsettet og la Fristil styre komponentene:
+Fristil forutsetter ikke Tailwind, men står ikke i veien. La Tailwind styre oppsettet og Fristil styre komponentene:
 
 ```html
 <section class="mx-auto max-w-3xl p-6">
@@ -99,7 +97,7 @@ Fristil forutsetter ikke Tailwind, men står ikke i veien for det heller. Bruker
 </section>
 ```
 
-Vil du at Tailwind-klassene skal bruke Fristils egne verdier, finnes `fristilPreset`. Det er en bekvemmelighet, ikke et krav — `var()` fungerer uansett.
+Skal Tailwind-klassene bruke Fristils verdier, finnes `fristilPreset`. En bekvemmelighet, ikke et krav.
 
 ## Videre
 

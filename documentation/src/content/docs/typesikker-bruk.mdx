@@ -3,15 +3,13 @@ title: Typesikker bruk
 description: Ett navnerom, én form. Autofullføring på hele systemet, uten å binde deg til et rammeverk.
 ---
 
-Komponentene styres med klasser og dataattributter. Det gjør dem uavhengige av rammeverk, men det betyr også at alt er strenger:
+Klasser og dataattributter gjør komponentene rammeverksuavhengige, men alt er strenger:
 
 ```html
 <button class="fs-button" data-variant="secundary">Lagre utkast</button>
 ```
 
-Knappen over får primærstilen. Ingen feilmelding, ingen advarsel — bare en variant som stille aldri ble brukt.
-
-Derfor finnes `fs`.
+Knappen får primærstilen. Ingen feilmelding — bare en variant som stille aldri ble brukt. Derfor finnes `fs`.
 
 ## Én inngang
 
@@ -24,9 +22,9 @@ import { fs } from "@fristil/designsystem"
 <a {...fs.link()} href="/kvittering">Se kvittering</a>
 ```
 
-Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle, så du lærer den én gang.
+Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet — samme form for alle.
 
-Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et virker i React, Astro og ren HTML — alle kan spre et objekt inn i et element.
+Returverdiene er vanlige objekter. Derfor virker samme API i React, Astro, Datastar og ren HTML.
 
 :::note[Bruker du React?]
 Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
@@ -49,7 +47,7 @@ fs.button({ variant: "danger" })
 // { class: "fs-button", "data-variant": "danger" }
 ```
 
-Du sier alltid hvilken variant du vil ha, og funksjonen vet når attributtet kan utelates. Det er én ting mindre å holde styr på.
+Du sier alltid hvilken variant du vil ha; funksjonen vet når attributtet kan utelates.
 
 ## Lovlige verdier og vakter ligger på komponenten
 
@@ -61,9 +59,9 @@ fs.button.isVariant("ghost")  // true
 fs.button.isVariant("gost")   // false
 ```
 
-Skriv `fs.button.` og editoren viser både variantene og vakten. Samme mønster overalt: `fs.badge.colors` og `fs.badge.isColor`, `fs.input.types` og `fs.input.isType`.
+Samme mønster overalt: `fs.badge.colors` og `fs.badge.isColor`, `fs.input.types` og `fs.input.isType`.
 
-Kommer verdien fra et API, en URL-parameter eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vakten gjør den om til en gyldig verdi eller en trygg reserve:
+Kommer verdien fra et API, en URL eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vakten gir en gyldig verdi eller en trygg reserve:
 
 ```ts
 const svar = await hentKnappeoppsett()
@@ -72,11 +70,11 @@ const variant = fs.button.isVariant(svar.variant) ? svar.variant : "primary"
 fs.button({ variant })
 ```
 
-Etter `isVariant(...)` vet TypeScript at verdien er en `ButtonVariant`, ikke bare en `string`.
+Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
 
 ## `fs.input` kan ikke komme i utakt
 
-Skriver du et datofelt for hånd, må `type` og `data-variant` stemme overens — ellers får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
+Skrevet for hånd må `type` og `data-variant` stemme overens, ellers skjer ingenting når brukeren trykker på ikonet.
 
 ```ts
 fs.input({ type: "date" })
@@ -86,9 +84,7 @@ fs.input({ type: "email" })
 // { class: "fs-input", type: "email" } — e-post har ikke noe ikon
 ```
 
-Én verdi styrer begge. Feilen er ikke lenger mulig å gjøre.
-
-Det samme gjelder tilstand: `state: "invalid"` gir både `data-state` for fargen og `aria-invalid` for skjermleseren. To ting som alltid må følges ad, satt ett sted.
+Én verdi styrer begge. Det samme gjelder tilstand: `state: "invalid"` gir både `data-state` og `aria-invalid`.
 
 ## Ett begrep, én betydning
 
@@ -111,7 +107,7 @@ fs.select({ state: tilstand })
 
 ## `fs.field` kobler et helt felt
 
-Et felt med ledetekst, hjelpetekst og feilmelding krever fem koblinger som alle må stemme samtidig. `fs.field` regner dem ut for deg:
+Fem koblinger må stemme samtidig. `fs.field` regner dem ut:
 
 ```ts
 const felt = fs.field({
@@ -132,12 +128,12 @@ Du får `for`, `id`, `aria-describedby`, `aria-invalid` og `data-state` ferdig u
 
 Legg merke til at `fs.input` bare får `type`. Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke — sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
 
-Legg merke til én detalj: feilmeldingen tas med i `aria-describedby` **bare når feltet faktisk er ugyldig**. Ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
+Feilmeldingen tas med i `aria-describedby` **bare når feltet er ugyldig** — ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
 
 :::note[Samme kjerne som `<fs-field>`]
-[Field](../components/field/) gjør nøyaktig den samme utregningen, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted i systemet og kan ikke gå fra hverandre.
+[Field](../components/field/) gjør samme utregning, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted.
 
-Velg `<fs-field>` når du vil skrive vanlig HTML og la komponenten koble den. Velg `fs.field` når du bygger markupen i et rammeverk og heller vil ha koblingen som data.
+Velg `<fs-field>` for vanlig HTML, `fs.field` når du bygger markupen selv.
 :::
 
 ## I praksis: en gjenbrukbar knapp i React
@@ -156,20 +152,20 @@ export function Knapp({ variant, ...rest }: Props) {
 }
 ```
 
-Tolv linjer. Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
+Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
 
-`ComponentProps<"button">` tar med `ref`, og siden React 19 er `ref` en vanlig prop. Den følger derfor med gjennom `{...rest}` uten `forwardRef`. (De eldre variantene `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.)
+`ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
 
 ## Web-komponentene
 
-`fs` dekker CSS-komponentene. De egendefinerte elementene — `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` — er HTML-tagger, og TypeScript kjenner dem ikke uten videre. Importer typene én gang i en `.d.ts`-fil:
+TypeScript kjenner ikke `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` uten videre. Importer typene én gang i en `.d.ts`-fil:
 
 ```ts
 // src/fristil.d.ts
 import "@fristil/designsystem/react-jsx"
 ```
 
-Da får attributtene autofullføring og sjekk, også de med bindestrek:
+Da får attributtene autofullføring og sjekk:
 
 ```tsx
 <fs-field required-marker="text" />      // ok
@@ -182,23 +178,21 @@ Ren HTML, Astro og Datastar trenger ikke dette — der er `<fs-field>` bare en H
 
 ## Det typene ikke fanger
 
-To ting er verdt å vite:
+**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer — returverdien er bare et objekt med HTML-attributter.
 
-**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer. Returverdien er bare et objekt med HTML-attributter, og TypeScript har ingen grunn til å nekte.
-
-**Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen av lovlige typer, ikke `"date"`. Det spiller sjelden noen rolle siden du sprer objektet videre.
+**Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen, ikke `"date"`.
 
 ## Når du kan hoppe over det
 
-`fs` er valgfritt. Skriver du HTML for hånd, i en mal uten TypeScript, eller i et oppsett uten byggesteg, er dette like gyldig:
+`fs` er valgfritt. Uten TypeScript eller byggesteg er dette like gyldig:
 
 ```html
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
-Resultatet er identisk. Forskjellen er bare hvor tidlig du får vite at du skrev `secundary`.
+Resultatet er identisk. Forskjellen er hvor tidlig du får vite at du skrev `secundary`.
 
-Vil du bare ha én komponent, finnes de som egne inngangspunkter også:
+Vil du bare ha én komponent:
 
 ```ts
 import { button } from "@fristil/designsystem/button"
