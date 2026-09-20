@@ -1,0 +1,16 @@
+@layer fristil {
+  /* Tekst som bare skjermlesere skal få. `display: none` og
+     `visibility: hidden` fjerner elementet også for dem, så innholdet må bli
+     stående i dokumentet og krympes bort visuelt i stedet. */
+  .fs-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

@@ -277,6 +277,14 @@ Begge bobler. Les alltid `element.value`, som er ISO uansett hvordan datoen ble 
 }
 ```
 
+| Variabel | Standard |
+| --- | --- |
+| `--fs-date-field-icon-size` | `var(--size-7)` |
+| `--fs-date-field-icon-radius` | `var(--size-1)` |
+| `--fs-date-field-icon-space` | `var(--size-10)` |
+
+`--fs-date-field-icon-space` er plassen ikonet får inne i tekstfeltet. Gjør du ikonet større, må den følge med, ellers legger ikonet seg oppå teksten.
+
 Kalenderen den åpner er derimot en `<fs-calendar>` med Shadow DOM. Delene inni den nås gjennom datofeltet:
 
 ```css

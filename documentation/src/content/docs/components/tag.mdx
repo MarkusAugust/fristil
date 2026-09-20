@@ -1,0 +1,80 @@
+---
+title: Tag
+description: Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+En merkelapp merker innhold: emneord på en artikkel, valgte filtre over en liste. Sier lappen hvilken tilstand noe er i, som «Innvilget» eller «Forfalt», er [Badge](../badge/) riktig i stedet.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/tag.css"
+```
+
+## Varianter
+
+<Eksempel stiler={["tag"]} kode={`
+<span class="fs-tag">Bostøtte</span>
+<span class="fs-tag" data-variant="filled">Barnehage</span>
+<span class="fs-tag" aria-disabled="true">Arkivert</span>
+`} />
+
+| `data-variant` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Omriss. Standardvalget. |
+| `filled` | Dempet flate, når lappene ligger på en lys flate |
+
+## Filtre som kan slås av og på
+
+<Eksempel stiler={["tag"]} kode={`
+<button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
+<button class="fs-tag" data-selectable aria-pressed="false" type="button">Under behandling</button>
+<button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+`} />
+
+`data-selectable` gir hover og fokusmarkering. Elementet må være en `<button>`, og `aria-pressed` setter du selv:
+
+```html
+<script type="module">
+  for (const lapp of document.querySelectorAll(".fs-tag[data-selectable]")) {
+    lapp.addEventListener("click", () => {
+      const valgt = lapp.getAttribute("aria-pressed") === "true"
+      lapp.setAttribute("aria-pressed", String(!valgt))
+    })
+  }
+</script>
+```
+
+`aria-pressed` er det som gjør at skjermleseren sier «valgt» eller «ikke valgt». Fargen alene sier ingenting.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const lapp = document.createElement("button")
+lapp.type = "button"
+
+fs.setAttributes(lapp, fs.tag({ selectable: true }))
+lapp.setAttribute("aria-pressed", "false")
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-tag` | Merkelappen. Varianten kommer fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-tag-padding` | `var(--size-0-5) var(--size-2)` |
+| `--fs-tag-radius` | `var(--size-1)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- En lapp som ikke kan trykkes på skal ikke se ut som om den kan det. Bruk `data-selectable` bare på ekte knapper.
+- Har du mange filtre, legg dem i en liste med en overskrift som sier hva de filtrerer.
+- Skal lappen kunne fjernes, lag en egen knapp inni med tekst som sier hva som fjernes: «Fjern filteret Innvilget», ikke bare et kryss.

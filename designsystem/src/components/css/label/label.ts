@@ -30,7 +30,7 @@ export type LabelAttributes = {
  * Attributtene for en ledetekst.
  *
  * Markeringen er bare visuell, så sett `required` på selve feltet i tillegg,
- * ellers får skjermleseren ikke vite at det må fylles result.
+ * ellers får skjermleseren ikke vite at det må fylles ut.
  *
  * ```ts
  * <label {...label({ required: "symbol" })} htmlFor="epost">E-postadresse</label>

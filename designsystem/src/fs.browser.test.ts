@@ -175,3 +175,42 @@ describe("fs.field sammen med feltfunksjonene", () => {
     expect(felt.control["aria-invalid"]).toBeUndefined()
   })
 })
+
+describe("formen på navnerommet", () => {
+  /** Byggefunksjonene, altså alt i `fs` som kan kalles uten argumenter. */
+  const byggere = Object.entries(fs).filter(
+    ([navn, verdi]) =>
+      typeof verdi === "function" &&
+      navn !== "setAttributes" &&
+      navn !== "isState" &&
+      navn !== "isMarker" &&
+      navn !== "field",
+  ) as [string, () => Record<string, unknown>][]
+
+  it("har byggere å kontrollere", () => {
+    expect(byggere.length).toBeGreaterThan(20)
+  })
+
+  it.each(
+    byggere,
+  )("fs.%s() gir en fs-prefikset klasse uten argumenter", (_navn, bygger) => {
+    const attributter = bygger()
+
+    expect(typeof attributter.class).toBe("string")
+    for (const klasse of String(attributter.class).split(" ")) {
+      expect(klasse.startsWith("fs-")).toBe(true)
+    }
+  })
+
+  it.each(
+    byggere,
+  )("fs.%s() setter ingen tomme attributter", (_navn, bygger) => {
+    const tomme = Object.entries(bygger())
+      .filter(([, verdi]) => verdi === undefined)
+      .map(([navn]) => navn)
+
+    // Et attributt med verdien undefined blir «undefined» som streng i maler
+    // som skriver ut attributtene bokstavelig, som Astro og ren HTML.
+    expect(tomme).toEqual([])
+  })
+})

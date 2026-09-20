@@ -2,6 +2,9 @@
   "name": "@fristil/designsystem",
   "version": "0.1.0",
   "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,9 +13,21 @@
       "types": "./dist/index.d.ts"
     },
     "./tokens.css": "./src/tokens/tokens.css",
-    "./utilities.css": "./src/tokens/utilities.css",
     "./button.css": "./src/components/css/button/button.css",
     "./link.css": "./src/components/css/link/link.css",
+    "./sr-only.css": "./src/components/css/sr-only/sr-only.css",
+    "./file-upload.css": "./src/components/css/file-upload/file-upload.css",
+    "./popover.css": "./src/components/ramme/popover/popover.css",
+    "./toast.css": "./src/components/frittstaende/toast/toast.css",
+    "./suggestion.css": "./src/components/frittstaende/suggestion/suggestion.css",
+    "./checkbox.css": "./src/components/css/checkbox/checkbox.css",
+    "./radio.css": "./src/components/css/radio/radio.css",
+    "./switch.css": "./src/components/css/switch/switch.css",
+    "./fieldset.css": "./src/components/css/fieldset/fieldset.css",
+    "./alert.css": "./src/components/css/alert/alert.css",
+    "./card.css": "./src/components/css/card/card.css",
+    "./divider.css": "./src/components/css/divider/divider.css",
+    "./spinner.css": "./src/components/css/spinner/spinner.css",
     "./badge.css": "./src/components/css/badge/badge.css",
     "./label.css": "./src/components/css/label/label.css",
     "./input.css": "./src/components/css/input/input.css",
@@ -21,6 +36,8 @@
     "./help-text.css": "./src/components/css/help-text/help-text.css",
     "./error-text.css": "./src/components/css/error-text/error-text.css",
     "./field.css": "./src/components/ramme/field/field.css",
+    "./tabs.css": "./src/components/ramme/tabs/tabs.css",
+    "./error-summary.css": "./src/components/ramme/error-summary/error-summary.css",
     "./date-field.css": "./src/components/frittstaende/date-field/date-field.css",
     "./label": {
       "import": "./dist/components/css/label/label.js",
@@ -54,6 +71,14 @@
       "import": "./dist/components/ramme/field/fs-field.js",
       "types": "./dist/components/ramme/field/fs-field.d.ts"
     },
+    "./tabs": {
+      "import": "./dist/components/ramme/tabs/fs-tabs.js",
+      "types": "./dist/components/ramme/tabs/fs-tabs.d.ts"
+    },
+    "./error-summary": {
+      "import": "./dist/components/ramme/error-summary/fs-error-summary.js",
+      "types": "./dist/components/ramme/error-summary/fs-error-summary.d.ts"
+    },
     "./date-field": {
       "import": "./dist/components/frittstaende/date-field/fs-date-field.js",
       "types": "./dist/components/frittstaende/date-field/fs-date-field.d.ts"
@@ -66,10 +91,7 @@
       "import": "./dist/tokens/tokens.js",
       "types": "./dist/tokens/tokens.d.ts"
     },
-    "./tailwind": {
-      "import": "./dist/tailwind/preset.js",
-      "types": "./dist/tailwind/preset.d.ts"
-    },
+    "./tailwind.css": "./src/tailwind/tailwind.css",
     "./badge": {
       "import": "./dist/components/css/badge/badge.js",
       "types": "./dist/components/css/badge/badge.d.ts"
@@ -77,6 +99,58 @@
     "./link": {
       "import": "./dist/components/css/link/link.js",
       "types": "./dist/components/css/link/link.d.ts"
+    },
+    "./sr-only": {
+      "import": "./dist/components/css/sr-only/sr-only.js",
+      "types": "./dist/components/css/sr-only/sr-only.d.ts"
+    },
+    "./file-upload": {
+      "import": "./dist/components/css/file-upload/file-upload.js",
+      "types": "./dist/components/css/file-upload/file-upload.d.ts"
+    },
+    "./popover": {
+      "import": "./dist/components/ramme/popover/fs-popover.js",
+      "types": "./dist/components/ramme/popover/fs-popover.d.ts"
+    },
+    "./toast": {
+      "import": "./dist/components/frittstaende/toast/fs-toast.js",
+      "types": "./dist/components/frittstaende/toast/fs-toast.d.ts"
+    },
+    "./suggestion": {
+      "import": "./dist/components/frittstaende/suggestion/fs-suggestion.js",
+      "types": "./dist/components/frittstaende/suggestion/fs-suggestion.d.ts"
+    },
+    "./checkbox": {
+      "import": "./dist/components/css/checkbox/checkbox.js",
+      "types": "./dist/components/css/checkbox/checkbox.d.ts"
+    },
+    "./radio": {
+      "import": "./dist/components/css/radio/radio.js",
+      "types": "./dist/components/css/radio/radio.d.ts"
+    },
+    "./switch": {
+      "import": "./dist/components/css/switch/switch.js",
+      "types": "./dist/components/css/switch/switch.d.ts"
+    },
+    "./fieldset": {
+      "import": "./dist/components/css/fieldset/fieldset.js",
+      "types": "./dist/components/css/fieldset/fieldset.d.ts"
+    },
+    "./alert": {
+      "import": "./dist/components/css/alert/alert.js",
+      "types": "./dist/components/css/alert/alert.d.ts"
+    },
+    "./card": {
+      "import": "./dist/components/css/card/card.js",
+      "types": "./dist/components/css/card/card.d.ts"
+    },
+    "./divider": {
+      "import": "./dist/components/css/divider/divider.js",
+      "types": "./dist/components/css/divider/divider.d.ts"
+    },
+    "./spinner": {
+      "import": "./dist/components/css/spinner/spinner.js",
+      "types": "./dist/components/css/spinner/spinner.d.ts"
     },
     "./shared": {
       "import": "./dist/components/css/shared.js",
@@ -97,28 +171,105 @@
     "./dom": {
       "import": "./dist/dom.js",
       "types": "./dist/dom.d.ts"
+    },
+    "./table.css": "./src/components/css/table/table.css",
+    "./table": {
+      "import": "./dist/components/css/table/table.js",
+      "types": "./dist/components/css/table/table.d.ts"
+    },
+    "./list.css": "./src/components/css/list/list.css",
+    "./list": {
+      "import": "./dist/components/css/list/list.js",
+      "types": "./dist/components/css/list/list.d.ts"
+    },
+    "./tag.css": "./src/components/css/tag/tag.css",
+    "./tag": {
+      "import": "./dist/components/css/tag/tag.js",
+      "types": "./dist/components/css/tag/tag.d.ts"
+    },
+    "./avatar.css": "./src/components/css/avatar/avatar.css",
+    "./avatar": {
+      "import": "./dist/components/css/avatar/avatar.js",
+      "types": "./dist/components/css/avatar/avatar.d.ts"
+    },
+    "./skeleton.css": "./src/components/css/skeleton/skeleton.css",
+    "./skeleton": {
+      "import": "./dist/components/css/skeleton/skeleton.js",
+      "types": "./dist/components/css/skeleton/skeleton.d.ts"
+    },
+    "./breadcrumbs.css": "./src/components/css/breadcrumbs/breadcrumbs.css",
+    "./breadcrumbs": {
+      "import": "./dist/components/css/breadcrumbs/breadcrumbs.js",
+      "types": "./dist/components/css/breadcrumbs/breadcrumbs.d.ts"
+    },
+    "./pagination.css": "./src/components/css/pagination/pagination.css",
+    "./pagination": {
+      "import": "./dist/components/css/pagination/pagination.js",
+      "types": "./dist/components/css/pagination/pagination.d.ts"
+    },
+    "./skip-link.css": "./src/components/css/skip-link/skip-link.css",
+    "./skip-link": {
+      "import": "./dist/components/css/skip-link/skip-link.js",
+      "types": "./dist/components/css/skip-link/skip-link.d.ts"
+    },
+    "./accordion.css": "./src/components/css/accordion/accordion.css",
+    "./accordion": {
+      "import": "./dist/components/css/accordion/accordion.js",
+      "types": "./dist/components/css/accordion/accordion.d.ts"
+    },
+    "./dialog.css": "./src/components/css/dialog/dialog.css",
+    "./dialog": {
+      "import": "./dist/components/css/dialog/dialog.js",
+      "types": "./dist/components/css/dialog/dialog.d.ts"
+    },
+    "./search.css": "./src/components/css/search/search.css",
+    "./search": {
+      "import": "./dist/components/css/search/search.js",
+      "types": "./dist/components/css/search/search.d.ts"
+    },
+    "./toggle-group.css": "./src/components/css/toggle-group/toggle-group.css",
+    "./toggle-group": {
+      "import": "./dist/components/css/toggle-group/toggle-group.js",
+      "types": "./dist/components/css/toggle-group/toggle-group.d.ts"
+    },
+    "./tooltip.css": "./src/components/css/tooltip/tooltip.css",
+    "./tooltip": {
+      "import": "./dist/components/css/tooltip/tooltip.js",
+      "types": "./dist/components/css/tooltip/tooltip.d.ts"
+    },
+    "./heading.css": "./src/components/css/heading/heading.css",
+    "./heading": {
+      "import": "./dist/components/css/heading/heading.js",
+      "types": "./dist/components/css/heading/heading.d.ts"
+    },
+    "./paragraph.css": "./src/components/css/paragraph/paragraph.css",
+    "./paragraph": {
+      "import": "./dist/components/css/paragraph/paragraph.js",
+      "types": "./dist/components/css/paragraph/paragraph.d.ts"
     }
   },
   "files": [
     "dist",
     "src/tokens",
-    "src/components"
+    "src/components",
+    "src/tailwind",
+    "!**/*.browser.test.ts",
+    "!**/*.test.ts",
+    "!**/*.tsbuildinfo"
   ],
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && tsc -b",
+    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
-    "test:browser": "vitest --config vitest.config.ts --run"
+    "test:browser": "vitest --config vitest.config.ts --run",
+    "sjekk:eksport": "bun scripts/sjekk-eksport.ts",
+    "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts"
   },
   "peerDependencies": {
-    "lit": ">=3.0.0",
-    "tailwindcss": ">=4.3.0"
+    "lit": ">=3.0.0"
   },
   "peerDependenciesMeta": {
-    "tailwindcss": {
-      "optional": true
-    },
     "lit": {
       "optional": true
     }

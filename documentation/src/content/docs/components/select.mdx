@@ -58,6 +58,20 @@ felt.addEventListener("change", () => {
 
 `state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-select-radius` | `var(--size-1)` |
+
+Pilen er to gradienter i bakgrunnen, tegnet i `--semantic-muted-foreground`, så den snur med temaet. Skal den bort, sett `background-image: none`.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
 ## Tilgjengelighet
 
 - En `<option>` som sier «Velg fylke» er en ledetekst i forkledning, ikke en erstatning for `<label>`.

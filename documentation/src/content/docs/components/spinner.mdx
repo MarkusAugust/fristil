@@ -1,0 +1,90 @@
+---
+title: Spinner
+description: Venteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+En ring som snurrer mens noe lastes. Vet du hvor lenge det tar, eller hvor langt det er kommet, er en fremdriftsindikator bedre. Denne sier bare at noe pågår.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/spinner.css"
+```
+
+## Størrelser
+
+<Eksempel stiler={["spinner"]} kode={`
+<span class="fs-spinner" data-size="small" aria-hidden="true"></span>
+<span class="fs-spinner" aria-hidden="true"></span>
+<span class="fs-spinner" data-size="large" aria-hidden="true"></span>
+`} />
+
+| `data-size` | Brukes til |
+| --- | --- |
+| `small` | Inne i en knapp eller en tabellrad |
+| *(utelatt)* | Ved siden av en tekst |
+| `large` | Midt på en side eller i et panel som lastes |
+
+## Med tekst ved siden av
+
+Den som hører siden får ingenting av en ring. Enten bærer en synlig tekst beskjeden, eller så gjør ringen det selv med `aria-label`.
+
+<Eksempel stiler={["spinner"]} kode={`
+<p role="status" style="display: flex; align-items: center; gap: var(--size-2); margin: 0;">
+  <span class="fs-spinner" data-size="small" aria-hidden="true"></span>
+  Henter søknadene dine
+</p>
+`} />
+
+Er teksten synlig, sett `aria-hidden="true"` på ringen. Ellers leses ventingen opp to ganger.
+
+Står ringen alene, snur det:
+
+```html
+<span class="fs-spinner" role="status" aria-label="Laster søknader"></span>
+```
+
+## Inne i en knapp
+
+```html
+<button class="fs-button" disabled>
+  <span class="fs-spinner" data-size="small" aria-hidden="true"></span>
+  Sender søknad
+</button>
+```
+
+La knappeteksten endre seg fra «Send søknad» til «Sender søknad». Da sier knappen hva som skjer, også for den som ikke ser ringen.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ring = document.querySelector<HTMLElement>("#venter")
+
+fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
+```
+
+`label` gir både `role="status"` og `aria-label`, siden ringen ikke sier noe uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-spinner` | Ringen. Størrelsen kommer fra `data-size`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-spinner-size` | `var(--size-6)` |
+| `--fs-spinner-thickness` | `2px` |
+
+Har brukeren bedt om mindre bevegelse i systemet sitt, snurrer ringen saktere. Den stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Vent litt før du viser den. En ring som blinker forbi på 100 millisekunder er mer forstyrrende enn ingenting.
+- Si hva som lastes, ikke bare at noe lastes. «Henter søknadene dine» er mer verdt enn «Laster».
+- Er ventingen over, flytt fokus dit resultatet kom, eller meld fra i et `role="status"`-felt. Ellers står brukeren igjen uten å vite at noe skjedde.

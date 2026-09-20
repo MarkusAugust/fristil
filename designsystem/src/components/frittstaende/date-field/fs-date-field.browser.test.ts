@@ -17,6 +17,23 @@ describe("fs-date-field", () => {
     document.body.innerHTML = ""
   })
 
+  it("gives the icon button a large enough target", async () => {
+    document.body.innerHTML = `<fs-date-field label="Fødselsdato"></fs-date-field>`
+
+    await Promise.resolve()
+    await ventPaTegning()
+
+    const button = document.querySelector(
+      ".fs-date-field__icon-btn",
+    ) as HTMLElement
+    const rect = button.getBoundingClientRect()
+
+    // WCAG 2.2 krever 24 piksler i begge retninger. Knappen var 16 fordi
+    // reserven pekte på --size-7, som ikke fantes, og hele regelen ble ugyldig.
+    expect(rect.width).toBeGreaterThanOrEqual(24)
+    expect(rect.height).toBeGreaterThanOrEqual(24)
+  })
+
   it("renders input and calendar together", async () => {
     document.body.innerHTML = `<fs-date-field label="Fødselsdato"></fs-date-field>`
 

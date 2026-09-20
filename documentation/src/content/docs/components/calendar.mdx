@@ -115,7 +115,20 @@ fs-calendar::part(day)[data-selected="true"] { }
 fs-calendar::part(popup) .day { }
 ```
 
-Pseudoklasser virker som normalt, så `::part(day):hover` er greit. Størrelse og form kan også settes med [komponentvariabler](../../tilpasning/#form-og-størrelse).
+Pseudoklasser virker som normalt, så `::part(day):hover` er greit.
+
+Form og størrelse settes med variabler, uten `::part()`:
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-calendar-trigger-size` | `var(--size-10)` |
+| `--fs-calendar-trigger-padding` | `0 var(--size-3)` |
+| `--fs-calendar-radius` | `var(--size-1)` |
+| `--fs-calendar-popup-width` | `min(20rem, 92vw)` |
+| `--fs-calendar-popup-padding` | `var(--size-3)` |
+| `--fs-calendar-day-size` | `var(--size-8)` |
+
+Variabler arves inn i skyggeroten, og er derfor den ene veien inn som virker uten at komponenten eksponerer noe spesielt. Se [Tilpasning](../../tilpasning/).
 
 ## Tastatur og tilgjengelighet
 

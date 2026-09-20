@@ -1,0 +1,45 @@
+@import "../../css/list/list.css";
+
+@layer fristil {
+  fs-error-summary[hidden] {
+    display: none;
+  }
+
+  /* Klassen settes på selve elementet av komponenten. Konsumentens markup
+     blir stående der den er. */
+  .fs-error-summary {
+    display: block;
+    box-sizing: border-box;
+    padding: var(--fs-error-summary-padding, var(--size-4));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-danger-background);
+    border-inline-start: var(--size-1) solid var(--semantic-danger-foreground);
+    border-radius: var(--fs-error-summary-radius, var(--size-1));
+  }
+
+  .fs-error-summary:focus-visible {
+    outline: 2px solid var(--semantic-danger-foreground);
+    outline-offset: 2px;
+  }
+
+  .fs-error-summary__title {
+    margin: 0 0 var(--size-2);
+    font-size: var(--font-size-l);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .fs-error-summary a {
+    color: var(--semantic-danger-foreground);
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+
+  .fs-error-summary a:focus-visible {
+    outline: 2px solid var(--semantic-danger-foreground);
+    outline-offset: 2px;
+  }
+}

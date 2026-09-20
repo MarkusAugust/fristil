@@ -1,0 +1,21 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-popover" stiler={["popover", "button", "list"]} maxWidth="30rem">
+	<fs-popover placement="bottom-start">
+		<button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+
+		<ul class="fs-list" data-variant="plain">
+			<li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+			<li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+			<li><button class="fs-button" data-variant="ghost" type="button">Del med saksbehandler</button></li>
+		</ul>
+	</fs-popover>
+</Preview>
+
+<script>
+	import { defineFsPopover } from "@fristil/designsystem/popover"
+
+	defineFsPopover()
+</script>

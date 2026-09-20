@@ -1,0 +1,49 @@
+@import "../input/input.css";
+
+@layer fristil {
+  /*
+   * Begge klassene i selektoren, ikke bare .fs-search.
+   *
+   * .fs-input setter padding med kortformen, og .fs-search bare
+   * padding-inline-start. Med lik spesifisitet avgjør rekkefølgen stilarkene
+   * lastes i, og importerer konsumenten input.css sist, forsvinner plassen
+   * til ikonet. Med begge klassene vinner regelen uansett rekkefølge.
+   */
+  .fs-input.fs-search {
+    padding-inline-start: var(--fs-search-icon-space, var(--size-10));
+    background-image: var(--semantic-icon-search);
+    background-repeat: no-repeat;
+    background-position: left var(--size-3) center;
+    background-size: var(--fs-search-icon-size, var(--size-5));
+  }
+
+  .fs-search:dir(rtl) {
+    background-position: right var(--size-3) center;
+  }
+
+  /* Nettleserens eget kryss i et type="search"-felt. Safari og Chrome tegner
+     det ulikt, og Firefox ikke i det hele tatt. */
+  .fs-search::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
+
+  .fs-search-row {
+    display: flex;
+    align-items: stretch;
+    gap: var(--size-2);
+  }
+
+  .fs-search-row .fs-search {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  /* Høykontrast: forstørrelsesglasset er malt inn i bildet med fast farge, og
+     kan bli usynlig. Da er det bedre å ta det bort og gi plassen tilbake. */
+  @media (forced-colors: active) {
+    .fs-input.fs-search {
+      background-image: none;
+      padding-inline-start: var(--size-3);
+    }
+  }
+}

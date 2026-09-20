@@ -1,0 +1,93 @@
+---
+title: Avatar
+description: Profilbilde eller initialer. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+En rund flate med et bilde eller initialer. Komponenten sier ingenting om hvem personen er: det gjør teksten ved siden av, eller en tekst du gir bildet.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/avatar.css"
+```
+
+## Størrelser og former
+
+<Eksempel stiler={["avatar"]} kode={`
+<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
+<span class="fs-avatar" aria-hidden="true">ON</span>
+<span class="fs-avatar" data-size="large" aria-hidden="true">ON</span>
+<span class="fs-avatar" data-variant="square" aria-hidden="true">KB</span>
+`} />
+
+| Attributt | Effekt |
+| --- | --- |
+| `data-size="small"` | Til en tabellrad eller en liste |
+| *(utelatt)* | Ved siden av et navn |
+| `data-size="large"` | På en profilside |
+| `data-variant="square"` | Avrundet firkant, for logoer og virksomheter |
+
+## Med navn ved siden av
+
+<Eksempel stiler={["avatar"]} kode={`
+<span style="display: inline-flex; align-items: center; gap: var(--size-2);">
+  <span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
+  Ola Nordmann
+</span>
+`} />
+
+Står navnet der allerede, er bildet pynt. `aria-hidden="true"` hindrer at initialene leses opp som «O N» foran navnet.
+
+Står bildet alene, må det si hvem det er:
+
+```html
+<img class="fs-avatar" src="/bilder/ola.jpg" alt="Ola Nordmann" />
+```
+
+## Flere bilder som overlapper
+
+<Eksempel stiler={["avatar"]} layout="stabel" maxWidth="30rem" kode={`
+<ul class="fs-avatar-stack">
+  <li><span class="fs-avatar" data-size="small" aria-hidden="true">ON</span></li>
+  <li><span class="fs-avatar" data-size="small" aria-hidden="true">KB</span></li>
+  <li><span class="fs-avatar" data-size="small" aria-hidden="true">MH</span></li>
+</ul>
+<p>Ola Nordmann, Kari Berg og Mats Hansen følger saken</p>
+`} />
+
+Rekkefølgen snus i CSS, så det første bildet ligger øverst uten at markupen må skrives baklengs. Navnene må stå et sted, som i teksten under: initialer er ingen identifikasjon.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const bilde = document.querySelector<HTMLElement>("#profil")
+
+fs.setAttributes(bilde, fs.avatar({ size: "large" }))
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-avatar` | Flaten med bildet eller initialene |
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-avatar-stack` | Lista med bilder som overlapper |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-avatar-size` | `var(--size-10)` |
+| `--fs-avatar-radius` | `var(--size-1)` |
+| `--fs-avatar-stack-overlap` | `calc(var(--size-2) * -1)` |
+
+`--fs-avatar-radius` gjelder bare firkantvarianten. Den runde er alltid rund. Se [Tilpasning](../../tilpasning/).
+
+## Tilgjengelighet
+
+- Initialer er ingen identifikasjon. To personer kan ha de samme, så navnet må stå et sted.
+- Et `<img>` uten `alt` leses opp som filnavnet. Er bildet pynt, skriv `alt=""`.
+- Ikke la fargen på flaten bety noe. Den er tilfeldig for den som ikke ser den.

@@ -49,7 +49,7 @@ export type InputAttributes = {
  * Attributtene for et tekstfelt.
  *
  * `type` setter både HTML-typen og ikonvarianten, så de to kan ikke komme i
- * utakt. Skriver du dem for hånd, er det lett å få et datofelt som ser result
+ * utakt. Skriver du dem for hånd, er det lett å få et datofelt som ser ut
  * som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
  *
  * ```ts

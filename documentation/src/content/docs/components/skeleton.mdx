@@ -1,0 +1,75 @@
+---
+title: Skeleton
+description: Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermlesere, så ventingen må meldes ett sted i tillegg. Er det ingen form å vise, eller tar ventingen kort tid, er [Spinner](../spinner/) enklere.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/skeleton.css"
+```
+
+## Former
+
+<Eksempel stiler={["skeleton"]} layout="stabel" maxWidth="26rem" kode={`
+<div class="fs-skeleton" data-variant="circle" aria-hidden="true"></div>
+<div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
+<div class="fs-skeleton" data-variant="text" aria-hidden="true" style="width: 70%;"></div>
+<div class="fs-skeleton" aria-hidden="true" style="height: var(--size-12);"></div>
+`} />
+
+| `data-variant` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Blokk, for bilder og kort |
+| `text` | Én tekstlinje |
+| `circle` | Profilbilde |
+
+Sett bredden på de siste linjene til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
+
+## Ventingen må meldes ett sted
+
+```html
+<div id="innhold" aria-busy="true">
+  <p class="fs-sr-only" role="status">Henter søknadene dine</p>
+  <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
+  <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
+</div>
+```
+
+En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `fs.skeleton()` alltid `aria-hidden="true"`, og beskjeden legges i et eget felt med `role="status"`.
+
+Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const linje = document.createElement("div")
+
+fs.setAttributes(linje, fs.skeleton({ variant: "text" }))
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-skeleton` | Plassholderen. Formen kommer fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-skeleton-height` | `var(--size-4)` |
+| `--fs-skeleton-radius` | `var(--size-1)` |
+
+Skimmeret er en gradient som beveger seg over flaten, ikke en gjennomsiktighet som pulserer, så kontrasten mot sideflaten er den samme hele veien. Har brukeren bedt om mindre bevegelse, står flaten stille.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Formene skal ligne på det som kommer. En plassholder som er tre linjer der resultatet er tjue, gjør siden urolig når innholdet lander.
+- Vent litt før du viser dem, som med en venteindikator. Et glimt av grå bokser er mer forstyrrende enn en kort pause.
+- Ikke la dem bli stående hvis noe feiler. Da venter brukeren på noe som aldri kommer. Bytt til en [Alert](../alert/) med hva som gikk galt.

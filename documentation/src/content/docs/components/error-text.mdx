@@ -59,6 +59,14 @@ function oppdater(erGyldig: boolean) {
 
 [`fs.field`](../../typesikker-bruk/#fsfield) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-error-text` | Meldingen. Fargen kommer fra `data-variant`. |
+
+Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+
 ## Ordlyd i meldingen
 
 - Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.

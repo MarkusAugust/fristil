@@ -1,0 +1,57 @@
+@import "../label/label.css";
+
+@layer fristil {
+  .fs-fieldset {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--fs-fieldset-gap, var(--size-2));
+    margin: 0;
+    padding: 0;
+    /* Nettleserens egen ramme og innrykk på <fieldset> hører til et utseende
+       fra 1996, og kan ikke slås av med mindre begge nullstilles her. */
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  .fs-legend {
+    padding: 0;
+    margin-block-end: var(--size-1);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+  }
+
+  /* Samme markering som på en ledetekst. Reglene står her og ikke i
+     label.css, fordi <legend> er et annet element med egne standardverdier. */
+  .fs-legend[data-required]::after {
+    content: " *";
+    color: var(--semantic-danger-foreground);
+    font-weight: 700;
+  }
+
+  .fs-legend[data-required="text"]::after {
+    content: " (påkrevd)";
+    color: var(--semantic-danger-foreground);
+    font-weight: 400;
+    font-size: var(--font-size-xs);
+  }
+
+  .fs-legend[data-optional]::after {
+    content: " (valgfri)";
+    color: var(--semantic-disabled-foreground);
+    font-weight: 400;
+    font-size: var(--font-size-xs);
+  }
+
+  .fs-fieldset[data-state="invalid"] .fs-legend {
+    color: var(--semantic-danger-foreground);
+  }
+
+  .fs-fieldset:disabled .fs-legend,
+  .fs-legend[aria-disabled="true"] {
+    color: var(--semantic-muted-foreground);
+  }
+}

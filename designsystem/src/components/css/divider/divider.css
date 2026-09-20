@@ -1,0 +1,18 @@
+@layer fristil {
+  .fs-divider {
+    /* <hr> har både ramme og høyde fra nettleseren. Begge må bort før
+       fargen under er den eneste som vises. */
+    border: 0;
+    block-size: 1px;
+    margin-block: var(--fs-divider-space, var(--size-4));
+    background: var(--semantic-divider-30);
+  }
+
+  .fs-divider[data-variant="strong"] {
+    background: var(--semantic-divider-100);
+  }
+
+  .fs-divider[data-variant="subtle"] {
+    background: var(--semantic-neutral-background);
+  }
+}

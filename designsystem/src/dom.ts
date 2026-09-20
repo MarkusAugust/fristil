@@ -23,12 +23,24 @@ const SYSTEM_ATTRIBUTES = [
   "aria-invalid",
   "aria-disabled",
   "aria-describedby",
+  "disabled",
+  "multiple",
+  "accept",
+  "hidden",
 ] as const
 
 /** Klassene systemet eier. Konsumentens egne klasser beholdes. */
 const IS_SYSTEM_CLASS = /^fs-/
 
-export type Attributes = Record<string, string | undefined>
+/**
+ * Verdiene en byggefunksjon kan sende ut.
+ *
+ * `true` og `false` er med fordi flere av dem er boolske HTML-attributter:
+ * `disabled` på en bryter, `multiple` på et filfelt, `hidden` på en
+ * feilmelding. I HTML er et slikt attributt sant så lenge det finnes, uansett
+ * verdi, så `true` settes som tom streng og `false` fjerner det.
+ */
+export type Attributes = Record<string, string | boolean | undefined>
 
 /**
  * Setter attributtene fra en `fs`-funksjon på et element.
@@ -47,7 +59,7 @@ export type Attributes = Record<string, string | undefined>
 export function setAttributes(element: Element, attributes: Attributes): void {
   const newClass = attributes.class
 
-  if (newClass !== undefined) {
+  if (typeof newClass === "string") {
     const ownClasses = [...element.classList].filter(
       (klasse) => !IS_SYSTEM_CLASS.test(klasse),
     )
@@ -57,12 +69,7 @@ export function setAttributes(element: Element, attributes: Attributes): void {
   }
 
   for (const name of SYSTEM_ATTRIBUTES) {
-    const value = attributes[name]
-    if (value === undefined) {
-      element.removeAttribute(name)
-    } else {
-      element.setAttribute(name, value)
-    }
+    setOrRemove(element, name, attributes[name])
   }
 
   // Attributter utenfor den lukkede lista settes, men ryddes aldri bort.
@@ -70,6 +77,19 @@ export function setAttributes(element: Element, attributes: Attributes): void {
   for (const [name, value] of Object.entries(attributes)) {
     if (name === "class") continue
     if ((SYSTEM_ATTRIBUTES as readonly string[]).includes(name)) continue
-    if (value !== undefined) element.setAttribute(name, value)
+    if (value === undefined || value === false) continue
+    element.setAttribute(name, value === true ? "" : value)
+  }
+}
+
+function setOrRemove(
+  element: Element,
+  name: string,
+  value: string | boolean | undefined,
+): void {
+  if (value === undefined || value === false) {
+    element.removeAttribute(name)
+  } else {
+    element.setAttribute(name, value === true ? "" : value)
   }
 }

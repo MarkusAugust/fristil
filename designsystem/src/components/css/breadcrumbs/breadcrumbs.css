@@ -1,0 +1,50 @@
+@layer fristil {
+  .fs-breadcrumbs {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fs-breadcrumbs-gap, var(--size-2));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: inherit;
+    font-size: var(--font-size-s);
+    line-height: 1.5;
+    color: var(--semantic-muted-foreground);
+  }
+
+  .fs-breadcrumbs li {
+    display: flex;
+    align-items: center;
+    gap: var(--fs-breadcrumbs-gap, var(--size-2));
+  }
+
+  /* Skilletegnet er dekorasjon, og legges derfor inn med CSS. Sto det i
+     markupen, ville skjermlesere lest «skråstrek» mellom hvert steg. */
+  .fs-breadcrumbs li + li::before {
+    content: "/";
+    color: var(--semantic-muted-foreground);
+  }
+
+  .fs-breadcrumbs a {
+    color: var(--semantic-interactive-main);
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+
+  .fs-breadcrumbs a:hover {
+    color: var(--semantic-interactive-foreground);
+  }
+
+  .fs-breadcrumbs a:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-breadcrumbs [aria-current="page"] {
+    color: var(--semantic-page-foreground);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}

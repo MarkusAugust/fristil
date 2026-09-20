@@ -41,6 +41,7 @@ export const cssTokens = {
   "--size-4": "1rem",
   "--size-5": "1.25rem",
   "--size-6": "1.5rem",
+  "--size-7": "1.75rem",
   "--size-8": "2rem",
   "--size-10": "2.5rem",
   "--size-12": "3rem",
@@ -165,6 +166,43 @@ export const cssTokens = {
   "--semantic-divider-30": "var(--palette-graphite-30)",
   "--semantic-divider-100": "var(--palette-graphite-100)",
 
+  /** Forstørrelsesglasset i søkefeltet. */
+  "--semantic-icon-search":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E\")",
+
+  /**
+   * Haken og streken i avkryssingsboksen.
+   *
+   * De tegnes oppå `interactive-main`, og må derfor følge
+   * `interactive-contrast`, ikke sideflaten.
+   */
+  "--semantic-icon-check":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E\")",
+  "--semantic-icon-dash":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E\")",
+
+  /**
+   * Ikonene som tegnes inn i bakgrunnen til dato- og klokkeslettfeltet.
+   *
+   * De hører hjemme her og ikke i komponenten, fordi en data-URL ikke kan
+   * lese en CSS-variabel: streken er malt inn i selve bildet. Med ikonet som
+   * token snur det med temaet, som alt annet. Før var streken fast
+   * graphite-70, altså 2,03:1 mot den mørke flaten, og så vidt synlig.
+   */
+  "--semantic-icon-calendar":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E\")",
+  "--semantic-icon-clock":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E\")",
+
+  /**
+   * Flaten bak en dialog som er åpnet med `showModal()`.
+   *
+   * Den ligger mellom siden og dialogen, og må dempe sideinnholdet i begge
+   * temaer. I mørkt tema er en sort flate nesten usynlig mot bakgrunnen, så
+   * den er kraftigere der.
+   */
+  "--semantic-overlay-backdrop": "var(--palette-dark-alpha-50)",
+
   /**
    * Skyggen under flater som ligger over siden, som kalenderpanelet.
    *
@@ -229,6 +267,24 @@ export const darkTokens = {
   // Skillelinjer
   "--semantic-divider-30": "var(--palette-graphite-70)",
   "--semantic-divider-100": "var(--palette-graphite-30)",
+
+  "--semantic-icon-search":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E\")",
+
+  // Hake og strek ligger oppå interactive-main, som er lys i mørkt tema
+  "--semantic-icon-check":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E\")",
+  "--semantic-icon-dash":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E\")",
+
+  // Ikoner: lysere strek, så de holder seg synlige mot den mørke flaten
+  "--semantic-icon-calendar":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E\")",
+  "--semantic-icon-clock":
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E\")",
+
+  // Flaten bak en dialog må dempe mer når siden under alt er mørk
+  "--semantic-overlay-backdrop": "rgba(0, 0, 0, 0.72)",
 
   // Skygge: kraftigere, siden flaten under er nesten sort
   "--semantic-shadow-overlay": "0 16px 40px rgba(0, 0, 0, 0.6)",

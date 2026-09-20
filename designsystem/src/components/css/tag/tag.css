@@ -1,0 +1,58 @@
+@layer fristil {
+  .fs-tag {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: var(--fs-tag-padding, var(--size-0-5) var(--size-2));
+    font-family: inherit;
+    font-size: var(--font-size-s);
+    line-height: 1.4;
+    color: var(--semantic-page-foreground);
+    background: transparent;
+    border: 1px solid var(--semantic-divider-30);
+    border-radius: var(--fs-tag-radius, var(--size-1));
+  }
+
+  .fs-tag[data-variant="filled"] {
+    background: var(--semantic-neutral-background);
+    border-color: transparent;
+  }
+
+  /* Merkelappen kan velges av og på, og er da en ekte knapp. */
+  .fs-tag[data-selectable] {
+    cursor: pointer;
+  }
+
+  .fs-tag[data-selectable]:hover {
+    border-color: var(--semantic-interactive-main);
+  }
+
+  .fs-tag[data-selectable]:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-tag[aria-pressed="true"] {
+    background: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+    color: var(--semantic-interactive-contrast);
+  }
+
+  .fs-tag:disabled,
+  .fs-tag[aria-disabled="true"] {
+    background: var(--semantic-disabled-background);
+    border-color: var(--semantic-disabled-background);
+    color: var(--semantic-disabled-foreground);
+    cursor: not-allowed;
+  }
+
+  /* Høykontrast: den valgte lappen skilles bare med farge. Systemfargene
+     slipper gjennom der våre egne ikke gjør det. */
+  @media (forced-colors: active) {
+    .fs-tag[aria-pressed="true"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
+}

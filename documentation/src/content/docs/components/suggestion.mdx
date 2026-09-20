@@ -1,0 +1,101 @@
+---
+title: Suggestion
+description: Tekstfelt med forslag som snevres inn mens brukeren skriver. Frittstående komponent.
+---
+
+import SuggestionDemo from "../../../components/SuggestionDemo.astro"
+
+Alternativene skrives som `<option>`-barn, slik de ville stått i en `<datalist>`. Komponenten leser dem og bygger lista selv, fordi nettleserens egen `<datalist>` ikke kan styles, oppfører seg ulikt i hver nettleser, og ikke melder antall treff til skjermlesere.
+
+Feltet er et fritekstfelt, ikke en nedtrekksliste. Brukeren kan skrive noe som ikke står i lista. Skal bare gitte verdier godtas, er [Select](../select/) riktig.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+import "@fristil/designsystem/suggestion.css"
+
+defineFsSuggestion()
+```
+
+## Felt med forslag
+
+<SuggestionDemo />
+
+```html
+<fs-suggestion label="Kommune" name="kommune" help-text="Vi fyller ut resten av adressen for deg.">
+  <option>Bergen</option>
+  <option>Bodø</option>
+  <option>Oslo</option>
+  <option>Tromsø</option>
+</fs-suggestion>
+```
+
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `label` | streng | Ledeteksten over feltet. Påkrevd. |
+| `value` | streng | Det som står i feltet. Speiles når brukeren velger. |
+| `name` | streng | Navnet i `FormData` |
+| `placeholder` | streng | Plassholder i feltet |
+| `help-text` | streng | Hjelpetekst under feltet |
+| `error-text` | streng | Feilmelding. Vises når `invalid` er satt. |
+| `no-results-text` | streng | Teksten når ingenting passer. Standard: «Ingen treff». |
+| `invalid` | boolsk | Setter `aria-invalid` og viser feilmeldingen |
+| `required`, `optional`, `disabled` | boolsk | Som i [Field](../field/) |
+| `control-id`, `described-by` | streng | For egne id-er og ekstra beskrivelser |
+
+## Hendelser
+
+| Hendelse | `detail` | Når |
+| --- | --- | --- |
+| `suggestion-select` | `{ value, label }` | Et forslag velges |
+| `change` | ingen | Samtidig med `suggestion-select` |
+
+```js
+document.querySelector("fs-suggestion").addEventListener("suggestion-select", (hendelse) => {
+  hentPostnummer(hendelse.detail.value)
+})
+```
+
+Skriver brukeren fritt uten å velge et forslag, kommer ingen hendelse. Les `element.value` når skjemaet sendes.
+
+## Tastatur
+
+| Tast | Virkning |
+| --- | --- |
+| `Pil ned` og `Pil opp` | Flytter mellom forslagene. Går rundt. |
+| `Enter` | Velger forslaget som er markert |
+| `Escape` | Lukker lista uten å velge |
+| Skriving | Snevrer inn lista, og fjerner markeringen |
+
+Antall treff meldes i et eget felt med `role="status"`, så den som hører siden vet om det er noe å velge mellom.
+
+## Klasser du kan style
+
+Komponenten rendrer i vanlig DOM, og bruker de vanlige klassene for ledetekst, felt, hjelpetekst og feilmelding:
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-suggestion__field` | Feltet og lista, som ligger over |
+| `.fs-suggestion__list` | Forslagslista |
+| `.fs-suggestion__option` | Ett forslag |
+| `.fs-suggestion__empty` | Raden som sier at ingenting passer |
+| `.fs-label`, `.fs-input`, `.fs-help-text`, `.fs-error-text`, `.fs-sr-only` | De vanlige komponentklassene |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-suggestion-max-height` | `calc(var(--size-10) * 4)` |
+| `--fs-suggestion-radius` | `var(--size-1)` |
+| `--fs-suggestion-option-padding` | `var(--size-2) var(--size-3)` |
+
+Markeringen av det aktive forslaget følger `aria-selected`, altså den samme opplysningen skjermleseren leser. Da kan ikke det synlige og det opplesne komme i utakt.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Fokus blir i tekstfeltet hele tiden. Forslaget som er markert pekes ut med `aria-activedescendant`, slik at brukeren kan fortsette å skrive.
+- Lista skal ikke åpne seg med et tomt resultat uten forklaring. «Ingen treff» er en beskjed, ikke en tom boks.
+- Har du hundrevis av alternativer, hent dem fra serveren mens brukeren skriver, og sett `<option>`-barna på nytt.
+- Er lista kort og fast, er [Select](../select/) enklere for alle parter.

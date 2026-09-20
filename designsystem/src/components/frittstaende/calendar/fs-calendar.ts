@@ -264,6 +264,22 @@ export class FsCalendar extends LitElement {
       border-color: var(--semantic-interactive-main);
     }
 
+    /*
+     * Høykontrast: egne farger overstyres i modusen, så valgt dag og de andre
+     * blir like. Systemfargene slipper gjennom, og Highlight med
+     * HighlightText er paret operativsystemet bruker til noe som er valgt.
+     *
+     * Merk: ingen backtick-tegn i kommentarer her. De lukker malen, og resten
+     * av fila blir lest som JavaScript.
+     */
+    @media (forced-colors: active) {
+      .day[data-selected="true"] {
+        background: Highlight;
+        color: HighlightText;
+        border-color: Highlight;
+      }
+    }
+
     :host([disabled]) .trigger {
       background: var(--semantic-disabled-background);
       color: var(--semantic-disabled-foreground);
@@ -392,7 +408,7 @@ export class FsCalendar extends LitElement {
     // Panelet skjules med [hidden]. Står fokus på en dag inne i det, mister
     // nettleseren fokus til <body>, og en tastaturbruker havner på toppen av
     // siden. Fokus skal derfor tilbake til knappen som åpnet panelet.
-    // Lukkes panelet fordi brukeren klikket eller tabbet result, står fokus
+    // Lukkes panelet fordi brukeren klikket eller tabbet ut, står fokus
     // allerede et annet sted, og da skal vi ikke rive det til oss.
     const fokusStoInniPanelet =
       (this.renderRoot as ShadowRoot).activeElement !== null

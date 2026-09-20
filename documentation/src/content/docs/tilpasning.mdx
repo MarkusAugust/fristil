@@ -74,15 +74,80 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 | `--fs-button-radius` | `var(--size-1)` |
 | `--fs-badge-padding` | `var(--size-0-5) var(--size-2)` |
 | `--fs-badge-radius` | `var(--size-4)` |
+| `--fs-alert-padding` | `var(--size-3) var(--size-4)` |
+| `--fs-alert-radius` | `var(--size-1)` |
+| `--fs-alert-accent` | `var(--size-1)` |
+| `--fs-card-padding` | `var(--size-4)` |
+| `--fs-card-radius` | `var(--size-2)` |
+| `--fs-divider-space` | `var(--size-4)` |
+| `--fs-spinner-size` | `var(--size-6)` |
+| `--fs-spinner-thickness` | `2px` |
+| `--fs-table-cell-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-list-gap` | `var(--size-1)` |
+| `--fs-tag-padding` | `var(--size-0-5) var(--size-2)` |
+| `--fs-tag-radius` | `var(--size-1)` |
+| `--fs-avatar-size` | `var(--size-10)` |
+| `--fs-avatar-radius` | `var(--size-1)` |
+| `--fs-skeleton-height` | `var(--size-4)` |
+| `--fs-skeleton-radius` | `var(--size-1)` |
+| `--fs-breadcrumbs-gap` | `var(--size-2)` |
+| `--fs-pagination-gap` | `var(--size-1)` |
+| `--fs-pagination-size` | `var(--size-10)` |
+| `--fs-pagination-radius` | `var(--size-1)` |
+| `--fs-skip-link-padding` | `var(--size-2) var(--size-4)` |
+| `--fs-skip-link-radius` | `var(--size-1)` |
+| `--fs-accordion-radius` | `var(--size-1)` |
+| `--fs-accordion-padding` | `var(--size-3) var(--size-4)` |
+| `--fs-dialog-width` | `min(32rem, calc(100vw - var(--size-8)))` |
+| `--fs-dialog-padding` | `var(--size-5)` |
+| `--fs-dialog-radius` | `var(--size-2)` |
+| `--fs-tooltip-width` | `16rem` |
+| `--fs-tooltip-padding` | `var(--size-1) var(--size-2)` |
+| `--fs-tooltip-radius` | `var(--size-1)` |
+| `--fs-paragraph-width` | `70ch` |
+| `--fs-paragraph-gap` | `var(--size-3)` |
+| `--fs-tabs-gap` | `var(--size-1)` |
+| `--fs-tabs-padding` | `var(--size-2) var(--size-4)` |
+| `--fs-tabs-panel-space` | `var(--size-4)` |
+| `--fs-error-summary-padding` | `var(--size-4)` |
+| `--fs-error-summary-radius` | `var(--size-1)` |
+| `--fs-file-upload-padding` | `var(--size-2)` |
+| `--fs-file-upload-radius` | `var(--size-1)` |
+| `--fs-avatar-stack-overlap` | `calc(var(--size-2) * -1)` |
+| `--fs-popover-width` | `min(20rem, calc(100vw - var(--size-8)))` |
+| `--fs-popover-padding` | `var(--size-3)` |
+| `--fs-popover-radius` | `var(--size-1)` |
+| `--fs-popover-top` | settes av komponenten |
+| `--fs-popover-left` | settes av komponenten |
+| `--fs-toast-space` | `var(--size-4)` |
+| `--fs-toast-width` | `min(24rem, calc(100vw - var(--size-8)))` |
+| `--fs-toast-padding` | `var(--size-3) var(--size-4)` |
+| `--fs-toast-radius` | `var(--size-1)` |
+| `--fs-suggestion-max-height` | `calc(var(--size-10) * 4)` |
+| `--fs-suggestion-radius` | `var(--size-1)` |
+| `--fs-suggestion-option-padding` | `var(--size-2) var(--size-3)` |
 | `--fs-input-padding` | `var(--size-2) var(--size-3)` |
 | `--fs-input-radius` | `var(--size-1)` |
 | `--fs-textarea-min-height` | `calc(var(--size-4) * 5)` |
 | `--fs-textarea-padding` | `var(--size-2) var(--size-3)` |
 | `--fs-textarea-radius` | `var(--size-1)` |
 | `--fs-select-radius` | `var(--size-1)` |
+| `--fs-checkbox-size` | `var(--size-5)` |
+| `--fs-checkbox-radius` | `var(--size-1)` |
+| `--fs-radio-size` | `var(--size-5)` |
+| `--fs-switch-width` | `var(--size-10)` |
+| `--fs-switch-height` | `var(--size-6)` |
+| `--fs-fieldset-gap` | `var(--size-2)` |
+| `--fs-search-icon-space` | `var(--size-10)` |
+| `--fs-search-icon-size` | `var(--size-5)` |
+| `--fs-toggle-group-radius` | `var(--size-1)` |
+| `--fs-toggle-group-height` | `var(--size-10)` |
+| `--fs-toggle-group-padding` | `0 var(--size-4)` |
 | `--fs-date-field-icon-size` | `var(--size-7)` |
 | `--fs-date-field-icon-space` | `var(--size-10)` |
+| `--fs-date-field-icon-radius` | `var(--size-1)` |
 | `--fs-calendar-trigger-size` | `var(--size-10)` |
+| `--fs-calendar-trigger-padding` | `0 var(--size-3)` |
 | `--fs-calendar-radius` | `var(--size-1)` |
 | `--fs-calendar-popup-width` | `min(20rem, 92vw)` |
 | `--fs-calendar-popup-padding` | `var(--size-3)` |
@@ -105,6 +170,30 @@ Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="dang
 :::caution[`!important` snur rekkefølgen]
 For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
 :::
+
+### Tailwind og lagrekkefølgen
+
+Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
+
+```css
+@layer theme, base, fristil, components, utilities;
+
+@import "tailwindcss";
+@import "@fristil/designsystem/tokens.css";
+@import "@fristil/designsystem/tailwind.css";
+```
+
+Uten den linja får du ett av to problemer, avhengig av hvilken import som kommer først:
+
+| Rekkefølge | Hva som skjer |
+| --- | --- |
+| `fristil` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
+| `fristil` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.fs-button` gjør ingenting. |
+| `base`, `fristil`, `utilities` | Begge deler virker |
+
+Dette er målt, ikke antatt: `tilpasning.browser.test.ts` bygger begge tilfellene i hvert sitt dokument og kontrollerer hva knappen faktisk får.
+
+Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 
 ### Shadow DOM
 

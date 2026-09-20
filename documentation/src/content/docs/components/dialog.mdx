@@ -1,0 +1,105 @@
+---
+title: Dialog
+description: Modal dialog bygget på det native dialog-elementet. CSS-komponent med fire klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et `<dialog>`. Åpne den med `showModal()`, ikke ved å sette `open`: bare den første flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen er en boks på siden, ikke en dialog.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/dialog.css"
+```
+
+## Slik ser den ut
+
+<Eksempel stiler={["dialog", "button"]} layout="stabel" maxWidth="34rem" kode={`
+<div class="fs-dialog" style="position: static; display: block;">
+  <h2 class="fs-dialog__title">Slette søknaden?</h2>
+  <div class="fs-dialog__body">
+    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+  </div>
+  <div class="fs-dialog__footer">
+    <button class="fs-button" data-variant="secondary" type="button">Avbryt</button>
+    <button class="fs-button" data-variant="danger" type="button">Slett søknaden</button>
+  </div>
+</div>
+`} />
+
+## Komplett eksempel
+
+```html
+<button class="fs-button" data-variant="danger" id="apne" type="button">
+  Slett søknaden
+</button>
+
+<dialog class="fs-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
+  <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+  <div class="fs-dialog__body">
+    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+  </div>
+  <form method="dialog" class="fs-dialog__footer">
+    <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
+    <button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+  </form>
+</dialog>
+
+<script type="module">
+  const dialog = document.getElementById("bekreft")
+
+  document.getElementById("apne").addEventListener("click", () => {
+    dialog.showModal()
+  })
+
+  dialog.addEventListener("close", () => {
+    if (dialog.returnValue === "slett") {
+      // Slett søknaden her
+    }
+  })
+</script>
+```
+
+`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Da trenger du ingen lyttere på knappene, og Enter virker som forventet.
+
+Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const boks = document.querySelector<HTMLDialogElement>("#bekreft")
+
+fs.setAttributes(boks, fs.dialog())
+boks.showModal()
+```
+
+`fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassene på delene inni. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-dialog` | Selve dialogen |
+| `.fs-dialog__title` | Overskriften |
+| `.fs-dialog__body` | Innholdet, som ruller når dialogen blir for høy |
+| `.fs-dialog__footer` | Raden med knapper nederst |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-dialog-width` | `min(32rem, calc(100vw - var(--size-8)))` |
+| `--fs-dialog-padding` | `var(--size-5)` |
+| `--fs-dialog-radius` | `var(--size-2)` |
+
+Flaten bak dialogen er `::backdrop`, og finnes bare når dialogen er åpnet med `showModal()`. Fargen kommer fra `--semantic-overlay-backdrop` og er kraftigere i mørkt tema, der en sort flate ellers ville vært usynlig.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Dialogen trenger et navn. Enten `aria-labelledby` som peker på overskriften, eller `aria-label`.
+- Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».
+- Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
+- Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.
+- Ikke bruk en dialog til noe som kunne stått på siden. Den tar over hele skjermen for den som bruker forstørrelse.

@@ -1,0 +1,50 @@
+@layer fristil {
+  .fs-alert {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-1);
+    padding: var(--fs-alert-padding, var(--size-3) var(--size-4));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-neutral-background);
+    border-radius: var(--fs-alert-radius, var(--size-1));
+    /* Fargen ligger i en strek på kanten framfor i hele flaten, så teksten
+       beholder kontrasten mot sideflaten i begge temaer. */
+    border-inline-start: var(--fs-alert-accent, var(--size-1)) solid
+      var(--semantic-neutral-foreground);
+  }
+
+  .fs-alert__title {
+    margin: 0;
+    font-size: var(--font-size-m);
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .fs-alert p {
+    margin: 0;
+  }
+
+  .fs-alert[data-color="success"] {
+    background: var(--semantic-success-background);
+    border-inline-start-color: var(--semantic-success-foreground);
+  }
+
+  .fs-alert[data-color="warning"] {
+    background: var(--semantic-warning-background);
+    border-inline-start-color: var(--semantic-warning-foreground);
+  }
+
+  .fs-alert[data-color="danger"] {
+    background: var(--semantic-danger-background);
+    border-inline-start-color: var(--semantic-danger-foreground);
+  }
+
+  .fs-alert[data-color="info"] {
+    background: var(--semantic-interactive-background);
+    border-inline-start-color: var(--semantic-interactive-main);
+  }
+}

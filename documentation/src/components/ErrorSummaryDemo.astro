@@ -1,0 +1,31 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview
+	id="demo-error-summary"
+	stiler={["error-summary", "list", "label", "input", "button", "error-text"]}
+	layout="stabel"
+	maxWidth="34rem"
+>
+	<form id="demo-skjema" novalidate>
+		<fs-error-summary id="demo-oppsummering" heading="Skjemaet har to feil" autofocus={false}>
+			<ul class="fs-list">
+				<li><a href="#demo-epost">Skriv en e-postadresse med krøllalfa</a></li>
+				<li><a href="#demo-dato">Skriv datoen som DD-MM-ÅÅÅÅ</a></li>
+			</ul>
+		</fs-error-summary>
+
+		<label class="fs-label" for="demo-epost">E-postadresse</label>
+		<input class="fs-input" id="demo-epost" type="email" value="ola.nordmann" data-state="invalid" aria-invalid="true" />
+
+		<label class="fs-label" for="demo-dato">Fødselsdato</label>
+		<input class="fs-input" id="demo-dato" value="31/05" data-state="invalid" aria-invalid="true" />
+	</form>
+</Preview>
+
+<script>
+	import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+
+	defineFsErrorSummary()
+</script>

@@ -1,0 +1,92 @@
+---
+title: Table
+description: Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et ekte `<table>`. Det er `<th>` med `scope` som gjør at skjermlesere kan si «Beløp, 1 240 kroner» når brukeren står i en celle. Bygger du tabellen av `<div>`-er, finnes ikke den koblingen, og tallene står uten betydning.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/table.css"
+```
+
+## Varianter
+
+<Eksempel stiler={["table"]} layout="stabel" maxWidth="34rem" kode={`
+<table class="fs-table" data-variant="striped">
+  <caption>Fakturaer i 2026</caption>
+  <thead>
+    <tr>
+      <th scope="col">Faktura</th>
+      <th scope="col">Forfall</th>
+      <th scope="col" data-align="end">Beløp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">2026-0481</th>
+      <td>4. mars</td>
+      <td data-align="end">1 240 kr</td>
+    </tr>
+    <tr>
+      <th scope="row">2026-0482</th>
+      <td>4. april</td>
+      <td data-align="end">980 kr</td>
+    </tr>
+  </tbody>
+</table>
+`} />
+
+| Attributt | Effekt |
+| --- | --- |
+| `data-variant="striped"` | Dempet flate på annenhver rad |
+| `data-hoverable` | Markerer raden under musa. Bruk bare når raden kan trykkes på. |
+| `data-align="end"` på en celle | Høyrestiller, for beløp og antall |
+
+Tall står i `tabular-nums`, så sifrene får lik bredde og kolonnen kan leses nedover.
+
+## Brede tabeller
+
+En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det området må kunne nås med tastatur:
+
+```html
+<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
+  <table class="fs-table">…</table>
+</div>
+```
+
+`tabindex="0"` er ikke valgfritt. Uten det kommer ingen som navigerer med tastatur til innholdet som ligger utenfor kanten. `role="region"` med en tekst gjør at skjermleseren sier hva området inneholder når fokus havner der.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const tabell = document.querySelector<HTMLTableElement>("#fakturaer")
+
+fs.setAttributes(tabell, fs.table({ variant: "striped", hoverable: true }))
+```
+
+`fs.table.scroll` gir klassen på beholderen rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-table` | Selve tabellen. Varianten kommer fra `data-variant`. |
+| `.fs-table-scroll` | Beholderen som lar en bred tabell rulles |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-table-cell-padding` | `var(--size-2) var(--size-3)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Hver kolonneoverskrift skal være `<th scope="col">`, og raden sin egen nøkkel `<th scope="row">`. Da vet skjermleseren hvilken kolonne og rad en celle hører til.
+- Gi tabellen en `<caption>`. Den sier hva tabellen inneholder, og er det første som leses opp.
+- Slå aldri sammen celler for å få et oppsett til å se riktig ut. Sammenslåtte celler gjør navigasjonen uforutsigbar.
+- Skal rader kunne trykkes på, legg lenken i en celle. En hel rad som er klikkbar kan ikke nås med tastatur.
