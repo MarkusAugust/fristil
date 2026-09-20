@@ -16,12 +16,12 @@ import "../styles/custom-pages-tailwind.css"
 <body class="min-h-screen bg-zinc-950 text-zinc-50 antialiased">
   <div class="flex min-h-screen flex-col">
   <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/88 backdrop-blur-xl">
-    <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-5 sm:px-8">
+    <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:px-8 sm:py-5">
       <a href="/" class="inline-flex items-center text-inherit no-underline">
           <FristilLogo size="sm" />
       </a>
       <nav>
-          <ul class="flex items-center gap-4 text-sm font-medium text-zinc-300 sm:gap-8 sm:text-base">
+          <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-zinc-300 sm:gap-x-8 sm:text-base">
             <li><a class="transition-colors hover:text-white" href="/introduksjon/">Dokumentasjon</a></li>
             <li><a class="transition-colors hover:text-white" href="/components/button/">Komponenter</a></li>
             <li><a class="transition-colors hover:text-white" href="https://github.com/MarkusAugust/fristil" target="_blank" rel="noreferrer">GitHub</a></li>
@@ -39,9 +39,12 @@ import "../styles/custom-pages-tailwind.css"
           CSS-klasser og web components, ingen rammeverk påkrevd
         </div>
         <FristilLogo size="lg" className="mb-8" />
-        <h1 class="mb-8 flex flex-col gap-2 bg-linear-to-br  from-cyan-300 via-blue-400 to-fuchsia-400 bg-clip-text wrap-anywhere text-4xl font-black tracking-tight text-transparent sm:text-5xl">
-          <span>Rammeverksuavhengig</span><span>designsystem</span>
-      </h1>
+        <!-- Ett tekstelement, ikke to spenn. To spenn ble lest opp som
+             «Rammeverksuavhengigdesignsystem» i ett ord. Orddeling lar det
+             lange ordet brekke der det faktisk kan brekke. -->
+        <h1 class="mb-8 bg-linear-to-br from-cyan-300 via-blue-400 to-fuchsia-400 bg-clip-text text-3xl font-black tracking-tight text-balance text-transparent hyphens-auto sm:text-5xl">
+          Rammeverksuavhengig designsystem
+        </h1>
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
           Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
         </p>
@@ -59,12 +62,12 @@ import "../styles/custom-pages-tailwind.css"
         <p class="mb-6 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Dette får du</p>
         <div class="space-y-4">
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">Prisen følger problemet</h2>
-            <p class="text-sm leading-7 text-zinc-300">En knapp koster én CSS-klasse. Et datofelt koster en web component. Ingenting drar med seg mer maskineri enn det trenger.</p>
+            <h2 class="mb-2 text-lg font-bold text-white">En knapp koster én klasse</h2>
+            <p class="text-sm leading-7 text-zinc-300">En knapp er én CSS-klasse og null JavaScript. Et datofelt er en web component, fordi tekstfelt og kalender må vise det samme. Du laster bare det komponenten faktisk trenger.</p>
           </div>
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">Tilgjengelighet én gang</h2>
-            <p class="text-sm leading-7 text-zinc-300">Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er fem steder å gjøre feil per felt. Systemet gjør den, ikke hver app.</p>
+            <h2 class="mb-2 text-lg font-bold text-white">Koblingen gjøres ett sted</h2>
+            <p class="text-sm leading-7 text-zinc-300">Ledetekst, felt, hjelpetekst og feilmelding skal peke på hverandre med <code class="text-zinc-200">for</code>, <code class="text-zinc-200">id</code> og <code class="text-zinc-200">aria-describedby</code>. Systemet setter dem, så hver app slipper.</p>
           </div>
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
             <h2 class="mb-2 text-lg font-bold text-white">Ta det i bruk gradvis</h2>
@@ -79,32 +82,32 @@ import "../styles/custom-pages-tailwind.css"
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <div class="mb-10 max-w-2xl">
         <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Arkitektur</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre kategorier, delt etter hvor mye de tar over for deg</h2>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre kategorier, delt etter hvem som skriver HTML-en</h2>
       </div>
       <div class="grid gap-5 lg:grid-cols-3">
-        <article class="group rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-blue-400/70 hover:shadow-[0_30px_80px_-42px_rgba(79,172,254,0.3)]">
+        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-blue-400/70 hover:shadow-[0_30px_80px_-42px_rgba(79,172,254,0.3)]">
           <div class="mb-4 text-4xl">🎨</div>
           <h3 class="mb-3 text-xl font-bold">css</h3>
           <p class="text-sm leading-7 text-zinc-300">
             En klasse på et vanlig HTML-element. Ingen JavaScript lastes. Varianter styres med dataattributter.
           </p>
-          <code class="mt-4 block text-xs text-zinc-400">&lt;button class="fs-button"&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;button class="fs-button"&gt;</code>
         </article>
-        <article class="group rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-cyan-400/70 hover:shadow-[0_30px_80px_-42px_rgba(0,242,254,0.3)]">
+        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-cyan-400/70 hover:shadow-[0_30px_80px_-42px_rgba(0,242,254,0.3)]">
           <div class="mb-4 text-4xl">⚡</div>
           <h3 class="mb-3 text-xl font-bold">ramme</h3>
           <p class="text-sm leading-7 text-zinc-300">
             Du legger inn din egen HTML. Komponenten kobler ledetekst, felt og feilmelding sammen, og lar elementene bli liggende i vanlig DOM.
           </p>
-          <code class="mt-4 block text-xs text-zinc-400">&lt;fs-field&gt;…&lt;/fs-field&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-field&gt;…&lt;/fs-field&gt;</code>
         </article>
-        <article class="group rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-fuchsia-400/70 hover:shadow-[0_30px_80px_-42px_rgba(177,92,255,0.3)]">
+        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-fuchsia-400/70 hover:shadow-[0_30px_80px_-42px_rgba(177,92,255,0.3)]">
           <div class="mb-4 text-4xl">🔒</div>
           <h3 class="mb-3 text-xl font-bold">frittstående</h3>
           <p class="text-sm leading-7 text-zinc-300">
             Komponenten bygger alt selv. For tilfeller der flere deler må holdes i synk, som et datofelt der tekst og kalender alltid viser det samme.
           </p>
-          <code class="mt-4 block text-xs text-zinc-400">&lt;fs-date-field label="Reisedato"&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-date-field label="Reisedato"&gt;</code>
         </article>
       </div>
     </div>
@@ -114,43 +117,43 @@ import "../styles/custom-pages-tailwind.css"
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <div class="mb-10 max-w-2xl">
         <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Styrker</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre ting som ellers er vanskelige</h2>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre ting du slipper å løse selv</h2>
       </div>
 
       <div class="grid gap-5 lg:grid-cols-3">
-        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Autofullføring på klassene</h3>
+        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Editoren kjenner komponentene</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Klasser og dataattributter er strenger, og en skrivefeil i en variant gir ingen feilmelding, bare en stil som stille aldri ble brukt. Hele API-et finnes derfor også som funksjoner, med lovlige verdier i editoren.
+            Skriver du <code class="text-zinc-200">data-variant="secundary"</code> for hånd, skjer det ingenting: knappen blir stående med standardstilen, og ingen sier fra. Skriver du det gjennom funksjonen, får du en feil i editoren før du rekker å lagre.
           </p>
           <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>&lt;button &#123;...fs.button(&#123; variant: "secondary" &#125;)&#125;&gt;
   Lagre utkast
 &lt;/button&gt;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Returverdien er et vanlig objekt med attributter, så det samme kallet virker i JSX, i en Astro-mal og i ren JavaScript.
+            Funksjonen returnerer et vanlig objekt med attributter. Derfor virker det samme kallet i JSX, i en Astro-mal og i ren JavaScript.
           </p>
         </article>
 
-        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Tilpasning som er målt</h3>
+        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Din CSS vinner over vår</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            All komponent-CSS ligger i et eget lag, så din egen regel vinner uten <code class="text-zinc-200">!important</code>, uansett hvor spesifikk vår er. Form og størrelse leses fra variabler med tokenverdien som reserve, så standarden følger skalaen din.
+            All CSS-en vår ligger i et eget cascade layer. Da vinner en helt vanlig regel i din egen CSS over vår, uansett hvor spesifikk vår er, og uten <code class="text-zinc-200">!important</code>. Skal du bare endre form eller størrelse, finnes det en variabel per komponent.
           </p>
           <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>:root &#123;
   --fs-button-radius: 9999px;
 &#125;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Det er ikke et løfte i en README. Egne tester måler i nettleseren at hver av veiene inn fortsatt virker.
+            Testene åpner en nettleser og kontrollerer at regelen din faktisk vinner, at variabelen slår gjennom, og at <code class="text-zinc-200">::part()</code> når inn i kalenderen.
           </p>
         </article>
 
-        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Tilgjengelighet som kontrolleres</h3>
+        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Fargene holder kontrastkravet</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er skrevet én gang og brukes av både web-komponenten og funksjonen, så de to kan ikke gå fra hverandre.
+            Å koble en ledetekst, et felt, en hjelpetekst og en feilmelding riktig er fem ting å gjøre feil per felt. Regnestykket er skrevet én gang, og brukes av både <code class="text-zinc-200">&lt;fs-field&gt;</code> og <code class="text-zinc-200">fs.field()</code>.
           </p>
           <p class="text-sm leading-7 text-zinc-300">
-            Hver komponent kjøres gjennom axe i ekte nettleser mot WCAG 2.1 nivå A og AA. Det samme gjøres mot hver side i denne dokumentasjonen, i både lyst og mørkt tema, siden kontrastfeil oppstår først når delene settes sammen.
+            Hvert fargepar i systemet er regnet ut og kontrollert mot kravet i WCAG, i både lyst og mørkt tema. Komponentene kjøres gjennom axe i Chromium, Firefox og WebKit, og det samme gjøres mot hver side i denne dokumentasjonen.
           </p>
         </article>
       </div>

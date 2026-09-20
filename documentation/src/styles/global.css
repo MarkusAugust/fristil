@@ -165,6 +165,12 @@
 	   skal ikke arve dokumentasjonens typografi. En regel som treffer <p>
 	   direkte slår den arvede fargen fra forhåndsvisningen, uansett
 	   spesifisitet. */
+  /* Et langt kodeord i en celle, som et attributtnavn med verdi, holdt
+     tabellen bredere enn en mobilskjerm. Her får det lov til å brekke. */
+  .sl-markdown-content :is(td, th) code:not(.not-content *) {
+    overflow-wrap: anywhere;
+  }
+
   .sl-markdown-content :is(h1, h2, h3):not(.not-content, .not-content *) {
     @apply tracking-tight text-zinc-950 dark:text-zinc-50;
   }
