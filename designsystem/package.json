@@ -69,6 +69,22 @@
     "./tailwind": {
       "import": "./dist/tailwind/preset.js",
       "types": "./dist/tailwind/preset.d.ts"
+    },
+    "./badge": {
+      "import": "./dist/components/css/badge/badge.js",
+      "types": "./dist/components/css/badge/badge.d.ts"
+    },
+    "./link": {
+      "import": "./dist/components/css/link/link.js",
+      "types": "./dist/components/css/link/link.d.ts"
+    },
+    "./shared": {
+      "import": "./dist/components/css/shared.js",
+      "types": "./dist/components/css/shared.d.ts"
+    },
+    "./field-core": {
+      "import": "./dist/components/ramme/field/field-core.js",
+      "types": "./dist/components/ramme/field/field-core.d.ts"
     }
   },
   "files": [

@@ -1,3 +1,5 @@
+import { attributter, lagVakt } from "../shared.js"
+
 export const BUTTON_CLASS = "fs-button" as const
 
 export const buttonVariants = [
@@ -10,25 +12,33 @@ export const buttonVariants = [
 export type ButtonVariant = (typeof buttonVariants)[number]
 export type NonPrimaryButtonVariant = Exclude<ButtonVariant, "primary">
 
-export type ButtonStyleAttributes = {
+export type ButtonOptions = {
+  /** Hvor tung handlingen er. Standard: `primary`. */
+  variant?: ButtonVariant
+}
+
+export type ButtonAttributes = {
   class: typeof BUTTON_CLASS
   "data-variant"?: NonPrimaryButtonVariant
 }
 
-export function isButtonVariant(value: string): value is ButtonVariant {
-  return (buttonVariants as readonly string[]).includes(value)
-}
-
 /**
- * Returns only the Fristil button style attributes.
- * Other HTML attributes (id, aria-*, disabled, etc.) are owned by the app.
+ * Attributtene for en knapp.
+ *
+ * ```ts
+ * <button {...button({ variant: "secondary" })}>Lagre utkast</button>
+ * ```
  */
-export function getButtonStyleAttributes(
-  variant: ButtonVariant = "primary",
-): ButtonStyleAttributes {
-  if (variant === "primary") {
-    return { class: BUTTON_CLASS }
-  }
-
-  return { class: BUTTON_CLASS, "data-variant": variant }
-}
+export const button = Object.assign(
+  ({ variant = "primary" }: ButtonOptions = {}): ButtonAttributes =>
+    attributter({
+      class: BUTTON_CLASS,
+      "data-variant": variant === "primary" ? undefined : variant,
+    }),
+  {
+    /** De lovlige variantene, for oppslag og forgrening. */
+    variants: buttonVariants,
+    /** Sjekker om en streng utenfra er en gyldig variant. */
+    isVariant: lagVakt(buttonVariants),
+  },
+)

@@ -1,20 +1,11 @@
 import { html, LitElement } from "lit"
 
+import { computeFieldAttributes } from "./field-core.js"
+
 export const FS_FIELD_TAG = "fs-field" as const
 
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
-}
-
-function mergeTokens(...values: Array<string | null | undefined>): string {
-  const set = new Set<string>()
-  for (const value of values) {
-    if (!value) continue
-    for (const token of value.split(/\s+/)) {
-      if (token) set.add(token)
-    }
-  }
-  return [...set].join(" ")
 }
 
 export class FsField extends LitElement {
@@ -68,32 +59,52 @@ export class FsField extends LitElement {
 
     if (!control) return
 
-    const controlId =
-      this.controlId || control.id || uniqueId("fs-field-control")
-    control.id = controlId
+    if (help && !help.id) help.id = uniqueId("fs-field-help")
+    if (error && !error.id) error.id = uniqueId("fs-field-error")
+
+    // Selve kontrakten regnes ut av den delte kjernen, som fs.field() også
+    // bruker. Denne komponenten gjør bare én ting utover det: å sette
+    // resultatet på elementer som allerede står i DOM-en.
+    const beregnet = computeFieldAttributes({
+      id: this.controlId || control.id || uniqueId("fs-field-control"),
+      help: Boolean(help),
+      error: Boolean(error),
+      helpId: help?.id,
+      errorId: error?.id,
+      required:
+        this.requiredMarker === "symbol" || this.requiredMarker === "text"
+          ? this.requiredMarker
+          : undefined,
+      optional: this.optional,
+      invalid: this.invalid,
+      disabled: this.disabled,
+      describedBy: [
+        control.getAttribute("aria-describedby") ?? "",
+        this.describedBy ?? "",
+      ].filter(Boolean),
+    })
+
+    control.id = beregnet.control.id
 
     if (label) {
-      if (!label.htmlFor) {
-        label.htmlFor = controlId
-      }
-
-      // Markeringen under settes som data-required, og CSS-regelen for den
-      // er .fs-label[data-required]. Uten klassen treffer ingen regel, og
-      // ledeteksten blir stående ustilet med et attributt som ikke gjør noe.
-      label.classList.add("fs-label")
-
-      if (this.requiredMarker === "symbol" || this.requiredMarker === "text") {
-        label.setAttribute("data-required", this.requiredMarker)
-        label.removeAttribute("data-optional")
-      } else if (this.optional) {
-        label.setAttribute("data-optional", "")
-        label.removeAttribute("data-required")
-      }
-
-      if (this.disabled) {
-        label.setAttribute("aria-disabled", "true")
-      }
+      label.classList.add(beregnet.label.class)
+      if (!label.htmlFor) label.htmlFor = beregnet.label.for
+      settEllerFjern(label, "data-required", beregnet.label["data-required"])
+      settEllerFjern(label, "data-optional", beregnet.label["data-optional"])
+      settEllerFjern(label, "aria-disabled", beregnet.label["aria-disabled"])
     }
+
+    if (error) {
+      error.hidden = Boolean(beregnet.error.hidden)
+      error.setAttribute("aria-hidden", String(Boolean(beregnet.error.hidden)))
+    }
+
+    settEllerFjern(
+      control,
+      "aria-describedby",
+      beregnet.control["aria-describedby"],
+    )
+    settEllerFjern(control, "aria-invalid", beregnet.control["aria-invalid"])
 
     if (this.disabled) {
       control.setAttribute("disabled", "")
@@ -103,47 +114,32 @@ export class FsField extends LitElement {
       control.removeAttribute("aria-disabled")
     }
 
-    const helpId = help ? help.id || uniqueId("fs-field-help") : ""
-    if (help && !help.id) help.id = helpId
+    // data-state settes bare når konsumenten ikke har satt den selv.
+    const erSystemfelt =
+      control.classList.contains("fs-input") ||
+      control.classList.contains("fs-textarea") ||
+      control.classList.contains("fs-select")
 
-    const errorId = error ? error.id || uniqueId("fs-field-error") : ""
-    if (error && !error.id) error.id = errorId
-
-    if (error) {
-      const shouldShowError = this.invalid
-      error.hidden = !shouldShowError
-      error.setAttribute("aria-hidden", String(!shouldShowError))
+    if (this.invalid && erSystemfelt && !control.hasAttribute("data-state")) {
+      control.setAttribute("data-state", "invalid")
+    } else if (
+      !this.invalid &&
+      control.getAttribute("data-state") === "invalid"
+    ) {
+      control.removeAttribute("data-state")
     }
+  }
+}
 
-    if (this.invalid) {
-      control.setAttribute("aria-invalid", "true")
-      if (
-        control.classList.contains("fs-input") ||
-        control.classList.contains("fs-textarea") ||
-        control.classList.contains("fs-select")
-      ) {
-        if (!control.hasAttribute("data-state")) {
-          control.setAttribute("data-state", "invalid")
-        }
-      }
-    } else {
-      control.removeAttribute("aria-invalid")
-      if (control.getAttribute("data-state") === "invalid") {
-        control.removeAttribute("data-state")
-      }
-    }
-
-    const describedBy = mergeTokens(
-      control.getAttribute("aria-describedby"),
-      helpId,
-      this.invalid ? errorId : undefined,
-      this.describedBy,
-    )
-    if (describedBy) {
-      control.setAttribute("aria-describedby", describedBy)
-    } else {
-      control.removeAttribute("aria-describedby")
-    }
+function settEllerFjern(
+  element: HTMLElement,
+  navn: string,
+  verdi: string | undefined,
+) {
+  if (verdi === undefined) {
+    element.removeAttribute(navn)
+  } else {
+    element.setAttribute(navn, verdi)
   }
 }
 

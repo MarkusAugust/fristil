@@ -1,15 +1,13 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
-import selectCss from "./select.css?inline"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+import selectCss from "./select.css?inline"
 
 import "../../../tokens/tokens.css"
 import "./select.css"
