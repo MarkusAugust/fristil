@@ -12,7 +12,7 @@ import Preview from "../../components/Preview.astro"
 npm install @fristil/designsystem
 ```
 
-Ingen påkrevde avhengigheter. `lit` trengs bare til ramme- og frittstående komponenter, `tailwindcss` bare til forhåndsinnstillingen. Begge er valgfrie `peerDependencies`.
+Én valgfri avhengighet: `lit`, og bare til ramme- og frittstående komponenter. Tailwind-temaet er ren CSS, så pakken krever ingenting av Tailwind.
 
 ## Importer tokens
 
@@ -96,6 +96,7 @@ Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designs
 | `@fristil/designsystem/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
 | `@fristil/designsystem/<komponent>.css` | Én komponent, med samme navn som siden dens |
 | `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
+| `@fristil/designsystem/tailwind.css` | Fristils verdier som Tailwind-tema. Valgfri. |
 
 Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `date-field.css`, `error-summary.css`, `search.css` og `suggestion.css`.
 
@@ -131,7 +132,6 @@ Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra
 | `@fristil/designsystem/suggestion` | `defineFsSuggestion`, klassen `FsSuggestion` |
 | `@fristil/designsystem/field-core` | `computeFieldAttributes`: det `fs.field` og `<fs-field>` deler |
 | `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
-| `@fristil/designsystem/tailwind` | `fristilPreset` |
 
 Hver komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten.
 

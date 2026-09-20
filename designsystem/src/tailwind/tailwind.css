@@ -1,0 +1,134 @@
+/*
+ * Fristils verdier som Tailwind-tema.
+ *
+ * Fila er ren CSS, og pakken har ingen avhengighet til Tailwind. Det er
+ * Tailwind-versjonen i appen din som leser den, så to versjoner kan ikke
+ * komme i konflikt: her finnes det ingen andre.
+ *
+ * Krever Tailwind 4 og at `tokens.css` er lastet, siden verdiene peker dit.
+ *
+ * ```css
+ * @layer theme, base, fristil, components, utilities;
+ *
+ * @import "tailwindcss";
+ * @import "@fristil/designsystem/tokens.css";
+ * @import "@fristil/designsystem/tailwind.css";
+ * ```
+ *
+ * Rekkefølgen på den første linja er ikke pynt. Lagene teller i den
+ * rekkefølgen de først blir nevnt, og vinneren er det siste laget, uansett
+ * spesifisitet. Står `fristil` foran `base`, slår Tailwinds Preflight
+ * komponentene våre og nullstiller for eksempel bakgrunnen på en knapp. Står
+ * det etter `utilities`, slår komponentene våre `p-6` og resten av klassene
+ * dine. Mellom `base` og `components` er det eneste stedet begge deler virker.
+ *
+ * Alt vi legger til heter `fs-`, som klassene ellers i systemet. Da rører vi
+ * ikke Tailwinds egne verdier: `bg-neutral-100` betyr fortsatt det samme.
+ */
+
+@theme inline {
+  /*
+   * Avstandsenheten. Tailwind regner `p-4` som `calc(var(--spacing) * 4)`,
+   * så med `--size-1` som enhet er `p-4` nøyaktig `--size-4`. Endrer du
+   * skalaen, følger Tailwind-klassene med.
+   */
+  --spacing: var(--size-1);
+
+  /* Side */
+  --color-fs-page: var(--semantic-page-background);
+  --color-fs-page-fg: var(--semantic-page-foreground);
+
+  /* Interaktiv */
+  --color-fs-interactive: var(--semantic-interactive-main);
+  --color-fs-interactive-bg: var(--semantic-interactive-background);
+  --color-fs-interactive-fg: var(--semantic-interactive-foreground);
+  --color-fs-interactive-contrast: var(--semantic-interactive-contrast);
+  --color-fs-visited: var(--semantic-interactive-visited);
+
+  /* Status */
+  --color-fs-success: var(--semantic-success-foreground);
+  --color-fs-success-bg: var(--semantic-success-background);
+  --color-fs-warning: var(--semantic-warning-foreground);
+  --color-fs-warning-bg: var(--semantic-warning-background);
+  --color-fs-danger: var(--semantic-danger-foreground);
+  --color-fs-danger-bg: var(--semantic-danger-background);
+  --color-fs-danger-main: var(--semantic-danger-main);
+  --color-fs-danger-contrast: var(--semantic-danger-contrast);
+  --color-fs-neutral: var(--semantic-neutral-foreground);
+  --color-fs-neutral-bg: var(--semantic-neutral-background);
+  --color-fs-disabled: var(--semantic-disabled-foreground);
+  --color-fs-disabled-bg: var(--semantic-disabled-background);
+
+  /* Tekst og kanter */
+  --color-fs-muted: var(--semantic-muted-foreground);
+  --color-fs-field-border: var(--semantic-field-border);
+  --color-fs-field-border-hover: var(--semantic-field-border-hover);
+  --color-fs-divider: var(--semantic-divider-30);
+  --color-fs-divider-strong: var(--semantic-divider-100);
+
+  /* Palett, for det som ikke har en semantisk betydning ennå */
+  --color-fs-burgundy-5: var(--palette-burgundy-5);
+  --color-fs-burgundy-10: var(--palette-burgundy-10);
+  --color-fs-burgundy-30: var(--palette-burgundy-30);
+  --color-fs-burgundy-50: var(--palette-burgundy-50);
+  --color-fs-burgundy-70: var(--palette-burgundy-70);
+  --color-fs-burgundy-100: var(--palette-burgundy-100);
+  --color-fs-forest-5: var(--palette-forest-5);
+  --color-fs-forest-10: var(--palette-forest-10);
+  --color-fs-forest-30: var(--palette-forest-30);
+  --color-fs-forest-50: var(--palette-forest-50);
+  --color-fs-forest-70: var(--palette-forest-70);
+  --color-fs-forest-100: var(--palette-forest-100);
+  --color-fs-ochre-5: var(--palette-ochre-5);
+  --color-fs-ochre-10: var(--palette-ochre-10);
+  --color-fs-ochre-30: var(--palette-ochre-30);
+  --color-fs-ochre-50: var(--palette-ochre-50);
+  --color-fs-ochre-70: var(--palette-ochre-70);
+  --color-fs-ochre-100: var(--palette-ochre-100);
+  --color-fs-denim-5: var(--palette-denim-5);
+  --color-fs-denim-10: var(--palette-denim-10);
+  --color-fs-denim-30: var(--palette-denim-30);
+  --color-fs-denim-50: var(--palette-denim-50);
+  --color-fs-denim-70: var(--palette-denim-70);
+  --color-fs-denim-100: var(--palette-denim-100);
+  --color-fs-azure-10: var(--palette-azure-10);
+  --color-fs-azure-30: var(--palette-azure-30);
+  --color-fs-azure-70: var(--palette-azure-70);
+  --color-fs-azure-100: var(--palette-azure-100);
+  --color-fs-graphite-0: var(--palette-graphite-0);
+  --color-fs-graphite-5: var(--palette-graphite-5);
+  --color-fs-graphite-10: var(--palette-graphite-10);
+  --color-fs-graphite-30: var(--palette-graphite-30);
+  --color-fs-graphite-50: var(--palette-graphite-50);
+  --color-fs-graphite-70: var(--palette-graphite-70);
+  --color-fs-graphite-100: var(--palette-graphite-100);
+
+  /* Tekststørrelser */
+  --text-fs-xxs: var(--font-size-xxs);
+  --text-fs-xs: var(--font-size-xs);
+  --text-fs-s: var(--font-size-s);
+  --text-fs-m: var(--font-size-m);
+  --text-fs-l: var(--font-size-l);
+  --text-fs-xl: var(--font-size-xl);
+  --text-fs-xxl: var(--font-size-xxl);
+  --text-fs-mega: var(--font-size-mega);
+
+  /* Bredder for sideoppsett */
+  --container-fs-xs: 100%;
+  --container-fs-sm: 576px;
+  --container-fs-md: 960px;
+  --container-fs-lg: 1152px;
+  --container-fs-xl: 1536px;
+  --container-fs-aside: 384px;
+  --container-fs-aside-narrow: 288px;
+  --container-fs-wide-content: 768px;
+
+  /* Skygge under flater som ligger over siden */
+  --shadow-fs-overlay: var(--semantic-shadow-overlay);
+}
+
+/*
+ * Brekkpunktene er med vilje utelatt. Fristils `sm`, `md`, `lg`, `xl` og
+ * `2xl` har nøyaktig de samme verdiene som Tailwind allerede bruker, så
+ * `md:` virker som før uten at vi overstyrer noe.
+ */

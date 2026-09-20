@@ -71,7 +71,7 @@ import "@fristil/designsystem/checkbox.css"
 import { checkbox } from "@fristil/designsystem/checkbox"
 ```
 
-Web-komponentene ligger under de samme navnene: `/field`, `/tabs`, `/error-summary`, `/date-field`, `/calendar`, `/popover`, `/toast` og `/suggestion`. I tillegg finnes `/tokens`, `/tailwind`, `/react`, `/react-jsx`, `/dom` og `/field-core`.
+Web-komponentene ligger under de samme navnene: `/field`, `/tabs`, `/error-summary`, `/date-field`, `/calendar`, `/popover`, `/toast` og `/suggestion`. I tillegg finnes `/tokens`, `/react`, `/react-jsx`, `/dom` og `/field-core`, og `/tailwind.css` for dem som bruker Tailwind.
 
 Hele komponent-API-et ligger i ett navnerom:
 

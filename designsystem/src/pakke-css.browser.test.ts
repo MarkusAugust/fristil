@@ -47,7 +47,18 @@ function classNames(source: string): string[] {
   return [...new Set(found.map((name) => name.slice(1)))]
 }
 
-const filer = Object.entries(stilark).filter(([, source]) => !isBundle(source))
+/**
+ * Tailwind-temaet er ikke et komponentstilark.
+ *
+ * Det er en `@theme`-blokk som gir Tailwind Fristils verdier, så det ligger
+ * med vilje utenfor laget og definerer variabler i Tailwinds navnerom.
+ * Reglene under gjelder derfor ikke der, men fila har sine egne lenger nede.
+ */
+const erTailwindtema = (navn: string) => navn.includes("/tailwind/")
+
+const filer = Object.entries(stilark).filter(
+  ([navn, source]) => !isBundle(source) && !erTailwindtema(navn),
+)
 
 describe("stilarkene pakken sender ut", () => {
   it("har stilark å kontrollere", () => {
@@ -135,5 +146,49 @@ describe("tokenene komponentene faller tilbake på", () => {
       (name) => !name.startsWith("--fs-") && !definerte.has(name),
     )
     expect(manglende).toEqual([])
+  })
+})
+
+describe("Tailwind-temaet", () => {
+  const tema = Object.entries(stilark).find(([navn]) =>
+    erTailwindtema(navn),
+  )?.[1]
+
+  it("finnes", () => {
+    expect(tema).toBeTypeOf("string")
+  })
+
+  it("legger bare til navn i fs-navnerommet", () => {
+    const definert = [
+      ...onlyRules(tema ?? "").matchAll(/^\s*(--[\w-]+)\s*:/gm),
+    ].map((treff) => treff[1])
+
+    // `--spacing` er unntaket, og med vilje: det er Tailwinds avstandsenhet,
+    // og hele poenget er at `p-4` skal bli `--size-4`.
+    const utenfor = definert.filter(
+      (navn) =>
+        navn !== "--spacing" &&
+        !/^--(color|text|container|shadow|font|radius|leading|tracking|breakpoint)-fs-/.test(
+          navn,
+        ),
+    )
+
+    expect(utenfor).toEqual([])
+  })
+
+  it("henter alle verdiene fra Fristils tokens", () => {
+    const lest = [...onlyRules(tema ?? "").matchAll(/var\((--[\w-]+)/g)].map(
+      (treff) => treff[1],
+    )
+
+    const fremmede = lest.filter(
+      (navn) =>
+        !navn.startsWith("--semantic-") &&
+        !navn.startsWith("--palette-") &&
+        !navn.startsWith("--size") &&
+        !navn.startsWith("--font-size"),
+    )
+
+    expect([...new Set(fremmede)]).toEqual([])
   })
 })

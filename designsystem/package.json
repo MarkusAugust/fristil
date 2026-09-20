@@ -88,10 +88,7 @@
       "import": "./dist/tokens/tokens.js",
       "types": "./dist/tokens/tokens.d.ts"
     },
-    "./tailwind": {
-      "import": "./dist/tailwind/preset.js",
-      "types": "./dist/tailwind/preset.d.ts"
-    },
+    "./tailwind.css": "./src/tailwind/tailwind.css",
     "./badge": {
       "import": "./dist/components/css/badge/badge.js",
       "types": "./dist/components/css/badge/badge.d.ts"
@@ -259,16 +256,13 @@
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
-    "sjekk:eksport": "bun scripts/sjekk-eksport.ts"
+    "sjekk:eksport": "bun scripts/sjekk-eksport.ts",
+    "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts"
   },
   "peerDependencies": {
-    "lit": ">=3.0.0",
-    "tailwindcss": ">=4.3.0"
+    "lit": ">=3.0.0"
   },
   "peerDependenciesMeta": {
-    "tailwindcss": {
-      "optional": true
-    },
     "lit": {
       "optional": true
     }
