@@ -1,6 +1,5 @@
-/* Generated — edit tokens.ts, not this file */
+/* Generert — rediger tokens.ts, ikke denne fila */
 :root {
-
   /* font */
   --font-size-reference: 16px;
   --font-size-xxs: 0.625rem;
@@ -92,7 +91,7 @@
 
   /* semantic-warning */
   --semantic-warning-background: var(--palette-ochre-10);
-  --semantic-warning-foreground: #9f7509;
+  --semantic-warning-foreground: #896508;
 
   /* semantic-success */
   --semantic-success-background: var(--palette-forest-10);
@@ -101,6 +100,10 @@
   /* semantic-disabled */
   --semantic-disabled-background: var(--palette-graphite-10);
   --semantic-disabled-foreground: var(--palette-graphite-50);
+
+  /* semantic-neutral */
+  --semantic-neutral-background: var(--palette-graphite-10);
+  --semantic-neutral-foreground: var(--palette-graphite-70);
 
   /* semantic-interactive */
   --semantic-interactive-background: var(--palette-azure-10);
