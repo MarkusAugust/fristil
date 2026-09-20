@@ -137,3 +137,139 @@ describe("fs-date-field tilgjengelighet", () => {
     expect(document.activeElement).toBe(input)
   })
 })
+
+/**
+ * Tilgjengelighetskontrakten, altså koblingen mellom ledetekst, felt,
+ * hjelpetekst og feilmelding.
+ *
+ * Komponenten hadde lenge sin egen utgave av denne logikken, ved siden av
+ * `computeFieldAttributes`, og ingen test dekket den. Da kan de to gå fra
+ * hverandre uten at noe sier fra. Disse testene holder dem sammen.
+ */
+describe("fs-date-field: kobling og tilstand", () => {
+  beforeAll(() => {
+    defineFsDateField()
+  })
+
+  beforeEach(() => {
+    document.body.innerHTML = ""
+  })
+
+  async function lagFelt(attributter: string) {
+    document.body.innerHTML = `<fs-date-field ${attributter}></fs-date-field>`
+    const felt = document.querySelector("fs-date-field") as HTMLElement
+    await ventPaTegning(felt)
+    return {
+      felt,
+      ledetekst: felt.querySelector("label") as HTMLLabelElement,
+      input: felt.querySelector("input.fs-input") as HTMLInputElement,
+    }
+  }
+
+  it("kobler ledeteksten til feltet", async () => {
+    const { ledetekst, input } = await lagFelt('label="Fødselsdato"')
+
+    expect(ledetekst.getAttribute("for")).toBe(input.id)
+    expect(input.id).toBeTruthy()
+  })
+
+  it("peker på hjelpeteksten, og på feilmeldingen først når feltet er ugyldig", async () => {
+    const { felt, input } = await lagFelt(
+      'label="Fødselsdato" help-text="Skriv DD-MM-ÅÅÅÅ." error-text="Skriv en dato som finnes."',
+    )
+    const hjelp = felt.querySelector(".fs-help-text") as HTMLElement
+    const feil = felt.querySelector(".fs-error-text") as HTMLElement
+
+    expect(input.getAttribute("aria-describedby")).toBe(hjelp.id)
+
+    felt.setAttribute("invalid", "")
+    await ventPaTegning(felt)
+
+    // Feilmeldingen tas med først nå. Ellers ville skjermleseren pekt på et
+    // skjult element.
+    expect(input.getAttribute("aria-describedby")?.split(" ")).toEqual([
+      hjelp.id,
+      feil.id,
+    ])
+  })
+
+  it("tar med konsumentens egne id-er uten å gjenta noen", async () => {
+    const { input } = await lagFelt(
+      'label="Fødselsdato" help-text="Hjelp." described-by="min-tekst min-tekst"',
+    )
+
+    const ider = input.getAttribute("aria-describedby")?.split(" ") ?? []
+    expect(ider).toContain("min-tekst")
+    expect(ider.filter((id) => id === "min-tekst")).toHaveLength(1)
+  })
+
+  it("markerer ledeteksten som påkrevd eller valgfri", async () => {
+    const påkrevd = await lagFelt('label="Fødselsdato" required')
+    expect(påkrevd.ledetekst.getAttribute("data-required")).toBe("symbol")
+    expect(påkrevd.ledetekst.hasAttribute("data-optional")).toBe(false)
+
+    const valgfri = await lagFelt('label="Fødselsdato" optional')
+    expect(valgfri.ledetekst.getAttribute("data-optional")).toBe("")
+    expect(valgfri.ledetekst.hasAttribute("data-required")).toBe(false)
+  })
+
+  it("melder ledeteksten som av når feltet er av", async () => {
+    const { ledetekst } = await lagFelt('label="Fødselsdato" disabled')
+
+    expect(ledetekst.getAttribute("aria-disabled")).toBe("true")
+  })
+
+  it("lytter fortsatt på kalenderen etter at komponenten er tegnet på nytt", async () => {
+    // Lytteren ble tidligere fjernet og lagt på igjen ved hver oppdatering,
+    // av frykt for å miste den. Nå står den i malen, og Lit holder på den.
+    const { felt, input } = await lagFelt('label="Fødselsdato"')
+
+    felt.setAttribute("help-text", "En ny hjelpetekst")
+    await ventPaTegning(felt)
+
+    const kalender = felt.querySelector("fs-calendar") as HTMLElement
+    kalender.dispatchEvent(
+      new CustomEvent("date-select", {
+        detail: { value: "2026-05-15" },
+        bubbles: true,
+      }),
+    )
+    await ventPaTegning(felt)
+
+    expect(felt.getAttribute("value")).toBe("2026-05-15")
+    expect(input.value).toBe("15-05-2026")
+  })
+
+  it("lar det brukeren har skrevet stå når komponenten tegnes på nytt", async () => {
+    const { felt, input } = await lagFelt('label="Fødselsdato"')
+
+    // Brukeren skriver halve datoen
+    input.focus()
+    input.value = "01-01-20"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning(felt)
+
+    felt.setAttribute("help-text", "En ny hjelpetekst")
+    await ventPaTegning(felt)
+
+    // Halvskrevet tekst er ikke en gyldig dato, så this.value står stille.
+    // Malen må likevel ikke overskrive det som står i feltet.
+    expect(input.value).toBe("01-01-20")
+  })
+
+  it("setter feltet tilbake når verdien settes utenfra på nytt", async () => {
+    // Motstykket til testen over: står ikke brukeren i feltet, skal
+    // visningen følge `value`, også når `value` settes til det samme igjen.
+    const { felt, input } = await lagFelt(
+      'label="Fødselsdato" value="2026-05-31"',
+    )
+    expect(input.value).toBe("31-05-2026")
+
+    input.value = "rot"
+    felt.setAttribute("value", "2026-05-31")
+    felt.setAttribute("help-text", "En ny hjelpetekst")
+    await ventPaTegning(felt)
+
+    expect(input.value).toBe("31-05-2026")
+  })
+})

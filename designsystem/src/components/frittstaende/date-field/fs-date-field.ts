@@ -1,5 +1,8 @@
 import { html, LitElement } from "lit"
+import { ifDefined } from "lit/directives/if-defined.js"
+import { live } from "lit/directives/live.js"
 
+import { computeFieldAttributes } from "../../ramme/field/field-core.js"
 import { defineFsCalendar } from "../calendar/fs-calendar.js"
 
 export const FS_DATE_FIELD_TAG = "fs-date-field" as const
@@ -14,14 +17,14 @@ function isoToDisplay(iso: string): string {
   return `${match[3]}-${match[2]}-${match[1]}`
 }
 
-/** Returns ISO string, or null if display is not a valid calendar date. */
+/** ISO-streng, eller null om teksten ikke er en dato som finnes. */
 function displayToIso(display: string): string | null {
   const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(display)
   if (!match) return null
   const day = Number(match[1])
   const month = Number(match[2])
   const year = Number(match[3])
-  // Date.UTC overflow reveals invalid dates: 32-06-2026 rolls to 2026-07-02
+  // Date.UTC ruller over ved ugyldige datoer: 32-06-2026 blir 2026-07-02
   const date = new Date(Date.UTC(year, month - 1, day))
   if (
     date.getUTCFullYear() !== year ||
@@ -31,17 +34,6 @@ function displayToIso(display: string): string | null {
     return null
   }
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-}
-
-function mergeTokens(...values: Array<string | null | undefined>): string {
-  const set = new Set<string>()
-  for (const value of values) {
-    if (!value) continue
-    for (const token of value.split(/\s+/)) {
-      if (token) set.add(token)
-    }
-  }
-  return [...set].join(" ")
 }
 
 export class FsDateField extends LitElement {
@@ -75,8 +67,33 @@ export class FsDateField extends LitElement {
   controlId?: string
   describedBy?: string
 
-  /** True when the user has typed a date that is not a valid calendar date. */
+  /** Sann når brukeren har skrevet en dato som ikke finnes. */
   private _inputInvalid = false
+
+  /**
+   * Teksten brukeren har skrevet, når den ikke er en gyldig dato.
+   *
+   * Halvskrevet tekst som «01-01-20» kan ikke bli til en ISO-dato, så
+   * `value` står stille mens den skrives. Uten at teksten er en del av
+   * tilstanden her, ville malen tegnet feltet tomt igjen ved neste
+   * oppdatering, og brukeren mistet det de holdt på med.
+   */
+  private _typed: string | null = null
+
+  /** Det feltet skal vise: brukerens egen tekst, ellers `value`. */
+  private get displayValue() {
+    return this._typed ?? isoToDisplay(this.value)
+  }
+
+  /**
+   * Settes `value` utenfra, er brukerens tekst ikke lenger gyldig.
+   *
+   * Det gjelder også når komponenten setter `value` selv etter at teksten
+   * ble en fullstendig dato, og det er riktig: da viser `value` det samme.
+   */
+  willUpdate(changed: Map<string, unknown>) {
+    if (changed.has("value")) this._typed = null
+  }
 
   private readonly uid = uniqueId("fs-date-field")
 
@@ -90,15 +107,43 @@ export class FsDateField extends LitElement {
   }
 
   render() {
+    const invalid = this.invalid || this._inputInvalid
+
+    // Tilgjengelighetskontrakten regnes ut ett sted, det samme som
+    // `<fs-field>` og `fs.field()` bruker. Komponenten hadde tidligere sin
+    // egen utgave av den samme logikken, og de to kunne gå fra hverandre.
+    const felt = computeFieldAttributes({
+      id: this.inputId,
+      help: Boolean(this.helpText),
+      error: Boolean(this.errorText),
+      required: this.required ? "symbol" : undefined,
+      optional: this.optional,
+      invalid,
+      disabled: this.disabled,
+      describedBy: this.describedBy ? [this.describedBy] : [],
+      helpId: this.helpId,
+      errorId: this.errorId,
+    })
+
     return html`
       <div class="fs-date-field">
-        <label class="fs-label" for=${this.inputId}>${this.label}</label>
+        <label
+          class="fs-label"
+          for=${felt.label.for}
+          data-required=${ifDefined(felt.label["data-required"])}
+          data-optional=${ifDefined(felt.label["data-optional"])}
+          aria-disabled=${ifDefined(felt.label["aria-disabled"])}
+          >${this.label}</label
+        >
         <div class="fs-date-field__field">
           <input
-            id=${this.inputId}
+            id=${felt.control.id}
             class="fs-input"
             type="text"
-            .value=${isoToDisplay(this.value)}
+            aria-describedby=${ifDefined(felt.control["aria-describedby"])}
+            aria-invalid=${ifDefined(felt.control["aria-invalid"])}
+            data-state=${ifDefined(felt.control["data-state"])}
+            .value=${live(this.displayValue)}
             name=${this.name ?? ""}
             placeholder=${this.placeholder}
             ?required=${this.required}
@@ -140,28 +185,18 @@ export class FsDateField extends LitElement {
             ?disabled=${this.disabled}
             trigger-hidden
             class="fs-date-field__calendar"
+            @date-select=${this.handleCalendarSelect}
           ></fs-calendar>
         </div>
 
         ${this.helpText ? html`<p class="fs-help-text" id=${this.helpId}>${this.helpText}</p>` : null}
         ${
           this.errorText
-            ? html`<p class="fs-error-text" id=${this.errorId} ?hidden=${!(this.invalid || this._inputInvalid)}>${this.errorText}</p>`
+            ? html`<p class="fs-error-text" id=${felt.error.id} ?hidden=${Boolean(felt.error.hidden)}>${this.errorText}</p>`
             : null
         }
       </div>
     `
-  }
-
-  firstUpdated() {
-    this.syncA11y()
-    this.attachCalendarListener()
-  }
-
-  updated() {
-    this.syncA11y()
-    this.syncControlValues()
-    this.attachCalendarListener()
   }
 
   private get inputId() {
@@ -180,6 +215,7 @@ export class FsDateField extends LitElement {
     return `${this.uid}-error`
   }
 
+
   private get inputElement() {
     return this.querySelector(`#${this.inputId}`) as HTMLInputElement | null
   }
@@ -188,87 +224,8 @@ export class FsDateField extends LitElement {
     return this.querySelector(`#${this.calendarId}`) as HTMLElement | null
   }
 
-  private attachCalendarListener() {
-    const calendar = this.calendarElement
-    if (!calendar) return
 
-    calendar.removeEventListener(
-      "date-select",
-      this.handleCalendarSelect as EventListener,
-    )
-    calendar.addEventListener(
-      "date-select",
-      this.handleCalendarSelect as EventListener,
-    )
-  }
 
-  private syncControlValues() {
-    const input = this.inputElement
-    if (input && input.value !== isoToDisplay(this.value)) {
-      input.value = isoToDisplay(this.value)
-    }
-
-    const calendar = this.calendarElement as
-      | (HTMLElement & { value?: string })
-      | null
-    if (calendar && calendar.value !== this.value) {
-      calendar.value = this.value
-    }
-  }
-
-  private syncA11y() {
-    const label = this.querySelector("label")
-    const input = this.inputElement
-    const help = this.helpText
-      ? (this.querySelector(`#${this.helpId}`) as HTMLElement | null)
-      : null
-    const error = this.errorText
-      ? (this.querySelector(`#${this.errorId}`) as HTMLElement | null)
-      : null
-
-    if (!input || !label) return
-
-    if (this.required) {
-      label.setAttribute("data-required", "symbol")
-      label.removeAttribute("data-optional")
-    } else if (this.optional) {
-      label.setAttribute("data-optional", "")
-      label.removeAttribute("data-required")
-    } else {
-      label.removeAttribute("data-required")
-      label.removeAttribute("data-optional")
-    }
-
-    if (this.disabled) {
-      label.setAttribute("aria-disabled", "true")
-      input.setAttribute("aria-disabled", "true")
-    } else {
-      label.removeAttribute("aria-disabled")
-      input.removeAttribute("aria-disabled")
-    }
-
-    const isInvalid = this.invalid || this._inputInvalid
-    if (isInvalid) {
-      input.setAttribute("data-state", "invalid")
-      input.setAttribute("aria-invalid", "true")
-    } else {
-      if (input.getAttribute("data-state") === "invalid") {
-        input.removeAttribute("data-state")
-      }
-      input.removeAttribute("aria-invalid")
-    }
-
-    const describedBy = mergeTokens(
-      this.describedBy,
-      help ? this.helpId : undefined,
-      isInvalid && error ? this.errorId : undefined,
-    )
-    if (describedBy) {
-      input.setAttribute("aria-describedby", describedBy)
-    } else {
-      input.removeAttribute("aria-describedby")
-    }
-  }
 
   private handleIconClick = (event: Event) => {
     event.stopPropagation()
@@ -302,7 +259,11 @@ export class FsDateField extends LitElement {
     const iso = displayToIso(target.value)
     if (iso !== null) {
       this._inputInvalid = false
+      this._typed = null
       this.value = iso
+      this.requestUpdate()
+    } else {
+      this._typed = target.value
       this.requestUpdate()
     }
     // Ugyldig inndata skal ikke endre this.value. Behold siste gyldige ISO.
@@ -319,7 +280,6 @@ export class FsDateField extends LitElement {
       this._inputInvalid = displayToIso(raw) === null
     }
     this.requestUpdate()
-    this.syncA11y()
   }
 
   private handleCalendarSelect = (event: Event) => {
@@ -328,6 +288,7 @@ export class FsDateField extends LitElement {
     if (!selected) return
 
     this._inputInvalid = false
+    this._typed = null
     this.value = selected
     this.requestUpdate()
     this.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
