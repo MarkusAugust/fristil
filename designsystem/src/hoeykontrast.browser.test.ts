@@ -3,8 +3,8 @@
 /// som fyller det, og her er det Playwright som gir oss `send`.
 /// <reference types="@vitest/browser-playwright" />
 
-import { cdp, server } from "@vitest/browser/context"
 import { afterEach, describe, expect, it } from "vitest"
+import { cdp, server } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
 
