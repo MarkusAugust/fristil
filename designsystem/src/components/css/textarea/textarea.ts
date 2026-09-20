@@ -1,5 +1,5 @@
 import {
-  attributter,
+  attributes,
   type FieldState,
   fieldStates,
   isFieldState,
@@ -28,7 +28,7 @@ export type TextareaAttributes = {
  */
 export const textarea = Object.assign(
   ({ state = "default" }: TextareaOptions = {}): TextareaAttributes =>
-    attributter({
+    attributes({
       class: TEXTAREA_CLASS,
       "data-state": state === "default" ? undefined : state,
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,

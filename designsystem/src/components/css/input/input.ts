@@ -1,9 +1,9 @@
 import {
-  attributter,
+  attributes,
+  createGuard,
   type FieldState,
   fieldStates,
   isFieldState,
-  lagVakt,
   type NonDefaultFieldState,
 } from "../shared.js"
 
@@ -49,7 +49,7 @@ export type InputAttributes = {
  * Attributtene for et tekstfelt.
  *
  * `type` setter både HTML-typen og ikonvarianten, så de to kan ikke komme i
- * utakt. Skriver du dem for hånd, er det lett å få et datofelt som ser ut
+ * utakt. Skriver du dem for hånd, er det lett å få et datofelt som ser result
  * som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
  *
  * ```ts
@@ -58,7 +58,7 @@ export type InputAttributes = {
  */
 export const input = Object.assign(
   ({ type = "text", state = "default" }: InputOptions = {}): InputAttributes =>
-    attributter({
+    attributes({
       class: INPUT_CLASS,
       type,
       "data-variant": (TYPER_MED_IKON as readonly string[]).includes(type)
@@ -69,7 +69,7 @@ export const input = Object.assign(
     }),
   {
     types: inputTypes,
-    isType: lagVakt(inputTypes),
+    isType: createGuard(inputTypes),
     states: fieldStates,
     isState: isFieldState,
   },

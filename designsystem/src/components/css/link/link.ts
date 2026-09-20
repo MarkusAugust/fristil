@@ -1,4 +1,4 @@
-import { attributter } from "../shared.js"
+import { attributes } from "../shared.js"
 
 export const LINK_CLASS = "fs-link" as const
 
@@ -23,7 +23,7 @@ export type LinkAttributes = {
  * ```
  */
 export const link = ({ disabled = false }: LinkOptions = {}): LinkAttributes =>
-  attributter({
+  attributes({
     class: LINK_CLASS,
     "aria-disabled": disabled ? ("true" as const) : undefined,
   })

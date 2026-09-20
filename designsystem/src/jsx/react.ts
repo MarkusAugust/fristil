@@ -22,13 +22,13 @@ import type { HTMLAttributes } from "react"
  */
 
 /**
- * Boolske attributter på egendefinerte elementer.
+ * Boolske attributes på egendefinerte elementer.
  *
  * Typen er `true | undefined`, ikke `boolean`, og det er med vilje. React
  * behandler egendefinerte elementer ulikt mellom versjoner, og bare ett
  * mønster er riktig i begge:
  *
- *     React 18 setter attributter        React 19 setter egenskaper
+ *     React 18 setter attributes        React 19 setter egenskaper
  *     invalid=""       virker            aldri ugyldig
  *     invalid={true}   virker            virker
  *     invalid={false}  ALLTID ugyldig    virker

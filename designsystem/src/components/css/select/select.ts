@@ -1,5 +1,5 @@
 import {
-  attributter,
+  attributes,
   type FieldState,
   fieldStates,
   isFieldState,
@@ -28,7 +28,7 @@ export type SelectAttributes = {
  */
 export const select = Object.assign(
   ({ state = "default" }: SelectOptions = {}): SelectAttributes =>
-    attributter({
+    attributes({
       class: SELECT_CLASS,
       "data-state": state === "default" ? undefined : state,
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,

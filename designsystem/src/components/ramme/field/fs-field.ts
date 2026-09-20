@@ -62,10 +62,10 @@ export class FsField extends LitElement {
     if (help && !help.id) help.id = uniqueId("fs-field-help")
     if (error && !error.id) error.id = uniqueId("fs-field-error")
 
-    // Selve kontrakten regnes ut av den delte kjernen, som fs.field() også
+    // Selve kontrakten regnes result av den delte kjernen, som fs.field() også
     // bruker. Denne komponenten gjør bare én ting utover det: å sette
     // resultatet på elementer som allerede står i DOM-en.
-    const beregnet = computeFieldAttributes({
+    const computed = computeFieldAttributes({
       id: this.controlId || control.id || uniqueId("fs-field-control"),
       help: Boolean(help),
       error: Boolean(error),
@@ -84,27 +84,27 @@ export class FsField extends LitElement {
       ].filter(Boolean),
     })
 
-    control.id = beregnet.control.id
+    control.id = computed.control.id
 
     if (label) {
-      label.classList.add(beregnet.label.class)
-      if (!label.htmlFor) label.htmlFor = beregnet.label.for
-      settEllerFjern(label, "data-required", beregnet.label["data-required"])
-      settEllerFjern(label, "data-optional", beregnet.label["data-optional"])
-      settEllerFjern(label, "aria-disabled", beregnet.label["aria-disabled"])
+      label.classList.add(computed.label.class)
+      if (!label.htmlFor) label.htmlFor = computed.label.for
+      setOrRemove(label, "data-required", computed.label["data-required"])
+      setOrRemove(label, "data-optional", computed.label["data-optional"])
+      setOrRemove(label, "aria-disabled", computed.label["aria-disabled"])
     }
 
     if (error) {
-      error.hidden = Boolean(beregnet.error.hidden)
-      error.setAttribute("aria-hidden", String(Boolean(beregnet.error.hidden)))
+      error.hidden = Boolean(computed.error.hidden)
+      error.setAttribute("aria-hidden", String(Boolean(computed.error.hidden)))
     }
 
-    settEllerFjern(
+    setOrRemove(
       control,
       "aria-describedby",
-      beregnet.control["aria-describedby"],
+      computed.control["aria-describedby"],
     )
-    settEllerFjern(control, "aria-invalid", beregnet.control["aria-invalid"])
+    setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
 
     if (this.disabled) {
       control.setAttribute("disabled", "")
@@ -115,13 +115,13 @@ export class FsField extends LitElement {
     }
 
     // data-state settes bare når konsumenten ikke har satt den selv.
-    const erSystemfelt =
+    const isSystemField =
       control.classList.contains("fs-input") ||
       control.classList.contains("fs-textarea") ||
       control.classList.contains("fs-select")
 
-    const tilstand = beregnet.control["data-state"]
-    if (tilstand && erSystemfelt && !control.hasAttribute("data-state")) {
+    const tilstand = computed.control["data-state"]
+    if (tilstand && isSystemField && !control.hasAttribute("data-state")) {
       control.setAttribute("data-state", tilstand)
     } else if (!tilstand && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
@@ -129,15 +129,15 @@ export class FsField extends LitElement {
   }
 }
 
-function settEllerFjern(
+function setOrRemove(
   element: HTMLElement,
-  navn: string,
-  verdi: string | undefined,
+  name: string,
+  value: string | undefined,
 ) {
-  if (verdi === undefined) {
-    element.removeAttribute(navn)
+  if (value === undefined) {
+    element.removeAttribute(name)
   } else {
-    element.setAttribute(navn, verdi)
+    element.setAttribute(name, value)
   }
 }
 

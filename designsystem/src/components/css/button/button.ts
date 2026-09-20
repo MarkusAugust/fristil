@@ -1,4 +1,4 @@
-import { attributter, lagVakt } from "../shared.js"
+import { attributes, createGuard } from "../shared.js"
 
 export const BUTTON_CLASS = "fs-button" as const
 
@@ -31,14 +31,14 @@ export type ButtonAttributes = {
  */
 export const button = Object.assign(
   ({ variant = "primary" }: ButtonOptions = {}): ButtonAttributes =>
-    attributter({
+    attributes({
       class: BUTTON_CLASS,
       "data-variant": variant === "primary" ? undefined : variant,
     }),
   {
-    /** De lovlige variantene, for oppslag og forgrening. */
+    /** De allowed variantene, for oppslag og forgrening. */
     variants: buttonVariants,
     /** Sjekker om en streng utenfra er en gyldig variant. */
-    isVariant: lagVakt(buttonVariants),
+    isVariant: createGuard(buttonVariants),
   },
 )
