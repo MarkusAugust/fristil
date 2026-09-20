@@ -10,7 +10,15 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: playwright(),
-      instances: [{ browser: "chromium" }],
+      // Tre nettlesere, fordi hele premisset er at vi bruker nettleserens
+      // egne API-er. Det er nettopp de som spriker: :has(),
+      // ::file-selector-button, <details name>, popover og pseudoelementer
+      // på <input> oppfører seg ulikt.
+      instances: [
+        { browser: "chromium" },
+        { browser: "firefox" },
+        { browser: "webkit" },
+      ],
       headless: true,
       // Ingen tester sammenlikner bilder, så skjermbildene fra feilede
       // kjøringer ble bare liggende og samle seg. Feilmeldingen sier det

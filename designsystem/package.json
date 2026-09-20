@@ -2,6 +2,9 @@
   "name": "@fristil/designsystem",
   "version": "0.1.0",
   "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -248,7 +251,11 @@
   "files": [
     "dist",
     "src/tokens",
-    "src/components"
+    "src/components",
+    "src/tailwind",
+    "!**/*.browser.test.ts",
+    "!**/*.test.ts",
+    "!**/*.tsbuildinfo"
   ],
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
