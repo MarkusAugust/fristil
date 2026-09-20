@@ -24,11 +24,23 @@ import type { HTMLAttributes } from "react"
 /**
  * Boolske attributter på egendefinerte elementer.
  *
- * `"" | undefined` er med fordi et attributt er sant så lenge det finnes:
- * `invalid={false}` blir til `invalid="false"` i eldre React, og det er sant.
- * Mønsteret `invalid={ugyldig ? "" : undefined}` virker i alle versjoner.
+ * Typen er `true | undefined`, ikke `boolean`, og det er med vilje. React
+ * behandler egendefinerte elementer ulikt mellom versjoner, og bare ett
+ * mønster er riktig i begge:
+ *
+ *     React 18 setter attributter        React 19 setter egenskaper
+ *     invalid=""       virker            aldri ugyldig
+ *     invalid={true}   virker            virker
+ *     invalid={false}  ALLTID ugyldig    virker
+ *     invalid={undefined}  virker        virker
+ *
+ * React 18 stringifiserer til `invalid="false"` — et attributt som finnes,
+ * og dermed sant. React 19 setter egenskapen til `""`, som er usann.
+ *
+ * Skriv derfor `invalid={ugyldig || undefined}`. Typen her gjør at de to
+ * andre variantene blir kompileringsfeil i stedet for noe du må huske.
  */
-type Flagg = boolean | "" | undefined
+type Flagg = true | undefined
 
 type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
   invalid?: Flagg
