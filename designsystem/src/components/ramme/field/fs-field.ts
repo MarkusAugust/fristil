@@ -62,7 +62,7 @@ export class FsField extends LitElement {
     if (help && !help.id) help.id = uniqueId("fs-field-help")
     if (error && !error.id) error.id = uniqueId("fs-field-error")
 
-    // Selve kontrakten regnes result av den delte kjernen, som fs.field() også
+    // Selve kontrakten regnes ut av den delte kjernen, som fs.field() også
     // bruker. Denne komponenten gjør bare én ting utover det: å sette
     // resultatet på elementer som allerede står i DOM-en.
     const computed = computeFieldAttributes({
@@ -120,10 +120,10 @@ export class FsField extends LitElement {
       control.classList.contains("fs-textarea") ||
       control.classList.contains("fs-select")
 
-    const tilstand = computed.control["data-state"]
-    if (tilstand && isSystemField && !control.hasAttribute("data-state")) {
-      control.setAttribute("data-state", tilstand)
-    } else if (!tilstand && control.getAttribute("data-state") === "invalid") {
+    const state = computed.control["data-state"]
+    if (state && isSystemField && !control.hasAttribute("data-state")) {
+      control.setAttribute("data-state", state)
+    } else if (!state && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
     }
   }

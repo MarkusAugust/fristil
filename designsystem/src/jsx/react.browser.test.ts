@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest"
-
-import { FsField } from "../components/ramme/field/fs-field"
 import { FsCalendar } from "../components/frittstaende/calendar/fs-calendar"
 import { FsDateField } from "../components/frittstaende/date-field/fs-date-field"
+import { FsSuggestion } from "../components/frittstaende/suggestion/fs-suggestion"
+import { FsToast } from "../components/frittstaende/toast/fs-toast"
+import { FsErrorSummary } from "../components/ramme/error-summary/fs-error-summary"
+import { FsField } from "../components/ramme/field/fs-field"
+import { FsPopover } from "../components/ramme/popover/fs-popover"
+import { FsTabs } from "../components/ramme/tabs/fs-tabs"
 import kilde from "./react?raw"
 
 /**
@@ -32,6 +36,11 @@ describe("JSX-deklarasjonene følger komponentene", () => {
     ["fs-field", FsField],
     ["fs-calendar", FsCalendar],
     ["fs-date-field", FsDateField],
+    ["fs-tabs", FsTabs],
+    ["fs-error-summary", FsErrorSummary],
+    ["fs-popover", FsPopover],
+    ["fs-toast", FsToast],
+    ["fs-suggestion", FsSuggestion],
   ])("%s har alle attributtene sine deklarert", (tagg, klasse) => {
     const attributter = attributtnavn(klasse)
 
@@ -53,6 +62,11 @@ describe("JSX-deklarasjonene følger komponentene", () => {
       ...attributtnavn(FsField),
       ...attributtnavn(FsCalendar),
       ...attributtnavn(FsDateField),
+      ...attributtnavn(FsTabs),
+      ...attributtnavn(FsErrorSummary),
+      ...attributtnavn(FsPopover),
+      ...attributtnavn(FsToast),
+      ...attributtnavn(FsSuggestion),
     ])
 
     // Bare attributtblokkene. Taggnavnene i IntrinsicElements står under

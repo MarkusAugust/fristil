@@ -3,8 +3,8 @@
  *
  * Komponenttestene i `designsystem` kjører mot komponentene isolert. Det er
  * bra, men det fanger ikke feil som oppstår først når komponentene settes inn
- * på en side — og dokumentasjonen for et designsystem er et produkt i seg
- * selv. En lysegrå brødtekst på hvit flate gikk rett gjennom nettopp fordi
+ * på en side. Dokumentasjonen for et designsystem er et produkt i seg selv.
+ * En lysegrå brødtekst på hvit flate gikk rett gjennom nettopp fordi
  * ingenting testet den bygde siden.
  *
  * Kjør med: bun run test:docs (bygg først)

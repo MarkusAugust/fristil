@@ -1,0 +1,31 @@
+@layer fristil {
+  .fs-paragraph {
+    margin: 0;
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.6;
+    color: var(--semantic-page-foreground);
+    /* Under 75 tegn per linje. Lengre linjer gjør det vanskelig å finne
+       tilbake til starten av neste. */
+    max-inline-size: var(--fs-paragraph-width, 70ch);
+  }
+
+  .fs-paragraph + .fs-paragraph {
+    margin-block-start: var(--fs-paragraph-gap, var(--size-3));
+  }
+
+  .fs-paragraph[data-size="small"] {
+    font-size: var(--font-size-s);
+  }
+
+  .fs-paragraph[data-size="large"] {
+    font-size: var(--font-size-l);
+    line-height: 1.55;
+  }
+
+  .fs-paragraph[data-variant="lead"] {
+    font-size: var(--font-size-l);
+    line-height: 1.55;
+    color: var(--semantic-muted-foreground);
+  }
+}

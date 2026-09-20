@@ -1,0 +1,82 @@
+@layer fristil {
+  .fs-toggle-group {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--fs-toggle-group-radius, var(--size-1));
+    overflow: hidden;
+    min-inline-size: 0;
+  }
+
+  .fs-toggle-group__option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 40 piksler høy, som knappene, så en rad av dem står i linje. */
+    min-block-size: var(--fs-toggle-group-height, var(--size-10));
+    padding: var(--fs-toggle-group-padding, 0 var(--size-4));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-interactive-main);
+    background: var(--semantic-page-background);
+    cursor: pointer;
+  }
+
+  .fs-toggle-group__option + .fs-toggle-group__option {
+    border-inline-start: 1px solid var(--semantic-field-border);
+  }
+
+  /* Radioknappen ligger inni ledeteksten og er krympet bort visuelt. Den blir
+     stående i tastaturrekkefølgen, så piltastene og skjermleseren virker som
+     i en vanlig radiogruppe. */
+  .fs-toggle-group__option input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .fs-toggle-group__option:hover {
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-toggle-group__option:has(input:focus-visible) {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: -2px;
+  }
+
+  .fs-toggle-group__option:has(input:checked) {
+    color: var(--semantic-interactive-contrast);
+    background: var(--semantic-interactive-main);
+    font-weight: 600;
+  }
+
+  .fs-toggle-group__option:has(input:disabled) {
+    color: var(--semantic-disabled-foreground);
+    background: var(--semantic-disabled-background);
+    cursor: not-allowed;
+  }
+
+  /*
+   * Høykontrast: det valgte alternativet skilles bare med bakgrunnsfarge, og
+   * egne farger overstyres i modusen. Systemfargene slipper gjennom, og
+   * `Highlight` med `HighlightText` er nettopp paret operativsystemet bruker
+   * til å vise noe som er valgt.
+   */
+  @media (forced-colors: active) {
+    .fs-toggle-group__option:has(input:checked) {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
+}

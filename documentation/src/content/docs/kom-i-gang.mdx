@@ -12,7 +12,7 @@ import Preview from "../../components/Preview.astro"
 npm install @fristil/designsystem
 ```
 
-Ingen påkrevde avhengigheter. `lit` trengs bare til ramme- og frittstående komponenter, `tailwindcss` bare til forhåndsinnstillingen. Begge er valgfrie `peerDependencies`.
+Én valgfri avhengighet: `lit`, og bare til ramme- og frittstående komponenter. Tailwind-temaet er ren CSS, så pakken krever ingenting av Tailwind.
 
 ## Importer tokens
 
@@ -89,25 +89,18 @@ Får du en tom side, har `define`-funksjonen nesten alltid ikke kjørt.
 
 **Stilark**
 
+Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designsystem/button.css`, `/checkbox.css`, `/table.css` og så videre. Importer dem du bruker.
+
 | Import | Innhold |
 | --- | --- |
 | `@fristil/designsystem/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
-| `@fristil/designsystem/utilities.css` | `.link` og `.srOnly` |
-| `@fristil/designsystem/button.css` | [Button](../components/button/) |
-| `@fristil/designsystem/link.css` | [Link](../components/link/) |
-| `@fristil/designsystem/badge.css` | [Badge](../components/badge/) |
-| `@fristil/designsystem/label.css` | [Label](../components/label/) |
-| `@fristil/designsystem/input.css` | [Input](../components/input/) |
-| `@fristil/designsystem/textarea.css` | [Textarea](../components/textarea/) |
-| `@fristil/designsystem/select.css` | [Select](../components/select/) |
-| `@fristil/designsystem/help-text.css` | [Help Text](../components/help-text/) |
-| `@fristil/designsystem/error-text.css` | [Error Text](../components/error-text/) |
-| `@fristil/designsystem/field.css` | [Field](../components/field/), med ledetekst, felt og tekster samlet |
-| `@fristil/designsystem/date-field.css` | [Date Field](../components/date-field/) |
+| `@fristil/designsystem/<komponent>.css` | Én komponent, med samme navn som siden dens |
+| `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
+| `@fristil/designsystem/tailwind.css` | Fristils verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
 
-`field.css` og `date-field.css` samler stilene de trenger.
+Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `date-field.css`, `error-summary.css`, `search.css` og `suggestion.css`.
 
-Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM, der barna er dine egne elementer med systemets klasser, og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
+Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; de andre kjører i vanlig DOM, der elementene er alminnelige elementer med systemets klasser, og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
 
 **JavaScript og TypeScript**
 
@@ -127,14 +120,18 @@ Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra
 | --- | --- |
 | `@fristil/designsystem` | `fs` med alle komponentene, alle typene, og web component-registreringene |
 | `@fristil/designsystem/react` | Samme `fs`, men med `className` og `htmlFor` |
-| `@fristil/designsystem/react-jsx` | Typer for `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` i JSX |
+| `@fristil/designsystem/react-jsx` | Typer for de egendefinerte elementene i JSX |
 | `@fristil/designsystem/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
 | `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
 | `@fristil/designsystem/calendar` | `defineFsCalendar`, klassen `FsCalendar` |
 | `@fristil/designsystem/date-field` | `defineFsDateField`, klassen `FsDateField` |
+| `@fristil/designsystem/tabs` | `defineFsTabs`, klassen `FsTabs` |
+| `@fristil/designsystem/error-summary` | `defineFsErrorSummary`, klassen `FsErrorSummary` |
+| `@fristil/designsystem/popover` | `defineFsPopover`, klassen `FsPopover` |
+| `@fristil/designsystem/toast` | `defineFsToast`, klassen `FsToast` |
+| `@fristil/designsystem/suggestion` | `defineFsSuggestion`, klassen `FsSuggestion` |
 | `@fristil/designsystem/field-core` | `computeFieldAttributes`: det `fs.field` og `<fs-field>` deler |
 | `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
-| `@fristil/designsystem/tailwind` | `fristilPreset` |
 
 Hver komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten.
 
@@ -144,4 +141,5 @@ Hver komponent finnes også som eget inngangspunkt (`@fristil/designsystem/butto
 
 - [Rammeverk](../rammeverk/): konkret oppsett for ren HTML, React, Astro og Datastar
 - [Design tokens](../design-tokens/): hvilke variabler som finnes, og hva de heter
+- [Tailwind](../tailwind/): oppsett og Fristils verdier som utility-klasser
 - [Button](../components/button/): den enkleste komponenten å begynne med

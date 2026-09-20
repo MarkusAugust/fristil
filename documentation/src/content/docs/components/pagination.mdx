@@ -1,0 +1,69 @@
+---
+title: Pagination
+description: Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Navigering mellom sider i en lang liste. Hver side er en lenke med sin egen adresse, ikke en knapp: da kan brukeren åpne side tre i ny fane, kopiere adressen, og komme tilbake med tilbakeknappen.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/pagination.css"
+```
+
+## Sidevelgeren
+
+<Eksempel stiler={["pagination"]} layout="stabel" maxWidth="34rem" kode={`
+<nav aria-label="Sidenavigering">
+  <ul class="fs-pagination">
+    <li><a href="#" aria-label="Forrige side">Forrige</a></li>
+    <li><a href="#" aria-label="Side 1">1</a></li>
+    <li><a href="#" aria-label="Side 2" aria-current="page">2</a></li>
+    <li><a href="#" aria-label="Side 3">3</a></li>
+    <li><span class="fs-pagination__gap">…</span></li>
+    <li><a href="#" aria-label="Side 9">9</a></li>
+    <li><a href="#" aria-label="Neste side">Neste</a></li>
+  </ul>
+</nav>
+`} />
+
+Et tall alene sier lite når det leses opp midt i en rekke. `aria-label="Side 3"` gjør lenken forståelig, og `aria-current="page"` sier hvilken brukeren står på.
+
+Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut med `<span aria-disabled="true">` eller la den være ute.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const liste = document.querySelector<HTMLUListElement>("#sider")
+
+fs.setAttributes(liste, fs.pagination())
+```
+
+`fs.pagination.gap` gir klassen på hoppet i nummerrekken. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-pagination` | Listen med sidene. Lenkene og knappene inni styles av komponenten. |
+| `.fs-pagination__gap` | Hoppet i nummerrekken, som «1 2 … 9 10» |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-pagination-gap` | `var(--size-1)` |
+| `--fs-pagination-size` | `var(--size-10)` |
+| `--fs-pagination-radius` | `var(--size-1)` |
+
+`--fs-pagination-size` er minste bredde og høyde på hvert nummer. WCAG 2.2 krever 24 piksler; standarden her er 40, fordi et nummer i en lang rekke er lett å bomme på med finger.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Si hvor brukeren er, også utenfor selve velgeren: «Viser 21 til 40 av 184 saker» over listen hjelper mer enn tallrekken alene.
+- Etter at en ny side er lastet, flytt fokus til toppen av listen. Ellers står fokus igjen på et tall som nå betyr noe annet.
+- Har listen få sider, vis alle. Hoppet med «…» er bare verdt det fra rundt ti sider og oppover.
+- Er innholdet en strøm uten slutt, er «Vis flere»-knapp ofte bedre enn sidetall. Uendelig rulling uten knapp gjør bunnteksten uoppnåelig.

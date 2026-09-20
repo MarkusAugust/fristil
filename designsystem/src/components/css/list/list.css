@@ -1,0 +1,40 @@
+@layer fristil {
+  .fs-list {
+    box-sizing: border-box;
+    margin: 0;
+    padding-inline-start: var(--size-5);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.6;
+    color: var(--semantic-page-foreground);
+  }
+
+  .fs-list li + li {
+    margin-block-start: var(--fs-list-gap, var(--size-1));
+  }
+
+  .fs-list .fs-list {
+    margin-block-start: var(--fs-list-gap, var(--size-1));
+  }
+
+  /* Uten punkter og innrykk, for lister som bærer sin egen struktur, som
+     rader med kort. Listen blir værende en liste for skjermlesere. */
+  .fs-list[data-variant="plain"] {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  .fs-list[data-variant="divided"] {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  .fs-list[data-variant="divided"] li + li {
+    margin-block-start: 0;
+    border-block-start: 1px solid var(--semantic-divider-30);
+  }
+
+  .fs-list[data-variant="divided"] li {
+    padding-block: var(--fs-list-gap, var(--size-2));
+  }
+}

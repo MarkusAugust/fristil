@@ -1,0 +1,98 @@
+---
+title: Accordion
+description: Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et `<details>` med et `<summary>` først. Nettleseren tar seg av åpning, lukking, tastatur og at skjermlesere melder «utvidet» eller «sammenfoldet».
+
+Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt. Og teksten i et lukket panel forsvinner fra DOM-en, så nettleserens eget søk i siden finner den ikke lenger.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/accordion.css"
+```
+
+## Paneler
+
+<Eksempel stiler={["accordion"]} layout="stabel" maxWidth="34rem" kode={`
+<details class="fs-accordion">
+  <summary>Hvem kan søke om bostøtte?</summary>
+  <div class="fs-accordion__content">
+    <p>Alle som bor og er folkeregistrert i boligen kan søke. Du må være over 18 år, eller ha egne barn boende hos deg.</p>
+  </div>
+</details>
+
+<details class="fs-accordion" open>
+  <summary>Hvor lang er behandlingstiden?</summary>
+  <div class="fs-accordion__content">
+    <p>Vi behandler søknaden innen tre uker. Mangler vi vedlegg, får du beskjed i digital postkasse.</p>
+  </div>
+</details>
+`} />
+
+| Attributt | Effekt |
+| --- | --- |
+| `open` | Panelet står åpent når siden lastes |
+| `data-variant="plain"` | Uten egen ramme, for paneler som står rett under hverandre |
+| `name` på flere paneler | Bare ett kan være åpent om gangen |
+
+`name` er nettleserens egen måte å lage et trekkspill der ett panel lukker det forrige:
+
+```html
+<details class="fs-accordion" name="sporsmal">…</details>
+<details class="fs-accordion" name="sporsmal">…</details>
+```
+
+## Overskrift inni
+
+Skal panelene være en del av sidens struktur, legg en overskrift inne i `<summary>`:
+
+```html
+<details class="fs-accordion">
+  <summary><h3>Hvem kan søke om bostøtte?</h3></summary>
+  <div class="fs-accordion__content">…</div>
+</details>
+```
+
+Da kan skjermlesere hoppe mellom spørsmålene med overskriftsnavigasjon. Nivået må passe med resten av siden.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const panel = document.querySelector<HTMLDetailsElement>("#bostotte")
+
+fs.setAttributes(panel, fs.accordion({ variant: "plain" }))
+
+panel.addEventListener("toggle", () => {
+  console.log(panel.open ? "åpnet" : "lukket")
+})
+```
+
+`fs.accordion.content` gir klassen på innholdet. `toggle` er nettleserens egen hendelse, og kommer både når brukeren åpner og når du setter `open` fra kode.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-accordion` | Panelet. Varianten kommer fra `data-variant`. |
+| `.fs-accordion__content` | Innholdet under overskriften |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-accordion-radius` | `var(--size-1)` |
+| `--fs-accordion-padding` | `var(--size-3) var(--size-4)` |
+
+Pilen er tegnet med `::after` på `<summary>`, fordi nettleserens egen trekant ser ulik ut i hver nettleser. Skal du bytte den ut, overstyr `content` og `border` i den regelen.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Ikke gjem noe brukeren trenger for å komme videre. Et skjemafelt som er påkrevd hører ikke hjemme i et lukket panel.
+- Overskriften i `<summary>` skal si hva som kommer, ikke «Les mer».
+- La panelet som inneholder en feil åpne seg når skjemaet valideres. Ellers ser brukeren en feilmelding uten å finne feltet.
+- `<summary>` er allerede en knapp for nettleseren. Ikke legg en knapp inni den.

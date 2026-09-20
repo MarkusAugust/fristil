@@ -1,0 +1,110 @@
+---
+title: Tailwind
+description: Bruk Tailwind fritt sammen med Fristil, med de samme verdiene og uten at noe slåss om rekkefølgen.
+---
+
+import TailwindEksempel from "../../components/TailwindEksempel.astro"
+
+Tailwind er ikke påkrevd i Fristil, og er heller ikke i veien. Bruker du det, skal du kunne skrive `p-6` på en `.fs-button` og forvente at det virker, og bygge dine egne flater med Fristils farger uten å slå opp et eneste variabelnavn.
+
+Pakken har ingen avhengighet til Tailwind. Temaet er en vanlig CSS-fil, så det er versjonen i appen din som leser den, og to versjoner kan ikke komme i konflikt.
+
+## Oppsett
+
+```css
+/* app.css */
+@layer theme, base, fristil, components, utilities;
+
+@import "tailwindcss";
+@import "@fristil/designsystem/tokens.css";
+@import "@fristil/designsystem/tailwind.css";
+
+/* og stilarkene for komponentene du bruker */
+@import "@fristil/designsystem/button.css";
+```
+
+Den første linja er det eneste du må huske. Uten den nullstiller Tailwinds Preflight komponentene, eller komponentene slår klassene dine. [Lagrekkefølgen](#lagrekkefølgen) forklarer hvorfor.
+
+Det er alt. Ingen `tailwind.config.ts`, ingen forhåndsinnstilling som skal importeres i JavaScript.
+
+## Overstyr en komponent med vanlige klasser
+
+Komponentene ligger i `@layer fristil`, og utility-klassene kommer etter. En Tailwind-klasse vinner derfor over komponentens egen verdi, uten `!important` og uten å slå spesifisitet:
+
+<TailwindEksempel stiler={["button"]} layout="stabel" maxWidth="26rem" kode={`
+<button class="fs-button">Send søknad</button>
+<button class="fs-button w-full justify-center rounded-full">Send søknad</button>
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<button class="fs-button px-8 py-4 text-fs-l" data-variant="secondary">Lagre utkast</button>
+`} />
+
+Knappen beholder farger, fokusmarkering og deaktivert tilstand. Du endrer bare det du peker på.
+
+## Bygg dine egne flater med Fristils verdier
+
+Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da vet du alltid hvilke verdier som er Fristils, og Tailwinds egne er urørt: `bg-neutral-100` betyr fortsatt det samme.
+
+<TailwindEksempel stiler={["badge", "link"]} layout="stabel" maxWidth="30rem" kode={`
+<article class="rounded-xl border border-fs-divider bg-fs-page p-4 shadow-fs-overlay">
+  <div class="mb-2 flex items-center justify-between gap-2">
+    <h3 class="text-fs-l font-semibold text-fs-page-fg">Søknad om bostøtte</h3>
+    <span class="fs-badge" data-color="success">Innvilget</span>
+  </div>
+  <p class="text-fs-muted">Sendt 4. mars. Saksnummer 2026-0481.</p>
+  <a class="fs-link mt-3 inline-block" href="#">Se vedtaket</a>
+</article>
+`} />
+
+Eksempelet over er ikke tegnet av. Det kompileres av en ekte Tailwind når dokumentasjonen bygges, av nøyaktig den markupen som står i kodefanen.
+
+## Hva temaet gir deg
+
+| Klasser | Verdi |
+| --- | --- |
+| `text-fs-page-fg`, `bg-fs-page` | Sideflate og tekst |
+| `text-fs-interactive`, `bg-fs-interactive-bg`, `text-fs-interactive-contrast` | Lenker og knapper |
+| `text-fs-success`, `bg-fs-success-bg`, og det samme for `warning`, `danger`, `neutral`, `disabled` | Status |
+| `text-fs-muted` | Dempet, men lesbar tekst |
+| `border-fs-field-border`, `border-fs-divider`, `border-fs-divider-strong` | Kanter og streker |
+| `bg-fs-azure-70` og resten av paletten | Råfarger, når betydningen ikke finnes ennå |
+| `text-fs-xxs` til `text-fs-mega` | Tekststørrelser |
+| `max-w-fs-aside`, `max-w-fs-wide-content` | Bredder for sideoppsett |
+| `shadow-fs-overlay` | Skyggen under flater som ligger over siden |
+
+Alle peker på tokens, så de snur med temaet. `bg-fs-page` er hvit i lyst tema og nesten sort i mørkt, uten at du skriver `dark:`.
+
+### Avstandene er de samme
+
+Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--size-1`. `p-4` er dermed nøyaktig `--size-4`, den samme verdien komponentene bruker. Endrer du skalaen, følger både komponentene og Tailwind-klassene med:
+
+```css
+:root {
+	--size-1: 0.3rem;
+}
+```
+
+Brekkpunktene er med vilje utelatt fra temaet. Fristils `sm` til `2xl` har allerede Tailwinds verdier, så `md:` virker som før.
+
+## Lagrekkefølgen
+
+Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Derfor står rekkefølgen på første linje:
+
+| Rekkefølge | Hva som skjer |
+| --- | --- |
+| `fristil` før `base` | Preflight nullstiller komponentene. Knappen mister bakgrunnen. |
+| `fristil` etter `utilities` | Komponentene slår klassene dine. `p-6` gjør ingenting. |
+| `base`, `fristil`, `utilities` | Begge deler virker |
+
+Begge feiltilfellene er målt i `tilpasning.browser.test.ts`, som bygger dem i hvert sitt dokument og leser av hva knappen faktisk får. Dokumentasjonssiden du leser nå er satt opp på samme måte.
+
+## Tre ting som er greie å vite
+
+**Shadow DOM tar ikke imot utility-klasser.** `<fs-calendar>` har sine egne stiler inni en skyggerot, og hverken Tailwind eller din egen CSS når inn. Der gjelder [komponentvariabler og `::part()`](../tilpasning/#shadow-dom).
+
+**`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--semantic-…)` direkte.
+
+**Preflight er Tailwinds valg, ikke vårt.** Fristils komponenter nullstiller det de trenger selv, blant annet `box-sizing`, så de virker like godt uten Preflight som med.
+
+## Uten Tailwind
+
+Ingenting av dette er påkrevd. `var(--semantic-interactive-main)` og `class="fs-button"` virker like godt i ren CSS, og i alle andre verktøy som skriver CSS. Se [Tilpasning](../tilpasning/).

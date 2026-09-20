@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# En ny push til samme gren avbryter forrige kjøring. Det er ingen vits i å
+# kjøre tre nettlesere gjennom en versjon ingen skal se igjen.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sjekk:
+    name: Lint, typer og tester
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      # Nettleserne er store, og endrer seg bare når Playwright gjør det.
+      - name: Hent nettlesere fra hurtigbufferen
+        id: nettlesere
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Installer nettlesere
+        run: bun --filter @fristil/designsystem exec playwright install --with-deps chromium firefox webkit
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typesjekk
+        run: bun run typecheck
+
+      - name: Typesjekk av testene
+        run: bun run typecheck:tests
+
+      # Kjører komponenttestene i Chromium, Firefox og WebKit, og kontrollerer
+      # at Tailwind-temaet gir Fristils verdier.
+      - name: Tester
+        run: bun run test
+
+      # Bygger pakken og dokumentasjonen, og kontrollerer at pakken inneholder
+      # det den lover.
+      - name: Bygg
+        run: bun run build
+
+      # Kjører axe mot hver bygde side i begge temaer, og kontrollerer at
+      # dokumentasjonen følger koden.
+      - name: Dokumentasjon
+        run: bun run test:docs

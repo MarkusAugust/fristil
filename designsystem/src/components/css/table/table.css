@@ -1,0 +1,63 @@
+@layer fristil {
+  .fs-table {
+    box-sizing: border-box;
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    /* Tall som står under hverandre skal ha samme bredde per siffer, ellers
+       kan ikke kolonnen leses nedover. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fs-table caption {
+    text-align: start;
+    font-weight: 600;
+    padding-block-end: var(--size-2);
+  }
+
+  .fs-table th,
+  .fs-table td {
+    padding: var(--fs-table-cell-padding, var(--size-2) var(--size-3));
+    text-align: start;
+    vertical-align: top;
+    border-block-end: 1px solid var(--semantic-divider-30);
+  }
+
+  .fs-table thead th {
+    font-weight: 600;
+    border-block-end: 2px solid var(--semantic-divider-100);
+  }
+
+  .fs-table tbody tr:last-child th,
+  .fs-table tbody tr:last-child td {
+    border-block-end: 0;
+  }
+
+  .fs-table[data-variant="striped"] tbody tr:nth-child(even) {
+    background: var(--semantic-neutral-background);
+  }
+
+  .fs-table[data-hoverable] tbody tr:hover {
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-table td[data-align="end"],
+  .fs-table th[data-align="end"] {
+    text-align: end;
+  }
+
+  /* En tabell som er bredere enn skjermen må kunne rulles, og det området må
+     kunne nås med tastatur. Derfor tabindex="0" på beholderen. */
+  .fs-table-scroll {
+    overflow-x: auto;
+    max-inline-size: 100%;
+  }
+
+  .fs-table-scroll:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+}

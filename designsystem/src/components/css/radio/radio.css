@@ -1,0 +1,76 @@
+@layer fristil {
+  .fs-radio {
+    box-sizing: border-box;
+    appearance: none;
+    flex: none;
+    display: inline-block;
+    inline-size: var(--fs-radio-size, var(--size-5));
+    block-size: var(--fs-radio-size, var(--size-5));
+    margin: 0;
+    background-color: var(--semantic-page-background);
+    border: 1px solid var(--semantic-field-border);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .fs-radio:hover:not(:disabled) {
+    border-color: var(--semantic-field-border-hover);
+  }
+
+  .fs-radio:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  /* Prikken er en gradient og ikke et bilde, så den tar farge fra tokenet
+     direkte og trenger ingen egen variant for mørkt tema. */
+  .fs-radio:checked {
+    background-color: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+    background-image: radial-gradient(
+      circle at center,
+      var(--semantic-interactive-contrast) 0 32%,
+      transparent 34%
+    );
+  }
+
+  .fs-radio:disabled {
+    background-color: var(--semantic-disabled-background);
+    border-color: var(--semantic-disabled-background);
+    cursor: not-allowed;
+  }
+
+  .fs-radio:disabled:checked {
+    background-color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-foreground);
+  }
+
+  .fs-radio[data-state="invalid"] {
+    border-color: var(--semantic-danger-foreground);
+  }
+
+  .fs-radio[data-state="invalid"]:focus-visible {
+    outline-color: var(--semantic-danger-foreground);
+  }
+
+  .fs-radio[data-state="success"] {
+    border-color: var(--semantic-success-foreground);
+  }
+
+  .fs-radio-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-2);
+    line-height: 1.5;
+  }
+
+  /* Høykontrast: prikken er en gradient, og gradienter fjernes i modusen.
+     Nettleserens egen radioknapp tegnes riktig i alle temaer. */
+  @media (forced-colors: active) {
+    .fs-radio,
+    .fs-radio:checked {
+      appearance: auto;
+      background-image: none;
+    }
+  }
+}

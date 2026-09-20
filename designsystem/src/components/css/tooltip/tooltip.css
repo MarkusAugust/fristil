@@ -1,0 +1,47 @@
+@layer fristil {
+  .fs-tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .fs-tooltip__bubble {
+    position: absolute;
+    inset-block-end: calc(100% + var(--size-2));
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    inline-size: max-content;
+    max-inline-size: var(--fs-tooltip-width, 16rem);
+    padding: var(--fs-tooltip-padding, var(--size-1) var(--size-2));
+    font-size: var(--font-size-s);
+    line-height: 1.4;
+    color: var(--semantic-page-background);
+    background: var(--semantic-page-foreground);
+    border-radius: var(--fs-tooltip-radius, var(--size-1));
+    /* Boblen er skjult til utløseren får fokus eller musa. `visibility` og
+       ikke `display`, så teksten blir stående i tilgjengelighetstreet og kan
+       pekes på med aria-describedby. */
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .fs-tooltip:hover .fs-tooltip__bubble,
+  .fs-tooltip:focus-within .fs-tooltip__bubble {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fs-tooltip__bubble {
+      transition: opacity 120ms ease;
+    }
+  }
+
+  /* Høykontrast: boblen har ingen ramme, og flatene tvinges til samme farge
+     som siden. Uten en kant flyter teksten rett oppå innholdet under. */
+  @media (forced-colors: active) {
+    .fs-tooltip__bubble {
+      border: 1px solid CanvasText;
+    }
+  }
+}

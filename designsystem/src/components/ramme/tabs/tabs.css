@@ -1,0 +1,68 @@
+@layer fristil {
+  fs-tabs {
+    display: block;
+  }
+
+  .fs-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fs-tabs-gap, var(--size-1));
+    border-block-end: 1px solid var(--semantic-divider-30);
+  }
+
+  .fs-tabs__list button {
+    box-sizing: border-box;
+    padding: var(--fs-tabs-padding, var(--size-2) var(--size-4));
+    min-block-size: var(--size-10);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-interactive-main);
+    background: transparent;
+    border: 0;
+    /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
+       ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
+    border-block-end: var(--size-0-5) solid transparent;
+    margin-block-end: -1px;
+    cursor: pointer;
+  }
+
+  .fs-tabs__list button:hover {
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-tabs__list button:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: -2px;
+  }
+
+  .fs-tabs__list button[aria-selected="true"] {
+    color: var(--semantic-page-foreground);
+    font-weight: 600;
+    border-block-end-color: var(--semantic-interactive-main);
+  }
+
+  .fs-tabs__list button:disabled {
+    color: var(--semantic-disabled-foreground);
+    cursor: not-allowed;
+  }
+
+  .fs-tabs__panel {
+    padding-block-start: var(--fs-tabs-panel-space, var(--size-4));
+  }
+
+  .fs-tabs__panel:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  /* Høykontrast: streken under den valgte fanen tvinges til samme farge som
+     de gjennomsiktige strekene under de andre. `Highlight` slipper gjennom,
+     og gir tilbake forskjellen. */
+  @media (forced-colors: active) {
+    .fs-tabs__list button[aria-selected="true"] {
+      border-block-end-color: Highlight;
+      color: Highlight;
+    }
+  }
+}

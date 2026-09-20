@@ -1,0 +1,100 @@
+---
+title: Tooltip
+description: Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+En boble med et tillegg til noe som allerede står på skjermen. Den må aldri bære informasjon brukeren trenger: på en berøringsskjerm finnes hverken hover eller fokus før noe trykkes.
+
+Er teksten nødvendig for å fylle ut et felt, hører den hjemme i [Help Text](../help-text/) under feltet.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/tooltip.css"
+```
+
+## En knapp med forklaring
+
+<Eksempel stiler={["tooltip", "button"]} layout="stabel" maxWidth="30rem" kode={`
+<span class="fs-tooltip" style="margin-top: var(--size-8);">
+  <button class="fs-button" data-variant="ghost" type="button" aria-describedby="arkiv-hint">
+    Arkiver
+  </button>
+  <span class="fs-tooltip__bubble" role="tooltip" id="arkiv-hint">
+    Saken flyttes til arkivet og kan hentes fram igjen
+  </span>
+</span>
+`} />
+
+To ting må stemme:
+
+| Hva | Hvorfor |
+| --- | --- |
+| `aria-describedby` fra utløseren til boblen | Uten den er boblen bare noe som dukker opp på skjermen, og leses aldri opp |
+| `role="tooltip"` på boblen | Sier hva slags tekst det er |
+
+Boblen vises på `:hover` og på `:focus-within`. Fokusdelen er ikke valgfri: en boble som bare kommer med musa finnes ikke for den som bruker tastatur.
+
+## Ikonknapp med navn
+
+En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskjellige ting:
+
+```html
+<span class="fs-tooltip">
+  <button class="fs-button" data-variant="ghost" type="button"
+    aria-label="Arkiver saken" aria-describedby="arkiv-hint">
+    <svg aria-hidden="true" width="20" height="20">…</svg>
+  </button>
+  <span class="fs-tooltip__bubble" role="tooltip" id="arkiv-hint">
+    Saken kan hentes fram igjen senere
+  </span>
+</span>
+```
+
+`aria-label` er navnet knappen leses opp med. Boblen er tillegget. Bruker du boblen som navn, har knappen ingen navn før den får fokus.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const omslag = document.querySelector<HTMLElement>("#arkiv")
+
+fs.setAttributes(omslag, fs.tooltip())
+```
+
+`fs.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-tooltip` | Omslaget rundt utløseren og boblen |
+| `.fs-tooltip__bubble` | Boblen med teksten |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-tooltip-width` | `16rem` |
+| `--fs-tooltip-padding` | `var(--size-1) var(--size-2)` |
+| `--fs-tooltip-radius` | `var(--size-1)` |
+
+Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du flytte den ned selv:
+
+```css
+.fs-tooltip__bubble {
+	inset-block-end: auto;
+	inset-block-start: calc(100% + var(--size-2));
+}
+```
+
+Boblen skjules med `visibility`, ikke `display`, så teksten blir stående i tilgjengelighetstreet og kan pekes på med `aria-describedby` også før den vises.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Ingenting som bare finnes i boblen kan være nødvendig. Regn med at halvparten av brukerne aldri ser den.
+- Hold teksten kort. Boblen kan ikke rulles, og den forsvinner når musa flyttes.
+- Ikke legg lenker eller knapper inni. Brukeren rekker ikke fram til dem før boblen lukker seg.
+- En boble på et felt som allerede har hjelpetekst er dobbelt opp. Velg én.

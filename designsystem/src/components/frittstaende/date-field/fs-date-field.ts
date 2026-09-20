@@ -112,7 +112,7 @@ export class FsDateField extends LitElement {
     // Tilgjengelighetskontrakten regnes ut ett sted, det samme som
     // `<fs-field>` og `fs.field()` bruker. Komponenten hadde tidligere sin
     // egen utgave av den samme logikken, og de to kunne gå fra hverandre.
-    const felt = computeFieldAttributes({
+    const field = computeFieldAttributes({
       id: this.inputId,
       help: Boolean(this.helpText),
       error: Boolean(this.errorText),
@@ -129,20 +129,20 @@ export class FsDateField extends LitElement {
       <div class="fs-date-field">
         <label
           class="fs-label"
-          for=${felt.label.for}
-          data-required=${ifDefined(felt.label["data-required"])}
-          data-optional=${ifDefined(felt.label["data-optional"])}
-          aria-disabled=${ifDefined(felt.label["aria-disabled"])}
+          for=${field.label.for}
+          data-required=${ifDefined(field.label["data-required"])}
+          data-optional=${ifDefined(field.label["data-optional"])}
+          aria-disabled=${ifDefined(field.label["aria-disabled"])}
           >${this.label}</label
         >
         <div class="fs-date-field__field">
           <input
-            id=${felt.control.id}
+            id=${field.control.id}
             class="fs-input"
             type="text"
-            aria-describedby=${ifDefined(felt.control["aria-describedby"])}
-            aria-invalid=${ifDefined(felt.control["aria-invalid"])}
-            data-state=${ifDefined(felt.control["data-state"])}
+            aria-describedby=${ifDefined(field.control["aria-describedby"])}
+            aria-invalid=${ifDefined(field.control["aria-invalid"])}
+            data-state=${ifDefined(field.control["data-state"])}
             .value=${live(this.displayValue)}
             name=${this.name ?? ""}
             placeholder=${this.placeholder}
@@ -192,7 +192,7 @@ export class FsDateField extends LitElement {
         ${this.helpText ? html`<p class="fs-help-text" id=${this.helpId}>${this.helpText}</p>` : null}
         ${
           this.errorText
-            ? html`<p class="fs-error-text" id=${felt.error.id} ?hidden=${Boolean(felt.error.hidden)}>${this.errorText}</p>`
+            ? html`<p class="fs-error-text" id=${field.error.id} ?hidden=${Boolean(field.error.hidden)}>${this.errorText}</p>`
             : null
         }
       </div>
@@ -215,7 +215,6 @@ export class FsDateField extends LitElement {
     return `${this.uid}-error`
   }
 
-
   private get inputElement() {
     return this.querySelector(`#${this.inputId}`) as HTMLInputElement | null
   }
@@ -223,9 +222,6 @@ export class FsDateField extends LitElement {
   private get calendarElement() {
     return this.querySelector(`#${this.calendarId}`) as HTMLElement | null
   }
-
-
-
 
   private handleIconClick = (event: Event) => {
     event.stopPropagation()

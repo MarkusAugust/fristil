@@ -2,6 +2,7 @@ node_modules
 PLAN.md
 .claude
 dist
+.astro/
 *.tsbuildinfo
 __screenshots__
 .vitest-attachments

@@ -1,0 +1,82 @@
+@layer fristil {
+  .fs-file-upload {
+    box-sizing: border-box;
+    display: block;
+    inline-size: 100%;
+    padding: var(--fs-file-upload-padding, var(--size-2));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px dashed var(--semantic-field-border);
+    border-radius: var(--fs-file-upload-radius, var(--size-1));
+    cursor: pointer;
+  }
+
+  /* Knappen inne i feltet er nettleserens egen, og kan bare styles gjennom
+     denne pseudoklassen. Teksten på den kommer fra nettleseren og språket i
+     operativsystemet, så den kan ikke oversettes herfra. */
+  .fs-file-upload::file-selector-button {
+    margin-inline-end: var(--size-3);
+    padding: var(--size-2) var(--size-4);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-interactive-main);
+    background: transparent;
+    border: 1px solid var(--semantic-interactive-main);
+    border-radius: var(--fs-file-upload-radius, var(--size-1));
+    cursor: pointer;
+  }
+
+  .fs-file-upload::file-selector-button:hover {
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-file-upload:hover {
+    border-color: var(--semantic-field-border-hover);
+  }
+
+  .fs-file-upload:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-file-upload:disabled {
+    background: var(--semantic-disabled-background);
+    color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-background);
+    cursor: not-allowed;
+  }
+
+  .fs-file-upload[data-state="invalid"] {
+    border-color: var(--semantic-danger-foreground);
+    background: var(--semantic-danger-background);
+  }
+
+  .fs-file-upload[data-state="success"] {
+    border-color: var(--semantic-success-foreground);
+  }
+
+  /* Lista over filene som er valgt. Den skriver du selv, siden bare du vet
+     hva som skal skje når en fil fjernes. */
+  .fs-file-upload-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2);
+    margin: var(--size-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fs-file-upload-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-2);
+    padding: var(--size-2) var(--size-3);
+    background: var(--semantic-neutral-background);
+    border-radius: var(--fs-file-upload-radius, var(--size-1));
+  }
+}

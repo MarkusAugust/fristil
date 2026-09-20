@@ -1,0 +1,68 @@
+---
+title: Divider
+description: Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et vanlig `<hr>`. Nettleserens egen strek har både ramme og høyde, og begge må nullstilles før fargen fra tokenene er den eneste som vises.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/divider.css"
+```
+
+## Varianter
+
+<Eksempel stiler={["divider"]} layout="stabel" maxWidth="32rem" kode={`
+<p>Saken er registrert.</p>
+<hr class="fs-divider" />
+<p>Du får svar innen tre uker.</p>
+<hr class="fs-divider" data-variant="strong" />
+<p>Kontakt oss hvis noe er uklart.</p>
+<hr class="fs-divider" data-variant="subtle" />
+<p>Saksnummer 2026-0481.</p>
+`} />
+
+| `data-variant` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Vanlig skille mellom to deler |
+| `strong` | Tydelig skille, for eksempel før en oppsummering |
+| `subtle` | Svakt skille mellom rader i en liste |
+
+## Når streken ikke skal leses opp
+
+`<hr>` melder seg som et skille i innholdet. Er streken bare pynt mellom to bokser som allerede er atskilt visuelt, si fra at den ikke betyr noe:
+
+```html
+<hr class="fs-divider" data-variant="subtle" aria-hidden="true" />
+```
+
+Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjengelighetstreet. Den er da den eneste måten skjermleseren får vite at et emne er slutt.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const strek = document.createElement("hr")
+
+fs.setAttributes(strek, fs.divider({ variant: "subtle" }))
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-divider` | Streken. Styrken kommer fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-divider-space` | `var(--size-4)` |
+
+`--fs-divider-space` er luften over og under streken. Se [Tilpasning](../../tilpasning/).
+
+## Tilgjengelighet
+
+- Ikke bruk en strek der en overskrift hører hjemme. En overskrift sier hva som kommer; en strek sier bare at noe er slutt.
+- En strek mellom hvert element i en liste er støy for den som hører siden. Bruk heller `aria-hidden="true"`, eller la være.

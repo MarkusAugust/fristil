@@ -1,0 +1,86 @@
+---
+title: Toggle Group
+description: Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med en `<input type="radio">` inni, krympet bort visuelt. Da beholder du piltastene, `FormData` og at skjermleseren sier «2 av 3», uten at noe av det må skrives på nytt.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/toggle-group.css"
+import "@fristil/designsystem/sr-only.css"
+```
+
+## Velg visning
+
+<Eksempel stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<fieldset class="fs-toggle-group">
+  <legend class="fs-sr-only">Visning</legend>
+
+  <label class="fs-toggle-group__option">
+    <input type="radio" name="visning" value="liste" checked /> Liste
+  </label>
+  <label class="fs-toggle-group__option">
+    <input type="radio" name="visning" value="kart" /> Kart
+  </label>
+  <label class="fs-toggle-group__option">
+    <input type="radio" name="visning" value="kalender" /> Kalender
+  </label>
+</fieldset>
+`} />
+
+`<legend>` er påkrevd selv når den er skjult. Uten den vet ikke den som hører siden hva de tre alternativene velger mellom.
+
+## Når det ikke er denne du skal ha
+
+| Situasjon | Komponent |
+| --- | --- |
+| Ett valg blant tre til fem korte alternativer | **Toggle Group** |
+| Ett valg blant mange, eller lange alternativer | [Radio](../radio/) i en [Fieldset](../fieldset/) |
+| Flere valg samtidig | [Checkbox](../checkbox/) |
+| Av og på for én innstilling | [Switch](../switch/) |
+| Handlinger, som «fet, kursiv, understreket» | Knapper med `aria-pressed` |
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
+
+fs.setAttributes(gruppe, fs.toggleGroup())
+```
+
+`fs.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
+
+```ts
+gruppe.addEventListener("change", (hendelse) => {
+  const valgt = (hendelse.target as HTMLInputElement).value
+})
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-toggle-group` | Gruppen |
+| `.fs-toggle-group__option` | Ledeteksten rundt hvert alternativ |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-toggle-group-radius` | `var(--size-1)` |
+| `--fs-toggle-group-height` | `var(--size-10)` |
+| `--fs-toggle-group-padding` | `0 var(--size-4)` |
+
+Den valgte flaten settes med `:has(input:checked)`, altså fra tilstanden på den ekte radioknappen. Det er ingen egen klasse å holde i synk.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Radioknappen er krympet bort, ikke fjernet. `display: none` ville tatt den ut av tastaturrekkefølgen, og da virker ikke piltastene.
+- Piltastene flytter mellom alternativene og velger samtidig. Tab hopper ut av hele gruppen. Slik virker radioknapper, og det skal ikke overstyres.
+- Alternativene må være korte. Blir teksten lang, er det egentlig en liste med radioknapper.
+- Ikke la et valg utløse noe som ikke kan angres. Brukeren treffer alle alternativene på veien når hen blar med piltastene.

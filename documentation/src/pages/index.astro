@@ -1,7 +1,7 @@
 ---
 import "@fristil/designsystem/button.css"
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/utilities.css"
+import "@fristil/designsystem/sr-only.css"
 import FristilLogo from "../components/FristilLogo.astro"
 import "../styles/custom-pages-tailwind.css"
 ---
@@ -43,7 +43,7 @@ import "../styles/custom-pages-tailwind.css"
           <span>Rammeverksuavhengig</span><span>designsystem</span>
       </h1>
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet React, Vue, Svelte eller ingenting, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+          Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
         </p>
         <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
           <a href="/kom-i-gang/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-cyan-300 via-blue-400 to-fuchsia-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(79,172,254,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(79,172,254,0.55)] sm:w-auto">
@@ -105,6 +105,53 @@ import "../styles/custom-pages-tailwind.css"
             Komponenten bygger alt selv. For tilfeller der flere deler må holdes i synk, som et datofelt der tekst og kalender alltid viser det samme.
           </p>
           <code class="mt-4 block text-xs text-zinc-400">&lt;fs-date-field label="Reisedato"&gt;</code>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-zinc-800/80 bg-zinc-900/30 py-24">
+    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
+      <div class="mb-10 max-w-2xl">
+        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Styrker</p>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre ting som ellers er vanskelige</h2>
+      </div>
+
+      <div class="grid gap-5 lg:grid-cols-3">
+        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Autofullføring på klassene</h3>
+          <p class="mb-5 text-sm leading-7 text-zinc-300">
+            Klasser og dataattributter er strenger, og en skrivefeil i en variant gir ingen feilmelding, bare en stil som stille aldri ble brukt. Hele API-et finnes derfor også som funksjoner, med lovlige verdier i editoren.
+          </p>
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>&lt;button &#123;...fs.button(&#123; variant: "secondary" &#125;)&#125;&gt;
+  Lagre utkast
+&lt;/button&gt;</code></pre>
+          <p class="mt-5 text-sm leading-7 text-zinc-300">
+            Returverdien er et vanlig objekt med attributter, så det samme kallet virker i JSX, i en Astro-mal og i ren JavaScript.
+          </p>
+        </article>
+
+        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Tilpasning som er målt</h3>
+          <p class="mb-5 text-sm leading-7 text-zinc-300">
+            All komponent-CSS ligger i et eget lag, så din egen regel vinner uten <code class="text-zinc-200">!important</code>, uansett hvor spesifikk vår er. Form og størrelse leses fra variabler med tokenverdien som reserve, så standarden følger skalaen din.
+          </p>
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>:root &#123;
+  --fs-button-radius: 9999px;
+&#125;</code></pre>
+          <p class="mt-5 text-sm leading-7 text-zinc-300">
+            Det er ikke et løfte i en README. Egne tester måler i nettleseren at hver av veiene inn fortsatt virker.
+          </p>
+        </article>
+
+        <article class="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Tilgjengelighet som kontrolleres</h3>
+          <p class="mb-5 text-sm leading-7 text-zinc-300">
+            Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er skrevet én gang og brukes av både web-komponenten og funksjonen, så de to kan ikke gå fra hverandre.
+          </p>
+          <p class="text-sm leading-7 text-zinc-300">
+            Hver komponent kjøres gjennom axe i ekte nettleser mot WCAG 2.1 nivå A og AA. Det samme gjøres mot hver side i denne dokumentasjonen, i både lyst og mørkt tema, siden kontrastfeil oppstår først når delene settes sammen.
+          </p>
         </article>
       </div>
     </div>

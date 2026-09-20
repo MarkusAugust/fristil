@@ -1,0 +1,96 @@
+@layer fristil {
+  .fs-checkbox {
+    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset. */
+    box-sizing: border-box;
+
+    appearance: none;
+    flex: none;
+    display: inline-block;
+    inline-size: var(--fs-checkbox-size, var(--size-5));
+    block-size: var(--fs-checkbox-size, var(--size-5));
+    margin: 0;
+    background-color: var(--semantic-page-background);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 80%;
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--fs-checkbox-radius, var(--size-1));
+    cursor: pointer;
+  }
+
+  .fs-checkbox:hover:not(:disabled) {
+    border-color: var(--semantic-field-border-hover);
+  }
+
+  .fs-checkbox:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .fs-checkbox:checked,
+  .fs-checkbox:indeterminate {
+    background-color: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+  }
+
+  /* Haken er et token og ikke et bilde i denne fila, fordi en data-URL ikke
+     kan lese en CSS-variabel. Streken er malt inn i bildet, og må derfor snu
+     med temaet der de andre fargene snur. */
+  .fs-checkbox:checked {
+    background-image: var(--semantic-icon-check);
+  }
+
+  .fs-checkbox:indeterminate {
+    background-image: var(--semantic-icon-dash);
+  }
+
+  .fs-checkbox:disabled {
+    background-color: var(--semantic-disabled-background);
+    border-color: var(--semantic-disabled-background);
+    cursor: not-allowed;
+  }
+
+  .fs-checkbox:disabled:checked,
+  .fs-checkbox:disabled:indeterminate {
+    background-color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-foreground);
+  }
+
+  .fs-checkbox[data-state="invalid"] {
+    border-color: var(--semantic-danger-foreground);
+  }
+
+  .fs-checkbox[data-state="invalid"]:focus-visible {
+    outline-color: var(--semantic-danger-foreground);
+  }
+
+  .fs-checkbox[data-state="success"] {
+    border-color: var(--semantic-success-foreground);
+  }
+
+  /* Boksen og teksten på én linje, med teksten på plass ved flere linjer. */
+  .fs-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-2);
+    line-height: 1.5;
+  }
+
+  /*
+   * Høykontrast: la nettleseren tegne boksen selv.
+   *
+   * Målt i modusen: gradienter og box-shadow fjernes, egne farger overstyres,
+   * og bare systemfarger, rammer, masker og data-URL-bilder overlever. Haken
+   * vår er hvit og malt inn i bildet, så den ville blitt usynlig mot den
+   * påtvungne flaten. Nettleserens egen avkryssingsboks er riktig i alle
+   * temaer brukeren kan velge, og koster oss ingenting å falle tilbake på.
+   */
+  @media (forced-colors: active) {
+    .fs-checkbox,
+    .fs-checkbox:checked,
+    .fs-checkbox:indeterminate {
+      appearance: auto;
+      background-image: none;
+    }
+  }
+}

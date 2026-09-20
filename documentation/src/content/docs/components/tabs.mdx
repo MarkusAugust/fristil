@@ -1,0 +1,99 @@
+---
+title: Tabs
+description: Faner som kobler en rad med knapper til panelene sine. Rammekomponent.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+import TabsDemo from "../../../components/TabsDemo.astro"
+
+Du skriver knappene og panelene selv. Komponenten setter rollene, holder `aria-selected` og `aria-controls` i synk, skjuler panelene som ikke er valgt, og tar piltastene.
+
+Tastaturet er hele grunnen til at komponenten finnes. I en faneliste skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsTabs } from "@fristil/designsystem/tabs"
+import "@fristil/designsystem/tabs.css"
+
+defineFsTabs()
+```
+
+## Faner
+
+<TabsDemo />
+
+```html
+<fs-tabs label="Deler av saken">
+  <div class="fs-tabs__list">
+    <button>Søknaden</button>
+    <button>Vedlegg</button>
+    <button>Meldinger</button>
+  </div>
+
+  <div class="fs-tabs__panel">
+    <p>Søknaden ble sendt 4. mars 2026.</p>
+  </div>
+  <div class="fs-tabs__panel">
+    <p>Tre vedlegg er lastet opp.</p>
+  </div>
+  <div class="fs-tabs__panel">
+    <p>Ingen meldinger i denne saken.</p>
+  </div>
+</fs-tabs>
+```
+
+Rekkefølgen er koblingen: første knapp hører til første panel. Du trenger ingen id-er, men skriver du dem selv, beholder komponenten dem.
+
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `selected` | tall | Indeksen på fanen som er valgt. Speiles når brukeren bytter. |
+| `label` | streng | Blir `aria-label` på raden, og sier hva fanene velger mellom |
+
+## Hendelser
+
+| Hendelse | `detail` | Når |
+| --- | --- | --- |
+| `tab-select` | `{ index: number }` | En annen fane velges |
+
+```js
+document.querySelector("fs-tabs").addEventListener("tab-select", (hendelse) => {
+  console.log("Fane", hendelse.detail.index)
+})
+```
+
+## Tastatur
+
+| Tast | Virkning |
+| --- | --- |
+| `Pil høyre` og `Pil ned` | Neste fane. Går rundt fra siste til første. |
+| `Pil venstre` og `Pil opp` | Forrige fane |
+| `Home` og `End` | Første og siste fane |
+| `Tab` | Ut av raden og inn i panelet |
+
+## Klasser du kan style
+
+Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer:
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-tabs__list` | Raden med knapper. Komponenten gir den `role="tablist"`. |
+| `.fs-tabs__panel` | Hvert panel. Komponenten gir det `role="tabpanel"`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-tabs-gap` | `var(--size-1)` |
+| `--fs-tabs-padding` | `var(--size-2) var(--size-4)` |
+| `--fs-tabs-panel-space` | `var(--size-4)` |
+
+Streken under den valgte fanen tegnes på alle fanene, gjennomsiktig på dem som ikke er valgt. Da hopper ikke teksten når brukeren bytter.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Faner passer når innholdet er sideordnet og brukeren bare trenger én del om gangen. Er alt viktig, hører det hjemme under hverandre.
+- Ikke legg skjemafelt som må fylles ut i forskjellige faner. Brukeren finner ikke feilen i en fane som er skjult.
+- `label` bør si hva fanene deler opp, ikke gjenta sidens overskrift.
+- Panelet kan få fokus, så Tab går fra fanen og rett inn i innholdet som nettopp ble vist.

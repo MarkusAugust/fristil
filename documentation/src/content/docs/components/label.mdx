@@ -64,8 +64,24 @@ fs.setAttributes(ledetekst, felt.label)
 fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
 ```
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-label` | Ledeteksten. Markeringene legges på med `::after`. |
+
+Markeringen bak `data-required` og `data-optional` er tekst i `::after`, så den kan byttes uten å endre markupen:
+
+```css
+.fs-label[data-optional]::after {
+	content: " (kan stå tomt)";
+}
+```
+
+Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+
 ## Tilgjengelighet
 
 - `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
 - Stjernen legges til med `::after` og leses ikke opp. Det er meningen, for `required` formidler det samme, og en opplest «stjerne» ved hvert felt blir støy.
-- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.srOnly` fra `utilities.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.
+- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.fs-sr-only` fra `sr-only.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.
