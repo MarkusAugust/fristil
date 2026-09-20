@@ -68,52 +68,7 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
   graphite: [0, 5, 10, 30, 50, 70, 100],
 }} />
 
-## Egne farger
-
-Vil du ha andre farger enn Fristils, overstyrer du variablene i din egen CSS. Last den etter `tokens.css`:
-
-```css
-:root {
-	--semantic-interactive-main: #7c3aed;
-	--semantic-interactive-contrast: #ffffff;
-}
-```
-
-Det er din fil, så den overlever oppgraderinger av pakken.
-
-Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet — du trenger verken `!important` eller lange selektorer.
-
-:::caution[Overstyrer du, eier du kontrasten]
-Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger — og paret den inngår i, må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
-:::
-
-### Per tema
-
-Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
-
-```css
-:root {
-	--semantic-interactive-main: #7c3aed;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) {
-		--semantic-interactive-main: #c4b5fd;
-	}
-}
-
-[data-theme="dark"] {
-	--semantic-interactive-main: #c4b5fd;
-}
-```
-
-De to siste blokkene må begge være med, siden Fristil støtter både systemvalget og et eksplisitt `data-theme`.
-
-### Hvilket lag?
-
-Overstyr **semantiske** verdier når du vil endre hva en farge betyr. Overstyr **palett**-verdier når du vil bytte hele skalaen; da følger alle semantiske verdier som peker på den, med.
-
-## Størrelser
+## Størrelsesskalaen
 
 Én skala, `--size-*`, til alt spatialt: `padding`, `margin`, `gap`, `width`, `height`. Ingen egen `--spacing-*`. Fire piksler som grunnenhet, som Tailwind, så `--size-4` tilsvarer `p-4`.
 
@@ -194,3 +149,5 @@ export default {
 `text-interactive`, `bg-danger-bg` og `border-divider` gir da de samme verdiene som `var()`-variantene. Brekkpunkter, containerbredder og hele paletten følger med.
 
 Forhåndsinnstillingen er et tillegg, ikke et krav.
+
+Vil du endre farger, form eller størrelse, se [Tilpasning](../tilpasning/).

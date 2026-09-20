@@ -1,0 +1,117 @@
+---
+title: Tilpasning
+description: Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.
+---
+
+Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Det er din fil, så den overlever oppgraderinger av pakken — i motsetning til å endre noe inne i `node_modules`.
+
+Fire veier, i den rekkefølgen du bør prøve dem:
+
+| Vei | Til hva |
+| --- | --- |
+| [Tokens](#egne-farger) | Farger, på tvers av hele systemet |
+| [Komponentvariabler](#form-og-størrelse) | Form og størrelse på én komponent |
+| [`::part()`](#shadow-dom) | Innsiden av `<fs-calendar>` |
+| [Vanlige regler](#når-variabelen-ikke-rekker) | Alt annet |
+
+## Egne farger
+
+Vil du ha andre farger enn Fristils, overstyrer du variablene i din egen CSS. Last den etter `tokens.css`:
+
+```css
+:root {
+	--semantic-interactive-main: #7c3aed;
+	--semantic-interactive-contrast: #ffffff;
+}
+```
+
+Det er din fil, så den overlever oppgraderinger av pakken.
+
+Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet — du trenger verken `!important` eller lange selektorer.
+
+:::caution[Overstyrer du, eier du kontrasten]
+Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger — og paret den inngår i, må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
+:::
+
+### Per tema
+
+Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
+
+```css
+:root {
+	--semantic-interactive-main: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--semantic-interactive-main: #c4b5fd;
+	}
+}
+
+[data-theme="dark"] {
+	--semantic-interactive-main: #c4b5fd;
+}
+```
+
+De to siste blokkene må begge være med, siden Fristil støtter både systemvalget og et eksplisitt `data-theme`.
+
+### Hvilket lag?
+
+Overstyr **semantiske** verdier når du vil endre hva en farge betyr. Overstyr **palett**-verdier når du vil bytte hele skalaen; da følger alle semantiske verdier som peker på den, med.
+
+## Form og størrelse
+
+Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for form og størrelse:
+
+```css
+:root {
+	--fs-button-radius: 9999px;
+	--fs-input-radius: 0;
+}
+```
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-button-padding` | `var(--size-2) var(--size-4)` |
+| `--fs-button-radius` | `var(--size-1)` |
+| `--fs-badge-padding` | `var(--size-0-5) var(--size-2)` |
+| `--fs-badge-radius` | `var(--size-4)` |
+| `--fs-input-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-input-radius` | `var(--size-1)` |
+| `--fs-textarea-min-height` | `calc(var(--size-4) * 5)` |
+| `--fs-textarea-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-textarea-radius` | `var(--size-1)` |
+| `--fs-select-radius` | `var(--size-1)` |
+
+Standardverdiene peker på `--size-*`-skalaen. Endrer du skalaen, følger komponentene med — setter du variabelen, gjelder din verdi bare for den komponenten.
+
+## Når variabelen ikke rekker
+
+Alt Fristil sender ut — tokens og komponent-CSS — ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
+
+```css
+.fs-button {
+	letter-spacing: 0.02em;
+}
+```
+
+Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="danger"]:hover`, eller ty til `!important`.
+
+:::caution[`!important` snur rekkefølgen]
+For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke — la det være.
+:::
+
+### Shadow DOM
+
+`<fs-calendar>` har sine egne stiler inni en shadow root, og vanlig CSS når ikke inn. To veier virker:
+
+```css
+/* Variabler arves gjennom skyggegrensen */
+:root { --semantic-interactive-main: #7c3aed; }
+
+/* Utpekte deler kan styles utenfra */
+fs-calendar::part(trigger) { border-radius: 9999px; }
+fs-calendar::part(popup) { box-shadow: none; }
+```
+
+Komponenten eksponerer `trigger` (knappen) og `popup` (kalenderpanelet).

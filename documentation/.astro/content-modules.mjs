@@ -16,5 +16,6 @@ export default new Map([
 ["src/content/docs/introduksjon.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fintroduksjon.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/kom-i-gang.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fkom-i-gang.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/rammeverk.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Frammeverk.mdx&astroContentModuleFlag=true")],
+["src/content/docs/tilpasning.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Ftilpasning.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/typesikker-bruk.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Ftypesikker-bruk.mdx&astroContentModuleFlag=true")]]);
 		
