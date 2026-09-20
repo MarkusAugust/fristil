@@ -1,86 +1,88 @@
-.fs-button {
-  /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-     Uten border-box legges padding og ramme utenpå width, og feltet
-     blir bredere enn boksen det ligger i. */
-  box-sizing: border-box;
+@layer fristil {
+  .fs-button {
+    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
+       Uten border-box legges padding og ramme utenpå width, og feltet
+       blir bredere enn boksen det ligger i. */
+    box-sizing: border-box;
 
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-2);
-  padding: var(--size-2) var(--size-4);
-  font-family: inherit;
-  font-size: var(--font-size-m);
-  font-weight: 500;
-  line-height: 1.5;
-  border: 1px solid var(--semantic-interactive-main);
-  border-radius: var(--size-1);
-  background: var(--semantic-interactive-main);
-  color: var(--semantic-interactive-contrast);
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  user-select: none;
-}
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2);
+    padding: var(--fs-button-padding, var(--size-2) var(--size-4));
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    font-weight: 500;
+    line-height: 1.5;
+    border: 1px solid var(--semantic-interactive-main);
+    border-radius: var(--fs-button-radius, var(--size-1));
+    background: var(--semantic-interactive-main);
+    color: var(--semantic-interactive-contrast);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+  }
 
-.fs-button:hover {
-  background: var(--semantic-interactive-foreground);
-  border-color: var(--semantic-interactive-foreground);
-}
+  .fs-button:hover {
+    background: var(--semantic-interactive-foreground);
+    border-color: var(--semantic-interactive-foreground);
+  }
 
-.fs-button:focus-visible {
-  outline: 2px solid var(--semantic-interactive-main);
-  outline-offset: 2px;
-}
+  .fs-button:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
 
-.fs-button:disabled,
-.fs-button[aria-disabled="true"] {
-  background: var(--semantic-disabled-background);
-  color: var(--semantic-disabled-foreground);
-  border-color: var(--semantic-disabled-background);
-  /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-     deaktivert felt, og pointer-events ville bare hindret markøren i å
-     vises — elementet blir da ikke truffet av musa i det hele tatt. */
-  cursor: not-allowed;
-}
+  .fs-button:disabled,
+  .fs-button[aria-disabled="true"] {
+    background: var(--semantic-disabled-background);
+    color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-background);
+    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
+       deaktivert felt, og pointer-events ville bare hindret markøren i å
+       vises — elementet blir da ikke truffet av musa i det hele tatt. */
+    cursor: not-allowed;
+  }
 
-/* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-   fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-   Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-.fs-button[aria-disabled="true"] {
-  pointer-events: none;
-}
+  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
+     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
+     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
+  .fs-button[aria-disabled="true"] {
+    pointer-events: none;
+  }
 
-/* Sekundær — omriss, gjennomsiktig bakgrunn */
-.fs-button[data-variant="secondary"] {
-  background: transparent;
-  color: var(--semantic-interactive-main);
-  border-color: var(--semantic-interactive-main);
-}
+  /* Sekundær — omriss, gjennomsiktig bakgrunn */
+  .fs-button[data-variant="secondary"] {
+    background: transparent;
+    color: var(--semantic-interactive-main);
+    border-color: var(--semantic-interactive-main);
+  }
 
-.fs-button[data-variant="secondary"]:hover {
-  background: var(--semantic-interactive-background);
-}
+  .fs-button[data-variant="secondary"]:hover {
+    background: var(--semantic-interactive-background);
+  }
 
-/* Ghost — ingen kant, ingen bakgrunn */
-.fs-button[data-variant="ghost"] {
-  background: transparent;
-  color: var(--semantic-interactive-main);
-  border-color: transparent;
-}
+  /* Ghost — ingen kant, ingen bakgrunn */
+  .fs-button[data-variant="ghost"] {
+    background: transparent;
+    color: var(--semantic-interactive-main);
+    border-color: transparent;
+  }
 
-.fs-button[data-variant="ghost"]:hover {
-  background: var(--semantic-interactive-background);
-}
+  .fs-button[data-variant="ghost"]:hover {
+    background: var(--semantic-interactive-background);
+  }
 
-/* Danger */
-.fs-button[data-variant="danger"] {
-  background: var(--semantic-danger-background);
-  color: var(--semantic-danger-foreground);
-  border-color: var(--semantic-danger-foreground);
-}
+  /* Danger */
+  .fs-button[data-variant="danger"] {
+    background: var(--semantic-danger-background);
+    color: var(--semantic-danger-foreground);
+    border-color: var(--semantic-danger-foreground);
+  }
 
-.fs-button[data-variant="danger"]:hover {
-  background: var(--semantic-danger-main);
-  border-color: var(--semantic-danger-main);
-  color: var(--semantic-danger-contrast);
+  .fs-button[data-variant="danger"]:hover {
+    background: var(--semantic-danger-main);
+    border-color: var(--semantic-danger-main);
+    color: var(--semantic-danger-contrast);
+  }
 }

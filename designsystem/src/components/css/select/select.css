@@ -1,83 +1,85 @@
-.fs-select {
-  /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-     Uten border-box legges padding og ramme utenpå width, og feltet
-     blir bredere enn boksen det ligger i. */
-  box-sizing: border-box;
+@layer fristil {
+  .fs-select {
+    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
+       Uten border-box legges padding og ramme utenpå width, og feltet
+       blir bredere enn boksen det ligger i. */
+    box-sizing: border-box;
 
-  display: block;
-  width: 100%;
-  padding: var(--size-2) calc(var(--size-4) + var(--size-2)) var(--size-2)
-    var(--size-3);
-  font-family: inherit;
-  font-size: var(--font-size-m);
-  line-height: 1.5;
-  color: var(--semantic-page-foreground);
-  background-color: var(--semantic-page-background);
-  border: 1px solid var(--semantic-field-border);
-  border-radius: var(--size-1);
-  appearance: none;
-  background-image:
-    linear-gradient(
-      45deg,
-      transparent 50%,
-      var(--semantic-muted-foreground) 50%
-    ),
-    linear-gradient(
-      135deg,
-      var(--semantic-muted-foreground) 50%,
-      transparent 50%
-    );
-  background-position:
-    calc(100% - 1rem) calc(50% - 0.1rem),
-    calc(100% - 0.75rem) calc(50% - 0.1rem);
-  background-size:
-    0.35rem 0.35rem,
-    0.35rem 0.35rem;
-  background-repeat: no-repeat;
-}
+    display: block;
+    width: 100%;
+    padding: var(--size-2) calc(var(--size-4) + var(--size-2)) var(--size-2)
+      var(--size-3);
+    font-family: inherit;
+    font-size: var(--font-size-m);
+    line-height: 1.5;
+    color: var(--semantic-page-foreground);
+    background-color: var(--semantic-page-background);
+    border: 1px solid var(--semantic-field-border);
+    border-radius: var(--fs-select-radius, var(--size-1));
+    appearance: none;
+    background-image:
+      linear-gradient(
+        45deg,
+        transparent 50%,
+        var(--semantic-muted-foreground) 50%
+      ),
+      linear-gradient(
+        135deg,
+        var(--semantic-muted-foreground) 50%,
+        transparent 50%
+      );
+    background-position:
+      calc(100% - 1rem) calc(50% - 0.1rem),
+      calc(100% - 0.75rem) calc(50% - 0.1rem);
+    background-size:
+      0.35rem 0.35rem,
+      0.35rem 0.35rem;
+    background-repeat: no-repeat;
+  }
 
-.fs-select:hover {
-  border-color: var(--semantic-field-border-hover);
-}
+  .fs-select:hover {
+    border-color: var(--semantic-field-border-hover);
+  }
 
-.fs-select:focus-visible {
-  outline: 2px solid var(--semantic-interactive-main);
-  outline-offset: 2px;
-  border-color: var(--semantic-interactive-main);
-}
+  .fs-select:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+    border-color: var(--semantic-interactive-main);
+  }
 
-.fs-select:disabled,
-.fs-select[aria-disabled="true"] {
-  background-color: var(--semantic-disabled-background);
-  color: var(--semantic-disabled-foreground);
-  border-color: var(--semantic-disabled-background);
-  /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-     deaktivert felt, og pointer-events ville bare hindret markøren i å
-     vises — elementet blir da ikke truffet av musa i det hele tatt. */
-  cursor: not-allowed;
-}
+  .fs-select:disabled,
+  .fs-select[aria-disabled="true"] {
+    background-color: var(--semantic-disabled-background);
+    color: var(--semantic-disabled-foreground);
+    border-color: var(--semantic-disabled-background);
+    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
+       deaktivert felt, og pointer-events ville bare hindret markøren i å
+       vises — elementet blir da ikke truffet av musa i det hele tatt. */
+    cursor: not-allowed;
+  }
 
-/* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-   fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-   Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-.fs-select[aria-disabled="true"] {
-  pointer-events: none;
-}
+  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
+     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
+     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
+  .fs-select[aria-disabled="true"] {
+    pointer-events: none;
+  }
 
-.fs-select[data-state="invalid"] {
-  border-color: var(--semantic-danger-foreground);
-  background-color: var(--semantic-danger-background);
-}
+  .fs-select[data-state="invalid"] {
+    border-color: var(--semantic-danger-foreground);
+    background-color: var(--semantic-danger-background);
+  }
 
-.fs-select[data-state="invalid"]:focus-visible {
-  outline-color: var(--semantic-danger-foreground);
-}
+  .fs-select[data-state="invalid"]:focus-visible {
+    outline-color: var(--semantic-danger-foreground);
+  }
 
-.fs-select[data-state="success"] {
-  border-color: var(--semantic-success-foreground);
-  background-color: var(--semantic-success-background);
-}
+  .fs-select[data-state="success"] {
+    border-color: var(--semantic-success-foreground);
+    background-color: var(--semantic-success-background);
+  }
 
-.fs-select[data-state="success"]:focus-visible {
-  outline-color: var(--semantic-success-foreground);
+  .fs-select[data-state="success"]:focus-visible {
+    outline-color: var(--semantic-success-foreground);
+  }
 }

@@ -1,40 +1,42 @@
-.fs-badge {
-  /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-     Uten border-box legges padding og ramme utenpå width, og feltet
-     blir bredere enn boksen det ligger i. */
-  box-sizing: border-box;
+@layer fristil {
+  .fs-badge {
+    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
+       Uten border-box legges padding og ramme utenpå width, og feltet
+       blir bredere enn boksen det ligger i. */
+    box-sizing: border-box;
 
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-1);
-  padding: var(--size-0-5) var(--size-2);
-  font-family: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  line-height: 1.5;
-  border-radius: var(--size-4);
-  white-space: nowrap;
-  user-select: none;
-  background: var(--semantic-interactive-background);
-  color: var(--semantic-interactive-main);
-}
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-1);
+    padding: var(--fs-badge-padding, var(--size-0-5) var(--size-2));
+    font-family: inherit;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: 1.5;
+    border-radius: var(--fs-badge-radius, var(--size-4));
+    white-space: nowrap;
+    user-select: none;
+    background: var(--semantic-interactive-background);
+    color: var(--semantic-interactive-main);
+  }
 
-.fs-badge[data-color="success"] {
-  background: var(--semantic-success-background);
-  color: var(--semantic-success-foreground);
-}
+  .fs-badge[data-color="success"] {
+    background: var(--semantic-success-background);
+    color: var(--semantic-success-foreground);
+  }
 
-.fs-badge[data-color="warning"] {
-  background: var(--semantic-warning-background);
-  color: var(--semantic-warning-foreground);
-}
+  .fs-badge[data-color="warning"] {
+    background: var(--semantic-warning-background);
+    color: var(--semantic-warning-foreground);
+  }
 
-.fs-badge[data-color="danger"] {
-  background: var(--semantic-danger-background);
-  color: var(--semantic-danger-foreground);
-}
+  .fs-badge[data-color="danger"] {
+    background: var(--semantic-danger-background);
+    color: var(--semantic-danger-foreground);
+  }
 
-.fs-badge[data-color="neutral"] {
-  background: var(--semantic-neutral-background);
-  color: var(--semantic-neutral-foreground);
+  .fs-badge[data-color="neutral"] {
+    background: var(--semantic-neutral-background);
+    color: var(--semantic-neutral-foreground);
+  }
 }
