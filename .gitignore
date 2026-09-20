@@ -3,3 +3,5 @@ PLAN.md
 .claude
 dist
 *.tsbuildinfo
+__screenshots__
+.vitest-attachments
