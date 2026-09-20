@@ -2,6 +2,9 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import inputCss from "./input.css?inline"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -103,5 +106,16 @@ describe("fs-input tilgjengelighet", () => {
 
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-input uten CSS-reset", () => {
+  it("holder seg innenfor boksen sin", () => {
+    const { boks } = monterIsolert(
+      inputCss,
+      `<input class="fs-input" type="email" value="ola@eksempel.no" />`,
+    )
+
+    expect(finnOverflyt(boks)).toEqual([])
   })
 })

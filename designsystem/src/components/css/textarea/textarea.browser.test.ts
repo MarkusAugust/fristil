@@ -2,6 +2,9 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
+import textareaCss from "./textarea.css?inline"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -75,5 +78,16 @@ describe("fs-textarea tilgjengelighet", () => {
 
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-textarea uten CSS-reset", () => {
+  it("holder seg innenfor boksen sin", () => {
+    const { boks } = monterIsolert(
+      textareaCss,
+      `<textarea class="fs-textarea" rows="3">Jeg flytter 1. juni.</textarea>`,
+    )
+
+    expect(finnOverflyt(boks)).toEqual([])
   })
 })

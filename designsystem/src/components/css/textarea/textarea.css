@@ -1,4 +1,9 @@
 .fs-textarea {
+  /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
+     Uten border-box legges padding og ramme utenpå width, og feltet
+     blir bredere enn boksen det ligger i. */
+  box-sizing: border-box;
+
   display: block;
   width: 100%;
   min-height: calc(var(--size-4) * 5);
