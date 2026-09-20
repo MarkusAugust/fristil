@@ -92,6 +92,8 @@ Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene d
 
 `fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>` — kontrakten finnes ett sted. Se «Typesikker bruk» i dokumentasjonen.
 
+Bruker du React, importer fra `@fristil/designsystem/react`. Samme kall, men `className` og `htmlFor` i returverdien — React skriver ellers «Invalid DOM property `class`» i konsollen for hvert element. Vue, Svelte, Solid og Preact tar HTML-navnene som de er.
+
 ## Lokal utvikling
 
 Forutsetninger: Bun installert.

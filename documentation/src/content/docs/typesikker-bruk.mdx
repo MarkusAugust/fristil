@@ -28,6 +28,14 @@ Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon 
 
 Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et virker i React, Vue, Svelte og ren HTML — alle kan spre et objekt inn i et element.
 
+:::note[Bruker du React?]
+Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
+
+`fs` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem — de havner riktig i DOM-en — men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
+
+Vue, Svelte, Solid og Preact tar `class` og `for` som de er, og bruker hovedinngangen.
+:::
+
 ## Standardverdier gir ingen attributter
 
 ```ts
@@ -133,7 +141,8 @@ Velg `<fs-field>` når du vil skrive vanlig HTML og la komponenten koble den. Ve
 ## I praksis: en gjenbrukbar knapp i React
 
 ```tsx
-import { fs, type ButtonVariant } from "@fristil/designsystem"
+import { fs } from "@fristil/designsystem/react"
+import type { ButtonVariant } from "@fristil/designsystem"
 import type { ComponentProps } from "react"
 
 type Props = ComponentProps<"button"> & {
@@ -145,7 +154,9 @@ export function Knapp({ variant, ...rest }: Props) {
 }
 ```
 
-Elleve linjer, én import. Bytter teamet rammeverk, er det disse elleve linjene som skrives om — ikke designsystemet.
+Tolv linjer. Bytter teamet rammeverk, er det disse tolv linjene som skrives om — ikke designsystemet.
+
+`ComponentProps<"button">` tar med `ref`, og siden React 19 er `ref` en vanlig prop. Den følger derfor med gjennom `{...rest}` uten `forwardRef`. (De eldre variantene `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.)
 
 ## Når du kan hoppe over det
 
@@ -162,3 +173,5 @@ Vil du bare ha én komponent, finnes de som egne inngangspunkter også:
 ```ts
 import { button } from "@fristil/designsystem/button"
 ```
+
+Subpath-ene returnerer `class` og `for`, som hovedinngangen. React-varianten finnes bare som samlet `fs`.
