@@ -72,28 +72,33 @@ Tre ting må stemme samtidig: `data-state` på feltet for fargen, `aria-invalid`
 ## TypeScript
 
 ```ts
-import { getErrorTextStyleAttributes } from "@fristil/designsystem/error-text"
+import { fs } from "@fristil/designsystem"
 
-getErrorTextStyleAttributes("warning")
+fs.errorText({ variant: "warning" })
 // { class: "fs-error-text", "data-variant": "warning" }
 
-getErrorTextStyleAttributes()
+fs.errorText()
 // { class: "fs-error-text" } — "error" er standard
 ```
 
 Verdier som kommer utenfra, validerer du først:
 
 ```ts
-import {
-	getErrorTextStyleAttributes,
-	isErrorTextVariant,
-} from "@fristil/designsystem/error-text"
+const variant = fs.errorText.isVariant(svar.variant) ? svar.variant : "error"
 
-const fraServer = String(svar.variant)
-const variant = isErrorTextVariant(fraServer) ? fraServer : "error"
-
-getErrorTextStyleAttributes(variant)
+fs.errorText({ variant })
 ```
+
+De tre tingene som må stemme samtidig, gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) i én operasjon:
+
+```tsx
+const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
+
+<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+```
+
+`felt.error` inneholder `hidden` når feltet ikke er ugyldig, og feilmeldingen tas da heller ikke med i `aria-describedby` — en skjult melding skal ikke pekes på.
 
 ## Slik skriver du feilmeldingen
 

@@ -73,27 +73,30 @@ Hjelpeteksten må knyttes til feltet med `aria-describedby`, ellers leses den ik
 ## TypeScript
 
 ```ts
-import { getHelpTextStyleAttributes } from "@fristil/designsystem/help-text"
+import { fs } from "@fristil/designsystem"
 
-getHelpTextStyleAttributes("success")
+fs.helpText({ variant: "success" })
 // { class: "fs-help-text", "data-variant": "success" }
 
-getHelpTextStyleAttributes()
+fs.helpText()
 // { class: "fs-help-text" } — "muted" er standard
 ```
 
 Verdier som kommer utenfra, validerer du først:
 
 ```ts
-import {
-	getHelpTextStyleAttributes,
-	isHelpTextVariant,
-} from "@fristil/designsystem/help-text"
+const variant = fs.helpText.isVariant(svar.variant) ? svar.variant : "muted"
 
-const fraServer = String(svar.variant)
-const variant = isHelpTextVariant(fraServer) ? fraServer : "muted"
+fs.helpText({ variant })
+```
 
-getHelpTextStyleAttributes(variant)
+Koblingen til feltet gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) for deg:
+
+```tsx
+const felt = fs.field({ id: "kid", help: true })
+
+<input {...fs.input()} {...felt.control} inputMode="numeric" />
+<p {...fs.helpText()} {...felt.help}>Du finner nummeret øverst på fakturaen.</p>
 ```
 
 ## Tilgjengelighet

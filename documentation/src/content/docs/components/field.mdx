@@ -25,6 +25,21 @@ Hver `id` må være unik på siden, `aria-describedby` må peke på begge tekste
 
 `<fs-field>` gjør den koblingen én gang, i systemet, i stedet for i hver app.
 
+## Eller som data, uten custom element
+
+Bygger du markupen i et rammeverk og vil heller eie den selv, gir [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) deg den samme koblingen som attributter:
+
+```tsx
+const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
+
+<label {...felt.label}>E-postadresse</label>
+<input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
+<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+```
+
+De to deler kode: utregningen skjer ett sted i systemet, så kontrakten kan ikke gå fra hverandre. Forskjellen er bare hvem som eier markupen.
+
 ## Kom i gang
 
 ```ts
