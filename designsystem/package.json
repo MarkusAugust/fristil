@@ -85,6 +85,10 @@
     "./field-core": {
       "import": "./dist/components/ramme/field/field-core.js",
       "types": "./dist/components/ramme/field/field-core.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react.js",
+      "types": "./dist/react.d.ts"
     }
   },
   "files": [
