@@ -17,6 +17,7 @@ import {
   computeFieldAttributes,
   type FieldOptions,
 } from "./components/ramme/field/field-core.js"
+import { setAttributes } from "./dom.js"
 
 /**
  * Samme API som `fs`, men med `className` og `htmlFor`.
@@ -50,15 +51,15 @@ export type ReactAttributes<T> = {
       : K]: T[K]
 }
 
-export function tilReactAttributter<T extends Record<string, unknown>>(
-  attributter: T,
+export function toReactAttributes<T extends Record<string, unknown>>(
+  attributes: T,
 ): ReactAttributes<T> {
-  const ut: Record<string, unknown> = {}
-  for (const [navn, verdi] of Object.entries(attributter)) {
-    ut[navn === "class" ? "className" : navn === "for" ? "htmlFor" : navn] =
-      verdi
+  const result: Record<string, unknown> = {}
+  for (const [name, value] of Object.entries(attributes)) {
+    result[name === "class" ? "className" : name === "for" ? "htmlFor" : name] =
+      value
   }
-  return ut as ReactAttributes<T>
+  return result as ReactAttributes<T>
 }
 
 /**
@@ -71,8 +72,8 @@ export function tilReactAttributter<T extends Record<string, unknown>>(
 function forReact<Valg, Ut extends Record<string, unknown>, Ekstra>(
   fn: ((valg?: Valg) => Ut) & Ekstra,
 ): ((valg?: Valg) => ReactAttributes<Ut>) & Ekstra {
-  const innpakket = (valg?: Valg) => tilReactAttributter(fn(valg))
-  return Object.assign(innpakket, fn)
+  const wrapped = (valg?: Valg) => toReactAttributes(fn(valg))
+  return Object.assign(wrapped, fn)
 }
 
 export const fs = {
@@ -94,8 +95,10 @@ export const fs = {
    */
   field: (options: FieldOptions = {}) => {
     const felt = computeFieldAttributes(options)
-    return { ...felt, label: tilReactAttributter(felt.label) }
+    return { ...felt, label: toReactAttributes(felt.label) }
   },
+
+  setAttributes,
 
   states: fieldStates,
   isState: isFieldState,

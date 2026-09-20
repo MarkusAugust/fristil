@@ -93,6 +93,10 @@
     "./react-jsx": {
       "import": "./dist/jsx/react.js",
       "types": "./dist/jsx/react.d.ts"
+    },
+    "./dom": {
+      "import": "./dist/dom.js",
+      "types": "./dist/dom.d.ts"
     }
   },
   "files": [

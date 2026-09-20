@@ -14,6 +14,7 @@ import {
 } from "./components/css/shared.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { computeFieldAttributes } from "./components/ramme/field/field-core.js"
+import { setAttributes } from "./dom.js"
 
 /**
  * Hele komponent-API-et på ett sted.
@@ -30,7 +31,7 @@ import { computeFieldAttributes } from "./components/ramme/field/field-core.js"
  * ```
  *
  * Formen er den samme for alle, så du lærer den én gang. Skriv `fs.` i
- * editoren for å se hva som finnes; skriv `fs.button.` for å se de lovlige
+ * editoren for å se hva som finnes; skriv `fs.button.` for å se de allowed
  * variantene og vakten som validerer verdier utenfra.
  *
  * Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et
@@ -64,6 +65,14 @@ export const fs = {
   textarea,
 
   /** Valideringstilstandene som deles av input, textarea og select. */
+  /**
+   * Bruker et attributtsett på et element i vanlig DOM.
+   *
+   * I JSX sprer du objektet. Uten JSX gjør denne jobben — og rydder bort
+   * attributes fra forrige tilstand.
+   */
+  setAttributes,
+
   states: fieldStates,
   isState: isFieldState,
   /** Måtene et påkrevd felt kan markeres på. */
