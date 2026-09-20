@@ -158,6 +158,34 @@ Tolv linjer. Bytter teamet rammeverk, er det disse tolv linjene som skrives om �
 
 `ComponentProps<"button">` tar med `ref`, og siden React 19 er `ref` en vanlig prop. Den følger derfor med gjennom `{...rest}` uten `forwardRef`. (De eldre variantene `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.)
 
+## Web-komponentene
+
+`fs` dekker CSS-komponentene. De egendefinerte elementene — `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` — er HTML-tagger, og TypeScript kjenner dem ikke uten videre. Importer typene én gang i en `.d.ts`-fil:
+
+```ts
+// src/fristil.d.ts
+import "@fristil/designsystem/react-jsx"
+```
+
+Da får attributtene autofullføring og sjekk, også de med bindestrek:
+
+```tsx
+<fs-field required-marker="text" />      // ok
+<fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
+<fs-date-field labell="Reisedato" />     // feil: ukjent attributt
+<fs-date-field helpText="DD-MM-ÅÅÅÅ" />  // feil: attributtet heter help-text
+```
+
+Vue og Svelte trenger ikke dette. Vue godtar elementene når `fs-` er satt opp i `isCustomElement`, og Svelte klager ikke på ukjente tagger.
+
+## Det typene ikke fanger
+
+To ting er verdt å vite:
+
+**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer. Returverdien er bare et objekt med HTML-attributter, og TypeScript har ingen grunn til å nekte.
+
+**Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen av lovlige typer, ikke `"date"`. Det spiller sjelden noen rolle siden du sprer objektet videre.
+
 ## Når du kan hoppe over det
 
 `fs` er valgfritt. Skriver du HTML for hånd, i en mal uten TypeScript, eller i et oppsett uten byggesteg, er dette like gyldig:

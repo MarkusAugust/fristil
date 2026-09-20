@@ -84,27 +84,30 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     Importerer du dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
   </TabItem>
   <TabItem label="TypeScript-typer">
-    React kjenner ikke `<fs-field>` fra før. Legg til en typedeklarasjon i prosjektet — for eksempel `src/fristil.d.ts`:
+    Importer typene for de egendefinerte elementene én gang. Legg importen i en `.d.ts`-fil, så havner den aldri i bygget:
 
     ```ts
-    import type { DetailedHTMLProps, HTMLAttributes } from "react"
-
-    type FristilElement<T> = DetailedHTMLProps<HTMLAttributes<T>, T> & {
-    	[attributt: string]: unknown
-    }
-
-    declare module "react" {
-    	namespace JSX {
-    		interface IntrinsicElements {
-    			"fs-field": FristilElement<HTMLElement>
-    			"fs-date-field": FristilElement<HTMLElement>
-    			"fs-calendar": FristilElement<HTMLElement>
-    		}
-    	}
-    }
+    // src/fristil.d.ts
+    import "@fristil/designsystem/react-jsx"
     ```
 
-    Uten denne fila klager TypeScript på at `fs-field` ikke finnes.
+    Uten den kjenner ikke TypeScript `<fs-field>` i det hele tatt:
+
+    ```
+    Property 'fs-field' does not exist on type 'JSX.IntrinsicElements'
+    ```
+
+    Med den får du autofullføring og feilmelding på attributtene:
+
+    ```tsx
+    <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
+    <fs-date-field labell="Reisedato" />     // feil: ukjent attributt
+    <fs-date-field helpText="DD-MM-ÅÅÅÅ" /> // feil: attributtet heter help-text
+    ```
+
+    :::caution[Bare én kopi av `@types/react`]
+    Typene virker ved at pakken utvider Reacts `JSX.IntrinsicElements`. Har prosjektet to installasjoner av `@types/react` — lett å få til i et monorepo — utvider pakken den ene mens koden din bruker den andre, og elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
+    :::
   </TabItem>
   <TabItem label="Bruk">
     ```tsx
