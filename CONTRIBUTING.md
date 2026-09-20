@@ -32,13 +32,13 @@ Kjører nøyaktig det CI kjører, i samme rekkefølge:
 
 Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under arbeid er `bun run test -- --project chromium` nok.
 
-Første gang må nettleserne hentes:
+`sjekk` henter nettleserne først, så den virker i et nyklonet repo. Kommandoen er rask når de allerede ligger der. Trenger du bare dem:
 
 ```bash
 bun --filter @fristil/designsystem nettlesere
 ```
 
-Bruk den kommandoen, ikke `bunx playwright install`. Den siste kan hente en annen versjon enn den vitest bruker, og da starter ikke testene.
+Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon enn den vitest bruker, og heller ikke `bun --filter <pakke> run <skript>`, som gir «No packages matched the filter». Skriptnavnet skal stå uten `run`.
 
 ## Commit-meldinger
 
