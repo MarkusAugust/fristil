@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
   pull_request:
+  # Lar en gren kjøres før det finnes en PR, så feil i selve arbeidsflyten
+  # kommer fram med en gang.
+  workflow_dispatch:
 
 # En ny push til samme gren avbryter forrige kjøring. Det er ingen vits i å
 # kjøre tre nettlesere gjennom en versjon ingen skal se igjen.
@@ -34,8 +37,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
+      # Pakkens egen Playwright, ikke `bunx playwright`, som kan hente en
+      # annen versjon enn den vitest bruker.
       - name: Installer nettlesere
-        run: bun --filter @fristil/designsystem exec playwright install --with-deps chromium firefox webkit
+        working-directory: designsystem
+        run: ./node_modules/.bin/playwright install --with-deps chromium firefox webkit
 
       - name: Lint
         run: bun run lint

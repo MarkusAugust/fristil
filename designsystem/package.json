@@ -264,7 +264,8 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
     "sjekk:eksport": "bun scripts/sjekk-eksport.ts",
-    "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts"
+    "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts",
+    "nettlesere": "playwright install chromium firefox webkit"
   },
   "peerDependencies": {
     "lit": ">=3.0.0"
