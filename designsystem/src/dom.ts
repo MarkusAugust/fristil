@@ -2,16 +2,16 @@
  * Å bruke attributtene på et element i vanlig DOM.
  *
  * I JSX sprer du objektet rett inn i elementet. Uten JSX måtte du løkke
- * gjennom det selv, og passe på å fjerne attributes fra forrige tilstand —
+ * gjennom det selv, og passe på å fjerne attributter fra forrige tilstand —
  * går et felt fra ugyldig til gyldig, utelater byggeren `data-state`, og et
  * `setAttribute` alene ville latt den gamle verdien bli stående.
  */
 
 /**
- * Attributtene byggerne kan sende result.
+ * Attributtene byggerne kan sende ut.
  *
- * Lista er lukket, og `setAttributes` rydder bare i disse. Konsumentens ownClasses
- * attributes — `data-testid` og hva det måtte være — røres ikke.
+ * Lista er lukket, og `setAttributes` rydder bare i disse. Konsumentens egne
+ * attributter — `data-testid` og hva det måtte være — røres ikke.
  */
 const SYSTEM_ATTRIBUTES = [
   "type",
@@ -25,7 +25,7 @@ const SYSTEM_ATTRIBUTES = [
   "aria-describedby",
 ] as const
 
-/** Klassene systemet eier. Konsumentens ownClasses klasser beholdes. */
+/** Klassene systemet eier. Konsumentens egne klasser beholdes. */
 const IS_SYSTEM_CLASS = /^fs-/
 
 export type Attributes = Record<string, string | undefined>
@@ -41,7 +41,7 @@ export type Attributes = Record<string, string | undefined>
  * ```
  *
  * Kall den på nytt for å endre tilstand. Attributes fra forrige kall som
- * ikke er med i det nye settet, fjernes — men bare systemets ownClasses, og bare
+ * ikke er med i det nye settet, fjernes — men bare systemets egne, og bare
  * `fs-`-klassene. Alt annet på elementet står som det står.
  */
 export function setAttributes(element: Element, attributes: Attributes): void {
@@ -65,8 +65,8 @@ export function setAttributes(element: Element, attributes: Attributes): void {
     }
   }
 
-  // Attributes utenfor den lukkede lista settes, men ryddes aldri bort —
-  // systemet kan ikke vite om de er dets ownClasses.
+  // Attributter utenfor den lukkede lista settes, men ryddes aldri bort —
+  // systemet kan ikke vite om de er dets egne.
   for (const [name, value] of Object.entries(attributes)) {
     if (name === "class") continue
     if ((SYSTEM_ATTRIBUTES as readonly string[]).includes(name)) continue
