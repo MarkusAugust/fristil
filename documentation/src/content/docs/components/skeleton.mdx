@@ -17,8 +17,8 @@ import "@fristil/designsystem/skeleton.css"
 <Eksempel stiler={["skeleton"]} layout="stabel" maxWidth="26rem" kode={`
 <div class="fs-skeleton" data-variant="circle" aria-hidden="true"></div>
 <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
-<div class="fs-skeleton" data-variant="text" aria-hidden="true" style="width: 70%;"></div>
-<div class="fs-skeleton" aria-hidden="true" style="height: var(--size-12);"></div>
+<div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
+<div class="fs-skeleton" aria-hidden="true"></div>
 `} />
 
 | `data-variant` | Brukes til |
@@ -27,7 +27,19 @@ import "@fristil/designsystem/skeleton.css"
 | `text` | Én tekstlinje |
 | `circle` | Profilbilde |
 
-Sett bredden på de siste linjene til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
+Formene fyller bredden de får. Bredde og høyde setter du i din egen CSS, etter hva som skal komme:
+
+```css
+.sak-plassholder .fs-skeleton:last-of-type {
+	inline-size: 70%;
+}
+
+.bilde-plassholder {
+	--fs-skeleton-height: var(--size-12);
+}
+```
+
+Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
 
 ## Ventingen må meldes ett sted
 

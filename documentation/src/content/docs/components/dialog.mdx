@@ -14,8 +14,19 @@ import "@fristil/designsystem/dialog.css"
 
 ## Slik ser den ut
 
-<Eksempel stiler={["dialog", "button"]} layout="stabel" maxWidth="34rem" kode={`
-<div class="fs-dialog" style="position: static; display: block;">
+Forhåndsvisningen viser dialogen slik den ser ut når den er åpen. En ekte `<dialog>` ligger i topplaget, og tvinges her ned i boksen for å kunne vises:
+
+<Eksempel
+  stiler={["dialog", "button"]}
+  layout="stabel"
+  maxWidth="34rem"
+  visningsCss={`
+    /* Bare for å vise dialogen i en boks. Med showModal() trengs ingenting
+       av dette. */
+    .fs-dialog { position: static; display: block; }
+  `}
+  kode={`
+<div class="fs-dialog">
   <h2 class="fs-dialog__title">Slette søknaden?</h2>
   <div class="fs-dialog__body">
     <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>

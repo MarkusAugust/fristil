@@ -100,15 +100,29 @@ Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Tri
 
 Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhold til brødteksten.
 
-<Preview layout="stabel" maxWidth="34rem">
-  <p style="margin: 0; font-size: var(--font-size-xxs);">xxs, 0.625rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xs);">xs, 0.75rem</p>
-  <p style="margin: 0; font-size: var(--font-size-s);">s, 0.875rem</p>
-  <p style="margin: 0; font-size: var(--font-size-m);">m, 1rem, brødtekst</p>
-  <p style="margin: 0; font-size: var(--font-size-l);">l, 1.125rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xl);">xl, 1.375rem</p>
-  <p style="margin: 0; font-size: var(--font-size-xxl);">xxl, 1.875rem</p>
-  <p style="margin: 0; font-size: var(--font-size-mega);">mega, 2.625rem</p>
+<Preview
+  layout="stabel"
+  maxWidth="34rem"
+  ekstraCss={`
+    .prove { margin: 0; }
+    .prove-xxs { font-size: var(--font-size-xxs); }
+    .prove-xs { font-size: var(--font-size-xs); }
+    .prove-s { font-size: var(--font-size-s); }
+    .prove-m { font-size: var(--font-size-m); }
+    .prove-l { font-size: var(--font-size-l); }
+    .prove-xl { font-size: var(--font-size-xl); }
+    .prove-xxl { font-size: var(--font-size-xxl); }
+    .prove-mega { font-size: var(--font-size-mega); }
+  `}
+>
+  <p class="prove prove-xxs">xxs, 0.625rem</p>
+  <p class="prove prove-xs">xs, 0.75rem</p>
+  <p class="prove prove-s">s, 0.875rem</p>
+  <p class="prove prove-m">m, 1rem, brødtekst</p>
+  <p class="prove prove-l">l, 1.125rem</p>
+  <p class="prove prove-xl">xl, 1.375rem</p>
+  <p class="prove prove-xxl">xxl, 1.875rem</p>
+  <p class="prove prove-mega">mega, 2.625rem</p>
 </Preview>
 
 `--font-size-m` er brødteksten. `--font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.

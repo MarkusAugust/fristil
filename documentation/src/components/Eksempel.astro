@@ -11,9 +11,18 @@ interface Props {
   maxWidth?: string
   /** Markupen. Vises både levende og som kode. */
   kode: string
+  /**
+   * CSS som bare gjelder forhåndsvisningen.
+   *
+   * Noen komponenter viser seg ikke av seg selv i en boks: hopplenken ligger
+   * utenfor skjermen til den får fokus, og dialogen ligger i topplaget. Da
+   * tvinges de fram her, framfor med `style=` i markupen. Det leseren
+   * kopierer skal være det som virker i en ekte side.
+   */
+  visningsCss?: string
 }
 
-const { stiler, layout, maxWidth, kode } = Astro.props
+const { stiler, layout, maxWidth, kode, visningsCss } = Astro.props
 
 /*
  * Markupen står ett sted.
@@ -27,7 +36,7 @@ const { stiler, layout, maxWidth, kode } = Astro.props
 
 <Tabs>
 	<TabItem label="Eksempel">
-		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth}>
+		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={visningsCss}>
 			<Fragment set:html={kode} />
 		</Preview>
 	</TabItem>

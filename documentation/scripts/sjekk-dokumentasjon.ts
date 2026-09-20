@@ -82,6 +82,30 @@ function deler(ts: string): string[] {
   return [...funnet]
 }
 
+/**
+ * Eksempler skal kunne kopieres rett inn.
+ *
+ * `style=` i et eksempel er nesten alltid en jukselapp for å få
+ * forhåndsvisningen til å se riktig ut, og leseren kan ikke se forskjell på
+ * den og systemet. Trenger visningen en tilpasning, hører den i `visningsCss`
+ * på `<Eksempel>`, som ikke vises i kodefanen.
+ */
+for (const fil of new Bun.Glob("**/*.mdx").scanSync(
+  `${ROT}documentation/src/content/docs`,
+)) {
+  const tekst = les(`${ROT}documentation/src/content/docs/${fil}`)
+
+  // `visningsCss` er CSS, og kan inneholde ordet uten at det er markup.
+  const utenVisningsCss = tekst.replace(/visningsCss=\{`[\s\S]*?`\}/g, " ")
+
+  if (utenVisningsCss.includes('style="')) {
+    avvik.push({
+      hvor: fil,
+      hva: "har et style-attributt i et eksempel. Bruk visningsCss, eller en klasse fra systemet.",
+    })
+  }
+}
+
 const tilpasning = les(TILPASNING)
 const alleVariabler = new Set<string>()
 

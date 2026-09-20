@@ -1,0 +1,139 @@
+/**
+ * Kontrollerer kommandolinjeverktøyet, slik en konsument kjører det.
+ *
+ * `bun run test` kjører i nettleseren, og `tsc` leser bare typene. Flagg som
+ * ikke leses, en fil som ikke skrives, eller en feil som avslutter med kode
+ * null ville derfor gått rett gjennom. Her kjøres den bygde fila i en egen
+ * prosess, som er det en konsument faktisk får.
+ *
+ * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
+ */
+
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
+const pakke = new URL("../", import.meta.url).pathname
+const cli = join(pakke, "dist/cli.js")
+
+const FARGER = [
+  "--interaktiv=#7c3aed",
+  "--fare=#b3261e",
+  "--suksess=#2b6940",
+  "--advarsel=#8a5a00",
+]
+
+type Kjøring = { kode: number; ut: string; feil: string }
+
+async function kjør(argumenter: string[]): Promise<Kjøring> {
+  const prosess = Bun.spawn(["node", cli, ...argumenter], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const [ut, feil, kode] = await Promise.all([
+    new Response(prosess.stdout).text(),
+    new Response(prosess.stderr).text(),
+    prosess.exited,
+  ])
+
+  return { kode, ut, feil }
+}
+
+const feil: string[] = []
+
+function krev(påstand: boolean, beskrivelse: string): void {
+  if (!påstand) feil.push(beskrivelse)
+}
+
+// Skriver temaet til utdata når ingen fil er oppgitt
+{
+  const { kode, ut } = await kjør(["tema", ...FARGER])
+
+  krev(kode === 0, `tema med alle farger avsluttet med kode ${kode}`)
+  krev(
+    ut.includes("--semantic-interactive-main"),
+    "utdata mangler de semantiske verdiene",
+  )
+  krev(ut.includes('[data-theme="dark"]'), "utdata mangler mørkt tema")
+}
+
+// Skriver til fil når --ut er med, og lar utdata være tom
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const sti = join(mappe, "tema.css")
+
+  const { kode, ut } = await kjør(["tema", ...FARGER, `--ut=${sti}`])
+  const innhold = await readFile(sti, "utf8")
+
+  krev(kode === 0, `skriving til fil avsluttet med kode ${kode}`)
+  krev(ut.trim() === "", "utdata skulle vært tom når temaet skrives til fil")
+  krev(innhold.includes("@layer fristil"), "fila mangler laget")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Leser fargene fra en JSON-fil
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const sti = join(mappe, "fristil.tema.json")
+  await writeFile(
+    sti,
+    JSON.stringify({
+      interaktiv: "#0f766e",
+      fare: "#9f1239",
+      suksess: "#15803d",
+      advarsel: "#a16207",
+    }),
+  )
+
+  const { kode, ut } = await kjør(["tema", sti])
+
+  krev(kode === 0, `lesing fra fil avsluttet med kode ${kode}`)
+  krev(ut.includes("--palette-interactive-70"), "utdata mangler paletten")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Sier fra når farger mangler, og avslutter med feil
+{
+  const { kode, feil: melding } = await kjør(["tema", "--interaktiv=#7c3aed"])
+
+  krev(kode !== 0, "manglende farger skulle gitt en feilkode")
+  krev(
+    melding.includes("fare") && melding.includes("suksess"),
+    "feilmeldingen sier ikke hvilke farger som mangler",
+  )
+}
+
+// Sier fra på en lesbar måte når en farge ikke er en farge
+{
+  const { kode, feil: melding } = await kjør([
+    "tema",
+    "--interaktiv=lilla",
+    "--fare=#b3261e",
+    "--suksess=#2b6940",
+    "--advarsel=#8a5a00",
+  ])
+
+  krev(kode !== 0, "ugyldig farge skulle gitt en feilkode")
+  krev(
+    melding.includes("lilla"),
+    `feilmeldingen nevner ikke verdien som var feil: ${melding.slice(0, 120)}`,
+  )
+  krev(
+    !melding.includes("at buildTheme"),
+    "feilmeldingen viser et stakkspor framfor å si hva som er galt",
+  )
+}
+
+if (feil.length > 0) {
+  console.error(
+    `Kommandolinjeverktøyet oppfører seg ikke som lovet:\n\n${feil
+      .map((linje) => `  ${linje}`)
+      .join("\n")}\n`,
+  )
+  process.exit(1)
+}
+
+console.log("Kommandolinjeverktøyet svarer som det skal på seks kjøringer.")

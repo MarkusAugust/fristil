@@ -88,7 +88,19 @@ if (mangler.length > 0) {
   process.exit(1)
 }
 
-const tema = buildTheme(input as ThemeInput)
+let tema: ReturnType<typeof buildTheme>
+
+try {
+  tema = buildTheme(input as ThemeInput)
+} catch (grunn) {
+  // Som regel en farge som ikke er en farge. Et stakkspor sier ingenting om
+  // hva brukeren skrev feil.
+  console.error(
+    `\n${grunn instanceof Error ? grunn.message : String(grunn)}\n\n` +
+      "Fargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n",
+  )
+  process.exit(1)
+}
 
 for (const justering of tema.adjustments) {
   console.error(
