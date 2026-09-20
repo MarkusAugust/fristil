@@ -70,7 +70,7 @@ export default defineConfig({
               items: [{ label: "Field", slug: "components/field" }],
             },
             {
-              label: "Sammensatt",
+              label: "Frittstående",
               items: [
                 { label: "Date Field", slug: "components/date-field" },
                 { label: "Calendar", slug: "components/calendar" },
