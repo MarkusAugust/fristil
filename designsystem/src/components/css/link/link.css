@@ -17,7 +17,7 @@
 }
 
 .fs-link:visited {
-  color: var(--palette-denim-70);
+  color: var(--semantic-interactive-visited);
 }
 
 .fs-link:focus-visible {
@@ -27,7 +27,7 @@
 }
 
 .fs-link[aria-disabled="true"] {
-  color: var(--semantic-disabled-foreground);
+  color: var(--semantic-muted-foreground);
   text-decoration: none;
   cursor: not-allowed;
   pointer-events: none;

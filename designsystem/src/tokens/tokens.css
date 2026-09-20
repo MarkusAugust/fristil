@@ -88,6 +88,8 @@
   /* semantic-danger */
   --semantic-danger-background: var(--palette-burgundy-10);
   --semantic-danger-foreground: #a82e39;
+  --semantic-danger-main: #a82e39;
+  --semantic-danger-contrast: var(--palette-graphite-0);
 
   /* semantic-warning */
   --semantic-warning-background: var(--palette-ochre-10);
@@ -101,6 +103,9 @@
   --semantic-disabled-background: var(--palette-graphite-10);
   --semantic-disabled-foreground: var(--palette-graphite-50);
 
+  /* semantic-muted */
+  --semantic-muted-foreground: var(--palette-graphite-50);
+
   /* semantic-neutral */
   --semantic-neutral-background: var(--palette-graphite-10);
   --semantic-neutral-foreground: var(--palette-graphite-70);
@@ -109,8 +114,70 @@
   --semantic-interactive-background: var(--palette-azure-10);
   --semantic-interactive-main: var(--palette-azure-70);
   --semantic-interactive-foreground: var(--palette-azure-100);
+  --semantic-interactive-contrast: var(--palette-graphite-0);
+  --semantic-interactive-visited: var(--palette-denim-70);
+
+  /* semantic-field */
+  --semantic-field-border: var(--palette-graphite-50);
+  --semantic-field-border-hover: var(--palette-graphite-70);
 
   /* semantic-divider */
   --semantic-divider-30: var(--palette-graphite-30);
   --semantic-divider-100: var(--palette-graphite-100);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --semantic-page-background: var(--palette-graphite-100);
+    --semantic-page-foreground: var(--palette-graphite-5);
+    --semantic-danger-background: var(--palette-burgundy-100);
+    --semantic-danger-foreground: var(--palette-burgundy-30);
+    --semantic-warning-background: var(--palette-ochre-100);
+    --semantic-warning-foreground: var(--palette-ochre-30);
+    --semantic-success-background: var(--palette-forest-100);
+    --semantic-success-foreground: var(--palette-forest-30);
+    --semantic-disabled-background: var(--palette-graphite-70);
+    --semantic-disabled-foreground: var(--palette-graphite-30);
+    --semantic-muted-foreground: var(--palette-graphite-30);
+    --semantic-neutral-background: var(--palette-graphite-70);
+    --semantic-neutral-foreground: var(--palette-graphite-10);
+    --semantic-interactive-background: var(--palette-azure-100);
+    --semantic-interactive-main: var(--palette-azure-30);
+    --semantic-interactive-foreground: var(--palette-azure-10);
+    --semantic-interactive-contrast: var(--palette-graphite-100);
+    --semantic-interactive-visited: var(--palette-denim-30);
+    --semantic-field-border: var(--palette-graphite-50);
+    --semantic-field-border-hover: var(--palette-graphite-30);
+    --semantic-danger-main: var(--palette-burgundy-30);
+    --semantic-danger-contrast: var(--palette-graphite-100);
+    --semantic-divider-30: var(--palette-graphite-70);
+    --semantic-divider-100: var(--palette-graphite-30);
+  }
+}
+
+[data-theme="dark"] {
+  --semantic-page-background: var(--palette-graphite-100);
+  --semantic-page-foreground: var(--palette-graphite-5);
+  --semantic-danger-background: var(--palette-burgundy-100);
+  --semantic-danger-foreground: var(--palette-burgundy-30);
+  --semantic-warning-background: var(--palette-ochre-100);
+  --semantic-warning-foreground: var(--palette-ochre-30);
+  --semantic-success-background: var(--palette-forest-100);
+  --semantic-success-foreground: var(--palette-forest-30);
+  --semantic-disabled-background: var(--palette-graphite-70);
+  --semantic-disabled-foreground: var(--palette-graphite-30);
+  --semantic-muted-foreground: var(--palette-graphite-30);
+  --semantic-neutral-background: var(--palette-graphite-70);
+  --semantic-neutral-foreground: var(--palette-graphite-10);
+  --semantic-interactive-background: var(--palette-azure-100);
+  --semantic-interactive-main: var(--palette-azure-30);
+  --semantic-interactive-foreground: var(--palette-azure-10);
+  --semantic-interactive-contrast: var(--palette-graphite-100);
+  --semantic-interactive-visited: var(--palette-denim-30);
+  --semantic-field-border: var(--palette-graphite-50);
+  --semantic-field-border-hover: var(--palette-graphite-30);
+  --semantic-danger-main: var(--palette-burgundy-30);
+  --semantic-danger-contrast: var(--palette-graphite-100);
+  --semantic-divider-30: var(--palette-graphite-70);
+  --semantic-divider-100: var(--palette-graphite-30);
 }
