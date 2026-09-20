@@ -92,6 +92,16 @@ Bruker du Tailwind, importer `@fristil/designsystem/tailwind.css` og sett lagrek
 
 Bruker du React, importer `fs` fra `@fristil/designsystem/react`. Samme kall, men `className` og `htmlFor` i returverdien. Ellers skriver React «Invalid DOM property `class`» i konsollen for hvert element. Vue, Svelte, Solid og Preact tar HTML-navnene som de er.
 
+## Slik jobber vi
+
+`master` skal alltid være grønn, så alt arbeid går gjennom en gren og en pull request. Før du sender noe fra deg, kjør det CI kjører:
+
+```bash
+bun run sjekk
+```
+
+Se [CONTRIBUTING.md](CONTRIBUTING.md) for hele flyten.
+
 ## Lokal utvikling
 
 Forutsetninger: Bun installert.
