@@ -11,7 +11,7 @@ Klasser og dataattributter gjør komponentene rammeverksuavhengige, men alt er s
 
 Knappen får primærstilen. Ingen feilmelding — bare en variant som stille aldri ble brukt. Derfor finnes `fs`.
 
-## Én inngang
+## Navnerommet `fs`
 
 ```ts
 import { fs } from "@fristil/designsystem"
@@ -34,7 +34,7 @@ Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, m
 Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
 
-## Standardverdier gir ingen attributter
+## Standardverdier
 
 ```ts
 fs.button()
@@ -49,7 +49,7 @@ fs.button({ variant: "danger" })
 
 Du sier alltid hvilken variant du vil ha; funksjonen vet når attributtet kan utelates.
 
-## Lovlige verdier og vakter ligger på komponenten
+## Lovlige verdier og vakter
 
 ```ts
 fs.button.variants
@@ -72,7 +72,7 @@ fs.button({ variant })
 
 Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
 
-## `fs.input` kan ikke komme i utakt
+## `fs.input`
 
 Skrevet for hånd må `type` og `data-variant` stemme overens, ellers skjer ingenting når brukeren trykker på ikonet.
 
@@ -105,7 +105,7 @@ fs.textarea({ state: tilstand })
 fs.select({ state: tilstand })
 ```
 
-## `fs.field` kobler et helt felt
+## `fs.field`
 
 Fem koblinger må stemme samtidig. `fs.field` regner dem ut:
 
@@ -133,10 +133,10 @@ Feilmeldingen tas med i `aria-describedby` **bare når feltet er ugyldig** — e
 :::note[Samme kjerne som `<fs-field>`]
 [Field](../components/field/) gjør samme utregning, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted.
 
-Velg `<fs-field>` for vanlig HTML, `fs.field` når du bygger markupen selv.
+Velg `<fs-field>` når du skriver HTML og vil ha koblingen gjort i nettleseren. Velg `fs.field` når du rendrer i et rammeverk eller ved bygging, og heller vil ha attributtene som data.
 :::
 
-## I praksis: en gjenbrukbar knapp i React
+## Gjenbrukbar knapp i React
 
 ```tsx
 import { fs } from "@fristil/designsystem/react"
@@ -176,13 +176,13 @@ Da får attributtene autofullføring og sjekk:
 
 Ren HTML, Astro og Datastar trenger ikke dette — der er `<fs-field>` bare en HTML-tagg.
 
-## Det typene ikke fanger
+## Grenser for typene
 
 **Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer — returverdien er bare et objekt med HTML-attributter.
 
 **Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen, ikke `"date"`.
 
-## Når du kan hoppe over det
+## Uten TypeScript
 
 `fs` er valgfritt. Uten TypeScript eller byggesteg er dette like gyldig:
 

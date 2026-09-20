@@ -44,7 +44,7 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 
 [Field](../field/) setter alle tre når du gir den `invalid` — det er grunnen til at den komponenten finnes.
 
-## Med TypeScript
+## TypeScript
 
 ```tsx
 import { fs } from "@fristil/designsystem"
@@ -57,7 +57,7 @@ const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
 `felt.error` inneholder `hidden` når feltet ikke er ugyldig, og feilmeldingen tas da heller ikke med i `aria-describedby` — en skjult melding skal ikke pekes på.
 
-## Slik skriver du meldingen
+## Ordlyd i meldingen
 
 - Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.
 - Ta med et eksempel når formatet er uvanlig.

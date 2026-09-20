@@ -21,9 +21,9 @@ Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samti
 
 Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt.
 
-## Eller som data
+## Uten custom element
 
-Vil du eie markupen selv, gir [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) samme kobling som attributter:
+Samme kobling finnes som en ren funksjon, [`fs.field`](../../typesikker-bruk/#fsfield). Den regner ut attributtene der du rendrer — ved bygging i Astro, eller på hver render i React — så nettleseren trenger ingen registrert komponent:
 
 ```tsx
 const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
@@ -34,7 +34,7 @@ const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
 
-De to deler kode, så kontrakten kan ikke gå fra hverandre. Forskjellen er hvem som eier markupen.
+De to deler kode, så kontrakten kan ikke gå fra hverandre. Forskjellen er når attributtene settes: av komponenten i nettleseren, eller av funksjonen der du rendrer.
 
 ## Kom i gang
 
@@ -72,7 +72,7 @@ defineFsField()
 
 `<label>` har ikke `for`, og tekstene har ikke `id`. Komponenten fyller ut begge deler.
 
-## Minste mulige bruk
+## Minimalt eksempel
 
 ```html
 <fs-field>
@@ -83,7 +83,7 @@ defineFsField()
 
 Klikk på teksten flytter fokus til feltet, og skjermleseren leser riktig ledetekst.
 
-## Hva komponenten gjør
+## Automatisk kobling
 
 Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant barna og:
 
