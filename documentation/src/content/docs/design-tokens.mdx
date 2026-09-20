@@ -144,19 +144,36 @@ Brekkpunktene følger Tailwind: `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1280px
 
 ## Tailwind
 
-`fristilPreset` kobler Tailwind-klassene til de samme variablene:
+Temaet er en CSS-fil, ikke en forhåndsinnstilling i JavaScript. Pakken har derfor ingen avhengighet til Tailwind i det hele tatt, og to Tailwind-versjoner kan ikke komme i konflikt: det er versjonen i appen din som leser fila.
 
-```ts
-// tailwind.config.ts
-import { fristilPreset } from "@fristil/designsystem/tailwind"
+```css
+/* app.css */
+@layer theme, base, fristil, components, utilities;
 
-export default {
-	presets: [fristilPreset],
-}
+@import "tailwindcss";
+@import "@fristil/designsystem/tokens.css";
+@import "@fristil/designsystem/tailwind.css";
 ```
 
-`text-interactive`, `bg-danger-bg` og `border-divider` gir da de samme verdiene som `var()`-variantene. Brekkpunkter, containerbredder og hele paletten følger med.
+Den første linja er det viktigste. Se [Tilpasning](../tilpasning/#tailwind-og-lagrekkefølgen) for hvorfor.
 
-Forhåndsinnstillingen er et tillegg, ikke et krav.
+Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da er `bg-neutral-100` fortsatt Tailwinds egen farge:
+
+| Klasse | Verdi |
+| --- | --- |
+| `text-fs-interactive` | `--semantic-interactive-main` |
+| `bg-fs-danger-bg` | `--semantic-danger-background` |
+| `text-fs-muted` | `--semantic-muted-foreground` |
+| `border-fs-field-border` | `--semantic-field-border` |
+| `text-fs-mega` | `--font-size-mega` |
+| `max-w-fs-aside` | 384px |
+| `shadow-fs-overlay` | `--semantic-shadow-overlay` |
+| `bg-fs-azure-70` | `--palette-azure-70` |
+
+Avstandene er koblet til skalaen: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--size-1`. `p-4` er dermed nøyaktig `--size-4`, og endrer du skalaen, følger alle Tailwind-klassene med.
+
+Brekkpunktene er utelatt med vilje. Fristils `sm` til `2xl` har de samme verdiene som Tailwind allerede bruker, så `md:` virker som før.
+
+En egen sjekk kompilerer temaet med en ekte Tailwind og kontrollerer at klassene over faktisk kommer ut med Fristils tokens i seg. Kjør den med `bun run test`.
 
 Vil du endre farger, form eller størrelse, se [Tilpasning](../tilpasning/).

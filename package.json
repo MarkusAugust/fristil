@@ -10,7 +10,7 @@
     "build": "bun --filter @fristil/designsystem generate && tsc -b --force && bun --filter @fristil/designsystem sjekk:eksport && bun --filter @fristil/documentation build",
     "typecheck": "tsc -b",
     "typecheck:tests": "bun --filter @fristil/designsystem typecheck:tests",
-    "test": "bun --filter @fristil/designsystem test:browser",
+    "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:tailwind",
     "test:docs": "bun --filter @fristil/documentation test:docs",
     "lint": "biome check ."
   },

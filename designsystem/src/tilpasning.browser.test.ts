@@ -1,10 +1,11 @@
 /// <reference path="./types/css.d.ts" />
 
 import type { LitElement } from "lit"
-import { beforeEach, describe, expect, it } from "vitest"
-
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import knappeKilde from "./components/css/button/button.css?inline"
 import { defineFsCalendar } from "./components/frittstaende/calendar/fs-calendar"
 import { defineFsDateField } from "./components/frittstaende/date-field/fs-date-field"
+import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
@@ -165,5 +166,85 @@ describe("de frittstående komponentene kan tilpasses", () => {
       '.day[data-today="true"]',
     ) as HTMLElement
     expect(getComputedStyle(iDag).outlineColor).toBe("rgb(8, 8, 8)")
+  })
+})
+
+/**
+ * At Fristil og Tailwind kan ligge i samme app uten å slåss.
+ *
+ * Lagene teller i den rekkefølgen de først blir nevnt, og det siste laget
+ * vinner uansett spesifisitet. Tailwinds Preflight ligger i `base`, og
+ * nullstiller blant annet bakgrunnen på `button`. Havner `base` etter
+ * `fristil`, forsvinner knappefargen vår, uten at noe sier fra.
+ *
+ * Rekkefølgen kan ikke endres etter at et lag er nevnt, så hver variant måles
+ * i sitt eget dokument.
+ */
+async function medStilark(css: string): Promise<Document> {
+  const ramme = document.createElement("iframe")
+  ramme.style.width = "400px"
+  ramme.style.height = "200px"
+  document.body.append(ramme)
+
+  const dok = ramme.contentDocument as Document
+  dok.open()
+  dok.write(`<!doctype html><html><head><style>${css}</style></head>
+    <body><button class="fs-button" id="knapp">Send søknad</button></body></html>`)
+  dok.close()
+
+  await new Promise((resolve) => requestAnimationFrame(resolve))
+  return dok
+}
+
+/** Det Preflight gjør med en knapp, i sitt eget lag. */
+const PREFLIGHT = `@layer base { button { background-color: transparent; border: 0; } }`
+
+describe("sammen med Tailwind", () => {
+  afterEach(() => {
+    // Rammene må bort. Blir de stående, kan fokus havne i dem, og testene
+    // som måler fokus lenger ned i suiten måler feil dokument.
+    for (const ramme of document.querySelectorAll("iframe")) ramme.remove()
+  })
+
+  it("beholder knappefargen når fristil står etter base", async () => {
+    const dok = await medStilark(`
+      @layer theme, base, fristil, components, utilities;
+      ${tokenKilde}
+      ${knappeKilde}
+      ${PREFLIGHT}
+    `)
+
+    const knapp = dok.getElementById("knapp") as HTMLElement
+    const bakgrunn = dok.defaultView?.getComputedStyle(knapp).backgroundColor
+
+    expect(bakgrunn).not.toBe("rgba(0, 0, 0, 0)")
+  })
+
+  it("mister knappefargen uten rekkefølgen, og det er derfor linja står i dokumentasjonen", async () => {
+    const dok = await medStilark(`
+      ${tokenKilde}
+      ${knappeKilde}
+      ${PREFLIGHT}
+    `)
+
+    const knapp = dok.getElementById("knapp") as HTMLElement
+    const bakgrunn = dok.defaultView?.getComputedStyle(knapp).backgroundColor
+
+    // `base` nevnes her etter `fristil`, og vinner derfor.
+    expect(bakgrunn).toBe("rgba(0, 0, 0, 0)")
+  })
+
+  it("lar en Tailwind-utility slå komponentens egen verdi", async () => {
+    const dok = await medStilark(`
+      @layer theme, base, fristil, components, utilities;
+      ${tokenKilde}
+      ${knappeKilde}
+      @layer utilities { .p-6 { padding: 1.5rem; } }
+    `)
+
+    const knapp = dok.getElementById("knapp") as HTMLElement
+    knapp.classList.add("p-6")
+
+    expect(dok.defaultView?.getComputedStyle(knapp).padding).toBe("24px")
   })
 })

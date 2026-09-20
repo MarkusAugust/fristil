@@ -171,6 +171,30 @@ Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="dang
 For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
 :::
 
+### Tailwind og lagrekkefølgen
+
+Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
+
+```css
+@layer theme, base, fristil, components, utilities;
+
+@import "tailwindcss";
+@import "@fristil/designsystem/tokens.css";
+@import "@fristil/designsystem/tailwind.css";
+```
+
+Uten den linja får du ett av to problemer, avhengig av hvilken import som kommer først:
+
+| Rekkefølge | Hva som skjer |
+| --- | --- |
+| `fristil` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
+| `fristil` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.fs-button` gjør ingenting. |
+| `base`, `fristil`, `utilities` | Begge deler virker |
+
+Dette er målt, ikke antatt: `tilpasning.browser.test.ts` bygger begge tilfellene i hvert sitt dokument og kontrollerer hva knappen faktisk får.
+
+Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
+
 ### Shadow DOM
 
 `<fs-calendar>` har sine egne stiler inni en shadow root, og vanlig CSS når ikke inn. To veier virker:
