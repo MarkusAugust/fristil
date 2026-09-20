@@ -82,7 +82,8 @@ describe("fs-input", () => {
     expect(input.backgroundColor).toBe("rgb(229, 229, 229)")
     expect(input.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(input.color).toBe("rgb(117, 117, 117)")
-    expect(input.pointerEvents).toBe("none")
+    // Markøren vises bare hvis elementet treffes av pekeren
+    expect(input.pointerEvents).toBe("auto")
   })
 })
 
@@ -115,5 +116,25 @@ describe("fs-input uten CSS-reset", () => {
     )
 
     expect(finnOverflyt(boks)).toEqual([])
+  })
+})
+
+describe("fs-input deaktivert", () => {
+  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
+    monter(`<input class="fs-input" disabled value="Av" />`)
+
+    const element = document.querySelector("input") as HTMLElement
+    const ramme = element.getBoundingClientRect()
+
+    expect(getComputedStyle(element).cursor).toBe("not-allowed")
+
+    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
+    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    expect(
+      document.elementFromPoint(
+        ramme.x + ramme.width / 2,
+        ramme.y + ramme.height / 2,
+      ),
+    ).toBe(element)
   })
 })

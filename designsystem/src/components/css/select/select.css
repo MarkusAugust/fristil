@@ -51,7 +51,16 @@
   background-color: var(--semantic-disabled-background);
   color: var(--semantic-disabled-foreground);
   border-color: var(--semantic-disabled-background);
+  /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
+     deaktivert felt, og pointer-events ville bare hindret markøren i å
+     vises — elementet blir da ikke truffet av musa i det hele tatt. */
   cursor: not-allowed;
+}
+
+/* aria-disabled er bare en opplysning til skjermlesere; elementet virker
+   fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
+   Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
+.fs-select[aria-disabled="true"] {
   pointer-events: none;
 }
 

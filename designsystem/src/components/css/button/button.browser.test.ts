@@ -69,7 +69,8 @@ describe("fs-button variants", () => {
     expect(disabled.backgroundColor).toBe("rgb(229, 229, 229)")
     expect(disabled.borderTopColor).toBe("rgb(229, 229, 229)")
     expect(disabled.color).toBe("rgb(117, 117, 117)")
-    expect(disabled.pointerEvents).toBe("none")
+    // Markøren vises bare hvis elementet treffes av pekeren
+    expect(disabled.pointerEvents).toBe("auto")
   })
 })
 
@@ -86,5 +87,25 @@ describe("fs-button tilgjengelighet", () => {
 
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-button deaktivert", () => {
+  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
+    monter(`<button class="fs-button" disabled>Av</button>`)
+
+    const element = document.querySelector("button") as HTMLElement
+    const ramme = element.getBoundingClientRect()
+
+    expect(getComputedStyle(element).cursor).toBe("not-allowed")
+
+    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
+    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    expect(
+      document.elementFromPoint(
+        ramme.x + ramme.width / 2,
+        ramme.y + ramme.height / 2,
+      ),
+    ).toBe(element)
   })
 })
