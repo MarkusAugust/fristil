@@ -5,6 +5,13 @@ import remarkGfm from "remark-gfm"
 
 // https://astro.build/config
 export default defineConfig({
+  /*
+   * `markdown.remarkPlugins` er merket som utfaset til fordel for
+   * `markdown.processor`. Den veien virker ikke her: sidene er `.mdx`, og
+   * MDX-pipelinen leser `remarkPlugins` herfra, mens `processor` bare gjelder
+   * `.md`. Målt ved å bytte: alle tabellene kom ut som rå tekst med
+   * skilletegn. Blir stående til MDX leser prosessoren.
+   */
   markdown: {
     remarkPlugins: [remarkGfm],
   },
@@ -77,6 +84,7 @@ export default defineConfig({
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
             { label: "Tilgjengelighet", slug: "tilgjengelighet" },
+            { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
           ],
         },
