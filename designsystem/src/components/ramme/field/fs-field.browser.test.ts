@@ -143,3 +143,39 @@ describe("fs-field tilgjengelighet", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("fs-field ledetekst", () => {
+  it("gir ledeteksten fs-label, slik at required-marker faktisk vises", async () => {
+    monter(`
+      <fs-field required-marker="text">
+        <label>E-postadresse</label>
+        <input class="fs-input" type="email" />
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const label = document.querySelector("label") as HTMLLabelElement
+    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(label.getAttribute("data-required")).toBe("text")
+
+    // Attributtet alene er dødt uten klassen — markeringen kommer fra ::after
+    const markering = getComputedStyle(label, "::after").content
+    expect(markering).toContain("påkrevd")
+  })
+
+  it("markerer valgfrie felt på samme måte", async () => {
+    monter(`
+      <fs-field optional>
+        <label>Adresse</label>
+        <input class="fs-input" type="text" />
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const label = document.querySelector("label") as HTMLLabelElement
+    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(getComputedStyle(label, "::after").content).toContain("valgfri")
+  })
+})
