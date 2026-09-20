@@ -12,7 +12,7 @@ import Preview from "../../components/Preview.astro"
 npm install @fristil/designsystem
 ```
 
-Ingen påkrevde avhengigheter. `lit` trengs bare til `ramme`- og `sammensatt`-komponentene, `tailwindcss` bare til forhåndsinnstillingen. Begge er valgfrie `peerDependencies`.
+Ingen påkrevde avhengigheter. `lit` trengs bare til ramme- og frittstående komponenter, `tailwindcss` bare til forhåndsinnstillingen. Begge er valgfrie `peerDependencies`.
 
 ## Importer tokens
 
@@ -63,7 +63,7 @@ Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
 
 ## Registrer web components
 
-`ramme`- og `sammensatt`-komponentene er egendefinerte elementer, og må registreres én gang når appen starter:
+Ramme- og frittstående komponenter er egendefinerte elementer, og må registreres én gang når appen starter:
 
 ```ts
 // main.ts, kjøres én gang

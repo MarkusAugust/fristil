@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import { FsField } from "../components/ramme/field/fs-field"
-import { FsCalendar } from "../components/sammensatt/calendar/fs-calendar"
-import { FsDateField } from "../components/sammensatt/date-field/fs-date-field"
+import { FsCalendar } from "../components/frittstaende/calendar/fs-calendar"
+import { FsDateField } from "../components/frittstaende/date-field/fs-date-field"
 import kilde from "./react?raw"
 
 /**

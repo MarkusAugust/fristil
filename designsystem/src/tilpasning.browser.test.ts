@@ -3,13 +3,13 @@
 import type { LitElement } from "lit"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { defineFsCalendar } from "./components/sammensatt/calendar/fs-calendar"
-import { defineFsDateField } from "./components/sammensatt/date-field/fs-date-field"
+import { defineFsCalendar } from "./components/frittstaende/calendar/fs-calendar"
+import { defineFsDateField } from "./components/frittstaende/date-field/fs-date-field"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/input/input.css"
-import "./components/sammensatt/date-field/date-field.css"
+import "./components/frittstaende/date-field/date-field.css"
 
 /**
  * At en konsument faktisk får lov til å tilpasse systemet.
@@ -84,7 +84,7 @@ describe("en konsument kan tilpasse systemet", () => {
 })
 
 /**
- * De sammensatte komponentene, som eier sin egen markup.
+ * De frittstående komponentene, som eier sin egen markup.
  *
  * `<fs-date-field>` rendrer i vanlig DOM, og la tidligere oppsettet sitt i
  * `style=`-attributter. Inline stil taper bare for `!important`, så
@@ -92,7 +92,7 @@ describe("en konsument kan tilpasse systemet", () => {
  * konsumentens selektorer ikke når inn i det hele tatt. Der er
  * komponentvariabler og `::part()` de eneste veiene.
  */
-describe("de sammensatte komponentene kan tilpasses", () => {
+describe("de frittstående komponentene kan tilpasses", () => {
   beforeEach(async () => {
     for (const style of document.querySelectorAll("style[data-consumer]")) {
       style.remove()
