@@ -1,14 +1,11 @@
 ---
 title: Textarea
-description: Flerlinjet tekstfelt, med samme tilstander som Input. CSS-komponent — én klasse, ingen JavaScript.
+description: Flerlinjet tekstfelt. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-textarea` gir `<textarea>` samme utseende og tilstander som [Input](../input/). Bruk det når svaret kan bli lengre enn én linje — en begrunnelse, en melding, en beskrivelse.
-
-## Importer
+Samme utseende og tilstander som [Input](../input/), for svar som blir lengre enn én linje.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -17,68 +14,46 @@ import "@fristil/designsystem/textarea.css"
 
 ## Tilstander
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" for="ex-begrunnelse">Begrunnelse</label>
-      <textarea class="fs-textarea" id="ex-begrunnelse" rows="3" placeholder="Skriv en kort begrunnelse"></textarea>
+<Eksempel stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="begrunnelse">Begrunnelse</label>
+<textarea class="fs-textarea" id="begrunnelse" rows="3"
+  placeholder="Skriv en kort begrunnelse"></textarea>
 
-      <label class="fs-label" for="ex-melding">Melding til saksbehandler</label>
-      <textarea class="fs-textarea" id="ex-melding" rows="2" data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
+<label class="fs-label" for="melding">Melding til saksbehandler</label>
+<textarea class="fs-textarea" id="melding" rows="2"
+  data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
 
-      <label class="fs-label" for="ex-kort">Utfyllende svar</label>
-      <textarea class="fs-textarea" id="ex-kort" rows="2" data-state="invalid" aria-invalid="true">For kort</textarea>
+<label class="fs-label" for="svar">Utfyllende svar</label>
+<textarea class="fs-textarea" id="svar" rows="2"
+  data-state="invalid" aria-invalid="true">For kort</textarea>
 
-      <label class="fs-label" for="ex-avsluttet">Merknad</label>
-      <textarea class="fs-textarea" id="ex-avsluttet" rows="2" disabled>Saken er avsluttet og kan ikke endres.</textarea>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <textarea class="fs-textarea" rows="3" name="begrunnelse"
-      placeholder="Skriv en kort begrunnelse"></textarea>
+<label class="fs-label" for="merknad">Merknad</label>
+<textarea class="fs-textarea" id="merknad" rows="2"
+  disabled>Saken er avsluttet og kan ikke endres.</textarea>
+`} />
 
-    <textarea class="fs-textarea" rows="3" name="begrunnelse"
-      data-state="invalid" aria-invalid="true"></textarea>
-
-    <textarea class="fs-textarea" rows="3" name="begrunnelse" disabled></textarea>
-    ```
-  </TabItem>
-</Tabs>
-
-| `data-state` | Når du bruker den |
+| `data-state` | Brukes til |
 | --- | --- |
 | *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet. Sett `aria-invalid="true"` i tillegg. |
-| `success` | Innholdet er bekreftet gyldig. |
+| `invalid` | Valideringen har feilet |
+| `success` | Innholdet er bekreftet gyldig |
 
-Sett `rows` til omtrent så mye tekst du faktisk forventer. Et felt med tre rader signaliserer noe annet til brukeren enn et felt med ti.
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg — eller [Field](../field/), som setter begge.
 
-## TypeScript
+## Med TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
 
-fs.textarea({ state: "success" })
-// { class: "fs-textarea", "data-state": "success" }
-
-fs.textarea()
-// { class: "fs-textarea" }
+fs.textarea({ state: "invalid" })
+// { class: "fs-textarea", "data-state": "invalid", "aria-invalid": "true" }
 ```
 
-`state` er den samme typen som i [Input](../input/) og [Select](../select/), så en verdi kan sendes mellom dem uten konvertering.
-
-Verdier som kommer utenfra, validerer du først:
-
-```ts
-const state = fs.textarea.isState(svar.state) ? svar.state : "default"
-
-fs.textarea({ state })
-```
+`state` er samme type som i [Input](../input/) og [Select](../select/). Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Tilgjengelighet
 
 - Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en.
-- Har feltet en øvre grense, si det før brukeren skriver — i hjelpeteksten, ikke bare i en teller. `maxlength` alene hindrer innskriving uten å forklare hvorfor.
-- Bruker du en tegnteller som oppdateres mens brukeren skriver, legg den i et element med `aria-live="polite"`, og la den bare melde fra ved runde tall eller når grensen nærmer seg. Ellers avbryter den opplesingen for hvert tastetrykk.
-- Ikke slå av muligheten til å endre størrelsen på feltet med `resize: none`. Det er ofte den eneste måten brukeren kan få oversikt over lang tekst.
+- Har feltet en øvre grense, si det i hjelpeteksten før brukeren skriver. `maxlength` alene hindrer innskriving uten å forklare hvorfor.
+- Bruker du en tegnteller, legg den i et element med `aria-live="polite"` og la den melde fra bare når grensen nærmer seg. Ellers avbryter den opplesingen for hvert tastetrykk.
+- Ikke slå av `resize`. Det er ofte eneste måten brukeren får oversikt over lang tekst.

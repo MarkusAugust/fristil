@@ -3,102 +3,50 @@ title: Button
 description: Knapp for handlinger. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-button` er en CSS-komponent. Du får den ved å sette klassen på et vanlig `<button>`-element — ingen JavaScript lastes, og den fungerer likt i alle rammeverk.
-
-## Importer
+Klassen settes på et vanlig `<button>`. Ingen JavaScript lastes, og den virker likt i alle rammeverk.
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/button.css"
 ```
 
-Uten byggesteg:
-
-```html
-<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
-<link rel="stylesheet" href="@fristil/designsystem/button.css" />
-```
-
 ## Varianter
 
-Varianten sier hvor tung handlingen er. Uten `data-variant` får du primærknappen.
+<Eksempel stiler={["button"]} kode={`
+<button class="fs-button">Send søknad</button>
+<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
+<button class="fs-button" data-variant="danger">Slett søknad</button>
+`} />
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["button"]}>
-      <button class="fs-button">Send søknad</button>
-      <button class="fs-button" data-variant="secondary">Lagre utkast</button>
-      <button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
-      <button class="fs-button" data-variant="danger">Slett søknad</button>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <button class="fs-button">Send søknad</button>
-    <button class="fs-button" data-variant="secondary">Lagre utkast</button>
-    <button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
-    <button class="fs-button" data-variant="danger">Slett søknad</button>
-    ```
-  </TabItem>
-</Tabs>
-
-| `data-variant` | Når du bruker den |
+| `data-variant` | Brukes til |
 | --- | --- |
 | *(utelatt)* | Hovedhandlingen på siden. Bruk bare én. |
-| `secondary` | Alternativ handling ved siden av hovedhandlingen. |
-| `ghost` | Lav vekt — verktøylinjer og handlinger inne i tabeller eller kort. |
-| `danger` | Handlinger som sletter eller ikke kan angres. |
+| `secondary` | Alternativ handling ved siden av hovedhandlingen |
+| `ghost` | Lav vekt — verktøylinjer, handlinger i tabeller og kort |
+| `danger` | Sletter eller kan ikke angres |
 
 ## Deaktivert
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["button"]}>
-      <button class="fs-button" disabled>Send søknad</button>
-      <button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
-      <button class="fs-button" data-variant="danger" disabled>Slett søknad</button>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <button class="fs-button" disabled>Send søknad</button>
-    <button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
-    <button class="fs-button" data-variant="danger" disabled>Slett søknad</button>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["button"]} kode={`
+<button class="fs-button" disabled>Send søknad</button>
+<button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
+`} />
 
-`disabled` finnes bare på `<button>`. Ser knappen din ut som en lenke i markupen, bruker du `aria-disabled="true"` i stedet — da beholder skjermlesere elementet i lesefokus og kan fortelle at det er utilgjengelig.
-
-```html
-<a class="fs-button" aria-disabled="true" href="/neste-steg">Gå videre</a>
-```
+`disabled` finnes bare på `<button>`. Ser knappen ut som en lenke i markupen, bruk `aria-disabled="true"` — da beholder skjermlesere elementet og kan si at det er utilgjengelig.
 
 ## Lenke som ser ut som knapp
 
-Navigerer du brukeren til et annet sted, skal elementet være en `<a>` selv om det ser ut som en knapp. Da virker høyreklikk, midtklikk og «åpne i ny fane» som forventet.
+<Eksempel stiler={["button"]} kode={`
+<a class="fs-button" href="#">Gå til oversikten</a>
+<a class="fs-button" data-variant="secondary" href="#">Les vilkårene</a>
+`} />
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["button"]}>
-      <a class="fs-button" href="#">Gå til oversikten</a>
-      <a class="fs-button" data-variant="secondary" href="#">Les vilkårene</a>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <a class="fs-button" href="/oversikt">Gå til oversikten</a>
-    <a class="fs-button" data-variant="secondary" href="/vilkar">Les vilkårene</a>
-    ```
-  </TabItem>
-</Tabs>
+Navigerer du brukeren, skal elementet være en `<a>` selv om det ser ut som en knapp. Da virker høyreklikk, midtklikk og «åpne i ny fane».
 
-## TypeScript
-
-Skriver du `data-variant` for hånd, er det en vanlig streng, og `"secundary"` feiler stille. Med `fs` tar editoren skrivefeilen før du rekker å lagre.
+## Med TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
@@ -110,27 +58,11 @@ fs.button()
 // { class: "fs-button" } — primær er standard og trenger ikke attributtet
 ```
 
-Funksjonen returnerer bare Fristils egne attributter. Resten av elementet eier du selv:
-
-```ts
-<button {...fs.button({ variant: "danger" })} type="submit" onClick={slett}>
-  Slett søknaden
-</button>
-```
-
-Kommer varianten fra et API eller en URL, valider den først:
-
-```ts
-const variant = fs.button.isVariant(svar.variant) ? svar.variant : "primary"
-
-fs.button({ variant })
-```
-
-Se [Typesikker bruk](../../typesikker-bruk/) for hele mønsteret.
+Kommer varianten utenfra: `fs.button.isVariant(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Tilgjengelighet
 
-- `<button>` utfører en handling, `<a>` flytter deg et annet sted. Velg etter hva som faktisk skjer, ikke etter hvordan det ser ut.
-- Inne i et `<form>` er `type="submit"` standard i nettleseren. Skal knappen ikke sende skjemaet, må du skrive `type="button"` eksplisitt.
+- `<button>` utfører en handling, `<a>` flytter deg et annet sted. Velg etter hva som skjer, ikke hvordan det ser ut.
+- Inne i et `<form>` er `type="submit"` standard. Skal knappen ikke sende skjemaet, skriv `type="button"`.
 - La teksten beskrive handlingen: «Slett bruker» sier mer enn «OK».
-- Ikke bruk en deaktivert knapp som eneste forklaring på hvorfor noe ikke går. Vis heller en feilmelding brukeren kan gjøre noe med.
+- Ikke bruk en deaktivert knapp som eneste forklaring på hvorfor noe ikke går. Vis en feilmelding brukeren kan gjøre noe med.

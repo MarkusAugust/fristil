@@ -3,14 +3,9 @@ title: Help Text
 description: Forklarende tekst under et skjemafelt. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-help-text` er den lille teksten under et felt som forklarer hva systemet forventer — hvilket format datoen skal ha, hva opplysningen brukes til, hvor brukeren finner nummeret du ber om.
-
-Er teksten en feilmelding, bruker du [Error Text](../error-text/) i stedet.
-
-## Importer
+Den lille teksten under et felt som forklarer hva systemet forventer. Er teksten en feilmelding, bruk [Error Text](../error-text/).
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -19,78 +14,42 @@ import "@fristil/designsystem/help-text.css"
 
 ## Varianter
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["help-text"]} layout="stabel" maxWidth="30rem">
-      <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
-      <p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
-      <p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
-      <p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
-    <p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
-    <p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
-    <p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
+<p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
+<p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
+<p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
+<p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
+`} />
 
-| `data-variant` | Når du bruker den |
+| `data-variant` | Brukes til |
 | --- | --- |
-| *(utelatt)* | Dempet. Standardvalget for vanlig hjelpetekst. |
-| `default` | Full tekstfarge. Når hjelpeteksten er viktig nok til å lese før feltet fylles ut. |
-| `success` | Bekreftelse på at noe gikk bra. |
-| `warning` | Noe brukeren bør vite, men som ikke stopper innsending. |
+| *(utelatt)* | Dempet. Standardvalget. |
+| `default` | Full tekstfarge, når teksten må leses før feltet fylles ut |
+| `success` | Bekreftelse på at noe gikk bra |
+| `warning` | Noe brukeren bør vite, men som ikke stopper innsending |
 
 ## Koblet til feltet
 
-Hjelpeteksten må knyttes til feltet med `aria-describedby`, ellers leses den ikke opp når brukeren får fokus i feltet.
+Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem">
-      <label class="fs-label" for="demo-kid">KID-nummer</label>
-      <input class="fs-input" id="demo-kid" inputmode="numeric" placeholder="0000 0000 0000 000" />
-      <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <label class="fs-label" for="kid">KID-nummer</label>
-    <input class="fs-input" id="kid" inputmode="numeric" aria-describedby="kid-hjelp" />
-    <p class="fs-help-text" id="kid-hjelp">
-      Du finner nummeret øverst til høyre på fakturaen.
-    </p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<label class="fs-label" for="kid">KID-nummer</label>
+<input class="fs-input" id="kid" inputmode="numeric" aria-describedby="kid-hjelp" />
+<p class="fs-help-text" id="kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
+`} />
 
-[Field](../field/) genererer denne `id`-en og setter `aria-describedby` for deg. Bruk den hvis du ikke har grunn til å styre koblingen selv.
+[Field](../field/) genererer `id`-en og setter `aria-describedby` for deg.
 
-## TypeScript
+## Med TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
 
-fs.helpText({ variant: "success" })
-// { class: "fs-help-text", "data-variant": "success" }
-
-fs.helpText()
-// { class: "fs-help-text" } — "muted" er standard
+fs.helpText({ variant: "warning" })
+// { class: "fs-help-text", "data-variant": "warning" }
 ```
 
-Verdier som kommer utenfra, validerer du først:
-
-```ts
-const variant = fs.helpText.isVariant(svar.variant) ? svar.variant : "muted"
-
-fs.helpText({ variant })
-```
-
-Koblingen til feltet gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) for deg:
+Koblingen gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt):
 
 ```tsx
 const felt = fs.field({ id: "kid", help: true })
@@ -101,7 +60,6 @@ const felt = fs.field({ id: "kid", help: true })
 
 ## Tilgjengelighet
 
-- Uten `aria-describedby` er hjelpeteksten usynlig for skjermlesere. Koblingen er hele poenget.
-- Hold teksten kort. Den leses opp rett etter ledeteksten hver gang feltet får fokus, så to setninger blir raskt tungt.
-- Fargen skal ikke bære betydningen alene. En `warning`-variant må si i ordene sine hva som er problemet.
-- Skriv hjelpeteksten som en instruksjon, ikke som en advarsel om hva som går galt. Feilen hører hjemme i [Error Text](../error-text/), etter at brukeren faktisk har gjort noe.
+- Uten `aria-describedby` er teksten usynlig for skjermlesere. Koblingen er hele poenget.
+- Hold den kort. Den leses opp rett etter ledeteksten hver gang feltet får fokus.
+- Fargen skal ikke bære betydningen. En `warning` må si i ordene sine hva problemet er.

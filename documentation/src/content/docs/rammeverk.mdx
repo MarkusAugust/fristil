@@ -5,15 +5,15 @@ description: Oppsett av Fristil i ren HTML, React, Astro og Datastar — samme k
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 
-CSS-komponentene er klasser og krever ingenting av rammeverket. Det er web-komponentene som av og til trenger litt oppsett, og denne siden samler det.
+CSS-komponentene er klasser og krever ingenting av rammeverket. Web-komponentene trenger av og til oppsett, og denne siden samler det.
 
-Tre ting gjelder uansett hvor du er:
+Tre ting gjelder overalt:
 
 1. **`define`-funksjonen må kjøre én gang** når appen starter, før elementet brukes.
 2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"` gjør feltet ugyldig. Skal attributtet bort, må det fjernes helt.
 3. **Les verdien fra elementet, ikke fra hendelsen.** `element.value` på `<fs-date-field>` er alltid ISO, uansett hva brukeren skrev.
 
-React har i tillegg sin egen inngang, `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for `class` og `for`. Uten den skriver React ut «Invalid DOM property» i konsollen for hvert element. Ren HTML, Astro og Datastar bruker HTML-navnene direkte.
+React har i tillegg `@fristil/designsystem/react`, som gir `className` og `htmlFor`. Uten den skriver React «Invalid DOM property» i konsollen for hvert element. De andre bruker HTML-navnene direkte.
 
 ## Ren HTML
 
@@ -52,7 +52,7 @@ Ingen byggverktøy, ingen pakkebehandler i nettleseren.
 
 `new FormData(...)` plukker opp feltet uten videre, fordi `<fs-field>` holder elementene i vanlig DOM.
 
-CSS-komponentene krever ikke engang skriptet. Ett stilark, én klasse:
+CSS-komponentene krever ikke engang skriptet:
 
 ```html
 <link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
@@ -61,7 +61,7 @@ CSS-komponentene krever ikke engang skriptet. Ett stilark, én klasse:
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
-Dette er den delen av systemet som overlever lengst. Klassen og dataattributtet er en kontrakt nettleseren forstår direkte, og den endres ikke fordi et rammeverk gjør det.
+Dette er delen som overlever lengst. Klassen og dataattributtet er en kontrakt nettleseren forstår direkte.
 
 :::caution[TypeScript hører ikke hjemme i `<script type="module">`]
 En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. Skriver du `hendelse as CustomEvent<…>` der, får du `SyntaxError` og hele skriptet stopper. Type-syntaks krever et byggesteg.
@@ -183,7 +183,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
 ## Astro
 
-En `.astro`-fil er HTML med et frontmatter-felt over. Stilarkene importeres der, og `fs` brukes rett i malen — Astro støtter spredning som JSX.
+En `.astro`-fil er HTML med frontmatter over. Stilarkene importeres der, og `fs` brukes rett i malen — Astro støtter spredning som JSX.
 
 ```astro
 ---
@@ -197,18 +197,18 @@ import "@fristil/designsystem/badge.css"
 <span {...fs.badge({ color: "success" })}>Innvilget</span>
 ```
 
-Dette kjøres ved bygging. Ut kommer ren HTML:
+Kjøres ved bygging. Ut kommer ren HTML:
 
 ```html
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-Null JavaScript sendt til nettleseren — `fs` er borte når siden er bygget. Det gjelder alle `css`-komponentene.
+Null JavaScript sendt til nettleseren — `fs` er borte når siden er bygget.
 
 ### Et helt felt, uten JavaScript
 
-`fs.field()` regner ut tilgjengelighetskoblingen i frontmatteret, så den også blir statisk HTML:
+`fs.field()` regner ut koblingen i frontmatteret, så den også blir statisk HTML:
 
 ```astro
 ---
@@ -225,11 +225,11 @@ const epost = fs.field({ id: "epost", required: "symbol", help: true, error: tru
 <p {...fs.errorText()} {...epost.error}>Skriv en gyldig adresse.</p>
 ```
 
-Her brukes ikke `<fs-field>` i det hele tatt. Koblingen gjøres ved bygging, og siden trenger ingen kjøretid.
+Ingen `<fs-field>`, ingen kjøretid.
 
 ### Når du vil ha web-komponentene
 
-Trenger du at feltet skal kunne bli ugyldig mens brukeren står i det, må komponenten registreres i nettleseren. Astro pakker `<script>`-tagger og kjører dem på klienten:
+Skal feltet kunne bli ugyldig mens brukeren står i det, må komponenten registreres. Astro pakker `<script>`-tagger og kjører dem på klienten:
 
 ```astro
 ---
@@ -249,17 +249,15 @@ import "@fristil/designsystem/field.css"
 </script>
 ```
 
-HTML-en sendes som den er fra serveren, og komponenten tar over når skriptet er lastet. `customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret.
-
-Bruker du Lit-integrasjonen i Astro i stedet, må komponentene settes inn med `client:only="lit"` — de skal ikke serverrendres.
+`customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret. Bruker du Lit-integrasjonen i Astro, settes komponentene inn med `client:only="lit"`.
 
 ### Astro og Datastar
 
-De to kombineres godt, og er kanskje den reneste måten å bruke Fristil på: Astro bygger HTML-en, Datastar gir den oppførsel, og ingen av delene krever en komponentmodell i nettleseren. Se seksjonen under.
+Astro bygger HTML-en, Datastar gir den oppførsel, og ingen av delene krever en komponentmodell i nettleseren.
 
 ## HTML med Datastar
 
-[Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter. Det er ett skript og ingen byggesteg — samme premiss som Fristil, og derfor en god kombinasjon: komponentene er nettleser-native, og tilstanden er det også.
+[Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter — ett skript, ingen byggesteg. Samme premiss som Fristil.
 
 ```html
 <script
@@ -300,17 +298,17 @@ Tre attributter gjør hele jobben:
 - `data-computed:ugyldig` utleder valideringen av den.
 - `data-bind:navn` binder feltet begge veier, og `data-on:blur` markerer at brukeren har forlatt det.
 
-`data-attr:invalid` er det som knytter Datastar til komponenten. Den **setter attributtet når uttrykket er sant og fjerner det når det er usant** — nøyaktig semantikken et boolsk HTML-attributt skal ha, og dermed det `<fs-field>` forventer.
+`data-attr:invalid` knytter Datastar til komponenten: den **setter attributtet når uttrykket er sant og fjerner det når det er usant** — nøyaktig det `<fs-field>` forventer.
 
 :::note[Ingen av React-fellene her]
-I React må du skrive `invalid={ugyldig || undefined}` fordi versjonene håndterer egendefinerte elementer ulikt. Datastar har ikke det problemet: den jobber direkte på attributtene, slik HTML er definert.
+React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer egendefinerte elementer ulikt. Datastar jobber direkte på attributtene.
 :::
 
-Bruker du `fs`-funksjonene til å skrive ut klassene, gjør du det på serveren eller i byggesteget — Datastar trenger dem ikke i nettleseren.
+`fs` brukes eventuelt på serveren eller i byggesteget — Datastar trenger den ikke i nettleseren.
 
 ### HTML fra serveren
 
-Datastar kan la serveren sende HTML underveis, over Server-Sent Events. [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript) er den offisielle server-SDK-en for Node, Deno og Bun. Den har ingenting med Fristil å gjøre — den sender HTML — men den treffer en egenskap ved komponentene det er verdt å vite om.
+Datastar kan la serveren sende HTML underveis, over Server-Sent Events — se [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript).
 
 Et egendefinert element oppgraderer seg selv når det settes inn i dokumentet, så lenge `defineFsField()` har kjørt én gang. Serveren kan derfor sende dette som ren HTML:
 
@@ -323,9 +321,9 @@ Et egendefinert element oppgraderer seg selv når det settes inn i dokumentet, s
 </fs-field>
 ```
 
-Når den havner i DOM-en, kobler komponenten opp `for` og `id`, setter `fs-label` på ledeteksten, legger på `aria-invalid` og bygger `aria-describedby` av hjelpeteksten og feilmeldingen — uten at du sender med noe JavaScript for akkurat dette feltet.
+Komponenten kobler da `for` og `id`, setter `fs-label`, legger på `aria-invalid` og bygger `aria-describedby` — uten JavaScript sendt med for akkurat dette feltet.
 
-Det er hele poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
+Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
 ## Kjente fallgruver
 

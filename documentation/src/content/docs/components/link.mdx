@@ -3,72 +3,47 @@ title: Link
 description: Lenkestil for navigasjon i løpende tekst. CSS-komponent — én klasse, ingen JavaScript.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-link` gir `<a>` den lenkestilen resten av systemet bruker, med tydelig understrek, hover og fokusmarkering. Standardfargen er `--semantic-interactive-main`.
-
-Skal lenken se ut som en knapp — for eksempel som hovedhandlingen i et skjema — bruker du [Button](../button/) på `<a>`-elementet i stedet.
-
-## Importer
+Lenkestil med tydelig understrek, hover og fokusmarkering. Skal lenken se ut som en knapp, bruk [Button](../button/) på `<a>`-elementet i stedet.
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/link.css"
 ```
 
-Uten byggesteg:
-
-```html
-<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
-<link rel="stylesheet" href="@fristil/designsystem/link.css" />
-```
-
 ## I løpende tekst
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["link"]} layout="stabel" maxWidth="32rem">
-      <p>
-        Søknaden er sendt. Du finner den igjen under <a class="fs-link" href="#">Mine søknader</a>, og vi sender deg en e-post når den er behandlet.
-      </p>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <p>
-      Søknaden er sendt. Du finner den igjen under
-      <a class="fs-link" href="/mine-soknader">Mine søknader</a>,
-      og vi sender deg en e-post når den er behandlet.
-    </p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["link"]} layout="stabel" maxWidth="32rem" kode={`
+<p>
+  Søknaden er sendt. Du finner den igjen under
+  <a class="fs-link" href="#">Mine søknader</a>, og vi sender deg en
+  e-post når den er behandlet.
+</p>
+`} />
 
-## Lenke som ikke er klikkbar ennå
+## Ikke klikkbar ennå
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["link"]}>
-      <a class="fs-link" href="#">Se kvittering</a>
-      <a class="fs-link" aria-disabled="true" href="#">Se årsoppgave</a>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <a class="fs-link" href="/kvittering">Se kvittering</a>
-    <a class="fs-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["link"]} kode={`
+<a class="fs-link" href="#">Se kvittering</a>
+<a class="fs-link" aria-disabled="true" href="#">Se årsoppgave</a>
+`} />
 
-`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, slik at en skjermleser kan lese den og fortelle at den er utilgjengelig — det er forskjellen fra å fjerne `href`.
+`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, så skjermlesere kan lese den og si at den er utilgjengelig — det er forskjellen fra å fjerne `href`.
 
-Merk at `pointer-events: none` stopper musa, men ikke tastaturet. Er det viktig at lenken ikke kan følges i det hele tatt, må du også fjerne `href` eller stoppe klikket i JavaScript.
+Merk at `pointer-events: none` stopper musa, ikke tastaturet. Skal lenken ikke kunne følges i det hele tatt, må du også fjerne `href`.
+
+## Med TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+fs.link({ disabled: true })
+// { class: "fs-link", "aria-disabled": "true" }
+```
 
 ## Tilgjengelighet
 
-- Lenketeksten skal gi mening lest alene. Mange skjermlesere kan liste opp alle lenker på siden, og da hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.
-- Ikke fjern `outline` på `:focus-visible`. Den følger med `fs-link` og er det eneste tastaturbrukere har å navigere etter.
-- Åpner lenken i ny fane, si det i teksten eller med `aria-label`. Uventet fanebytte er vanskelig å oppdage for den som ikke ser skjermen.
-- Er lenken deaktivert, forklar hvorfor i teksten rundt. `aria-disabled` sier at noe ikke går, ikke hva brukeren skal gjøre i stedet.
+- Lenketeksten skal gi mening lest alene. Skjermlesere kan liste opp alle lenker på siden, og der hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.
+- Ikke fjern `outline` på `:focus-visible`. Den er det eneste tastaturbrukere navigerer etter.
+- Åpner lenken i ny fane, si det i teksten eller med `aria-label`.

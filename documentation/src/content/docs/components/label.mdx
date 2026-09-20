@@ -1,16 +1,11 @@
 ---
 title: Label
-description: Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent — én klasse, ingen JavaScript.
+description: Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Preview from "../../../components/Preview.astro"
+import Eksempel from "../../../components/Eksempel.astro"
 
-`fs-label` gir `<label>` riktig typografi og en fast måte å markere påkrevde og valgfrie felt på, via dataattributter.
-
-Setter du opp et helt felt med ledetekst, hjelpetekst og feilmelding, er det som regel enklere å bruke [Field](../field/). Den setter `for`, `id` og `aria-describedby` for deg. Denne siden handler om selve ledeteksten.
-
-## Importer
+Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere — den setter `for`, `id` og `aria-describedby` for deg.
 
 ```js
 import "@fristil/designsystem/tokens.css"
@@ -19,121 +14,48 @@ import "@fristil/designsystem/label.css"
 
 ## Markering
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["label"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" for="ex-standard">Fullt navn</label>
-      <label class="fs-label" data-required="symbol" for="ex-symbol">E-postadresse</label>
-      <label class="fs-label" data-required="text" for="ex-tekst">Telefonnummer</label>
-      <label class="fs-label" data-optional="" for="ex-valgfri">Adresse</label>
-      <label class="fs-label" aria-disabled="true" for="ex-deaktivert">Organisasjonsnummer</label>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <label class="fs-label" for="navn">Fullt navn</label>
+<Eksempel stiler={["label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="navn">Fullt navn</label>
+<label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
+<label class="fs-label" data-required="text" for="telefon">Telefonnummer</label>
+<label class="fs-label" data-optional="" for="adresse">Adresse</label>
+<label class="fs-label" aria-disabled="true" for="orgnr">Organisasjonsnummer</label>
+`} />
 
-    <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
-
-    <label class="fs-label" data-required="text" for="telefon">Telefonnummer</label>
-
-    <label class="fs-label" data-optional="" for="adresse">Adresse</label>
-
-    <label class="fs-label" aria-disabled="true" for="orgnr">Organisasjonsnummer</label>
-    ```
-  </TabItem>
-</Tabs>
-
-| Attributt | Hva det gjør |
+| Attributt | Effekt |
 | --- | --- |
 | *(utelatt)* | Vanlig ledetekst |
-| `data-required="symbol"` | Legger til ` *` i farefargen |
-| `data-required="text"` | Legger til ` (påkrevd)` i farefargen |
-| `data-optional=""` | Legger til ` (valgfri)` i dempet farge |
-| `aria-disabled="true"` | Demper tekstfargen |
+| `data-required="symbol"` | ` *` i farefargen |
+| `data-required="text"` | ` (påkrevd)` i farefargen |
+| `data-optional=""` | ` (valgfri)` i dempet farge |
+| `aria-disabled="true"` | Dempet tekstfarge |
 
-Velg én av `data-required` og `data-optional` og hold deg til den gjennom hele skjemaet. Markerer du både det påkrevde og det valgfrie, må brukeren lese begge deler for å finne ut hva som gjelder.
+Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjemaet. Markerer du begge, må brukeren lese begge for å vite hva som gjelder.
 
 ## Sammen med et felt
 
-Ledeteksten skal peke på feltet sitt med `for`, som må matche `id` på feltet. Uten den koblingen leser ikke skjermleseren opp ledeteksten når feltet får fokus, og et klikk på teksten flytter ikke fokus til feltet.
+`for` må matche `id` på feltet. Uten koblingen leses ikke ledeteksten opp når feltet får fokus, og et klikk på teksten flytter ikke fokus dit.
 
-<Tabs>
-  <TabItem label="Eksempel">
-    <Preview stiler={["label", "input", "help-text"]} layout="stabel" maxWidth="26rem">
-      <label class="fs-label" data-required="symbol" for="demo-epost">E-postadresse</label>
-      <input class="fs-input" id="demo-epost" type="email" required placeholder="ola@eksempel.no" />
-      <p class="fs-help-text">Vi bruker adressen til å sende kvittering.</p>
-    </Preview>
-  </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
-    <input class="fs-input" id="epost" type="email" required aria-describedby="epost-hjelp" />
-    <p class="fs-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
-    ```
-  </TabItem>
-</Tabs>
+<Eksempel stiler={["label", "input", "help-text"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
+<input class="fs-input" id="epost" type="email" required aria-describedby="epost-hjelp" />
+<p class="fs-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
+`} />
 
-Dette er nøyaktig den koblingen [Field](../field/) gjør automatisk. Skriver du den for hånd, må du holde styr på `id`-ene selv.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-fs.label({ required: "text" })
-// { class: "fs-label", "data-required": "text" }
-
-fs.label({ optional: true })
-// { class: "fs-label", "data-optional": "" }
-```
-
-Funksjonen returnerer bare Fristils egne attributter — `for` og `id` eier du selv:
+## Med TypeScript
 
 ```tsx
+import { fs } from "@fristil/designsystem/react"
+
 <label {...fs.label({ required: "symbol" })} htmlFor="epost">
   E-postadresse
 </label>
 ```
 
-Kommer markeringen utenfra, valider den først:
-
-```ts
-const required = fs.label.isMarker(svar.marker) ? svar.marker : undefined
-
-fs.label({ required })
-```
-
-Setter du opp et helt felt, gjør [`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) både dette og koblingen til kontrollen i én operasjon.
-
-## I React
-
-Samme funksjon, spredt inn i et vanlig `<label>`. Ingen Fristil-spesifikk komponent trengs:
-
-```tsx
-import { fs } from "@fristil/designsystem/react"
-import type { RequiredMarker } from "@fristil/designsystem"
-
-type Props = {
-	htmlFor: string
-	required?: RequiredMarker
-	optional?: boolean
-	children: React.ReactNode
-}
-
-export function Ledetekst({ htmlFor, required, optional, children }: Props) {
-	return (
-		<label {...fs.label({ required, optional })} htmlFor={htmlFor}>
-			{children}
-		</label>
-	)
-}
-```
+[`fs.field`](../../typesikker-bruk/#fsfield-kobler-et-helt-felt) gjør både dette og koblingen til kontrollen i én operasjon.
 
 ## Tilgjengelighet
 
-- `for` må alltid peke på `id`-en til feltet. Det er koblingen som gjør at klikk på ledeteksten flytter fokus, og at skjermleseren leser riktig tekst.
-- `data-required` er bare visuelt. Skjermleseren får ikke vite at feltet er påkrevd med mindre du også setter `required` eller `aria-required="true"` på selve feltet.
-- Stjernen legges til med `::after` og leses ikke opp. Det er meningen — `required` på feltet formidler det samme, og en opplest «stjerne» ved hvert felt blir bare støy.
-- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.srOnly` fra `utilities.css` framfor `placeholder`, som forsvinner så fort brukeren begynner å skrive.
+- `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
+- Stjernen legges til med `::after` og leses ikke opp. Det er meningen — `required` formidler det samme, og en opplest «stjerne» ved hvert felt blir støy.
+- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.srOnly` fra `utilities.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.
