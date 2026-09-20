@@ -1,0 +1,85 @@
+---
+title: Error Summary
+description: Oppsummering av feilene i et skjema, med fokusflytting. Rammekomponent.
+---
+
+import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
+
+Når et skjema ikke kan sendes, trenger brukeren å se alle feilene på ett sted, og komme seg til dem. Du skriver lista selv, som lenker til id-en på hvert felt.
+
+Komponenten gjør tre ting som er lette å glemme:
+
+1. Flytter fokus til boksen når den kommer til syne, så den som hører siden får vite at innsendingen stoppet.
+2. Gir fokus til selve kontrollen når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før.
+3. Skjuler seg selv mens lista er tom, så en tom overskrift ikke blir stående i skjemaet.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+import "@fristil/designsystem/error-summary.css"
+
+defineFsErrorSummary()
+```
+
+## Et skjema som feiler
+
+<ErrorSummaryDemo />
+
+```html
+<fs-error-summary heading="Skjemaet har to feil">
+  <ul class="fs-list">
+    <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
+    <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+  </ul>
+</fs-error-summary>
+```
+
+Lenketeksten skal være feilmeldingen, ikke navnet på feltet. Den som hører lista skal kunne forstå hva som er galt uten å hoppe til feltet først.
+
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `heading` | streng | Overskriften over lista. Skriver du en `<h2>` selv, beholdes den. |
+| `autofocus` | boolsk | Flytt fokus hit når boksen kommer til syne. På som standard. |
+
+Komponenten ser etter at lista endrer seg, så den skjuler og viser seg selv når du bytter ut innholdet. Du trenger ikke sette `hidden`.
+
+## Sammen med valideringen
+
+```js
+skjema.addEventListener("submit", (hendelse) => {
+  const feil = valider(skjema)
+
+  if (feil.length === 0) return
+
+  hendelse.preventDefault()
+
+  oppsummering.querySelector("ul").innerHTML = feil
+    .map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+    .join("")
+})
+```
+
+Sett `aria-invalid="true"` og `data-state="invalid"` på feltene i samme slengen, eller bruk [Field](../field/), som gjør begge deler.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-error-summary` | Boksen. Komponenten setter klassen på selve elementet. |
+| `.fs-error-summary__title` | Overskriften over lista |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-error-summary-padding` | `var(--size-4)` |
+| `--fs-error-summary-radius` | `var(--size-1)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Boksen hører øverst i skjemaet, over det første feltet. Nederst finner ingen den.
+- Én oppsummering per skjema. To bokser som begge melder feil er verre enn ingen.
+- Er det bare én feil, vis den likevel i lista. Overskriften kan si «Skjemaet har én feil».
+- Lista skal oppdateres hver gang skjemaet sendes på nytt, også når de samme feilene står igjen. Da leses den opp igjen, og brukeren vet at forsøket ble avvist.

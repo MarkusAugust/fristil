@@ -1,0 +1,71 @@
+---
+title: Breadcrumbs
+description: Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne i en `<nav>`: rekkefølgen betyr noe, så listen må være nummerert selv om tallene ikke vises.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/breadcrumbs.css"
+```
+
+## Stien
+
+<Eksempel stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
+<nav aria-label="Du er her">
+  <ol class="fs-breadcrumbs">
+    <li><a href="#">Forsiden</a></li>
+    <li><a href="#">Mine saker</a></li>
+    <li><a href="#" aria-current="page">Søknad 2026-0481</a></li>
+  </ol>
+</nav>
+`} />
+
+Tre ting må stå i markupen:
+
+| Hva | Hvorfor |
+| --- | --- |
+| `<nav aria-label="Du er her">` | Skjermlesere lister opp navigasjonene på siden. Uten teksten heter denne bare «navigasjon». |
+| `<ol>`, ikke `<ul>` | Rekkefølgen er en del av betydningen |
+| `aria-current="page"` på siste steg | Sier hvilken side brukeren er på. Fargen alene sier ingenting. |
+
+Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere lest «skråstrek» mellom hvert steg.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const sti = document.querySelector<HTMLOListElement>("#brodsmuler")
+
+fs.setAttributes(sti, fs.breadcrumbs())
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-breadcrumbs` | Listen med stegene |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-breadcrumbs-gap` | `var(--size-2)` |
+
+Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan byttes:
+
+```css
+.fs-breadcrumbs li + li::before {
+	content: "›";
+}
+```
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Siste steg skal være der brukeren er nå, ikke et sted å gå. Enten som en lenke med `aria-current="page"`, eller som ren tekst.
+- Ikke kort ned stegene til «...» på liten skjerm uten at de kan foldes ut. Da mister brukeren nettopp den oversikten stien er til for.
+- Stien erstatter ikke en tilbakeknapp. Den viser hvor i strukturen brukeren er, ikke hvor hen kom fra.

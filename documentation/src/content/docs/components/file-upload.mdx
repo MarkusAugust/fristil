@@ -1,0 +1,99 @@
+---
+title: File Upload
+description: Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et vanlig `<input type="file">`. Knappen inni er nettleserens egen, og teksten på den kommer fra operativsystemets språk. Den kan ikke oversettes, så ledeteksten over feltet må si hva som skal lastes opp.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/file-upload.css"
+```
+
+## Feltet
+
+<Eksempel stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
+<label class="fs-label" for="vedlegg">Last opp vedlegg</label>
+<input class="fs-file-upload" type="file" id="vedlegg" multiple accept=".pdf,.jpg" aria-describedby="vedlegg-hjelp" />
+<p class="fs-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
+`} />
+
+| Attributt | Effekt |
+| --- | --- |
+| `multiple` | Flere filer kan velges |
+| `accept` | Filtypene filvelgeren foreslår |
+| `data-state="invalid"` | Rød ramme. Sett `aria-invalid="true"` i tillegg. |
+
+`accept` er en hjelp i filvelgeren, ikke en sperre. Brukeren kan velge «alle filer», så typen må sjekkes på serveren uansett.
+
+## Lista over valgte filer
+
+Lista skriver du selv, siden bare du vet hva som skal skje når en fil fjernes.
+
+<Eksempel stiler={["file-upload", "button", "label"]} layout="stabel" maxWidth="32rem" kode={`
+<label class="fs-label" for="vedlegg-2">Last opp vedlegg</label>
+<input class="fs-file-upload" type="file" id="vedlegg-2" multiple />
+
+<ul class="fs-file-upload-list">
+  <li>
+    fodselsattest.pdf
+    <button class="fs-button" data-variant="ghost" type="button">Fjern fodselsattest.pdf</button>
+  </li>
+  <li>
+    leiekontrakt.pdf
+    <button class="fs-button" data-variant="ghost" type="button">Fjern leiekontrakt.pdf</button>
+  </li>
+</ul>
+`} />
+
+Knappeteksten skal si hvilken fil som fjernes. «Fjern» alene gir like knapper for den som hører siden.
+
+Feltet husker bare det siste utvalget: velger brukeren to filer til, erstatter de forrige. Skal filene samles opp, og kunne fjernes én og én, må du holde lista selv:
+
+```js
+const felt = document.getElementById("vedlegg")
+let filer = []
+
+felt.addEventListener("change", () => {
+  filer = [...filer, ...felt.files]
+  tegnListe()
+  felt.value = ""
+})
+```
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLInputElement>("#vedlegg")
+
+fs.setAttributes(felt, fs.fileUpload({ multiple: true, accept: ".pdf" }))
+```
+
+`fs.fileUpload.list` gir klassen på lista. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-file-upload` | Feltet. Tilstanden kommer fra `data-state`. |
+| `.fs-file-upload-list` | Lista over filene som er valgt |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-file-upload-padding` | `var(--size-2)` |
+| `--fs-file-upload-radius` | `var(--size-1)` |
+
+Knappen inne i feltet styles gjennom `::file-selector-button`, som er den eneste veien inn til den.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Si hvilke filtyper og hvilken største størrelse som godtas, før brukeren prøver. En feilmelding etterpå er et dårligere alternativ.
+- Meld fra når en fil er lagt til eller fjernet, i et felt med `role="status"`.
+- Dra-og-slipp kan komme i tillegg, aldri i stedet. Det finnes ikke for tastatur.
+- Under opplasting: vis fremdrift per fil, og la brukeren avbryte.

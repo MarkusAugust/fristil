@@ -1,0 +1,61 @@
+---
+title: Sr Only
+description: Tekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Innhold som skal leses opp, men ikke vises. Klassen krymper elementet bort visuelt og lar det bli stående i dokumentet, så skjermlesere fortsatt finner det.
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/sr-only.css"
+```
+
+## Utfyllende knappetekst
+
+En rad med «Slett»-knapper gir mening for den som ser tabellen. Den som hører den, får fire like knapper. Tillegget i `.fs-sr-only` sier hvilken rad knappen hører til, uten å gjenta det for øyet.
+
+<Eksempel stiler={["button", "sr-only"]} layout="stabel" maxWidth="26rem" kode={`
+<button class="fs-button" data-variant="danger">
+  Slett<span class="fs-sr-only"> søknaden fra 4. mars</span>
+</button>
+`} />
+
+Knappen leses opp som «Slett søknaden fra 4. mars», mens den står som «Slett» på skjermen.
+
+## Skjult ledetekst
+
+Er ledeteksten åpenbar av oppsettet, kan den skjules visuelt. Den skal ikke fjernes.
+
+<Eksempel stiler={["input", "label", "sr-only", "button"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label fs-sr-only" for="sok">Søk i saker</label>
+<input class="fs-input" id="sok" type="search" placeholder="Søk i saker" />
+`} />
+
+`placeholder` er ingen erstatning for en ledetekst: den forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp i det hele tatt.
+
+## TypeScript
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const tillegg = document.createElement("span")
+tillegg.textContent = " søknaden fra 4. mars"
+
+fs.setAttributes(tillegg, fs.srOnly())
+```
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-sr-only` | Elementet som skal høres, men ikke ses |
+
+Klassen har ingen variabler. Den har én oppgave, og verdiene i den er de som faktisk virker på tvers av nettlesere.
+
+## Tilgjengelighet
+
+- Bruk den bare på tekst som gir mening lest alene. En forklaring som bare henger sammen med noe du ser, blir forvirrende når den leses opp i en lenkeliste.
+- Skal innholdet bort for alle, bruk `hidden`. `display: none` og `visibility: hidden` fjerner elementet også for skjermlesere, og det er nettopp det denne klassen unngår.
+- Et element med klassen kan fortsatt få fokus. Legger du en lenke der, hopper fokus til noe brukeren ikke ser. Skal den vises når den får fokus, må du sette stilene tilbake i `:focus`.

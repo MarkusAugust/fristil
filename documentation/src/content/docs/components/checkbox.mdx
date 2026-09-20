@@ -1,0 +1,132 @@
+---
+title: Checkbox
+description: Avkryssingsboks for valg som står for seg selv. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Ren CSS på et vanlig `<input type="checkbox">`, så tastatur, `FormData` og nettleserens egen validering virker som før. Skal brukeren velge ett av flere alternativer, er [Radio](../radio/) riktig. Er valget av eller på for en innstilling som slår inn med en gang, bruk [Switch](../switch/).
+
+```js
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/checkbox.css"
+import "@fristil/designsystem/label.css"
+```
+
+## Tilstander
+
+<Eksempel stiler={["checkbox", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox" type="checkbox" id="vilkar" />
+  <label class="fs-label" for="vilkar">Jeg godtar vilkårene</label>
+</div>
+
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox" type="checkbox" id="nyhetsbrev" checked />
+  <label class="fs-label" for="nyhetsbrev">Send meg nyhetsbrev</label>
+</div>
+
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox" type="checkbox" id="bekreft" data-state="invalid" aria-invalid="true" />
+  <label class="fs-label" for="bekreft">Jeg bekrefter at opplysningene stemmer</label>
+</div>
+
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox" type="checkbox" id="arkivert" checked disabled />
+  <label class="fs-label" for="arkivert">Saken er arkivert</label>
+</div>
+`} />
+
+| `data-state` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Normaltilstand |
+| `invalid` | Valideringen har feilet |
+| `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
+
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
+
+## Delvis avkrysset
+
+«Velg alle» er verken på eller av når noen av valgene under er krysset av. Den tilstanden finnes bare som en egenskap i JavaScript, ikke som et HTML-attributt:
+
+```html
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox" type="checkbox" id="alle" />
+  <label class="fs-label" for="alle">Velg alle vedlegg</label>
+</div>
+
+<script type="module">
+  const alle = document.getElementById("alle")
+  const valg = document.querySelectorAll(".vedlegg")
+
+  function oppdater() {
+    const antall = [...valg].filter((boks) => boks.checked).length
+
+    alle.checked = antall === valg.length
+    alle.indeterminate = antall > 0 && antall < valg.length
+  }
+
+  for (const boks of valg) boks.addEventListener("change", oppdater)
+</script>
+```
+
+Skjermlesere melder tilstanden som «delvis avkrysset» av seg selv. Du trenger ikke `aria-checked="mixed"` på et ekte `<input>`.
+
+## Flere valg som hører sammen
+
+Hører boksene til samme spørsmål, samle dem i en [Fieldset](../fieldset/). Da leses spørsmålet opp før hvert valg.
+
+<Eksempel stiler={["checkbox", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
+<fieldset class="fs-fieldset">
+  <legend class="fs-legend">Hvordan vil du varsles?</legend>
+
+  <div class="fs-checkbox-row">
+    <input class="fs-checkbox" type="checkbox" id="varsel-epost" name="varsel" value="epost" checked />
+    <label class="fs-label" for="varsel-epost">E-post</label>
+  </div>
+
+  <div class="fs-checkbox-row">
+    <input class="fs-checkbox" type="checkbox" id="varsel-sms" name="varsel" value="sms" />
+    <label class="fs-label" for="varsel-sms">SMS</label>
+  </div>
+</fieldset>
+`} />
+
+Like `name`-verdier gir én nøkkel med flere verdier i `FormData`. Les dem med `formData.getAll("varsel")`.
+
+## TypeScript
+
+```ts
+import { fs, type FieldState } from "@fristil/designsystem"
+
+const boks = document.querySelector<HTMLInputElement>("#bekreft")
+
+boks.addEventListener("change", () => {
+  const tilstand: FieldState = boks.checked ? "default" : "invalid"
+
+  fs.setAttributes(boks, fs.checkbox({ state: tilstand }))
+})
+```
+
+`fs.checkbox()` setter `type` for deg, så boksen ikke kan bli et tekstfelt med boksens stil. `fs.checkbox.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-checkbox` | Selve boksen |
+| `.fs-checkbox-row` | Raden som holder boksen og teksten ved siden av hverandre |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-checkbox-size` | `var(--size-5)` |
+| `--fs-checkbox-radius` | `var(--size-1)` |
+
+Haken og streken tegnes fra `--semantic-icon-check` og `--semantic-icon-dash`, som snur med temaet. Se [Tilpasning](../../tilpasning/).
+
+## Tilgjengelighet
+
+- Hver boks trenger en `<label>` med `for`. Uten den er klikkflaten bare selve boksen, og skjermleseren leser ingenting.
+- Teksten skal si hva som skjer når boksen er krysset av, ikke hva spørsmålet het. «Send meg nyhetsbrev», ikke «Nyhetsbrev».
+- Ikke send skjemaet eller naviger når en boks endres. Brukeren forventer å kunne krysse av flere før noe skjer.
+- Er avkryssing påkrevd, sett `required` på boksen. Da stopper nettleseren innsendingen selv.

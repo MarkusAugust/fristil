@@ -19,7 +19,7 @@ En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
-Varianter styres med `data-`-attributter. Dekker knapper, lenker, merker, ledetekster og skjemafelt, altså alt der utfordringen er utseende og ikke oppførsel.
+Varianter styres med `data-`-attributter. Dette er den største gruppen: knapper, lenker, merker, skjemafelt, tabeller, kort, varsler og typografi, altså alt der utfordringen er utseende og ikke oppførsel.
 
 ### ramme
 
@@ -71,13 +71,18 @@ Regelen: skjemafelt i vanlig DOM, innkapslede widgets kan skjermes.
 
 Valget avgjør også om komponenten trenger en CSS-import:
 
-| Komponent | DOM | Stilark |
-| --- | --- | --- |
-| `<fs-field>` | vanlig | `field.css` |
-| `<fs-date-field>` | vanlig | `date-field.css` |
-| `<fs-calendar>` | Shadow | ingen |
+| Komponent | Kategori | DOM | Stilark |
+| --- | --- | --- | --- |
+| `<fs-field>` | ramme | vanlig | `field.css` |
+| `<fs-tabs>` | ramme | vanlig | `tabs.css` |
+| `<fs-error-summary>` | ramme | vanlig | `error-summary.css` |
+| `<fs-popover>` | ramme | vanlig | `popover.css` |
+| `<fs-date-field>` | frittstående | vanlig | `date-field.css` |
+| `<fs-suggestion>` | frittstående | vanlig | `suggestion.css` |
+| `<fs-toast>` | frittstående | vanlig | `toast.css` |
+| `<fs-calendar>` | frittstående | Shadow | ingen |
 
-En Shadow DOM-komponent tar med stilene sine. En komponent i vanlig DOM gjør det ikke. Barna er *dine* elementer med systemets klasser, og de klassene må lastes på siden. Det er derfor to frittstående komponenter oppfører seg ulikt her.
+En Shadow DOM-komponent tar med stilene sine. En komponent i vanlig DOM gjør det ikke, og trenger derfor et stilark på siden. Det er derfor to frittstående komponenter oppfører seg ulikt her: `<fs-calendar>` klarer seg alene, mens `<fs-date-field>` må ha `date-field.css`.
 
 ## Design tokens
 

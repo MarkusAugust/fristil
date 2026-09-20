@@ -1,0 +1,88 @@
+---
+title: Popover
+description: Panel som henger under en knapp og lukker seg selv. Rammekomponent.
+---
+
+import PopoverDemo from "../../../components/PopoverDemo.astro"
+
+Panelet bruker nettleserens egen `popover`, så det havner i topplaget og legger seg over alt annet uten at noen trenger å finne en `z-index` som er høy nok.
+
+Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden nettleserens egen lukking rekker å lukke panelet før knappen får klikket sitt, og knappen da ikke kan brukes til å lukke igjen. Escape, klikk utenfor og fokus tilbake til knappen er derfor skrevet i komponenten.
+
+Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsPopover } from "@fristil/designsystem/popover"
+import "@fristil/designsystem/popover.css"
+
+defineFsPopover()
+```
+
+## En meny under en knapp
+
+<PopoverDemo />
+
+```html
+<fs-popover placement="bottom-end">
+  <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+
+  <ul class="fs-list" data-variant="plain">
+    <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+    <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+  </ul>
+</fs-popover>
+```
+
+Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten setter `aria-expanded` og `aria-controls` på knappen, så skjermleseren sier om panelet er åpent.
+
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
+| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end` |
+
+## Hendelser og metoder
+
+| Navn | Hva det er |
+| --- | --- |
+| `popover-toggle` | Hendelse med `{ open: boolean }` i `detail` |
+| `show()`, `hide()`, `toggle()` | Metoder på elementet |
+
+```js
+const meny = document.querySelector("fs-popover")
+
+meny.addEventListener("popover-toggle", (hendelse) => {
+  console.log(hendelse.detail.open ? "åpnet" : "lukket")
+})
+```
+
+Panelet flytter seg med siden når brukeren ruller eller endrer vindusstørrelsen. Er det ikke plass under knappen, legger det seg over.
+
+## Klasser du kan style
+
+Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer:
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-popover` | Panelet. Komponenten setter klassen på elementet du la inn. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-popover-width` | `min(20rem, calc(100vw - var(--size-8)))` |
+| `--fs-popover-padding` | `var(--size-3)` |
+| `--fs-popover-radius` | `var(--size-1)` |
+| `--fs-popover-top` | settes av komponenten |
+| `--fs-popover-left` | settes av komponenten |
+
+Posisjonen settes som `--fs-popover-top` og `--fs-popover-left` på elementet. De to er regnet ut fra knappens plass på skjermen, og er de eneste verdiene komponenten skriver inn direkte. Alt annet står i stilarket, så du kan overstyre det uten `!important`.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Panelet er ikke en dialog. Fokus flyttes ikke inn automatisk, og resten av siden er fortsatt i bruk. Trenger du å stoppe brukeren, bruk [Dialog](../dialog/).
+- Escape lukker og gir fokus tilbake til knappen. Uten det står fokus på noe som ikke finnes lenger.
+- Innholdet i panelet skal kunne nås med Tab, i samme rekkefølge som det står i markupen.
+- Ikke legg et skjema som må fylles ut i et panel som lukker seg ved klikk utenfor.

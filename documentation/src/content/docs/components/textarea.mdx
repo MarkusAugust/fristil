@@ -56,6 +56,22 @@ felt.addEventListener("blur", () => {
 
 `state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `fs.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-textarea` | Feltet. Tilstanden kommer fra `data-state`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-textarea-min-height` | `calc(var(--size-4) * 5)` |
+| `--fs-textarea-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-textarea-radius` | `var(--size-1)` |
+
+`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` og brukerens eget drag i hjørnet virker som før.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
 ## Tilgjengelighet
 
 - Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en.

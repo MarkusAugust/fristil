@@ -88,6 +88,19 @@ felt.addEventListener("blur", () => {
 
 Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-input` | Feltet. Tilstanden kommer fra `data-state`, ikonet fra `data-variant`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-input-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-input-radius` | `var(--size-1)` |
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
 ## Tilgjengelighet
 
 - Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning, siden den forsvinner idet brukeren skriver.
