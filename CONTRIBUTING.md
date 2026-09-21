@@ -47,10 +47,10 @@ Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon 
 Når en versjon skal ut:
 
 ```bash
-bun run publish:versjon 0.3.0
+bun run publish:versjon 0.4.0
 bun run sjekk
-git checkout -b slipp-0.3.0 && git commit -am "chore: slipp 0.3.0"
-git push -u origin slipp-0.3.0 && gh pr create --fill
+git checkout -b slipp-0.4.0 && git commit -am "chore: slipp 0.4.0"
+git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
 `publish:versjon` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt».
@@ -59,10 +59,10 @@ Taggen settes først når versjonen ligger på master:
 
 ```bash
 git checkout master && git pull
-git tag v0.3.0 && git push origin v0.3.0
+git tag v0.4.0 && git push origin v0.4.0
 ```
 
-Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollen i `publish.yml` kjøringen, og taggen må fjernes med `git push origin :refs/tags/v0.3.0` og `git tag -d v0.3.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
+Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollen i `publish.yml` kjøringen, og taggen må fjernes med `git push origin :refs/tags/v0.4.0` og `git tag -d v0.4.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
 
 Taggen starter `.github/workflows/publish.yml`, som bygger pakken og legger den ut på npm. Arbeidsflyten har ingen hemmeligheter i seg: den ber npm om en kortlevd legitimasjon gjennom GitHubs OIDC, og det virker bare så lenge pakken har en utgiver registrert under Settings på npmjs.com (GitHub Actions, `MarkusAugust`, `fristil`, `publish.yml`). npm signerer samtidig en attestasjon som viser hvilken commit versjonen kom fra.
 
