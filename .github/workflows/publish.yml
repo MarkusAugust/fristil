@@ -1,0 +1,74 @@
+name: Publiser til npm
+
+# Kjører når en versjonstagg dyttes opp, og kan også startes for hånd.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# `id-token` er hele poenget: GitHub lager et kortlevd OIDC-bevis som npm
+# stoler på, så det ligger ingen hemmelighet i repoet. npm signerer samtidig
+# en attestasjon som viser hvilken commit pakken ble bygd fra.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publiser:
+    name: Bygg og publiser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # npm må være 11.5.1 eller nyere for å kunne hente legitimasjon fra
+      # OIDC-beviset.
+      - name: Oppdater npm
+        run: npm install --global npm@latest
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      # Bygger bare pakken. Dokumentasjonen har ingenting med utgivelsen å
+      # gjøre, og bygget kontrollerer selv at pakken inneholder det `exports`
+      # lover, at kommandolinja virker, og at versjonen står i loggen.
+      - name: Bygg pakken
+        run: bun --filter @fristil/designsystem build
+
+      - name: Les versjonen
+        id: versjon
+        working-directory: designsystem
+        run: echo "nummer=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # Den første utgivelsen gjøres fra maskinen, siden npm bare lar deg
+      # koble en utgiver til en pakke som allerede finnes. Taggen for den
+      # versjonen ville ellers starte en kjøring som feilet på at versjonen
+      # er tatt.
+      - name: Se om versjonen alt er ute
+        id: registeret
+        run: |
+          if npm view "@fristil/designsystem@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1; then
+            echo "publisert=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "publisert=nei" >> "$GITHUB_OUTPUT"
+          fi
+
+      # `--ignore-scripts` fordi bygget alt er gjort i et eget steg. Uten det
+      # kjører `prepublishOnly` hele bygget en gang til.
+      - name: Publiser
+        if: steps.registeret.outputs.publisert == 'nei'
+        working-directory: designsystem
+        run: npm publish --ignore-scripts
+
+      - name: Versjonen var alt publisert
+        if: steps.registeret.outputs.publisert == 'ja'
+        run: echo "@fristil/designsystem@${{ steps.versjon.outputs.nummer }} ligger alt på npm. Ingenting ble publisert."
