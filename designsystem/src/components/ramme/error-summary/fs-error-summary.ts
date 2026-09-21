@@ -39,6 +39,8 @@ export class FsErrorSummary extends LitElement {
   autofocus = true
 
   private hasFocused = false
+  /** Tittelen komponenten selv har laget, til forskjell fra konsumentens. */
+  private ownTitle?: HTMLElement
 
   createRenderRoot() {
     return this
@@ -115,8 +117,22 @@ export class FsErrorSummary extends LitElement {
         title = document.createElement("h2")
         title.className = ERROR_SUMMARY_TITLE_CLASS
         this.prepend(title)
+        this.ownTitle = title
       }
-      if (!title.textContent?.trim()) title.textContent = this.heading
+
+      // Overskriften følger `heading` så lenge det er vi som har laget den.
+      // Antallet feil endrer seg mens brukeren retter, og en overskrift som
+      // ble stående på det første tallet er verre enn ingen: den som hører
+      // siden får vite at det er to feil igjen når det er én.
+      // Har konsumenten skrevet tittelen selv, er den deres.
+      //
+      // Sammenligningen er ikke pynt: å skrive den samme teksten på nytt
+      // teller som en endring for MutationObserver, og da kaller den sync()
+      // igjen i det uendelige.
+      const skalSkrive = title === this.ownTitle || !title.textContent?.trim()
+      if (skalSkrive && title.textContent !== this.heading) {
+        title.textContent = this.heading
+      }
 
       for (const link of links) {
         link.removeEventListener("click", this.handleLinkClick)

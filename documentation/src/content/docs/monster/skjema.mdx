@@ -15,11 +15,13 @@ Prøv å sende skjemaet tomt, og deretter med en ufullstendig e-postadresse:
 
 | Tidspunkt | Hva som skjer |
 | --- | --- |
-| Mens brukeren skriver | Aldri. «Ugyldig e-postadresse» etter to tegn er å kjefte på noen som er halvveis. |
-| Når feltet forlates | Bare hvis skjemaet er forsøkt sendt før. Da er feilen noe brukeren alt kjenner til. |
-| Når skjemaet sendes | Alltid. Det er her alle feilene finnes samtidig. |
+| Mens brukeren skriver | Ingen nye feil. En feilmelding som alt står der, forsvinner i det feltet blir riktig. |
+| Når feltet forlates | Valider feltet, hvis brukeren har skrevet i det. Da er han ferdig med det, og meldingen avbryter ingen. |
+| Når skjemaet sendes | Valider alt. Det er her alle feilene finnes samtidig. |
 
-Demoen over gjør nøyaktig dette: første innsending viser alt, og etterpå oppdateres hvert felt når du forlater det.
+Et felt brukeren ikke har rørt, sier vi ingenting om før innsending. «Skriv e-postadressen din» før du har begynt, er å kjefte på noen som ikke har gjort noe ennå.
+
+Oppsummeringen bygges på nytt hver gang noe valideres, og leses ut av feltene. Retter du én av to feil, står den gjenværende igjen alene, og overskriften teller ned. En oppsummering som blir stående på det første tallet er verre enn ingen.
 
 ## De tre tingene som må stemme per felt
 
@@ -59,7 +61,19 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/) e
 
 Lenketeksten er feilmeldingen, ikke navnet på feltet. Den som hører lista skal forstå hva som er galt uten å hoppe til feltet først.
 
-Bygg lista på nytt ved hver innsending, også når de samme feilene står igjen. Da leses den opp på nytt, og brukeren vet at forsøket ble avvist.
+Bygg lista på nytt hver gang du validerer, også når de samme feilene står igjen. Ved innsending leses den da opp på nytt, og brukeren vet at forsøket ble avvist.
+
+## Nettleseren fanger ikke alt
+
+`type="email"` godtar `ola@eksempel`, uten punktum og toppdomene. Det er en gyldig adresse på et internt nett, og derfor riktig av nettleseren, men i et skjema som sender kvittering på e-post er det nesten alltid en skrivefeil. Demoen legger derfor på én regel til:
+
+```js
+const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
+
+const gyldig = felt.checkValidity() && ADRESSE.test(felt.value)
+```
+
+Strengere enn dette er ikke verdt det. En adresse er først bekreftet når noen har klikket på lenken i e-posten du sendte.
 
 ## Feil fra serveren
 

@@ -40,6 +40,23 @@ bun --filter @fristil/designsystem nettlesere
 
 Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon enn den vitest bruker, og heller ikke `bun --filter <pakke> run <skript>`, som gir «No packages matched the filter». Skriptnavnet skal stå uten `run`.
 
+## Versjonslogg og utgivelser
+
+`designsystem/CHANGELOG.md` skrives underveis, ikke ved utgivelse. Endrer du noe en konsument merker, legg linjen under «Ikke utgitt» i samme pull request som endringen. `bun run build` stopper hvis versjonen i `package.json` mangler en overskrift i loggen.
+
+Når en versjon skal ut:
+
+```bash
+# 1. Skriv om overskriften «Ikke utgitt» til versjonsnummeret og datoen,
+#    og legg inn en ny tom «Ikke utgitt» over den.
+# 2. Sett samme nummer i designsystem/package.json.
+bun run sjekk
+git commit -am "chore: slipp 0.2.0"
+git tag v0.2.0
+```
+
+Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
+
 ## Commit-meldinger
 
 På norsk, i imperativ, med et prefiks som sier hva slags endring det er: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`. Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.

@@ -16,6 +16,22 @@ import Preview from "./Preview.astro"
 	]}
 	layout="stabel"
 	maxWidth="34rem"
+	ekstraCss={`
+		/* Oppsettet er appens valg, ikke systemets. Fristil gir feltene,
+		   mens avstanden mellom dem hører til skjemaet som setter dem
+		   sammen. To felt som står klistret til hverandre leses som ett. */
+		#demo-soknad {
+			display: flex;
+			flex-direction: column;
+			gap: var(--size-5);
+		}
+
+		/* Knappen skal ha mer luft over seg enn feltene har mellom seg, så
+		   den ikke ser ut som en del av det siste feltet. */
+		.demo-knapperad {
+			margin-block-start: var(--size-2);
+		}
+	`}
 >
 	<form id="demo-soknad" novalidate>
 		<fs-error-summary id="demo-feil" heading="Skjemaet kan ikke sendes" autofocus={false}>
@@ -49,7 +65,9 @@ import Preview from "./Preview.astro"
 			<p class="fs-error-text" id="demo-fodselsdato-feil" hidden></p>
 		</div>
 
-		<button class="fs-button" type="submit">Send søknaden</button>
+		<div class="demo-knapperad">
+			<button class="fs-button" type="submit">Send søknaden</button>
+		</div>
 
 		<p class="fs-sr-only" role="status" id="demo-status"></p>
 	</form>
@@ -65,78 +83,94 @@ import Preview from "./Preview.astro"
 	const skjema = flate?.getElementById("demo-soknad") as HTMLFormElement | null
 	const oppsummering = flate?.getElementById("demo-feil")
 	const status = flate?.getElementById("demo-status")
+	const felter = skjema ? [...skjema.querySelectorAll("input")] : []
 
-	/** Meldingene er våre egne, ikke nettleserens engelske standardtekster. */
-	const MELDINGER: Record<string, (felt: HTMLInputElement) => string> = {
-		epost: (felt) =>
-			felt.value === ""
+	/** Felt brukeren har skrevet i, og som derfor kan få en feilmelding. */
+	const rort = new Set<HTMLInputElement>()
+	let forsokt = false
+
+	/**
+	 * Meldingene er våre egne, ikke nettleserens engelske standardtekster.
+	 *
+	 * E-postadressen sjekkes i tillegg til `type="email"`. Nettleseren godtar
+	 * `ola@eksempel`, uten toppdomene, siden det er en gyldig adresse på et
+	 * internt nett. I et skjema som sender kvittering på e-post er det nesten
+	 * alltid en skrivefeil.
+	 */
+	const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
+
+	function meldingFor(felt: HTMLInputElement): string {
+		if (felt.value === "") {
+			return felt.name === "epost"
 				? "Skriv e-postadressen din"
-				: "Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no",
-		fodselsdato: (felt) =>
-			felt.value === ""
-				? "Skriv fødselsdatoen din"
-				: "Skriv en dato som finnes",
-	}
-
-	function valider(): { id: string; melding: string }[] {
-		if (!skjema) return []
-
-		const feil: { id: string; melding: string }[] = []
-
-		for (const felt of skjema.querySelectorAll("input")) {
-			const melding = felt.checkValidity()
-				? ""
-				: (MELDINGER[felt.name]?.(felt) ?? "Feltet er ikke fylt ut riktig")
-
-			const feiltekst = flate?.getElementById(`${felt.id}-feil`)
-			if (feiltekst) {
-				feiltekst.textContent = melding
-				feiltekst.hidden = melding === ""
-			}
-
-			if (melding) {
-				felt.setAttribute("aria-invalid", "true")
-				felt.dataset.state = "invalid"
-				felt.setAttribute(
-					"aria-describedby",
-					[felt.getAttribute("aria-describedby"), `${felt.id}-feil`]
-						.filter(Boolean)
-						.join(" ")
-						.split(/\s+/)
-						.filter((id, i, alle) => alle.indexOf(id) === i)
-						.join(" "),
-				)
-				feil.push({ id: felt.id, melding })
-			} else {
-				felt.removeAttribute("aria-invalid")
-				delete felt.dataset.state
-				felt.setAttribute(
-					"aria-describedby",
-					(felt.getAttribute("aria-describedby") ?? "")
-						.split(/\s+/)
-						.filter((id) => id && id !== `${felt.id}-feil`)
-						.join(" "),
-				)
-			}
+				: "Skriv fødselsdatoen din"
 		}
 
-		return feil
+		if (felt.name === "epost") {
+			return felt.checkValidity() && ADRESSE.test(felt.value)
+				? ""
+				: "Skriv hele e-postadressen, for eksempel ola@eksempel.no"
+		}
+
+		return felt.checkValidity() ? "" : "Skriv en dato som finnes"
 	}
 
-	skjema?.addEventListener("submit", (hendelse) => {
-		hendelse.preventDefault()
+	/** Viser eller fjerner feilmeldingen for ett felt. */
+	function vis(felt: HTMLInputElement, melding: string) {
+		const feiltekst = flate?.getElementById(`${felt.id}-feil`)
+		if (feiltekst) {
+			feiltekst.textContent = melding
+			feiltekst.hidden = melding === ""
+		}
 
-		const feil = valider()
+		const beskrevetAv = (felt.getAttribute("aria-describedby") ?? "")
+			.split(/\s+/)
+			.filter((id) => id && id !== `${felt.id}-feil`)
+
+		if (melding) {
+			felt.setAttribute("aria-invalid", "true")
+			felt.dataset.state = "invalid"
+			beskrevetAv.push(`${felt.id}-feil`)
+		} else {
+			felt.removeAttribute("aria-invalid")
+			delete felt.dataset.state
+		}
+
+		// Feilmeldingen skal ut av aria-describedby igjen når feltet blir
+		// gyldig. Ellers peker feltet på en tekst som ikke står på skjermen.
+		if (beskrevetAv.length > 0) {
+			felt.setAttribute("aria-describedby", beskrevetAv.join(" "))
+		} else {
+			felt.removeAttribute("aria-describedby")
+		}
+	}
+
+	/**
+	 * Bygger oppsummeringen av det som faktisk står i skjemaet nå.
+	 *
+	 * Den leses ut av feltene, ikke ført som en egen liste ved siden av.
+	 * Retter du én av to feil, er det den gjenværende som står igjen, og
+	 * overskriften teller riktig.
+	 */
+	function oppsummer() {
+		const feil = felter
+			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
+			.map((felt) => ({
+				id: felt.id,
+				melding: flate?.getElementById(`${felt.id}-feil`)?.textContent ?? "",
+			}))
+
 		const liste = oppsummering?.querySelector("ul")
-
 		if (liste) {
 			liste.innerHTML = feil
 				.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
 				.join("")
 		}
 
-		if (oppsummering) {
-			oppsummering.setAttribute(
+		// Overskriften står urørt når lista er tom: komponenten skjuler seg
+		// selv, og «Skjemaet har 0 feil» ville vært det siste som ble lest.
+		if (feil.length > 0) {
+			oppsummering?.setAttribute(
 				"heading",
 				feil.length === 1
 					? "Skjemaet har én feil"
@@ -144,24 +178,41 @@ import Preview from "./Preview.astro"
 			)
 		}
 
+		return feil.length
+	}
+
+	for (const felt of felter) {
+		// Mens brukeren skriver sier vi ingenting nytt, men en feilmelding som
+		// alt står der forsvinner i det feltet blir riktig.
+		felt.addEventListener("input", () => {
+			rort.add(felt)
+
+			if (felt.getAttribute("aria-invalid") === "true") {
+				vis(felt, meldingFor(felt))
+				oppsummer()
+			}
+		})
+
+		// Når feltet forlates er brukeren ferdig med det, og da er en
+		// feilmelding en hjelp og ikke en avbrytelse.
+		felt.addEventListener("blur", () => {
+			if (!rort.has(felt) && !forsokt) return
+
+			vis(felt, meldingFor(felt))
+			oppsummer()
+		})
+	}
+
+	skjema?.addEventListener("submit", (hendelse) => {
+		hendelse.preventDefault()
+		forsokt = true
+
+		for (const felt of felter) vis(felt, meldingFor(felt))
+
+		const antall = oppsummer()
+
 		if (status) {
-			status.textContent =
-				feil.length === 0 ? "Søknaden er sendt." : ""
+			status.textContent = antall === 0 ? "Søknaden er sendt." : ""
 		}
 	})
-
-	// Valider på nytt når brukeren forlater et felt, men bare etter at
-	// skjemaet er forsøkt sendt. Ellers får du en feilmelding før du har
-	// rukket å skrive ferdig.
-	let forsokt = false
-	skjema?.addEventListener("submit", () => {
-		forsokt = true
-	})
-	skjema?.addEventListener(
-		"blur",
-		() => {
-			if (forsokt) valider()
-		},
-		true,
-	)
 </script>

@@ -72,11 +72,21 @@
 
   .fs-file-upload-list li {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: var(--size-2);
     padding: var(--size-2) var(--size-3);
     background: var(--semantic-neutral-background);
     border-radius: var(--fs-file-upload-radius, var(--size-1));
+    /* Filnavn har sjelden mellomrom å brekke i, og knappeteksten gjentar
+       navnet. Uten dette presser raden seg bredere enn skjermen på mobil. */
+    overflow-wrap: anywhere;
+  }
+
+  /* Et flex-element kan som standard ikke bli smalere enn innholdet sitt.
+     Uten dette brekker ikke filnavnet, uansett hva vi sier over. */
+  .fs-file-upload-list li > * {
+    min-inline-size: 0;
   }
 }

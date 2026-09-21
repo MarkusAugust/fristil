@@ -1,20 +1,10 @@
 # Fristil Designsystem (POC)
 
-Fristil er en proof of concept for et rammeverksuavhengig designsystem for web.
+Fristil er en proof of concept for et rammeverksuavhengig designsystem for web. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
-Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut; nettleserens egne API-er byttes ikke ut.
+**Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.netlify.app/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
 
-Prosjektet utforsker tre kategorier som kan brukes hver for seg eller sammen:
-
-- **`css`**: klasser og tokens for styling uten JavaScript.
-- **`ramme`**: web components som kobler sammen HTML-en du selv legger inn, og tar tilgjengelighetskoblingen.
-- **`frittstaende`**: web components som bygger alt selv, for interaksjon som må holde flere deler i synk.
-
-Shadow DOM er et valg per komponent, ikke en egen kategori. Skjemafelt holder seg i vanlig DOM så `FormData` og testverktøy finner dem; innkapslede widgets som kalenderen kan skjermes.
-
-Målet er å teste retning, arkitektur og utvikleropplevelse, ikke å levere et ferdig produkt.
-
-## Viktig status
+## Status
 
 Dette er kun en proof of concept.
 
@@ -23,156 +13,66 @@ Dette er kun en proof of concept.
 - Kan bli lagt på is eller aldri bli ferdigstilt.
 - Bidrag fra andre skjer kun etter avtale med eier.
 
-## Monorepo-oversikt
+## Repoet
 
-Repoet har to workspaces:
+Bun-monorepo med to workspaces:
 
-- `designsystem`: selve pakken med tokens, CSS og komponenter.
-- `documentation`: Astro/Starlight-dokumentasjon og demoer.
+| Workspace | Pakke | Innhold |
+| --- | --- | --- |
+| `designsystem/` | `@fristil/designsystem` | tokens, CSS-komponenter, web components, temageneratoren |
+| `documentation/` | `@fristil/documentation` | Astro 6 + Starlight, demoene og sjekkene av dem |
 
-## Kom i gang med pakken
+Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som skriver markupen:
 
-Installer pakken hos en konsument:
+- `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
+- `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
+- `frittstaende/<komponent>/`: web component som eier markupen og interaksjonen, som `<fs-date-field>`.
 
-```bash
-npm install @fristil/designsystem
-```
-
-Importer tokens i appen:
-
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/sr-only.css" // valgfri: .fs-sr-only
-```
-
-`tokens.css` må lastes først, siden alle andre stilark bygger på variablene der.
-
-Du kan også bruke konkrete CSS-komponenter direkte:
-
-```js
-import "@fristil/designsystem/button.css"
-import "@fristil/designsystem/input.css"
-import "@fristil/designsystem/field.css"
-```
-
-For web components importerer du JS-modulen og registrerer elementet én gang når appen starter:
-
-```ts
-import { defineFsField } from "@fristil/designsystem/field"
-import "@fristil/designsystem/field.css"
-
-defineFsField()
-```
-
-Hvert stilark og hver komponent har sitt eget inngangspunkt, oppkalt etter komponenten:
-
-```ts
-import "@fristil/designsystem/checkbox.css"
-import { checkbox } from "@fristil/designsystem/checkbox"
-```
-
-Web-komponentene ligger under de samme navnene: `/field`, `/tabs`, `/error-summary`, `/date-field`, `/calendar`, `/popover`, `/toast` og `/suggestion`. I tillegg finnes `/tokens`, `/react`, `/react-jsx`, `/dom` og `/field-core`, og `/tailwind.css` for dem som bruker Tailwind.
-
-Hele komponent-API-et ligger i ett navnerom:
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
-<input {...fs.input({ type: "email", state: "invalid" })} />
-```
-
-Hver komponent er en funksjon som tar et valgobjekt og returnerer attributtene du sprer inn i elementet. Formen er lik for alle. Skriv `fs.` i editoren for å se hva som finnes, og `fs.button.` for å se lovlige verdier og vakten som validerer verdier utenfra.
-
-Har organisasjonen egne merkefarger, lager generatoren et helt tema av dem, med kontrasten kontrollert i begge temaer:
-
-```bash
-npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
-  --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
-```
-
-Bruker du Tailwind, importer `@fristil/designsystem/tailwind.css` og sett lagrekkefølgen `@layer theme, base, fristil, components, utilities;` først i CSS-en din. Da kan utility-klasser overstyre komponentene, og Preflight lar dem være. Se «Tailwind» i dokumentasjonen.
-
-`fs.field()` kobler ledetekst, felt, hjelpetekst og feilmelding, og deler kjerne med `<fs-field>`, så kontrakten finnes ett sted. Se «Typesikker bruk» og «Rammeverk» i dokumentasjonen. Rammeverk-siden dekker ren HTML, React, Astro og Datastar.
-
-`@fristil/designsystem/react-jsx` gir `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` typer i JSX. Uten den kjenner ikke TypeScript elementene, og attributter som `required-marker` og `help-text` er ukontrollerte strenger.
-
-Bruker du React, importer `fs` fra `@fristil/designsystem/react`. Samme kall, men `className` og `htmlFor` i returverdien. Ellers skriver React «Invalid DOM property `class`» i konsollen for hvert element. Vue, Svelte, Solid og Preact tar HTML-navnene som de er.
-
-## Slik jobber vi
-
-`master` skal alltid være grønn, så alt arbeid går gjennom en gren og en pull request. Før du sender noe fra deg, kjør det CI kjører:
-
-```bash
-bun run sjekk
-```
-
-Se [CONTRIBUTING.md](CONTRIBUTING.md) for hele flyten.
+Shadow DOM er et valg per komponent, ikke det som skiller kategoriene. Bare `<fs-calendar>` bruker det.
 
 ## Lokal utvikling
 
-Forutsetninger: Bun installert.
-
-1. Installer avhengigheter fra repo-roten:
+Forutsetning: Bun.
 
 ```bash
 bun install
+bun run build   # må kjøres én gang: dokumentasjonen leser fra designsystem/dist
+bun run dev     # dokumentasjonssiden
 ```
 
-2. Bygg `designsystem` én gang før du starter docs:
+Bygget genererer også `tokens.css` fra `tokens.ts`. Endrer du TypeScript eller tokens i pakken, kjør `bun run build` på nytt.
 
 ```bash
-bun run build
-```
-
-Dette er nødvendig fordi dokumentasjonen bruker subpath-importer som leser fra `designsystem/dist`. Bygget genererer også `tokens.css` fra `tokens.ts`.
-
-3. Kjør docs i dev-modus fra repo-roten:
-
-```bash
-bun run dev
-```
-
-4. Når du endrer TypeScript-kode eller tokens i `designsystem`, bygg pakken på nytt med `bun run build`.
-
-5. Nyttige kommandoer fra repo-roten:
-
-```bash
+bun run lint             # Biome, har siste ordet om formatering
 bun run typecheck        # tsc -b
-bun run typecheck:tests  # typesjekk av testene
-bun run test             # nettlesertester, inkludert axe
-bun run test:docs        # axe mot den bygde dokumentasjonen, begge temaer
-bun run lint             # biome check .
+bun run typecheck:tests  # testene, som tsc -b ikke leser
+bun run test             # nettlesertestene i Chromium, Firefox og WebKit
+bun run test:docs        # sjekkene mot den bygde dokumentasjonen
+bun run sjekk            # alt det over, i samme rekkefølge som CI
 ```
 
-## Pakkeinnhold
+Nettleserne hentes med `bun --filter @fristil/designsystem nettlesere`.
 
-```ts
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/sr-only.css"
+## Arbeidsflyt
 
-// CSS-komponent: stilark pluss typet hjelper
-import "@fristil/designsystem/button.css"
-import { fs } from "@fristil/designsystem"
+`master` er beskyttet og skal alltid være grønn, så alt arbeid går gjennom en gren og en pull request. Kjør `bun run sjekk` før du sender noe fra deg. Hele flyten, inkludert hvordan en versjon slippes, står i [CONTRIBUTING.md](CONTRIBUTING.md). Endringer en konsument merker, skrives inn i [designsystem/CHANGELOG.md](designsystem/CHANGELOG.md) i samme pull request.
 
-// Web component: stilark pluss registreringsfunksjon
-import "@fristil/designsystem/field.css"
-import { defineFsField } from "@fristil/designsystem/field"
-```
+## Ny komponent
 
-Tokens finnes både som CSS custom properties og TypeScript-eksporter.
+1. Lag mappa under riktig kategori, med komponenten, stilarket og en `*.browser.test.ts` ved siden av.
+2. Legg til `exports`-oppføringer i `designsystem/package.json`, både CSS og JS.
+3. Eksporter fra `designsystem/src/index.ts` hvis den skal med i `fs`.
+4. Legg stilarket inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
+5. Skriv komponentsiden under `documentation/src/content/docs/components/` og legg den i sidebaren i `documentation/astro.config.mjs`.
 
-## Legge til ny komponent
+Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
-Komponentene ligger under `designsystem/src/components/`, delt etter kategori:
-
-- `css/<komponent>/`: CSS-klasse, ingen JavaScript
-- `ramme/<komponent>/`: web component som kobler dine elementer, som `<fs-field>` og `<fs-tabs>`
-- `frittstaende/<komponent>/`: web component som bygger alt selv, som `<fs-date-field>` og `<fs-suggestion>`
-
-Husk å oppdatere `exports` i `designsystem/package.json` for nye subpaths, både CSS og JS ved behov, og å eksportere fra `designsystem/src/index.ts` hvis komponenten skal med i toppnivå-API-et. Har komponenten et eget stilark, må det også inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene på dokumentasjonssiden.
-
-To sjekker holder dette på plass, og begge kjøres av `bun run test` og `bun run test:docs`: `pakke-css.browser.test.ts` krever at stilarket ligger i laget og bare bruker `fs-`-prefikserte klasser, og `sjekk-dokumentasjon.ts` krever at komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har.
+| Sjekk | Hva den krever |
+| --- | --- |
+| `pakke-css.browser.test.ts` | Alt ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
+| `fs.browser.test.ts` | Hver bygger i `fs` gir en klasse og ingen `undefined`-attributter |
+| `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
+| `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har |
 
 ### Navnekonvensjoner
 
@@ -192,7 +92,7 @@ To sjekker holder dette på plass, og begge kjøres av `bun run test` og `bun ru
 
 **Registrer web components i en eksportert `defineFs*`-funksjon**, ikke med `@customElement`-dekoratoren. Da bestemmer konsumenten når elementet registreres, og pakken får ingen bivirkninger ved import.
 
-## Design tokens
+## Tokens
 
 `designsystem/src/tokens/tokens.ts` er den eneste fila som redigeres. `tokens.css` genereres derfra, og endringer gjort direkte i den blir overskrevet:
 
@@ -200,23 +100,19 @@ To sjekker holder dette på plass, og begge kjøres av `bun run test` og `bun ru
 bun --filter @fristil/designsystem generate
 ```
 
-Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier; de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter skal bruke det semantiske laget, så de følger med når paletten justeres.
+Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier, og de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter bruker det semantiske laget, så de følger med når paletten justeres.
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
+Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista måler Fristils egne farger.
+
 ## Tester
 
-Hver komponent har en `*.browser.test.ts` ved siden av seg, som kjøres i ekte Chromium via Playwright:
-
-```bash
-bun run test
-```
+Hver komponent har en `*.browser.test.ts` ved siden av seg, som kjøres i Chromium, Firefox og WebKit gjennom Playwright. Det er ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.
 
 Test det komponenten lover utad, altså klasser, attributter, `aria-*`-koblinger og hendelser, ikke interne detaljer.
 
-### Tilgjengelighetstester
-
-Systemet lover at tilgjengelighet er løst sentralt. Hver komponent har derfor en test som kjører axe mot WCAG 2.1 nivå A og AA:
+Hver komponent har også en tilgjengelighetstest som kjører axe mot WCAG 2.1 nivå A og AA:
 
 ```ts
 import {
@@ -225,38 +121,27 @@ import {
 	ventPaTegning,
 } from "../../../testing/a11y"
 
-describe("fs-min-komponent tilgjengelighet", () => {
-	it("har nok kontrast i alle varianter", async () => {
-		monter(`
-			<span class="fs-min-komponent">Innhold</span>
-			<span class="fs-min-komponent" data-variant="primary">Innhold</span>
-		`)
+it("har nok kontrast i alle varianter", async () => {
+	monter(`
+		<span class="fs-min-komponent">Innhold</span>
+		<span class="fs-min-komponent" data-variant="primary">Innhold</span>
+	`)
 
-		await ventPaTegning()
-		await forventIngenTilgjengelighetsbrudd()
-	})
+	await ventPaTegning()
+	await forventIngenTilgjengelighetsbrudd()
 })
 ```
 
 `monter` setter opp en flate med designsystemets sidefarger. Den delen er ikke pynt: axe regner ut kontrast ved å lete oppover etter en bakgrunnsfarge, og finner den ingen, melder den «incomplete» i stedet for å gi et svar.
 
-Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og tekst i merket. Tester du markup ingen ville skrevet, tester du ingenting.
+Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og tekst i merket. Tester du markup ingen ville skrevet, tester du ingenting. Axe fanger kontrast, manglende ledetekster og feil bruk av `aria-*`. Den fanger ikke fokushåndtering, så flytter komponenten fokus, trenger det sin egen test.
 
-Axe fanger kontrast, manglende ledetekster og feil bruk av `aria-*`. Den fanger ikke fokushåndtering. Flytter komponenten fokus, slik `fs-calendar` gjør når panelet lukkes, må det ha sin egen test.
+### Sjekkene mot dokumentasjonen
 
-### Dokumentasjonssiden
+Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
 
-Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. Dokumentasjonen for et designsystem er et produkt i seg selv, og har sin egen sjekk:
+## Dokumentasjonen
 
-```bash
-bun run build
-bun run test:docs
-```
+Teksten er på norsk (bokmål) og skal lese som om en norsk utvikler har skrevet den. Anglisismer i brødtekst oversettes, overskrifter bruker norsk stor forbokstav bare i første ord, og eksempler skal vise hvordan komponenten faktisk tas i bruk, med import, registrering og realistiske verdier.
 
-Den kjører axe mot hver bygde side i både lyst og mørkt tema.
-
-## Dokumentasjon
-
-Dokumentasjonen er på norsk og skal lese som om en norsk utvikler har skrevet den. Anglisismer i brødtekst oversettes, overskrifter bruker norsk stor forbokstav, og eksempler skal vise hvordan komponenten faktisk tas i bruk, med import, registrering og realistiske verdier.
-
-Nye komponenter trenger en side under `documentation/src/content/docs/components/` og en oppføring i sidebaren i `documentation/astro.config.mjs`.
+Levende eksempler går gjennom `Preview.astro`, som legger innholdet i en shadow root. Uten isolasjonen treffer dokumentasjonssidens egen CSS eksempelet, og du ser ikke lenger det en konsument får.

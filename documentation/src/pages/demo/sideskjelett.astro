@@ -25,6 +25,15 @@ import "@fristil/designsystem/card.css"
 import "@fristil/designsystem/badge.css"
 import "@fristil/designsystem/list.css"
 import "@fristil/designsystem/divider.css"
+
+/*
+ * Klassen fra `fs.*` må trekkes ut og slås sammen med sidens egen for hånd.
+ * Skriver du `{...fs.list()} class="min-klasse"`, skriver Astro ut begge
+ * attributtene, og nettleseren beholder den første. Den egne klassen blir
+ * altså borte uten at noe sier fra, og menyen lå lenge under hverandre i en
+ * kolonne av nettopp den grunnen.
+ */
+const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 ---
 
 <!doctype html>
@@ -39,21 +48,21 @@ import "@fristil/designsystem/divider.css"
 
 		<header class="skjelett-topp">
 			<div class="skjelett-bredde skjelett-toppinnhold">
-				<a {...fs.link()} href="#" aria-label="Eksempelkommune, til forsiden">
-					<strong>Eksempelkommune</strong>
+				<a class="skjelett-merke" href="#" aria-label="Eksempelkommune, til forsiden">
+					Eksempelkommune
 				</a>
 
 				<nav aria-label="Hovedmeny">
-					<ul {...fs.list({ variant: "plain" })} class="fs-list skjelett-meny">
-						<li><a {...fs.link()} href="#">Mine saker</a></li>
-						<li><a {...fs.link()} href="#">Søknader</a></li>
-						<li><a {...fs.link()} href="#">Kontakt oss</a></li>
+					<ul {...liste} class={`${listeKlasse} skjelett-meny`}>
+						<li><a href="#" aria-current="page">Mine saker</a></li>
+						<li><a href="#">Søknader</a></li>
+						<li><a href="#">Kontakt oss</a></li>
 					</ul>
 				</nav>
 			</div>
 		</header>
 
-		<div class="skjelett-bredde">
+		<div class="skjelett-bredde skjelett-sti">
 			<nav aria-label="Du er her">
 				<ol {...fs.breadcrumbs()}>
 					<li><a {...fs.link()} href="#">Forsiden</a></li>
@@ -73,7 +82,7 @@ import "@fristil/designsystem/divider.css"
 			<section aria-labelledby="til-behandling">
 				<h2 {...fs.heading({ size: "m" })} id="til-behandling">Til behandling</h2>
 
-				<ul {...fs.list({ variant: "plain" })} class="fs-list skjelett-saker">
+				<ul {...liste} class={`${listeKlasse} skjelett-saker`}>
 					<li>
 						<article {...fs.card()}>
 							<h3 class={fs.card.title}>Søknad om bostøtte</h3>
@@ -147,9 +156,14 @@ import "@fristil/designsystem/divider.css"
 				padding-inline: var(--size-4);
 			}
 
+			/*
+			 * Topplinja er appens merkevare, og skrives derfor uten Fristils
+			 * lenkefarge. Det er mulig fordi systemets CSS ligger i
+			 * @layer fristil: reglene her vinner uten !important.
+			 */
 			.skjelett-topp {
-				background: var(--semantic-neutral-background);
-				border-block-end: 1px solid var(--semantic-divider-30);
+				background: var(--semantic-interactive-main);
+				color: var(--semantic-interactive-contrast);
 			}
 
 			.skjelett-toppinnhold {
@@ -157,25 +171,65 @@ import "@fristil/designsystem/divider.css"
 				flex-wrap: wrap;
 				align-items: center;
 				justify-content: space-between;
-				gap: var(--size-3);
-				padding-block: var(--size-3);
+				gap: var(--size-4);
+				padding-block: var(--size-4);
+			}
+
+			/* Fargen settes, ikke arves: menyen står i en `.fs-list`, som selv
+			   setter tekstfargen, og `inherit` hadde hentet den derfra og gitt
+			   mørk tekst på den blå flaten. */
+			.skjelett-topp a {
+				color: var(--semantic-interactive-contrast);
+				text-decoration: none;
+			}
+
+			.skjelett-topp a:hover {
+				text-decoration: underline;
+			}
+
+			.skjelett-topp a:focus-visible {
+				outline: 2px solid var(--semantic-interactive-contrast);
+				outline-offset: 3px;
+			}
+
+			.skjelett-merke {
+				font-size: var(--font-size-l);
+				font-weight: 700;
+				letter-spacing: -0.01em;
 			}
 
 			.skjelett-meny {
 				display: flex;
 				flex-wrap: wrap;
-				gap: var(--size-4);
+				gap: var(--size-5);
 			}
 
 			.skjelett-meny li + li {
 				margin-block-start: 0;
 			}
 
+			/* Siden du står på markeres med strek, ikke bare med farge. */
+			.skjelett-meny [aria-current="page"] {
+				text-decoration: underline;
+				text-underline-offset: 0.35em;
+				text-decoration-thickness: 2px;
+			}
+
+			.skjelett-sti {
+				padding-block: var(--size-4) 0;
+			}
+
 			.skjelett-hoved {
 				display: flex;
 				flex-direction: column;
 				gap: var(--size-5);
-				padding-block: var(--size-6);
+				padding-block: var(--size-5) var(--size-7);
+			}
+
+			/* Overskriften og ingressen hører sammen, og skal stå tettere på
+			   hverandre enn på seksjonene under. */
+			.skjelett-hoved > h1 {
+				margin-block-end: calc(var(--size-5) * -1 + var(--size-2));
 			}
 
 			.skjelett-hoved section {
@@ -194,6 +248,7 @@ import "@fristil/designsystem/divider.css"
 			}
 
 			.skjelett-bunn {
+				margin-block-start: var(--size-6);
 				padding-block: var(--size-5);
 				background: var(--semantic-neutral-background);
 				border-block-start: 1px solid var(--semantic-divider-30);
