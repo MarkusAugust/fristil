@@ -8,7 +8,7 @@
  * `0.2.0`. Da stopper kontrollen i `publish.yml` kjøringen, men først etter at
  * taggen er dyttet opp, og en tagg som er dyttet opp må fjernes igjen.
  *
- * Kjør med: bun run versjon <neste versjon>
+ * Kjør med: bun run prepare-version <neste versjon>
  */
 
 import { join } from "node:path"
@@ -28,7 +28,7 @@ function stopp(melding: string): never {
 const nyVersjon = process.argv[2]
 
 if (!nyVersjon) {
-  stopp("Mangler versjonsnummer. Bruk: bun run versjon 0.4.0")
+  stopp("Mangler versjonsnummer. Bruk: bun run prepare-version 0.4.0")
 }
 
 if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(nyVersjon)) {
