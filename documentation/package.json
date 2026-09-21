@@ -6,7 +6,7 @@
     "dev": "bunx --bun astro dev",
     "start": "bunx --bun astro dev",
     "build": "bunx --bun astro build",
-    "test:docs": "bun scripts/sjekk-dokumentasjon.ts && bun scripts/sjekk-monster.ts && bun scripts/sjekk-mobil.ts && bun scripts/sjekk-tilgjengelighet.ts",
+    "test:docs": "bun scripts/sjekk-dokumentasjon.ts && bun scripts/sjekk-monster.ts && bun scripts/sjekk-komponentdemoer.ts && bun scripts/sjekk-mobil.ts && bun scripts/sjekk-tilgjengelighet.ts",
     "preview": "bunx --bun astro preview",
     "astro": "bunx --bun astro"
   },
