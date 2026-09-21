@@ -10,6 +10,12 @@ Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, t
 
 Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
 
+:::note[Bruk byggefunksjonen og komponenten sammen]
+`fs.suggestion()` gir deg feltet og lista, som ekte HTML. Elementet gir deg filtreringen, piltastene og antall treff, som en funksjon ikke kan gjøre. Her trenger du **begge**.
+
+Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::
+
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
@@ -53,7 +59,7 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
 </fs-suggestion>
 ```
 
-Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Server først](/server-forst/).
+Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 
