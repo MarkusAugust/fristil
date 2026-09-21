@@ -10,7 +10,7 @@ Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til 
 
 | Lager du markupen med JavaScript? | Bruk |
 | --- | --- |
-| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`fs.field()`](#som-funksjon). Da trenger du ikke elementet |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`fs.field()`](#som-funksjon). Da trenger du ikke web componenten |
 | **Nei.** En Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML | [`<fs-field>`](#som-element) |
 
 Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverandre. Forskjellen er bare om koden som lager HTML-en kan kalle en TypeScript-funksjon.
@@ -18,7 +18,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 `<fs-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
 
 :::note[Andre komponenter er ikke enten eller]
-`<fs-field>` er det eneste unntaket i systemet, fordi koblingen er markup og ikke oppførsel. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggeren **og** elementet. Se [Markup og oppførsel](/markup-og-oppforsel/#bygger-eller-element).
+`<fs-field>` er det eneste unntaket i systemet, fordi koblingen er markup og ikke oppførsel. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ## Hvorfor koblingen er vanskelig
@@ -65,7 +65,7 @@ import "@fristil/designsystem/field.css"
 defineFsField()
 ```
 
-`defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart. Flere kall er ufarlige.
+`defineFsField()` registrerer web componenten i nettleseren. Kall den én gang ved oppstart. Flere kall er ufarlige.
 
 Stilarket må importeres fordi barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
 

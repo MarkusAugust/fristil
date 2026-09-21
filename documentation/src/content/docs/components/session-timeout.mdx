@@ -24,7 +24,7 @@ defineFsSessionTimeout()
 
 De fleste komponentene i Fristil rører ikke DOM-en serveren har sendt. Denne gjør, og grunnen er at nedtellingen er klientens klokke. Tallet endrer seg hvert sekund ut fra når brukeren sist rørte tastaturet, og det er en tilstand ingen server kan sende. Å patche den over en strøm hvert sekund ville vært meningsløst.
 
-Derfor setter byggeren `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Markup og oppførsel](/markup-og-oppforsel/) for hele regelen.
+Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Markup og oppførsel](/markup-og-oppforsel/) for hele regelen.
 
 ```html
 <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"

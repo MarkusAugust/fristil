@@ -13,7 +13,7 @@ Dette gjelder like mye om appen din rendrer alt i nettleseren, server-rendrer me
 
 Ja, og det er verdt å si tydelig, fordi delingen over lett leses som noe som bare angår servere.
 
-Har du en React-app uten server i det hele tatt, lager React all markupen i nettleseren. Da kaller du byggerne der du rendrer, akkurat som du ville gjort på en server:
+Har du en React-app uten server i det hele tatt, lager React all markupen i nettleseren. Da kaller du byggefunksjonene der du rendrer, akkurat som du ville gjort på en server:
 
 ```tsx
 const felt = fs.field({ id: "epost", help: true, invalid })
@@ -23,7 +23,7 @@ const felt = fs.field({ id: "epost", help: true, invalid })
 <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
 ```
 
-Byggerne er rene funksjoner. De bryr seg ikke om hvor de kjører.
+Byggefunksjonene er rene funksjoner. De bryr seg ikke om hvor de kjører.
 
 Det eneste som endrer seg mellom rendringsmodellene er hvor ofte markupen kan bli erstattet, og det er derfor komponentene ikke får lage den:
 
@@ -38,11 +38,11 @@ I alle tre er det noe annet enn komponenten som bestemmer hva som står i DOM-en
 Med markup menes strukturen: elementene, klassene, rollene og koblingen
 mellom dem. Den lager komponenten aldri. Tilstand som endrer seg mens
 brukeren holder på, som `aria-expanded` på en åpen meny, setter komponenten,
-og de attributtene er navngitt i `data-preserve-attr` fra byggeren. Skillet
+og de attributtene er navngitt i `data-preserve-attr` fra byggefunksjonen. Skillet
 er altså ikke mellom attributt og node, men mellom det som beskriver siden og
 det som beskriver hva brukeren nettopp gjorde.
 
-## Bygger eller element?
+## Byggefunksjon eller web component?
 
 Dette er spørsmålet folk stopper på, og svaret er ulikt for én komponent enn for alle de andre.
 
@@ -52,7 +52,7 @@ Dette er spørsmålet folk stopper på, og svaret er ulikt for én komponent enn
 
 | Lager du markupen med JavaScript? | Bruk |
 | --- | --- |
-| **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`. Elementet trengs ikke |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`. Web componenten trengs ikke |
 | **Nei.** En Go-mal, en PHP-fil, en Razor-visning, en publiseringsløsning eller håndskrevet HTML | `<fs-field>` |
 
 `fs.field()` er en TypeScript-funksjon. Kan koden som lager HTML-en kalle den, er det den korteste veien: attributtene står ferdig i markupen, og nettleseren trenger ingen registrert komponent. Kan den ikke det, gjør `<fs-field>` det samme i nettleseren i stedet.
@@ -62,11 +62,11 @@ Dette er spørsmålet folk stopper på, og svaret er ulikt for én komponent enn
 De øvrige rammekomponentene gjør noe en funksjon umulig kan gjøre: de lytter på tastatur, flytter fokus og regner ut posisjon. Der bruker du **begge deler**.
 
 ```ts
-const faner = fs.tabs({ id: "sak", count: 3 })   // markupen, fra byggeren
-defineFsTabs()                                    // piltastene, fra elementet
+const faner = fs.tabs({ id: "sak", count: 3 })   // markupen, fra byggefunksjonen
+defineFsTabs()                                    // piltastene, fra komponenten
 ```
 
-| Komponent | Byggeren gir deg | Elementet gir deg |
+| Komponent | Byggefunksjonen gir deg | Komponenten gir deg |
 | --- | --- | --- |
 | `<fs-field>` | koblingen | den samme koblingen, så velg én |
 | `<fs-tabs>` | roller, `hidden`, tabbestopp | piltaster, Home og End |
@@ -74,11 +74,11 @@ defineFsTabs()                                    // piltastene, fra elementet
 | `<fs-suggestion>` | feltet og lista | filtrering, piltaster, antall treff |
 | `<fs-error-summary>` | boksen, `role="alert"`, overskriften | fokus hit, og videre til feltet |
 
-Regelen bak tabellen: **byggeren gir markup, elementet gir oppførsel.** `<fs-field>` er det eneste unntaket, og bare fordi koblingen er markup og ikke oppførsel.
+Regelen bak tabellen: **byggefunksjonen gir markup, komponenten gir oppførsel.** `<fs-field>` er det eneste unntaket, og bare fordi koblingen er markup og ikke oppførsel.
 
-### Komponenter uten bygger
+### De frittstående komponentene
 
-[`<fs-toast>`](/components/toast/), [`<fs-session-timeout>`](/components/session-timeout/) og [`<fs-connection-status>`](/components/connection-status/) har også byggere, men der gir byggeren bare et tomt element med riktige attributter. Alt innholdet lager komponenten selv, fordi det ikke finnes før brukeren har gjort noe. Se [Introduksjon](/introduksjon/#frittstående).
+[`<fs-toast>`](/components/toast/), [`<fs-session-timeout>`](/components/session-timeout/) og [`<fs-connection-status>`](/components/connection-status/) har også byggefunksjoner, men der gir de bare et tomt element med riktige attributter. Alt innholdet lager komponenten selv, fordi det ikke finnes før brukeren har gjort noe. Se [Introduksjon](/introduksjon/#frittstående).
 
 ## Problemet det løser
 
@@ -107,12 +107,12 @@ Et attributt som ikke står i serverens HTML blir fjernet. React har det samme p
 
 | Lag | Hva det er | Hvor det kjører |
 | --- | --- | --- |
-| `fs`-byggerne | Klasser, `data-*`, tilgjengelighetskoblingen | Der du lager markupen, på server eller i nettleseren |
+| `fs`-byggefunksjonene | Klasser, `data-*`, tilgjengelighetskoblingen | Der du lager markupen, på server eller i nettleseren |
 | Web-komponentene | Tastatur, fokus, posisjonering | I nettleseren, etter at HTML-en står der |
 
-De overlapper ikke. En bygger setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.
+De overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.
 
-En bygger er en ren funksjon. Du gir den et valgobjekt og får attributter tilbake:
+En byggefunksjon er en ren funksjon. Du gir den et valgobjekt og får attributter tilbake:
 
 ```ts
 import { fs } from "@fristil/designsystem"
@@ -126,7 +126,7 @@ Det er hele grunnen til at det samme API-et virker i alle tre miljøene. Ingenti
 
 ## De tre miljøene
 
-**React Server Components.** Byggerne er rene funksjoner uten klientkode. De kjører på serveren og forsvinner. Skal du bruke en web component i tillegg, kaller du `defineFs*` fra en klientkomponent.
+**React Server Components.** Byggefunksjonene er rene funksjoner uten klientkode. De kjører på serveren og forsvinner. Skal du bruke en web component i tillegg, kaller du `defineFs*` fra en klientkomponent.
 
 **TanStack Start.** Spre attributtene i JSX. React eier dem og sender dem ut likt ved hver rendring, så det er ingenting som kan komme i utakt.
 
@@ -146,13 +146,13 @@ Datastar er det strengeste av de tre. Holder markupen der, holder den overalt.
 
 Noen attributter endrer seg mens brukeren holder på. `aria-expanded` på en knapp som åpner et panel, `hidden` på et fanepanel, posisjonen på et sprettoppvindu. Det er ekte oppførsel, og komponenten må få lov.
 
-Byggerne skriver derfor ut `data-preserve-attr` med navnene på nøyaktig de attributtene komponenten kommer til å røre:
+Byggefunksjonene skriver derfor ut `data-preserve-attr` med navnene på nøyaktig de attributtene komponenten kommer til å røre:
 
 ```html
 <button aria-expanded="false" data-preserve-attr="aria-expanded">Handlinger</button>
 ```
 
-Datastar leser lista fra serverens node og lar de attributtene stå. I React og ren HTML er det et vanlig data-attributt som ikke gjør noe. Du trenger ikke tenke på det: byggeren setter det.
+Datastar leser lista fra serverens node og lar de attributtene stå. I React og ren HTML er det et vanlig data-attributt som ikke gjør noe. Du trenger ikke tenke på det: byggefunksjonen setter det.
 
 ## Når markupen ikke lages med JavaScript
 
@@ -183,7 +183,7 @@ Det gir to veier til den samme kontrakten:
 | En mal i et annet språk, eller HTML du skriver selv | `<fs-field>` og `data-preserve-attr` |
 
 Dette er et annet spørsmål enn om siden bygges på serveren. En React-app uten
-server bruker byggeren, og en statisk HTML-side bruker elementet. Om markupen
+server bruker byggefunksjonen, og en statisk HTML-side bruker web componenten. Om markupen
 kan bli sendt på nytt fra en server avgjør bare om det komponenten setter
 trenger `data-preserve-attr`.
 
@@ -195,7 +195,7 @@ To komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/int
 
 [`<fs-connection-status>`](/components/connection-status/) sier fra når forbindelsen er borte. Serveren kan ikke melde det selv: er den utilgjengelig, kommer det ingenting derfra.
 
-Begge setter `data-ignore-morph`, som ber Datastar la innholdet være. Byggerne skriver det ut, så du trenger ikke huske det.
+Begge setter `data-ignore-morph`, som ber Datastar la innholdet være. Byggefunksjonene skriver det ut, så du trenger ikke huske det.
 
 ## Det som ikke finnes
 
