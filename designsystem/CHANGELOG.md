@@ -45,6 +45,25 @@ kommer i et nytt undertall.
   hjelpeteksten eller feilmeldingen ble lest opp. Lista har nå en `help`-nøkkel,
   `error` har fått `id` og ledeteksten har fått `for`.
 
+- **`<fs-error-summary>` tar fokus hver gang boksen vises på nytt.** Den tok
+  det bare første gang. Mønsteret i en Datastar-app er at serveren sender
+  boksen skjult og bare slår `hidden` av og på, mens lista står med de samme
+  lenkene, og da nullstilte ingenting flagget. Andre gang det samme skjemaet
+  feilet, ble brukeren stående i feltet uten å få vite hvorfor innsendingen
+  ikke gikk gjennom. Flagget nullstilles nå når boksen skjules.
+
+- **`<fs-suggestion>` leser hvilket alternativ som er markert fra markupen.**
+  Komponenten holdt en egen teller ved siden av `aria-selected`. Satte
+  serveren markeringen selv med `fs.suggestion({ activeIndex })`, hoppet
+  første piltast til toppen av lista i stedet for til alternativet etter, og
+  markeringen serveren nettopp sendte var borte.
+
+- **Pil opp åpner lista, og går til det siste alternativet.** Den markerte før
+  et alternativ uten å åpne lista, så `aria-activedescendant` pekte inn i noe
+  feltet samtidig meldte som lukket, og skjermleseren leste opp et alternativ
+  som ikke sto på skjermen. Uten noe markert fra før gikk den dessuten til det
+  nest siste, ikke det siste.
+
 - **`fs.suggestion().empty` bevarer `hidden` gjennom en oppdatering.**
   Komponenten skjuler «Ingen treff» når noe passer, men elementet hadde ingen
   `data-preserve-attr`, så teksten dukket opp igjen ved hver patch, også midt

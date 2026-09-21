@@ -64,7 +64,21 @@ function morf(live: Element, markup: string): void {
   const levende = [live, ...live.querySelectorAll("*")]
   const sendte = [rot, ...rot.querySelectorAll("*")]
 
-  for (let i = 0; i < Math.min(levende.length, sendte.length); i++) {
+  if (levende.length !== sendte.length) {
+    throw new Error(
+      `Komponenten la til eller fjernet noder: ${levende.length} i siden mot ${sendte.length} fra serveren`,
+    )
+  }
+
+  for (let i = 0; i < levende.length; i++) {
+    // Uten dette kunne en komponent som setter inn en node forskyve hele
+    // sammenligningen, og testen ville stilt krav til feil elementer uten å
+    // si fra.
+    if (levende[i].tagName !== sendte[i].tagName) {
+      throw new Error(
+        `Nodene står ikke i samme rekkefølge: ${levende[i].tagName} mot ${sendte[i].tagName}`,
+      )
+    }
     morfElement(levende[i], sendte[i])
   }
 }

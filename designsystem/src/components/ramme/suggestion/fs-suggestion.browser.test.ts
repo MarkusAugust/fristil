@@ -192,3 +192,107 @@ describe("fs-suggestion", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+/**
+ * Serveren kan også bestemme hvilket alternativ som er aktivt.
+ *
+ * `fs.suggestion({ activeIndex })` skriver `aria-selected="true"` på ett av
+ * dem. Holdt komponenten en egen teller ved siden av, ville første piltast
+ * hoppe til toppen av lista i stedet for til neste alternativ, og
+ * markeringen serveren nettopp sendte var borte.
+ */
+describe("fs-suggestion med markeringen fra serveren", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  beforeEach(async () => {
+    const fra = suggestion({
+      id: "kommune",
+      count: KOMMUNER.length,
+      open: true,
+      activeIndex: 2,
+    })
+
+    monter(`
+      <fs-suggestion>
+        <label ${attr(fra.label)}>Kommune</label>
+        <div ${attr(fra.field)}>
+          <input ${attr(fra.control)} name="kommune">
+          <ul ${attr(fra.list)}>
+            ${fra.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
+          </ul>
+          <p ${attr(fra.empty)}>Ingen treff</p>
+          <span ${attr(fra.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    await tegn()
+  })
+
+  it("går videre fra det serveren markerte", async () => {
+    const felt = document.querySelector("fs-suggestion") as FsSuggestion
+    const input = felt.querySelector("input") as HTMLInputElement
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+
+    expect(valg[2].getAttribute("aria-selected")).toBe("true")
+
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+    await ventPaTegning()
+
+    expect(
+      valg[3].getAttribute("aria-selected"),
+      "piltasten hoppet ikke til alternativet etter det serveren markerte",
+    ).toBe("true")
+    expect(input.getAttribute("aria-activedescendant")).toBe(valg[3].id)
+  })
+})
+
+describe("fs-suggestion med pil opp", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  beforeEach(async () => {
+    monter(`
+      <fs-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <ul ${attr(FORSLAG.list)}>
+            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
+          </ul>
+          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    await tegn()
+  })
+
+  it("åpner lista og går til det siste alternativet", async () => {
+    const felt = document.querySelector("fs-suggestion") as FsSuggestion
+    const input = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
+    )
+    await ventPaTegning()
+
+    // Uten åpningen pekte aria-activedescendant inn i en liste feltet
+    // samtidig meldte som lukket.
+    expect(liste.hidden, "lista ble ikke åpnet").toBe(false)
+    expect(input.getAttribute("aria-expanded")).toBe("true")
+
+    const siste = valg[valg.length - 1]
+    expect(
+      siste.getAttribute("aria-selected"),
+      "pil opp gikk ikke til det siste alternativet",
+    ).toBe("true")
+    expect(input.getAttribute("aria-activedescendant")).toBe(siste.id)
+  })
+})

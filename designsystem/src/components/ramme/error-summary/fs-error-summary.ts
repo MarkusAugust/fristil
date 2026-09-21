@@ -77,9 +77,19 @@ export class FsErrorSummary extends HTMLElement {
       this.links.add(link)
     }
 
-    // Boksen er skjult av serveren når lista er tom. Er den synlig nå, og vi
-    // ikke har flyttet fokus hit ennå, er det denne innsendingen som feilet.
-    if (this.shouldFocus && !this.hasFocused && !this.hidden) {
+    // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
+    // nullstillingen tok boksen fokus bare første gang: mønsteret i en
+    // Datastar-app er at lista står med de samme lenkene hele veien og bare
+    // `hidden` slås av og på, så «har jeg flyttet fokus hit før» er ikke et
+    // svar på om dette er en ny innsending.
+    if (this.hidden) {
+      this.hasFocused = false
+      return
+    }
+
+    // Er boksen synlig nå, og vi ikke har flyttet fokus hit ennå, er det
+    // denne innsendingen som feilet.
+    if (this.shouldFocus && !this.hasFocused) {
       this.hasFocused = true
       this.focus()
     }
