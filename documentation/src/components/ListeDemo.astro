@@ -18,6 +18,32 @@ import Preview from "./Preview.astro"
 	]}
 	layout="stabel"
 	maxWidth="34rem"
+	ekstraCss={`
+		/* Oppsettet er appens, ikke systemets: Fristil gir søkefeltet,
+		   merkelappene og tabellen, mens luften mellom dem hører til siden
+		   som setter dem sammen. */
+		#demo-liste-rot {
+			display: flex;
+			flex-direction: column;
+			gap: var(--size-5);
+		}
+
+		.demo-filtre {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--size-2);
+		}
+
+		.demo-filtre h3 {
+			flex-basis: 100%;
+			margin: 0 0 var(--size-1);
+		}
+
+		#demo-last-om-igjen {
+			align-self: start;
+		}
+	`}
 >
 	<div id="demo-liste-rot">
 		<form role="search" class="fs-search-row" id="demo-sok-skjema">
@@ -31,7 +57,7 @@ import Preview from "./Preview.astro"
 			/>
 		</form>
 
-		<div role="group" aria-labelledby="demo-filtre">
+		<div role="group" aria-labelledby="demo-filtre" class="demo-filtre">
 			<h3 class="fs-heading" data-size="xs" id="demo-filtre">Status</h3>
 			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Innvilget">Innvilget</button>
 			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Under behandling">Under behandling</button>

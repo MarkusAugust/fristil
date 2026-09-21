@@ -6,3 +6,6 @@ dist
 *.tsbuildinfo
 __screenshots__
 .vitest-attachments
+
+# Lokale engangsskript for måling i nettleser, ikke del av sjekkene
+documentation/scripts/.lokal/

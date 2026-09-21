@@ -67,6 +67,37 @@ describe("fs-error-summary", () => {
     expect(tittel.textContent).toBe("Skjemaet har to feil")
   })
 
+  it("oppdaterer overskriften når antallet feil endrer seg", async () => {
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const liste = boks.querySelector("ul") as HTMLElement
+
+    liste.innerHTML = `<li><a href="#epost">Skriv en e-postadresse</a></li>`
+    boks.setAttribute("heading", "Skjemaet har én feil")
+    await tegn()
+
+    const tittel = boks.querySelector(
+      `.${"fs-error-summary__title"}`,
+    ) as HTMLElement
+
+    // Retter brukeren én av to feil, skal ikke overskriften bli stående på to.
+    expect(tittel.textContent).toBe("Skjemaet har én feil")
+  })
+
+  it("lar konsumentens egen overskrift stå", async () => {
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    boks.querySelector(".fs-error-summary__title")?.remove()
+    boks.insertAdjacentHTML(
+      "afterbegin",
+      `<h2 class="fs-error-summary__title">Vi fant noe som må rettes</h2>`,
+    )
+    boks.setAttribute("heading", "Skjemaet har én feil")
+    await tegn()
+
+    expect(boks.querySelector(".fs-error-summary__title")?.textContent).toBe(
+      "Vi fant noe som må rettes",
+    )
+  })
+
   it("gir fokus til selve feltet når en lenke følges", () => {
     const lenke = document.getElementById("lenke-epost") as HTMLElement
     lenke.click()
