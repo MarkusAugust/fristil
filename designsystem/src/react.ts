@@ -82,20 +82,28 @@ export type ReactAttributes<T> = {
       ? "htmlFor"
       : K extends "tabindex"
         ? "tabIndex"
-        : K]: T[K]
+        : K extends "autocomplete"
+          ? "autoComplete"
+          : K]: T[K]
 }
 
 /**
  * Attributtene som heter noe annet i React.
  *
- * `tabindex` kom med de sammensatte byggerne: feiloppsummeringen skal kunne
- * få fokus, og bare den valgte fanen er en tabbestopp. Uten omdøpingen
- * advarer React om hver eneste av dem.
+ * `tabindex` kom med de sammensatte byggefunksjonene, og `autocomplete` med
+ * forslagsfeltet. Uten omdøpingen advarer React om hver eneste av dem.
+ *
+ * `aria-*` og `data-*` skal derimot stå som de er. React sender dem videre
+ * uendret, og en omdøping ville gitt ugyldige attributter.
+ *
+ * Testen i `react.browser.test.ts` kaller hver byggefunksjon og krever at
+ * ingen nøkkel React staver annerledes mangler her.
  */
 const NAVN: Record<string, string> = {
   class: "className",
   for: "htmlFor",
   tabindex: "tabIndex",
+  autocomplete: "autoComplete",
 }
 
 export function toReactAttributes<T extends Record<string, unknown>>(
