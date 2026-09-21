@@ -90,9 +90,11 @@ Byggerne skriver derfor ut `data-preserve-attr` med navnene på nøyaktig de att
 
 Datastar leser lista fra serverens node og lar de attributtene stå. I React og ren HTML er det et vanlig data-attributt som ikke gjør noe. Du trenger ikke tenke på det: byggeren setter det.
 
-## Når serveren ikke kjører JavaScript
+## Når markupen ikke lages med JavaScript
 
-En Go-, PHP- eller .NET-server kan ikke kalle `fs.field()`. Da gjør `<fs-field>` koblingen på klienten i stedet, og serveren skriver lista over hva som må bevares:
+`fs.field()` er en TypeScript-funksjon. Lager du markupen med JavaScript, kaller du den, og det spiller ingen rolle hvor koden kjører: React, Astro, en Node-server eller en app helt uten server.
+
+Blir markupen til uten JavaScript, i en Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML, finnes ikke den muligheten. Da gjør `<fs-field>` den samme koblingen i nettleseren i stedet, og den som skriver malen tar med lista over hva som må bevares:
 
 ```html
 <label class="fs-label" for="epost"
@@ -109,12 +111,17 @@ kontrollen, forsvinner klassen og feilmeldingen likevel.
 Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, med én nøkkel per element
 (`label`, `control` og `error`), så du slipper å skrive dem av.
 
-Det gir to veier til den samme kontrakten, og hvilken som gjelder avhenger av serveren din:
+Det gir to veier til den samme kontrakten:
 
-| Serveren din | Bruk |
+| Hvem lager markupen | Bruk |
 | --- | --- |
-| Kjører JavaScript | `fs.field()`. Komponenten trengs ikke |
-| Kjører noe annet | `<fs-field>` og `data-preserve-attr` |
+| Kode du skriver i JavaScript | `fs.field()`. Komponenten trengs ikke |
+| En mal i et annet språk, eller HTML du skriver selv | `<fs-field>` og `data-preserve-attr` |
+
+Dette er et annet spørsmål enn om siden bygges på serveren. En React-app uten
+server bruker byggeren, og en statisk HTML-side bruker elementet. Om markupen
+kan bli sendt på nytt fra en server avgjør bare om det komponenten setter
+trenger `data-preserve-attr`.
 
 ## Komponenter som eier sitt eget innhold
 

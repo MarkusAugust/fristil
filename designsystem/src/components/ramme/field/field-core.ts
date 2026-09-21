@@ -134,12 +134,13 @@ export function computeFieldAttributes(
 /**
  * Attributtene `<fs-field>` setter, per element den rører.
  *
- * Kjører serveren JavaScript, skal den kalle `computeFieldAttributes` og
- * skrive dem selv. Da trengs verken komponenten eller denne lista. Kjører den
- * noe annet, altså Go, PHP eller .NET, gjør komponenten koblingen på klienten,
- * og da må serveren skrive lista som `data-preserve-attr` på hvert av de tre
- * elementene. Datastars morfing leser lista fra serverens node, per element,
- * så komponenten kan ikke beskytte seg selv.
+ * Lages markupen med JavaScript, skal den kalle `computeFieldAttributes` og
+ * skrive attributtene selv. Da trengs verken komponenten eller denne lista.
+ * Blir markupen til uten JavaScript, i en Go-mal eller håndskrevet HTML,
+ * gjør komponenten koblingen i nettleseren, og da må malen skrive lista som
+ * `data-preserve-attr` på hvert av de tre elementene. Datastars morfing leser
+ * lista fra serverens node, per element, så komponenten kan ikke beskytte seg
+ * selv.
  *
  * Det holder ikke å beskytte kontrollen alene. Komponenten legger også
  * `fs-label` og markeringene på ledeteksten, og skjuler feilmeldingen. Uten
