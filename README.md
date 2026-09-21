@@ -104,7 +104,7 @@ Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier, og 
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista måler Fristils egne farger.
+Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista sjekker Fristils egne farger.
 
 ## Tester
 

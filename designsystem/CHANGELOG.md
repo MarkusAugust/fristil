@@ -25,7 +25,7 @@ kommer i et nytt undertall.
   elementer serveren hadde sendt. Det virker ikke i en app med server-rendret
   HTML: Datastars morfing fjerner hvert attributt som ikke står i HTML-en
   serveren nettopp sendte, og React kan kaste bort noder et egendefinert
-  element har lagt inn i et tre React eier. Målt med ekte Datastar mistet et
+  element har lagt inn i et tre React eier. Testet med ekte Datastar mistet et
   `<fs-field>` både `aria-describedby`, klassen på ledeteksten og den skjulte
   feilmeldingen etter én patch, og fikk dem ikke tilbake.
 
@@ -37,7 +37,7 @@ kommer i et nytt undertall.
 - **`<fs-calendar>` og `<fs-date-field>` er fjernet.** Nettleserens eget panel
   i `<input type="date">` gjør jobben, og `fs.field()` sammen med
   `fs.input({ type: "date" })` gir et komplett datofelt. Mønstersiden «Dato i
-  et skjema» viser oppsettet, med de to målte forskjellene mellom nettleserne.
+  et skjema» viser oppsettet, med de to forskjellene vi har testet mellom nettleserne.
   `exports`-oppføringene `./calendar`, `./date-field` og `./date-field.css` er
   borte, og det samme er `--fs-calendar-*`- og `--fs-date-field-*`-variablene
   og alle `part`-navnene i kalenderen.
@@ -74,11 +74,11 @@ kommer i et nytt undertall.
   `reportFailure()` og `reportSuccess()` lar appen melde fra selv.
 
 - **Siden «Server først»** forklarer hvorfor markupen kommer fra serveren, med
-  målingene bak, og hva det betyr i TanStack Start, React Server Components og
+  testene bak, og hva det betyr i TanStack Start, React Server Components og
   Datastar.
 
 - **Mønstersiden «Dato i et skjema»** viser hvordan du ber om en dato uten en
-  datovelger fra oss, med de to målte forskjellene mellom nettleserne:
+  datovelger fra oss, med de to forskjellene vi har testet mellom nettleserne:
   WebKit krever skilletegnene, og Chromium tar imot feil rekkefølge som
   gyldig.
 

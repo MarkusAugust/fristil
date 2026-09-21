@@ -78,7 +78,7 @@ fs.errorSummary({ count: 2, id: "feil" })
 //   title:     { class: "fs-error-summary__title" } }
 ```
 
-Hele begrunnelsen, med målingene bak, står på [Server først](https://fristil.netlify.app/server-forst/).
+Hele begrunnelsen, med testene bak, står på [Server først](https://fristil.netlify.app/server-forst/).
 
 ## Eget fargetema
 
