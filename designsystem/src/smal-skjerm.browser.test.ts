@@ -37,6 +37,12 @@ const KOMPONENTER: [navn: string, markup: string][] = [
     `<button class="fs-button">Send søknaden om bostøtte for hele kalenderåret 2026</button>`,
   ],
   [
+    "knapp i noe som arver nowrap",
+    `<div style="white-space: nowrap">
+       <button class="fs-button">Send søknaden om bostøtte for hele kalenderåret 2026</button>
+     </div>`,
+  ],
+  [
     "to knapper ved siden av hverandre",
     `<button class="fs-button">Send søknaden nå</button>
      <button class="fs-button" data-variant="secondary">Lagre som utkast</button>`,

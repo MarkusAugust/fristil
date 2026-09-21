@@ -23,7 +23,14 @@
 
     /* Teksten får brekke. Med `white-space: nowrap` sprengte en knapp med en
        lang norsk ledetekst boksen sin på en telefon, og da ruller hele siden
-       sidelengs. Knappen skal aldri bli bredere enn plassen den får. */
+       sidelengs. Knappen skal aldri bli bredere enn plassen den får.
+
+       `normal` står eksplisitt fordi `white-space` arves: en konsument med
+       `nowrap` på noe rundt ville ellers fått problemet tilbake. Målt i
+       Chromium holder `text-wrap: balance` alene, siden den setter
+       `text-wrap-mode: wrap` og dermed slår den arvede verdien, men den
+       eksplisitte linja gjelder også der `text-wrap` ikke er støttet. */
+    white-space: normal;
     max-inline-size: 100%;
     text-align: center;
     text-wrap: balance;
