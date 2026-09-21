@@ -60,11 +60,12 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
       <input class="fs-radio" type="radio" id="radio" checked />
       <input class="fs-switch" type="checkbox" role="switch" id="bryter" checked />
       <select class="fs-select" id="liste"><option>Valg</option></select>
+      <select class="fs-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
     `)
 
     await settHoeykontrast(true)
 
-    for (const id of ["boks", "radio", "bryter", "liste"]) {
+    for (const id of ["boks", "radio", "bryter", "liste", "liste-stylet"]) {
       // `appearance: auto` gir tilbake nettleserens egen tegning, som er
       // riktig i alle temaene brukeren kan velge.
       expect(stil(id).appearance, id).toBe("auto")

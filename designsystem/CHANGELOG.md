@@ -16,6 +16,46 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.5.2 (2026-09-22)
+
+### Lagt til
+
+- **`<select>` kan tegne nedtrekkslista inne i siden.** `fs.select({ picker:
+  "styled" })` gir `data-picker="styled"`, og da bruker feltet
+  `appearance: base-select`: lista blir et vanlig element i siden i stedet for
+  et vindu fra operativsystemet, og får Fristils farger, avstander og skygge.
+  Elementet er fortsatt en helt vanlig `<select>`, så innsending, tastatur og
+  skjermleser er uendret.
+
+  Det må slås på, og det er med vilje. Chromium 148 og WebKit 26.4 har
+  `appearance: base-select`; Firefox 150 har det ikke og viser nettleserens
+  egen liste som før. Begge deler er testet i hver sin motor. I
+  høykontrastmodus faller alle tre tilbake til nettleserens egen liste, siden
+  systemfargene er de eneste som er garantert lesbare der.
+
+  Nye variabler: `--fs-select-option-padding` og
+  `--fs-select-viewport-margin`. `--fs-select-radius` gjelder nå også lista.
+
+### Rettet
+
+- **`.fs-select` snur riktig i språk som skrives fra høyre mot venstre.**
+  Feltet holdt av plass til pila si med en `padding` på fire verdier, altså
+  over, høyre, under og venstre. De to fysiske sidene snur ikke med språket,
+  så i RTL lå plassen på feil side og teksten la seg oppå pila. Plassen settes
+  nå logisk, og pila, som er to gradienter og derfor ikke har noen logisk
+  variant, speilvendes med `:dir(rtl)`. Nedtrekkslista var ikke dekket av
+  retningstesten i det hele tatt, og er det nå. En ny vaktpost i
+  `pakke-css.browser.test.ts` avviser fysiske kortformer med fire verdier i
+  alle stilark.
+
+- **`fs.setAttributes` fjerner nå `data-size` og `data-picker` igjen.** Den
+  rydder bare i en lukket liste av attributtnavn, og de to sto utenfor. En
+  avatar eller en overskrift som gikk tilbake til standardstørrelsen beholdt
+  altså `data-size` fra forrige kall, og fikk aldri standardutseendet sitt
+  igjen. En ny vaktpost kaller hver byggefunksjon med hver lovlige verdi den
+  selv oppgir, regner et attributt som valgfritt når det ikke er med i kallet
+  uten argumenter, og krever at hvert av dem lar seg fjerne.
+
 ## 0.5.1 (2026-09-21)
 
 ### Rettet

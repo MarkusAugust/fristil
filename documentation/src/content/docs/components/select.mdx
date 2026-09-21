@@ -42,6 +42,42 @@ import "@fristil/designsystem/select.css"
 
 Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da stopper `required` faktisk innsending til brukeren har valgt noe.
 
+## Listen tegnet i siden
+
+Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen CSS når inn i den. Med `data-picker="styled"` ber feltet nettleseren tegne listen inne i siden i stedet, slik at den får systemets farger, avstander og skygge.
+
+<Eksempel stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="fs-label" for="sak">Sakstype</label>
+<select class="fs-select" data-picker="styled" id="sak" name="sak">
+  <option value="">Velg sakstype</option>
+  <option value="byggesak" selected>Byggesak</option>
+  <option value="deling">Deling av eiendom</option>
+  <option value="utslipp">Utslippstillatelse</option>
+</select>
+`} />
+
+Dette er den samme `<select>`-en som før. Den sendes inn med skjemaet, leses av skjermlesere og virker med tastatur på nøyaktig samme måte, og markupen er uendret bortsett fra attributtet.
+
+Grupper laget med `<optgroup label="…">` får overskriften i mindre og dempet tekst, så den skiller seg fra valgene.
+
+Støtten er ulik mellom nettleserne, og det er grunnen til at dette må slås på:
+
+| Nettleser | Hva brukeren ser |
+| --- | --- |
+| Chrome, Edge, Safari 26 | Listen tegnes i siden, med Fristils farger |
+| Firefox | Nettleserens egen liste, som uten attributtet |
+
+Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
+
+I høykontrastmodus faller feltet tilbake til nettleserens egen liste i alle nettlesere. Systemfargene er de eneste som er garantert lesbare der.
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+fs.select({ picker: "styled" })
+// { class: "fs-select", "data-picker": "styled" }
+```
+
 ## TypeScript
 
 ```ts
@@ -52,23 +88,27 @@ const felt = document.querySelector<HTMLSelectElement>("#fylke")
 felt.addEventListener("change", () => {
   const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
 
-  fs.setAttributes(felt, fs.select({ state: tilstand }))
+  fs.setAttributes(felt, fs.select({ state: tilstand, picker: "styled" }))
 })
 ```
 
 `state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
 
+Hvert kall setter hele tilstanden. Utelater du `picker`, fjernes `data-picker` på samme måte som `data-state`, så send med de valgene feltet skal beholde.
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`. |
+| `.fs-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`, listen fra `data-picker`. |
 
-| Variabel | Standard |
-| --- | --- |
-| `--fs-select-radius` | `var(--size-1)` |
+| Variabel | Standard | Gjelder |
+| --- | --- | --- |
+| `--fs-select-radius` | `var(--size-1)` | Feltet, og listen som tegnes i siden |
+| `--fs-select-option-padding` | `var(--size-2) var(--size-3)` | Ett valg i listen som tegnes i siden |
+| `--fs-select-viewport-margin` | `var(--size-2)` | Luft mellom listen og kanten av vinduet |
 
-Pilen er to gradienter i bakgrunnen, tegnet i `--semantic-muted-foreground`, så den snur med temaet. Skal den bort, sett `background-image: none`.
+Pilen er to gradienter i bakgrunnen, tegnet i `--semantic-muted-foreground`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 

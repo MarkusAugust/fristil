@@ -305,6 +305,62 @@ await pa(
   },
 )
 
+/*
+ * Nedtrekkslista er en CSS-komponent, og har verken skyggerot eller
+ * egendefinert element å slå opp. Den har likevel noe som kan slutte å
+ * virke: `data-picker="styled"` ber nettleseren tegne lista inne i siden, og
+ * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne prøven
+ * ville en demo som åpner seg uten farger meldt grønt.
+ */
+gjeldende = "select"
+await side.goto(`http://localhost:${PORT}/components/select/`, {
+  waitUntil: "networkidle",
+})
+
+const stylet = await side.evaluate(async () => {
+  const vert = [...document.querySelectorAll("*")].find((element) =>
+    element.shadowRoot?.querySelector('select[data-picker="styled"]'),
+  )
+  const felt = vert?.shadowRoot?.querySelector(
+    'select[data-picker="styled"]',
+  ) as HTMLSelectElement | undefined
+
+  if (!felt) return { finnes: false }
+
+  felt.focus()
+  felt.showPicker()
+  await new Promise((ferdig) => setTimeout(ferdig, 300))
+
+  const liste = getComputedStyle(felt, "::picker(select)")
+  const valg = felt.querySelector("option")
+
+  return {
+    finnes: true,
+    utseende: getComputedStyle(felt).appearance,
+    apen: felt.matches(":open"),
+    flate: liste.backgroundColor,
+    hoyde: Number.parseFloat(liste.blockSize),
+    valgPadding: valg ? getComputedStyle(valg).padding : "",
+  }
+})
+
+krev(stylet.finnes, 'fant ingen demo med data-picker="styled"')
+
+// Resten sier bare «undefined» om igjen når demoen ikke finnes.
+if (stylet.finnes) {
+  krev(
+    stylet.utseende === "base-select",
+    `feltet tegnes som ${stylet.utseende}`,
+  )
+  krev(stylet.apen === true, "lista åpnet seg ikke")
+  krev(
+    stylet.flate === "rgb(255, 255, 255)",
+    `lista har flaten ${stylet.flate}`,
+  )
+  krev((stylet.hoyde ?? 0) > 40, `lista er ${stylet.hoyde} piksler høy`)
+  krev(stylet.valgPadding === "8px 12px", `et valg har ${stylet.valgPadding}`)
+}
+
 await nettleser.close()
 tjener.stop()
 
