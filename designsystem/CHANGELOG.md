@@ -16,11 +16,21 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Lagt til
+
+- `fristil overta <komponent>` kopierer kildekoden til én komponent inn i
+  prosjektet ditt, og skriver om henvisningene ut av mappa. Til bruk når
+  tilpasning gjennom CSS ikke strekker til. Kopien er din, og oppdateringer av
+  pakken rører den ikke.
+
 ### Rettet
 
 - Lista over valgte filer i `file-upload` brekker nå til flere linjer på smal
   skjerm. Raden var bredere enn en telefon når filnavnet var langt, og knappen
   «Fjern <filnavn>» ble klippet av.
+- `<fs-error-summary>` oppdaterer overskriften når `heading` endrer seg. Den
+  ble bare skrevet første gang, så en oppsummering som talte ned fra to feil
+  til én ble stående på to.
 
 ## 0.1.0 (2026-09-21)
 
