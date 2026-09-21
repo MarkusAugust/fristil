@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.2.0 (2026-09-21)
+
 ### Lagt til
 
 - `fristil overta <komponent>` kopierer kildekoden til én komponent inn i
