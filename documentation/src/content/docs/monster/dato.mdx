@@ -1,0 +1,74 @@
+---
+title: Dato i et skjema
+description: Hvorfor Fristil ikke har en datovelger, og hvordan du ber om en dato som virker overalt.
+---
+
+import DatoDemo from "../../../components/DatoDemo.astro"
+
+Fristil har ingen datovelger. Nettleseren har en, og den er bedre enn vår var.
+
+<DatoDemo />
+
+## Markupen
+
+```html
+<fs-field>
+  <label class="fs-label" for="fodselsdato">Fødselsdato</label>
+  <input class="fs-input" id="fodselsdato" name="fodselsdato" type="date"
+         min="1900-01-01" max="2026-12-31">
+  <p class="fs-help-text">Skriv datoen, eller velg den i kalenderen.</p>
+</fs-field>
+```
+
+Kjører serveren din JavaScript, skriver den attributtene selv og trenger ikke `<fs-field>`:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = fs.field({ id: "fodselsdato", help: true, invalid })
+const kontroll = fs.input({ type: "date", state: felt.state })
+```
+
+## Hvorfor ingen komponent
+
+Vi hadde en, `<fs-calendar>`, og fjernet den. Regnestykket gikk ikke opp:
+
+| Oppgave | Hvem gjør den |
+| --- | --- |
+| Åpne kalenderpanel | nettleseren |
+| Tastaturnavigasjon i panelet | nettleseren |
+| Oversettelse og ukestart | nettleseren, etter brukerens eget oppsett |
+| Gyldig intervall | `min` og `max` |
+| ISO-verdi til serveren | nettleseren |
+| Koble ledetekst, hjelpetekst og feilmelding | `fs.field()` |
+
+Det som var igjen til en egen komponent var ingenting, bortsett fra at panelet ville sett likt ut i alle nettlesere. Det er den samme avveiningen vi allerede har tatt for `<select>`: nedtrekkslista tegnes av operativsystemet, og ingen savner at den ikke gjør det.
+
+Panelet er dessuten forbigående. Det står ikke i siden, det åpner seg og lukker seg igjen.
+
+## To forskjeller mellom nettleserne du må kjenne
+
+Dette er testet i Chromium, Firefox og WebKit, ikke lest i en spesifikasjon.
+
+**WebKit krever skilletegnene.** Skriver brukeren `31052026` uten punktum, blir feltet stående tomt med `validity.badInput`, og skjemaet sender ingenting. `31.05.2026` virker. Derfor skal hjelpeteksten si hvordan datoen skrives.
+
+**Chromium tar imot feil rekkefølge som gyldig.** `20260531` ble til år 60531, og `validity.valid` var fortsatt `true`. Derfor skal `min` og `max` alltid settes. Uten dem slipper en feiltasting gjennom som en stille gal dato.
+
+## Valider på serveren
+
+```ts
+const dato = formData.get("fodselsdato")
+
+if (typeof dato !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dato)) {
+  return feil("Skriv datoen som dag, måned og år.")
+}
+```
+
+Feltet sender alltid ISO når nettleseren godtok datoen. Men `badInput` betyr at serveren får en tom streng fra noen som mente å skrive noe, og den forskjellen må appen din si fra om.
+
+## Det systemet ikke gjør
+
+- **Vi validerer ikke datoen.** `min` og `max` er nettleserens sjekk, og den kan omgås. Serveren må gjøre den om igjen.
+- **Vi oversetter ikke feilmeldingene.** Nettleserens egne bobler («Please enter a valid value») kommer på nettleserens språk. Vil du ha norsk, må du slå dem av med `novalidate` og vise `<p class="fs-error-text">` selv.
+- **Vi håndterer ikke datointervaller.** Fra og til er to felt, og at det ene må komme før det andre er appens regel.
+- **Vi har ingen datovelger du kan style.** Trenger du en kalender som ser lik ut i alle nettlesere, er det et eget prosjekt i appen din, ikke noe som ligger her.

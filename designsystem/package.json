@@ -1,6 +1,6 @@
 {
   "name": "@fristil/designsystem",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "license": "MIT",
   "author": "MarkusAugust",
@@ -20,7 +20,6 @@
     "custom-elements",
     "css",
     "design-tokens",
-    "lit",
     "accessibility",
     "universell-utforming"
   ],
@@ -45,7 +44,7 @@
     "./file-upload.css": "./src/components/css/file-upload/file-upload.css",
     "./popover.css": "./src/components/ramme/popover/popover.css",
     "./toast.css": "./src/components/frittstaende/toast/toast.css",
-    "./suggestion.css": "./src/components/frittstaende/suggestion/suggestion.css",
+    "./suggestion.css": "./src/components/ramme/suggestion/suggestion.css",
     "./checkbox.css": "./src/components/css/checkbox/checkbox.css",
     "./radio.css": "./src/components/css/radio/radio.css",
     "./switch.css": "./src/components/css/switch/switch.css",
@@ -64,7 +63,6 @@
     "./field.css": "./src/components/ramme/field/field.css",
     "./tabs.css": "./src/components/ramme/tabs/tabs.css",
     "./error-summary.css": "./src/components/ramme/error-summary/error-summary.css",
-    "./date-field.css": "./src/components/frittstaende/date-field/date-field.css",
     "./label": {
       "types": "./dist/components/css/label/label.d.ts",
       "import": "./dist/components/css/label/label.js"
@@ -89,10 +87,6 @@
       "types": "./dist/components/css/error-text/error-text.d.ts",
       "import": "./dist/components/css/error-text/error-text.js"
     },
-    "./calendar": {
-      "types": "./dist/components/frittstaende/calendar/fs-calendar.d.ts",
-      "import": "./dist/components/frittstaende/calendar/fs-calendar.js"
-    },
     "./field": {
       "types": "./dist/components/ramme/field/fs-field.d.ts",
       "import": "./dist/components/ramme/field/fs-field.js"
@@ -104,10 +98,6 @@
     "./error-summary": {
       "types": "./dist/components/ramme/error-summary/fs-error-summary.d.ts",
       "import": "./dist/components/ramme/error-summary/fs-error-summary.js"
-    },
-    "./date-field": {
-      "types": "./dist/components/frittstaende/date-field/fs-date-field.d.ts",
-      "import": "./dist/components/frittstaende/date-field/fs-date-field.js"
     },
     "./button": {
       "types": "./dist/components/css/button/button.d.ts",
@@ -151,8 +141,8 @@
       "import": "./dist/components/frittstaende/toast/fs-toast.js"
     },
     "./suggestion": {
-      "types": "./dist/components/frittstaende/suggestion/fs-suggestion.d.ts",
-      "import": "./dist/components/frittstaende/suggestion/fs-suggestion.js"
+      "types": "./dist/components/ramme/suggestion/fs-suggestion.d.ts",
+      "import": "./dist/components/ramme/suggestion/fs-suggestion.js"
     },
     "./checkbox": {
       "types": "./dist/components/css/checkbox/checkbox.d.ts",
@@ -280,7 +270,17 @@
     "./paragraph": {
       "types": "./dist/components/css/paragraph/paragraph.d.ts",
       "import": "./dist/components/css/paragraph/paragraph.js"
-    }
+    },
+    "./session-timeout": {
+      "types": "./dist/components/frittstaende/session-timeout/fs-session-timeout.d.ts",
+      "import": "./dist/components/frittstaende/session-timeout/fs-session-timeout.js"
+    },
+    "./session-timeout.css": "./src/components/frittstaende/session-timeout/session-timeout.css",
+    "./connection-status": {
+      "types": "./dist/components/frittstaende/connection-status/fs-connection-status.d.ts",
+      "import": "./dist/components/frittstaende/connection-status/fs-connection-status.js"
+    },
+    "./connection-status.css": "./src/components/frittstaende/connection-status/connection-status.css"
   },
   "files": [
     "dist",
@@ -309,9 +309,6 @@
     "sjekk:versjon": "bun scripts/sjekk-versjon.ts",
     "sjekk:pakke": "publint",
     "prepublishOnly": "bun run build"
-  },
-  "dependencies": {
-    "lit": "^3.3.3"
   },
   "devDependencies": {
     "@types/node": "24.12.4",

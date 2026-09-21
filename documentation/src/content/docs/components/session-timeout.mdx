@@ -1,0 +1,154 @@
+---
+title: Session Timeout
+description: Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+import SessionTimeoutDemo from "../../../components/SessionTimeoutDemo.astro"
+
+Dette er tingen hver store organisasjon bygger selv, og gjør feil. Enten kommer det ingen advarsel, og brukeren mister et halvutfylt søknadsskjema. Eller dialogen stjeler fokus midt i en setning. Eller skjermleseren leser nedtellingen hvert eneste sekund.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+import "@fristil/designsystem/session-timeout.css"
+
+defineFsSessionTimeout()
+```
+
+## Prøv den
+
+<SessionTimeoutDemo />
+
+## Hvorfor den eier sitt eget innhold
+
+De fleste komponentene i Fristil rører ikke DOM-en serveren har sendt. Denne gjør, og grunnen er at nedtellingen er klientens klokke. Tallet endrer seg hvert sekund ut fra når brukeren sist rørte tastaturet, og det er en tilstand ingen server kan sende. Å patche den over en strøm hvert sekund ville vært meningsløst.
+
+Derfor setter byggeren `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Server først](/server-forst/) for hele regelen.
+
+```html
+<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                    data-ignore-morph></fs-session-timeout>
+```
+
+## Attributter
+
+| Attributt | Betydning | Standard |
+| --- | --- | --- |
+| `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
+| `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
+
+Aktivitet er tastetrykk, klikk og rulling. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
+
+## Hendelser
+
+| Hendelse | Når | Hva du gjør |
+| --- | --- | --- |
+| `session-warn` | Dialogen åpner seg | Som regel ingenting |
+| `session-extend` | Brukeren velger å fortsette | Be serveren forlenge økten |
+| `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
+| `session-expired` | Tiden er ute | Send brukeren til innloggingen |
+
+Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
+
+## I en app
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                        data-ignore-morph></fs-session-timeout>
+
+    <script type="module">
+      import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+      defineFsSessionTimeout()
+
+      const okt = document.querySelector("fs-session-timeout")
+
+      okt.addEventListener("session-extend", async () => {
+        await fetch("/api/forleng-okt", { method: "POST" })
+      })
+
+      okt.addEventListener("session-expired", () => {
+        location.href = "/logg-inn?arsak=utlopt"
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { useEffect, useRef } from "react"
+    import { fs } from "@fristil/designsystem"
+    import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+
+    defineFsSessionTimeout()
+
+    export function Okt() {
+      const ref = useRef<HTMLElement>(null)
+
+      useEffect(() => {
+        const element = ref.current
+        if (!element) return
+
+        const forleng = () => fetch("/api/forleng-okt", { method: "POST" })
+        const utlopt = () => { location.href = "/logg-inn?arsak=utlopt" }
+
+        element.addEventListener("session-extend", forleng)
+        element.addEventListener("session-expired", utlopt)
+        return () => {
+          element.removeEventListener("session-extend", forleng)
+          element.removeEventListener("session-expired", utlopt)
+        }
+      }, [])
+
+      return <fs-session-timeout ref={ref} {...fs.sessionTimeout({ warnAt: 1500, expiresAt: 1800 })} />
+    }
+    ```
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                        data-ignore-morph
+                        data-on:session-extend="@post('/api/forleng-okt')"
+                        data-on:session-expired="window.location = '/logg-inn?arsak=utlopt'">
+    </fs-session-timeout>
+    ```
+
+    `data-ignore-morph` er nødvendig her. Uten den forsvinner dialogen i det serveren patcher området rundt.
+  </TabItem>
+</Tabs>
+
+## Tilgjengelighet
+
+Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
+
+Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
+
+- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
+- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
+- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-session-timeout` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
+| `.fs-session-timeout__dialog` | Selve dialogen |
+| `.fs-session-timeout__title` | Overskriften |
+| `.fs-session-timeout__text` | Avsnittet med nedtellingen i |
+| `.fs-session-timeout__count` | Tallet som teller ned |
+| `.fs-session-timeout__actions` | Raden med knapper |
+
+Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve:
+
+| Variabel | Reserve |
+| --- | --- |
+| `--fs-session-timeout-width` | `26rem` |
+| `--fs-session-timeout-padding` | `var(--size-5)` |
+| `--fs-session-timeout-radius` | `var(--size-1)` |
+
+```css
+.fs-session-timeout__dialog {
+  --fs-session-timeout-width: 32rem;
+}
+```

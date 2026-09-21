@@ -1,0 +1,21 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-okt" stiler={["session-timeout", "button", "sr-only"]} maxWidth="34rem">
+	<p class="fs-paragraph">
+		Her er økten satt til fem sekunder, så du slipper å vente i 25 minutter.
+		Slutt å røre tastaturet og musa, så kommer varselet.
+	</p>
+	<fs-session-timeout
+		class="fs-session-timeout"
+		warn-at="5"
+		expires-at="65"
+		data-ignore-morph></fs-session-timeout>
+</Preview>
+
+<script>
+	import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+
+	defineFsSessionTimeout()
+</script>

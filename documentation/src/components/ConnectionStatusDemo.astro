@@ -1,0 +1,28 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-samband" stiler={["connection-status", "button"]} maxWidth="34rem">
+	<div class="demo-samband-knapper">
+		<button class="fs-button" id="demo-samband-av" type="button">Simuler at kallet feiler</button>
+		<button class="fs-button" data-variant="secondary" id="demo-samband-pa" type="button">Simuler at det virker igjen</button>
+	</div>
+	<fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+</Preview>
+
+<script>
+	import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+
+	defineFsConnectionStatus()
+
+	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	const flate = document.getElementById("demo-samband")?.shadowRoot
+	const status = flate?.querySelector("fs-connection-status")
+
+	flate?.getElementById("demo-samband-av")?.addEventListener("click", () => {
+		status?.reportFailure()
+	})
+	flate?.getElementById("demo-samband-pa")?.addEventListener("click", () => {
+		status?.reportSuccess()
+	})
+</script>

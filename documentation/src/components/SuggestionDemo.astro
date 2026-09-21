@@ -1,20 +1,29 @@
 ---
+import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
+
+const kommuner = ["Bergen", "Bodø", "Oslo", "Stavanger", "Tromsø", "Trondheim"]
+
+// Serveren skriver feltet og lista. Komponenten filtrerer og tar tastaturet.
+const forslag = fs.suggestion({
+  id: "demo-kommune",
+  count: kommuner.length,
+  help: true,
+})
 ---
 
-<Preview id="demo-suggestion" stiler={["suggestion"]} maxWidth="30rem">
-	<fs-suggestion
-		label="Kommune"
-		name="kommune"
-		placeholder="Begynn å skrive"
-		help-text="Vi fyller ut resten av adressen for deg."
-	>
-		<option>Bergen</option>
-		<option>Bodø</option>
-		<option>Oslo</option>
-		<option>Stavanger</option>
-		<option>Tromsø</option>
-		<option>Trondheim</option>
+<Preview id="demo-suggestion" stiler={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
+	<fs-suggestion>
+		<label {...forslag.label}>Kommune</label>
+		<div {...forslag.field}>
+			<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
+			<ul {...forslag.list}>
+				{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+			</ul>
+			<p class="fs-suggestion__empty" hidden>Ingen treff</p>
+			<span {...forslag.status}></span>
+		</div>
+		<p class="fs-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
 	</fs-suggestion>
 </Preview>
 

@@ -1,0 +1,33 @@
+@layer fristil {
+  fs-connection-status {
+    display: contents;
+  }
+
+  .fs-connection-status__bar {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: var(--fs-connection-status-layer, 1000);
+    padding: var(--fs-connection-status-padding, var(--size-2) var(--size-4));
+    font-size: var(--font-size-s);
+    line-height: 1.4;
+    text-align: center;
+    color: var(--semantic-danger-foreground);
+    background: var(--semantic-danger-background);
+    border-block-end: 1px solid var(--semantic-danger-foreground);
+  }
+
+  .fs-connection-status__bar[data-state="online"] {
+    color: var(--semantic-success-foreground);
+    background: var(--semantic-success-background);
+    border-block-end-color: var(--semantic-success-foreground);
+  }
+
+  /* Høykontrastmodus fjerner egne farger og bakgrunner. Uten en ramme ville
+     linja vært usynlig, og det er nettopp den som sier at noe er galt. */
+  @media (forced-colors: active) {
+    .fs-connection-status__bar {
+      border: 2px solid CanvasText;
+    }
+  }
+}

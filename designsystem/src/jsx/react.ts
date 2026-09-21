@@ -51,35 +51,31 @@ type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
   "described-by"?: string
 }
 
-type FsTabsAttributes = HTMLAttributes<HTMLElement> & {
-  /** Indeksen på fanen som er valgt. */
-  selected?: number
-  /** Tekst som sier hva fanene velger mellom. */
-  label?: string
-}
+/**
+ * `<fs-tabs>` har ingen attributter.
+ *
+ * Hvilken fane som er valgt står i markupen serveren sendte, som
+ * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det
+ * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
+ * hver sin ting.
+ */
+type FsTabsAttributes = HTMLAttributes<HTMLElement>
 
 type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
-  /** Overskriften over lista med feil. */
-  heading?: string
-  /** Flytt fokus hit når boksen kommer til syne. */
-  autofocus?: Flag
+  /**
+   * Flytt fokus hit når boksen kommer til syne. Standard: på.
+   * Sett `"false"` for å la være.
+   */
+  autofocus?: "false"
 }
 
 type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
-  label?: string
-  value?: string
-  name?: string
-  placeholder?: string
-  "help-text"?: string
-  "error-text"?: string
-  "control-id"?: string
-  "described-by"?: string
-  "no-results-text"?: string
-  invalid?: Flag
-  required?: Flag
-  optional?: Flag
-  disabled?: Flag
-  open?: Flag
+  /**
+   * Slår av filtreringen på klienten. Bruk den når serveren sender lista på
+   * nytt mens brukeren skriver, som i en Datastar-app: da er det serveren som
+   * bestemmer hva som vises.
+   */
+  "server-filtered"?: Flag
 }
 
 type FsPopoverAttributes = HTMLAttributes<HTMLElement> & {
@@ -88,36 +84,25 @@ type FsPopoverAttributes = HTMLAttributes<HTMLElement> & {
   placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
 }
 
+type FsSessionTimeoutAttributes = HTMLAttributes<HTMLElement> & {
+  /** Sekunder uten aktivitet før varselet kommer. */
+  "warn-at"?: number
+  /** Sekunder uten aktivitet før økten er ute. */
+  "expires-at"?: number
+}
+
+type FsConnectionStatusAttributes = HTMLAttributes<HTMLElement> & {
+  /** Teksten når forbindelsen er borte. */
+  "offline-text"?: string
+  /** Teksten når den kommer tilbake. */
+  "online-text"?: string
+}
+
 type FsToastAttributes = HTMLAttributes<HTMLElement> & {
   /** Millisekunder før meldingene forsvinner. */
   duration?: number
   /** Tekst som sier hva regionen er. */
   label?: string
-}
-
-type FsCalendarAttributes = HTMLAttributes<HTMLElement> & {
-  /** Valgt dato som `ÅÅÅÅ-MM-DD`. */
-  value?: string
-  open?: Flag
-  disabled?: Flag
-  "trigger-hidden"?: Flag
-}
-
-type FsDateFieldAttributes = HTMLAttributes<HTMLElement> & {
-  label?: string
-  /** Datoen som `ÅÅÅÅ-MM-DD`, alltid ISO. */
-  value?: string
-  name?: string
-  placeholder?: string
-  "help-text"?: string
-  "error-text"?: string
-  "control-id"?: string
-  "described-by"?: string
-  invalid?: Flag
-  required?: Flag
-  optional?: Flag
-  disabled?: Flag
-  readonly?: Flag
 }
 
 declare module "react" {
@@ -128,19 +113,19 @@ declare module "react" {
       "fs-popover": FsPopoverAttributes
       "fs-suggestion": FsSuggestionAttributes
       "fs-tabs": FsTabsAttributes
+      "fs-session-timeout": FsSessionTimeoutAttributes
+      "fs-connection-status": FsConnectionStatusAttributes
       "fs-toast": FsToastAttributes
-      "fs-calendar": FsCalendarAttributes
-      "fs-date-field": FsDateFieldAttributes
     }
   }
 }
 
 export type {
-  FsCalendarAttributes,
-  FsDateFieldAttributes,
+  FsConnectionStatusAttributes,
   FsErrorSummaryAttributes,
   FsFieldAttributes,
   FsPopoverAttributes,
+  FsSessionTimeoutAttributes,
   FsSuggestionAttributes,
   FsTabsAttributes,
   FsToastAttributes,

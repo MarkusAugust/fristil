@@ -6,6 +6,8 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { attr } from "../../../testing/markup"
+import { computeFieldAttributes } from "./field-core"
 import { defineFsField, type FsField } from "./fs-field"
 import "../../../tokens/tokens.css"
 import "./field.css"
@@ -71,8 +73,9 @@ describe("fs-field", () => {
     await Promise.resolve()
 
     const error = document.querySelector(".fs-error-text") as HTMLElement
+    // `hidden` alene: et skjult element er allerede ute av
+    // tilgjengelighetstreet, og `aria-hidden` ga hydreringsfeil i React.
     expect(error.hidden).toBe(true)
-    expect(error.getAttribute("aria-hidden")).toBe("true")
 
     const field = document.querySelector("fs-field") as FsField
     field.invalid = true
@@ -80,7 +83,6 @@ describe("fs-field", () => {
     await Promise.resolve()
 
     expect(error.hidden).toBe(false)
-    expect(error.getAttribute("aria-hidden")).toBe("false")
   })
 
   it("applies required marker and optional marker on label", async () => {
@@ -177,5 +179,69 @@ describe("fs-field ledetekst", () => {
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.classList.contains("fs-label")).toBe(true)
     expect(getComputedStyle(label, "::after").content).toContain("valgfri")
+  })
+})
+
+describe("fs-field krangler ikke med serveren", () => {
+  /**
+   * Demoappene fanget dette, ikke enhetstestene.
+   *
+   * Skrev serveren feltet med `fs.field()`, regnet komponenten ut sitt eget
+   * svar fra attributtene på verten, fant ingen `invalid` og ingen
+   * `required-marker`, og fjernet det serveren nettopp hadde skrevet. I React
+   * ble det en hydreringsfeil, i Datastar en feilmelding som dukket opp på et
+   * gyldig felt ved neste patch.
+   *
+   * Komponenten leser derfor tilstanden fra markupen, ikke fra et parallelt
+   * attributt.
+   */
+  it("lar attributtene serveren skrev stå", async () => {
+    const felt = computeFieldAttributes({
+      id: "epost",
+      help: true,
+      error: true,
+      invalid: true,
+      required: "symbol",
+    })
+
+    monter(`
+      <fs-field>
+        <label ${attr(felt.label)}>E-postadresse</label>
+        <input class="fs-input" type="email" ${attr(felt.control)} />
+        <p class="fs-help-text" ${attr(felt.help)}>Vi sender kvittering hit.</p>
+        <p class="fs-error-text" ${attr(felt.error)}>Skriv en gyldig adresse.</p>
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const input = document.getElementById("epost") as HTMLInputElement
+    const label = document.querySelector("label") as HTMLLabelElement
+    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(input.getAttribute("aria-describedby")).toBe(
+      "epost-help epost-error",
+    )
+    expect(label.getAttribute("data-required")).toBe("symbol")
+    expect(feilmelding.hidden).toBe(false)
+  })
+
+  it("setter ikke aria-hidden på feilmeldingen", async () => {
+    // `hidden` tar den allerede ut av tilgjengelighetstreet, og et attributt
+    // serveren ikke skriver gir hydreringsfeil i React.
+    monter(`
+      <fs-field>
+        <label>E-postadresse</label>
+        <input class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig adresse.</p>
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+    expect(feilmelding.hidden).toBe(true)
+    expect(feilmelding.hasAttribute("aria-hidden")).toBe(false)
   })
 })

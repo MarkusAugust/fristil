@@ -38,7 +38,14 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
+import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
+import { sessionTimeout } from "./components/frittstaende/session-timeout/session-timeout.js"
+import { toast } from "./components/frittstaende/toast/toast.js"
+import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
 import { computeFieldAttributes } from "./components/ramme/field/field-core.js"
+import { popover } from "./components/ramme/popover/popover.js"
+import { suggestion } from "./components/ramme/suggestion/suggestion.js"
+import { tabs } from "./components/ramme/tabs/tabs.js"
 import { setAttributes } from "./dom.js"
 
 /**
@@ -71,9 +78,19 @@ export const fs = {
   button,
   card,
   checkbox,
+  /**
+   * Linja som sier fra at forbindelsen til serveren er borte. Serveren kan
+   * ikke melde det selv, så `<fs-connection-status>` eier innholdet.
+   */
+  connectionStatus,
   dialog,
   divider,
   errorText,
+  /**
+   * Feiloppsummeringen over et skjema. Serveren skriver hele boksen, også
+   * overskriften, og `<fs-error-summary>` flytter bare fokus.
+   */
+  errorSummary,
   /**
    * Kobler sammen ledetekst, felt, hjelpetekst og feilmelding.
    *
@@ -102,16 +119,41 @@ export const fs = {
   list,
   pagination,
   paragraph,
+  /**
+   * Knappen og panelet i et sprettoppvindu. `<fs-popover>` regner ut
+   * posisjonen, serveren skriver koblingen.
+   */
+  popover,
   radio,
   search,
   select,
+  /**
+   * Varselet om at innlogget økt går ut. Nedtellingen er klientens klokke,
+   * så `<fs-session-timeout>` eier innholdet.
+   */
+  sessionTimeout,
   skeleton,
   skipLink,
   spinner,
   /** Tekst bare skjermlesere skal få. Krever `sr-only.css`. */
   srOnly,
+  /**
+   * Feltet og forslagslista. `<fs-suggestion>` tar tastaturet og
+   * filtreringen, serveren skriver markupen.
+   */
+  suggestion,
   /** Av og på. Heter `switchControl` når du importerer den direkte. */
   switch: switchControl,
+  /**
+   * Fanerad med paneler. Serveren skriver rollene og skjuler panelene som
+   * ikke er valgt, `<fs-tabs>` tar piltastene.
+   */
+  tabs,
+  /**
+   * Varselregionen. Setter `data-ignore-morph`, fordi `<fs-toast>` lager og
+   * fjerner sine egne meldinger inni den.
+   */
+  toast,
   toggleGroup,
   tooltip,
   table,

@@ -26,9 +26,9 @@ Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier 
 
 - `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
 - `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
-- `frittstaende/<komponent>/`: web component som eier markupen og interaksjonen, som `<fs-date-field>`.
+- `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-session-timeout>`.
 
-Shadow DOM er et valg per komponent, ikke det som skiller kategoriene. Bare `<fs-calendar>` bruker det.
+Ingen komponent bruker shadow DOM. Kategorien sier hvem som eier DOM-en mens siden lever: serveren, eller komponenten. Se `.claude/CLAUDE.md`.
 
 ## Lokal utvikling
 
@@ -78,10 +78,10 @@ Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 | Ting | Form | Eksempel |
 | --- | --- | --- |
-| CSS-klasse | `fs-` + kebab-case | `fs-date-field` |
-| Egendefinert element | `fs-` + kebab-case | `<fs-date-field>` |
-| Klasse | `Fs` + PascalCase | `FsDateField` |
-| Registreringsfunksjon | `defineFs` + PascalCase | `defineFsDateField()` |
+| CSS-klasse | `fs-` + kebab-case | `fs-session-timeout` |
+| Egendefinert element | `fs-` + kebab-case | `<fs-session-timeout>` |
+| Klasse | `Fs` + PascalCase | `FsSessionTimeout` |
+| Registreringsfunksjon | `defineFs` + PascalCase | `defineFsSessionTimeout()` |
 | Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_DATE_FIELD_TAG` |
 | Variant | `data-variant` | `data-variant="secondary"` |
 | Tilstand | `data-state` | `data-state="invalid"` |
@@ -104,7 +104,7 @@ Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier, og 
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista måler Fristils egne farger.
+Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista sjekker Fristils egne farger.
 
 ## Tester
 
