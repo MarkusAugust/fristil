@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.5.0 (2026-09-21)
+
 ### Brytende
 
 - **Serveren skriver markupen, komponentene fester bare oppførsel.** Seks
