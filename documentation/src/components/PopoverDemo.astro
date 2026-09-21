@@ -1,15 +1,33 @@
 ---
+import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
+
+// Serveren skriver koblingen: aria-controls på knappen, klassen og popover
+// på panelet. Komponenten regner ut posisjonen og lukker ved klikk utenfor.
+const boks = fs.popover({ id: "demo-popover-panel" })
+const handlinger = [
+  "Arkiver saken",
+  "Last ned som PDF",
+  "Del med saksbehandler",
+]
 ---
 
 <Preview id="demo-popover" stiler={["popover", "button", "list"]} maxWidth="30rem">
-	<fs-popover placement="bottom-start">
-		<button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+	<fs-popover placement="bottom-start" {...boks.host}>
+		<button {...boks.trigger} {...fs.button({ variant: "secondary" })} type="button">
+			Handlinger
+		</button>
 
-		<ul class="fs-list" data-variant="plain">
-			<li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-			<li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
-			<li><button class="fs-button" data-variant="ghost" type="button">Del med saksbehandler</button></li>
+		<ul {...boks.panel} data-variant="plain">
+			{
+				handlinger.map((tekst) => (
+					<li>
+						<button class="fs-button" data-variant="ghost" type="button">
+							{tekst}
+						</button>
+					</li>
+				))
+			}
 		</ul>
 	</fs-popover>
 </Preview>

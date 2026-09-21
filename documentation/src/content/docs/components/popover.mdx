@@ -24,28 +24,40 @@ defineFsPopover()
 
 <PopoverDemo />
 
-```html
-<fs-popover placement="bottom-end">
-  <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+```ts
+const boks = fs.popover({ id: "handlinger" })
+```
 
-  <ul class="fs-list" data-variant="plain">
+```html
+<fs-popover placement="bottom-end" data-preserve-attr="open">
+  <button slot="trigger" class="fs-button" data-variant="secondary"
+          aria-expanded="false" aria-controls="handlinger"
+          data-preserve-attr="aria-expanded">Handlinger</button>
+
+  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
+      data-preserve-attr="style">
     <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
     <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
   </ul>
 </fs-popover>
 ```
 
-Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten setter `aria-expanded` og `aria-controls` på knappen, så skjermleseren sier om panelet er åpent.
+Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet.
+
+Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter bare to ting: `aria-expanded` når brukeren åpner, og posisjonen mot knappen. Begge står i `data-preserve-attr`, ellers river en oppdatering fra serveren dem bort. Se [Server først](/server-forst/).
 
 ## I en app
 
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <fs-popover id="handlinger" placement="bottom-end">
-      <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+    <fs-popover id="meny" placement="bottom-end" data-preserve-attr="open">
+      <button slot="trigger" class="fs-button" data-variant="secondary"
+              aria-expanded="false" aria-controls="handlinger"
+              data-preserve-attr="aria-expanded">Handlinger</button>
 
-      <ul class="fs-list" data-variant="plain">
+      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
+          data-preserve-attr="style">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -55,7 +67,7 @@ Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten
       import { defineFsPopover } from "@fristil/designsystem/popover"
       defineFsPopover()
 
-      const meny = document.getElementById("handlinger")
+      const meny = document.getElementById("meny")
 
       // Lukk menyen når en handling er valgt
       meny.addEventListener("click", (hendelse) => {
@@ -80,6 +92,7 @@ Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten
 
     export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
       const meny = useRef<HTMLElement & { hide(): void }>(null)
+      const boks = fs.popover({ id: "handlinger" })
 
       const velg = (handling: () => void) => () => {
         handling()
@@ -87,12 +100,12 @@ Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten
       }
 
       return (
-        <fs-popover ref={meny} placement="bottom-end">
-          <button slot="trigger" {...fs.button({ variant: "secondary" })}>
+        <fs-popover ref={meny} placement="bottom-end" {...boks.host}>
+          <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>
             Handlinger
           </button>
 
-          <ul {...fs.list({ variant: "plain" })}>
+          <ul {...boks.panel} data-variant="plain">
             <li>
               <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
                 Arkiver saken
@@ -110,12 +123,14 @@ Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten
     ```astro
     ---
     import { fs } from "@fristil/designsystem"
+
+    const boks = fs.popover({ id: "handlinger" })
     ---
 
-    <fs-popover placement="bottom-end">
-      <button slot="trigger" {...fs.button({ variant: "secondary" })}>Handlinger</button>
+    <fs-popover placement="bottom-end" {...boks.host}>
+      <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
 
-      <ul {...fs.list({ variant: "plain" })}>
+      <ul {...boks.panel} data-variant="plain">
         <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
         <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
       </ul>
@@ -127,19 +142,23 @@ Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten
     </script>
     ```
 
-    Er handlingene lenker, virker menyen også før skriptet er lastet: innholdet ligger i sidekilden, og lenkene kan følges.
+    Er handlingene lenker, ligger de i sidekilden og kan følges av en søkemotor. Selve panelet er skjult av `popover` til komponenten åpner det.
   </TabItem>
   <TabItem label="Datastar">
     ```html
     <div data-signals="{apen: false}">
       <fs-popover
         placement="bottom-end"
+        data-preserve-attr="open"
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
-        <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+        <button slot="trigger" class="fs-button" data-variant="secondary"
+                aria-expanded="false" aria-controls="handlinger"
+                data-preserve-attr="aria-expanded">Handlinger</button>
 
-        <ul class="fs-list" data-variant="plain">
+        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
+            data-preserve-attr="style">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
