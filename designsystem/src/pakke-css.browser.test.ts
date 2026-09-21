@@ -82,6 +82,30 @@ describe("stilarkene pakken sender ut", () => {
     expect(uprefiksert).toEqual([])
   })
 
+  /*
+   * Komponentene skal speilvende seg selv i språk som skrives høyre mot
+   * venstre. Det krever logiske egenskaper hele veien: `margin-inline-start`
+   * framfor `margin-left`. En enkelt `padding-left` er nok til at en
+   * komponent står feil, og det synes ikke før noen bytter språk.
+   *
+   * `background-position` har ingen logisk variant, og snus med `:dir(rtl)`.
+   */
+  it.each(
+    filer,
+  )("%s bruker logiske egenskaper, ikke venstre og høyre", (_navn, source) => {
+    const fysiske = [
+      ...onlyRules(source).matchAll(
+        /(?:^|[\s;{])((?:margin|padding|border)-(?:left|right)|left|right|text-align)\s*:\s*([^;}]+)/g,
+      ),
+    ]
+      .filter(([, egenskap, verdi]) =>
+        egenskap === "text-align" ? /\b(left|right)\b/.test(verdi) : true,
+      )
+      .map(([, egenskap]) => egenskap)
+
+    expect([...new Set(fysiske)]).toEqual([])
+  })
+
   it.each(filer)("%s navngir klassene i kebab-case", (_navn, source) => {
     const feilform = classNames(source).filter(
       (name) =>

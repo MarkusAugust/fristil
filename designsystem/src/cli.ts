@@ -113,7 +113,8 @@ async function overta(argumenter: string[]): Promise<void> {
   if (!navn || !komponenter.has(navn)) {
     console.error(
       (navn ? `Fant ingen komponent som heter «${navn}».\n\n` : "") +
-        `Bruk: fristil overta <komponent> [--ut=<mappe>]\n\n` +
+        `Bruk: fristil overta <komponent> [--ut=<mappe>]\n` +
+        `Hele oversikten: fristil --hjelp\n\n` +
         `Komponenter:\n  ${[...komponenter.keys()].sort().join(", ")}\n`,
     )
     process.exit(1)
@@ -198,7 +199,49 @@ async function overta(argumenter: string[]): Promise<void> {
   console.error(`${linjer.join("\n")}\n`)
 }
 
+/** Det kommandoen kan, skrevet ut på én skjerm. */
+const HJELP = `fristil <kommando>
+
+  overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet
+    --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
+    --overskriv=ja     Skriv over en kopi som finnes fra før
+
+  tema                 Lager et fargetema av merkefargene dine
+    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd)
+    --fare=<farge>        Feil og sletting (påkrevd)
+    --suksess=<farge>     Bekreftelser (påkrevd)
+    --advarsel=<farge>    Advarsler (påkrevd)
+    --noytral=<farge>     Tekst og flater
+    --besokt=<farge>      Besøkte lenker
+    --ut=<fil>            Skriv til fil i stedet for til utdata
+
+Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
+fra en JSON-fil: fristil tema fristil.tema.json
+
+Eksempler:
+  npx @fristil/designsystem overta button --ut=src/ui
+  npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
+    --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
+`
+
+const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
+const KOMMANDOER = new Set(["overta", "tema"])
+
 const argumenter = process.argv.slice(2)
+
+// Uten argumenter, eller når noen ber om hjelp, skal kommandoen fortelle hva
+// den kan. Før sto den rett inn i temakommandoen og klaget over manglende
+// farger, uten å nevne at «overta» fantes.
+if (argumenter.length === 0 || HJELPEFLAGG.has(argumenter[0])) {
+  console.log(HJELP)
+  process.exit(0)
+}
+
+// En ukjent kommando ble lest som et filnavn, og ga et stakkspor fra Node.
+if (!KOMMANDOER.has(argumenter[0]) && !argumenter[0].startsWith("--")) {
+  console.error(`Ukjent kommando «${argumenter[0]}».\n\n${HJELP}`)
+  process.exit(1)
+}
 
 if (argumenter[0] === "overta") {
   await overta(argumenter.slice(1))
@@ -211,9 +254,31 @@ const { flagg, filer } = lesArgumenter(
   argumenter[0] === "tema" ? argumenter.slice(1) : argumenter,
 )
 
-const fraFil = filer[0]
-  ? (JSON.parse(await readFile(filer[0], "utf8")) as Record<string, string>)
-  : {}
+async function lesTemafil(sti: string): Promise<Record<string, string>> {
+  let innhold: string
+
+  try {
+    innhold = await readFile(sti, "utf8")
+  } catch {
+    console.error(
+      `Fant ikke fila «${sti}».\n\n` +
+        "Oppgi en JSON-fil med fargene, eller sett dem som flagg. " +
+        "Se `fristil --hjelp`.\n",
+    )
+    process.exit(1)
+  }
+
+  try {
+    return JSON.parse(innhold) as Record<string, string>
+  } catch (grunn) {
+    console.error(
+      `«${sti}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
+    )
+    process.exit(1)
+  }
+}
+
+const fraFil = filer[0] ? await lesTemafil(filer[0]) : {}
 
 const input: Partial<ThemeInput> = {}
 for (const [norsk, engelsk] of Object.entries(NØKLER)) {
@@ -238,7 +303,8 @@ if (mangler.length > 0) {
   console.error(
     `Mangler farger: ${norske.join(", ")}\n\n` +
       "Eksempel:\n  npx @fristil/designsystem tema --interaktiv=#7c3aed" +
-      " --fare=#b3261e --suksess=#2b6940 --advarsel=#8a5a00\n",
+      " --fare=#b3261e --suksess=#2b6940 --advarsel=#8a5a00\n\n" +
+      "Hele oversikten: fristil --hjelp\n",
   )
   process.exit(1)
 }
