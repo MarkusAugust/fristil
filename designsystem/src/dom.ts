@@ -18,6 +18,8 @@ const SYSTEM_ATTRIBUTES = [
   "data-variant",
   "data-state",
   "data-color",
+  "data-size",
+  "data-picker",
   "data-required",
   "data-optional",
   "aria-invalid",

@@ -130,3 +130,54 @@ describe("fs-error-summary i en skyggerot", () => {
     vert.remove()
   })
 })
+
+/**
+ * Andre gang det samme skjemaet feiler.
+ *
+ * Mønsteret i en Datastar-app er at serveren sender boksen skjult og bare tar
+ * bort `hidden` når noe er galt. Lista står da med de samme lenkene hele
+ * veien, og komponenten kan ikke bruke «har jeg flyttet fokus hit før» som
+ * svar på om dette er en ny innsending.
+ */
+describe("fs-error-summary når skjemaet feiler igjen", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  beforeEach(async () => {
+    monter(`
+      <fs-error-summary ${attr(FEIL.container)} hidden>
+        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
+        <ul>
+          <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
+          <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+        </ul>
+      </fs-error-summary>
+      <input id="epost" />
+    `)
+    await tegn()
+  })
+
+  it("tar fokus hver gang boksen vises på nytt", async () => {
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const felt = document.getElementById("epost") as HTMLInputElement
+
+    boks.hidden = false
+    await ventPaTegning()
+    expect(document.activeElement).toBe(boks)
+
+    // Brukeren retter noe, serveren skjuler boksen igjen.
+    boks.hidden = true
+    felt.focus()
+    await ventPaTegning()
+
+    // Og så feiler innsendingen på nytt, med de samme feilene.
+    boks.hidden = false
+    await ventPaTegning()
+
+    expect(
+      document.activeElement,
+      "boksen tok ikke fokus andre gang skjemaet feilet",
+    ).toBe(boks)
+  })
+})

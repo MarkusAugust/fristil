@@ -152,19 +152,28 @@ export function computeFieldAttributes(
  * lister på de to andre forsvinner klassen og feilmeldingen ved neste
  * morfing, som er nøyaktig den feilen kontrakten skal hindre.
  *
+ * Hjelpeteksten og feilmeldingen må ha `id` med i lista selv om malen ikke
+ * skriver noen. Komponenten lager dem i så fall selv, og `aria-describedby`
+ * på kontrollen peker på dem. Forsvinner id-en i en morfing, peker
+ * koblingen på noe som ikke finnes, og skjermleseren leser verken
+ * hjelpeteksten eller feilen. `for` på ledeteksten er der av samme grunn.
+ *
  * ```html
- * <label class="fs-label" for="epost"
- *        data-preserve-attr="class data-required data-optional aria-disabled">E-post</label>
- * <input class="fs-input" id="epost"
+ * <label class="fs-label"
+ *        data-preserve-attr="class for data-required data-optional aria-disabled">E-post</label>
+ * <input class="fs-input"
  *        data-preserve-attr="id aria-describedby aria-invalid data-state disabled aria-disabled">
- * <p class="fs-error-text" hidden data-preserve-attr="hidden">Skriv en gyldig adresse.</p>
+ * <p class="fs-help-text" data-preserve-attr="id">Vi sender aldri spam.</p>
+ * <p class="fs-error-text" hidden data-preserve-attr="id hidden">Skriv en gyldig adresse.</p>
  * ```
  */
 export const FIELD_PRESERVED_ATTRIBUTES = {
   /** På ledeteksten. */
-  label: "class data-required data-optional aria-disabled",
+  label: "class for data-required data-optional aria-disabled",
   /** På selve kontrollen. */
   control: "id aria-describedby aria-invalid data-state disabled aria-disabled",
+  /** På hjelpeteksten. */
+  help: "id",
   /** På feilmeldingen. */
-  error: "hidden",
+  error: "id hidden",
 } as const

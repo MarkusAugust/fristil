@@ -51,7 +51,7 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
           aria-selected="false" data-preserve-attr="aria-selected hidden">Bodø</li>
     </ul>
 
-    <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+    <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
     <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
           data-ignore-morph></span>
   </div>
@@ -91,7 +91,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
           <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
           <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
         </ul>
-        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+        <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
         <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
               data-ignore-morph></span>
       </div>
@@ -129,7 +129,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
                 <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
               ))}
             </ul>
-            <p className="fs-suggestion__empty" hidden>Ingen treff</p>
+            <p className="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
             <span {...forslag.status} />
           </div>
         </fs-suggestion>
@@ -153,7 +153,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
         <ul {...forslag.list}>
           {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
         </ul>
-        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+        <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
         <span {...forslag.status}></span>
       </div>
     </fs-suggestion>
@@ -197,7 +197,7 @@ Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role
 | Tast | Gjør |
 | --- | --- |
 | Pil ned | Åpner lista, eller flytter til neste alternativ |
-| Pil opp | Forrige alternativ |
+| Pil opp | Åpner lista på det siste alternativet, eller flytter til forrige |
 | Enter | Velger det markerte |
 | Escape | Lukker lista |
 

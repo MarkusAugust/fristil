@@ -38,7 +38,6 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
 export class FsSuggestion extends HTMLElement {
   static observedAttributes = ["server-filtered"]
 
-  private activeIndex = -1
   private observer?: MutationObserver
   private control?: HTMLInputElement
   /** Alternativene som alt har fått lytteren sin. */
@@ -73,6 +72,22 @@ export class FsSuggestion extends HTMLElement {
     return [
       ...this.querySelectorAll<HTMLElement>(`.${SUGGESTION_OPTION_CLASS}`),
     ]
+  }
+
+  /**
+   * Hvilket synlig alternativ som er markert nå.
+   *
+   * Den leses fra `aria-selected` i markupen, ikke fra en teller inni
+   * komponenten. Serveren kan sette markeringen selv med
+   * `fs.suggestion({ activeIndex })`, og en parallell teller ville hoppet
+   * til toppen av lista ved første piltast i stedet for til alternativet
+   * etter. Filtreringen flytter også på alternativene, og da svarer
+   * oppslaget riktig av seg selv.
+   */
+  private get activeIndex(): number {
+    return this.visible.findIndex(
+      (option) => option.getAttribute("aria-selected") === "true",
+    )
   }
 
   /** Alternativene som er synlige nå. */
@@ -120,7 +135,6 @@ export class FsSuggestion extends HTMLElement {
     this.control.setAttribute("aria-expanded", String(open))
 
     if (!open) {
-      this.activeIndex = -1
       this.control.removeAttribute("aria-activedescendant")
       for (const option of this.options) {
         option.setAttribute("aria-selected", "false")
@@ -166,7 +180,6 @@ export class FsSuggestion extends HTMLElement {
     if (synlige.length === 0 || !this.control) return
 
     const neste = (index + synlige.length) % synlige.length
-    this.activeIndex = neste
 
     for (const option of this.options) {
       option.setAttribute("aria-selected", "false")
@@ -228,7 +241,17 @@ export class FsSuggestion extends HTMLElement {
       this.markActive(this.activeIndex + 1)
     } else if (event.key === "ArrowUp") {
       event.preventDefault()
-      this.markActive(this.activeIndex - 1)
+      // Lista må åpnes først, som med pil ned. Uten det pekte
+      // `aria-activedescendant` på et alternativ i en liste feltet samtidig
+      // meldte som lukket, og skjermleseren leste opp noe som ikke sto på
+      // skjermen.
+      if (!åpen) {
+        this.filter()
+        this.setOpen(true)
+      }
+      // Er ingenting markert, går pil opp til det siste. `activeIndex - 1`
+      // ville gitt det nest siste, siden ingenting markert er -1.
+      this.markActive(this.activeIndex < 0 ? -1 : this.activeIndex - 1)
     } else if (event.key === "Enter" && åpen && this.activeIndex >= 0) {
       event.preventDefault()
       const valgt = this.visible[this.activeIndex]

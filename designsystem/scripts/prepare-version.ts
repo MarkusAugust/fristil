@@ -73,7 +73,15 @@ if (innhold === "") {
   )
 }
 
-const dato = new Date().toISOString().slice(0, 10)
+// Datoen leses lokalt, ikke i UTC. `toISOString` ga dagen før når versjonen
+// ble satt etter midnatt norsk tid, og loggen skal stå med den dagen den som
+// gir ut faktisk hadde.
+const naa = new Date()
+const dato = [
+  naa.getFullYear(),
+  String(naa.getMonth() + 1).padStart(2, "0"),
+  String(naa.getDate()).padStart(2, "0"),
+].join("-")
 
 await Bun.write(
   loggSti,

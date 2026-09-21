@@ -8,6 +8,7 @@ import "./tokens/tokens.css"
 import "./components/css/input/input.css"
 import "./components/css/search/search.css"
 import "./components/css/switch/switch.css"
+import "./components/css/select/select.css"
 
 /**
  * At komponentene snur når språket går fra høyre til venstre.
@@ -39,6 +40,8 @@ describe("høyre til venstre", () => {
       <input class="fs-input" type="date" data-variant="date" id="dato" />
       <input class="fs-switch" type="checkbox" role="switch" id="av" />
       <input class="fs-switch" type="checkbox" role="switch" id="pa" checked />
+      <select class="fs-select" id="liste"><option>Valg</option></select>
+      <select class="fs-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
     `)
   })
 
@@ -60,6 +63,52 @@ describe("høyre til venstre", () => {
     const hoyre = stil("sok").backgroundPositionX
 
     expect(venstre).not.toBe(hoyre)
+  })
+
+  /*
+   * Nedtrekkslista testes med to felt side om side, ett i hver retning,
+   * framfor å snu dokumentet mellom avlesningene. WebKit 26.4 svarer med
+   * padding fra forrige retning etter en slik endring, selv etter to
+   * tegninger, mens `background-position` er oppdatert. Med to felt trenger
+   * ingenting å regnes om, og alle tre motorene svarer likt.
+   */
+  it("snur pila i nedtrekkslista, og plassen den ligger i", async () => {
+    monter(`
+      <div dir="ltr"><select class="fs-select" id="venstremot"><option>Valg</option></select></div>
+      <div dir="rtl"><select class="fs-select" id="hoyremot"><option>خيار</option></select></div>
+    `)
+    await ventPaTegning()
+
+    const ltr = stil("venstremot")
+    const rtl = stil("hoyremot")
+
+    expect(rtl.backgroundPositionX).not.toBe(ltr.backgroundPositionX)
+
+    // Plassen pila ligger i må følge med. Sto den igjen på samme fysiske
+    // side, ville pila lagt seg oppå teksten.
+    expect(rtl.paddingLeft).toBe(ltr.paddingRight)
+    expect(rtl.paddingRight).toBe(ltr.paddingLeft)
+  })
+
+  it("gir lista som tegnes i siden like mye plass på begge sider", async () => {
+    // Der tegner nettleseren pila selv, og den tar ekte plass i oppsettet.
+    // Da skal ingen av sidene ha reservert plass i tillegg. Firefox 150 har
+    // ikke `appearance: base-select`, og skal ha feltet som før.
+    monter(`
+      <div dir="ltr"><select class="fs-select" data-picker="styled" id="stylet-ltr"><option>Valg</option></select></div>
+      <div dir="rtl"><select class="fs-select" data-picker="styled" id="stylet-rtl"><option>خيار</option></select></div>
+    `)
+    await ventPaTegning()
+
+    for (const id of ["stylet-ltr", "stylet-rtl"]) {
+      const felt = stil(id)
+
+      if (CSS.supports("appearance", "base-select")) {
+        expect(felt.paddingLeft, id).toBe(felt.paddingRight)
+      } else {
+        expect(felt.paddingLeft, id).not.toBe(felt.paddingRight)
+      }
+    }
   })
 
   it("snur ikonet i datofeltet", async () => {

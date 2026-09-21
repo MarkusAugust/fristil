@@ -112,3 +112,76 @@ describe("boolske attributter", () => {
     expect(element.type).toBe("email")
   })
 })
+
+/**
+ * At hvert valgfritt attributt en byggefunksjon kan sende ut, også kan
+ * fjernes igjen.
+ *
+ * `setAttributes` rydder bare i en lukket liste, og den lista er håndskrevet.
+ * `data-picker` kom til med nedtrekkslista som tegnes i siden, og `data-size` hadde
+ * stått utenfor lenge: begge lot seg sette, men ikke fjerne. Et felt gikk
+ * altså aldri tilbake til standardutseendet sitt uten at noen skrev
+ * `removeAttribute` selv.
+ *
+ * Testen kaller hver byggefunksjon med hver lovlige verdi den selv oppgir, og
+ * regner et attributt som valgfritt når det ikke er med i kallet uten
+ * argumenter. Nettopp de må lista dekke.
+ */
+describe("setAttributes rydder i alt byggefunksjonene kan sette", () => {
+  /** `fs.label({ required: "symbol" })` henger på `label.markers`. */
+  const NOKKEL: Record<string, string> = { markers: "required" }
+
+  function attributtnavn(verdi: unknown, ut = new Set<string>()): Set<string> {
+    if (!verdi || typeof verdi !== "object") return ut
+    for (const [navn, under] of Object.entries(verdi)) {
+      if (under && typeof under === "object") attributtnavn(under, ut)
+      else ut.add(navn)
+    }
+    return ut
+  }
+
+  /** Attributtene som kommer av et valg, og derfor kan utebli. */
+  function valgfrieNavn(): string[] {
+    const valgfrie = new Set<string>()
+
+    for (const bygger of Object.values(fs)) {
+      if (typeof bygger !== "function") continue
+
+      let alltid: Set<string>
+      try {
+        alltid = attributtnavn((bygger as (valg?: unknown) => unknown)())
+      } catch {
+        // Vakter og hjelpefunksjoner sender ikke ut attributter.
+        continue
+      }
+
+      for (const [liste, verdier] of Object.entries(bygger)) {
+        if (!Array.isArray(verdier)) continue
+        const nokkel = NOKKEL[liste] ?? liste.replace(/s$/, "")
+
+        for (const verdi of verdier as string[]) {
+          const ut = attributtnavn(
+            (bygger as (valg?: unknown) => unknown)({ [nokkel]: verdi }),
+          )
+          for (const navn of ut) if (!alltid.has(navn)) valgfrie.add(navn)
+        }
+      }
+    }
+
+    return [...valgfrie].sort()
+  }
+
+  it("finner noe å sjekke", () => {
+    // Uten dette kunne et navnebytte på listene gjort testen tom og grønn.
+    expect(valgfrieNavn().length).toBeGreaterThan(4)
+  })
+
+  it.each(valgfrieNavn())("%s kan fjernes igjen", (navn) => {
+    const element = document.createElement("div")
+    element.setAttribute(navn, "noe")
+
+    fs.setAttributes(element, { class: "fs-noe" })
+
+    expect(element.hasAttribute(navn)).toBe(false)
+  })
+})
