@@ -13,6 +13,9 @@
  * Attributtet står i HTML-en og fjernes av skript, ikke motsatt: uten
  * JavaScript beholder leseren tilgangen til kolonnene.
  *
+ * Det samme gjelder `role="region"` og teksten som navngir området: en
+ * tabell som får plass skal ikke ligge i skjermleserens liste over områder.
+ *
  * Skriptet setter også `data-mer-venstre` og `data-mer-hoyre`, som global.css
  * tegner en skygge av. Uten den ser en avskåret kolonne ut som om tabellen
  * slutter der.
@@ -27,11 +30,22 @@ import Default from "@astrojs/starlight/components/MarkdownContent.astro"
 	for (const rullefelt of document.querySelectorAll<HTMLElement>(
 		".tabell-rull",
 	)) {
+		const navn = rullefelt.getAttribute("aria-label") ?? ""
+
 		const oppdater = () => {
 			const ruller = rullefelt.scrollWidth > rullefelt.clientWidth
 
-			if (ruller) rullefelt.setAttribute("tabindex", "0")
-			else rullefelt.removeAttribute("tabindex")
+			// En tabell som får plass skal verken være et tabbstopp eller et
+			// eget område i skjermleserens liste.
+			if (ruller) {
+				rullefelt.setAttribute("tabindex", "0")
+				rullefelt.setAttribute("role", "region")
+				if (navn) rullefelt.setAttribute("aria-label", navn)
+			} else {
+				rullefelt.removeAttribute("tabindex")
+				rullefelt.removeAttribute("role")
+				rullefelt.removeAttribute("aria-label")
+			}
 
 			// Skyggen ved kanten sier at det er mer å se den veien.
 			rullefelt.toggleAttribute("data-mer-venstre", rullefelt.scrollLeft > 1)

@@ -253,7 +253,17 @@
 
   .sl-markdown-content
     > *
-    + :is(p, ul, ol, pre, table, .expressive-code, .sl-tabs, .starlight-aside) {
+    + :is(
+      p,
+      ul,
+      ol,
+      pre,
+      table,
+      .tabell-rull,
+      .expressive-code,
+      .sl-tabs,
+      .starlight-aside
+    ) {
     @apply mt-6;
   }
 

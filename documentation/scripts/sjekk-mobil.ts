@@ -97,8 +97,9 @@ for (const url of finnSider()) {
     samle(document.body)
 
     // Det som stikker ut, og som ikke ligger i noe som kan rulles for seg
-    // selv. Et kodefelt og en bred tabell har sin egen rullefelt, og er
-    // dermed i orden.
+    // selv. Et kodefelt og en bred tabell har sitt eget rullefelt, og er
+    // dermed i orden. `hidden` og `clip` teller ikke: de klipper uten å gi
+    // noen vei til innholdet, og er nettopp feilen vi leter etter.
     const utenfor: string[] = []
     for (const element of alle) {
       const rute = element.getBoundingClientRect()
@@ -107,7 +108,8 @@ for (const url of finnSider()) {
       let forelder = element.parentElement
       let egenRull = false
       while (forelder) {
-        if (getComputedStyle(forelder).overflowX !== "visible") {
+        const overflow = getComputedStyle(forelder).overflowX
+        if (overflow === "auto" || overflow === "scroll") {
           egenRull = true
           break
         }
