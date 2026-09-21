@@ -27,7 +27,21 @@ kommer i et nytt undertall.
   Uten argumenter gjorde den før et forsøk på å lage et tema, og klaget over
   manglende farger uten å nevne at `overta` fantes.
 
+- Pakken kan publiseres på npm. Den har lisens (MIT), en README som blir
+  forsiden på npm, og feltene `repository`, `homepage`, `bugs` og `keywords`.
+  `publishConfig` sier `public`, siden en pakke med navnerom ellers blir
+  privat, og `prepublishOnly` bygger, så en publisering fra et rent klon ikke
+  kan komme ut uten `dist`.
+
+- `bun run sjekk:pakke` kjører [publint](https://publint.dev) mot pakken, som
+  en del av bygget. Den leser `exports` slik nettlesere, buntere og TypeScript
+  faktisk gjør det.
+
 ### Rettet
+
+- `types` står først i hver oppføring i `exports`. Betingelsene leses i
+  rekkefølge, og `import` sto først, så TypeScript fant typene bare fordi
+  `.d.ts`-fila lå ved siden av `.js`-fila. Stiene er de samme som før.
 
 - Kommandolinja svarer med en forklaring i stedet for et stakkspor fra Node
   når kommandoen er ukjent, eller når temafila mangler eller ikke er JSON.

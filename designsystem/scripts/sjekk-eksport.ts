@@ -30,11 +30,17 @@ const feil: string[] = []
 
 /** Filene npm ville lagt i tarballen. */
 async function pakkefiler(): Promise<string[]> {
-  const kjøring = Bun.spawn(["npm", "pack", "--dry-run", "--json"], {
-    cwd: pakke,
-    stdout: "pipe",
-    stderr: "pipe",
-  })
+  // `--ignore-scripts` fordi `npm pack` ellers kjører livssyklusskriptene til
+  // pakken. Et byggeskritt som pakker for å kontrollere seg selv, ville da
+  // kalle seg selv på nytt uten å stoppe.
+  const kjøring = Bun.spawn(
+    ["npm", "pack", "--dry-run", "--json", "--ignore-scripts"],
+    {
+      cwd: pakke,
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+  )
 
   const utdata = await new Response(kjøring.stdout).text()
   await kjøring.exited

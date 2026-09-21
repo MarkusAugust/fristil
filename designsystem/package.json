@@ -2,6 +2,28 @@
   "name": "@fristil/designsystem",
   "version": "0.1.0",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
+  "license": "MIT",
+  "author": "MarkusAugust",
+  "homepage": "https://fristil.netlify.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarkusAugust/fristil.git",
+    "directory": "designsystem"
+  },
+  "bugs": {
+    "url": "https://github.com/MarkusAugust/fristil/issues"
+  },
+  "keywords": [
+    "designsystem",
+    "design-system",
+    "web-components",
+    "custom-elements",
+    "css",
+    "design-tokens",
+    "lit",
+    "accessibility",
+    "universell-utforming"
+  ],
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -13,8 +35,8 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./tokens.css": "./src/tokens/tokens.css",
     "./button.css": "./src/components/css/button/button.css",
@@ -44,220 +66,220 @@
     "./error-summary.css": "./src/components/ramme/error-summary/error-summary.css",
     "./date-field.css": "./src/components/frittstaende/date-field/date-field.css",
     "./label": {
-      "import": "./dist/components/css/label/label.js",
-      "types": "./dist/components/css/label/label.d.ts"
+      "types": "./dist/components/css/label/label.d.ts",
+      "import": "./dist/components/css/label/label.js"
     },
     "./input": {
-      "import": "./dist/components/css/input/input.js",
-      "types": "./dist/components/css/input/input.d.ts"
+      "types": "./dist/components/css/input/input.d.ts",
+      "import": "./dist/components/css/input/input.js"
     },
     "./textarea": {
-      "import": "./dist/components/css/textarea/textarea.js",
-      "types": "./dist/components/css/textarea/textarea.d.ts"
+      "types": "./dist/components/css/textarea/textarea.d.ts",
+      "import": "./dist/components/css/textarea/textarea.js"
     },
     "./select": {
-      "import": "./dist/components/css/select/select.js",
-      "types": "./dist/components/css/select/select.d.ts"
+      "types": "./dist/components/css/select/select.d.ts",
+      "import": "./dist/components/css/select/select.js"
     },
     "./help-text": {
-      "import": "./dist/components/css/help-text/help-text.js",
-      "types": "./dist/components/css/help-text/help-text.d.ts"
+      "types": "./dist/components/css/help-text/help-text.d.ts",
+      "import": "./dist/components/css/help-text/help-text.js"
     },
     "./error-text": {
-      "import": "./dist/components/css/error-text/error-text.js",
-      "types": "./dist/components/css/error-text/error-text.d.ts"
+      "types": "./dist/components/css/error-text/error-text.d.ts",
+      "import": "./dist/components/css/error-text/error-text.js"
     },
     "./calendar": {
-      "import": "./dist/components/frittstaende/calendar/fs-calendar.js",
-      "types": "./dist/components/frittstaende/calendar/fs-calendar.d.ts"
+      "types": "./dist/components/frittstaende/calendar/fs-calendar.d.ts",
+      "import": "./dist/components/frittstaende/calendar/fs-calendar.js"
     },
     "./field": {
-      "import": "./dist/components/ramme/field/fs-field.js",
-      "types": "./dist/components/ramme/field/fs-field.d.ts"
+      "types": "./dist/components/ramme/field/fs-field.d.ts",
+      "import": "./dist/components/ramme/field/fs-field.js"
     },
     "./tabs": {
-      "import": "./dist/components/ramme/tabs/fs-tabs.js",
-      "types": "./dist/components/ramme/tabs/fs-tabs.d.ts"
+      "types": "./dist/components/ramme/tabs/fs-tabs.d.ts",
+      "import": "./dist/components/ramme/tabs/fs-tabs.js"
     },
     "./error-summary": {
-      "import": "./dist/components/ramme/error-summary/fs-error-summary.js",
-      "types": "./dist/components/ramme/error-summary/fs-error-summary.d.ts"
+      "types": "./dist/components/ramme/error-summary/fs-error-summary.d.ts",
+      "import": "./dist/components/ramme/error-summary/fs-error-summary.js"
     },
     "./date-field": {
-      "import": "./dist/components/frittstaende/date-field/fs-date-field.js",
-      "types": "./dist/components/frittstaende/date-field/fs-date-field.d.ts"
+      "types": "./dist/components/frittstaende/date-field/fs-date-field.d.ts",
+      "import": "./dist/components/frittstaende/date-field/fs-date-field.js"
     },
     "./button": {
-      "import": "./dist/components/css/button/button.js",
-      "types": "./dist/components/css/button/button.d.ts"
+      "types": "./dist/components/css/button/button.d.ts",
+      "import": "./dist/components/css/button/button.js"
     },
     "./tokens": {
-      "import": "./dist/tokens/tokens.js",
-      "types": "./dist/tokens/tokens.d.ts"
+      "types": "./dist/tokens/tokens.d.ts",
+      "import": "./dist/tokens/tokens.js"
     },
     "./tema": {
-      "import": "./dist/tokens/theme.js",
-      "types": "./dist/tokens/theme.d.ts"
+      "types": "./dist/tokens/theme.d.ts",
+      "import": "./dist/tokens/theme.js"
     },
     "./farge": {
-      "import": "./dist/tokens/color.js",
-      "types": "./dist/tokens/color.d.ts"
+      "types": "./dist/tokens/color.d.ts",
+      "import": "./dist/tokens/color.js"
     },
     "./tailwind.css": "./src/tailwind/tailwind.css",
     "./badge": {
-      "import": "./dist/components/css/badge/badge.js",
-      "types": "./dist/components/css/badge/badge.d.ts"
+      "types": "./dist/components/css/badge/badge.d.ts",
+      "import": "./dist/components/css/badge/badge.js"
     },
     "./link": {
-      "import": "./dist/components/css/link/link.js",
-      "types": "./dist/components/css/link/link.d.ts"
+      "types": "./dist/components/css/link/link.d.ts",
+      "import": "./dist/components/css/link/link.js"
     },
     "./sr-only": {
-      "import": "./dist/components/css/sr-only/sr-only.js",
-      "types": "./dist/components/css/sr-only/sr-only.d.ts"
+      "types": "./dist/components/css/sr-only/sr-only.d.ts",
+      "import": "./dist/components/css/sr-only/sr-only.js"
     },
     "./file-upload": {
-      "import": "./dist/components/css/file-upload/file-upload.js",
-      "types": "./dist/components/css/file-upload/file-upload.d.ts"
+      "types": "./dist/components/css/file-upload/file-upload.d.ts",
+      "import": "./dist/components/css/file-upload/file-upload.js"
     },
     "./popover": {
-      "import": "./dist/components/ramme/popover/fs-popover.js",
-      "types": "./dist/components/ramme/popover/fs-popover.d.ts"
+      "types": "./dist/components/ramme/popover/fs-popover.d.ts",
+      "import": "./dist/components/ramme/popover/fs-popover.js"
     },
     "./toast": {
-      "import": "./dist/components/frittstaende/toast/fs-toast.js",
-      "types": "./dist/components/frittstaende/toast/fs-toast.d.ts"
+      "types": "./dist/components/frittstaende/toast/fs-toast.d.ts",
+      "import": "./dist/components/frittstaende/toast/fs-toast.js"
     },
     "./suggestion": {
-      "import": "./dist/components/frittstaende/suggestion/fs-suggestion.js",
-      "types": "./dist/components/frittstaende/suggestion/fs-suggestion.d.ts"
+      "types": "./dist/components/frittstaende/suggestion/fs-suggestion.d.ts",
+      "import": "./dist/components/frittstaende/suggestion/fs-suggestion.js"
     },
     "./checkbox": {
-      "import": "./dist/components/css/checkbox/checkbox.js",
-      "types": "./dist/components/css/checkbox/checkbox.d.ts"
+      "types": "./dist/components/css/checkbox/checkbox.d.ts",
+      "import": "./dist/components/css/checkbox/checkbox.js"
     },
     "./radio": {
-      "import": "./dist/components/css/radio/radio.js",
-      "types": "./dist/components/css/radio/radio.d.ts"
+      "types": "./dist/components/css/radio/radio.d.ts",
+      "import": "./dist/components/css/radio/radio.js"
     },
     "./switch": {
-      "import": "./dist/components/css/switch/switch.js",
-      "types": "./dist/components/css/switch/switch.d.ts"
+      "types": "./dist/components/css/switch/switch.d.ts",
+      "import": "./dist/components/css/switch/switch.js"
     },
     "./fieldset": {
-      "import": "./dist/components/css/fieldset/fieldset.js",
-      "types": "./dist/components/css/fieldset/fieldset.d.ts"
+      "types": "./dist/components/css/fieldset/fieldset.d.ts",
+      "import": "./dist/components/css/fieldset/fieldset.js"
     },
     "./alert": {
-      "import": "./dist/components/css/alert/alert.js",
-      "types": "./dist/components/css/alert/alert.d.ts"
+      "types": "./dist/components/css/alert/alert.d.ts",
+      "import": "./dist/components/css/alert/alert.js"
     },
     "./card": {
-      "import": "./dist/components/css/card/card.js",
-      "types": "./dist/components/css/card/card.d.ts"
+      "types": "./dist/components/css/card/card.d.ts",
+      "import": "./dist/components/css/card/card.js"
     },
     "./divider": {
-      "import": "./dist/components/css/divider/divider.js",
-      "types": "./dist/components/css/divider/divider.d.ts"
+      "types": "./dist/components/css/divider/divider.d.ts",
+      "import": "./dist/components/css/divider/divider.js"
     },
     "./spinner": {
-      "import": "./dist/components/css/spinner/spinner.js",
-      "types": "./dist/components/css/spinner/spinner.d.ts"
+      "types": "./dist/components/css/spinner/spinner.d.ts",
+      "import": "./dist/components/css/spinner/spinner.js"
     },
     "./shared": {
-      "import": "./dist/components/css/shared.js",
-      "types": "./dist/components/css/shared.d.ts"
+      "types": "./dist/components/css/shared.d.ts",
+      "import": "./dist/components/css/shared.js"
     },
     "./field-core": {
-      "import": "./dist/components/ramme/field/field-core.js",
-      "types": "./dist/components/ramme/field/field-core.d.ts"
+      "types": "./dist/components/ramme/field/field-core.d.ts",
+      "import": "./dist/components/ramme/field/field-core.js"
     },
     "./react": {
-      "import": "./dist/react.js",
-      "types": "./dist/react.d.ts"
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
     },
     "./react-jsx": {
-      "import": "./dist/jsx/react.js",
-      "types": "./dist/jsx/react.d.ts"
+      "types": "./dist/jsx/react.d.ts",
+      "import": "./dist/jsx/react.js"
     },
     "./dom": {
-      "import": "./dist/dom.js",
-      "types": "./dist/dom.d.ts"
+      "types": "./dist/dom.d.ts",
+      "import": "./dist/dom.js"
     },
     "./table.css": "./src/components/css/table/table.css",
     "./table": {
-      "import": "./dist/components/css/table/table.js",
-      "types": "./dist/components/css/table/table.d.ts"
+      "types": "./dist/components/css/table/table.d.ts",
+      "import": "./dist/components/css/table/table.js"
     },
     "./list.css": "./src/components/css/list/list.css",
     "./list": {
-      "import": "./dist/components/css/list/list.js",
-      "types": "./dist/components/css/list/list.d.ts"
+      "types": "./dist/components/css/list/list.d.ts",
+      "import": "./dist/components/css/list/list.js"
     },
     "./tag.css": "./src/components/css/tag/tag.css",
     "./tag": {
-      "import": "./dist/components/css/tag/tag.js",
-      "types": "./dist/components/css/tag/tag.d.ts"
+      "types": "./dist/components/css/tag/tag.d.ts",
+      "import": "./dist/components/css/tag/tag.js"
     },
     "./avatar.css": "./src/components/css/avatar/avatar.css",
     "./avatar": {
-      "import": "./dist/components/css/avatar/avatar.js",
-      "types": "./dist/components/css/avatar/avatar.d.ts"
+      "types": "./dist/components/css/avatar/avatar.d.ts",
+      "import": "./dist/components/css/avatar/avatar.js"
     },
     "./skeleton.css": "./src/components/css/skeleton/skeleton.css",
     "./skeleton": {
-      "import": "./dist/components/css/skeleton/skeleton.js",
-      "types": "./dist/components/css/skeleton/skeleton.d.ts"
+      "types": "./dist/components/css/skeleton/skeleton.d.ts",
+      "import": "./dist/components/css/skeleton/skeleton.js"
     },
     "./breadcrumbs.css": "./src/components/css/breadcrumbs/breadcrumbs.css",
     "./breadcrumbs": {
-      "import": "./dist/components/css/breadcrumbs/breadcrumbs.js",
-      "types": "./dist/components/css/breadcrumbs/breadcrumbs.d.ts"
+      "types": "./dist/components/css/breadcrumbs/breadcrumbs.d.ts",
+      "import": "./dist/components/css/breadcrumbs/breadcrumbs.js"
     },
     "./pagination.css": "./src/components/css/pagination/pagination.css",
     "./pagination": {
-      "import": "./dist/components/css/pagination/pagination.js",
-      "types": "./dist/components/css/pagination/pagination.d.ts"
+      "types": "./dist/components/css/pagination/pagination.d.ts",
+      "import": "./dist/components/css/pagination/pagination.js"
     },
     "./skip-link.css": "./src/components/css/skip-link/skip-link.css",
     "./skip-link": {
-      "import": "./dist/components/css/skip-link/skip-link.js",
-      "types": "./dist/components/css/skip-link/skip-link.d.ts"
+      "types": "./dist/components/css/skip-link/skip-link.d.ts",
+      "import": "./dist/components/css/skip-link/skip-link.js"
     },
     "./accordion.css": "./src/components/css/accordion/accordion.css",
     "./accordion": {
-      "import": "./dist/components/css/accordion/accordion.js",
-      "types": "./dist/components/css/accordion/accordion.d.ts"
+      "types": "./dist/components/css/accordion/accordion.d.ts",
+      "import": "./dist/components/css/accordion/accordion.js"
     },
     "./dialog.css": "./src/components/css/dialog/dialog.css",
     "./dialog": {
-      "import": "./dist/components/css/dialog/dialog.js",
-      "types": "./dist/components/css/dialog/dialog.d.ts"
+      "types": "./dist/components/css/dialog/dialog.d.ts",
+      "import": "./dist/components/css/dialog/dialog.js"
     },
     "./search.css": "./src/components/css/search/search.css",
     "./search": {
-      "import": "./dist/components/css/search/search.js",
-      "types": "./dist/components/css/search/search.d.ts"
+      "types": "./dist/components/css/search/search.d.ts",
+      "import": "./dist/components/css/search/search.js"
     },
     "./toggle-group.css": "./src/components/css/toggle-group/toggle-group.css",
     "./toggle-group": {
-      "import": "./dist/components/css/toggle-group/toggle-group.js",
-      "types": "./dist/components/css/toggle-group/toggle-group.d.ts"
+      "types": "./dist/components/css/toggle-group/toggle-group.d.ts",
+      "import": "./dist/components/css/toggle-group/toggle-group.js"
     },
     "./tooltip.css": "./src/components/css/tooltip/tooltip.css",
     "./tooltip": {
-      "import": "./dist/components/css/tooltip/tooltip.js",
-      "types": "./dist/components/css/tooltip/tooltip.d.ts"
+      "types": "./dist/components/css/tooltip/tooltip.d.ts",
+      "import": "./dist/components/css/tooltip/tooltip.js"
     },
     "./heading.css": "./src/components/css/heading/heading.css",
     "./heading": {
-      "import": "./dist/components/css/heading/heading.js",
-      "types": "./dist/components/css/heading/heading.d.ts"
+      "types": "./dist/components/css/heading/heading.d.ts",
+      "import": "./dist/components/css/heading/heading.js"
     },
     "./paragraph.css": "./src/components/css/paragraph/paragraph.css",
     "./paragraph": {
-      "import": "./dist/components/css/paragraph/paragraph.js",
-      "types": "./dist/components/css/paragraph/paragraph.d.ts"
+      "types": "./dist/components/css/paragraph/paragraph.d.ts",
+      "import": "./dist/components/css/paragraph/paragraph.js"
     }
   },
   "files": [
@@ -270,9 +292,12 @@
     "!**/*.test.ts",
     "!**/*.tsbuildinfo"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon",
+    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
@@ -281,7 +306,9 @@
     "nettlesere": "playwright install chromium firefox webkit",
     "tema": "bun src/cli.ts",
     "sjekk:cli": "bun scripts/sjekk-cli.ts",
-    "sjekk:versjon": "bun scripts/sjekk-versjon.ts"
+    "sjekk:versjon": "bun scripts/sjekk-versjon.ts",
+    "sjekk:pakke": "publint",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "lit": ">=3.0.0"
@@ -299,6 +326,7 @@
     "axe-core": "^4.13.0",
     "lit": "3.3.3",
     "playwright": "1.60.0",
+    "publint": "^0.3.24",
     "tailwindcss": "4.3.0",
     "vite": "7.0.0",
     "vitest": "4.1.7"
