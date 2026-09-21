@@ -9,3 +9,6 @@ __screenshots__
 
 # Lokale engangsskript for måling i nettleser, ikke del av sjekkene
 documentation/scripts/.lokal/
+
+# Presentasjonen om designsystemarkitektur, hentet ned fra Netlify
+presentasjon/
