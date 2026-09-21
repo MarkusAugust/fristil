@@ -78,3 +78,45 @@ describe("fs-dialog", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("bredden på dialogen", () => {
+  it("blir ikke bredere enn boksen den står i", async () => {
+    /*
+     * Dialogen regnet bredden sin mot vindusruten. Står den i en smalere
+     * boks, som i et panel eller en forhåndsvisning, stakk den utenfor.
+     *
+     * En `<dialog open>` er absolutt plassert av nettleseren, så `100%`
+     * måles mot nærmeste plasserte forelder. Derfor `position: relative` på
+     * boksen her; uten den er det vindusruten som gjelder, og det er riktig
+     * for en dialog åpnet med `showModal()`.
+     */
+    monter(`
+      <div id="smal" style="width: 240px; position: relative">
+        <dialog class="fs-dialog" id="i-boks" open>
+          <p>Innhold</p>
+        </dialog>
+      </div>
+
+      <div id="smal-flate" style="width: 240px">
+        <div class="fs-dialog" id="som-boks">
+          <p>Innhold</p>
+        </div>
+      </div>
+    `)
+
+    await ventPaTegning()
+
+    for (const [boksId, dialogId] of [
+      ["smal", "i-boks"],
+      ["smal-flate", "som-boks"],
+    ]) {
+      const boks = document.getElementById(boksId) as HTMLElement
+      const dialog = document.getElementById(dialogId) as HTMLElement
+
+      expect(
+        dialog.getBoundingClientRect().width,
+        dialogId,
+      ).toBeLessThanOrEqual(boks.getBoundingClientRect().width)
+    }
+  })
+})

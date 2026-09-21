@@ -9,7 +9,7 @@ Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes 
 
 ## Tre kategorier
 
-Komponentene er delt i tre etter hvor mye de tar over for deg.
+Komponentene er delt i tre etter hvem som skriver HTML-en: du, komponenten, eller begge.
 
 ### css
 
@@ -19,11 +19,11 @@ En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
 
-Varianter styres med `data-`-attributter. Dette er den største gruppen: knapper, lenker, merker, skjemafelt, tabeller, kort, varsler og typografi, altså alt der utfordringen er utseende og ikke oppførsel.
+Varianter styres med `data-`-attributter. Dette er den største gruppen, og dekker knapper, lenker, merker, skjemafelt, tabeller, kort, varsler og typografi. Felles for dem er at utfordringen er hvordan de ser ut, ikke hva de gjør.
 
 ### ramme
 
-En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men kobler sammen det du gir den.
+En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men setter attributtene som kobler dem sammen.
 
 ```html
 <fs-field required-marker="symbol" invalid>
@@ -49,25 +49,19 @@ En web component som bygger alt selv. Du sender inn attributter.
 ></fs-date-field>
 ```
 
-Ingen HTML å sette opp, men du bestemmer mindre over strukturen. For komponenter der interaksjonen er det vanskelige, som et datofelt som holder tekst og kalender i synk, eller en dialog.
+Du slipper å sette opp markupen, men bestemmer mindre over den. Passer der interaksjonen er det vanskelige, som et datofelt der tekstfeltet og kalenderen alltid må vise den samme datoen.
 
 ## Hvorfor tre kategorier
 
-De fleste designsystemer har én komponentmodell for alt. Da drar enten en knapp med seg like mye maskineri som en datovelger, eller datovelgeren får like lite struktur som en knapp.
+Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, men du vil fortsatt eie markupen. Et datofelt må holde et tekstfelt og en kalender i synk, og det klarer ingen klasse alene.
 
-Her står prisen i forhold til problemet:
-
-- En knapp koster én CSS-klasse.
-- Et skjemafelt koster en web component som gjør tilgjengelighetskoblingen, men lar deg beholde HTML-en.
-- Et datofelt koster en komponent som eier alt, fordi det er den eneste måten å holde flere deler i synk på.
-
-Det gjør det også lett å ta i bruk gradvis: begynn med `tokens.css` og noen knapper.
+Delingen gjør at du laster det komponenten trenger, og ikke mer: en knapp er null JavaScript, mens datofeltet er en web component. Den gjør det også lett å begynne smått, med `tokens.css` og noen knapper.
 
 ## Shadow DOM
 
 Shadow DOM er et valg per komponent, ikke en egen kategori. `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM fordi skjemaelementene må være synlige utenfra. `<fs-calendar>` skjermes fordi kalenderpanelet har mange interne elementer ingen app bør style ved et uhell.
 
-Regelen: skjemafelt i vanlig DOM, innkapslede widgets kan skjermes.
+Tommelfingerregelen er at skjemafelt skal stå i vanlig DOM, mens en komponent som eier hele innsiden sin kan skjermes.
 
 Valget avgjør også om komponenten trenger en CSS-import:
 
