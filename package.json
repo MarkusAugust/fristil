@@ -13,7 +13,7 @@
     "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:tailwind",
     "test:docs": "bun --filter @fristil/documentation test:docs",
     "lint": "biome check .",
-    "publish:versjon": "bun designsystem/scripts/publiser-versjon.ts",
+    "versjon": "bun designsystem/scripts/sett-versjon.ts",
     "sjekk": "bun --filter @fristil/designsystem nettlesere && bun run lint && bun run typecheck && bun run typecheck:tests && bun run test && bun run build && bun run test:docs"
   },
   "devDependencies": {

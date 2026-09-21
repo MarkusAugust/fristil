@@ -1,5 +1,6 @@
 /**
- * Setter versjonen som skal publiseres, i begge filene den står i.
+ * Setter versjonen som skal publiseres, i begge filene den står i. Den
+ * skriver bare de to filene, og publiserer ingenting.
  *
  * En utgivelse består av tre ting som må si det samme: nummeret i
  * `package.json`, overskriften i `CHANGELOG.md`, og taggen i git. Settes de
@@ -7,7 +8,7 @@
  * `0.2.0`. Da stopper kontrollen i `publish.yml` kjøringen, men først etter at
  * taggen er dyttet opp, og en tagg som er dyttet opp må fjernes igjen.
  *
- * Kjør med: bun run publish:versjon <neste versjon>
+ * Kjør med: bun run versjon <neste versjon>
  */
 
 import { join } from "node:path"
@@ -27,7 +28,7 @@ function stopp(melding: string): never {
 const nyVersjon = process.argv[2]
 
 if (!nyVersjon) {
-  stopp("Mangler versjonsnummer. Bruk: bun run publish:versjon 0.4.0")
+  stopp("Mangler versjonsnummer. Bruk: bun run versjon 0.4.0")
 }
 
 if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(nyVersjon)) {
