@@ -49,6 +49,19 @@ jobs:
         working-directory: designsystem
         run: echo "nummer=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
+      # Taggen og versjonen i package.json må si det samme. En tagg v0.3.0 på
+      # en commit som fortsatt sier 0.2.0 ville ellers publisert 0.2.0, eller
+      # hoppet over den, og taggen i historikken ville pekt på noe annet enn
+      # det som ligger på npm.
+      - name: Se at taggen og versjonen stemmer
+        if: github.ref_type == 'tag'
+        run: |
+          tagg="${GITHUB_REF_NAME#v}"
+          if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
+            echo "Taggen $GITHUB_REF_NAME sier $tagg, mens package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
+            exit 1
+          fi
+
       # Den første utgivelsen gjøres fra maskinen, siden npm bare lar deg
       # koble en utgiver til en pakke som allerede finnes. Taggen for den
       # versjonen ville ellers starte en kjøring som feilet på at versjonen
