@@ -19,8 +19,14 @@
     color: var(--semantic-interactive-contrast);
     cursor: pointer;
     text-decoration: none;
-    white-space: nowrap;
     user-select: none;
+
+    /* Teksten får brekke. Med `white-space: nowrap` sprengte en knapp med en
+       lang norsk ledetekst boksen sin på en telefon, og da ruller hele siden
+       sidelengs. Knappen skal aldri bli bredere enn plassen den får. */
+    max-inline-size: 100%;
+    text-align: center;
+    text-wrap: balance;
   }
 
   .fs-button:hover {
