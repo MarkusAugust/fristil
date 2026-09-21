@@ -1,0 +1,214 @@
+---
+/**
+ * Sideskjelettet som en ekte side, ikke en tegning av en.
+ *
+ * Mønsteret handler om landemerker, overskriftsnivåer og hopplenken, og det
+ * lar seg ikke vise i en boks inne i en dokumentasjonsside: hopplenken skal
+ * være det første i `<body>`, og `<main>` kan bare finnes én gang per side.
+ * Derfor er demoen en egen adresse, som vises i en ramme på mønstersiden og
+ * kan åpnes for seg selv.
+ *
+ * Siden er bygget av Fristils egne komponenter, uten Tailwind, så det som
+ * står her er det samme som en konsument ville skrevet.
+ */
+
+import { fs } from "@fristil/designsystem"
+
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/skip-link.css"
+import "@fristil/designsystem/breadcrumbs.css"
+import "@fristil/designsystem/heading.css"
+import "@fristil/designsystem/paragraph.css"
+import "@fristil/designsystem/link.css"
+import "@fristil/designsystem/button.css"
+import "@fristil/designsystem/card.css"
+import "@fristil/designsystem/badge.css"
+import "@fristil/designsystem/list.css"
+import "@fristil/designsystem/divider.css"
+---
+
+<!doctype html>
+<html lang="nb">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Mine saker – Eksempelkommune</title>
+	</head>
+	<body>
+		<a {...fs.skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
+
+		<header class="skjelett-topp">
+			<div class="skjelett-bredde skjelett-toppinnhold">
+				<a {...fs.link()} href="#" aria-label="Eksempelkommune, til forsiden">
+					<strong>Eksempelkommune</strong>
+				</a>
+
+				<nav aria-label="Hovedmeny">
+					<ul {...fs.list({ variant: "plain" })} class="fs-list skjelett-meny">
+						<li><a {...fs.link()} href="#">Mine saker</a></li>
+						<li><a {...fs.link()} href="#">Søknader</a></li>
+						<li><a {...fs.link()} href="#">Kontakt oss</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<div class="skjelett-bredde">
+			<nav aria-label="Du er her">
+				<ol {...fs.breadcrumbs()}>
+					<li><a {...fs.link()} href="#">Forsiden</a></li>
+					<li><a {...fs.link()} href="#">Min side</a></li>
+					<li><a {...fs.link()} href="#" aria-current="page">Mine saker</a></li>
+				</ol>
+			</nav>
+		</div>
+
+		<main id="hovedinnhold" tabindex="-1" class="skjelett-bredde skjelett-hoved">
+			<h1 {...fs.heading({ size: "xl" })}>Mine saker</h1>
+
+			<p {...fs.paragraph({ variant: "lead" })}>
+				Her finner du sakene dine, og hva som skjer med dem.
+			</p>
+
+			<section aria-labelledby="til-behandling">
+				<h2 {...fs.heading({ size: "m" })} id="til-behandling">Til behandling</h2>
+
+				<ul {...fs.list({ variant: "plain" })} class="fs-list skjelett-saker">
+					<li>
+						<article {...fs.card()}>
+							<h3 class={fs.card.title}>Søknad om bostøtte</h3>
+							<p {...fs.paragraph({ size: "small" })}>
+								Sendt 4. mars 2026. Saksnummer 2026-0481.
+							</p>
+							<p><span {...fs.badge({ color: "warning" })}>Mangler vedlegg</span></p>
+							<p>
+								<a {...fs.link()} href="#">Se hva som mangler</a>
+							</p>
+						</article>
+					</li>
+					<li>
+						<article {...fs.card()}>
+							<h3 class={fs.card.title}>Søknad om barnehageplass</h3>
+							<p {...fs.paragraph({ size: "small" })}>
+								Sendt 12. februar 2026. Saksnummer 2026-0377.
+							</p>
+							<p><span {...fs.badge({ color: "success" })}>Innvilget</span></p>
+							<p>
+								<a {...fs.link()} href="#">Se vedtaket</a>
+							</p>
+						</article>
+					</li>
+				</ul>
+			</section>
+
+			<hr {...fs.divider()} />
+
+			<section aria-labelledby="ny-soknad">
+				<h2 {...fs.heading({ size: "m" })} id="ny-soknad">Ny søknad</h2>
+				<p {...fs.paragraph()}>
+					Du kan søke om bostøtte hver måned. Fristen er den 25.
+				</p>
+				<p><button {...fs.button()} type="button">Start ny søknad</button></p>
+			</section>
+		</main>
+
+		<footer class="skjelett-bunn">
+			<div class="skjelett-bredde">
+				<p {...fs.paragraph({ size: "small" })}>
+					Eksempelkommune, postboks 1, 0000 Eksempelby. Telefon 00 00 00 00.
+				</p>
+			</div>
+		</footer>
+
+		<style is:global>
+			/*
+			 * Oppsettet er appens, ikke designsystemets.
+			 *
+			 * Fristil gir komponentene og tokenene. Bredden på spalten, luften
+			 * mellom delene og fargen på topp og bunn hører til siden, og står
+			 * derfor her. Alle verdiene er tokens, så siden følger temaet.
+			 */
+			body {
+				margin: 0;
+				background: var(--semantic-page-background);
+				color: var(--semantic-page-foreground);
+				font-family:
+					system-ui,
+					-apple-system,
+					"Segoe UI",
+					sans-serif;
+			}
+
+			.skjelett-bredde {
+				box-sizing: border-box;
+				/* Fristil har ingen CSS-token for spaltebredde. Den er appens valg. */
+				max-inline-size: 60rem;
+				margin-inline: auto;
+				padding-inline: var(--size-4);
+			}
+
+			.skjelett-topp {
+				background: var(--semantic-neutral-background);
+				border-block-end: 1px solid var(--semantic-divider-30);
+			}
+
+			.skjelett-toppinnhold {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: space-between;
+				gap: var(--size-3);
+				padding-block: var(--size-3);
+			}
+
+			.skjelett-meny {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--size-4);
+			}
+
+			.skjelett-meny li + li {
+				margin-block-start: 0;
+			}
+
+			.skjelett-hoved {
+				display: flex;
+				flex-direction: column;
+				gap: var(--size-5);
+				padding-block: var(--size-6);
+			}
+
+			.skjelett-hoved section {
+				display: flex;
+				flex-direction: column;
+				gap: var(--size-3);
+			}
+
+			.skjelett-saker {
+				display: grid;
+				gap: var(--size-3);
+			}
+
+			.skjelett-saker li + li {
+				margin-block-start: 0;
+			}
+
+			.skjelett-bunn {
+				padding-block: var(--size-5);
+				background: var(--semantic-neutral-background);
+				border-block-start: 1px solid var(--semantic-divider-30);
+			}
+
+			/* Fokusmarkeringen på hovedinnholdet er til for hopplenken, og skal
+			   ikke vises når brukeren bare klikker et sted på siden. */
+			main:focus {
+				outline: none;
+			}
+
+			main:focus-visible {
+				outline: 2px solid var(--semantic-interactive-main);
+				outline-offset: 4px;
+			}
+		</style>
+	</body>
+</html>
