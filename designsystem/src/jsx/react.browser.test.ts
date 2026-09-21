@@ -179,13 +179,21 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
   })
 
   it("lar aria- og data-attributter stå", () => {
-    // React sender dem videre uendret. En omdøping ville gitt ugyldig HTML.
-    const rorte = alleAttributtnavn().filter(
-      (navn) =>
-        (navn.startsWith("aria-") || navn.startsWith("data-")) &&
-        navn in KAMELFORMER,
+    // React sender dem videre uendret, så en omdøping ville gitt ugyldig
+    // HTML. Her kjøres hvert navn gjennom funksjonen og sjekkes at det kommer
+    // ut med samme nøkkel. Den forrige utgaven filtrerte bare på navn som
+    // fantes i KAMELFORMER, og siden ingen aria- eller data-navn står der,
+    // kunne den aldri feile.
+    const navnene = alleAttributtnavn().filter(
+      (navn) => navn.startsWith("aria-") || navn.startsWith("data-"),
     )
 
-    expect(rorte).toEqual([])
+    expect(navnene.length, "fant ingen å sjekke").toBeGreaterThan(5)
+
+    const dopt = navnene.filter(
+      (navn) => !(navn in toReactAttributes({ [navn]: "x" })),
+    )
+
+    expect(dopt, "Disse skal stå som de er i React").toEqual([])
   })
 })
