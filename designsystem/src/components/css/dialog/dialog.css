@@ -1,9 +1,14 @@
 @layer fristil {
   .fs-dialog {
     box-sizing: border-box;
+    /*
+     * `100%` og ikke bare `100vw`: en ekte dialog i topplaget måler seg mot
+     * vindusruten, men står den i en smalere boks, som i dokumentasjonen,
+     * stakk den utenfor. `min()` tar den minste av de tre.
+     */
     inline-size: var(
       --fs-dialog-width,
-      min(32rem, calc(100vw - var(--size-8)))
+      min(32rem, 100%, calc(100vw - var(--size-8)))
     );
     max-block-size: calc(100vh - var(--size-16));
     padding: var(--fs-dialog-padding, var(--size-5));
