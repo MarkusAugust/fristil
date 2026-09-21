@@ -1,13 +1,39 @@
 ---
-title: Server først
-description: Hvorfor serveren skriver markupen, og komponentene bare fester oppførsel.
+title: Markup og oppførsel
+description: Hvem som skriver HTML-en, hvem som fester oppførselen, og hvilken av de to formene du skal bruke.
 ---
 
-Fristil er bygget for apper der HTML-en kommer fra serveren. Det gjelder TanStack Start, React Server Components og Datastar like mye, og det er ikke en tilpasning vi har lagt til etterpå: det avgjør hvordan hver eneste komponent er skrevet.
+Fristil er delt i to lag som aldri rører det samme. Det ene gir deg markupen, det andre gir deg oppførselen.
 
-Regelen er én setning:
+> Markup eies av den som lager den. Oppførsel eies av komponenten.
 
-> Markup eies av den som sender den. Oppførsel eies av komponenten.
+Dette gjelder like mye om appen din rendrer alt i nettleseren, server-rendrer med hydrering, eller sender HTML fra serveren hele veien. Fristil er ikke et system for én av dem.
+
+## Virker dette i en klientrendret app?
+
+Ja, og det er verdt å si tydelig, fordi delingen over lett leses som noe som bare angår servere.
+
+Har du en React-app uten server i det hele tatt, lager React all markupen i nettleseren. Da kaller du byggerne der du rendrer, akkurat som du ville gjort på en server:
+
+```tsx
+const felt = fs.field({ id: "epost", help: true, invalid })
+
+<label {...felt.label}>E-postadresse</label>
+<input {...fs.input({ type: "email" })} {...felt.control} />
+<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+```
+
+Byggerne er rene funksjoner. De bryr seg ikke om hvor de kjører.
+
+Det eneste som endrer seg mellom rendringsmodellene er hvor ofte markupen kan bli erstattet, og det er derfor komponentene ikke får lage den:
+
+| Rendringsmodell | Markupen lages av | Kan erstatte den etterpå |
+| --- | --- | --- |
+| Klientrendring (CSR) | React, i nettleseren | React, ved neste rendring |
+| Server-rendring med hydrering (SSR) | Serveren, deretter React | React, ved neste rendring |
+| Hypermedia (Datastar, htmx) | Serveren, også underveis | Svaret fra serveren |
+
+I alle tre er det noe annet enn komponenten som bestemmer hva som står i DOM-en. Lager komponenten sitt eget innhold, blir det ryddet bort.
 
 Med markup menes strukturen: elementene, klassene, rollene og koblingen
 mellom dem. Den lager komponenten aldri. Tilstand som endrer seg mens
@@ -15,6 +41,44 @@ brukeren holder på, som `aria-expanded` på en åpen meny, setter komponenten,
 og de attributtene er navngitt i `data-preserve-attr` fra byggeren. Skillet
 er altså ikke mellom attributt og node, men mellom det som beskriver siden og
 det som beskriver hva brukeren nettopp gjorde.
+
+## Bygger eller element?
+
+Dette er spørsmålet folk stopper på, og svaret er ulikt for én komponent enn for alle de andre.
+
+### `<fs-field>` er enten eller
+
+`fs.field()` og `<fs-field>` gjør nøyaktig den samme jobben: de kobler ledetekst, felt, hjelpetekst og feilmelding sammen. Du skal bruke den ene, ikke begge.
+
+| Lager du markupen med JavaScript? | Bruk |
+| --- | --- |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`. Elementet trengs ikke |
+| **Nei.** En Go-mal, en PHP-fil, en Razor-visning, en publiseringsløsning eller håndskrevet HTML | `<fs-field>` |
+
+`fs.field()` er en TypeScript-funksjon. Kan koden som lager HTML-en kalle den, er det den korteste veien: attributtene står ferdig i markupen, og nettleseren trenger ingen registrert komponent. Kan den ikke det, gjør `<fs-field>` det samme i nettleseren i stedet.
+
+### De andre er både og
+
+De øvrige rammekomponentene gjør noe en funksjon umulig kan gjøre: de lytter på tastatur, flytter fokus og regner ut posisjon. Der bruker du **begge deler**.
+
+```ts
+const faner = fs.tabs({ id: "sak", count: 3 })   // markupen, fra byggeren
+defineFsTabs()                                    // piltastene, fra elementet
+```
+
+| Komponent | Byggeren gir deg | Elementet gir deg |
+| --- | --- | --- |
+| `<fs-field>` | koblingen | den samme koblingen, så velg én |
+| `<fs-tabs>` | roller, `hidden`, tabbestopp | piltaster, Home og End |
+| `<fs-popover>` | koblingen, `popover`-attributtet | posisjon, Escape, klikk utenfor |
+| `<fs-suggestion>` | feltet og lista | filtrering, piltaster, antall treff |
+| `<fs-error-summary>` | boksen, `role="alert"`, overskriften | fokus hit, og videre til feltet |
+
+Regelen bak tabellen: **byggeren gir markup, elementet gir oppførsel.** `<fs-field>` er det eneste unntaket, og bare fordi koblingen er markup og ikke oppførsel.
+
+### Komponenter uten bygger
+
+[`<fs-toast>`](/components/toast/), [`<fs-session-timeout>`](/components/session-timeout/) og [`<fs-connection-status>`](/components/connection-status/) har også byggere, men der gir byggeren bare et tomt element med riktige attributter. Alt innholdet lager komponenten selv, fordi det ikke finnes før brukeren har gjort noe. Se [Introduksjon](/introduksjon/#frittstående).
 
 ## Problemet det løser
 
@@ -43,7 +107,7 @@ Et attributt som ikke står i serverens HTML blir fjernet. React har det samme p
 
 | Lag | Hva det er | Hvor det kjører |
 | --- | --- | --- |
-| `fs`-byggerne | Klasser, `data-*`, tilgjengelighetskoblingen | På serveren, i hvilket som helst språk |
+| `fs`-byggerne | Klasser, `data-*`, tilgjengelighetskoblingen | Der du lager markupen, på server eller i nettleseren |
 | Web-komponentene | Tastatur, fokus, posisjonering | I nettleseren, etter at HTML-en står der |
 
 De overlapper ikke. En bygger setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.

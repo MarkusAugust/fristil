@@ -10,6 +10,12 @@ Serveren skriver rollene og skjuler panelene som ikke er valgt. Komponenten tar 
 
 Det er hele grunnen til at den finnes. I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
 
+:::note[Bruk byggeren og elementet sammen]
+`fs.tabs()` gir deg rollene, hvilke paneler som er skjult og hvilken fane som er tabbestopp. Elementet gir deg piltastene, Home og End, som en funksjon ikke kan gjøre. Her trenger du **begge**.
+
+Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#bygger-eller-element).
+:::
+
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsTabs } from "@fristil/designsystem/tabs"
@@ -52,7 +58,7 @@ const faner = fs.tabs({ id: "sak", count: 3, selected: 0, label: "Deler av saken
 </fs-tabs>
 ```
 
-`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv. `data-preserve-attr` sier fra om hva komponenten endrer når brukeren velger, slik at en oppdatering fra serveren ikke setter valget tilbake. Se [Server først](/server-forst/).
+`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv. `data-preserve-attr` sier fra om hva komponenten endrer når brukeren velger, slik at en oppdatering fra serveren ikke setter valget tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Hvilken fane som er valgt
 

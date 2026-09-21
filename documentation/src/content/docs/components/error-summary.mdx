@@ -8,6 +8,12 @@ import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
 
 Når en innsending stopper, skal brukeren få vite hvorfor, og komme til feltet med ett klikk. Serveren skriver hele boksen. Komponenten gjør de to tingene nettleseren ikke gjør selv: flytter fokus hit når boksen kommer til syne, og gir fokus til selve kontrollen når en lenke følges.
 
+:::note[Bruk byggeren og elementet sammen]
+`fs.errorSummary()` gir deg boksen, `role="alert"` og overskriften. Elementet gir deg fokus hit, og videre til feltet som feilet, som en funksjon ikke kan gjøre. Her trenger du **begge**.
+
+Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#bygger-eller-element).
+:::
+
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
@@ -36,7 +42,7 @@ const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 </fs-error-summary>
 ```
 
-Klassen, `role="alert"`, `tabindex="-1"` og overskriften kommer fra serveren. Komponenten lagde dem tidligere selv, og da forsvant både klassen og overskriften ved første oppdatering fra serveren, uten å komme tilbake. Se [Server først](/server-forst/).
+Klassen, `role="alert"`, `tabindex="-1"` og overskriften kommer fra serveren. Komponenten lagde dem tidligere selv, og da forsvant både klassen og overskriften ved første oppdatering fra serveren, uten å komme tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 Er det ingen feil, setter byggeren `hidden` på boksen. En tom oppsummering med overskriften «Skjemaet har 0 feil» er verre enn ingen.
 

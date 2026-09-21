@@ -6,9 +6,22 @@ description: Rammekomponent som kobler ledetekst, felt, hjelpetekst og feilmeldi
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import FieldDemo from "../../../components/FieldDemo.astro"
 
-Du legger inn dine egne `<label>`, `<input>` og tekster som vanlig HTML, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid`. Den lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
+Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til selve feltet. Fristil gir deg den koblingen på to måter, og **du skal bruke den ene, ikke begge**.
 
-## Hvorfor komponenten finnes
+| Lager du markupen med JavaScript? | Bruk |
+| --- | --- |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`fs.field()`](#som-funksjon). Da trenger du ikke elementet |
+| **Nei.** En Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML | [`<fs-field>`](#som-element) |
+
+Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverandre. Forskjellen er bare om koden som lager HTML-en kan kalle en TypeScript-funksjon.
+
+`<fs-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
+
+:::note[Andre komponenter er ikke enten eller]
+`<fs-field>` er det eneste unntaket i systemet, fordi koblingen er markup og ikke oppførsel. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggeren **og** elementet. Se [Markup og oppførsel](/markup-og-oppforsel/#bygger-eller-element).
+:::
+
+## Hvorfor koblingen er vanskelig
 
 Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samtidig:
 
@@ -19,11 +32,11 @@ Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samti
 <p id="epost-feil">Skriv en gyldig e-postadresse.</p>
 ```
 
-Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt.
+Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt. Og det synes ikke på skjermen når en av dem mangler.
 
-## Uten custom element
+## Som funksjon
 
-Samme kobling finnes som en ren funksjon, [`fs.field`](../../typesikker-bruk/#fsfield). Den regner ut attributtene der du rendrer, enten ved bygging i Astro eller på hver render i React, så nettleseren trenger ingen registrert komponent:
+[`fs.field`](../../typesikker-bruk/#fsfield) regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
 
 ```tsx
 const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
@@ -34,7 +47,13 @@ const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true
 <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
 
-De to deler kode, så kontrakten kan ikke gå fra hverandre. Forskjellen er når attributtene settes: av komponenten i nettleseren, eller av funksjonen der du rendrer.
+Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
+
+## Som element
+
+Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
+
+Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, må malen din ta med `data-preserve-attr` på de tre elementene. Ellers fjernes koblingen ved neste oppdatering. Lista ligger i `FIELD_PRESERVED_ATTRIBUTES`, og hele begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
 
 ## Kom i gang
 
