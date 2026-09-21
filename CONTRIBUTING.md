@@ -52,8 +52,20 @@ Når en versjon skal ut:
 # 2. Sett samme nummer i designsystem/package.json.
 bun run sjekk
 git commit -am "chore: slipp 0.2.0"
-git tag v0.2.0
+# 3. Send det gjennom en pull request som alt annet, og tagg commiten
+#    på master når den er slått sammen.
+git tag v0.2.0 && git push --tags
 ```
+
+Taggen starter `.github/workflows/publish.yml`, som bygger pakken og legger den ut på npm. Arbeidsflyten har ingen hemmeligheter i seg: den ber npm om en kortlevd legitimasjon gjennom GitHubs OIDC, og det virker bare så lenge pakken har en utgiver registrert under Settings på npmjs.com (GitHub Actions, `MarkusAugust`, `fristil`, `publish.yml`). npm signerer samtidig en attestasjon som viser hvilken commit versjonen kom fra.
+
+Den aller første utgivelsen kan ikke gjøres slik, for en utgiver kan bare kobles til en pakke som alt finnes. Den gjøres fra maskinen, med `npm login` først:
+
+```bash
+cd designsystem && npm publish --access public
+```
+
+En versjon kan aldri publiseres på nytt eller overskrives, og `npm unpublish` er stengt etter 72 timer. Skal en versjon ut av sirkulasjon, er `npm deprecate` veien.
 
 Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
 
