@@ -1,0 +1,167 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview
+	id="demo-skjema"
+	stiler={[
+		"error-summary",
+		"list",
+		"label",
+		"input",
+		"help-text",
+		"error-text",
+		"button",
+		"sr-only",
+	]}
+	layout="stabel"
+	maxWidth="34rem"
+>
+	<form id="demo-soknad" novalidate>
+		<fs-error-summary id="demo-feil" heading="Skjemaet kan ikke sendes" autofocus={false}>
+			<ul class="fs-list"></ul>
+		</fs-error-summary>
+
+		<div>
+			<label class="fs-label" data-required="symbol" for="demo-epost">E-postadresse</label>
+			<input
+				class="fs-input"
+				id="demo-epost"
+				name="epost"
+				type="email"
+				required
+				aria-describedby="demo-epost-hjelp"
+			/>
+			<p class="fs-help-text" id="demo-epost-hjelp">Vi sender kvittering hit.</p>
+			<p class="fs-error-text" id="demo-epost-feil" hidden></p>
+		</div>
+
+		<div>
+			<label class="fs-label" data-required="symbol" for="demo-fodselsdato">Fødselsdato</label>
+			<input
+				class="fs-input"
+				id="demo-fodselsdato"
+				name="fodselsdato"
+				type="date"
+				data-variant="date"
+				required
+			/>
+			<p class="fs-error-text" id="demo-fodselsdato-feil" hidden></p>
+		</div>
+
+		<button class="fs-button" type="submit">Send søknaden</button>
+
+		<p class="fs-sr-only" role="status" id="demo-status"></p>
+	</form>
+</Preview>
+
+<script>
+	import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+
+	defineFsErrorSummary()
+
+	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	const flate = document.getElementById("demo-skjema")?.shadowRoot
+	const skjema = flate?.getElementById("demo-soknad") as HTMLFormElement | null
+	const oppsummering = flate?.getElementById("demo-feil")
+	const status = flate?.getElementById("demo-status")
+
+	/** Meldingene er våre egne, ikke nettleserens engelske standardtekster. */
+	const MELDINGER: Record<string, (felt: HTMLInputElement) => string> = {
+		epost: (felt) =>
+			felt.value === ""
+				? "Skriv e-postadressen din"
+				: "Skriv en e-postadresse med krøllalfa, for eksempel ola@eksempel.no",
+		fodselsdato: (felt) =>
+			felt.value === ""
+				? "Skriv fødselsdatoen din"
+				: "Skriv en dato som finnes",
+	}
+
+	function valider(): { id: string; melding: string }[] {
+		if (!skjema) return []
+
+		const feil: { id: string; melding: string }[] = []
+
+		for (const felt of skjema.querySelectorAll("input")) {
+			const melding = felt.checkValidity()
+				? ""
+				: (MELDINGER[felt.name]?.(felt) ?? "Feltet er ikke fylt ut riktig")
+
+			const feiltekst = flate?.getElementById(`${felt.id}-feil`)
+			if (feiltekst) {
+				feiltekst.textContent = melding
+				feiltekst.hidden = melding === ""
+			}
+
+			if (melding) {
+				felt.setAttribute("aria-invalid", "true")
+				felt.dataset.state = "invalid"
+				felt.setAttribute(
+					"aria-describedby",
+					[felt.getAttribute("aria-describedby"), `${felt.id}-feil`]
+						.filter(Boolean)
+						.join(" ")
+						.split(/\s+/)
+						.filter((id, i, alle) => alle.indexOf(id) === i)
+						.join(" "),
+				)
+				feil.push({ id: felt.id, melding })
+			} else {
+				felt.removeAttribute("aria-invalid")
+				delete felt.dataset.state
+				felt.setAttribute(
+					"aria-describedby",
+					(felt.getAttribute("aria-describedby") ?? "")
+						.split(/\s+/)
+						.filter((id) => id && id !== `${felt.id}-feil`)
+						.join(" "),
+				)
+			}
+		}
+
+		return feil
+	}
+
+	skjema?.addEventListener("submit", (hendelse) => {
+		hendelse.preventDefault()
+
+		const feil = valider()
+		const liste = oppsummering?.querySelector("ul")
+
+		if (liste) {
+			liste.innerHTML = feil
+				.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+				.join("")
+		}
+
+		if (oppsummering) {
+			oppsummering.setAttribute(
+				"heading",
+				feil.length === 1
+					? "Skjemaet har én feil"
+					: `Skjemaet har ${feil.length} feil`,
+			)
+		}
+
+		if (status) {
+			status.textContent =
+				feil.length === 0 ? "Søknaden er sendt." : ""
+		}
+	})
+
+	// Valider på nytt når brukeren forlater et felt, men bare etter at
+	// skjemaet er forsøkt sendt. Ellers får du en feilmelding før du har
+	// rukket å skrive ferdig.
+	let forsokt = false
+	skjema?.addEventListener("submit", () => {
+		forsokt = true
+	})
+	skjema?.addEventListener(
+		"blur",
+		() => {
+			if (forsokt) valider()
+		},
+		true,
+	)
+</script>

@@ -1,0 +1,195 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview
+	id="demo-liste"
+	stiler={[
+		"search",
+		"tag",
+		"table",
+		"skeleton",
+		"alert",
+		"button",
+		"label",
+		"sr-only",
+		"heading",
+		"paragraph",
+	]}
+	layout="stabel"
+	maxWidth="34rem"
+>
+	<div id="demo-liste-rot">
+		<form role="search" class="fs-search-row" id="demo-sok-skjema">
+			<label class="fs-label fs-sr-only" for="demo-sok">Søk i saker</label>
+			<input
+				class="fs-input fs-search"
+				type="search"
+				id="demo-sok"
+				name="q"
+				placeholder="Søk i saker"
+			/>
+		</form>
+
+		<div role="group" aria-labelledby="demo-filtre">
+			<h3 class="fs-heading" data-size="xs" id="demo-filtre">Status</h3>
+			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Innvilget">Innvilget</button>
+			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Under behandling">Under behandling</button>
+			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Avslått">Avslått</button>
+		</div>
+
+		<p class="fs-sr-only" role="status" id="demo-treff"></p>
+
+		<div id="demo-resultat"></div>
+
+		<button class="fs-button" data-variant="secondary" type="button" id="demo-last-om-igjen">
+			Last listen på nytt
+		</button>
+	</div>
+</Preview>
+
+<script>
+	type Sak = { nummer: string; dato: string; status: string }
+
+	const SAKER: Sak[] = [
+		{ nummer: "2026-0481", dato: "4. mars", status: "Under behandling" },
+		{ nummer: "2026-0377", dato: "12. februar", status: "Innvilget" },
+		{ nummer: "2025-1204", dato: "3. desember", status: "Avslått" },
+		{ nummer: "2025-0988", dato: "14. oktober", status: "Innvilget" },
+	]
+
+	const flate = document.getElementById("demo-liste")?.shadowRoot
+	const rot = flate?.getElementById("demo-liste-rot")
+	const resultat = flate?.getElementById("demo-resultat")
+	const treff = flate?.getElementById("demo-treff")
+	const sok = flate?.getElementById("demo-sok") as HTMLInputElement | null
+
+	/** Demoen feiler med vilje hver tredje lasting, for å vise feiltilstanden. */
+	let lastinger = 0
+
+	function valgteFiltre(): string[] {
+		return [...(rot?.querySelectorAll(".fs-tag[aria-pressed='true']") ?? [])].map(
+			(knapp) => (knapp as HTMLElement).dataset.status ?? "",
+		)
+	}
+
+	function visLaster() {
+		if (!resultat) return
+		resultat.innerHTML = `
+			<div aria-busy="true">
+				${'<div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>'.repeat(3)}
+			</div>`
+		if (treff) treff.textContent = "Henter saker"
+	}
+
+	function visFeil() {
+		if (!resultat) return
+		resultat.innerHTML = `
+			<div class="fs-alert" data-color="danger" role="alert">
+				<p class="fs-alert__title">Klarte ikke å hente sakene</p>
+				<p>Nettverket svarte ikke. Prøv igjen.</p>
+			</div>`
+		if (treff) treff.textContent = "Klarte ikke å hente sakene"
+	}
+
+	function visTomt(sokeord: string) {
+		if (!resultat) return
+		resultat.innerHTML = `
+			<div>
+				<p class="fs-paragraph"><strong>Ingen saker passer${sokeord ? ` med «${sokeord}»` : ""}.</strong></p>
+				<p class="fs-paragraph" data-size="small">Prøv et annet søkeord, eller fjern filtrene.</p>
+				<button class="fs-button" data-variant="secondary" type="button" id="demo-nullstill">
+					Nullstill søket
+				</button>
+			</div>`
+		if (treff) treff.textContent = "Ingen treff"
+
+		flate?.getElementById("demo-nullstill")?.addEventListener("click", () => {
+			if (sok) sok.value = ""
+			for (const knapp of rot?.querySelectorAll(".fs-tag") ?? []) {
+				knapp.setAttribute("aria-pressed", "false")
+			}
+			tegn()
+		})
+	}
+
+	function visSaker(saker: Sak[]) {
+		if (!resultat) return
+		resultat.innerHTML = `
+			<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Saker">
+				<table class="fs-table" data-variant="striped">
+					<caption class="fs-sr-only">Saker som passer med søket</caption>
+					<thead>
+						<tr><th scope="col">Saksnummer</th><th scope="col">Sendt</th><th scope="col">Status</th></tr>
+					</thead>
+					<tbody>
+						${saker
+							.map(
+								(sak) => `<tr>
+									<th scope="row">${sak.nummer}</th>
+									<td>${sak.dato}</td>
+									<td>${sak.status}</td>
+								</tr>`,
+							)
+							.join("")}
+					</tbody>
+				</table>
+			</div>`
+
+		if (treff) {
+			treff.textContent =
+				saker.length === 1 ? "1 sak" : `${saker.length} saker`
+		}
+	}
+
+	function tegn() {
+		lastinger += 1
+		visLaster()
+
+		window.setTimeout(() => {
+			if (lastinger % 3 === 0) {
+				visFeil()
+				return
+			}
+
+			const sokeord = (sok?.value ?? "").trim().toLowerCase()
+			const filtre = valgteFiltre()
+
+			const passer = SAKER.filter(
+				(sak) =>
+					(sokeord === "" ||
+						sak.nummer.toLowerCase().includes(sokeord) ||
+						sak.status.toLowerCase().includes(sokeord)) &&
+					(filtre.length === 0 || filtre.includes(sak.status)),
+			)
+
+			if (passer.length === 0) visTomt(sokeord)
+			else visSaker(passer)
+		}, 450)
+	}
+
+	// Søk mens brukeren skriver, men ikke ved hvert tastetrykk: antall treff
+	// leses opp, og det ville avbrutt opplesingen hele tiden.
+	let tidsavbrudd: number
+	sok?.addEventListener("input", () => {
+		window.clearTimeout(tidsavbrudd)
+		tidsavbrudd = window.setTimeout(tegn, 300)
+	})
+
+	flate?.getElementById("demo-sok-skjema")?.addEventListener("submit", (hendelse) => {
+		hendelse.preventDefault()
+		tegn()
+	})
+
+	for (const knapp of rot?.querySelectorAll(".fs-tag[data-selectable]") ?? []) {
+		knapp.addEventListener("click", () => {
+			const valgt = knapp.getAttribute("aria-pressed") === "true"
+			knapp.setAttribute("aria-pressed", String(!valgt))
+			tegn()
+		})
+	}
+
+	flate?.getElementById("demo-last-om-igjen")?.addEventListener("click", tegn)
+
+	tegn()
+</script>

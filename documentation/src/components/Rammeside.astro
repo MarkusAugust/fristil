@@ -1,0 +1,64 @@
+---
+/**
+ * Viser en hel side i en ramme, med en vei til å åpne den for seg selv.
+ *
+ * Noen mønstre handler om siden som helhet: hopplenken skal være det første i
+ * `<body>`, `<main>` kan bare finnes én gang, og landemerkene gir bare mening
+ * i forhold til hverandre. Slikt lar seg ikke vise i en boks inne i en annen
+ * side. Demoen er derfor en ekte side på egen adresse, som vises her i en
+ * `<iframe>` og kan åpnes i egen fane.
+ *
+ * Rammen har sin egen vindusbredde, så det du ser er det siden faktisk gjør
+ * på den bredden, uten triksing med skalering.
+ */
+
+interface Props {
+  /** Adressen til demosiden. */
+  src: string
+  /** Hva rammen inneholder. Blir `title`, som skjermlesere leser opp. */
+  tittel: string
+  /** Høyden på rammen. */
+  hoyde?: string
+}
+
+const { src, tittel, hoyde = "34rem" } = Astro.props
+---
+
+<figure class="rammeside not-content">
+	<iframe src={src} title={tittel} loading="lazy" style={`height: ${hoyde}`}
+	></iframe>
+
+	<figcaption>
+		<a href={src} target="_blank" rel="noreferrer">
+			Åpne {tittel.toLowerCase()} i egen fane
+		</a>
+		<span> (der virker Tab og hopplenken som på en ekte side)</span>
+	</figcaption>
+</figure>
+
+<style>
+	.rammeside {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--size-2);
+	}
+
+	.rammeside iframe {
+		inline-size: 100%;
+		border: 1px solid var(--semantic-divider-30);
+		border-radius: var(--size-2);
+		background: var(--semantic-page-background);
+		/* Rammen er en egen side, og skal rulle for seg selv. */
+		overflow: auto;
+	}
+
+	.rammeside figcaption {
+		font-size: var(--font-size-s);
+		color: var(--semantic-muted-foreground);
+	}
+
+	.rammeside a {
+		color: var(--semantic-interactive-main);
+	}
+</style>

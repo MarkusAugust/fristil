@@ -89,6 +89,15 @@ export default defineConfig({
           ],
         },
         {
+          label: "Mønstre",
+          items: [
+            { label: "Skjema med validering", slug: "monster/skjema" },
+            { label: "Liste med filtre", slug: "monster/liste" },
+            { label: "Sideskjelett", slug: "monster/sideskjelett" },
+            { label: "Bekreft en handling", slug: "monster/bekreftelse" },
+          ],
+        },
+        {
           label: "Komponenter",
           items: [
             {
