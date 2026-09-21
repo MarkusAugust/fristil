@@ -51,7 +51,7 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/) e
 [Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Den gjør tre ting du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, sender fokus til riktig felt når en lenke følges, og skjuler seg selv når lista er tom.
 
 ```html
-<fs-error-summary heading="Skjemaet har to feil">
+<fs-error-summary id="skjemafeil" heading="Skjemaet har to feil">
   <ul class="fs-list">
     <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
     <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
@@ -80,20 +80,32 @@ Strengere enn dette er ikke verdt det. En adresse er først bekreftet når noen 
 Nettleserens validering fanger format. Serveren fanger alt det andre: at adressen ikke finnes i registeret, at fristen er gått ut, at noen andre har søkt på det samme. De to må ende opp på samme sted.
 
 ```js
-const svar = await fetch("/api/soknad", { method: "POST", body: data })
+const skjema = document.getElementById("soknad")
 
-if (!svar.ok) {
+skjema.addEventListener("submit", async (hendelse) => {
+  hendelse.preventDefault()
+
+  const svar = await fetch("/api/soknad", {
+    method: "POST",
+    body: new FormData(skjema),
+  })
+
+  if (svar.ok) return
+
   const { feil } = await svar.json() // [{ felt: "epost", melding: "…" }]
 
-  for (const f of feil) {
-    const felt = skjema.elements[f.felt]
+  for (const { felt: navn, melding } of feil) {
+    const felt = skjema.elements[navn]
     felt.setAttribute("aria-invalid", "true")
     felt.dataset.state = "invalid"
-    document.getElementById(`${felt.id}-feil`).textContent = f.melding
+    document.getElementById(`${felt.id}-feil`).textContent = melding
   }
 
-  vis(feil) // den samme oppsummeringen som over
-}
+  // Den samme oppsummeringen som over, bygget av feilene serveren sendte.
+  document.querySelector("#skjemafeil ul").innerHTML = feil
+    .map(({ felt, melding }) => `<li><a href="#${felt}">${melding}</a></li>`)
+    .join("")
+})
 ```
 
 Har feilen ikke noe felt, for eksempel «tjenesten er nede», hører den i en [Alert](../../components/alert/) over skjemaet, ikke i oppsummeringen. Oppsummeringen er en liste over ting brukeren kan rette.

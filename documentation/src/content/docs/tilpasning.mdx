@@ -214,3 +214,34 @@ fs-calendar::part(day-selected) { background: #7c3aed; }
 Hele lista over deler står på [Calendar](../components/calendar/#deler-du-kan-style), sammen med de to formene som ikke virker: attributtselektor etter `::part()` og etterkommere av en del.
 
 Pseudoklasser virker som normalt: `::part(day):hover`.
+
+## Når CSS ikke er nok
+
+Variabler, laget og `::part()` dekker utseendet. De dekker ikke at komponenten skal gjøre noe annet enn den gjør. Da kan du overta kildekoden til den ene komponenten:
+
+```bash
+npx @fristil/designsystem overta button --ut=src/ui
+```
+
+Kommandoen kopierer komponentens filer inn i prosjektet ditt, og skriver om henvisningene ut av mappa, slik at kopien virker der den havner:
+
+```text
+Kopierte button til src/ui/button/
+  button.ts
+  button.css
+
+Komponenten er nå din. Oppdateringer av @fristil/designsystem rører den ikke.
+
+Henvisninger ut av mappa peker nå på pakken:
+  ../shared.js → @fristil/designsystem/shared
+
+Bytt ut disse importene med kopien:
+  @fristil/designsystem/button
+  @fristil/designsystem/button.css
+```
+
+Klassenavnene følger med. Importerer du stilarket fra pakken i tillegg, finnes komponenten to ganger, og hvilken som vinner avgjøres av rekkefølgen. Bytt derfor ut importene, som utskriften sier.
+
+Det du gir fra deg er oppdateringene. Rettelser og forbedringer i pakken treffer ikke kopien, og det er du som eier den derfra. Bruk kommandoen på den ene komponenten som trenger det, ikke på alle.
+
+`npx @fristil/designsystem overta` uten navn lister komponentene. Kopien skrives ikke over hvis mappa finnes fra før, med mindre du legger til `--overskriv=ja`.

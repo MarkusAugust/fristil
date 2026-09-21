@@ -9,7 +9,7 @@
  * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
  */
 
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -128,6 +128,73 @@ function krev(påstand: boolean, beskrivelse: string): void {
   krev(
     !melding.includes("at buildTheme"),
     "feilmeldingen viser et stakkspor framfor å si hva som er galt",
+  )
+}
+
+// Overtar en komponent, og skriver om henvisningene ut av mappa
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+
+  const { kode, feil: melding } = await kjør([
+    "overta",
+    "button",
+    `--ut=${join(mappe, "ui")}`,
+  ])
+
+  const filer = await readdir(join(mappe, "ui/button"))
+  const kilde = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+
+  krev(kode === 0, `overta button avsluttet med kode ${kode}`)
+  krev(
+    filer.includes("button.ts") && filer.includes("button.css"),
+    `kopien mangler filer: ${filer.join(", ")}`,
+  )
+  krev(!filer.some((fil) => fil.includes(".test.")), "testene ble med i kopien")
+  krev(
+    kilde.includes('from "@fristil/designsystem/shared"'),
+    "henvisningen ut av mappa ble ikke skrevet om",
+  )
+  krev(
+    melding.includes("er nå din"),
+    "utskriften sier ikke at kopien er konsumentens ansvar",
+  )
+
+  // Kopien skal ikke skrives over uten at det er bedt om.
+  await writeFile(join(mappe, "ui/button/button.ts"), "// min egen versjon\n")
+  const igjen = await kjør(["overta", "button", `--ut=${join(mappe, "ui")}`])
+  const etterpå = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+
+  krev(igjen.kode !== 0, "en kopi som finnes fra før ble skrevet over")
+  krev(
+    etterpå.startsWith("// min egen versjon"),
+    "endringene i kopien gikk tapt",
+  )
+
+  const tvunget = await kjør([
+    "overta",
+    "button",
+    `--ut=${join(mappe, "ui")}`,
+    "--overskriv=ja",
+  ])
+  const erstattet = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+
+  krev(tvunget.kode === 0, "--overskriv=ja virket ikke")
+  krev(
+    erstattet.includes("BUTTON_CLASS"),
+    "kopien ble ikke erstattet med --overskriv=ja",
+  )
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Sier hvilke komponenter som finnes når navnet er ukjent
+{
+  const { kode, feil: melding } = await kjør(["overta", "knapp"])
+
+  krev(kode !== 0, "et ukjent komponentnavn skulle gitt en feilkode")
+  krev(
+    melding.includes("knapp") && melding.includes("button"),
+    "feilmeldingen lister ikke komponentene som finnes",
   )
 }
 
