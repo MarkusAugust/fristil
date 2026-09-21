@@ -11,6 +11,7 @@ export type PopoverOptions = {
 
 export type PopoverAttributes = {
   host: {
+    open?: ""
     "data-preserve-attr": "open"
   }
   trigger: {
@@ -50,7 +51,12 @@ export const popover = ({
   // Om panelet er åpent står som `open` på verten, og det er brukerens
   // tilstand, ikke serverens. Uten dette lukker morfingen panelet i det
   // serveren patcher området rundt.
-  host: { "data-preserve-attr": "open" },
+  host: attributes({
+    // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
+    // sa markupen at panelet var åpent mens komponenten mente det var lukket.
+    open: open ? ("" as const) : undefined,
+    "data-preserve-attr": "open" as const,
+  }),
   trigger: attributes({
     slot: "trigger" as const,
     "aria-expanded": (open ? "true" : "false") as "true" | "false",

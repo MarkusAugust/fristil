@@ -198,11 +198,9 @@ Ingen komponent i Fristil bruker shadow DOM lenger. `<fs-calendar>` var den enes
 
 Det betyr at CSS-en din når fram overalt. Du trenger verken `::part()` eller å lete etter en vei inn i en skyggerot.
 
-Pseudoklasser virker som normalt: `::part(day):hover`.
-
 ## Når CSS ikke er nok
 
-Variabler, laget og `::part()` dekker utseendet. De dekker ikke at komponenten skal gjøre noe annet enn den gjør. Da kan du overta kildekoden til den ene komponenten:
+Variabler og laget dekker utseendet. De dekker ikke at komponenten skal gjøre noe annet enn den gjør. Da kan du overta kildekoden til den ene komponenten:
 
 ```bash
 npx @fristil/designsystem overta button --ut=src/ui

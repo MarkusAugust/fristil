@@ -26,17 +26,30 @@ import "../../../tokens/tokens.css"
 import "./session-timeout.css"
 import "../../css/sr-only/sr-only.css"
 
-/** Kort økt, så testen måler oppførsel og ikke tålmodighet. */
-const KORT = sessionTimeout({ warnAt: 100, expiresAt: 160 })
+/**
+ * Kort økt: varsel etter 3 sekunder, ute etter 13.
+ *
+ * Hvert simulerte sekund er ett kall til tidtakeren, og i Firefox koster hvert
+ * av dem en rundtur. Med minutter i testen tok den over et minutt å kjøre.
+ * Tallene er valgt slik at nedtellingen passerer 10 sekunder, som er den
+ * terskelen komponenten leser opp.
+ */
+const KORT = sessionTimeout({ warnAt: 3, expiresAt: 13 })
 
 function dialog(): HTMLDialogElement {
   return document.querySelector("dialog") as HTMLDialogElement
 }
 
-/** Flytter klokka uten å vente på den. */
+/**
+ * Flytter klokka uten å vente på den.
+ *
+ * Her ventes det bare på tidtakeren, ikke på en tegning. Komponenten gjør alt
+ * arbeidet synkront inne i intervallet, så en `requestAnimationFrame` ville
+ * bare vært noe ekstra å vente på, og i Firefox fyrte den ikke mens dialogen
+ * åpnet seg. Testen hang da uten feilmelding.
+ */
 async function gaFram(sekunder: number) {
   await vi.advanceTimersByTimeAsync(sekunder * 1000)
-  await ventPaTegning()
 }
 
 describe("fs-session-timeout", () => {
@@ -73,42 +86,42 @@ describe("fs-session-timeout", () => {
   })
 
   it("holder seg unna så lenge brukeren er i gang", async () => {
-    await gaFram(90)
+    await gaFram(2)
     expect(dialog().open).toBe(false)
   })
 
   it("varsler når det har vært stille lenge nok", async () => {
-    await gaFram(101)
+    await gaFram(4)
 
     expect(dialog().open).toBe(true)
     expect(dialog().getAttribute("role")).toBe("alertdialog")
   })
 
   it("teller ned mot utløpet", async () => {
-    await gaFram(120)
+    await gaFram(5)
 
     const tall = document.querySelector(
       ".fs-session-timeout__count",
     ) as HTMLElement
-    // 160 - 120 = 40 sekunder igjen
-    expect(tall.textContent).toBe("0:40")
+    // 13 - 5 = 8 sekunder igjen
+    expect(tall.textContent).toBe("0:08")
     // Tallet endrer seg hvert sekund. Leses det opp hver gang, er dialogen
     // ubrukelig med skjermleser.
     expect(tall.getAttribute("aria-hidden")).toBe("true")
   })
 
   it("leser opp nedtellingen ved noen terskler, ikke hvert sekund", async () => {
-    await gaFram(130)
+    await gaFram(3)
     const live = document.querySelector("[role='status']") as HTMLElement
-    expect(live.textContent).toBe("Du blir logget ut om 30 sekunder.")
+    expect(live.textContent).toBe("Du blir logget ut om 10 sekunder.")
 
     await gaFram(1)
     // Ingen ny opplesning ett sekund senere.
-    expect(live.textContent).toBe("Du blir logget ut om 30 sekunder.")
+    expect(live.textContent).toBe("Du blir logget ut om 10 sekunder.")
   })
 
   it("lukker og melder fra når brukeren vil fortsette", async () => {
-    await gaFram(101)
+    await gaFram(4)
 
     const meldinger: string[] = []
     const vert = document.querySelector(
@@ -126,7 +139,7 @@ describe("fs-session-timeout", () => {
     expect(meldinger).toEqual(["extend"])
 
     // Og klokka er nullstilt, så varselet kommer ikke rett tilbake.
-    await gaFram(90)
+    await gaFram(2)
     expect(dialog().open).toBe(false)
   })
 
@@ -137,15 +150,18 @@ describe("fs-session-timeout", () => {
     ) as FsSessionTimeout
     vert.addEventListener("session-expired", () => utlopt.push("ute"))
 
-    await gaFram(161)
+    await gaFram(14)
 
     expect(utlopt).toEqual(["ute"])
     expect(dialog().open).toBe(false)
   })
 
   it("har ingen tilgjengelighetsbrudd med varselet oppe", async () => {
-    await gaFram(101)
+    await gaFram(4)
+    expect(dialog().open).toBe(true)
+
     vi.useRealTimers()
+    await ventPaTegning()
 
     await forventIngenTilgjengelighetsbrudd()
   })

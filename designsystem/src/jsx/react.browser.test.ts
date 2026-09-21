@@ -19,9 +19,28 @@ import kilde from "./react?raw"
  * hvert attributt finnes i deklarasjonsfila.
  */
 
-/** Attributtene komponenten faktisk lytter på. */
+/**
+ * Attributter React allerede kjenner gjennom `HTMLAttributes`.
+ *
+ * `<fs-error-summary>` observerer `hidden`, fordi serveren kan ta det bort
+ * for å vise boksen. Det er ikke et attributt vi har funnet på, og å
+ * deklarere det på nytt ville vært å gjenta nettleseren.
+ */
+const STANDARD = new Set([
+  "hidden",
+  "id",
+  "class",
+  "title",
+  "lang",
+  "dir",
+  "slot",
+])
+
+/** Attributtene komponenten faktisk lytter på, utenom de standardiserte. */
 function attributtnavn(klasse: { observedAttributes?: unknown }): string[] {
-  return [...((klasse.observedAttributes ?? []) as string[])]
+  return [...((klasse.observedAttributes ?? []) as string[])].filter(
+    (navn) => !STANDARD.has(navn),
+  )
 }
 
 describe("JSX-deklarasjonene følger komponentene", () => {

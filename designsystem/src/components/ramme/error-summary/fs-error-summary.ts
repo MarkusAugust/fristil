@@ -25,7 +25,7 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  * ```
  */
 export class FsErrorSummary extends HTMLElement {
-  static observedAttributes = ["autofocus"]
+  static observedAttributes = ["autofocus", "hidden"]
 
   private hasFocused = false
   private observer?: MutationObserver
@@ -38,6 +38,13 @@ export class FsErrorSummary extends HTMLElement {
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, { childList: true, subtree: true })
     this.sync()
+  }
+
+  attributeChangedCallback(): void {
+    // Serveren kan sende boksen skjult og senere bare ta bort `hidden` på
+    // den samme noden. Uten dette får en oppsummering som nettopp ble synlig
+    // aldri fokus, og det er hele grunnen til at komponenten finnes.
+    if (this.isConnected) this.sync()
   }
 
   disconnectedCallback(): void {
@@ -83,7 +90,12 @@ export class FsErrorSummary extends HTMLElement {
     const id = link.getAttribute("href")?.slice(1)
     if (!id) return
 
-    const target = document.getElementById(id)
+    // Oppslaget går mot rota komponenten selv står i, ikke mot `document`.
+    // Ligger skjemaet i en skyggerot, som i en forhåndsvisning eller inne i
+    // en annen komponent, finner `document.getElementById` ingenting, og
+    // lenken blir en vanlig ankerlenke uten fokusflytting.
+    const rot = this.getRootNode() as Document | ShadowRoot
+    const target = rot.getElementById?.(id) ?? document.getElementById(id)
     if (!target) return
 
     event.preventDefault()
@@ -91,7 +103,8 @@ export class FsErrorSummary extends HTMLElement {
     // Er lenken til en ledetekst, skal fokus til kontrollen den peker på.
     const control =
       target instanceof HTMLLabelElement && target.htmlFor
-        ? document.getElementById(target.htmlFor)
+        ? (rot.getElementById?.(target.htmlFor) ??
+          document.getElementById(target.htmlFor))
         : target
 
     const focusable = control ?? target

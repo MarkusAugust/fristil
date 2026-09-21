@@ -75,6 +75,11 @@ export class FsPopover extends HTMLElement {
     this.observer?.disconnect()
     this.observer = undefined
     this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
+    // Referansen må nullstilles, ellers ser `sync()` at knappen er den samme
+    // når elementet settes inn igjen, og hopper over å feste lytteren på
+    // nytt. Da lar panelet seg ikke åpne lenger.
+    this.triggerElement = undefined
+    this.panel = undefined
   }
 
   attributeChangedCallback(): void {

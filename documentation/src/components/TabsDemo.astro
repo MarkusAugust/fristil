@@ -1,24 +1,36 @@
 ---
+import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
+
+// Markupen serveren sender. Rollene, tabbestoppene og hvilke paneler som er
+// skjult kommer herfra, ikke fra komponenten.
+const faner = fs.tabs({
+  id: "demo",
+  count: 3,
+  selected: 0,
+  label: "Deler av saken",
+})
+const titler = ["Søknaden", "Vedlegg", "Meldinger"]
+const innhold = [
+  "Søknaden ble sendt 4. mars 2026. Saksnummer 2026-0481.",
+  "Tre vedlegg er lastet opp. Siste kom 6. mars.",
+  "Ingen meldinger i denne saken ennå.",
+]
 ---
 
 <Preview id="demo-tabs" stiler={["tabs", "paragraph"]} maxWidth="34rem">
-	<fs-tabs label="Deler av saken">
-		<div class="fs-tabs__list">
-			<button>Søknaden</button>
-			<button>Vedlegg</button>
-			<button>Meldinger</button>
+	<fs-tabs>
+		<div {...faner.list}>
+			{faner.tabs.map((fane, i) => <button {...fane}>{titler[i]}</button>)}
 		</div>
 
-		<div class="fs-tabs__panel">
-			<p class="fs-paragraph">Søknaden ble sendt 4. mars 2026. Saksnummer 2026-0481.</p>
-		</div>
-		<div class="fs-tabs__panel">
-			<p class="fs-paragraph">Tre vedlegg er lastet opp. Siste kom 6. mars.</p>
-		</div>
-		<div class="fs-tabs__panel">
-			<p class="fs-paragraph">Ingen meldinger i denne saken ennå.</p>
-		</div>
+		{
+			faner.panels.map((panel, i) => (
+				<div {...panel}>
+					<p class="fs-paragraph">{innhold[i]}</p>
+				</div>
+			))
+		}
 	</fs-tabs>
 </Preview>
 

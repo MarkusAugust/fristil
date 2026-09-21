@@ -41,6 +41,8 @@ export class FsSuggestion extends HTMLElement {
   private activeIndex = -1
   private observer?: MutationObserver
   private control?: HTMLInputElement
+  /** Alternativene som alt har fått lytteren sin. */
+  private readonly bundne = new WeakSet<HTMLElement>()
   /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
   private choosing = false
 
@@ -89,16 +91,24 @@ export class FsSuggestion extends HTMLElement {
 
   private bind(): void {
     const control = this.querySelector<HTMLInputElement>("[role='combobox']")
-    if (!control || control === this.control) return
+    if (!control) return
 
-    this.unbind()
-    control.addEventListener("input", this.handleInput)
-    control.addEventListener("keydown", this.handleKeydown)
-    control.addEventListener("focus", this.handleFocus)
-    this.control = control
+    if (control !== this.control) {
+      this.unbind()
+      control.addEventListener("input", this.handleInput)
+      control.addEventListener("keydown", this.handleKeydown)
+      control.addEventListener("focus", this.handleFocus)
+      this.control = control
+    }
 
+    // Alternativene byttes ut uavhengig av feltet: i en Datastar-app sender
+    // serveren en ny liste mens brukeren skriver. Lå dette bak sjekken over,
+    // fikk de nye alternativene aldri lytteren sin, og valg med mus sluttet
+    // å virke etter første oppdatering.
     for (const option of this.options) {
+      if (this.bundne.has(option)) continue
       option.addEventListener("mousedown", this.handleOptionMouseDown)
+      this.bundne.add(option)
     }
   }
 

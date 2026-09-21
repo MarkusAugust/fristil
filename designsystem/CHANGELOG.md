@@ -85,6 +85,35 @@ kommer i et nytt undertall.
 - **`FIELD_PRESERVED_ATTRIBUTES`** er lista serveren skal skrive som
   `data-preserve-attr` når den ikke kan kalle `fs.field()` selv.
 
+### Rettet
+
+- **`<fs-toast duration="0">` lot ikke meldingene bli stående.** Attributtet
+  ble lest som «ugyldig» og falt tilbake til seks sekunder, så bare
+  `show(…, { duration: 0 })` virket.
+
+- **`<fs-error-summary>` fikk ikke fokus når serveren bare tok bort `hidden`.**
+  Komponenten så etter endringer i barna, ikke i attributtene, så en
+  oppsummering som nettopp ble synlig ble stående uten fokus.
+
+- **`<fs-error-summary>` finner nå feltet i sin egen rot.** Oppslaget gikk mot
+  `document`, som ikke ser inn i en skyggerot, så lenken ble en vanlig
+  ankerlenke uten fokusflytting når skjemaet lå inne i en annen komponent.
+
+- **`FIELD_PRESERVED_ATTRIBUTES` dekker alle tre elementene.** Den dekket bare
+  kontrollen, men komponenten legger også `fs-label` og markeringene på
+  ledeteksten og skjuler feilmeldingen. Serveren må derfor skrive én liste per
+  element, og konstanten har nå `label`, `control` og `error`.
+
+- **`<fs-popover>` lot seg ikke åpne etter at den var flyttet i DOM-en.**
+  Referansen til knappen ble stående, så lytteren ble aldri festet på nytt.
+
+- **`fs.popover({ open: true })` sier det nå på verten.** Før satte den bare
+  `aria-expanded` på knappen, så markupen meldte at panelet var åpent mens
+  komponenten mente det var lukket.
+
+- **`<fs-suggestion>` mistet musevalg etter at serveren sendte en ny liste.**
+  Alternativene fikk bare lytteren sin når selve feltet var nytt.
+
 ### Endret
 
 - **React-inngangen døper også om `tabindex` til `tabIndex`,** og dekker de nye

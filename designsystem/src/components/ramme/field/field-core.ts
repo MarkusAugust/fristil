@@ -132,18 +132,33 @@ export function computeFieldAttributes(
 }
 
 /**
- * Attributtene `<fs-field>` setter på elementene konsumenten har skrevet.
+ * Attributtene `<fs-field>` setter, per element den rører.
  *
  * Kjører serveren JavaScript, skal den kalle `computeFieldAttributes` og
  * skrive dem selv. Da trengs verken komponenten eller denne lista. Kjører den
  * noe annet, altså Go, PHP eller .NET, gjør komponenten koblingen på klienten,
- * og da må serveren skrive lista som `data-preserve-attr` på kontrollen.
- * Datastars morfing leser lista fra serverens node, så komponenten kan ikke
- * beskytte seg selv.
+ * og da må serveren skrive lista som `data-preserve-attr` på hvert av de tre
+ * elementene. Datastars morfing leser lista fra serverens node, per element,
+ * så komponenten kan ikke beskytte seg selv.
+ *
+ * Det holder ikke å beskytte kontrollen alene. Komponenten legger også
+ * `fs-label` og markeringene på ledeteksten, og skjuler feilmeldingen. Uten
+ * lister på de to andre forsvinner klassen og feilmeldingen ved neste
+ * morfing, som er nøyaktig den feilen kontrakten skal hindre.
  *
  * ```html
- * <input class="fs-input" id="epost" data-preserve-attr="id aria-describedby aria-invalid data-state">
+ * <label class="fs-label" for="epost"
+ *        data-preserve-attr="class data-required data-optional aria-disabled">E-post</label>
+ * <input class="fs-input" id="epost"
+ *        data-preserve-attr="id aria-describedby aria-invalid data-state disabled aria-disabled">
+ * <p class="fs-error-text" hidden data-preserve-attr="hidden">Skriv en gyldig adresse.</p>
  * ```
  */
-export const FIELD_PRESERVED_ATTRIBUTES =
-  "id aria-describedby aria-invalid data-state" as const
+export const FIELD_PRESERVED_ATTRIBUTES = {
+  /** På ledeteksten. */
+  label: "class data-required data-optional aria-disabled",
+  /** På selve kontrollen. */
+  control: "id aria-describedby aria-invalid data-state disabled aria-disabled",
+  /** På feilmeldingen. */
+  error: "hidden",
+} as const

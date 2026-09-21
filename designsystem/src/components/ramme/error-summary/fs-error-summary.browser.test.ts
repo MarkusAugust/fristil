@@ -101,3 +101,32 @@ describe("fs-error-summary", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("fs-error-summary i en skyggerot", () => {
+  /**
+   * Forhåndsvisningene i dokumentasjonen ligger i en skyggerot, og det gjør
+   * skjemaer inne i andre komponenter også. `document.getElementById` ser
+   * ikke inn dit, så lenken ble en vanlig ankerlenke uten fokusflytting.
+   */
+  it("finner feltet i sin egen rot", async () => {
+    const vert = document.createElement("div")
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    const feil = errorSummary({ count: 1 })
+
+    rot.innerHTML = `
+      <fs-error-summary ${attr(feil.container)} autofocus="false">
+        <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
+      </fs-error-summary>
+      <input id="skygge-epost" type="email" />
+    `
+
+    await ventPaTegning()
+    ;(rot.getElementById("skygge-lenke") as HTMLElement).click()
+
+    expect(rot.activeElement?.id).toBe("skygge-epost")
+
+    vert.remove()
+  })
+})

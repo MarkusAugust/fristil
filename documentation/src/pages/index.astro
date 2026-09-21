@@ -97,7 +97,7 @@ import "../styles/custom-pages-tailwind.css"
           <div class="mb-4 text-4xl">⚡</div>
           <h3 class="mb-3 text-xl font-bold">ramme</h3>
           <p class="text-sm leading-7 text-zinc-300">
-            Du legger inn din egen HTML. Komponenten kobler ledetekst, felt og feilmelding sammen, og lar elementene bli liggende i vanlig DOM.
+            Serveren skriver HTML-en, også koblingen mellom ledetekst, felt og feilmelding. Komponenten fester bare tastatur og fokus, og lar elementene bli liggende i vanlig DOM.
           </p>
           <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-field&gt;…&lt;/fs-field&gt;</code>
         </article>
@@ -105,7 +105,7 @@ import "../styles/custom-pages-tailwind.css"
           <div class="mb-4 text-4xl">🔒</div>
           <h3 class="mb-3 text-xl font-bold">frittstående</h3>
           <p class="text-sm leading-7 text-zinc-300">
-            Komponenten bygger alt selv. For tilfeller der flere deler må holdes i synk, som et datofelt der tekst og kalender alltid viser det samme.
+            Komponenten lager alt innholdet selv, fordi det ikke finnes noe for serveren å sende. Som en nedtelling mot at innloggingen går ut, der tallet kommer fra klientens klokke.
           </p>
           <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-session-timeout warn-at="1500"&gt;</code>
         </article>

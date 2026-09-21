@@ -48,8 +48,13 @@ export class FsToast extends HTMLElement {
 
   /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
   get duration(): number {
-    const value = Number(this.getAttribute("duration"))
-    return Number.isFinite(value) && value > 0 ? value : 6000
+    // `0` er en gyldig verdi og betyr at meldingene blir stående. Uten
+    // sjekken mot null her forsvant de likevel etter seks sekunder, og bare
+    // `show(..., { duration: 0 })` virket.
+    const rå = this.getAttribute("duration")
+    if (rå === null) return 6000
+    const value = Number(rå)
+    return Number.isFinite(value) && value >= 0 ? value : 6000
   }
 
   set duration(value: number) {

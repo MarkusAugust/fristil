@@ -9,6 +9,13 @@ Regelen er én setning:
 
 > Markup eies av den som sender den. Oppførsel eies av komponenten.
 
+Med markup menes strukturen: elementene, klassene, rollene og koblingen
+mellom dem. Den lager komponenten aldri. Tilstand som endrer seg mens
+brukeren holder på, som `aria-expanded` på en åpen meny, setter komponenten,
+og de attributtene er navngitt i `data-preserve-attr` fra byggeren. Skillet
+er altså ikke mellom attributt og node, men mellom det som beskriver siden og
+det som beskriver hva brukeren nettopp gjorde.
+
 ## Problemet det løser
 
 Et egendefinert element som lager sitt eget innhold i vanlig DOM havner i strid med rammeverket rundt. Rammeverket mener at HTML-en fra serveren er fasiten, og alt komponenten har lagt til er noe det ikke vet om.
@@ -88,11 +95,19 @@ Datastar leser lista fra serverens node og lar de attributtene stå. I React og 
 En Go-, PHP- eller .NET-server kan ikke kalle `fs.field()`. Da gjør `<fs-field>` koblingen på klienten i stedet, og serveren skriver lista over hva som må bevares:
 
 ```html
+<label class="fs-label" for="epost"
+       data-preserve-attr="class data-required data-optional aria-disabled">E-post</label>
 <input class="fs-input" id="epost"
-       data-preserve-attr="id aria-describedby aria-invalid data-state">
+       data-preserve-attr="id aria-describedby aria-invalid data-state disabled aria-disabled">
+<p class="fs-error-text" hidden data-preserve-attr="hidden">Skriv en gyldig adresse.</p>
 ```
 
-Konstanten heter `FIELD_PRESERVED_ATTRIBUTES`, så du slipper å skrive den av.
+Alle tre elementene trenger sin egen liste. Komponenten legger `fs-label` og
+markeringene på ledeteksten og skjuler feilmeldingen, så beskytter du bare
+kontrollen, forsvinner klassen og feilmeldingen likevel.
+
+Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, med én nøkkel per element
+(`label`, `control` og `error`), så du slipper å skrive dem av.
 
 Det gir to veier til den samme kontrakten, og hvilken som gjelder avhenger av serveren din:
 
