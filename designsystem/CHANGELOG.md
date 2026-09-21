@@ -16,6 +16,83 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.5.2 (2026-09-22)
+
+### Lagt til
+
+- **`<select>` kan tegne nedtrekkslista inne i siden.** `fs.select({ picker:
+  "styled" })` gir `data-picker="styled"`, og da bruker feltet
+  `appearance: base-select`: lista blir et vanlig element i siden i stedet for
+  et vindu fra operativsystemet, og får Fristils farger, avstander og skygge.
+  Elementet er fortsatt en helt vanlig `<select>`, så innsending, tastatur og
+  skjermleser er uendret.
+
+  Det må slås på, og det er med vilje. Chromium 148 og WebKit 26.4 har
+  `appearance: base-select`; Firefox 150 har det ikke og viser nettleserens
+  egen liste som før. Begge deler er testet i hver sin motor. I
+  høykontrastmodus faller alle tre tilbake til nettleserens egen liste, siden
+  systemfargene er de eneste som er garantert lesbare der.
+
+  Nye variabler: `--fs-select-option-padding` og
+  `--fs-select-viewport-margin`. `--fs-select-radius` gjelder nå også lista.
+
+### Rettet
+
+- **`FIELD_PRESERVED_ATTRIBUTES` dekker nå hjelpeteksten og feilmeldingen.**
+  Skriver malen ingen id-er, lager `<fs-field>` dem selv, og
+  `aria-describedby` på kontrollen peker på dem. `id` sto ikke i noen liste,
+  så en morfing fjernet den, og koblingen pekte på noe som ikke fantes: verken
+  hjelpeteksten eller feilmeldingen ble lest opp. Lista har nå en `help`-nøkkel,
+  `error` har fått `id` og ledeteksten har fått `for`.
+
+- **`<fs-error-summary>` tar fokus hver gang boksen vises på nytt.** Den tok
+  det bare første gang. Mønsteret i en Datastar-app er at serveren sender
+  boksen skjult og bare slår `hidden` av og på, mens lista står med de samme
+  lenkene, og da nullstilte ingenting flagget. Andre gang det samme skjemaet
+  feilet, ble brukeren stående i feltet uten å få vite hvorfor innsendingen
+  ikke gikk gjennom. Flagget nullstilles nå når boksen skjules.
+
+- **`<fs-suggestion>` leser hvilket alternativ som er markert fra markupen.**
+  Komponenten holdt en egen teller ved siden av `aria-selected`. Satte
+  serveren markeringen selv med `fs.suggestion({ activeIndex })`, hoppet
+  første piltast til toppen av lista i stedet for til alternativet etter, og
+  markeringen serveren nettopp sendte var borte.
+
+- **Pil opp åpner lista, og går til det siste alternativet.** Den markerte før
+  et alternativ uten å åpne lista, så `aria-activedescendant` pekte inn i noe
+  feltet samtidig meldte som lukket, og skjermleseren leste opp et alternativ
+  som ikke sto på skjermen. Uten noe markert fra før gikk den dessuten til det
+  nest siste, ikke det siste.
+
+- **`fs.suggestion().empty` bevarer `hidden` gjennom en oppdatering.**
+  Komponenten skjuler «Ingen treff» når noe passer, men elementet hadde ingen
+  `data-preserve-attr`, så teksten dukket opp igjen ved hver patch, også midt
+  i en liste med treff. Byggefunksjonen sender nå `hidden` når serveren har
+  noe å velge mellom, og navnet står i lista.
+
+  Begge ble funnet av en ny vaktpost, `morfing.browser.test.ts`, som kjører
+  Datastars egen attributtsynkronisering mot ekte markup etter at komponenten
+  har gjort jobben sin. Den dekker felt, forslagsfelt, faner og
+  sprettoppvindu.
+
+- **`.fs-select` snur riktig i språk som skrives fra høyre mot venstre.**
+  Feltet holdt av plass til pila si med en `padding` på fire verdier, altså
+  over, høyre, under og venstre. De to fysiske sidene snur ikke med språket,
+  så i RTL lå plassen på feil side og teksten la seg oppå pila. Plassen settes
+  nå logisk, og pila, som er to gradienter og derfor ikke har noen logisk
+  variant, speilvendes med `:dir(rtl)`. Nedtrekkslista var ikke dekket av
+  retningstesten i det hele tatt, og er det nå. En ny vaktpost i
+  `pakke-css.browser.test.ts` avviser fysiske kortformer med fire verdier i
+  alle stilark.
+
+- **`fs.setAttributes` fjerner nå `data-size` og `data-picker` igjen.** Den
+  rydder bare i en lukket liste av attributtnavn, og de to sto utenfor. En
+  avatar eller en overskrift som gikk tilbake til standardstørrelsen beholdt
+  altså `data-size` fra forrige kall, og fikk aldri standardutseendet sitt
+  igjen. En ny vaktpost kaller hver byggefunksjon med hver lovlige verdi den
+  selv oppgir, regner et attributt som valgfritt når det ikke er med i kallet
+  uten argumenter, og krever at hvert av dem lar seg fjerne.
+
 ## 0.5.1 (2026-09-21)
 
 ### Rettet

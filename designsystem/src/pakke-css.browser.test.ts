@@ -41,6 +41,29 @@ function isBundle(source: string): boolean {
     .every((line) => line.trim() === "" || line.trim().startsWith("@import"))
 }
 
+/**
+ * Teller verdiene i en kortform, uten å telle inni `var()` og `calc()`.
+ *
+ * `padding: var(--size-2) calc(var(--size-4) + var(--size-2))` er to verdier,
+ * ikke fem.
+ */
+function antallVerdier(verdi: string): number {
+  let dybde = 0
+  let antall = 0
+  let ihvit = true
+
+  for (const tegn of verdi.trim()) {
+    if (tegn === "(") dybde += 1
+    else if (tegn === ")") dybde -= 1
+
+    const hvit = /\s/.test(tegn)
+    if (dybde === 0 && !hvit && ihvit) antall += 1
+    if (dybde === 0) ihvit = hvit
+  }
+
+  return antall
+}
+
 /** Klasseselektorene i en fil, uten duplikater. */
 function classNames(source: string): string[] {
   const found = onlyRules(source).match(/\.[a-zA-Z_][\w-]*/g) ?? []
@@ -104,6 +127,26 @@ describe("stilarkene pakken sender ut", () => {
       .map(([, egenskap]) => egenskap)
 
     expect([...new Set(fysiske)]).toEqual([])
+  })
+
+  /*
+   * Fire verdier i `padding`, `margin` eller `inset` er over, høyre, under,
+   * venstre. To av dem er fysiske sider, og de snur ikke med språket.
+   * `.fs-select` hadde `padding: … calc(…) … var(--size-3)` for å holde av
+   * plass til pila si, og i RTL ble plassen liggende på feil side mens
+   * teksten la seg oppå pila. Tre verdier er trygt: da er den midterste
+   * begge de fysiske sidene, og lik på begge.
+   */
+  it.each(filer)("%s bruker ikke fysiske firverdier", (_navn, source) => {
+    const feil = [
+      ...onlyRules(source).matchAll(
+        /(?:^|[\s;{])(padding|margin|inset|border-width|border-color|border-style)\s*:\s*([^;}]+)/g,
+      ),
+    ]
+      .filter(([, , verdi]) => antallVerdier(verdi) >= 4)
+      .map(([, egenskap, verdi]) => `${egenskap}: ${verdi.trim()}`)
+
+    expect(feil).toEqual([])
   })
 
   it.each(filer)("%s navngir klassene i kebab-case", (_navn, source) => {

@@ -119,10 +119,16 @@ export type {
 } from "./components/css/search/search.js"
 export { search } from "./components/css/search/search.js"
 export type {
+  NonDefaultSelectPicker,
   SelectAttributes,
   SelectOptions,
+  SelectPicker,
 } from "./components/css/select/select.js"
-export { select } from "./components/css/select/select.js"
+export {
+  isSelectPicker,
+  select,
+  selectPickers,
+} from "./components/css/select/select.js"
 export * from "./components/css/shared.js"
 export type {
   SkeletonAttributes,

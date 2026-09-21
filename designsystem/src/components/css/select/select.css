@@ -7,8 +7,8 @@
 
     display: block;
     width: 100%;
-    padding: var(--size-2) calc(var(--size-4) + var(--size-2)) var(--size-2)
-      var(--size-3);
+    padding-block: var(--size-2);
+    padding-inline: var(--size-3) calc(var(--size-4) + var(--size-2));
     font-family: inherit;
     font-size: var(--font-size-m);
     line-height: 1.5;
@@ -35,6 +35,15 @@
       0.35rem 0.35rem,
       0.35rem 0.35rem;
     background-repeat: no-repeat;
+  }
+
+  /* Pila er to gradienter, og `background-position` har ingen logisk
+     variant. Speilvendingen er de samme to bitene, flyttet til venstre kant
+     og byttet om: den som lå ytterst ligger nå innerst. */
+  .fs-select:dir(rtl) {
+    background-position:
+      calc(0.75rem - 0.35rem) calc(50% - 0.1rem),
+      calc(1rem - 0.35rem) calc(50% - 0.1rem);
   }
 
   .fs-select:hover {
@@ -83,13 +92,192 @@
     outline-color: var(--semantic-success-foreground);
   }
 
+  /*
+   * Nedtrekkslista er et vindu fra operativsystemet, og ingen CSS når inn i
+   * den. `appearance: base-select` ber nettleseren tegne den inne i siden i
+   * stedet: `::picker(select)` blir et vanlig element, og hvert `<option>`
+   * kan få systemets egne farger og avstander.
+   *
+   * Det er valgfritt, og slås på med `data-picker="styled"`. Firefox 150 har
+   * det ikke, og der beholder feltet nettleserens egen liste. Det er den
+   * samme komponenten med to utseender, ikke noe som går i stykker.
+   */
+  @supports (appearance: base-select) {
+    .fs-select[data-picker="styled"],
+    .fs-select[data-picker="styled"]::picker(select) {
+      appearance: base-select;
+    }
+
+    /* Knappen tegner nå sin egen pil med `::picker-icon`, så gradientene skal
+       bort. Pila tar ekte plass i oppsettet, og plassen vi holdt av til den
+       tegnede pila ville da blitt liggende dobbelt. */
+    .fs-select[data-picker="styled"] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--size-2);
+      background-image: none;
+      padding-inline: var(--size-3);
+    }
+
+    /* Teksten i knappen er valget som står nå. Lange valg skal klippes, ikke
+       skyve pila ut av feltet. Uten `min-inline-size: 0` krymper den ikke,
+       for flex gir den minstebredden til innholdet. */
+    /* biome-ignore lint/correctness/noUnknownTypeSelector: <selectedcontent> er
+       elementet nettleseren lager for det valgte alternativet i en tilpassbar
+       nedtrekksliste. Biome kjenner det ennå ikke. */
+    .fs-select[data-picker="styled"] selectedcontent {
+      min-inline-size: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fs-select[data-picker="styled"]::picker-icon {
+      color: var(--semantic-muted-foreground);
+      transition: rotate 120ms ease;
+    }
+
+    .fs-select[data-picker="styled"]:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    .fs-select[data-picker="styled"]::picker(select) {
+      box-sizing: border-box;
+      min-inline-size: anchor-size(self-inline);
+      /* Lista skal fylle plassen som faktisk er igjen ned til kanten av
+         vinduet, ikke strekke seg utenfor den. `stretch` er nettopp den
+         plassen, og margen trekkes fra. */
+      max-block-size: stretch;
+      margin-block: var(--fs-select-viewport-margin, var(--size-2));
+      padding: 0;
+      overflow-y: auto;
+      background: var(--semantic-page-background);
+      border: 1px solid var(--semantic-field-border);
+      border-radius: var(--fs-select-radius, var(--size-1));
+      box-shadow: var(--semantic-shadow-overlay);
+      /* Er det ikke plass under feltet, legges lista over det. */
+      position-try-fallbacks: flip-block;
+      opacity: 0;
+      transition:
+        opacity 120ms ease,
+        overlay 120ms allow-discrete,
+        display 120ms allow-discrete;
+    }
+
+    .fs-select[data-picker="styled"]:open::picker(select) {
+      opacity: 1;
+    }
+
+    @starting-style {
+      .fs-select[data-picker="styled"]:open::picker(select) {
+        opacity: 0;
+      }
+    }
+
+    /* Høyden kan bare animeres der `calc-size` finnes, siden `auto` ellers
+       ikke er en verdi det går an å gå til. Uten støtte står høyden på
+       `auto`, og bare gjennomsiktigheten tones. */
+    @supports (block-size: calc-size(auto, size)) {
+      .fs-select[data-picker="styled"]::picker(select) {
+        block-size: 0;
+        transition:
+          opacity 120ms ease,
+          block-size 120ms ease,
+          overlay 120ms allow-discrete,
+          display 120ms allow-discrete;
+      }
+
+      .fs-select[data-picker="styled"]:open::picker(select) {
+        block-size: calc-size(auto, size);
+      }
+
+      @starting-style {
+        .fs-select[data-picker="styled"]:open::picker(select) {
+          block-size: 0;
+        }
+      }
+    }
+
+    /* Gruppeoverskriften er ikke et element vi kan treffe når den kommer fra
+       `label=`, bare fra `<legend>`. Derfor settes den på gruppa, og arves
+       ned: størrelsen og fargen skiller den fra valgene, og `text-indent`
+       gir den samme venstrekant som teksten i et valg. Valgene setter de tre
+       tilbake til sine egne verdier. */
+    .fs-select[data-picker="styled"] optgroup {
+      padding-block: var(--size-2) var(--size-1);
+      font-size: var(--font-size-s);
+      color: var(--semantic-muted-foreground);
+      text-indent: var(--size-3);
+    }
+
+    .fs-select[data-picker="styled"] option {
+      text-indent: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--size-2);
+      padding: var(--fs-select-option-padding, var(--size-2) var(--size-3));
+      font-family: inherit;
+      font-size: var(--font-size-m);
+      line-height: 1.5;
+      color: var(--semantic-page-foreground);
+      background: var(--semantic-page-background);
+      cursor: pointer;
+    }
+
+    /* Haken står etter teksten, ikke foran den, slik at alle valgene får
+       teksten på samme sted. */
+    .fs-select[data-picker="styled"] option::checkmark {
+      order: 1;
+      margin-inline-start: auto;
+    }
+
+    .fs-select[data-picker="styled"] option:hover {
+      background: var(--semantic-interactive-background);
+    }
+
+    .fs-select[data-picker="styled"] option:checked {
+      background: var(--semantic-interactive-main);
+      color: var(--semantic-interactive-contrast);
+    }
+
+    /* Fokus vises med en ramme, ikke med en flate. Piltastene flytter fokus
+       mellom valgene, og det valgte har allerede sin egen flate. En annen
+       bakgrunnsfarge ville derfor forsvunnet nettopp der brukeren står. */
+    .fs-select[data-picker="styled"] option:focus {
+      outline: 2px solid var(--semantic-interactive-main);
+      outline-offset: -2px;
+    }
+
+    .fs-select[data-picker="styled"] option:checked:focus {
+      outline-color: var(--semantic-interactive-contrast);
+    }
+
+    .fs-select[data-picker="styled"] option:disabled {
+      color: var(--semantic-disabled-foreground);
+      background: var(--semantic-disabled-background);
+      cursor: not-allowed;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fs-select[data-picker="styled"]::picker(select),
+      .fs-select[data-picker="styled"]::picker-icon {
+        transition: none;
+      }
+    }
+  }
+
   /* Høykontrast: pilen er to gradienter, og de fjernes i modusen. Da er
-     nettleserens egen pil bedre enn ingen. */
+     nettleserens egen pil bedre enn ingen. Lista som tegnes i siden
+     faller tilbake av samme grunn: nettleserens egen liste bruker systemfargene, og de er
+     de eneste som er garantert lesbare i modusen. */
   @media (forced-colors: active) {
-    .fs-select {
+    .fs-select,
+    .fs-select[data-picker="styled"] {
+      display: block;
       appearance: auto;
       background-image: none;
-      padding-inline-end: var(--size-3);
+      padding-inline: var(--size-3);
     }
   }
 }
