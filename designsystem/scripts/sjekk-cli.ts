@@ -198,6 +198,56 @@ function krev(påstand: boolean, beskrivelse: string): void {
   )
 }
 
+// Skriver ut hjelpen uten argumenter, og når noen ber om den
+for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
+  const { kode, ut } = await kjør(argumenter)
+
+  krev(
+    kode === 0,
+    `«${argumenter[0] ?? "uten argumenter"}» avsluttet med kode ${kode}`,
+  )
+  krev(
+    ut.includes("overta") && ut.includes("tema"),
+    `hjelpen nevner ikke begge kommandoene: ${ut.slice(0, 80)}`,
+  )
+}
+
+// Sier fra om en ukjent kommando i stedet for å lese den som et filnavn
+{
+  const { kode, feil: melding } = await kjør(["bygg"])
+
+  krev(kode !== 0, "en ukjent kommando skulle gitt en feilkode")
+  krev(
+    melding.includes("bygg") && !melding.includes("ENOENT"),
+    `feilmeldingen er et stakkspor i stedet for en forklaring: ${melding.slice(0, 80)}`,
+  )
+}
+
+// Sier fra om en temafil som ikke finnes, eller ikke er JSON
+{
+  const borte = await kjør(["tema", "finnes-ikke.json"])
+
+  krev(borte.kode !== 0, "en temafil som ikke finnes skulle gitt en feilkode")
+  krev(
+    borte.feil.includes("finnes-ikke.json") && !borte.feil.includes("ENOENT"),
+    `feilmeldingen er et stakkspor: ${borte.feil.slice(0, 80)}`,
+  )
+
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const sti = join(mappe, "ugyldig.json")
+  await writeFile(sti, "{ikke json")
+
+  const ugyldig = await kjør(["tema", sti])
+
+  krev(ugyldig.kode !== 0, "ugyldig JSON skulle gitt en feilkode")
+  krev(
+    ugyldig.feil.includes("JSON"),
+    `feilmeldingen sier ikke at fila ikke er JSON: ${ugyldig.feil.slice(0, 80)}`,
+  )
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
 if (feil.length > 0) {
   console.error(
     `Kommandolinjeverktøyet oppfører seg ikke som lovet:\n\n${feil
