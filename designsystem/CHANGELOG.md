@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.3.0 (2026-09-21)
+
 ### Rettet
 
 - `sjekk-eksport.ts` leser svaret fra `npm pack --json` i begge formene npm
