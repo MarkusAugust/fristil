@@ -16,6 +16,19 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- `sjekk-eksport.ts` leser svaret fra `npm pack --json` i begge formene npm
+  bruker. npm 11 svarer med en liste, npm 12 med et objekt der pakkenavnet er
+  nøkkelen, og arbeidsflyten som publiserer henter alltid nyeste npm. Utgivelsen
+  stoppet derfor på «{} is not iterable», med en feil som pekte på vår egen kode
+  framfor på npm. Skriptet sier nå fra med npm sin egen feilmelding når
+  pakkingen feiler.
+
+- `bin` peker på `dist/cli.js` uten `./` foran. npm rettet det selv ved
+  publisering og advarte om at navnet var «invalid and removed», som leste som
+  om kommandolinja forsvant. Den var med hele tiden.
+
 ## 0.2.0 (2026-09-21)
 
 ### Lagt til

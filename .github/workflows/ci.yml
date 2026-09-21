@@ -26,6 +26,12 @@ jobs:
         with:
           bun-version: 1.3.14
 
+      # Arbeidsflyten som publiserer kjører alltid nyeste npm, og `npm pack`
+      # er en del av byggesjekkene. Møter ikke CI samme npm, viser en endring
+      # i npm seg først når en versjon skal ut.
+      - name: Oppdater npm
+        run: npm install --global npm@latest
+
       - name: Installer avhengigheter
         run: bun install --frozen-lockfile
 

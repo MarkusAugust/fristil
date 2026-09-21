@@ -42,11 +42,41 @@ async function pakkefiler(): Promise<string[]> {
     },
   )
 
-  const utdata = await new Response(kjøring.stdout).text()
-  await kjøring.exited
+  const [utdata, feilutdata] = await Promise.all([
+    new Response(kjøring.stdout).text(),
+    new Response(kjøring.stderr).text(),
+  ])
+  const kode = await kjøring.exited
 
-  const [resultat] = JSON.parse(utdata) as [{ files: { path: string }[] }]
-  return resultat.files.map((fil) => fil.path)
+  if (kode !== 0) {
+    throw new Error(`npm pack svarte med kode ${kode}:\n${feilutdata.trim()}`)
+  }
+
+  return førstePakke(JSON.parse(utdata)).files.map((fil) => fil.path)
+}
+
+type Pakkeresultat = { files: { path: string }[] }
+
+/**
+ * npm 11 svarer med en liste som har ett resultat i seg. npm 12 svarer med et
+ * objekt der pakkenavnet er nøkkelen. Arbeidsflyten som publiserer henter
+ * alltid nyeste npm, så skriptet må tåle begge formene. Da den bare tålte den
+ * første, stoppet utgivelsen på «{} is not iterable», og feilen pekte på vår
+ * egen kode framfor på npm.
+ */
+function førstePakke(utdata: unknown): Pakkeresultat {
+  const resultater = Array.isArray(utdata)
+    ? utdata
+    : Object.values(utdata as Record<string, unknown>)
+  const [første] = resultater as Pakkeresultat[]
+
+  if (!Array.isArray(første?.files)) {
+    throw new Error(
+      `Forsto ikke svaret fra npm pack: ${JSON.stringify(utdata).slice(0, 200)}`,
+    )
+  }
+
+  return første
 }
 
 const filer = new Set(await pakkefiler())
