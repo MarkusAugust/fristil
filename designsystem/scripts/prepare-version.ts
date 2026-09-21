@@ -1,6 +1,6 @@
 /**
- * Setter versjonen som skal publiseres, i begge filene den står i. Den
- * skriver bare de to filene, og publiserer ingenting.
+ * Setter versjonen som skal publiseres, i de tre filene den står i. Den
+ * skriver bare filene, og publiserer ingenting.
  *
  * En utgivelse består av tre ting som må si det samme: nummeret i
  * `package.json`, overskriften i `CHANGELOG.md`, og taggen i git. Settes de
@@ -15,6 +15,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
+const monorepoRot = fileURLToPath(new URL("../../", import.meta.url))
 const manifestSti = join(pakke, "package.json")
 const loggSti = join(pakke, "CHANGELOG.md")
 
@@ -38,7 +39,10 @@ if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(nyVersjon)) {
 const manifest = await Bun.file(manifestSti).text()
 const logg = await Bun.file(loggSti).text()
 
-const naavaerende = (JSON.parse(manifest) as { version: string }).version
+const { name: pakkenavn, version: naavaerende } = JSON.parse(manifest) as {
+  name: string
+  version: string
+}
 
 if (!erHoyere(nyVersjon, naavaerende)) {
   stopp(
@@ -80,13 +84,39 @@ await Bun.write(
   manifest.replace(`"version": "${naavaerende}"`, `"version": "${nyVersjon}"`),
 )
 
+// `bun.lock` har også versjonen til hvert workspace i seg, og den blir
+// hengende igjen på forrige nummer. Testet med bun 1.3.14: dette stopper
+// ikke `--frozen-lockfile`, som bare sammenligner oppløsningene av
+// avhengigheter. Publiseringen går altså gjennom uansett.
+//
+// Den skrives likevel her, fordi en lockfil som oppgir feil versjon er
+// villedende for den som leser den, og avviket bare vokser for hver utgivelse.
+//
+// Verdien må settes for hånd. Verken `bun install`, `--lockfile-only` eller
+// `--force` oppdaterer den når det bare er versjonen som har endret seg. Bare
+// en full regenerering gjør det, og å slette lockfila i et slipp ville rørt
+// oppløsninger som ikke har noe med saken å gjøre.
+const lockSti = join(monorepoRot, "bun.lock")
+const lock = await Bun.file(lockSti).text()
+const lockMonster = new RegExp(
+  `("name":\\s*"${pakkenavn}",\\s*\n\\s*"version":\\s*")[^"]+(")`,
+)
+
+if (!lockMonster.test(lock)) {
+  stopp(
+    `Fant ikke versjonen til ${pakkenavn} i bun.lock. Sjekk formatet før du gir ut.`,
+  )
+}
+
+await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
+
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
 Slik gir du den ut:
 
   bun run sjekk
   git checkout -b slipp-${nyVersjon}
-  git commit -am "chore: slipp ${nyVersjon}"
+  git commit -am "Slipp ${nyVersjon}"
   git push -u origin slipp-${nyVersjon} && gh pr create --fill
 
 Når grenen er slått sammen, og først da:
