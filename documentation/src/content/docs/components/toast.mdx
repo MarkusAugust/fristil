@@ -3,6 +3,7 @@ title: Toast
 description: Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ToastDemo from "../../../components/ToastDemo.astro"
 
 Elementet er beholderen, ikke meldingen. Du legger det inn én gang i appen og kaller `show()` når noe skal meldes.
@@ -36,6 +37,127 @@ defineFsToast()
   })
 </script>
 ```
+
+## I en app
+
+Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjellen fra de andre komponentene: her kaller du en metode framfor å sette et attributt.
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+    <button class="fs-button" id="lagre" type="button">Lagre søknaden</button>
+
+    <script type="module">
+      import { defineFsToast } from "@fristil/designsystem/toast"
+      defineFsToast()
+
+      const meldinger = document.getElementById("meldinger")
+
+      document.getElementById("lagre").addEventListener("click", async () => {
+        try {
+          await lagre()
+          meldinger.show("Søknaden er lagret", { color: "success" })
+        } catch {
+          meldinger.show("Klarte ikke å lagre. Prøv igjen.", { color: "danger", duration: 0 })
+        }
+      })
+    </script>
+    ```
+
+    En feilmelding står til brukeren lukker den, derfor `duration: 0`.
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    // main.tsx, kjøres én gang når appen starter
+    import { defineFsToast } from "@fristil/designsystem/toast"
+    import "@fristil/designsystem/toast.css"
+
+    defineFsToast()
+    ```
+
+    Legg beholderen i rotkomponenten, og del referansen med en context:
+
+    ```tsx
+    import { createContext, useContext, useRef } from "react"
+    import type { FsToast } from "@fristil/designsystem"
+
+    const Meldinger = createContext<(tekst: string, farge?: "success" | "danger") => void>(
+      () => {},
+    )
+
+    export function MeldingerProvider({ children }: { children: React.ReactNode }) {
+      const kø = useRef<FsToast>(null)
+
+      const meld = (tekst: string, farge?: "success" | "danger") => {
+        kø.current?.show(tekst, { color: farge, duration: farge === "danger" ? 0 : undefined })
+      }
+
+      return (
+        <Meldinger.Provider value={meld}>
+          {children}
+          <fs-toast ref={kø} label="Meldinger" />
+        </Meldinger.Provider>
+      )
+    }
+
+    export const useMeldinger = () => useContext(Meldinger)
+    ```
+
+    ```tsx
+    const meld = useMeldinger()
+
+    <button {...fs.button()} onClick={() => meld("Søknaden er lagret", "success")}>
+      Lagre søknaden
+    </button>
+    ```
+
+    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt.
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    // Legg beholderen i sideoppsettet, så finnes den på hver side
+    ---
+
+    <slot />
+
+    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+    <script>
+      import { defineFsToast } from "@fristil/designsystem/toast"
+      defineFsToast()
+
+      // Gjør køen tilgjengelig for øyene på siden
+      window.meld = (tekst, valg) =>
+        document.getElementById("meldinger").show(tekst, valg)
+    </script>
+    ```
+
+    Beholderen er tom fra serveren, og fylles bare av kode som kjører i nettleseren. Den koster derfor ingenting på en side som ikke bruker den.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+    <button
+      class="fs-button"
+      type="button"
+      data-on:click="document.getElementById('meldinger').show('Søknaden er lagret', { color: 'success' })"
+    >
+      Lagre søknaden
+    </button>
+
+    <script type="module">
+      import { defineFsToast } from "@fristil/designsystem/toast"
+      defineFsToast()
+    </script>
+    ```
+
+    Meldingene er ikke en tilstand som skal speiles i et signal. De er noe som skjer, og derfor kaller `data-on:click` metoden direkte.
+  </TabItem>
+</Tabs>
 
 ## Attributter og metoder
 

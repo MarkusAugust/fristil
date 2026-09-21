@@ -3,7 +3,7 @@ title: Tabs
 description: Faner som kobler en rad med knapper til panelene sine. Rammekomponent.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
 
 Du skriver knappene og panelene selv. Komponenten setter rollene, holder `aria-selected` og `aria-controls` i synk, skjuler panelene som ikke er valgt, og tar piltastene.
@@ -43,6 +43,140 @@ defineFsTabs()
 ```
 
 Rekkefølgen er koblingen: første knapp hører til første panel. Du trenger ingen id-er, men skriver du dem selv, beholder komponenten dem.
+
+## I en app
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <fs-tabs id="saksfaner" label="Deler av saken">
+      <div class="fs-tabs__list">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
+      </div>
+
+      <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
+      <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+    </fs-tabs>
+
+    <script type="module">
+      import { defineFsTabs } from "@fristil/designsystem/tabs"
+      defineFsTabs()
+
+      const faner = document.getElementById("saksfaner")
+
+      faner.addEventListener("tab-select", (hendelse) => {
+        // Lagre valget, så brukeren kommer tilbake til samme fane
+        sessionStorage.setItem("sak-fane", hendelse.detail.index)
+      })
+
+      faner.selected = Number(sessionStorage.getItem("sak-fane") ?? 0)
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    // main.tsx, kjøres én gang når appen starter
+    import { defineFsTabs } from "@fristil/designsystem/tabs"
+    import "@fristil/designsystem/tabs.css"
+
+    defineFsTabs()
+    ```
+
+    ```tsx
+    import { useEffect, useRef, useState } from "react"
+
+    export function Saksfaner() {
+      const faner = useRef<HTMLElement>(null)
+      const [valgt, setValgt] = useState(0)
+
+      useEffect(() => {
+        const element = faner.current
+        if (!element) return
+
+        const lytter = (hendelse: Event) => {
+          setValgt((hendelse as CustomEvent<{ index: number }>).detail.index)
+        }
+
+        element.addEventListener("tab-select", lytter)
+        return () => element.removeEventListener("tab-select", lytter)
+      }, [])
+
+      return (
+        <fs-tabs ref={faner} selected={valgt} label="Deler av saken">
+          <div className="fs-tabs__list">
+            <button>Søknaden</button>
+            <button>Vedlegg</button>
+          </div>
+
+          <div className="fs-tabs__panel">
+            <p>Sendt 4. mars 2026.</p>
+          </div>
+          <div className="fs-tabs__panel">
+            <p>Tre vedlegg.</p>
+          </div>
+        </fs-tabs>
+      )
+    }
+    ```
+
+    `tab-select` er en egendefinert hendelse, og React kobler ikke slike opp gjennom `on…`-egenskaper. Den må derfor legges på med `addEventListener` gjennom en ref.
+
+    Importer `@fristil/designsystem/react-jsx` én gang, så kjenner TypeScript `<fs-tabs>` og attributtene på den.
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    // Ingenting her. Elementet registreres i skriptet under.
+    ---
+
+    <fs-tabs label="Deler av saken">
+      <div class="fs-tabs__list">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
+      </div>
+
+      <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
+      <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+    </fs-tabs>
+
+    <script>
+      import { defineFsTabs } from "@fristil/designsystem/tabs"
+      defineFsTabs()
+    </script>
+    ```
+
+    Fanene er vanlig HTML, så de er med i sidekilden og virker før skriptet er lastet. Da er også innholdet i alle panelene lesbart for søkemotorer.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <div data-signals="{fane: 0}">
+      <fs-tabs
+        label="Deler av saken"
+        data-attr:selected="$fane"
+        data-on:tab-select="$fane = evt.detail.index"
+      >
+        <div class="fs-tabs__list">
+          <button>Søknaden</button>
+          <button>Vedlegg</button>
+        </div>
+
+        <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
+        <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+      </fs-tabs>
+
+      <p>Du ser på fane <span data-text="$fane + 1"></span>.</p>
+    </div>
+
+    <script type="module">
+      import { defineFsTabs } from "@fristil/designsystem/tabs"
+      defineFsTabs()
+    </script>
+    ```
+
+    `data-attr:selected` setter attributtet, og `data-on:tab-select` fanger hendelsen. Signalet og komponenten holder hverandre i synk uten at du skriver noe imellom.
+  </TabItem>
+</Tabs>
 
 ## Attributter
 

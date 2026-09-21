@@ -3,6 +3,7 @@ title: Error Summary
 description: Oppsummering av feilene i et skjema, med fokusflytting. Rammekomponent.
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
 
 Når et skjema ikke kan sendes, trenger brukeren å se alle feilene på ett sted, og komme seg til dem. Du skriver lista selv, som lenker til id-en på hvert felt.
@@ -35,6 +36,160 @@ defineFsErrorSummary()
 ```
 
 Lenketeksten skal være feilmeldingen, ikke navnet på feltet. Den som hører lista skal kunne forstå hva som er galt uten å hoppe til feltet først.
+
+## I en app
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <form id="skjema" novalidate>
+      <fs-error-summary id="feil" heading="Skjemaet har feil">
+        <ul class="fs-list"></ul>
+      </fs-error-summary>
+
+      <label class="fs-label" for="epost">E-postadresse</label>
+      <input class="fs-input" id="epost" name="epost" type="email" required />
+
+      <button class="fs-button" type="submit">Send søknaden</button>
+    </form>
+
+    <script type="module">
+      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+      defineFsErrorSummary()
+
+      const skjema = document.getElementById("skjema")
+      const oppsummering = document.getElementById("feil")
+      const liste = oppsummering.querySelector("ul")
+
+      skjema.addEventListener("submit", (hendelse) => {
+        const felt = [...skjema.querySelectorAll("input")]
+        const ugyldige = felt.filter((f) => !f.checkValidity())
+
+        for (const f of felt) {
+          f.toggleAttribute("aria-invalid", ugyldige.includes(f))
+          f.dataset.state = ugyldige.includes(f) ? "invalid" : ""
+        }
+
+        liste.innerHTML = ugyldige
+          .map((f) => `<li><a href="#${f.id}">${f.validationMessage}</a></li>`)
+          .join("")
+
+        if (ugyldige.length > 0) hendelse.preventDefault()
+      })
+    </script>
+    ```
+
+    Lista tømmes og fylles på nytt ved hver innsending. Er den tom, skjuler komponenten seg selv.
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    // main.tsx, kjøres én gang når appen starter
+    import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+    import "@fristil/designsystem/error-summary.css"
+
+    defineFsErrorSummary()
+    ```
+
+    ```tsx
+    import { useState } from "react"
+    import { fs } from "@fristil/designsystem/react"
+
+    type Feil = { id: string; melding: string }
+
+    export function Søknadsskjema() {
+      const [feil, setFeil] = useState<Feil[]>([])
+      const epost = fs.field({ id: "epost", error: true, invalid: feil.length > 0 })
+
+      return (
+        <form onSubmit={(e) => { e.preventDefault(); setFeil(valider()) }} noValidate>
+          <fs-error-summary heading={`Skjemaet har ${feil.length} feil`} hidden={feil.length === 0 || undefined}>
+            <ul className="fs-list">
+              {feil.map((f) => (
+                <li key={f.id}>
+                  <a href={`#${f.id}`}>{f.melding}</a>
+                </li>
+              ))}
+            </ul>
+          </fs-error-summary>
+
+          <label {...epost.label}>E-postadresse</label>
+          <input {...fs.input({ type: "email" })} {...epost.control} />
+
+          <button {...fs.button()} type="submit">Send søknaden</button>
+        </form>
+      )
+    }
+    ```
+
+    Komponenten ser selv at lista endrer seg, og flytter fokus til boksen. Du trenger ingen `useEffect` for det.
+
+    `hidden={… || undefined}` og ikke `hidden={false}`: React 18 og 19 behandler boolske attributter på egendefinerte elementer ulikt, og `undefined` er den ene formen som virker i begge. Typene i `@fristil/designsystem/react-jsx` gjør den andre til en kompileringsfeil.
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+
+    const felt = fs.field({ id: "epost", error: true })
+    ---
+
+    <form id="skjema" novalidate>
+      <fs-error-summary id="feil" heading="Skjemaet har feil">
+        <ul class="fs-list"></ul>
+      </fs-error-summary>
+
+      <label {...felt.label}>E-postadresse</label>
+      <input {...fs.input({ type: "email" })} {...felt.control} name="epost" required />
+
+      <button {...fs.button()} type="submit">Send søknaden</button>
+    </form>
+
+    <script>
+      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+      defineFsErrorSummary()
+
+      // Samme validering som i ren HTML
+    </script>
+    ```
+
+    `fs.field()` kjører under bygging og skriver attributtene rett inn i HTML-en, så koblingen mellom ledetekst, felt og feilmelding er på plass før noe JavaScript er lastet.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <form
+      data-signals="{feil: []}"
+      data-on:submit="evt.preventDefault(); $feil = valider(evt.currentTarget)"
+    >
+      <fs-error-summary heading="Skjemaet har feil">
+        <ul class="fs-list">
+          <template data-for="f in $feil">
+            <li><a data-attr:href="'#' + f.id" data-text="f.melding"></a></li>
+          </template>
+        </ul>
+      </fs-error-summary>
+
+      <label class="fs-label" for="epost">E-postadresse</label>
+      <input
+        class="fs-input"
+        id="epost"
+        type="email"
+        required
+        data-attr:aria-invalid="$feil.some((f) => f.id === 'epost')"
+        data-attr:data-state="$feil.some((f) => f.id === 'epost') ? 'invalid' : null"
+      />
+
+      <button class="fs-button" type="submit">Send søknaden</button>
+    </form>
+
+    <script type="module">
+      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+      defineFsErrorSummary()
+    </script>
+    ```
+
+    Komponenten ser at lista endrer seg uansett hvem som endret den, så den virker like godt når Datastar fyller `<ul>`-en som når du gjør det selv.
+  </TabItem>
+</Tabs>
 
 ## Attributter
 

@@ -3,6 +3,7 @@ title: Popover
 description: Panel som henger under en knapp og lukker seg selv. Rammekomponent.
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import PopoverDemo from "../../../components/PopoverDemo.astro"
 
 Panelet bruker nettleserens egen `popover`, så det havner i topplaget og legger seg over alt annet uten at noen trenger å finne en `z-index` som er høy nok.
@@ -35,6 +36,128 @@ defineFsPopover()
 ```
 
 Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet. Komponenten setter `aria-expanded` og `aria-controls` på knappen, så skjermleseren sier om panelet er åpent.
+
+## I en app
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <fs-popover id="handlinger" placement="bottom-end">
+      <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+
+      <ul class="fs-list" data-variant="plain">
+        <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+        <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+      </ul>
+    </fs-popover>
+
+    <script type="module">
+      import { defineFsPopover } from "@fristil/designsystem/popover"
+      defineFsPopover()
+
+      const meny = document.getElementById("handlinger")
+
+      // Lukk menyen når en handling er valgt
+      meny.addEventListener("click", (hendelse) => {
+        if (hendelse.target.closest("button[slot='trigger']")) return
+        if (hendelse.target.closest("button")) meny.hide()
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    // main.tsx, kjøres én gang når appen starter
+    import { defineFsPopover } from "@fristil/designsystem/popover"
+    import "@fristil/designsystem/popover.css"
+
+    defineFsPopover()
+    ```
+
+    ```tsx
+    import { useRef } from "react"
+    import { fs } from "@fristil/designsystem/react"
+
+    export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
+      const meny = useRef<HTMLElement & { hide(): void }>(null)
+
+      const velg = (handling: () => void) => () => {
+        handling()
+        meny.current?.hide()
+      }
+
+      return (
+        <fs-popover ref={meny} placement="bottom-end">
+          <button slot="trigger" {...fs.button({ variant: "secondary" })}>
+            Handlinger
+          </button>
+
+          <ul {...fs.list({ variant: "plain" })}>
+            <li>
+              <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
+                Arkiver saken
+              </button>
+            </li>
+          </ul>
+        </fs-popover>
+      )
+    }
+    ```
+
+    Panelet åpnes og lukkes av komponenten selv, så du trenger ingen tilstand i React for det. Skal du lukke etter en handling, kaller du `hide()` på elementet.
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+    ---
+
+    <fs-popover placement="bottom-end">
+      <button slot="trigger" {...fs.button({ variant: "secondary" })}>Handlinger</button>
+
+      <ul {...fs.list({ variant: "plain" })}>
+        <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
+        <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
+      </ul>
+    </fs-popover>
+
+    <script>
+      import { defineFsPopover } from "@fristil/designsystem/popover"
+      defineFsPopover()
+    </script>
+    ```
+
+    Er handlingene lenker, virker menyen også før skriptet er lastet: innholdet ligger i sidekilden, og lenkene kan følges.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <div data-signals="{apen: false}">
+      <fs-popover
+        placement="bottom-end"
+        data-attr:open="$apen"
+        data-on:popover-toggle="$apen = evt.detail.open"
+      >
+        <button slot="trigger" class="fs-button" data-variant="secondary">Handlinger</button>
+
+        <ul class="fs-list" data-variant="plain">
+          <li>
+            <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
+              Arkiver saken
+            </button>
+          </li>
+        </ul>
+      </fs-popover>
+    </div>
+
+    <script type="module">
+      import { defineFsPopover } from "@fristil/designsystem/popover"
+      defineFsPopover()
+    </script>
+    ```
+
+    `data-attr:open` setter og fjerner attributtet etter signalet, og `data-on:popover-toggle` fanger opp at brukeren lukket panelet med Escape eller et klikk utenfor. Uten den siste ville signalet og panelet kommet i utakt.
+  </TabItem>
+</Tabs>
 
 ## Attributter
 
