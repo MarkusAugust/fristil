@@ -34,7 +34,15 @@ import Preview from "./Preview.astro"
 	`}
 >
 	<form id="demo-soknad" novalidate>
-		<fs-error-summary id="demo-feil" heading="Skjemaet kan ikke sendes" autofocus={false}>
+		<fs-error-summary
+			id="demo-feil"
+			class="fs-error-summary"
+			role="alert"
+			tabindex="-1"
+			autofocus="false"
+			hidden
+		>
+			<h2 class="fs-error-summary__title">Skjemaet kan ikke sendes</h2>
 			<ul class="fs-list"></ul>
 		</fs-error-summary>
 
@@ -167,15 +175,20 @@ import Preview from "./Preview.astro"
 				.join("")
 		}
 
-		// Overskriften står urørt når lista er tom: komponenten skjuler seg
-		// selv, og «Skjemaet har 0 feil» ville vært det siste som ble lest.
-		if (feil.length > 0) {
-			oppsummering?.setAttribute(
-				"heading",
+		// Overskriften og hidden skrives her, slik en server ville gjort det.
+		// Komponenten lager ingen markup: gjorde den det, ville en morfing i
+		// Datastar fjernet den igjen. Se «Server først».
+		const tittel = oppsummering?.querySelector(".fs-error-summary__title")
+
+		if (oppsummering) oppsummering.hidden = feil.length === 0
+
+		// Står lista tom, blir overskriften urørt. «Skjemaet har 0 feil» ville
+		// vært det siste som ble lest opp.
+		if (feil.length > 0 && tittel) {
+			tittel.textContent =
 				feil.length === 1
 					? "Skjemaet har én feil"
-					: `Skjemaet har ${feil.length} feil`,
-			)
+					: `Skjemaet har ${feil.length} feil`
 		}
 
 		return feil.length

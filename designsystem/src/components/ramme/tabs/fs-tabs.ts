@@ -1,129 +1,90 @@
-import { html, LitElement } from "lit"
-
 export const FS_TABS_TAG = "fs-tabs" as const
 
-export const TABS_LIST_CLASS = "fs-tabs__list" as const
-export const TABS_PANEL_CLASS = "fs-tabs__panel" as const
-
-function uniqueId(prefix: string): string {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
-}
-
 /**
- * Kobler en rad med knapper til panelene de hører til.
+ * Tastaturet i en fanerad.
  *
- * Du skriver knappene og panelene selv. Komponenten setter rollene, holder
- * `aria-selected` og `aria-controls` i synk, skjuler panelene som ikke er
- * valgt, og tar piltastene.
+ * Serveren skriver rollene, `aria-controls` og `hidden` med `fs.tabs()`.
+ * Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt,
+ * og innholdet hoppe når panelene skjulte seg selv. I en Datastar-app ville
+ * de dessuten komme tilbake ved hver patch.
  *
- * Tastaturet er hele grunnen til at komponenten finnes. I en faneliste skal
- * Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom
- * fanene. Et sett knapper uten denne koblingen gir én tabbestopp per fane, og
- * skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+ * Det komponenten gjør er det nettleseren ikke gjør selv: Tab hopper forbi
+ * hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett
+ * knapper uten dette gir én tabbestopp per fane, og skjermleseren sier
+ * «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+ *
+ * Attributtene som endrer seg når brukeren velger, altså `aria-selected`,
+ * `tabindex` og `hidden`, står i `data-preserve-attr` fra byggeren.
  *
  * ```html
  * <fs-tabs>
- *   <div class="fs-tabs__list">
- *     <button>Søknaden</button>
- *     <button>Vedlegg</button>
+ *   <div class="fs-tabs__list" role="tablist">
+ *     <button id="sak-tab-0" role="tab" aria-selected="true" aria-controls="sak-panel-0"
+ *             tabindex="0" data-preserve-attr="aria-selected tabindex">Søknaden</button>
  *   </div>
- *   <div class="fs-tabs__panel">…</div>
- *   <div class="fs-tabs__panel">…</div>
+ *   <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
+ *        aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">…</div>
  * </fs-tabs>
  * ```
  */
-export class FsTabs extends LitElement {
-  static properties = {
-    selected: { type: Number, reflect: true },
-    label: { type: String },
+export class FsTabs extends HTMLElement {
+  /**
+   * Ingen attributter. Hvilken fane som er valgt står i markupen serveren
+   * sendte, som `aria-selected` på fanen og `hidden` på panelene, og leses
+   * derfra. Et eget `selected` ville vært en parallell utgave av det samme.
+   */
+  static observedAttributes: string[] = []
+
+  private readonly bound = new Set<HTMLButtonElement>()
+  private observer?: MutationObserver
+
+  connectedCallback(): void {
+    this.observer = new MutationObserver(() => this.bind())
+    this.observer.observe(this, { childList: true, subtree: true })
+    this.bind()
   }
 
-  /** Indeksen på fanen som er valgt. */
-  selected = 0
-  /** Tekst som sier hva fanene velger mellom. Blir `aria-label` på raden. */
-  label?: string
-
-  createRenderRoot() {
-    return this
-  }
-
-  render() {
-    return html`<slot @slotchange=${this.handleSlotChange}></slot>`
-  }
-
-  firstUpdated() {
-    this.sync()
-  }
-
-  updated() {
-    this.sync()
-  }
-
-  private handleSlotChange = () => {
-    this.sync()
+  disconnectedCallback(): void {
+    this.observer?.disconnect()
+    this.observer = undefined
+    for (const tab of this.bound) {
+      tab.removeEventListener("click", this.handleClick)
+      tab.removeEventListener("keydown", this.handleKeydown)
+    }
+    this.bound.clear()
   }
 
   private get tabs(): HTMLButtonElement[] {
-    const list = this.querySelector(`.${TABS_LIST_CLASS}`)
-    return list ? [...list.querySelectorAll("button")] : []
+    return [...this.querySelectorAll<HTMLButtonElement>("[role='tab']")]
   }
 
   private get panels(): HTMLElement[] {
-    return [...this.querySelectorAll<HTMLElement>(`.${TABS_PANEL_CLASS}`)]
+    return [...this.querySelectorAll<HTMLElement>("[role='tabpanel']")]
   }
 
-  private sync() {
-    const list = this.querySelector(`.${TABS_LIST_CLASS}`)
-    const tabs = this.tabs
-    const panels = this.panels
+  /** Indeksen på fanen serveren har markert som valgt. */
+  get selected(): number {
+    const index = this.tabs.findIndex(
+      (tab) => tab.getAttribute("aria-selected") === "true",
+    )
+    return index < 0 ? 0 : index
+  }
 
-    if (!list || tabs.length === 0) return
-
-    list.setAttribute("role", "tablist")
-    if (this.label) list.setAttribute("aria-label", this.label)
-
-    // Er `selected` satt utenfor rekkevidde, rettes den her. Ellers ville
-    // attributtet sagt noe annet enn det brukeren ser.
-    const valid = Math.min(Math.max(this.selected, 0), tabs.length - 1)
-    if (valid !== this.selected) this.selected = valid
-
-    tabs.forEach((tab, index) => {
-      const panel = panels[index]
-      if (!tab.id) tab.id = uniqueId("fs-tab")
-      if (panel && !panel.id) panel.id = uniqueId("fs-tabpanel")
-
-      const isSelected = index === valid
-
-      tab.setAttribute("role", "tab")
-      tab.setAttribute("type", "button")
-      tab.setAttribute("aria-selected", String(isSelected))
-      // Roving tabindex: bare den valgte fanen er en tabbestopp, så Tab går
-      // fra raden og rett inn i panelet.
-      tab.tabIndex = isSelected ? 0 : -1
-      if (panel) tab.setAttribute("aria-controls", panel.id)
-
-      tab.removeEventListener("click", this.handleClick)
+  private bind(): void {
+    for (const tab of this.tabs) {
+      if (this.bound.has(tab)) continue
       tab.addEventListener("click", this.handleClick)
-      tab.removeEventListener("keydown", this.handleKeydown)
       tab.addEventListener("keydown", this.handleKeydown)
-
-      if (panel) {
-        panel.setAttribute("role", "tabpanel")
-        panel.setAttribute("aria-labelledby", tab.id)
-        panel.hidden = !isSelected
-        // Panelet får fokus når det ikke har noe å fokusere på selv, ellers
-        // hopper Tab rett forbi innholdet som nettopp ble vist.
-        panel.tabIndex = 0
-      }
-    })
+      this.bound.add(tab)
+    }
   }
 
-  private handleClick = (event: Event) => {
+  private handleClick = (event: Event): void => {
     const index = this.tabs.indexOf(event.currentTarget as HTMLButtonElement)
     if (index >= 0) this.select(index)
   }
 
-  private handleKeydown = (event: KeyboardEvent) => {
+  private handleKeydown = (event: KeyboardEvent): void => {
     const tabs = this.tabs
     const current = tabs.indexOf(event.currentTarget as HTMLButtonElement)
     if (current < 0) return
@@ -153,11 +114,19 @@ export class FsTabs extends LitElement {
   }
 
   /** Velger en fane og melder fra. */
-  select(index: number) {
+  select(index: number): void {
+    const tabs = this.tabs
+    const panels = this.panels
+    if (index < 0 || index >= tabs.length) return
     if (index === this.selected) return
 
-    this.selected = index
-    this.sync()
+    tabs.forEach((tab, i) => {
+      const valgt = i === index
+      tab.setAttribute("aria-selected", String(valgt))
+      tab.tabIndex = valgt ? 0 : -1
+      const panel = panels[i]
+      if (panel) panel.hidden = !valgt
+    })
 
     this.dispatchEvent(
       new CustomEvent("tab-select", {

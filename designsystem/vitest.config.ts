@@ -2,9 +2,6 @@ import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
-  optimizeDeps: {
-    include: ["lit", "lit/directives/if-defined.js", "lit/directives/live.js"],
-  },
   test: {
     include: ["src/**/*.browser.test.ts"],
     browser: {

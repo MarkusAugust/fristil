@@ -21,8 +21,8 @@ const EXPORTS: PackageExports = {
   ".": { import: "./dist/index.js" },
   "./shared": { import: "./dist/components/css/shared.js" },
   "./input": { import: "./dist/components/css/input/input.js" },
-  "./calendar": {
-    import: "./dist/components/frittstaende/calendar/fs-calendar.js",
+  "./suggestion": {
+    import: "./dist/components/ramme/suggestion/fs-suggestion.js",
   },
   "./field-core": { import: "./dist/components/ramme/field/field-core.js" },
   "./button.css": "./src/components/css/button/button.css",
@@ -47,7 +47,7 @@ describe("overta", () => {
     )
     expect(
       resolvePath(
-        "src/components/frittstaende/date-field",
+        "src/components/ramme/suggestion",
         "../../css/input/input.css",
       ),
     ).toBe("src/components/css/input/input.css")
@@ -134,18 +134,19 @@ describe("overta", () => {
     const plan = planTakeover(
       [
         {
-          path: "src/components/frittstaende/calendar/fs-calendar.ts",
+          path: "src/components/ramme/suggestion/fs-suggestion.ts",
           content:
-            `import { html, LitElement } from "lit"\n` +
-            `import { ifDefined } from "lit/directives/if-defined.js"\n` +
+            // Fristil har ingen avhengigheter, så dette er en oppdiktet
+            // komponent. Logikken som finner dem må likevel virke.
+            `import { noe } from "et-bibliotek"\n` +
             `import { attributes } from "../../css/shared.js"\n`,
         },
       ],
       INNGANGER,
     )
 
-    expect(plan.dependencies).toEqual(["lit"])
+    expect(plan.dependencies).toEqual(["et-bibliotek"])
     expect(plan.keptImports).toEqual(["@fristil/designsystem/shared"])
-    expect(plan.replacedEntries).toEqual(["@fristil/designsystem/calendar"])
+    expect(plan.replacedEntries).toEqual(["@fristil/designsystem/suggestion"])
   })
 })

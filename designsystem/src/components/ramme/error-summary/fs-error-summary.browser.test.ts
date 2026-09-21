@@ -7,6 +7,8 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { attr } from "../../../testing/markup"
+import { errorSummary } from "./error-summary"
 import { defineFsErrorSummary } from "./fs-error-summary"
 
 import "../../../tokens/tokens.css"
@@ -14,12 +16,12 @@ import "./error-summary.css"
 import "../../css/input/input.css"
 import "../../css/label/label.css"
 
+/** Markupen serveren sender når den fant to feil. */
+const FEIL = errorSummary({ count: 2 })
+
 async function tegn() {
-  const boks = document.querySelector("fs-error-summary") as HTMLElement & {
-    updateComplete?: Promise<unknown>
-  }
   await customElements.whenDefined("fs-error-summary")
-  await boks?.updateComplete
+  await ventPaTegning()
 }
 
 describe("fs-error-summary", () => {
@@ -29,7 +31,8 @@ describe("fs-error-summary", () => {
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary heading="Skjemaet har to feil">
+      <fs-error-summary ${attr(FEIL.container)}>
+        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
           <li><a href="#epost" id="lenke-epost">Skriv en gyldig e-postadresse</a></li>
           <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
@@ -45,57 +48,32 @@ describe("fs-error-summary", () => {
     await tegn()
   })
 
-  it("melder seg som en varsling og kan få fokus", () => {
-    const boks = document.querySelector(".fs-error-summary") as HTMLElement
-
-    expect(boks.getAttribute("role")).toBe("alert")
-    expect(boks.tabIndex).toBe(-1)
-  })
-
-  it("flytter fokus til boksen når den kommer til syne", () => {
-    const boks = document.querySelector(".fs-error-summary") as HTMLElement
-
-    // Uten dette vet ikke den som hører siden at innsendingen stoppet.
-    expect(document.activeElement).toBe(boks)
-  })
-
-  it("skriver overskriften når konsumenten ikke har gjort det", () => {
+  it("får varslingsrollen og overskriften fra serveren", () => {
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
     const tittel = document.querySelector(
       ".fs-error-summary__title",
     ) as HTMLElement
 
+    // Lagde komponenten dette selv, forsvant både klassen og overskriften ved
+    // første morfing i Datastar, og kom ikke tilbake.
+    expect(boks.classList.contains("fs-error-summary")).toBe(true)
+    expect(boks.getAttribute("role")).toBe("alert")
+    expect(boks.tabIndex).toBe(-1)
     expect(tittel.textContent).toBe("Skjemaet har to feil")
   })
 
-  it("oppdaterer overskriften når antallet feil endrer seg", async () => {
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
-    const liste = boks.querySelector("ul") as HTMLElement
+  it("skjules av serveren når det ikke er noen feil", () => {
+    const tom = errorSummary({ count: 0 })
 
-    liste.innerHTML = `<li><a href="#epost">Skriv en e-postadresse</a></li>`
-    boks.setAttribute("heading", "Skjemaet har én feil")
-    await tegn()
-
-    const tittel = boks.querySelector(
-      `.${"fs-error-summary__title"}`,
-    ) as HTMLElement
-
-    // Retter brukeren én av to feil, skal ikke overskriften bli stående på to.
-    expect(tittel.textContent).toBe("Skjemaet har én feil")
+    expect(tom.container.hidden).toBe(true)
+    expect(FEIL.container.hidden).toBeUndefined()
   })
 
-  it("lar konsumentens egen overskrift stå", async () => {
+  it("flytter fokus til boksen når den kommer til syne", () => {
     const boks = document.querySelector("fs-error-summary") as HTMLElement
-    boks.querySelector(".fs-error-summary__title")?.remove()
-    boks.insertAdjacentHTML(
-      "afterbegin",
-      `<h2 class="fs-error-summary__title">Vi fant noe som må rettes</h2>`,
-    )
-    boks.setAttribute("heading", "Skjemaet har én feil")
-    await tegn()
 
-    expect(boks.querySelector(".fs-error-summary__title")?.textContent).toBe(
-      "Vi fant noe som må rettes",
-    )
+    // Uten dette vet ikke den som hører siden at innsendingen stoppet.
+    expect(document.activeElement).toBe(boks)
   })
 
   it("gir fokus til selve feltet når en lenke følges", () => {
@@ -107,16 +85,48 @@ describe("fs-error-summary", () => {
     expect(document.activeElement?.id).toBe("epost")
   })
 
-  it("skjuler seg selv når lista er tom", async () => {
+  it("kobler seg på lenker serveren patcher inn senere", async () => {
     const boks = document.querySelector("fs-error-summary") as HTMLElement
-    boks.innerHTML = ""
-    await tegn()
+    const liste = boks.querySelector("ul") as HTMLElement
 
-    expect(boks.hidden).toBe(true)
+    liste.innerHTML = `<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>`
+    await tegn()
+    ;(document.getElementById("ny-lenke") as HTMLElement).click()
+
+    expect(document.activeElement?.id).toBe("fodselsdato")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-error-summary i en skyggerot", () => {
+  /**
+   * Forhåndsvisningene i dokumentasjonen ligger i en skyggerot, og det gjør
+   * skjemaer inne i andre komponenter også. `document.getElementById` ser
+   * ikke inn dit, så lenken ble en vanlig ankerlenke uten fokusflytting.
+   */
+  it("finner feltet i sin egen rot", async () => {
+    const vert = document.createElement("div")
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    const feil = errorSummary({ count: 1 })
+
+    rot.innerHTML = `
+      <fs-error-summary ${attr(feil.container)} autofocus="false">
+        <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
+      </fs-error-summary>
+      <input id="skygge-epost" type="email" />
+    `
+
+    await ventPaTegning()
+    ;(rot.getElementById("skygge-lenke") as HTMLElement).click()
+
+    expect(rot.activeElement?.id).toBe("skygge-epost")
+
+    vert.remove()
   })
 })

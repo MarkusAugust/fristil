@@ -3,7 +3,7 @@
  *
  * Lista brukes av to tester: den som måler Fristils egne farger, og den som
  * måler et tema generatoren har laget av noen andre sine merkefarger. Uten
- * delingen ville generatoren blitt målt mot en kopi som kunne gå fra
+ * delingen ville generatoren blitt sjekket mot en kopi som kunne gå fra
  * hverandre, og da måler den ikke lenger det samme løftet.
  */
 
@@ -75,7 +75,7 @@ export const PAR: Array<[navn: string, forgrunn: string, bakgrunn: string]> = [
     "--semantic-interactive-background",
   ],
   // Avataren skriver initialer i interactive-foreground på
-  // interactive-background. Paret manglet i lista, og ble derfor ikke målt.
+  // interactive-background. Paret manglet i lista, og ble derfor ikke sjekket.
   [
     "initialer i avatar",
     "--semantic-interactive-foreground",

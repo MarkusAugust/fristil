@@ -15,7 +15,7 @@ import "./toast.css"
 async function tegn() {
   const toast = document.querySelector("fs-toast") as FsToast
   await customElements.whenDefined("fs-toast")
-  await toast.updateComplete
+  await ventPaTegning()
   return toast
 }
 

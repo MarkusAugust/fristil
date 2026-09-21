@@ -1,14 +1,14 @@
 ---
 title: Suggestion
-description: Tekstfelt med forslag som snevres inn mens brukeren skriver. Frittstående komponent.
+description: Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SuggestionDemo from "../../../components/SuggestionDemo.astro"
 
-Alternativene skrives som `<option>`-barn, slik de ville stått i en `<datalist>`. Komponenten leser dem og bygger lista selv, fordi nettleserens egen `<datalist>` ikke kan styles, oppfører seg ulikt i hver nettleser, og ikke melder antall treff til skjermlesere.
+Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, tar piltastene, og melder antall treff til skjermlesere.
 
-Feltet er et fritekstfelt, ikke en nedtrekksliste. Brukeren kan skrive noe som ikke står i lista. Skal bare gitte verdier godtas, er [Select](../select/) riktig.
+Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
 
 ```ts
 // main.ts, kjøres én gang når appen starter
@@ -18,17 +18,55 @@ import "@fristil/designsystem/suggestion.css"
 defineFsSuggestion()
 ```
 
-## Felt med forslag
+## Kommunesøk
 
 <SuggestionDemo />
 
+## Markupen
+
+```ts
+const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: true })
+```
+
 ```html
-<fs-suggestion label="Kommune" name="kommune" help-text="Vi fyller ut resten av adressen for deg.">
-  <option>Bergen</option>
-  <option>Bodø</option>
-  <option>Oslo</option>
-  <option>Tromsø</option>
+<fs-suggestion>
+  <label class="fs-label" for="kommune">Kommune</label>
+  <div class="fs-suggestion__field">
+    <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+           autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+           aria-autocomplete="list" aria-describedby="kommune-help kommune-status"
+           data-preserve-attr="aria-expanded aria-activedescendant">
+
+    <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
+        data-preserve-attr="hidden">
+      <li class="fs-suggestion__option" id="kommune-option-0" role="option"
+          aria-selected="false" data-preserve-attr="aria-selected hidden">Bergen</li>
+      <li class="fs-suggestion__option" id="kommune-option-1" role="option"
+          aria-selected="false" data-preserve-attr="aria-selected hidden">Bodø</li>
+    </ul>
+
+    <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+    <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+          data-ignore-morph></span>
+  </div>
+  <p class="fs-help-text" id="kommune-help">Vi fyller ut resten av adressen for deg.</p>
 </fs-suggestion>
+```
+
+Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Server først](/server-forst/).
+
+Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
+
+```html
+<li class="fs-suggestion__option" id="kommune-option-0" role="option" data-value="4601">Bergen</li>
+```
+
+## Når serveren filtrerer selv
+
+I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett `server-filtered`, så holder komponenten fingrene av fatet og lar lista være som den kom.
+
+```html
+<fs-suggestion server-filtered>…</fs-suggestion>
 ```
 
 ## I en app
@@ -36,83 +74,82 @@ defineFsSuggestion()
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <form id="adresse">
-      <fs-suggestion id="kommune" label="Kommune" name="kommune">
-        <option>Bergen</option>
-        <option>Oslo</option>
-        <option>Tromsø</option>
-      </fs-suggestion>
-
-      <button class="fs-button" type="submit">Neste</button>
-    </form>
+    <fs-suggestion id="kommunesok">
+      <label class="fs-label" for="kommune">Kommune</label>
+      <div class="fs-suggestion__field">
+        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+               aria-autocomplete="list" data-preserve-attr="aria-expanded aria-activedescendant">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
+            data-preserve-attr="hidden">
+          <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+          <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
+        </ul>
+        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+              data-ignore-morph></span>
+      </div>
+    </fs-suggestion>
 
     <script type="module">
       import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
       defineFsSuggestion()
 
-      const felt = document.getElementById("kommune")
-
-      felt.addEventListener("suggestion-select", (hendelse) => {
-        hentPostnummer(hendelse.detail.value)
-      })
-
-      document.getElementById("adresse").addEventListener("submit", (hendelse) => {
-        hendelse.preventDefault()
-        console.log(felt.value) // det som står i feltet, valgt eller skrevet
+      document.getElementById("kommunesok").addEventListener("suggestion-select", (evt) => {
+        console.log("valgte", evt.detail.value)
       })
     </script>
     ```
-
-    Skriver brukeren fritt uten å velge et forslag, kommer ingen hendelse. Les `felt.value` når skjemaet sendes.
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.tsx, kjøres én gang når appen starter
+    import { fs } from "@fristil/designsystem/react"
     import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-    import "@fristil/designsystem/suggestion.css"
 
     defineFsSuggestion()
-    ```
 
-    ```tsx
-    import { useEffect, useRef, useState } from "react"
+    const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
 
-    export function Kommunefelt() {
-      const felt = useRef<HTMLElement>(null)
-      const [kommune, setKommune] = useState("")
-
-      useEffect(() => {
-        const element = felt.current
-        if (!element) return
-
-        const lytter = (hendelse: Event) => {
-          setKommune((hendelse as CustomEvent<{ value: string }>).detail.value)
-        }
-
-        element.addEventListener("suggestion-select", lytter)
-        return () => element.removeEventListener("suggestion-select", lytter)
-      }, [])
+    export function Kommunesok() {
+      const forslag = fs.suggestion({ id: "kommune", count: KOMMUNER.length })
 
       return (
-        <fs-suggestion ref={felt} label="Kommune" name="kommune" value={kommune}>
-          {kommuner.map((navn) => (
-            <option key={navn}>{navn}</option>
-          ))}
+        <fs-suggestion>
+          <label {...forslag.label}>Kommune</label>
+          <div {...forslag.field}>
+            <input {...forslag.control} name="kommune" />
+            <ul {...forslag.list}>
+              {forslag.options.map((valg, i) => (
+                <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
+              ))}
+            </ul>
+            <p className="fs-suggestion__empty" hidden>Ingen treff</p>
+            <span {...forslag.status} />
+          </div>
         </fs-suggestion>
       )
     }
     ```
-
-    Alternativene kan byttes ut når som helst. Komponenten leser dem på nytt, så en liste som hentes fra serveren mens brukeren skriver virker som den skal.
   </TabItem>
   <TabItem label="Astro">
     ```astro
     ---
-    const kommuner = await hentKommuner()
+    import { fs } from "@fristil/designsystem"
+
+    const kommuner = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+    const forslag = fs.suggestion({ id: "kommune", count: kommuner.length })
     ---
 
-    <fs-suggestion label="Kommune" name="kommune">
-      {kommuner.map((navn) => <option>{navn}</option>)}
+    <fs-suggestion>
+      <label {...forslag.label}>Kommune</label>
+      <div {...forslag.field}>
+        <input {...forslag.control} name="kommune" />
+        <ul {...forslag.list}>
+          {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+        </ul>
+        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+        <span {...forslag.status}></span>
+      </div>
     </fs-suggestion>
 
     <script>
@@ -120,104 +157,61 @@ defineFsSuggestion()
       defineFsSuggestion()
     </script>
     ```
-
-    Alternativene hentes under bygging og står i sidekilden. Feltet er et vanlig tekstfelt før skriptet er lastet, og kan fylles ut og sendes inn uansett.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <div data-signals="{kommune: ''}">
-      <fs-suggestion
-        label="Kommune"
-        name="kommune"
-        data-attr:value="$kommune"
-        data-on:change="$kommune = evt.currentTarget.value"
-      >
-        <option>Bergen</option>
-        <option>Oslo</option>
-        <option>Tromsø</option>
-      </fs-suggestion>
-
-      <p data-show="$kommune !== ''">
-        Vi henter postnummer for <span data-text="$kommune"></span>.
-      </p>
-    </div>
-
-    <script type="module">
-      import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-      defineFsSuggestion()
-    </script>
+    <fs-suggestion server-filtered
+                   data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
+                   data-on:suggestion-select="$kommune = evt.detail.value">
+      <label class="fs-label" for="kommune">Kommune</label>
+      <div class="fs-suggestion__field">
+        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+               aria-autocomplete="list" data-preserve-attr="aria-expanded aria-activedescendant">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
+            data-preserve-attr="hidden"></ul>
+        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+              data-ignore-morph></span>
+      </div>
+    </fs-suggestion>
     ```
 
-    Bruk `evt.currentTarget`, ikke `evt.target`. Komponenten rendrer et `<input>` inni seg, og hendelsen bobler derfra.
+    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `server-filtered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
   </TabItem>
 </Tabs>
 
-## Attributter
+## Tilgjengelighet
 
-| Attributt | Type | Effekt |
-| --- | --- | --- |
-| `label` | streng | Ledeteksten over feltet. Påkrevd. |
-| `value` | streng | Det som står i feltet. Speiles når brukeren velger. |
-| `name` | streng | Navnet i `FormData` |
-| `placeholder` | streng | Plassholder i feltet |
-| `help-text` | streng | Hjelpetekst under feltet |
-| `error-text` | streng | Feilmelding. Vises når `invalid` er satt. |
-| `no-results-text` | streng | Teksten når ingenting passer. Standard: «Ingen treff». |
-| `invalid` | boolsk | Setter `aria-invalid` og viser feilmeldingen |
-| `required`, `optional`, `disabled` | boolsk | Som i [Field](../field/) |
-| `control-id`, `described-by` | streng | For egne id-er og ekstra beskrivelser |
+Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Alt står i markupen fra serveren, så semantikken er riktig før skriptet kjører.
 
-## Hendelser
+- **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
+- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.
+- **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
 
-| Hendelse | `detail` | Når |
-| --- | --- | --- |
-| `suggestion-select` | `{ value, label }` | Et forslag velges |
-| `change` | ingen | Samtidig med `suggestion-select` |
-
-```js
-document.querySelector("fs-suggestion").addEventListener("suggestion-select", (hendelse) => {
-  hentPostnummer(hendelse.detail.value)
-})
-```
-
-Skriver brukeren fritt uten å velge et forslag, kommer ingen hendelse. Les `element.value` når skjemaet sendes.
-
-## Tastatur
-
-| Tast | Virkning |
+| Tast | Gjør |
 | --- | --- |
-| `Pil ned` og `Pil opp` | Flytter mellom forslagene. Går rundt. |
-| `Enter` | Velger forslaget som er markert |
-| `Escape` | Lukker lista uten å velge |
-| Skriving | Snevrer inn lista, og fjerner markeringen |
-
-Antall treff meldes i et eget felt med `role="status"`, så den som hører siden vet om det er noe å velge mellom.
+| Pil ned | Åpner lista, eller flytter til neste alternativ |
+| Pil opp | Forrige alternativ |
+| Enter | Velger det markerte |
+| Escape | Lukker lista |
 
 ## Klasser du kan style
 
-Komponenten rendrer i vanlig DOM, og bruker de vanlige klassene for ledetekst, felt, hjelpetekst og feilmelding:
-
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-suggestion__field` | Feltet og lista, som ligger over |
-| `.fs-suggestion__list` | Forslagslista |
-| `.fs-suggestion__option` | Ett forslag |
-| `.fs-suggestion__empty` | Raden som sier at ingenting passer |
-| `.fs-label`, `.fs-input`, `.fs-help-text`, `.fs-error-text`, `.fs-sr-only` | De vanlige komponentklassene |
+| `.fs-suggestion__field` | Feltet og lista, som ligger under det |
+| `.fs-suggestion__list` | Selve lista. `hidden` når den er lukket |
+| `.fs-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
+| `.fs-suggestion__empty` | Teksten som vises når ingenting passer |
 
-| Variabel | Standard |
+| Variabel | Reserve |
 | --- | --- |
-| `--fs-suggestion-max-height` | `calc(var(--size-10) * 4)` |
-| `--fs-suggestion-radius` | `var(--size-1)` |
+| `--fs-suggestion-max-height` | `18rem` |
 | `--fs-suggestion-option-padding` | `var(--size-2) var(--size-3)` |
+| `--fs-suggestion-radius` | `var(--size-1)` |
 
-Markeringen av det aktive forslaget følger `aria-selected`, altså den samme opplysningen skjermleseren leser. Da kan ikke det synlige og det opplesne komme i utakt.
-
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
-
-## Tilgjengelighet
-
-- Fokus blir i tekstfeltet hele tiden. Forslaget som er markert pekes ut med `aria-activedescendant`, slik at brukeren kan fortsette å skrive.
-- Lista skal ikke åpne seg med et tomt resultat uten forklaring. «Ingen treff» er en beskjed, ikke en tom boks.
-- Har du hundrevis av alternativer, hent dem fra serveren mens brukeren skriver, og sett `<option>`-barna på nytt.
-- Er lista kort og fast, er [Select](../select/) enklere for alle parter.
+```css
+.fs-suggestion__list {
+  --fs-suggestion-max-height: 24rem;
+}
+```

@@ -184,7 +184,16 @@ describe("formen på navnerommet", () => {
       navn !== "setAttributes" &&
       navn !== "isState" &&
       navn !== "isMarker" &&
-      navn !== "field",
+      // De sammensatte byggerne gir ett attributtsett per element i stedet
+      // for ett flatt sett, og krever en id for å kunne koble dem sammen.
+      ![
+        "field",
+        "errorSummary",
+        "popover",
+        "tabs",
+        "suggestion",
+        "toast",
+      ].includes(navn),
   ) as [string, () => Record<string, unknown>][]
 
   it("har byggere å kontrollere", () => {

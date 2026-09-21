@@ -1,16 +1,12 @@
 /// <reference path="./types/css.d.ts" />
 
-import type { LitElement } from "lit"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import knappeKilde from "./components/css/button/button.css?inline"
-import { defineFsCalendar } from "./components/frittstaende/calendar/fs-calendar"
-import { defineFsDateField } from "./components/frittstaende/date-field/fs-date-field"
 import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/input/input.css"
-import "./components/frittstaende/date-field/date-field.css"
 
 /**
  * At en konsument faktisk får lov til å tilpasse systemet.
@@ -81,91 +77,6 @@ describe("en konsument kan tilpasse systemet", () => {
 
     const button = document.querySelector(".fs-button") as HTMLElement
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(124, 58, 237)")
-  })
-})
-
-/**
- * De frittstående komponentene, som eier sin egen markup.
- *
- * `<fs-date-field>` rendrer i vanlig DOM, og la tidligere oppsettet sitt i
- * `style=`-attributter. Inline stil taper bare for `!important`, så
- * komponenten var i praksis låst. `<fs-calendar>` har shadow DOM, der
- * konsumentens selektorer ikke når inn i det hele tatt. Der er
- * komponentvariabler og `::part()` de eneste veiene.
- */
-describe("de frittstående komponentene kan tilpasses", () => {
-  beforeEach(async () => {
-    for (const style of document.querySelectorAll("style[data-consumer]")) {
-      style.remove()
-    }
-    document.body.innerHTML = `
-      <fs-date-field label="Fødselsdato"></fs-date-field>
-      <fs-calendar id="alene" open></fs-calendar>
-    `
-    defineFsDateField()
-    defineFsCalendar()
-    await customElements.whenDefined("fs-date-field")
-    await customElements.whenDefined("fs-calendar")
-    for (const element of document.querySelectorAll(
-      "fs-date-field, fs-calendar",
-    )) {
-      await (element as LitElement).updateComplete
-    }
-  })
-
-  it("lar konsumenten flytte ikonet i fs-date-field", () => {
-    const button = document.querySelector(
-      ".fs-date-field__icon-btn",
-    ) as HTMLElement
-
-    // Uten inline stil på elementet holder det med én klasse, altså 0,1,0
-    apply(".fs-date-field__icon-btn { inset-inline-end: 40px; }")
-
-    expect(getComputedStyle(button).insetInlineEnd).toBe("40px")
-  })
-
-  it("lar konsumenten sette komponentvariabler inn i shadow DOM", () => {
-    apply(":root { --fs-calendar-radius: 12px; }")
-
-    const calendar = document.getElementById("alene") as HTMLElement
-    const popup = calendar.shadowRoot?.querySelector(".popup") as HTMLElement
-    expect(getComputedStyle(popup).borderRadius).toBe("12px")
-  })
-
-  it("lar konsumenten nå innsiden av kalenderen med ::part()", () => {
-    apply("fs-calendar::part(month-button) { background-color: rgb(9, 9, 9); }")
-
-    const calendar = document.getElementById("alene") as HTMLElement
-    const knapp = calendar.shadowRoot?.querySelector(
-      ".month-button",
-    ) as HTMLElement
-    expect(getComputedStyle(knapp).backgroundColor).toBe("rgb(9, 9, 9)")
-  })
-
-  it("når kalenderdelene også gjennom fs-date-field", async () => {
-    // fs-date-field har ikke shadow DOM selv, men rendrer en fs-calendar
-    // som har det. Delene skal kunne nås gjennom datofeltet.
-    apply("fs-date-field fs-calendar::part(trigger) { border-radius: 7px; }")
-
-    const felt = document.querySelector("fs-date-field") as HTMLElement
-    const kalender = felt.querySelector("fs-calendar") as LitElement
-    await kalender.updateComplete
-    const trigger = kalender.shadowRoot?.querySelector(
-      ".trigger",
-    ) as HTMLElement
-
-    expect(getComputedStyle(trigger).borderRadius).toBe("7px")
-  })
-
-  it("eksponerer dagens tilstand som egne delnavn", () => {
-    // ::part(day)[data-selected] treffer ikke. Det er målt, og derfor delnavn.
-    apply("fs-calendar::part(day-today) { outline: 3px solid rgb(8, 8, 8); }")
-
-    const calendar = document.getElementById("alene") as HTMLElement
-    const iDag = calendar.shadowRoot?.querySelector(
-      '.day[data-today="true"]',
-    ) as HTMLElement
-    expect(getComputedStyle(iDag).outlineColor).toBe("rgb(8, 8, 8)")
   })
 })
 

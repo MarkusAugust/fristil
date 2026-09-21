@@ -34,49 +34,44 @@ En web component du legger dine egne HTML-elementer inn i. Den lager ingen marku
 </fs-field>
 ```
 
-Komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid`. Du eier strukturen, den eier koblingen. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
+Koblingen mellom de fire elementene, altså `for`, `id`, `aria-describedby` og `aria-invalid`, skrives av serveren med `fs.field()`. Komponenten finnes for servere som ikke kan kalle den. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
 
 ### frittstående
 
-En web component som bygger alt selv. Du sender inn attributter.
+En web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende.
 
 ```html
-<fs-date-field
-  label="Reisedato"
-  value="2026-05-31"
-  help-text="Skriv datoen som DD-MM-ÅÅÅÅ, eller velg den i kalenderen."
-  error-text="Skriv en dato som finnes."
-></fs-date-field>
+<fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
 ```
 
-Du slipper å sette opp markupen, men bestemmer mindre over den. Passer der interaksjonen er det vanskelige, som et datofelt der tekstfeltet og kalenderen alltid må vise den samme datoen.
+Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er to av dem: [`<fs-session-timeout>`](../components/session-timeout/), der nedtellingen er klientens klokke, og [`<fs-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<fs-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
 
 ## Hvorfor tre kategorier
 
-Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, men du vil fortsatt eie markupen. Et datofelt må holde et tekstfelt og en kalender i synk, og det klarer ingen klasse alene.
+Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, og markupen må stå i HTML-en serveren sender, ellers finnes ikke feltet før skriptet har kjørt. En nedtelling mot at økten går ut finnes derimot ikke før klienten begynner å telle.
 
-Delingen gjør at du laster det komponenten trenger, og ikke mer: en knapp er null JavaScript, mens datofeltet er en web component. Den gjør det også lett å begynne smått, med `tokens.css` og noen knapper.
+Vilkåret som avgjør hvor en komponent hører hjemme:
 
-## Shadow DOM
+> Bærer den en verdi inn i en innsending, eller har den innhold serveren må sende, kan den ikke eie sin egen markup.
 
-Shadow DOM er et valg per komponent, ikke en egen kategori. `<fs-field>` og `<fs-date-field>` kjører i vanlig DOM fordi skjemaelementene må være synlige utenfra. `<fs-calendar>` skjermes fordi kalenderpanelet har mange interne elementer ingen app bør style ved et uhell.
+Delingen gjør også at du laster det komponenten trenger og ikke mer: en knapp er null JavaScript.
 
-Tommelfingerregelen er at skjemafelt skal stå i vanlig DOM, mens en komponent som eier hele innsiden sin kan skjermes.
+## Serveren skriver markupen
 
-Valget avgjør også om komponenten trenger en CSS-import:
+Fristil er bygget for apper der HTML-en kommer fra serveren, enten det er TanStack Start, React Server Components eller Datastar. Ingen komponent rendrer sitt eget innhold i DOM serveren eier, fordi rammeverket rundt da river det bort igjen ved neste oppdatering. Det er testet, ikke antatt. Hele begrunnelsen står i [Server først](../server-forst/).
 
-| Komponent | Kategori | DOM | Stilark |
-| --- | --- | --- | --- |
-| `<fs-field>` | ramme | vanlig | `field.css` |
-| `<fs-tabs>` | ramme | vanlig | `tabs.css` |
-| `<fs-error-summary>` | ramme | vanlig | `error-summary.css` |
-| `<fs-popover>` | ramme | vanlig | `popover.css` |
-| `<fs-date-field>` | frittstående | vanlig | `date-field.css` |
-| `<fs-suggestion>` | frittstående | vanlig | `suggestion.css` |
-| `<fs-toast>` | frittstående | vanlig | `toast.css` |
-| `<fs-calendar>` | frittstående | Shadow | ingen |
+Ingen komponent bruker shadow DOM. Alle elementene står i vanlig DOM, og CSS-en din når fram overalt.
 
-En Shadow DOM-komponent tar med stilene sine. En komponent i vanlig DOM gjør det ikke, og trenger derfor et stilark på siden. Det er derfor to frittstående komponenter oppfører seg ulikt her: `<fs-calendar>` klarer seg alene, mens `<fs-date-field>` må ha `date-field.css`.
+| Komponent | Kategori | Stilark |
+| --- | --- | --- |
+| `<fs-field>` | ramme | `field.css` |
+| `<fs-tabs>` | ramme | `tabs.css` |
+| `<fs-error-summary>` | ramme | `error-summary.css` |
+| `<fs-popover>` | ramme | `popover.css` |
+| `<fs-suggestion>` | ramme | `suggestion.css` |
+| `<fs-toast>` | frittstående | `toast.css` |
+| `<fs-session-timeout>` | frittstående | `session-timeout.css` |
+| `<fs-connection-status>` | frittstående | `connection-status.css` |
 
 ## Design tokens
 

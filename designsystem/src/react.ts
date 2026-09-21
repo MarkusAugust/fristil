@@ -38,10 +38,17 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
+import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
+import { sessionTimeout } from "./components/frittstaende/session-timeout/session-timeout.js"
+import { toast } from "./components/frittstaende/toast/toast.js"
+import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
 import {
   computeFieldAttributes,
   type FieldOptions,
 } from "./components/ramme/field/field-core.js"
+import { popover } from "./components/ramme/popover/popover.js"
+import { suggestion } from "./components/ramme/suggestion/suggestion.js"
+import { tabs } from "./components/ramme/tabs/tabs.js"
 import { setAttributes } from "./dom.js"
 
 /**
@@ -73,7 +80,22 @@ export type ReactAttributes<T> = {
     ? "className"
     : K extends "for"
       ? "htmlFor"
-      : K]: T[K]
+      : K extends "tabindex"
+        ? "tabIndex"
+        : K]: T[K]
+}
+
+/**
+ * Attributtene som heter noe annet i React.
+ *
+ * `tabindex` kom med de sammensatte byggerne: feiloppsummeringen skal kunne
+ * få fokus, og bare den valgte fanen er en tabbestopp. Uten omdøpingen
+ * advarer React om hver eneste av dem.
+ */
+const NAVN: Record<string, string> = {
+  class: "className",
+  for: "htmlFor",
+  tabindex: "tabIndex",
 }
 
 export function toReactAttributes<T extends Record<string, unknown>>(
@@ -81,8 +103,7 @@ export function toReactAttributes<T extends Record<string, unknown>>(
 ): ReactAttributes<T> {
   const result: Record<string, unknown> = {}
   for (const [name, value] of Object.entries(attributes)) {
-    result[name === "class" ? "className" : name === "for" ? "htmlFor" : name] =
-      value
+    result[NAVN[name] ?? name] = value
   }
   return result as ReactAttributes<T>
 }
@@ -148,6 +169,63 @@ export const fs = {
     const field = computeFieldAttributes(options)
     return { ...field, label: toReactAttributes(field.label) }
   },
+
+  /**
+   * De sammensatte byggerne gir ett attributtsett per element, og hvert sett
+   * må døpes om for seg. `container` har `tabindex`, fanene har både
+   * `tabindex` og `class`.
+   */
+  errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {
+    const boks = errorSummary(options)
+    return {
+      container: toReactAttributes(boks.container),
+      title: toReactAttributes(boks.title),
+    }
+  },
+
+  popover: (options: Parameters<typeof popover>[0]) => {
+    const boks = popover(options)
+    return {
+      host: boks.host,
+      trigger: toReactAttributes(boks.trigger),
+      panel: toReactAttributes(boks.panel),
+    }
+  },
+
+  tabs: (options: Parameters<typeof tabs>[0]) => {
+    const faner = tabs(options)
+    return {
+      list: toReactAttributes(faner.list),
+      tabs: faner.tabs.map(toReactAttributes),
+      panels: faner.panels.map(toReactAttributes),
+    }
+  },
+
+  suggestion: (options: Parameters<typeof suggestion>[0]) => {
+    const forslag = suggestion(options)
+    return {
+      ...forslag,
+      label: toReactAttributes(forslag.label),
+      field: toReactAttributes(forslag.field),
+      control: toReactAttributes(forslag.control),
+      list: toReactAttributes(forslag.list),
+      options: forslag.options.map(toReactAttributes),
+      empty: toReactAttributes(forslag.empty),
+      status: toReactAttributes(forslag.status),
+    }
+  },
+
+  toast: (options: Parameters<typeof toast>[0] = {}) => {
+    const varsler = toast(options)
+    return {
+      region: varsler.region,
+      toast: toReactAttributes(varsler.toast),
+      close: toReactAttributes(varsler.close),
+    }
+  },
+
+  sessionTimeout: forReact(sessionTimeout),
+  connectionStatus: forReact(connectionStatus),
 
   setAttributes,
 

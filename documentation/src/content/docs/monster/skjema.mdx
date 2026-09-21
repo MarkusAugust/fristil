@@ -48,16 +48,19 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/) e
 
 ## Oppsummeringen
 
-[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Den gjør tre ting du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, sender fokus til riktig felt når en lenke følges, og skjuler seg selv når lista er tom.
+[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `fs.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, og sender fokus til riktig felt når en lenke følges.
 
 ```html
-<fs-error-summary id="skjemafeil" heading="Skjemaet har to feil">
+<fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="skjemafeil">
+  <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
   <ul class="fs-list">
     <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
     <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
   </ul>
 </fs-error-summary>
 ```
+
+Overskriften og `hidden` skrives av den som rendrer skjemaet, ikke av komponenten. Er lista tom, setter `fs.errorSummary({ count: 0 })` `hidden` på boksen, og overskriften blir stående urørt: «Skjemaet har 0 feil» er det siste brukeren skal få lest opp.
 
 Lenketeksten er feilmeldingen, ikke navnet på feltet. Den som hører lista skal forstå hva som er galt uten å hoppe til feltet først.
 

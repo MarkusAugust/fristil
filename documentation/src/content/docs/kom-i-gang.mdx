@@ -98,9 +98,9 @@ Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designs
 | `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
 | `@fristil/designsystem/tailwind.css` | Fristils verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
 
-Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `date-field.css`, `error-summary.css`, `search.css` og `suggestion.css`.
+Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `error-summary.css`, `search.css` og `suggestion.css`.
 
-Web-komponentene krever ikke alle et stilark. `<fs-calendar>` bruker Shadow DOM og tar med stilene sine; de andre kjører i vanlig DOM, der elementene er alminnelige elementer med systemets klasser, og klassene må lastes på siden. Se [Introduksjon](../introduksjon/#shadow-dom).
+Alle web-komponentene trenger et stilark. Ingen av dem bruker shadow DOM, så elementene er alminnelige elementer med systemets klasser, og klassene må lastes på siden.
 
 **JavaScript og TypeScript**
 
@@ -123,8 +123,8 @@ Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra
 | `@fristil/designsystem/react-jsx` | Typer for de egendefinerte elementene i JSX |
 | `@fristil/designsystem/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
 | `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
-| `@fristil/designsystem/calendar` | `defineFsCalendar`, klassen `FsCalendar` |
-| `@fristil/designsystem/date-field` | `defineFsDateField`, klassen `FsDateField` |
+| `@fristil/designsystem/session-timeout` | `defineFsSessionTimeout`, klassen `FsSessionTimeout` |
+| `@fristil/designsystem/connection-status` | `defineFsConnectionStatus`, klassen `FsConnectionStatus` |
 | `@fristil/designsystem/tabs` | `defineFsTabs`, klassen `FsTabs` |
 | `@fristil/designsystem/error-summary` | `defineFsErrorSummary`, klassen `FsErrorSummary` |
 | `@fristil/designsystem/popover` | `defineFsPopover`, klassen `FsPopover` |

@@ -5,7 +5,7 @@ import "./tokens.css"
 import { cssTokens, darkTokens } from "./tokens"
 
 /**
- * Kontrasten i begge temaer, målt på ekte utregnede farger.
+ * Kontrasten i begge temaer, sjekket på ekte utregnede farger.
  *
  * Verdiene i `tokens.ts` er `var()`-henvisninger, så de kan ikke regnes på
  * direkte. Testen setter dem på et element og leser hva nettleseren faktisk

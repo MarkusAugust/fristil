@@ -22,7 +22,7 @@ import "./components/css/tooltip/tooltip.css"
  * At komponentene fortsatt viser tilstanden sin i høykontrastmodus.
  *
  * Windows' høykontrast bytter ut fargene på siden med brukerens eget sett.
- * Målt i modusen: egne farger overstyres, gradienter og `box-shadow` fjernes,
+ * Testet i modusen: egne farger overstyres, gradienter og `box-shadow` fjernes,
  * mens systemfargene, rammer, masker og data-URL-bilder overlever.
  *
  * Det rammer nettopp de kontrollene som viser tilstanden sin med farge eller

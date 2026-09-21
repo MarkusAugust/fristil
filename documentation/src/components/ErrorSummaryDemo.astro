@@ -1,5 +1,10 @@
 ---
+import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
+
+// Serveren skriver hele boksen: klassen, rollen, tabbestoppen og
+// overskriften. Komponenten flytter bare fokus og tar klikk på lenkene.
+const feil = fs.errorSummary({ count: 2, id: "demo-oppsummering" })
 ---
 
 <Preview
@@ -9,10 +14,11 @@ import Preview from "./Preview.astro"
 	maxWidth="34rem"
 >
 	<form id="demo-skjema" novalidate>
-		<fs-error-summary id="demo-oppsummering" heading="Skjemaet har to feil" autofocus={false}>
+		<fs-error-summary {...feil.container} autofocus="false">
+			<h2 {...feil.title}>Skjemaet har to feil</h2>
 			<ul class="fs-list">
 				<li><a href="#demo-epost">Skriv en e-postadresse med krøllalfa</a></li>
-				<li><a href="#demo-dato">Skriv datoen som DD-MM-ÅÅÅÅ</a></li>
+				<li><a href="#demo-dato">Skriv datoen som dag, måned og år</a></li>
 			</ul>
 		</fs-error-summary>
 
@@ -20,7 +26,7 @@ import Preview from "./Preview.astro"
 		<input class="fs-input" id="demo-epost" type="email" value="ola.nordmann" data-state="invalid" aria-invalid="true" />
 
 		<label class="fs-label" for="demo-dato">Fødselsdato</label>
-		<input class="fs-input" id="demo-dato" value="31/05" data-state="invalid" aria-invalid="true" />
+		<input class="fs-input" id="demo-dato" type="date" data-state="invalid" aria-invalid="true" />
 	</form>
 </Preview>
 

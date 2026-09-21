@@ -48,7 +48,7 @@ defineFsField()
 
 `defineFsField()` registrerer elementet i nettleseren. Kall den én gang ved oppstart. Flere kall er ufarlige.
 
-Stilarket må importeres i tillegg fordi komponenten kjører i vanlig DOM: barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem. [Calendar](../calendar/) bruker Shadow DOM og trenger derfor ingen import.
+Stilarket må importeres fordi barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
 
 <Tabs>
   <TabItem label="Eksempel">

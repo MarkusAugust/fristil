@@ -103,7 +103,7 @@ boks.showModal()
 | `--fs-dialog-padding` | `var(--size-5)` |
 | `--fs-dialog-radius` | `var(--size-2)` |
 
-`100%` i bredden gjelder når dialogen ikke ligger i topplaget. En `<dialog>` åpnet med `showModal()` måler seg mot vindusruten uansett, men lager du en boks på siden av den, som i forhåndsvisningen over, ville `100vw` gjort den bredere enn boksen.
+`100%` i bredden gjelder når dialogen ikke ligger i topplaget. En `<dialog>` åpnet med `showModal()` forholder seg til vindusruten uansett, men lager du en boks på siden av den, som i forhåndsvisningen over, ville `100vw` gjort den bredere enn boksen.
 
 Flaten bak dialogen er `::backdrop`, og finnes bare når dialogen er åpnet med `showModal()`. Fargen kommer fra `--semantic-overlay-backdrop` og er kraftigere i mørkt tema, der en sort flate ellers ville vært usynlig.
 

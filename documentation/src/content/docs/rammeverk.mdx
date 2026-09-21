@@ -7,13 +7,13 @@ import { TabItem, Tabs } from "@astrojs/starlight/components"
 
 CSS-komponentene er klasser og krever ingenting av rammeverket. Web-komponentene trenger av og til oppsett, og denne siden samler det.
 
-Alle web-komponentene registreres på samme måte, og hver av dem har sin egen side med et eksempel i alle fire miljøene: [Field](../components/field/), [Tabs](../components/tabs/), [Error Summary](../components/error-summary/), [Popover](../components/popover/), [Date Field](../components/date-field/), [Suggestion](../components/suggestion/), [Toast](../components/toast/) og [Calendar](../components/calendar/).
+Alle web-komponentene registreres på samme måte, og hver av dem har sin egen side med et eksempel i alle fire miljøene: [Field](../components/field/), [Tabs](../components/tabs/), [Error Summary](../components/error-summary/), [Popover](../components/popover/), [Suggestion](../components/suggestion/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) og [Connection Status](../components/connection-status/).
 
 Tre ting gjelder overalt:
 
 1. **`define`-funksjonen må kjøre én gang** når appen starter, før elementet brukes.
 2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"` gjør feltet ugyldig. Skal attributtet bort, må det fjernes helt.
-3. **Les verdien fra elementet, ikke fra hendelsen.** `element.value` på `<fs-date-field>` er alltid ISO, uansett hva brukeren skrev.
+3. **Serveren skriver markupen, komponenten fester oppførsel.** Se [Server først](../server-forst/) for hvorfor, og hva det betyr i hvert av miljøene.
 
 React har i tillegg `@fristil/designsystem/react`, som gir `className` og `htmlFor`. Uten den skriver React «Invalid DOM property» i konsollen for hvert element. De andre bruker HTML-navnene direkte.
 
@@ -77,13 +77,13 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     // main.tsx
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/field.css"
-    import "@fristil/designsystem/date-field.css"
+    import "@fristil/designsystem/suggestion.css"
 
     import { defineFsField } from "@fristil/designsystem/field"
-    import { defineFsDateField } from "@fristil/designsystem/date-field"
+    import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
 
     defineFsField()
-    defineFsDateField()
+    defineFsSuggestion()
     ```
 
     Bruker du CSS-komponentene, importer `fs` fra React-inngangen:
@@ -114,8 +114,8 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
     ```tsx
     <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-    <fs-date-field labell="Reisedato" />     // feil: ukjent attributt
-    <fs-date-field helpText="DD-MM-ÅÅÅÅ" /> // feil: attributtet heter help-text
+    <fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+    <fs-connection-status offline="Nede" />  // feil: ukjent attributt
     ```
 
     :::caution[Bare én kopi av `@types/react`]

@@ -74,7 +74,8 @@ export default defineConfig({
         "@fristil/designsystem/divider.css",
         "@fristil/designsystem/spinner.css",
         "@fristil/designsystem/field.css",
-        "@fristil/designsystem/date-field.css",
+        "@fristil/designsystem/session-timeout.css",
+        "@fristil/designsystem/connection-status.css",
       ],
       sidebar: [
         {
@@ -83,6 +84,7 @@ export default defineConfig({
             { label: "Introduksjon", slug: "introduksjon" },
             { label: "Kom i gang", slug: "kom-i-gang" },
             { label: "Rammeverk", slug: "rammeverk" },
+            { label: "Server først", slug: "server-forst" },
             { label: "Design tokens", slug: "design-tokens" },
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
@@ -98,6 +100,7 @@ export default defineConfig({
             { label: "Liste med filtre", slug: "monster/liste" },
             { label: "Sideskjelett", slug: "monster/sideskjelett" },
             { label: "Bekreft en handling", slug: "monster/bekreftelse" },
+            { label: "Dato i et skjema", slug: "monster/dato" },
           ],
         },
         {
@@ -149,15 +152,21 @@ export default defineConfig({
                 { label: "Tabs", slug: "components/tabs" },
                 { label: "Error Summary", slug: "components/error-summary" },
                 { label: "Popover", slug: "components/popover" },
+                { label: "Suggestion", slug: "components/suggestion" },
               ],
             },
             {
               label: "Frittstående",
               items: [
-                { label: "Date Field", slug: "components/date-field" },
-                { label: "Calendar", slug: "components/calendar" },
                 { label: "Toast", slug: "components/toast" },
-                { label: "Suggestion", slug: "components/suggestion" },
+                {
+                  label: "Session Timeout",
+                  slug: "components/session-timeout",
+                },
+                {
+                  label: "Connection Status",
+                  slug: "components/connection-status",
+                },
               ],
             },
           ],

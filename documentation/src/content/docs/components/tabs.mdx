@@ -1,14 +1,14 @@
 ---
 title: Tabs
-description: Faner som kobler en rad med knapper til panelene sine. Rammekomponent.
+description: Fanerad koblet til panelene sine. Rammekomponent.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
 
-Du skriver knappene og panelene selv. Komponenten setter rollene, holder `aria-selected` og `aria-controls` i synk, skjuler panelene som ikke er valgt, og tar piltastene.
+Serveren skriver rollene og skjuler panelene som ikke er valgt. Komponenten tar piltastene.
 
-Tastaturet er hele grunnen til at komponenten finnes. I en faneliste skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+Det er hele grunnen til at den finnes. I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
 
 ```ts
 // main.ts, kjøres én gang når appen starter
@@ -22,122 +22,122 @@ defineFsTabs()
 
 <TabsDemo />
 
+## Markupen
+
+`fs.tabs()` gir ett attributtsett per element. Id-ene og koblingen mellom fane og panel regnes ut av byggeren, så de kan ikke komme i utakt.
+
+```ts
+const faner = fs.tabs({ id: "sak", count: 3, selected: 0, label: "Deler av saken" })
+```
+
 ```html
-<fs-tabs label="Deler av saken">
-  <div class="fs-tabs__list">
-    <button>Søknaden</button>
-    <button>Vedlegg</button>
-    <button>Meldinger</button>
+<fs-tabs>
+  <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
+    <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
+            aria-controls="sak-panel-0" tabindex="0"
+            data-preserve-attr="aria-selected tabindex">Søknaden</button>
+    <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
+            aria-controls="sak-panel-1" tabindex="-1"
+            data-preserve-attr="aria-selected tabindex">Vedlegg</button>
   </div>
 
-  <div class="fs-tabs__panel">
-    <p>Søknaden ble sendt 4. mars 2026.</p>
+  <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
+       aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">
+    <p class="fs-paragraph">Søknaden ble sendt 4. mars 2026.</p>
   </div>
-  <div class="fs-tabs__panel">
-    <p>Tre vedlegg er lastet opp.</p>
-  </div>
-  <div class="fs-tabs__panel">
-    <p>Ingen meldinger i denne saken.</p>
+  <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
+       aria-labelledby="sak-tab-1" tabindex="0" hidden data-preserve-attr="hidden">
+    <p class="fs-paragraph">Tre vedlegg er lastet opp.</p>
   </div>
 </fs-tabs>
 ```
 
-Rekkefølgen er koblingen: første knapp hører til første panel. Du trenger ingen id-er, men skriver du dem selv, beholder komponenten dem.
+`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv. `data-preserve-attr` sier fra om hva komponenten endrer når brukeren velger, slik at en oppdatering fra serveren ikke setter valget tilbake. Se [Server først](/server-forst/).
+
+## Hvilken fane som er valgt
+
+Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
+
+```ts
+const faner = document.querySelector("fs-tabs")
+
+faner.selected // 0
+faner.select(1) // velger «Vedlegg» og sender `tab-select`
+```
 
 ## I en app
 
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <fs-tabs id="saksfaner" label="Deler av saken">
-      <div class="fs-tabs__list">
-        <button>Søknaden</button>
-        <button>Vedlegg</button>
+    <fs-tabs id="saksfaner">
+      <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
+        <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
+                aria-controls="sak-panel-0" tabindex="0"
+                data-preserve-attr="aria-selected tabindex">Søknaden</button>
+        <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
+                aria-controls="sak-panel-1" tabindex="-1"
+                data-preserve-attr="aria-selected tabindex">Vedlegg</button>
       </div>
-
-      <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
-      <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+      <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
+           aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">Søknaden</div>
+      <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
+           aria-labelledby="sak-tab-1" tabindex="0" hidden data-preserve-attr="hidden">Vedlegg</div>
     </fs-tabs>
 
     <script type="module">
       import { defineFsTabs } from "@fristil/designsystem/tabs"
       defineFsTabs()
 
-      const faner = document.getElementById("saksfaner")
-
-      faner.addEventListener("tab-select", (hendelse) => {
-        // Lagre valget, så brukeren kommer tilbake til samme fane
-        sessionStorage.setItem("sak-fane", hendelse.detail.index)
+      document.getElementById("saksfaner").addEventListener("tab-select", (evt) => {
+        console.log("valgte fane", evt.detail.index)
       })
-
-      faner.selected = Number(sessionStorage.getItem("sak-fane") ?? 0)
     </script>
     ```
   </TabItem>
   <TabItem label="React">
     ```tsx
-    // main.tsx, kjøres én gang når appen starter
+    import { fs } from "@fristil/designsystem/react"
     import { defineFsTabs } from "@fristil/designsystem/tabs"
-    import "@fristil/designsystem/tabs.css"
 
     defineFsTabs()
-    ```
 
-    ```tsx
-    import { useEffect, useRef, useState } from "react"
+    const TITLER = ["Søknaden", "Vedlegg", "Meldinger"]
 
     export function Saksfaner() {
-      const faner = useRef<HTMLElement>(null)
-      const [valgt, setValgt] = useState(0)
-
-      useEffect(() => {
-        const element = faner.current
-        if (!element) return
-
-        const lytter = (hendelse: Event) => {
-          setValgt((hendelse as CustomEvent<{ index: number }>).detail.index)
-        }
-
-        element.addEventListener("tab-select", lytter)
-        return () => element.removeEventListener("tab-select", lytter)
-      }, [])
+      const faner = fs.tabs({ id: "sak", count: TITLER.length, label: "Deler av saken" })
 
       return (
-        <fs-tabs ref={faner} selected={valgt} label="Deler av saken">
-          <div className="fs-tabs__list">
-            <button>Søknaden</button>
-            <button>Vedlegg</button>
+        <fs-tabs>
+          <div {...faner.list}>
+            {faner.tabs.map((fane, i) => (
+              <button key={fane.id} {...fane}>{TITLER[i]}</button>
+            ))}
           </div>
-
-          <div className="fs-tabs__panel">
-            <p>Sendt 4. mars 2026.</p>
-          </div>
-          <div className="fs-tabs__panel">
-            <p>Tre vedlegg.</p>
-          </div>
+          {faner.panels.map((panel, i) => (
+            <div key={panel.id} {...panel}>Innhold for {TITLER[i]}</div>
+          ))}
         </fs-tabs>
       )
     }
     ```
 
-    `tab-select` er en egendefinert hendelse, og React kobler ikke slike opp gjennom `on…`-egenskaper. Den må derfor legges på med `addEventListener` gjennom en ref.
-
-    Importer `@fristil/designsystem/react-jsx` én gang, så kjenner TypeScript `<fs-tabs>` og attributtene på den.
+    Importen fra `@fristil/designsystem/react` gir `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
   </TabItem>
   <TabItem label="Astro">
     ```astro
     ---
-    // Ingenting her. Elementet registreres i skriptet under.
+    import { fs } from "@fristil/designsystem"
+
+    const titler = ["Søknaden", "Vedlegg", "Meldinger"]
+    const faner = fs.tabs({ id: "sak", count: titler.length, label: "Deler av saken" })
     ---
 
-    <fs-tabs label="Deler av saken">
-      <div class="fs-tabs__list">
-        <button>Søknaden</button>
-        <button>Vedlegg</button>
+    <fs-tabs>
+      <div {...faner.list}>
+        {faner.tabs.map((fane, i) => <button {...fane}>{titler[i]}</button>)}
       </div>
-
-      <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
-      <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+      {faner.panels.map((panel, i) => <div {...panel}>Innhold for {titler[i]}</div>)}
     </fs-tabs>
 
     <script>
@@ -145,89 +145,53 @@ Rekkefølgen er koblingen: første knapp hører til første panel. Du trenger in
       defineFsTabs()
     </script>
     ```
-
-    Fanene er vanlig HTML, så de er med i sidekilden og virker før skriptet er lastet. Da er også innholdet i alle panelene lesbart for søkemotorer.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <div data-signals="{fane: 0}">
-      <fs-tabs
-        label="Deler av saken"
-        data-attr:selected="$fane"
-        data-on:tab-select="$fane = evt.detail.index"
-      >
-        <div class="fs-tabs__list">
-          <button>Søknaden</button>
-          <button>Vedlegg</button>
-        </div>
-
-        <div class="fs-tabs__panel"><p>Sendt 4. mars 2026.</p></div>
-        <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
-      </fs-tabs>
-
-      <p>Du ser på fane <span data-text="$fane + 1"></span>.</p>
-    </div>
-
-    <script type="module">
-      import { defineFsTabs } from "@fristil/designsystem/tabs"
-      defineFsTabs()
-    </script>
+    <fs-tabs data-on:tab-select="$valgtFane = evt.detail.index">
+      <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
+        <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
+                aria-controls="sak-panel-0" tabindex="0"
+                data-preserve-attr="aria-selected tabindex">Søknaden</button>
+      </div>
+      <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
+           aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">Søknaden</div>
+    </fs-tabs>
     ```
 
-    `data-attr:selected` setter attributtet, og `data-on:tab-select` fanger hendelsen. Signalet og komponenten holder hverandre i synk uten at du skriver noe imellom.
+    `data-preserve-attr` er nødvendig her. Uten den setter neste oppdatering fra serveren valget tilbake til det den sendte.
   </TabItem>
 </Tabs>
 
-## Attributter
+## Tilgjengelighet
 
-| Attributt | Type | Effekt |
-| --- | --- | --- |
-| `selected` | tall | Indeksen på fanen som er valgt. Speiles når brukeren bytter. |
-| `label` | streng | Blir `aria-label` på raden, og sier hva fanene velger mellom |
+Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Alt dette står i markupen fra serveren, så semantikken er riktig før skriptet har kjørt.
 
-## Hendelser
-
-| Hendelse | `detail` | Når |
-| --- | --- | --- |
-| `tab-select` | `{ index: number }` | En annen fane velges |
-
-```js
-document.querySelector("fs-tabs").addEventListener("tab-select", (hendelse) => {
-  console.log("Fane", hendelse.detail.index)
-})
-```
-
-## Tastatur
-
-| Tast | Virkning |
+| Tast | Gjør |
 | --- | --- |
-| `Pil høyre` og `Pil ned` | Neste fane. Går rundt fra siste til første. |
-| `Pil venstre` og `Pil opp` | Forrige fane |
-| `Home` og `End` | Første og siste fane |
-| `Tab` | Ut av raden og inn i panelet |
+| Piltastene | Flytter mellom fanene, og går rundt fra siste til første |
+| Home og End | Første og siste fane |
+| Tab | Ut av raden og inn i det valgte panelet |
+
+Bare den valgte fanen har `tabindex="0"`. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
 
 ## Klasser du kan style
 
-Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer:
-
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tabs__list` | Raden med knapper. Komponenten gir den `role="tablist"`. |
-| `.fs-tabs__panel` | Hvert panel. Komponenten gir det `role="tabpanel"`. |
+| `.fs-tabs__list` | Raden med knapper. Serveren gir den `role="tablist"` |
+| `.fs-tabs__panel` | Ett panel. Den valgte er uten `hidden` |
 
-| Variabel | Standard |
+Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
+
+| Variabel | Reserve |
 | --- | --- |
 | `--fs-tabs-gap` | `var(--size-1)` |
 | `--fs-tabs-padding` | `var(--size-2) var(--size-4)` |
 | `--fs-tabs-panel-space` | `var(--size-4)` |
 
-Streken under den valgte fanen tegnes på alle fanene, gjennomsiktig på dem som ikke er valgt. Da hopper ikke teksten når brukeren bytter.
-
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
-
-## Tilgjengelighet
-
-- Faner passer når innholdet er sideordnet og brukeren bare trenger én del om gangen. Er alt viktig, hører det hjemme under hverandre.
-- Ikke legg skjemafelt som må fylles ut i forskjellige faner. Brukeren finner ikke feilen i en fane som er skjult.
-- `label` bør si hva fanene deler opp, ikke gjenta sidens overskrift.
-- Panelet kan få fokus, så Tab går fra fanen og rett inn i innholdet som nettopp ble vist.
+```css
+.fs-tabs__list {
+  --fs-tabs-gap: 0;
+}
+```

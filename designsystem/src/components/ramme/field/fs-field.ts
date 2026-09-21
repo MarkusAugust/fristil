@@ -1,5 +1,3 @@
-import { html, LitElement } from "lit"
-
 import { computeFieldAttributes } from "./field-core.js"
 
 export const FS_FIELD_TAG = "fs-field" as const
@@ -8,79 +6,174 @@ function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
 }
 
-export class FsField extends LitElement {
-  static properties = {
-    invalid: { type: Boolean, reflect: true },
-    disabled: { type: Boolean, reflect: true },
-    optional: { type: Boolean, reflect: true },
-    requiredMarker: { type: String, attribute: "required-marker" },
-    controlId: { type: String, attribute: "control-id" },
-    describedBy: { type: String, attribute: "described-by" },
+function setOrRemove(
+  element: HTMLElement,
+  name: string,
+  value: string | undefined,
+): void {
+  if (value === undefined) {
+    element.removeAttribute(name)
+  } else if (element.getAttribute(name) !== value) {
+    element.setAttribute(name, value)
+  }
+}
+
+/**
+ * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
+ *
+ * Komponenten er for servere som ikke kan kalle `fs.field()`, altså alt som
+ * ikke kjører JavaScript. Kan serveren kalle byggeren, skal den skrive
+ * attributtene selv, og da trengs ikke dette elementet.
+ *
+ * Komponenten rendrer ingenting. Den satte tidligere et `<slot>`-element inn i
+ * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
+ * det ved hver patch. Se `FIELD_PRESERVED_ATTRIBUTES` for hva serveren må
+ * skrive for at koblingen skal overleve en morfing.
+ */
+export class FsField extends HTMLElement {
+  static observedAttributes = [
+    "invalid",
+    "disabled",
+    "optional",
+    "required-marker",
+    "control-id",
+    "described-by",
+  ]
+
+  private observer?: MutationObserver
+
+  /**
+   * Egenskapene speiler attributtene.
+   *
+   * Tilstanden bor i attributtet og ikke i et felt på klassen, slik at det
+   * serveren sendte og det komponenten mener alltid er det samme. En egen
+   * `invalid`-variabel ville kunne si noe annet enn markupen etter en morfing.
+   */
+  get invalid(): boolean {
+    return this.hasAttribute("invalid")
   }
 
-  invalid = false
-  disabled = false
-  optional = false
-  requiredMarker: "none" | "symbol" | "text" = "none"
-  controlId?: string
-  describedBy?: string
-
-  createRenderRoot() {
-    return this
+  set invalid(value: boolean) {
+    this.toggleAttribute("invalid", value)
   }
 
-  render() {
-    return html`<slot @slotchange=${this.handleSlotChange}></slot>`
+  get disabled(): boolean {
+    return this.hasAttribute("disabled")
   }
 
-  firstUpdated() {
-    this.syncA11y()
+  set disabled(value: boolean) {
+    this.toggleAttribute("disabled", value)
   }
 
-  updated() {
-    this.syncA11y()
+  get optional(): boolean {
+    return this.hasAttribute("optional")
   }
 
-  private handleSlotChange = () => {
-    this.syncA11y()
+  set optional(value: boolean) {
+    this.toggleAttribute("optional", value)
   }
 
-  private syncA11y() {
-    const label = this.querySelector("label") as HTMLLabelElement | null
-    const control = this.querySelector(
-      "input:not([type='hidden']), textarea, select",
-    ) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
-    const help = this.querySelector(
+  get requiredMarker(): "none" | "symbol" | "text" {
+    const value = this.getAttribute("required-marker")
+    return value === "symbol" || value === "text" ? value : "none"
+  }
+
+  set requiredMarker(value: "none" | "symbol" | "text") {
+    if (value === "none") this.removeAttribute("required-marker")
+    else this.setAttribute("required-marker", value)
+  }
+
+  get controlId(): string | undefined {
+    return this.getAttribute("control-id") ?? undefined
+  }
+
+  set controlId(value: string | undefined) {
+    if (value === undefined) this.removeAttribute("control-id")
+    else this.setAttribute("control-id", value)
+  }
+
+  get describedBy(): string | undefined {
+    return this.getAttribute("described-by") ?? undefined
+  }
+
+  set describedBy(value: string | undefined) {
+    if (value === undefined) this.removeAttribute("described-by")
+    else this.setAttribute("described-by", value)
+  }
+
+  connectedCallback(): void {
+    // `slotchange` melder ikke fra i vanlig DOM, og innholdet byttes ut mens
+    // brukeren fyller ut skjemaet. Bare childList: å sette et attributt på et
+    // barn utløser da ingen ny runde, så observatøren kan ikke gå i ring.
+    this.observer = new MutationObserver(() => this.sync())
+    this.observer.observe(this, { childList: true, subtree: true })
+    this.sync()
+  }
+
+  disconnectedCallback(): void {
+    this.observer?.disconnect()
+    this.observer = undefined
+  }
+
+  attributeChangedCallback(): void {
+    if (this.isConnected) this.sync()
+  }
+
+  private sync(): void {
+    const label = this.querySelector("label")
+    const control = this.querySelector<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >("input:not([type='hidden']), textarea, select")
+    const help = this.querySelector<HTMLElement>(
       ".fs-help-text, [data-role='help']",
-    ) as HTMLElement | null
-    const error = this.querySelector(
+    )
+    const error = this.querySelector<HTMLElement>(
       ".fs-error-text, [data-role='error']",
-    ) as HTMLElement | null
+    )
 
     if (!control) return
 
     if (help && !help.id) help.id = uniqueId("fs-field-help")
     if (error && !error.id) error.id = uniqueId("fs-field-error")
 
-    // Selve kontrakten regnes ut av den delte kjernen, som fs.field() også
-    // bruker. Denne komponenten gjør bare én ting utover det: å sette
-    // resultatet på elementer som allerede står i DOM-en.
+    // Markeringene leses også fra markupen. Skrev serveren dem med
+    // `fs.field()`, står de på ledeteksten, og en komponent som bare så på
+    // sine egne attributter ville fjernet dem igjen. I React ga det en
+    // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
+    // tok det bort, og så mente React at HTML-en ikke stemte.
+    const marker =
+      this.getAttribute("required-marker") ??
+      label?.getAttribute("data-required") ??
+      null
+    const disabled =
+      this.hasAttribute("disabled") || control.hasAttribute("disabled")
+
+    // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
+    // Skrev serveren feltet med `fs.field()`, står svaret allerede på
+    // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
+    // igjen. Da kranglet de to halvdelene av API-et med hverandre.
+    const invalid =
+      this.hasAttribute("invalid") ||
+      control.getAttribute("aria-invalid") === "true"
+
     const computed = computeFieldAttributes({
-      id: this.controlId || control.id || uniqueId("fs-field-control"),
+      id:
+        this.getAttribute("control-id") ||
+        control.id ||
+        uniqueId("fs-field-control"),
       help: Boolean(help),
       error: Boolean(error),
       helpId: help?.id,
       errorId: error?.id,
-      required:
-        this.requiredMarker === "symbol" || this.requiredMarker === "text"
-          ? this.requiredMarker
-          : undefined,
-      optional: this.optional,
-      invalid: this.invalid,
-      disabled: this.disabled,
+      required: marker === "symbol" || marker === "text" ? marker : undefined,
+      optional:
+        this.hasAttribute("optional") ||
+        label?.hasAttribute("data-optional") === true,
+      invalid,
+      disabled,
       describedBy: [
         control.getAttribute("aria-describedby") ?? "",
-        this.describedBy ?? "",
+        this.getAttribute("described-by") ?? "",
       ].filter(Boolean),
     })
 
@@ -95,8 +188,10 @@ export class FsField extends LitElement {
     }
 
     if (error) {
+      // Bare `hidden`. Et skjult element er allerede ute av
+      // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
+      // hydreringsfeil i React fordi serveren ikke skriver det.
       error.hidden = Boolean(computed.error.hidden)
-      error.setAttribute("aria-hidden", String(Boolean(computed.error.hidden)))
     }
 
     setOrRemove(
@@ -106,7 +201,7 @@ export class FsField extends LitElement {
     )
     setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
 
-    if (this.disabled) {
+    if (disabled) {
       control.setAttribute("disabled", "")
       control.setAttribute("aria-disabled", "true")
     } else {
@@ -126,18 +221,6 @@ export class FsField extends LitElement {
     } else if (!state && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
     }
-  }
-}
-
-function setOrRemove(
-  element: HTMLElement,
-  name: string,
-  value: string | undefined,
-) {
-  if (value === undefined) {
-    element.removeAttribute(name)
-  } else {
-    element.setAttribute(name, value)
   }
 }
 
