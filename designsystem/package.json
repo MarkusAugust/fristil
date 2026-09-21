@@ -1,6 +1,7 @@
 {
   "name": "@fristil/designsystem",
   "version": "0.1.0",
+  "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -264,13 +265,14 @@
     "src/tokens",
     "src/components",
     "src/tailwind",
+    "CHANGELOG.md",
     "!**/*.browser.test.ts",
     "!**/*.test.ts",
     "!**/*.tsbuildinfo"
   ],
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli",
+    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
@@ -278,7 +280,8 @@
     "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts",
     "nettlesere": "playwright install chromium firefox webkit",
     "tema": "bun src/cli.ts",
-    "sjekk:cli": "bun scripts/sjekk-cli.ts"
+    "sjekk:cli": "bun scripts/sjekk-cli.ts",
+    "sjekk:versjon": "bun scripts/sjekk-versjon.ts"
   },
   "peerDependencies": {
     "lit": ">=3.0.0"

@@ -1,0 +1,50 @@
+---
+/**
+ * Dokumentasjonens brødtekst, med ett tillegg: tabeller som ikke ruller skal
+ * ikke være et tabbstopp.
+ *
+ * Hver tabell får et rullefelt med `tabindex="0"` av
+ * `src/plugins/rehype-tabellrull.mjs`, slik at kolonnene utenfor kanten er
+ * nåbare med tastatur. På en bred skjerm ruller ingen av dem, og da er de 150
+ * stoppene bare støy for den som tabber seg gjennom siden. Skriptet under tar
+ * `tabindex` bort igjen når tabellen får plass, og setter den tilbake når
+ * vinduet krymper.
+ *
+ * Attributtet står i HTML-en og fjernes av skript, ikke motsatt: uten
+ * JavaScript beholder leseren tilgangen til kolonnene.
+ *
+ * Skriptet setter også `data-mer-venstre` og `data-mer-hoyre`, som global.css
+ * tegner en skygge av. Uten den ser en avskåret kolonne ut som om tabellen
+ * slutter der.
+ */
+
+import Default from "@astrojs/starlight/components/MarkdownContent.astro"
+---
+
+<Default><slot /></Default>
+
+<script>
+	for (const rullefelt of document.querySelectorAll<HTMLElement>(
+		".tabell-rull",
+	)) {
+		const oppdater = () => {
+			const ruller = rullefelt.scrollWidth > rullefelt.clientWidth
+
+			if (ruller) rullefelt.setAttribute("tabindex", "0")
+			else rullefelt.removeAttribute("tabindex")
+
+			// Skyggen ved kanten sier at det er mer å se den veien.
+			rullefelt.toggleAttribute("data-mer-venstre", rullefelt.scrollLeft > 1)
+			rullefelt.toggleAttribute(
+				"data-mer-hoyre",
+				ruller &&
+					rullefelt.scrollLeft + rullefelt.clientWidth <
+						rullefelt.scrollWidth - 1,
+			)
+		}
+
+		oppdater()
+		new ResizeObserver(oppdater).observe(rullefelt)
+		rullefelt.addEventListener("scroll", oppdater, { passive: true })
+	}
+</script>

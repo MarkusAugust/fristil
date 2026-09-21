@@ -6,9 +6,15 @@
  * telefonen. Det er lett å innføre på nytt, siden ingenting sier fra i et
  * vanlig utviklingsvindu.
  *
- * Målingen er den brukeren merker: kan siden faktisk dras sidelengs?
+ * Den ene målingen er den brukeren merker: kan siden faktisk dras sidelengs?
  * `scrollWidth` alene er misvisende, for et kodefelt som er klippet av en
  * `overflow: hidden` teller med der uten at noe kan rulles.
+ *
+ * Den andre er innhold som stikker utenfor skjermen uten å gjøre siden
+ * dragbar, fordi noe lenger ute klipper det. Det synes ikke som en rullefelt,
+ * men teksten er borte. Knappen «Fjern <filnavn>» i filopplastingen var
+ * nøyaktig dette. Forhåndsvisningene ligger i skyggerøtter, så målingen må
+ * gå inn i dem for å se slikt.
  *
  * Kjør med: bun run test:docs (bygg først)
  */
@@ -80,37 +86,51 @@ for (const url of finnSider()) {
     const rullet = window.scrollX
     window.scrollTo(0, 0)
 
-    if (rullet === 0) return { rullet, synder: "" }
+    // Alle elementer, også de som ligger inne i en skyggerot.
+    const alle: HTMLElement[] = []
+    const samle = (rot: ParentNode) => {
+      for (const element of rot.querySelectorAll<HTMLElement>("*")) {
+        alle.push(element)
+        if (element.shadowRoot) samle(element.shadowRoot)
+      }
+    }
+    samle(document.body)
 
-    // Finn det ytterste elementet som stikker ut, og som ikke ligger i noe
-    // som klipper eller kan rulles for seg selv.
-    for (const element of document.querySelectorAll("*")) {
+    // Det som stikker ut, og som ikke ligger i noe som kan rulles for seg
+    // selv. Et kodefelt og en bred tabell har sin egen rullefelt, og er
+    // dermed i orden.
+    const utenfor: string[] = []
+    for (const element of alle) {
       const rute = element.getBoundingClientRect()
       if (rute.width === 0 || rute.right <= bredde + 1) continue
 
       let forelder = element.parentElement
-      let klippet = false
+      let egenRull = false
       while (forelder) {
         if (getComputedStyle(forelder).overflowX !== "visible") {
-          klippet = true
+          egenRull = true
           break
         }
         forelder = forelder.parentElement
       }
-      if (klippet) continue
+      if (egenRull) continue
 
       const klasse = (element.className || "").toString().split(" ")[0]
-      return {
-        rullet,
-        synder: `${element.tagName.toLowerCase()}${klasse ? `.${klasse}` : ""} er ${Math.round(rute.width)} piksler bred`,
-      }
+      const tekst = (element.textContent ?? "").trim().slice(0, 30)
+      utenfor.push(
+        `${element.tagName.toLowerCase()}${klasse ? `.${klasse}` : ""} er ${Math.round(rute.width)} piksler bred${tekst ? ` («${tekst}»)` : ""}`,
+      )
     }
 
-    return { rullet, synder: "fant ikke hvilket element" }
+    return { rullet, synder: [...new Set(utenfor)].slice(0, 3).join("; ") }
   }, BREDDE)
 
-  if (resultat.rullet > 0) {
-    funn.push({ side: url, rullet: resultat.rullet, synder: resultat.synder })
+  if (resultat.rullet > 0 || resultat.synder !== "") {
+    funn.push({
+      side: url,
+      rullet: resultat.rullet,
+      synder: resultat.synder || "fant ikke hvilket element",
+    })
   }
 }
 
@@ -119,13 +139,16 @@ tjener.stop()
 
 if (funn.length > 0) {
   console.error(
-    `Fant ${funn.length} sider som ruller sidelengs på ${BREDDE} piksler:\n\n` +
+    `Fant ${funn.length} sider med innhold utenfor skjermen på ${BREDDE} piksler:\n\n` +
       funn
-        .map((f) => `  ${f.side}: ${f.rullet} piksler til siden. ${f.synder}`)
+        .map(
+          (f) =>
+            `  ${f.side}: ${f.rullet > 0 ? `siden kan dras ${f.rullet} piksler til siden. ` : ""}${f.synder}`,
+        )
         .join("\n") +
       "\n",
   )
   process.exit(1)
 }
 
-console.log(`Ingen av sidene ruller sidelengs på ${BREDDE} piksler.`)
+console.log(`Alt holder seg innenfor ${BREDDE} piksler.`)
