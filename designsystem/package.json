@@ -297,7 +297,7 @@
   },
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
@@ -310,13 +310,8 @@
     "sjekk:pakke": "publint",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "lit": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "lit": {
-      "optional": true
-    }
+  "dependencies": {
+    "lit": "^3.3.3"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
@@ -324,7 +319,6 @@
     "@vitest/browser": "4.1.7",
     "@vitest/browser-playwright": "^4.1.7",
     "axe-core": "^4.13.0",
-    "lit": "3.3.3",
     "playwright": "1.60.0",
     "publint": "^0.3.24",
     "tailwindcss": "4.3.0",

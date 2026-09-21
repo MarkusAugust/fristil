@@ -20,9 +20,10 @@
  */
 
 import { join, relative } from "node:path"
+import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 
-const DIST = new URL("../dist/", import.meta.url).pathname
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4179
 /** iPhone SE, den smaleste skjermen det er verdt å ta hensyn til. */
 const BREDDE = 375

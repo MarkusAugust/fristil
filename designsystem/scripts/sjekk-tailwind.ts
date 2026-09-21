@@ -14,9 +14,10 @@
 
 import { readFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { compile } from "tailwindcss"
 
-const pakke = new URL("../", import.meta.url).pathname
+const pakke = fileURLToPath(new URL("../", import.meta.url))
 
 async function loadStylesheet(id: string, basedir: string) {
   const sti = id.startsWith(".")
