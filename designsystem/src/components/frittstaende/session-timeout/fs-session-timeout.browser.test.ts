@@ -85,9 +85,12 @@ describe("fs-session-timeout", () => {
     expect(vert.hasAttribute("data-ignore-morph")).toBe(true)
   })
 
-  it("holder seg unna så lenge brukeren er i gang", async () => {
+  it("lager ingenting før varselet skal komme", async () => {
     await gaFram(2)
-    expect(dialog().open).toBe(false)
+
+    // Dialogen bygges først når den skal vises. Sto den i DOM-en fra start,
+    // fant React et element den ikke hadde rendret, og hydreringen feilet.
+    expect(document.querySelector("dialog")).toBeNull()
   })
 
   it("varsler når det har vært stille lenge nok", async () => {

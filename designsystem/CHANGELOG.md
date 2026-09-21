@@ -16,6 +16,28 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **React-inngangen døper nå også om `autocomplete` til `autoComplete`.**
+  `fs.suggestion()` sender det ut på kontrollen, og React advarte «Invalid DOM
+  property `autocomplete`» i konsollen for hvert forslagsfelt. En ny vaktpost
+  kaller hver byggefunksjon, teller opp hvert attributtnavn de sender ut, og
+  krever at ingen av dem er et navn React staver annerledes uten at
+  `react.ts` døper det om.
+
+- **`<fs-session-timeout>` bygger dialogen sin først når den skal vises.** Den
+  lagde den i `connectedCallback`, altså før React rakk å hydrere, og
+  hydreringen feilet med «server rendered HTML didn't match the client». Nå
+  gjør den det samme som `<fs-toast>` og `<fs-connection-status>`: ingenting
+  står i DOM-en før det trengs.
+
+### Endret
+
+- **`fs.toast()` er dokumentert.** Byggefunksjonen fantes, men sto ikke på
+  komponentsiden. Den gir tre attributtsett, og det er `region` du sprer på
+  `<fs-toast>`, ikke hele objektet.
+
+
 ## 0.5.0 (2026-09-21)
 
 ### Brytende
