@@ -12,9 +12,9 @@ Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire
 npm install @fristil/designsystem
 ```
 
-Det er alt du trenger å installere. `lit` følger med, og brukes av komponentene som er web components.
+Pakken har én avhengighet, `lit`, og den installeres sammen med pakken. Komponentene som er web components er bygd på den.
 
-Bruker du bare CSS-komponentene, havner Lit aldri i bunten din. Ingenting registreres ved import alene, så Lit kommer først med når du kaller en `defineFs*`.
+Den koster rundt 9,8 kB gzippet, og bare for den som registrerer minst én web component. Bruker du bare CSS-komponentene, havner Lit aldri i bunten din: ingenting registreres ved import alene, så den kommer først med når du kaller en `defineFs*`.
 
 ## CSS-komponenter
 
