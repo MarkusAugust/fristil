@@ -16,13 +16,14 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.4.0 (2026-09-21)
+
 ### Endret
 
 - `lit` er en vanlig avhengighet, ikke en valgfri `peerDependency`. Du trenger
   bare `npm install @fristil/designsystem`, og ikke lenger vite at Lit finnes.
   Bunten din er upåvirket: ingenting registreres ved import alene, så Lit
   kommer først med når du kaller en `defineFs*`.
-
 
 ## 0.3.0 (2026-09-21)
 
