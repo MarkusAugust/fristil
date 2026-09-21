@@ -111,6 +111,31 @@ for (const url of sider) {
           "updateComplete" in el,
       )
       await Promise.all(komponenter.map((el) => el.updateComplete))
+
+      /*
+       * Kodefeltene får tastaturtilgang av et skript, ikke av markupen.
+       * Expressive Code setter `tabindex` på de feltene som kan rulles, og
+       * gjør det etter at siden er tegnet. Målte axe før det, meldte den
+       * «Scrollable region must have keyboard access» på et felt som fikk
+       * tilgangen et øyeblikk senere, og sjekken feilet tilfeldig.
+       *
+       * Skriftene må også være lastet: det er bredden på tegnene som avgjør
+       * om feltet i det hele tatt kan rulles.
+       */
+      await document.fonts.ready
+
+      const uten = () =>
+        [...document.querySelectorAll("pre")].filter(
+          (felt) =>
+            felt.scrollWidth > felt.clientWidth &&
+            !felt.hasAttribute("tabindex"),
+        )
+
+      const frist = Date.now() + 3000
+      while (uten().length > 0 && Date.now() < frist) {
+        await new Promise((r) => setTimeout(r, 50))
+      }
+
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
       )
