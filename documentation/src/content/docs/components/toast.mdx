@@ -18,6 +18,28 @@ import "@fristil/designsystem/toast.css"
 defineFsToast()
 ```
 
+## Markupen
+
+`fs.toast()` gir tre attributtsett, og bare det første skriver du selv:
+
+```ts
+const varsler = fs.toast({ label: "Meldinger" })
+```
+
+```html
+<fs-toast role="status" aria-live="polite" aria-label="Meldinger" data-ignore-morph></fs-toast>
+```
+
+I JSX sprer du **`region`**, ikke hele objektet:
+
+```tsx
+<fs-toast {...fs.toast().region} />
+```
+
+`varsler.toast` og `varsler.close` er klassene på selve meldingen og lukkeknappen. Dem lager komponenten, så du trenger dem bare hvis serveren patcher inn en melding, som i en Datastar-app.
+
+`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-og-oppforsel/#de-frittstående-komponentene).
+
 ## Meldinger
 
 <ToastDemo />

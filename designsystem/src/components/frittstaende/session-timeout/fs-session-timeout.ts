@@ -69,8 +69,11 @@ export class FsSessionTimeout extends HTMLElement {
 
   connectedCallback(): void {
     this.classList.add(SESSION_TIMEOUT_CLASS)
-    this.build()
 
+    // Dialogen bygges først når den skal vises, ikke her. Lagde vi den med
+    // én gang, sto den i DOM-en før React rakk å hydrere, og React fant et
+    // element den ikke hadde rendret. `<fs-toast>` og
+    // `<fs-connection-status>` gjør det på samme måte.
     for (const navn of ["pointerdown", "keydown", "scroll"] as const) {
       document.addEventListener(navn, this.registerActivity, { passive: true })
     }
@@ -171,6 +174,7 @@ export class FsSessionTimeout extends HTMLElement {
   }
 
   private open(): void {
+    this.build()
     if (!this.dialog || this.dialog.open) return
     // Fokus skal tilbake dit brukeren var. Uten dette starter neste
     // tastetrykk på toppen av siden, midt i et skjema.
