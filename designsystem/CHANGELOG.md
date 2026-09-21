@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.5.1 (2026-09-21)
+
 ### Rettet
 
 - **React-inngangen døper nå også om `autocomplete` til `autoComplete`.**
