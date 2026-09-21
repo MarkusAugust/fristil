@@ -36,9 +36,16 @@ describe("fs-skip-link", () => {
     const lenke = document.getElementById("hopp") as HTMLElement
     const skjult = getComputedStyle(lenke).transform
 
+    // Lenken glir på plass, så verdien måles når overgangen er ferdig, og
+    // ikke etter en fast pause: 250 millisekunder holdt ikke alltid i
+    // Firefox, og testen feilet på en verdi midt i bevegelsen.
+    const ferdig = new Promise<void>((resolve) => {
+      lenke.addEventListener("transitionend", () => resolve(), { once: true })
+      setTimeout(resolve, 2000)
+    })
+
     lenke.focus()
-    // Lenken glir på plass, så verdien måles etter at overgangen er ferdig.
-    await new Promise((resolve) => setTimeout(resolve, 250))
+    await ferdig
     const synlig = getComputedStyle(lenke).transform
 
     expect(skjult).not.toBe(synlig)

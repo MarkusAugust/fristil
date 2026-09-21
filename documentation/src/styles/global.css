@@ -165,10 +165,69 @@
 	   skal ikke arve dokumentasjonens typografi. En regel som treffer <p>
 	   direkte slår den arvede fargen fra forhåndsvisningen, uansett
 	   spesifisitet. */
-  /* Et langt kodeord i en celle, som et attributtnavn med verdi, holdt
-     tabellen bredere enn en mobilskjerm. Her får det lov til å brekke. */
+  /* Tabeller ruller sidelengs framfor å brekke kodeord midt i taggen.
+     Rullefeltet legges rundt hver tabell av rehype-tabellrull.mjs, og det er
+     det som har kortutseendet. Tabellen selv skal ikke klippe noe: gjør den
+     det, er kolonnene utenfor kanten borte uten vei tilbake. */
+  .sl-markdown-content .tabell-rull {
+    max-inline-size: 100%;
+    overflow-x: auto;
+  }
+
+  .sl-markdown-content .tabell-rull:focus-visible {
+    outline: 2px solid var(--semantic-interactive-main);
+    outline-offset: 2px;
+  }
+
+  .sl-markdown-content .tabell-rull table {
+    display: table;
+    inline-size: 100%;
+    margin-block: 0;
+    overflow: visible;
+  }
+
+  /* Skygge ved den kanten det er mer tabell bak. Attributtene settes av
+     MarkdownContent.astro. Bakgrunnen ligger i ro mens innholdet ruller, så
+     skyggen blir stående ved kanten. */
+  .sl-markdown-content .tabell-rull {
+    --tabell-skygge: rgb(15 23 42 / 0.16);
+
+    background-repeat: no-repeat;
+    background-size: 1.5rem 100%;
+  }
+
+  :root[data-theme="dark"] .sl-markdown-content .tabell-rull {
+    --tabell-skygge: rgb(0 0 0 / 0.5);
+  }
+
+  .sl-markdown-content .tabell-rull[data-mer-hoyre] {
+    background-image: linear-gradient(
+      to left,
+      var(--tabell-skygge),
+      transparent
+    );
+    background-position: right;
+  }
+
+  .sl-markdown-content .tabell-rull[data-mer-venstre] {
+    background-image: linear-gradient(
+      to right,
+      var(--tabell-skygge),
+      transparent
+    );
+    background-position: left;
+  }
+
+  .sl-markdown-content .tabell-rull[data-mer-venstre][data-mer-hoyre] {
+    background-image:
+      linear-gradient(to right, var(--tabell-skygge), transparent),
+      linear-gradient(to left, var(--tabell-skygge), transparent);
+    background-position: left, right;
+  }
+
+  /* Kodeord i en celle skal stå på én linje. Det er tabellen som ruller. */
   .sl-markdown-content :is(td, th) code:not(.not-content *) {
-    overflow-wrap: anywhere;
+    white-space: nowrap;
   }
 
   .sl-markdown-content :is(h1, h2, h3):not(.not-content, .not-content *) {
@@ -194,7 +253,17 @@
 
   .sl-markdown-content
     > *
-    + :is(p, ul, ol, pre, table, .expressive-code, .sl-tabs, .starlight-aside) {
+    + :is(
+      p,
+      ul,
+      ol,
+      pre,
+      table,
+      .tabell-rull,
+      .expressive-code,
+      .sl-tabs,
+      .starlight-aside
+    ) {
     @apply mt-6;
   }
 
@@ -212,14 +281,16 @@
   }
 
   .expressive-code .frame,
-  .sl-markdown-content table:not(.not-content, .not-content *),
   .sl-tabs,
   .starlight-aside {
     @apply overflow-hidden rounded-2xl border border-zinc-200/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
   }
 
-  .sl-markdown-content table:not(.not-content, .not-content *) {
-    @apply bg-white/70 dark:bg-zinc-900/50;
+  /* Kortutseendet hører på rullefeltet. Sto det på tabellen, måtte tabellen
+     ha `overflow: hidden` for å klippe de runde hjørnene, og da var brede
+     tabeller avskåret i stedet for å rulle. */
+  .sl-markdown-content .tabell-rull {
+    @apply rounded-2xl border border-zinc-200/70 bg-white/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:bg-zinc-900/50 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
   }
 
   .sl-markdown-content table:not(.not-content, .not-content *) :is(th, td) {

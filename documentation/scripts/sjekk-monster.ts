@@ -63,6 +63,33 @@ async function apne(sti: string) {
   })
 }
 
+/** Skriver i et felt i skjemademoen, og forlater det etterpå. */
+async function skrivIFelt(id: string, verdi: string) {
+  await side.evaluate(
+    ([id, verdi]) => {
+      const rot = document.getElementById("demo-skjema")?.shadowRoot
+      const felt = rot?.getElementById(id) as HTMLInputElement
+      felt.focus()
+      felt.value = verdi
+      felt.dispatchEvent(new Event("input", { bubbles: true }))
+      felt.blur()
+    },
+    [id, verdi],
+  )
+}
+
+function lesSkjema() {
+  return side.evaluate(() => {
+    const rot = document.getElementById("demo-skjema")?.shadowRoot
+    return {
+      lenker: rot?.querySelectorAll("fs-error-summary li a").length ?? 0,
+      markerte: rot?.querySelectorAll("[aria-invalid='true']").length ?? 0,
+      overskrift:
+        rot?.querySelector(".fs-error-summary__title")?.textContent ?? "",
+    }
+  })
+}
+
 // Skjemaet: et tomt skjema skal gi feil i alle feltene og i oppsummeringen
 {
   await apne("/monster/skjema/")
@@ -104,6 +131,49 @@ async function apne(sti: string) {
   krev(
     resultat.pekerPaFeil,
     "feltet peker ikke på feilmeldingen med aria-describedby",
+  )
+
+  // Retter brukeren én av to feil, skal den andre stå igjen alene.
+  await skrivIFelt("demo-epost", "ola@eksempel.no")
+  await side.waitForTimeout(200)
+
+  const etterRetting = await lesSkjema()
+
+  krev(
+    etterRetting.lenker === 1,
+    `oppsummeringen har ${etterRetting.lenker} feil etter at én er rettet, ventet 1`,
+  )
+  krev(
+    etterRetting.overskrift.includes("én"),
+    `overskriften teller ikke ned: «${etterRetting.overskrift}»`,
+  )
+
+  // En adresse uten toppdomene godtas av nettleseren, men ikke av skjemaet.
+  await skrivIFelt("demo-epost", "ola@eksempel")
+  await side.waitForTimeout(200)
+
+  krev(
+    (await lesSkjema()).lenker === 2,
+    "«ola@eksempel» ble godtatt som e-postadresse",
+  )
+}
+
+// Skjemaet: en feil skal komme når feltet forlates, uten innsending først
+{
+  await apne("/monster/skjema/")
+
+  await skrivIFelt("demo-epost", "ola")
+  await side.waitForTimeout(200)
+
+  const etterBlur = await lesSkjema()
+
+  krev(
+    etterBlur.markerte === 1,
+    `${etterBlur.markerte} felt er markert etter at ett ble forlatt, ventet 1`,
+  )
+  krev(
+    etterBlur.lenker === 1,
+    `oppsummeringen viser ${etterBlur.lenker} feil etter blur, ventet 1`,
   )
 }
 

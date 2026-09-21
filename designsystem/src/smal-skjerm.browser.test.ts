@@ -106,6 +106,15 @@ const KOMPONENTER: [navn: string, markup: string][] = [
      <button class="fs-tag" data-selectable aria-pressed="false">Ferdig behandlet</button>`,
   ],
   ["filopplasting", `<input class="fs-file-upload" type="file" multiple />`],
+  [
+    "lista over valgte filer",
+    `<ul class="fs-file-upload-list">
+       <li>
+         soknad-om-bostotte-2026-vedlegg-1.pdf
+         <button class="fs-button" data-variant="ghost" type="button">Fjern soknad-om-bostotte-2026-vedlegg-1.pdf</button>
+       </li>
+     </ul>`,
+  ],
   ["datofelt", `<input class="fs-input" type="date" data-variant="date" />`],
 ]
 

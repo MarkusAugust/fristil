@@ -2,6 +2,7 @@ import startlight from "@astrojs/starlight"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
+import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
 
 // https://astro.build/config
 export default defineConfig({
@@ -14,6 +15,7 @@ export default defineConfig({
    */
   markdown: {
     remarkPlugins: [remarkGfm],
+    rehypePlugins: [rehypeTabellrull],
   },
   vite: {
     plugins: [tailwindcss()],
@@ -27,6 +29,7 @@ export default defineConfig({
       },
       components: {
         SiteTitle: "./src/components/SiteTitle.astro",
+        MarkdownContent: "./src/components/MarkdownContent.astro",
       },
       customCss: [
         "./src/styles/global.css",
