@@ -23,7 +23,14 @@ kommer i et nytt undertall.
   tilpasning gjennom CSS ikke strekker til. Kopien er din, og oppdateringer av
   pakken rører den ikke.
 
+- `fristil --hjelp` (og `--help`, `-h`, `help`) skriver ut hva kommandoen kan.
+  Uten argumenter gjorde den før et forsøk på å lage et tema, og klaget over
+  manglende farger uten å nevne at `overta` fantes.
+
 ### Rettet
+
+- Kommandolinja svarer med en forklaring i stedet for et stakkspor fra Node
+  når kommandoen er ukjent, eller når temafila mangler eller ikke er JSON.
 
 - Lista over valgte filer i `file-upload` brekker nå til flere linjer på smal
   skjerm. Raden var bredere enn en telefon når filnavnet var langt, og knappen
