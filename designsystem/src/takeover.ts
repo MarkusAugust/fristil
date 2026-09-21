@@ -104,6 +104,7 @@ const IMPORT_PATTERN = /(from\s+|@import\s+)(["'])([^"']+)\2/g
 export function rewriteReferences(
   file: SourceFile,
   entryPoints: Map<string, string>,
+  /** Stiene til filene som blir med i kopien, som de står i pakken. */
   ownFiles: Set<string>,
 ): PlannedFile {
   const directory = file.path.slice(0, file.path.lastIndexOf("/"))
@@ -116,10 +117,13 @@ export function rewriteReferences(
 
       const target = resolvePath(directory, specifier)
 
-      // En nabo i samme mappe blir med i kopien. Importen i koden peker på
-      // «.js», som er filen etter bygging, mens kilden heter «.ts».
-      const basename = (target.split("/").pop() ?? "").replace(/\.js$/, ".ts")
-      if (ownFiles.has(basename)) return treff
+      // En fil som blir med i kopien skal stå urørt. Sammenligningen går på
+      // hele stien: filnavnet alene ville latt `../shared.js` stå så snart
+      // mappa selv hadde en `shared.ts`, og kopien hadde pekt ut av seg selv.
+      // Importen i koden peker dessuten på «.js», altså filen etter bygging,
+      // mens kilden heter «.ts».
+      const asSource = target.replace(/\.js$/, ".ts")
+      if (ownFiles.has(target) || ownFiles.has(asSource)) return treff
 
       const entry =
         entryPoints.get(target) ??
@@ -145,7 +149,7 @@ export function planTakeover(
   files: SourceFile[],
   entryPoints: Map<string, string>,
 ): TakeoverPlan {
-  const ownFiles = new Set(files.map((fil) => fil.path.split("/").pop() ?? ""))
+  const ownFiles = new Set(files.map((fil) => fil.path))
   const planned = files.map((fil) =>
     rewriteReferences(fil, entryPoints, ownFiles),
   )

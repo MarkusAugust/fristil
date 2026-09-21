@@ -51,7 +51,7 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/) e
 [Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Den gjør tre ting du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, sender fokus til riktig felt når en lenke følges, og skjuler seg selv når lista er tom.
 
 ```html
-<fs-error-summary heading="Skjemaet har to feil">
+<fs-error-summary id="skjemafeil" heading="Skjemaet har to feil">
   <ul class="fs-list">
     <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
     <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
@@ -101,7 +101,10 @@ skjema.addEventListener("submit", async (hendelse) => {
     document.getElementById(`${felt.id}-feil`).textContent = melding
   }
 
-  oppsummer() // den samme lista som over, bygget av feltene
+  // Den samme oppsummeringen som over, bygget av feilene serveren sendte.
+  document.querySelector("#skjemafeil ul").innerHTML = feil
+    .map(({ felt, melding }) => `<li><a href="#${felt}">${melding}</a></li>`)
+    .join("")
 })
 ```
 

@@ -59,7 +59,11 @@ describe("overta", () => {
       content: `import { attributes } from "../shared.js"\n`,
     }
 
-    const planlagt = rewriteReferences(fil, INNGANGER, new Set(["button.ts"]))
+    const planlagt = rewriteReferences(
+      fil,
+      INNGANGER,
+      new Set(["src/components/css/button/button.ts"]),
+    )
 
     expect(planlagt.content).toContain(`from "@fristil/designsystem/shared"`)
     expect(planlagt.rewrites).toEqual([
@@ -79,11 +83,34 @@ describe("overta", () => {
     const planlagt = rewriteReferences(
       fil,
       INNGANGER,
-      new Set(["fs-field.ts", "field-core.ts"]),
+      new Set([
+        "src/components/ramme/field/fs-field.ts",
+        "src/components/ramme/field/field-core.ts",
+      ]),
     )
 
     expect(planlagt.content).toContain(`from "./field-core.js"`)
     expect(planlagt.rewrites).toEqual([])
+  })
+
+  it("skriver om en henvisning ut av mappa selv om filnavnet finnes i den", () => {
+    const fil: SourceFile = {
+      path: "src/components/css/dialog/dialog.ts",
+      content: `import { attributes } from "../shared.js"\n`,
+    }
+
+    // Mappa har sin egen «shared.ts». Sammenlignet vi bare filnavnet, ble
+    // henvisningen stående, og kopien pekte på en mappe over seg selv.
+    const planlagt = rewriteReferences(
+      fil,
+      INNGANGER,
+      new Set([
+        "src/components/css/dialog/dialog.ts",
+        "src/components/css/dialog/shared.ts",
+      ]),
+    )
+
+    expect(planlagt.content).toContain(`from "@fristil/designsystem/shared"`)
   })
 
   it("skriver om @import i stilark", () => {
@@ -92,7 +119,11 @@ describe("overta", () => {
       content: `@import "../input/input.css";\n\n@layer fristil {}\n`,
     }
 
-    const planlagt = rewriteReferences(fil, INNGANGER, new Set(["search.css"]))
+    const planlagt = rewriteReferences(
+      fil,
+      INNGANGER,
+      new Set(["src/components/css/search/search.css"]),
+    )
 
     expect(planlagt.content).toContain(
       `@import "@fristil/designsystem/input.css";`,

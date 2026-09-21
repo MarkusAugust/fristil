@@ -30,6 +30,8 @@
  */
 
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import {
   buildEntryPoints,
   type PackageExports,
@@ -60,8 +62,14 @@ function lesArgumenter(argumenter: string[]) {
   return { flagg, filer }
 }
 
-/** Pakkas egen rot, enten CLI-en kjøres fra `dist` eller fra kilden. */
-const PAKKEROT = new URL("../", import.meta.url).pathname
+/**
+ * Pakkas egen rot, enten CLI-en kjøres fra `dist` eller fra kilden.
+ *
+ * `fileURLToPath`, ikke `pathname`: på Windows gir `pathname` en sti som
+ * begynner med skråstrek foran stasjonsbokstaven, og mellomrom i stien står
+ * fortsatt som `%20`. Da finner ikke kommandoen sine egne filer.
+ */
+const PAKKEROT = fileURLToPath(new URL("../", import.meta.url))
 
 /** Mappene komponentene ligger i, med kategorien som navn. */
 const KATEGORIER = ["css", "ramme", "frittstaende"] as const
@@ -74,14 +82,14 @@ async function finnKomponenter(): Promise<Map<string, string>> {
     let innhold: string[]
 
     try {
-      innhold = await readdir(`${PAKKEROT}${mappe}`)
+      innhold = await readdir(join(PAKKEROT, mappe))
     } catch {
       continue
     }
 
     for (const navn of innhold) {
       const sti = `${mappe}/${navn}`
-      if ((await stat(`${PAKKEROT}${sti}`)).isDirectory()) {
+      if ((await stat(join(PAKKEROT, sti))).isDirectory()) {
         komponenter.set(navn, sti)
       }
     }
@@ -112,7 +120,7 @@ async function overta(argumenter: string[]): Promise<void> {
   }
 
   const kilde = komponenter.get(navn) as string
-  const utmappe = `${flagg.ut ?? "src/fristil"}/${navn}`
+  const utmappe = join(flagg.ut ?? "src/fristil", navn)
 
   const finnes = await stat(utmappe).then(
     () => true,
@@ -128,10 +136,10 @@ async function overta(argumenter: string[]): Promise<void> {
   }
 
   const pakke = JSON.parse(
-    await readFile(`${PAKKEROT}package.json`, "utf8"),
+    await readFile(join(PAKKEROT, "package.json"), "utf8"),
   ) as { name: string; exports: PackageExports }
 
-  const filnavn = (await readdir(`${PAKKEROT}${kilde}`)).filter(
+  const filnavn = (await readdir(join(PAKKEROT, kilde))).filter(
     // Testene hører til pakkens eget oppsett, og sier ingenting her.
     (fil) => !fil.includes(".test."),
   )
@@ -139,7 +147,7 @@ async function overta(argumenter: string[]): Promise<void> {
   const kildefiler: SourceFile[] = await Promise.all(
     filnavn.map(async (fil) => ({
       path: `${kilde}/${fil}`,
-      content: await readFile(`${PAKKEROT}${kilde}/${fil}`, "utf8"),
+      content: await readFile(join(PAKKEROT, kilde, fil), "utf8"),
     })),
   )
 
@@ -150,7 +158,7 @@ async function overta(argumenter: string[]): Promise<void> {
 
   await mkdir(utmappe, { recursive: true })
   for (const fil of plan.files) {
-    await writeFile(`${utmappe}/${fil.name}`, fil.content)
+    await writeFile(join(utmappe, fil.name), fil.content)
   }
 
   const linjer = [
@@ -174,8 +182,9 @@ async function overta(argumenter: string[]): Promise<void> {
       "",
       "Bytt ut disse importene med kopien:",
       ...plan.replacedEntries.map((entry) => `  ${entry}`),
-      "Klassenavnene er de samme, så blir begge stående, finnes komponenten",
-      "to ganger, og hvilken som vinner avgjøres av rekkefølgen.",
+      "Klassenavnene er de samme. Blir importene stående ved siden av",
+      "kopien, finnes komponenten to ganger, og hvilken som vinner avgjøres",
+      "av rekkefølgen.",
     )
   }
 
