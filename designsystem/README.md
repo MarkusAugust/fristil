@@ -12,11 +12,9 @@ Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire
 npm install @fristil/designsystem
 ```
 
-Pakken har ingen påkrevde avhengigheter. `lit` er valgfri, og trengs bare til komponentene som er web components:
+Det er alt du trenger å installere. `lit` følger med, og brukes av komponentene som er web components.
 
-```bash
-npm install lit
-```
+Bruker du bare CSS-komponentene, havner Lit aldri i bunten din. Ingenting registreres ved import alene, så Lit kommer først med når du kaller en `defineFs*`.
 
 ## CSS-komponenter
 

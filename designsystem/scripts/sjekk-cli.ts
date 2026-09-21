@@ -12,8 +12,9 @@
 import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const pakke = new URL("../", import.meta.url).pathname
+const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
 
 const FARGER = [

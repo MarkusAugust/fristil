@@ -12,9 +12,10 @@
  */
 
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 
-const DIST = new URL("../dist/", import.meta.url).pathname
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4183
 
 const MEDIETYPER: Record<string, string> = {
