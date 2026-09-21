@@ -12,3 +12,6 @@ documentation/scripts/.lokal/
 
 # Presentasjonen om designsystemarkitektur, hentet ned fra Netlify
 presentasjon/
+
+# macOS
+.DS_Store
