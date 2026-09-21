@@ -17,8 +17,9 @@
 
 import { existsSync } from "node:fs"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const pakke = new URL("../", import.meta.url).pathname
+const pakke = fileURLToPath(new URL("../", import.meta.url))
 
 type Exports = Record<string, string | Record<string, string>>
 

@@ -12,9 +12,10 @@
 
 import { readFileSync } from "node:fs"
 import { join, relative } from "node:path"
+import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 
-const DIST = new URL("../dist/", import.meta.url).pathname
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4173
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
 const TEMAER = ["light", "dark"] as const
@@ -70,7 +71,9 @@ const tjener = Bun.serve({
 })
 
 const axeKilde = readFileSync(
-  new URL("../node_modules/axe-core/axe.min.js", import.meta.url).pathname,
+  fileURLToPath(
+    new URL("../node_modules/axe-core/axe.min.js", import.meta.url),
+  ),
   "utf8",
 )
 

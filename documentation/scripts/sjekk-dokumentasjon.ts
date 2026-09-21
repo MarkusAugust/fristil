@@ -12,8 +12,9 @@
  */
 
 import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 
-const ROT = new URL("../../", import.meta.url).pathname
+const ROT = fileURLToPath(new URL("../../", import.meta.url))
 const KOMPONENTER = `${ROT}designsystem/src/components/`
 const SIDER = `${ROT}documentation/src/content/docs/components/`
 const TILPASNING = `${ROT}documentation/src/content/docs/tilpasning.mdx`

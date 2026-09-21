@@ -8,8 +8,9 @@
  */
 
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const ROT = new URL("..", import.meta.url).pathname
+const ROT = fileURLToPath(new URL("..", import.meta.url))
 const pakke = await Bun.file(join(ROT, "package.json")).json()
 const logg = await Bun.file(join(ROT, "CHANGELOG.md")).text()
 
