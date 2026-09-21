@@ -82,7 +82,19 @@ export const suggestion = ({
         "data-preserve-attr": "aria-selected hidden" as const,
       }),
     ),
-    empty: { class: SUGGESTION_EMPTY_CLASS },
+    /**
+     * Teksten som vises når ingenting passer.
+     *
+     * Den er skjult så lenge serveren sender noe å velge mellom, og
+     * komponenten skjuler og viser den igjen mens brukeren skriver.
+     * `data-preserve-attr` må derfor ha `hidden` med: uten den dukket
+     * «Ingen treff» opp igjen ved hver patch, også når noe passet.
+     */
+    empty: attributes({
+      class: SUGGESTION_EMPTY_CLASS,
+      hidden: count > 0 ? (true as const) : undefined,
+      "data-preserve-attr": "hidden" as const,
+    }),
     /**
      * Området som melder antall treff til skjermlesere.
      *

@@ -165,19 +165,25 @@ Blir markupen til uten JavaScript, i en Go-mal, en PHP-fil, en Razor-visning ell
 Oppdaterer serveren det samme området mens brukeren holder på, som i en Datastar- eller htmx-app, må malen i tillegg ta med lista over hva som skal bevares. Uten den fjernes koblingen komponenten satte, ved første oppdatering:
 
 ```html
-<label class="fs-label" for="epost"
-       data-preserve-attr="class data-required data-optional aria-disabled">E-post</label>
-<input class="fs-input" id="epost"
+<label class="fs-label"
+       data-preserve-attr="class for data-required data-optional aria-disabled">E-post</label>
+<input class="fs-input"
        data-preserve-attr="id aria-describedby aria-invalid data-state disabled aria-disabled">
-<p class="fs-error-text" hidden data-preserve-attr="hidden">Skriv en gyldig adresse.</p>
+<p class="fs-help-text" data-preserve-attr="id">Vi sender aldri spam.</p>
+<p class="fs-error-text" hidden data-preserve-attr="id hidden">Skriv en gyldig adresse.</p>
 ```
 
-Alle tre elementene trenger sin egen liste. Komponenten legger `fs-label` og
+Hvert element trenger sin egen liste. Komponenten legger `fs-label` og
 markeringene på ledeteksten og skjuler feilmeldingen, så beskytter du bare
 kontrollen, forsvinner klassen og feilmeldingen likevel.
 
+`id` står på hjelpeteksten og feilmeldingen selv om malen ikke skriver noen.
+Komponenten lager dem i så fall selv, og `aria-describedby` på kontrollen
+peker på dem. Forsvinner id-en i en oppdatering, peker koblingen på noe som
+ikke finnes, og skjermleseren leser verken hjelpeteksten eller feilen.
+
 Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, med én nøkkel per element
-(`label`, `control` og `error`), så du slipper å skrive dem av.
+(`label`, `control`, `help` og `error`), så du slipper å skrive dem av.
 
 Det gir to veier til den samme kontrakten:
 

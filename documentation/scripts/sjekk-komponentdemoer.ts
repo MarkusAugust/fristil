@@ -329,7 +329,14 @@ const stylet = await side.evaluate(async () => {
 
   felt.focus()
   felt.showPicker()
-  await new Promise((ferdig) => setTimeout(ferdig, 300))
+
+  // Vent på at lista faktisk er tonet inn, ikke på klokka. Overgangen varer
+  // 120 millisekunder, og en fast pause ville feilet tilfeldig på en treg
+  // kjøring.
+  for (let forsok = 0; forsok < 90; forsok++) {
+    if (getComputedStyle(felt, "::picker(select)").opacity === "1") break
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+  }
 
   const liste = getComputedStyle(felt, "::picker(select)")
   const valg = felt.querySelector("option")

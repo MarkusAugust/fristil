@@ -1,0 +1,246 @@
+/**
+ * At en morfing fra serveren ikke river bort det komponenten har satt.
+ *
+ * Datastar synkroniserer attributter slik, der `r` står i siden og `s` er
+ * serverens node:
+ *
+ * ```js
+ * for (let {name: l} of Array.from(r.attributes))
+ *   !s.hasAttribute(l) && !o.includes(l) && r.removeAttribute(l)
+ * ```
+ *
+ * `o` er lista fra `data-preserve-attr`, og den leses fra serverens node.
+ * Setter en komponent et attributt som ikke står der, forsvinner det ved
+ * hver patch. Testen her kjører nøyaktig den løkka mot ekte markup, etter at
+ * komponenten har gjort jobben sin, og krever at tilstanden står igjen.
+ */
+
+import { beforeEach, describe, expect, it } from "vitest"
+import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
+import { defineFsField } from "./components/ramme/field/fs-field"
+import { defineFsPopover } from "./components/ramme/popover/fs-popover"
+import { popover } from "./components/ramme/popover/popover"
+import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
+import { suggestion } from "./components/ramme/suggestion/suggestion"
+import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
+import { tabs } from "./components/ramme/tabs/tabs"
+
+import "./tokens/tokens.css"
+
+defineFsField()
+defineFsSuggestion()
+defineFsPopover()
+defineFsTabs()
+
+/** Datastars attributtsynkronisering, på ett element. */
+function morfElement(live: Element, server: Element): void {
+  const bevar = (server.getAttribute("data-preserve-attr") ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+
+  for (const { name } of [...live.attributes]) {
+    if (!server.hasAttribute(name) && !bevar.includes(name)) {
+      live.removeAttribute(name)
+    }
+  }
+
+  // Bare når verdien faktisk er en annen. En morfing som skriver hvert
+  // attributt på nytt ville lukket et åpent `popover` av seg selv, og da
+  // hadde testen etterprøvd sin egen skrivemåte framfor morfingen.
+  for (const { name, value } of [...server.attributes]) {
+    if (!bevar.includes(name) && live.getAttribute(name) !== value) {
+      live.setAttribute(name, value)
+    }
+  }
+}
+
+/** Samme, gjennom hele treet. Nodene står i samme rekkefølge. */
+function morf(live: Element, markup: string): void {
+  const mal = document.createElement("div")
+  mal.innerHTML = markup
+  const rot = mal.firstElementChild
+  if (!rot) throw new Error("Markupen har ingen rot")
+
+  const levende = [live, ...live.querySelectorAll("*")]
+  const sendte = [rot, ...rot.querySelectorAll("*")]
+
+  for (let i = 0; i < Math.min(levende.length, sendte.length); i++) {
+    morfElement(levende[i], sendte[i])
+  }
+}
+
+function monterMarkup(markup: string): HTMLElement {
+  document.body.innerHTML = markup
+  return document.body.firstElementChild as HTMLElement
+}
+
+describe("morfing river ikke bort det komponenten setter", () => {
+  beforeEach(() => {
+    document.body.innerHTML = ""
+  })
+
+  /*
+   * Markupen er skrevet slik en Go-mal ville gjort det: ingen id-er, ingen
+   * kobling. Da er det `<fs-field>` som lager dem, og nettopp de må lista
+   * dekke.
+   */
+  const FELT = `
+    <fs-field data-preserve-attr="">
+      <label class="fs-label" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.label}">E-post</label>
+      <input class="fs-input" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.control}" />
+      <p class="fs-help-text" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.help}">Vi sender aldri spam.</p>
+      <p class="fs-error-text" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.error}">Skriv en gyldig adresse.</p>
+    </fs-field>`
+
+  it("holder feltet koblet gjennom en patch", async () => {
+    const felt = monterMarkup(FELT)
+    await customElements.whenDefined("fs-field")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    const foer = kontroll.getAttribute("aria-describedby")
+    expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
+
+    morf(felt, FELT)
+
+    const etter = kontroll.getAttribute("aria-describedby")
+    expect(etter, "koblingen forsvant i patchen").toBe(foer)
+
+    for (const id of (etter ?? "").split(/\s+/).filter(Boolean)) {
+      expect(
+        document.getElementById(id),
+        `aria-describedby peker på «${id}», som ikke finnes etter patchen`,
+      ).not.toBeNull()
+    }
+
+    const label = felt.querySelector("label") as HTMLLabelElement
+    expect(label.htmlFor, "ledeteksten mistet koblingen til feltet").toBe(
+      kontroll.id,
+    )
+  })
+
+  /*
+   * Forslagsfeltet skjuler «Ingen treff» når noe passer. Det gjør det med
+   * `hidden`, og serveren sender ikke den tilstanden, for den følger av hva
+   * brukeren har skrevet.
+   */
+  const FORSLAG = suggestion({ id: "kommune", count: 2 })
+  const attr = (verdier: Record<string, unknown>) =>
+    Object.entries(verdier)
+      .map(([navn, verdi]) => (verdi === true ? navn : `${navn}="${verdi}"`))
+      .join(" ")
+
+  const FELT_MED_FORSLAG = `
+    <fs-suggestion>
+      <label ${attr(FORSLAG.label)}>Kommune</label>
+      <div ${attr(FORSLAG.field)}>
+        <input ${attr(FORSLAG.control)} name="kommune">
+        <ul ${attr(FORSLAG.list)}>
+          <li ${attr(FORSLAG.options[0])}>Bergen</li>
+          <li ${attr(FORSLAG.options[1])}>Bodø</li>
+        </ul>
+        <p ${attr(FORSLAG.empty)}>Ingen treff</p>
+        <span ${attr(FORSLAG.status)}></span>
+      </div>
+    </fs-suggestion>`
+
+  it("lar «Ingen treff» bli skjult gjennom en patch", async () => {
+    const felt = monterMarkup(FELT_MED_FORSLAG)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    kontroll.value = "Be"
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+
+    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    expect(tom.hidden, "«Ingen treff» sto framme selv om Bergen passet").toBe(
+      true,
+    )
+
+    morf(felt, FELT_MED_FORSLAG)
+
+    expect(tom.hidden, "«Ingen treff» dukket opp igjen i patchen").toBe(true)
+  })
+
+  /*
+   * Fanene bærer valget i `aria-selected` og `tabindex` på knappene, og i
+   * `hidden` på panelene. Ingen av delene finnes i serverens utgave, for
+   * valget er noe brukeren har gjort.
+   */
+  const FANER = tabs({ id: "sak", count: 2 })
+
+  const FANEMARKUP = `
+    <fs-tabs>
+      <div ${attr(FANER.list)}>
+        <button ${attr(FANER.tabs[0])}>Oversikt</button>
+        <button ${attr(FANER.tabs[1])}>Vedlegg</button>
+      </div>
+      <div ${attr(FANER.panels[0])}>Sammendrag</div>
+      <div ${attr(FANER.panels[1])}>Filer</div>
+    </fs-tabs>`
+
+  it("holder på hvilken fane som er valgt gjennom en patch", async () => {
+    const felt = monterMarkup(FANEMARKUP)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const paneler = [
+      ...felt.querySelectorAll("[role='tabpanel']"),
+    ] as HTMLElement[]
+
+    knapper[1].click()
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+
+    morf(felt, FANEMARKUP)
+
+    expect(
+      knapper[1].getAttribute("aria-selected"),
+      "den valgte fanen ble den første igjen",
+    ).toBe("true")
+    expect(knapper[1].tabIndex, "tabbestoppet fulgte ikke med").toBe(0)
+    expect(paneler[1].hidden, "panelet til den valgte fanen ble skjult").toBe(
+      false,
+    )
+    expect(paneler[0].hidden).toBe(true)
+  })
+
+  /*
+   * Sprettoppvinduet bærer tilstanden på verten, og posisjonen i `style` på
+   * panelet. Patchen må utløses fra noe inne i vinduet; et klikk utenfor
+   * lukker det, og da etterprøver man sin egen klikking.
+   */
+  const SPRETT = popover({ id: "meny" })
+
+  const SPRETTMARKUP = `
+    <fs-popover ${attr(SPRETT.host)}>
+      <button ${attr(SPRETT.trigger)}>Handlinger</button>
+      <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
+    </fs-popover>`
+
+  it("holder sprettoppvinduet åpent gjennom en patch", async () => {
+    const felt = monterMarkup(SPRETTMARKUP)
+    await customElements.whenDefined("fs-popover")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapp = felt.querySelector("button") as HTMLButtonElement
+    const panel = felt.querySelector("ul") as HTMLElement
+
+    knapp.click()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(panel.matches(":popover-open"), "vinduet åpnet seg ikke").toBe(true)
+
+    morf(felt, SPRETTMARKUP)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(felt.hasAttribute("open"), "verten mistet tilstanden sin").toBe(true)
+    expect(
+      knapp.getAttribute("aria-expanded"),
+      "knappen meldte lukket til skjermleseren",
+    ).toBe("true")
+    expect(panel.matches(":popover-open"), "vinduet lukket seg i patchen").toBe(
+      true,
+    )
+  })
+})

@@ -53,7 +53,7 @@ Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className`
 
 Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
 
-Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, må malen din ta med `data-preserve-attr` på de tre elementene. Ellers fjernes koblingen ved neste oppdatering. Lista ligger i `FIELD_PRESERVED_ATTRIBUTES`, og hele begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
+Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, må malen din ta med `data-preserve-attr` på hvert av elementene, også på hjelpeteksten og feilmeldingen. Ellers fjernes koblingen ved neste oppdatering. Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, og hele begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
 
 ## Kom i gang
 

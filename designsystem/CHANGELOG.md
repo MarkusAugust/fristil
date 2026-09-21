@@ -38,6 +38,24 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **`FIELD_PRESERVED_ATTRIBUTES` dekker nå hjelpeteksten og feilmeldingen.**
+  Skriver malen ingen id-er, lager `<fs-field>` dem selv, og
+  `aria-describedby` på kontrollen peker på dem. `id` sto ikke i noen liste,
+  så en morfing fjernet den, og koblingen pekte på noe som ikke fantes: verken
+  hjelpeteksten eller feilmeldingen ble lest opp. Lista har nå en `help`-nøkkel,
+  `error` har fått `id` og ledeteksten har fått `for`.
+
+- **`fs.suggestion().empty` bevarer `hidden` gjennom en oppdatering.**
+  Komponenten skjuler «Ingen treff» når noe passer, men elementet hadde ingen
+  `data-preserve-attr`, så teksten dukket opp igjen ved hver patch, også midt
+  i en liste med treff. Byggefunksjonen sender nå `hidden` når serveren har
+  noe å velge mellom, og navnet står i lista.
+
+  Begge ble funnet av en ny vaktpost, `morfing.browser.test.ts`, som kjører
+  Datastars egen attributtsynkronisering mot ekte markup etter at komponenten
+  har gjort jobben sin. Den dekker felt, forslagsfelt, faner og
+  sprettoppvindu.
+
 - **`.fs-select` snur riktig i språk som skrives fra høyre mot venstre.**
   Feltet holdt av plass til pila si med en `padding` på fire verdier, altså
   over, høyre, under og venstre. De to fysiske sidene snur ikke med språket,
