@@ -21,9 +21,10 @@ function setOrRemove(
 /**
  * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
  *
- * Komponenten er for servere som ikke kan kalle `fs.field()`, altså alt som
- * ikke kjører JavaScript. Kan serveren kalle byggeren, skal den skrive
- * attributtene selv, og da trengs ikke dette elementet.
+ * Komponenten er for markup som blir til uten JavaScript: en Go-mal, en
+ * PHP-fil, en Razor-visning eller håndskrevet HTML. Lages markupen med
+ * JavaScript, uansett hvor koden kjører, skal `fs.field()` skrive
+ * attributtene i stedet, og da trengs ikke dette elementet.
  *
  * Komponenten rendrer ingenting. Den satte tidligere et `<slot>`-element inn i
  * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing

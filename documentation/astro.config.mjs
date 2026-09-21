@@ -84,7 +84,7 @@ export default defineConfig({
             { label: "Introduksjon", slug: "introduksjon" },
             { label: "Kom i gang", slug: "kom-i-gang" },
             { label: "Rammeverk", slug: "rammeverk" },
-            { label: "Server først", slug: "server-forst" },
+            { label: "Markup og oppførsel", slug: "markup-og-oppforsel" },
             { label: "Design tokens", slug: "design-tokens" },
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
