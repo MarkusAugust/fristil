@@ -64,6 +64,19 @@ Ber brukeren om mindre bevegelse i systemet sitt, demper systemet seg selv:
 | [Skip Link](../components/skip-link/) | Kommer til syne uten å gli |
 | [Tooltip](../components/tooltip/) | Vises uten overgang |
 
+## Smal skjerm
+
+En komponent skal aldri bli bredere enn plassen den får. Blir den det, kan hele siden dras sidelengs, og innhold havner utenfor kanten.
+
+| Komponent | Hva som skjer på smal skjerm |
+| --- | --- |
+| [Button](../components/button/) | Teksten brekker framfor å sprenge boksen |
+| [Pagination](../components/pagination/), [Breadcrumbs](../components/breadcrumbs/), [Toggle Group](../components/toggle-group/), [Tabs](../components/tabs/) | Radene brekker til flere linjer |
+| [Table](../components/table/) | Ruller sidelengs i `.fs-table-scroll`, som du legger rundt |
+| [Dialog](../components/dialog/), [Popover](../components/popover/), [Toast](../components/toast/), [Calendar](../components/calendar/) | Bredden er begrenset av skjermen, ikke bare av en fast verdi |
+
+To tester holder dette på plass. `smal-skjerm.browser.test.ts` setter hver komponent i en boks på 320 piksler og krever at ingenting stikker utenfor. `sjekk-mobil.ts` åpner hver side i dokumentasjonen på 375 piksler og krever at siden ikke kan dras sidelengs.
+
 ## Høyre til venstre
 
 Komponentene bruker logiske egenskaper, altså `padding-inline-start` og `inset-inline-end`, og snur av seg selv når dokumentet går fra høyre til venstre:

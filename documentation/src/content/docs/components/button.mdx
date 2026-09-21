@@ -89,6 +89,18 @@ Se [Typesikker bruk](../../typesikker-bruk/).
 
 Standardverdien følger `--size`-skalaen, så knappen holder seg i takt med resten om du endrer skalaen. Se [Tilpasning](../../tilpasning/).
 
+## På smal skjerm
+
+Knappeteksten brekker når den må. En knapp med en lang norsk ledetekst, som «Send søknaden om bostøtte for hele kalenderåret 2026», ville ellers blitt bredere enn telefonen, og da ruller hele siden sidelengs.
+
+Trenger du en knapp i full bredde, er det appens oppsett:
+
+```css
+.skjema-knapp {
+	inline-size: 100%;
+}
+```
+
 ## Tilgjengelighet
 
 - `<button>` utfører en handling, `<a>` flytter deg et annet sted. Velg etter hva som skjer, ikke hvordan det ser ut.
