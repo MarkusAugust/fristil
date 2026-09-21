@@ -1,0 +1,57 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview
+	id="demo-bekreft"
+	stiler={["dialog", "button", "toast", "paragraph"]}
+	layout="stabel"
+	maxWidth="34rem"
+>
+	<p class="fs-paragraph">Søknad 2026-0481, sendt 4. mars.</p>
+
+	<button class="fs-button" data-variant="danger" type="button" id="demo-slett">
+		Slett søknaden
+	</button>
+
+	<dialog class="fs-dialog" id="demo-dialog" aria-labelledby="demo-dialog-tittel">
+		<h2 class="fs-dialog__title" id="demo-dialog-tittel">Slette søknaden?</h2>
+
+		<div class="fs-dialog__body">
+			<p class="fs-paragraph">
+				Søknaden og vedleggene blir borte. Dette kan ikke angres.
+			</p>
+		</div>
+
+		<form method="dialog" class="fs-dialog__footer">
+			<button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
+			<button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+		</form>
+	</dialog>
+
+	<fs-toast id="demo-meldinger" label="Meldinger"></fs-toast>
+</Preview>
+
+<script>
+	import { defineFsToast } from "@fristil/designsystem/toast"
+
+	defineFsToast()
+
+	const flate = document.getElementById("demo-bekreft")?.shadowRoot
+	const dialog = flate?.getElementById("demo-dialog") as HTMLDialogElement | null
+	const meldinger = flate?.getElementById("demo-meldinger") as
+		| (HTMLElement & { show(tekst: string, valg?: { color?: string }): void })
+		| null
+
+	flate?.getElementById("demo-slett")?.addEventListener("click", () => {
+		dialog?.showModal()
+	})
+
+	dialog?.addEventListener("close", () => {
+		if (dialog.returnValue !== "slett") return
+
+		// Handlingen er utført. Meldingen bekrefter, men er ikke stedet for
+		// en angreknapp: den forsvinner.
+		meldinger?.show("Søknaden er slettet", { color: "success" })
+	})
+</script>

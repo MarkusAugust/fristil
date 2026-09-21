@@ -1,0 +1,98 @@
+---
+title: Skjema med validering
+description: Fra felt til feilmelding til oppsummering, med fokus der brukeren trenger det.
+---
+
+import SkjemaDemo from "../../../components/SkjemaDemo.astro"
+
+Komponentene finnes hver for seg. Det som avgjør om et skjema er brukbart er avgjørelsene rundt dem: når du validerer, hvor fokus går, og hva feilmeldingen sier.
+
+Prøv å sende skjemaet tomt, og deretter med en ufullstendig e-postadresse:
+
+<SkjemaDemo />
+
+## Når du validerer
+
+| Tidspunkt | Hva som skjer |
+| --- | --- |
+| Mens brukeren skriver | Aldri. «Ugyldig e-postadresse» etter to tegn er å kjefte på noen som er halvveis. |
+| Når feltet forlates | Bare hvis skjemaet er forsøkt sendt før. Da er feilen noe brukeren alt kjenner til. |
+| Når skjemaet sendes | Alltid. Det er her alle feilene finnes samtidig. |
+
+Demoen over gjør nøyaktig dette: første innsending viser alt, og etterpå oppdateres hvert felt når du forlater det.
+
+## De tre tingene som må stemme per felt
+
+```html
+<label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
+<input
+  class="fs-input"
+  id="epost"
+  type="email"
+  required
+  data-state="invalid"
+  aria-invalid="true"
+  aria-describedby="epost-hjelp epost-feil"
+/>
+<p class="fs-help-text" id="epost-hjelp">Vi sender kvittering hit.</p>
+<p class="fs-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+```
+
+`data-state` gir fargen, `aria-invalid` sier fra til skjermleseren, og `aria-describedby` peker på teksten. Mangler den siste, finnes feilmeldingen bare for den som ser den.
+
+Feilmeldingen skal ut av `aria-describedby` igjen når feltet blir gyldig. Ellers peker feltet på en skjult tekst, og skjermlesere melder enten ingenting eller noe som ikke står på skjermen.
+
+Slipper du å holde styr på dette selv, bruk [Field](../../components/field/) eller [`fs.field()`](../../typesikker-bruk/#fsfield). De regner ut alle tre fra én tilstand.
+
+## Oppsummeringen
+
+[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Den gjør tre ting du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, sender fokus til riktig felt når en lenke følges, og skjuler seg selv når lista er tom.
+
+```html
+<fs-error-summary heading="Skjemaet har to feil">
+  <ul class="fs-list">
+    <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
+    <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+  </ul>
+</fs-error-summary>
+```
+
+Lenketeksten er feilmeldingen, ikke navnet på feltet. Den som hører lista skal forstå hva som er galt uten å hoppe til feltet først.
+
+Bygg lista på nytt ved hver innsending, også når de samme feilene står igjen. Da leses den opp på nytt, og brukeren vet at forsøket ble avvist.
+
+## Feil fra serveren
+
+Nettleserens validering fanger format. Serveren fanger alt det andre: at adressen ikke finnes i registeret, at fristen er gått ut, at noen andre har søkt på det samme. De to må ende opp på samme sted.
+
+```js
+const svar = await fetch("/api/soknad", { method: "POST", body: data })
+
+if (!svar.ok) {
+  const { feil } = await svar.json() // [{ felt: "epost", melding: "…" }]
+
+  for (const f of feil) {
+    const felt = skjema.elements[f.felt]
+    felt.setAttribute("aria-invalid", "true")
+    felt.dataset.state = "invalid"
+    document.getElementById(`${felt.id}-feil`).textContent = f.melding
+  }
+
+  vis(feil) // den samme oppsummeringen som over
+}
+```
+
+Har feilen ikke noe felt, for eksempel «tjenesten er nede», hører den i en [Alert](../../components/alert/) over skjemaet, ikke i oppsummeringen. Oppsummeringen er en liste over ting brukeren kan rette.
+
+## Ordlyden
+
+- Si hva brukeren skal gjøre: «Skriv en dato som finnes», ikke «Ugyldig verdi».
+- Ta med et eksempel når formatet er uvanlig: «for eksempel ola@eksempel.no».
+- Skriv på norsk. Nettleserens egne meldinger følger nettleserspråket, ikke sidens, så `validationMessage` kan dukke opp på engelsk midt i et norsk skjema. Demoen over bruker derfor egne tekster.
+- Dropp utropstegnet, og ikke legg skylden på brukeren.
+
+## Det systemet ikke gjør
+
+- **Rekkefølgen på feltene.** Tastaturet følger markupen.
+- **Hva som er påkrevd.** `data-required` er bare visuelt, og `required` på feltet er det som stopper innsendingen.
+- **Lagring av utkast.** Et langt skjema bør tåle at nettet forsvinner, men det er appens ansvar.

@@ -1,0 +1,98 @@
+---
+title: Bekreft en handling
+description: Dialog, ordlyd og hva som skjer etterpå, når handlingen ikke kan angres.
+---
+
+import BekreftelseDemo from "../../../components/BekreftelseDemo.astro"
+
+En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, og bare da.
+
+<BekreftelseDemo />
+
+## Markupen
+
+```html
+<button class="fs-button" data-variant="danger" id="slett" type="button">
+  Slett søknaden
+</button>
+
+<dialog class="fs-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
+  <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+
+  <div class="fs-dialog__body">
+    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+  </div>
+
+  <form method="dialog" class="fs-dialog__footer">
+    <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
+    <button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+  </form>
+</dialog>
+
+<fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+<script type="module">
+  import { defineFsToast } from "@fristil/designsystem/toast"
+  defineFsToast()
+
+  const dialog = document.getElementById("bekreft")
+  const meldinger = document.getElementById("meldinger")
+
+  document.getElementById("slett").addEventListener("click", () => {
+    dialog.showModal()
+  })
+
+  dialog.addEventListener("close", async () => {
+    if (dialog.returnValue !== "slett") return
+
+    await slett()
+    meldinger.show("Søknaden er slettet", { color: "success" })
+  })
+</script>
+```
+
+`showModal()`, ikke `open`. Bare den flytter fokus inn, holder fokus i dialogen, lukker på Escape og gjør resten av siden utilgjengelig.
+
+`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Du slipper lyttere på knappene, og Enter virker som forventet.
+
+## Ordlyden
+
+| Sted | Skriv | Ikke skriv |
+| --- | --- | --- |
+| Overskriften | Spørsmålet: «Slette søknaden?» | «Er du sikker?», «Bekreft» |
+| Brødteksten | Hva som skjer: «Søknaden og vedleggene blir borte.» | «Denne handlingen kan ikke angres.» alene |
+| Knappen | Handlingen: «Slett søknaden» | «OK», «Ja» |
+
+Knappeteksten er den viktigste. Den som hører dialogen uten å se overskriften, hører bare knappene. «OK» sier ingenting om hva som er i ferd med å skje.
+
+## Etterpå
+
+Handlingen er utført, og brukeren trenger å vite det. En melding i hjørnet er nok for noe som gikk bra:
+
+```js
+meldinger.show("Søknaden er slettet", { color: "success" })
+```
+
+Men meldingen forsvinner. Derfor:
+
+- **Angreknappen hører ikke der.** Skal handlingen kunne angres, hører knappen i siden, og da var det kanskje ikke en bekreftelse du trengte.
+- **En feil hører ikke der heller.** Gikk slettingen galt, er det en [Alert](../../components/alert/) i siden, eller en melding med `duration: 0` som blir stående.
+- **Fokus må et sted.** Nettleseren gir fokus tilbake til knappen som åpnet dialogen. Er den knappen borte, fordi raden den sto i er slettet, må du flytte fokus selv, for eksempel til overskriften på lista.
+
+## Når du ikke skal bekrefte
+
+Kan handlingen angres, er angring bedre enn bekreftelse. Et ekstra klikk hver gang er dyrere enn en angreknapp de få gangene noen bommer.
+
+Bekreftelse er riktig når:
+
+- noe forsvinner for godt
+- noe sendes til andre, som en søknad eller en melding
+- noe koster penger
+
+Bekreftelse er feil når handlingen bare er upraktisk å gjøre om igjen. Da lager du en dialog som alle klikker bort uten å lese, og neste gang det gjelder noe alvorlig, gjør de det samme.
+
+## Det systemet ikke gjør
+
+- **Å hindre dobbeltklikk.** Slå av knappen mens handlingen pågår.
+- **Å huske valget.** «Ikke spør meg igjen» er en innstilling du eier.
+- **Å avgjøre hva som er farlig.** `data-variant="danger"` er en farge. Hva som fortjener den, er en vurdering.

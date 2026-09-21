@@ -1,0 +1,104 @@
+---
+title: Sideskjelett
+description: Hopplenke, landemerker og overskriftsnivåer, altså det komponentene ikke kan ta ansvar for.
+---
+
+import Rammeside from "../../../components/Rammeside.astro"
+
+En komponent kan ikke vite hvor den står på siden. Den vet ikke om overskriften er den første på siden eller den tolvte, og den kan ikke legge inn en hopplenke på dine vegne. Derfor er dette mønsteret det eneste som ikke handler om en enkelt komponent, men om rekkefølgen de står i.
+
+<Rammeside src="/demo/sideskjelett/" tittel="Sideskjelettet" hoyde="36rem" />
+
+## Rekkefølgen
+
+```html
+<body>
+  <a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
+
+  <header>
+    <a class="fs-link" href="/" aria-label="Eksempelkommune, til forsiden">
+      <strong>Eksempelkommune</strong>
+    </a>
+
+    <nav aria-label="Hovedmeny">
+      <ul class="fs-list" data-variant="plain">
+        <li><a class="fs-link" href="/saker">Mine saker</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <nav aria-label="Du er her">
+    <ol class="fs-breadcrumbs">
+      <li><a class="fs-link" href="/">Forsiden</a></li>
+      <li><a class="fs-link" href="/saker" aria-current="page">Mine saker</a></li>
+    </ol>
+  </nav>
+
+  <main id="hovedinnhold" tabindex="-1">
+    <h1 class="fs-heading" data-size="xl">Mine saker</h1>
+    …
+  </main>
+
+  <footer>…</footer>
+</body>
+```
+
+| Element | Hvorfor det står der |
+| --- | --- |
+| Hopplenken først | Den skal være det første som får fokus. Står den etter menyen, hjelper den ingen. |
+| `<header>`, `<main>`, `<footer>` | Skjermlesere kan hoppe mellom landemerker. Uten dem er siden én lang strøm. |
+| `aria-label` på hver `<nav>` | Siden har to. Uten tekst heter begge «navigasjon». |
+| `tabindex="-1"` på `<main>` | Uten den flytter nettleseren visningen, men ikke fokus, og neste tabbetrykk fortsetter i menyen brukeren nettopp hoppet over. |
+| `<h1>` inne i `<main>` | Én per side, og den sier hva siden handler om. |
+
+## Overskriftsnivåene
+
+`fs.heading({ size })` setter bare størrelsen. Nivået er sidens struktur, og det er ditt ansvar:
+
+```html
+<h1 class="fs-heading" data-size="xl">Mine saker</h1>
+
+<section aria-labelledby="til-behandling">
+  <h2 class="fs-heading" data-size="m" id="til-behandling">Til behandling</h2>
+
+  <article class="fs-card">
+    <h3 class="fs-card__title">Søknad om bostøtte</h3>
+  </article>
+</section>
+```
+
+Nivåene skal følge hverandre uten hopp. Skal en `<h2>` se liten ut, gir du den `data-size="s"`, og lar nivået være. Hopper du til `<h4>` fordi den var liten nok, blir innholdsfortegnelsen skjermleseren bygger feil.
+
+`aria-labelledby` på `<section>` gjør at seksjonen melder seg med overskriften sin. Uten den er `<section>` bare en boks.
+
+## Det du må skrive selv
+
+Oppsettet er appens. Fristil gir komponentene og tokenene, mens spaltebredde, luft mellom delene og farge på topp og bunn hører til siden:
+
+```css
+.sidebredde {
+	max-inline-size: 60rem;
+	margin-inline: auto;
+	padding-inline: var(--size-4);
+}
+
+.topp {
+	background: var(--semantic-neutral-background);
+	border-block-end: 1px solid var(--semantic-divider-30);
+}
+```
+
+Bruk tokens til verdiene, så følger siden temaet uten at du skriver `dark:` noe sted.
+
+## Når siden bytter innhold
+
+I en app som ikke laster siden på nytt, må to ting skje ved hvert bytte:
+
+1. Flytt fokus til `<main>`, eller til den nye `<h1>`.
+2. Oppdater `<title>`, og meld gjerne den nye siden i et felt med `role="status"`.
+
+Uten det blir en skjermleserbruker stående på den gamle siden uten å vite at noe skjedde. Det er den vanligste feilen i en enkeltside-app, og den er usynlig for den som ser skjermen.
+
+## Prøv den
+
+Åpne demoen i egen fane, og trykk Tab som det aller første. Da skal hopplenken komme til syne. Trykker du Enter, havner fokus i hovedinnholdet, og neste Tab går til den første lenken der, ikke tilbake til menyen.

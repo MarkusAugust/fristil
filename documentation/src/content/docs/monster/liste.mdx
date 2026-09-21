@@ -1,0 +1,81 @@
+---
+title: Liste med filtre
+description: "Søk, filtre og de fire tilstandene en liste har: laster, treff, tomt og feilet."
+---
+
+import ListeDemo from "../../../components/ListeDemo.astro"
+
+En liste er ikke én ting. Den er fire tilstander, og de tre andre enn «her er resultatet» er de som blir glemt.
+
+Prøv å søke etter noe som ikke finnes, og trykk «Last listen på nytt» noen ganger. Hver tredje lasting feiler med vilje:
+
+<ListeDemo />
+
+## De fire tilstandene
+
+| Tilstand | Hva brukeren skal se |
+| --- | --- |
+| Laster | Plassholdere i formen innholdet får, og en beskjed i et `role="status"`-felt |
+| Treff | Resultatet, og hvor mange det er |
+| Tomt | Hvorfor det er tomt, og en vei videre |
+| Feilet | Hva som gikk galt, og en måte å prøve igjen |
+
+Den tomme tilstanden er den viktigste å skrive godt. «Ingen treff» alene etterlater brukeren uten noe å gjøre. Si hva som ble søkt etter, og gi en knapp som nullstiller.
+
+## Meld antall treff
+
+```html
+<p class="fs-sr-only" role="status" id="treff"></p>
+```
+
+Den som ser skjermen ser at lista endret seg. Den som hører siden gjør det ikke, med mindre du sier fra. Skriv antallet inn i et felt med `role="status"`, så leses det opp uten å avbryte.
+
+Vent litt før du søker mens brukeren skriver. Demoen venter 300 millisekunder. Uten pausen leses antall treff opp ved hvert tastetrykk.
+
+## Filtre
+
+Filtrene er knapper med `aria-pressed`, samlet i en gruppe med en ledetekst:
+
+```html
+<div role="group" aria-labelledby="filtre">
+  <h3 class="fs-heading" data-size="xs" id="filtre">Status</h3>
+
+  <button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
+  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+</div>
+```
+
+`aria-pressed` er det som gjør at skjermleseren sier «valgt». Fargen alene sier ingenting. Se [Tag](../../components/tag/).
+
+## Tabellen
+
+En tabell med flere enn to kolonner blir bredere enn en telefon. Legg den i rullefeltet sitt, og gi området en tekst:
+
+```html
+<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Saker">
+  <table class="fs-table" data-variant="striped">…</table>
+</div>
+```
+
+`tabindex="0"` er ikke valgfritt. Uten den kommer ingen som navigerer med tastatur til kolonnene utenfor kanten.
+
+Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i en [liste](../../components/list/) ofte bedre enn en tabell på liten skjerm.
+
+## Feilet, ikke tomt
+
+De to er forskjellige, og skal se forskjellige ut. En tom liste er et svar. En feilet liste er ingen svar, og trenger `role="alert"` og en knapp:
+
+```html
+<div class="fs-alert" data-color="danger" role="alert">
+  <p class="fs-alert__title">Klarte ikke å hente sakene</p>
+  <p>Nettverket svarte ikke. Prøv igjen.</p>
+</div>
+```
+
+La aldri plassholderne bli stående når noe feiler. Da venter brukeren på noe som ikke kommer.
+
+## Det systemet ikke gjør
+
+- **Henting av data, og hvor lenge du venter før du viser plassholdere.** Under rundt 300 millisekunder er det bedre å vise ingenting enn et glimt av grått.
+- **Sidenavigering eller «vis flere».** [Pagination](../../components/pagination/) gir utseendet; hvilken side du er på hører til adressen.
+- **Hva som er en rimelig standardsortering.** Det avhenger av hva lista er.
