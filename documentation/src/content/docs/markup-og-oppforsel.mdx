@@ -158,7 +158,11 @@ Datastar leser lista fra serverens node og lar de attributtene stå. I React og 
 
 `fs.field()` er en TypeScript-funksjon. Lager du markupen med JavaScript, kaller du den, og det spiller ingen rolle hvor koden kjører: React, Astro, en Node-server eller en app helt uten server.
 
-Blir markupen til uten JavaScript, i en Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML, finnes ikke den muligheten. Da gjør `<fs-field>` den samme koblingen i nettleseren i stedet, og den som skriver malen tar med lista over hva som må bevares:
+Blir markupen til uten JavaScript, i en Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML, finnes ikke den muligheten. Da gjør `<fs-field>` den samme koblingen i nettleseren i stedet. Det er alt som trengs på en side serveren sender én gang.
+
+### Og hvis serveren sender feltet på nytt
+
+Oppdaterer serveren det samme området mens brukeren holder på, som i en Datastar- eller htmx-app, må malen i tillegg ta med lista over hva som skal bevares. Uten den fjernes koblingen komponenten satte, ved første oppdatering:
 
 ```html
 <label class="fs-label" for="epost"
@@ -177,15 +181,17 @@ Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, med én nøkkel per element
 
 Det gir to veier til den samme kontrakten:
 
-| Hvem lager markupen | Bruk |
-| --- | --- |
-| Kode du skriver i JavaScript | `fs.field()`. Komponenten trengs ikke |
-| En mal i et annet språk, eller HTML du skriver selv | `<fs-field>` og `data-preserve-attr` |
+| Hvem lager markupen | Sender serveren den på nytt? | Bruk |
+| --- | --- | --- |
+| Kode du skriver i JavaScript | uansett | `fs.field()`. Komponenten trengs ikke |
+| En mal i et annet språk, eller HTML du skriver selv | nei | `<fs-field>` |
+| En mal i et annet språk, eller HTML du skriver selv | ja | `<fs-field>` **og** `data-preserve-attr` |
 
-Dette er et annet spørsmål enn om siden bygges på serveren. En React-app uten
-server bruker byggefunksjonen, og en statisk HTML-side bruker web componenten. Om markupen
-kan bli sendt på nytt fra en server avgjør bare om det komponenten setter
-trenger `data-preserve-attr`.
+De to spørsmålene er uavhengige, og skal ikke slås sammen. Hvem som lager
+markupen avgjør om du bruker byggefunksjonen eller web componenten. Om
+serveren kan sende den på nytt avgjør om `data-preserve-attr` trengs. En
+statisk HTML-side bruker altså web componenten uten lista, og en React-app
+uten server bruker byggefunksjonen.
 
 ## Komponenter som eier sitt eget innhold
 
