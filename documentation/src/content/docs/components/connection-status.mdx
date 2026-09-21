@@ -1,0 +1,134 @@
+---
+title: Connection Status
+description: Sier fra når forbindelsen til serveren er borte. Frittstående komponent.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+import ConnectionStatusDemo from "../../../components/ConnectionStatusDemo.astro"
+
+En side som mister forbindelsen ser helt normal ut, men er frosset. Fyller brukeren ut et skjema inn i en død forbindelse, er alt borte når hun trykker send.
+
+```ts
+// main.ts, kjøres én gang når appen starter
+import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+import "@fristil/designsystem/connection-status.css"
+
+defineFsConnectionStatus()
+```
+
+## Prøv den
+
+<ConnectionStatusDemo />
+
+## Hvorfor den eier sitt eget innhold
+
+Serveren kan per definisjon ikke fortelle deg at den er utilgjengelig. Er den nede, kommer det ingenting derfra å rendre. Derfor lager komponenten innholdet selv, og byggeren setter `data-ignore-morph` så en senere patch ikke river linja bort i det øyeblikket forbindelsen er tilbake. Se [Server først](/server-forst/).
+
+## `navigator.onLine` er ikke nok
+
+Nettleseren vet bare om maskinen har et nettverk, ikke om serveren svarer. Et kontornett uten utgang til internett, en server som er nede, eller en strøm som har røket teller alle som «online».
+
+Derfor melder appen selv fra:
+
+```ts
+const status = document.querySelector("fs-connection-status")
+
+try {
+  await fetch("/api/lagre", { method: "POST", body })
+  status.reportSuccess()
+} catch {
+  status.reportFailure()
+}
+```
+
+| Metode | Når du kaller den |
+| --- | --- |
+| `reportFailure()` | Et kall til serveren feilet |
+| `reportSuccess()` | Et kall lyktes igjen |
+
+Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nettverk som forsvinner fanges uten at du gjør noe.
+
+## Attributter og hendelser
+
+| Attributt | Standard |
+| --- | --- |
+| `offline-text` | «Ingen forbindelse. Det du skriver blir ikke lagret.» |
+| `online-text` | «Forbindelsen er tilbake.» |
+
+| Hendelse | Når |
+| --- | --- |
+| `connection-lost` | Linja kommer til syne |
+| `connection-restored` | Forbindelsen er tilbake |
+
+## I en app
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+
+    <script type="module">
+      import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+      defineFsConnectionStatus()
+
+      const status = document.querySelector("fs-connection-status")
+
+      async function lagre(body) {
+        try {
+          const svar = await fetch("/api/lagre", { method: "POST", body })
+          if (!svar.ok) throw new Error(svar.statusText)
+          status.reportSuccess()
+        } catch {
+          status.reportFailure()
+        }
+      }
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { fs } from "@fristil/designsystem"
+    import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+
+    defineFsConnectionStatus()
+
+    export function Samband() {
+      return <fs-connection-status {...fs.connectionStatus()} />
+    }
+    ```
+
+    Hent elementet med `document.querySelector` der du gjør kallene, og kall
+    `reportFailure()` eller `reportSuccess()`.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+    ```
+
+    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Det er nettopp da denne linja er forskjellen på en bruker som vet det og en som ikke gjør det.
+  </TabItem>
+</Tabs>
+
+## Tilgjengelighet
+
+Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
+
+Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' høykontrastmodus fjernes egne farger og bakgrunner, og linja får derfor en ramme i `CanvasText`, ellers ville den vært usynlig.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-connection-status` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
+| `.fs-connection-status__bar` | Selve linja. Har `data-state="offline"` eller `data-state="online"` |
+
+| Variabel | Reserve |
+| --- | --- |
+| `--fs-connection-status-layer` | `1000` |
+| `--fs-connection-status-padding` | `var(--size-2) var(--size-4)` |
+
+```css
+.fs-connection-status__bar {
+  --fs-connection-status-layer: 9999;
+}
+```

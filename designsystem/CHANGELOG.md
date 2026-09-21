@@ -16,6 +16,87 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Serveren skriver markupen, komponentene fester bare oppførsel.** Seks
+  komponenter satte tidligere klasser, roller og tilgjengelighetskoblinger på
+  elementer serveren hadde sendt. Det virker ikke i en app med server-rendret
+  HTML: Datastars morfing fjerner hvert attributt som ikke står i HTML-en
+  serveren nettopp sendte, og React kan kaste bort noder et egendefinert
+  element har lagt inn i et tre React eier. Målt med ekte Datastar mistet et
+  `<fs-field>` både `aria-describedby`, klassen på ledeteksten og den skjulte
+  feilmeldingen etter én patch, og fikk dem ikke tilbake.
+
+  Markupen skrives nå av nye byggere i `fs`: `fs.errorSummary()`,
+  `fs.popover()`, `fs.tabs()`, `fs.suggestion()` og `fs.toast()`. Byggerne
+  setter også `data-preserve-attr` for de attributtene komponenten endrer
+  underveis, så du slipper å vite om det. Se «Server først» i dokumentasjonen.
+
+- **`<fs-calendar>` og `<fs-date-field>` er fjernet.** Nettleserens eget panel
+  i `<input type="date">` gjør jobben, og `fs.field()` sammen med
+  `fs.input({ type: "date" })` gir et komplett datofelt. Mønstersiden «Dato i
+  et skjema» viser oppsettet, med de to målte forskjellene mellom nettleserne.
+  `exports`-oppføringene `./calendar`, `./date-field` og `./date-field.css` er
+  borte, og det samme er `--fs-calendar-*`- og `--fs-date-field-*`-variablene
+  og alle `part`-navnene i kalenderen.
+
+- **`<fs-suggestion>` er flyttet fra `frittstående` til `ramme`.** Den lagde
+  tidligere hele feltet selv, så det fantes verken ledetekst eller
+  inndatafelt før skriptet hadde kjørt, og ingenting ble med i innsendingen.
+  Nå skriver serveren feltet og lista med `fs.suggestion()`.
+
+- **`<fs-tabs>` har ingen `selected`- eller `label`-attributter lenger.**
+  Hvilken fane som er valgt står i markupen serveren sendte. `<fs-error-summary>`
+  har ikke lenger `heading`: overskriften skrives av serveren.
+
+- **Ingen komponent bruker shadow DOM.** `::part()` er dermed ikke lenger en
+  del av det offentlige API-et.
+
+- **`<fs-field>` leser tilstanden fra markupen, ikke fra egne attributter.**
+  Skrev serveren feltet med `fs.field()`, står `aria-invalid` og
+  `data-required` allerede på elementene. Komponenten regnet tidligere ut sitt
+  eget svar fra attributtene på verten, fant ingenting der, og fjernet det
+  serveren nettopp hadde skrevet. De to halvdelene av API-et kranglet altså
+  med hverandre når de ble brukt sammen. Den setter heller ikke lenger
+  `aria-hidden` på feilmeldingen: `hidden` tar den allerede ut av
+  tilgjengelighetstreet, og attributtet ga hydreringsfeil i React.
+
+### Lagt til
+
+- **`<fs-session-timeout>`** varsler før en innlogget økt går ut, med en
+  nedtelling som leses opp ved terskler i stedet for hvert sekund, og fokus
+  som går tilbake dit brukeren var.
+
+- **`<fs-connection-status>`** sier fra når forbindelsen til serveren er
+  borte. `navigator.onLine` sier bare at maskinen har et nettverk, så
+  `reportFailure()` og `reportSuccess()` lar appen melde fra selv.
+
+- **Siden «Server først»** forklarer hvorfor markupen kommer fra serveren, med
+  målingene bak, og hva det betyr i TanStack Start, React Server Components og
+  Datastar.
+
+- **Mønstersiden «Dato i et skjema»** viser hvordan du ber om en dato uten en
+  datovelger fra oss, med de to målte forskjellene mellom nettleserne:
+  WebKit krever skilletegnene, og Chromium tar imot feil rekkefølge som
+  gyldig.
+
+- **`FIELD_PRESERVED_ATTRIBUTES`** er lista serveren skal skrive som
+  `data-preserve-attr` når den ikke kan kalle `fs.field()` selv.
+
+### Endret
+
+- **React-inngangen døper også om `tabindex` til `tabIndex`,** og dekker de nye
+  sammensatte byggerne. `fs.errorSummary()`, `fs.popover()`, `fs.tabs()`,
+  `fs.suggestion()` og `fs.toast()` finnes nå også i
+  `@fristil/designsystem/react`, der hvert attributtsett er døpt om for seg.
+  Pakken har fortsatt ingen avhengighet til React: dette er ren omdøping av
+  tre objektnøkler.
+
+- **`lit` er ikke lenger en avhengighet.** Etter omleggingen rendrer ingen
+  komponent sitt eget innhold, så Lit ble brukt til nesten ingenting.
+  Komponentene er vanlige `HTMLElement`-klasser, og pakken har nå ingen
+  avhengigheter i det hele tatt.
+
 ## 0.4.0 (2026-09-21)
 
 ### Endret

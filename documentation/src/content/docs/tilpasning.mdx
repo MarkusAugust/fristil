@@ -11,7 +11,6 @@ Fire veier, i den rekkefølgen du bør prøve dem:
 | --- | --- |
 | [Tokens](#egne-farger) | Farger, på tvers av hele systemet |
 | [Komponentvariabler](#form-og-størrelse) | Form og størrelse på én komponent |
-| [`::part()`](#shadow-dom) | Innsiden av `<fs-calendar>` |
 | [Vanlige regler](#når-variabelen-ikke-rekker) | Alt annet |
 
 ## Egne farger
@@ -145,15 +144,11 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 | `--fs-toggle-group-radius` | `var(--size-1)` |
 | `--fs-toggle-group-height` | `var(--size-10)` |
 | `--fs-toggle-group-padding` | `0 var(--size-4)` |
-| `--fs-date-field-icon-size` | `var(--size-7)` |
-| `--fs-date-field-icon-space` | `var(--size-10)` |
-| `--fs-date-field-icon-radius` | `var(--size-1)` |
-| `--fs-calendar-trigger-size` | `var(--size-10)` |
-| `--fs-calendar-trigger-padding` | `0 var(--size-3)` |
-| `--fs-calendar-radius` | `var(--size-1)` |
-| `--fs-calendar-popup-width` | `min(20rem, 92vw)` |
-| `--fs-calendar-popup-padding` | `var(--size-3)` |
-| `--fs-calendar-day-size` | `var(--size-8)` |
+| `--fs-session-timeout-width` | `26rem` |
+| `--fs-session-timeout-padding` | `var(--size-5)` |
+| `--fs-session-timeout-radius` | `var(--size-1)` |
+| `--fs-connection-status-layer` | `1000` |
+| `--fs-connection-status-padding` | `var(--size-2) var(--size-4)` |
 
 Standardverdiene peker på `--size-*`-skalaen. Endrer du skalaen, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
 
@@ -197,21 +192,11 @@ Dette er målt, ikke antatt: `tilpasning.browser.test.ts` bygger begge tilfellen
 
 Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 
-### Shadow DOM
+### Ingen shadow DOM
 
-`<fs-calendar>` har sine egne stiler inni en shadow root, og vanlig CSS når ikke inn. To veier virker:
+Ingen komponent i Fristil bruker shadow DOM lenger. `<fs-calendar>` var den eneste, og den er fjernet til fordel for nettleserens eget datopanel. Se [Dato i et skjema](../monster/dato/).
 
-```css
-/* Variabler arves gjennom skyggegrensen */
-:root { --semantic-interactive-main: #7c3aed; }
-:root { --fs-calendar-day-size: 2.75rem; }
-
-/* Utpekte deler kan styles utenfra */
-fs-calendar::part(trigger) { border-radius: 9999px; }
-fs-calendar::part(day-selected) { background: #7c3aed; }
-```
-
-Hele lista over deler står på [Calendar](../components/calendar/#deler-du-kan-style), sammen med de to formene som ikke virker: attributtselektor etter `::part()` og etterkommere av en del.
+Det betyr at CSS-en din når fram overalt. Du trenger verken `::part()` eller å lete etter en vei inn i en skyggerot.
 
 Pseudoklasser virker som normalt: `::part(day):hover`.
 

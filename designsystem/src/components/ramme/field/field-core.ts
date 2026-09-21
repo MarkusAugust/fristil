@@ -130,3 +130,20 @@ export function computeFieldAttributes(
     state: invalid ? "invalid" : "default",
   }
 }
+
+/**
+ * Attributtene `<fs-field>` setter på elementene konsumenten har skrevet.
+ *
+ * Kjører serveren JavaScript, skal den kalle `computeFieldAttributes` og
+ * skrive dem selv. Da trengs verken komponenten eller denne lista. Kjører den
+ * noe annet, altså Go, PHP eller .NET, gjør komponenten koblingen på klienten,
+ * og da må serveren skrive lista som `data-preserve-attr` på kontrollen.
+ * Datastars morfing leser lista fra serverens node, så komponenten kan ikke
+ * beskytte seg selv.
+ *
+ * ```html
+ * <input class="fs-input" id="epost" data-preserve-attr="id aria-describedby aria-invalid data-state">
+ * ```
+ */
+export const FIELD_PRESERVED_ATTRIBUTES =
+  "id aria-describedby aria-invalid data-state" as const

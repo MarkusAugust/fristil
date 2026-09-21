@@ -12,9 +12,7 @@ Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire
 npm install @fristil/designsystem
 ```
 
-Pakken har én avhengighet, `lit`, og den installeres sammen med pakken. Komponentene som er web components er bygd på den.
-
-Den koster rundt 9,8 kB gzippet, og bare for den som registrerer minst én web component. Bruker du bare CSS-komponentene, havner Lit aldri i bunten din: ingenting registreres ved import alene, så den kommer først med når du kaller en `defineFs*`.
+Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasser, og ingenting registreres ved import alene, så du betaler bare for det du faktisk kaller.
 
 ## CSS-komponenter
 
@@ -54,16 +52,33 @@ import { fs } from "@fristil/designsystem/react"
 Ingenting registreres ved import alene. Du kaller `defineFs*` selv, så du bestemmer når elementet finnes og hva det skal hete:
 
 ```js
-import { defineFsDateField } from "@fristil/designsystem/date-field"
+import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/date-field.css"
+import "@fristil/designsystem/session-timeout.css"
 
-defineFsDateField()
+defineFsSessionTimeout()
 ```
 
 ```html
-<fs-date-field label="Fødselsdato" value="2026-05-31"></fs-date-field>
+<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                    data-ignore-morph></fs-session-timeout>
 ```
+
+## Serveren skriver markupen
+
+Fristil er bygget for apper der HTML-en kommer fra serveren, enten det er TanStack Start, React Server Components eller Datastar. Ingen komponent rendrer sitt eget innhold i DOM serveren eier, fordi rammeverket rundt da river det bort igjen ved neste oppdatering.
+
+Byggerne i `fs` gir markupen, komponentene gir oppførselen, og de to overlapper ikke:
+
+```js
+import { fs } from "@fristil/designsystem"
+
+fs.errorSummary({ count: 2, id: "feil" })
+// { container: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
+//   title:     { class: "fs-error-summary__title" } }
+```
+
+Hele begrunnelsen, med målingene bak, står på [Server først](https://fristil.netlify.app/server-forst/).
 
 ## Eget fargetema
 

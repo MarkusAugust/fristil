@@ -1,45 +1,38 @@
 import { describe, expect, it } from "vitest"
-import { FsCalendar } from "../components/frittstaende/calendar/fs-calendar"
-import { FsDateField } from "../components/frittstaende/date-field/fs-date-field"
-import { FsSuggestion } from "../components/frittstaende/suggestion/fs-suggestion"
+import { FsConnectionStatus } from "../components/frittstaende/connection-status/fs-connection-status"
+import { FsSessionTimeout } from "../components/frittstaende/session-timeout/fs-session-timeout"
 import { FsToast } from "../components/frittstaende/toast/fs-toast"
 import { FsErrorSummary } from "../components/ramme/error-summary/fs-error-summary"
 import { FsField } from "../components/ramme/field/fs-field"
 import { FsPopover } from "../components/ramme/popover/fs-popover"
+import { FsSuggestion } from "../components/ramme/suggestion/fs-suggestion"
 import { FsTabs } from "../components/ramme/tabs/fs-tabs"
 import kilde from "./react?raw"
 
 /**
  * JSX-deklarasjonene er håndskrevet, og kan derfor komme i utakt med
- * komponentene de beskriver. Legger noen til en egenskap på `<fs-date-field>`
+ * komponentene de beskriver. Legger noen til en egenskap på `<fs-suggestion>`
  * uten å legge den inn her, er den usynlig for TypeScript, og da er vi
  * tilbake til at skrivefeil går rett gjennom.
  *
- * Testen leser `static properties` fra komponentene og krever at hvert
- * attributt finnes i deklarasjonsfila.
+ * Testen leser `static observedAttributes` fra komponentene og krever at
+ * hvert attributt finnes i deklarasjonsfila.
  */
 
-type LitEgenskaper = Record<string, { attribute?: string | boolean }>
-
-/** Attributtnavnet Lit faktisk lytter på for hver egenskap. */
-function attributtnavn(klasse: { properties?: unknown }): string[] {
-  const egenskaper = (klasse.properties ?? {}) as LitEgenskaper
-  return Object.entries(egenskaper)
-    .filter(([, valg]) => valg.attribute !== false)
-    .map(([navn, valg]) =>
-      typeof valg.attribute === "string" ? valg.attribute : navn.toLowerCase(),
-    )
+/** Attributtene komponenten faktisk lytter på. */
+function attributtnavn(klasse: { observedAttributes?: unknown }): string[] {
+  return [...((klasse.observedAttributes ?? []) as string[])]
 }
 
 describe("JSX-deklarasjonene følger komponentene", () => {
   it.each([
     ["fs-field", FsField],
-    ["fs-calendar", FsCalendar],
-    ["fs-date-field", FsDateField],
     ["fs-tabs", FsTabs],
     ["fs-error-summary", FsErrorSummary],
     ["fs-popover", FsPopover],
     ["fs-toast", FsToast],
+    ["fs-session-timeout", FsSessionTimeout],
+    ["fs-connection-status", FsConnectionStatus],
     ["fs-suggestion", FsSuggestion],
   ])("%s har alle attributtene sine deklarert", (tagg, klasse) => {
     const attributter = attributtnavn(klasse)
@@ -60,12 +53,12 @@ describe("JSX-deklarasjonene følger komponentene", () => {
   it("deklarerer ikke attributter komponentene ikke har", () => {
     const kjente = new Set([
       ...attributtnavn(FsField),
-      ...attributtnavn(FsCalendar),
-      ...attributtnavn(FsDateField),
       ...attributtnavn(FsTabs),
       ...attributtnavn(FsErrorSummary),
       ...attributtnavn(FsPopover),
       ...attributtnavn(FsToast),
+      ...attributtnavn(FsSessionTimeout),
+      ...attributtnavn(FsConnectionStatus),
       ...attributtnavn(FsSuggestion),
     ])
 

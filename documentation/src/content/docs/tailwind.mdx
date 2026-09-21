@@ -99,7 +99,7 @@ Begge feiltilfellene er målt i `tilpasning.browser.test.ts`, som bygger dem i h
 
 ## Tre ting som er greie å vite
 
-**Shadow DOM tar ikke imot utility-klasser.** `<fs-calendar>` har sine egne stiler inni en skyggerot, og hverken Tailwind eller din egen CSS når inn. Der gjelder [komponentvariabler og `::part()`](../tilpasning/#shadow-dom).
+**Ingen komponent bruker shadow DOM.** Alt står i vanlig DOM, så utility-klasser og din egen CSS når fram overalt.
 
 **`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--semantic-…)` direkte.
 

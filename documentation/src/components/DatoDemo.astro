@@ -1,0 +1,39 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-dato" stiler={["field", "button"]} maxWidth="26rem" layout="kolonne">
+	<fs-field>
+		<label class="fs-label" for="demo-dato-fodt">Fødselsdato</label>
+		<input
+			class="fs-input"
+			id="demo-dato-fodt"
+			name="fodselsdato"
+			type="date"
+			min="1900-01-01"
+			max="2026-12-31"
+			data-preserve-attr="id aria-describedby aria-invalid data-state"
+		/>
+		<p class="fs-help-text">Skriv datoen, eller velg den i kalenderen.</p>
+	</fs-field>
+
+	<p class="fs-paragraph" id="demo-dato-svar">Ingen dato valgt ennå.</p>
+</Preview>
+
+<script>
+	import { defineFsField } from "@fristil/designsystem/field"
+
+	defineFsField()
+
+	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	const flate = document.getElementById("demo-dato")?.shadowRoot
+	const felt = flate?.getElementById("demo-dato-fodt") as HTMLInputElement | null
+	const svar = flate?.getElementById("demo-dato-svar")
+
+	felt?.addEventListener("change", () => {
+		if (!svar) return
+		svar.textContent = felt.value
+			? `Serveren får ${felt.value}, uansett hvordan datoen ser ut i feltet.`
+			: "Ingen dato valgt ennå."
+	})
+</script>

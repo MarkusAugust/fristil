@@ -179,7 +179,7 @@ Bytter teamet rammeverk, er det disse tolv linjene som skrives om, ikke designsy
 
 ## Web-komponentene
 
-TypeScript kjenner ikke `<fs-field>`, `<fs-calendar>` og `<fs-date-field>` uten videre. Importer typene én gang i en `.d.ts`-fil:
+TypeScript kjenner ikke `<fs-field>`, `<fs-session-timeout>` og `<fs-connection-status>` uten videre. Importer typene én gang i en `.d.ts`-fil:
 
 ```ts
 // src/fristil.d.ts
@@ -191,8 +191,8 @@ Da får attributtene autofullføring og sjekk:
 ```tsx
 <fs-field required-marker="text" />      // ok
 <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-<fs-date-field labell="Reisedato" />     // feil: ukjent attributt
-<fs-date-field helpText="DD-MM-ÅÅÅÅ" />  // feil: attributtet heter help-text
+<fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+<fs-connection-status offline="Nede" />  // feil: ukjent attributt
 ```
 
 Ren HTML, Astro og Datastar trenger ikke dette. Der er `<fs-field>` bare en HTML-tagg.

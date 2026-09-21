@@ -1,10 +1,13 @@
-import { html, LitElement } from "lit"
-
 export const FS_POPOVER_TAG = "fs-popover" as const
 
-export const POPOVER_CLASS = "fs-popover" as const
-
 type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
+
+const PLACEMENTS: readonly Placement[] = [
+  "bottom-start",
+  "bottom-end",
+  "top-start",
+  "top-end",
+]
 
 /**
  * Et panel som henger under en knapp, og som lukker seg selv.
@@ -13,93 +16,93 @@ type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
  * løser tre ting som ellers krever kode: panelet legger seg over alt annet
  * uten `z-index`, Escape lukker det, og et klikk utenfor lukker det.
  *
- * Det topplaget gjør ikke er å plassere panelet. `position-anchor` finnes
- * ennå ikke i alle nettlesere, så posisjonen regnes ut her, mot knappens
- * plass på skjermen.
+ * Det topplaget ikke gjør er å plassere panelet. `position-anchor` finnes
+ * ennå ikke i alle nettlesere, så posisjonen regnes ut her.
  *
- * Du skriver knappen og innholdet selv, og komponenten kobler dem sammen:
+ * Serveren skriver koblingen med `fs.popover()`: `aria-controls` på knappen,
+ * klassen og `popover` på panelet. Komponenten setter bare `aria-expanded`,
+ * som endrer seg når brukeren klikker, og posisjonen. Begge står i
+ * `data-preserve-attr` fra byggeren, ellers river morfingen dem bort.
  *
  * ```html
  * <fs-popover placement="bottom-end">
- *   <button slot="trigger" class="fs-button">Handlinger</button>
- *   <ul class="fs-list" data-variant="plain">…</ul>
+ *   <button slot="trigger" class="fs-button" aria-controls="meny" aria-expanded="false"
+ *           data-preserve-attr="aria-expanded">Handlinger</button>
+ *   <ul id="meny" class="fs-popover" popover="manual" data-preserve-attr="style">…</ul>
  * </fs-popover>
  * ```
  */
-export class FsPopover extends LitElement {
-  static properties = {
-    open: { type: Boolean, reflect: true },
-    placement: { type: String },
-  }
-
-  /** Om panelet er åpent. Speiles, så CSS kan treffe tilstanden. */
-  open = false
-  /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
-  placement: Placement = "bottom-start"
+export class FsPopover extends HTMLElement {
+  static observedAttributes = ["open", "placement"]
 
   private panel?: HTMLElement
   private triggerElement?: HTMLElement
+  private observer?: MutationObserver
 
-  createRenderRoot() {
-    return this
+  /** Om panelet er åpent. Speiles, så CSS kan treffe tilstanden. */
+  get open(): boolean {
+    return this.hasAttribute("open")
   }
 
-  render() {
-    return html`<slot @slotchange=${this.handleSlotChange}></slot>`
+  set open(value: boolean) {
+    if (value) this.setAttribute("open", "")
+    else this.removeAttribute("open")
   }
 
-  connectedCallback() {
-    super.connectedCallback()
+  /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
+  get placement(): Placement {
+    const value = this.getAttribute("placement") as Placement | null
+    return value && PLACEMENTS.includes(value) ? value : "bottom-start"
+  }
+
+  set placement(value: Placement) {
+    this.setAttribute("placement", value)
+  }
+
+  connectedCallback(): void {
     window.addEventListener("resize", this.reposition)
     window.addEventListener("scroll", this.reposition, true)
+    this.observer = new MutationObserver(() => this.sync())
+    this.observer.observe(this, { childList: true })
+    this.sync()
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     window.removeEventListener("resize", this.reposition)
     window.removeEventListener("scroll", this.reposition, true)
-    super.disconnectedCallback()
+    document.removeEventListener("click", this.handleOutsideClick, true)
+    document.removeEventListener("keydown", this.handleKeydown)
+    this.observer?.disconnect()
+    this.observer = undefined
+    this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
   }
 
-  firstUpdated() {
-    this.sync()
+  attributeChangedCallback(): void {
+    if (this.isConnected) this.sync()
   }
 
-  updated() {
-    this.sync()
-  }
-
-  private handleSlotChange = () => {
-    this.sync()
-  }
-
-  private sync() {
+  private sync(): void {
     const trigger = this.querySelector<HTMLElement>("[slot='trigger']")
     const panel = [...this.children].find(
       (child): child is HTMLElement =>
         child instanceof HTMLElement &&
-        child.getAttribute("slot") !== "trigger" &&
-        child.tagName !== "SLOT",
+        child.getAttribute("slot") !== "trigger",
     )
 
     if (!trigger || !panel) return
 
-    this.triggerElement = trigger
+    if (this.triggerElement !== trigger) {
+      this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
+      trigger.addEventListener("click", this.handleTriggerClick)
+      this.triggerElement = trigger
+    }
     this.panel = panel
 
-    if (!panel.id) {
-      panel.id = `fs-popover-${Math.random().toString(36).slice(2, 9)}`
+    // Eneste attributtet komponenten eier. Resten skrev serveren.
+    const expanded = String(this.open)
+    if (trigger.getAttribute("aria-expanded") !== expanded) {
+      trigger.setAttribute("aria-expanded", expanded)
     }
-
-    panel.classList.add(POPOVER_CLASS)
-    // `manual` og ikke `auto`: vi lukker selv, slik at knappen kan brukes til
-    // å lukke igjen uten at nettleseren rekker å lukke først.
-    panel.setAttribute("popover", "manual")
-
-    trigger.setAttribute("aria-expanded", String(this.open))
-    trigger.setAttribute("aria-controls", panel.id)
-
-    trigger.removeEventListener("click", this.handleTriggerClick)
-    trigger.addEventListener("click", this.handleTriggerClick)
 
     if (this.open) {
       if (!panel.matches(":popover-open")) panel.showPopover()
@@ -113,17 +116,17 @@ export class FsPopover extends LitElement {
     }
   }
 
-  private handleTriggerClick = () => {
+  private handleTriggerClick = (): void => {
     this.toggle()
   }
 
-  private handleOutsideClick = (event: Event) => {
+  private handleOutsideClick = (event: Event): void => {
     const target = event.target as Node
     if (this.contains(target) || this.panel?.contains(target)) return
     this.hide()
   }
 
-  private handleKeydown = (event: KeyboardEvent) => {
+  private handleKeydown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape") return
     this.hide()
     // Fokus tilbake til knappen. Uten dette står fokus på et panel som ikke
@@ -132,7 +135,7 @@ export class FsPopover extends LitElement {
   }
 
   /** Regner ut hvor panelet skal stå, mot knappens plass på skjermen. */
-  private reposition = () => {
+  private reposition = (): void => {
     if (!this.open || !this.panel || !this.triggerElement) return
 
     const anchor = this.triggerElement.getBoundingClientRect()
@@ -159,34 +162,32 @@ export class FsPopover extends LitElement {
     this.panel.style.setProperty("--fs-popover-left", `${Math.round(left)}px`)
   }
 
-  /** Åpner panelet. */
-  show() {
-    if (this.open) return
-    this.open = true
+  private emit(open: boolean): void {
     this.dispatchEvent(
       new CustomEvent("popover-toggle", {
-        detail: { open: true },
+        detail: { open },
         bubbles: true,
         composed: true,
       }),
     )
+  }
+
+  /** Åpner panelet. */
+  show(): void {
+    if (this.open) return
+    this.open = true
+    this.emit(true)
   }
 
   /** Lukker panelet. */
-  hide() {
+  hide(): void {
     if (!this.open) return
     this.open = false
-    this.dispatchEvent(
-      new CustomEvent("popover-toggle", {
-        detail: { open: false },
-        bubbles: true,
-        composed: true,
-      }),
-    )
+    this.emit(false)
   }
 
   /** Åpner eller lukker. */
-  toggle() {
+  toggle(): void {
     if (this.open) this.hide()
     else this.show()
   }

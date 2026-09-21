@@ -1,0 +1,43 @@
+@import "../../css/button/button.css";
+
+@layer fristil {
+  fs-session-timeout {
+    display: contents;
+  }
+
+  .fs-session-timeout__dialog {
+    max-inline-size: var(--fs-session-timeout-width, 26rem);
+    padding: var(--fs-session-timeout-padding, var(--size-5));
+    color: var(--semantic-page-foreground);
+    background: var(--semantic-page-background);
+    border: 1px solid var(--semantic-divider-30);
+    border-radius: var(--fs-session-timeout-radius, var(--size-1));
+    box-shadow: var(--semantic-shadow-overlay);
+  }
+
+  .fs-session-timeout__dialog::backdrop {
+    background: var(--semantic-overlay-backdrop);
+  }
+
+  .fs-session-timeout__title {
+    margin: 0 0 var(--size-2);
+    font-size: var(--font-size-l);
+    line-height: 1.3;
+  }
+
+  .fs-session-timeout__text {
+    margin: 0 0 var(--size-4);
+    line-height: 1.5;
+  }
+
+  .fs-session-timeout__count {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .fs-session-timeout__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2);
+  }
+}

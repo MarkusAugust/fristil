@@ -32,7 +32,7 @@ Det rammer kontrollene som viser tilstanden sin med farge eller en gradient. Ute
 | Komponent | Hva systemet gjør |
 | --- | --- |
 | [Checkbox](../components/checkbox/), [Radio](../components/radio/), [Switch](../components/switch/), [Select](../components/select/) | Faller tilbake til nettleserens egen tegning, som er riktig i alle temaer brukeren kan velge |
-| [Toggle Group](../components/toggle-group/), [Tag](../components/tag/), [Pagination](../components/pagination/), [Tabs](../components/tabs/), [Calendar](../components/calendar/) | Viser det valgte med `Highlight` og `HighlightText` |
+| [Toggle Group](../components/toggle-group/), [Tag](../components/tag/), [Pagination](../components/pagination/), [Tabs](../components/tabs/) | Viser det valgte med `Highlight` og `HighlightText` |
 | [Tooltip](../components/tooltip/) | Får en kant, så boblen ikke flyter oppå innholdet |
 | [Spinner](../components/spinner/) | Merker én kant med `Highlight`, så ringen fortsatt har et punkt |
 | [Input](../components/input/) med dato, [Search](../components/search/) | Tar bort ikonet, som har fargen malt inn i bildet, og gir plassen tilbake |
@@ -73,7 +73,7 @@ En komponent skal aldri bli bredere enn plassen den får. Blir den det, kan hele
 | [Button](../components/button/) | Teksten brekker framfor å sprenge boksen |
 | [Pagination](../components/pagination/), [Breadcrumbs](../components/breadcrumbs/), [Toggle Group](../components/toggle-group/), [Tabs](../components/tabs/) | Radene brekker til flere linjer |
 | [Table](../components/table/) | Ruller sidelengs i `.fs-table-scroll`, som du legger rundt |
-| [Dialog](../components/dialog/), [Popover](../components/popover/), [Toast](../components/toast/), [Calendar](../components/calendar/) | Bredden er begrenset av skjermen, ikke bare av en fast verdi |
+| [Dialog](../components/dialog/), [Popover](../components/popover/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) | Bredden er begrenset av skjermen, ikke bare av en fast verdi |
 
 To tester holder dette på plass. `smal-skjerm.browser.test.ts` setter hver komponent i en boks på 320 piksler og krever at ingenting stikker utenfor. `sjekk-mobil.ts` åpner hver side i dokumentasjonen på 375 piksler og krever at siden ikke kan dras sidelengs.
 

@@ -1,14 +1,11 @@
-import { html, LitElement } from "lit"
+import { TOAST_CLASS, TOAST_CLOSE_CLASS } from "./toast.js"
 
 export const FS_TOAST_TAG = "fs-toast" as const
-
-export const TOAST_CLASS = "fs-toast" as const
-export const TOAST_CLOSE_CLASS = "fs-toast__close" as const
 
 export const toastColors = ["neutral", "success", "warning", "danger"] as const
 export type ToastColor = (typeof toastColors)[number]
 
-export type ToastOptions = {
+export type ShowOptions = {
   /** Hva meldingen betyr. Standard: `neutral`. */
   color?: ToastColor
   /** Millisekunder før meldingen forsvinner. `0` lar den bli stående. */
@@ -20,8 +17,15 @@ export type ToastOptions = {
 /**
  * Køen av korte meldinger i hjørnet av skjermen.
  *
- * Elementet er beholderen, ikke meldingen. Du legger det inn én gang i
- * appen og kaller `show()` når noe skal meldes.
+ * Dette er den eneste frittstående komponenten, og den eneste delen av pakken
+ * du kaller i stedet for å skrive. Elementet er beholderen, ikke meldingen:
+ * du legger det inn én gang i appen og kaller `show()` når noe skal meldes.
+ * Meldingene finnes ikke før en hendelse på klienten skaper dem, så det er
+ * ingenting for serveren å rendre.
+ *
+ * Serveren skriver beholderen med `fs.toast()`, og den setter
+ * `data-ignore-morph`. Uten det river Datastars morfing meldingene bort ved
+ * neste patch, fordi serverens utgave av regionen er tom.
  *
  * Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding
  * som dukker opp i hjørnet skal ikke avbryte det skjermleseren holder på med;
@@ -39,40 +43,40 @@ export type ToastOptions = {
  * })
  * ```
  */
-export class FsToast extends LitElement {
-  static properties = {
-    duration: { type: Number },
-    label: { type: String },
-  }
+export class FsToast extends HTMLElement {
+  static observedAttributes = ["duration", "label"]
 
   /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
-  duration = 6000
-  /** Tekst som sier hva regionen er. Blir `aria-label`. */
-  label = "Meldinger"
-
-  createRenderRoot() {
-    return this
+  get duration(): number {
+    const value = Number(this.getAttribute("duration"))
+    return Number.isFinite(value) && value > 0 ? value : 6000
   }
 
-  render() {
-    return html`<slot></slot>`
+  set duration(value: number) {
+    this.setAttribute("duration", String(value))
   }
 
-  connectedCallback() {
-    super.connectedCallback()
-    this.setAttribute("role", "status")
-    this.setAttribute("aria-live", "polite")
-    this.setAttribute("aria-label", this.label)
+  connectedCallback(): void {
+    // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
+    // settes det bare når det mangler, så en ren HTML-side uten bygger også
+    // får en region skjermleseren forstår.
+    if (!this.hasAttribute("role")) this.setAttribute("role", "status")
+    if (!this.hasAttribute("aria-live")) {
+      this.setAttribute("aria-live", "polite")
+    }
+    if (!this.hasAttribute("aria-label")) {
+      this.setAttribute("aria-label", this.getAttribute("label") ?? "Meldinger")
+    }
   }
 
-  updated() {
+  attributeChangedCallback(navn: string, _gammel: string, ny: string): void {
     // `label` kan settes etter at elementet står i DOM-en, for eksempel av et
     // rammeverk som fyller inn attributtene i et senere steg.
-    this.setAttribute("aria-label", this.label)
+    if (navn === "label" && ny) this.setAttribute("aria-label", ny)
   }
 
   /** Viser en melding, og returnerer elementet den ble lagt i. */
-  show(message: string, options: ToastOptions = {}): HTMLElement {
+  show(message: string, options: ShowOptions = {}): HTMLElement {
     const {
       color = "neutral",
       duration = this.duration,
@@ -116,7 +120,7 @@ export class FsToast extends LitElement {
   }
 
   /** Fjerner en melding. */
-  dismiss(toast: HTMLElement) {
+  dismiss(toast: HTMLElement): void {
     if (!this.contains(toast)) return
     toast.remove()
 
@@ -126,7 +130,7 @@ export class FsToast extends LitElement {
   }
 
   /** Fjerner alle meldingene. */
-  clear() {
+  clear(): void {
     for (const toast of this.querySelectorAll(`.${TOAST_CLASS}`)) {
       toast.remove()
     }
