@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 import {
   SUGGESTION_EMPTY_CLASS,
   SUGGESTION_OPTION_CLASS,
@@ -35,7 +36,7 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  * </fs-suggestion>
  * ```
  */
-export class FsSuggestion extends HTMLElement {
+export class FsSuggestion extends HostElement {
   static observedAttributes = ["server-filtered"]
 
   private observer?: MutationObserver
@@ -282,7 +283,5 @@ declare global {
 }
 
 export function defineFsSuggestion(tagName = FS_SUGGESTION_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsSuggestion)
-  }
+  defineElement(tagName, FsSuggestion)
 }

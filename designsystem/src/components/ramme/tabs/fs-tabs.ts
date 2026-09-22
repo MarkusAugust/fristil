@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
 
 /**
@@ -27,7 +28,7 @@ export const FS_TABS_TAG = "fs-tabs" as const
  * </fs-tabs>
  * ```
  */
-export class FsTabs extends HTMLElement {
+export class FsTabs extends HostElement {
   /**
    * Ingen attributter. Hvilken fane som er valgt står i markupen serveren
    * sendte, som `aria-selected` på fanen og `hidden` på panelene, og leses
@@ -145,7 +146,5 @@ declare global {
 }
 
 export function defineFsTabs(tagName = FS_TABS_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsTabs)
-  }
+  defineElement(tagName, FsTabs)
 }
