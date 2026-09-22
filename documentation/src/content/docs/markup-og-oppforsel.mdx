@@ -212,31 +212,39 @@ problemet.
 Resten av kapittelet gjelder når du likevel må sende et større område på
 nytt.
 
-#### Skriv hele feltet, så har komponenten ingenting å legge til
+#### Skriv struktur, og la komponenten koble
 
-`<fs-field>` fyller inn det som mangler: id-er, `for`, `aria-describedby` og
-klassen på ledeteksten. Det er praktisk i HTML du skriver for hånd. Men
-skriver serveren dette selv, gjør komponenten ingenting, og da kan morfingen
-heller ikke ta noe bort.
-
-Id-er og `aria-describedby` er vanlig strengarbeid, og lar seg gjøre i
-ethvert malspråk:
+Med smale oppdateringer trenger serveren ikke skrive koblingen i det hele
+tatt. Dette er alt den sender:
 
 ```html
-<fs-field>
-  <label class="fs-label" for="epost">E-post</label>
-  <input class="fs-input" id="epost" aria-describedby="epost-hjelp">
-  <p class="fs-help-text" id="epost-hjelp">Vi sender aldri spam.</p>
-  <p class="fs-error-text" id="epost-feil" hidden>Skriv en gyldig adresse.</p>
+<fs-field invalid required-marker="symbol">
+  <label>E-post</label>
+  <input class="fs-input" type="email">
+  <p class="fs-help-text">Vi sender aldri spam.</p>
+  <p class="fs-error-text">Skriv en gyldig adresse.</p>
 </fs-field>
 ```
 
-Testet med Datastars egen morfing: feltet overlever en oppdatering uendret,
-og når serveren sender det som ugyldig, slår `aria-invalid`, `data-state` og
-feilmeldingen inn som de skal. Uten et eneste `data-preserve-attr`.
+Ingen id-er, ingen `for`, ingen `aria-describedby`. Klassene sier hvilket
+element som er hva, og `invalid` sier at feltet er ugyldig. Resten gjør
+komponenten, og dette står i siden etterpå:
 
-Komponenten er fortsatt med, og gjør det den er til for: den leser tilstanden
-fra markupen og fester oppførselen.
+```
+label.class        fs-label
+label.for          fs-field-control-ho4wioz
+input.id           fs-field-control-ho4wioz
+aria-describedby   fs-field-help-7p0v5u9
+aria-invalid       true
+data-state         invalid
+```
+
+Feilmeldingen vises, og blir med i `aria-describedby`. Er feltet gyldig,
+skjules den og tas ut av koblingen igjen.
+
+Dette gjelder uansett hvilket språk serveren er skrevet i. En Go-mal, en
+PHP-fil eller en Ktor-app skriver det samme, og ingen av dem trenger å
+kjenne reglene. Det er hele poenget med at koblingen bor i komponenten.
 
 #### `data-preserve-attr` for det brukeren eier
 
@@ -286,15 +294,20 @@ gjorde noe, står `data-preserve-attr` fortsatt.
 
 #### Kort oppsummert
 
-1. Send bare det som har endret seg. Da oppstår ikke problemet.
-2. Må du sende et større område: skriv hele feltet selv, så har komponenten
-   ingenting å legge til.
-3. For det bare brukeren vet, som fanevalg og åpne vinduer: `data-preserve-attr`,
-   skrevet av byggefunksjonen.
+1. **Send bare det som har endret seg.** Da oppstår ikke problemet.
+2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
+   `aria-describedby` selv, i hvilket som helst språk.
+3. **For det bare brukeren vet**, som fanevalg og åpne vinduer:
+   `data-preserve-attr`, skrevet av byggefunksjonen.
 
-`FIELD_PRESERVED_ATTRIBUTES` finnes fortsatt, for markup du ikke rår over, som
-den en publiseringsløsning spytter ut, i et område som også oppdateres. Det er
-et hjørne, ikke hovedveien.
+Må du likevel sende et stort område på nytt, i et område brukeren står og
+fyller ut, kan serveren skrive hele koblingen selv. Da har komponenten
+ingenting å legge til, og morfingen ingenting å ta bort.
+`FIELD_PRESERVED_ATTRIBUTES` er for det siste hjørnet: markup du ikke rår
+over, som den en publiseringsløsning spytter ut, i et område som også
+oppdateres.
+
+Begge de siste er unntak. Regelen er de tre punktene over.
 
 ## Komponenter som eier sitt eget innhold
 
