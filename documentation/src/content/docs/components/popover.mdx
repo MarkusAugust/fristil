@@ -36,7 +36,7 @@ const boks = fs.popover({ id: "handlinger" })
 
 ```html
 <fs-popover placement="bottom-end" data-preserve-attr="open">
-  <button slot="trigger" class="fs-button" data-variant="secondary"
+  <button class="fs-button" data-variant="secondary"
           aria-expanded="false" aria-controls="handlinger"
           data-preserve-attr="aria-expanded">Handlinger</button>
 
@@ -48,7 +48,7 @@ const boks = fs.popover({ id: "handlinger" })
 </fs-popover>
 ```
 
-Knappen merkes med `slot="trigger"`. Alt annet innhold blir panelet.
+Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
 
 Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter bare to ting: `aria-expanded` når brukeren åpner, og posisjonen mot knappen. Begge står i `data-preserve-attr`, ellers river en oppdatering fra serveren dem bort. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
@@ -58,7 +58,7 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
   <TabItem label="Ren HTML">
     ```html
     <fs-popover id="meny" placement="bottom-end" data-preserve-attr="open">
-      <button slot="trigger" class="fs-button" data-variant="secondary"
+      <button class="fs-button" data-variant="secondary"
               aria-expanded="false" aria-controls="handlinger"
               data-preserve-attr="aria-expanded">Handlinger</button>
 
@@ -77,7 +77,7 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
 
       // Lukk menyen når en handling er valgt
       meny.addEventListener("click", (hendelse) => {
-        if (hendelse.target.closest("button[slot='trigger']")) return
+        if (hendelse.target.closest("[aria-controls]")) return
         if (hendelse.target.closest("button")) meny.hide()
       })
     </script>
@@ -159,7 +159,7 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
-        <button slot="trigger" class="fs-button" data-variant="secondary"
+        <button class="fs-button" data-variant="secondary"
                 aria-expanded="false" aria-controls="handlinger"
                 data-preserve-attr="aria-expanded">Handlinger</button>
 
