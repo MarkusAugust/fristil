@@ -41,7 +41,7 @@
 
   .fs-pagination a:focus-visible,
   .fs-pagination button:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: var(--semantic-focus-ring);
     outline-offset: 2px;
   }
 

@@ -149,6 +149,25 @@ describe("stilarkene pakken sender ut", () => {
     expect(feil).toEqual([])
   })
 
+  /*
+   * Fokusringen skal komme fra `--semantic-focus-ring`, ikke skrives ut.
+   *
+   * Den sto med bredde og farge i tjue regler fordelt på atten stilark.
+   * Selektorene er forskjellige i hver komponent, så det lot seg ikke samle
+   * i én regel, men verdien er den samme overalt og hører i et token. En
+   * komponent som trenger en annen farge, som hopplenken, skriver
+   * `outline-color` etter kortformen og arver bredden.
+   */
+  it.each(filer)("%s skriver ikke ut fokusringen for hånd", (navn, source) => {
+    if (navn.includes("/tokens/")) return
+
+    const skrevet = [
+      ...onlyRules(source).matchAll(/outline:\s*([^;}]*\bsolid\b[^;}]*)/g),
+    ].map((treff) => treff[1].trim())
+
+    expect(skrevet).toEqual([])
+  })
+
   it.each(filer)("%s navngir klassene i kebab-case", (_navn, source) => {
     const feilform = classNames(source).filter(
       (name) =>
