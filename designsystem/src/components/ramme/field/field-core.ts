@@ -134,22 +134,27 @@ export function computeFieldAttributes(
 /**
  * Attributtene `<fs-field>` setter, per element den rører.
  *
- * Dette er et hjørne, ikke hovedveien. Oppdaterer serveren det samme området
- * mens brukeren holder på, som i en Datastar- eller htmx-app, er det to
- * enklere veier først:
+ * Dette er det siste hjørnet, ikke hovedveien. Oppdaterer serveren det
+ * samme området mens brukeren holder på, som i en Datastar- eller htmx-app,
+ * er rekkefølgen på rådene denne:
  *
- * 1. Send bare det som har endret seg, med `selector` og `mode: inner`. Da
- *    røres ikke feltet i det hele tatt.
- * 2. La serveren skrive hele feltet: id-er, `for` og `aria-describedby`. Da
- *    har komponenten ingenting å legge til, og morfingen ingenting å ta
- *    bort. Testet med Datastars egen morfing: feltet overlever uendret, og
- *    en oppdatering som gjør det ugyldig slår inn som den skal.
+ * 1. **Send bare det som har endret seg**, med `selector` og `mode: inner`.
+ *    Da røres ikke feltet i det hele tatt.
+ * 2. **Skriv struktur, ikke kobling.** Serveren sender `<fs-field>` med en
+ *    ledetekst, en kontroll og eventuelt hjelpetekst og feilmelding, uten
+ *    id-er. Komponenten setter `for`, `id` og `aria-describedby` selv, i
+ *    hvilket som helst språk. Testet: ett `invalid` på verten gir
+ *    `aria-invalid`, `data-state`, synlig feilmelding og riktig kobling.
+ * 3. Må du likevel sende et stort område på nytt mens brukeren fyller det
+ *    ut, kan serveren skrive hele koblingen selv. Da har komponenten
+ *    ingenting å legge til, og morfingen ingenting å ta bort.
  *
- * Lista her er for markup du ikke rår over, som den en publiseringsløsning
- * spytter ut, i et område som også oppdateres. Da fyller `<fs-field>` inn
- * det som mangler, og navnene må stå i `data-preserve-attr` for at morfingen
- * ikke skal ta dem igjen. Lista leses fra serverens node, per element, så
- * komponenten kan ikke sette den på seg selv.
+ * Lista her trengs bare når markupen kommer fra noe du ikke rår over, som
+ * en publiseringsløsning, i et område som også oppdateres. Da fyller
+ * `<fs-field>` inn det som mangler, og navnene må stå i
+ * `data-preserve-attr` for at morfingen ikke skal ta dem igjen. Lista leses
+ * fra serverens node, per element, så komponenten kan ikke sette den på seg
+ * selv.
  *
  * ```html
  * <label class="fs-label"
