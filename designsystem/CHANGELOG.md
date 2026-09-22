@@ -16,6 +16,24 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`color-scheme` i `tokens.css`.** Uten den tegner nettleseren sine egne
+  flater lyst uansett hva tokenene sier: nedtrekkslista til en `<select>`,
+  rullefelt og kalenderpanelet i et datofelt. En side i mørkt tema fikk da en
+  hvit liste midt i seg. `:root` sier nå `light dark`, så systemvalget
+  avgjør, og `data-theme` setter den til `light` eller `dark` slik at
+  nettleserens flater følger med når appen tvinger fram et tema.
+
+  Dette ble funnet i en demoapp, ikke i enhetstestene. Det er bare
+  nettleserens eget utseende som røper det.
+
+- **`<fs-field>` sier selv at det er en blokk.** Et egendefinert element er
+  `display: inline` til noen sier noe annet, og feltet var det eneste som
+  pakker inn andre elementer uten å si det. Barna er blokker, så det så
+  riktig ut helt til noen ga elementet en avstand eller la det i et rutenett.
+  `<fs-suggestion>` har alltid sagt det samme om seg selv.
+
 ## 0.6.1 (2026-09-22)
 
 ### Lagt til

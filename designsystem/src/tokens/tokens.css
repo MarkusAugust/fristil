@@ -2,6 +2,8 @@
 
 @layer fristil {
   :root {
+    color-scheme: light dark;
+
     /* font */
     --font-size-reference: 16px;
     --font-size-xxs: 0.625rem;
@@ -181,7 +183,13 @@
     }
   }
 
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
   [data-theme="dark"] {
+    color-scheme: dark;
+
     --semantic-page-background: var(--palette-graphite-100);
     --semantic-page-foreground: var(--palette-graphite-5);
     --semantic-danger-background: var(--palette-burgundy-100);

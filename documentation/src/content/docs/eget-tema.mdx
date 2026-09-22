@@ -55,6 +55,8 @@ Legg fila etter `tokens.css`. Den overstyrer fargene, mens størrelser, skriftst
 
 Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt `data-theme`.
 
+`tokens.css` setter også `color-scheme`. Det er den som avgjør hvordan nettleseren tegner sine egne flater: nedtrekkslista til en `<select>`, rullefelt og kalenderpanelet i et datofelt. Uten den blir de lyse i en mørk side. Standarden er `light dark`, altså at systemvalget avgjør, og setter du `data-theme` følger nettleserens flater med.
+
 ## Hva generatoren gjør
 
 **Skalaene bygges i OKLCH.** I HSL betyr lyshet noe ulikt for hver kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort, med samme tall. En skala bygget på HSL blir derfor ujevn, og kontrasten varierer med hvilken farge du valgte. I OKLCH er lysheten den samme opplevde lysheten uansett kulør.
