@@ -27,7 +27,7 @@ const PLACEMENTS: readonly Placement[] = [
  *
  * ```html
  * <fs-popover placement="bottom-end">
- *   <button slot="trigger" class="fs-button" aria-controls="meny" aria-expanded="false"
+ *   <button class="fs-button" aria-controls="meny" aria-expanded="false"
  *           data-preserve-attr="aria-expanded">Handlinger</button>
  *   <ul id="meny" class="fs-popover" popover="manual" data-preserve-attr="style">…</ul>
  * </fs-popover>
@@ -88,12 +88,18 @@ export class FsPopover extends HostElement {
   }
 
   private sync(): void {
-    const trigger = this.querySelector<HTMLElement>("[slot='trigger']")
-    const panel = [...this.children].find(
-      (child): child is HTMLElement =>
-        child instanceof HTMLElement &&
-        child.getAttribute("slot") !== "trigger",
-    )
+    // Delene kjennes igjen på koblingen som må være der uansett: panelet er
+    // det som har `popover`, og knappen er den som peker på panelet med
+    // `aria-controls`. Før sto det `slot="trigger"` på knappen, et levn fra
+    // den gangen komponenten hadde shadow DOM. Uten en skyggerot gjør `slot`
+    // ingenting i HTML, så attributtet var en merkelapp som så ut som noe
+    // annet enn det var.
+    const panel = this.querySelector<HTMLElement>("[popover]")
+    const trigger = panel?.id
+      ? this.querySelector<HTMLElement>(
+          `[aria-controls="${CSS.escape(panel.id)}"]`,
+        )
+      : null
 
     if (!trigger || !panel) return
 

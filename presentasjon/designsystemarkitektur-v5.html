@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentasjon: Arkitekturplan Designsystem V5</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-success: #10b981;
+      --accent-warn: #f59e0b;
+      --border-color: rgba(255, 255, 255, 0.14);
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /*
+     * Lyskasterne.
+     *
+     * To myke lysflekker som driver sakte over bakgrunnen, i hver sin takt.
+     * De ligger bak alt annet og fanger ikke mus. Bevegelsen er lang og
+     * rolig med vilje: et lys som beveger seg fort trekker blikket bort fra
+     * teksten, som er det folk faktisk skal lese.
+     */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -25%;
+      z-index: 0;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    body::before {
+      background: radial-gradient(38% 42% at 50% 50%, rgba(96, 165, 250, 0.26), rgba(96, 165, 250, 0) 70%);
+      animation: lyskaster-en 34s ease-in-out infinite;
+    }
+
+    body::after {
+      background: radial-gradient(34% 38% at 50% 50%, rgba(167, 139, 250, 0.22), rgba(167, 139, 250, 0) 70%);
+      animation: lyskaster-to 46s ease-in-out infinite;
+    }
+
+    @keyframes lyskaster-en {
+      0%   { transform: translate3d(-16%, -10%, 0) scale(1); }
+      50%  { transform: translate3d(14%, 12%, 0) scale(1.18); }
+      100% { transform: translate3d(-16%, -10%, 0) scale(1); }
+    }
+
+    @keyframes lyskaster-to {
+      0%   { transform: translate3d(18%, 14%, 0) scale(1.1); }
+      50%  { transform: translate3d(-12%, -12%, 0) scale(0.95); }
+      100% { transform: translate3d(18%, 14%, 0) scale(1.1); }
+    }
+
+    .presentation-container {
+      position: relative;
+      z-index: 1;
+      width: 95vw;
+      height: 53.43vw;
+      max-height: 90vh;
+      max-width: 160vh;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.28);
+      box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    }
+
+    /* Glasset: en svak lysstripe over toppen, som på en matt glassplate. */
+    .presentation-container::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 42%);
+    }
+
+    .slide-deck {
+      display: flex;
+      width: calc(var(--antall, 1) * 100%);
+      height: 100%;
+      transition: transform 0.62s cubic-bezier(0.22, 0.85, 0.24, 1);
+    }
+
+    .slide {
+      position: relative;
+      width: calc(100% / var(--antall, 1));
+      height: 100%;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(1.5rem, 3.4vw, 3.5rem);
+      background: linear-gradient(160deg, rgba(30, 41, 59, 0.62), rgba(15, 23, 42, 0.48));
+      backdrop-filter: blur(26px) saturate(140%);
+      -webkit-backdrop-filter: blur(26px) saturate(140%);
+    }
+
+    .slide-content {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* Siste utvei på en liten skjerm: heller kunne rulle enn å miste
+         teksten under kanten. */
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .nav-hint {
+      position: absolute;
+      bottom: 1.4rem;
+      right: clamp(1.5rem, 3.4vw, 3.5rem);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 3;
+    }
+
+    /* Framdriften, som en tynn strek langs bunnen. */
+    .framdrift {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      z-index: 3;
+    }
+
+    .framdrift span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(to right, var(--accent), #93c5fd);
+      transition: width 0.62s cubic-bezier(0.22, 0.85, 0.24, 1);
+    }
+
+    .bla {
+      position: absolute;
+      top: 50%;
+      translate: 0 -50%;
+      z-index: 3;
+      width: 2.75rem;
+      height: 2.75rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(10px);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.25s ease, background 0.25s ease;
+    }
+
+    .presentation-container:hover .bla,
+    .bla:focus-visible { opacity: 1; }
+    .bla:hover { background: rgba(30, 41, 59, 0.8); }
+    .bla:focus-visible { outline: 2px solid #93c5fd; outline-offset: 3px; }
+    .bla[disabled] { opacity: 0 !important; pointer-events: none; }
+    .bla-forrige { left: 1rem; }
+    .bla-neste { right: 1rem; }
+
+    h1 {
+      font-size: clamp(2rem, 4.4vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #ffffff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 2.9vw, 2.2rem);
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 1.2rem;
+      border-left: 5px solid var(--accent);
+      padding-left: 1rem;
+    }
+
+    p { font-size: clamp(0.98rem, 1.5vw, 1.2rem); line-height: 1.6; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { padding: 0.9rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: clamp(0.88rem, 1.3vw, 1.05rem); }
+    th { color: #ffffff; font-weight: 600; background: rgba(255, 255, 255, 0.04); }
+
+    pre {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1.2rem;
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    code { font-family: var(--font-mono); font-size: 0.92em; color: #bae6fd; }
+    td code { white-space: nowrap; }
+
+    a { color: #93c5fd; text-decoration-color: rgba(147, 197, 253, 0.4); text-underline-offset: 0.2em; }
+    a:hover { text-decoration-color: #93c5fd; }
+
+    ul { list-style-position: inside; margin-bottom: 1rem; }
+    li { font-size: clamp(0.95rem, 1.45vw, 1.15rem); margin-bottom: 0.5rem; color: var(--text-muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-primary { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-warn { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+    .flex-layout { display: flex; gap: 2rem; }
+    .flex-child { flex: 1; }
+    .callout { border-left: 4px solid var(--accent-success); background: rgba(16, 185, 129, 0.06); padding: 1.5rem; border-radius: 0 10px 10px 0; }
+    .advarsel { border-left: 4px solid var(--accent-warn); background: rgba(245, 158, 11, 0.05); padding: 1.5rem; border-radius: 0 10px 10px 0; }
+
+    .two-col-tight { gap: 1.25rem; align-items: stretch; }
+    .two-col-tight .flex-child { flex: 0 1 48%; }
+    .two-col-tight pre { font-size: clamp(0.72rem, 1vw, 0.84rem); }
+    .intro-list { margin-top: 0.4rem; }
+    .intro-list li { font-size: clamp(0.9rem, 1.3vw, 1.02rem); margin-bottom: 0.35rem; }
+
+    .testet {
+      margin-top: 1rem;
+      font-size: clamp(0.8rem, 1.15vw, 0.95rem);
+      color: #34d399;
+      font-family: var(--font-mono);
+    }
+    .testet::before { content: "testet: "; color: var(--text-muted); }
+
+    .trad { counter-reset: punkt; list-style: none; margin-bottom: 1.2rem; }
+    .trad li {
+      counter-increment: punkt;
+      position: relative;
+      padding-left: 2.6rem;
+      margin-bottom: 0.9rem;
+      font-size: clamp(0.92rem, 1.4vw, 1.12rem);
+      color: var(--text-muted);
+    }
+    .trad li::before {
+      content: counter(punkt);
+      position: absolute;
+      left: 0;
+      top: -0.1rem;
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.18);
+      color: #93c5fd;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .trad strong { color: var(--text-main); }
+
+    /*
+     * De to perspektivene, nederst på hvert lysbilde.
+     *
+     * Et designsystem har to sett brukere som betaler ulik pris: teamene som
+     * bygger på det, og de som forvalter det. Står bare det ene, høres
+     * gevinsten gratis ut for den ene og byrden meningsløs for den andre.
+     */
+    .perspektiv {
+      margin-top: 1.2rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.55rem 1.6rem;
+      font-size: clamp(0.8rem, 1.12vw, 0.97rem);
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .rolle {
+      display: inline-block;
+      margin-right: 0.45rem;
+      padding: 0.16rem 0.5rem;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .rolle-produkt { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+    .rolle-forvalter { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; }
+
+    /*
+     * Siste lysbilde: før og nå, med litt mer bevegelse enn resten.
+     *
+     * Strekene over «før»-punktene tegnes av gårde, og «nå»-punktene tennes
+     * ett og ett. Et lysdrag går over flaten når lysbildet kommer fram.
+     */
+    .gevinst {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem 2rem;
+      margin-top: 0.4rem;
+    }
+
+    .gevinst ul { margin: 0.6rem 0 0; list-style: none; }
+    .gevinst li { position: relative; padding-left: 1.1rem; }
+    .gevinst li::marker { content: ""; }
+
+    .rolle-for { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; }
+    .rolle-na { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+
+    .for-liste li::before,
+    .na-liste li::before {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .for-liste li::before { content: "×"; color: #94a3b8; }
+    .na-liste li::before { content: "→"; color: #34d399; }
+
+    /* Streken tegnes fra venstre mot høyre, som når noen stryker ut en linje. */
+    .for-liste li::after {
+      content: "";
+      position: absolute;
+      left: 1.1rem;
+      top: 0.78em;
+      height: 1px;
+      width: 0;
+      background: rgba(203, 213, 225, 0.5);
+    }
+
+    .slide.aktiv .for-liste li::after {
+      animation: strek 0.5s ease-out both;
+    }
+
+    .slide.aktiv .for-liste li:nth-child(1)::after { animation-delay: 0.55s; }
+    .slide.aktiv .for-liste li:nth-child(2)::after { animation-delay: 0.75s; }
+    .slide.aktiv .for-liste li:nth-child(3)::after { animation-delay: 0.95s; }
+    .slide.aktiv .for-liste li:nth-child(4)::after { animation-delay: 1.15s; }
+
+    @keyframes strek {
+      from { width: 0; }
+      to { width: calc(100% - 1.1rem); }
+    }
+
+    .na-liste li { opacity: 0.25; }
+
+    .slide.aktiv .na-liste li {
+      animation: tenn 0.6s ease-out both;
+    }
+
+    .slide.aktiv .na-liste li:nth-child(1) { animation-delay: 0.65s; }
+    .slide.aktiv .na-liste li:nth-child(2) { animation-delay: 0.85s; }
+    .slide.aktiv .na-liste li:nth-child(3) { animation-delay: 1.05s; }
+    .slide.aktiv .na-liste li:nth-child(4) { animation-delay: 1.25s; }
+
+    @keyframes tenn {
+      0% { opacity: 0.25; transform: translateX(-6px); }
+      60% { color: #d1fae5; }
+      100% { opacity: 1; transform: none; }
+    }
+
+    /*
+     * Lysdraget over det siste lysbildet.
+     *
+     * Det ligger på selve lysbildet, ikke på innholdsflaten, så det dekker
+     * hele kortet helt ut i kantene. Bakgrunnen forskyves inni elementet i
+     * stedet for at elementet flytter på seg: et element som stikker utenfor
+     * en boks som kan rulle, gir rullefelt langs kanten.
+     */
+    .slide-gevinst::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(100deg, transparent 40%, rgba(147, 197, 253, 0.16) 50%, transparent 60%);
+      background-size: 300% 100%;
+      background-position: 150% 0;
+      background-repeat: no-repeat;
+    }
+
+    .slide-gevinst.aktiv::after {
+      animation: sveip 2s cubic-bezier(0.3, 0.7, 0.3, 1) 0.2s both;
+    }
+
+    @keyframes sveip {
+      from { background-position: 150% 0; }
+      to { background-position: -50% 0; }
+    }
+
+    .skjult {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /*
+     * På en lav eller smal skjerm strammes luften inn, slik at lysbildene
+     * fortsatt får plass. Testet på 900 x 600: fem lysbilder gikk utenfor
+     * kanten før dette.
+     */
+    @media (max-height: 780px), (max-width: 1150px) {
+      h2 { margin-bottom: 0.8rem; }
+      p { margin-bottom: 1rem; }
+      li { margin-bottom: 0.35rem; }
+      .trad li { margin-bottom: 0.6rem; }
+      .callout, .advarsel { padding: 1rem 1.2rem; }
+      pre { padding: 0.9rem; }
+      th, td { padding: 0.6rem; }
+      .flex-layout { gap: 1rem; }
+      .perspektiv { margin-top: 0.8rem; padding-top: 0.6rem; gap: 0.4rem 1.2rem; }
+    }
+
+    /*
+     * Innholdet kommer inn etter at lysbildet har lagt seg på plass, litt
+     * forskjøvet fra element til element. Rekkefølgen settes av skriptet,
+     * så et nytt avsnitt får riktig forsinkelse uten at noe rettes her.
+     */
+    .slide:not(.aktiv) .slide-content > * { opacity: 0; }
+
+    .slide.aktiv .slide-content > * {
+      animation: stig-inn 0.55s cubic-bezier(0.22, 0.85, 0.24, 1) both;
+      animation-delay: calc(0.18s + var(--nr, 0) * 0.07s);
+    }
+
+    @keyframes stig-inn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Enda strammere når vinduet er riktig lite, for eksempel en halv
+       skjerm ved siden av noe annet. */
+    @media (max-height: 660px) {
+      .slide { padding: 0.9rem 1.5rem; }
+      h2 { margin-bottom: 0.6rem; }
+      p { margin-bottom: 0.7rem; }
+      .trad li { margin-bottom: 0.45rem; }
+      .callout, .advarsel { padding: 0.8rem 1rem; }
+      .testet { margin-top: 0.6rem; }
+      table { margin-top: 0.2rem; }
+      th, td { padding: 0.45rem 0.6rem; }
+      .perspektiv { margin-top: 0.6rem; padding-top: 0.5rem; gap: 0.3rem 1rem; }
+      .rolle { padding: 0.12rem 0.42rem; }
+      .trad { margin-bottom: 0.7rem; }
+      .trad li { margin-bottom: 0.35rem; }
+      .trad li::before { width: 1.5rem; height: 1.5rem; font-size: 0.85rem; }
+      .trad li { padding-left: 2.1rem; font-size: 0.88rem; }
+    }
+
+    /*
+     * Den som har slått av animasjoner i systemet, skal få en presentasjon
+     * som står stille. Lyskasterne og innglidningen er pynt, og pynt er det
+     * første som skal vike.
+     */
+    @media (prefers-reduced-motion: reduce) {
+      body::before,
+      body::after { animation: none; }
+      .slide-deck { transition: none; }
+      .framdrift span { transition: none; }
+      .slide.aktiv .slide-content > * { animation: none; }
+      .slide:not(.aktiv) .slide-content > * { opacity: 1; }
+      .slide-gevinst.aktiv::after { animation: none; opacity: 0; }
+      .slide.aktiv .for-liste li::after { animation: none; width: calc(100% - 1.1rem); }
+      .slide.aktiv .na-liste li,
+      .na-liste li { animation: none; opacity: 1; }
+    }
+
+    /*
+     * Utskrift, og dermed PDF: ett lysbilde per side, uten glass og lys.
+     * Presentasjonen skal kunne sendes videre til noen som ikke var i rommet.
+     */
+    @media print {
+      body { display: block; height: auto; background: #0f172a; }
+      body::before, body::after { display: none; }
+      .presentation-container {
+        width: auto; height: auto; max-width: none; max-height: none;
+        border: 0; border-radius: 0; box-shadow: none; background: none;
+      }
+      .presentation-container::after { display: none; }
+      .slide-deck { display: block; width: 100% !important; transform: none !important; }
+      .slide {
+        width: 100% !important;
+        height: 100vh;
+        break-after: page;
+        backdrop-filter: none;
+        background: #111c33;
+      }
+      .slide-content > * { opacity: 1 !important; animation: none !important; }
+      .bla, .nav-hint, .framdrift { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="presentation-container">
+    <button class="bla bla-forrige" id="forrige" type="button" aria-label="Forrige lysbilde">&#8592;</button>
+    <button class="bla bla-neste" id="neste" type="button" aria-label="Neste lysbilde">&#8594;</button>
+
+    <div class="slide-deck" id="deck">
+
+      <!-- 1: Forside -->
+      <section class="slide">
+        <div class="slide-content">
+          <span class="badge badge-primary" style="width: max-content; margin-bottom: 1.5rem;">Arkitekturplan V3 · september 2026</span>
+          <h1>Rammeverksuavhengig<br>designsystem</h1>
+          <p style="font-size: 1.3rem; color: var(--text-main); margin-bottom: 2rem;">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
+          <p style="font-size: 1.05rem; margin-bottom: 0.8rem;">Komponentene er delt i tre kategorier etter ett spørsmål: hvem skriver HTML-en?</p>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <span class="badge badge-primary" style="font-size: 0.9rem; padding: 0.4rem 1rem;">css</span>
+            <span class="badge badge-success" style="font-size: 0.9rem; padding: 0.4rem 1rem;">ramme</span>
+            <span class="badge badge-warn" style="font-size: 0.9rem; padding: 0.4rem 1rem;">frittstående</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2: Kort fortalt -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Kort fortalt</h2>
+          <p>I dagens webutvikling brukes det mange ulike rammeverk, og rammeverkene kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang noe skifter. Derfor bør designsystemet bygges på det nettleseren allerede forstår, og la hvert team velge hvor mye de vil overlate til det. Denne presentasjonen viser hvordan vi har løst det.</p>
+          <ol class="trad">
+            <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og egendefinerte HTML-elementer, og virker like godt i React, i Astro og i ren HTML.</li>
+            <li><strong>Tre kategorier, ett spørsmål: hvem skriver HTML-en.</strong> Det avgjør hvor mye systemet tar ansvar for, og hvor fritt teamet står.</li>
+            <li><strong>Tilgjengelighet er bygget inn.</strong> Koblingene som gjør skjemaer lesbare for skjermlesere ligger ett sted, og alle bruker den samme.</li>
+            <li><strong>Teamene kan overstyre alt utenfra, og overta en komponent helt hvis de må.</strong> Uten å vente på oss.</li>
+            <li><strong>Regningen tas av oss, ikke av teamene.</strong> Alt testes i tre nettlesermotorer, nye nettleserfunksjoner må vente på den siste av dem, og et klassenavn kan vi ikke døpe om, fordi det står i koden til andre.</li>
+          </ol>
+          <p style="font-size: 1.05rem;">Nederst på lysbildene står to linjer: hva det betyr for teamene som bruker systemet, og hva det koster oss som forvalter det.</p>
+          <p style="margin-bottom: 0; font-size: 1.05rem;">Alt dette er bygget og publisert. Se hvordan det ser ut i praksis på <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a>, med levende komponenter, kode og dokumentasjon.</p>
+        </div>
+      </section>
+
+      <!-- 3: Hvorfor tre veier -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Tre veier, fordi behovene er ulike</h2>
+          <p style="margin-bottom: 0.8rem;">De fleste designsystemer velger én teknisk strategi for alt de leverer, og lever med følgene av den. Vi tar valget per komponent i stedet, fordi komponentene løser ulike problemer. En knapp trenger en farge, en form og en tilstand for avslått. En datovelger må holde orden på måneder, tastaturnavigasjon og et panel som åpner og lukker seg.</p>
+          <p>Tabellen viser hva hver rendyrket strategi ville gitt, og hva den ville kostet:</p>
+          <table>
+            <thead>
+              <tr><th>Hvis vi valgte bare én</th><th>Det vi får</th><th>Det det koster</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-primary">Bare CSS</span></td>
+                <td>Ingen kode som kjører, og full frihet i HTML-en</td>
+                <td>Hvert team må skrive og vedlikeholde koblingene som gjør skjemaer lesbare for skjermlesere</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">Bare React</span></td>
+                <td>God hverdag i appene som er skrevet i React</td>
+                <td>Alt annet står utenfor, og systemet lever ikke lenger enn rammeverket gjør</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warn">Alt i Shadow DOM</span></td>
+                <td>Et eget HTML-element med skjermet innside, som appens CSS ikke når inn i</td>
+                <td>Unødig tungt for en knapp, og skjemafelt inni blir usynlige for validering og testverktøy</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout" style="margin-top: 1.2rem; padding: 1rem 1.5rem;">
+            «Frihet under ansvar» betyr i praksis at teknologien velges per komponent, etter hva den må klare.
+          </div>
+        </div>
+      </section>
+
+      <!-- 4: Hvorfor plattformen først -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Hvorfor plattformen først, og ikke React først</h2>
+          <p>Vårt utgangspunkt er ikke hvilket rammeverk som er best i dag, men hva som fortsatt virker når appene rundt systemet er byttet ut. Fire grunner gjorde valget for oss:</p>
+          <ul>
+            <li><strong>Retningen kan bare gå én vei.</strong> Av komponenter bygget på plattformen kan vi lage en React-pakke senere. Av et React-bibliotek kan ingen lage en vanlig HTML-versjon.</li>
+            <li><strong>Porteføljen er aldri ett rammeverk.</strong> Vi har gamle apper, nye apper, publiseringsløsninger som bare sender HTML, og systemer vi ikke eier selv. En CSS-klasse virker alle stedene. En React-komponent virker ett sted.</li>
+            <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til hooks til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En klasse og et egendefinert element fra samme periode virker fortsatt uendret.</li>
+            <li><strong>Utseendet krever ingen kjøretid.</strong> En knapp, et merke og et kort er CSS. Gjør vi dem til React-komponenter, må rammeverket være lastet og kjøre før de ser riktige ut.</li>
+          </ul>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>React-utviklerne får ikke ferdige React-komponenter, men klasser og attributter, med typer og en egen React-inngang.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Må gjøre uavhengigheten usynlig i hverdagen, ellers oppleves den som et steg ned fra et React-bibliotek.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5: Kategoriene -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Kategorien sier hvem som skriver HTML-en</h2>
+          <p>I vår arkitektur deles komponentene etter ett spørsmål: skriver utvikleren HTML-en selv, eller leverer komponenten den ferdig? Svaret avgjør hvem som gjør jobben når noe skal endres.</p>
+          <table>
+            <thead>
+              <tr><th>Kategori</th><th>Hvem skriver HTML-en</th><th>Eksempel</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-primary">css</span></td>
+                <td>Utvikleren. Komponenten er en klasse og noen attributter, uten JavaScript</td>
+                <td><code>&lt;button class="fs-button"&gt;</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">ramme</span></td>
+                <td>Utvikleren, men komponenten kobler sammen delene og gjør dem tilgjengelige</td>
+                <td><code>&lt;fs-field&gt;</code> med felt og feilmelding inni</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warn">frittstående</span></td>
+                <td>Komponenten. Utvikleren sender inn verdier og får hele oppførselen med</td>
+                <td><code>&lt;fs-date-field label="Fødselsdato"&gt;</code></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="advarsel" style="margin-top: 1.2rem; padding: 1rem 1.5rem;">
+            <strong>Skjerming (Shadow DOM) er et eget valg per komponent, ikke en fjerde kategori.</strong> Kalenderen skjermer innsiden sin og tar med stilene sine, datofeltet og kombiboksen gjør det ikke. Alle tre er frittstående.
+          </div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Velger selv hvor mye de vil overlate til systemet.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Holder tre API-former i live, og må si hvilken hver komponent hører til.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6: Tilgjengelighet -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Tilgjengelighet er skrevet én gang, og brukt to veier</h2>
+          <p>Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til selve feltet, slik at en skjermleser leser dem opp sammen med det. Koblingen er tre henvisninger som må peke riktig, de er lette å glemme, og det synes ikke på skjermen at de mangler. Derfor har vi skrevet den én gang.</p>
+          <div class="flex-layout two-col-tight">
+            <div class="flex-child">
+              <span class="badge badge-primary">Utvikleren skriver HTML-en selv</span>
+              <pre>const felt = fs.field({
+  id: "epost",
+  state: "invalid",
+  helpText: true,
+})</pre>
+            </div>
+            <div class="flex-child">
+              <span class="badge badge-success">Komponenten gjør koblingen</span>
+              <pre>&lt;fs-field invalid&gt;
+  &lt;label&gt;E-post&lt;/label&gt;
+  &lt;input type="email" /&gt;
+  &lt;p&gt;Vi sender kvittering hit&lt;/p&gt;
+&lt;/fs-field&gt;</pre>
+            </div>
+          </div>
+          <p style="margin-top: 1rem; margin-bottom: 0;">Begge veier bruker den samme funksjonen under. Skjerper vi kravene, retter vi ett sted.</p>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Dere trenger ikke kunne reglene for hvordan felt og tekst kobles sammen, og arver rettelser gratis.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde kontrakten i én funksjon. To implementasjoner glir fra hverandre i løpet av et år.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7: Kaskadelag -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Teamene kan overstyre oss uten å kopiere koden</h2>
+          <p>Et team skal kunne endre utseendet på en komponent uten å spørre oss først, og uten å lage sin egen kopi. Da må deres egen CSS vinne over vår hver gang. I vår løsning ligger derfor alt vi sender ut i et kaskadelag, og CSS utenfor et lag vinner alltid over CSS inne i et, uansett hvor presist vi selv har skrevet regelen.</p>
+          <pre>.fs-button { letter-spacing: 0.02em; }   /* vinner, uten triks */</pre>
+          <div class="testet">uten laget taper teamets egen regel mot vår, og eneste vei ut er !important</div>
+          <div class="advarsel" style="margin-top: 1.2rem; padding: 1rem 1.5rem;">
+            To feller er verdt å kjenne. <strong><code>!important</code> snur rekkefølgen</strong>, så det gir det motsatte av det utvikleren prøver å oppnå. Og <strong>registrerte CSS-variabler slutter å ha en reserveverdi</strong>, slik at standardverdien vår aldri slår inn. Begge deler er testet i nettleser, ikke lest i en spesifikasjon.
+          </div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Deres egen CSS vinner alltid, så dere slipper både <code>!important</code> og en egen kopi av systemet.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Kan ikke lene seg på spesifisitet. Alt som sendes ut må ligge i laget, hver gang.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8: Variabler -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Tilpasning på to nivåer</h2>
+          <p>Hos oss leser hver komponent form og størrelse fra en egen variabel, med systemets verdi som reserve. Da kan et team endre én komponent, eller flytte hele skalaen, uten at vi lager et tema for dem.</p>
+          <pre>padding: var(--fs-button-padding, var(--size-2) var(--size-4));</pre>
+          <ul class="intro-list" style="margin-top: 1rem;">
+            <li><strong>Sett <code>--fs-button-padding</code>:</strong> bare knappen endrer seg.</li>
+            <li><strong>Sett <code>--size-*</code>:</strong> avstandene i hele systemet endrer seg, og knappen følger med, fordi standardverdien peker på skalaen.</li>
+            <li>En test leser stilarkene som tekst og krever at hver verdi vi peker på, faktisk finnes. Ellers er regelen ugyldig, og komponenten faller tilbake til nettleserens standard.</li>
+          </ul>
+          <div class="testet">én verdi som manglet gjorde regelen ugyldig, og en knapp ble 16 piksler bred i stedet for 28</div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Endrer én komponent med én variabel, eller flytter hele skalaen, uten å vente på noen.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Må sette hver verdi noen kan tenkes å ville endre, som en variabel med tokenet som reserve.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9: Skjerming og deler -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>En skjermet komponent må peke ut hva som kan endres</h2>
+          <p>Vi skjermer en komponent når innsiden er tett nok til at appens egne regler for <code>table</code>, <code>button</code> eller <code>li</code> kan ødelegge den, og konsumenten ikke har noe der inne å gjøre. I dag gjelder det kalenderens rutenett, og det vil gjelde flere etter hvert som vi lager mer sammensatte komponenter.</p>
+          <p style="margin-bottom: 0.8rem;">Skjemafelt holder vi utenfor uansett: de skal være ekte felt i siden, slik at validering og testverktøy finner dem. Prisen for skjerming er at ingenting kan endres utenfra med mindre vi peker det ut, og da må vi peke ut nok.</p>
+          <p style="margin-bottom: 0.6rem;">Tre testede begrensninger avgjør hvordan utpekingen må gjøres:</p>
+          <ul>
+            <li>En utpekt del kan bare velges ut fra navnet, ikke ut fra tilstanden sin.</li>
+            <li>Det som ligger inni en utpekt del, kan ikke nås utenfra.</li>
+            <li>Ett element kan derimot ha flere navn samtidig.</li>
+          </ul>
+          <pre>&lt;button part="day day-today day-selected"&gt;</pre>
+          <p style="margin-top: 0.8rem; margin-bottom: 0;">Derfor får tilstand egne navn i stedet for å være en egenskap.</p>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Kan style innsiden utenfra, men bare der systemet har pekt ut noe. Lista står i dokumentasjonen.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Må gi hvert nytt element inni et navn, ellers er det utilgjengelig for alle andre.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10: Prisen -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Prisen for å bygge på nettleseren selv</h2>
+          <p>Vi har valgt funksjoner nettleserne allerede har, framfor biblioteker vi må følge med på. Det koster ingenting i lisenser, men det koster arbeid: nettleserne gjør ikke helt det samme.</p>
+          <table>
+            <thead>
+              <tr><th>Det koster</th><th>Hva det betyr hos oss</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Tre nettlesermotorer</td><td>Hele testpakken kjøres i Chrome, Firefox og Safari, ikke bare i den utvikleren har åpen</td></tr>
+              <tr><td>Nye nettleserfunksjoner</td><td>Tas i bruk først når alle tre har dem, ellers er biblioteket byttet mot et støtteproblem</td></tr>
+              <tr><td>Høykontrastmodus</td><td>Systemet fjerner farger og skygger, så tilstand kan aldri vises med farge alene</td></tr>
+              <tr><td>Høyre mot venstre</td><td>Komponentene speilvendes, og ikoner må snus med egne regler</td></tr>
+            </tbody>
+          </table>
+          <div class="testet">hver komponent i Chrome, Firefox og Safari, og tilgjengelighet i både lyst og mørkt tema</div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Kontrollene som viser tilstand med farge er testet i høykontrastmodus, og all CSS bruker logiske egenskaper, så komponentene speilvender seg selv.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Tester i tre motorer, og venter på den siste nettleseren før noe nytt tas i bruk.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11: Pakking -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Hva det koster appen din å bruke én komponent</h2>
+          <p>Bruker appen bare knappen vår, skal den ikke laste ned resten av systemet. Hvor mye som havner i appen avgjøres ikke av komponentene, men av hvordan pakken er satt sammen. Tre ting avgjør det:</p>
+          <ul>
+            <li><strong>Du importerer én komponent, og får én komponent.</strong> Hver komponent har sin egen inngang, både for koden og for stilarket, så en app uten kalender laster verken kalenderens kode eller CSS.</li>
+            <li><strong>Ingenting skjer bare fordi du importerer.</strong> Web-komponentene blir til HTML-elementer først når du kaller registreringsfunksjonen, så det er appen din som bestemmer hva som defineres, og når.</li>
+            <li><strong>Byggeverktøyet kan kaste det appen ikke bruker.</strong> Pakken er merket med at det å importere en fil ikke gjør noe i seg selv. Uten den merkingen må verktøyet regne med at importen har en virkning et sted, og tar med alt for sikkerhets skyld.</li>
+          </ul>
+          <div class="testet">samme app, som bare brukte knappen: 69 737 byte før merkingen, 8 361 byte etter</div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Dere betaler bare for det dere faktisk importerer.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Holder orden på inngangspunktene, og kontrollerer i hver utgivelse at pakken inneholder det den lover.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12: Tailwind -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Tailwind uten å kreve det, og uten å krangle med det</h2>
+          <p>Flere team bruker Tailwind. Vi leverer derfor fargene og avstandene våre som et helt vanlig stilark de kan slå på, og har selv ingen avhengighet til Tailwind. Da finnes det heller ingen versjonskonflikt: appens egen versjon er den eneste i bruk.</p>
+          <pre>@layer theme, base, fristil, components, utilities;</pre>
+          <div class="advarsel" style="margin-top: 1.2rem; padding: 1rem 1.5rem;">
+            Rekkefølgen over er det ene appen må sette selv, og begge feilene er testet. Kommer vi for tidlig i rekka, nullstiller Tailwind komponentene våre. Kommer vi for sent, slår komponentene våre Tailwind-klassene utviklerne skriver.
+          </div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Bruker Tailwind som før. Fargene og avstandene kommer som klasser, og én linje må settes i CSS-en.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Kan ikke ha Tailwind som avhengighet, og må teste temaet mot en ekte Tailwind-kompilering.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13: Utvikleropplevelse -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Uavhengighet skal ikke merkes som en nedtur</h2>
+          <p>Et rammeverksuavhengig system taper fort mot et React-bibliotek på hverdagen. Vårt motsvar er at alt har samme form, og at TypeScript-støtten ligger i selve systemet, ikke i en rammeverkspakke ved siden av.</p>
+          <pre>fs.button({ variant: "secondary" })
+fs.input({ type: "email", state: "invalid" })</pre>
+          <ul class="intro-list" style="margin-top: 1rem;">
+            <li>Én funksjon per komponent, med ett objekt inn og ferdige attributter ut.</li>
+            <li>Standardverdien gir ikke noe attributt, så koden viser bare det som faktisk avviker.</li>
+            <li>Lovlige verdier ligger på funksjonen, så editoren foreslår dem og fanger skrivefeil.</li>
+            <li><strong>Typene er ikke bundet til React.</strong> De samme funksjonene virker i Astro, i Vue og i ren TypeScript. Og skriver du JSX, kjenner TypeScript også elementene våre, så <code>&lt;fs-date-field&gt;</code> får autofullføring på attributtene i stedet for å være et ukjent element editoren ikke kan hjelpe med.</li>
+          </ul>
+          <p style="margin-top: 0.9rem; margin-bottom: 0; font-size: clamp(0.85rem, 1.2vw, 1rem);">Sjekket september 2026: hos de to store norske alternativene ligger typene i React-pakken, mens CSS-pakken er uten. Velger et team CSS-veien der, er klassenavn og varianter ukontrollert tekst.</p>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Editoren foreslår lovlige verdier, og en skrivefeil blir en typefeil i stedet for en knapp uten stil.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Må gi alle komponenter samme form. Ett unntak, og løftet om at du lærer det én gang, faller.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14: Rømningsvei -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Når systemet ikke strekker til, skal teamet komme videre</h2>
+          <p>Variabler og utpekte deler dekker utseendet, men ikke at komponenten skal oppføre seg annerledes. Uten en vei videre blir systemet en flaskehals akkurat når det haster, og da lager teamet sin egen kopi i stillhet. Vår vei ut er en kommando:</p>
+          <pre>npx @fristil/designsystem overta button --ut=src/ui</pre>
+          <p style="margin-top: 1.2rem;">Kommandoen kopierer kildekoden inn i teamets eget prosjekt og retter opp henvisningene, slik at kopien virker der den havner. Utskriften sier fra om at kopien er teamets ansvar fra da av.</p>
+          <div class="callout" style="padding: 1rem 1.5rem;">
+            Motstykket er et løfte fra oss: <strong>klassenavn, attributter, navn på utpekte deler og navn på designverdier endres ikke uten et nytt hovedtall i versjonen.</strong> Det er de navnene teamene bygger på, og de må kunne stoles på like mye som funksjonene.
+          </div>
+          <div class="perspektiv">
+            <p style="margin: 0;"><span class="rolle rolle-produkt">Produktteamene</span>Kan overta en komponent og endre den fritt, uten å vente på noen.</p>
+            <p style="margin: 0;"><span class="rolle rolle-forvalter">Designsystemteamet</span>Mister kontakten med den kopien, og må gjøre navnene forutsigbare nok til at det går bra likevel.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 15: Konklusjon -->
+      <section class="slide">
+        <div class="slide-content">
+          <h2>Hva vi får, og hva det koster</h2>
+          <div class="callout">
+            <strong>Et designsystem som hjelper teamene framfor å stoppe dem:</strong>
+            <p style="margin-top: 0.5rem; margin-bottom: 0; font-size: 1.1rem; color: var(--text-main);">
+              Teamene eier fortsatt sin egen applikasjonslogikk, slipper å skrive tilgjengelighetskoblingene i skjemaene selv, og kan overta en komponent den dagen den ikke passer.
+            </p>
+          </div>
+          <div class="flex-layout" style="gap: 2rem; margin-top: 1.4rem;">
+            <div class="flex-child">
+              <span class="rolle rolle-produkt">Produktteamene</span>
+              <ul class="intro-list" style="margin-top: 0.6rem;">
+                <li>Felles utseende og tilgjengelighet uten å binde seg til ett rammeverk.</li>
+                <li>Frihet til å endre utseendet selv, og til å overta en komponent helt.</li>
+                <li>Bare det de importerer havner i appen.</li>
+              </ul>
+            </div>
+            <div class="flex-child">
+              <span class="rolle rolle-forvalter">Designsystemteamet</span>
+              <ul class="intro-list" style="margin-top: 0.6rem;">
+                <li>Tre nettlesermotorer i hver testkjøring, og tilgjengelighet som krav før noe slippes.</li>
+                <li>Navn vi ikke kan rydde i uten å varsle, fordi de står i koden til andre.</li>
+                <li>Venting på den siste nettleseren når noe nytt skal tas i bruk.</li>
+              </ul>
+            </div>
+          </div>
+          <p style="margin-top: 1.5rem; margin-bottom: 0; font-size: 1.05rem;">Systemet og dokumentasjonen ligger på <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a>.</p>
+        </div>
+      </section>
+
+      <!-- 16: Gevinsten -->
+      <section class="slide slide-gevinst">
+        <div class="slide-content">
+          <h2>Fra lukket grensesnitt til åpen plattform</h2>
+          <p>Alternativet er et React-designsystem av typen Skatteetaten og NAV bruker, der komponenten bestemmer hva som er lov. Propsene er plukket ut med <code>Pick</code>, ikke åpnet med <code>Omit</code>, så alt systemet ikke har tenkt på, finnes ikke:</p>
+          <pre>type RequiredButtonHTMLAttributes = Pick&lt;
+  ComponentPropsWithoutRef&lt;'button' | 'a'&gt;, 'accessKey' | 'type'
+&gt;   <span style="color: var(--text-muted)">// @skatteetaten/ds-buttons 3.0.0</span></pre>
+          <p style="margin-top: 0.9rem;">Knappen tar altså to av nettleserens egne attributter. Trenger du <code>aria-expanded</code> eller <code>onKeyDown</code>, er veien en sak i køen hos designsystemteamet.</p>
+          <div class="gevinst">
+            <div>
+              <span class="rolle rolle-for">Lukket React-system</span>
+              <ul class="for-liste intro-list">
+                <li>Propsene er valgt på forhånd, og alt annet finnes ikke.</li>
+                <li>Nytt attributt eller ny variant blir en sak i køen.</li>
+                <li>Tilpasning ender i omslag og <code>!important</code>.</li>
+                <li>Bare React-appene får noe som helst.</li>
+              </ul>
+            </div>
+            <div>
+              <span class="rolle rolle-na">Rammeverksuavhengig</span>
+              <ul class="na-liste intro-list">
+                <li>Komponenten er et ekte HTML-element, og alle attributter virker fra dag én.</li>
+                <li>Egen CSS vinner over vår, uten å spørre noen.</li>
+                <li>Holder ikke det, overtar teamet komponenten med én kommando.</li>
+                <li>Alle appene får det samme, uansett rammeverk.</li>
+              </ul>
+            </div>
+          </div>
+          <p style="margin-top: 1rem; margin-bottom: 0;">Køen av «kan dere eksponere denne propen?» er borte. Designsystemteamet bruker tiden på systemet i stedet for på andres unntak. Dokumentasjonen viser de samme komponentene tatt i bruk i ren HTML med JavaScript, i React, i Astro og med Datastar: <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a>.</p>
+        </div>
+      </section>
+
+    </div>
+    <div class="nav-hint" id="page-indicator"></div>
+    <div class="framdrift"><span id="framdrift-linje"></span></div>
+    <p class="skjult" role="status" aria-live="polite" id="melding"></p>
+  </div>
+
+  <script>
+    const deck = document.getElementById('deck');
+    const indicator = document.getElementById('page-indicator');
+    const linje = document.getElementById('framdrift-linje');
+    const melding = document.getElementById('melding');
+    const forrigeKnapp = document.getElementById('forrige');
+    const nesteKnapp = document.getElementById('neste');
+
+    const lysbilder = Array.from(deck.children);
+    const totalSlides = lysbilder.length;
+    let currentSlide = 0;
+
+    // Bredden regnes av antallet lysbilder, så et nytt lysbilde ikke krever
+    // at prosenter rettes for hånd.
+    deck.style.setProperty('--antall', totalSlides);
+
+    // Rekkefølgen brukes til å forskyve innglidningen element for element.
+    for (const lysbilde of lysbilder) {
+      const innhold = lysbilde.querySelector('.slide-content');
+      Array.from(innhold.children).forEach((barn, nr) => {
+        barn.style.setProperty('--nr', nr);
+      });
+      lysbilde.setAttribute('aria-roledescription', 'lysbilde');
+    }
+
+    function tittel(n) {
+      const overskrift = lysbilder[n].querySelector('h1, h2');
+      if (!overskrift) return `Lysbilde ${n + 1}`;
+
+      // innerText framfor textContent: forsiden har et linjeskift midt i
+      // overskriften, og textContent limer ordene sammen til ett.
+      const tekst = overskrift.innerText || overskrift.textContent;
+      return tekst.replace(/\s+/g, ' ').trim();
+    }
+
+    function visLysbilde(n, { hopp = false } = {}) {
+      currentSlide = Math.max(0, Math.min(n, totalSlides - 1));
+
+      deck.style.transform = `translateX(-${currentSlide * (100 / totalSlides)}%)`;
+      indicator.textContent = `Slide ${currentSlide + 1} / ${totalSlides} | Piltaster, Space eller Enter`;
+      linje.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+
+      lysbilder.forEach((lysbilde, nr) => {
+        const aktiv = nr === currentSlide;
+        // «inert» tar lysbildet ut av både tastaturrekkefølgen og
+        // skjermleseren, så lenker på lysbilder utenfor skjermen ikke kan
+        // nås ved et uhell.
+        lysbilde.inert = !aktiv;
+        if (aktiv) {
+          // Klassen fjernes og settes på nytt, ellers spiller ikke
+          // innglidningen av gårde igjen når man blar fram og tilbake.
+          lysbilde.classList.remove('aktiv');
+          void lysbilde.offsetWidth;
+          lysbilde.classList.add('aktiv');
+        } else {
+          lysbilde.classList.remove('aktiv');
+        }
+      });
+
+      forrigeKnapp.disabled = currentSlide === 0;
+      nesteKnapp.disabled = currentSlide === totalSlides - 1;
+
+      melding.textContent = `Lysbilde ${currentSlide + 1} av ${totalSlides}: ${tittel(currentSlide)}`;
+
+      const adresse = `#lysbilde-${currentSlide + 1}`;
+      if (location.hash !== adresse) {
+        history.replaceState(null, '', adresse);
+      }
+    }
+
+    function fraAdressen() {
+      const treff = /^#lysbilde-(\d+)$/.exec(location.hash);
+      return treff ? Number(treff[1]) - 1 : 0;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const taster = {
+        ArrowRight: 1, ' ': 1, Enter: 1, PageDown: 1,
+        ArrowLeft: -1, PageUp: -1,
+      };
+
+      if (e.key in taster) {
+        e.preventDefault();
+        visLysbilde(currentSlide + taster[e.key]);
+      }
+      if (e.key === 'Home') { e.preventDefault(); visLysbilde(0); }
+      if (e.key === 'End') { e.preventDefault(); visLysbilde(totalSlides - 1); }
+    });
+
+    forrigeKnapp.addEventListener('click', () => visLysbilde(currentSlide - 1));
+    nesteKnapp.addEventListener('click', () => visLysbilde(currentSlide + 1));
+
+    // Sveip på berøringsskjerm. Terskelen er satt så en rulling i et
+    // kodefelt ikke blar videre ved et uhell.
+    let startX = null;
+    deck.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    deck.addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const lengde = e.clientX - startX;
+      startX = null;
+      if (Math.abs(lengde) > 60) visLysbilde(currentSlide + (lengde < 0 ? 1 : -1));
+    });
+
+    window.addEventListener('hashchange', () => visLysbilde(fraAdressen()));
+
+    visLysbilde(fraAdressen());
+  </script>
+</body>
+</html>

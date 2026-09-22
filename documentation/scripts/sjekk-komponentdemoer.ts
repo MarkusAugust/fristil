@@ -191,9 +191,15 @@ await pa("suggestion", "demo-suggestion", "fs-suggestion", async (side, id) => {
 await pa("popover", "demo-popover", "fs-popover", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
-    const utloser = rot?.querySelector("[slot='trigger']") as HTMLElement | null
+    // Delene slås opp slik komponenten selv gjør det: panelet er det som
+    // har `popover`, og knappen er den som peker på panelet.
+    const panel = rot?.querySelector("[popover]") as HTMLElement | null
+    const utloser = panel?.id
+      ? (rot?.querySelector(
+          `[aria-controls="${panel.id}"]`,
+        ) as HTMLElement | null)
+      : null
     utloser?.click()
-    const panel = rot?.querySelector(".fs-popover") as HTMLElement | null
     return {
       apen: utloser?.getAttribute("aria-expanded") ?? "",
       synlig: panel?.matches(":popover-open") ?? false,
