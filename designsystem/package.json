@@ -245,10 +245,10 @@
       "types": "./dist/components/css/accordion/accordion.d.ts",
       "import": "./dist/components/css/accordion/accordion.js"
     },
-    "./dialog.css": "./src/components/css/dialog/dialog.css",
+    "./dialog.css": "./src/components/ramme/dialog/dialog.css",
     "./dialog": {
-      "types": "./dist/components/css/dialog/dialog.d.ts",
-      "import": "./dist/components/css/dialog/dialog.js"
+      "types": "./dist/components/ramme/dialog/fs-dialog.d.ts",
+      "import": "./dist/components/ramme/dialog/fs-dialog.js"
     },
     "./search.css": "./src/components/css/search/search.css",
     "./search": {

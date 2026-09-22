@@ -187,6 +187,7 @@ describe("formen på navnerommet", () => {
       // De sammensatte byggerne gir ett attributtsett per element i stedet
       // for ett flatt sett, og krever en id for å kunne koble dem sammen.
       ![
+        "dialog",
         "field",
         "errorSummary",
         "popover",

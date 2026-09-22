@@ -127,7 +127,6 @@ export default defineConfig({
                 { label: "Pagination", slug: "components/pagination" },
                 { label: "Skip Link", slug: "components/skip-link" },
                 { label: "Accordion", slug: "components/accordion" },
-                { label: "Dialog", slug: "components/dialog" },
                 { label: "Tooltip", slug: "components/tooltip" },
                 { label: "Label", slug: "components/label" },
                 { label: "Input", slug: "components/input" },
@@ -149,6 +148,7 @@ export default defineConfig({
               label: "Ramme",
               items: [
                 { label: "Field", slug: "components/field" },
+                { label: "Dialog", slug: "components/dialog" },
                 { label: "Tabs", slug: "components/tabs" },
                 { label: "Error Summary", slug: "components/error-summary" },
                 { label: "Popover", slug: "components/popover" },

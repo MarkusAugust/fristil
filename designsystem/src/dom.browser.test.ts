@@ -185,3 +185,21 @@ describe("setAttributes rydder i alt byggefunksjonene kan sette", () => {
     expect(element.hasAttribute(navn)).toBe(false)
   })
 })
+
+/**
+ * `open` kommer fra `fs.dialog()`, men sveipen over byggerne hopper over
+ * den, siden den krever et valgobjekt. Uten `open` i `SYSTEM_ATTRIBUTES`
+ * kunne `setAttributes` åpne en dialog, men aldri lukke den igjen, og det er
+ * nøyaktig feilen `data-size` hadde.
+ */
+describe("setAttributes og dialogen", () => {
+  it("kan både sette og fjerne open på verten", () => {
+    const vert = document.createElement("fs-dialog")
+
+    fs.setAttributes(vert, fs.dialog({ titleId: "t", open: true }).host)
+    expect(vert.hasAttribute("open")).toBe(true)
+
+    fs.setAttributes(vert, fs.dialog({ titleId: "t" }).host)
+    expect(vert.hasAttribute("open")).toBe(false)
+  })
+})

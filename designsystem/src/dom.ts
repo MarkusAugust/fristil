@@ -29,6 +29,7 @@ const SYSTEM_ATTRIBUTES = [
   "multiple",
   "accept",
   "hidden",
+  "open",
 ] as const
 
 /** Klassene systemet eier. Konsumentens egne klasser beholdes. */

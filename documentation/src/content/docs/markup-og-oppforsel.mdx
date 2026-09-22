@@ -73,6 +73,7 @@ defineFsTabs()                                    // piltastene, fra komponenten
 | `<fs-popover>` | koblingen, `popover`-attributtet | posisjon, Escape, klikk utenfor |
 | `<fs-suggestion>` | feltet og lista | filtrering, piltaster, antall treff |
 | `<fs-error-summary>` | boksen, `role="alert"`, overskriften | fokus hit, og videre til feltet |
+| `<fs-dialog>` | dialogen og koblingen til overskriften | `showModal()`, som en server ikke kan kalle |
 
 Regelen bak tabellen: **byggefunksjonen gir markup, komponenten gir oppførsel.** `<fs-field>` er det eneste unntaket, og bare fordi koblingen er markup og ikke oppførsel.
 
@@ -272,6 +273,7 @@ Byggefunksjonene skriver det for deg:
 | `fs.tabs()` | `aria-selected` og `tabindex` på fanene, `hidden` på panelene. Brukeren valgte fanen. |
 | `fs.popover()` | `open` på verten, `aria-expanded` på knappen, `style` på panelet. Brukeren åpnet det, og posisjonen regnes ut i nettleseren. |
 | `fs.suggestion()` | `aria-expanded`, `aria-activedescendant` og `hidden`. Brukeren skriver og blar. |
+| `fs.dialog()` | `open` på selve `<dialog>`, som nettleseren setter når `showModal()` kalles. Merk at `open` på verten **ikke** fredes: det er serverens beskjed om at dialogen skal vises, og hadde det vært fredet, kunne serveren aldri åpnet dialogen igjen etter første lukking. |
 
 Skriver du markupen i et annet språk enn JavaScript, står de samme navnene i
 tabellen over.
