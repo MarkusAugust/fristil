@@ -73,3 +73,29 @@ describe("fs fra /react", () => {
     }
   })
 })
+
+/**
+ * `tabindex` er ikke bare et annet navn.
+ *
+ * I HTML er verdien en streng, i React er `tabIndex` et tall. Lot vi
+ * strengen stå, kom `fs.tabs()` ut med `tabIndex: "0"`, og TypeScript avviste
+ * den i enhver React-app. Den virket i nettleseren, siden React gjør om
+ * verdien selv, så feilen viste seg bare som en typefeil hos konsumenten.
+ * Det ble funnet i en ekte React-app, ikke her.
+ */
+describe("tabIndex kommer ut som et tall", () => {
+  it("på fanene", () => {
+    const faner = fsReact.tabs({ id: "sak", count: 2 })
+
+    expect(typeof faner.tabs[0]?.tabIndex).toBe("number")
+    expect(faner.tabs[0]?.tabIndex).toBe(0)
+    expect(faner.tabs[1]?.tabIndex).toBe(-1)
+    expect(typeof faner.panels[0]?.tabIndex).toBe("number")
+  })
+
+  it("på feiloppsummeringen", () => {
+    expect(typeof fsReact.errorSummary({ count: 1 }).container.tabIndex).toBe(
+      "number",
+    )
+  })
+})

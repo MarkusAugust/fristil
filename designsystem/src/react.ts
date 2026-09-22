@@ -74,7 +74,15 @@ import { setAttributes } from "./dom.js"
  * `@fristil/designsystem` direkte.
  */
 
-/** Gir nøklene navnene React forventer. */
+/**
+ * Gir nøklene navnene React forventer, og verdiene typene React forventer.
+ *
+ * `tabindex` er ikke bare et annet navn: i HTML er verdien en streng, og i
+ * React er `tabIndex` et tall. Lot vi strengen stå, kom `fs.tabs()` ut med
+ * `tabIndex: "0"`, og TypeScript avviste den i enhver React-app. Den virket
+ * i nettleseren, siden React gjør om verdien selv, så feilen viste seg bare
+ * som en typefeil hos konsumenten.
+ */
 export type ReactAttributes<T> = {
   [K in keyof T as K extends "class"
     ? "className"
@@ -84,7 +92,7 @@ export type ReactAttributes<T> = {
         ? "tabIndex"
         : K extends "autocomplete"
           ? "autoComplete"
-          : K]: T[K]
+          : K]: K extends "tabindex" ? number : T[K]
 }
 
 /**
@@ -111,7 +119,9 @@ export function toReactAttributes<T extends Record<string, unknown>>(
 ): ReactAttributes<T> {
   const result: Record<string, unknown> = {}
   for (const [name, value] of Object.entries(attributes)) {
-    result[NAVN[name] ?? name] = value
+    // `tabindex` er en streng i HTML og et tall i React. Alt annet går rett
+    // gjennom: det er navnene som er ulike, ikke verdiene.
+    result[NAVN[name] ?? name] = name === "tabindex" ? Number(value) : value
   }
   return result as ReactAttributes<T>
 }

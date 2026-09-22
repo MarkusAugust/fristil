@@ -2,6 +2,8 @@
 
 import { describe, expect, it } from "vitest"
 
+import { fs } from "./fs"
+
 /**
  * At stilarkene pakken sender ut holder seg innenfor sitt eget navnerom.
  *
@@ -276,5 +278,87 @@ describe("Tailwind-temaet", () => {
     )
 
     expect([...new Set(fremmede)]).toEqual([])
+  })
+})
+
+/**
+ * At hver lovlige verdi en bygger reklamerer med, finnes i CSS-en.
+ *
+ * `fs.badge.colors` inneholdt `info` i over et halvt år uten at
+ * `badge.css` hadde en regel for den. Attributtet ble skrevet, ingenting
+ * skjedde, og merket så ut som standarden. Byggeren lovet altså noe pakken
+ * ikke leverte, og ingen prøve så det: `dom.browser.test.ts` sjekker at
+ * verdien kan settes og fjernes, ikke at den betyr noe.
+ *
+ * Standardverdien er unntaket, og den kjenner vi igjen på at byggeren ikke
+ * sender ut attributtet i det hele tatt for den.
+ */
+describe("hver lovlig verdi finnes i CSS-en", () => {
+  /*
+   * `onlyRules` fjerner tekststrenger, og en attributtverdi i en selektor er
+   * nettopp det: `[data-color="success"]` ble til `[data-color= ]`. Her
+   * fjernes bare kommentarer og `url(...)`, som er det som ellers gir falske
+   * treff.
+   */
+  const alleRegler = Object.values(stilark)
+    .map((kilde) =>
+      kilde.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/url\([^)]*\)/g, " "),
+    )
+    .join("\n")
+
+  /** Lista på byggeren, og attributtet verdiene havner i. */
+  const LISTER: Record<string, string> = {
+    variants: "data-variant",
+    colors: "data-color",
+    sizes: "data-size",
+    states: "data-state",
+    pickers: "data-picker",
+    markers: "data-required",
+  }
+
+  type Bygger = ((valg?: Record<string, unknown>) => Record<string, unknown>) &
+    Record<string, unknown>
+
+  const tilfeller: [string, string][] = []
+
+  for (const [navn, verdi] of Object.entries(fs)) {
+    if (typeof verdi !== "function") continue
+    const bygger = verdi as Bygger
+
+    for (const [liste, attributt] of Object.entries(LISTER)) {
+      const verdier = bygger[liste]
+      if (!Array.isArray(verdier)) continue
+
+      const felt = liste.replace(/s$/, "") as
+        | "variant"
+        | "color"
+        | "size"
+        | "state"
+      for (const v of verdier) {
+        let ut: Record<string, unknown>
+        try {
+          ut = bygger({ [felt]: v })
+        } catch {
+          // Sammensatte byggere krever en id. De har ingen slike lister.
+          continue
+        }
+        // Standardverdien gir ikke noe attributt, og har derfor ingen regel.
+        if (ut[attributt] === undefined) continue
+
+        // Selektoren, ikke bare verdien: `[data-color="info"]` finnes i
+        // `alert.css`, og en søken etter den alene ville sagt at merkelappen
+        // hadde den òg.
+        const klasse = String(ut.class ?? "").split(" ")[0]
+        tilfeller.push([navn, `.${klasse}[${attributt}="${v}"]`])
+      }
+    }
+  }
+
+  it("har verdier å kontrollere", () => {
+    expect(tilfeller.length).toBeGreaterThan(20)
+  })
+
+  it.each(tilfeller)("fs.%s: %s har en regel", (_navn, selektor) => {
+    expect(alleRegler).toContain(selektor)
   })
 })

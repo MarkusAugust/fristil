@@ -16,6 +16,30 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`tabIndex` kom ut som en streng fra React-inngangen.** `NAVN` døpte om
+  `tabindex`, men lot verdien stå. I HTML er den en streng, i React er
+  `tabIndex` et tall, så `fs.tabs()` ga `tabIndex: "0"` og TypeScript avviste
+  den i enhver React-app. Den virket i nettleseren, siden React gjør om
+  verdien selv, så feilen viste seg bare som en typefeil hos konsumenten.
+  Funnet i en ekte React-app, ikke her.
+
+- **`fs.fieldset` lovet en tilstand som ikke fantes.** `states` har alltid
+  oppgitt `success`, men `fieldset.css` hadde bare en regel for `invalid`.
+  Attributtet ble skrevet, og ingenting skjedde.
+
+### Lagt til
+
+- **En vaktpost på at hver lovlig verdi finnes i CSS-en.** `pakke-css.browser.test.ts`
+  går gjennom listene byggerne reklamerer med, `variants`, `colors`, `sizes`,
+  `states` og `pickers`, kaller byggeren med hver av dem, og krever at
+  selektoren finnes i et stilark. Standardverdien hoppes over, siden den
+  kjennes igjen på at byggeren ikke sender ut attributtet i det hele tatt.
+
+  `dom.browser.test.ts` sjekket at en verdi kan settes og fjernes, ikke at
+  den betyr noe. Fieldset-feilen over hadde ligget der siden komponenten kom.
+
 ## 0.7.0 (2026-09-22)
 
 ### Brytende
