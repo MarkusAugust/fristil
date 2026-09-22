@@ -16,6 +16,27 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.6.0 (2026-09-22)
+
+### Brytende
+
+- **`fs.popover()` sender ikke lenger ut `slot="trigger"`.** Attributtet var
+  et levn fra den gangen komponenten hadde shadow DOM. Uten en skyggerot gjør
+  `slot` ingenting i HTML, så det var en merkelapp som så ut som noe annet enn
+  det var, og dokumentasjonen ba leseren skrive noe nettleseren ignorerte.
+
+  `<fs-popover>` kjenner nå igjen delene på koblingen som må være der uansett:
+  panelet er det som har `popover`, og knappen er den som peker på panelet med
+  `aria-controls`. Begge deler skriver `fs.popover()` fra før, så markup laget
+  med byggefunksjonen virker uendret, og et `slot`-attributt som blir stående
+  fra en server som ikke er oppdatert, gjør ingen skade.
+
+  Skriver du markupen for hånd, må knappen ha `aria-controls` med panelets
+  `id`, og panelet må ha `popover`. Det er de samme to tingene
+  tilgjengeligheten krever.
+
+  Typen `PopoverAttributes` har mistet `slot` fra `trigger`.
+
 ## 0.5.3 (2026-09-22)
 
 ### Rettet

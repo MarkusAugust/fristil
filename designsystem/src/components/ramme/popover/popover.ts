@@ -15,7 +15,6 @@ export type PopoverAttributes = {
     "data-preserve-attr": "open"
   }
   trigger: {
-    slot: "trigger"
     "aria-expanded": "true" | "false"
     "aria-controls": string
     "data-preserve-attr": "aria-expanded"
@@ -58,7 +57,6 @@ export const popover = ({
     "data-preserve-attr": "open" as const,
   }),
   trigger: attributes({
-    slot: "trigger" as const,
     "aria-expanded": (open ? "true" : "false") as "true" | "false",
     "aria-controls": id,
     // Komponenten endrer aria-expanded når panelet åpnes. Uten dette fjerner

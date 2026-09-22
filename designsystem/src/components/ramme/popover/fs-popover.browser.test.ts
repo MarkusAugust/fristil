@@ -130,3 +130,63 @@ describe("fs-popover", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+/**
+ * Hvordan komponenten kjenner igjen delene sine.
+ *
+ * Knappen var tidligere merket med `slot="trigger"`, et levn fra den gangen
+ * komponenten hadde shadow DOM. Uten en skyggerot gjør `slot` ingenting i
+ * HTML, så attributtet så ut som noe annet enn det var. Nå leses koblingen
+ * som uansett må være der: panelet har `popover`, og knappen peker på det
+ * med `aria-controls`.
+ */
+describe("fs-popover finner delene sine", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  it("sender ikke ut slot i det hele tatt", () => {
+    expect(Object.keys(popover({ id: "x" }).trigger)).not.toContain("slot")
+  })
+
+  it("virker på markup helt uten slot", async () => {
+    monter(`
+      <fs-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} class="fs-button" id="bare-aria">Handlinger</button>
+        <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
+      </fs-popover>
+    `)
+    await tegn()
+
+    const knapp = document.getElementById("bare-aria") as HTMLButtonElement
+    const panel = document.querySelector("[popover]") as HTMLElement
+
+    expect(document.querySelectorAll("[slot]")).toHaveLength(0)
+
+    knapp.click()
+    await ventPaTegning()
+
+    expect(panel.matches(":popover-open")).toBe(true)
+    expect(knapp.getAttribute("aria-expanded")).toBe("true")
+  })
+
+  it("lar et gammelt slot-attributt stå uten å ta skade", async () => {
+    // En server som ennå ikke er oppdatert sender fortsatt `slot="trigger"`.
+    // Det skal ikke hindre noe: attributtet er inert uten en skyggerot.
+    monter(`
+      <fs-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} slot="trigger" class="fs-button" id="med-slot">Handlinger</button>
+        <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
+      </fs-popover>
+    `)
+    await tegn()
+
+    const knapp = document.getElementById("med-slot") as HTMLButtonElement
+    const panel = document.querySelector("[popover]") as HTMLElement
+
+    knapp.click()
+    await ventPaTegning()
+
+    expect(panel.matches(":popover-open")).toBe(true)
+  })
+})
