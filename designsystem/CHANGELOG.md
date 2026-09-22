@@ -16,6 +16,28 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.5.3 (2026-09-22)
+
+### Rettet
+
+- **Pakken lar seg importere på en server.** `class X extends HTMLElement`
+  blir evaluert i det modulen lastes, og `HTMLElement` finnes bare i
+  nettleseren. Ni av inngangspunktene stoppet derfor med «HTMLElement is not
+  defined» på en server uten DOM, hovedinngangen `@fristil/designsystem`
+  inkludert. Det gjorde `import { fs } from "@fristil/designsystem"` umulig i
+  en Node- eller Bun-server, altså nøyaktig den linja «Kom i gang» ber leseren
+  skrive, i nettopp den situasjonen systemet er bygd for.
+
+  Web-komponentene arver nå fra `HostElement` i det nye inngangspunktet
+  `@fristil/designsystem/host-element`, som faller tilbake på en tom klasse
+  når `HTMLElement` ikke finnes. `defineFs*` gjør ingenting når det ikke
+  finnes noen `customElements` å registrere i, så et kall fra en modul som
+  kjøres begge steder er trygt.
+
+  Ingen nettlesertest kunne se dette, for der finnes `HTMLElement`. En ny
+  vaktpost, `scripts/sjekk-server-import.ts`, kjører i Bun uten DOM og
+  importerer hver JavaScript-oppføring i `exports` fra `dist`.
+
 ## 0.5.2 (2026-09-22)
 
 ### Lagt til

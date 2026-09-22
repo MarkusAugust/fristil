@@ -251,7 +251,7 @@ import "@fristil/designsystem/field.css"
 </script>
 ```
 
-`customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret. Bruker du Lit-integrasjonen i Astro, settes komponentene inn med `client:only="lit"`.
+`customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret. Et `<script>` i malen er alt som skal til: komponentene er vanlige egendefinerte elementer, og trenger verken en Astro-integrasjon eller et `client:`-direktiv.
 
 ### Astro og Datastar
 

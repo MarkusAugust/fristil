@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 import {
   SESSION_TIMEOUT_CLASS,
   SESSION_TIMEOUT_DIALOG_CLASS,
@@ -47,7 +48,7 @@ function ord(sekunder: number): string {
  *   .addEventListener("session-extend", () => fetch("/forleng", { method: "POST" }))
  * ```
  */
-export class FsSessionTimeout extends HTMLElement {
+export class FsSessionTimeout extends HostElement {
   static observedAttributes = ["warn-at", "expires-at"]
 
   private dialog?: HTMLDialogElement
@@ -210,7 +211,5 @@ declare global {
 }
 
 export function defineFsSessionTimeout(tagName = FS_SESSION_TIMEOUT_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsSessionTimeout)
-  }
+  defineElement(tagName, FsSessionTimeout)
 }

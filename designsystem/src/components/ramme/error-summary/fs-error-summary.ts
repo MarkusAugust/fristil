@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
 
 /**
@@ -24,7 +25,7 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  * </fs-error-summary>
  * ```
  */
-export class FsErrorSummary extends HTMLElement {
+export class FsErrorSummary extends HostElement {
   static observedAttributes = ["autofocus", "hidden"]
 
   private hasFocused = false
@@ -144,7 +145,5 @@ declare global {
 }
 
 export function defineFsErrorSummary(tagName = FS_ERROR_SUMMARY_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsErrorSummary)
-  }
+  defineElement(tagName, FsErrorSummary)
 }

@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 import { TOAST_CLASS, TOAST_CLOSE_CLASS } from "./toast.js"
 
 export const FS_TOAST_TAG = "fs-toast" as const
@@ -43,7 +44,7 @@ export type ShowOptions = {
  * })
  * ```
  */
-export class FsToast extends HTMLElement {
+export class FsToast extends HostElement {
   static observedAttributes = ["duration", "label"]
 
   /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
@@ -149,7 +150,5 @@ declare global {
 }
 
 export function defineFsToast(tagName = FS_TOAST_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsToast)
-  }
+  defineElement(tagName, FsToast)
 }

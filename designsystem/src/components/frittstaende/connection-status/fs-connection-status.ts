@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 import {
   CONNECTION_STATUS_BAR_CLASS,
   CONNECTION_STATUS_CLASS,
@@ -36,7 +37,7 @@ const KVITTERING_MS = 4000
  * }
  * ```
  */
-export class FsConnectionStatus extends HTMLElement {
+export class FsConnectionStatus extends HostElement {
   static observedAttributes = ["offline-text", "online-text"]
 
   private bar?: HTMLElement
@@ -138,7 +139,5 @@ declare global {
 export function defineFsConnectionStatus(
   tagName = FS_CONNECTION_STATUS_TAG,
 ): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsConnectionStatus)
-  }
+  defineElement(tagName, FsConnectionStatus)
 }
