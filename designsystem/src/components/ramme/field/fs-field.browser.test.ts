@@ -245,3 +245,45 @@ describe("fs-field krangler ikke med serveren", () => {
     expect(feilmelding.hasAttribute("aria-hidden")).toBe(false)
   })
 })
+
+/**
+ * Dokumentasjonen viser hva serveren sender og hva som står i siden etterpå.
+ * Den lista var feil: `aria-describedby` manglet id-en til feilmeldingen,
+ * og ingenting sa fra, for ingen test leste den. Nå står påstanden her.
+ */
+describe("fs-field kobler markup som bare har struktur", () => {
+  beforeAll(() => {
+    defineFsField()
+  })
+
+  it("gir hele koblingen av ett invalid på verten", async () => {
+    monter(`
+      <fs-field invalid required-marker="symbol">
+        <label>E-post</label>
+        <input class="fs-input" type="email">
+        <p class="fs-help-text">Vi sender aldri spam.</p>
+        <p class="fs-error-text">Skriv en gyldig adresse.</p>
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const label = document.querySelector("label") as HTMLLabelElement
+    const input = document.querySelector("input") as HTMLInputElement
+    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
+    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+
+    expect(label.getAttribute("class")).toBe("fs-label")
+    expect(label.getAttribute("for")).toBe(input.id)
+    expect(label.getAttribute("data-required")).toBe("symbol")
+    expect(input.id).toMatch(/^fs-field-control-/)
+    expect(hjelp.id).toMatch(/^fs-field-help-/)
+    expect(feilmelding.id).toMatch(/^fs-field-error-/)
+    expect(input.getAttribute("aria-describedby")).toBe(
+      `${hjelp.id} ${feilmelding.id}`,
+    )
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(input.getAttribute("data-state")).toBe("invalid")
+    expect(feilmelding.hidden).toBe(false)
+  })
+})
