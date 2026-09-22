@@ -104,8 +104,12 @@ export type ReactAttributes<T> = {
  * `aria-*` og `data-*` skal derimot stå som de er. React sender dem videre
  * uendret, og en omdøping ville gitt ugyldige attributter.
  *
- * Testen i `react.browser.test.ts` kaller hver byggefunksjon og krever at
- * ingen nøkkel React staver annerledes mangler her.
+ * `react.browser.test.ts` kaller hver byggefunksjon her med hver lovlige
+ * verdi den selv oppgir, samler alle attributtnavn i svaret, også de som
+ * ligger i lister og undernivåer, og avviser hvert navn React staver
+ * annerledes. Lista der er Reacts egen og er lengre enn de fire vi døper om,
+ * så en byggefunksjon som en dag sender ut `readonly` eller `maxlength`
+ * stopper der og ikke i konsollen hos en konsument.
  */
 const NAVN: Record<string, string> = {
   class: "className",

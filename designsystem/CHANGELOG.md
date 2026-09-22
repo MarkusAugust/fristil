@@ -16,6 +16,14 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`ReactAttributes<T>` gir `number` for `tabIndex`.** Typen er eksportert,
+  altså offentlig API, og den sa før `string`. Rettelsen under er grunnen:
+  verdien var feil, og typen beskrev feilen. Kode som tok imot den gamle
+  typen som en streng, for eksempel `const t: string = fs.tabs(...).tabs[0]
+  .tabIndex`, kompilerer ikke lenger. Selve attributtet i DOM-en er uendret.
+
 ### Rettet
 
 - **`tabIndex` kom ut som en streng fra React-inngangen.** `NAVN` døpte om
@@ -39,12 +47,29 @@ kommer i et nytt undertall.
 
 - **En vaktpost på at hver lovlig verdi finnes i CSS-en.** `pakke-css.browser.test.ts`
   går gjennom listene byggerne reklamerer med, `variants`, `colors`, `sizes`,
-  `states` og `pickers`, kaller byggeren med hver av dem, og krever at
-  selektoren finnes i et stilark. Standardverdien hoppes over, siden den
-  kjennes igjen på at byggeren ikke sender ut attributtet i det hele tatt.
+  `states`, `pickers`, `markers` og `types`, kaller byggeren med hver av dem,
+  og rendrer elementet to ganger, med og uten attributtet. Noe i den beregnede
+  stilen må være forskjellig, pseudoelementene medregnet. Et tekstsøk ville
+  passert på en tom regel og på en som blir overstyrt lenger nede.
+  Standardverdien hoppes over, siden den kjennes igjen på at byggeren ikke
+  sender ut attributtet i det hele tatt, og en egen prøve krever at det
+  hoppes over nøyaktig de verdiene.
+
+  Hvilke regler som gjelder hentes fra CSSOM, ikke fra teksten: en regel i en
+  `@supports` motoren ikke har, eller i en `@media` som ikke slår til, gjør
+  ingenting. Den stylede nedtrekkslista står i begge, og skal ikke endre noe
+  i Firefox.
 
   `dom.browser.test.ts` sjekket at en verdi kan settes og fjernes, ikke at
   den betyr noe. Fieldset-feilen over hadde ligget der siden komponenten kom.
+
+- **En vaktpost på at ingen byggefunksjon sender ut et navn React staver
+  annerledes.** `react.browser.test.ts` kalte før ti byggefunksjoner for hånd
+  og så bare etter `class` og `for`. Den går nå gjennom hver byggefunksjon i
+  `/react`, med hver lovlige verdi funksjonen selv oppgir, og avviser hvert
+  navn i Reacts egen tabell, også `readonly`, `maxlength` og `colspan`, som
+  ingen byggefunksjon sender ut ennå. Den krever også at hver byggefunksjon i
+  `fs` finnes i `/react`.
 
 - **En vaktpost på at byggerne passer i JSX-deklarasjonene.**
   `src/jsx/typer.browser.test.ts` tilordner det byggerne sender ut til
