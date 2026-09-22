@@ -140,6 +140,9 @@
 
     /* semantic-shadow */
     --semantic-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12);
+
+    /* semantic-focus */
+    --semantic-focus-ring: 2px solid var(--semantic-interactive-main);
   }
 
   @media (prefers-color-scheme: dark) {

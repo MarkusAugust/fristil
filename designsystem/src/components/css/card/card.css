@@ -42,7 +42,7 @@
   }
 
   .fs-card[data-interactive]:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: var(--semantic-focus-ring);
     outline-offset: 2px;
   }
 }

@@ -32,7 +32,7 @@
   }
 
   .fs-tabs__list button:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: var(--semantic-focus-ring);
     outline-offset: -2px;
   }
 
@@ -52,7 +52,7 @@
   }
 
   .fs-tabs__panel:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: var(--semantic-focus-ring);
     outline-offset: 2px;
   }
 

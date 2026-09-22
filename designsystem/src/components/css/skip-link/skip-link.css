@@ -24,7 +24,8 @@
      den som hopper dit fra et skript. */
   .fs-skip-link:focus {
     transform: translateY(0);
-    outline: 2px solid var(--semantic-page-foreground);
+    outline: var(--semantic-focus-ring);
+    outline-color: var(--semantic-page-foreground);
     outline-offset: 2px;
   }
 

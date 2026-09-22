@@ -16,6 +16,24 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.6.1 (2026-09-22)
+
+### Lagt til
+
+- **`--semantic-focus-ring` samler fokusringen på ett sted.** Den sto skrevet
+  ut med bredde og farge i tjue regler fordelt på atten stilark. Selektorene
+  er forskjellige i hver komponent, og `outline-offset` skal være ulik, så det
+  som faktisk gjentok seg var verdien. Nå skriver hver komponent
+  `outline: var(--semantic-focus-ring)`, og en konsument som vil ha en annen
+  fokusring endrer ett token framfor atten filer.
+
+  De tre stedene som med vilje har en annen farge, feiloppsummeringen og
+  hopplenken, skriver `outline-color` etter kortformen og arver bredden. Da
+  følger også de med hvis bredden endres.
+
+  En ny vaktpost i `pakke-css.browser.test.ts` avviser en `outline` med
+  `solid` skrevet ut i et komponentstilark.
+
 ## 0.6.0 (2026-09-22)
 
 ### Brytende

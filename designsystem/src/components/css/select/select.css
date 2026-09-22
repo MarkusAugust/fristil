@@ -51,7 +51,7 @@
   }
 
   .fs-select:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: var(--semantic-focus-ring);
     outline-offset: 2px;
     border-color: var(--semantic-interactive-main);
   }
@@ -245,7 +245,7 @@
        mellom valgene, og det valgte har allerede sin egen flate. En annen
        bakgrunnsfarge ville derfor forsvunnet nettopp der brukeren står. */
     .fs-select[data-picker="styled"] option:focus {
-      outline: 2px solid var(--semantic-interactive-main);
+      outline: var(--semantic-focus-ring);
       outline-offset: -2px;
     }
 
