@@ -542,7 +542,17 @@
         border: 0; border-radius: 0; box-shadow: none; background: none;
       }
       .presentation-container::after { display: none; }
-      .slide-deck { display: block; width: 100% !important; transform: none !important; }
+      .slide-deck {
+        display: block;
+        width: 100% !important;
+        height: auto !important;
+        transform: none !important;
+        /* `scale` er en egen egenskap, og `transform: none` rører den ikke. */
+        scale: 1 !important;
+        /* Uten dette begynner nullstillingen som en overgang, og en utskrift
+           som starter med én gang fanger lysbildene midt i bevegelsen. */
+        transition: none !important;
+      }
       .slide {
         width: 100% !important;
         height: 100vh;
@@ -628,7 +638,7 @@
       <!-- 1: Forside -->
       <section class="slide">
         <div class="slide-content">
-          <span class="badge badge-primary" style="width: max-content; margin-bottom: 1.5rem;">Arkitekturplan V6 · september 2026</span>
+          <span class="badge badge-primary" style="width: max-content; margin-bottom: 1.5rem;">Arkitekturplan V7 · september 2026</span>
           <h1>Rammeverksuavhengig<br>designsystem</h1>
           <p style="font-size: 1.3rem; color: var(--text-main); margin-bottom: 2rem;">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
           <p style="font-size: 1.05rem; margin-bottom: 0.8rem;">Komponentene er delt i tre kategorier etter ett spørsmål: hvem kan endre siden mens brukeren er der?</p>
@@ -1205,11 +1215,28 @@ fs.input({ type: "email", state: "invalid" })</pre>
       return treff ? Number(treff[1]) - 1 : 0;
     }
 
+    /*
+     * Om tastetrykket hører til det brukeren står i.
+     *
+     * Mellomrom og Enter blar videre, men de er også måten man følger en
+     * lenke eller trykker en knapp på. Uten dette kunne ingen bruke lenkene
+     * på lysbildene med tastaturet.
+     */
+    function iEtElementSomSvarerSelv(mål) {
+      return Boolean(
+        mål?.closest?.('a[href], button, input, select, textarea, [contenteditable]'),
+      );
+    }
+
     window.addEventListener('keydown', (e) => {
       const taster = {
         ArrowRight: 1, ' ': 1, Enter: 1, PageDown: 1,
         ArrowLeft: -1, PageUp: -1,
       };
+
+      if ((e.key === ' ' || e.key === 'Enter') && iEtElementSomSvarerSelv(e.target)) {
+        return;
+      }
 
       if (e.key in taster) {
         e.preventDefault();
