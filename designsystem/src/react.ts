@@ -6,7 +6,6 @@ import { breadcrumbs } from "./components/css/breadcrumbs/breadcrumbs.js"
 import { button } from "./components/css/button/button.js"
 import { card } from "./components/css/card/card.js"
 import { checkbox } from "./components/css/checkbox/checkbox.js"
-import { dialog } from "./components/css/dialog/dialog.js"
 import { divider } from "./components/css/divider/divider.js"
 import { errorText } from "./components/css/error-text/error-text.js"
 import { fieldset, legend } from "./components/css/fieldset/fieldset.js"
@@ -41,6 +40,7 @@ import { tooltip } from "./components/css/tooltip/tooltip.js"
 import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
 import { sessionTimeout } from "./components/frittstaende/session-timeout/session-timeout.js"
 import { toast } from "./components/frittstaende/toast/toast.js"
+import { dialog } from "./components/ramme/dialog/dialog.js"
 import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
 import {
   computeFieldAttributes,
@@ -139,7 +139,6 @@ export const fs = {
   button: forReact(button),
   card: forReact(card),
   checkbox: forReact(checkbox),
-  dialog: forReact(dialog),
   divider: forReact(divider),
   errorText: forReact(errorText),
   fieldset: forReact(fieldset),
@@ -190,6 +189,25 @@ export const fs = {
       title: toReactAttributes(boks.title),
     }
   },
+
+  dialog: Object.assign(
+    (options: Parameters<typeof dialog>[0]) => {
+      const boks = dialog(options)
+      return {
+        host: boks.host,
+        dialog: toReactAttributes(boks.dialog),
+        title: toReactAttributes(boks.title),
+        body: toReactAttributes(boks.body),
+        footer: toReactAttributes(boks.footer),
+      }
+    },
+    {
+      dialog: dialog.dialog,
+      title: dialog.title,
+      body: dialog.body,
+      footer: dialog.footer,
+    },
+  ),
 
   popover: (options: Parameters<typeof popover>[0]) => {
     const boks = popover(options)

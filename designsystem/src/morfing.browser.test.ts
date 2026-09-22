@@ -18,6 +18,8 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
 import { defineFsField } from "./components/ramme/field/fs-field"
+import { dialog } from "./components/ramme/dialog/dialog"
+import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover"
 import { popover } from "./components/ramme/popover/popover"
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
@@ -31,6 +33,7 @@ defineFsField()
 defineFsSuggestion()
 defineFsPopover()
 defineFsTabs()
+defineFsDialog()
 
 /** Datastars attributtsynkronisering, på ett element. */
 function morfElement(live: Element, server: Element): void {
@@ -131,6 +134,39 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(label.htmlFor, "ledeteksten mistet koblingen til feltet").toBe(
       kontroll.id,
     )
+  })
+
+  /*
+   * Dialogen lukkes av brukeren, ikke av serveren. Lukker hun den med
+   * Escape, fjerner komponenten `open` fra verten, og serverens utgave sier
+   * fortsatt `open`. Uten bevaringen ville neste patch åpnet dialogen igjen,
+   * midt i noe helt annet.
+   */
+  it("åpner ikke en dialog brukeren har lukket", async () => {
+    const boks = dialog({ titleId: "tittel", open: true })
+    const MARKUP = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </fs-dialog>`
+
+    const vert = monterMarkup(MARKUP)
+    await customElements.whenDefined("fs-dialog")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const d = vert.querySelector("dialog") as HTMLDialogElement
+    expect(d.open, "dialogen åpnet seg ikke i det hele tatt").toBe(true)
+
+    d.close()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vert.hasAttribute("open")).toBe(false)
+
+    morf(vert, MARKUP)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(d.open, "patchen åpnet dialogen på nytt").toBe(false)
   })
 
   /*

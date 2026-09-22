@@ -1,0 +1,269 @@
+/// <reference path="../../../types/css.d.ts" />
+
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest"
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+import { attr } from "../../../testing/markup"
+import { dialog } from "./dialog"
+import { defineFsDialog } from "./fs-dialog"
+
+import "../../../tokens/tokens.css"
+import "./dialog.css"
+import "../../css/button/button.css"
+
+describe(".fs-dialog", () => {
+  beforeEach(() => {
+    monter(`
+      <button class="fs-button" id="apne" type="button">Slett søknaden</button>
+      <dialog class="fs-dialog" id="dialog" aria-labelledby="dialog-tittel">
+        <h2 class="fs-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
+        <div class="fs-dialog__body">
+          <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+        </div>
+        <div class="fs-dialog__footer">
+          <button class="fs-button" data-variant="secondary" id="avbryt" type="button">Avbryt</button>
+          <button class="fs-button" data-variant="danger" id="slett" type="button">Slett søknaden</button>
+        </div>
+      </dialog>
+    `)
+  })
+
+  afterEach(() => {
+    const d = document.getElementById("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  it("flytter fokus inn i dialogen når den åpnes med showModal", () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    expect(d.open).toBe(true)
+    // showModal() flytter fokus selv. Et <dialog open> i markupen gjør ikke
+    // det, og er derfor bare en boks på siden.
+    expect(d.contains(document.activeElement)).toBe(true)
+  })
+
+  it("lukkes med Escape uten at vi skriver noe for det", () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    d.dispatchEvent(new Event("cancel", { cancelable: true }))
+    d.close()
+
+    expect(d.open).toBe(false)
+  })
+
+  it("melder tilbake hva brukeren valgte", () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+    d.close("slett")
+
+    expect(d.returnValue).toBe("slett")
+  })
+
+  it("setter attributtene fra byggefunksjonen", () => {
+    const boks = dialog({ titleId: "dialog-tittel" })
+
+    expect(boks.dialog).toEqual({
+      class: "fs-dialog",
+      "aria-labelledby": "dialog-tittel",
+    })
+    expect(boks.title).toEqual({
+      class: "fs-dialog__title",
+      id: "dialog-tittel",
+    })
+    expect(boks.body).toEqual({ class: "fs-dialog__body" })
+    expect(boks.footer).toEqual({ class: "fs-dialog__footer" })
+    expect(dialog.title).toBe("fs-dialog__title")
+  })
+
+  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("bredden på dialogen", () => {
+  it("blir ikke bredere enn boksen den står i", async () => {
+    /*
+     * Dialogen regnet bredden sin mot vindusruten. Står den i en smalere
+     * boks, som i et panel eller en forhåndsvisning, stakk den utenfor.
+     *
+     * En `<dialog open>` er absolutt plassert av nettleseren, så `100%`
+     * måles mot nærmeste plasserte forelder. Derfor `position: relative` på
+     * boksen her; uten den er det vindusruten som gjelder, og det er riktig
+     * for en dialog åpnet med `showModal()`.
+     */
+    monter(`
+      <div id="smal" style="width: 240px; position: relative">
+        <dialog class="fs-dialog" id="i-boks" open>
+          <p>Innhold</p>
+        </dialog>
+      </div>
+
+      <div id="smal-flate" style="width: 240px">
+        <div class="fs-dialog" id="som-boks">
+          <p>Innhold</p>
+        </div>
+      </div>
+    `)
+
+    await ventPaTegning()
+
+    for (const [boksId, dialogId] of [
+      ["smal", "i-boks"],
+      ["smal-flate", "som-boks"],
+    ]) {
+      const boks = document.getElementById(boksId) as HTMLElement
+      const dialog = document.getElementById(dialogId) as HTMLElement
+
+      expect(
+        dialog.getBoundingClientRect().width,
+        dialogId,
+      ).toBeLessThanOrEqual(boks.getBoundingClientRect().width)
+    }
+  })
+})
+
+/**
+ * Serveren kan si at dialogen er åpen, og komponenten gjør kallet.
+ *
+ * Uten dette kunne en app som bare sender HTML ikke åpne en dialog i det
+ * hele tatt: `showModal()` er et kall, og `<dialog open>` er bare en boks på
+ * siden. Det ble funnet i en app skrevet i Kotlin med Datastar.
+ */
+describe("fs-dialog", () => {
+  beforeAll(() => {
+    defineFsDialog()
+  })
+
+  async function monterDialog(open: boolean) {
+    const boks = dialog({ titleId: "tittel", open })
+    monter(`
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="fs-button" id="lukk" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+    return {
+      vert: document.querySelector("fs-dialog") as HTMLElement,
+      d: document.querySelector("dialog") as HTMLDialogElement,
+    }
+  }
+
+  afterEach(() => {
+    const d = document.querySelector("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  it("åpner modalt når serveren sier at den er åpen", async () => {
+    const { d } = await monterDialog(true)
+
+    expect(d.open).toBe(true)
+    // `:modal` er forskjellen på `showModal()` og `show()`. Bare den første
+    // gjør resten av siden utilgjengelig og lukker på Escape. Fokus flyttes
+    // av begge, så det alene skiller dem ikke.
+    expect(d.matches(":modal")).toBe(true)
+    expect(d.contains(document.activeElement)).toBe(true)
+  })
+
+  it("lar den stå lukket når serveren ikke sier noe", async () => {
+    const { d } = await monterDialog(false)
+
+    expect(d.open).toBe(false)
+  })
+
+  it("åpner og lukker når serveren snur attributtet", async () => {
+    const { vert, d } = await monterDialog(false)
+
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    expect(d.open).toBe(true)
+
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    expect(d.open).toBe(false)
+  })
+
+  it("fjerner open fra verten når brukeren lukker", async () => {
+    const { vert, d } = await monterDialog(true)
+
+    d.close()
+    await ventPaTegning()
+
+    // Markupen skal si det samme som skjermen. Ellers ville neste patch
+    // åpnet dialogen igjen, siden verten fortsatt sa `open`.
+    expect(vert.hasAttribute("open")).toBe(false)
+  })
+
+  it("kaster ikke når markupen bygges løsrevet fra siden", async () => {
+    // En morfer lager serverens utgave i et løsrevet tre for å sammenligne.
+    // Elementet tas i bruk også der, og `showModal()` kaster på en dialog
+    // som ikke står i dokumentet.
+    //
+    // Feilen kommer ikke ut av `innerHTML`: et unntak i en reaksjon på et
+    // egendefinert element rapporteres til vinduet i stedet. Derfor lyttes
+    // det på `error` framfor å pakke inn kallet.
+    const feil: string[] = []
+    const lytter = (event: ErrorEvent) => feil.push(event.message)
+    window.addEventListener("error", lytter)
+
+    const boks = dialog({ titleId: "t", open: true })
+    const holder = document.createElement("div")
+    holder.innerHTML = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Tittel</h2>
+        </dialog>
+      </fs-dialog>`
+
+    await ventPaTegning()
+    window.removeEventListener("error", lytter)
+
+    expect(feil).toEqual([])
+    expect((holder.querySelector("dialog") as HTMLDialogElement).open).toBe(
+      false,
+    )
+  })
+
+  it("ber serveren bevare open, for det er brukerens tilstand", () => {
+    expect(dialog({ titleId: "t", open: true }).host).toEqual({
+      open: "",
+      "data-preserve-attr": "open",
+    })
+  })
+
+  it("melder fra når den åpnes og lukkes", async () => {
+    const meldinger: boolean[] = []
+    const { vert, d } = await monterDialog(false)
+    vert.addEventListener("dialog-toggle", (event) => {
+      meldinger.push((event as CustomEvent<{ open: boolean }>).detail.open)
+    })
+
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    d.close()
+    await ventPaTegning()
+
+    expect(meldinger).toEqual([true, false])
+  })
+
+  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
+    await monterDialog(true)
+
+    await forventIngenTilgjengelighetsbrudd()
+  })
+})

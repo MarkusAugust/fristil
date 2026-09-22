@@ -78,6 +78,11 @@ type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
   "server-filtered"?: Flag
 }
 
+type FsDialogAttributes = HTMLAttributes<HTMLElement> & {
+  /** Dialogen er åpen. Komponenten kaller `showModal()`. */
+  open?: Flag
+}
+
 type FsPopoverAttributes = HTMLAttributes<HTMLElement> & {
   open?: Flag
   /** Hvilken kant panelet henger fra. */
@@ -108,6 +113,7 @@ type FsToastAttributes = HTMLAttributes<HTMLElement> & {
 declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
+      "fs-dialog": FsDialogAttributes
       "fs-error-summary": FsErrorSummaryAttributes
       "fs-field": FsFieldAttributes
       "fs-popover": FsPopoverAttributes
@@ -122,6 +128,7 @@ declare module "react" {
 
 export type {
   FsConnectionStatusAttributes,
+  FsDialogAttributes,
   FsErrorSummaryAttributes,
   FsFieldAttributes,
   FsPopoverAttributes,

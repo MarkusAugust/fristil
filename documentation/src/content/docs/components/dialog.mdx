@@ -5,11 +5,16 @@ description: Modal dialog bygget på det native dialog-elementet. CSS-komponent 
 
 import Eksempel from "../../../components/Eksempel.astro"
 
-Klassen settes på et `<dialog>`. Åpne den med `showModal()`, ikke ved å sette `open`: bare den første flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen er en boks på siden, ikke en dialog.
+Klassen settes på et `<dialog>`. Å åpne den er et kall: `showModal()` flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen gjør ingen av delene, og er bare en boks på siden.
+
+Det er et problem for en server som bare sender HTML, for den kan ikke kalle noe i nettleseren. Derfor finnes `<fs-dialog>`: serveren sier at dialogen er åpen, og komponenten gjør kallet.
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/dialog.css"
+import { defineFsDialog } from "@fristil/designsystem/dialog"
+
+defineFsDialog()
 ```
 
 ## Slik ser den ut
@@ -75,18 +80,37 @@ Forhåndsvisningen viser dialogen slik den ser ut når den er åpen. En ekte `<d
 
 Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
 
+## Når serveren åpner dialogen
+
+En app i Datastar, htmx, en Go-mal eller en Razor-visning kan ikke kalle `showModal()`. Den sender `open` på `<fs-dialog>`, og komponenten åpner dialogen modalt.
+
+```html
+<fs-dialog open data-preserve-attr="open">
+  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel">
+    <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
+    <div class="fs-dialog__body">
+      <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
+    </div>
+    <form method="dialog" class="fs-dialog__footer">
+      <button class="fs-button" value="lukk">Lukk</button>
+    </form>
+  </dialog>
+</fs-dialog>
+```
+
+Lukker brukeren dialogen, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. `data-preserve-attr="open"` er derfor nødvendig: uten den ville en morfing åpnet dialogen igjen ved neste oppdatering, siden serverens utgave fortsatt sier `open`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open`.
+
 ## TypeScript
 
 ```ts
 import { fs } from "@fristil/designsystem"
 
-const boks = document.querySelector<HTMLDialogElement>("#bekreft")
-
-fs.setAttributes(boks, fs.dialog())
-boks.showModal()
+const boks = fs.dialog({ titleId: "kvittering-tittel", open: true })
 ```
 
-`fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassene på delene inni. Se [Typesikker bruk](../../typesikker-bruk/).
+`boks.host` hører på `<fs-dialog>`, `boks.dialog` på `<dialog>`, og `boks.title`, `boks.body` og `boks.footer` på delene inni. `fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
+
+Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i eksempelet over.
 
 ## Klasser du kan style
 
@@ -116,3 +140,4 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 - Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
 - Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.
 - Ikke bruk en dialog til noe som kunne stått på siden. Den tar over hele skjermen for den som bruker forstørrelse.
+- `<fs-dialog>` åpner alltid modalt. Et `show()` ville gitt en boks som ser lik ut, men som ikke fanger fokus og ikke lukker på Escape. Forskjellen er `:modal`, og den er testet i alle tre nettlesermotorene.
