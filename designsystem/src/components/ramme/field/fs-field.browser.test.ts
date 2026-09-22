@@ -287,3 +287,26 @@ describe("fs-field kobler markup som bare har struktur", () => {
     expect(feilmelding.hidden).toBe(false)
   })
 })
+
+describe("fs-field er et blokkelement", () => {
+  beforeAll(() => {
+    defineFsField()
+  })
+
+  it("sier selv at det er en blokk", async () => {
+    // Uten dette er elementet `display: inline`, og en avstand satt utenpå
+    // det gjør ingenting. Barna er blokker, så feilen synes ikke før noen
+    // legger feltet i et rutenett eller gir det en margin.
+    monter(`
+      <fs-field>
+        <label class="fs-label">E-post</label>
+        <input class="fs-input" type="email" />
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const felt = document.querySelector("fs-field") as HTMLElement
+    expect(getComputedStyle(felt).display).toBe("block")
+  })
+})
