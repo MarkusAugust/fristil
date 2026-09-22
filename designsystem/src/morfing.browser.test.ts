@@ -16,10 +16,10 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
-import { defineFsField } from "./components/ramme/field/fs-field"
 import { dialog } from "./components/ramme/dialog/dialog"
 import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
+import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
+import { defineFsField } from "./components/ramme/field/fs-field"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover"
 import { popover } from "./components/ramme/popover/popover"
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
