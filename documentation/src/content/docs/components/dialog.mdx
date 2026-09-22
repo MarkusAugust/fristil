@@ -1,22 +1,21 @@
 ---
 title: Dialog
-description: Modal dialog bygget på det native dialog-elementet. Fire klasser, og en komponent som lar en server åpne den.
+description: Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().
 ---
 
 import DialogDemo from "../../../components/DialogDemo.astro"
 import Eksempel from "../../../components/Eksempel.astro"
 
-Klassen settes på et `<dialog>`. Å åpne den er et kall: `showModal()` flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen gjør ingen av delene, og er bare en boks på siden.
-
-Det er et problem for en server som bare sender HTML, for den kan ikke kalle noe i nettleseren. Derfor finnes `<fs-dialog>`: serveren sier at dialogen er åpen, og komponenten gjør kallet.
+Klassen settes på et `<dialog>`, og resten er nettleserens eget element. Har appen din JavaScript i nettleseren, trenger du ingenting fra Fristil: åpne dialogen med `showModal()`, lukk den med `close()`.
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/dialog.css"
-import { defineFsDialog } from "@fristil/designsystem/dialog"
-
-defineFsDialog()
 ```
+
+Å åpne den **må** være et kall. `showModal()` flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen gjør ingen av delene, og er bare en boks på siden. Det finnes ingen deklarativ måte å åpne en modal dialog på, verken i Fristil eller i HTML.
+
+Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra, fordi all markup blir til på serveren. Til den finnes `<fs-dialog>`, [lenger ned på siden](#når-serveren-åpner-dialogen). Den er valgfri, på samme måte som `<fs-field>` er valgfri ved siden av `fs.field()`.
 
 ## Slik ser den ut
 
@@ -83,13 +82,21 @@ Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en l
 
 ## Prøv den
 
-Knappen her gjør det serveren ellers ville gjort: setter `open` på `<fs-dialog>`. Komponenten kaller `showModal()`, og dialogen legger seg i topplaget med fokus inne i seg.
+Knappen her gjør det en server ellers ville gjort: setter `open` på `<fs-dialog>`. Komponenten kaller `showModal()`, og dialogen legger seg i topplaget med fokus inne i seg. Skriver du markupen i JavaScript, kaller du `showModal()` selv, og trenger ingen `<fs-dialog>` rundt.
 
 <DialogDemo />
 
 ## Når serveren åpner dialogen
 
-En app i Datastar, htmx, en Go-mal eller en Razor-visning kan ikke kalle `showModal()`. Den sender `open` på `<fs-dialog>`, og komponenten åpner dialogen modalt.
+Dette avsnittet gjelder bare apper uten egen kode i nettleseren. Har du JavaScript der, hopp over det: `showModal()` er ett kall, og en komponent i mellom gir deg ingenting.
+
+En app i Datastar, htmx, en Go-mal eller en Razor-visning har ikke det stedet. Den sender `open` på `<fs-dialog>`, og komponenten gjør kallet.
+
+```js
+import { defineFsDialog } from "@fristil/designsystem/dialog"
+
+defineFsDialog()
+```
 
 ```html
 <fs-dialog open>
