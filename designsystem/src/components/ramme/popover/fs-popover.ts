@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
 
 type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
@@ -32,7 +33,7 @@ const PLACEMENTS: readonly Placement[] = [
  * </fs-popover>
  * ```
  */
-export class FsPopover extends HTMLElement {
+export class FsPopover extends HostElement {
   static observedAttributes = ["open", "placement"]
 
   private panel?: HTMLElement
@@ -205,7 +206,5 @@ declare global {
 }
 
 export function defineFsPopover(tagName = FS_POPOVER_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsPopover)
-  }
+  defineElement(tagName, FsPopover)
 }

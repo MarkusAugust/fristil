@@ -1,6 +1,6 @@
 {
   "name": "@fristil/designsystem",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "license": "MIT",
   "author": "MarkusAugust",
@@ -196,6 +196,10 @@
       "types": "./dist/dom.d.ts",
       "import": "./dist/dom.js"
     },
+    "./host-element": {
+      "types": "./dist/components/host-element.d.ts",
+      "import": "./dist/components/host-element.js"
+    },
     "./table.css": "./src/components/css/table/table.css",
     "./table": {
       "types": "./dist/components/css/table/table.d.ts",
@@ -297,11 +301,12 @@
   },
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
     "sjekk:eksport": "bun scripts/sjekk-eksport.ts",
+    "sjekk:server": "bun scripts/sjekk-server-import.ts",
     "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts",
     "nettlesere": "playwright install chromium firefox webkit",
     "tema": "bun src/cli.ts",

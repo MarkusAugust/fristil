@@ -1,3 +1,4 @@
+import { defineElement, HostElement } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
 
 export const FS_FIELD_TAG = "fs-field" as const
@@ -31,7 +32,7 @@ function setOrRemove(
  * det ved hver patch. Se `FIELD_PRESERVED_ATTRIBUTES` for hva serveren må
  * skrive for at koblingen skal overleve en morfing.
  */
-export class FsField extends HTMLElement {
+export class FsField extends HostElement {
   static observedAttributes = [
     "invalid",
     "disabled",
@@ -232,7 +233,5 @@ declare global {
 }
 
 export function defineFsField(tagName = FS_FIELD_TAG): void {
-  if (!customElements.get(tagName)) {
-    customElements.define(tagName, FsField)
-  }
+  defineElement(tagName, FsField)
 }
