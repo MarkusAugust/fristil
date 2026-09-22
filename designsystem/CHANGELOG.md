@@ -42,9 +42,12 @@ kommer i et nytt undertall.
   kallet.
 
   Lukker brukeren dialogen, fjernes `open` fra verten igjen, så markupen sier
-  det samme som skjermen. Derfor står `open` i `data-preserve-attr` fra
-  `fs.dialog()`, og `morfing.browser.test.ts` krever at en patch ikke åpner
-  en dialog brukeren har lukket.
+  det samme som skjermen. De to `open`-ene er ikke det samme: det på verten er
+  serverens beskjed og er ikke fredet, for ellers kunne serveren aldri åpnet
+  dialogen igjen etter første lukking. Det nettleseren setter på selve
+  `<dialog>` når `showModal()` kalles, er derimot fredet, ellers river
+  morfingen det bort og lukker dialogen i samme øyeblikk som den åpnet den.
+  `morfing.browser.test.ts` kjører hele runden.
 
   Komponenten gjør ingenting når den står løsrevet fra siden. En morfer
   bygger serverens utgave i et løsrevet tre før den sammenlignes, og et

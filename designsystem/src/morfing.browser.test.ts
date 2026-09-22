@@ -137,12 +137,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
   })
 
   /*
-   * Dialogen lukkes av brukeren, ikke av serveren. Lukker hun den med
-   * Escape, fjerner komponenten `open` fra verten, og serverens utgave sier
-   * fortsatt `open`. Uten bevaringen ville neste patch åpnet dialogen igjen,
-   * midt i noe helt annet.
+   * Dialogen er serverens. `open` er derfor ikke fredet, i motsetning til på
+   * sprettoppvinduet: hadde det vært det, kunne serveren aldri åpnet
+   * dialogen igjen etter at brukeren hadde lukket den én gang.
    */
-  it("åpner ikke en dialog brukeren har lukket", async () => {
+  it("lar serveren åpne en dialog brukeren har lukket", async () => {
     const boks = dialog({ titleId: "tittel", open: true })
     const MARKUP = `
       <fs-dialog ${attr(boks.host)}>
@@ -166,7 +165,8 @@ describe("morfing river ikke bort det komponenten setter", () => {
     morf(vert, MARKUP)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    expect(d.open, "patchen åpnet dialogen på nytt").toBe(false)
+    expect(d.open, "patchen fikk ikke åpnet dialogen igjen").toBe(true)
+    d.close()
   })
 
   /*

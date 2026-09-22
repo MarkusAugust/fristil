@@ -1,6 +1,6 @@
 ---
 title: Dialog
-description: Modal dialog bygget på det native dialog-elementet. CSS-komponent med fire klasser og ingen JavaScript.
+description: Modal dialog bygget på det native dialog-elementet. Fire klasser, og en komponent som lar en server åpne den.
 ---
 
 import Eksempel from "../../../components/Eksempel.astro"
@@ -85,8 +85,8 @@ Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en l
 En app i Datastar, htmx, en Go-mal eller en Razor-visning kan ikke kalle `showModal()`. Den sender `open` på `<fs-dialog>`, og komponenten åpner dialogen modalt.
 
 ```html
-<fs-dialog open data-preserve-attr="open">
-  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel">
+<fs-dialog open>
+  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" data-preserve-attr="open">
     <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
     <div class="fs-dialog__body">
       <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
@@ -98,7 +98,18 @@ En app i Datastar, htmx, en Go-mal eller en Razor-visning kan ikke kalle `showMo
 </fs-dialog>
 ```
 
-Lukker brukeren dialogen, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. `data-preserve-attr="open"` er derfor nødvendig: uten den ville en morfing åpnet dialogen igjen ved neste oppdatering, siden serverens utgave fortsatt sier `open`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open`.
+Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog">`, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. Et klikk på flaten bak lukker den ikke; det gjør heller ikke en vanlig `<dialog>`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open`.
+
+De to `open`-ene i eksempelet er ikke det samme:
+
+| Hvor | Hvem setter den | Fredet |
+| --- | --- | --- |
+| På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
+| På `<dialog>` | Nettleseren, når `showModal()` kalles | Ja |
+
+Verten er ikke fredet med vilje. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
+
+Attributtet på selve `<dialog>` må derimot fredes. Serveren skriver det aldri, så uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
 
 ## TypeScript
 

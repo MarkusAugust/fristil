@@ -1,6 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -46,12 +47,14 @@ describe(".fs-dialog", () => {
     expect(d.contains(document.activeElement)).toBe(true)
   })
 
-  it("lukkes med Escape uten at vi skriver noe for det", () => {
+  it("lukkes med Escape uten at vi skriver noe for det", async () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
 
-    d.dispatchEvent(new Event("cancel", { cancelable: true }))
-    d.close()
+    // Et `cancel` sendt for hånd utløser ikke nettleserens egen lukking, og
+    // en test som gjorde det og deretter kalte `close()` selv, prøvde bare
+    // sin egen kode. Her trykkes tasten på ekte.
+    await userEvent.keyboard("{Escape}")
 
     expect(d.open).toBe(false)
   })
@@ -70,6 +73,7 @@ describe(".fs-dialog", () => {
     expect(boks.dialog).toEqual({
       class: "fs-dialog",
       "aria-labelledby": "dialog-tittel",
+      "data-preserve-attr": "open",
     })
     expect(boks.title).toEqual({
       class: "fs-dialog__title",
@@ -239,11 +243,32 @@ describe("fs-dialog", () => {
     )
   })
 
-  it("ber serveren bevare open, for det er brukerens tilstand", () => {
-    expect(dialog({ titleId: "t", open: true }).host).toEqual({
-      open: "",
-      "data-preserve-attr": "open",
-    })
+  it("freder ikke open på verten, for det er serveren som åpner dialogen", () => {
+    // Hadde `open` stått i `data-preserve-attr` her, kunne serveren aldri
+    // åpnet dialogen igjen etter at brukeren hadde lukket den én gang.
+    expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: "" })
+    expect(dialog({ titleId: "t" }).host).toEqual({})
+  })
+
+  it("freder open på selve dialogen, for den setter nettleseren", () => {
+    // `showModal()` setter `open` på `<dialog>`. Serveren skriver det aldri,
+    // så uten fredningen river morfingen det bort og lukker dialogen i det
+    // øyeblikket den åpnet den.
+    expect(dialog({ titleId: "t" }).dialog["data-preserve-attr"]).toBe("open")
+  })
+
+  it("åpner igjen når serveren sender open på nytt", async () => {
+    const { vert, d } = await monterDialog(true)
+
+    d.close()
+    await ventPaTegning()
+    expect(vert.hasAttribute("open")).toBe(false)
+
+    // Dette er det en morfing gjør: serverens node sier fortsatt `open`.
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+
+    expect(d.open, "serveren kunne ikke åpne dialogen på nytt").toBe(true)
   })
 
   it("melder fra når den åpnes og lukkes", async () => {

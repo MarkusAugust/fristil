@@ -15,15 +15,20 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * det hele tatt, uten å skrive sitt eget skript ved siden av. Her sier
  * serveren i stedet at dialogen er åpen, og komponenten gjør kallet.
  *
- * Lukker brukeren dialogen, med Escape, med en knapp i en
- * `<form method="dialog">` eller med et klikk på flaten bak, fjernes `open`
- * fra verten igjen, slik at markupen sier det samme som skjermen. Det er
- * derfor `open` står i `data-preserve-attr` fra `fs.dialog()`: uten det
- * ville morfingen åpnet dialogen igjen ved neste patch.
+ * Lukker brukeren dialogen, med Escape eller med en knapp i en
+ * `<form method="dialog">`, fjernes `open` fra verten igjen, slik at
+ * markupen sier det samme som skjermen. Et klikk på flaten bak lukker den
+ * ikke: det gjør heller ikke en vanlig `<dialog>`, og komponenten legger
+ * ingenting til.
+ *
+ * `open` er serverens. Sender serveren området på nytt med `open` fortsatt
+ * satt, åpnes dialogen igjen. Hadde attributtet stått i
+ * `data-preserve-attr`, kunne serveren aldri åpnet dialogen på nytt etter
+ * første lukking, og det er en verre feil enn den den ville løst.
  *
  * ```html
- * <fs-dialog open data-preserve-attr="open">
- *   <dialog class="fs-dialog" aria-labelledby="tittel">
+ * <fs-dialog open>
+ *   <dialog class="fs-dialog" aria-labelledby="tittel" data-preserve-attr="open">
  *     <h2 class="fs-dialog__title" id="tittel">Vedtaket er registrert</h2>
  *     <div class="fs-dialog__body">Saken er ferdigbehandlet.</div>
  *     <form method="dialog" class="fs-dialog__footer">
@@ -77,6 +82,9 @@ export class FsDialog extends HostElement {
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
         bubbles: true,
+        // Uten `composed` stopper hendelsen i en skyggerot, og en lytter
+        // utenfor får aldri vite at dialogen ble lukket.
+        composed: true,
         detail: { open: false },
       }),
     )
@@ -105,12 +113,19 @@ export class FsDialog extends HostElement {
       this.dispatchEvent(
         new CustomEvent("dialog-toggle", {
           bubbles: true,
+          composed: true,
           detail: { open: true },
         }),
       )
     } else if (!this.open && dialog.open) {
       dialog.close()
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "fs-dialog": FsDialog
   }
 }
 

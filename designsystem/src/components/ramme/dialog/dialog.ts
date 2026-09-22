@@ -15,11 +15,11 @@ export type DialogOptions = {
 export type DialogAttributes = {
   host: {
     open?: ""
-    "data-preserve-attr": "open"
   }
   dialog: {
     class: typeof DIALOG_CLASS
     "aria-labelledby": string
+    "data-preserve-attr": "open"
   }
   title: {
     class: typeof DIALOG_TITLE_CLASS
@@ -38,8 +38,18 @@ export type DialogAttributes = {
  *
  * Det er et problem for en server som bare sender HTML, for den kan ikke
  * kalle noe i nettleseren. Derfor sier serveren at dialogen er åpen, og
- * `<fs-dialog>` gjør kallet. Om den er åpen er brukerens tilstand, ikke
- * serverens, så `open` står i `data-preserve-attr` på verten.
+ * `<fs-dialog>` gjør kallet.
+ *
+ * De to `open`-ene er ikke det samme, og det er verdt å holde fra hverandre:
+ *
+ * - `open` på **verten** er serverens beskjed om at dialogen skal vises. Den
+ *   er ikke fredet. Hadde den vært det, kunne serveren aldri åpnet dialogen
+ *   igjen etter at brukeren hadde lukket den én gang. Sender serveren
+ *   området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen.
+ *   Skal en avvisning vare, må appen si fra til serveren.
+ * - `open` på **`<dialog>`** setter nettleseren selv når `showModal()`
+ *   kalles. Serveren skriver det aldri, så det må fredes, ellers river
+ *   morfingen det bort og lukker dialogen igjen ved neste patch.
  *
  * ```ts
  * const boks = fs.dialog({ titleId: "slett-tittel", open: true })
@@ -60,11 +70,14 @@ export const dialog = Object.assign(
   ({ titleId, open = false }: DialogOptions): DialogAttributes => ({
     host: attributes({
       open: open ? ("" as const) : undefined,
-      "data-preserve-attr": "open" as const,
     }),
     dialog: attributes({
       class: DIALOG_CLASS,
       "aria-labelledby": titleId,
+      // `showModal()` setter `open` på selve `<dialog>`. Serveren skriver
+      // det aldri, så uten fredningen river morfingen det bort og lukker
+      // dialogen i det øyeblikket den åpnet den.
+      "data-preserve-attr": "open" as const,
     }),
     title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),
     body: attributes({ class: DIALOG_BODY_CLASS }),
