@@ -160,44 +160,141 @@ Datastar leser lista fra serverens node og lar de attributtene stå. I React og 
 
 Blir markupen til uten JavaScript, i en Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML, finnes ikke den muligheten. Da gjør `<fs-field>` den samme koblingen i nettleseren i stedet. Det er alt som trengs på en side serveren sender én gang.
 
-### Og hvis serveren sender feltet på nytt
+### Når serveren sender det samme området på nytt
 
-Oppdaterer serveren det samme området mens brukeren holder på, som i en Datastar- eller htmx-app, må malen i tillegg ta med lista over hva som skal bevares. Uten den fjernes koblingen komponenten satte, ved første oppdatering:
+Dette gjelder deg som bruker Datastar eller htmx, altså der serveren
+oppdaterer en del av siden mens brukeren holder på. Bruker du ikke det, kan
+du hoppe over resten av kapittelet.
 
-```html
-<label class="fs-label"
-       data-preserve-attr="class for data-required data-optional aria-disabled">E-post</label>
-<input class="fs-input"
-       data-preserve-attr="id aria-describedby aria-invalid data-state disabled aria-disabled">
-<p class="fs-help-text" data-preserve-attr="id">Vi sender aldri spam.</p>
-<p class="fs-error-text" hidden data-preserve-attr="id hidden">Skriv en gyldig adresse.</p>
+#### Hva som skjer i en oppdatering
+
+Datastar kan oppdatere på flere måter. Standarden, og den anbefalte, heter
+`outer`, og den *morfer*: serveren sender ny HTML for et område, og Datastar
+endrer elementene som allerede står der slik at de blir like den nye
+versjonen. Elementene beholdes, bare det som er ulikt endres. Det er derfor
+tekst du har skrevet i et felt ikke forsvinner.
+
+(Det finnes også `replace`, som bytter ut elementet i stedet. Da mister du
+alt nettleseren har lagt til, så den er ingen vei utenom det som står under.)
+
+Men morfingen fjerner også alt den nye versjonen ikke har:
+
+```
+Serveren sendte:   <button aria-selected="false">Vedlegg</button>
+Brukeren klikker, og <fs-tabs> setter:
+I siden står nå:   <button aria-selected="true">Vedlegg</button>
+
+Serveren oppdaterer området, og sender fortsatt:
+                   <button aria-selected="false">Vedlegg</button>
+
+Fanevalget er borte.
 ```
 
-Hvert element trenger sin egen liste. Komponenten legger `fs-label` og
-markeringene på ledeteksten og skjuler feilmeldingen, så beskytter du bare
-kontrollen, forsvinner klassen og feilmeldingen likevel.
+Serveren vet ikke hvilken fane brukeren valgte, så den sender den samme
+HTML-en som før, og morfingen setter siden tilbake.
 
-`id` står på hjelpeteksten og feilmeldingen selv om malen ikke skriver noen.
-Komponenten lager dem i så fall selv, og `aria-describedby` på kontrollen
-peker på dem. Forsvinner id-en i en oppdatering, peker koblingen på noe som
-ikke finnes, og skjermleseren leser verken hjelpeteksten eller feilen.
+#### Den enkleste løsningen: send bare det som har endret seg
 
-Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, med én nøkkel per element
-(`label`, `control`, `help` og `error`), så du slipper å skrive dem av.
+Datastar lar deg peke ut hva som skal oppdateres, med `selector` og
+`mode: inner`. Har poengtavla endret seg, send tavla:
 
-Det gir to veier til den samme kontrakten:
+```
+event: datastar-patch-elements
+data: selector #tavle
+data: mode inner
+data: elements <tr><td>Kari</td><td>34</td></tr>
+```
 
-| Hvem lager markupen | Sender serveren den på nytt? | Bruk |
-| --- | --- | --- |
-| Kode du skriver i JavaScript | uansett | `fs.field()`. Komponenten trengs ikke |
-| En mal i et annet språk, eller HTML du skriver selv | nei | `<fs-field>` |
-| En mal i et annet språk, eller HTML du skriver selv | ja | `<fs-field>` **og** `data-preserve-attr` |
+Da røres ikke fanene eller skjemaet i det hele tatt, og ingenting kan gå
+tapt. Dette er den vanlige måten å bruke Datastar på, og den fjerner hele
+problemet.
 
-De to spørsmålene er uavhengige, og skal ikke slås sammen. Hvem som lager
-markupen avgjør om du bruker byggefunksjonen eller web componenten. Om
-serveren kan sende den på nytt avgjør om `data-preserve-attr` trengs. En
-statisk HTML-side bruker altså web componenten uten lista, og en React-app
-uten server bruker byggefunksjonen.
+Resten av kapittelet gjelder når du likevel må sende et større område på
+nytt.
+
+#### Skriv hele feltet, så har komponenten ingenting å legge til
+
+`<fs-field>` fyller inn det som mangler: id-er, `for`, `aria-describedby` og
+klassen på ledeteksten. Det er praktisk i HTML du skriver for hånd. Men
+skriver serveren dette selv, gjør komponenten ingenting, og da kan morfingen
+heller ikke ta noe bort.
+
+Id-er og `aria-describedby` er vanlig strengarbeid, og lar seg gjøre i
+ethvert malspråk:
+
+```html
+<fs-field>
+  <label class="fs-label" for="epost">E-post</label>
+  <input class="fs-input" id="epost" aria-describedby="epost-hjelp">
+  <p class="fs-help-text" id="epost-hjelp">Vi sender aldri spam.</p>
+  <p class="fs-error-text" id="epost-feil" hidden>Skriv en gyldig adresse.</p>
+</fs-field>
+```
+
+Testet med Datastars egen morfing: feltet overlever en oppdatering uendret,
+og når serveren sender det som ugyldig, slår `aria-invalid`, `data-state` og
+feilmeldingen inn som de skal. Uten et eneste `data-preserve-attr`.
+
+Komponenten er fortsatt med, og gjør det den er til for: den leser tilstanden
+fra markupen og fester oppførselen.
+
+#### `data-preserve-attr` for det brukeren eier
+
+Noe kan serveren umulig vite: hvilken fane brukeren valgte, og om
+sprettoppvinduet er åpent. Det er brukerens tilstand, ikke serverens, og den
+lever bare i nettleseren.
+
+Datastar har et attributt for nettopp dette. Det tar navnene på de
+attributtene morfingen skal la stå:
+
+```html
+<button aria-selected="true" data-preserve-attr="aria-selected tabindex">Vedlegg</button>
+```
+
+«Oppdater denne knappen, men la `aria-selected` og `tabindex` være i fred.»
+
+Det må stå i HTML-en **serveren** sender, for det er der Datastar leser det.
+Komponenten kan ikke sette det på seg selv; da kommer det for sent.
+
+Byggefunksjonene skriver det for deg:
+
+| Byggefunksjon | Hva den lar stå, og hvorfor |
+| --- | --- |
+| `fs.tabs()` | `aria-selected` og `tabindex` på fanene, `hidden` på panelene. Brukeren valgte fanen. |
+| `fs.popover()` | `open` på verten, `aria-expanded` på knappen, `style` på panelet. Brukeren åpnet det, og posisjonen regnes ut i nettleseren. |
+| `fs.suggestion()` | `aria-expanded`, `aria-activedescendant` og `hidden`. Brukeren skriver og blar. |
+
+Skriver du markupen i et annet språk enn JavaScript, står de samme navnene i
+tabellen over.
+
+#### Når brukeren selv utløser oppdateringen
+
+Datastar sender signalene sine med hver forespørsel klienten starter. Lar du
+komponenten oppdatere et signal, vet serveren hva brukeren har gjort, og kan
+sende riktig HTML med én gang:
+
+```html
+<fs-tabs data-on:tab-select="$fane = evt.detail.index">
+```
+
+Komponenten gjør tastaturet og tilgjengeligheten, signalet følger etter, og
+serveren rendrer fra `$fane`. Da trengs ikke `data-preserve-attr`.
+
+Det virker ikke når **serveren** dytter en oppdatering av seg selv, for da
+har den ingen ferske signaler. I en app der noe skjer fordi en annen bruker
+gjorde noe, står `data-preserve-attr` fortsatt.
+
+#### Kort oppsummert
+
+1. Send bare det som har endret seg. Da oppstår ikke problemet.
+2. Må du sende et større område: skriv hele feltet selv, så har komponenten
+   ingenting å legge til.
+3. For det bare brukeren vet, som fanevalg og åpne vinduer: `data-preserve-attr`,
+   skrevet av byggefunksjonen.
+
+`FIELD_PRESERVED_ATTRIBUTES` finnes fortsatt, for markup du ikke rår over, som
+den en publiseringsløsning spytter ut, i et område som også oppdateres. Det er
+et hjørne, ikke hovedveien.
 
 ## Komponenter som eier sitt eget innhold
 
