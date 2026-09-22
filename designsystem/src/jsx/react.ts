@@ -40,7 +40,18 @@ import type { HTMLAttributes } from "react"
  * Skriv derfor `invalid={ugyldig || undefined}`. Typen her gjør at de to
  * andre variantene blir kompileringsfeil i stedet for noe du må huske.
  */
-type Flag = true | undefined
+/**
+ * Et boolsk HTML-attributt, slik det ser ut i JSX.
+ *
+ * `""` er med fordi det er det byggerne sender ut: et boolsk attributt i HTML
+ * er til stede eller ikke, og den tomme strengen er den kanoniske formen.
+ * Uten den type-sjekket ikke `<fs-popover {...fs.popover({ open: true }).host}>`
+ * mot pakkens egen JSX-deklarasjon, altså to deler av det samme API-et som
+ * var uenige om det samme attributtet.
+ *
+ * `true` er også med, for den som skriver `open` uten verdi i JSX.
+ */
+type Flag = "" | true | undefined
 
 type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
   invalid?: Flag

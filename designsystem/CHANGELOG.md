@@ -29,6 +29,12 @@ kommer i et nytt undertall.
   oppgitt `success`, men `fieldset.css` hadde bare en regel for `invalid`.
   Attributtet ble skrevet, og ingenting skjedde.
 
+- **JSX-deklarasjonene godtok ikke det byggerne sender ut.** Et boolsk
+  attributt er `""` fra byggeren, mens `Flag` i `jsx/react.ts` bare tillot
+  `true` og `undefined`. `<fs-popover {...fs.popover({ open: true }).host}>`
+  type-sjekket derfor ikke, altså to deler av det samme API-et som var
+  uenige om det samme attributtet.
+
 ### Lagt til
 
 - **En vaktpost på at hver lovlig verdi finnes i CSS-en.** `pakke-css.browser.test.ts`
@@ -39,6 +45,11 @@ kommer i et nytt undertall.
 
   `dom.browser.test.ts` sjekket at en verdi kan settes og fjernes, ikke at
   den betyr noe. Fieldset-feilen over hadde ligget der siden komponenten kom.
+
+- **En vaktpost på at byggerne passer i JSX-deklarasjonene.**
+  `src/jsx/typer.browser.test.ts` tilordner det byggerne sender ut til
+  `JSX.IntrinsicElements`, og det er `typecheck:tests` som er prøven. Begge
+  deler er offentlig API, og de kan gå fra hverandre uten at noe sier fra.
 
 ## 0.7.0 (2026-09-22)
 

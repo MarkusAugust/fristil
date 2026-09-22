@@ -323,7 +323,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
   for (const [navn, verdi] of Object.entries(fs)) {
     if (typeof verdi !== "function") continue
-    const bygger = verdi as Bygger
+    const bygger = verdi as unknown as Bygger
 
     for (const [liste, attributt] of Object.entries(LISTER)) {
       const verdier = bygger[liste]
