@@ -134,29 +134,22 @@ export function computeFieldAttributes(
 /**
  * Attributtene `<fs-field>` setter, per element den rører.
  *
- * Lista trengs bare når to ting gjelder samtidig.
+ * Dette er et hjørne, ikke hovedveien. Oppdaterer serveren det samme området
+ * mens brukeren holder på, som i en Datastar- eller htmx-app, er det to
+ * enklere veier først:
  *
- * Lages markupen med JavaScript, skal den kalle `computeFieldAttributes` og
- * skrive attributtene selv. Da trengs verken komponenten eller denne lista.
- * Blir markupen til uten JavaScript, i en Go-mal eller håndskrevet HTML, gjør
- * `<fs-field>` koblingen i nettleseren, og på en side serveren sender én gang
- * er det alt som skal til.
+ * 1. Send bare det som har endret seg, med `selector` og `mode: inner`. Da
+ *    røres ikke feltet i det hele tatt.
+ * 2. La serveren skrive hele feltet: id-er, `for` og `aria-describedby`. Da
+ *    har komponenten ingenting å legge til, og morfingen ingenting å ta
+ *    bort. Testet med Datastars egen morfing: feltet overlever uendret, og
+ *    en oppdatering som gjør det ugyldig slår inn som den skal.
  *
- * Oppdaterer serveren det samme området mens brukeren holder på, som i en
- * Datastar- eller htmx-app, må malen i tillegg skrive lista som
- * `data-preserve-attr` på hvert av de tre elementene. Morfingen leser den fra
- * serverens node, per element, så komponenten kan ikke beskytte seg selv.
- *
- * Det holder ikke å beskytte kontrollen alene. Komponenten legger også
- * `fs-label` og markeringene på ledeteksten, og skjuler feilmeldingen. Uten
- * lister på de to andre forsvinner klassen og feilmeldingen ved neste
- * morfing, som er nøyaktig den feilen kontrakten skal hindre.
- *
- * Hjelpeteksten og feilmeldingen må ha `id` med i lista selv om malen ikke
- * skriver noen. Komponenten lager dem i så fall selv, og `aria-describedby`
- * på kontrollen peker på dem. Forsvinner id-en i en morfing, peker
- * koblingen på noe som ikke finnes, og skjermleseren leser verken
- * hjelpeteksten eller feilen. `for` på ledeteksten er der av samme grunn.
+ * Lista her er for markup du ikke rår over, som den en publiseringsløsning
+ * spytter ut, i et område som også oppdateres. Da fyller `<fs-field>` inn
+ * det som mangler, og navnene må stå i `data-preserve-attr` for at morfingen
+ * ikke skal ta dem igjen. Lista leses fra serverens node, per element, så
+ * komponenten kan ikke sette den på seg selv.
  *
  * ```html
  * <label class="fs-label"
