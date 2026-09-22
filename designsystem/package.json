@@ -1,6 +1,6 @@
 {
   "name": "@fristil/designsystem",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "license": "MIT",
   "author": "MarkusAugust",
