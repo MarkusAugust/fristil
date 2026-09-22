@@ -212,6 +212,24 @@ await pa("popover", "demo-popover", "fs-popover", async (side, id) => {
   krev(svar.synlig, "panelet havner ikke i topplaget")
 })
 
+await pa("dialog", "demo-dialog", "fs-dialog", async (side, id) => {
+  const svar = await side.evaluate((id) => {
+    const rot = document.getElementById(id)?.shadowRoot
+    const knapp = rot?.querySelector("[data-apne]") as HTMLElement | null
+    const dialog = rot?.querySelector("dialog") as HTMLDialogElement | null
+    knapp?.click()
+    return {
+      // `:modal` og ikke `open`: et `<dialog open>` ser likt ut, men fanger
+      // ikke fokus og lukker ikke på Escape.
+      modal: dialog?.matches(":modal") ?? false,
+      fokusInne: dialog?.contains(rot?.activeElement ?? null) ?? false,
+    }
+  }, id)
+
+  krev(svar.modal, "et klikk åpner ikke dialogen modalt")
+  krev(svar.fokusInne, "fokus havner ikke inne i dialogen")
+})
+
 await pa("field", "demo-field", "fs-field", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot

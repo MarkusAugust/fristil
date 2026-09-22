@@ -16,6 +16,8 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
+import { dialog } from "./components/ramme/dialog/dialog"
+import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
 import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
 import { defineFsField } from "./components/ramme/field/fs-field"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover"
@@ -31,6 +33,7 @@ defineFsField()
 defineFsSuggestion()
 defineFsPopover()
 defineFsTabs()
+defineFsDialog()
 
 /** Datastars attributtsynkronisering, på ett element. */
 function morfElement(live: Element, server: Element): void {
@@ -131,6 +134,75 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(label.htmlFor, "ledeteksten mistet koblingen til feltet").toBe(
       kontroll.id,
     )
+  })
+
+  /*
+   * Dialogen er serverens. `open` er derfor ikke fredet, i motsetning til på
+   * sprettoppvinduet: hadde det vært det, kunne serveren aldri åpnet
+   * dialogen igjen etter at brukeren hadde lukket den én gang.
+   */
+  it("lar serveren åpne en dialog brukeren har lukket", async () => {
+    const boks = dialog({ titleId: "tittel", open: true })
+    const MARKUP = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </fs-dialog>`
+
+    const vert = monterMarkup(MARKUP)
+    await customElements.whenDefined("fs-dialog")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const d = vert.querySelector("dialog") as HTMLDialogElement
+    expect(d.open, "dialogen åpnet seg ikke i det hele tatt").toBe(true)
+
+    d.close()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vert.hasAttribute("open")).toBe(false)
+
+    morf(vert, MARKUP)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(d.open, "patchen fikk ikke åpnet dialogen igjen").toBe(true)
+    d.close()
+  })
+
+  /*
+   * Og det `data-preserve-attr` på selve `<dialog>` finnes for: nettleseren
+   * setter `open` der når `showModal()` kalles, og serveren skriver det
+   * aldri. Uten fredningen river morfingen det bort, og dialogen lukker seg
+   * i samme øyeblikk som den åpnet seg.
+   */
+  it("lukker ikke en åpen dialog i en patch", async () => {
+    const boks = dialog({ titleId: "tittel", open: true })
+    const MARKUP = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </fs-dialog>`
+
+    const vert = monterMarkup(MARKUP)
+    await customElements.whenDefined("fs-dialog")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const d = vert.querySelector("dialog") as HTMLDialogElement
+    expect(d.matches(":modal"), "dialogen åpnet seg ikke modalt").toBe(true)
+
+    // Serveren patcher området mens dialogen står åpen, for eksempel fordi
+    // poengtavla ved siden av har endret seg.
+    morf(vert, MARKUP)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    // `open` og `:modal` er ikke det samme her heller: fjernes attributtet
+    // fra en modal dialog, forsvinner den fra skjermen mens `:modal`
+    // fortsatt er sann. Det er attributtet som må stå igjen.
+    expect(d.open, "patchen rev bort open og skjulte dialogen").toBe(true)
+    expect(d.matches(":modal")).toBe(true)
+    d.close()
   })
 
   /*

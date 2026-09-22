@@ -16,6 +16,48 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`fs.dialog()` tar nå et valgobjekt og gir ett attributtsett per element.**
+  Den ga før `{ class: "fs-dialog" }` til selve `<dialog>`. Nå heter kallet
+  `fs.dialog({ titleId, open })` og gir `host`, `dialog`, `title`, `body` og
+  `footer`, på samme form som `fs.popover()`. Klassenavnene ligger fortsatt på
+  funksjonen: `fs.dialog.title` og de andre.
+
+- **Dialogen har flyttet fra `css/` til `ramme/`,** siden den nå har en
+  komponent. `@fristil/designsystem/dialog` peker derfor på `<fs-dialog>` og
+  ikke lenger på byggefunksjonen; den hentes fra hovedinngangen, som for de
+  andre sammensatte komponentene. `@fristil/designsystem/dialog.css` er
+  uendret.
+
+### Lagt til
+
+- **`<fs-dialog>` lar en server åpne en dialog.** Å åpne en `<dialog>` er et
+  kall og ikke et attributt: bare `showModal()` flytter fokus inn, holder
+  fokus inne i dialogen, lukker på Escape og gjør resten av siden
+  utilgjengelig. `<dialog open>` er bare en boks på siden. En app som skriver
+  HTML på serveren, i Datastar, htmx, en Go-mal eller en Razor-visning, kunne
+  derfor ikke åpne en dialog i det hele tatt uten å skrive sitt eget skript
+  ved siden av. Nå sier serveren `open` på `<fs-dialog>`, og komponenten gjør
+  kallet.
+
+  Lukker brukeren dialogen, fjernes `open` fra verten igjen, så markupen sier
+  det samme som skjermen. De to `open`-ene er ikke det samme: det på verten er
+  serverens beskjed og er ikke fredet, for ellers kunne serveren aldri åpnet
+  dialogen igjen etter første lukking. Det nettleseren setter på selve
+  `<dialog>` når `showModal()` kalles, er derimot fredet, ellers river
+  morfingen det bort og lukker dialogen i samme øyeblikk som den åpnet den.
+  `morfing.browser.test.ts` kjører hele runden.
+
+  Komponenten melder fra med hendelsen `dialog-toggle`, som bærer `open` og
+  `returnValue`, altså hvilken knapp som lukket dialogen. Den er `composed`,
+  så den kommer ut av en skyggerot.
+
+  Komponenten gjør ingenting når den står løsrevet fra siden. En morfer
+  bygger serverens utgave i et løsrevet tre før den sammenlignes, og et
+  egendefinert element tas i bruk der også; uten den sperren kastet
+  `showModal()` ved hver patch som rørte dialogen.
+
 ### Rettet
 
 - **`color-scheme` i `tokens.css`.** Uten den tegner nettleseren sine egne

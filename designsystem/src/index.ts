@@ -42,8 +42,6 @@ export type {
   CheckboxOptions,
 } from "./components/css/checkbox/checkbox.js"
 export { checkbox } from "./components/css/checkbox/checkbox.js"
-export type { DialogAttributes } from "./components/css/dialog/dialog.js"
-export { dialog } from "./components/css/dialog/dialog.js"
 export type {
   DividerAttributes,
   DividerOptions,
@@ -178,6 +176,12 @@ export * from "./components/frittstaende/session-timeout/fs-session-timeout.js"
 export * from "./components/frittstaende/session-timeout/session-timeout.js"
 export * from "./components/frittstaende/toast/fs-toast.js"
 export * from "./components/frittstaende/toast/toast.js"
+export type {
+  DialogAttributes,
+  DialogOptions,
+} from "./components/ramme/dialog/dialog.js"
+export { dialog } from "./components/ramme/dialog/dialog.js"
+export * from "./components/ramme/dialog/fs-dialog.js"
 export * from "./components/ramme/error-summary/error-summary.js"
 export * from "./components/ramme/error-summary/fs-error-summary.js"
 export * from "./components/ramme/field/field-core.js"
