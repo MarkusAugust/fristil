@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.7.0 (2026-09-22)
+
 ### Brytende
 
 - **`fs.dialog()` tar nå et valgobjekt og gir ett attributtsett per element.**
