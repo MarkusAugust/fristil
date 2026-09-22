@@ -163,10 +163,11 @@ describe("fs fra /react", () => {
     }
   })
 
-  it("har med hver byggefunksjon fra hovedinngangen", () => {
+  it("har nøyaktig de samme byggefunksjonene som hovedinngangen", () => {
     // `react.ts` har sin egen liste, og en ny komponent må inn i begge.
-    const mangler = Object.keys(fs).filter((navn) => !(navn in fsReact))
-    expect(mangler).toEqual([])
+    // Sjekken går begge veier: en funksjon som bare finnes i den ene er like
+    // gal uansett hvilken av dem det er.
+    expect(Object.keys(fsReact).sort()).toEqual(Object.keys(fs).sort())
   })
 })
 

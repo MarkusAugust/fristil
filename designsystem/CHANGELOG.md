@@ -18,6 +18,21 @@ kommer i et nytt undertall.
 
 ### Brytende
 
+- **Boolske attributter på en vert er `true`, ikke `""`.** `fs.dialog().host`
+  og `fs.popover().host` sendte ut `open: ""`. React 19 setter egenskaper
+  framfor attributter på egendefinerte elementer, og `el.open = ""` er usant,
+  så setteren i komponenten fjernet attributtet igjen: dialogen og panelet
+  åpnet seg ikke, og om det skjedde kom an på om elementet var oppgradert
+  ennå. `data-*` er noe annet og beholder den tomme strengen, for dem sender
+  React videre som attributter i begge versjoner. `Flag` i `jsx/react.ts` er
+  dermed `true | undefined` igjen, slik dokumentasjonen har sagt hele tiden.
+
+- **Avslaget på fokus i feiloppsummeringen heter `data-autofocus="false"`.**
+  Det het `autofocus="false"`. `autofocus` er en boolsk egenskap på
+  `HTMLElement`, så React 19 satte `el.autofocus = "false"`, som er sant,
+  mens attributtet aldri kom i markupen. Avslaget virket altså ikke i React
+  19, og feilen var taus. Samme feilklasse som `open` over.
+
 - **`ReactAttributes<T>` gir `number` for `tabIndex`.** Typen er eksportert,
   altså offentlig API, og den sa før `string`. Rettelsen under er grunnen:
   verdien var feil, og typen beskrev feilen. Kode som tok imot den gamle
@@ -51,9 +66,17 @@ kommer i et nytt undertall.
   og rendrer elementet to ganger, med og uten attributtet. Noe i den beregnede
   stilen må være forskjellig, pseudoelementene medregnet. Et tekstsøk ville
   passert på en tom regel og på en som blir overstyrt lenger nede.
-  Standardverdien hoppes over, siden den kjennes igjen på at byggeren ikke
-  sender ut attributtet i det hele tatt, og en egen prøve krever at det
-  hoppes over nøyaktig de verdiene.
+  Farger regelen et barn framfor elementet selv, som feltsettet gjør med
+  `.fs-legend`, kreves det i stedet at en regel som gjelder her erklærer noe.
+  Uten det ville en tom blokk passert, og det var nettopp en tom blokk som
+  slapp gjennom første utgave av prøven.
+
+  Verdier som ikke sender ut noe attributt hoppes over: standardverdien, og
+  verdier som ikke er ment å se annerledes ut. To egne prøver passer på at
+  hoppelista ikke blir en bakdør. Den ene krever at opsjonsnavnet er et
+  byggefunksjonen kjenner, siden feil navn ellers tar en hel liste ut av
+  prøven i stillhet. Den andre krever at hver liste en byggefunksjon har,
+  står i tabellen.
 
   Hvilke regler som gjelder hentes fra CSSOM, ikke fra teksten: en regel i en
   `@supports` motoren ikke har, eller i en `@media` som ikke slår til, gjør

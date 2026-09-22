@@ -24,34 +24,29 @@ import type { HTMLAttributes } from "react"
 /**
  * Boolske attributter på egendefinerte elementer.
  *
- * Typen er `true | undefined`, ikke `boolean`, og det er med vilje. React
- * behandler egendefinerte elementer ulikt mellom versjoner, og bare ett
- * mønster er riktig i begge:
+ * Typen er `true | undefined`, ikke `boolean` og ikke `""`, og det er med
+ * vilje. React behandler egendefinerte elementer ulikt mellom versjoner, og
+ * bare ett mønster er riktig i begge:
  *
  *     React 18 setter attributter       React 19 setter egenskaper
- *     invalid=""       virker            aldri ugyldig
- *     invalid={true}   virker            virker
- *     invalid={false}  ALLTID ugyldig    virker
- *     invalid={undefined}  virker        virker
+ *     open=""          virker            aldri åpen
+ *     open={true}      virker            virker
+ *     open={false}     ALLTID åpen       virker
+ *     open={undefined} virker            virker
  *
- * React 18 stringifiserer til `invalid="false"`. Attributtet finnes da,
- * og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
+ * React 18 stringifiserer til `open="false"`. Attributtet finnes da, og er
+ * dermed sant. React 19 setter egenskapen til `""`, som er usann, og
+ * setteren i komponenten fjerner attributtet igjen.
  *
- * Skriv derfor `invalid={ugyldig || undefined}`. Typen her gjør at de to
- * andre variantene blir kompileringsfeil i stedet for noe du må huske.
+ * Derfor sender byggefunksjonene `true` for et boolsk attributt på en vert,
+ * ikke den tomme strengen. `data-*` er noe annet: React sender dem videre
+ * som attributter i begge versjoner, og der er `""` den kanoniske formen.
+ *
+ * Skriver du det for hånd, skriv `open={apen || undefined}`. Typen her gjør
+ * at de to andre variantene blir kompileringsfeil i stedet for noe du må
+ * huske.
  */
-/**
- * Et boolsk HTML-attributt, slik det ser ut i JSX.
- *
- * `""` er med fordi det er det byggerne sender ut: et boolsk attributt i HTML
- * er til stede eller ikke, og den tomme strengen er den kanoniske formen.
- * Uten den type-sjekket ikke `<fs-popover {...fs.popover({ open: true }).host}>`
- * mot pakkens egen JSX-deklarasjon, altså to deler av det samme API-et som
- * var uenige om det samme attributtet.
- *
- * `true` er også med, for den som skriver `open` uten verdi i JSX.
- */
-type Flag = "" | true | undefined
+type Flag = true | undefined
 
 type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
   invalid?: Flag
@@ -77,7 +72,7 @@ type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
    * Flytt fokus hit når boksen kommer til syne. Standard: på.
    * Sett `"false"` for å la være.
    */
-  autofocus?: "false"
+  "data-autofocus"?: "false"
 }
 
 type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {

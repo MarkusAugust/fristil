@@ -282,16 +282,19 @@ describe("Tailwind-temaet", () => {
 })
 
 /**
- * At hver lovlige verdi en bygger reklamerer med, finnes i CSS-en.
+ * At hver lovlige verdi en byggefunksjon reklamerer med, finnes i CSS-en.
  *
- * `fs.badge.colors` inneholdt `info` i over et halvt år uten at
- * `badge.css` hadde en regel for den. Attributtet ble skrevet, ingenting
- * skjedde, og merket så ut som standarden. Byggeren lovet altså noe pakken
- * ikke leverte, og ingen prøve så det: `dom.browser.test.ts` sjekker at
- * verdien kan settes og fjernes, ikke at den betyr noe.
+ * `fs.fieldset.states` oppga `success` fra dagen komponenten kom, mens
+ * `fieldset.css` bare hadde en regel for `invalid`. Attributtet ble skrevet,
+ * og ingenting skjedde. Byggefunksjonen lovet altså noe pakken ikke leverte,
+ * og ingen prøve så det: `dom.browser.test.ts` sjekker at verdien kan settes
+ * og fjernes, ikke at den betyr noe.
  *
- * Standardverdien er unntaket, og den kjenner vi igjen på at byggeren ikke
- * sender ut attributtet i det hele tatt for den.
+ * Verdier som ikke sender ut noe attributt hoppes over. Det er standarden,
+ * som CSS-en alt har, og verdier som ikke er ment å se annerledes ut, som de
+ * fleste `input.types`. To egne prøver passer på at hoppelista ikke blir en
+ * bakdør: opsjonsnavnet må være et byggefunksjonen kjenner, og hver liste må
+ * gi minst ett tilfelle.
  */
 describe("hver lovlig verdi finnes i CSS-en", () => {
   // Stilarkene må stå i dokumentet for at beregnet stil skal si noe. De
@@ -319,14 +322,15 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
    * en regel som gjelder. Da meldte prøven feil i én av tre motorer på noe
    * som er helt riktig. Nettleseren vet svaret selv, så vi spør den.
    */
-  const virksomme: string[] = []
+  const virksomme: { selektor: string; regel: CSSStyleRule }[] = []
 
   function samle(regler: CSSRuleList, gjelder: boolean): void {
     for (const regel of Array.from(regler)) {
       if (regel instanceof CSSStyleRule) {
         if (gjelder) {
-          for (const del of regel.selectorText.split(","))
-            virksomme.push(del.trim())
+          for (const del of regel.selectorText.split(",")) {
+            virksomme.push({ selektor: del.trim(), regel })
+          }
         }
         samle(regel.cssRules, gjelder)
       } else if (regel instanceof CSSSupportsRule) {
@@ -346,7 +350,16 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     for (const [sti, kilde] of Object.entries(stilark)) {
       const ark = document.createElement("style")
       ark.dataset.fra = sti
-      ark.textContent = kilde
+      /*
+       * `@import` må bort. Hver fil legges inn for seg, så naboen er alt
+       * med, og en relativ sti ville uansett gitt 404 herfra. I WebKit er
+       * det ikke ufarlig: et stilark med en uløst `@import` blir ikke tatt i
+       * bruk i det hele tatt, og `.fs-legend[data-required]::after` fra
+       * `fieldset.css` regnet seg til `content: none` mens den identiske
+       * regelen i `label.css` virket. Chromium og Firefox hoppet bare over
+       * den døde importen.
+       */
+      ark.textContent = kilde.replace(/@import[^;]*;/g, "")
       document.head.append(ark)
       if (ark.sheet) samle(ark.sheet.cssRules, true)
     }
@@ -398,7 +411,10 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
       for (const v of verdier) {
         const ut = bygger({ [opsjon]: v })
 
-        // Standardverdien gir ikke noe attributt, og har derfor ingen regel.
+        // Verdier som ikke gir noe attributt har ingen regel å kontrollere.
+        // Det er to slag: standardverdien, som CSS-en alt har, og verdier
+        // som ikke er ment å se annerledes ut, som `input.types=text`, der
+        // bare noen få typer får et ikon.
         if (ut[attributt] === undefined) {
           hoppet.push(`${navn}.${liste}=${v}`)
           continue
@@ -421,33 +437,59 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     expect(tilfeller.length).toBeGreaterThan(30)
   })
 
-  it("hopper bare over standardverdier", () => {
-    // Uten denne kunne en feilstavet opsjon i `LISTER` ta en hel liste ut av
-    // prøven uten at noe sa fra: attributtet mangler både når verdien er
-    // standarden og når kallet ikke traff.
-    const standardverdier = new Set<string>()
+  it("bruker et opsjonsnavn byggefunksjonen faktisk kjenner", () => {
+    /*
+     * Står feil opsjonsnavn i `LISTER`, tar byggefunksjonen ikke imot noe,
+     * og svarer det samme som den gjør uten argumenter, uansett verdi. Løkka
+     * over leser det som «dette er standardverdien» og hopper over hele
+     * lista uten å si fra. Slik ble `markers` borte: opsjonen heter
+     * `required`, ikke `marker`.
+     *
+     * Bare én verdi i en liste kan gi det samme som standardkallet, nemlig
+     * standardverdien selv. Gjør to det, er navnet feil.
+     */
     for (const [navn, verdi] of Object.entries(fs)) {
       if (typeof verdi !== "function") continue
       const bygger = verdi as unknown as Bygger
-      let standard: Record<string, unknown>
-      try {
-        standard = bygger()
-      } catch {
-        continue
-      }
-      for (const [liste, opsjon, attributt] of LISTER) {
+
+      for (const [liste, opsjon] of LISTER) {
         const verdier = bygger[liste]
         if (!Array.isArray(verdier)) continue
-        for (const v of verdier) {
-          const ut = bygger({ [opsjon]: v })
-          const uten =
-            standard[attributt] === undefined && ut[attributt] === undefined
-          if (uten) standardverdier.add(`${navn}.${liste}=${v}`)
-        }
+
+        const standard = JSON.stringify(bygger())
+        const like = verdier.filter(
+          (v) => JSON.stringify(bygger({ [opsjon]: v })) === standard,
+        )
+        expect(
+          like,
+          `${navn}.${liste} svarer likt for ${like.join(", ")}`,
+        ).toHaveLength(like.length > 1 ? 0 : like.length)
+      }
+    }
+  })
+
+  it("kontrollerer hver liste en byggefunksjon har", () => {
+    /*
+     * `LISTER` er skrevet for hånd, og en liste som mangler der blir aldri
+     * kontrollert uten at noe sier fra. Det er den samme feilklassen som
+     * `SYSTEM_ATTRIBUTES` i `dom.ts` har vært innom: et attributt som ikke
+     * står i en håndskrevet tabell er usynlig for prøven, ikke for brukeren.
+     */
+    const kjente = new Set(LISTER.map(([liste]) => liste))
+    const ukjente: string[] = []
+
+    for (const [navn, verdi] of Object.entries(fs)) {
+      if (typeof verdi !== "function") continue
+      const bygger = verdi as unknown as Bygger
+      for (const [liste, verdier] of Object.entries(bygger)) {
+        // `Object.assign` henger både lovlige verdier og vakter på
+        // funksjonen. Det er listene vi er ute etter.
+        if (!Array.isArray(verdier)) continue
+        if (!kjente.has(liste)) ukjente.push(`${navn}.${liste}`)
       }
     }
 
-    expect([...hoppet].sort()).toEqual([...standardverdier].sort())
+    expect(ukjente).toEqual([])
   })
 
   it("dekker hver liste med minst ett tilfelle", () => {
@@ -494,17 +536,49 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     expect(finnes, `ingen regel for ${selektorer[0]}`).toBe(true)
 
     /*
-     * Kreves en forskjell i beregnet stil? Bare hvis det finnes en regel
-     * som gjelder her og som treffer elementet selv. En regel på et barn
-     * (feltsettet farger `.fs-legend`) endrer ingenting på elementet, og
-     * en regel i en `@supports` eller `@media` som ikke slår til, gjør
-     * ingenting i det hele tatt. I begge tilfellene holder det at
-     * selektoren står i et stilark.
+     * Treffer en regel som gjelder her elementet selv, skal den kunne sees:
+     * elementet rendres to ganger, med og uten attributtet, og noe i den
+     * beregnede stilen må være forskjellig. Pseudoelementene er med hver for
+     * seg, for `data-required` vises bare gjennom `::after`.
      */
-    const paSegSelv = virksomme.some((regel) =>
-      selektorer.some((selektor) => regel === selektor),
+    const pseudoer = ["", "::after", "::before"]
+    const treffSelv = pseudoer.filter((pseudo) =>
+      virksomme.some(({ selektor }) =>
+        selektorer.some((s) => selektor === `${s}${pseudo}`),
+      ),
     )
-    if (!paSegSelv) return
+
+    if (treffSelv.length === 0) {
+      /*
+       * Ellers farger regelen et barn: feltsettet farger `.fs-legend`, og
+       * den stripete tabellen farger annenhver rad. Da finnes det ingenting
+       * på elementet selv å sammenligne, og kravet er i stedet at en regel
+       * som gjelder her faktisk erklærer noe. Et tekstsøk alene passerte på
+       * en tom blokk, og det var nettopp en tom regel jeg klarte å legge inn
+       * uten at prøven sa fra.
+       *
+       * En regel i en `@supports` motoren ikke har, eller i en `@media` som
+       * ikke slår til, er ikke med i `virksomme`, og skal heller ikke telle.
+       */
+      const erklaerer = virksomme.filter(
+        ({ selektor, regel }) =>
+          selektorer.some((s) => selektor.startsWith(s)) &&
+          regel.style.length > 0,
+      )
+      if (erklaerer.length > 0) return
+
+      // Har motoren ingen virksom regel i det hele tatt, er det fordi
+      // regelen står bak en betingelse den ikke oppfyller. Da er det riktig
+      // at den ikke gjør noe her.
+      const noenSomHelst = virksomme.some(({ selektor }) =>
+        selektorer.some((s) => selektor.startsWith(s)),
+      )
+      expect(
+        noenSomHelst,
+        `${selektorer[0]} treffer bare barn, og regelen erklærer ingenting`,
+      ).toBe(false)
+      return
+    }
 
     const uten = document.createElement("span")
     uten.className = tilfelle.klasser.join(" ")
@@ -514,9 +588,9 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
     document.body.append(uten, med)
     try {
-      const ulik = (pseudo?: string) => {
-        const a = getComputedStyle(uten, pseudo)
-        const b = getComputedStyle(med, pseudo)
+      const ulik = (pseudo: string) => {
+        const a = getComputedStyle(uten, pseudo || undefined)
+        const b = getComputedStyle(med, pseudo || undefined)
         for (let i = 0; i < a.length; i += 1) {
           const navn = a.item(i)
           if (a.getPropertyValue(navn) !== b.getPropertyValue(navn)) return true
@@ -524,7 +598,11 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
         return false
       }
 
-      expect(ulik() || ulik("::after") || ulik("::before")).toBe(true)
+      for (const pseudo of treffSelv) {
+        expect(ulik(pseudo), `${selektorer[0]}${pseudo} endrer ingenting`).toBe(
+          true,
+        )
+      }
     } finally {
       uten.remove()
       med.remove()
