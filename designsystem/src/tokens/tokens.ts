@@ -211,6 +211,21 @@ export const cssTokens = {
    * dybden si i mørkt tema.
    */
   "--semantic-shadow-overlay": "0 16px 40px rgba(0, 0, 0, 0.12)",
+
+  /**
+   * Ringen rundt det som har tastaturfokus.
+   *
+   * Den sto skrevet ut med bredde og farge i tjue regler fordelt på atten
+   * stilark. Selektorene er forskjellige i hver komponent, og `outline-offset`
+   * skal være ulik, så det som faktisk gjentok seg var verdien. Da hører den
+   * hjemme her.
+   *
+   * Fargen følger temaet av seg selv, siden den peker på et annet semantisk
+   * token. Trenger en komponent en annen farge, som feiloppsummeringen og
+   * hopplenken, skriver den `outline-color` etter kortformen og arver
+   * bredden.
+   */
+  "--semantic-focus-ring": "2px solid var(--semantic-interactive-main)",
 } as const
 
 export type CssToken = keyof typeof cssTokens
