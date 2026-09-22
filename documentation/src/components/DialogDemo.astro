@@ -1,0 +1,45 @@
+---
+import { fs } from "@fristil/designsystem"
+import Preview from "./Preview.astro"
+
+// Serveren skriver hele dialogen og sier om den er åpen. Komponenten kaller
+// showModal(), som en server ikke kan gjøre selv.
+const boks = fs.dialog({ titleId: "demo-dialog-tittel" })
+---
+
+<Preview id="demo-dialog" stiler={["dialog", "button"]} maxWidth="30rem">
+	<button {...fs.button({ variant: "danger" })} type="button" data-apne>
+		Slett søknaden
+	</button>
+
+	<fs-dialog {...boks.host}>
+		<dialog {...boks.dialog}>
+			<h2 {...boks.title}>Slette søknaden?</h2>
+			<div {...boks.body}>
+				<p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+			</div>
+			<form method="dialog" {...boks.footer}>
+				<button {...fs.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
+				<button {...fs.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+			</form>
+		</dialog>
+	</fs-dialog>
+</Preview>
+
+<script>
+	import { defineFsDialog } from "@fristil/designsystem/dialog"
+
+	defineFsDialog()
+
+	// I en app med server ville knappen sendt en forespørsel, og serveren
+	// svart med den samme markupen og `open` på verten. Her gjør knappen det
+	// serveren ellers ville gjort, slik at eksempelet kan prøves.
+	const vert = document
+		.getElementById("demo-dialog")
+		?.shadowRoot?.querySelector("fs-dialog")
+
+	document
+		.getElementById("demo-dialog")
+		?.shadowRoot?.querySelector("[data-apne]")
+		?.addEventListener("click", () => vert?.setAttribute("open", ""))
+</script>

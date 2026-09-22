@@ -95,7 +95,7 @@ describe("overta", () => {
 
   it("skriver om en henvisning ut av mappa selv om filnavnet finnes i den", () => {
     const fil: SourceFile = {
-      path: "src/components/css/dialog/dialog.ts",
+      path: "src/components/css/accordion/accordion.ts",
       content: `import { attributes } from "../shared.js"\n`,
     }
 
@@ -105,8 +105,8 @@ describe("overta", () => {
       fil,
       INNGANGER,
       new Set([
-        "src/components/css/dialog/dialog.ts",
-        "src/components/css/dialog/shared.ts",
+        "src/components/css/accordion/accordion.ts",
+        "src/components/css/accordion/shared.ts",
       ]),
     )
 

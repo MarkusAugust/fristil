@@ -17,14 +17,15 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  *
  * Lukker brukeren dialogen, med Escape eller med en knapp i en
  * `<form method="dialog">`, fjernes `open` fra verten igjen, slik at
- * markupen sier det samme som skjermen. Et klikk på flaten bak lukker den
- * ikke: det gjør heller ikke en vanlig `<dialog>`, og komponenten legger
- * ingenting til.
+ * markupen sier det samme som skjermen. Komponenten melder fra med
+ * `dialog-toggle`, som bærer `open` og `returnValue`. Et klikk på flaten bak
+ * lukker den ikke: det gjør heller ikke en vanlig `<dialog>`, og komponenten
+ * legger ingenting til.
  *
  * `open` er serverens. Sender serveren området på nytt med `open` fortsatt
  * satt, åpnes dialogen igjen. Hadde attributtet stått i
  * `data-preserve-attr`, kunne serveren aldri åpnet dialogen på nytt etter
- * første lukking, og det er en verre feil enn den den ville løst.
+ * første lukking.
  *
  * ```html
  * <fs-dialog open>
@@ -42,6 +43,7 @@ export class FsDialog extends HostElement {
   static observedAttributes = ["open"]
 
   private observer?: MutationObserver
+  private dialogElement?: HTMLDialogElement
 
   /** Om dialogen er åpen. Speiler `open`-attributtet. */
   get open(): boolean {
@@ -55,39 +57,58 @@ export class FsDialog extends HostElement {
 
   connectedCallback(): void {
     // Serveren kan sende dialogen inn i et område som allerede står i siden,
-    // og da finnes ikke `<dialog>` ennå når komponenten kobles til.
+    // og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare
+    // egne barn observeres: dialogen er alltid et direkte barn, og
+    // innholdet inni den endrer seg ved hver patch.
     this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true, subtree: true })
+    this.observer.observe(this, { childList: true })
     this.sync()
   }
 
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
-    this.dialog?.removeEventListener("close", this.handleClose)
+    this.dialogElement?.removeEventListener("close", this.handleClose)
+    this.dialogElement = undefined
   }
 
   attributeChangedCallback(): void {
     this.sync()
   }
 
+  /**
+   * Dialogen komponenten styrer.
+   *
+   * Bare et direkte barn. En `<dialog>` lenger ned i treet kan tilhøre noe
+   * annet, og skal ikke åpnes av denne komponenten.
+   */
   private get dialog(): HTMLDialogElement | null {
-    return this.querySelector("dialog")
+    return this.querySelector(":scope > dialog")
   }
 
-  private handleClose = (): void => {
-    // Brukeren lukket den. Markupen skal si det samme som skjermen, ellers
-    // ville neste patch åpnet dialogen igjen.
-    this.removeAttribute("open")
+  private meld(open: boolean, returnValue = ""): void {
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
         bubbles: true,
         // Uten `composed` stopper hendelsen i en skyggerot, og en lytter
         // utenfor får aldri vite at dialogen ble lukket.
         composed: true,
-        detail: { open: false },
+        detail: { open, returnValue },
       }),
     )
+  }
+
+  private handleClose = (): void => {
+    // `close` er køet, ikke synkron. Rekker serveren å lukke og åpne igjen i
+    // samme oppgave, gjelder ikke denne hendelsen lenger, og uten sperren
+    // lukket komponenten dialogen den nettopp hadde åpnet.
+    if (this.dialog?.matches(":modal")) return
+
+    // Lukket serveren den, er verten alt i takt, og `sync()` har meldt fra.
+    if (!this.open) return
+
+    this.removeAttribute("open")
+    this.meld(false, this.dialog?.returnValue ?? "")
   }
 
   private sync(): void {
@@ -101,24 +122,28 @@ export class FsDialog extends HostElement {
     // `sync()` uansett på nytt når den kobles til.
     if (!dialog?.isConnected) return
 
-    dialog.removeEventListener("close", this.handleClose)
-    dialog.addEventListener("close", this.handleClose)
+    if (dialog !== this.dialogElement) {
+      this.dialogElement?.removeEventListener("close", this.handleClose)
+      this.dialogElement = dialog
+      dialog.addEventListener("close", this.handleClose)
+    }
 
-    // `showModal()` kaster hvis dialogen alt er åpen, og `close()` på en
-    // lukket dialog utløser en `close`-hendelse som ville fjernet `open`
-    // under beina på oss. Derfor sammenlignes det med den faktiske
-    // tilstanden framfor å kalle blindt.
-    if (this.open && !dialog.open) {
+    // `:modal` og ikke `open`. De to er ikke det samme: et `<dialog open>`
+    // i markupen, og en dialog som har vært flyttet i DOM-en mens den var
+    // åpen, har `open` uten å være modal. Da er den en boks på siden, uten
+    // fokusfelle og uten Escape, altså nøyaktig det komponenten finnes for å
+    // hindre.
+    const modal = dialog.matches(":modal")
+
+    if (this.open && !modal) {
+      // `showModal()` kaster `InvalidStateError` når `open` står der fra før
+      // uten at dialogen er modal. Attributtet må bort først.
+      if (dialog.open) dialog.close()
       dialog.showModal()
-      this.dispatchEvent(
-        new CustomEvent("dialog-toggle", {
-          bubbles: true,
-          composed: true,
-          detail: { open: true },
-        }),
-      )
+      this.meld(true)
     } else if (!this.open && dialog.open) {
       dialog.close()
+      this.meld(false, dialog.returnValue)
     }
   }
 }
@@ -129,6 +154,6 @@ declare global {
   }
 }
 
-export function defineFsDialog(): void {
-  defineElement(FS_DIALOG_TAG, FsDialog)
+export function defineFsDialog(tagName = FS_DIALOG_TAG): void {
+  defineElement(tagName, FsDialog)
 }

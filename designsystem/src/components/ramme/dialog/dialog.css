@@ -1,4 +1,11 @@
 @layer fristil {
+  /* Verten er ikke en boks. Uten dette er den `inline` som alle andre
+     egendefinerte elementer, og en tom `<fs-dialog>` i et oppsett med
+     `gap` flytter naboen sin. */
+  fs-dialog {
+    display: contents;
+  }
+
   .fs-dialog {
     box-sizing: border-box;
     /*

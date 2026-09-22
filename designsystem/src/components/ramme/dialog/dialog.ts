@@ -40,7 +40,7 @@ export type DialogAttributes = {
  * kalle noe i nettleseren. Derfor sier serveren at dialogen er åpen, og
  * `<fs-dialog>` gjør kallet.
  *
- * De to `open`-ene er ikke det samme, og det er verdt å holde fra hverandre:
+ * De to `open`-ene er ikke det samme, og det er verdt å holde dem fra hverandre:
  *
  * - `open` på **verten** er serverens beskjed om at dialogen skal vises. Den
  *   er ikke fredet. Hadde den vært det, kunne serveren aldri åpnet dialogen

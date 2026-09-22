@@ -49,6 +49,10 @@ kommer i et nytt undertall.
   morfingen det bort og lukker dialogen i samme øyeblikk som den åpnet den.
   `morfing.browser.test.ts` kjører hele runden.
 
+  Komponenten melder fra med hendelsen `dialog-toggle`, som bærer `open` og
+  `returnValue`, altså hvilken knapp som lukket dialogen. Den er `composed`,
+  så den kommer ut av en skyggerot.
+
   Komponenten gjør ingenting når den står løsrevet fra siden. En morfer
   bygger serverens utgave i et løsrevet tre før den sammenlignes, og et
   egendefinert element tas i bruk der også; uten den sperren kastet

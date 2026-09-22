@@ -286,6 +286,84 @@ describe("fs-dialog", () => {
     expect(meldinger).toEqual([true, false])
   })
 
+  it("gjør en dialog som allerede står åpen modal", async () => {
+    // `<dialog open>` skrevet for hånd er en boks på siden: ingen fokusfelle,
+    // ingen Escape, ingen flate bak. Komponenten skal rette opp i det, og
+    // `showModal()` kaster hvis attributtet står der fra før.
+    const boks = dialog({ titleId: "tittel", open: true })
+    monter(`
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)} open>
+          <h2 ${attr(boks.title)}>Tittel</h2>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    expect(d.matches(":modal"), "dialogen ble stående som en boks").toBe(true)
+  })
+
+  it("lukker ikke seg selv når serveren lukker og åpner i samme omgang", async () => {
+    const { vert, d } = await monterDialog(true)
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      meldinger.push((event as CustomEvent<{ open: boolean }>).detail.open)
+    })
+
+    // `close`-hendelsen er køet, ikke synkron. Uten en sperre kom den fram
+    // etter at dialogen var åpnet igjen, og lukket den på nytt.
+    vert.removeAttribute("open")
+    vert.setAttribute("open", "")
+
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen lukket seg selv etterpå").toBe(true)
+    expect(vert.hasAttribute("open")).toBe(true)
+    expect(meldinger).toEqual([false, true])
+  })
+
+  it("styrer bare sin egen dialog, ikke en lenger ned i treet", async () => {
+    // En annen komponent kan ha sin egen `<dialog>` inni denne. Den står
+    // først i dokumentet her, så en komponent som bare spurte etter «den
+    // første dialogen» ville åpnet feil boks.
+    const boks = dialog({ titleId: "tittel", open: true })
+    monter(`
+      <fs-dialog ${attr(boks.host)}>
+        <div class="et-eller-annet-kort">
+          <dialog id="fremmed"><p>Noe helt annet</p></dialog>
+        </div>
+        <dialog ${attr(boks.dialog)} id="min">
+          <h2 ${attr(boks.title)}>Tittel</h2>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    expect((document.getElementById("min") as HTMLDialogElement).open).toBe(
+      true,
+    )
+    expect((document.getElementById("fremmed") as HTMLDialogElement).open).toBe(
+      false,
+    )
+  })
+
+  it("sier hvilken knapp som lukket den", async () => {
+    const { vert, d } = await monterDialog(true)
+    let svar: string | undefined
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar = (event as CustomEvent<{ returnValue: string }>).detail.returnValue
+    })
+
+    d.close("slett")
+    await ventPaTegning()
+
+    expect(svar).toBe("slett")
+  })
+
   it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
     await monterDialog(true)
 

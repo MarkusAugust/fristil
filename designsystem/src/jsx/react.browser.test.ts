@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { FsConnectionStatus } from "../components/frittstaende/connection-status/fs-connection-status"
 import { FsSessionTimeout } from "../components/frittstaende/session-timeout/fs-session-timeout"
 import { FsToast } from "../components/frittstaende/toast/fs-toast"
+import { FsDialog } from "../components/ramme/dialog/fs-dialog"
 import { FsErrorSummary } from "../components/ramme/error-summary/fs-error-summary"
 import { FsField } from "../components/ramme/field/fs-field"
 import { FsPopover } from "../components/ramme/popover/fs-popover"
@@ -55,6 +56,7 @@ describe("JSX-deklarasjonene følger komponentene", () => {
     ["fs-session-timeout", FsSessionTimeout],
     ["fs-connection-status", FsConnectionStatus],
     ["fs-suggestion", FsSuggestion],
+    ["fs-dialog", FsDialog],
   ])("%s har alle attributtene sine deklarert", (tagg, klasse) => {
     const attributter = attributtnavn(klasse)
 
@@ -81,6 +83,7 @@ describe("JSX-deklarasjonene følger komponentene", () => {
       ...attributtnavn(FsSessionTimeout),
       ...attributtnavn(FsConnectionStatus),
       ...attributtnavn(FsSuggestion),
+      ...attributtnavn(FsDialog),
     ])
 
     // Bare attributtblokkene. Taggnavnene i IntrinsicElements står under

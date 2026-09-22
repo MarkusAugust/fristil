@@ -3,6 +3,7 @@ title: Dialog
 description: Modal dialog bygget på det native dialog-elementet. Fire klasser, og en komponent som lar en server åpne den.
 ---
 
+import DialogDemo from "../../../components/DialogDemo.astro"
 import Eksempel from "../../../components/Eksempel.astro"
 
 Klassen settes på et `<dialog>`. Å åpne den er et kall: `showModal()` flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen gjør ingen av delene, og er bare en boks på siden.
@@ -80,6 +81,12 @@ Forhåndsvisningen viser dialogen slik den ser ut når den er åpen. En ekte `<d
 
 Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
 
+## Prøv den
+
+Knappen her gjør det serveren ellers ville gjort: setter `open` på `<fs-dialog>`. Komponenten kaller `showModal()`, og dialogen legger seg i topplaget med fokus inne i seg.
+
+<DialogDemo />
+
 ## Når serveren åpner dialogen
 
 En app i Datastar, htmx, en Go-mal eller en Razor-visning kan ikke kalle `showModal()`. Den sender `open` på `<fs-dialog>`, og komponenten åpner dialogen modalt.
@@ -107,21 +114,31 @@ De to `open`-ene i eksempelet er ikke det samme:
 | På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
 | På `<dialog>` | Nettleseren, når `showModal()` kalles | Ja |
 
-Verten er ikke fredet med vilje. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
+At verten ikke er fredet, er et valg og ikke en forglemmelse. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
 
 Attributtet på selve `<dialog>` må derimot fredes. Serveren skriver det aldri, så uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
 
 ## TypeScript
 
-```ts
+```tsx
 import { fs } from "@fristil/designsystem"
 
 const boks = fs.dialog({ titleId: "kvittering-tittel", open: true })
+
+<fs-dialog {...boks.host}>
+  <dialog {...boks.dialog}>
+    <h2 {...boks.title}>Vedtaket er registrert</h2>
+    <div {...boks.body}>Saken er ferdigbehandlet og sendt til arkiv.</div>
+    <form method="dialog" {...boks.footer}>
+      <button class="fs-button" value="lukk">Lukk</button>
+    </form>
+  </dialog>
+</fs-dialog>
 ```
 
-`boks.host` hører på `<fs-dialog>`, `boks.dialog` på `<dialog>`, og `boks.title`, `boks.body` og `boks.footer` på delene inni. `fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
+`fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
 
-Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i eksempelet over.
+Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Komplett eksempel» over.
 
 ## Klasser du kan style
 
@@ -146,7 +163,7 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 
-- Dialogen trenger et navn. Enten `aria-labelledby` som peker på overskriften, eller `aria-label`.
+- Dialogen trenger et navn. `fs.dialog({ titleId })` skriver `aria-labelledby` mot overskriften. Skriver du markupen selv og ikke har noen overskrift, bruk `aria-label` i stedet.
 - Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».
 - Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
 - Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.
