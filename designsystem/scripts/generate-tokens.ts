@@ -26,15 +26,27 @@ for (const key of Object.keys(cssTokens) as (keyof typeof cssTokens)[]) {
  * operativsystemet i mørkt. CSS uten layer slår alltid CSS i et layer,
  * uansett spesifisitet, så nå holder en enkel :root.
  */
+/*
+ * `color-scheme` er ikke et token, men hører likevel hjemme her.
+ *
+ * Uten den tegner nettleseren sine egne flater lyst uansett hva tokenene
+ * sier: nedtrekkslista til en `<select>`, rullefelt, kalenderpanelet i et
+ * datofelt og standardfargen på en side uten egen bakgrunn. En side i mørkt
+ * tema fikk da en hvit liste midt i seg. Verdien `light dark` sier at begge
+ * deler finnes, og at systemvalget avgjør.
+ */
 const lines = [
   "/* Generert. Rediger tokens.ts, ikke denne fila. */",
   "",
   "@layer fristil {",
   "  :root {",
+  "    color-scheme: light dark;",
+  "",
 ]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
-  // Tom linje mellom gruppene, men ikke rett etter `:root {`, for da ville
-  // biome flagget fila hver gang den genereres på nytt.
+  // Tom linje mellom gruppene. Den første står allerede etter
+  // `color-scheme`, og to på rad ville biome flagget hver gang fila
+  // genereres på nytt.
   if (index > 0) lines.push("")
   lines.push(`    /* ${section} */`)
   lines.push(...props.map((line) => `  ${line}`))
@@ -61,7 +73,16 @@ lines.push(
   "    }",
   "  }",
   "",
+  // Tvinger appen fram et tema, må nettleserens egne flater følge med.
+  // Ellers får en app som står på lyst tema på en mørk maskin en svart
+  // nedtrekksliste under et hvitt felt.
+  '  [data-theme="light"] {',
+  "    color-scheme: light;",
+  "  }",
+  "",
   '  [data-theme="dark"] {',
+  "    color-scheme: dark;",
+  "",
   ...darkLines.map((l) => l.slice(2)),
   "  }",
   "}",
