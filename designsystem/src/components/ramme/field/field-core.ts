@@ -1,5 +1,9 @@
 import type { FieldState, RequiredMarker } from "../../css/shared.js"
-import { attributes } from "../../css/shared.js"
+import { attributes, createFieldId, idEllerReserve } from "../../css/shared.js"
+
+// Videreeksportert her, der den hørte hjemme før, så konsumenter som
+// importerer fra `./field-core` ikke merker flyttingen.
+export { createFieldId }
 
 /**
  * Regner ut koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
@@ -27,10 +31,10 @@ export type FieldOptions = {
    *
    * Kravet står i typen, og det er ikke nok alene: en konsument uten
    * TypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og
-   * sier fra i konsollen, så feltet virker og utvikleren får vite hvorfor det
-   * ikke burde. Uten den reserven ville en JavaScript-konsument fått
-   * `id="undefined-help"` og ingen kobling i det hele tatt, altså verre enn
-   * før.
+   * sier fra i konsollen. Da virker feltet, og utvikleren får vite hvorfor
+   * han likevel bør oppgi id-en. Uten reserven fikk han `for=""`,
+   * `aria-describedby="undefined-help"` og ingen kobling i det hele tatt,
+   * altså verre enn den ustabile id-en kravet skulle bli kvitt.
    */
   id: string
   /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
@@ -74,56 +78,6 @@ export type FieldAttributes = {
   state: FieldState
 }
 
-let counter = 0
-
-/**
- * Sier fra én gang per melding, i konsollen.
- *
- * `fs.field()` er en ren funksjon uten et element å henge beskjeden på, så
- * den kan ikke bruke `warnAboutMarkup`. Dedupliseringen trengs like fullt: i
- * en app som rendrer en liste med felt ville meldingen kommet per felt og per
- * rendring.
- */
-const sagt = new Set<string>()
-
-function advarEnGang(melding: string): void {
-  if (typeof console === "undefined" || sagt.has(melding)) return
-  sagt.add(melding)
-  console.warn(melding)
-}
-
-/**
- * Reserven når en konsument uten TypeScript utelater id-en.
- *
- * Typen krever den, men en type finnes ikke i ren JavaScript, og der er
- * `<script type="module">` en førsteklasses måte å bruke Fristil på. Uten
- * denne reserven ble `aria-describedby` til strengen `undefined-help`, og
- * `for` og `id` forsvant helt, så feltet var uten kobling og to felt på samme
- * side fikk samme id.
- */
-function manglendeId(): string {
-  advarEnGang(
-    "fs.field(): ingen id oppgitt, så det lages en tilfeldig. To kjøringer " +
-      "gir da to ulike, og rendres feltet både på en server og i nettleseren, " +
-      "peker for og aria-describedby på noe som ikke finnes. Oppgi id, i " +
-      "React fra useId().",
-  )
-  return createFieldId()
-}
-
-/**
- * Lager en id som er unik innenfor dokumentet.
- *
- * Trygg bare når markupen rendres én gang. Rendres det samme feltet både på
- * en server og i nettleseren, gir de to kjøringene to ulike id-er, og da er
- * koblingen brutt til rammeverket har rettet den opp. Derfor er den ikke
- * lenger standarden i `fs.field()`, men en funksjon du kaller med vilje.
- */
-export function createFieldId(): string {
-  counter += 1
-  return `fs-field-${counter}-${Math.random().toString(36).slice(2, 8)}`
-}
-
 /**
  * Setter sammen `aria-describedby` av hjelpetekst, feilmelding og det
  * kalleren har lagt til selv.
@@ -147,8 +101,7 @@ export function joinDescribedBy(
 
 export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   const {
-    // Reserven gjelder bare den som ikke har en typesjekk. Se `manglendeId`.
-    id = manglendeId(),
+    id: oppgittId,
     help = false,
     error = false,
     required,
@@ -156,9 +109,12 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
     invalid = false,
     disabled = false,
     describedBy = [],
-    helpId = `${id}-help`,
-    errorId = `${id}-error`,
   } = options
+
+  // Reserven gjelder bare den som ikke har en typesjekk. Se `idEllerReserve`.
+  const id = idEllerReserve("fs.field()", oppgittId)
+  const helpId = options.helpId ?? `${id}-help`
+  const errorId = options.errorId ?? `${id}-error`
 
   return {
     label: attributes({

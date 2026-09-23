@@ -18,7 +18,7 @@ kommer i et nytt undertall.
 
 ### Brytende
 
-- **`id` er påkrevd i `fs.field()`.** Den var valgfri, og funksjonen laget en
+- **`id` er påkrevd i `fs.field()`, og i de andre byggerne som tar en.** Den var valgfri, og funksjonen laget en
   når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir
   to ulike, og rendres det samme feltet på en server og så i nettleseren,
   peker `for` og `aria-describedby` på noe annet enn det som står der. React
@@ -32,10 +32,20 @@ kommer i et nytt undertall.
 
   Typen alene er heller ikke nok, for en konsument uten TypeScript ser ingen
   type, og ren HTML med `<script type="module">` er en førsteklasses måte å
-  bruke Fristil på. Utelates id-en likevel, lager funksjonen en og sier fra i
-  konsollen, én gang. Uten den reserven ville en JavaScript-konsument fått
-  `aria-describedby="undefined-help"` og verken `for` eller `id`, altså verre
-  enn den ustabile id-en kravet skulle bli kvitt.
+  bruke Fristil på. Utelates id-en likevel, lager byggeren en og sier fra i
+  konsollen, én gang, med navnet på byggeren i meldingen. Uten den reserven
+  fikk en JavaScript-konsument `aria-describedby="undefined-help"` og verken
+  `for` eller `id`, altså verre enn den ustabile id-en kravet skulle bli
+  kvitt.
+
+  Reserven gjelder `fs.field()`, `fs.suggestion()`, `fs.tabs()`,
+  `fs.popover()` og `fs.dialog()`. Forslagsfeltet er grunnen til at den ikke
+  kunne bo i feltet alene: uten id ble `list.id` og `options[n].id` til
+  `undefined-list` og `undefined-option-0`, mens meldingen sa «fs.field()» og
+  sendte utvikleren til feil sted.
+
+  Den tomme strengen teller som ingen id. `fs.field({ id: "" })` ga `for=""`
+  og `help.id="-help"`, altså det samme problemet uten at noe sa fra.
 
   I React kommer id-en fra `useId()`. Ellers er feltets eget navn som regel
   det opplagte valget. Vet du sikkert at markupen rendres én gang, kall

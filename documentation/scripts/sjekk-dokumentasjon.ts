@@ -218,7 +218,16 @@ for (const variabel of [...alleVariabler].sort()) {
  * og ingen av dem kompileres. Da denne endringen ble gjort, sto alle
  * eksemplene allerede riktig, men det var tilfeldig og ikke voktet.
  */
-const KODEKALL = /\bfs\.field\(\s*(\{([^}]*)\})?/g
+/**
+ * Et kall på en bygger som tar en id, og argumentet det fikk.
+ *
+ * Objektet fanges med ett nivå nesting, så `${x}` og et nøstet objekt inni
+ * ikke avslutter treffet for tidlig. Er argumentet en variabel framfor et
+ * objekt, sier sjekken ingenting: den kan ikke vite hva som står i den, og en
+ * falsk alarm på riktig kode er verre enn et hull.
+ */
+const KODEKALL =
+  /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
 
 /**
  * Bare koden.
@@ -246,10 +255,17 @@ for (const fil of [
 ]) {
   for (const kode of kodebiter(fil, les(`${DOKUMENTASJON}${fil}`))) {
     for (const treff of kode.matchAll(KODEKALL)) {
-      if (treff[2] && /\bid\s*:/.test(treff[2])) continue
+      const bygger = treff[1]
+      const argument = treff[2]
+      // Ingen argumentliste å lese, altså en variabel. Da sier vi ingenting.
+      if (argument === undefined && !/\(\s*\)/.test(treff[0])) continue
+
+      const nokkel = bygger === "dialog" ? "titleId" : "id"
+      if (argument && new RegExp(`\\b${nokkel}\\s*:`).test(argument)) continue
+
       avvik.push({
         hvor: fil,
-        hva: "`fs.field()` uten `id`. Den er påkrevd, og et eksempel uten den lærer bort en felle",
+        hva: `\`fs.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
       })
     }
   }

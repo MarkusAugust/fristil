@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createFieldId } from "./components/ramme/field/field-core"
 import { fs } from "./fs"
 
 describe("fs: felles form", () => {
@@ -159,29 +158,83 @@ describe("fs.field", () => {
     expect(typeof utenId).toBe("function")
   })
 
-  it("lager en id likevel, og sier fra, når JavaScript utelater den", () => {
+  it("lager id-er likevel, og sier fra, når JavaScript utelater dem", () => {
     /*
      * En konsument uten TypeScript ser ingen type, og ren HTML med
      * `<script type="module">` er en førsteklasses måte å bruke Fristil på.
-     * Uten reserven ble `aria-describedby` til strengen `undefined-help`, og
-     * `for` og `id` forsvant helt, altså verre enn den ustabile id-en kravet
-     * skulle bli kvitt.
+     * Uten reserven ble id-ene til strenger som `undefined-help` og
+     * `undefined-list`, og `for`, `aria-controls` og `aria-describedby` pekte
+     * dit. Koblingen var brutt, og den så gyldig ut.
+     *
+     * Hver bygger som tar en id er med. Første utgave hadde reserven bare i
+     * `fs.field()`, og da sa forslagsfeltet «fs.field()» i meldingen og sendte
+     * utvikleren til feil sted, mens halve id-ene fortsatt ble `undefined-…`.
      */
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const utenId = <T>(bygger: (o: unknown) => T, valg: unknown): T =>
+      bygger(valg)
 
-    // Slik en JavaScript-konsument ville kalt den, uten at typen stopper ham.
-    const felt = (fs.field as (o: unknown) => ReturnType<typeof fs.field>)({
-      help: true,
-    })
-
+    const felt = utenId(
+      fs.field as (o: unknown) => ReturnType<typeof fs.field>,
+      {
+        help: true,
+        error: true,
+      },
+    )
     expect(felt.control.id).toMatch(/^fs-field-/)
     expect(felt.label.for).toBe(felt.control.id)
-    expect(felt.control["aria-describedby"]).toBe(felt.help.id)
-    expect(felt.help.id).not.toContain("undefined")
-    expect(advarsel.mock.calls.map((k) => String(k[0])).join()).toContain(
-      "ingen id oppgitt",
-    )
+    expect(JSON.stringify(felt)).not.toContain("undefined")
 
+    const forslag = utenId(
+      fs.suggestion as (o: unknown) => ReturnType<typeof fs.suggestion>,
+      { count: 2 },
+    )
+    expect(JSON.stringify(forslag)).not.toContain("undefined")
+    expect(forslag.control["aria-controls"]).toBe(forslag.list.id)
+
+    const faner = utenId(
+      fs.tabs as (o: unknown) => ReturnType<typeof fs.tabs>,
+      {
+        count: 2,
+      },
+    )
+    expect(JSON.stringify(faner)).not.toContain("undefined")
+
+    const vindu = utenId(
+      fs.popover as (o: unknown) => ReturnType<typeof fs.popover>,
+      {},
+    )
+    expect(vindu.trigger["aria-controls"]).toBe(vindu.panel.id)
+
+    const boks = utenId(
+      fs.dialog as (o: unknown) => ReturnType<typeof fs.dialog>,
+      {},
+    )
+    expect(boks.dialog["aria-labelledby"]).toBe(boks.title.id)
+
+    const meldinger = advarsel.mock.calls.map((k) => String(k[0])).join("\n")
+    for (const navn of [
+      "fs.field()",
+      "fs.suggestion()",
+      "fs.tabs()",
+      "fs.popover()",
+      "fs.dialog()",
+    ]) {
+      expect(meldinger, `${navn} sa ikke fra`).toContain(navn)
+    }
+
+    advarsel.mockRestore()
+  })
+
+  it("regner den tomme strengen som ingen id", () => {
+    // `fs.field({ id: "" })` slapp gjennom både typen og reserven, og ga
+    // `for=""` og `help.id="-help"`. Koblingen var brutt, og ingenting sa fra.
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    const felt = fs.field({ id: "  ", help: true })
+
+    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.help.id).toBe(`${felt.control.id}-help`)
     advarsel.mockRestore()
   })
 })
