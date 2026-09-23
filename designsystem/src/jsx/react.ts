@@ -89,11 +89,17 @@ type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
 
 type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
   /**
-   * Slår av filtreringen på klienten. Bruk den når serveren sender lista på
-   * nytt mens brukeren skriver, som i en Datastar-app: da er det serveren som
-   * bestemmer hva som vises.
+   * Noen andre har alt filtrert, så komponenten skal la være.
+   *
+   * Komponenten skjuler et alternativ når teksten ikke inneholder det som
+   * står i feltet. Filtrerer du på noe annet, blir de to uenige, og da er det
+   * ditt filter som skal gjelde. En React-app som rendrer bare treffene av et
+   * søk uten diakritikk er det vanligste tilfellet, ved siden av en
+   * Datastar-app der serveren sender lista på nytt.
+   *
+   * Antall treff leses opp uansett hvem som filtrerte.
    */
-  "server-filtered"?: Flag
+  prefiltered?: Flag
 } & ServerControlled
 
 type FsDialogAttributes = HTMLAttributes<HTMLElement> &

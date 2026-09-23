@@ -45,7 +45,7 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  * ```
  */
 export class FsSuggestion extends HostElement {
-  static observedAttributes = ["server-filtered", SERVER_CONTROLLED]
+  static observedAttributes = ["prefiltered", SERVER_CONTROLLED]
 
   private observer?: MutationObserver
   private control?: HTMLInputElement
@@ -169,9 +169,20 @@ export class FsSuggestion extends HostElement {
     this.unbind()
   }
 
-  /** Slår av filtreringen på klienten. Da er det serveren som bestemmer. */
-  get serverFiltered(): boolean {
-    return this.hasAttribute("server-filtered")
+  /**
+   * Noen andre har alt filtrert, så komponenten skal la være.
+   *
+   * Navnet het `server-filtered` før, og det var misvisende: det handler ikke
+   * om servere. En React-app som rendrer bare treffene har filtrert like
+   * fullt, uten at noen server er involvert.
+   *
+   * Komponenten skjuler et alternativ når teksten ikke inneholder det som
+   * står i feltet. Filtrerer du på noe annet, uten diakritikk, på en kode som
+   * ikke vises, med `startsWith` eller uskarpt, blir de to uenige, og da er
+   * det ditt filter som skal gjelde.
+   */
+  get prefiltered(): boolean {
+    return this.hasAttribute("prefiltered")
   }
 
   private get listElement(): HTMLElement | null {
@@ -280,13 +291,23 @@ export class FsSuggestion extends HostElement {
     }
   }
 
+  /**
+   * Skjuler det som ikke passer, og melder hvor mange som er igjen.
+   *
+   * `prefiltered` slår av den første halvdelen, ikke den andre. Å telle hva
+   * som er synlig kan komponenten uansett, og den som ikke ser skjermen
+   * trenger beskjeden like mye når det er serveren eller React som har
+   * filtrert. Første utgave returnerte med en gang, og da satt en
+   * Datastar-app igjen uten opplesning av antall treff og uten at «Ingen
+   * treff» ble slått av og på i det hele tatt. Det sto ikke noe sted.
+   */
   private filter(): void {
-    if (this.serverFiltered) return
-
-    const query = (this.control?.value ?? "").trim().toLowerCase()
-    for (const option of this.options) {
-      const label = (option.textContent ?? "").trim().toLowerCase()
-      setFlag(option, "hidden", query !== "" && !label.includes(query))
+    if (!this.prefiltered) {
+      const query = (this.control?.value ?? "").trim().toLowerCase()
+      for (const option of this.options) {
+        const label = (option.textContent ?? "").trim().toLowerCase()
+        setFlag(option, "hidden", query !== "" && !label.includes(query))
+      }
     }
 
     const treff = this.visible.length

@@ -16,18 +16,13 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
-### Endret
-
-- **Dokumentasjonen sier når `server-filtered` skal stå, og React er med.**
-  Attributtet var beskrevet som et Datastar-tilfelle, men det handler ikke om
-  servere: det handler om at noen andre alt har filtrert. Rendrer en
-  React-app alternativene av en filtrert liste, som er det opplagte når
-  søkeordet alt står i en `useState`, filtrerer den allerede, og uten
-  attributtet skjuler komponenten alternativer React nettopp bestemte seg for
-  å vise. Regelen står nå på komponentsiden: rendres bare treffene, skal
-  attributtet stå; rendres hele lista, skal det ikke.
-
 ### Brytende
+
+- **`server-filtered` heter `prefiltered`.** Navnet var misvisende på to
+  måter. Det handler ikke om servere: en React-app som rendrer bare treffene
+  har filtrert like fullt, uten at noen server er involvert. Og det handler
+  ikke om hvem som filtrerte, men om hva de filtrerte på. Ingen konsumenter
+  ennå, så navnet er byttet framfor å dokumenteres rundt.
 
 - **`id` er påkrevd i `fs.field()`, og i de andre byggerne som tar en.** Den var valgfri, og funksjonen laget en
   når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir
@@ -72,6 +67,15 @@ kommer i et nytt undertall.
 - **`createFieldId` eksporteres også fra `@fristil/designsystem/react`.** Den
   lå bare i hovedinngangen og i `./field-core`, mens dokumentasjonen peker på
   den i en seksjon som ber leseren importere fra `/react`.
+
+### Rettet
+
+- **Forslagsfeltet sluttet å melde antall treff når noen andre filtrerte.**
+  `filter()` returnerte med en gang, så en app med `server-filtered` mistet
+  både opplesningen i `[role="status"]` og at «Ingen treff» ble slått av og
+  på. Det sto ikke noe sted, og den som ikke ser skjermen merket det.
+  Attributtet slår nå av skjulingen av alternativer, og ingenting annet: å
+  telle hva som er synlig kan komponenten uansett.
 
 ### Lagt til
 
@@ -172,8 +176,6 @@ kommer i et nytt undertall.
   nødvendig: komponenten ser at attributtene er borte, og setter dem
   tilbake. Bruker du den i dag, kan du ta bort både lista og
   `data-preserve-attr` på feltet.
-
-### Rettet
 
 - **Sprettoppvinduet åpnet seg igjen når en patch både fjernet `open` og
   overlot tilstanden.** En morfing setter ett attributt om gangen, og `open`

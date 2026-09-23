@@ -175,18 +175,43 @@ describe("fs-suggestion", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("lar serveren bestemme når den filtrerer selv", async () => {
+  it("filtrerer ikke når noen andre alt har gjort det", async () => {
     const felt = await tegn()
-    felt.setAttribute("server-filtered", "")
+    felt.setAttribute("prefiltered", "")
     skriv(felt, "xyz")
     await tegn()
 
-    // I en Datastar-app patcher serveren lista mens brukeren skriver. Da skal
-    // komponenten holde fingrene av fatet.
+    // Serveren eller React har alt bestemt hva som vises. Da skal komponenten
+    // holde fingrene av fatet.
     const synlige = [
       ...felt.querySelectorAll<HTMLElement>("[role='option']"),
     ].filter((o) => !o.hidden)
     expect(synlige).toHaveLength(4)
+  })
+
+  it("melder antall treff også når noen andre filtrerte", async () => {
+    /*
+     * `prefiltered` slår av skjulingen, ikke opplesningen. Første utgave
+     * returnerte med en gang, og da satt en Datastar-app igjen uten beskjed
+     * om hvor mange treff som var igjen, og uten at «Ingen treff» ble slått
+     * av og på. Det sto ikke noe sted, og den som ikke ser skjermen merket
+     * det.
+     */
+    const felt = await tegn()
+    felt.setAttribute("prefiltered", "")
+
+    // Slik en server eller React ville gjort det: alt utenom ett skjules.
+    const valg = [...felt.querySelectorAll<HTMLElement>("[role='option']")]
+    for (const [i, alternativ] of valg.entries()) alternativ.hidden = i !== 0
+
+    skriv(felt, "b")
+    await tegn()
+
+    const status = felt.querySelector("[role='status']") as HTMLElement
+    expect(status.textContent).toBe("Ett treff")
+
+    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    expect(tom.hidden).toBe(true)
   })
 
   it("har ingen tilgjengelighetsbrudd med lista åpen", async () => {
