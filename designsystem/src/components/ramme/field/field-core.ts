@@ -1,26 +1,42 @@
 import type { FieldState, RequiredMarker } from "../../css/shared.js"
-import { attributes } from "../../css/shared.js"
+import { attributes, createFieldId, idEllerReserve } from "../../css/shared.js"
+
+// Videreeksportert her, der den hørte hjemme før, så konsumenter som
+// importerer fra `./field-core` ikke merker flyttingen.
+export { createFieldId }
 
 /**
  * Regner ut koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
  *
  * Dette er den ene implementasjonen av tilgjengelighetskontrakten i systemet.
  * `<fs-field>` bruker den på elementer som allerede står i DOM-en, og
- * `fs.field()` gir den samme utregningen som data til den som vil eie
- * markupen selv. Uten delingen ville kontrakten finnes to steder og kunne gå
+ * `fs.field()` gir den samme utregningen som data, til den som skriver
+ * markupen med JavaScript. Uten delingen ville kontrakten finnes to steder og kunne gå
  * fra hverandre.
  */
 
 export type FieldOptions = {
   /**
-   * Id på kontrollen. Lages automatisk hvis den utelates.
+   * Id på kontrollen. Påkrevd.
    *
-   * En id som lages her er tilfeldig, og to kjøringer gir to ulike. Rendrer
-   * du det samme feltet to ganger, på en server og så i nettleseren, må
-   * id-en komme utenfra, ellers peker `for` og `aria-describedby` på noe
-   * annet enn det som står der. I React er `useId()` laget for nettopp det.
+   * I React kommer den fra `useId()`. Ellers er feltets eget navn som regel
+   * det opplagte valget. Vet du sikkert at markupen rendres én gang, kall
+   * `createFieldId()` selv.
+   *
+   * Den var valgfri, og funksjonen laget en når den manglet. Id-en er
+   * tilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på
+   * en server og så i nettleseren, peker `for` og `aria-describedby` på noe
+   * annet enn det som står der. React melder avvik ved hydreringen, og
+   * advarselen sier selv at avviket ikke blir rettet opp.
+   *
+   * Kravet står i typen, og det er ikke nok alene: en konsument uten
+   * TypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og
+   * sier fra i konsollen. Da virker feltet, og utvikleren får vite hvorfor
+   * han likevel bør oppgi id-en. Uten reserven fikk han `for=""`,
+   * `aria-describedby="undefined-help"` og ingen kobling i det hele tatt,
+   * altså verre enn den ustabile id-en kravet skulle bli kvitt.
    */
-  id?: string
+  id: string
   /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
   help?: boolean
   /** Feltet har en feilmelding. Den skjules til feltet er ugyldig. */
@@ -62,14 +78,6 @@ export type FieldAttributes = {
   state: FieldState
 }
 
-let counter = 0
-
-/** Lager en id som er unik innenfor dokumentet. */
-export function createFieldId(): string {
-  counter += 1
-  return `fs-field-${counter}-${Math.random().toString(36).slice(2, 8)}`
-}
-
 /**
  * Setter sammen `aria-describedby` av hjelpetekst, feilmelding og det
  * kalleren har lagt til selv.
@@ -91,11 +99,9 @@ export function joinDescribedBy(
   return unique.size > 0 ? [...unique].join(" ") : undefined
 }
 
-export function computeFieldAttributes(
-  options: FieldOptions = {},
-): FieldAttributes {
+export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   const {
-    id = createFieldId(),
+    id: oppgittId,
     help = false,
     error = false,
     required,
@@ -103,9 +109,12 @@ export function computeFieldAttributes(
     invalid = false,
     disabled = false,
     describedBy = [],
-    helpId = `${id}-help`,
-    errorId = `${id}-error`,
   } = options
+
+  // Reserven gjelder bare den som ikke har en typesjekk. Se `idEllerReserve`.
+  const id = idEllerReserve("fs.field()", oppgittId)
+  const helpId = options.helpId ?? `${id}-help`
+  const errorId = options.errorId ?? `${id}-error`
 
   return {
     label: attributes({

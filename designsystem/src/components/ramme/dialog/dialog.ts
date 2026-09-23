@@ -1,4 +1,4 @@
-import { attributes } from "../../css/shared.js"
+import { attributes, idEllerReserve } from "../../css/shared.js"
 
 export const DIALOG_CLASS = "fs-dialog" as const
 export const DIALOG_TITLE_CLASS = "fs-dialog__title" as const
@@ -76,32 +76,37 @@ export type DialogAttributes = {
  * ```
  */
 export const dialog = Object.assign(
-  ({ titleId, open = false }: DialogOptions): DialogAttributes => ({
-    host: attributes({
-      open: open ? (true as const) : undefined,
-    }),
-    dialog: attributes({
-      class: DIALOG_CLASS,
-      "aria-labelledby": titleId,
-      /*
-       * `open` står begge steder når dialogen skal vises, og det er med
-       * vilje.
-       *
-       * Uten JavaScript er `<dialog>` uten `open` skjult, så innholdet
-       * serveren ville vise fantes ikke for leseren. Med `open` står det
-       * der som en boks på siden, og komponenten gjør den om til en ekte
-       * modal med `showModal()` når den får kjøre.
-       *
-       * I React er det dessuten det eneste som stemmer: komponenten setter
-       * `open` på `<dialog>` før React hydrerer, og sto det ikke i serverens
-       * HTML, meldte React avvik ved hvert eneste oppslag.
-       */
-      open: open ? (true as const) : undefined,
-    }),
-    title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),
-    body: attributes({ class: DIALOG_BODY_CLASS }),
-    footer: attributes({ class: DIALOG_FOOTER_CLASS }),
-  }),
+  ({ titleId: oppgittId, open = false }: DialogOptions): DialogAttributes => {
+    // Reserven gjelder bare den som ikke har en typesjekk.
+    const titleId = idEllerReserve("fs.dialog()", oppgittId)
+
+    return {
+      host: attributes({
+        open: open ? (true as const) : undefined,
+      }),
+      dialog: attributes({
+        class: DIALOG_CLASS,
+        "aria-labelledby": titleId,
+        /*
+         * `open` står begge steder når dialogen skal vises, og det er med
+         * vilje.
+         *
+         * Uten JavaScript er `<dialog>` uten `open` skjult, så innholdet
+         * serveren ville vise fantes ikke for leseren. Med `open` står det
+         * der som en boks på siden, og komponenten gjør den om til en ekte
+         * modal med `showModal()` når den får kjøre.
+         *
+         * I React er det dessuten det eneste som stemmer: komponenten setter
+         * `open` på `<dialog>` før React hydrerer, og sto det ikke i serverens
+         * HTML, meldte React avvik ved hvert eneste oppslag.
+         */
+        open: open ? (true as const) : undefined,
+      }),
+      title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),
+      body: attributes({ class: DIALOG_BODY_CLASS }),
+      footer: attributes({ class: DIALOG_FOOTER_CLASS }),
+    }
+  },
   {
     /** Klassen på selve `<dialog>`. */
     dialog: DIALOG_CLASS,

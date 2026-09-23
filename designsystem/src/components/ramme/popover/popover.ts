@@ -1,4 +1,4 @@
-import { attributes } from "../../css/shared.js"
+import { attributes, idEllerReserve } from "../../css/shared.js"
 
 export const POPOVER_CLASS = "fs-popover" as const
 
@@ -41,26 +41,31 @@ export type PopoverAttributes = {
  * ```
  */
 export const popover = ({
-  id,
+  id: oppgittId,
   open = false,
-}: PopoverOptions): PopoverAttributes => ({
-  host: attributes({
-    // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
-    // sa markupen at panelet var åpent mens komponenten mente det var lukket.
-    // Ingen bevaringsliste: river en patch attributtet bort, setter
-    // komponenten det tilbake, og `server-controlled` slår av reparasjonen
-    // når serveren skal eie tilstanden.
-    open: open ? (true as const) : undefined,
-  }),
-  trigger: attributes({
-    "aria-expanded": (open ? "true" : "false") as "true" | "false",
-    "aria-controls": id,
-  }),
-  panel: attributes({
-    class: POPOVER_CLASS,
-    id,
-    // `manual` og ikke `auto`: komponenten lukker selv, slik at knappen kan
-    // brukes til å lukke igjen uten at nettleseren rekker å lukke først.
-    popover: "manual" as const,
-  }),
-})
+}: PopoverOptions): PopoverAttributes => {
+  // Reserven gjelder bare den som ikke har en typesjekk.
+  const id = idEllerReserve("fs.popover()", oppgittId)
+
+  return {
+    host: attributes({
+      // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
+      // sa markupen at panelet var åpent mens komponenten mente det var lukket.
+      // Ingen bevaringsliste: river en patch attributtet bort, setter
+      // komponenten det tilbake, og `server-controlled` slår av reparasjonen
+      // når serveren skal eie tilstanden.
+      open: open ? (true as const) : undefined,
+    }),
+    trigger: attributes({
+      "aria-expanded": (open ? "true" : "false") as "true" | "false",
+      "aria-controls": id,
+    }),
+    panel: attributes({
+      class: POPOVER_CLASS,
+      id,
+      // `manual` og ikke `auto`: komponenten lukker selv, slik at knappen kan
+      // brukes til å lukke igjen uten at nettleseren rekker å lukke først.
+      popover: "manual" as const,
+    }),
+  }
+}

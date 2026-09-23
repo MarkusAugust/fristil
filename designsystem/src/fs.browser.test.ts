@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { fs } from "./fs"
 
@@ -138,8 +138,104 @@ describe("fs.field", () => {
     expect(felt.control["aria-describedby"]).toBe("epost-help vilkaar")
   })
 
-  it("lager en unik id når den ikke oppgis", () => {
-    expect(fs.field().control.id).not.toBe(fs.field().control.id)
+  it("krever en id i typen", () => {
+    /*
+     * Kravet er en type, og en type kan bare holdes fast av typesjekken.
+     * Tilordningene under er testen, og det er `typecheck:tests` som kjører
+     * den: blir `id` valgfri igjen, forsvinner feilen, og `@ts-expect-error`
+     * blir selv en feil.
+     *
+     * Uten dette sto kravet uten vaktpost. Den forrige testen het «krever en
+     * id» og sa ingenting om kravet: begge påstandene var grønne også med
+     * den gamle, valgfrie id-en.
+     */
+    // @ts-expect-error id er påkrevd
+    const utenNoe = () => fs.field()
+    // @ts-expect-error id er påkrevd
+    const utenId = () => fs.field({ help: true })
+
+    expect(typeof utenNoe).toBe("function")
+    expect(typeof utenId).toBe("function")
+  })
+
+  it("lager id-er likevel, og sier fra, når JavaScript utelater dem", () => {
+    /*
+     * En konsument uten TypeScript ser ingen type, og ren HTML med
+     * `<script type="module">` er en førsteklasses måte å bruke Fristil på.
+     * Uten reserven ble id-ene til strenger som `undefined-help` og
+     * `undefined-list`, og `for`, `aria-controls` og `aria-describedby` pekte
+     * dit. Koblingen var brutt, og den så gyldig ut.
+     *
+     * Hver bygger som tar en id er med. Første utgave hadde reserven bare i
+     * `fs.field()`, og da sa forslagsfeltet «fs.field()» i meldingen og sendte
+     * utvikleren til feil sted, mens halve id-ene fortsatt ble `undefined-…`.
+     */
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const utenId = <T>(bygger: (o: unknown) => T, valg: unknown): T =>
+      bygger(valg)
+
+    const felt = utenId(
+      fs.field as (o: unknown) => ReturnType<typeof fs.field>,
+      {
+        help: true,
+        error: true,
+      },
+    )
+    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.label.for).toBe(felt.control.id)
+    expect(JSON.stringify(felt)).not.toContain("undefined")
+
+    const forslag = utenId(
+      fs.suggestion as (o: unknown) => ReturnType<typeof fs.suggestion>,
+      { count: 2 },
+    )
+    expect(JSON.stringify(forslag)).not.toContain("undefined")
+    expect(forslag.control["aria-controls"]).toBe(forslag.list.id)
+
+    const faner = utenId(
+      fs.tabs as (o: unknown) => ReturnType<typeof fs.tabs>,
+      {
+        count: 2,
+      },
+    )
+    expect(JSON.stringify(faner)).not.toContain("undefined")
+
+    const vindu = utenId(
+      fs.popover as (o: unknown) => ReturnType<typeof fs.popover>,
+      {},
+    )
+    expect(vindu.trigger["aria-controls"]).toBe(vindu.panel.id)
+
+    const boks = utenId(
+      fs.dialog as (o: unknown) => ReturnType<typeof fs.dialog>,
+      {},
+    )
+    expect(boks.dialog["aria-labelledby"]).toBe(boks.title.id)
+
+    const meldinger = advarsel.mock.calls.map((k) => String(k[0])).join("\n")
+    for (const navn of [
+      "fs.field()",
+      "fs.suggestion()",
+      "fs.tabs()",
+      "fs.popover()",
+      "fs.dialog()",
+    ]) {
+      expect(meldinger, `${navn} sa ikke fra`).toContain(navn)
+    }
+
+    advarsel.mockRestore()
+  })
+
+  it("regner den tomme strengen som ingen id", () => {
+    // `fs.field({ id: "" })` slapp gjennom både typen og reserven, og ga
+    // `for=""` og `help.id="-help"`. Koblingen var brutt, og ingenting sa fra.
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    const felt = fs.field({ id: "  ", help: true })
+
+    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.help.id).toBe(`${felt.control.id}-help`)
+    advarsel.mockRestore()
   })
 })
 

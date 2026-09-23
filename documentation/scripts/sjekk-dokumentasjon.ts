@@ -18,6 +18,7 @@ const ROT = fileURLToPath(new URL("../../", import.meta.url))
 const KOMPONENTER = `${ROT}designsystem/src/components/`
 const SIDER = `${ROT}documentation/src/content/docs/components/`
 const TILPASNING = `${ROT}documentation/src/content/docs/tilpasning.mdx`
+const DOKUMENTASJON = `${ROT}documentation/src/`
 
 type Avvik = { hvor: string; hva: string }
 
@@ -205,6 +206,68 @@ for (const variabel of [...alleVariabler].sort()) {
       hvor: "tilpasning.mdx",
       hva: `variabelen \`${variabel}\` mangler i oversikten`,
     })
+  }
+}
+
+/*
+ * Eksempler som kaller `fs.field()` uten `id`.
+ *
+ * `id` er påkrevd, og en konsument som kopierer et eksempel uten den får en
+ * advarsel i konsollen og en id som ikke overlever hydrering. Ingenting annet
+ * i rekka leser kodeblokkene: `sjekk-dokumentasjon` ser etter navn i teksten,
+ * og ingen av dem kompileres. Da denne endringen ble gjort, sto alle
+ * eksemplene allerede riktig, men det var tilfeldig og ikke voktet.
+ */
+/**
+ * Et kall på en bygger som tar en id, og argumentet det fikk.
+ *
+ * Objektet fanges med ett nivå nesting, så `${x}` og et nøstet objekt inni
+ * ikke avslutter treffet for tidlig. Er argumentet en variabel framfor et
+ * objekt, sier sjekken ingenting: den kan ikke vite hva som står i den, og en
+ * falsk alarm på riktig kode er verre enn et hull.
+ */
+const KODEKALL =
+  /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
+
+/**
+ * Bare koden.
+ *
+ * I brødtekst nevnes `fs.field()` uten at det er et kall, og på forsiden står
+ * det til og med inni en `<code>`-tagg i en setning. I mdx er koden det som
+ * står i kodegjerdene, i Astro er det frontmatteret og skriptene.
+ */
+function kodebiter(fil: string, innhold: string): string[] {
+  if (fil.endsWith(".mdx")) {
+    return [...innhold.matchAll(/```[a-zA-Z]*\n([\s\S]*?)```/g)].map(
+      (treff) => treff[1],
+    )
+  }
+
+  const frontmatter = innhold.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ""
+  const skript = [
+    ...innhold.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g),
+  ].map((treff) => treff[1])
+  return [frontmatter, ...skript]
+}
+
+for (const fil of [
+  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOKUMENTASJON),
+]) {
+  for (const kode of kodebiter(fil, les(`${DOKUMENTASJON}${fil}`))) {
+    for (const treff of kode.matchAll(KODEKALL)) {
+      const bygger = treff[1]
+      const argument = treff[2]
+      // Ingen argumentliste å lese, altså en variabel. Da sier vi ingenting.
+      if (argument === undefined && !/\(\s*\)/.test(treff[0])) continue
+
+      const nokkel = bygger === "dialog" ? "titleId" : "id"
+      if (argument && new RegExp(`\\b${nokkel}\\s*:`).test(argument)) continue
+
+      avvik.push({
+        hvor: fil,
+        hva: `\`fs.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
+      })
+    }
   }
 }
 
