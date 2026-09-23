@@ -132,6 +132,75 @@ function krev(påstand: boolean, beskrivelse: string): void {
   )
 }
 
+/**
+ * Hver komponent skal kunne overtas, og kopien skal ikke peke i løse lufta.
+ *
+ * Omskrivingen bytter en relativ sti med inngangspunktet i `exports`, men
+ * bare når inngangspunktet finnes. Gjør det ikke det, blir stien stående som
+ * den er, og kopien peker på en mappe som ikke finnes hos konsumenten. Det
+ * er skrevet ned som en fare i CLAUDE.md, uten at noe har sjekket det.
+ *
+ * Her overtas hver komponent verktøyet selv lister opp, og hver henvisning
+ * ut av mappa kontrolleres mot `exports` i pakken.
+ */
+{
+  const eksport = new Set(
+    Object.keys(
+      (
+        JSON.parse(await readFile(join(pakke, "package.json"), "utf8")) as {
+          exports: Record<string, unknown>
+        }
+      ).exports,
+    ),
+  )
+
+  const liste = await kjør(["overta"])
+  const navnene = (liste.feil + liste.ut)
+    .split("Komponenter:")[1]
+    ?.split("\n")[1]
+    ?.split(",")
+    .map((navn) => navn.trim())
+    .filter(Boolean)
+
+  krev(
+    (navnene?.length ?? 0) > 10,
+    `fant bare ${navnene?.length ?? 0} komponenter å overta`,
+  )
+
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+
+  for (const navn of navnene ?? []) {
+    const { kode } = await kjør(["overta", navn, `--ut=${join(mappe, navn)}`])
+    krev(kode === 0, `overta ${navn} avsluttet med kode ${kode}`)
+
+    const kopimappe = join(mappe, navn, navn)
+    for (const fil of await readdir(kopimappe)) {
+      const innhold = await readFile(join(kopimappe, fil), "utf8")
+
+      for (const treff of innhold.matchAll(
+        /(?:from|@import)\s+["']([^"']+)["']/g,
+      )) {
+        const sti = treff[1] as string
+
+        krev(
+          !sti.startsWith("../"),
+          `${navn}/${fil} peker ut av mappa med «${sti}», som ikke finnes hos konsumenten`,
+        )
+
+        if (!sti.startsWith("@fristil/designsystem")) continue
+
+        const under = `.${sti.slice("@fristil/designsystem".length)}`
+        krev(
+          eksport.has(under),
+          `${navn}/${fil} peker på «${sti}», som ikke står i exports`,
+        )
+      }
+    }
+  }
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // Overtar en komponent, og skriver om henvisningene ut av mappa
 {
   const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))

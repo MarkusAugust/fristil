@@ -16,6 +16,15 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **En vaktpost på at hver komponent kan overtas.** `sjekk-cli.ts` kjører
+  `overta` på hver komponent verktøyet selv lister opp, og krever at ingen
+  fil i kopien peker ut av mappa, og at hver `@fristil/…`-henvisning står i
+  `exports`. Faren har stått skrevet ned lenge: en komponent som henter noe
+  fra en ny mappe uten et inngangspunkt gir en kopi som peker i løse lufta,
+  og feilen viser seg først når konsumenten bygger. Nå sier den fra her.
+
 ## 0.8.3 (2026-09-23)
 
 ### Rettet

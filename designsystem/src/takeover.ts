@@ -2,13 +2,20 @@
  * Regnestykket bak `fristil overta <komponent>`.
  *
  * Kommandoen kopierer kildekoden til én komponent inn i prosjektet ditt.
- * Tilpasning gjennom `@layer`, `--fs-*`-variabler og `::part()` dekker
- * utseendet, men ikke «jeg vil at denne komponenten skal oppføre seg
- * annerledes». Da er alternativet enten å leve med det eller å skrive
- * komponenten på nytt fra bunnen. Denne kommandoen er veien imellom.
+ * Laget og `--fs-*`-variablene dekker utseendet, og siden ingen komponent
+ * har shadow DOM, når CSS-en din fram overalt. Det de ikke dekker er «jeg
+ * vil at denne komponenten skal oppføre seg annerledes». Da er alternativet
+ * enten å leve med det eller å skrive komponenten på nytt fra bunnen, og
+ * denne kommandoen er veien imellom.
+ *
+ * Etter omleggingen er det en overkommelig vei: en komponent er et stilark
+ * og en fil på mellom hundre og tre hundre linjer, uten avhengigheter, som
+ * fester oppførsel på markup serveren har sendt. Det er noe man kan overta
+ * og vedlikeholde selv.
  *
  * Fila her gjør ingenting med filsystemet, bare med tekst, slik at
- * omskrivingen kan måles i en test. `cli.ts` leser og skriver filene.
+ * omskrivingen kan etterprøves i en vanlig test. `cli.ts` leser og skriver
+ * filene.
  *
  * Det som må skrives om er henvisningene ut av mappa. En komponent peker på
  * naboene sine med relative stier, og de stiene finnes ikke lenger når mappa
@@ -39,7 +46,14 @@ export type PlannedFile = {
 
 export type TakeoverPlan = {
   files: PlannedFile[]
-  /** Pakker kopien trenger i prosjektet, som «lit». */
+  /**
+   * Pakker kopien trenger i prosjektet.
+   *
+   * Lista er tom i dag: pakken har ingen avhengigheter, så en komponent kan
+   * bare peke på naboene sine og på `@fristil/…`. Den står her fordi en
+   * konsument skal få vite det med én gang hvis en komponent en dag henter
+   * noe utenfra, framfor å oppdage det når bygget hans feiler.
+   */
   dependencies: string[]
   /** Stilark kopien fortsatt henter fra pakken. */
   keptImports: string[]
