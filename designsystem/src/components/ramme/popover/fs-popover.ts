@@ -3,6 +3,7 @@ import {
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
@@ -31,9 +32,14 @@ const PLACEMENTS: readonly Placement[] = [
  * `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake
  * når en patch river dem bort. Malen trenger ingen `data-preserve-attr`.
  *
- * Reparasjonen gjelder én vei: har brukeren åpnet vinduet, blir det stående.
- * Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa. Skal
- * serveren også kunne lukke det, settes `server-controlled` på verten.
+ * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
+ * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
+ * serveren faktisk sa.
+ *
+ * Skal serveren eie tilstanden, settes `server-controlled` på verten. Det er
+ * også svaret når siden styrer `open` med et attributt utenfra, som med
+ * Datastars `data-attr:open`: et fjernet attributt er ikke til å skille fra en
+ * morfing, mens `meny.open = false` er en beskjed komponenten kan se.
  *
  * ```html
  * <fs-popover placement="bottom-end">
@@ -49,14 +55,21 @@ export class FsPopover extends HostElement {
   private triggerElement?: HTMLElement
   private observer?: MutationObserver
   /**
-   * At brukeren har åpnet vinduet, husket så en patch ikke kan lukke det.
+   * Hva komponenten sist ble bedt om, gjennom `open`-egenskapen.
    *
    * `open` bor på verten, og en morfing river bort alt som ikke står i
-   * serverens HTML. Uten dette lukket hver eneste patch et vindu brukeren
-   * nettopp hadde åpnet. Før sto `open` i `data-preserve-attr`, og da kunne
-   * serveren til gjengjeld aldri åpne det selv.
+   * serverens HTML. Uten noe mer lukket hver eneste patch et vindu brukeren
+   * nettopp hadde åpnet.
+   *
+   * Et fjernet attributt ser likt ut uansett hvem som fjernet det, så
+   * komponenten kan ikke se forskjell på en morfing og en app. Skillet går i
+   * stedet på **hvordan** appen sier fra: går den gjennom egenskapen, altså
+   * `meny.open = false`, `hide()` eller `toggle()`, er det en beskjed, og den
+   * følges. Setter noe attributtet direkte, som Datastars `data-attr:open`,
+   * er det ikke til å skille fra en morfing, og da skal siden si
+   * `server-controlled` og la serveren eie tilstanden.
    */
-  private openedByUser = false
+  private wantsOpen = false
 
   /** Om panelet er åpent. Speiles, så CSS kan treffe tilstanden. */
   get open(): boolean {
@@ -64,6 +77,10 @@ export class FsPopover extends HostElement {
   }
 
   set open(value: boolean) {
+    // Beskjeden noteres her, og ikke i `show()` og `hide()`. De går begge
+    // gjennom setteren, men det gjør også `meny.open = false` fra en app, og
+    // uten dette satte komponenten attributtet rett tilbake igjen.
+    this.wantsOpen = value
     if (value) this.setAttribute("open", "")
     else this.removeAttribute("open")
   }
@@ -116,7 +133,7 @@ export class FsPopover extends HostElement {
     // `server-controlled` slått på midt i: komponenten slipper taket, og neste
     // patch bestemmer.
     if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
-      this.openedByUser = false
+      this.wantsOpen = false
     }
 
     if (this.isConnected) this.sync()
@@ -130,7 +147,7 @@ export class FsPopover extends HostElement {
      * brukeren eller serveren sagt det. Er det borte mens brukeren åpnet det,
      * er det morfingen som tok det, og da kommer det tilbake.
      */
-    if (this.openedByUser && !this.open && !isServerControlled(this)) {
+    if (this.wantsOpen && !this.open && !isServerControlled(this)) {
       this.setAttribute("open", "")
     }
 
@@ -220,10 +237,7 @@ export class FsPopover extends HostElement {
     this.panel = panel
 
     // Komponentens eget, og satt på nytt hvis en patch tok det.
-    const expanded = String(this.open)
-    if (trigger.getAttribute("aria-expanded") !== expanded) {
-      trigger.setAttribute("aria-expanded", expanded)
-    }
+    setAttr(trigger, "aria-expanded", String(this.open))
 
     if (this.open) {
       if (!panel.matches(":popover-open")) panel.showPopover()
@@ -296,7 +310,6 @@ export class FsPopover extends HostElement {
   /** Åpner panelet. */
   show(): void {
     if (this.open) return
-    this.openedByUser = true
     this.open = true
     this.emit(true)
   }
@@ -304,7 +317,6 @@ export class FsPopover extends HostElement {
   /** Lukker panelet. */
   hide(): void {
     if (!this.open) return
-    this.openedByUser = false
     this.open = false
     this.emit(false)
   }

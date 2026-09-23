@@ -1,6 +1,7 @@
 import {
   defineElement,
   HostElement,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
@@ -34,18 +35,6 @@ const DERIVED_ATTRIBUTES = [
   "disabled",
   "hidden",
 ]
-
-function setOrRemove(
-  element: HTMLElement,
-  name: string,
-  value: string | undefined,
-): void {
-  if (value === undefined) {
-    element.removeAttribute(name)
-  } else if (element.getAttribute(name) !== value) {
-    element.setAttribute(name, value)
-  }
-}
 
 /**
  * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
@@ -395,9 +384,9 @@ export class FsField extends HostElement {
       // opplysningen, og de to kan ikke få lov til å si hver sin ting.
       if (label.htmlFor !== computed.label.for)
         label.htmlFor = computed.label.for
-      setOrRemove(label, "data-required", computed.label["data-required"])
-      setOrRemove(label, "data-optional", computed.label["data-optional"])
-      setOrRemove(label, "aria-disabled", computed.label["aria-disabled"])
+      setAttr(label, "data-required", computed.label["data-required"])
+      setAttr(label, "data-optional", computed.label["data-optional"])
+      setAttr(label, "aria-disabled", computed.label["aria-disabled"])
     }
 
     if (error) {
@@ -408,19 +397,14 @@ export class FsField extends HostElement {
       if (error.hidden !== shouldHide) error.hidden = shouldHide
     }
 
-    setOrRemove(
-      control,
-      "aria-describedby",
-      computed.control["aria-describedby"],
-    )
-    setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
+    setAttr(control, "aria-describedby", computed.control["aria-describedby"])
+    setAttr(control, "aria-invalid", computed.control["aria-invalid"])
     this.writtenInvalid = computed.control["aria-invalid"] ?? null
     this.lastControl = control
 
     if (disabled) {
-      if (!control.hasAttribute("disabled"))
-        control.setAttribute("disabled", "")
-      setOrRemove(control, "aria-disabled", "true")
+      setAttr(control, "disabled", "")
+      setAttr(control, "aria-disabled", "true")
     } else {
       control.removeAttribute("disabled")
       control.removeAttribute("aria-disabled")
@@ -434,7 +418,7 @@ export class FsField extends HostElement {
 
     const state = computed.control["data-state"]
     if (state && isSystemField && !control.hasAttribute("data-state")) {
-      control.setAttribute("data-state", state)
+      setAttr(control, "data-state", state)
     } else if (!state && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
     }

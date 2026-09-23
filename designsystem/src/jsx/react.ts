@@ -96,10 +96,11 @@ type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
   "server-filtered"?: Flag
 } & ServerControlled
 
-type FsDialogAttributes = HTMLAttributes<HTMLElement> & {
-  /** Dialogen er åpen. Komponenten kaller `showModal()`. */
-  open?: Flag
-}
+type FsDialogAttributes = HTMLAttributes<HTMLElement> &
+  ServerControlled & {
+    /** Dialogen er åpen. Komponenten kaller `showModal()`. */
+    open?: Flag
+  }
 
 type FsPopoverAttributes = HTMLAttributes<HTMLElement> &
   ServerControlled & {

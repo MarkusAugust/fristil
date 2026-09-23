@@ -1,6 +1,9 @@
 import {
   defineElement,
   HostElement,
+  isServerControlled,
+  SERVER_CONTROLLED,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 
@@ -35,6 +38,10 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * JavaScript er en `<dialog>` uten `open` skjult, og da finnes ikke
  * innholdet i det hele tatt. `fs.dialog({ open: true })` gir begge.
  *
+ * `server-controlled` på verten slår av reparasjonen av `open` på
+ * `<dialog>`. Da bestemmer hver patch om dialogen vises, også når den står i
+ * topplaget.
+ *
  * ```html
  * <fs-dialog open>
  *   <dialog class="fs-dialog" aria-labelledby="tittel" open>
@@ -48,7 +55,7 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * ```
  */
 export class FsDialog extends HostElement {
-  static observedAttributes = ["open"]
+  static observedAttributes = ["open", SERVER_CONTROLLED]
 
   private observer?: MutationObserver
   /**
@@ -141,11 +148,11 @@ export class FsDialog extends HostElement {
    * en dialog noen har tatt attributtet fra.
    */
   private repairOpen(): void {
+    if (isServerControlled(this)) return
+
     const dialog = this.dialogElement
     if (!dialog?.isConnected) return
-    if (dialog.matches(":modal") && !dialog.hasAttribute("open")) {
-      dialog.setAttribute("open", "")
-    }
+    if (dialog.matches(":modal")) setAttr(dialog, "open", "")
   }
 
   private handleClose = (): void => {
@@ -171,6 +178,15 @@ export class FsDialog extends HostElement {
     // hver eneste patch som rørte dialogen. Står den løsrevet nå, kjøres
     // `sync()` uansett på nytt når den kobles til.
     if (!dialog?.isConnected) {
+      // Slipp taket i en dialog som er borte. Ellers ble observatøren og
+      // lytteren hengende på en løsrevet node så lenge verten levde.
+      if (!dialog) {
+        this.openObserver?.disconnect()
+        this.openObserver = undefined
+        this.dialogElement?.removeEventListener("close", this.handleClose)
+        this.dialogElement = undefined
+      }
+
       warnAboutMarkup(
         this,
         "fant ingen <dialog> som direkte barn. Uten den kan ingenting " +
@@ -261,7 +277,7 @@ export class FsDialog extends HostElement {
        * Brukeren satt igjen med en side der ingenting kunne klikkes, og
        * ingenting synlig som forklarte hvorfor.
        */
-      if (!dialog.open) dialog.setAttribute("open", "")
+      setAttr(dialog, "open", "")
       dialog.close()
       this.meld(false, dialog.returnValue)
     }

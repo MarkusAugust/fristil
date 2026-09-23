@@ -3,6 +3,7 @@ import {
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 import {
@@ -60,7 +61,16 @@ export class FsSuggestion extends HostElement {
    * komponenten det tilbake.
    */
   private wantOpen?: boolean
-  private activeId?: string
+  /**
+   * Alternativet som er markert, husket med både id og tekst.
+   *
+   * Id-ene fra `fs.suggestion()` er posisjonelle, så en ny liste fra serveren
+   * gjenbruker dem. Med id alene satte komponenten markeringen tilbake på
+   * alternativ nummer to i en helt annen liste, og skjermleseren leste opp en
+   * kommune brukeren aldri navigerte til. Teksten er identiteten; id-en er
+   * bare der `aria-activedescendant` skal peke.
+   */
+  private active?: { id: string; label: string }
 
   connectedCallback(): void {
     /*
@@ -86,7 +96,7 @@ export class FsSuggestion extends HostElement {
   attributeChangedCallback(navn: string): void {
     if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
       this.wantOpen = undefined
-      this.activeId = undefined
+      this.active = undefined
     }
   }
 
@@ -105,14 +115,35 @@ export class FsSuggestion extends HostElement {
     if (isServerControlled(this) || !this.control) return
 
     if (this.wantOpen !== undefined) {
+      /*
+       * Begge delene sjekkes hver for seg. En patch som bare rører feltet lot
+       * `aria-expanded="false"` stå mens alternativene var synlige, og
+       * skjermleseren meldte at lista var lukket mens den sto på skjermen.
+       */
       const list = this.listElement
-      if (list && list.hidden === this.wantOpen) this.applyOpen(this.wantOpen)
+      const expanded = this.control.getAttribute("aria-expanded")
+      if (
+        (list && list.hidden === this.wantOpen) ||
+        expanded !== String(this.wantOpen)
+      ) {
+        this.applyOpen(this.wantOpen)
+      }
       if (this.wantOpen) this.filter()
     }
 
-    if (this.activeId) {
-      const aktiv = this.options.find((o) => o.id === this.activeId)
-      if (aktiv && aktiv.getAttribute("aria-selected") !== "true") {
+    if (this.active) {
+      /*
+       * Teksten må stemme, ikke bare id-en, og alternativet må være synlig.
+       * Ellers markerte komponenten noe serveren nettopp hadde filtrert bort,
+       * og `aria-activedescendant` pekte på et skjult element.
+       */
+      const aktiv = this.visible.find(
+        (o) =>
+          o.id === this.active?.id &&
+          (o.textContent ?? "").trim() === this.active?.label,
+      )
+      if (!aktiv) this.active = undefined
+      else if (aktiv.getAttribute("aria-selected") !== "true") {
         this.markOption(aktiv)
       }
     }
@@ -225,18 +256,13 @@ export class FsSuggestion extends HostElement {
     if (!list || !this.control) return
 
     if (list.hidden === open) list.hidden = !open
-    const expanded = String(open)
-    if (this.control.getAttribute("aria-expanded") !== expanded) {
-      this.control.setAttribute("aria-expanded", expanded)
-    }
+    setAttr(this.control, "aria-expanded", String(open))
 
     if (!open) {
-      this.activeId = undefined
+      this.active = undefined
       this.control.removeAttribute("aria-activedescendant")
       for (const option of this.options) {
-        if (option.getAttribute("aria-selected") !== "false") {
-          option.setAttribute("aria-selected", "false")
-        }
+        setAttr(option, "aria-selected", "false")
       }
     }
   }
@@ -281,10 +307,6 @@ export class FsSuggestion extends HostElement {
 
     const neste = (index + synlige.length) % synlige.length
 
-    for (const option of this.options) {
-      option.setAttribute("aria-selected", "false")
-    }
-
     this.markOption(synlige[neste])
     synlige[neste].scrollIntoView({ block: "nearest" })
   }
@@ -294,18 +316,13 @@ export class FsSuggestion extends HostElement {
     if (!this.control) return
 
     for (const option of this.options) {
-      const valgt = option === aktiv ? "true" : "false"
-      if (option.getAttribute("aria-selected") !== valgt) {
-        option.setAttribute("aria-selected", valgt)
-      }
+      setAttr(option, "aria-selected", option === aktiv ? "true" : "false")
     }
 
-    this.activeId = aktiv.id
+    this.active = { id: aktiv.id, label: (aktiv.textContent ?? "").trim() }
     // aria-activedescendant flytter skjermleserens lesepunkt uten at fokus
     // forlater feltet. Uten den leses alternativet aldri opp.
-    if (this.control.getAttribute("aria-activedescendant") !== aktiv.id) {
-      this.control.setAttribute("aria-activedescendant", aktiv.id)
-    }
+    setAttr(this.control, "aria-activedescendant", aktiv.id)
   }
 
   private choose(option: HTMLElement): void {

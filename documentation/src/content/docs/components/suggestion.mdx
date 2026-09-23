@@ -69,6 +69,8 @@ Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 
 I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett `server-filtered`, så holder komponenten fingrene av fatet og lar lista være som den kom.
 
+`server-filtered` gjelder filtreringen. Vil du at serveren også skal eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Uten det setter komponenten begge deler tilbake etter en oppdatering, slik at brukeren ikke mister plassen sin.
+
 ```html
 <fs-suggestion server-filtered>…</fs-suggestion>
 ```

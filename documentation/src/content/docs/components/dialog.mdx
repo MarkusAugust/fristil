@@ -118,10 +118,12 @@ Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog"
 
 De to `open`-ene i eksempelet er ikke det samme:
 
-| Hvor | Hvem setter den | Fredet |
+| Hvor | Hvem setter den | Hva som skjer i en oppdatering |
 | --- | --- | --- |
-| På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
-| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Ja |
+| På `<fs-dialog>` | Serveren, når dialogen skal vises | Serveren bestemmer. Sender den `open` på nytt, åpnes dialogen igjen |
+| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Komponenten setter det tilbake så lenge dialogen står i topplaget |
+
+`server-controlled` på `<fs-dialog>` slår av den siste. Da bestemmer hver oppdatering om dialogen vises, også når den står i topplaget.
 
 At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
 

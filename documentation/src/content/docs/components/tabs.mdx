@@ -152,7 +152,7 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <fs-tabs data-on:tab-select="$valgtFane = evt.detail.index">
+    <fs-tabs server-controlled data-on:tab-select="$valgtFane = evt.detail.index">
       <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
         <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
                 aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
@@ -162,7 +162,7 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
     </fs-tabs>
     ```
 
-    Ingenting ekstra trengs her. Neste oppdatering fra serveren river fanevalget bort, og komponenten setter det tilbake.
+    `server-controlled` hører med når et signal styrer hvilken fane som vises. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
   </TabItem>
 </Tabs>
 

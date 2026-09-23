@@ -3,6 +3,7 @@ import {
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
@@ -38,9 +39,10 @@ export const FS_TABS_TAG = "fs-tabs" as const
  */
 export class FsTabs extends HostElement {
   /**
-   * Ingen attributter. Hvilken fane som er valgt står i markupen serveren
-   * sendte, som `aria-selected` på fanen og `hidden` på panelene, og leses
-   * derfra. Et eget `selected` ville vært en parallell utgave av det samme.
+   * Bare `server-controlled`. Hvilken fane som er valgt står i markupen
+   * serveren sendte, som `aria-selected` på fanen og `hidden` på panelene, og
+   * leses derfra. Et eget `selected` ville vært en parallell utgave av det
+   * samme.
    */
   static observedAttributes: string[] = [SERVER_CONTROLLED]
 
@@ -49,11 +51,16 @@ export class FsTabs extends HostElement {
   /**
    * Fanen brukeren valgte, husket så en patch ikke kan ta den.
    *
+   * Id-en og ikke indeksen. En indeks er ikke en identitet: setter serveren
+   * inn en fane først i lista, peker den samme indeksen på noe annet, og
+   * valget hoppet til en fane brukeren aldri trykket på. Er id-en borte etter
+   * en patch, er fanen borte, og da glemmer komponenten valget framfor å
+   * gjette.
+   *
    * `undefined` betyr at brukeren ikke har valgt noe ennå, og da er det
-   * serverens markup som gjelder. Så snart hun har valgt, er det hennes valg
-   * som settes tilbake når en morfing river `aria-selected` bort.
+   * serverens markup som gjelder.
    */
-  private chosen?: number
+  private chosenId?: string
 
   connectedCallback(): void {
     /*
@@ -72,10 +79,12 @@ export class FsTabs extends HostElement {
     this.sync()
   }
 
-  attributeChangedCallback(): void {
+  attributeChangedCallback(navn: string): void {
     // `server-controlled` slått på midt i: da skal komponenten slippe taket,
     // og neste patch bestemmer.
-    if (isServerControlled(this)) this.chosen = undefined
+    if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
+      this.chosenId = undefined
+    }
   }
 
   disconnectedCallback(): void {
@@ -115,12 +124,24 @@ export class FsTabs extends HostElement {
    * Uten dette måtte malen skrive `data-preserve-attr="aria-selected tabindex"`
    * på hver fane og `hidden` på hvert panel, altså liste opp attributtene
    * komponenten kom til å røre. Ingen kompilator så på den lista.
+   *
+   * `apply()` kalles uansett om fanene ser riktige ut, for en patch kan ha
+   * rørt bare panelene. Det er den smale patchen dokumentasjonen selv
+   * anbefaler, og en sjekk på `aria-selected` alene så den ikke: fanen sa én
+   * ting og skjermen en annen.
    */
   private repair(): void {
-    if (this.chosen === undefined || isServerControlled(this)) return
-    if (this.chosen >= this.tabs.length) return
-    if (this.selected === this.chosen) return
-    this.apply(this.chosen)
+    if (this.chosenId === undefined || isServerControlled(this)) return
+
+    const index = this.tabs.findIndex((tab) => tab.id === this.chosenId)
+    if (index < 0) {
+      // Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
+      // serverens markup som gjelder.
+      this.chosenId = undefined
+      return
+    }
+
+    this.apply(index)
   }
 
   private bind(): void {
@@ -197,7 +218,10 @@ export class FsTabs extends HostElement {
     if (index < 0 || index >= tabs.length) return
     if (index === this.selected) return
 
-    this.chosen = index
+    // Ingen hukommelse når serveren eier valget. Uten dette ville et valg
+    // gjort mens attributtet sto der blitt satt tilbake i det noen fjernet
+    // det igjen.
+    if (!isServerControlled(this)) this.chosenId = tabs[index].id
     this.apply(index)
 
     this.dispatchEvent(
@@ -222,10 +246,7 @@ export class FsTabs extends HostElement {
 
     tabs.forEach((tab, i) => {
       const valgt = i === index
-      const selected = String(valgt)
-      if (tab.getAttribute("aria-selected") !== selected) {
-        tab.setAttribute("aria-selected", selected)
-      }
+      setAttr(tab, "aria-selected", String(valgt))
       const tabindex = valgt ? 0 : -1
       if (tab.tabIndex !== tabindex) tab.tabIndex = tabindex
 

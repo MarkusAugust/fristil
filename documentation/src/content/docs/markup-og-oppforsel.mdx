@@ -293,10 +293,14 @@ Da reparerer komponenten ingenting, og hver patch bestemmer. Standardvalget
 er det motsatte, fordi det er riktig nesten alltid: brukeren mister ikke det
 hun nettopp gjorde.
 
-Sprettoppvinduet og dialogen står i en mellomstilling, og det er med vilje.
-Har brukeren åpnet et sprettoppvindu, blir det stående gjennom en patch.
-Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa. Skal
-serveren også kunne lukke det, trengs `server-controlled`.
+Sprettoppvinduet står i en mellomstilling, og det er med vilje. Har noen bedt
+om at vinduet er åpent, blir det stående gjennom en patch. Sender serveren
+`open`, åpnes det, for det er noe serveren faktisk sa.
+
+En app lukker det med egenskapen: `meny.open = false`, `hide()` eller
+`toggle()`. Styrer du `open` med et attributt utenfra, som med Datastars
+`data-attr:open`, ser komponenten ingen forskjell på det og en morfing, og da
+skal siden si `server-controlled` og la serveren eie tilstanden.
 
 #### Når brukeren selv utløser oppdateringen
 
@@ -310,11 +314,13 @@ sende riktig HTML med én gang:
 
 Komponenten gjør tastaturet og tilgjengeligheten, signalet følger etter, og
 serveren rendrer fra `$fane`. Da er serveren den som vet, og
-`server-controlled` sier det.
+`server-controlled` sier det. Uten attributtet ville de to kjempet om det
+samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender
+sin egen.
 
-Uten signalet, eller når **serveren** dytter en oppdatering av seg selv fordi
-en annen bruker gjorde noe, er det komponenten som vet, og da skal den
-reparere. Det er standardvalget.
+Lar du være å binde et signal, er det komponenten som vet, og da skal den
+reparere. Det er standardvalget, og det er også det riktige når **serveren**
+dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
 
 #### Kort oppsummert
 

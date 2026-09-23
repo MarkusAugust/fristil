@@ -36,7 +36,25 @@ kommer i et nytt undertall.
   markupen kunne bestemme hvem som eier tilstanden. «Gå videre til steg 2» er
   en ekte ting en server vil kunne gjøre. Står attributtet der, reparerer
   komponenten ingenting, og hver patch bestemmer. Ett attributt å huske i
-  stedet for ni, og standardvalget er det som er riktig nesten alltid.
+  stedet for ni, og standardvalget er det som er riktig nesten alltid. Gjelder
+  `<fs-tabs>`, `<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>`, og er
+  deklarert for JSX på alle fire.
+
+- **`setAttr` og `SERVER_CONTROLLED` er nye eksporter** fra
+  `@fristil/designsystem/host-element`. `setAttr` skriver et attributt bare
+  når verdien er en annen, og er den eneste lovlige veien til et attributt på
+  et annet element i en komponent som observerer sine egne. En overtatt
+  komponent bruker begge.
+
+- **`scripts/sjekk-skriving.ts` håndhever den regelen.** Den kjører som del av
+  `build` og leser kilden, fordi regelen ikke lar seg etterprøve ved å kjøre
+  noe: bryter en komponent den, kaller observatøren seg selv, mikrooppgavekøen
+  tømmes aldri, og en testkjøring **henger** framfor å feile. Ingen
+  stakksporing, ingen påstand, bare en kjøring som må drepes for hånd.
+
+- **`stabilitet.browser.test.ts`** teller mutasjoner i hver av de fem
+  komponentene etter at brukeren har gjort noe, og krever null. Den fanger en
+  komponent som skriver litt for mye.
 
 ### Endret
 
@@ -47,10 +65,20 @@ kommer i et nytt undertall.
   Alle fire observerer nå de attributtene de selv setter, og hver skriving
   sammenligner først.
 
-  Sprettoppvinduet reparerer én vei: har brukeren åpnet det, blir det
-  stående, men sender serveren `open`, åpnes det, for det er noe serveren
-  faktisk sa. Dialogen skiller på samme måte mellom `open` på verten, som er
-  serverens beskjed, og `open` på `<dialog>`, som nettleseren setter.
+  Sprettoppvinduet reparerer én vei: har noen bedt om at vinduet er åpent,
+  blir det stående, men sender serveren `open`, åpnes det, for det er noe
+  serveren faktisk sa. En app lukker det med egenskapen, altså
+  `meny.open = false`, `hide()` eller `toggle()`; et attributt fjernet utenfra
+  er ikke til å skille fra en morfing, og der er `server-controlled` svaret.
+  Dialogen skiller på samme måte mellom `open` på verten, som er serverens
+  beskjed, og `open` på `<dialog>`, som nettleseren setter.
+
+  Komponentene husker identiteter og ikke posisjoner. `<fs-tabs>` husker
+  id-en på fanen brukeren valgte, ikke indeksen: setter serveren inn en fane
+  først i lista, peker den samme indeksen på noe annet. `<fs-suggestion>`
+  husker både id-en og teksten på det markerte alternativet, siden id-ene fra
+  `fs.suggestion()` er posisjonelle og en ny liste gjenbruker dem. Er det
+  borte, glemmer komponenten det framfor å gjette.
 
 ## 0.9.0 (2026-09-23)
 
