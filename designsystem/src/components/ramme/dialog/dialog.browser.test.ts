@@ -345,6 +345,50 @@ describe("fs-dialog", () => {
     expect(fikkFokus, "resten av siden er fortsatt inert").toBe(true)
   })
 
+  it("åpner ikke igjen en dialog brukeren lukket før skriptet kom", async () => {
+    /*
+     * Serveren skriver `open` begge steder, så innholdet finnes uten
+     * JavaScript, og `<form method="dialog">` lukker boksen uten JavaScript
+     * også. Skjer det før komponenten har fått kjøre, finnes det ingen
+     * lytter, og første `sync()` så en vert som sa «åpen» og en lukket
+     * dialog. Da spratt dialogen opp igjen rett etter at brukeren hadde
+     * lukket den. På mobil skjedde det hver gang, fordi vinduet der er langt
+     * nok til å rekke et trykk.
+     *
+     * Markupen bygges løsrevet og lukkes der. `sync()` gir seg på en dialog
+     * som ikke står i siden, så ingen lytter er festet, og det er nettopp
+     * tilstanden en side har før skriptet er lastet.
+     */
+    const boks = dialog({ titleId: "tittel", open: true })
+    const holder = document.createElement("div")
+    holder.innerHTML = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Tittel</h2>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="fs-button" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </fs-dialog>`
+
+    const d = holder.querySelector("dialog") as HTMLDialogElement
+    expect(d.open, "serveren sendte den ikke åpen").toBe(true)
+
+    // Brukeren lukker boksen mens den bare er en boks på siden.
+    d.close("lukk")
+
+    document.body.append(holder)
+    await ventPaTegning()
+
+    expect(d.open, "dialogen spratt opp igjen").toBe(false)
+    expect(
+      holder.querySelector("fs-dialog")?.hasAttribute("open"),
+      "verten sier fortsatt at den er åpen",
+    ).toBe(false)
+
+    holder.remove()
+  })
+
   it("sender ingen close-hendelse når serveren sender dialogen åpen", async () => {
     /*
      * Serveren skriver `open` på `<dialog>`, og komponenten må ta det bort
