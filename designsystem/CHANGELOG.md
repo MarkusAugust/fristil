@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.9.0 (2026-09-23)
+
 ### Brytende
 
 - **`FIELD_PRESERVED_ATTRIBUTES` er fjernet.** Lista fantes for at en mal
