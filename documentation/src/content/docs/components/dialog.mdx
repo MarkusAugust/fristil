@@ -127,6 +127,8 @@ Attributtet på selve `<dialog>` må fredes, for nettleseren setter det selv i `
 
 Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
 
+Det siste gjelder også deg som har JavaScript: dialogen vises først der den står i flyten, og hopper til midten når modulen har kjørt. På en tung side er det et synlig hopp, ikke ett bilde. Vil du unngå det, la serveren sende dialogen lukket og åpne den fra klienten i stedet.
+
 ## TypeScript
 
 ```tsx
