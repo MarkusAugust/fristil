@@ -108,6 +108,17 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **Sprettoppvinduet åpnet seg igjen når en patch både fjernet `open` og
+  overlot tilstanden.** En morfing setter ett attributt om gangen, og `open`
+  kommer før `server-controlled` i dokumentrekkefølgen, så komponenten
+  reparerte mens serveren var midt i å si at den overtar. Reparasjonen venter
+  nå til hele patchen har landet, og sjekker vilkåret på nytt der.
+
+- **Forslagsfeltet satte ikke tilbake `aria-activedescendant` alene.** Rev en
+  patch bare pekeren, mens markeringen sto igjen, så ingenting galt ut i
+  markupen, men skjermleseren hadde mistet lesepunktet sitt. Begge sidene av
+  koblingen sjekkes nå.
+
 - **En fanerad sluttet å svare når en patch fjernet den valgte fanen.**
   `<fs-tabs>` glemte valget, men lot markupen stå i utakt: ingen fane markert,
   alle paneler skjult, og et klikk gjorde ingenting, fordi `select(0)`

@@ -150,7 +150,13 @@ export class FsSuggestion extends HostElement {
         // skjermleseren leste opp en kommune brukeren aldri navigerte til.
         this.active = undefined
         this.control.removeAttribute("aria-activedescendant")
-      } else if (aktiv.getAttribute("aria-selected") !== "true") {
+      } else if (
+        aktiv.getAttribute("aria-selected") !== "true" ||
+        this.control.getAttribute("aria-activedescendant") !== aktiv.id
+      ) {
+        // Begge sidene av koblingen sjekkes. Rev patchen bare
+        // `aria-activedescendant`, mens markeringen sto igjen, mistet
+        // skjermleseren lesepunktet sitt uten at noe annet så galt ut.
         this.markOption(aktiv)
       }
     }

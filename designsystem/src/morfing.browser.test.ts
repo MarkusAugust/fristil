@@ -349,6 +349,36 @@ describe("morfing river ikke bort det komponenten setter", () => {
     ).toBe(true)
   })
 
+  it("setter tilbake lesepunktet når bare aria-activedescendant blir revet bort", async () => {
+    /*
+     * Markeringen kan stå igjen mens pekeren er borte. Da ser ingenting galt
+     * ut i markupen, men skjermleseren har mistet lesepunktet sitt, og
+     * brukeren får ikke lest opp alternativet hun står på.
+     */
+    const felt = monterMarkup(FELT_MED_FORSLAG)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    expect(kontroll.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+
+    kontroll.removeAttribute("aria-activedescendant")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      kontroll.getAttribute("aria-activedescendant"),
+      "lesepunktet kom ikke tilbake",
+    ).toBe(valg[0].id)
+  })
+
   it("glemmer markeringen når serveren sender en helt ny liste", async () => {
     /*
      * Id-ene fra `fs.suggestion()` er posisjonelle, så en ny liste gjenbruker
@@ -643,6 +673,31 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(
       vindu.hasAttribute("open"),
       "serveren sa at den eier vinduet, men komponenten åpnet det igjen",
+    ).toBe(false)
+  })
+
+  it("lukker seg når patchen både fjerner open og overlater tilstanden", async () => {
+    /*
+     * En morfing setter ett attributt om gangen, og `open` kommer før
+     * `server-controlled` i dokumentrekkefølgen. Reparerte komponenten med en
+     * gang, satte den `open` tilbake mens serveren var midt i å si at den
+     * overtar tilstanden, og vinduet ble stående åpent etterpå.
+     */
+    const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & { show(): void }
+    await customElements.whenDefined("fs-popover")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    vindu.show()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vindu.hasAttribute("open")).toBe(true)
+
+    vindu.removeAttribute("open")
+    vindu.setAttribute("server-controlled", "")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      vindu.hasAttribute("open"),
+      "vinduet åpnet seg igjen fordi reparasjonen kom før hele patchen hadde landet",
     ).toBe(false)
   })
 

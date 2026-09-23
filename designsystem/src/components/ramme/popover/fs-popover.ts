@@ -151,7 +151,20 @@ export class FsPopover extends HostElement {
      * er det morfingen som tok det, og da kommer det tilbake.
      */
     if (this.wantsOpen && !this.open && !isServerControlled(this)) {
-      setFlag(this, "open", true)
+      /*
+       * Vent til hele patchen har landet før vinduet åpnes igjen.
+       *
+       * En morfing setter ett attributt om gangen, og `open` kommer før
+       * `server-controlled` i dokumentrekkefølgen. Reparerte komponenten med
+       * en gang, satte den `open` tilbake mens serveren var midt i å si at
+       * den overtar tilstanden, og vinduet ble stående åpent etterpå.
+       * `queueMicrotask` kjører etter at hele patchen er ferdig, og vilkåret
+       * sjekkes på nytt der.
+       */
+      queueMicrotask(() => {
+        if (!this.isConnected || isServerControlled(this)) return
+        if (this.wantsOpen && !this.open) setFlag(this, "open", true)
+      })
     }
 
     // Delene kjennes igjen på koblingen som må være der uansett: panelet er
