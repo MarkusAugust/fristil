@@ -73,7 +73,6 @@ describe(".fs-dialog", () => {
     expect(boks.dialog).toEqual({
       class: "fs-dialog",
       "aria-labelledby": "dialog-tittel",
-      "data-preserve-attr": "open",
     })
     // Skal dialogen vises, står `open` begge steder. På `<dialog>` er det
     // reserven for den som ikke har JavaScript: uten den er innholdet skjult.
@@ -81,7 +80,6 @@ describe(".fs-dialog", () => {
       class: "fs-dialog",
       "aria-labelledby": "t",
       open: true,
-      "data-preserve-attr": "open",
     })
     expect(boks.title).toEqual({
       class: "fs-dialog__title",
@@ -254,21 +252,20 @@ describe("fs-dialog", () => {
     expect(holder.querySelector("dialog")?.hasAttribute("open")).toBe(true)
   })
 
-  it("freder ikke open på verten, for det er serveren som åpner dialogen", () => {
-    // Hadde `open` stått i `data-preserve-attr` her, kunne serveren aldri
-    // åpnet dialogen igjen etter at brukeren hadde lukket den én gang.
+  it("skriver open på verten som serverens beskjed", () => {
     // `true` og ikke `""`: React 19 setter egenskapen, og den tomme
     // strengen er usann, så setteren i komponenten fjerner attributtet igjen.
     expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: true })
     expect(dialog({ titleId: "t" }).host).toEqual({})
   })
 
-  it("freder open på selve dialogen, for den setter nettleseren", () => {
-    // `showModal()` setter `open` på `<dialog>` selv, og uten fredningen
-    // river morfingen det bort og lukker dialogen i det øyeblikket den
-    // åpnet den. Serveren skriver det også når den vet at dialogen skal
-    // vises, men den vet det ikke når brukeren åpner den selv.
-    expect(dialog({ titleId: "t" }).dialog["data-preserve-attr"]).toBe("open")
+  it("ber ikke malen frede noe", () => {
+    // `showModal()` setter `open` på `<dialog>` selv, og en morfing river det
+    // bort igjen. Før måtte malen skrive `data-preserve-attr="open"` for å
+    // hindre det. Nå setter komponenten attributtet tilbake, og kommer lista
+    // hit igjen, har noen gjenopptatt kontrakten malen måtte skrive av.
+    expect("data-preserve-attr" in dialog({ titleId: "t" }).dialog).toBe(false)
+    expect("data-preserve-attr" in dialog({ titleId: "t" }).host).toBe(false)
   })
 
   it("åpner igjen når serveren sender open på nytt", async () => {
@@ -306,7 +303,7 @@ describe("fs-dialog", () => {
     // så dette tilfellet finnes bare i maler noen har skrevet selv.
     monter(`
       <fs-dialog open>
-        <dialog class="fs-dialog" aria-labelledby="tittel" data-preserve-attr="open">
+        <dialog class="fs-dialog" aria-labelledby="tittel">
           <h2 class="fs-dialog__title" id="tittel">Tittel</h2>
         </dialog>
       </fs-dialog>

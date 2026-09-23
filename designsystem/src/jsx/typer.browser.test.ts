@@ -36,6 +36,34 @@ describe("byggerne passer i JSX-deklarasjonene", () => {
     expect(host.open).toBe(true)
   })
 
+  /**
+   * At `server-controlled` er deklarert på hver komponent som har det.
+   *
+   * Vakten i `react.browser.test.ts` leser kilden som tekst, og den kan ikke
+   * se dette: navnet står i den felles `ServerControlled`-typen, så regexen
+   * treffer uansett om en komponent faktisk bruker den. Tilordningene her går
+   * gjennom TypeScript, og en komponent som mister aliaset blir en
+   * kompileringsfeil i `typecheck:tests`.
+   */
+  it("de fire komponentene som lar serveren eie tilstanden", () => {
+    const faner: JSX.IntrinsicElements["fs-tabs"] = {
+      "server-controlled": true,
+    }
+    const sprett: JSX.IntrinsicElements["fs-popover"] = {
+      "server-controlled": true,
+    }
+    const forslag: JSX.IntrinsicElements["fs-suggestion"] = {
+      "server-controlled": true,
+    }
+    const boks: JSX.IntrinsicElements["fs-dialog"] = {
+      "server-controlled": true,
+    }
+
+    for (const el of [faner, sprett, forslag, boks]) {
+      expect(el["server-controlled"]).toBe(true)
+    }
+  })
+
   it("fanene, som har tabIndex", () => {
     const faner = fs.tabs({ id: "sak", count: 2 })
     const [forste] = faner.tabs

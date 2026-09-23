@@ -16,6 +16,85 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`data-preserve-attr` er borte fra hele pakken.** `fs.tabs()`,
+  `fs.popover()`, `fs.suggestion()` og `fs.dialog()` skriver det ikke lenger,
+  og typene deres har ikke feltet. Skriver du markupen for hånd, kan du slette
+  attributtet.
+
+  Lista krevde at malen skrev av navnene på hvert attributt komponenten kom
+  til å røre, ni strenger fordelt på fire komponenter, uten at noen
+  kompilator så på dem. Endret Fristil hva en komponent satte, gikk malen
+  stille i stykker. Komponentene setter nå tilbake det brukeren gjorde, og
+  ingen mal trenger å kjenne attributtene.
+
+### Lagt til
+
+- **`server-controlled` på verten gir serveren tilstanden tilbake.** Det
+  fredningen ga, og som reparasjonen måtte erstatte, er at den som skrev
+  markupen kunne bestemme hvem som eier tilstanden. «Gå videre til steg 2» er
+  en ekte ting en server vil kunne gjøre. Står attributtet der, reparerer
+  komponenten ingenting, og hver patch bestemmer. Ett attributt å huske i
+  stedet for ni, og standardvalget er det som er riktig nesten alltid. Gjelder
+  `<fs-tabs>`, `<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>`, og er
+  deklarert for JSX på alle fire.
+
+- **`setAttr`, `setFlag`, `setText`, `addClass`, `SERVER_CONTROLLED` og
+  `isServerControlled` er nye eksporter** fra
+  `@fristil/designsystem/host-element`. De fire første skriver bare når noe
+  faktisk endrer seg, og er de eneste lovlige veiene til et attributt, et
+  boolsk flagg, tekst og en klasse i en komponent som observerer sine egne. En
+  overtatt komponent bruker dem.
+
+- **`scripts/sjekk-skriving.ts` håndhever den regelen.** Den kjører som del av
+  `build`, både i pakken og i rota, og leser kilden, fordi regelen ikke lar seg
+  etterprøve ved å kjøre noe: bryter en komponent den, kaller observatøren seg
+  selv, mikrooppgavekøen tømmes aldri, og en testkjøring **henger** framfor å
+  feile. Ingen stakksporing, ingen påstand, bare en kjøring som må drepes for
+  hånd.
+
+  Den ser etter seks skrivemåter, ikke bare `setAttribute`: `el.hidden = x`,
+  `el.tabIndex = n`, `el.htmlFor = s`, `el.textContent = s`,
+  `classList.add()` og `el.style.cssText = s`. Alle gir en mutasjonspost når
+  ingenting endrer seg, og fem av dem var i bruk. Verten er ikke et unntak:
+  komponentene observerer seg selv, så `this.classList.add()` henger en
+  kjøring like godt som en skriving på et barn.
+
+- **`sjekk:server` kjøres nå også fra rota.** Den sto bare i pakkens egen
+  `build`, så den kjørte ved publisering og ikke i CI, mens `CLAUDE.md` sa at
+  den var en vaktpost.
+
+- **`stabilitet.browser.test.ts`** teller mutasjoner i hver av de fem
+  komponentene etter at brukeren har gjort noe, og krever null. Den fanger en
+  komponent som skriver litt for mye.
+
+### Endret
+
+- **Komponentene setter tilbake det brukeren gjorde.** `<fs-tabs>` setter
+  fanevalget tilbake, `<fs-popover>` at vinduet er åpent og hvor det står,
+  `<fs-suggestion>` om lista er utvidet og hva som er markert, og
+  `<fs-dialog>` `open` på selve `<dialog>` når den fortsatt står i topplaget.
+  Alle fire observerer nå de attributtene de selv setter, og hver skriving
+  sammenligner først.
+
+  Sprettoppvinduet reparerer én vei: har noen bedt om at vinduet er åpent,
+  blir det stående, men sender serveren `open`, åpnes det, for det er noe
+  serveren faktisk sa. En app lukker det med egenskapen, altså
+  `meny.open = false`, `hide()` eller `toggle()`; et attributt fjernet utenfra
+  er ikke til å skille fra en morfing, og der er `server-controlled` svaret.
+  Dialogen skiller på samme måte mellom `open` på verten, som er serverens
+  beskjed, og `open` på `<dialog>`, som nettleseren setter.
+
+  Komponentene husker identiteter og ikke posisjoner. `<fs-tabs>` husker selve
+  knappen brukeren valgte: en indeks er ingen identitet, og en id virker ikke
+  i håndskrevet markup, som ofte ikke har noen. En attributtmorfing beholder
+  nodene, så referansen overlever den. `<fs-suggestion>` husker både id-en og
+  teksten på det markerte alternativet, siden id-ene fra `fs.suggestion()` er
+  posisjonelle og en ny liste gjenbruker dem. Er det borte, glemmer
+  komponenten det framfor å gjette, og fanene rydder opp etter seg slik at
+  raden fortsatt svarer.
+
 ## 0.9.0 (2026-09-23)
 
 ### Brytende
@@ -28,6 +107,26 @@ kommer i et nytt undertall.
   `data-preserve-attr` på feltet.
 
 ### Rettet
+
+- **Sprettoppvinduet åpnet seg igjen når en patch både fjernet `open` og
+  overlot tilstanden.** En morfing setter ett attributt om gangen, og `open`
+  kommer før `server-controlled` i dokumentrekkefølgen, så komponenten
+  reparerte mens serveren var midt i å si at den overtar. Reparasjonen venter
+  nå til hele patchen har landet, og sjekker vilkåret på nytt der.
+
+- **Forslagsfeltet satte ikke tilbake `aria-activedescendant` alene.** Rev en
+  patch bare pekeren, mens markeringen sto igjen, så ingenting galt ut i
+  markupen, men skjermleseren hadde mistet lesepunktet sitt. Begge sidene av
+  koblingen sjekkes nå.
+
+- **En fanerad sluttet å svare når en patch fjernet den valgte fanen.**
+  `<fs-tabs>` glemte valget, men lot markupen stå i utakt: ingen fane markert,
+  alle paneler skjult, og et klikk gjorde ingenting, fordi `select(0)`
+  sammenlignet mot en `selected` som svarer 0 også når ingenting er markert.
+  Komponenten velger nå den første fanen i det tilfellet, og melder fra med
+  `tab-select`, siden det er komponentens eget valg og ikke brukerens. Sendte
+  serveren med vilje en rad uten markering, blir den overkjørt, men bare når
+  brukeren hadde valgt noe fra før.
 
 - **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
   fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da

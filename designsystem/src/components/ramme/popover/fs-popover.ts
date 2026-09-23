@@ -1,6 +1,10 @@
 import {
   defineElement,
   HostElement,
+  isServerControlled,
+  SERVER_CONTROLLED,
+  setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
@@ -25,24 +29,48 @@ const PLACEMENTS: readonly Placement[] = [
  * ennå ikke i alle nettlesere, så posisjonen regnes ut her.
  *
  * Serveren skriver koblingen med `fs.popover()`: `aria-controls` på knappen,
- * klassen og `popover` på panelet. Komponenten setter bare `aria-expanded`,
- * som endrer seg når brukeren klikker, og posisjonen. Begge står i
- * `data-preserve-attr` fra byggeren, ellers river morfingen dem bort.
+ * klassen og `popover` på panelet. Komponenten setter `open` på verten,
+ * `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake
+ * når en patch river dem bort. Malen trenger ingen `data-preserve-attr`.
+ *
+ * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
+ * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
+ * serveren faktisk sa.
+ *
+ * Skal serveren eie tilstanden, settes `server-controlled` på verten. Det er
+ * også svaret når siden styrer `open` med et attributt utenfra, som med
+ * Datastars `data-attr:open`: et fjernet attributt er ikke til å skille fra en
+ * morfing, mens `meny.open = false` er en beskjed komponenten kan se.
  *
  * ```html
  * <fs-popover placement="bottom-end">
- *   <button class="fs-button" aria-controls="meny" aria-expanded="false"
- *           data-preserve-attr="aria-expanded">Handlinger</button>
- *   <ul id="meny" class="fs-popover" popover="manual" data-preserve-attr="style">…</ul>
+ *   <button class="fs-button" aria-controls="meny" aria-expanded="false">Handlinger</button>
+ *   <ul id="meny" class="fs-popover" popover="manual">…</ul>
  * </fs-popover>
  * ```
  */
 export class FsPopover extends HostElement {
-  static observedAttributes = ["open", "placement"]
+  static observedAttributes = ["open", "placement", SERVER_CONTROLLED]
 
   private panel?: HTMLElement
   private triggerElement?: HTMLElement
   private observer?: MutationObserver
+  /**
+   * Hva komponenten sist ble bedt om, gjennom `open`-egenskapen.
+   *
+   * `open` bor på verten, og en morfing river bort alt som ikke står i
+   * serverens HTML. Uten noe mer lukket hver eneste patch et vindu brukeren
+   * nettopp hadde åpnet.
+   *
+   * Et fjernet attributt ser likt ut uansett hvem som fjernet det, så
+   * komponenten kan ikke se forskjell på en morfing og en app. Skillet går i
+   * stedet på **hvordan** appen sier fra: går den gjennom egenskapen, altså
+   * `meny.open = false`, `hide()` eller `toggle()`, er det en beskjed, og den
+   * følges. Setter noe attributtet direkte, som Datastars `data-attr:open`,
+   * er det ikke til å skille fra en morfing, og da skal siden si
+   * `server-controlled` og la serveren eie tilstanden.
+   */
+  private wantsOpen = false
 
   /** Om panelet er åpent. Speiles, så CSS kan treffe tilstanden. */
   get open(): boolean {
@@ -50,8 +78,14 @@ export class FsPopover extends HostElement {
   }
 
   set open(value: boolean) {
-    if (value) this.setAttribute("open", "")
-    else this.removeAttribute("open")
+    // Beskjeden noteres her, og ikke i `show()` og `hide()`. De går begge
+    // gjennom setteren, men det gjør også `meny.open = false` fra en app, og
+    // uten dette satte komponenten attributtet rett tilbake igjen.
+    //
+    // Ingen hukommelse når serveren eier tilstanden. Uten den sperren spratt
+    // vinduet opp av seg selv i det `server-controlled` ble tatt av igjen.
+    this.wantsOpen = isServerControlled(this) ? false : value
+    setFlag(this, "open", value)
   }
 
   /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
@@ -61,14 +95,25 @@ export class FsPopover extends HostElement {
   }
 
   set placement(value: Placement) {
-    this.setAttribute("placement", value)
+    setAttr(this, "placement", value)
   }
 
   connectedCallback(): void {
     window.addEventListener("resize", this.reposition)
     window.addEventListener("scroll", this.reposition, true)
+    /*
+     * Attributtene er med, ikke bare barna. `aria-expanded` på knappen og
+     * plasseringen på panelet er noe komponenten regner ut, så river en patch
+     * dem bort, skal de tilbake. Hver skriving i `sync()` sammenligner først,
+     * ellers ville observatøren utløst seg selv.
+     */
     this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true })
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-expanded", "style"],
+    })
     this.sync()
   }
 
@@ -87,11 +132,41 @@ export class FsPopover extends HostElement {
     this.panel = undefined
   }
 
-  attributeChangedCallback(): void {
+  attributeChangedCallback(navn: string): void {
+    // `server-controlled` slått på midt i: komponenten slipper taket, og neste
+    // patch bestemmer.
+    if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
+      this.wantsOpen = false
+    }
+
     if (this.isConnected) this.sync()
   }
 
   private sync(): void {
+    /*
+     * Setter `open` tilbake når en patch tok det.
+     *
+     * Bare én vei: står `open` der, er vinduet åpent, og da har enten
+     * brukeren eller serveren sagt det. Er det borte mens brukeren åpnet det,
+     * er det morfingen som tok det, og da kommer det tilbake.
+     */
+    if (this.wantsOpen && !this.open && !isServerControlled(this)) {
+      /*
+       * Vent til hele patchen har landet før vinduet åpnes igjen.
+       *
+       * En morfing setter ett attributt om gangen, og `open` kommer før
+       * `server-controlled` i dokumentrekkefølgen. Reparerte komponenten med
+       * en gang, satte den `open` tilbake mens serveren var midt i å si at
+       * den overtar tilstanden, og vinduet ble stående åpent etterpå.
+       * `queueMicrotask` kjører etter at hele patchen er ferdig, og vilkåret
+       * sjekkes på nytt der.
+       */
+      queueMicrotask(() => {
+        if (!this.isConnected || isServerControlled(this)) return
+        if (this.wantsOpen && !this.open) setFlag(this, "open", true)
+      })
+    }
+
     // Delene kjennes igjen på koblingen som må være der uansett: panelet er
     // det som har `popover`, og knappen er den som peker på panelet med
     // `aria-controls`. Før sto det `slot="trigger"` på knappen, et levn fra
@@ -177,11 +252,8 @@ export class FsPopover extends HostElement {
     }
     this.panel = panel
 
-    // Eneste attributtet komponenten eier. Resten skrev serveren.
-    const expanded = String(this.open)
-    if (trigger.getAttribute("aria-expanded") !== expanded) {
-      trigger.setAttribute("aria-expanded", expanded)
-    }
+    // Komponentens eget, og satt på nytt hvis en patch tok det.
+    setAttr(trigger, "aria-expanded", String(this.open))
 
     if (this.open) {
       if (!panel.matches(":popover-open")) panel.showPopover()

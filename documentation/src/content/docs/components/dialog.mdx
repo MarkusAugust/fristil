@@ -100,7 +100,7 @@ defineFsDialog()
 
 ```html
 <fs-dialog open>
-  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" open data-preserve-attr="open">
+  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" open>
     <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
     <div class="fs-dialog__body">
       <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
@@ -118,14 +118,16 @@ Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog"
 
 De to `open`-ene i eksempelet er ikke det samme:
 
-| Hvor | Hvem setter den | Fredet |
+| Hvor | Hvem setter den | Hva som skjer i en oppdatering |
 | --- | --- | --- |
-| På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
-| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Ja |
+| På `<fs-dialog>` | Serveren, når dialogen skal vises | Serveren bestemmer. Sender den `open` på nytt, åpnes dialogen igjen |
+| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Komponenten setter det tilbake så lenge dialogen står i topplaget |
 
-At verten ikke er fredet, er et valg og ikke en forglemmelse. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
+`server-controlled` på `<fs-dialog>` slår av den siste. Da bestemmer hver oppdatering om dialogen vises, også når den står i topplaget.
 
-Attributtet på selve `<dialog>` må fredes, for nettleseren setter det selv i `showModal()`. Uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
+At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
+
+Attributtet på selve `<dialog>` er noe annet: nettleseren setter det i `showModal()`, og serveren sendte det ikke, så en oppdatering river det bort og skjuler dialogen i det øyeblikket den åpnet den. Komponenten setter det tilbake når dialogen fortsatt står i topplaget, så malen din trenger ingenting ekstra.
 
 Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
 

@@ -1,6 +1,9 @@
 import {
+  addClass,
   defineElement,
   HostElement,
+  setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
@@ -35,18 +38,6 @@ const DERIVED_ATTRIBUTES = [
   "hidden",
 ]
 
-function setOrRemove(
-  element: HTMLElement,
-  name: string,
-  value: string | undefined,
-): void {
-  if (value === undefined) {
-    element.removeAttribute(name)
-  } else if (element.getAttribute(name) !== value) {
-    element.setAttribute(name, value)
-  }
-}
-
 /**
  * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
  *
@@ -59,12 +50,11 @@ function setOrRemove(
  * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
  * det ved hver patch.
  *
- * Malen trenger ingen `data-preserve-attr` for feltet. River en morfing bort
- * koblingen, ser komponenten det og setter den tilbake. Skillet er mellom det
- * komponenten utleder, som `id`, `for` og `aria-describedby`, og tilstand
- * brukeren eier, som `open` på et sprettoppvindu: det første kan repareres,
- * det andre må fredes, for der ville en reparasjon kjempet mot en server som
- * med vilje endret noe.
+ * Malen trenger ingenting ekstra. River en morfing bort koblingen, ser
+ * komponenten det og setter den tilbake. Det samme gjør de andre
+ * komponentene med tilstanden brukeren har laget, og `data-preserve-attr`
+ * finnes ikke lenger i pakken. Skal serveren eie tilstanden, sier den det med
+ * `server-controlled` på verten.
  */
 export class FsField extends HostElement {
   static observedAttributes = [
@@ -154,8 +144,7 @@ export class FsField extends HostElement {
   }
 
   set requiredMarker(value: "none" | "symbol" | "text") {
-    if (value === "none") this.removeAttribute("required-marker")
-    else this.setAttribute("required-marker", value)
+    setAttr(this, "required-marker", value === "none" ? null : value)
   }
 
   get controlId(): string | undefined {
@@ -163,8 +152,7 @@ export class FsField extends HostElement {
   }
 
   set controlId(value: string | undefined) {
-    if (value === undefined) this.removeAttribute("control-id")
-    else this.setAttribute("control-id", value)
+    setAttr(this, "control-id", value ?? null)
   }
 
   get describedBy(): string | undefined {
@@ -172,8 +160,7 @@ export class FsField extends HostElement {
   }
 
   set describedBy(value: string | undefined) {
-    if (value === undefined) this.removeAttribute("described-by")
-    else this.setAttribute("described-by", value)
+    setAttr(this, "described-by", value ?? null)
   }
 
   connectedCallback(): void {
@@ -188,10 +175,8 @@ export class FsField extends HostElement {
      * `data-preserve-attr` for at de skulle overleve. Nå ser komponenten at
      * de er borte, og setter dem tilbake.
      *
-     * Lista er avgrenset til det komponenten selv utleder. Tilstand
-     * brukeren eier, som hvilken fane som er valgt eller om et
-     * sprettoppvindu står åpent, skal fortsatt fredes: der ville en
-     * reparasjon kjempet mot en server som med vilje endret noe.
+     * Lista er avgrenset til det komponenten selv utleder. De andre
+     * komponentene gjør det samme med sin egen tilstand, hver med sin liste.
      *
      * Hver skriving i `sync()` sammenligner først. Uten det ville
      * observatøren utløst seg selv i det uendelige.
@@ -331,14 +316,14 @@ export class FsField extends HostElement {
       if (help.id) this.generatedHelpId = help.id
       else {
         this.generatedHelpId ??= uniqueId("fs-field-help")
-        help.id = this.generatedHelpId
+        setAttr(help, "id", this.generatedHelpId)
       }
     }
     if (error) {
       if (error.id) this.generatedErrorId = error.id
       else {
         this.generatedErrorId ??= uniqueId("fs-field-error")
-        error.id = this.generatedErrorId
+        setAttr(error, "id", this.generatedErrorId)
       }
     }
 
@@ -385,42 +370,38 @@ export class FsField extends HostElement {
       ].filter(Boolean),
     })
 
-    if (control.id !== computed.control.id) control.id = computed.control.id
+    setAttr(control, "id", computed.control.id)
 
     if (label) {
-      if (!label.classList.contains(computed.label.class)) {
-        label.classList.add(computed.label.class)
-      }
+      addClass(label, computed.label.class)
       // Alltid, ikke bare når den mangler: `for` og `id` er den samme
       // opplysningen, og de to kan ikke få lov til å si hver sin ting.
-      if (label.htmlFor !== computed.label.for)
-        label.htmlFor = computed.label.for
-      setOrRemove(label, "data-required", computed.label["data-required"])
-      setOrRemove(label, "data-optional", computed.label["data-optional"])
-      setOrRemove(label, "aria-disabled", computed.label["aria-disabled"])
+      setAttr(label, "for", computed.label.for)
+      setAttr(label, "data-required", computed.label["data-required"])
+      setAttr(label, "data-optional", computed.label["data-optional"])
+      setAttr(label, "aria-disabled", computed.label["aria-disabled"])
     }
 
     if (error) {
       // Bare `hidden`. Et skjult element er allerede ute av
       // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
       // hydreringsfeil i React fordi serveren ikke skriver det.
-      const shouldHide = Boolean(computed.error.hidden)
-      if (error.hidden !== shouldHide) error.hidden = shouldHide
+      setFlag(error, "hidden", Boolean(computed.error.hidden))
     }
 
-    setOrRemove(
-      control,
-      "aria-describedby",
-      computed.control["aria-describedby"],
-    )
-    setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
+    setAttr(control, "aria-describedby", computed.control["aria-describedby"])
+    setAttr(control, "aria-invalid", computed.control["aria-invalid"])
     this.writtenInvalid = computed.control["aria-invalid"] ?? null
     this.lastControl = control
 
     if (disabled) {
-      if (!control.hasAttribute("disabled"))
-        control.setAttribute("disabled", "")
-      setOrRemove(control, "aria-disabled", "true")
+      // `setFlag` og ikke `setAttr`: en mal kan ha skrevet
+      // `disabled="disabled"`, og den skal stå som den er. `setAttr` ville
+      // normalisert verdien til den tomme strengen, og siden `disabled` er
+      // blant attributtene komponenten observerer, ville serveren og
+      // komponenten skrevet hver sin verdi ved hver patch.
+      setFlag(control, "disabled", true)
+      setAttr(control, "aria-disabled", "true")
     } else {
       control.removeAttribute("disabled")
       control.removeAttribute("aria-disabled")
@@ -434,7 +415,7 @@ export class FsField extends HostElement {
 
     const state = computed.control["data-state"]
     if (state && isSystemField && !control.hasAttribute("data-state")) {
-      control.setAttribute("data-state", state)
+      setAttr(control, "data-state", state)
     } else if (!state && control.getAttribute("data-state") === "invalid") {
       control.removeAttribute("data-state")
     }

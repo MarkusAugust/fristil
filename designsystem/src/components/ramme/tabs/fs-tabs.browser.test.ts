@@ -82,14 +82,15 @@ describe("fs-tabs", () => {
     expect(faner.map((f) => f.tabIndex)).toEqual([0, -1, -1])
   })
 
-  it("ber serveren bevare det komponenten endrer", () => {
+  it("ber ikke malen frede noe", () => {
+    // Fanevalget er brukerens, og komponenten setter det tilbake selv etter
+    // en patch. Kommer `data-preserve-attr` tilbake her, har noen gjenopptatt
+    // kontrakten malen måtte skrive av fra dokumentasjonen.
     const fane = document.getElementById("sak-tab-0") as HTMLElement
     const panel = document.getElementById("sak-panel-0") as HTMLElement
 
-    expect(fane.getAttribute("data-preserve-attr")).toBe(
-      "aria-selected tabindex",
-    )
-    expect(panel.getAttribute("data-preserve-attr")).toBe("hidden")
+    expect(fane.hasAttribute("data-preserve-attr")).toBe(false)
+    expect(panel.hasAttribute("data-preserve-attr")).toBe(false)
   })
 
   it("flytter mellom fanene med piltastene", async () => {
