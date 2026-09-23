@@ -78,6 +78,8 @@ fs.errorSummary({ count: 2, id: "feil" })
 //   title:     { class: "fs-error-summary__title" } }
 ```
 
+`id` er påkrevd i byggefunksjonene som tar en. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom ledetekst, felt og hjelpetekst er brutt til React har rettet den opp. I React kommer den fra `useId()`.
+
 Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.netlify.app/markup-og-oppforsel/).
 
 ## Eget fargetema
