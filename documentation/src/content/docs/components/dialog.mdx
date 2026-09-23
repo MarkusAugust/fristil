@@ -112,6 +112,8 @@ defineFsDialog()
 </fs-dialog>
 ```
 
+**Gi knappen som lukker dialogen en `value`.** Uten JavaScript er dialogen en boks på siden, og `<form method="dialog">` lukker den før noe skript har kjørt. Komponenten kjenner igjen det som alt har skjedd på `returnValue`, som nettleseren setter til verdien på knappen. Er den tom, ser komponenten en vert som sier «åpen» og en lukket dialog, og åpner den igjen.
+
 Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog">`, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. Et klikk på flaten bak lukker den ikke; det gjør heller ikke en vanlig `<dialog>`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open`.
 
 De to `open`-ene i eksempelet er ikke det samme:
