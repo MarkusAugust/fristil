@@ -16,7 +16,7 @@
     min-block-size: var(--size-10);
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-interactive-main);
     background: transparent;
     border: 0;
@@ -38,7 +38,7 @@
 
   .fs-tabs__list button[aria-selected="true"] {
     color: var(--semantic-page-foreground);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     border-block-end-color: var(--semantic-interactive-main);
   }
 

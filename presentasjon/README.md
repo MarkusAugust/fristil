@@ -43,13 +43,14 @@ begrunnelsen for kontrakten, og de sier mer enn et avsnitt om dem. Et panel
 som bare viser at det finnes kode er derimot tatt ut.
 
 Ingen webfont. Skriften er `Helvetica, Arial, sans-serif`, som er stakken
-Skatteetaten selv oppgir for skjerm, og fargene er Fristils egne tokens
-skrevet av med samme verdier. En presentasjon skal ikke kunne feile på grunn
+Skatteetaten selv oppgir for skjerm, Paletten er Fristils egne tokens skrevet av med
+samme verdier; flaten og teksten er valgt for et mørkt lysbilde og hører
+bare til presentasjonen. En presentasjon skal ikke kunne feile på grunn
 av nettet i et møterom.
 
 ### V8 på liten skjerm
 
-Under 860 piksler forsvinner kortet helt: ingen ramme, ingen skygge, ingen
+Fra og med 860 piksler og nedover forsvinner kortet helt: ingen ramme, ingen skygge, ingen
 skalering. Lysbildet blir vanlig tekst rett på bakgrunnen, med full
 skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.

@@ -291,15 +291,19 @@ describe("temaet kan også sette skrift og form", () => {
     knapp.textContent = "Send søknad"
     document.body.append(knapp)
 
-    const beregnet = getComputedStyle(knapp)
-    expect(beregnet.borderTopWidth).toBe("3px")
-    expect(beregnet.fontWeight).toBe("700")
-    expect(beregnet.borderTopLeftRadius).toBe("44px")
-    expect(beregnet.fontFamily).toContain("Courier")
-
-    knapp.remove()
-    stil.remove()
-    knappeark.remove()
+    try {
+      const beregnet = getComputedStyle(knapp)
+      expect(beregnet.borderTopWidth).toBe("3px")
+      expect(beregnet.fontWeight).toBe("700")
+      expect(beregnet.borderTopLeftRadius).toBe("44px")
+      expect(beregnet.fontFamily).toContain("Courier")
+    } finally {
+      // Uten `finally` ble Courier og de runde hjørnene stående på dokumentet
+      // for hver test som kjører etter, den dagen en påstand feiler.
+      knapp.remove()
+      stil.remove()
+      knappeark.remove()
+    }
   })
 })
 

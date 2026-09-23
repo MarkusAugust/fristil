@@ -36,8 +36,6 @@ import {
 export type ThemeTypography = {
   /** Skriftstakken hele temaet skal bruke, skrevet som i CSS. */
   fontFamily?: string
-  /** Skriften i kode og i tall som skal stå i kolonne. */
-  monoFamily?: string
   /** Vektene, som tall eller nøkkelord. */
   weights?: {
     regular?: string | number
@@ -60,16 +58,21 @@ export type ThemeTypography = {
  * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
  * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
  *
- * Avkryssingsboksen, radioknappen, merket, avataren og skjelettet står med
- * vilje utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en
- * avkryssingsboks som blir rund, ser ut som en radioknapp.
+ * Avkryssingsboksen, radioknappen, merket, etiketten, valggruppa, avataren og
+ * skjelettet står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
+ * selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp,
+ * og et merke som blir firkantet, ser ut som en knapp.
  */
 export type ThemeShape = {
   /** Hjørner på knappen, paginering og hopplenken. */
   buttonRadius?: string
-  /** Hjørner på feltet og nedtrekkslista. */
+  /** Hjørner på feltet, tekstområdet og nedtrekkslista. */
   fieldRadius?: string
-  /** Hjørner på kort, dialog, sprettoppvindu, varsel og trekkspill. */
+  /**
+   * Hjørner på kort, dialog, sprettoppvindu, varsel, trekkspill,
+   * feiloppsummering, filopplasting, økttidsavbrudd, forslagslista,
+   * meldingen og hjelpeboblen.
+   */
   surfaceRadius?: string
   /** Rammetykkelsen på knappen. */
   buttonBorderWidth?: string
@@ -90,15 +93,7 @@ export type ThemeShape = {
  * `#1e6ab7`, fordi skalaene regnes om i OKLCH fra merkefargen. Et tema som
  * bare setter skrift og form er da det riktige svaret.
  */
-export type ThemeInput = {
-  /** Lenker, knapper og fokusmarkering. */
-  interactive?: string
-  /** Feil, sletting og avslag. */
-  danger?: string
-  /** Fullført og godkjent. */
-  success?: string
-  /** Noe som krever oppmerksomhet. */
-  warning?: string
+type ThemeCommon = {
   /** Flater, tekst og skillelinjer. Nesten uten kulør. */
   neutral?: string
   /** Besøkte lenker. Utledes fra `interactive` hvis den utelates. */
@@ -108,6 +103,29 @@ export type ThemeInput = {
   /** Hjørner og rammer. Utelates den, står Fristils egen form. */
   shape?: ThemeShape
 }
+
+type ThemeColors = {
+  /** Lenker, knapper og fokusmarkering. */
+  interactive: string
+  /** Feil, sletting og avslag. */
+  danger: string
+  /** Fullført og godkjent. */
+  success: string
+  /** Noe som krever oppmerksomhet. */
+  warning: string
+}
+
+/**
+ * Enten alle fire fargene, eller ingen.
+ *
+ * Unionen er her fordi vilkåret ellers bare ville stått som en `throw` i
+ * kjøretid, og prosjektets egen regel sier at fella skal lukkes i typen med
+ * en beskjed ved siden av for dem typen ikke når. `buildTheme({ interactive,
+ * danger })` er nå en typefeil, ikke en kjøring som stopper.
+ */
+export type ThemeInput =
+  | (ThemeColors & ThemeCommon)
+  | (Partial<Record<keyof ThemeColors, never>> & ThemeCommon)
 
 export type ThemeAdjustment = {
   /** Tokenet som ble flyttet. */
@@ -423,7 +441,7 @@ export function buildTheme(input: ThemeInput): Theme {
  */
 const KNAPPER = ["button", "pagination", "skip-link"] as const
 
-const FELT = ["input", "select"] as const
+const FELT = ["input", "select", "textarea"] as const
 
 const FLATER = [
   "card",
@@ -435,21 +453,47 @@ const FLATER = [
   "file-upload",
   "session-timeout",
   "suggestion",
+  "toast",
+  "tooltip",
 ] as const
 
-/** Skriver en variabel bare når den er oppgitt. */
+/**
+ * Avviser en verdi som kan bryte ut av regelen den skrives inn i.
+ *
+ * Oppskriften er en JSON-fil, og den kan komme fra et annet repo eller fra et
+ * byggesteg. Uten denne sjekken lukket `4px; } html { display: none } :root {
+ * --x: 1` både erklæringen og `:root`-blokka, og fikk en vilkårlig regel inn i
+ * `@layer fristil`. Etterprøvd før den kom på plass.
+ */
+function kontroller(navn: string, verdi: string): string {
+  if (/[;{}]|\/\*/.test(verdi)) {
+    throw new Error(
+      `Verdien til ${navn} kan ikke inneholde «;», «{», «}» eller «/*». ` +
+        `Den skrives rett inn i en CSS-regel. Fikk: ${verdi}`,
+    )
+  }
+  return verdi
+}
+
+/**
+ * Skriver en variabel bare når den er oppgitt.
+ *
+ * `0` er oppgitt. Sannhetssjekken sto her først, og ga to motsatte utfall for
+ * den samme nullen: `buttonRadius: 0` ble ignorert, mens `buttonFontWeight: 0`
+ * slapp gjennom.
+ */
 function kanskje(
   verdier: Record<string, string>,
   navn: string,
   verdi: string | number | undefined,
 ): void {
-  if (verdi !== undefined && verdi !== "") verdier[navn] = String(verdi)
+  if (verdi === undefined || verdi === "") return
+  verdier[navn] = kontroller(navn, String(verdi))
 }
 
 function typografiVerdier(t: ThemeTypography): Record<string, string> {
   const verdier: Record<string, string> = {}
   kanskje(verdier, "--font-family-base", t.fontFamily)
-  kanskje(verdier, "--font-family-mono", t.monoFamily)
   kanskje(verdier, "--font-weight-regular", t.weights?.regular)
   kanskje(verdier, "--font-weight-medium", t.weights?.medium)
   kanskje(verdier, "--font-weight-semibold", t.weights?.semibold)
@@ -462,14 +506,12 @@ function typografiVerdier(t: ThemeTypography): Record<string, string> {
 
 function formVerdier(f: ThemeShape): Record<string, string> {
   const verdier: Record<string, string> = {}
-  if (f.buttonRadius) {
-    for (const navn of KNAPPER) verdier[`--fs-${navn}-radius`] = f.buttonRadius
-  }
-  if (f.fieldRadius) {
-    for (const navn of FELT) verdier[`--fs-${navn}-radius`] = f.fieldRadius
-  }
-  if (f.surfaceRadius) {
-    for (const navn of FLATER) verdier[`--fs-${navn}-radius`] = f.surfaceRadius
+  for (const [verdi, navnene] of [
+    [f.buttonRadius, KNAPPER],
+    [f.fieldRadius, FELT],
+    [f.surfaceRadius, FLATER],
+  ] as const) {
+    for (const navn of navnene) kanskje(verdier, `--fs-${navn}-radius`, verdi)
   }
   kanskje(verdier, "--fs-button-border-width", f.buttonBorderWidth)
   kanskje(verdier, "--fs-button-font-weight", f.buttonFontWeight)

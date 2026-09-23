@@ -78,7 +78,7 @@ fs.errorSummary({ count: 2, id: "feil" })
 //   title:     { class: "fs-error-summary__title" } }
 ```
 
-`id` er påkrevd i byggefunksjonene som tar en. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom ledetekst, felt og hjelpetekst er brutt til React har rettet den opp. I React kommer den fra `useId()`.
+`id` er påkrevd i `fs.field()`. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom ledetekst, felt og hjelpetekst er brutt til React har rettet den opp. I React kommer den fra `useId()`. I `fs.errorSummary()` er den valgfri, siden den bare navngir boksen slik at noe annet kan peke på den.
 
 Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.netlify.app/markup-og-oppforsel/).
 

@@ -227,24 +227,28 @@ describe("variablene komponentene leser", () => {
   })
 })
 
-describe("tokenene komponentene faller tilbake på", () => {
-  const definerte = definerteTokens
-
+describe("reservene komponentene har", () => {
   const komponentfiler = filer.filter(([navn]) => !navn.includes("/tokens/"))
 
   it.each(
     komponentfiler,
-  )("%s viser bare til tokens som finnes", (_navn, source) => {
-    // `var(--fs-x, var(--size-7))` med et token som ikke finnes gir en ugyldig
-    // verdi, ikke en reserve. Ikonknappen i datofeltet ble 16 piksler bred i
-    // stedet for 28 på nøyaktig denne måten, uten at noe sa fra.
-    const lest = [...onlyRules(source).matchAll(/var\((--[\w-]+)/g)].map(
-      (treff) => treff[1],
-    )
-    const manglende = [...new Set(lest)].filter(
-      (name) => !name.startsWith("--fs-") && !definerte.has(name),
-    )
-    expect(manglende).toEqual([])
+  )("%s gir hver komponentvariabel en reserve", (_navn, source) => {
+    /*
+     * `var(--fs-x)` uten reserve gir ingenting når konsumenten ikke har satt
+     * den, og da faller hele erklæringen bort. Regelen i prosjektet er at
+     * form og størrelse leses fra en komponentvariabel *med tokenverdien som
+     * reserve*, og det er reserven denne testen ser etter.
+     *
+     * Testen over sier at hvert navn finnes. Denne sier at det står noe bak
+     * kommaet. De to sto en gang som samme sjekk skrevet to ganger.
+     */
+    const uten = [
+      ...onlyRules(source).matchAll(/var\(\s*(--fs-[\w-]+)\s*([,)])/g),
+    ]
+      .filter((treff) => treff[2] === ")")
+      .map((treff) => treff[1])
+
+    expect([...new Set(uten)]).toEqual([])
   })
 })
 

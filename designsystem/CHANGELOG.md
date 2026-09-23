@@ -46,13 +46,37 @@ kommer i et nytt undertall.
   ville flyttet dem bort fra der de skal være. `#1362ae` kommer ut som
   `#1e6ab7`, siden skalaene regnes om i OKLCH fra merkefargen. Enten alle fire
   fargene, eller ingen: to farger kaster, siden resten av temaet da ville blitt
-  bygget av standardfarger uten at noen ba om det.
+  bygget av standardfarger uten at noen ba om det. Vilkåret står i typen som en
+  union, ikke bare som en `throw`, så `buildTheme({ interactive, danger })` er
+  en typefeil. `ThemeInput` er dermed endret: en konsument som leste
+  `input.interactive` fra en variabel av den typen, må nå skille de to
+  tilfellene. Det er en brytende endring på en type, og den står her framfor i
+  et nytt hovedtall fordi pakken ikke har konsumenter ennå.
+
+- **Verdier i et tema kan ikke bryte ut av regelen de skrives inn i.**
+  Oppskriften er en JSON-fil som kan komme fra et annet repo eller fra et
+  byggesteg, og `«4px; } html { display: none } :root { --x: 1` lukket både
+  erklæringen og `:root`-blokka, og fikk en vilkårlig regel inn i
+  `@layer fristil`. Verdier med `;`, `{`, `}` eller `/*` avvises nå med en
+  melding som sier hvorfor.
+
+- **Et ukjent flagg stopper kjøringen** framfor å bli ignorert.
+  `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens flagget
+  heter `hjorner`, og temaet kom før ut uten hjørnet og uten et ord.
 
 - **Vekt og linjeavstand er tokens.** `--font-weight-regular`,
   `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`,
   `--semantic-line-height-default`, `--semantic-line-height-heading` og
   `--semantic-line-height-article`. Verdiene er nøyaktig dem komponentene
   hadde skrevet ut fra før, så ingenting ser annerledes ut.
+
+- **Tjueni stilark leser nå vekt og linjeavstand fra tokenene** framfor å
+  skrive tallet. Verdiene er de samme, så ingenting ser annerledes ut, men uten
+  dette ville `typography.weights` og `typography.lineHeights` i et tema truffet
+  tre komponenter og ikke resten. Knappen, overskriften og avsnittet leser dem
+  gjennom sin egen komponentvariabel, de andre leser tokenet direkte: en egen
+  variabel per komponent er verdt det der man vil kunne skille dem, og støy der
+  man ikke vil.
 
 - **Seks nye komponentvariabler** der form sto skrevet ut i stilarket:
   `--fs-button-border-width`, `--fs-button-font-weight`,

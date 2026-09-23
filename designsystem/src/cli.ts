@@ -61,9 +61,8 @@ const NØKLER: Record<string, keyof ThemeInput> = {
  * typografi og form, og temaet endrer bare farger, slik det gjorde før disse
  * kom til.
  */
-const SKRIFTFLAGG: Record<string, "fontFamily" | "monoFamily"> = {
+const SKRIFTFLAGG: Record<string, "fontFamily"> = {
   skrift: "fontFamily",
-  "skrift-kode": "monoFamily",
 }
 
 const FORMFLAGG: Record<string, keyof ThemeShape> = {
@@ -241,10 +240,11 @@ const HJELP = `fristil <kommando>
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
     --skrift=<stakk>      Skriftstakken temaet skal bruke
-    --skrift-kode=<stakk> Skriften i kode og tall
     --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
-    --felt-hjorner=<mål>  Hjørner på felt og nedtrekksliste
-    --flate-hjorner=<mål> Hjørner på kort, dialog og sprettoppvindu
+    --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
+    --flate-hjorner=<mål> Hjørner på kort, dialog, sprettoppvindu, varsel,
+                          trekkspill, feiloppsummering, filopplasting,
+                          økttidsavbrudd, forslagsliste, melding og hjelpeboble
     --knapp-ramme=<mål>   Rammetykkelsen på knappen
     --knapp-vekt=<vekt>   Vekten på knappeteksten
     --ut=<fil>            Skriv til fil i stedet for til utdata
@@ -341,6 +341,32 @@ for (const [norsk, engelsk] of Object.entries(FORMFLAGG)) {
 if (Object.keys(typografi).length > 0) input.typography = typografi
 if (Object.keys(form).length > 0) input.shape = form
 
+/*
+ * Et flagg som ikke finnes skal si fra.
+ *
+ * `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens flagget
+ * heter `hjorner`. Den gikk stille gjennom, og temaet kom ut uten hjørnet og
+ * uten et ord om hvorfor. CLI-en har allerede «Ukjent kommando» for den samme
+ * klassen feil.
+ */
+const KJENTE_FLAGG = new Set([
+  ...Object.keys(NØKLER),
+  ...Object.keys(SKRIFTFLAGG),
+  ...Object.keys(FORMFLAGG),
+  "ut",
+])
+
+const ukjente = Object.keys(flagg).filter((navn) => !KJENTE_FLAGG.has(navn))
+
+if (ukjente.length > 0) {
+  console.error(
+    `Ukjent flagg: ${ukjente.map((navn) => `--${navn}`).join(", ")}\n\n` +
+      `Kjente flagg: ${[...KJENTE_FLAGG].map((navn) => `--${navn}`).join(", ")}\n\n` +
+      "Hele oversikten: fristil --hjelp\n",
+  )
+  process.exit(1)
+}
+
 const påkrevd: (keyof ThemeInput)[] = [
   "interactive",
   "danger",
@@ -382,11 +408,21 @@ let tema: ReturnType<typeof buildTheme>
 try {
   tema = buildTheme(input as ThemeInput)
 } catch (grunn) {
-  // Som regel en farge som ikke er en farge. Et stakkspor sier ingenting om
-  // hva brukeren skrev feil.
+  /*
+   * Et stakkspor sier ingenting om hva brukeren skrev feil.
+   *
+   * Hintet om heksadesimale farger står bare når feilen faktisk handler om en
+   * farge. Sto det alltid, pekte det bort fra en verdi som ble avvist fordi
+   * den kunne bryte ut av CSS-regelen.
+   */
+  const melding = grunn instanceof Error ? grunn.message : String(grunn)
+  const omFarger = !melding.includes("CSS-regel")
+
   console.error(
-    `\n${grunn instanceof Error ? grunn.message : String(grunn)}\n\n` +
-      "Fargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n",
+    `\n${melding}\n` +
+      (omFarger
+        ? "\nFargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n"
+        : ""),
   )
   process.exit(1)
 }

@@ -57,6 +57,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
+  /* Flaten er mørk, og nettleseren skal vite det: uten dette tegnes
+     rullefelt og felter i lys utgave oppå. */
+  color-scheme: dark;
   font-family: var(--sans);
   background: var(--flate);
   color: var(--tekst);
@@ -536,7 +539,7 @@ fs.input({ type: "email", state: "invalid" })
     </div>
     <div class="boks">
       <span class="merke merke-gul">frittstående</span>
-      <p>Ett element, <code>&lt;fs-toast&gt;</code>. Det eneste imperative API-et i pakken: du kaller det, og det lager og fjerner sine egne elementer.</p>
+      <p>Tre elementer: meldingen, økttidsavbruddet og sambandslinja. De har ingen tilstand serveren kan sende, og du kaller dem framfor å skrive dem.</p>
       <pre>toast.show("Lagret")</pre>
     </div>
   </div>
@@ -715,7 +718,7 @@ fs.input({ type: "email", state: "invalid" })
 
 <!-- 15 -->
 <section class="lysbilde">
-  <h2>Prøvd mot en ekte etat</h2>
+  <h2>Etterprøvd mot en ekte etat</h2>
   <p>Paletten i Fristil er Skatteetatens, og det gjør den lett å etterprøve: den står publisert i deres eget designsystem. Sammenligningen er kjørt mot kilden deres, ikke mot en skjermdump.</p>
   <div class="rader tre">
     <div class="boks">
@@ -742,7 +745,7 @@ fs.input({ type: "email", state: "invalid" })
   </table>
   </div>
   <p style="margin-block-start: 1rem;">Det er ikke en kritikk av et godt designsystem. Det er hele argumentet for at fargene skal regnes ut framfor å velges: en verdi som ligger tett på kravet, går under det uten at noen ser det.</p>
-  <p>Førstelinja kjører i deres stil og tone, generert av en oppskrift på seks linjer. Vi har ikke tatt inn en eneste linje av designsystemet deres, og fargene er ikke kjørt gjennom generatoren: paletten er allerede riktig, og en omregning i OKLCH ville gjort <code>#1362ae</code> til <code>#1e6ab7</code>.</p>
+  <p>Førstelinja kjører i deres stil og tone, generert av en oppskrift på seks linjer. Vi har ikke tatt inn en eneste linje av designsystemet deres, og fargene er ikke kjørt gjennom generatoren: paletten er allerede riktig, og en omregning i OKLCH ville gjort den interaktive fargen om fra <code>#1362ae</code> til <code>#1e6ab7</code>.</p>
 </section>
 
 <!-- 16 -->
@@ -751,8 +754,8 @@ fs.input({ type: "email", state: "invalid" })
   <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
   <div class="rader tre">
     <div class="boks">
-      <span class="tall">3&nbsp;368</span>
-      <p>tester i hver kjøring, fordelt på Chromium, Firefox og WebKit. Ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.</p>
+      <span class="tall">3</span>
+      <p>nettlesermotorer i hver kjøring: Chromium, Firefox og WebKit, med godt over tre tusen tester. Ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.</p>
     </div>
     <div class="boks">
       <h3>Venting på den siste motoren</h3>
@@ -896,7 +899,12 @@ document.getElementById("neste").addEventListener("click", () => vis(gjeldende +
 document.getElementById("forrige").addEventListener("click", () => vis(gjeldende - 1))
 
 document.addEventListener("keydown", (e) => {
-  if (e.target instanceof HTMLButtonElement && (e.key === " " || e.key === "Enter")) return
+  // Enter på en lenke skal følge lenken, og mellomrom på en knapp skal trykke
+  // den. Uten denne linja bladde presentasjonen i stedet, og lenkene på
+  // første og siste lysbilde var umulige å følge med tastatur.
+  const påKontroll =
+    e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement
+  if (påKontroll && (e.key === " " || e.key === "Enter")) return
   if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " " || e.key === "Enter") {
     e.preventDefault()
     vis(gjeldende + 1)

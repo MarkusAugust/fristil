@@ -5,7 +5,7 @@
     padding-inline-start: var(--size-5);
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.6;
+    line-height: var(--semantic-line-height-article);
     color: var(--semantic-page-foreground);
   }
 

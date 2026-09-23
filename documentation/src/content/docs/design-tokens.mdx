@@ -134,15 +134,17 @@ Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en or
 
 | Token | Verdi | Brukt av |
 | --- | --- | --- |
-| `--font-weight-regular` | 400 | brødtekst |
-| `--font-weight-medium` | 500 | knapp |
-| `--font-weight-semibold` | 600 | korttittel, varsel, trekkspill |
-| `--font-weight-bold` | 700 | overskrift |
-| `--semantic-line-height-default` | 1.5 | knapp, felt, tabellcelle |
+| `--font-weight-regular` | 400 | ledetekst uten vekt, feltsettets valgfrie felt |
+| `--font-weight-medium` | 500 | knapp, feilmelding |
+| `--font-weight-semibold` | 600 | ledetekst, korttittel, varsel, trekkspill, tabelloverskrift, fane, merke, avatar, brødsmule, paginering, valggruppe, dialogtittel, feiloppsummering, økttidsavbrudd |
+| `--font-weight-bold` | 700 | overskrift, ledetekst i stor utgave, feltsettets tittel |
+| `--semantic-line-height-default` | 1.5 | knapp, felt, tekstområde, nedtrekksliste, tabell, fane, dialog, sprettoppvindu, varsel, trekkspill, forslagsliste, melding og en rekke til |
 | `--semantic-line-height-heading` | 1.2 | overskrift |
-| `--semantic-line-height-article` | 1.6 | brødtekst |
+| `--semantic-line-height-article` | 1.6 | brødtekst, liste, korttekst |
 
-Komponentene leser dem gjennom sin egen variabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`.
+Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
+
+Fire linjeavstander står fortsatt som tall i stilarkene: `1`, `1.3`, `1.4` og `1.55`. De er finjustering i én komponent, ikke en rytme noen vil endre på tvers, og et token for hver av dem ville vært en oppfinnelse.
 
 ## TypeScript
 
