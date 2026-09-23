@@ -65,15 +65,50 @@ Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 <li class="fs-suggestion__option" id="kommune-option-0" role="option" data-value="4601">Bergen</li>
 ```
 
-## Når serveren filtrerer selv
+## Når noen andre filtrerer
 
-I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett `server-filtered`, så holder komponenten fingrene av fatet og lar lista være som den kom.
-
-`server-filtered` gjelder filtreringen. Vil du at serveren også skal eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Uten det setter komponenten begge deler tilbake etter en oppdatering, slik at brukeren ikke mister plassen sin.
+Komponenten skjuler et alternativ når teksten ikke inneholder det som står i feltet. Filtrerer du selv, og filteret ditt er et annet, blir de to uenige, og da er det ditt som skal gjelde. Det sier du med `prefiltered`.
 
 ```html
-<fs-suggestion server-filtered>…</fs-suggestion>
+<fs-suggestion prefiltered>…</fs-suggestion>
 ```
+
+Filtrerer du på nøyaktig det samme, altså at teksten inneholder søkeordet, trenger du ingenting: de to er enige, og komponenten skjuler ikke noe du ville vist. Attributtet er for de gangene dere ikke er det:
+
+| Ditt filter | Hva som skjer uten `prefiltered` |
+| --- | --- |
+| Søk uten diakritikk, `bodo` finner `Bodø` | Komponenten skjuler Bodø, og lista ser tom ut |
+| Søk på en kode som ikke vises, `4601` | Det samme |
+| Uskarpt søk, `oslo` finner `Osloveien` | Treffene komponenten ikke kjenner igjen blir borte |
+| Asynkront søk | Lista blinker mens svaret er underveis |
+
+Et smalere filter enn komponentens, som `startsWith`, er derimot trygt: alt du beholder inneholder også søkeordet, så komponenten skjuler ingenting av det. Da er `prefiltered` likevel riktig for tommeldingen, som forklart under.
+
+Det gjelder like mye i React som i Datastar. I React er det lett å overse, for der er ingen server involvert:
+
+```tsx
+// Søk uten diakritikk. Komponentens eget filter ville skjult Bodø igjen.
+const treff = kommuner.filter((k) => utenTegn(k).includes(utenTegn(sok)))
+
+<fs-suggestion prefiltered>
+  …
+  <ul {...forslag.list}>
+    {treff.map((navn, i) => <li {...forslag.options[i]} key={navn}>{navn}</li>)}
+  </ul>
+</fs-suggestion>
+```
+
+Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista: `count` avgjør om «Ingen treff» starter skjult.
+
+### Hvem viser «Ingen treff»
+
+Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count })` skriver `hidden` på den når du har treff, så rendrer du feltet på nytt for hvert søk, er det gjort. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+
+**Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer når lista faktisk har endret seg, ikke ved tastetrykket. Med `prefiltered` betyr det: når du har rendret på nytt. Det første antallet leses ikke opp, siden det er utgangspunktet og ikke en endring.
+
+Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, altså det verken React eller serveren gjør.
+
+`prefiltered` handler om hva som vises. Skal serveren i tillegg eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
 
 ## I en app
 
@@ -135,6 +170,8 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
       )
     }
     ```
+
+    Her rendres hele lista, og komponenten filtrerer. Filtrerer du i React i stedet, og filteret ditt er et annet enn «teksten inneholder søkeordet», settes `prefiltered`. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer).
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -165,7 +202,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <fs-suggestion server-filtered
+    <fs-suggestion prefiltered
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
       <label class="fs-label" for="kommune">Kommune</label>
@@ -180,7 +217,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
     </fs-suggestion>
     ```
 
-    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `server-filtered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
+    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
   </TabItem>
 </Tabs>
 

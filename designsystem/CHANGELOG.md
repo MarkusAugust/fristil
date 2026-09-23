@@ -18,6 +18,12 @@ kommer i et nytt undertall.
 
 ### Brytende
 
+- **`server-filtered` heter `prefiltered`.** Navnet var misvisende på to
+  måter. Det handler ikke om servere: en React-app som rendrer bare treffene
+  har filtrert like fullt, uten at noen server er involvert. Og det handler
+  ikke om hvem som filtrerte, men om hva de filtrerte på. Ingen konsumenter
+  ennå, så navnet er byttet framfor å dokumenteres rundt.
+
 - **`id` er påkrevd i `fs.field()`, og i de andre byggerne som tar en.** Den var valgfri, og funksjonen laget en
   når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir
   to ulike, og rendres det samme feltet på en server og så i nettleseren,
@@ -62,13 +68,46 @@ kommer i et nytt undertall.
   lå bare i hovedinngangen og i `./field-core`, mens dokumentasjonen peker på
   den i en seksjon som ber leseren importere fra `/react`.
 
+### Rettet
+
+- **Forslagsfeltet sluttet å melde antall treff når noen andre filtrerte.**
+  `filter()` returnerte med en gang, så en app med attributtet mistet
+  opplesningen i `[role="status"]`. Det sto ikke noe sted, og den som ikke
+  ser skjermen merket det.
+
+  Beskjeden kommer nå av at lista har endret seg, og ikke av tastetrykket.
+  Med `prefiltered` rendrer appen lista, og mellom tastetrykket og det nye
+  svaret kan det gå et halvt sekund over nettverket. Bare en endring i
+  antallet leses opp; det første antallet er utgangspunktet og ikke en nyhet.
+
+  Tommeldingen er derimot en del av det lista viser, og den eier du med
+  `prefiltered`. `fs.suggestion({ count })` skriver `hidden` på den når du
+  har treff, så rendrer du feltet for hvert søk, er det gjort. Komponenten
+  kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet
+  ennå», og meldte derfor «Ingen treff» ved fokus på et tomt felt og i hvert
+  opphold i et asynkront søk.
+
+- **`prefiltered` kunne ikke settes fra React.** Getteren hadde ingen setter,
+  og React 19 skriver egenskapen framfor attributtet når et egendefinert
+  element har en med det navnet. Skrivingen kastet «Cannot set property»,
+  attributtet landet aldri, og komponenten skjulte det React nettopp hadde
+  rendret. Det gamle navnet `server-filtered` kunne ikke være et
+  egenskapsnavn, så feilen kom med omdøpingen.
+
+- **`prefiltered` gjorde ingenting før neste tastetrykk.** Attributtet sto i
+  `observedAttributes`, men tilbakekallet svarte bare på `server-controlled`.
+  Slås det av mens siden lever, filtrerer komponenten nå med en gang.
+
 ### Lagt til
 
 - **`sjekk-dokumentasjon.ts` avviser et eksempel som kaller `fs.field()` uten
   `id`.** Ingenting annet i rekka leser kodeblokkene i dokumentasjonen, så et
   utdatert eksempel kunne stått grønt gjennom hele `bun run sjekk`. Den leser
-  bare koden: i mdx det som står i kodegjerdene, i Astro frontmatteret og
-  skriptene, siden `fs.field()` også nevnes i brødtekst.
+  koden: i mdx kodegjerdene, i Astro frontmatteret og skriptene. I brødtekst
+  teller bare et kall som har en argumentliste, siden `fs.field()` uten
+  argumenter er navnet på en funksjon og står slik i dusinvis av setninger.
+  Det skillet måtte til: `fs.suggestion({ count: treff.length })` sto i en
+  setning under et eksempel og slapp gjennom.
 
 ## 0.10.0 (2026-09-23)
 

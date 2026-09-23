@@ -129,7 +129,7 @@ At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren o
 
 Attributtet på selve `<dialog>` er noe annet: nettleseren setter det i `showModal()`, og serveren sendte det ikke, så en oppdatering river det bort og skjuler dialogen i det øyeblikket den åpnet den. Komponenten setter det tilbake når dialogen fortsatt står i topplaget, så malen din trenger ingenting ekstra.
 
-Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
+Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ titleId, open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
 
 Det siste gjelder også deg som har JavaScript: dialogen vises først der den står i flyten, og hopper til midten når modulen har kjørt. På en tung side er det et synlig hopp, ikke ett bilde. Vil du unngå det, la serveren sende dialogen lukket og åpne den fra klienten i stedet.
 

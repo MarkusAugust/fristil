@@ -156,7 +156,12 @@ describe("tastaturfokus er synlig", () => {
       uten.map((f) => `${f.hvem}: ${f.bredde} ${f.stil}`),
       "disse mangler fokusringen",
     ).toEqual([])
-  })
+
+    // Hver tabb er en tur til nettleseren, og 24 av dem tar over femten
+    // sekunder i Firefox på en travel maskin. Testen feilet da tilfeldig på
+    // klokka framfor på noe den sjekker, og en port som feiler tilfeldig blir
+    // ignorert.
+  }, 45_000)
 
   it("henter ringen fra tokenet, ikke fra hver komponent", async () => {
     monter(`<button class="fs-button" type="button">Send</button>`)
