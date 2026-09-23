@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import { createFieldId } from "./components/ramme/field/field-core"
 import { fs } from "./fs"
 
 describe("fs: felles form", () => {
@@ -138,8 +139,18 @@ describe("fs.field", () => {
     expect(felt.control["aria-describedby"]).toBe("epost-help vilkaar")
   })
 
-  it("lager en unik id når den ikke oppgis", () => {
-    expect(fs.field().control.id).not.toBe(fs.field().control.id)
+  it("krever en id, så koblingen ikke kan brekke i hydreringen", () => {
+    /*
+     * `id` var valgfri, og `fs.field()` laget en når den manglet. Det var en
+     * felle: id-en er tilfeldig, så serveren og nettleseren fikk hver sin, og
+     * `for` og `aria-describedby` pekte på noe annet enn det som sto der.
+     * Kravet står i typen, så det treffer hvert miljø likt.
+     *
+     * `createFieldId()` finnes fortsatt, for markup som rendres én gang, men
+     * nå må den kalles med vilje.
+     */
+    expect(createFieldId()).not.toBe(createFieldId())
+    expect(fs.field({ id: createFieldId() }).control.id).toMatch(/^fs-field-/)
   })
 })
 

@@ -186,7 +186,7 @@ export const fs = {
    * `control`, `help` og `error` har ingen nøkler som må døpes om, og er
    * derfor like i begge inngangene.
    */
-  field: (options: FieldOptions = {}) => {
+  field: (options: FieldOptions) => {
     const field = computeFieldAttributes(options)
     return { ...field, label: toReactAttributes(field.label) }
   },

@@ -16,6 +16,29 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`id` er påkrevd i `fs.field()`.** Den var valgfri, og funksjonen laget en
+  når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir
+  to ulike, og rendres det samme feltet på en server og så i nettleseren,
+  peker `for` og `aria-describedby` på noe annet enn det som står der. React
+  melder avvik ved hydreringen, og advarselen sier selv at avviket ikke blir
+  rettet opp. Det er sett i en ekte app.
+
+  Et kast på serveren ble vurdert og forkastet: `document === undefined` betyr
+  ikke «dette blir hydrert», bare «dette er ikke en nettleser». En Astro-side
+  rendres på serveren og hydrerer ingenting, og der er en laget id helt i
+  orden. Et krav i typen treffer alle miljøer likt, og utvikleren får vite det
+  før koden kjører.
+
+  I React kommer id-en fra `useId()`. Ellers er feltets eget navn som regel
+  det opplagte valget. Vet du sikkert at markupen rendres én gang, kall
+  `createFieldId()` selv. Den finnes fortsatt, og er nå et valg som står i
+  koden framfor det som skjer når du ikke tenker på det.
+
+  `<fs-field>` er upåvirket. Den lager fortsatt id-er i nettleseren, etter at
+  HTML-en står der, og der finnes ikke problemet.
+
 ## 0.10.0 (2026-09-23)
 
 ### Brytende

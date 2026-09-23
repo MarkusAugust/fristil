@@ -13,14 +13,26 @@ import { attributes } from "../../css/shared.js"
 
 export type FieldOptions = {
   /**
-   * Id på kontrollen. Lages automatisk hvis den utelates.
+   * Id på kontrollen. Påkrevd.
    *
-   * En id som lages her er tilfeldig, og to kjøringer gir to ulike. Rendrer
-   * du det samme feltet to ganger, på en server og så i nettleseren, må
-   * id-en komme utenfra, ellers peker `for` og `aria-describedby` på noe
-   * annet enn det som står der. I React er `useId()` laget for nettopp det.
+   * Den var valgfri, og `fs.field()` laget en når den manglet. Det var en
+   * felle: id-en er tilfeldig, så to kjøringer gir to ulike, og rendres det
+   * samme feltet på en server og så i nettleseren, peker `for` og
+   * `aria-describedby` på noe annet enn det som står der. React melder avvik
+   * ved hydreringen, og advarselen sier selv at avviket ikke blir rettet opp.
+   *
+   * Et kast på serveren ble vurdert og forkastet: `document === undefined`
+   * betyr ikke «dette blir hydrert», bare «dette er ikke en nettleser». En
+   * Astro-side rendres på serveren og hydrerer ingenting, og der er en laget
+   * id helt i orden. Et krav i typen treffer derimot alle miljøer likt, og
+   * utvikleren får vite det før koden kjører.
+   *
+   * I React kommer id-en fra `useId()`. Ellers er feltets eget navn som
+   * regel det opplagte valget. Vet du sikkert at markupen rendres én gang,
+   * og vil ha en laget id likevel, kall `createFieldId()` selv. Da står
+   * valget i koden i stedet for å være standardoppførselen.
    */
-  id?: string
+  id: string
   /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
   help?: boolean
   /** Feltet har en feilmelding. Den skjules til feltet er ugyldig. */
@@ -64,7 +76,14 @@ export type FieldAttributes = {
 
 let counter = 0
 
-/** Lager en id som er unik innenfor dokumentet. */
+/**
+ * Lager en id som er unik innenfor dokumentet.
+ *
+ * Trygg bare når markupen rendres én gang. Rendres det samme feltet både på
+ * en server og i nettleseren, gir de to kjøringene to ulike id-er, og da er
+ * koblingen brutt til rammeverket har rettet den opp. Derfor er den ikke
+ * lenger standarden i `fs.field()`, men en funksjon du kaller med vilje.
+ */
 export function createFieldId(): string {
   counter += 1
   return `fs-field-${counter}-${Math.random().toString(36).slice(2, 8)}`
@@ -91,11 +110,9 @@ export function joinDescribedBy(
   return unique.size > 0 ? [...unique].join(" ") : undefined
 }
 
-export function computeFieldAttributes(
-  options: FieldOptions = {},
-): FieldAttributes {
+export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   const {
-    id = createFieldId(),
+    id,
     help = false,
     error = false,
     required,
