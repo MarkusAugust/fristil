@@ -8,7 +8,13 @@ export const DIALOG_FOOTER_CLASS = "fs-dialog__footer" as const
 export type DialogOptions = {
   /** Id på overskriften. Dialogen navngis av den med `aria-labelledby`. */
   titleId: string
-  /** Dialogen er åpen. Standard: lukket. */
+  /**
+   * Dialogen er åpen. Standard: lukket.
+   *
+   * Dette er serverens beskjed til `<fs-dialog>`. Styrer du dialogen selv
+   * fra nettleseren, med `showModal()`, skal du la den være: kallet kaster
+   * `InvalidStateError` på en dialog som alt står åpen.
+   */
   open?: boolean
 }
 
@@ -19,6 +25,7 @@ export type DialogAttributes = {
   dialog: {
     class: typeof DIALOG_CLASS
     "aria-labelledby": string
+    open?: true
     "data-preserve-attr": "open"
   }
   title: {
@@ -48,8 +55,11 @@ export type DialogAttributes = {
  *   området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen.
  *   Skal en avvisning vare, må appen si fra til serveren.
  * - `open` på **`<dialog>`** setter nettleseren selv når `showModal()`
- *   kalles. Serveren skriver det aldri, så det må fredes, ellers river
- *   morfingen det bort og lukker dialogen igjen ved neste patch.
+ *   kalles, så det må fredes, ellers river morfingen det bort og lukker
+ *   dialogen igjen ved neste patch. Serveren skriver det i tillegg når den
+ *   vet at dialogen skal vises: uten JavaScript er en `<dialog>` uten `open`
+ *   skjult, og innholdet finnes da ikke for leseren. Med attributtet står
+ *   det som en boks på siden til komponenten gjør den om til en modal.
  *
  * ```ts
  * const boks = fs.dialog({ titleId: "slett-tittel", open: true })
@@ -74,9 +84,24 @@ export const dialog = Object.assign(
     dialog: attributes({
       class: DIALOG_CLASS,
       "aria-labelledby": titleId,
-      // `showModal()` setter `open` på selve `<dialog>`. Serveren skriver
-      // det aldri, så uten fredningen river morfingen det bort og lukker
-      // dialogen i det øyeblikket den åpnet den.
+      /*
+       * `open` står begge steder når dialogen skal vises, og det er med
+       * vilje.
+       *
+       * Uten JavaScript er `<dialog>` uten `open` skjult, så innholdet
+       * serveren ville vise fantes ikke for leseren. Med `open` står det
+       * der som en boks på siden, og komponenten gjør den om til en ekte
+       * modal med `showModal()` når den får kjøre.
+       *
+       * I React er det dessuten det eneste som stemmer: komponenten setter
+       * `open` på `<dialog>` før React hydrerer, og sto det ikke i serverens
+       * HTML, meldte React avvik ved hvert eneste oppslag.
+       */
+      open: open ? (true as const) : undefined,
+      // Fredningen trengs fordi `showModal()` setter `open` selv når
+      // brukeren åpner dialogen fra siden, uten at serveren vet det. Uten
+      // den river morfingen attributtet bort og lukker dialogen i det
+      // øyeblikket den åpnet den.
       "data-preserve-attr": "open" as const,
     }),
     title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),

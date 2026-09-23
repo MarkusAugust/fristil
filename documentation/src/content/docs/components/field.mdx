@@ -49,6 +49,8 @@ const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true
 
 Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
 
+**Oppgi `id` når feltet rendres to ganger.** Utelater du den, lager `fs.field()` en tilfeldig id, og to kjøringer gir to ulike. Rendrer serveren feltet og nettleseren det samme feltet på nytt, peker `for` og `aria-describedby` da på noe annet enn det som står der. I React er `useId()` laget for nettopp dette, og da melder den heller ikke avvik ved hydreringen.
+
 ## Som element
 
 Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
@@ -229,6 +231,29 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
     React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
 
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
+    :::
+
+    :::caution[Med server-rendring må id-en komme fra `useId()`]
+    `fs.field()` lager en id når den ikke får en, og den kan ikke bli den samme på serveren og i nettleseren. React melder da avvik ved hydreringen på ledeteksten, feltet og hjelpeteksten, og koblingen mellom dem er brutt til React har rettet den opp.
+
+    ```tsx
+    import { fs } from "@fristil/designsystem/react"
+    import { useId } from "react"
+
+    export function Navnefelt() {
+      const felt = fs.field({ id: useId(), help: true })
+
+      return (
+        <>
+          <label {...felt.label}>Fullt navn</label>
+          <input {...fs.input({ type: "text" })} {...felt.control} name="navn" />
+          <p {...fs.helpText()} {...felt.help}>Slik det står i folkeregisteret.</p>
+        </>
+      )
+    }
+    ```
+
+    `<fs-field>` har ikke problemet: der settes id-ene i nettleseren, etter at HTML-en står der, og serveren sender ingen.
     :::
   </TabItem>
   <TabItem label="Astro">
