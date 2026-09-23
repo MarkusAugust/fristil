@@ -16,6 +16,17 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Endret
+
+- **Dokumentasjonen sier når `server-filtered` skal stå, og React er med.**
+  Attributtet var beskrevet som et Datastar-tilfelle, men det handler ikke om
+  servere: det handler om at noen andre alt har filtrert. Rendrer en
+  React-app alternativene av en filtrert liste, som er det opplagte når
+  søkeordet alt står i en `useState`, filtrerer den allerede, og uten
+  attributtet skjuler komponenten alternativer React nettopp bestemte seg for
+  å vise. Regelen står nå på komponentsiden: rendres bare treffene, skal
+  attributtet stå; rendres hele lista, skal det ikke.
+
 ### Brytende
 
 - **`id` er påkrevd i `fs.field()`, og i de andre byggerne som tar en.** Den var valgfri, og funksjonen laget en

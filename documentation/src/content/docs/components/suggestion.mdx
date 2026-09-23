@@ -65,15 +65,32 @@ Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 <li class="fs-suggestion__option" id="kommune-option-0" role="option" data-value="4601">Bergen</li>
 ```
 
-## Når serveren filtrerer selv
+## Når noen andre filtrerer
 
-I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett `server-filtered`, så holder komponenten fingrene av fatet og lar lista være som den kom.
+Komponenten filtrerer som standard: den skjuler alternativene som ikke passer mens brukeren skriver. Gjør noe annet det samme, skal den la være, og det sier du med `server-filtered`.
+
+To tilfeller, og de er vanligere enn unntaket:
+
+**Datastar.** Serveren sender en ny liste mens brukeren skriver, og patcher den inn. Komponenten skal da la lista være som den kom.
+
+**React.** Dette er lett å overse, for serveren er ikke involvert. Rendrer du alternativene av en filtrert liste, altså det opplagte i React, filtrerer du allerede:
+
+```tsx
+const treff = kommuner.filter((k) => k.toLowerCase().includes(sok.toLowerCase()))
+
+<fs-suggestion server-filtered>
+  …
+  <ul {...forslag.list}>
+    {treff.map((navn, i) => <li {...forslag.options[i]} key={navn}>{navn}</li>)}
+  </ul>
+</fs-suggestion>
+```
+
+Uten attributtet skjuler komponenten alternativer React nettopp bestemte seg for å vise, og de to kjemper om den samme lista. Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, altså det React ikke gjør.
+
+Rendrer du derimot hele lista og lar komponenten velge hva som vises, som i en Astro-side eller ren HTML, skal attributtet stå av.
 
 `server-filtered` gjelder filtreringen. Vil du at serveren også skal eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Uten det setter komponenten begge deler tilbake etter en oppdatering, slik at brukeren ikke mister plassen sin.
-
-```html
-<fs-suggestion server-filtered>…</fs-suggestion>
-```
 
 ## I en app
 
@@ -135,6 +152,8 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
       )
     }
     ```
+
+    Her rendres hele lista, og komponenten filtrerer. Filtrerer du i React i stedet, som er det opplagte når du alt har søkeordet i en `useState`, settes `server-filtered`. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer).
   </TabItem>
   <TabItem label="Astro">
     ```astro
