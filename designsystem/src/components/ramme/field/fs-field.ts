@@ -144,8 +144,7 @@ export class FsField extends HostElement {
   }
 
   set requiredMarker(value: "none" | "symbol" | "text") {
-    if (value === "none") this.removeAttribute("required-marker")
-    else this.setAttribute("required-marker", value)
+    setAttr(this, "required-marker", value === "none" ? null : value)
   }
 
   get controlId(): string | undefined {
@@ -153,8 +152,7 @@ export class FsField extends HostElement {
   }
 
   set controlId(value: string | undefined) {
-    if (value === undefined) this.removeAttribute("control-id")
-    else this.setAttribute("control-id", value)
+    setAttr(this, "control-id", value ?? null)
   }
 
   get describedBy(): string | undefined {
@@ -162,8 +160,7 @@ export class FsField extends HostElement {
   }
 
   set describedBy(value: string | undefined) {
-    if (value === undefined) this.removeAttribute("described-by")
-    else this.setAttribute("described-by", value)
+    setAttr(this, "described-by", value ?? null)
   }
 
   connectedCallback(): void {

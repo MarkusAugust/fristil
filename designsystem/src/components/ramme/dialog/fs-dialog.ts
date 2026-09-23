@@ -4,6 +4,7 @@ import {
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 
@@ -77,8 +78,7 @@ export class FsDialog extends HostElement {
   }
 
   set open(value: boolean) {
-    if (value) this.setAttribute("open", "")
-    else this.removeAttribute("open")
+    setFlag(this, "open", value)
   }
 
   connectedCallback(): void {

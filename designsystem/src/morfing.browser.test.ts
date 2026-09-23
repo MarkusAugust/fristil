@@ -527,6 +527,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
     expect(knapper[1].getAttribute("aria-selected")).toBe("true")
 
+    const meldte: number[] = []
+    felt.addEventListener("tab-select", (e) =>
+      meldte.push((e as CustomEvent<{ index: number }>).detail.index),
+    )
+
     // Patchen fjerner fanen brukeren valgte, og panelet dens.
     knapper[1].remove()
     ;(felt.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
@@ -541,6 +546,10 @@ describe("morfing river ikke bort det komponenten setter", () => {
       igjen.map((k) => k.getAttribute("aria-selected")),
       "ingen fane var markert etter patchen",
     ).toEqual(["true"])
+    expect(
+      meldte,
+      "opprydningen tok et nytt valg uten å si fra, så en app som laster panelinnhold fikk aldri vite det",
+    ).toContain(0)
     expect(paneler[0].hidden, "ingen paneler var synlige etter patchen").toBe(
       false,
     )

@@ -42,9 +42,9 @@ kommer i et nytt undertall.
 
 - **`setAttr`, `setFlag`, `setText`, `addClass`, `SERVER_CONTROLLED` og
   `isServerControlled` er nye eksporter** fra
-  `@fristil/designsystem/host-element`. De tre første skriver bare når noe
+  `@fristil/designsystem/host-element`. De fire første skriver bare når noe
   faktisk endrer seg, og er de eneste lovlige veiene til et attributt, et
-  boolsk flagg og en klasse i en komponent som observerer sine egne. En
+  boolsk flagg, tekst og en klasse i en komponent som observerer sine egne. En
   overtatt komponent bruker dem.
 
 - **`scripts/sjekk-skriving.ts` håndhever den regelen.** Den kjører som del av
@@ -54,10 +54,12 @@ kommer i et nytt undertall.
   feile. Ingen stakksporing, ingen påstand, bare en kjøring som må drepes for
   hånd.
 
-  Den ser etter seks skrivemåter, ikke bare `setAttribute`. `el.hidden = x`,
-  `el.tabIndex = n`, `el.htmlFor = s`, `el.textContent = s` og
-  `classList.add()` gir alle en mutasjonspost når ingenting endrer seg, og
-  alle fem var i bruk.
+  Den ser etter seks skrivemåter, ikke bare `setAttribute`: `el.hidden = x`,
+  `el.tabIndex = n`, `el.htmlFor = s`, `el.textContent = s`,
+  `classList.add()` og `el.style.cssText = s`. Alle gir en mutasjonspost når
+  ingenting endrer seg, og fem av dem var i bruk. Verten er ikke et unntak:
+  komponentene observerer seg selv, så `this.classList.add()` henger en
+  kjøring like godt som en skriving på et barn.
 
 - **`sjekk:server` kjøres nå også fra rota.** Den sto bare i pakkens egen
   `build`, så den kjørte ved publisering og ikke i CI, mens `CLAUDE.md` sa at
@@ -105,6 +107,15 @@ kommer i et nytt undertall.
   `data-preserve-attr` på feltet.
 
 ### Rettet
+
+- **En fanerad sluttet å svare når en patch fjernet den valgte fanen.**
+  `<fs-tabs>` glemte valget, men lot markupen stå i utakt: ingen fane markert,
+  alle paneler skjult, og et klikk gjorde ingenting, fordi `select(0)`
+  sammenlignet mot en `selected` som svarer 0 også når ingenting er markert.
+  Komponenten velger nå den første fanen i det tilfellet, og melder fra med
+  `tab-select`, siden det er komponentens eget valg og ikke brukerens. Sendte
+  serveren med vilje en rad uten markering, blir den overkjørt, men bare når
+  brukeren hadde valgt noe fra før.
 
 - **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
   fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da

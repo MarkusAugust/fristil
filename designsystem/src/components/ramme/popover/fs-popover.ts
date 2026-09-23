@@ -4,6 +4,7 @@ import {
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
@@ -84,8 +85,7 @@ export class FsPopover extends HostElement {
     // Ingen hukommelse når serveren eier tilstanden. Uten den sperren spratt
     // vinduet opp av seg selv i det `server-controlled` ble tatt av igjen.
     this.wantsOpen = isServerControlled(this) ? false : value
-    if (value) this.setAttribute("open", "")
-    else this.removeAttribute("open")
+    setFlag(this, "open", value)
   }
 
   /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
@@ -95,7 +95,7 @@ export class FsPopover extends HostElement {
   }
 
   set placement(value: Placement) {
-    this.setAttribute("placement", value)
+    setAttr(this, "placement", value)
   }
 
   connectedCallback(): void {
@@ -151,7 +151,7 @@ export class FsPopover extends HostElement {
      * er det morfingen som tok det, og da kommer det tilbake.
      */
     if (this.wantsOpen && !this.open && !isServerControlled(this)) {
-      this.setAttribute("open", "")
+      setFlag(this, "open", true)
     }
 
     // Delene kjennes igjen på koblingen som må være der uansett: panelet er

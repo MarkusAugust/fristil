@@ -158,13 +158,23 @@ export class FsTabs extends HostElement {
        * Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
        * serverens markup som gjelder.
        *
-       * Men markupen må henge sammen etterpå. Fjernet patchen fanen som var
-       * markert, står raden igjen uten en eneste `aria-selected="true"`,
-       * alle panelene er skjult, og et klikk gjør ingenting. Da velges den
-       * første, som er det en fanerad uansett starter på.
+       * Med ett unntak, og det er verdt å vite om: markupen må henge sammen
+       * etterpå. Fjernet patchen fanen som var markert, står raden igjen uten
+       * en eneste `aria-selected="true"`, alle panelene er skjult, og et
+       * klikk gjør ingenting. Da velger komponenten den første, som er det en
+       * fanerad uansett starter på. Sendte serveren med vilje en rad uten
+       * markering, blir den altså overkjørt, men bare når brukeren hadde
+       * valgt noe fra før.
+       *
+       * Valget meldes, for dette er komponentens eget og ikke brukerens.
+       * Uten hendelsen ville en app som laster innholdet i panelet eller
+       * skriver valget i adressen aldri fått vite at det flyttet seg.
        */
       this.chosenTab = undefined
-      if (this.markedIndex < 0 && this.tabs.length > 0) this.apply(0)
+      if (this.markedIndex < 0 && this.tabs.length > 0) {
+        this.apply(0)
+        this.meld(0)
+      }
       return
     }
 
@@ -252,7 +262,11 @@ export class FsTabs extends HostElement {
     // det igjen.
     if (!isServerControlled(this)) this.chosenTab = tabs[index]
     this.apply(index)
+    this.meld(index)
+  }
 
+  /** Sier fra om hvilken fane som er valgt nå. */
+  private meld(index: number): void {
     this.dispatchEvent(
       new CustomEvent("tab-select", {
         detail: { index },

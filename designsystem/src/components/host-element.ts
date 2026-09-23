@@ -71,7 +71,18 @@ export function setFlag(element: Element, name: string, on: boolean): void {
   element.toggleAttribute(name, on)
 }
 
-/** Skriver tekst i et element, men bare når teksten er en annen. */
+/**
+ * Skriver tekst i et element, men bare når teksten er en annen.
+ *
+ * `textContent` er en `childList`-endring, og komponentene observerer barna
+ * sine. Å skrive den samme teksten på nytt teller som en endring, og da
+ * kaller observatøren seg selv.
+ *
+ * `textContent` er all tekst i undertreet slått sammen, så sammenligningen
+ * ser ikke forskjell på `<b>3</b> treff` og `3 treff`. Funksjonen er ment for
+ * elementer komponenten fyller med ren tekst, som meldingen om antall treff i
+ * forslagsfeltet.
+ */
 export function setText(element: Element, text: string): void {
   if (element.textContent !== text) element.textContent = text
 }
