@@ -189,29 +189,71 @@ describe("fs-suggestion", () => {
     expect(synlige).toHaveLength(4)
   })
 
-  it("melder antall treff også når noen andre filtrerte", async () => {
+  it("kan settes som egenskap, slik React 19 gjør det", async () => {
     /*
-     * `prefiltered` slår av skjulingen, ikke opplesningen. Første utgave
-     * returnerte med en gang, og da satt en Datastar-app igjen uten beskjed
-     * om hvor mange treff som var igjen, og uten at «Ingen treff» ble slått
-     * av og på. Det sto ikke noe sted, og den som ikke ser skjermen merket
-     * det.
+     * React skriver egenskapen framfor attributtet når et egendefinert
+     * element har en med det navnet. Med bare en getter kastet skrivingen
+     * «Cannot set property», attributtet landet aldri, og komponenten skjulte
+     * det React nettopp hadde rendret.
      */
     const felt = await tegn()
-    felt.setAttribute("prefiltered", "")
+
+    felt.prefiltered = true
+    expect(felt.hasAttribute("prefiltered")).toBe(true)
+
+    felt.prefiltered = false
+    expect(felt.hasAttribute("prefiltered")).toBe(false)
+  })
+
+  it("melder antall treff når den som filtrerte har rendret lista", async () => {
+    /*
+     * Beskjeden følger lista, ikke tastetrykket. `prefiltered` slår av
+     * skjulingen, ikke opplesningen: første utgave returnerte med en gang, og
+     * da satt en Datastar-app igjen uten beskjed om hvor mange treff som var
+     * igjen. Det sto ikke noe sted, og den som ikke ser skjermen merket det.
+     */
+    const felt = await tegn()
+    felt.prefiltered = true
+    const status = felt.querySelector("[role='status']") as HTMLElement
+
+    skriv(felt, "b")
+    await tegn()
+    expect(
+      status.textContent,
+      "leste opp et antall før den som filtrerte hadde svart",
+    ).toBe("")
 
     // Slik en server eller React ville gjort det: alt utenom ett skjules.
     const valg = [...felt.querySelectorAll<HTMLElement>("[role='option']")]
     for (const [i, alternativ] of valg.entries()) alternativ.hidden = i !== 0
-
-    skriv(felt, "b")
     await tegn()
 
-    const status = felt.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("Ett treff")
+  })
 
+  it("lar tommeldingen være i fred når noen andre filtrerte", async () => {
+    /*
+     * Tommeldingen er en del av det lista viser, og det eier den som
+     * filtrerte. Komponenten kan ikke se forskjell på «søket ga ingenting» og
+     * «svaret er ikke kommet ennå», og satte derfor meldingen synlig igjen
+     * midt i et asynkront søk, uten at det fantes en vei utenom.
+     */
+    const felt = await tegn()
+    felt.prefiltered = true
     const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
-    expect(tom.hidden).toBe(true)
+
+    // Appen venter på svar: ingen alternativer, og meldingen holdes skjult.
+    for (const alternativ of felt.querySelectorAll("[role='option']"))
+      alternativ.remove()
+    skriv(felt, "xyz")
+    await tegn()
+    expect(tom.hidden, "komponenten viste «Ingen treff» selv").toBe(true)
+
+    // Appen svarer med at ingenting passet, og viser meldingen selv.
+    tom.hidden = false
+    skriv(felt, "xyzæ")
+    await tegn()
+    expect(tom.hidden, "komponenten skjulte appens «Ingen treff»").toBe(false)
   })
 
   it("har ingen tilgjengelighetsbrudd med lista åpen", async () => {
@@ -220,6 +262,65 @@ describe("fs-suggestion", () => {
     await tegn()
 
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+/**
+ * Et prefiltrert felt som ennå ikke har fått noe å vise.
+ *
+ * Dette er markupen fra Datastar-fanen i dokumentasjonen: lista er tom til
+ * serveren har sendt noe. Talte komponenten ved fokus, meldte feltet «Ingen
+ * treff» før brukeren hadde skrevet et tegn, altså til nettopp den som ikke
+ * ser skjermen, og tommeldingen sto synlig på et felt ingen hadde søkt i.
+ */
+describe("fs-suggestion som venter på det første svaret", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  beforeEach(async () => {
+    const tomt = suggestion({ id: "kommune", count: 0 })
+
+    monter(`
+      <fs-suggestion prefiltered>
+        <label ${attr(tomt.label)}>Kommune</label>
+        <div ${attr(tomt.field)}>
+          <input ${attr(tomt.control)} name="kommune">
+          <ul ${attr(tomt.list)}></ul>
+          <p ${attr(tomt.empty)} hidden>Ingen treff</p>
+          <span ${attr(tomt.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    await tegn()
+  })
+
+  it("sier ingenting ved fokus", async () => {
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+
+    input.dispatchEvent(new FocusEvent("focus"))
+    await tegn()
+
+    const status = felt.querySelector("[role='status']") as HTMLElement
+    expect(status.textContent).toBe("")
+    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    expect(tom.hidden, "viste «Ingen treff» før noen hadde søkt").toBe(true)
+  })
+
+  it("melder fra når serveren har sendt lista", async () => {
+    const felt = await tegn()
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+
+    // Slik en patch ville gjort det.
+    liste.innerHTML = `
+      <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+      <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
+    `
+    await tegn()
+
+    const status = felt.querySelector("[role='status']") as HTMLElement
+    expect(status.textContent).toBe("2 treff")
   })
 })
 

@@ -79,8 +79,10 @@ Filtrerer du på nøyaktig det samme, altså at teksten inneholder søkeordet, t
 | --- | --- |
 | Søk uten diakritikk, `bodo` finner `Bodø` | Komponenten skjuler Bodø, og lista ser tom ut |
 | Søk på en kode som ikke vises, `4601` | Det samme |
-| `startsWith` framfor «inneholder» | Treff midt i ordet blir borte igjen |
-| Uskarpt eller asynkront søk | Lista blinker mens de to er uenige |
+| Uskarpt søk, `oslo` finner `Osloveien` | Treffene komponenten ikke kjenner igjen blir borte |
+| Asynkront søk | Lista blinker mens svaret er underveis |
+
+Et smalere filter enn komponentens, som `startsWith`, er derimot trygt: alt du beholder inneholder også søkeordet, så komponenten skjuler ingenting av det. Da er `prefiltered` likevel riktig for tommeldingen, som forklart under.
 
 Det gjelder like mye i React som i Datastar. I React er det lett å overse, for der er ingen server involvert:
 
@@ -96,9 +98,15 @@ const treff = kommuner.filter((k) => utenTegn(k).includes(utenTegn(sok)))
 </fs-suggestion>
 ```
 
-Bygg da `fs.suggestion({ count: treff.length })`, ikke med hele lista: `count` avgjør om «Ingen treff» starter skjult.
+Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista: `count` avgjør om «Ingen treff» starter skjult.
 
-**Antall treff leses opp uansett hvem som filtrerte,** og «Ingen treff» skjules og vises av komponenten som før. `prefiltered` slår av skjulingen av alternativer, ingenting annet. Komponenten tar også piltastene, markeringen og `aria-activedescendant`, altså det verken React eller serveren gjør.
+### Hvem viser «Ingen treff»
+
+Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count })` skriver `hidden` på den når du har treff, så rendrer du feltet på nytt for hvert søk, er det gjort. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+
+**Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer når lista faktisk har endret seg, ikke ved tastetrykket. Med `prefiltered` betyr det: når du har rendret på nytt. Det første antallet leses ikke opp, siden det er utgangspunktet og ikke en endring.
+
+Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, altså det verken React eller serveren gjør.
 
 `prefiltered` handler om hva som vises. Skal serveren i tillegg eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
 

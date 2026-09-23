@@ -71,19 +71,43 @@ kommer i et nytt undertall.
 ### Rettet
 
 - **Forslagsfeltet sluttet å melde antall treff når noen andre filtrerte.**
-  `filter()` returnerte med en gang, så en app med `server-filtered` mistet
-  både opplesningen i `[role="status"]` og at «Ingen treff» ble slått av og
-  på. Det sto ikke noe sted, og den som ikke ser skjermen merket det.
-  Attributtet slår nå av skjulingen av alternativer, og ingenting annet: å
-  telle hva som er synlig kan komponenten uansett.
+  `filter()` returnerte med en gang, så en app med attributtet mistet
+  opplesningen i `[role="status"]`. Det sto ikke noe sted, og den som ikke
+  ser skjermen merket det.
+
+  Beskjeden kommer nå av at lista har endret seg, og ikke av tastetrykket.
+  Med `prefiltered` rendrer appen lista, og mellom tastetrykket og det nye
+  svaret kan det gå et halvt sekund over nettverket. Bare en endring i
+  antallet leses opp; det første antallet er utgangspunktet og ikke en nyhet.
+
+  Tommeldingen er derimot en del av det lista viser, og den eier du med
+  `prefiltered`. `fs.suggestion({ count })` skriver `hidden` på den når du
+  har treff, så rendrer du feltet for hvert søk, er det gjort. Komponenten
+  kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet
+  ennå», og meldte derfor «Ingen treff» ved fokus på et tomt felt og i hvert
+  opphold i et asynkront søk.
+
+- **`prefiltered` kunne ikke settes fra React.** Getteren hadde ingen setter,
+  og React 19 skriver egenskapen framfor attributtet når et egendefinert
+  element har en med det navnet. Skrivingen kastet «Cannot set property»,
+  attributtet landet aldri, og komponenten skjulte det React nettopp hadde
+  rendret. Det gamle navnet `server-filtered` kunne ikke være et
+  egenskapsnavn, så feilen kom med omdøpingen.
+
+- **`prefiltered` gjorde ingenting før neste tastetrykk.** Attributtet sto i
+  `observedAttributes`, men tilbakekallet svarte bare på `server-controlled`.
+  Slås det av mens siden lever, filtrerer komponenten nå med en gang.
 
 ### Lagt til
 
 - **`sjekk-dokumentasjon.ts` avviser et eksempel som kaller `fs.field()` uten
   `id`.** Ingenting annet i rekka leser kodeblokkene i dokumentasjonen, så et
   utdatert eksempel kunne stått grønt gjennom hele `bun run sjekk`. Den leser
-  bare koden: i mdx det som står i kodegjerdene, i Astro frontmatteret og
-  skriptene, siden `fs.field()` også nevnes i brødtekst.
+  koden: i mdx kodegjerdene, i Astro frontmatteret og skriptene. I brødtekst
+  teller bare et kall som har en argumentliste, siden `fs.field()` uten
+  argumenter er navnet på en funksjon og står slik i dusinvis av setninger.
+  Det skillet måtte til: `fs.suggestion({ count: treff.length })` sto i en
+  setning under et eksempel og slapp gjennom.
 
 ## 0.10.0 (2026-09-23)
 
@@ -176,6 +200,8 @@ kommer i et nytt undertall.
   nødvendig: komponenten ser at attributtene er borte, og setter dem
   tilbake. Bruker du den i dag, kan du ta bort både lista og
   `data-preserve-attr` på feltet.
+
+### Rettet
 
 - **Sprettoppvinduet åpnet seg igjen når en patch både fjernet `open` og
   overlot tilstanden.** En morfing setter ett attributt om gangen, og `open`
