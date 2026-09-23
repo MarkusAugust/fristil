@@ -48,6 +48,18 @@ import type { HTMLAttributes } from "react"
  */
 type Flag = true | undefined
 
+/**
+ * Serveren eier tilstanden i dette elementet.
+ *
+ * Komponentene setter tilbake det brukeren har gjort når en patch river det
+ * bort: valgte fanen, det åpne sprettoppvinduet, den utvidede forslagslista.
+ * Med dette gjør de ikke det, og hver patch bestemmer. Bruk den når serveren
+ * skal kunne flytte fanen selv, som i «gå videre til steg 2».
+ */
+type ServerControlled = {
+  "server-controlled"?: Flag
+}
+
 type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
   invalid?: Flag
   disabled?: Flag
@@ -58,14 +70,14 @@ type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
 }
 
 /**
- * `<fs-tabs>` har ingen attributter.
+ * `<fs-tabs>` har bare `server-controlled`.
  *
  * Hvilken fane som er valgt står i markupen serveren sendte, som
  * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = HTMLAttributes<HTMLElement>
+type FsTabsAttributes = HTMLAttributes<HTMLElement> & ServerControlled
 
 type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
   /**
@@ -82,18 +94,19 @@ type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
    * bestemmer hva som vises.
    */
   "server-filtered"?: Flag
-}
+} & ServerControlled
 
 type FsDialogAttributes = HTMLAttributes<HTMLElement> & {
   /** Dialogen er åpen. Komponenten kaller `showModal()`. */
   open?: Flag
 }
 
-type FsPopoverAttributes = HTMLAttributes<HTMLElement> & {
-  open?: Flag
-  /** Hvilken kant panelet henger fra. */
-  placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
-}
+type FsPopoverAttributes = HTMLAttributes<HTMLElement> &
+  ServerControlled & {
+    open?: Flag
+    /** Hvilken kant panelet henger fra. */
+    placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
+  }
 
 type FsSessionTimeoutAttributes = HTMLAttributes<HTMLElement> & {
   /** Sekunder uten aktivitet før varselet kommer. */

@@ -40,25 +40,25 @@ const faner = fs.tabs({ id: "sak", count: 3, selected: 0, label: "Deler av saken
 <fs-tabs>
   <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
     <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-            aria-controls="sak-panel-0" tabindex="0"
-            data-preserve-attr="aria-selected tabindex">Søknaden</button>
+            aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
     <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
-            aria-controls="sak-panel-1" tabindex="-1"
-            data-preserve-attr="aria-selected tabindex">Vedlegg</button>
+            aria-controls="sak-panel-1" tabindex="-1">Vedlegg</button>
   </div>
 
   <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-       aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">
+       aria-labelledby="sak-tab-0" tabindex="0">
     <p class="fs-paragraph">Søknaden ble sendt 4. mars 2026.</p>
   </div>
   <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
-       aria-labelledby="sak-tab-1" tabindex="0" hidden data-preserve-attr="hidden">
+       aria-labelledby="sak-tab-1" tabindex="0" hidden>
     <p class="fs-paragraph">Tre vedlegg er lastet opp.</p>
   </div>
 </fs-tabs>
 ```
 
-`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv. `data-preserve-attr` sier fra om hva komponenten endrer når brukeren velger, slik at en oppdatering fra serveren ikke setter valget tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
+`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv.
+
+Sender serveren området på nytt mens brukeren holder på, river oppdateringen fanevalget bort, siden ingenting av det sto i HTML-en den sendte. Komponenten ser det og setter valget tilbake, så malen din trenger ingenting ekstra. Skal serveren kunne flytte fanen selv, som i «gå videre til steg 2», settes `server-controlled` på `<fs-tabs>`. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Hvilken fane som er valgt
 
@@ -79,16 +79,14 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
     <fs-tabs id="saksfaner">
       <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
         <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-                aria-controls="sak-panel-0" tabindex="0"
-                data-preserve-attr="aria-selected tabindex">Søknaden</button>
+                aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
         <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
-                aria-controls="sak-panel-1" tabindex="-1"
-                data-preserve-attr="aria-selected tabindex">Vedlegg</button>
+                aria-controls="sak-panel-1" tabindex="-1">Vedlegg</button>
       </div>
       <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">Søknaden</div>
+           aria-labelledby="sak-tab-0" tabindex="0">Søknaden</div>
       <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-1" tabindex="0" hidden data-preserve-attr="hidden">Vedlegg</div>
+           aria-labelledby="sak-tab-1" tabindex="0" hidden>Vedlegg</div>
     </fs-tabs>
 
     <script type="module">
@@ -157,15 +155,14 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
     <fs-tabs data-on:tab-select="$valgtFane = evt.detail.index">
       <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
         <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-                aria-controls="sak-panel-0" tabindex="0"
-                data-preserve-attr="aria-selected tabindex">Søknaden</button>
+                aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
       </div>
       <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">Søknaden</div>
+           aria-labelledby="sak-tab-0" tabindex="0">Søknaden</div>
     </fs-tabs>
     ```
 
-    `data-preserve-attr` er nødvendig her. Uten den setter neste oppdatering fra serveren valget tilbake til det den sendte.
+    Ingenting ekstra trengs her. Neste oppdatering fra serveren river fanevalget bort, og komponenten setter det tilbake.
   </TabItem>
 </Tabs>
 

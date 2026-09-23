@@ -34,6 +34,29 @@ export function defineElement(
 }
 
 /**
+ * Attributtet som gir serveren tilstanden tilbake.
+ *
+ * Komponentene reparerer som standard det brukeren har gjort: valgte fanen,
+ * det åpne sprettoppvinduet, den utvidede forslagslista. En morfing river det
+ * bort, siden ingenting av det sto i HTML-en serveren sendte, og komponenten
+ * setter det tilbake. Da trenger ingen mal å kjenne til attributtene.
+ *
+ * Noen ganger er det serveren som skal bestemme: «gå videre til steg 2» er en
+ * ekte ting en server vil kunne gjøre. Står `server-controlled` på verten,
+ * reparerer komponenten ingenting, og hver patch bestemmer.
+ *
+ * Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene
+ * på hvert attributt komponenten kom til å røre. Ett attributt å huske i
+ * stedet for ni, og standardvalget er det som er riktig nesten alltid.
+ */
+export const SERVER_CONTROLLED = "server-controlled" as const
+
+/** Om serveren eier tilstanden i dette elementet. */
+export function isServerControlled(element: Element): boolean {
+  return element.hasAttribute(SERVER_CONTROLLED)
+}
+
+/**
  * Sier fra når markupen en komponent fikk, ikke henger sammen.
  *
  * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det

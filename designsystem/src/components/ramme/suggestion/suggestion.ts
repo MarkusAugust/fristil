@@ -30,8 +30,10 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  * tidligere lagde den hele feltet selv, og da fantes det ikke noe å fylle ut
  * før skriptet hadde kjørt.
  *
- * Attributtene som endrer seg mens brukeren skriver står i
- * `data-preserve-attr`, ellers river Datastars morfing dem bort.
+ * Ingen bevaringsliste. Attributtene som endrer seg mens brukeren skriver er
+ * komponentens egne, og den setter dem tilbake når en patch river dem bort.
+ * Skal serveren eie hva lista viser, settes `server-controlled` på
+ * `<fs-suggestion>`.
  */
 export const suggestion = ({
   id,
@@ -62,14 +64,12 @@ export const suggestion = ({
         .join(" "),
       "aria-autocomplete": "list" as const,
       "aria-activedescendant": aktiv ? optionId(activeIndex) : undefined,
-      "data-preserve-attr": "aria-expanded aria-activedescendant" as const,
     }),
     list: attributes({
       class: SUGGESTION_LIST_CLASS,
       id: listId,
       role: "listbox" as const,
       hidden: open ? undefined : (true as const),
-      "data-preserve-attr": "hidden" as const,
     }),
     options: Array.from({ length: count }, (_, index) =>
       attributes({
@@ -79,21 +79,19 @@ export const suggestion = ({
         "aria-selected": (index === activeIndex ? "true" : "false") as
           | "true"
           | "false",
-        "data-preserve-attr": "aria-selected hidden" as const,
       }),
     ),
     /**
      * Teksten som vises når ingenting passer.
      *
      * Den er skjult så lenge serveren sender noe å velge mellom, og
-     * komponenten skjuler og viser den igjen mens brukeren skriver.
-     * `data-preserve-attr` må derfor ha `hidden` med: uten den dukket
-     * «Ingen treff» opp igjen ved hver patch, også når noe passet.
+     * komponenten skjuler og viser den igjen mens brukeren skriver. Uten
+     * reparasjonen dukket «Ingen treff» opp igjen ved hver patch, også når
+     * noe passet.
      */
     empty: attributes({
       class: SUGGESTION_EMPTY_CLASS,
       hidden: count > 0 ? (true as const) : undefined,
-      "data-preserve-attr": "hidden" as const,
     }),
     /**
      * Området som melder antall treff til skjermlesere.

@@ -1,6 +1,8 @@
 import {
   defineElement,
   HostElement,
+  isServerControlled,
+  SERVER_CONTROLLED,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
@@ -18,17 +20,19 @@ export const FS_TABS_TAG = "fs-tabs" as const
  * knapper uten dette gir én tabbestopp per fane, og skjermleseren sier
  * «knapp» der den skulle sagt «fane, 2 av 3, valgt».
  *
- * Attributtene som endrer seg når brukeren velger, altså `aria-selected`,
- * `tabindex` og `hidden`, står i `data-preserve-attr` fra byggeren.
+ * Fanevalget er brukerens, og komponenten setter det tilbake når en patch
+ * river det bort. Malen trenger derfor ingen `data-preserve-attr`. Skal
+ * serveren kunne flytte fanen, som i «gå videre til steg 2», settes
+ * `server-controlled` på verten, og da bestemmer hver patch.
  *
  * ```html
  * <fs-tabs>
  *   <div class="fs-tabs__list" role="tablist">
- *     <button id="sak-tab-0" role="tab" aria-selected="true" aria-controls="sak-panel-0"
- *             tabindex="0" data-preserve-attr="aria-selected tabindex">Søknaden</button>
+ *     <button id="sak-tab-0" role="tab" aria-selected="true"
+ *             aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
  *   </div>
  *   <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
- *        aria-labelledby="sak-tab-0" tabindex="0" data-preserve-attr="hidden">…</div>
+ *        aria-labelledby="sak-tab-0" tabindex="0">…</div>
  * </fs-tabs>
  * ```
  */
@@ -38,15 +42,40 @@ export class FsTabs extends HostElement {
    * sendte, som `aria-selected` på fanen og `hidden` på panelene, og leses
    * derfra. Et eget `selected` ville vært en parallell utgave av det samme.
    */
-  static observedAttributes: string[] = []
+  static observedAttributes: string[] = [SERVER_CONTROLLED]
 
   private readonly bound = new Set<HTMLButtonElement>()
   private observer?: MutationObserver
+  /**
+   * Fanen brukeren valgte, husket så en patch ikke kan ta den.
+   *
+   * `undefined` betyr at brukeren ikke har valgt noe ennå, og da er det
+   * serverens markup som gjelder. Så snart hun har valgt, er det hennes valg
+   * som settes tilbake når en morfing river `aria-selected` bort.
+   */
+  private chosen?: number
 
   connectedCallback(): void {
-    this.observer = new MutationObserver(() => this.bind())
-    this.observer.observe(this, { childList: true, subtree: true })
-    this.bind()
+    /*
+     * Attributtene er med, ikke bare barna. En morfing river bort det som
+     * ikke står i serverens HTML, og fanevalget er nettopp det: noe brukeren
+     * gjorde etter at siden kom. Hver skriving sammenligner først, ellers
+     * ville observatøren utløst seg selv.
+     */
+    this.observer = new MutationObserver(() => this.sync())
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-selected", "tabindex", "hidden"],
+    })
+    this.sync()
+  }
+
+  attributeChangedCallback(): void {
+    // `server-controlled` slått på midt i: da skal komponenten slippe taket,
+    // og neste patch bestemmer.
+    if (isServerControlled(this)) this.chosen = undefined
   }
 
   disconnectedCallback(): void {
@@ -73,6 +102,25 @@ export class FsTabs extends HostElement {
       (tab) => tab.getAttribute("aria-selected") === "true",
     )
     return index < 0 ? 0 : index
+  }
+
+  private sync(): void {
+    this.bind()
+    this.repair()
+  }
+
+  /**
+   * Setter brukerens valg tilbake etter en patch.
+   *
+   * Uten dette måtte malen skrive `data-preserve-attr="aria-selected tabindex"`
+   * på hver fane og `hidden` på hvert panel, altså liste opp attributtene
+   * komponenten kom til å røre. Ingen kompilator så på den lista.
+   */
+  private repair(): void {
+    if (this.chosen === undefined || isServerControlled(this)) return
+    if (this.chosen >= this.tabs.length) return
+    if (this.selected === this.chosen) return
+    this.apply(this.chosen)
   }
 
   private bind(): void {
@@ -146,17 +194,11 @@ export class FsTabs extends HostElement {
   /** Velger en fane og melder fra. */
   select(index: number): void {
     const tabs = this.tabs
-    const panels = this.panels
     if (index < 0 || index >= tabs.length) return
     if (index === this.selected) return
 
-    tabs.forEach((tab, i) => {
-      const valgt = i === index
-      tab.setAttribute("aria-selected", String(valgt))
-      tab.tabIndex = valgt ? 0 : -1
-      const panel = panels[i]
-      if (panel) panel.hidden = !valgt
-    })
+    this.chosen = index
+    this.apply(index)
 
     this.dispatchEvent(
       new CustomEvent("tab-select", {
@@ -165,6 +207,31 @@ export class FsTabs extends HostElement {
         composed: true,
       }),
     )
+  }
+
+  /**
+   * Skriver valget ut i markupen.
+   *
+   * Hver skriving sammenligner først. Komponenten observerer nå de samme
+   * attributtene den setter, så en skriving uten sammenligning ville utløst
+   * observatøren, som ville skrevet på nytt, i det uendelige.
+   */
+  private apply(index: number): void {
+    const tabs = this.tabs
+    const panels = this.panels
+
+    tabs.forEach((tab, i) => {
+      const valgt = i === index
+      const selected = String(valgt)
+      if (tab.getAttribute("aria-selected") !== selected) {
+        tab.setAttribute("aria-selected", selected)
+      }
+      const tabindex = valgt ? 0 : -1
+      if (tab.tabIndex !== tabindex) tab.tabIndex = tabindex
+
+      const panel = panels[i]
+      if (panel && panel.hidden === valgt) panel.hidden = !valgt
+    })
   }
 }
 

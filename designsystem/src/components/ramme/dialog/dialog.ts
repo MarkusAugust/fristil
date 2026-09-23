@@ -26,7 +26,6 @@ export type DialogAttributes = {
     class: typeof DIALOG_CLASS
     "aria-labelledby": string
     open?: true
-    "data-preserve-attr": "open"
   }
   title: {
     class: typeof DIALOG_TITLE_CLASS
@@ -55,8 +54,8 @@ export type DialogAttributes = {
  *   området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen.
  *   Skal en avvisning vare, må appen si fra til serveren.
  * - `open` på **`<dialog>`** setter nettleseren selv når `showModal()`
- *   kalles, så det må fredes, ellers river morfingen det bort og lukker
- *   dialogen igjen ved neste patch. Serveren skriver det i tillegg når den
+ *   kalles. Det står ikke i serverens HTML, så en morfing river det bort, og
+ *   komponenten setter det tilbake. Serveren skriver det i tillegg når den
  *   vet at dialogen skal vises: uten JavaScript er en `<dialog>` uten `open`
  *   skjult, og innholdet finnes da ikke for leseren. Med attributtet står
  *   det som en boks på siden til komponenten gjør den om til en modal.
@@ -98,11 +97,6 @@ export const dialog = Object.assign(
        * HTML, meldte React avvik ved hvert eneste oppslag.
        */
       open: open ? (true as const) : undefined,
-      // Fredningen trengs fordi `showModal()` setter `open` selv når
-      // brukeren åpner dialogen fra siden, uten at serveren vet det. Uten
-      // den river morfingen attributtet bort og lukker dialogen i det
-      // øyeblikket den åpnet den.
-      "data-preserve-attr": "open" as const,
     }),
     title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),
     body: attributes({ class: DIALOG_BODY_CLASS }),

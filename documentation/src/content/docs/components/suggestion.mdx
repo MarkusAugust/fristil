@@ -40,18 +40,16 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
   <div class="fs-suggestion__field">
     <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
            autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-           aria-autocomplete="list" aria-describedby="kommune-help kommune-status"
-           data-preserve-attr="aria-expanded aria-activedescendant">
+           aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
 
-    <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
-        data-preserve-attr="hidden">
+    <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
       <li class="fs-suggestion__option" id="kommune-option-0" role="option"
-          aria-selected="false" data-preserve-attr="aria-selected hidden">Bergen</li>
+          aria-selected="false">Bergen</li>
       <li class="fs-suggestion__option" id="kommune-option-1" role="option"
-          aria-selected="false" data-preserve-attr="aria-selected hidden">Bodø</li>
+          aria-selected="false">Bodø</li>
     </ul>
 
-    <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
+    <p class="fs-suggestion__empty" hidden>Ingen treff</p>
     <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
           data-ignore-morph></span>
   </div>
@@ -85,13 +83,12 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
       <div class="fs-suggestion__field">
         <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
                autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list" data-preserve-attr="aria-expanded aria-activedescendant">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
-            data-preserve-attr="hidden">
+               aria-autocomplete="list">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
           <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
           <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
         </ul>
-        <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
+        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
         <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
               data-ignore-morph></span>
       </div>
@@ -129,7 +126,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
                 <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
               ))}
             </ul>
-            <p className="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
+            <p className="fs-suggestion__empty" hidden>Ingen treff</p>
             <span {...forslag.status} />
           </div>
         </fs-suggestion>
@@ -153,7 +150,7 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
         <ul {...forslag.list}>
           {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
         </ul>
-        <p class="fs-suggestion__empty" hidden data-preserve-attr="hidden">Ingen treff</p>
+        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
         <span {...forslag.status}></span>
       </div>
     </fs-suggestion>
@@ -173,9 +170,8 @@ I en Datastar-app sender serveren gjerne en ny liste mens brukeren skriver. Sett
       <div class="fs-suggestion__field">
         <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
                autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list" data-preserve-attr="aria-expanded aria-activedescendant">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden
-            data-preserve-attr="hidden"></ul>
+               aria-autocomplete="list">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden></ul>
         <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
               data-ignore-morph></span>
       </div>

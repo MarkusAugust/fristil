@@ -12,18 +12,15 @@ export type PopoverOptions = {
 export type PopoverAttributes = {
   host: {
     open?: true
-    "data-preserve-attr": "open"
   }
   trigger: {
     "aria-expanded": "true" | "false"
     "aria-controls": string
-    "data-preserve-attr": "aria-expanded"
   }
   panel: {
     class: typeof POPOVER_CLASS
     id: string
     popover: "manual"
-    "data-preserve-attr": "style"
   }
 }
 
@@ -47,21 +44,17 @@ export const popover = ({
   id,
   open = false,
 }: PopoverOptions): PopoverAttributes => ({
-  // Om panelet er åpent står som `open` på verten, og det er brukerens
-  // tilstand, ikke serverens. Uten dette lukker morfingen panelet i det
-  // serveren patcher området rundt.
   host: attributes({
     // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
     // sa markupen at panelet var åpent mens komponenten mente det var lukket.
+    // Ingen bevaringsliste: river en patch attributtet bort, setter
+    // komponenten det tilbake, og `server-controlled` slår av reparasjonen
+    // når serveren skal eie tilstanden.
     open: open ? (true as const) : undefined,
-    "data-preserve-attr": "open" as const,
   }),
   trigger: attributes({
     "aria-expanded": (open ? "true" : "false") as "true" | "false",
     "aria-controls": id,
-    // Komponenten endrer aria-expanded når panelet åpnes. Uten dette fjerner
-    // Datastars morfing det igjen, siden serverens utgave sier noe annet.
-    "data-preserve-attr": "aria-expanded" as const,
   }),
   panel: attributes({
     class: POPOVER_CLASS,
@@ -69,9 +62,5 @@ export const popover = ({
     // `manual` og ikke `auto`: komponenten lukker selv, slik at knappen kan
     // brukes til å lukke igjen uten at nettleseren rekker å lukke først.
     popover: "manual" as const,
-    // Posisjonen regnes ut mot knappens plass på skjermen og settes som
-    // `--fs-popover-top` og `--fs-popover-left` i style-attributtet. Uten
-    // dette river morfingen posisjonen bort, og panelet hopper til hjørnet.
-    "data-preserve-attr": "style" as const,
   }),
 })

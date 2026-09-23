@@ -16,6 +16,42 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`data-preserve-attr` er borte fra hele pakken.** `fs.tabs()`,
+  `fs.popover()`, `fs.suggestion()` og `fs.dialog()` skriver det ikke lenger,
+  og typene deres har ikke feltet. Skriver du markupen for hånd, kan du slette
+  attributtet.
+
+  Lista krevde at malen skrev av navnene på hvert attributt komponenten kom
+  til å røre, ni strenger fordelt på fire komponenter, uten at noen
+  kompilator så på dem. Endret Fristil hva en komponent satte, gikk malen
+  stille i stykker. Komponentene setter nå tilbake det brukeren gjorde, og
+  ingen mal trenger å kjenne attributtene.
+
+### Lagt til
+
+- **`server-controlled` på verten gir serveren tilstanden tilbake.** Det
+  fredningen ga, og som reparasjonen måtte erstatte, er at den som skrev
+  markupen kunne bestemme hvem som eier tilstanden. «Gå videre til steg 2» er
+  en ekte ting en server vil kunne gjøre. Står attributtet der, reparerer
+  komponenten ingenting, og hver patch bestemmer. Ett attributt å huske i
+  stedet for ni, og standardvalget er det som er riktig nesten alltid.
+
+### Endret
+
+- **Komponentene setter tilbake det brukeren gjorde.** `<fs-tabs>` setter
+  fanevalget tilbake, `<fs-popover>` at vinduet er åpent og hvor det står,
+  `<fs-suggestion>` om lista er utvidet og hva som er markert, og
+  `<fs-dialog>` `open` på selve `<dialog>` når den fortsatt står i topplaget.
+  Alle fire observerer nå de attributtene de selv setter, og hver skriving
+  sammenligner først.
+
+  Sprettoppvinduet reparerer én vei: har brukeren åpnet det, blir det
+  stående, men sender serveren `open`, åpnes det, for det er noe serveren
+  faktisk sa. Dialogen skiller på samme måte mellom `open` på verten, som er
+  serverens beskjed, og `open` på `<dialog>`, som nettleseren setter.
+
 ## 0.9.0 (2026-09-23)
 
 ### Brytende

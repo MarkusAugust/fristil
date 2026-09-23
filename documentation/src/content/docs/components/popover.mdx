@@ -35,13 +35,11 @@ const boks = fs.popover({ id: "handlinger" })
 ```
 
 ```html
-<fs-popover placement="bottom-end" data-preserve-attr="open">
+<fs-popover placement="bottom-end">
   <button class="fs-button" data-variant="secondary"
-          aria-expanded="false" aria-controls="handlinger"
-          data-preserve-attr="aria-expanded">Handlinger</button>
+          aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-      data-preserve-attr="style">
+  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
     <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
     <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
   </ul>
@@ -50,20 +48,20 @@ const boks = fs.popover({ id: "handlinger" })
 
 Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
 
-Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter bare to ting: `aria-expanded` når brukeren åpner, og posisjonen mot knappen. Begge står i `data-preserve-attr`, ellers river en oppdatering fra serveren dem bort. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter `open` på verten, `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake når en oppdatering fra serveren river dem bort. Malen din trenger ingenting ekstra.
+
+Reparasjonen gjelder én vei: har brukeren åpnet vinduet, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa. Skal serveren også kunne lukke det, settes `server-controlled` på `<fs-popover>`. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## I en app
 
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <fs-popover id="meny" placement="bottom-end" data-preserve-attr="open">
+    <fs-popover id="meny" placement="bottom-end">
       <button class="fs-button" data-variant="secondary"
-              aria-expanded="false" aria-controls="handlinger"
-              data-preserve-attr="aria-expanded">Handlinger</button>
+              aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-          data-preserve-attr="style">
+      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -155,16 +153,13 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
     <div data-signals="{apen: false}">
       <fs-popover
         placement="bottom-end"
-        data-preserve-attr="open"
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
         <button class="fs-button" data-variant="secondary"
-                aria-expanded="false" aria-controls="handlinger"
-                data-preserve-attr="aria-expanded">Handlinger</button>
+                aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-            data-preserve-attr="style">
+        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken

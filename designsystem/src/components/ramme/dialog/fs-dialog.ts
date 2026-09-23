@@ -26,10 +26,10 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * lukker den ikke: det gjør heller ikke en vanlig `<dialog>`, og komponenten
  * legger ingenting til.
  *
- * `open` er serverens. Sender serveren området på nytt med `open` fortsatt
- * satt, åpnes dialogen igjen. Hadde attributtet stått i
- * `data-preserve-attr`, kunne serveren aldri åpnet dialogen på nytt etter
- * første lukking.
+ * `open` på **verten** er serverens. Sender serveren området på nytt med
+ * `open` fortsatt satt, åpnes dialogen igjen. `open` på selve `<dialog>` er
+ * nettleserens, satt av `showModal()`, og det setter komponenten tilbake når
+ * en patch river det bort. Malen trenger ingen `data-preserve-attr`.
  *
  * Skriv `open` på selve `<dialog>` også når dialogen skal vises. Uten
  * JavaScript er en `<dialog>` uten `open` skjult, og da finnes ikke
@@ -37,7 +37,7 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  *
  * ```html
  * <fs-dialog open>
- *   <dialog class="fs-dialog" aria-labelledby="tittel" open data-preserve-attr="open">
+ *   <dialog class="fs-dialog" aria-labelledby="tittel" open>
  *     <h2 class="fs-dialog__title" id="tittel">Vedtaket er registrert</h2>
  *     <div class="fs-dialog__body">Saken er ferdigbehandlet.</div>
  *     <form method="dialog" class="fs-dialog__footer">
@@ -51,6 +51,17 @@ export class FsDialog extends HostElement {
   static observedAttributes = ["open"]
 
   private observer?: MutationObserver
+  /**
+   * Egen observatør for `open` på selve `<dialog>`.
+   *
+   * Den kan ikke slås sammen med den andre. Lukker brukeren dialogen, fjerner
+   * nettleseren attributtet først og sender `close` etterpå, og en observatør
+   * som kjørte hele `sync()` der ville sett en vert som fortsatt sa «åpen» og
+   * en dialog som ikke var modal, og åpnet den igjen før `close` rakk å bli
+   * håndtert. Denne gjør bare én ting: setter attributtet tilbake på en
+   * dialog som fortsatt står i topplaget.
+   */
+  private openObserver?: MutationObserver
   private dialogElement?: HTMLDialogElement
 
   /** Om dialogen er åpen. Speiler `open`-attributtet. */
@@ -64,10 +75,18 @@ export class FsDialog extends HostElement {
   }
 
   connectedCallback(): void {
-    // Serveren kan sende dialogen inn i et område som allerede står i siden,
-    // og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare
-    // egne barn observeres: dialogen er alltid et direkte barn, og
-    // innholdet inni den endrer seg ved hver patch.
+    /*
+     * Serveren kan sende dialogen inn i et område som allerede står i siden,
+     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare egne
+     * barn observeres: dialogen er alltid et direkte barn, og innholdet inni
+     * den endrer seg ved hver patch.
+     *
+     * `open` på selve `<dialog>` er med. Nettleseren setter det når
+     * `showModal()` kalles, og en morfing river det bort igjen, siden
+     * serveren ikke sendte det. Uten dette forsvant en åpen dialog i det noe
+     * i området rundt ble patchet, og malen måtte skrive
+     * `data-preserve-attr="open"` for å hindre det.
+     */
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, { childList: true })
     this.sync()
@@ -76,6 +95,8 @@ export class FsDialog extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
+    this.openObserver?.disconnect()
+    this.openObserver = undefined
     this.dialogElement?.removeEventListener("close", this.handleClose)
     this.dialogElement = undefined
   }
@@ -104,6 +125,27 @@ export class FsDialog extends HostElement {
         detail: { open, returnValue },
       }),
     )
+  }
+
+  /**
+   * Setter `open` tilbake på en dialog som fortsatt står i topplaget.
+   *
+   * `showModal()` setter attributtet selv, og serveren sendte det ikke, så
+   * morfingen tar det. Nettleserens egen stil skjuler da en `<dialog>` uten
+   * `open`, og dialogen forsvant for brukeren midt i noe hun holdt på med.
+   * Før måtte malen skrive `data-preserve-attr="open"` for å hindre det.
+   *
+   * `:modal` og ikke `this.open` er vilkåret, og det er presist: lukker
+   * brukeren dialogen, forlater den topplaget, og da er det manglende
+   * attributtet ekte. Bare en dialog som fortsatt er modal uten å si det, er
+   * en dialog noen har tatt attributtet fra.
+   */
+  private repairOpen(): void {
+    const dialog = this.dialogElement
+    if (!dialog?.isConnected) return
+    if (dialog.matches(":modal") && !dialog.hasAttribute("open")) {
+      dialog.setAttribute("open", "")
+    }
   }
 
   private handleClose = (): void => {
@@ -146,7 +188,13 @@ export class FsDialog extends HostElement {
       this.dialogElement?.removeEventListener("close", this.handleClose)
       this.dialogElement = dialog
       dialog.addEventListener("close", this.handleClose)
+
+      this.openObserver?.disconnect()
+      this.openObserver = new MutationObserver(() => this.repairOpen())
+      this.openObserver.observe(dialog, { attributeFilter: ["open"] })
     }
+
+    this.repairOpen()
 
     /*
      * Lukket brukeren dialogen før komponenten fikk kjøre?

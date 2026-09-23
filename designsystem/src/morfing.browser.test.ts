@@ -305,7 +305,9 @@ describe("morfing river ikke bort det komponenten setter", () => {
   /*
    * Fanene bærer valget i `aria-selected` og `tabindex` på knappene, og i
    * `hidden` på panelene. Ingen av delene finnes i serverens utgave, for
-   * valget er noe brukeren har gjort.
+   * valget er noe brukeren har gjort, og ingen av dem er fredet: byggeren
+   * skriver ingen `data-preserve-attr`. Morfingen river dem altså bort, og
+   * komponenten setter dem tilbake.
    */
   const FANER = tabs({ id: "sak", count: 2 })
 
@@ -333,6 +335,8 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(knapper[1].getAttribute("aria-selected")).toBe("true")
 
     morf(felt, FANEMARKUP)
+    // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(
       knapper[1].getAttribute("aria-selected"),
@@ -343,6 +347,37 @@ describe("morfing river ikke bort det komponenten setter", () => {
       false,
     )
     expect(paneler[0].hidden).toBe(true)
+  })
+
+  it("lar serveren flytte fanen når den sier at den eier valget", async () => {
+    /*
+     * Det fredningen ga, og som reparasjonen måtte erstatte.
+     *
+     * «Gå videre til steg 2» er en ekte ting en server vil kunne gjøre. Med
+     * `data-preserve-attr` kunne den aldri det: lista gjaldt begge veier.
+     * `server-controlled` sier at serveren eier valget, og da bestemmer hver
+     * patch.
+     */
+    const SERVERENS = FANEMARKUP.replace(
+      "<fs-tabs>",
+      "<fs-tabs server-controlled>",
+    )
+    const felt = monterMarkup(SERVERENS)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    knapper[1].click()
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+
+    morf(felt, SERVERENS)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      knapper[0].getAttribute("aria-selected"),
+      "serveren sa at den eier valget, men komponenten satte det tilbake",
+    ).toBe("true")
+    expect(knapper[1].getAttribute("aria-selected")).toBe("false")
   })
 
   /*
