@@ -1,6 +1,7 @@
 import {
   defineElement,
   HostElement,
+  setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
@@ -176,7 +177,7 @@ export class FsErrorSummary extends HostElement {
 
     const focusable = control ?? target
     if (!focusable.hasAttribute("tabindex") && !isFocusable(focusable)) {
-      focusable.setAttribute("tabindex", "-1")
+      setAttr(focusable, "tabindex", "-1")
     }
 
     focusable.focus()

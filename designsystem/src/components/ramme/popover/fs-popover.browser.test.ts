@@ -52,17 +52,17 @@ describe("fs-popover", () => {
     expect(panel.classList.contains("fs-popover")).toBe(true)
   })
 
-  it("ber serveren bevare det komponenten endrer", () => {
-    // Uten dette river Datastars morfing tilstanden bort ved neste patch.
-    const utloser = document.getElementById("utloser") as HTMLElement
+  it("ber ikke malen frede noe", () => {
+    // Tilstanden er brukerens, og komponenten setter den tilbake selv etter
+    // en patch. Kommer `data-preserve-attr` tilbake her, har noen gjenopptatt
+    // kontrakten malen måtte skrive av fra dokumentasjonen.
+    const vert = document.querySelector("fs-popover") as HTMLElement
+    const knapp = document.querySelector("button") as HTMLElement
     const panel = document.getElementById("panel") as HTMLElement
 
-    expect(utloser.getAttribute("data-preserve-attr")).toBe("aria-expanded")
-    expect(panel.getAttribute("data-preserve-attr")).toBe("style")
-
-    // Om panelet er åpent er brukerens tilstand, ikke serverens.
-    const vert = document.querySelector("fs-popover") as HTMLElement
-    expect(vert.getAttribute("data-preserve-attr")).toBe("open")
+    expect(vert.hasAttribute("data-preserve-attr")).toBe(false)
+    expect(knapp.hasAttribute("data-preserve-attr")).toBe(false)
+    expect(panel.hasAttribute("data-preserve-attr")).toBe(false)
   })
 
   it("åpner og lukker på klikk", async () => {

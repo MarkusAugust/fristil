@@ -283,6 +283,149 @@ describe("morfing river ikke bort det komponenten setter", () => {
       </div>
     </fs-suggestion>`
 
+  it("holder forslagslista åpen og markeringen gjennom en patch", async () => {
+    /*
+     * Alt brukeren har gjort i et forslagsfelt er komponentens eget: at lista
+     * er utvidet, hva filtreringen skjuler, og hvilket alternativ hun har
+     * blitt med piltastene. Ingenting av det står i serverens utgave, og
+     * ingenting er fredet. Morfingen river det bort, og komponenten setter
+     * det tilbake.
+     */
+    const felt = monterMarkup(FELT_MED_FORSLAG)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+
+    expect(liste.hidden, "lista åpnet seg ikke").toBe(false)
+    expect(kontroll.getAttribute("aria-expanded")).toBe("true")
+    expect(valg[0].getAttribute("aria-selected")).toBe("true")
+
+    morf(felt, FELT_MED_FORSLAG)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(liste.hidden, "lista lukket seg i patchen").toBe(false)
+    expect(
+      kontroll.getAttribute("aria-expanded"),
+      "skjermleseren fikk beskjed om at lista var lukket mens den sto framme",
+    ).toBe("true")
+    expect(
+      valg[0].getAttribute("aria-selected"),
+      "markeringen forsvant i patchen",
+    ).toBe("true")
+    expect(kontroll.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+  })
+
+  it("lar serveren styre forslagslista når den sier at den eier den", async () => {
+    const SERVERENS = FELT_MED_FORSLAG.replace(
+      "<fs-suggestion>",
+      "<fs-suggestion server-controlled>",
+    )
+    const felt = monterMarkup(SERVERENS)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    expect(liste.hidden).toBe(false)
+
+    morf(felt, SERVERENS)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      liste.hidden,
+      "serveren sa at den eier lista, men komponenten åpnet den igjen",
+    ).toBe(true)
+  })
+
+  it("setter tilbake lesepunktet når bare aria-activedescendant blir revet bort", async () => {
+    /*
+     * Markeringen kan stå igjen mens pekeren er borte. Da ser ingenting galt
+     * ut i markupen, men skjermleseren har mistet lesepunktet sitt, og
+     * brukeren får ikke lest opp alternativet hun står på.
+     */
+    const felt = monterMarkup(FELT_MED_FORSLAG)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    expect(kontroll.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+
+    kontroll.removeAttribute("aria-activedescendant")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      kontroll.getAttribute("aria-activedescendant"),
+      "lesepunktet kom ikke tilbake",
+    ).toBe(valg[0].id)
+  })
+
+  it("glemmer markeringen når serveren sender en helt ny liste", async () => {
+    /*
+     * Id-ene fra `fs.suggestion()` er posisjonelle, så en ny liste gjenbruker
+     * dem. Husket komponenten bare id-en, satte den markeringen tilbake på
+     * alternativ nummer to i en helt annen liste, og skjermleseren leste opp
+     * en kommune brukeren aldri navigerte til. Teksten er identiteten.
+     */
+    const felt = monterMarkup(FELT_MED_FORSLAG)
+    await customElements.whenDefined("fs-suggestion")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+
+    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    expect(valg[1].getAttribute("aria-selected")).toBe("true")
+
+    /*
+     * `morf()` her etterligner Datastars attributtsynkronisering, og en ekte
+     * patch bytter også teksten. Den delen settes derfor for hånd, slik at
+     * lista faktisk blir en annen liste og ikke bare de samme navnene med
+     * nye attributter.
+     */
+    const NY_LISTE = FELT_MED_FORSLAG.replace(">Bergen<", ">Alta<").replace(
+      ">Bodø<",
+      ">Asker<",
+    )
+    valg[0].textContent = "Alta"
+    valg[1].textContent = "Asker"
+    morf(felt, NY_LISTE)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const etter = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    expect(
+      etter.map((o) => o.getAttribute("aria-selected")),
+      "markeringen ble satt på et alternativ brukeren aldri navigerte til",
+    ).toEqual(["false", "false"])
+    expect(kontroll.hasAttribute("aria-activedescendant")).toBe(false)
+  })
+
   it("lar «Ingen treff» bli skjult gjennom en patch", async () => {
     const felt = monterMarkup(FELT_MED_FORSLAG)
     await customElements.whenDefined("fs-suggestion")
@@ -305,7 +448,9 @@ describe("morfing river ikke bort det komponenten setter", () => {
   /*
    * Fanene bærer valget i `aria-selected` og `tabindex` på knappene, og i
    * `hidden` på panelene. Ingen av delene finnes i serverens utgave, for
-   * valget er noe brukeren har gjort.
+   * valget er noe brukeren har gjort, og ingen av dem er fredet: byggeren
+   * skriver ingen `data-preserve-attr`. Morfingen river dem altså bort, og
+   * komponenten setter dem tilbake.
    */
   const FANER = tabs({ id: "sak", count: 2 })
 
@@ -333,6 +478,8 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(knapper[1].getAttribute("aria-selected")).toBe("true")
 
     morf(felt, FANEMARKUP)
+    // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(
       knapper[1].getAttribute("aria-selected"),
@@ -343,6 +490,130 @@ describe("morfing river ikke bort det komponenten setter", () => {
       false,
     )
     expect(paneler[0].hidden).toBe(true)
+  })
+
+  it("lar brukeren bytte fane i markup uten id-er", async () => {
+    /*
+     * Håndskrevet markup fra en Go- eller Kotlin-mal har ofte ingen id-er på
+     * fanene, og det er lovlig: `aria-controls` er ikke et krav.
+     *
+     * Husket komponenten valget som en id, ble den tomme strengen en
+     * identitet som traff den første fanen, og reparasjonen satte valget
+     * tilbake i neste mikrooppgave. Brukeren fikk da ikke byttet fane i det
+     * hele tatt, og ingenting sa fra.
+     */
+    const UTEN_IDER = `
+      <fs-tabs>
+        <div class="fs-tabs__list" role="tablist">
+          <button role="tab" aria-selected="true" tabindex="0">Oversikt</button>
+          <button role="tab" aria-selected="false" tabindex="-1">Vedlegg</button>
+        </div>
+        <div class="fs-tabs__panel" role="tabpanel" tabindex="0">Sammendrag</div>
+        <div class="fs-tabs__panel" role="tabpanel" tabindex="0" hidden>Filer</div>
+      </fs-tabs>`
+
+    const felt = monterMarkup(UTEN_IDER)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const paneler = [
+      ...felt.querySelectorAll("[role='tabpanel']"),
+    ] as HTMLElement[]
+
+    knapper[1].click()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      knapper[1].getAttribute("aria-selected"),
+      "valget hoppet tilbake til den første fanen",
+    ).toBe("true")
+    expect(paneler[1].hidden).toBe(false)
+
+    morf(felt, UTEN_IDER)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+    expect(paneler[1].hidden).toBe(false)
+  })
+
+  it("lar fanene stå i takt når patchen fjerner den valgte", async () => {
+    /*
+     * Serveren kan sende en kortere rad. Komponenten glemmer da valget, for
+     * fanen finnes ikke lenger, men markupen må henge sammen etterpå.
+     *
+     * Uten opprydningen sto raden igjen uten en eneste `aria-selected="true"`,
+     * med alle panelene skjult, og et klikk på den ene fanen som var igjen
+     * gjorde ingenting: `select(0)` sammenlignet mot en `selected` som svarer
+     * 0 også når ingenting er markert. Brukeren fikk en fanerad som ikke
+     * svarte.
+     */
+    const felt = monterMarkup(FANEMARKUP)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    knapper[1].click()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+
+    const meldte: number[] = []
+    felt.addEventListener("tab-select", (e) =>
+      meldte.push((e as CustomEvent<{ index: number }>).detail.index),
+    )
+
+    // Patchen fjerner fanen brukeren valgte, og panelet dens.
+    knapper[1].remove()
+    ;(felt.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const igjen = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const paneler = [
+      ...felt.querySelectorAll("[role='tabpanel']"),
+    ] as HTMLElement[]
+
+    expect(
+      igjen.map((k) => k.getAttribute("aria-selected")),
+      "ingen fane var markert etter patchen",
+    ).toEqual(["true"])
+    expect(
+      meldte,
+      "opprydningen tok et nytt valg uten å si fra, så en app som laster panelinnhold fikk aldri vite det",
+    ).toContain(0)
+    expect(paneler[0].hidden, "ingen paneler var synlige etter patchen").toBe(
+      false,
+    )
+  })
+
+  it("lar serveren flytte fanen når den sier at den eier valget", async () => {
+    /*
+     * Det fredningen ga, og som reparasjonen måtte erstatte.
+     *
+     * «Gå videre til steg 2» er en ekte ting en server vil kunne gjøre. Med
+     * `data-preserve-attr` kunne den aldri det: lista gjaldt begge veier.
+     * `server-controlled` sier at serveren eier valget, og da bestemmer hver
+     * patch.
+     */
+    const SERVERENS = FANEMARKUP.replace(
+      "<fs-tabs>",
+      "<fs-tabs server-controlled>",
+    )
+    const felt = monterMarkup(SERVERENS)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    knapper[1].click()
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+
+    morf(felt, SERVERENS)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      knapper[0].getAttribute("aria-selected"),
+      "serveren sa at den eier valget, men komponenten satte det tilbake",
+    ).toBe("true")
+    expect(knapper[1].getAttribute("aria-selected")).toBe("false")
   })
 
   /*
@@ -381,5 +652,79 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(panel.matches(":popover-open"), "vinduet lukket seg i patchen").toBe(
       true,
     )
+  })
+
+  it("lar serveren lukke sprettoppvinduet når den sier at den eier det", async () => {
+    const SERVERENS = SPRETTMARKUP.replace(
+      "<fs-popover ",
+      "<fs-popover server-controlled ",
+    )
+    const vindu = monterMarkup(SERVERENS) as HTMLElement & { show(): void }
+    await customElements.whenDefined("fs-popover")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    vindu.show()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vindu.hasAttribute("open")).toBe(true)
+
+    morf(vindu, SERVERENS)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      vindu.hasAttribute("open"),
+      "serveren sa at den eier vinduet, men komponenten åpnet det igjen",
+    ).toBe(false)
+  })
+
+  it("lukker seg når patchen både fjerner open og overlater tilstanden", async () => {
+    /*
+     * En morfing setter ett attributt om gangen, og `open` kommer før
+     * `server-controlled` i dokumentrekkefølgen. Reparerte komponenten med en
+     * gang, satte den `open` tilbake mens serveren var midt i å si at den
+     * overtar tilstanden, og vinduet ble stående åpent etterpå.
+     */
+    const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & { show(): void }
+    await customElements.whenDefined("fs-popover")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    vindu.show()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vindu.hasAttribute("open")).toBe(true)
+
+    vindu.removeAttribute("open")
+    vindu.setAttribute("server-controlled", "")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      vindu.hasAttribute("open"),
+      "vinduet åpnet seg igjen fordi reparasjonen kom før hele patchen hadde landet",
+    ).toBe(false)
+  })
+
+  it("lar en app lukke sprettoppvinduet med egenskapen", async () => {
+    /*
+     * Reparasjonen må ikke stå i veien for en app som styrer vinduet selv.
+     * Første utgave husket bare «brukeren åpnet det», og satte da `open`
+     * rett tilbake når appen fjernet det. Datastar-eksempelet i
+     * dokumentasjonen lukker menyen fra en handling inne i panelet, og den
+     * ble stående åpen.
+     */
+    const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & {
+      show(): void
+      open: boolean
+    }
+    await customElements.whenDefined("fs-popover")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    vindu.show()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(vindu.hasAttribute("open")).toBe(true)
+
+    vindu.open = false
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(vindu.hasAttribute("open"), "vinduet lot seg ikke lukke").toBe(false)
+    const panel = vindu.querySelector("[popover]") as HTMLElement
+    expect(panel.matches(":popover-open")).toBe(false)
   })
 })

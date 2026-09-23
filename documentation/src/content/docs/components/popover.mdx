@@ -35,13 +35,11 @@ const boks = fs.popover({ id: "handlinger" })
 ```
 
 ```html
-<fs-popover placement="bottom-end" data-preserve-attr="open">
+<fs-popover placement="bottom-end">
   <button class="fs-button" data-variant="secondary"
-          aria-expanded="false" aria-controls="handlinger"
-          data-preserve-attr="aria-expanded">Handlinger</button>
+          aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-      data-preserve-attr="style">
+  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
     <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
     <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
   </ul>
@@ -50,20 +48,22 @@ const boks = fs.popover({ id: "handlinger" })
 
 Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
 
-Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter bare to ting: `aria-expanded` når brukeren åpner, og posisjonen mot knappen. Begge står i `data-preserve-attr`, ellers river en oppdatering fra serveren dem bort. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter `open` på verten, `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake når en oppdatering fra serveren river dem bort. Malen din trenger ingenting ekstra.
+
+Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
+
+Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## I en app
 
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <fs-popover id="meny" placement="bottom-end" data-preserve-attr="open">
+    <fs-popover id="meny" placement="bottom-end">
       <button class="fs-button" data-variant="secondary"
-              aria-expanded="false" aria-controls="handlinger"
-              data-preserve-attr="aria-expanded">Handlinger</button>
+              aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-          data-preserve-attr="style">
+      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -154,17 +154,15 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
     ```html
     <div data-signals="{apen: false}">
       <fs-popover
+        server-controlled
         placement="bottom-end"
-        data-preserve-attr="open"
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
         <button class="fs-button" data-variant="secondary"
-                aria-expanded="false" aria-controls="handlinger"
-                data-preserve-attr="aria-expanded">Handlinger</button>
+                aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain"
-            data-preserve-attr="style">
+        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
@@ -181,6 +179,8 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
     ```
 
     `data-attr:open` setter og fjerner attributtet etter signalet, og `data-on:popover-toggle` fanger opp at brukeren lukket panelet med Escape eller et klikk utenfor. Uten den siste ville signalet og panelet kommet i utakt.
+
+    `server-controlled` hører med når signalet styrer `open`. Komponenten setter ellers attributtet tilbake når noe fjerner det, siden et fjernet attributt ikke er til å skille fra en oppdatering som river det bort, og da lot panelet seg ikke lukke fra signalet. Styrer du panelet fra JavaScript i stedet, med `meny.open = false`, trengs det ikke: en egenskap er en beskjed komponenten kan se.
   </TabItem>
 </Tabs>
 
@@ -190,6 +190,7 @@ Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover(
 | --- | --- | --- |
 | `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
 | `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end` |
+| `server-controlled` | boolsk | Serveren eier tilstanden. Komponenten setter ikke `open` tilbake etter en oppdatering. |
 
 ## Hendelser og metoder
 

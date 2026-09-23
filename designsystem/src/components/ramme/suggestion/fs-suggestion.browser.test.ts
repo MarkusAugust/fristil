@@ -73,14 +73,19 @@ describe("fs-suggestion", () => {
     expect(document.querySelectorAll("[role='option']")).toHaveLength(4)
   })
 
-  it("ber serveren bevare det komponenten endrer", () => {
+  it("ber ikke malen frede noe", () => {
+    // Det lista viser og hva som er markert er brukerens, og komponenten
+    // setter det tilbake selv etter en patch. Kommer `data-preserve-attr`
+    // tilbake her, har noen gjenopptatt kontrakten malen måtte skrive av fra
+    // dokumentasjonen.
     const input = document.querySelector("input") as HTMLInputElement
     const liste = document.querySelector("[role='listbox']") as HTMLElement
+    const valg = document.querySelectorAll("[role='option']")
 
-    expect(input.getAttribute("data-preserve-attr")).toBe(
-      "aria-expanded aria-activedescendant",
-    )
-    expect(liste.getAttribute("data-preserve-attr")).toBe("hidden")
+    expect(input.hasAttribute("data-preserve-attr")).toBe(false)
+    expect(liste.hasAttribute("data-preserve-attr")).toBe(false)
+    for (const v of valg)
+      expect(v.hasAttribute("data-preserve-attr")).toBe(false)
   })
 
   it("snevrer inn forslagene mens brukeren skriver", async () => {

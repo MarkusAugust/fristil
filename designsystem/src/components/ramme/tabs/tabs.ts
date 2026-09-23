@@ -27,7 +27,6 @@ export type TabsAttributes = {
     "aria-selected": "true" | "false"
     "aria-controls": string
     tabindex: "0" | "-1"
-    "data-preserve-attr": "aria-selected tabindex"
   }>
   panels: Array<{
     id: string
@@ -36,7 +35,6 @@ export type TabsAttributes = {
     "aria-labelledby": string
     tabindex: "0"
     hidden?: true
-    "data-preserve-attr": "hidden"
   }>
 }
 
@@ -46,6 +44,10 @@ export type TabsAttributes = {
  * Serveren skriver rollene og skjuler panelene som ikke er valgt. Gjorde
  * komponenten det, ville alle panelene vises til skriptet hadde kjørt, og
  * innholdet hoppe når det skjulte seg selv.
+ *
+ * Ingen bevaringsliste. Fanevalget er brukerens, og `<fs-tabs>` setter det
+ * tilbake når en patch river det bort. Skal serveren kunne flytte fanen,
+ * settes `server-controlled` på `<fs-tabs>`.
  *
  * ```ts
  * const faner = fs.tabs({ id: "sak", count: 2, selected: 1, label: "Velg visning" })
@@ -84,7 +86,6 @@ export const tabs = ({
         tabindex: (index === valid ? "0" : "-1") as "0" | "-1",
         // Komponenten flytter valget når brukeren klikker. Morfingen ville
         // ellers satt det tilbake til det serveren sendte.
-        "data-preserve-attr": "aria-selected tabindex" as const,
       }),
     ),
     panels: indices.map((index) =>
@@ -97,7 +98,6 @@ export const tabs = ({
         // hopper Tab rett forbi innholdet som nettopp ble vist.
         tabindex: "0" as const,
         hidden: index === valid ? undefined : (true as const),
-        "data-preserve-attr": "hidden" as const,
       }),
     ),
   }

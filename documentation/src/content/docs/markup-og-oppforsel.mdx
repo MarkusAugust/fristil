@@ -38,9 +38,9 @@ I alle tre er det noe annet enn komponenten som bestemmer hva som står i DOM-en
 Med markup menes strukturen: elementene, klassene, rollene og koblingen
 mellom dem. Den lager komponenten aldri. Tilstand som endrer seg mens
 brukeren holder på, som `aria-expanded` på en åpen meny, setter komponenten,
-og de attributtene er navngitt i `data-preserve-attr` fra byggefunksjonen. Skillet
-er altså ikke mellom attributt og node, men mellom det som beskriver siden og
-det som beskriver hva brukeren nettopp gjorde.
+og den setter den tilbake når en oppdatering fra serveren river den bort.
+Skillet er altså ikke mellom attributt og node, men mellom det som beskriver
+siden og det som beskriver hva brukeren nettopp gjorde.
 
 ## Byggefunksjon eller web component?
 
@@ -147,13 +147,15 @@ Datastar er det strengeste av de tre. Holder markupen der, holder den overalt.
 
 Noen attributter endrer seg mens brukeren holder på. `aria-expanded` på en knapp som åpner et panel, `hidden` på et fanepanel, posisjonen på et sprettoppvindu. Det er ekte oppførsel, og komponenten må få lov.
 
-Byggefunksjonene skriver derfor ut `data-preserve-attr` med navnene på nøyaktig de attributtene komponenten kommer til å røre:
+En oppdatering fra serveren river dem bort, siden ingenting av dem sto i HTML-en den sendte. Komponenten ser det og setter dem tilbake. Du trenger ikke gjøre noe, og malen din trenger ikke kjenne til attributtene i det hele tatt.
+
+Skal serveren eie tilstanden, sier du det på verten:
 
 ```html
-<button aria-expanded="false" data-preserve-attr="aria-expanded">Handlinger</button>
+<fs-tabs server-controlled>
 ```
 
-Datastar leser lista fra serverens node og lar de attributtene stå. I React og ren HTML er det et vanlig data-attributt som ikke gjør noe. Du trenger ikke tenke på det: byggefunksjonen setter det.
+Da reparerer komponenten ingenting, og hver oppdatering bestemmer. Det er valget en server trenger når den skal kunne flytte fanen selv.
 
 ## Når markupen ikke lages med JavaScript
 
@@ -249,46 +251,56 @@ PHP-fil eller en Ktor-app skriver det samme, og ingen av dem trenger å
 kjenne reglene. Det er hele poenget med at koblingen bor i komponenten.
 
 Patchen river koblingen bort, siden ingenting av den sto i HTML-en serveren
-sendte. Komponenten ser at den er borte, og setter den tilbake. Malen
-trenger altså ingen `data-preserve-attr` for feltet, og id-ene blir de
-samme som før: komponenten husker dem, slik at en skjermleser midt i en
+sendte. Komponenten ser at den er borte, og setter den tilbake. Id-ene blir
+de samme som før: komponenten husker dem, slik at en skjermleser midt i en
 opplesning ikke følger en peker som skifter under den.
 
-#### `data-preserve-attr` for det brukeren eier
+#### Komponenten setter tilbake det brukeren gjorde
 
 Noe kan serveren umulig vite: hvilken fane brukeren valgte, og om
 sprettoppvinduet er åpent. Det er brukerens tilstand, ikke serverens, og den
-lever bare i nettleseren.
+lever bare i nettleseren. Ingenting av den står i HTML-en serveren sendte, så
+morfingen river den bort.
 
-Det er her skillet går, og det er verdt å holde fast ved. En kobling
-komponenten har **regnet ut** kan den regne ut på nytt, så den repareres.
-Noe brukeren har **gjort** finnes det ingen kilde til, og en reparasjon
-ville dessuten kjempet mot en server som med vilje endret noe. Det siste må
-fredes.
+Komponentene setter den tilbake. Malen din trenger ikke vite hvilke
+attributter det gjelder:
 
-Datastar har et attributt for nettopp dette. Det tar navnene på de
-attributtene morfingen skal la stå:
+| Komponent | Hva den setter tilbake |
+| --- | --- |
+| `<fs-field>` | `id`, `for`, `aria-describedby` og resten av koblingen, med de samme id-ene som før |
+| `<fs-tabs>` | fanevalget: `aria-selected` og `tabindex` på fanene, `hidden` på panelene |
+| `<fs-popover>` | `open` på verten, `aria-expanded` på knappen, posisjonen på panelet |
+| `<fs-suggestion>` | om lista står åpen, hva som er markert, og hva filtreringen skjuler |
+| `<fs-dialog>` | `open` på selve `<dialog>`, som nettleseren setter i `showModal()` |
+
+Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene på
+hvert attributt komponenten kom til å røre. Ni strenger å holde i takt med en
+pakke som kunne endre seg, uten at noen kompilator så på dem.
+
+#### Når serveren skal eie tilstanden
+
+Fredningen ga én ting reparasjonen måtte erstatte: den som skrev markupen
+kunne bestemme hvem som eier tilstanden. «Gå videre til steg 2» er en ekte
+ting en server vil kunne gjøre.
+
+Ett attributt gjør det, på verten:
 
 ```html
-<button aria-selected="true" data-preserve-attr="aria-selected tabindex">Vedlegg</button>
+<fs-tabs server-controlled>
 ```
 
-«Oppdater denne knappen, men la `aria-selected` og `tabindex` være i fred.»
+Da reparerer komponenten ingenting, og hver patch bestemmer. Standardvalget
+er det motsatte, fordi det er riktig nesten alltid: brukeren mister ikke det
+hun nettopp gjorde.
 
-Det må stå i HTML-en **serveren** sender, for det er der Datastar leser det.
-Komponenten kan ikke sette det på seg selv; da kommer det for sent.
+Sprettoppvinduet står i en mellomstilling, og det er med vilje. Har noen bedt
+om at vinduet er åpent, blir det stående gjennom en patch. Sender serveren
+`open`, åpnes det, for det er noe serveren faktisk sa.
 
-Byggefunksjonene skriver det for deg:
-
-| Byggefunksjon | Hva den lar stå, og hvorfor |
-| --- | --- |
-| `fs.tabs()` | `aria-selected` og `tabindex` på fanene, `hidden` på panelene. Brukeren valgte fanen. |
-| `fs.popover()` | `open` på verten, `aria-expanded` på knappen, `style` på panelet. Brukeren åpnet det, og posisjonen regnes ut i nettleseren. |
-| `fs.suggestion()` | `aria-expanded`, `aria-activedescendant` og `hidden`. Brukeren skriver og blar. |
-| `fs.dialog()` | `open` på selve `<dialog>`, som nettleseren setter når `showModal()` kalles. Merk at `open` på verten **ikke** fredes: det er serverens beskjed om at dialogen skal vises, og hadde det vært fredet, kunne serveren aldri åpnet dialogen igjen etter første lukking. |
-
-Skriver du markupen i et annet språk enn JavaScript, står de samme navnene i
-tabellen over.
+En app lukker det med egenskapen: `meny.open = false`, `hide()` eller
+`toggle()`. Styrer du `open` med et attributt utenfra, som med Datastars
+`data-attr:open`, ser komponenten ingen forskjell på det og en morfing, og da
+skal siden si `server-controlled` og la serveren eie tilstanden.
 
 #### Når brukeren selv utløser oppdateringen
 
@@ -297,24 +309,26 @@ komponenten oppdatere et signal, vet serveren hva brukeren har gjort, og kan
 sende riktig HTML med én gang:
 
 ```html
-<fs-tabs data-on:tab-select="$fane = evt.detail.index">
+<fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
 ```
 
 Komponenten gjør tastaturet og tilgjengeligheten, signalet følger etter, og
-serveren rendrer fra `$fane`. Da trengs ikke `data-preserve-attr`.
+serveren rendrer fra `$fane`. Da er serveren den som vet, og
+`server-controlled` sier det. Uten attributtet ville de to kjempet om det
+samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender
+sin egen.
 
-Det virker ikke når **serveren** dytter en oppdatering av seg selv, for da
-har den ingen ferske signaler. I en app der noe skjer fordi en annen bruker
-gjorde noe, står `data-preserve-attr` fortsatt.
+Lar du være å binde et signal, er det komponenten som vet, og da skal den
+reparere. Det er standardvalget, og det er også det riktige når **serveren**
+dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
 
 #### Kort oppsummert
 
 1. **Send bare det som har endret seg.** Da oppstår ikke problemet.
 2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
    `aria-describedby` selv, i hvilket som helst språk.
-3. **For det bare brukeren vet**, som fanevalg og åpne vinduer:
-   `data-preserve-attr`, skrevet av byggefunksjonen. Koblingen i et felt
-   hører ikke hit: den repareres av komponenten.
+3. **Det brukeren gjorde setter komponenten tilbake.** Du trenger ikke gjøre
+   noe. Skal serveren eie tilstanden, sier du det med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
 fyller det ut, kan serveren skrive hele koblingen selv. Da har komponenten

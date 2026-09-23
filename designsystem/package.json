@@ -301,7 +301,7 @@
   },
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
@@ -313,7 +313,8 @@
     "sjekk:cli": "bun scripts/sjekk-cli.ts",
     "sjekk:versjon": "bun scripts/sjekk-versjon.ts",
     "sjekk:pakke": "publint",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "sjekk:skriving": "bun scripts/sjekk-skriving.ts"
   },
   "devDependencies": {
     "@types/node": "24.12.4",

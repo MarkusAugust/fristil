@@ -34,6 +34,88 @@ export function defineElement(
 }
 
 /**
+ * Setter et attributt, men bare når verdien faktisk er en annen.
+ *
+ * Komponentene observerer de attributtene de selv setter, for å kunne sette
+ * dem tilbake etter en patch. En skriving av en verdi som alt står der teller
+ * som en endring, så observatøren kaller seg selv, skriver på nytt, og
+ * mikrooppgavekøen tømmes aldri. Siden fryser, og en testkjøring henger uten
+ * feilmelding: ingen stakksporing, ingen påstand, bare stillhet. Det er
+ * derfor ingen test kan fange det, og hvorfor skrivingen går gjennom én
+ * funksjon som alle komponentene bruker.
+ *
+ * `null` fjerner attributtet.
+ */
+export function setAttr(
+  element: Element,
+  name: string,
+  value: string | null | undefined,
+): void {
+  if (value === null || value === undefined) {
+    if (element.hasAttribute(name)) element.removeAttribute(name)
+  } else if (element.getAttribute(name) !== value) {
+    element.setAttribute(name, value)
+  }
+}
+
+/**
+ * Slår et boolsk attributt av eller på, uten å skrive når det står slik alt.
+ *
+ * `el.hidden = true` på noe som alt er skjult skriver attributtet på nytt, og
+ * det teller som en endring. `toggleAttribute` gjør ikke det: står
+ * attributtet slik det skal, skjer ingenting. Den er derfor den eneste
+ * lovlige veien til `hidden`, `disabled` og de andre boolske attributtene i en
+ * komponent som observerer sine egne.
+ */
+export function setFlag(element: Element, name: string, on: boolean): void {
+  element.toggleAttribute(name, on)
+}
+
+/**
+ * Skriver tekst i et element, men bare når teksten er en annen.
+ *
+ * `textContent` er en `childList`-endring, og komponentene observerer barna
+ * sine. Å skrive den samme teksten på nytt teller som en endring, og da
+ * kaller observatøren seg selv.
+ *
+ * `textContent` er all tekst i undertreet slått sammen, så sammenligningen
+ * ser ikke forskjell på `<b>3</b> treff` og `3 treff`. Funksjonen er ment for
+ * elementer komponenten fyller med ren tekst, som meldingen om antall treff i
+ * forslagsfeltet.
+ */
+export function setText(element: Element, text: string): void {
+  if (element.textContent !== text) element.textContent = text
+}
+
+/** Legger på en klasse, men bare når den ikke står der fra før. */
+export function addClass(element: Element, name: string): void {
+  if (!element.classList.contains(name)) element.classList.add(name)
+}
+
+/**
+ * Attributtet som gir serveren tilstanden tilbake.
+ *
+ * Komponentene reparerer som standard det brukeren har gjort: valgte fanen,
+ * det åpne sprettoppvinduet, den utvidede forslagslista. En morfing river det
+ * bort, siden ingenting av det sto i HTML-en serveren sendte, og komponenten
+ * setter det tilbake. Da trenger ingen mal å kjenne til attributtene.
+ *
+ * Noen ganger er det serveren som skal bestemme: «gå videre til steg 2» er en
+ * ekte ting en server vil kunne gjøre. Står `server-controlled` på verten,
+ * reparerer komponenten ingenting, og hver patch bestemmer.
+ *
+ * Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene
+ * på hvert attributt komponenten kom til å røre. Ett attributt å huske i
+ * stedet for ni, og standardvalget er det som er riktig nesten alltid.
+ */
+export const SERVER_CONTROLLED = "server-controlled" as const
+
+/** Om serveren eier tilstanden i dette elementet. */
+export function isServerControlled(element: Element): boolean {
+  return element.hasAttribute(SERVER_CONTROLLED)
+}
+
+/**
  * Sier fra når markupen en komponent fikk, ikke henger sammen.
  *
  * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det
