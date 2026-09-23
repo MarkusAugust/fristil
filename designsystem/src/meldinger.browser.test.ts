@@ -263,23 +263,26 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toBe(true)
   })
 
-  it("feiloppsummeringen med en lenke som peker på ingenting", async () => {
+  it("feiloppsummeringen med lenker som peker på ingenting", async () => {
+    // Uten et klikk. En lenke som ikke fører noe sted er like ødelagt om
+    // ingen prøver den, og den som leser oppsummeringen har nettopp
+    // mislyktes med et skjema. Hver lenke sier fra om seg selv.
     const advarsel = lytt()
 
-    const flate = monter(`
+    monter(`
       <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1">
-        <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
-        <ul class="fs-list"><li><a href="#finnes-ikke">Skriv en gyldig adresse</a></li></ul>
+        <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
+        <ul class="fs-list">
+          <li><a href="#finnes-ikke">Skriv en gyldig adresse</a></li>
+          <li><a href="#heller-ikke">Velg en kommune</a></li>
+        </ul>
       </fs-error-summary>
     `)
     await ventTilRo()
 
-    flate.querySelector("a")?.click()
-    await ventTilRo()
-
-    expect(meldinger(advarsel).some((m) => m.includes("#finnes-ikke"))).toBe(
-      true,
-    )
+    const sagt = meldinger(advarsel)
+    expect(sagt.some((m) => m.includes("#finnes-ikke"))).toBe(true)
+    expect(sagt.some((m) => m.includes("#heller-ikke"))).toBe(true)
   })
 
   it("sier det én gang, ikke én gang per synkronisering", async () => {

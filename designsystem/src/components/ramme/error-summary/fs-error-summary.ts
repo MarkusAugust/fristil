@@ -98,6 +98,27 @@ export class FsErrorSummary extends HostElement {
     }
 
     for (const link of links) {
+      /*
+       * En lenke som ikke fører noe sted, meldt her og ikke først ved et
+       * klikk.
+       *
+       * Sjekken sto bare i klikkhåndtereren, og da var en boks med en lenke
+       * til et felt som ikke finnes helt taus til noen faktisk fulgte den.
+       * En feiloppsummering leses av den som nettopp mislyktes med et skjema,
+       * og en lenke som ikke virker er akkurat det som gjør boksen verdiløs.
+       * Id-en står i meldingen, og hver lenke har sin egen, så en boks med to
+       * ødelagte lenker sier fra om begge.
+       */
+      const id = link.getAttribute("href")?.slice(1)
+      if (id) {
+        warnAboutMarkup(
+          this,
+          `lenken peker på #${id}, men det finnes ikke noe element med den ` +
+            "id-en. Lenken ruller ingen steder, og fokus blir stående.",
+          () => this.resolveTarget(id) === null,
+        )
+      }
+
       if (this.links.has(link)) continue
       link.addEventListener("click", this.handleLinkClick)
       this.links.add(link)
@@ -121,37 +142,36 @@ export class FsErrorSummary extends HostElement {
     }
   }
 
+  /**
+   * Elementet en lenke peker på.
+   *
+   * Oppslaget går mot rota komponenten selv står i, ikke mot `document`.
+   * Ligger skjemaet i en skyggerot, som i en forhåndsvisning eller inne i en
+   * annen komponent, finner `document.getElementById` ingenting, og lenken
+   * blir en vanlig ankerlenke uten fokusflytting.
+   */
+  private resolveTarget(id: string): HTMLElement | null {
+    const rot = this.getRootNode() as Document | ShadowRoot
+    return rot.getElementById?.(id) ?? document.getElementById(id)
+  }
+
   private handleLinkClick = (event: Event): void => {
     const link = event.currentTarget as HTMLAnchorElement
     const id = link.getAttribute("href")?.slice(1)
     if (!id) return
 
-    // Oppslaget går mot rota komponenten selv står i, ikke mot `document`.
-    // Ligger skjemaet i en skyggerot, som i en forhåndsvisning eller inne i
-    // en annen komponent, finner `document.getElementById` ingenting, og
-    // lenken blir en vanlig ankerlenke uten fokusflytting.
-    const rot = this.getRootNode() as Document | ShadowRoot
-    const target = rot.getElementById?.(id) ?? document.getElementById(id)
-    if (!target) {
-      // Klikket har alt skjedd, så her er det ingenting å vente på. Id-en
-      // står i meldingen, og hver lenke har sin egen, så en boks med to
-      // ødelagte lenker sier fra om begge.
-      warnAboutMarkup(
-        this,
-        `lenken peker på #${id}, men det finnes ikke noe element med den ` +
-          "id-en. Lenken ruller ingen steder, og fokus blir stående.",
-        () => true,
-      )
-      return
-    }
+    // Vakten står igjen for kappløpet: målet kan ha forsvunnet i en patch
+    // mellom synkroniseringen og klikket. `sync()` har alt meldt fra om en
+    // lenke som aldri har hatt et mål.
+    const target = this.resolveTarget(id)
+    if (!target) return
 
     event.preventDefault()
 
     // Er lenken til en ledetekst, skal fokus til kontrollen den peker på.
     const control =
       target instanceof HTMLLabelElement && target.htmlFor
-        ? (rot.getElementById?.(target.htmlFor) ??
-          document.getElementById(target.htmlFor))
+        ? this.resolveTarget(target.htmlFor)
         : target
 
     const focusable = control ?? target

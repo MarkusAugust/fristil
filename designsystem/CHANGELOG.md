@@ -84,7 +84,9 @@ kommer i et nytt undertall.
   - `<fs-popover>` uten et panel, uten en id på panelet, og uten en knapp som
     peker på det;
   - `<fs-error-summary>` med punkter som ikke lenker til feltene, og med en
-    lenke som peker på en id som ikke finnes.
+    lenke som peker på en id som ikke finnes. Den siste meldes når boksen
+    synkroniserer, ikke først når noen klikker: en lenke som ikke fører noe
+    sted er like ødelagt om ingen prøver den.
 
   Advarselen kommer én gang per element og melding, og først når siden har
   falt til ro. Det siste er grunnen til at den kan stoles på: HTML som
