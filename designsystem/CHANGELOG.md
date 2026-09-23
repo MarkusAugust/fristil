@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.8.1 (2026-09-23)
+
 ### Endret
 
 - **`fs.dialog({ open: true })` skriver `open` på `<dialog>` også.** Det sto
