@@ -49,9 +49,11 @@ const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true
 
 Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
 
-**`id` er påkrevd.** Den var valgfri en stund, og `fs.field()` laget en når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der. React melder avvik ved hydreringen, og advarselen sier selv at avviket ikke blir rettet opp.
+**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@fristil/designsystem` og `@fristil/designsystem/react`.
 
-I React kommer id-en fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()` selv. Da står valget i koden, i stedet for å være det som skjer når du ikke tenker på det.
+Grunnen er at en id som lages av seg selv er tilfeldig: to kjøringer gir to ulike. Rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der, og React melder avvik ved hydreringen.
+
+Skriver du JavaScript uten typer, ser du ingen type. Da lager funksjonen en id likevel, og sier fra i konsollen, så feltet virker mens du retter det.
 
 ## Som element
 
@@ -237,8 +239,8 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
 
-    :::caution[Med server-rendring må id-en komme fra `useId()`]
-    `useId()` er ikke pynt her. Fram til `id` ble påkrevd lagde `fs.field()` en når den manglet, og den kunne ikke bli den samme på serveren og i nettleseren. React meldte da avvik ved hydreringen på ledeteksten, feltet og hjelpeteksten. Det er sett i en ekte app, og advarselen sier selv at avviket ikke blir rettet opp.
+    :::caution[I React kommer id-en fra `useId()`]
+    `useId()` er ikke pynt her. En id som lages av seg selv blir ikke den samme på serveren og i nettleseren, og React melder da avvik ved hydreringen på ledeteksten, feltet og hjelpeteksten. Det er sett i en ekte app, og advarselen sier selv at avviket ikke blir rettet opp. `createFieldId()` duger heller ikke i en komponentkropp: den gir en ny id ved hver rendring.
 
     ```tsx
     import { fs } from "@fristil/designsystem/react"
@@ -257,7 +259,7 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
     }
     ```
 
-    `<fs-field>` har ikke problemet: der settes id-ene i nettleseren, etter at HTML-en står der, og serveren sender ingen.
+    `<fs-field>` har ikke problemet: der settes id-ene i nettleseren, etter at HTML-en står der, og serveren sender ingen. Merk at det gjelder når komponenten er det eneste som kobler feltet. Bruker du React med server-rendring, skal du bruke `fs.field()`: da står koblingen ferdig i markupen serveren sendte, og React ser det samme før og etter hydreringen.
     :::
   </TabItem>
   <TabItem label="Astro">

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { createFieldId } from "./components/ramme/field/field-core"
 import { fs } from "./fs"
@@ -139,18 +139,50 @@ describe("fs.field", () => {
     expect(felt.control["aria-describedby"]).toBe("epost-help vilkaar")
   })
 
-  it("krever en id, så koblingen ikke kan brekke i hydreringen", () => {
+  it("krever en id i typen", () => {
     /*
-     * `id` var valgfri, og `fs.field()` laget en når den manglet. Det var en
-     * felle: id-en er tilfeldig, så serveren og nettleseren fikk hver sin, og
-     * `for` og `aria-describedby` pekte på noe annet enn det som sto der.
-     * Kravet står i typen, så det treffer hvert miljø likt.
+     * Kravet er en type, og en type kan bare holdes fast av typesjekken.
+     * Tilordningene under er testen, og det er `typecheck:tests` som kjører
+     * den: blir `id` valgfri igjen, forsvinner feilen, og `@ts-expect-error`
+     * blir selv en feil.
      *
-     * `createFieldId()` finnes fortsatt, for markup som rendres én gang, men
-     * nå må den kalles med vilje.
+     * Uten dette sto kravet uten vaktpost. Den forrige testen het «krever en
+     * id» og sa ingenting om kravet: begge påstandene var grønne også med
+     * den gamle, valgfrie id-en.
      */
-    expect(createFieldId()).not.toBe(createFieldId())
-    expect(fs.field({ id: createFieldId() }).control.id).toMatch(/^fs-field-/)
+    // @ts-expect-error id er påkrevd
+    const utenNoe = () => fs.field()
+    // @ts-expect-error id er påkrevd
+    const utenId = () => fs.field({ help: true })
+
+    expect(typeof utenNoe).toBe("function")
+    expect(typeof utenId).toBe("function")
+  })
+
+  it("lager en id likevel, og sier fra, når JavaScript utelater den", () => {
+    /*
+     * En konsument uten TypeScript ser ingen type, og ren HTML med
+     * `<script type="module">` er en førsteklasses måte å bruke Fristil på.
+     * Uten reserven ble `aria-describedby` til strengen `undefined-help`, og
+     * `for` og `id` forsvant helt, altså verre enn den ustabile id-en kravet
+     * skulle bli kvitt.
+     */
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    // Slik en JavaScript-konsument ville kalt den, uten at typen stopper ham.
+    const felt = (fs.field as (o: unknown) => ReturnType<typeof fs.field>)({
+      help: true,
+    })
+
+    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.label.for).toBe(felt.control.id)
+    expect(felt.control["aria-describedby"]).toBe(felt.help.id)
+    expect(felt.help.id).not.toContain("undefined")
+    expect(advarsel.mock.calls.map((k) => String(k[0])).join()).toContain(
+      "ingen id oppgitt",
+    )
+
+    advarsel.mockRestore()
   })
 })
 

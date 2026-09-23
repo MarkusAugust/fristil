@@ -7,11 +7,11 @@ dist
 __screenshots__
 .vitest-attachments
 
-# Lokale engangsskript for måling i nettleser, ikke del av sjekkene
+# Lokale engangsskript for etterprøving i nettleser, ikke del av sjekkene
 documentation/scripts/.lokal/
 
 # macOS
 .DS_Store
 
-# Midlertidige demoapper for måling mot ekte SSR, ikke del av pakken
+# Midlertidige demoapper for etterprøving mot ekte SSR, ikke del av pakken
 demoer-lokalt/

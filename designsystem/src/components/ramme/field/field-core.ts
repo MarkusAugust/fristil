@@ -6,8 +6,8 @@ import { attributes } from "../../css/shared.js"
  *
  * Dette er den ene implementasjonen av tilgjengelighetskontrakten i systemet.
  * `<fs-field>` bruker den på elementer som allerede står i DOM-en, og
- * `fs.field()` gir den samme utregningen som data til den som vil eie
- * markupen selv. Uten delingen ville kontrakten finnes to steder og kunne gå
+ * `fs.field()` gir den samme utregningen som data, til den som skriver
+ * markupen med JavaScript. Uten delingen ville kontrakten finnes to steder og kunne gå
  * fra hverandre.
  */
 
@@ -15,22 +15,22 @@ export type FieldOptions = {
   /**
    * Id på kontrollen. Påkrevd.
    *
-   * Den var valgfri, og `fs.field()` laget en når den manglet. Det var en
-   * felle: id-en er tilfeldig, så to kjøringer gir to ulike, og rendres det
-   * samme feltet på en server og så i nettleseren, peker `for` og
-   * `aria-describedby` på noe annet enn det som står der. React melder avvik
-   * ved hydreringen, og advarselen sier selv at avviket ikke blir rettet opp.
+   * I React kommer den fra `useId()`. Ellers er feltets eget navn som regel
+   * det opplagte valget. Vet du sikkert at markupen rendres én gang, kall
+   * `createFieldId()` selv.
    *
-   * Et kast på serveren ble vurdert og forkastet: `document === undefined`
-   * betyr ikke «dette blir hydrert», bare «dette er ikke en nettleser». En
-   * Astro-side rendres på serveren og hydrerer ingenting, og der er en laget
-   * id helt i orden. Et krav i typen treffer derimot alle miljøer likt, og
-   * utvikleren får vite det før koden kjører.
+   * Den var valgfri, og funksjonen laget en når den manglet. Id-en er
+   * tilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på
+   * en server og så i nettleseren, peker `for` og `aria-describedby` på noe
+   * annet enn det som står der. React melder avvik ved hydreringen, og
+   * advarselen sier selv at avviket ikke blir rettet opp.
    *
-   * I React kommer id-en fra `useId()`. Ellers er feltets eget navn som
-   * regel det opplagte valget. Vet du sikkert at markupen rendres én gang,
-   * og vil ha en laget id likevel, kall `createFieldId()` selv. Da står
-   * valget i koden i stedet for å være standardoppførselen.
+   * Kravet står i typen, og det er ikke nok alene: en konsument uten
+   * TypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og
+   * sier fra i konsollen, så feltet virker og utvikleren får vite hvorfor det
+   * ikke burde. Uten den reserven ville en JavaScript-konsument fått
+   * `id="undefined-help"` og ingen kobling i det hele tatt, altså verre enn
+   * før.
    */
   id: string
   /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
@@ -77,6 +77,41 @@ export type FieldAttributes = {
 let counter = 0
 
 /**
+ * Sier fra én gang per melding, i konsollen.
+ *
+ * `fs.field()` er en ren funksjon uten et element å henge beskjeden på, så
+ * den kan ikke bruke `warnAboutMarkup`. Dedupliseringen trengs like fullt: i
+ * en app som rendrer en liste med felt ville meldingen kommet per felt og per
+ * rendring.
+ */
+const sagt = new Set<string>()
+
+function advarEnGang(melding: string): void {
+  if (typeof console === "undefined" || sagt.has(melding)) return
+  sagt.add(melding)
+  console.warn(melding)
+}
+
+/**
+ * Reserven når en konsument uten TypeScript utelater id-en.
+ *
+ * Typen krever den, men en type finnes ikke i ren JavaScript, og der er
+ * `<script type="module">` en førsteklasses måte å bruke Fristil på. Uten
+ * denne reserven ble `aria-describedby` til strengen `undefined-help`, og
+ * `for` og `id` forsvant helt, så feltet var uten kobling og to felt på samme
+ * side fikk samme id.
+ */
+function manglendeId(): string {
+  advarEnGang(
+    "fs.field(): ingen id oppgitt, så det lages en tilfeldig. To kjøringer " +
+      "gir da to ulike, og rendres feltet både på en server og i nettleseren, " +
+      "peker for og aria-describedby på noe som ikke finnes. Oppgi id, i " +
+      "React fra useId().",
+  )
+  return createFieldId()
+}
+
+/**
  * Lager en id som er unik innenfor dokumentet.
  *
  * Trygg bare når markupen rendres én gang. Rendres det samme feltet både på
@@ -112,7 +147,8 @@ export function joinDescribedBy(
 
 export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   const {
-    id,
+    // Reserven gjelder bare den som ikke har en typesjekk. Se `manglendeId`.
+    id = manglendeId(),
     help = false,
     error = false,
     required,
