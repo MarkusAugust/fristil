@@ -247,6 +247,41 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(false)
   })
 
+  it("holder koblingen når en patch bytter ut kontrollen, med ledeteksten utenfor", async () => {
+    /*
+     * Ledeteksten utenfor elementet finnes bare gjennom kontrollens id, og
+     * en patch fra en Kotlin- eller Go-server sender gjerne en kontroll uten
+     * id. Da fant komponenten ingen ledetekst, laget en ny id, og
+     * ledetekstens `for` pekte på et element som ikke fantes. Feltet sto uten
+     * navn for en skjermleser, og det holdt seg til siden ble lastet på nytt.
+     */
+    document.body.innerHTML = `
+      <div>
+        <label class="fs-label" for="epost">E-post</label>
+        <fs-field>
+          <input id="epost" class="fs-input" type="email" />
+        </fs-field>
+      </div>
+    `
+
+    await Promise.resolve()
+
+    const label = document.querySelector("label") as HTMLLabelElement
+    const gammel = document.querySelector("input") as HTMLInputElement
+    expect(label.htmlFor).toBe(gammel.id)
+
+    const ny = document.createElement("input")
+    ny.className = "fs-input"
+    ny.type = "email"
+    gammel.replaceWith(ny)
+
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(ny.id).toBe("epost")
+    expect(label.htmlFor).toBe("epost")
+    expect(document.getElementById(label.htmlFor)).toBe(ny)
+  })
+
   it("applies required marker and optional marker on label", async () => {
     document.body.innerHTML = `
       <fs-field required-marker="text">

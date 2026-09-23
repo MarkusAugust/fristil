@@ -109,21 +109,33 @@ for (const url of sider) {
     // peker på riktig side og riktig tema. Konsollhendelser kommer asynkront.
     gjeldende = `${url} [${tema}]`
 
+    /*
+     * Nettleseren må mene det samme om temaet som vi gjør.
+     *
+     * Starlight setter `data-theme` selv, fra `localStorage` og ellers fra
+     * `prefers-color-scheme`, og skriptet kjører mens siden lastes. Satte vi
+     * bare attributtet etterpå, kappløp de to: lenkefargen på `/tailwind/`
+     * landet på lys verdi i halvparten av lastingene, og sjekken feilet
+     * tilfeldig på kontrast. Med `emulateMedia` regner Starlight seg fram til
+     * det samme temaet, og ingen overskriver noe.
+     */
+    await side.emulateMedia({ colorScheme: tema })
+
     await side.goto(`http://localhost:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
-    await side.evaluate(
-      (t) => document.documentElement.setAttribute("data-theme", t),
-      tema,
-    )
-
     /*
-     * Vent til siden faktisk har tegnet ferdig i det nye temaet.
+     * Overgangene slås av FØR temaet settes, ikke etter.
      *
-     * Lit oppdaterer asynkront, og axe leser utregnet stil. Men den verste
-     * kilden til ustabilitet var CSS-overganger: sidemenyens lenker har
-     * `transition-colors`, så rett etter et temabytte målte axe en farge midt
-     * i overgangen. Overganger og animasjoner slås derfor av før målingen.
+     * Den verste kilden til ustabilitet er CSS-overganger: lenkene har
+     * `transition-colors`, så rett etter et temabytte leser axe en farge midt
+     * i overgangen. Første utgave slo dem av etter byttet, og det er for
+     * sent: en overgang som alt er i gang stopper ikke av at `transition`
+     * settes til `none`, den blir stående der den var. Sonden viste det
+     * tydelig, med lenkefargen på `/tailwind/` spredt over ni ulike verdier
+     * på førti lastinger, og sjekken feilet tilfeldig på kontrast.
+     *
+     * Settes regelen først, starter ingen overgang i det hele tatt.
      * En tilgjengelighetsport som feiler tilfeldig blir ignorert.
      */
     await side.addStyleTag({
@@ -132,6 +144,11 @@ for (const url of sider) {
         animation: none !important;
       }`,
     })
+
+    await side.evaluate(
+      (t) => document.documentElement.setAttribute("data-theme", t),
+      tema,
+    )
 
     await side.evaluate(async () => {
       const komponenter = [...document.querySelectorAll("*")].filter(

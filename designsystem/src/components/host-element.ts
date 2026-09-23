@@ -122,15 +122,18 @@ function whenSettled(run: () => void): void {
      * meldingen stående i køen for alltid der, og sperret en senere, ekte
      * advarsel om det samme.
      *
-     * Den avlyses i det første rammen fyrer. Ellers kunne den vunnet kappløpet
-     * på en travel maskin, og da ville sjekken kjørt før siden var ferdig, som
-     * er akkurat det utsettelsen finnes for å unngå.
+     * Den avlyses ikke. Et forsøk på å avlyse den i den første rammen var
+     * verre enn problemet: fyrer første ramme og fanen blir skjult før den
+     * andre, er både reserven borte og den andre rammen borte, og da kjører
+     * sjekken aldri. `once` er engangs, så det gjør ingenting at begge veier
+     * er i gang samtidig, og den som kommer først vinner.
+     *
+     * Et sekund er valgt så to rammer vinner i alt annet enn en side som står
+     * helt stille. Skjer det, er en advarsel om markup som fortsatt er
+     * halvferdig et lite problem ved siden av at siden er frosset.
      */
-    const reserve = setTimeout(once, 500)
-    requestAnimationFrame(() => {
-      clearTimeout(reserve)
-      requestAnimationFrame(once)
-    })
+    setTimeout(once, 1000)
+    requestAnimationFrame(() => requestAnimationFrame(once))
   }
 
   if (typeof document !== "undefined" && document.readyState === "loading") {

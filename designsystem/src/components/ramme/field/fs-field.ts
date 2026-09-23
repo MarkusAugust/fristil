@@ -82,6 +82,17 @@ export class FsField extends HostElement {
   private generatedErrorId?: string
   private generatedControlId?: string
   /**
+   * Id-en kontrollen hadde sist, enten den kom fra markupen eller herfra.
+   *
+   * Bytter en patch ut kontrollen med en uten id, finner komponenten id-en
+   * igjen i ledetekstens `for`, så lenge ledeteksten står inni elementet.
+   * Står den utenfor, finner komponenten den ikke: oppslaget etter en
+   * ledetekst utenfor går gjennom kontrollens id, og den er nettopp borte.
+   * Uten dette minnet laget komponenten da en ny id, og `for` pekte på et
+   * element som ikke fantes.
+   */
+  private lastId?: string
+  /**
    * Hva noen andre enn komponenten sist sa om `aria-invalid`.
    *
    * `sync()` må lese `aria-invalid` fra kontrollen, fordi serveren kan ha
@@ -224,10 +235,13 @@ export class FsField extends HostElement {
   ): string {
     const fromMarkup =
       this.getAttribute("control-id") || control.id || label?.htmlFor
-    if (fromMarkup) return fromMarkup
 
-    this.generatedControlId ??= uniqueId("fs-field-control")
-    return this.generatedControlId
+    if (!fromMarkup && !this.lastId) {
+      this.generatedControlId ??= uniqueId("fs-field-control")
+    }
+
+    this.lastId = fromMarkup || this.lastId || this.generatedControlId
+    return this.lastId as string
   }
 
   /**

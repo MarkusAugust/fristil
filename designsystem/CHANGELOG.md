@@ -47,9 +47,11 @@ kommer i et nytt undertall.
 - **`<fs-field>` kobler også en ledetekst som står utenfor elementet.** En
   `<label for>` som peker på kontrollen navngir feltet like godt som en inni,
   og komponenten skriver nå `fs-label`, `data-required` og `aria-disabled` på
-  den. Én forskjell er verdt å vite: en ledetekst utenfor ligger ikke i det
+  den. Bytter en patch ut kontrollen med en uten id, husker komponenten
+  id-en, så ledetekstens `for` fortsetter å peke på et element som finnes.
+  Én forskjell er verdt å vite: en ledetekst utenfor ligger ikke i det
   komponenten observerer, så river en patch klassen av den, kommer den ikke
-  tilbake av seg selv.
+  tilbake før neste gang feltet synkroniserer.
 
 - **`<fs-field>` reparerer sin egen kobling.** Bevaringslista var en kontrakt
   vi ikke kunne kontrollere: en Go- eller Kotlin-mal måtte skrive av ni
