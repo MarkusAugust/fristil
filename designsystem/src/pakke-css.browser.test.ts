@@ -287,12 +287,12 @@ describe("Tailwind-temaet", () => {
  * `fs.fieldset.states` oppga `success` fra dagen komponenten kom, mens
  * `fieldset.css` bare hadde en regel for `invalid`. Attributtet ble skrevet,
  * og ingenting skjedde. Byggefunksjonen lovet altså noe pakken ikke leverte,
- * og ingen prøve så det: `dom.browser.test.ts` sjekker at verdien kan settes
+ * og ingen test så det: `dom.browser.test.ts` sjekker at verdien kan settes
  * og fjernes, ikke at den betyr noe.
  *
  * Verdier som ikke sender ut noe attributt hoppes over. Det er standarden,
  * som CSS-en alt har, og verdier som ikke er ment å se annerledes ut, som de
- * fleste `input.types`. To egne prøver passer på at hoppelista ikke blir en
+ * fleste `input.types`. To egne tester passer på at hoppelista ikke blir en
  * bakdør: opsjonsnavnet må være et byggefunksjonen kjenner, og hver liste må
  * gi minst ett tilfelle.
  */
@@ -319,7 +319,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
    * (appearance: base-select)` finnes ikke i Firefox, og `@media
    * (forced-colors: active)` gjelder ikke før modusen er på. Den stylede
    * nedtrekkslista står i begge, og et tekstsøk ser ingen forskjell på dem og
-   * en regel som gjelder. Da meldte prøven feil i én av tre motorer på noe
+   * en regel som gjelder. Da meldte testen feil i én av tre motorer på noe
    * som er helt riktig. Nettleseren vet svaret selv, så vi spør den.
    */
   const virksomme: { selektor: string; regel: CSSStyleRule }[] = []
@@ -473,7 +473,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
      * `LISTER` er skrevet for hånd, og en liste som mangler der blir aldri
      * kontrollert uten at noe sier fra. Det er den samme feilklassen som
      * `SYSTEM_ATTRIBUTES` i `dom.ts` har vært innom: et attributt som ikke
-     * står i en håndskrevet tabell er usynlig for prøven, ikke for brukeren.
+     * står i en håndskrevet tabell er usynlig for testen, ikke for brukeren.
      */
     const kjente = new Set(LISTER.map(([liste]) => liste))
     const ukjente: string[] = []
@@ -517,7 +517,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
    *
    * Noen tilstander farger et barn framfor elementet selv: feltsettet farger
    * `.fs-legend`, og den stripete tabellen farger radene. Da finnes det
-   * ingen regel på elementet å sammenligne, og prøven faller tilbake på at
+   * ingen regel på elementet å sammenligne, og testen faller tilbake på at
    * selektoren står i et stilark. Fallet er begrenset til nettopp de
    * tilfellene: finnes det en regel på elementet selv, kreves forskjellen.
    */
@@ -555,7 +555,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
        * på elementet selv å sammenligne, og kravet er i stedet at en regel
        * som gjelder her faktisk erklærer noe. Et tekstsøk alene passerte på
        * en tom blokk, og det var nettopp en tom regel jeg klarte å legge inn
-       * uten at prøven sa fra.
+       * uten at testen sa fra.
        *
        * En regel i en `@supports` motoren ikke har, eller i en `@media` som
        * ikke slår til, er ikke med i `virksomme`, og skal heller ikke telle.

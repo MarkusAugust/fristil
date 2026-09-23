@@ -85,6 +85,203 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(false)
   })
 
+  it("tar tilbake feilmeldingen når invalid slås av igjen", async () => {
+    /*
+     * Komponenten leser `aria-invalid` fra kontrollen, fordi serveren kan ha
+     * skrevet feltet med `fs.field()` og da står svaret allerede der. Uten et
+     * skille mellom serverens attributt og komponentens eget leste den
+     * tilbake sitt eget svar fra forrige runde, og feltet kunne aldri bli
+     * gyldig igjen: den røde rammen og feilmeldingen ble stående for godt.
+     */
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
+    const field = document.querySelector("fs-field") as FsField
+    field.invalid = false
+
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBeNull()
+    expect(input.getAttribute("data-state")).toBeNull()
+    expect(error.hidden).toBe(true)
+  })
+
+  it("lar serverens eget aria-invalid stå", async () => {
+    // Skrev serveren feltet med `fs.field()`, står `aria-invalid` på
+    // kontrollen uten at verten har `invalid`. Da er attributtet serverens,
+    // og komponenten skal lese det, ikke fjerne det.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("lar serverens aria-invalid stå, også når verten slår av sitt eget", async () => {
+    /*
+     * To kilder som sier hver sin ting, og serveren vinner.
+     *
+     * Står `aria-invalid` på kontrollen i markupen serveren sendte, er det
+     * serverens ord om feltet. `felt.invalid = false` fjerner flagget på
+     * verten, men kan ikke stryke det serveren skrev: da ville den samme
+     * markupen gitt to ulike svar alt etter hva verten hadde vært innom, og
+     * komponenten ville overkjørt serveren uten at noe sa fra.
+     *
+     * Skal feltet bli gyldig, må serveren si det, eller appen må bruke den
+     * ene av de to kildene og ikke begge. Dokumentasjonen sier hvilken.
+     */
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const field = document.querySelector("fs-field") as FsField
+    field.invalid = false
+
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("gir samme svar på samme markup, uansett hva verten har vært innom", async () => {
+    /*
+     * Komponenten skal ikke være avhengig av historien sin.
+     *
+     * En tidligere utgave husket hva verten sa sist, og da ga nøyaktig den
+     * samme markupen to ulike svar: et felt der `invalid` hadde vært innom på
+     * verten mistet serverens `aria-invalid`, mens et ferskt felt beholdt det.
+     * I en Datastar-app, der `data-attr:invalid` slår flagget av og på, sto
+     * feltet grønt mens serveren sa det var feil.
+     */
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    const field = document.querySelector("fs-field") as FsField
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+
+    // Verten får flagget og mister det igjen, slik et signal ville gjort.
+    field.setAttribute("invalid", "")
+    await Promise.resolve()
+    field.removeAttribute("invalid")
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(input.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("følger serveren når en patch bytter ut kontrollen", async () => {
+    /*
+     * Serveren kan si det samme på to måter, og bytte mellom dem i en patch:
+     * flagget på verten i én runde, og en ferdig skrevet kontroll i den
+     * neste. Husker komponenten «dette attributtet er mitt eget ekko», og
+     * knytter det til seg selv framfor til kontrollen, regner den feltet som
+     * gyldig i det kontrollen byttes ut. Brukeren ser da et felt uten rød
+     * ramme og uten feilmelding, mens serveren nettopp sa at det er feil.
+     */
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    const felt = document.querySelector("fs-field") as FsField
+    expect(document.querySelector("input")?.getAttribute("aria-invalid")).toBe(
+      "true",
+    )
+
+    // Patchen: ny kontroll som selv sier ugyldig, og flagget bort fra verten.
+    const gammel = document.querySelector("input") as HTMLInputElement
+    const ny = document.createElement("input")
+    ny.id = "epost"
+    ny.className = "fs-input"
+    ny.type = "email"
+    ny.setAttribute("aria-invalid", "true")
+    gammel.replaceWith(ny)
+    felt.removeAttribute("invalid")
+
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(ny.getAttribute("aria-invalid")).toBe("true")
+    expect(ny.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("holder koblingen når en patch bytter ut kontrollen, med ledeteksten utenfor", async () => {
+    /*
+     * Ledeteksten utenfor elementet finnes bare gjennom kontrollens id, og
+     * en patch fra en Kotlin- eller Go-server sender gjerne en kontroll uten
+     * id. Da fant komponenten ingen ledetekst, laget en ny id, og
+     * ledetekstens `for` pekte på et element som ikke fantes. Feltet sto uten
+     * navn for en skjermleser, og det holdt seg til siden ble lastet på nytt.
+     */
+    document.body.innerHTML = `
+      <div>
+        <label class="fs-label" for="epost">E-post</label>
+        <fs-field>
+          <input id="epost" class="fs-input" type="email" />
+        </fs-field>
+      </div>
+    `
+
+    await Promise.resolve()
+
+    const label = document.querySelector("label") as HTMLLabelElement
+    const gammel = document.querySelector("input") as HTMLInputElement
+    expect(label.htmlFor).toBe(gammel.id)
+
+    const ny = document.createElement("input")
+    ny.className = "fs-input"
+    ny.type = "email"
+    gammel.replaceWith(ny)
+
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(ny.id).toBe("epost")
+    expect(label.htmlFor).toBe("epost")
+    expect(document.getElementById(label.htmlFor)).toBe(ny)
+  })
+
   it("applies required marker and optional marker on label", async () => {
     document.body.innerHTML = `
       <fs-field required-marker="text">

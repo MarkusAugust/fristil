@@ -248,11 +248,23 @@ Dette gjelder uansett hvilket språk serveren er skrevet i. En Go-mal, en
 PHP-fil eller en Ktor-app skriver det samme, og ingen av dem trenger å
 kjenne reglene. Det er hele poenget med at koblingen bor i komponenten.
 
+Patchen river koblingen bort, siden ingenting av den sto i HTML-en serveren
+sendte. Komponenten ser at den er borte, og setter den tilbake. Malen
+trenger altså ingen `data-preserve-attr` for feltet, og id-ene blir de
+samme som før: komponenten husker dem, slik at en skjermleser midt i en
+opplesning ikke følger en peker som skifter under den.
+
 #### `data-preserve-attr` for det brukeren eier
 
 Noe kan serveren umulig vite: hvilken fane brukeren valgte, og om
 sprettoppvinduet er åpent. Det er brukerens tilstand, ikke serverens, og den
 lever bare i nettleseren.
+
+Det er her skillet går, og det er verdt å holde fast ved. En kobling
+komponenten har **regnet ut** kan den regne ut på nytt, så den repareres.
+Noe brukeren har **gjort** finnes det ingen kilde til, og en reparasjon
+ville dessuten kjempet mot en server som med vilje endret noe. Det siste må
+fredes.
 
 Datastar har et attributt for nettopp dette. Det tar navnene på de
 attributtene morfingen skal la stå:
@@ -301,15 +313,26 @@ gjorde noe, står `data-preserve-attr` fortsatt.
 2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
    `aria-describedby` selv, i hvilket som helst språk.
 3. **For det bare brukeren vet**, som fanevalg og åpne vinduer:
-   `data-preserve-attr`, skrevet av byggefunksjonen.
+   `data-preserve-attr`, skrevet av byggefunksjonen. Koblingen i et felt
+   hører ikke hit: den repareres av komponenten.
 
-To unntak finnes. Må du sende et stort område på nytt mens brukeren står og
+Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
 fyller det ut, kan serveren skrive hele koblingen selv. Da har komponenten
-ingenting å legge til, og morfingen ingenting å ta bort. Og kommer markupen
-fra noe du ikke rår over, som en publiseringsløsning, i et område som også
-oppdateres, står navnene i `FIELD_PRESERVED_ATTRIBUTES`.
+ingenting å legge til, og morfingen ingenting å ta bort.
 
 Regelen er de tre punktene over.
+
+## Komponenten sier fra når markupen ikke henger sammen
+
+En komponent fester oppførsel på markup noen andre har skrevet, og den markupen kan komme fra en Go-mal eller en publiseringsløsning der ingen kompilator ser etter. Fant komponenten ikke delene sine, gjorde den lenge ingenting, uten et ord, og feilen viste seg først når noen leste siden med skjermleser.
+
+Nå kommer det en advarsel i konsollen med elementet som mangler noe:
+
+```
+fs-field: fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>.
+```
+
+Meldingen kommer én gang per element, ikke én gang per oppdatering, og bare når markupen faktisk er gal. Et tomt område serveren ikke har fylt ennå er ikke en feil.
 
 ## Komponenter som eier sitt eget innhold
 

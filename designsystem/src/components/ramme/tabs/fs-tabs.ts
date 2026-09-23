@@ -1,4 +1,8 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import {
+  defineElement,
+  HostElement,
+  warnAboutMarkup,
+} from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
 
 /**
@@ -72,7 +76,32 @@ export class FsTabs extends HostElement {
   }
 
   private bind(): void {
-    for (const tab of this.tabs) {
+    const tabs = this.tabs
+
+    if (tabs.length === 0) {
+      warnAboutMarkup(
+        this,
+        'fant ingen faner. Knappene i raden må ha role="tab", ellers ' +
+          "sier skjermleseren «knapp» der den skulle sagt «fane, 2 av 3, " +
+          "valgt», og piltastene gjør ingenting.",
+        // En tom `<fs-tabs>` er et område serveren ikke har fylt ennå, og
+        // det er ikke en feil i markupen.
+        () => this.childElementCount > 0 && this.tabs.length === 0,
+      )
+      return
+    }
+
+    // Uten tallene i meldingen. Interpolerer den et tall, er hver runde en
+    // ny melding, og advarselen kommer på nytt for hvert panel som dukker
+    // opp framfor én gang.
+    warnAboutMarkup(
+      this,
+      'har flere faner enn paneler med role="tabpanel". Fanene uten et ' +
+        "panel kan velges uten at noe vises.",
+      () => this.tabs.length > 0 && this.panels.length < this.tabs.length,
+    )
+
+    for (const tab of tabs) {
       if (this.bound.has(tab)) continue
       tab.addEventListener("click", this.handleClick)
       tab.addEventListener("keydown", this.handleKeydown)
