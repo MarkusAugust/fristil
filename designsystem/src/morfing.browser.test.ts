@@ -136,6 +136,42 @@ describe("morfing river ikke bort det komponenten setter", () => {
     )
   })
 
+  it("kobler feltet på nytt når patchen byttet ut kontrollen", async () => {
+    /*
+     * Fredningen holder attributtene på en node som blir stående. Bytter
+     * patchen ut selve kontrollen, finnes det ingen node å frede, og den nye
+     * kommer uten id. Ledeteksten står igjen med sin `for`.
+     *
+     * Komponenten fant da ingen id, fant opp en ny, og skrev den bare på
+     * kontrollen. `for` pekte etter det på et element som ikke fantes, og
+     * ledeteksten var ikke lenger knyttet til feltet. Det ble funnet i
+     * spilldemoen, i appen som sender HTML-biter fra en Kotlin-server, og
+     * det holdt seg helt til siden ble lastet på nytt.
+     */
+    const felt = monterMarkup(FELT)
+    await customElements.whenDefined("fs-field")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const label = felt.querySelector("label") as HTMLLabelElement
+    const foer = label.htmlFor
+    expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
+
+    const gammel = felt.querySelector("input") as HTMLInputElement
+    const ny = document.createElement("input")
+    ny.className = "fs-input"
+    ny.setAttribute("data-preserve-attr", FIELD_PRESERVED_ATTRIBUTES.control)
+    gammel.replaceWith(ny)
+
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    expect(kontroll.id, "kontrollen fikk ingen id").toBeTruthy()
+    expect(label.htmlFor, "ledeteksten peker på en id som ikke finnes").toBe(
+      kontroll.id,
+    )
+    expect(document.getElementById(label.htmlFor)).toBe(kontroll)
+  })
+
   /*
    * Dialogen er serverens. `open` er derfor ikke fredet, i motsetning til på
    * sprettoppvinduet: hadde det vært det, kunne serveren aldri åpnet
