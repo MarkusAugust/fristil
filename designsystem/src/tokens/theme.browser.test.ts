@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { farge, kontrast, PAR } from "../testing/kontrast"
 import { adjustForContrast, parseHex, rgbToOklch } from "./color"
-import { buildTheme } from "./theme"
+import { buildTheme, type ThemeInput } from "./theme"
 
 import "./tokens.css"
 
@@ -338,11 +338,22 @@ describe("et tema kan la fargene stå", () => {
   })
 
   it("krever alle fire fargene, eller ingen", () => {
-    // To farger er alltid en feil: resten av temaet ville blitt bygget av
-    // standardfarger, og ingen ba om den blandingen.
-    expect(() =>
-      buildTheme({ interactive: "#1362ae", danger: "#a82e39" }),
-    ).toThrow(/alle fire/)
+    /*
+     * To farger er alltid en feil: resten av temaet ville blitt bygget av
+     * standardfarger, og ingen ba om den blandingen.
+     *
+     * Kastet står her selv om typen alt avviser det. En union lukker fella
+     * for dem som har TypeScript, og meldingen er for de andre: oppskriften
+     * kan komme fra en JSON-fil eller fra et skript uten typer. Derfor må
+     * testen gå utenom typen for å nå kjøretiden, og det er hele poenget med
+     * at den finnes.
+     */
+    const utenTyper = {
+      interactive: "#1362ae",
+      danger: "#a82e39",
+    } as ThemeInput
+
+    expect(() => buildTheme(utenTyper)).toThrow(/alle fire/)
   })
 
   it("sier fra når oppskriften er tom", () => {
