@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.11.0 (2026-09-23)
+
 ### Brytende
 
 - **`server-filtered` heter `prefiltered`.** Navnet var misvisende på to
