@@ -20,19 +20,28 @@ kommer i et nytt undertall.
 
 - **`fs.dialog({ open: true })` skriver `open` på `<dialog>` også.** Det sto
   bare på verten, og da var innholdet borte for den som ikke har JavaScript:
-  en `<dialog>` uten `open` er skjult. Nå står det som en boks på siden, og
-  komponenten gjør den om til en ekte modal med `showModal()` når den får
-  kjøre. I React var det dessuten det eneste som stemte: komponenten setter
+  en `<dialog>` uten `open` er skjult. Nå vises det, plassert over innholdet
+  under seg slik nettleserens egen stil gjør det, og komponenten gjør den om
+  til en ekte modal med `showModal()` når den får kjøre. I React var det dessuten det eneste som stemte: komponenten setter
   `open` før React hydrerer, og sto det ikke i serverens HTML, meldte React
   avvik ved hvert eneste oppslag. Funnet i demoappen i TanStack Start.
 
-### Dokumentasjon
+  `<fs-dialog>` tar attributtet bort med `removeAttribute` framfor `close()`
+  før den kaller `showModal()`. `close()` sender en ekte `close`-hendelse, og
+  den ville nå kommet ved hver eneste lasting av en åpen dialog, altså en
+  spøkelseslukking for apper som melder lukkingen til serveren.
 
-- **`fs.field()` med server-rendring i React trenger `useId()`.**
-  Byggefunksjonen lager en id når den ikke får en, og den kan ikke bli den
-  samme på serveren og i nettleseren. React meldte avvik ved hydreringen på
-  ledeteksten, feltet og hjelpeteksten. Det står nå på feltsiden, sammen med
-  at `<fs-field>` ikke har problemet.
+  Styrer du dialogen selv fra nettleseren, skal du ikke sende `open` inn i
+  `fs.dialog()`: `showModal()` kaster på en dialog som alt står åpen. Det står
+  nå både i typen og på siden.
+
+### Rettet
+
+- **`fs.field()` sa ikke fra om at en id som lages av seg selv er
+  tilfeldig.** Rendres feltet både på serveren og i nettleseren, blir det to
+  ulike, og `for` og `aria-describedby` peker på noe annet enn det som står
+  der. React melder avvik ved hydreringen. Det står nå i typen, på feltsiden
+  og i React-fanen, med `useId()` som svaret.
 
 ## 0.8.0 (2026-09-23)
 

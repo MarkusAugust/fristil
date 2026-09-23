@@ -27,9 +27,13 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * `data-preserve-attr`, kunne serveren aldri åpnet dialogen på nytt etter
  * første lukking.
  *
+ * Skriv `open` på selve `<dialog>` også når dialogen skal vises. Uten
+ * JavaScript er en `<dialog>` uten `open` skjult, og da finnes ikke
+ * innholdet i det hele tatt. `fs.dialog({ open: true })` gir begge.
+ *
  * ```html
  * <fs-dialog open>
- *   <dialog class="fs-dialog" aria-labelledby="tittel" data-preserve-attr="open">
+ *   <dialog class="fs-dialog" aria-labelledby="tittel" open data-preserve-attr="open">
  *     <h2 class="fs-dialog__title" id="tittel">Vedtaket er registrert</h2>
  *     <div class="fs-dialog__body">Saken er ferdigbehandlet.</div>
  *     <form method="dialog" class="fs-dialog__footer">
@@ -136,9 +140,18 @@ export class FsDialog extends HostElement {
     const modal = dialog.matches(":modal")
 
     if (this.open && !modal) {
-      // `showModal()` kaster `InvalidStateError` når `open` står der fra før
-      // uten at dialogen er modal. Attributtet må bort først.
-      if (dialog.open) dialog.close()
+      /*
+       * `showModal()` kaster `InvalidStateError` når `open` står der fra før
+       * uten at dialogen er modal. Attributtet må altså bort først.
+       *
+       * Men ikke med `close()`. Den sender en ekte `close`-hendelse, og
+       * siden serveren nå skriver `open` på `<dialog>` selv, ville den
+       * hendelsen kommet ved hver eneste lasting av en dialog som er åpen.
+       * En app som melder lukkingen til serveren, slik dokumentasjonen viser,
+       * fikk da en spøkelseslukking før brukeren hadde sett dialogen.
+       * `removeAttribute` gir den samme tillatelsen uten hendelsen.
+       */
+      dialog.removeAttribute("open")
       dialog.showModal()
       this.meld(true)
     } else if (!this.open && dialog.open) {
