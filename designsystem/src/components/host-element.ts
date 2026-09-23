@@ -32,3 +32,35 @@ export function defineElement(
   if (typeof customElements === "undefined") return
   if (!customElements.get(tagName)) customElements.define(tagName, element)
 }
+
+/**
+ * Sier fra når markupen komponenten fikk, ikke henger sammen.
+ *
+ * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det
+ * eneste alternativet til en beskjed er stillhet. Det var stillhet lenge:
+ * en mal uten en kontroll i `<fs-field>` ga et felt uten kobling, og
+ * ingenting sa fra før noen leste siden med skjermleser.
+ *
+ * Meldingen kommer én gang per element og melding. En komponent synkroniserer
+ * seg selv ved hver patch, og en advarsel per patch ville fylt konsollen så
+ * fort at den ble ubrukelig.
+ *
+ * Den kommer i alle miljøer, ikke bare under utvikling. Pakken har ingen
+ * byggetrinn som kunne fjernet den, og en advarsel som bare utløses av markup
+ * som faktisk er gal, hører hjemme der den skjer.
+ */
+const meldte = new WeakMap<Element, Set<string>>()
+
+export function meldMangel(element: Element, melding: string): void {
+  if (typeof console === "undefined") return
+
+  let sett = meldte.get(element)
+  if (!sett) {
+    sett = new Set()
+    meldte.set(element, sett)
+  }
+  if (sett.has(melding)) return
+  sett.add(melding)
+
+  console.warn(`${element.tagName.toLowerCase()}: ${melding}`, element)
+}

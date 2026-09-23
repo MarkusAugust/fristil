@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
 
 /**
@@ -77,6 +77,17 @@ export class FsErrorSummary extends HostElement {
     ]
 
     if (links.length === 0) {
+      // En tom boks er ikke en feil: mønsteret er at serveren lar den stå
+      // med `hidden` og fyller den når innsendingen feiler. En boks med
+      // punkter, men uten lenker til feltene, er noe annet.
+      if (this.querySelector("li")) {
+        meldMangel(
+          this,
+          'fant ingen lenker til feltene. Hvert punkt trenger en <a href="#id"> ' +
+            "som peker på kontrollen eller ledeteksten, ellers kommer brukeren " +
+            "seg ikke fra feilen til feltet.",
+        )
+      }
       this.hasFocused = false
       return
     }
@@ -116,7 +127,14 @@ export class FsErrorSummary extends HostElement {
     // lenken blir en vanlig ankerlenke uten fokusflytting.
     const rot = this.getRootNode() as Document | ShadowRoot
     const target = rot.getElementById?.(id) ?? document.getElementById(id)
-    if (!target) return
+    if (!target) {
+      meldMangel(
+        this,
+        `lenken peker på #${id}, men det finnes ikke noe element med den ` +
+          "id-en. Lenken ruller ingen steder, og fokus blir stående.",
+      )
+      return
+    }
 
     event.preventDefault()
 

@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 
 export const FS_DIALOG_TAG = "fs-dialog" as const
 
@@ -124,7 +124,19 @@ export class FsDialog extends HostElement {
     // element tas i bruk der også. Uten denne linja kastet komponenten ved
     // hver eneste patch som rørte dialogen. Står den løsrevet nå, kjøres
     // `sync()` uansett på nytt når den kobles til.
-    if (!dialog?.isConnected) return
+    if (!dialog?.isConnected) {
+      // Står komponenten selv i siden uten en `<dialog>` under seg, er
+      // markupen gal. Er den derimot løsrevet, bygger en morfer serverens
+      // utgave i et eget tre, og da er det ingenting å si fra om.
+      if (!dialog && this.isConnected && this.childElementCount > 0) {
+        meldMangel(
+          this,
+          "fant ingen <dialog> som direkte barn. Uten den kan ingenting " +
+            "åpnes modalt, og innholdet står som en vanlig boks på siden.",
+        )
+      }
+      return
+    }
 
     const forste = dialog !== this.dialogElement
     if (forste) {

@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
 
 export const FS_FIELD_TAG = "fs-field" as const
@@ -6,6 +6,28 @@ export const FS_FIELD_TAG = "fs-field" as const
 function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
 }
+
+/**
+ * Attributtene `<fs-field>` regner ut selv, og setter tilbake om de blir
+ * borte.
+ *
+ * Det samme sto en gang i `FIELD_PRESERVED_ATTRIBUTES`, som malen måtte
+ * skrive av inn i `data-preserve-attr`. Den lista finnes ikke lenger:
+ * komponenten ser at attributtene er borte og setter dem tilbake.
+ */
+const UTLEDEDE_ATTRIBUTTER = [
+  "class",
+  "for",
+  "id",
+  "aria-describedby",
+  "aria-invalid",
+  "aria-disabled",
+  "data-state",
+  "data-required",
+  "data-optional",
+  "disabled",
+  "hidden",
+]
 
 function setOrRemove(
   element: HTMLElement,
@@ -29,8 +51,14 @@ function setOrRemove(
  *
  * Komponenten rendrer ingenting. Den satte tidligere et `<slot>`-element inn i
  * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
- * det ved hver patch. Se `FIELD_PRESERVED_ATTRIBUTES` for hva serveren må
- * skrive for at koblingen skal overleve en morfing.
+ * det ved hver patch.
+ *
+ * Malen trenger ingen `data-preserve-attr` for feltet. River en morfing bort
+ * koblingen, ser komponenten det og setter den tilbake. Skillet er mellom det
+ * komponenten utleder, som `id`, `for` og `aria-describedby`, og tilstand
+ * brukeren eier, som `open` på et sprettoppvindu: det første kan repareres,
+ * det andre må fredes, for der ville en reparasjon kjempet mot en server som
+ * med vilje endret noe.
  */
 export class FsField extends HostElement {
   static observedAttributes = [
@@ -43,6 +71,10 @@ export class FsField extends HostElement {
   ]
 
   private observer?: MutationObserver
+  /** Id-ene komponenten laget selv, så en patch ikke gir nye hver gang. */
+  private hjelpId?: string
+  private feilId?: string
+  private kontrollId?: string
 
   /**
    * Egenskapene speiler attributtene.
@@ -104,11 +136,32 @@ export class FsField extends HostElement {
   }
 
   connectedCallback(): void {
-    // `slotchange` melder ikke fra i vanlig DOM, og innholdet byttes ut mens
-    // brukeren fyller ut skjemaet. Bare childList: å sette et attributt på et
-    // barn utløser da ingen ny runde, så observatøren kan ikke gå i ring.
+    /*
+     * `slotchange` melder ikke fra i vanlig DOM, og innholdet byttes ut mens
+     * brukeren fyller ut skjemaet.
+     *
+     * Attributtene er med, ikke bare barna. En morfing river bort det som
+     * ikke står i serverens HTML, og koblingen mellom ledetekst, felt og
+     * hjelpetekst er nettopp det: noe komponenten regnet ut, ikke noe
+     * serveren sendte. Før måtte malen liste opp attributtene i
+     * `data-preserve-attr` for at de skulle overleve. Nå ser komponenten at
+     * de er borte, og setter dem tilbake.
+     *
+     * Lista er avgrenset til det komponenten selv utleder. Tilstand
+     * brukeren eier, som hvilken fane som er valgt eller om et
+     * sprettoppvindu står åpent, skal fortsatt fredes: der ville en
+     * reparasjon kjempet mot en server som med vilje endret noe.
+     *
+     * Hver skriving i `sync()` sammenligner først. Uten det ville
+     * observatøren utløst seg selv i det uendelige.
+     */
     this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true, subtree: true })
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: UTLEDEDE_ATTRIBUTTER,
+    })
     this.sync()
   }
 
@@ -119,6 +172,31 @@ export class FsField extends HostElement {
 
   attributeChangedCallback(): void {
     if (this.isConnected) this.sync()
+  }
+
+  /**
+   * Id-en kontrollen skal ha, lest fra markupen når den står der.
+   *
+   * Ledetekstens `for` er med som kilde, og uten den mistet feltet koblingen
+   * ved første patch: morfingen kan erstatte kontrollen med serverens node,
+   * som ikke har noen id, mens ledeteksten beholder sin `for`. Da fant
+   * komponenten ingen id, fant opp en ny, og skrev den bare på kontrollen, og
+   * `for` pekte etter det på et element som ikke fantes. Funnet i
+   * spilldemoen, i appen som sender HTML-biter fra en Kotlin-server.
+   *
+   * Lager komponenten id-en selv, huskes den. En ny id per patch ville gitt
+   * en skjermleser en peker som skiftet under opplesningen.
+   */
+  private finnKontrollId(
+    control: HTMLElement,
+    label: HTMLLabelElement | null,
+  ): string {
+    const fraMarkupen =
+      this.getAttribute("control-id") || control.id || label?.htmlFor
+    if (fraMarkupen) return fraMarkupen
+
+    this.kontrollId ??= uniqueId("fs-field-control")
+    return this.kontrollId
   }
 
   private sync(): void {
@@ -133,10 +211,51 @@ export class FsField extends HostElement {
       ".fs-error-text, [data-role='error']",
     )
 
-    if (!control) return
+    if (!control) {
+      // Bare når det står noe her. Et tomt element er et område serveren
+      // ikke har fylt ennå, og det er ikke en feil i markupen.
+      if (this.childElementCount > 0) {
+        meldMangel(
+          this,
+          "fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og " +
+            "feilmeldingen står uten et felt, og koblingen kan ikke lages. " +
+            "Sett inn et <input>, <textarea> eller <select>.",
+        )
+      }
+      return
+    }
 
-    if (help && !help.id) help.id = uniqueId("fs-field-help")
-    if (error && !error.id) error.id = uniqueId("fs-field-error")
+    if (!label) {
+      meldMangel(
+        this,
+        "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
+          "skjermleser leser det opp uten navn.",
+      )
+    }
+
+    /*
+     * Id-ene komponenten selv laget, husket mellom rundene.
+     *
+     * Markupen er kilden så lenge den har dem. River en morfing dem bort,
+     * ville en ny id blitt laget for hver eneste patch, og en skjermleser som
+     * står midt i en opplesning ville fulgt en peker som skiftet under den.
+     * Minnet er ikke en parallell utgave av tilstanden: står id-en i
+     * markupen, er det den som gjelder.
+     */
+    if (help) {
+      if (help.id) this.hjelpId = help.id
+      else {
+        this.hjelpId ??= uniqueId("fs-field-help")
+        help.id = this.hjelpId
+      }
+    }
+    if (error) {
+      if (error.id) this.feilId = error.id
+      else {
+        this.feilId ??= uniqueId("fs-field-error")
+        error.id = this.feilId
+      }
+    }
 
     // Markeringene leses også fra markupen. Skrev serveren dem med
     // `fs.field()`, står de på ledeteksten, og en komponent som bare så på
@@ -159,21 +278,7 @@ export class FsField extends HostElement {
       control.getAttribute("aria-invalid") === "true"
 
     const computed = computeFieldAttributes({
-      /*
-       * Id-en leses fra markupen, også fra ledetekstens `for`.
-       *
-       * Uten den siste kilden mister feltet koblingen ved første patch.
-       * Morfingen kan erstatte kontrollen med serverens node, som ikke har
-       * noen id, mens ledeteksten beholder sin `for`, og da fant komponenten
-       * ingen id, fant opp en ny, og skrev den bare på kontrollen. `for`
-       * pekte etter det på et element som ikke fantes. Funnet i spilldemoen,
-       * i appen som sender HTML-biter fra en Kotlin-server.
-       */
-      id:
-        this.getAttribute("control-id") ||
-        control.id ||
-        label?.htmlFor ||
-        uniqueId("fs-field-control"),
+      id: this.finnKontrollId(control, label),
       help: Boolean(help),
       error: Boolean(error),
       helpId: help?.id,
@@ -190,13 +295,16 @@ export class FsField extends HostElement {
       ].filter(Boolean),
     })
 
-    control.id = computed.control.id
+    if (control.id !== computed.control.id) control.id = computed.control.id
 
     if (label) {
-      label.classList.add(computed.label.class)
+      if (!label.classList.contains(computed.label.class)) {
+        label.classList.add(computed.label.class)
+      }
       // Alltid, ikke bare når den mangler: `for` og `id` er den samme
       // opplysningen, og de to kan ikke få lov til å si hver sin ting.
-      label.htmlFor = computed.label.for
+      if (label.htmlFor !== computed.label.for)
+        label.htmlFor = computed.label.for
       setOrRemove(label, "data-required", computed.label["data-required"])
       setOrRemove(label, "data-optional", computed.label["data-optional"])
       setOrRemove(label, "aria-disabled", computed.label["aria-disabled"])
@@ -206,7 +314,8 @@ export class FsField extends HostElement {
       // Bare `hidden`. Et skjult element er allerede ute av
       // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
       // hydreringsfeil i React fordi serveren ikke skriver det.
-      error.hidden = Boolean(computed.error.hidden)
+      const skjult = Boolean(computed.error.hidden)
+      if (error.hidden !== skjult) error.hidden = skjult
     }
 
     setOrRemove(
@@ -217,8 +326,9 @@ export class FsField extends HostElement {
     setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
 
     if (disabled) {
-      control.setAttribute("disabled", "")
-      control.setAttribute("aria-disabled", "true")
+      if (!control.hasAttribute("disabled"))
+        control.setAttribute("disabled", "")
+      setOrRemove(control, "aria-disabled", "true")
     } else {
       control.removeAttribute("disabled")
       control.removeAttribute("aria-disabled")

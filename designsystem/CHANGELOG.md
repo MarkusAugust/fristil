@@ -16,7 +16,42 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`FIELD_PRESERVED_ATTRIBUTES` er fjernet.** Lista fantes for at en mal
+  skulle kunne skrive av navnene på alt `<fs-field>` setter, inn i
+  `data-preserve-attr`, slik at en morfing lot dem stå. Den er ikke lenger
+  nødvendig: komponenten ser at attributtene er borte, og setter dem
+  tilbake. Bruker du den i dag, kan du ta bort både lista og
+  `data-preserve-attr` på feltet.
+
+### Endret
+
+- **`<fs-field>` reparerer sin egen kobling.** Bevaringslista var en kontrakt
+  vi ikke kunne kontrollere: en Go- eller Kotlin-mal måtte skrive av ni
+  attributtnavn fra dokumentasjonen, og endret Fristil hva komponenten satte,
+  gikk malen stille i stykker. Komponenten observerer nå de attributtene den
+  selv utleder, og setter dem tilbake i det en patch river dem bort. Id-ene
+  den har laget huskes, så en skjermleser midt i en opplesning ikke følger en
+  peker som skifter under den.
+
+  Skillet er mellom det komponenten har **regnet ut** og det brukeren har
+  **gjort**. Det første kan regnes ut på nytt, og repareres. Det andre, som
+  `open` på et sprettoppvindu eller hvilken fane som er valgt, finnes det
+  ingen kilde til, og en reparasjon ville dessuten kjempet mot en server som
+  med vilje endret noe. Det fredes fortsatt med `data-preserve-attr`, skrevet
+  av byggefunksjonen.
+
 ### Lagt til
+
+- **Komponentene sier fra når markupen de fikk ikke henger sammen.** Et
+  `<fs-field>` uten en kontroll, en `<fs-tabs>` uten noe med `role="tab"`, en
+  `<fs-dialog>` uten en `<dialog>`, et `<fs-suggestion>` uten en combobox, et
+  `<fs-popover>` uten panel eller knapp, og en `<fs-error-summary>` med
+  punkter som ikke lenker til feltene: alle ga før stillhet, og feilen viste
+  seg først når noen leste siden med skjermleser. Nå kommer en advarsel i
+  konsollen med elementet og hva som mangler, én gang per element, ikke én
+  gang per oppdatering.
 
 - **En vaktpost på at hver komponent kan overtas.** `sjekk-cli.ts` kjører
   `overta` på hver komponent verktøyet selv lister opp, og krever at ingen

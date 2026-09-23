@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
 
 type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
@@ -101,7 +101,20 @@ export class FsPopover extends HostElement {
         )
       : null
 
-    if (!trigger || !panel) return
+    if (!trigger || !panel) {
+      // Bare når det står noe her. Et tomt element er et område serveren
+      // ikke har fylt ennå, og det er ikke en feil i markupen.
+      if (this.childElementCount > 0) {
+        meldMangel(
+          this,
+          !panel
+            ? "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres."
+            : "fant ingen knapp med [aria-controls] som peker på panelet. " +
+                "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
+        )
+      }
+      return
+    }
 
     if (this.triggerElement !== trigger) {
       this.triggerElement?.removeEventListener("click", this.handleTriggerClick)

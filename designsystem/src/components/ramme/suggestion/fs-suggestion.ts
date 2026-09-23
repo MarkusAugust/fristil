@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 import {
   SUGGESTION_EMPTY_CLASS,
   SUGGESTION_OPTION_CLASS,
@@ -107,7 +107,27 @@ export class FsSuggestion extends HostElement {
 
   private bind(): void {
     const control = this.querySelector<HTMLInputElement>("[role='combobox']")
-    if (!control) return
+    if (!control) {
+      // Bare når det står noe her. Et tomt element er et område serveren
+      // ikke har fylt ennå, og det er ikke en feil i markupen.
+      if (this.childElementCount > 0) {
+        meldMangel(
+          this,
+          'fant ingen [role="combobox"]. Uten den vet komponenten ikke ' +
+            "hvilket felt den skal lytte på, og verken filtrering eller " +
+            "piltaster virker. `fs.suggestion()` setter rollen.",
+        )
+      }
+      return
+    }
+
+    if (!this.listElement) {
+      meldMangel(
+        this,
+        'fant ingen [role="listbox"]. Alternativene kan da verken vises, ' +
+          "filtreres eller velges med tastaturet.",
+      )
+    }
 
     if (control !== this.control) {
       this.unbind()

@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, meldMangel } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
 
 /**
@@ -72,7 +72,32 @@ export class FsTabs extends HostElement {
   }
 
   private bind(): void {
-    for (const tab of this.tabs) {
+    const tabs = this.tabs
+
+    if (tabs.length === 0) {
+      // Bare når det står noe her. En tom `<fs-tabs>` er et område serveren
+      // ikke har fylt ennå, og det er ikke en feil i markupen.
+      if (this.childElementCount > 0) {
+        meldMangel(
+          this,
+          'fant ingen faner. Knappene i raden må ha role="tab", ellers ' +
+            "sier skjermleseren «knapp» der den skulle sagt «fane, 2 av 3, " +
+            "valgt», og piltastene gjør ingenting.",
+        )
+      }
+      return
+    }
+
+    if (this.panels.length < tabs.length) {
+      meldMangel(
+        this,
+        `har ${tabs.length} faner, men ${this.panels.length} paneler med ` +
+          'role="tabpanel". Fanene uten et panel kan velges uten at noe ' +
+          "vises.",
+      )
+    }
+
+    for (const tab of tabs) {
       if (this.bound.has(tab)) continue
       tab.addEventListener("click", this.handleClick)
       tab.addEventListener("keydown", this.handleKeydown)
