@@ -98,6 +98,26 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
+  it("men ikke når ledeteksten står utenfor elementet", async () => {
+    // En `<label for>` utenfor `<fs-field>` navngir feltet like godt, og
+    // komponenten kobler den på samme måte som en inni.
+    const advarsel = lytt()
+
+    const flate = monter(`
+      <div>
+        <label class="fs-label" for="epost">E-post</label>
+        <fs-field required-marker="symbol">
+          <input class="fs-input" id="epost" type="email" />
+        </fs-field>
+      </div>
+    `)
+    await ventTilRo()
+
+    const label = flate.querySelector("label") as HTMLLabelElement
+    expect(advarsel).not.toHaveBeenCalled()
+    expect(label.getAttribute("data-required")).toBe("symbol")
+  })
+
   it("fanene uten roller", async () => {
     const advarsel = lytt()
 

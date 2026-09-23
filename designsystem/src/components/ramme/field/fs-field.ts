@@ -82,22 +82,28 @@ export class FsField extends HostElement {
   private generatedErrorId?: string
   private generatedControlId?: string
   /**
-   * Vertens forrige svar, og kontrollen det gjaldt.
+   * Hva noen andre enn komponenten sist sa om `aria-invalid`.
    *
-   * `sync()` leser `aria-invalid` fra kontrollen, fordi serveren kan ha
-   * skrevet feltet med `fs.field()` og da står svaret allerede der. Uten
-   * noe mer leste komponenten tilbake sitt eget ekko fra forrige runde, og
-   * `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-   * feilmeldingen ble stående for godt.
+   * `sync()` må lese `aria-invalid` fra kontrollen, fordi serveren kan ha
+   * skrevet feltet med `fs.field()` og da står svaret allerede der. Men
+   * komponenten skriver det samme attributtet selv, så en naiv avlesning er
+   * komponentens eget ekko fra forrige runde, og `felt.invalid = false`
+   * fjernet flagget på verten mens den røde rammen og feilmeldingen ble
+   * stående for godt.
    *
-   * Det som skiller de to er hva **verten** sa sist. Sto `invalid` der før og
-   * er borte nå, er det verten som har endret seg, og attributtet på
-   * kontrollen er vårt eget ekko. Dette er altså ikke en påstand om eierskap,
-   * bare en huskelapp om forrige runde, og den gjelder bare så lenge det er
-   * den samme kontrollen: byttet en patch den ut, er attributtet på den nye
-   * noden noe serveren nettopp sendte, og da er det serverens ord som veier.
+   * Løsningen er ikke å huske hva verten sa sist. Det ble prøvd, og gjorde
+   * komponenten avhengig av historien sin: den samme markupen ga to ulike
+   * svar alt etter om verten hadde hatt `invalid` innom en gang. Da kunne
+   * den stryke serverens eget `aria-invalid` uten at noe sa fra.
+   *
+   * I stedet noteres verdien komponenten skrev, og hvilken kontroll den ble
+   * skrevet på. Står det noe annet der neste gang, har noen andre rørt
+   * attributtet, og det er serverens ord. Avlesningen er dermed alltid
+   * utledet av en endring som faktisk har skjedd, aldri av en gjetning, og
+   * det samme dokumentet gir alltid det samme svaret.
    */
-  private hadHostInvalid = false
+  private serverInvalid = false
+  private writtenInvalid: string | null = null
   private lastControl?: Element
 
   /**
@@ -192,6 +198,7 @@ export class FsField extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
+    this.lastControl = undefined
   }
 
   attributeChangedCallback(): void {
@@ -223,8 +230,28 @@ export class FsField extends HostElement {
     return this.generatedControlId
   }
 
+  /**
+   * Ledeteksten feltet hører sammen med.
+   *
+   * Vanligvis står den inni elementet. Står den utenfor, med `for` som peker
+   * på kontrollen, er feltet like godt navngitt, og komponenten kobler den
+   * på samme måte. Én forskjell er verdt å vite: en ledetekst utenfor ligger
+   * ikke i det komponenten observerer, så river en patch klassen av den,
+   * kommer den ikke tilbake av seg selv.
+   */
+  private resolveLabel(control: HTMLElement | null): HTMLLabelElement | null {
+    const inside = this.querySelector("label")
+    if (inside || !control?.id) return inside
+
+    const root = this.getRootNode() as Document | ShadowRoot
+    return (
+      root.querySelector?.<HTMLLabelElement>(
+        `label[for="${CSS.escape(control.id)}"]`,
+      ) ?? null
+    )
+  }
+
   private sync(): void {
-    const label = this.querySelector("label")
     const control = this.querySelector<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >(CONTROL_SELECTOR)
@@ -246,8 +273,16 @@ export class FsField extends HostElement {
         () =>
           this.childElementCount > 0 && !this.querySelector(CONTROL_SELECTOR),
       )
+      // Ingen grunn til å holde på den forrige kontrollen. Den er borte, og
+      // en referanse hit ville holdt en løsrevet node i live så lenge verten
+      // lever.
+      this.lastControl = undefined
       return
     }
+
+    // Ledeteksten kan stå utenfor elementet. Oppslaget må skje etter at
+    // kontrollen er funnet, siden det går via id-en hennes.
+    const label = this.resolveLabel(control)
 
     warnAboutMarkup(
       this,
@@ -260,20 +295,12 @@ export class FsField extends HostElement {
        * med bare et ikon.
        */
       () => {
-        const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
-        if (!control || this.querySelector("label")) return false
-        if (
-          control.hasAttribute("aria-label") ||
-          control.hasAttribute("aria-labelledby")
-        ) {
-          return false
-        }
-
-        const root = this.getRootNode() as Document | ShadowRoot
-        const outside = control.id
-          ? root.querySelector?.(`label[for="${CSS.escape(control.id)}"]`)
-          : null
-        return !outside
+        const named = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+        if (!named || this.resolveLabel(named)) return false
+        return (
+          !named.hasAttribute("aria-label") &&
+          !named.hasAttribute("aria-labelledby")
+        )
       },
     )
 
@@ -317,15 +344,14 @@ export class FsField extends HostElement {
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
     // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
     // igjen. Da kranglet de to halvdelene av API-et med hverandre.
-    const hostInvalid = this.hasAttribute("invalid")
-    const controlInvalid = control.getAttribute("aria-invalid") === "true"
-    const hostTurnedOff =
-      this.lastControl === control && this.hadHostInvalid && !hostInvalid
+    const nowInvalid = control.getAttribute("aria-invalid")
+    if (control !== this.lastControl || nowInvalid !== this.writtenInvalid) {
+      // Noen andre enn komponenten har rørt attributtet siden sist, eller
+      // dette er en kontroll vi aldri har skrevet på. Da er det serverens ord.
+      this.serverInvalid = nowInvalid === "true"
+    }
 
-    const invalid = hostInvalid || (controlInvalid && !hostTurnedOff)
-
-    this.hadHostInvalid = hostInvalid
-    this.lastControl = control
+    const invalid = this.hasAttribute("invalid") || this.serverInvalid
 
     const computed = computeFieldAttributes({
       id: this.resolveControlId(control, label),
@@ -374,6 +400,8 @@ export class FsField extends HostElement {
       computed.control["aria-describedby"],
     )
     setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
+    this.writtenInvalid = computed.control["aria-invalid"] ?? null
+    this.lastControl = control
 
     if (disabled) {
       if (!control.hasAttribute("disabled"))

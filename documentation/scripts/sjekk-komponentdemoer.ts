@@ -146,15 +146,23 @@ async function synligIBoksen(
       const vert = document.getElementById(id)
       const el = vert?.shadowRoot?.querySelector(selektor)
       // Flaten og ikke verten: det er den bordede firkanten leseren ser, og
-      // med `maxWidth` er den smalere enn vertselementet.
-      const flate = vert?.shadowRoot?.querySelector(".flate") ?? vert
+      // med `maxWidth` er den smalere enn vertselementet. Ingen reserve til
+      // verten: døper noen om klassen, skal sjekken si fra framfor å bli
+      // mildere i stillhet.
+      const flate = vert?.shadowRoot?.querySelector(".flate")
       if (!vert || !el || !flate)
-        return { funnet: false, synlig: false, inni: false }
+        return {
+          funnet: Boolean(el),
+          synlig: false,
+          inni: false,
+          flate: Boolean(flate),
+        }
 
       const r = el.getBoundingClientRect()
       const b = flate.getBoundingClientRect()
       return {
         funnet: true,
+        flate: true,
         synlig: r.width > 0 && r.height > 0,
         inni:
           r.top >= b.top - 1 &&
@@ -167,6 +175,7 @@ async function synligIBoksen(
   )
 
   krev(svar.funnet, `fant ikke «${selektor}» i forhåndsvisningen`)
+  krev(svar.flate, "fant ingen .flate i forhåndsvisningen å måle mot")
   krev(svar.synlig, `«${selektor}» har ingen utstrekning`)
   krev(
     svar.inni,

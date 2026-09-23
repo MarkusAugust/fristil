@@ -115,14 +115,22 @@ function whenSettled(run: () => void): void {
       once()
       return
     }
-    requestAnimationFrame(() => requestAnimationFrame(once))
     /*
-     * En reserve, fordi `requestAnimationFrame` aldri fyrer i en ramme som
-     * ikke tegnes: en skjult fane, eller en `<iframe>` med `display: none`.
-     * Uten den ble meldingen stående i køen for alltid, og sperret en senere,
-     * ekte advarsel om det samme. Den som kommer først vinner.
+     * En reserve, fordi `requestAnimationFrame` ikke alltid fyrer i en ramme
+     * som ikke tegnes. Testet i en `<iframe>` med `display: none`: Chromium
+     * og WebKit fyrer likevel, Firefox gjør det ikke. Uten reserven ble
+     * meldingen stående i køen for alltid der, og sperret en senere, ekte
+     * advarsel om det samme.
+     *
+     * Den avlyses i det første rammen fyrer. Ellers kunne den vunnet kappløpet
+     * på en travel maskin, og da ville sjekken kjørt før siden var ferdig, som
+     * er akkurat det utsettelsen finnes for å unngå.
      */
-    setTimeout(once, 1000)
+    const reserve = setTimeout(once, 500)
+    requestAnimationFrame(() => {
+      clearTimeout(reserve)
+      requestAnimationFrame(once)
+    })
   }
 
   if (typeof document !== "undefined" && document.readyState === "loading") {

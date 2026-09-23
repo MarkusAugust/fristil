@@ -157,10 +157,16 @@ export class FsPopover extends HostElement {
        * Slipp taket i det vi hadde. River en patch panelet bort, holdt
        * komponenten ellers på en løsrevet node, og `reposition()` fortsatte
        * å regne ut plasseringen for noe som ikke står i siden.
+       *
+       * Lytterne på `document` må med. Uten dem ble de liggende i fangstfasen
+       * så lenge markupen var ødelagt, og et klikk hvor som helst på siden ga
+       * appen en `popover-toggle` den ikke hadde bedt om.
        */
       this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
       this.triggerElement = undefined
       this.panel = undefined
+      document.removeEventListener("click", this.handleOutsideClick, true)
+      document.removeEventListener("keydown", this.handleKeydown)
       return
     }
 

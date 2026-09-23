@@ -138,10 +138,19 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(false)
   })
 
-  it("tar tilbake feilmeldingen selv når begge sider sa ugyldig", async () => {
-    // `invalid` på verten og `aria-invalid` på kontrollen samtidig. Da er det
-    // fortsatt verten som har endret seg når flagget slås av, og komponenten
-    // skal følge etter.
+  it("lar serverens aria-invalid stå, også når verten slår av sitt eget", async () => {
+    /*
+     * To kilder som sier hver sin ting, og serveren vinner.
+     *
+     * Står `aria-invalid` på kontrollen i markupen serveren sendte, er det
+     * serverens ord om feltet. `felt.invalid = false` fjerner flagget på
+     * verten, men kan ikke stryke det serveren skrev: da ville den samme
+     * markupen gitt to ulike svar alt etter hva verten hadde vært innom, og
+     * komponenten ville overkjørt serveren uten at noe sa fra.
+     *
+     * Skal feltet bli gyldig, må serveren si det, eller appen må bruke den
+     * ene av de to kildene og ikke begge. Dokumentasjonen sier hvilken.
+     */
     document.body.innerHTML = `
       <fs-field invalid>
         <label for="epost">E-post</label>
@@ -159,8 +168,42 @@ describe("fs-field", () => {
 
     await Promise.resolve()
 
-    expect(input.getAttribute("aria-invalid")).toBeNull()
-    expect(error.hidden).toBe(true)
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("gir samme svar på samme markup, uansett hva verten har vært innom", async () => {
+    /*
+     * Komponenten skal ikke være avhengig av historien sin.
+     *
+     * En tidligere utgave husket hva verten sa sist, og da ga nøyaktig den
+     * samme markupen to ulike svar: et felt der `invalid` hadde vært innom på
+     * verten mistet serverens `aria-invalid`, mens et ferskt felt beholdt det.
+     * I en Datastar-app, der `data-attr:invalid` slår flagget av og på, sto
+     * feltet grønt mens serveren sa det var feil.
+     */
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    const field = document.querySelector("fs-field") as FsField
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+
+    // Verten får flagget og mister det igjen, slik et signal ville gjort.
+    field.setAttribute("invalid", "")
+    await Promise.resolve()
+    field.removeAttribute("invalid")
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(input.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
   })
 
   it("følger serveren når en patch bytter ut kontrollen", async () => {

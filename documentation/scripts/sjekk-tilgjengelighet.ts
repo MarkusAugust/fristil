@@ -94,18 +94,21 @@ const brudd: Brudd[] = []
  * Her og ikke bare i `sjekk-komponentdemoer.ts`: dette skriptet besøker hver
  * bygde side, mønstersidene og forsiden medregnet.
  */
-const advarsler: string[] = []
-let naavaerende = ""
+const advarsler = new Set<string>()
+let gjeldende = ""
 
 side.on("console", (melding) => {
   const type = melding.type()
   if (type !== "warning" && type !== "error") return
-  advarsler.push(`${naavaerende}  ${type}: ${melding.text()}`)
+  advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
 })
 
 for (const url of sider) {
-  naavaerende = url
   for (const tema of TEMAER) {
+    // Merkelappen settes her og ikke i den ytre løkka, slik at en melding
+    // peker på riktig side og riktig tema. Konsollhendelser kommer asynkront.
+    gjeldende = `${url} [${tema}]`
+
     await side.goto(`http://localhost:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
@@ -191,22 +194,27 @@ tjener.stop()
 
 console.log(`Sjekket ${sider.length} sider i ${TEMAER.length} temaer.`)
 
-if (advarsler.length > 0) {
-  console.log(`\n✗ ${advarsler.length} meldinger i konsollen:`)
-  for (const a of [...new Set(advarsler)]) console.log(`  ${a}`)
-  process.exit(1)
-}
-
+/*
+ * Begge rapportene skrives ut, og så avgjøres utfallet.
+ *
+ * Første utgave avsluttet på konsollmeldingene før axe-funnene ble skrevet,
+ * så en enkelt melding skjulte hele tilgjengelighetsrapporten. Utvikleren
+ * fikk «404 Not Found» og ingen anelse om at siden også hadde et brudd.
+ */
 if (brudd.length === 0) {
   console.log("✓ Ingen tilgjengelighetsbrudd.")
-  process.exit(0)
+} else {
+  for (const b of brudd) {
+    console.log(`\n${b.side} [${b.tema}]  ${b.regel}`)
+    console.log(`  ${b.forklaring}`)
+    for (const el of b.elementer) console.log(`    ${el}`)
+  }
+  console.log(`\n✗ ${brudd.length} tilgjengelighetsbrudd.`)
 }
 
-for (const b of brudd) {
-  console.log(`\n${b.side} [${b.tema}]  ${b.regel}`)
-  console.log(`  ${b.forklaring}`)
-  for (const el of b.elementer) console.log(`    ${el}`)
+if (advarsler.size > 0) {
+  console.log(`\n✗ ${advarsler.size} meldinger i konsollen:`)
+  for (const a of advarsler) console.log(`  ${a}`)
 }
 
-console.log(`\n✗ ${brudd.length} tilgjengelighetsbrudd.`)
-process.exit(1)
+process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)

@@ -32,10 +32,24 @@ kommer i et nytt undertall.
   står svaret allerede der. Uten et skille mellom serverens attributt og
   komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
   `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
-  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
+  feilmeldingen ble stående.
+
+  Komponenten noterer nå verdien den selv skrev, og hvilken kontroll den ble
+  skrevet på. Står det noe annet der neste gang, har noen andre rørt
+  attributtet, og det er serverens ord som gjelder. Avlesningen er dermed
+  alltid utledet av en endring som faktisk har skjedd, så det samme
+  dokumentet gir alltid det samme svaret. Skrev serveren `aria-invalid` selv,
+  står det derfor: `felt.invalid = false` fjerner flagget på verten, men
+  stryker ikke det serveren sa. Bruk den ene av de to kildene, ikke begge.
 
 ### Endret
+
+- **`<fs-field>` kobler også en ledetekst som står utenfor elementet.** En
+  `<label for>` som peker på kontrollen navngir feltet like godt som en inni,
+  og komponenten skriver nå `fs-label`, `data-required` og `aria-disabled` på
+  den. Én forskjell er verdt å vite: en ledetekst utenfor ligger ikke i det
+  komponenten observerer, så river en patch klassen av den, kommer den ikke
+  tilbake av seg selv.
 
 - **`<fs-field>` reparerer sin egen kobling.** Bevaringslista var en kontrakt
   vi ikke kunne kontrollere: en Go- eller Kotlin-mal måtte skrive av ni
@@ -58,9 +72,10 @@ kommer i et nytt undertall.
   disse ga før stillhet, og feilen viste seg først når noen leste siden med
   skjermleser:
 
-  - `<fs-field>` uten en kontroll, og uten en `<label>` (med mindre kontrollen
-    har `aria-label` eller `aria-labelledby`, som i et søkefelt med bare et
-    ikon);
+  - `<fs-field>` uten en kontroll, og uten en ledetekst. Feltet regnes som
+    navngitt av en `<label>` inni, en `<label for>` utenfor, eller
+    `aria-label` og `aria-labelledby` på kontrollen, som i et søkefelt med
+    bare et ikon;
   - `<fs-tabs>` uten noe med `role="tab"`, og med færre paneler enn faner;
   - `<fs-dialog>` uten en `<dialog>` som direkte barn;
   - `<fs-suggestion>` uten en combobox, og uten en listboks;
