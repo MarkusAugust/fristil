@@ -50,6 +50,13 @@
     color: var(--semantic-danger-foreground);
   }
 
+  /* Feltsettet har de samme tilstandene som kontrollene det inneholder, og
+     `fs.fieldset.states` har alltid oppgitt begge. Uten denne regelen
+     skrev byggeren ut et attributt som ikke gjorde noe. */
+  .fs-fieldset[data-state="success"] .fs-legend {
+    color: var(--semantic-success-foreground);
+  }
+
   .fs-fieldset:disabled .fs-legend,
   .fs-legend[aria-disabled="true"] {
     color: var(--semantic-muted-foreground);
