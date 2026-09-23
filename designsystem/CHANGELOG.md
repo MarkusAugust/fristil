@@ -16,6 +16,60 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`id` er påkrevd i `fs.field()`, og i de andre byggerne som tar en.** Den var valgfri, og funksjonen laget en
+  når den manglet. Det var en felle: id-en er tilfeldig, så to kjøringer gir
+  to ulike, og rendres det samme feltet på en server og så i nettleseren,
+  peker `for` og `aria-describedby` på noe annet enn det som står der. React
+  melder avvik ved hydreringen, og advarselen sier selv at avviket ikke blir
+  rettet opp. Det er sett i en ekte app.
+
+  Å kaste når `document` ikke finnes ble vurdert og forkastet: det er å slutte
+  fra miljøet til hva utvikleren mente. `document === undefined` betyr bare
+  «dette er ikke en nettleser», og en Astro-side rendres på serveren og
+  hydrerer ingenting, så der er en laget id helt i orden.
+
+  Typen alene er heller ikke nok, for en konsument uten TypeScript ser ingen
+  type, og ren HTML med `<script type="module">` er en førsteklasses måte å
+  bruke Fristil på. Utelates id-en likevel, lager byggeren en og sier fra i
+  konsollen, én gang, med navnet på byggeren i meldingen. Uten den reserven
+  fikk en JavaScript-konsument `aria-describedby="undefined-help"` og verken
+  `for` eller `id`, altså verre enn den ustabile id-en kravet skulle bli
+  kvitt.
+
+  Reserven gjelder `fs.field()`, `fs.suggestion()`, `fs.tabs()`,
+  `fs.popover()` og `fs.dialog()`. Forslagsfeltet er grunnen til at den ikke
+  kunne bo i feltet alene: uten id ble `list.id` og `options[n].id` til
+  `undefined-list` og `undefined-option-0`, mens meldingen sa «fs.field()» og
+  sendte utvikleren til feil sted.
+
+  Den tomme strengen teller som ingen id. `fs.field({ id: "" })` ga `for=""`
+  og `help.id="-help"`, altså det samme problemet uten at noe sa fra.
+
+  I React kommer id-en fra `useId()`. Ellers er feltets eget navn som regel
+  det opplagte valget. Vet du sikkert at markupen rendres én gang, kall
+  `createFieldId()` selv. Den er nå også eksportert fra
+  `@fristil/designsystem/react`, siden det er inngangen React-dokumentasjonen
+  ber deg bruke.
+
+  `<fs-field>` er upåvirket når komponenten er det eneste som kobler feltet:
+  den lager id-er i nettleseren, etter at HTML-en står der. Bruker du React
+  med server-rendring, skal du bruke `fs.field()`, så koblingen står ferdig i
+  markupen serveren sendte.
+
+- **`createFieldId` eksporteres også fra `@fristil/designsystem/react`.** Den
+  lå bare i hovedinngangen og i `./field-core`, mens dokumentasjonen peker på
+  den i en seksjon som ber leseren importere fra `/react`.
+
+### Lagt til
+
+- **`sjekk-dokumentasjon.ts` avviser et eksempel som kaller `fs.field()` uten
+  `id`.** Ingenting annet i rekka leser kodeblokkene i dokumentasjonen, så et
+  utdatert eksempel kunne stått grønt gjennom hele `bun run sjekk`. Den leser
+  bare koden: i mdx det som står i kodegjerdene, i Astro frontmatteret og
+  skriptene, siden `fs.field()` også nevnes i brødtekst.
+
 ## 0.10.0 (2026-09-23)
 
 ### Brytende

@@ -111,8 +111,14 @@ describe("fs fra /react", () => {
   function kall(
     bygger: (valg?: Record<string, unknown>) => unknown,
   ): unknown[] {
+    /*
+     * Det minste kallet er med fordi de fleste byggerne skal virke uten
+     * argumenter. `id` sendes likevel, siden byggerne som tar en id krever
+     * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
+     * advarsel i konsollen i tillegg.
+     */
     const ekstra: Record<string, unknown>[] = [
-      {},
+      { id: "sak" },
       { id: "sak", count: 2, help: true, error: true, invalid: true },
     ]
     const holder = bygger as unknown as Record<string, unknown>

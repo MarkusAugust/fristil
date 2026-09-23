@@ -1,4 +1,4 @@
-import { attributes } from "../../css/shared.js"
+import { attributes, idEllerReserve } from "../../css/shared.js"
 import {
   computeFieldAttributes,
   type FieldOptions,
@@ -36,12 +36,14 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  * `<fs-suggestion>`.
  */
 export const suggestion = ({
-  id,
+  id: oppgittId,
   count = 0,
   activeIndex = -1,
   open = false,
   ...field
 }: SuggestionOptions) => {
+  // Reserven gjelder bare den som ikke har en typesjekk.
+  const id = idEllerReserve("fs.suggestion()", oppgittId)
   const computed = computeFieldAttributes({ ...field, id })
   const listId = `${id}-list`
   const statusId = `${id}-status`

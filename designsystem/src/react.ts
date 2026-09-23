@@ -44,6 +44,7 @@ import { dialog } from "./components/ramme/dialog/dialog.js"
 import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
 import {
   computeFieldAttributes,
+  createFieldId,
   type FieldOptions,
 } from "./components/ramme/field/field-core.js"
 import { popover } from "./components/ramme/popover/popover.js"
@@ -144,6 +145,17 @@ function forReact<Options, Result extends Record<string, unknown>, Extra>(
   return Object.assign(wrapped, fn)
 }
 
+/**
+ * Videreeksportert fra hovedinngangen.
+ *
+ * `field.mdx` peker på den i en seksjon som ber leseren importere fra
+ * `@fristil/designsystem/react`, og uten dette får en React-konsument som
+ * følger rådet «createFieldId is not exported». Den er trygg bare når
+ * markupen rendres én gang; i en React-komponent er `useId()` svaret, også i
+ * en app uten server.
+ */
+export { createFieldId }
+
 export const fs = {
   accordion: forReact(accordion),
   alert: forReact(alert),
@@ -186,7 +198,7 @@ export const fs = {
    * `control`, `help` og `error` har ingen nøkler som må døpes om, og er
    * derfor like i begge inngangene.
    */
-  field: (options: FieldOptions = {}) => {
+  field: (options: FieldOptions) => {
     const field = computeFieldAttributes(options)
     return { ...field, label: toReactAttributes(field.label) }
   },

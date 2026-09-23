@@ -1,4 +1,4 @@
-import { attributes } from "../../css/shared.js"
+import { attributes, idEllerReserve } from "../../css/shared.js"
 
 export const TABS_LIST_CLASS = "fs-tabs__list" as const
 export const TABS_PANEL_CLASS = "fs-tabs__panel" as const
@@ -54,11 +54,14 @@ export type TabsAttributes = {
  * ```
  */
 export const tabs = ({
-  id,
+  id: oppgittId,
   count,
   selected = 0,
   label,
 }: TabsOptions): TabsAttributes => {
+  // Reserven gjelder bare den som ikke har en typesjekk.
+  const id = idEllerReserve("fs.tabs()", oppgittId)
+
   // Er `selected` utenfor rekkevidde, rettes den her. Ellers ville markupen
   // sagt noe annet enn det brukeren ser.
   const valid = Math.min(Math.max(selected, 0), Math.max(count - 1, 0))
