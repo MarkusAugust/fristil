@@ -85,6 +85,59 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(false)
   })
 
+  it("tar tilbake feilmeldingen når invalid slås av igjen", async () => {
+    /*
+     * Komponenten leser `aria-invalid` fra kontrollen, fordi serveren kan ha
+     * skrevet feltet med `fs.field()` og da står svaret allerede der. Uten et
+     * skille mellom serverens attributt og komponentens eget leste den
+     * tilbake sitt eget svar fra forrige runde, og feltet kunne aldri bli
+     * gyldig igjen: den røde rammen og feilmeldingen ble stående for godt.
+     */
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
+    const field = document.querySelector("fs-field") as FsField
+    field.invalid = false
+
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBeNull()
+    expect(input.getAttribute("data-state")).toBeNull()
+    expect(error.hidden).toBe(true)
+  })
+
+  it("lar serverens eget aria-invalid stå", async () => {
+    // Skrev serveren feltet med `fs.field()`, står `aria-invalid` på
+    // kontrollen uten at verten har `invalid`. Da er attributtet serverens,
+    // og komponenten skal lese det, ikke fjerne det.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(error.hidden).toBe(false)
+  })
+
   it("applies required marker and optional marker on label", async () => {
     document.body.innerHTML = `
       <fs-field required-marker="text">

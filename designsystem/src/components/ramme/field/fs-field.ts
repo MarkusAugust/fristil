@@ -1,4 +1,8 @@
-import { defineElement, HostElement, meldMangel } from "../../host-element.js"
+import {
+  defineElement,
+  HostElement,
+  warnAboutMarkup,
+} from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
 
 export const FS_FIELD_TAG = "fs-field" as const
@@ -15,7 +19,9 @@ function uniqueId(prefix: string): string {
  * skrive av inn i `data-preserve-attr`. Den lista finnes ikke lenger:
  * komponenten ser at attributtene er borte og setter dem tilbake.
  */
-const UTLEDEDE_ATTRIBUTTER = [
+const CONTROL_SELECTOR = "input:not([type='hidden']), textarea, select"
+
+const DERIVED_ATTRIBUTES = [
   "class",
   "for",
   "id",
@@ -72,9 +78,19 @@ export class FsField extends HostElement {
 
   private observer?: MutationObserver
   /** Id-ene komponenten laget selv, så en patch ikke gir nye hver gang. */
-  private hjelpId?: string
-  private feilId?: string
-  private kontrollId?: string
+  private generatedHelpId?: string
+  private generatedErrorId?: string
+  private generatedControlId?: string
+  /**
+   * Om `aria-invalid` på kontrollen er komponentens eget verk.
+   *
+   * Uten dette kunne feltet aldri bli gyldig igjen: `sync()` leser
+   * `aria-invalid` fra kontrollen, fordi serveren kan ha skrevet det med
+   * `fs.field()`, og leste dermed tilbake sitt eget svar fra forrige runde.
+   * Sa appen `felt.invalid = false`, sto feilmeldingen og den røde rammen
+   * igjen for godt.
+   */
+  private wroteInvalid = false
 
   /**
    * Egenskapene speiler attributtene.
@@ -160,7 +176,7 @@ export class FsField extends HostElement {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: UTLEDEDE_ATTRIBUTTER,
+      attributeFilter: DERIVED_ATTRIBUTES,
     })
     this.sync()
   }
@@ -187,23 +203,23 @@ export class FsField extends HostElement {
    * Lager komponenten id-en selv, huskes den. En ny id per patch ville gitt
    * en skjermleser en peker som skiftet under opplesningen.
    */
-  private finnKontrollId(
+  private resolveControlId(
     control: HTMLElement,
     label: HTMLLabelElement | null,
   ): string {
-    const fraMarkupen =
+    const fromMarkup =
       this.getAttribute("control-id") || control.id || label?.htmlFor
-    if (fraMarkupen) return fraMarkupen
+    if (fromMarkup) return fromMarkup
 
-    this.kontrollId ??= uniqueId("fs-field-control")
-    return this.kontrollId
+    this.generatedControlId ??= uniqueId("fs-field-control")
+    return this.generatedControlId
   }
 
   private sync(): void {
     const label = this.querySelector("label")
     const control = this.querySelector<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >("input:not([type='hidden']), textarea, select")
+    >(CONTROL_SELECTOR)
     const help = this.querySelector<HTMLElement>(
       ".fs-help-text, [data-role='help']",
     )
@@ -212,26 +228,35 @@ export class FsField extends HostElement {
     )
 
     if (!control) {
-      // Bare når det står noe her. Et tomt element er et område serveren
-      // ikke har fylt ennå, og det er ikke en feil i markupen.
-      if (this.childElementCount > 0) {
-        meldMangel(
-          this,
-          "fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og " +
-            "feilmeldingen står uten et felt, og koblingen kan ikke lages. " +
-            "Sett inn et <input>, <textarea> eller <select>.",
-        )
-      }
+      warnAboutMarkup(
+        this,
+        "fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og " +
+          "feilmeldingen står uten et felt, og koblingen kan ikke lages. " +
+          "Sett inn et <input>, <textarea> eller <select>.",
+        // Et tomt element er et område serveren ikke har fylt ennå, og det
+        // er ikke en feil i markupen.
+        () =>
+          this.childElementCount > 0 && !this.querySelector(CONTROL_SELECTOR),
+      )
       return
     }
 
-    if (!label) {
-      meldMangel(
-        this,
-        "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
-          "skjermleser leser det opp uten navn.",
-      )
-    }
+    warnAboutMarkup(
+      this,
+      "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
+        "skjermleser leser det opp uten navn.",
+      // Et felt kan ha navnet sitt fra `aria-label` eller `aria-labelledby`,
+      // som i et søkefelt med bare et ikon. Da er det ingenting å si fra om.
+      () => {
+        const kontroll = this.querySelector(CONTROL_SELECTOR)
+        return (
+          kontroll !== null &&
+          !this.querySelector("label") &&
+          !kontroll.hasAttribute("aria-label") &&
+          !kontroll.hasAttribute("aria-labelledby")
+        )
+      },
+    )
 
     /*
      * Id-ene komponenten selv laget, husket mellom rundene.
@@ -243,17 +268,17 @@ export class FsField extends HostElement {
      * markupen, er det den som gjelder.
      */
     if (help) {
-      if (help.id) this.hjelpId = help.id
+      if (help.id) this.generatedHelpId = help.id
       else {
-        this.hjelpId ??= uniqueId("fs-field-help")
-        help.id = this.hjelpId
+        this.generatedHelpId ??= uniqueId("fs-field-help")
+        help.id = this.generatedHelpId
       }
     }
     if (error) {
-      if (error.id) this.feilId = error.id
+      if (error.id) this.generatedErrorId = error.id
       else {
-        this.feilId ??= uniqueId("fs-field-error")
-        error.id = this.feilId
+        this.generatedErrorId ??= uniqueId("fs-field-error")
+        error.id = this.generatedErrorId
       }
     }
 
@@ -273,12 +298,12 @@ export class FsField extends HostElement {
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
     // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
     // igjen. Da kranglet de to halvdelene av API-et med hverandre.
+    const hadInvalid = control.getAttribute("aria-invalid") === "true"
     const invalid =
-      this.hasAttribute("invalid") ||
-      control.getAttribute("aria-invalid") === "true"
+      this.hasAttribute("invalid") || (hadInvalid && !this.wroteInvalid)
 
     const computed = computeFieldAttributes({
-      id: this.finnKontrollId(control, label),
+      id: this.resolveControlId(control, label),
       help: Boolean(help),
       error: Boolean(error),
       helpId: help?.id,
@@ -314,8 +339,8 @@ export class FsField extends HostElement {
       // Bare `hidden`. Et skjult element er allerede ute av
       // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
       // hydreringsfeil i React fordi serveren ikke skriver det.
-      const skjult = Boolean(computed.error.hidden)
-      if (error.hidden !== skjult) error.hidden = skjult
+      const shouldHide = Boolean(computed.error.hidden)
+      if (error.hidden !== shouldHide) error.hidden = shouldHide
     }
 
     setOrRemove(
@@ -324,6 +349,16 @@ export class FsField extends HostElement {
       computed.control["aria-describedby"],
     )
     setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
+    /*
+     * Attributtet er komponentens eget bare når komponenten satte det først.
+     * Sto det der da vi kom, er det serverens, og da skal det fortsatt leses
+     * som en kilde. Uten det skillet kunne feltet aldri bli gyldig igjen:
+     * `felt.invalid = false` fjernet flagget på verten, men `sync()` leste
+     * sitt eget `aria-invalid` fra forrige runde og satte alt tilbake.
+     */
+    this.wroteInvalid =
+      computed.control["aria-invalid"] !== undefined &&
+      (!hadInvalid || this.wroteInvalid)
 
     if (disabled) {
       if (!control.hasAttribute("disabled"))

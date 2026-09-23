@@ -1,4 +1,8 @@
-import { defineElement, HostElement, meldMangel } from "../../host-element.js"
+import {
+  defineElement,
+  HostElement,
+  warnAboutMarkup,
+} from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
 
 type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
@@ -102,15 +106,49 @@ export class FsPopover extends HostElement {
       : null
 
     if (!trigger || !panel) {
-      // Bare når det står noe her. Et tomt element er et område serveren
-      // ikke har fylt ennå, og det er ikke en feil i markupen.
-      if (this.childElementCount > 0) {
-        meldMangel(
+      /*
+       * Tre ulike feil, og hver sin beskjed. Uten skillet fikk et panel
+       * uten `id` beskjed om at knappen manglet, og utvikleren lette på feil
+       * sted: oppslaget etter knappen går gjennom panelets id, så den faller
+       * bort av seg selv når id-en mangler.
+       *
+       * Et tomt element er et område serveren ikke har fylt ennå, og det er
+       * ikke en feil i markupen.
+       */
+      const tomt = () => this.childElementCount === 0
+
+      if (!panel) {
+        warnAboutMarkup(
           this,
-          !panel
-            ? "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres."
-            : "fant ingen knapp med [aria-controls] som peker på panelet. " +
-                "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
+          "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres.",
+          () => !tomt() && this.querySelector("[popover]") === null,
+        )
+      } else if (!panel.id) {
+        warnAboutMarkup(
+          this,
+          "panelet har ingen id, så knappen kan ikke peke på det med " +
+            "aria-controls, og komponenten finner ikke ut hva som åpner " +
+            "vinduet.",
+          () => {
+            const p = this.querySelector("[popover]")
+            return !tomt() && p !== null && p.id === ""
+          },
+        )
+      } else {
+        warnAboutMarkup(
+          this,
+          "fant ingen knapp med [aria-controls] som peker på panelet. " +
+            "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
+          () => {
+            const p = this.querySelector("[popover]")
+            return (
+              !tomt() &&
+              p !== null &&
+              p.id !== "" &&
+              this.querySelector(`[aria-controls="${CSS.escape(p.id)}"]`) ===
+                null
+            )
+          },
         )
       }
       return

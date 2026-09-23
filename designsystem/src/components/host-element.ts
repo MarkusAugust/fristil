@@ -34,33 +34,89 @@ export function defineElement(
 }
 
 /**
- * Sier fra når markupen komponenten fikk, ikke henger sammen.
+ * Sier fra når markupen en komponent fikk, ikke henger sammen.
  *
  * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det
  * eneste alternativet til en beskjed er stillhet. Det var stillhet lenge:
  * en mal uten en kontroll i `<fs-field>` ga et felt uten kobling, og
  * ingenting sa fra før noen leste siden med skjermleser.
  *
- * Meldingen kommer én gang per element og melding. En komponent synkroniserer
- * seg selv ved hver patch, og en advarsel per patch ville fylt konsollen så
- * fort at den ble ubrukelig.
+ * Beskjeden kommer én gang per element og melding. En komponent
+ * synkroniserer seg ved hver patch, og en advarsel per patch ville fylt
+ * konsollen så fort at den ble ubrukelig. Meldingen må derfor være den
+ * samme hver gang: interpolerer du et tall inn i den, er hver runde en ny
+ * melding, og dedupliseringen er borte.
+ *
+ * `stillBroken` er grunnen til at advarselen kan stoles på. Den kalles på
+ * nytt når siden har falt til ro, og bare da skrives noe ut. En komponent
+ * ser markupen sin i det den kobles til, og der er den ofte halvferdig:
+ * HTML som strømmer fra en Go- eller Kotlin-server leveres i pakker, og et
+ * brudd midt mellom ledeteksten og feltet er helt vanlig. Uten den siste
+ * sjekken advarte komponenten om markup som var i orden et øyeblikk senere,
+ * og en advarsel som også kommer på riktig markup blir slått av.
  *
  * Den kommer i alle miljøer, ikke bare under utvikling. Pakken har ingen
- * byggetrinn som kunne fjernet den, og en advarsel som bare utløses av markup
- * som faktisk er gal, hører hjemme der den skjer.
+ * byggetrinn som kunne fjernet den, og en advarsel som bare utløses av
+ * markup som faktisk er gal, hører hjemme der den skjer.
  */
-const meldte = new WeakMap<Element, Set<string>>()
+const reported = new WeakMap<Element, Set<string>>()
+const queued = new WeakMap<Element, Set<string>>()
 
-export function meldMangel(element: Element, melding: string): void {
+export function warnAboutMarkup(
+  element: Element,
+  message: string,
+  stillBroken: () => boolean,
+): void {
   if (typeof console === "undefined") return
+  if (reported.get(element)?.has(message)) return
 
-  let sett = meldte.get(element)
-  if (!sett) {
-    sett = new Set()
-    meldte.set(element, sett)
+  let venter = queued.get(element)
+  if (!venter) {
+    venter = new Set()
+    queued.set(element, venter)
   }
-  if (sett.has(melding)) return
-  sett.add(melding)
+  if (venter.has(message)) return
+  venter.add(message)
 
-  console.warn(`${element.tagName.toLowerCase()}: ${melding}`, element)
+  whenSettled(() => {
+    venter.delete(message)
+    if (!element.isConnected || !stillBroken()) return
+
+    let sagt = reported.get(element)
+    if (!sagt) {
+      sagt = new Set()
+      reported.set(element, sagt)
+    }
+    if (sagt.has(message)) return
+    sagt.add(message)
+
+    console.warn(`${element.tagName.toLowerCase()}: ${message}`, element)
+  })
+}
+
+/**
+ * Kjører etter at siden har falt til ro.
+ *
+ * Først må parseren være ferdig, ellers ser vi bare den delen av markupen
+ * som har rukket å komme. Så to tegninger, slik at en morfing, en
+ * React-hydrering eller et skript som fyller elementet i neste oppgave
+ * rekker å bli ferdig først.
+ */
+function whenSettled(run: () => void): void {
+  const etterToTegninger = () => {
+    if (typeof requestAnimationFrame === "undefined") {
+      run()
+      return
+    }
+    requestAnimationFrame(() => requestAnimationFrame(run))
+  }
+
+  if (typeof document !== "undefined" && document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", etterToTegninger, {
+      once: true,
+    })
+    return
+  }
+
+  etterToTegninger()
 }

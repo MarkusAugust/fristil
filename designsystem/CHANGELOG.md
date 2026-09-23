@@ -25,6 +25,16 @@ kommer i et nytt undertall.
   tilbake. Bruker du den i dag, kan du ta bort både lista og
   `data-preserve-attr` på feltet.
 
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
+  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
+
 ### Endret
 
 - **`<fs-field>` reparerer sin egen kobling.** Bevaringslista var en kontrakt
@@ -44,14 +54,29 @@ kommer i et nytt undertall.
 
 ### Lagt til
 
-- **Komponentene sier fra når markupen de fikk ikke henger sammen.** Et
-  `<fs-field>` uten en kontroll, en `<fs-tabs>` uten noe med `role="tab"`, en
-  `<fs-dialog>` uten en `<dialog>`, et `<fs-suggestion>` uten en combobox, et
-  `<fs-popover>` uten panel eller knapp, og en `<fs-error-summary>` med
-  punkter som ikke lenker til feltene: alle ga før stillhet, og feilen viste
-  seg først når noen leste siden med skjermleser. Nå kommer en advarsel i
-  konsollen med elementet og hva som mangler, én gang per element, ikke én
-  gang per oppdatering.
+- **Komponentene sier fra når markupen de fikk ikke henger sammen.** Alle
+  disse ga før stillhet, og feilen viste seg først når noen leste siden med
+  skjermleser:
+
+  - `<fs-field>` uten en kontroll, og uten en `<label>` (med mindre kontrollen
+    har `aria-label` eller `aria-labelledby`, som i et søkefelt med bare et
+    ikon);
+  - `<fs-tabs>` uten noe med `role="tab"`, og med færre paneler enn faner;
+  - `<fs-dialog>` uten en `<dialog>` som direkte barn;
+  - `<fs-suggestion>` uten en combobox, og uten en listboks;
+  - `<fs-popover>` uten et panel, uten en id på panelet, og uten en knapp som
+    peker på det;
+  - `<fs-error-summary>` med punkter som ikke lenker til feltene, og med en
+    lenke som peker på en id som ikke finnes.
+
+  Advarselen kommer én gang per element og melding, og først når siden har
+  falt til ro. Det siste er grunnen til at den kan stoles på: HTML som
+  strømmer fra en server leveres i pakker, og et brudd mellom ledeteksten og
+  feltet er helt vanlig, så komponenten ser ofte halvferdig markup i det den
+  kobles til.
+
+- **`warnAboutMarkup` er en ny eksport** fra `@fristil/designsystem/host-element`.
+  En overtatt komponent bruker den, så den må være tilgjengelig.
 
 - **En vaktpost på at hver komponent kan overtas.** `sjekk-cli.ts` kjører
   `overta` på hver komponent verktøyet selv lister opp, og krever at ingen
@@ -99,6 +124,16 @@ kommer i et nytt undertall.
   Kotlin-server.
 
 ## 0.8.1 (2026-09-23)
+
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
+  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
 
 ### Endret
 
@@ -444,6 +479,16 @@ kommer i et nytt undertall.
   gjør den det samme som `<fs-toast>` og `<fs-connection-status>`: ingenting
   står i DOM-en før det trengs.
 
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
+  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
+
 ### Endret
 
 - **`fs.toast()` er dokumentert.** Byggefunksjonen fantes, men sto ikke på
@@ -549,6 +594,16 @@ kommer i et nytt undertall.
 - **`<fs-suggestion>` mistet musevalg etter at serveren sendte en ny liste.**
   Alternativene fikk bare lytteren sin når selve feltet var nytt.
 
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
+  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
+
 ### Endret
 
 - **React-inngangen døper også om `tabindex` til `tabIndex`,** og dekker de nye
@@ -564,6 +619,16 @@ kommer i et nytt undertall.
   avhengigheter i det hele tatt.
 
 ## 0.4.0 (2026-09-21)
+
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
+  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
 
 ### Endret
 
