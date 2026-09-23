@@ -55,7 +55,9 @@ Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className`
 
 Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
 
-Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, må malen din ta med `data-preserve-attr` på hvert av elementene, også på hjelpeteksten og feilmeldingen. Ellers fjernes koblingen ved neste oppdatering. Listene ligger i `FIELD_PRESERVED_ATTRIBUTES`, og hele begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
+Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, med de samme id-ene som før, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
+
+Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon.
 
 ## Kom i gang
 

@@ -98,11 +98,36 @@ interface Props {
   maxWidth?: string
   /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
   id?: string
-  /** CSS som legges sist, for eksempel utility-klasser kompilert av Tailwind. */
+  /**
+   * CSS som legges sist i skyggerota.
+   *
+   * To bruk: utility-klasser kompilert av Tailwind, og tilpasning som bare
+   * gjelder visningen, som plass til en linje som legger seg øverst i boksen.
+   * Det siste er alternativet til et `style=`-attributt i eksempelet, og skal
+   * alltid ha en kommentar som sier at leseren ikke trenger det.
+   */
   ekstraCss?: string
+  /**
+   * Hold `position: fixed` inne i boksen.
+   *
+   * Noen komponenter fester innholdet sitt til vinduet, som linja fra
+   * `<fs-connection-status>` øverst og meldingene fra `<fs-toast>` i hjørnet.
+   * I en app er det riktig. I dokumentasjonen var det ikke det: leseren
+   * trykket på knappen midt i siden, og linja dukket opp i toppen av vinduet,
+   * bak den faste toppen på dokumentasjonssiden. Det så ut som at ingenting
+   * skjedde.
+   */
+  fastInni?: boolean
 }
 
-const { stiler = [], layout = "rad", maxWidth, id, ekstraCss } = Astro.props
+const {
+  stiler = [],
+  layout = "rad",
+  maxWidth,
+  id,
+  ekstraCss,
+  fastInni = false,
+} = Astro.props
 
 for (const navn of stiler) {
   if (!(navn in STILARK)) {
@@ -146,6 +171,14 @@ const stilark = [
 		line-height: 1.6;
 	}
 
+	/* Bare for visningen. Layout-inneslutning gjør boksen til utgangspunktet
+	   for et fastposisjonert barn, slik at leseren ser resultatet der hun
+	   trykket framfor i toppen av vinduet. En konsument trenger ikke dette,
+	   og skal ikke kopiere det. */
+	.flate[data-fast-inni] {
+		contain: layout;
+	}
+
 	.flate[data-layout="rad"] {
 		flex-wrap: wrap;
 		align-items: center;
@@ -171,6 +204,7 @@ const stilark = [
 		<div
 			class="flate"
 			data-layout={layout}
+			data-fast-inni={fastInni ? "" : undefined}
 			style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
 		>
 			<slot />

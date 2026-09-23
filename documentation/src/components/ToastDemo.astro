@@ -2,7 +2,17 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-toast" stiler={["toast", "button"]} maxWidth="30rem">
+<Preview
+	id="demo-toast"
+	stiler={["toast", "button"]}
+	maxWidth="30rem"
+	fastInni
+	ekstraCss={`
+		/* Bare for visningen: meldingene legger seg i hjørnet av boksen, slik de
+		   legger seg i hjørnet av vinduet i en app. Høyden gir dem plass. */
+		.flate { min-block-size: 10rem; }
+	`}
+>
 	<button class="fs-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
 	<fs-toast id="demo-toast-kø" label="Meldinger"></fs-toast>
 </Preview>

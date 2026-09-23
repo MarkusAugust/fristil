@@ -1,4 +1,8 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import {
+  defineElement,
+  HostElement,
+  warnAboutMarkup,
+} from "../../host-element.js"
 export const FS_POPOVER_TAG = "fs-popover" as const
 
 type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
@@ -101,7 +105,70 @@ export class FsPopover extends HostElement {
         )
       : null
 
-    if (!trigger || !panel) return
+    if (!trigger || !panel) {
+      /*
+       * Tre ulike feil, og hver sin beskjed. Uten skillet fikk et panel
+       * uten `id` beskjed om at knappen manglet, og utvikleren lette på feil
+       * sted: oppslaget etter knappen går gjennom panelets id, så den faller
+       * bort av seg selv når id-en mangler.
+       *
+       * Et tomt element er et område serveren ikke har fylt ennå, og det er
+       * ikke en feil i markupen.
+       */
+      const isEmpty = () => this.childElementCount === 0
+
+      if (!panel) {
+        warnAboutMarkup(
+          this,
+          "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres.",
+          () => !isEmpty() && this.querySelector("[popover]") === null,
+        )
+      } else if (!panel.id) {
+        warnAboutMarkup(
+          this,
+          "panelet har ingen id, så knappen kan ikke peke på det med " +
+            "aria-controls, og komponenten finner ikke ut hva som åpner " +
+            "vinduet.",
+          () => {
+            const found = this.querySelector("[popover]")
+            return !isEmpty() && found !== null && found.id === ""
+          },
+        )
+      } else {
+        warnAboutMarkup(
+          this,
+          "fant ingen knapp med [aria-controls] som peker på panelet. " +
+            "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
+          () => {
+            const found = this.querySelector("[popover]")
+            return (
+              !isEmpty() &&
+              found !== null &&
+              found.id !== "" &&
+              this.querySelector(
+                `[aria-controls="${CSS.escape(found.id)}"]`,
+              ) === null
+            )
+          },
+        )
+      }
+
+      /*
+       * Slipp taket i det vi hadde. River en patch panelet bort, holdt
+       * komponenten ellers på en løsrevet node, og `reposition()` fortsatte
+       * å regne ut plasseringen for noe som ikke står i siden.
+       *
+       * Lytterne på `document` må med. Uten dem ble de liggende i fangstfasen
+       * så lenge markupen var ødelagt, og et klikk hvor som helst på siden ga
+       * appen en `popover-toggle` den ikke hadde bedt om.
+       */
+      this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
+      this.triggerElement = undefined
+      this.panel = undefined
+      document.removeEventListener("click", this.handleOutsideClick, true)
+      document.removeEventListener("keydown", this.handleKeydown)
+      return
+    }
 
     if (this.triggerElement !== trigger) {
       this.triggerElement?.removeEventListener("click", this.handleTriggerClick)

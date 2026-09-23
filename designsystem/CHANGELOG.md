@@ -16,7 +16,86 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`FIELD_PRESERVED_ATTRIBUTES` er fjernet.** Lista fantes for at en mal
+  skulle kunne skrive av navnene på alt `<fs-field>` setter, inn i
+  `data-preserve-attr`, slik at en morfing lot dem stå. Den er ikke lenger
+  nødvendig: komponenten ser at attributtene er borte, og setter dem
+  tilbake. Bruker du den i dag, kan du ta bort både lista og
+  `data-preserve-attr` på feltet.
+
+### Rettet
+
+- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
+  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
+  står svaret allerede der. Uten et skille mellom serverens attributt og
+  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
+  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+  feilmeldingen ble stående.
+
+  Komponenten noterer nå verdien den selv skrev, og hvilken kontroll den ble
+  skrevet på. Står det noe annet der neste gang, har noen andre rørt
+  attributtet, og det er serverens ord som gjelder. Avlesningen er dermed
+  alltid utledet av en endring som faktisk har skjedd, så det samme
+  dokumentet gir alltid det samme svaret. Skrev serveren `aria-invalid` selv,
+  står det derfor: `felt.invalid = false` fjerner flagget på verten, men
+  stryker ikke det serveren sa. Bruk den ene av de to kildene, ikke begge.
+
+### Endret
+
+- **`<fs-field>` kobler også en ledetekst som står utenfor elementet.** En
+  `<label for>` som peker på kontrollen navngir feltet like godt som en inni,
+  og komponenten skriver nå `fs-label`, `data-required` og `aria-disabled` på
+  den. Bytter en patch ut kontrollen med en uten id, husker komponenten
+  id-en, så ledetekstens `for` fortsetter å peke på et element som finnes.
+  Én forskjell er verdt å vite: en ledetekst utenfor ligger ikke i det
+  komponenten observerer, så river en patch klassen av den, kommer den ikke
+  tilbake før neste gang feltet synkroniserer.
+
+- **`<fs-field>` reparerer sin egen kobling.** Bevaringslista var en kontrakt
+  vi ikke kunne kontrollere: en Go- eller Kotlin-mal måtte skrive av ni
+  attributtnavn fra dokumentasjonen, og endret Fristil hva komponenten satte,
+  gikk malen stille i stykker. Komponenten observerer nå de attributtene den
+  selv utleder, og setter dem tilbake i det en patch river dem bort. Id-ene
+  den har laget huskes, så en skjermleser midt i en opplesning ikke følger en
+  peker som skifter under den.
+
+  Skillet er mellom det komponenten har **regnet ut** og det brukeren har
+  **gjort**. Det første kan regnes ut på nytt, og repareres. Det andre, som
+  `open` på et sprettoppvindu eller hvilken fane som er valgt, finnes det
+  ingen kilde til, og en reparasjon ville dessuten kjempet mot en server som
+  med vilje endret noe. Det fredes fortsatt med `data-preserve-attr`, skrevet
+  av byggefunksjonen.
+
 ### Lagt til
+
+- **Komponentene sier fra når markupen de fikk ikke henger sammen.** Alle
+  disse ga før stillhet, og feilen viste seg først når noen leste siden med
+  skjermleser:
+
+  - `<fs-field>` uten en kontroll, og uten en ledetekst. Feltet regnes som
+    navngitt av en `<label>` inni, en `<label for>` utenfor, eller
+    `aria-label` og `aria-labelledby` på kontrollen, som i et søkefelt med
+    bare et ikon;
+  - `<fs-tabs>` uten noe med `role="tab"`, og med færre paneler enn faner;
+  - `<fs-dialog>` uten en `<dialog>` som direkte barn;
+  - `<fs-suggestion>` uten en combobox, og uten en listboks;
+  - `<fs-popover>` uten et panel, uten en id på panelet, og uten en knapp som
+    peker på det;
+  - `<fs-error-summary>` med punkter som ikke lenker til feltene, og med en
+    lenke som peker på en id som ikke finnes. Den siste meldes når boksen
+    synkroniserer, ikke først når noen klikker: en lenke som ikke fører noe
+    sted er like ødelagt om ingen prøver den.
+
+  Advarselen kommer én gang per element og melding, og først når siden har
+  falt til ro. Det siste er grunnen til at den kan stoles på: HTML som
+  strømmer fra en server leveres i pakker, og et brudd mellom ledeteksten og
+  feltet er helt vanlig, så komponenten ser ofte halvferdig markup i det den
+  kobles til.
+
+- **`warnAboutMarkup` er en ny eksport** fra `@fristil/designsystem/host-element`.
+  En overtatt komponent bruker den, så den må være tilgjengelig.
 
 - **En vaktpost på at hver komponent kan overtas.** `sjekk-cli.ts` kjører
   `overta` på hver komponent verktøyet selv lister opp, og krever at ingen

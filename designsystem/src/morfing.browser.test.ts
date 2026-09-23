@@ -18,7 +18,6 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { dialog } from "./components/ramme/dialog/dialog"
 import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
-import { FIELD_PRESERVED_ATTRIBUTES } from "./components/ramme/field/field-core"
 import { defineFsField } from "./components/ramme/field/fs-field"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover"
 import { popover } from "./components/ramme/popover/popover"
@@ -98,30 +97,41 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   /*
    * Markupen er skrevet slik en Go-mal ville gjort det: ingen id-er, ingen
-   * kobling. Da er det `<fs-field>` som lager dem, og nettopp de må lista
-   * dekke.
+   * kobling, og ingen `data-preserve-attr`.
+   *
+   * Koblingen mellom ledetekst, felt og hjelpetekst er noe komponenten
+   * regner ut, ikke noe serveren sendte, så morfingen river den bort.
+   * Løsningen var lenge at malen måtte liste opp attributtene i
+   * `data-preserve-attr`, og en Go- eller Kotlin-mal måtte skrive lista av
+   * fra dokumentasjonen. Endret Fristil hva komponenten setter, gikk malen
+   * stille i stykker. Komponenten ser nå at attributtene er borte og setter
+   * dem tilbake.
    */
   const FELT = `
-    <fs-field data-preserve-attr="">
-      <label class="fs-label" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.label}">E-post</label>
-      <input class="fs-input" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.control}" />
-      <p class="fs-help-text" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.help}">Vi sender aldri spam.</p>
-      <p class="fs-error-text" data-preserve-attr="${FIELD_PRESERVED_ATTRIBUTES.error}">Skriv en gyldig adresse.</p>
+    <fs-field>
+      <label class="fs-label">E-post</label>
+      <input class="fs-input" />
+      <p class="fs-help-text">Vi sender aldri spam.</p>
+      <p class="fs-error-text">Skriv en gyldig adresse.</p>
     </fs-field>`
 
-  it("holder feltet koblet gjennom en patch", async () => {
+  it("holder feltet koblet gjennom en patch, uten en bevaringsliste", async () => {
     const felt = monterMarkup(FELT)
     await customElements.whenDefined("fs-field")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
+    const label = felt.querySelector("label") as HTMLLabelElement
     const foer = kontroll.getAttribute("aria-describedby")
     expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
+    expect(label.htmlFor).toBe(kontroll.id)
 
     morf(felt, FELT)
+    // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const etter = kontroll.getAttribute("aria-describedby")
-    expect(etter, "koblingen forsvant i patchen").toBe(foer)
+    expect(etter, "koblingen kom ikke tilbake etter patchen").toBe(foer)
 
     for (const id of (etter ?? "").split(/\s+/).filter(Boolean)) {
       expect(
@@ -130,10 +140,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
       ).not.toBeNull()
     }
 
-    const label = felt.querySelector("label") as HTMLLabelElement
     expect(label.htmlFor, "ledeteksten mistet koblingen til feltet").toBe(
       kontroll.id,
     )
+    expect(document.getElementById(label.htmlFor)).toBe(kontroll)
+    expect(label.classList.contains("fs-label")).toBe(true)
   })
 
   it("kobler feltet på nytt når patchen byttet ut kontrollen", async () => {
@@ -159,7 +170,6 @@ describe("morfing river ikke bort det komponenten setter", () => {
     const gammel = felt.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
     ny.className = "fs-input"
-    ny.setAttribute("data-preserve-attr", FIELD_PRESERVED_ATTRIBUTES.control)
     gammel.replaceWith(ny)
 
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
@@ -212,10 +222,10 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * Serveren skriver riktignok `open` selv når den vet at dialogen skal
    * vises, men den vet det ikke alltid. Åpnes dialogen av et signal i
    * nettleseren, eller av en bruker, står `open` bare i den levende siden,
-   * og da er det bare fredningen som holder det der. Prøven sender derfor
+   * og da er det bare fredningen som holder det der. Testen sender derfor
    * serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
    * morfingen latt attributtet stå uansett, siden den bare fjerner det
-   * serverens node mangler, og prøven kunne ikke feile.
+   * serverens node mangler, og testen kunne ikke feile.
    */
   it("lukker ikke en åpen dialog i en patch", async () => {
     const boks = dialog({ titleId: "tittel", open: true })

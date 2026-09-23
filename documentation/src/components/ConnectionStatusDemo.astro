@@ -2,7 +2,19 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-samband" stiler={["connection-status", "button"]} maxWidth="34rem">
+<Preview
+	id="demo-samband"
+	stiler={["connection-status", "button"]}
+	maxWidth="34rem"
+	layout="stabel"
+	fastInni
+	ekstraCss={`
+		/* Bare for visningen: linja legger seg øverst i boksen, slik den legger
+		   seg øverst i vinduet i en app. Plassen her gjør at den ikke dekker
+		   knappene. En konsument trenger ingenting av dette. */
+		.flate { padding-block-start: var(--size-12); }
+	`}
+>
 	<div class="demo-samband-knapper">
 		<button class="fs-button" id="demo-samband-av" type="button">Simuler at kallet feiler</button>
 		<button class="fs-button" data-variant="secondary" id="demo-samband-pa" type="button">Simuler at det virker igjen</button>

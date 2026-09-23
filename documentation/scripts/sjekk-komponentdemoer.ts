@@ -70,12 +70,28 @@ side.on("console", (melding) => {
   if (melding.type() === "error") {
     feil.push(`${gjeldende}: konsollfeil «${melding.text()}»`)
   }
+  /*
+   * Advarsler teller også.
+   *
+   * Komponentene sier fra med `console.warn` når markupen de fikk ikke
+   * henger sammen. Kom en slik advarsel på en av komponentsidene, ville det
+   * enten betydd at et eksempel er galt, eller at advarselen slår ut på
+   * markup som er i orden. Begge deler må fanges, for en advarsel som også
+   * kommer på riktig markup blir slått av, og da er den verdiløs.
+   *
+   * Dette skriptet går bare gjennom komponentsidene. Resten av siden,
+   * mønstersidene og forsiden medregnet, dekkes av `sjekk-tilgjengelighet.ts`,
+   * som besøker hver eneste bygde side.
+   */
+  if (melding.type() === "warning") {
+    feil.push(`${gjeldende}: konsolladvarsel «${melding.text()}»`)
+  }
 })
 
 /**
  * Åpner en komponentside og kontrollerer det som gjelder alle demoer.
  *
- * Deretter kjøres den komponentens egen prøve. Den generelle delen alene er
+ * Deretter kjøres den komponentens egen test. Den generelle delen alene er
  * ikke nok: fanedemoen rendret knapper og paneler helt fint, den hadde bare
  * sluttet å få roller.
  */
@@ -108,6 +124,63 @@ async function pa(
   krev(generelt.harInnhold, "forhåndsvisningen er tom")
 
   if (generelt.harSkyggerot) await prove(side, vertsId)
+}
+
+/**
+ * Krever at noe demoen lagde faktisk står å se inne i forhåndsvisningen.
+ *
+ * Komponenter som fester innholdet sitt til vinduet fant vi ikke her før.
+ * `<fs-connection-status>` skriver linja si med `position: fixed` øverst,
+ * og i dokumentasjonen la den seg i toppen av vinduet, bak den faste toppen
+ * på siden. Leseren trykket på knappen midt i siden, og det så ut som at
+ * ingenting skjedde, mens denne sjekken meldte grønt fordi elementet fantes
+ * i DOM-en.
+ */
+async function synligIBoksen(
+  side: Page,
+  id: string,
+  selektor: string,
+): Promise<void> {
+  const svar = await side.evaluate(
+    ([id, selektor]) => {
+      const vert = document.getElementById(id)
+      const el = vert?.shadowRoot?.querySelector(selektor)
+      // Flaten og ikke verten: det er den bordede firkanten leseren ser, og
+      // med `maxWidth` er den smalere enn vertselementet. Ingen reserve til
+      // verten: døper noen om klassen, skal sjekken si fra framfor å bli
+      // mildere i stillhet.
+      const flate = vert?.shadowRoot?.querySelector(".flate")
+      if (!vert || !el || !flate)
+        return {
+          funnet: Boolean(el),
+          synlig: false,
+          inni: false,
+          flate: Boolean(flate),
+        }
+
+      const r = el.getBoundingClientRect()
+      const b = flate.getBoundingClientRect()
+      return {
+        funnet: true,
+        flate: true,
+        synlig: r.width > 0 && r.height > 0,
+        inni:
+          r.top >= b.top - 1 &&
+          r.bottom <= b.bottom + 1 &&
+          r.left >= b.left - 1 &&
+          r.right <= b.right + 1,
+      }
+    },
+    [id, selektor] as const,
+  )
+
+  krev(svar.funnet, `fant ikke «${selektor}» i forhåndsvisningen`)
+  krev(svar.flate, "fant ingen .flate i forhåndsvisningen å måle mot")
+  krev(svar.synlig, `«${selektor}» har ingen utstrekning`)
+  krev(
+    svar.inni,
+    `«${selektor}» står utenfor forhåndsvisningen, så leseren ser den ikke der hun trykket`,
+  )
 }
 
 await pa("tabs", "demo-tabs", "fs-tabs", async (side, id) => {
@@ -262,6 +335,7 @@ await pa("toast", "demo-toast", "fs-toast", async (side, id) => {
   krev(svar.rolle === "status", "regionen er ikke en status-region")
   krev(svar.meldinger === 1, `et klikk ga ${svar.meldinger} meldinger`)
   krev(svar.lukkeknapp === 1, "meldingen har ingen lukkeknapp")
+  await synligIBoksen(side, id, ".fs-toast")
 })
 
 await pa(
@@ -283,6 +357,7 @@ await pa(
     krev(svar.tekst.length > 0, "linja sier ingenting")
     krev(svar.tilstand === "offline", "linja melder ikke at sambandet er nede")
     krev(svar.rolle === "status", "linja er ikke en status-region")
+    await synligIBoksen(side, id, ".fs-connection-status__bar")
   },
 )
 
@@ -333,7 +408,7 @@ await pa(
  * Nedtrekkslista er en CSS-komponent, og har verken skyggerot eller
  * egendefinert element å slå opp. Den har likevel noe som kan slutte å
  * virke: `data-picker="styled"` ber nettleseren tegne lista inne i siden, og
- * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne prøven
+ * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne testen
  * ville en demo som åpner seg uten farger meldt grønt.
  */
 gjeldende = "select"

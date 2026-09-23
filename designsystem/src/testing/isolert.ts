@@ -9,7 +9,7 @@
  * testene kjørte på sider som tilfeldigvis hadde en.
  *
  * Inne i en shadow root gjelder bare nettleserens egne standardverdier pluss
- * stilarket vi sender inn. Det er den ærlige prøven.
+ * stilarket vi sender inn. Det er den ærligste testen.
  */
 
 export type IsolertFlate = {
