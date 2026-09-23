@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.10.0 (2026-09-23)
+
 ### Brytende
 
 - **`data-preserve-attr` er borte fra hele pakken.** `fs.tabs()`,
