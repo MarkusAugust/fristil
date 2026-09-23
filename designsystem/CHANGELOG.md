@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.8.0 (2026-09-23)
+
 ### Brytende
 
 - **Boolske attributter på en vert er `true`, ikke `""`.** `fs.dialog().host`
