@@ -302,3 +302,46 @@ describe("temaet kan også sette skrift og form", () => {
     knappeark.remove()
   })
 })
+
+/**
+ * Temaet uten farger.
+ *
+ * Fristils egen palett er Skatteetatens, verdi for verdi. Å kjøre fargene
+ * deres gjennom generatoren ville derfor flyttet dem bort fra der de skal
+ * være: `#1362ae` kommer ut som `#1e6ab7`, siden skalaene regnes om i OKLCH
+ * fra merkefargen. Et tema som bare setter skrift og form er svaret.
+ */
+describe("et tema kan la fargene stå", () => {
+  it("skriver verken palett eller semantiske farger", () => {
+    const tema = buildTheme({
+      typography: { fontFamily: "Helvetica, Arial, sans-serif" },
+      shape: { buttonRadius: "2.75rem" },
+    })
+
+    expect(tema.css).not.toContain("--palette-")
+    expect(tema.css).not.toContain("--semantic-")
+    expect(tema.css).toContain("--font-family-base")
+    expect(tema.light).toEqual({})
+    expect(tema.dark).toEqual({})
+  })
+
+  it("lar være å skrive tomme blokker", () => {
+    // En generert fil full av tomrom ser ut som en feil.
+    const tema = buildTheme({ shape: { buttonRadius: "2.75rem" } })
+
+    expect(tema.css).not.toContain("prefers-color-scheme")
+    expect(tema.css).not.toMatch(/\{\s*\}/)
+  })
+
+  it("krever alle fire fargene, eller ingen", () => {
+    // To farger er alltid en feil: resten av temaet ville blitt bygget av
+    // standardfarger, og ingen ba om den blandingen.
+    expect(() =>
+      buildTheme({ interactive: "#1362ae", danger: "#a82e39" }),
+    ).toThrow(/alle fire/)
+  })
+
+  it("sier fra når oppskriften er tom", () => {
+    expect(() => buildTheme({})).toThrow(/tomt/)
+  })
+})

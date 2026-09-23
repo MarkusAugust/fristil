@@ -233,8 +233,8 @@ const HJELP = `fristil <kommando>
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
 
-  tema                 Lager et fargetema av merkefargene dine
-    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd)
+  tema                 Lager et tema av merkefargene, skriften og formen din
+    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd med farger)
     --fare=<farge>        Feil og sletting (påkrevd)
     --suksess=<farge>     Bekreftelser (påkrevd)
     --advarsel=<farge>    Advarsler (påkrevd)
@@ -349,7 +349,17 @@ const påkrevd: (keyof ThemeInput)[] = [
 ]
 const mangler = påkrevd.filter((navn) => !input[navn])
 
-if (mangler.length > 0) {
+/*
+ * Fargene er påkrevd, med ett unntak: et tema som bare setter skrift og form.
+ *
+ * Det er ikke en kuriositet. Bruker organisasjonen allerede Fristils palett,
+ * er det nettopp skriften og hjørnene som skiller, og å kjøre fargene gjennom
+ * generatoren ville da flyttet dem bort fra der de skal være.
+ */
+const bareSkriftOgForm =
+  mangler.length === påkrevd.length && (input.typography || input.shape)
+
+if (mangler.length > 0 && !bareSkriftOgForm) {
   const norske = mangler.map(
     (navn) =>
       Object.entries(NØKLER).find(([, engelsk]) => engelsk === navn)?.[0] ??
@@ -359,6 +369,9 @@ if (mangler.length > 0) {
     `Mangler farger: ${norske.join(", ")}\n\n` +
       "Eksempel:\n  npx @fristil/designsystem tema --interaktiv=#7c3aed" +
       " --fare=#b3261e --suksess=#2b6940 --advarsel=#8a5a00\n\n" +
+      "Vil du bare sette skrift og form, og la fargene stå: utelat alle " +
+      "fire, og oppgi minst én av --skrift, --knapp-hjorner, --felt-hjorner, " +
+      "--flate-hjorner, --knapp-ramme eller --knapp-vekt.\n\n" +
       "Hele oversikten: fristil --hjelp\n",
   )
   process.exit(1)

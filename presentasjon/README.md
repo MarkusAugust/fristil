@@ -35,7 +35,7 @@ finnes også to knapper som dukker opp når musa er over.
 
 Innholdet følger arkitekturen slik den faktisk er: de to lagene, de tre
 kategoriene, reparasjon framfor fredning, `server-controlled`, og hva
-spilldemoen beviste. Nitten lysbilder.
+spilldemoen beviste. Tjue lysbilder.
 
 Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
 linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
@@ -54,7 +54,7 @@ skalering. Lysbildet blir vanlig tekst rett på bakgrunnen, med full
 skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
-Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de nitten
+Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de tjue
 lysbildene kan dras sidelengs, og på de tre største får alle plass uten å
 rulle. To ting måtte til, og begge er lette å gjøre feil igjen: et
 rutenettfelt trenger `min-inline-size: 0`, ellers blir det like bredt som den

@@ -39,6 +39,15 @@ kommer i et nytt undertall.
   eneste bokstav. Regelen står i `@layer fristil`, så konsumentens egen CSS
   vinner fortsatt over den.
 
+- **Et tema kan la fargene stå.** Merkefargene er nå valgfrie, og utelates
+  alle fire, lages et tema som bare setter skrift og form. Det er ikke en
+  kuriositet: bruker organisasjonen allerede Fristils palett, er det nettopp
+  skriften og hjørnene som skiller, og å kjøre fargene gjennom generatoren
+  ville flyttet dem bort fra der de skal være. `#1362ae` kommer ut som
+  `#1e6ab7`, siden skalaene regnes om i OKLCH fra merkefargen. Enten alle fire
+  fargene, eller ingen: to farger kaster, siden resten av temaet da ville blitt
+  bygget av standardfarger uten at noen ba om det.
+
 - **Vekt og linjeavstand er tokens.** `--font-weight-regular`,
   `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`,
   `--semantic-line-height-default`, `--semantic-line-height-heading` og

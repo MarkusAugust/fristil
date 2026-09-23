@@ -715,6 +715,38 @@ fs.input({ type: "email", state: "invalid" })
 
 <!-- 15 -->
 <section class="lysbilde">
+  <h2>Prøvd mot en ekte etat</h2>
+  <p>Paletten i Fristil er Skatteetatens, og det gjør den lett å etterprøve: den står publisert i deres eget designsystem. Sammenligningen er kjørt mot kilden deres, ikke mot en skjermdump.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">36 / 36</span>
+      <p>palettvariabler finnes i Fristil med nøyaktig samme verdi.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">14 / 15</span>
+      <p>semantiske fargetokens er også like. Den femtende avviker med vilje.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">1</span>
+      <p>verdi vi måtte flytte, og grunnen står i tabellen under.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Den ene er advarselsfargen. Kravet for vanlig tekst er 4,5:1:</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Advarselstekst</th><th>Mot hvit</th><th>Mot egen advarselsflate</th></tr></thead>
+    <tbody>
+      <tr><td>Skatteetaten <code>#9f7509</code></td><td>4,18:1</td><td>3,63:1</td></tr>
+      <tr><td>Fristil <code>#896508</code></td><td>5,35:1</td><td>4,64:1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Det er ikke en kritikk av et godt designsystem. Det er hele argumentet for at fargene skal regnes ut framfor å velges: en verdi som ligger tett på kravet, går under det uten at noen ser det.</p>
+  <p>Førstelinja kjører i deres stil og tone, generert av en oppskrift på seks linjer. Vi har ikke tatt inn en eneste linje av designsystemet deres, og fargene er ikke kjørt gjennom generatoren: paletten er allerede riktig, og en omregning i OKLCH ville gjort <code>#1362ae</code> til <code>#1e6ab7</code>.</p>
+</section>
+
+<!-- 16 -->
+<section class="lysbilde">
   <h2>Prisen for å bygge på nettleseren selv</h2>
   <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
   <div class="rader tre">
@@ -737,7 +769,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 16 -->
+<!-- 17 -->
 <section class="lysbilde">
   <h2>Hva det koster appen din</h2>
   <p>Et designsystem som drar med seg et rammeverk inn i hver app, er ikke gratis for noen. Tallene her er fra pakken slik den er:</p>
@@ -758,7 +790,7 @@ fs.input({ type: "email", state: "invalid" })
   <p style="margin-block-start: 1.1rem;">Ingenting i pakken gjør noe ved import alene. <code>customElements.define</code> skjer først når konsumenten kaller <code>defineFsField()</code>, og hver modul kan lastes på en server uten DOM. Det siste er ikke teoretisk: ni av inngangspunktene stoppet en gang med «HTMLElement is not defined» i Node, hovedinngangen medregnet, så <code>import { fs }</code> var umulig i en app med server-rendring.</p>
 </section>
 
-<!-- 17 -->
+<!-- 18 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det stemmer</h2>
   <p>Førstelinja er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter. Skjermene ser like ut, og det er hele poenget, så forskjellen måtte vises et annet sted.</p>
@@ -780,7 +812,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 18 -->
+<!-- 19 -->
 <section class="lysbilde">
   <h2>Når systemet ikke strekker til</h2>
   <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
@@ -796,7 +828,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
   <h2>Hva vi sitter igjen med</h2>
   <p class="ingress">Ett designsystem, uten rammeverk under, som virker i det vi har i dag og i det vi bytter til.</p>

@@ -77,15 +77,28 @@ export type ThemeShape = {
   buttonFontWeight?: string | number
 }
 
+/**
+ * Oppskriften på et tema.
+ *
+ * Fargene hører sammen: enten oppgir du alle fire, eller ingen. Utelates de,
+ * lages det et tema som bare setter skrift og form, og fargene blir stående
+ * som de er i `tokens.css`.
+ *
+ * Det siste er ikke en kuriositet. Fristils egen palett er Skatteetatens, med
+ * de samme verdiene, og da ville det å kjøre fargene gjennom generatoren
+ * gjort spillet mindre likt deres og ikke mer: `#1362ae` kommer ut som
+ * `#1e6ab7`, fordi skalaene regnes om i OKLCH fra merkefargen. Et tema som
+ * bare setter skrift og form er da det riktige svaret.
+ */
 export type ThemeInput = {
   /** Lenker, knapper og fokusmarkering. */
-  interactive: string
+  interactive?: string
   /** Feil, sletting og avslag. */
-  danger: string
+  danger?: string
   /** Fullført og godkjent. */
-  success: string
+  success?: string
   /** Noe som krever oppmerksomhet. */
-  warning: string
+  warning?: string
   /** Flater, tekst og skillelinjer. Nesten uten kulør. */
   neutral?: string
   /** Besøkte lenker. Utledes fra `interactive` hvis den utelates. */
@@ -179,12 +192,40 @@ function sikre(
 }
 
 export function buildTheme(input: ThemeInput): Theme {
+  const farger = [input.interactive, input.danger, input.success, input.warning]
+  const oppgitte = farger.filter(Boolean).length
+
+  if (oppgitte > 0 && oppgitte < 4) {
+    throw new Error(
+      "Et fargetema trenger alle fire merkefargene: interactive, danger, " +
+        "success og warning. Vil du bare sette skrift og form, utelat " +
+        "fargene helt.",
+    )
+  }
+
+  if (oppgitte === 0) {
+    if (!input.typography && !input.shape) {
+      throw new Error(
+        "Temaet er tomt. Oppgi enten merkefargene, eller skrift og form.",
+      )
+    }
+
+    // Uten farger er det ingen skalaer å bygge og ingen kontrast å sikre.
+    return {
+      light: {},
+      dark: {},
+      adjustments: [],
+      problems: [],
+      css: tilCss({}, {}, {}, input.typography, input.shape),
+    }
+  }
+
   const palett = {
-    interactive: buildScale(input.interactive),
-    danger: buildScale(input.danger),
-    success: buildScale(input.success),
-    warning: buildScale(input.warning),
-    visited: buildScale(input.visited ?? input.interactive),
+    interactive: buildScale(input.interactive as string),
+    danger: buildScale(input.danger as string),
+    success: buildScale(input.success as string),
+    warning: buildScale(input.warning as string),
+    visited: buildScale(input.visited ?? (input.interactive as string)),
     neutral: buildNeutralScale(input.neutral ?? "#1a1a1a"),
   }
 
@@ -446,7 +487,20 @@ function tilCss(
 
   const typografiske = typografi ? typografiVerdier(typografi) : {}
   const formen = form ? formVerdier(form) : {}
-  const ekstra = { ...typografiske, ...formen }
+
+  /*
+   * Blokkene settes sammen av det som faktisk finnes.
+   *
+   * Et tema uten farger skal ikke gi tomme `:root {}` og en tom mørk blokk.
+   * En generert fil som er full av tomrom ser ut som en feil, og den skal
+   * kunne leses av den som lurer på hva temaet gjorde.
+   */
+  const rotverdier = { ...palett, ...light, ...typografiske, ...formen }
+  const deler: string[] = []
+
+  if (Object.keys(rotverdier).length > 0) {
+    deler.push(`  :root {\n${linjer(rotverdier, "    ")}\n  }`)
+  }
 
   /*
    * Skriften settes som en ekte regel, ikke bare som et token.
@@ -455,13 +509,16 @@ function tilCss(
    * eneste bokstav. Regelen står i det samme laget som resten, slik at
    * konsumentens egen CSS fortsatt vinner over den.
    */
-  const skriftregel = typografi?.fontFamily
-    ? `
-  :root {
-    font-family: var(--font-family-base);
+  if (typografi?.fontFamily) {
+    deler.push("  :root {\n    font-family: var(--font-family-base);\n  }")
   }
-`
-    : ""
+
+  if (Object.keys(dark).length > 0) {
+    deler.push(
+      `  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme="light"]) {\n${linjer(dark, "      ")}\n    }\n  }`,
+    )
+    deler.push(`  [data-theme="dark"] {\n${linjer(dark, "    ")}\n  }`)
+  }
 
   return `/*
  * Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila.
@@ -471,28 +528,7 @@ function tilCss(
  */
 
 @layer fristil {
-  :root {
-${linjer(palett, "    ")}
-
-${linjer(light, "    ")}${
-  ekstra && Object.keys(ekstra).length
-    ? `
-
-${linjer(ekstra, "    ")}`
-    : ""
-}
-  }
-${skriftregel}
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-${linjer(dark, "      ")}
-    }
-  }
-
-  [data-theme="dark"] {
-${linjer(dark, "    ")}
-  }
+${deler.join("\n\n")}
 }
 `
 }

@@ -106,6 +106,19 @@ De samme verdiene finnes som flagg: `--skrift`, `--skrift-kode`, `--knapp-hjorne
 
 Alt her er valgfritt. Utelater du begge blokkene, er temaet nøyaktig det det var før: bare farger.
 
+### Uten farger
+
+Bruker organisasjonen din allerede Fristils palett, er det skriften og hjørnene som skiller. Da utelater du merkefargene helt, og får et tema som lar fargene stå:
+
+```bash
+npx @fristil/designsystem tema \
+  --skrift="Helvetica, Arial, sans-serif" \
+  --knapp-hjorner=2.75rem \
+  --ut=tema.css
+```
+
+Enten oppgir du alle fire merkefargene, eller ingen. To farger kaster: resten av temaet ville da blitt bygget av standardfarger uten at noen ba om det.
+
 ### Hvorfor tre slags hjørner
 
 | Nøkkel | Treffer |
