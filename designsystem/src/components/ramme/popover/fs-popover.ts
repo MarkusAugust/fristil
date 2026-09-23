@@ -115,13 +115,13 @@ export class FsPopover extends HostElement {
        * Et tomt element er et område serveren ikke har fylt ennå, og det er
        * ikke en feil i markupen.
        */
-      const tomt = () => this.childElementCount === 0
+      const isEmpty = () => this.childElementCount === 0
 
       if (!panel) {
         warnAboutMarkup(
           this,
           "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres.",
-          () => !tomt() && this.querySelector("[popover]") === null,
+          () => !isEmpty() && this.querySelector("[popover]") === null,
         )
       } else if (!panel.id) {
         warnAboutMarkup(
@@ -130,8 +130,8 @@ export class FsPopover extends HostElement {
             "aria-controls, og komponenten finner ikke ut hva som åpner " +
             "vinduet.",
           () => {
-            const p = this.querySelector("[popover]")
-            return !tomt() && p !== null && p.id === ""
+            const found = this.querySelector("[popover]")
+            return !isEmpty() && found !== null && found.id === ""
           },
         )
       } else {
@@ -140,17 +140,27 @@ export class FsPopover extends HostElement {
           "fant ingen knapp med [aria-controls] som peker på panelet. " +
             "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
           () => {
-            const p = this.querySelector("[popover]")
+            const found = this.querySelector("[popover]")
             return (
-              !tomt() &&
-              p !== null &&
-              p.id !== "" &&
-              this.querySelector(`[aria-controls="${CSS.escape(p.id)}"]`) ===
-                null
+              !isEmpty() &&
+              found !== null &&
+              found.id !== "" &&
+              this.querySelector(
+                `[aria-controls="${CSS.escape(found.id)}"]`,
+              ) === null
             )
           },
         )
       }
+
+      /*
+       * Slipp taket i det vi hadde. River en patch panelet bort, holdt
+       * komponenten ellers på en løsrevet node, og `reposition()` fortsatte
+       * å regne ut plasseringen for noe som ikke står i siden.
+       */
+      this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
+      this.triggerElement = undefined
+      this.panel = undefined
       return
     }
 

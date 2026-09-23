@@ -14,7 +14,7 @@ import "./react"
  * 19 setter egenskapen, og `el.open = ""` er usant, så panelet åpnet seg
  * ikke. Begge sender nå `true`.
  *
- * Tilordningene under er prøven, og det er `typecheck:tests` som kjører den.
+ * Tilordningene under er testen, og det er `typecheck:tests` som kjører den.
  * Det som kjøres i nettleseren er bare at verdiene faktisk er der.
  */
 describe("byggerne passer i JSX-deklarasjonene", () => {

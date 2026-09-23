@@ -222,10 +222,10 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * Serveren skriver riktignok `open` selv når den vet at dialogen skal
    * vises, men den vet det ikke alltid. Åpnes dialogen av et signal i
    * nettleseren, eller av en bruker, står `open` bare i den levende siden,
-   * og da er det bare fredningen som holder det der. Prøven sender derfor
+   * og da er det bare fredningen som holder det der. Testen sender derfor
    * serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
    * morfingen latt attributtet stå uansett, siden den bare fjerner det
-   * serverens node mangler, og prøven kunne ikke feile.
+   * serverens node mangler, og testen kunne ikke feile.
    */
   it("lukker ikke en åpen dialog i en patch", async () => {
     const boks = dialog({ titleId: "tittel", open: true })

@@ -11,6 +11,8 @@ function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+const CONTROL_SELECTOR = "input:not([type='hidden']), textarea, select"
+
 /**
  * Attributtene `<fs-field>` regner ut selv, og setter tilbake om de blir
  * borte.
@@ -19,8 +21,6 @@ function uniqueId(prefix: string): string {
  * skrive av inn i `data-preserve-attr`. Den lista finnes ikke lenger:
  * komponenten ser at attributtene er borte og setter dem tilbake.
  */
-const CONTROL_SELECTOR = "input:not([type='hidden']), textarea, select"
-
 const DERIVED_ATTRIBUTES = [
   "class",
   "for",
@@ -82,15 +82,23 @@ export class FsField extends HostElement {
   private generatedErrorId?: string
   private generatedControlId?: string
   /**
-   * Om `aria-invalid` på kontrollen er komponentens eget verk.
+   * Vertens forrige svar, og kontrollen det gjaldt.
    *
-   * Uten dette kunne feltet aldri bli gyldig igjen: `sync()` leser
-   * `aria-invalid` fra kontrollen, fordi serveren kan ha skrevet det med
-   * `fs.field()`, og leste dermed tilbake sitt eget svar fra forrige runde.
-   * Sa appen `felt.invalid = false`, sto feilmeldingen og den røde rammen
-   * igjen for godt.
+   * `sync()` leser `aria-invalid` fra kontrollen, fordi serveren kan ha
+   * skrevet feltet med `fs.field()` og da står svaret allerede der. Uten
+   * noe mer leste komponenten tilbake sitt eget ekko fra forrige runde, og
+   * `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
+   * feilmeldingen ble stående for godt.
+   *
+   * Det som skiller de to er hva **verten** sa sist. Sto `invalid` der før og
+   * er borte nå, er det verten som har endret seg, og attributtet på
+   * kontrollen er vårt eget ekko. Dette er altså ikke en påstand om eierskap,
+   * bare en huskelapp om forrige runde, og den gjelder bare så lenge det er
+   * den samme kontrollen: byttet en patch den ut, er attributtet på den nye
+   * noden noe serveren nettopp sendte, og da er det serverens ord som veier.
    */
-  private wroteInvalid = false
+  private hadHostInvalid = false
+  private lastControl?: Element
 
   /**
    * Egenskapene speiler attributtene.
@@ -245,16 +253,27 @@ export class FsField extends HostElement {
       this,
       "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
         "skjermleser leser det opp uten navn.",
-      // Et felt kan ha navnet sitt fra `aria-label` eller `aria-labelledby`,
-      // som i et søkefelt med bare et ikon. Da er det ingenting å si fra om.
+      /*
+       * Tre lovlige måter å gi feltet et navn på, og ingen av dem skal gi en
+       * advarsel: en `<label>` inni, en `<label for>` utenfor, eller
+       * `aria-label` og `aria-labelledby` på kontrollen, som i et søkefelt
+       * med bare et ikon.
+       */
       () => {
-        const kontroll = this.querySelector(CONTROL_SELECTOR)
-        return (
-          kontroll !== null &&
-          !this.querySelector("label") &&
-          !kontroll.hasAttribute("aria-label") &&
-          !kontroll.hasAttribute("aria-labelledby")
-        )
+        const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+        if (!control || this.querySelector("label")) return false
+        if (
+          control.hasAttribute("aria-label") ||
+          control.hasAttribute("aria-labelledby")
+        ) {
+          return false
+        }
+
+        const root = this.getRootNode() as Document | ShadowRoot
+        const outside = control.id
+          ? root.querySelector?.(`label[for="${CSS.escape(control.id)}"]`)
+          : null
+        return !outside
       },
     )
 
@@ -298,9 +317,15 @@ export class FsField extends HostElement {
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
     // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
     // igjen. Da kranglet de to halvdelene av API-et med hverandre.
-    const hadInvalid = control.getAttribute("aria-invalid") === "true"
-    const invalid =
-      this.hasAttribute("invalid") || (hadInvalid && !this.wroteInvalid)
+    const hostInvalid = this.hasAttribute("invalid")
+    const controlInvalid = control.getAttribute("aria-invalid") === "true"
+    const hostTurnedOff =
+      this.lastControl === control && this.hadHostInvalid && !hostInvalid
+
+    const invalid = hostInvalid || (controlInvalid && !hostTurnedOff)
+
+    this.hadHostInvalid = hostInvalid
+    this.lastControl = control
 
     const computed = computeFieldAttributes({
       id: this.resolveControlId(control, label),
@@ -349,16 +374,6 @@ export class FsField extends HostElement {
       computed.control["aria-describedby"],
     )
     setOrRemove(control, "aria-invalid", computed.control["aria-invalid"])
-    /*
-     * Attributtet er komponentens eget bare når komponenten satte det først.
-     * Sto det der da vi kom, er det serverens, og da skal det fortsatt leses
-     * som en kilde. Uten det skillet kunne feltet aldri bli gyldig igjen:
-     * `felt.invalid = false` fjernet flagget på verten, men `sync()` leste
-     * sitt eget `aria-invalid` fra forrige runde og satte alt tilbake.
-     */
-    this.wroteInvalid =
-      computed.control["aria-invalid"] !== undefined &&
-      (!hadInvalid || this.wroteInvalid)
 
     if (disabled) {
       if (!control.hasAttribute("disabled"))

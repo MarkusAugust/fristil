@@ -70,25 +70,25 @@ export function warnAboutMarkup(
   if (typeof console === "undefined") return
   if (reported.get(element)?.has(message)) return
 
-  let venter = queued.get(element)
-  if (!venter) {
-    venter = new Set()
-    queued.set(element, venter)
+  let pending = queued.get(element)
+  if (!pending) {
+    pending = new Set()
+    queued.set(element, pending)
   }
-  if (venter.has(message)) return
-  venter.add(message)
+  if (pending.has(message)) return
+  pending.add(message)
 
   whenSettled(() => {
-    venter.delete(message)
+    pending.delete(message)
     if (!element.isConnected || !stillBroken()) return
 
-    let sagt = reported.get(element)
-    if (!sagt) {
-      sagt = new Set()
-      reported.set(element, sagt)
+    let said = reported.get(element)
+    if (!said) {
+      said = new Set()
+      reported.set(element, said)
     }
-    if (sagt.has(message)) return
-    sagt.add(message)
+    if (said.has(message)) return
+    said.add(message)
 
     console.warn(`${element.tagName.toLowerCase()}: ${message}`, element)
   })
@@ -103,20 +103,34 @@ export function warnAboutMarkup(
  * rekker å bli ferdig først.
  */
 function whenSettled(run: () => void): void {
-  const etterToTegninger = () => {
+  let done = false
+  const once = () => {
+    if (done) return
+    done = true
+    run()
+  }
+
+  const afterTwoFrames = () => {
     if (typeof requestAnimationFrame === "undefined") {
-      run()
+      once()
       return
     }
-    requestAnimationFrame(() => requestAnimationFrame(run))
+    requestAnimationFrame(() => requestAnimationFrame(once))
+    /*
+     * En reserve, fordi `requestAnimationFrame` aldri fyrer i en ramme som
+     * ikke tegnes: en skjult fane, eller en `<iframe>` med `display: none`.
+     * Uten den ble meldingen stående i køen for alltid, og sperret en senere,
+     * ekte advarsel om det samme. Den som kommer først vinner.
+     */
+    setTimeout(once, 1000)
   }
 
   if (typeof document !== "undefined" && document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", etterToTegninger, {
+    document.addEventListener("DOMContentLoaded", afterTwoFrames, {
       once: true,
     })
     return
   }
 
-  etterToTegninger()
+  afterTwoFrames()
 }

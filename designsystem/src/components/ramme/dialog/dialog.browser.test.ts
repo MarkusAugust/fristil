@@ -401,7 +401,7 @@ describe("fs-dialog", () => {
      */
     const hendelser: string[] = []
     // `close` bobler ikke. En lytter på dokumentet i bobleefasen ser den
-    // aldri, og prøven ville meldt grønt uansett hva komponenten gjorde.
+    // aldri, og testen ville meldt grønt uansett hva komponenten gjorde.
     const lytter = (e: Event) => {
       if ((e.target as HTMLElement)?.tagName === "DIALOG")
         hendelser.push("close")

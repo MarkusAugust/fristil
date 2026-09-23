@@ -17,7 +17,7 @@ import { monter, ventPaTegning } from "./testing/a11y"
  * sine, gjorde den ingenting, uten et ord. Feilen viste seg først når noen
  * leste siden med skjermleser.
  *
- * Prøven som betyr mest er den siste: at riktig markup ikke gir et eneste
+ * Testen som betyr mest er den siste: at riktig markup ikke gir et eneste
  * ord. En advarsel som også kommer når alt er i orden blir slått av, og da
  * er den verdiløs.
  */

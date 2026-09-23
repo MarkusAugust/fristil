@@ -98,7 +98,14 @@ interface Props {
   maxWidth?: string
   /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
   id?: string
-  /** CSS som legges sist, for eksempel utility-klasser kompilert av Tailwind. */
+  /**
+   * CSS som legges sist i skyggerota.
+   *
+   * To bruk: utility-klasser kompilert av Tailwind, og tilpasning som bare
+   * gjelder visningen, som plass til en linje som legger seg øverst i boksen.
+   * Det siste er alternativet til et `style=`-attributt i eksempelet, og skal
+   * alltid ha en kommentar som sier at leseren ikke trenger det.
+   */
   ekstraCss?: string
   /**
    * Hold `position: fixed` inne i boksen.

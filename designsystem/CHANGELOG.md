@@ -125,16 +125,6 @@ kommer i et nytt undertall.
 
 ## 0.8.1 (2026-09-23)
 
-### Rettet
-
-- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
-  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
-  står svaret allerede der. Uten et skille mellom serverens attributt og
-  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
-  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
-  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
-
 ### Endret
 
 - **`fs.dialog({ open: true })` skriver `open` på `<dialog>` også.** Det sto
@@ -479,16 +469,6 @@ kommer i et nytt undertall.
   gjør den det samme som `<fs-toast>` og `<fs-connection-status>`: ingenting
   står i DOM-en før det trengs.
 
-### Rettet
-
-- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
-  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
-  står svaret allerede der. Uten et skille mellom serverens attributt og
-  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
-  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
-  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
-
 ### Endret
 
 - **`fs.toast()` er dokumentert.** Byggefunksjonen fantes, men sto ikke på
@@ -594,16 +574,6 @@ kommer i et nytt undertall.
 - **`<fs-suggestion>` mistet musevalg etter at serveren sendte en ny liste.**
   Alternativene fikk bare lytteren sin når selve feltet var nytt.
 
-### Rettet
-
-- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
-  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
-  står svaret allerede der. Uten et skille mellom serverens attributt og
-  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
-  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
-  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
-
 ### Endret
 
 - **React-inngangen døper også om `tabindex` til `tabIndex`,** og dekker de nye
@@ -619,16 +589,6 @@ kommer i et nytt undertall.
   avhengigheter i det hele tatt.
 
 ## 0.4.0 (2026-09-21)
-
-### Rettet
-
-- **Et felt kunne ikke bli gyldig igjen.** `<fs-field>` leser `aria-invalid`
-  fra kontrollen, fordi serveren kan ha skrevet feltet med `fs.field()` og da
-  står svaret allerede der. Uten et skille mellom serverens attributt og
-  komponentens eget leste den tilbake sitt eget svar fra forrige runde, så
-  `felt.invalid = false` fjernet flagget på verten mens den røde rammen og
-  feilmeldingen ble stående. Komponenten husker nå om den satte attributtet
-  selv, og et `aria-invalid` som sto der fra før er fortsatt serverens.
 
 ### Endret
 

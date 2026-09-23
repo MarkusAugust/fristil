@@ -82,7 +82,29 @@ const nettleser = await chromium.launch()
 const side = await (await nettleser.newContext()).newPage()
 const brudd: Brudd[] = []
 
+/*
+ * Advarslene komponentene skriver ut, samlet på hver eneste side.
+ *
+ * Komponentene sier fra med `console.warn` når markupen de fikk ikke henger
+ * sammen. Kommer en slik advarsel på våre egne sider, betyr det enten at et
+ * eksempel er galt, eller at advarselen slår ut på markup som er i orden. En
+ * advarsel som også kommer når alt er riktig blir slått av, og da er den
+ * verdiløs, så begge deler må felle sjekken.
+ *
+ * Her og ikke bare i `sjekk-komponentdemoer.ts`: dette skriptet besøker hver
+ * bygde side, mønstersidene og forsiden medregnet.
+ */
+const advarsler: string[] = []
+let naavaerende = ""
+
+side.on("console", (melding) => {
+  const type = melding.type()
+  if (type !== "warning" && type !== "error") return
+  advarsler.push(`${naavaerende}  ${type}: ${melding.text()}`)
+})
+
 for (const url of sider) {
+  naavaerende = url
   for (const tema of TEMAER) {
     await side.goto(`http://localhost:${PORT}${url}`, {
       waitUntil: "networkidle",
@@ -168,6 +190,12 @@ await nettleser.close()
 tjener.stop()
 
 console.log(`Sjekket ${sider.length} sider i ${TEMAER.length} temaer.`)
+
+if (advarsler.length > 0) {
+  console.log(`\n✗ ${advarsler.length} meldinger i konsollen:`)
+  for (const a of [...new Set(advarsler)]) console.log(`  ${a}`)
+  process.exit(1)
+}
 
 if (brudd.length === 0) {
   console.log("✓ Ingen tilgjengelighetsbrudd.")

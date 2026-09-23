@@ -138,6 +138,72 @@ describe("fs-field", () => {
     expect(error.hidden).toBe(false)
   })
 
+  it("tar tilbake feilmeldingen selv når begge sider sa ugyldig", async () => {
+    // `invalid` på verten og `aria-invalid` på kontrollen samtidig. Da er det
+    // fortsatt verten som har endret seg når flagget slås av, og komponenten
+    // skal følge etter.
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const field = document.querySelector("fs-field") as FsField
+    field.invalid = false
+
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBeNull()
+    expect(error.hidden).toBe(true)
+  })
+
+  it("følger serveren når en patch bytter ut kontrollen", async () => {
+    /*
+     * Serveren kan si det samme på to måter, og bytte mellom dem i en patch:
+     * flagget på verten i én runde, og en ferdig skrevet kontroll i den
+     * neste. Husker komponenten «dette attributtet er mitt eget ekko», og
+     * knytter det til seg selv framfor til kontrollen, regner den feltet som
+     * gyldig i det kontrollen byttes ut. Brukeren ser da et felt uten rød
+     * ramme og uten feilmelding, mens serveren nettopp sa at det er feil.
+     */
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-error-text">Skriv en gyldig e-post.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+    const felt = document.querySelector("fs-field") as FsField
+    expect(document.querySelector("input")?.getAttribute("aria-invalid")).toBe(
+      "true",
+    )
+
+    // Patchen: ny kontroll som selv sier ugyldig, og flagget bort fra verten.
+    const gammel = document.querySelector("input") as HTMLInputElement
+    const ny = document.createElement("input")
+    ny.id = "epost"
+    ny.className = "fs-input"
+    ny.type = "email"
+    ny.setAttribute("aria-invalid", "true")
+    gammel.replaceWith(ny)
+    felt.removeAttribute("invalid")
+
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(ny.getAttribute("aria-invalid")).toBe("true")
+    expect(ny.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
+  })
+
   it("applies required marker and optional marker on label", async () => {
     document.body.innerHTML = `
       <fs-field required-marker="text">

@@ -74,11 +74,14 @@ side.on("console", (melding) => {
    * Advarsler teller også.
    *
    * Komponentene sier fra med `console.warn` når markupen de fikk ikke
-   * henger sammen. Kom en slik advarsel på dokumentasjonssidens egne
-   * eksempler, ville det enten betydd at et eksempel er galt, eller at
-   * advarselen slår ut på markup som er i orden. Begge deler må fanges her,
-   * for en advarsel som også kommer på riktig markup blir slått av, og da er
-   * den verdiløs.
+   * henger sammen. Kom en slik advarsel på en av komponentsidene, ville det
+   * enten betydd at et eksempel er galt, eller at advarselen slår ut på
+   * markup som er i orden. Begge deler må fanges, for en advarsel som også
+   * kommer på riktig markup blir slått av, og da er den verdiløs.
+   *
+   * Dette skriptet går bare gjennom komponentsidene. Resten av siden,
+   * mønstersidene og forsiden medregnet, dekkes av `sjekk-tilgjengelighet.ts`,
+   * som besøker hver eneste bygde side.
    */
   if (melding.type() === "warning") {
     feil.push(`${gjeldende}: konsolladvarsel «${melding.text()}»`)
@@ -88,7 +91,7 @@ side.on("console", (melding) => {
 /**
  * Åpner en komponentside og kontrollerer det som gjelder alle demoer.
  *
- * Deretter kjøres den komponentens egen prøve. Den generelle delen alene er
+ * Deretter kjøres den komponentens egen test. Den generelle delen alene er
  * ikke nok: fanedemoen rendret knapper og paneler helt fint, den hadde bare
  * sluttet å få roller.
  */
@@ -142,10 +145,14 @@ async function synligIBoksen(
     ([id, selektor]) => {
       const vert = document.getElementById(id)
       const el = vert?.shadowRoot?.querySelector(selektor)
-      if (!vert || !el) return { funnet: false, synlig: false, inni: false }
+      // Flaten og ikke verten: det er den bordede firkanten leseren ser, og
+      // med `maxWidth` er den smalere enn vertselementet.
+      const flate = vert?.shadowRoot?.querySelector(".flate") ?? vert
+      if (!vert || !el || !flate)
+        return { funnet: false, synlig: false, inni: false }
 
       const r = el.getBoundingClientRect()
-      const b = vert.getBoundingClientRect()
+      const b = flate.getBoundingClientRect()
       return {
         funnet: true,
         synlig: r.width > 0 && r.height > 0,
@@ -392,7 +399,7 @@ await pa(
  * Nedtrekkslista er en CSS-komponent, og har verken skyggerot eller
  * egendefinert element å slå opp. Den har likevel noe som kan slutte å
  * virke: `data-picker="styled"` ber nettleseren tegne lista inne i siden, og
- * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne prøven
+ * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne testen
  * ville en demo som åpner seg uten farger meldt grønt.
  */
 gjeldende = "select"
