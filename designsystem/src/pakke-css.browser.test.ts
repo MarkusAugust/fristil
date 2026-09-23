@@ -179,6 +179,17 @@ describe("stilarkene pakken sender ut", () => {
   })
 })
 
+/** Alt som faktisk er definert i `tokens.css`, begge temaer. */
+const definerteTokens = new Set(
+  [
+    ...(
+      Object.entries(stilark).find(([navn]) =>
+        navn.endsWith("/tokens/tokens.css"),
+      )?.[1] ?? ""
+    ).matchAll(/^\s*(--[\w-]+)\s*:/gm),
+  ].map((treff) => treff[1]),
+)
+
 describe("variablene komponentene leser", () => {
   const komponentfiler = filer.filter(([navn]) => !navn.includes("/tokens/"))
 
@@ -197,27 +208,27 @@ describe("variablene komponentene leser", () => {
     const lest = [...onlyRules(source).matchAll(/var\((--[\w-]+)/g)].map(
       (treff) => treff[1],
     )
+
+    /*
+     * Lista over lovlige navn hentes fra `tokens.css`, ikke fra en liste med
+     * prefikser skrevet her.
+     *
+     * Prefikslista sto her lenge, og sa `--semantic-`, `--size` og
+     * `--font-size`. Da `--font-weight-medium` ble et token, feilet testen
+     * på en komponent som gjorde nøyaktig det den skulle, og feilmeldingen
+     * pekte på komponenten framfor på lista. Med tokenfila som fasit kan et
+     * nytt token tas i bruk uten at en test må endres, og et navn som ikke
+     * finnes blir fortsatt fanget.
+     */
     const ukjente = lest.filter(
-      (name) =>
-        !name.startsWith("--fs-") &&
-        !name.startsWith("--semantic-") &&
-        !name.startsWith("--size") &&
-        !name.startsWith("--font-size"),
+      (name) => !name.startsWith("--fs-") && !definerteTokens.has(name),
     )
     expect([...new Set(ukjente)]).toEqual([])
   })
 })
 
 describe("tokenene komponentene faller tilbake på", () => {
-  const tokens = Object.entries(stilark).find(([navn]) =>
-    navn.endsWith("/tokens/tokens.css"),
-  )?.[1]
-
-  const definerte = new Set(
-    [...(tokens ?? "").matchAll(/^\s*(--[\w-]+)\s*:/gm)].map(
-      (treff) => treff[1],
-    ),
-  )
+  const definerte = definerteTokens
 
   const komponentfiler = filer.filter(([navn]) => !navn.includes("/tokens/"))
 

@@ -16,6 +16,42 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.12.0 (2026-09-24)
+
+### Lagt til
+
+- **Temageneratoren kan også sette skrift og form.** Den bygget fargene, og
+  bare dem, og to systemer med den samme paletten ser fortsatt ulike ut når
+  skriften og hjørnene er ulike. `buildTheme()` tar nå to valgfrie blokker,
+  `typography` og `shape`, og kommandolinja har de samme verdiene som flagg:
+  `--skrift`, `--skrift-kode`, `--knapp-hjorner`, `--felt-hjorner`,
+  `--flate-hjorner`, `--knapp-ramme` og `--knapp-vekt`. Utelates begge, er
+  temaet nøyaktig det det var før.
+
+  Hjørnene er delt i tre framfor ett felles tall, fordi ett tall er feil:
+  Skatteetatens knapper er helt runde mens feltene deres har nesten rette
+  hjørner, og med én verdi blir feltene kapsler. Avkryssingsboksen,
+  radioknappen, merket, avataren og skjelettet står utenfor, fordi hjørnet
+  der ikke er et stilvalg, men selve formen.
+
+  Skriften skrives som en ekte regel på `:root` og ikke bare som et token.
+  Fristil arver skrift med vilje, så et token alene ville ikke endret én
+  eneste bokstav. Regelen står i `@layer fristil`, så konsumentens egen CSS
+  vinner fortsatt over den.
+
+- **Vekt og linjeavstand er tokens.** `--font-weight-regular`,
+  `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`,
+  `--semantic-line-height-default`, `--semantic-line-height-heading` og
+  `--semantic-line-height-article`. Verdiene er nøyaktig dem komponentene
+  hadde skrevet ut fra før, så ingenting ser annerledes ut.
+
+- **Seks nye komponentvariabler** der form sto skrevet ut i stilarket:
+  `--fs-button-border-width`, `--fs-button-font-weight`,
+  `--fs-button-line-height`, `--fs-heading-font-weight`,
+  `--fs-heading-line-height` og `--fs-paragraph-line-height`. Regelen er at
+  form og størrelse leses fra en komponentvariabel med tokenverdien som
+  reserve, og disse tre komponentene brøt den.
+
 ## 0.11.0 (2026-09-23)
 
 ### Brytende

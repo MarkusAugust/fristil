@@ -11,9 +11,17 @@
     padding: var(--fs-button-padding, var(--size-2) var(--size-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    font-weight: 500;
-    line-height: 1.5;
-    border: 1px solid var(--semantic-interactive-main);
+    /* Vekt, linjeavstand og rammetykkelse er form, og form leses fra en
+       komponentvariabel med tokenverdien som reserve. Et tema som vil ha
+       fete knapper med tykk ramme, slik Skatteetatens egne har, setter dem
+       uten å skrive en eneste selektor av. */
+    font-weight: var(--fs-button-font-weight, var(--font-weight-medium));
+    line-height: var(
+      --fs-button-line-height,
+      var(--semantic-line-height-default)
+    );
+    border: var(--fs-button-border-width, 1px) solid
+      var(--semantic-interactive-main);
     border-radius: var(--fs-button-radius, var(--size-1));
     background: var(--semantic-interactive-main);
     color: var(--semantic-interactive-contrast);

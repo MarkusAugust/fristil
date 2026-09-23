@@ -24,6 +24,59 @@ import {
  * ```
  */
 
+/**
+ * Typografien i temaet.
+ *
+ * Fargene er det som er vanskelig å få riktig, og det er derfor generatoren
+ * begynte der. Men to designsystemer med samme palett ser fortsatt ulike ut
+ * hvis skriften og linjeavstanden er ulik, og det er nettopp det som skiller
+ * et tema fra det neste. Alt her er valgfritt: utelates det, står Fristils
+ * egne verdier.
+ */
+export type ThemeTypography = {
+  /** Skriftstakken hele temaet skal bruke, skrevet som i CSS. */
+  fontFamily?: string
+  /** Skriften i kode og i tall som skal stå i kolonne. */
+  monoFamily?: string
+  /** Vektene, som tall eller nøkkelord. */
+  weights?: {
+    regular?: string | number
+    medium?: string | number
+    semibold?: string | number
+    bold?: string | number
+  }
+  /** Linjeavstand for kontroller, overskrifter og brødtekst. */
+  lineHeights?: {
+    default?: string | number
+    heading?: string | number
+    article?: string | number
+  }
+}
+
+/**
+ * Formen i temaet: hjørner og rammer.
+ *
+ * Knappen står for seg, feltet for seg, og flatene for seg. Skillet er verdt
+ * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
+ * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
+ *
+ * Avkryssingsboksen, radioknappen, merket, avataren og skjelettet står med
+ * vilje utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en
+ * avkryssingsboks som blir rund, ser ut som en radioknapp.
+ */
+export type ThemeShape = {
+  /** Hjørner på knappen, paginering og hopplenken. */
+  buttonRadius?: string
+  /** Hjørner på feltet og nedtrekkslista. */
+  fieldRadius?: string
+  /** Hjørner på kort, dialog, sprettoppvindu, varsel og trekkspill. */
+  surfaceRadius?: string
+  /** Rammetykkelsen på knappen. */
+  buttonBorderWidth?: string
+  /** Vekten på knappeteksten. */
+  buttonFontWeight?: string | number
+}
+
 export type ThemeInput = {
   /** Lenker, knapper og fokusmarkering. */
   interactive: string
@@ -37,6 +90,10 @@ export type ThemeInput = {
   neutral?: string
   /** Besøkte lenker. Utledes fra `interactive` hvis den utelates. */
   visited?: string
+  /** Skrift og linjeavstand. Utelates den, står Fristils egen typografi. */
+  typography?: ThemeTypography
+  /** Hjørner og rammer. Utelates den, står Fristils egen form. */
+  shape?: ThemeShape
 }
 
 export type ThemeAdjustment = {
@@ -300,8 +357,71 @@ export function buildTheme(input: ThemeInput): Theme {
     dark,
     adjustments: notater,
     problems: problemer,
-    css: tilCss(palett, light, dark),
+    css: tilCss(palett, light, dark, input.typography, input.shape),
   }
+}
+
+/**
+ * Kontrollene og flatene som har en hjørnevariabel.
+ *
+ * Lista er skrevet ut med vilje framfor å utledes. Et tema skal ikke endre
+ * en komponent ingen har tenkt på, og en ny komponent skal ikke begynne å
+ * følge et tema uten at noen har bestemt at den hører hjemme i den ene eller
+ * andre gruppa.
+ */
+const KNAPPER = ["button", "pagination", "skip-link"] as const
+
+const FELT = ["input", "select"] as const
+
+const FLATER = [
+  "card",
+  "dialog",
+  "popover",
+  "alert",
+  "accordion",
+  "error-summary",
+  "file-upload",
+  "session-timeout",
+  "suggestion",
+] as const
+
+/** Skriver en variabel bare når den er oppgitt. */
+function kanskje(
+  verdier: Record<string, string>,
+  navn: string,
+  verdi: string | number | undefined,
+): void {
+  if (verdi !== undefined && verdi !== "") verdier[navn] = String(verdi)
+}
+
+function typografiVerdier(t: ThemeTypography): Record<string, string> {
+  const verdier: Record<string, string> = {}
+  kanskje(verdier, "--font-family-base", t.fontFamily)
+  kanskje(verdier, "--font-family-mono", t.monoFamily)
+  kanskje(verdier, "--font-weight-regular", t.weights?.regular)
+  kanskje(verdier, "--font-weight-medium", t.weights?.medium)
+  kanskje(verdier, "--font-weight-semibold", t.weights?.semibold)
+  kanskje(verdier, "--font-weight-bold", t.weights?.bold)
+  kanskje(verdier, "--semantic-line-height-default", t.lineHeights?.default)
+  kanskje(verdier, "--semantic-line-height-heading", t.lineHeights?.heading)
+  kanskje(verdier, "--semantic-line-height-article", t.lineHeights?.article)
+  return verdier
+}
+
+function formVerdier(f: ThemeShape): Record<string, string> {
+  const verdier: Record<string, string> = {}
+  if (f.buttonRadius) {
+    for (const navn of KNAPPER) verdier[`--fs-${navn}-radius`] = f.buttonRadius
+  }
+  if (f.fieldRadius) {
+    for (const navn of FELT) verdier[`--fs-${navn}-radius`] = f.fieldRadius
+  }
+  if (f.surfaceRadius) {
+    for (const navn of FLATER) verdier[`--fs-${navn}-radius`] = f.surfaceRadius
+  }
+  kanskje(verdier, "--fs-button-border-width", f.buttonBorderWidth)
+  kanskje(verdier, "--fs-button-font-weight", f.buttonFontWeight)
+  return verdier
 }
 
 function linjer(verdier: Record<string, string>, innrykk: string): string {
@@ -314,6 +434,8 @@ function tilCss(
   paletter: Record<string, Record<number, string>>,
   light: Record<string, string>,
   dark: Record<string, string>,
+  typografi?: ThemeTypography,
+  form?: ThemeShape,
 ): string {
   const palett: Record<string, string> = {}
   for (const [navn, skala] of Object.entries(paletter)) {
@@ -322,19 +444,45 @@ function tilCss(
     }
   }
 
+  const typografiske = typografi ? typografiVerdier(typografi) : {}
+  const formen = form ? formVerdier(form) : {}
+  const ekstra = { ...typografiske, ...formen }
+
+  /*
+   * Skriften settes som en ekte regel, ikke bare som et token.
+   *
+   * Fristil arver skrift med vilje, så et token alene ville ikke endret én
+   * eneste bokstav. Regelen står i det samme laget som resten, slik at
+   * konsumentens egen CSS fortsatt vinner over den.
+   */
+  const skriftregel = typografi?.fontFamily
+    ? `
+  :root {
+    font-family: var(--font-family-base);
+  }
+`
+    : ""
+
   return `/*
- * Generert av @fristil/designsystem. Rediger merkefargene, ikke denne fila.
+ * Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila.
  *
- * Legges etter tokens.css, og overstyrer fargene der. Størrelser,
- * skriftstørrelser og ikoner kommer fortsatt fra tokens.css.
+ * Legges etter tokens.css, og overstyrer verdiene der. Det som ikke står i
+ * oppskriften, står fortsatt i tokens.css.
  */
 
 @layer fristil {
   :root {
 ${linjer(palett, "    ")}
 
-${linjer(light, "    ")}
+${linjer(light, "    ")}${
+  ekstra && Object.keys(ekstra).length
+    ? `
+
+${linjer(ekstra, "    ")}`
+    : ""
+}
   }
+${skriftregel}
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {

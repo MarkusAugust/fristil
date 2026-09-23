@@ -77,6 +77,59 @@ Den velger ikke farger for deg. Gir du en kulør som ligner for mye på en annen
 
 Den rører heller ikke ikonene i `tokens.css`. De er tegnet i nøytrale farger og virker i begge temaer.
 
+## Skrift og form
+
+Fargene er det vanskeligste å få riktig, og det er derfor generatoren begynte der. Men to systemer med den samme paletten ser fortsatt ulike ut hvis skriften og hjørnene er ulike. Derfor kan oppskriften også si hvordan det skal se ut:
+
+```json
+{
+  "interaktiv": "#1362ae",
+  "fare": "#a82e39",
+  "suksess": "#316f2a",
+  "advarsel": "#9f7509",
+  "typografi": {
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "weights": { "bold": 700 },
+    "lineHeights": { "default": 1.666, "heading": 1.333, "article": 1.666 }
+  },
+  "form": {
+    "buttonRadius": "2.75rem",
+    "fieldRadius": "0.25rem",
+    "surfaceRadius": "0.5rem",
+    "buttonBorderWidth": "3px",
+    "buttonFontWeight": 700
+  }
+}
+```
+
+De samme verdiene finnes som flagg: `--skrift`, `--skrift-kode`, `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner`, `--knapp-ramme` og `--knapp-vekt`.
+
+Alt her er valgfritt. Utelater du begge blokkene, er temaet nøyaktig det det var før: bare farger.
+
+### Hvorfor tre slags hjørner
+
+| Nøkkel | Treffer |
+| --- | --- |
+| `buttonRadius` | knappen, paginering og hopplenken |
+| `fieldRadius` | feltet og nedtrekkslista |
+| `surfaceRadius` | kort, dialog, sprettoppvindu, varsel, trekkspill, feiloppsummering, filopplasting, økttidsavbrudd og forslagslista |
+
+Ett felles tall ville vært enklere og feil. Skatteetatens knapper er helt runde, mens feltene deres har nesten rette hjørner, og med ett tall blir feltene kapsler.
+
+Avkryssingsboksen, radioknappen, merket, avataren og skjelettet står utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp.
+
+### Skriften settes som en regel
+
+Fristil arver skrift med vilje, så et token alene ville ikke endret én eneste bokstav. Oppgir du `fontFamily`, skriver generatoren derfor både tokenet og regelen som tar det i bruk:
+
+```css
+:root {
+  font-family: var(--font-family-base);
+}
+```
+
+Regelen står i `@layer fristil`, som resten, så din egen CSS vinner fortsatt over den.
+
 ## Programmatisk
 
 Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et byggesteg eller en temavelger:

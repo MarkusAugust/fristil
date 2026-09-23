@@ -32,6 +32,33 @@ export const cssTokens = {
   "--font-size-xxl": "1.875rem",
   "--font-size-mega": "2.625rem",
 
+  /*
+   * Skriftvekter og linjeavstander.
+   *
+   * De står her, og ikke i hver komponent, fordi en organisasjon som tar
+   * systemet i bruk gjerne har sin egen typografi. Skatteetatens knapper er
+   * fete med linjeavstand 1,666, våre er halvfete med 1,5, og forskjellen
+   * skal kunne settes ett sted framfor i tjue stilark.
+   *
+   * Komponentene leser dem gjennom sin egen `--fs-*`-variabel, slik at et
+   * tema kan endre alle knapper uten å endre all tekst.
+   */
+  "--font-weight-regular": "400",
+  "--font-weight-medium": "500",
+  "--font-weight-semibold": "600",
+  "--font-weight-bold": "700",
+
+  /*
+   * Verdiene er nøyaktig dem komponentene hadde skrevet ut fra før, slik at
+   * ingen konsument ser en endring av at de ble tokens.
+   */
+  /** Kontroller og tabeller: knapp, felt, celle. */
+  "--semantic-line-height-default": "1.5",
+  /** Overskrifter, som tåler tettere linjer fordi de er korte. */
+  "--semantic-line-height-heading": "1.2",
+  /** Brødtekst, der øyet skal finne tilbake til neste linje. */
+  "--semantic-line-height-article": "1.6",
+
   // Size scale (Tailwind-kompatibel, 4px-base)
   "--size-px": "1px",
   "--size-0-5": "0.125rem",

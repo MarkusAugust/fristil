@@ -128,6 +128,22 @@ Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhol
 
 `--font-size-m` er brødteksten. `--font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.
 
+### Vekt og linjeavstand
+
+Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en organisasjon som tar systemet i bruk gjerne har sin egen typografi, og da skal forskjellen settes ett sted framfor i tjue stilark.
+
+| Token | Verdi | Brukt av |
+| --- | --- | --- |
+| `--font-weight-regular` | 400 | brødtekst |
+| `--font-weight-medium` | 500 | knapp |
+| `--font-weight-semibold` | 600 | korttittel, varsel, trekkspill |
+| `--font-weight-bold` | 700 | overskrift |
+| `--semantic-line-height-default` | 1.5 | knapp, felt, tabellcelle |
+| `--semantic-line-height-heading` | 1.2 | overskrift |
+| `--semantic-line-height-article` | 1.6 | brødtekst |
+
+Komponentene leser dem gjennom sin egen variabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`.
+
 ## TypeScript
 
 Alle variabelnavn finnes som en typet oppslagstabell:

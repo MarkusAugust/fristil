@@ -38,7 +38,12 @@ import {
   planTakeover,
   type SourceFile,
 } from "./takeover.js"
-import { buildTheme, type ThemeInput } from "./tokens/theme.js"
+import {
+  buildTheme,
+  type ThemeInput,
+  type ThemeShape,
+  type ThemeTypography,
+} from "./tokens/theme.js"
 
 const NØKLER: Record<string, keyof ThemeInput> = {
   interaktiv: "interactive",
@@ -49,12 +54,34 @@ const NØKLER: Record<string, keyof ThemeInput> = {
   besokt: "visited",
 }
 
+/**
+ * Skrift og form, som flagg.
+ *
+ * Fargene er påkrevd, disse er ikke. Utelates de, står Fristils egen
+ * typografi og form, og temaet endrer bare farger, slik det gjorde før disse
+ * kom til.
+ */
+const SKRIFTFLAGG: Record<string, "fontFamily" | "monoFamily"> = {
+  skrift: "fontFamily",
+  "skrift-kode": "monoFamily",
+}
+
+const FORMFLAGG: Record<string, keyof ThemeShape> = {
+  "knapp-hjorner": "buttonRadius",
+  "felt-hjorner": "fieldRadius",
+  "flate-hjorner": "surfaceRadius",
+  "knapp-ramme": "buttonBorderWidth",
+  "knapp-vekt": "buttonFontWeight",
+}
+
 function lesArgumenter(argumenter: string[]) {
   const flagg: Record<string, string> = {}
   const filer: string[] = []
 
   for (const del of argumenter) {
-    const treff = /^--([a-zæøå]+)=(.+)$/.exec(del)
+    // Bindestrek er med i navnet: flagg som `--knapp-hjorner` leses ellers
+    // som en fil, og temaet fikk da runde hjørner uten at noen ba om det.
+    const treff = /^--([a-zæøå-]+)=(.+)$/.exec(del)
     if (treff) flagg[treff[1]] = treff[2]
     else filer.push(del)
   }
@@ -213,6 +240,13 @@ const HJELP = `fristil <kommando>
     --advarsel=<farge>    Advarsler (påkrevd)
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
+    --skrift=<stakk>      Skriftstakken temaet skal bruke
+    --skrift-kode=<stakk> Skriften i kode og tall
+    --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
+    --felt-hjorner=<mål>  Hjørner på felt og nedtrekksliste
+    --flate-hjorner=<mål> Hjørner på kort, dialog og sprettoppvindu
+    --knapp-ramme=<mål>   Rammetykkelsen på knappen
+    --knapp-vekt=<vekt>   Vekten på knappeteksten
     --ut=<fil>            Skriv til fil i stedet for til utdata
 
 Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
@@ -254,7 +288,7 @@ const { flagg, filer } = lesArgumenter(
   argumenter[0] === "tema" ? argumenter.slice(1) : argumenter,
 )
 
-async function lesTemafil(sti: string): Promise<Record<string, string>> {
+async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
   let innhold: string
 
   try {
@@ -269,7 +303,7 @@ async function lesTemafil(sti: string): Promise<Record<string, string>> {
   }
 
   try {
-    return JSON.parse(innhold) as Record<string, string>
+    return JSON.parse(innhold) as Record<string, unknown>
   } catch (grunn) {
     console.error(
       `«${sti}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
@@ -283,8 +317,29 @@ const fraFil = filer[0] ? await lesTemafil(filer[0]) : {}
 const input: Partial<ThemeInput> = {}
 for (const [norsk, engelsk] of Object.entries(NØKLER)) {
   const verdi = flagg[norsk] ?? fraFil[norsk] ?? fraFil[engelsk]
-  if (verdi) input[engelsk] = verdi
+  if (typeof verdi === "string" && verdi) input[engelsk] = verdi
 }
+
+/*
+ * Skrift og form kan komme fra fila eller fra flagg, og flagget vinner.
+ * Fila kan skrive dem på norsk eller engelsk, som fargene.
+ */
+const typografi: ThemeTypography = {
+  ...((fraFil.typography ?? fraFil.typografi ?? {}) as ThemeTypography),
+}
+for (const [norsk, engelsk] of Object.entries(SKRIFTFLAGG)) {
+  if (flagg[norsk]) typografi[engelsk] = flagg[norsk]
+}
+
+const form: ThemeShape = {
+  ...((fraFil.shape ?? fraFil.form ?? {}) as ThemeShape),
+}
+for (const [norsk, engelsk] of Object.entries(FORMFLAGG)) {
+  if (flagg[norsk]) form[engelsk] = flagg[norsk]
+}
+
+if (Object.keys(typografi).length > 0) input.typography = typografi
+if (Object.keys(form).length > 0) input.shape = form
 
 const påkrevd: (keyof ThemeInput)[] = [
   "interactive",

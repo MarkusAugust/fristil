@@ -3,7 +3,10 @@
     margin: 0;
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.6;
+    line-height: var(
+      --fs-paragraph-line-height,
+      var(--semantic-line-height-article)
+    );
     color: var(--semantic-page-foreground);
     /* Under 75 tegn per linje. Lengre linjer gjør det vanskelig å finne
        tilbake til starten av neste. */

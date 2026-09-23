@@ -173,3 +173,132 @@ describe("generatoren", () => {
     expect(Number.parseInt(r, 16)).toBeGreaterThan(Number.parseInt(g, 16))
   })
 })
+
+/**
+ * Skrift og form.
+ *
+ * Fargene er det vanskeligste å få riktig, og derfor begynte generatoren
+ * der. Men to systemer med samme palett ser fortsatt ulike ut hvis skriften
+ * og hjørnene er ulike, og da er det ikke det samme temaet.
+ */
+describe("temaet kan også sette skrift og form", () => {
+  const farger = {
+    interactive: "#1362ae",
+    danger: "#a82e39",
+    success: "#316f2a",
+    warning: "#9f7509",
+  }
+
+  it("lar være å skrive noe når ingenting er oppgitt", () => {
+    // Det er hele bakoverforeneligheten: et tema uten skrift og form skal
+    // være nøyaktig det temaet var før disse kom til.
+    const tema = buildTheme(farger)
+
+    expect(tema.css).not.toContain("--font-family-base")
+    expect(tema.css).not.toContain("--fs-button-radius")
+    expect(tema.css).not.toContain("font-family:")
+  })
+
+  it("setter skriften som en ekte regel, ikke bare som et token", () => {
+    // Fristil arver skrift med vilje, så et token alene ville ikke endret
+    // én eneste bokstav på skjermen.
+    const tema = buildTheme({
+      ...farger,
+      typography: { fontFamily: "Helvetica, Arial, sans-serif" },
+    })
+
+    expect(tema.css).toContain(
+      "--font-family-base: Helvetica, Arial, sans-serif;",
+    )
+    expect(tema.css).toContain("font-family: var(--font-family-base);")
+  })
+
+  it("skriver bare de vektene og linjeavstandene som er oppgitt", () => {
+    const tema = buildTheme({
+      ...farger,
+      typography: { weights: { bold: 700 }, lineHeights: { article: 1.666 } },
+    })
+
+    expect(tema.css).toContain("--font-weight-bold: 700;")
+    expect(tema.css).toContain("--semantic-line-height-article: 1.666;")
+    expect(tema.css).not.toContain("--font-weight-regular")
+    expect(tema.css).not.toContain("--semantic-line-height-heading")
+  })
+
+  it("skiller knapp, felt og flate", () => {
+    // Skatteetatens knapper er helt runde, mens feltene deres har nesten
+    // rette hjørner. Ett felles tall ville gjort feltene til kapsler.
+    const tema = buildTheme({
+      ...farger,
+      shape: {
+        buttonRadius: "2.75rem",
+        fieldRadius: "0.25rem",
+        surfaceRadius: "0.5rem",
+      },
+    })
+
+    expect(tema.css).toContain("--fs-button-radius: 2.75rem;")
+    expect(tema.css).toContain("--fs-pagination-radius: 2.75rem;")
+    expect(tema.css).toContain("--fs-input-radius: 0.25rem;")
+    expect(tema.css).toContain("--fs-card-radius: 0.5rem;")
+    expect(tema.css).toContain("--fs-dialog-radius: 0.5rem;")
+  })
+
+  it("rører ikke det som har hjørnet sitt som form", () => {
+    // En avkryssingsboks som blir rund ser ut som en radioknapp, og en
+    // avatar er rund fordi den er en avatar.
+    const tema = buildTheme({
+      ...farger,
+      shape: {
+        buttonRadius: "2.75rem",
+        fieldRadius: "2.75rem",
+        surfaceRadius: "2.75rem",
+      },
+    })
+
+    expect(tema.css).not.toContain("--fs-checkbox-radius")
+    expect(tema.css).not.toContain("--fs-avatar-radius")
+    expect(tema.css).not.toContain("--fs-skeleton-radius")
+    expect(tema.css).not.toContain("--fs-badge-radius")
+  })
+
+  it("virker i nettleseren, ikke bare som tekst", async () => {
+    // Det holder ikke at strengen står der. Regelen må også slå gjennom på
+    // et ekte element, og komponenten må faktisk lese variabelen.
+    const tema = buildTheme({
+      ...farger,
+      typography: { fontFamily: "Courier, monospace" },
+      shape: {
+        buttonRadius: "2.75rem",
+        buttonBorderWidth: "3px",
+        buttonFontWeight: 700,
+      },
+    })
+
+    const stil = document.createElement("style")
+    stil.textContent = `@layer fristil;\n${tema.css}`
+    document.head.append(stil)
+
+    const knappestil = await import(
+      "../components/css/button/button.css?inline"
+    )
+    const knappeark = document.createElement("style")
+    knappeark.textContent = knappestil.default
+    document.head.append(knappeark)
+
+    const knapp = document.createElement("button")
+    knapp.className = "fs-button"
+    knapp.textContent = "Send søknad"
+    document.body.append(knapp)
+
+    const beregnet = getComputedStyle(knapp)
+    expect(beregnet.borderTopWidth).toBe("3px")
+    expect(beregnet.fontWeight).toBe("700")
+    expect(beregnet.borderTopLeftRadius).toBe("44px")
+    expect(beregnet.fontFamily).toContain("Courier")
+
+    knapp.remove()
+    stil.remove()
+    knappeark.remove()
+  })
+})
