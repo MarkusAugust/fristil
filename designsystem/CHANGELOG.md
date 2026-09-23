@@ -16,6 +16,21 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`<fs-dialog>` åpnet igjen en dialog brukeren nettopp hadde lukket.**
+  Serveren skriver `open` begge steder, så innholdet finnes uten JavaScript,
+  og `<form method="dialog">` lukker boksen uten JavaScript også. Skjer det
+  før komponenten har fått kjøre, finnes det ingen lytter, og første
+  synkronisering så en vert som sa «åpen» og en lukket dialog. Da spratt
+  dialogen opp igjen. På mobil skjedde det hver gang, fordi vinduet der er
+  langt nok til å rekke et trykk.
+
+  `returnValue` skiller de to tilfellene: nettleseren setter den til verdien
+  på knappen som lukket dialogen, så en dialog som aldri har vært åpnet har
+  den tom. En mal som bare skriver `open` på verten åpnes derfor som før.
+  Funnet i spilldemoen, på 375 piksler.
+
 ## 0.8.2 (2026-09-23)
 
 ### Rettet

@@ -126,10 +126,32 @@ export class FsDialog extends HostElement {
     // `sync()` uansett på nytt når den kobles til.
     if (!dialog?.isConnected) return
 
-    if (dialog !== this.dialogElement) {
+    const forste = dialog !== this.dialogElement
+    if (forste) {
       this.dialogElement?.removeEventListener("close", this.handleClose)
       this.dialogElement = dialog
       dialog.addEventListener("close", this.handleClose)
+    }
+
+    /*
+     * Lukket brukeren dialogen før komponenten fikk kjøre?
+     *
+     * Serveren skriver `open` begge steder, så innholdet finnes uten
+     * JavaScript, og `<form method="dialog">` lukker boksen uten JavaScript
+     * også. Skjer det før skriptet er lastet, finnes det ingen lytter, og
+     * første `sync()` ville sett en vert som sier «åpen» og en dialog som er
+     * lukket, og åpnet den igjen. Dialogen spratt altså opp igjen rett etter
+     * at brukeren hadde lukket den, og på mobil var vinduet stort nok til at
+     * det skjedde hver gang.
+     *
+     * `returnValue` skiller de to tilfellene. Nettleseren setter den til
+     * verdien på knappen som lukket dialogen, så en dialog som aldri har
+     * vært åpnet har den tom. En mal som bare skrev `open` på verten, som
+     * dokumentasjonen viste lenge, har den også tom, og skal åpnes som før.
+     */
+    if (forste && this.open && !dialog.open && dialog.returnValue !== "") {
+      this.removeAttribute("open")
+      return
     }
 
     // `:modal` og ikke `open`. De to er ikke det samme: et `<dialog open>`
