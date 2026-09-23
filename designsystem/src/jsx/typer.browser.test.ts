@@ -9,9 +9,10 @@ import "./react"
  * At det byggerne sender ut, passer i pakkens egne JSX-deklarasjoner.
  *
  * De to er begge offentlig API, og de kan gå fra hverandre uten at noe sier
- * fra. `fs.popover().host` gir `open: ""`, mens deklarasjonen sa
- * `open?: true | undefined`. Koden virket i nettleseren, og feilen viste seg
- * bare som en typefeil hos konsumenten, i en app vi ikke har her.
+ * fra. `fs.popover().host` ga `open: ""`, mens deklarasjonen sa
+ * `open?: true | undefined`. Da var det byggefunksjonen som tok feil: React
+ * 19 setter egenskapen, og `el.open = ""` er usant, så panelet åpnet seg
+ * ikke. Begge sender nå `true`.
  *
  * Tilordningene under er prøven, og det er `typecheck:tests` som kjører den.
  * Det som kjøres i nettleseren er bare at verdiene faktisk er der.
@@ -23,7 +24,7 @@ describe("byggerne passer i JSX-deklarasjonene", () => {
       open: true,
     }).host
 
-    expect(host.open).toBe("")
+    expect(host.open).toBe(true)
   })
 
   it("dialogens vert", () => {
@@ -32,7 +33,7 @@ describe("byggerne passer i JSX-deklarasjonene", () => {
       open: true,
     }).host
 
-    expect(host.open).toBe("")
+    expect(host.open).toBe(true)
   })
 
   it("fanene, som har tabIndex", () => {
