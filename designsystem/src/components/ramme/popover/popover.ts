@@ -11,7 +11,7 @@ export type PopoverOptions = {
 
 export type PopoverAttributes = {
   host: {
-    open?: ""
+    open?: true
     "data-preserve-attr": "open"
   }
   trigger: {
@@ -53,7 +53,7 @@ export const popover = ({
   host: attributes({
     // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
     // sa markupen at panelet var åpent mens komponenten mente det var lukket.
-    open: open ? ("" as const) : undefined,
+    open: open ? (true as const) : undefined,
     "data-preserve-attr": "open" as const,
   }),
   trigger: attributes({

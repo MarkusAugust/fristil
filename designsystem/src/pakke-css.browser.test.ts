@@ -1,6 +1,8 @@
 /// <reference path="./types/css.d.ts" />
 
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
+
+import { fs } from "./fs"
 
 /**
  * At stilarkene pakken sender ut holder seg innenfor sitt eget navnerom.
@@ -276,5 +278,334 @@ describe("Tailwind-temaet", () => {
     )
 
     expect([...new Set(fremmede)]).toEqual([])
+  })
+})
+
+/**
+ * At hver lovlige verdi en byggefunksjon reklamerer med, finnes i CSS-en.
+ *
+ * `fs.fieldset.states` oppga `success` fra dagen komponenten kom, mens
+ * `fieldset.css` bare hadde en regel for `invalid`. Attributtet ble skrevet,
+ * og ingenting skjedde. Byggefunksjonen lovet altså noe pakken ikke leverte,
+ * og ingen prøve så det: `dom.browser.test.ts` sjekker at verdien kan settes
+ * og fjernes, ikke at den betyr noe.
+ *
+ * Verdier som ikke sender ut noe attributt hoppes over. Det er standarden,
+ * som CSS-en alt har, og verdier som ikke er ment å se annerledes ut, som de
+ * fleste `input.types`. To egne prøver passer på at hoppelista ikke blir en
+ * bakdør: opsjonsnavnet må være et byggefunksjonen kjenner, og hver liste må
+ * gi minst ett tilfelle.
+ */
+describe("hver lovlig verdi finnes i CSS-en", () => {
+  // Stilarkene må stå i dokumentet for at beregnet stil skal si noe. De
+  // hentes fra den samme glob-en som resten av fila leser som tekst, så
+  // ingen liste kan komme i utakt.
+  /*
+   * `onlyRules` fjerner tekststrenger, og en attributtverdi i en selektor er
+   * nettopp det: `[data-color="success"]` ble til `[data-color= ]`. Her
+   * fjernes bare kommentarer og `url(...)`, som er det som ellers gir falske
+   * treff.
+   */
+  const alleRegler = Object.values(stilark)
+    .map((kilde) =>
+      kilde.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/url\([^)]*\)/g, " "),
+    )
+    .join("\n")
+
+  /**
+   * Selektorene som faktisk gjelder i denne motoren, hentet fra CSSOM.
+   *
+   * En regel kan stå i stilarket uten å gjøre noe her: `@supports
+   * (appearance: base-select)` finnes ikke i Firefox, og `@media
+   * (forced-colors: active)` gjelder ikke før modusen er på. Den stylede
+   * nedtrekkslista står i begge, og et tekstsøk ser ingen forskjell på dem og
+   * en regel som gjelder. Da meldte prøven feil i én av tre motorer på noe
+   * som er helt riktig. Nettleseren vet svaret selv, så vi spør den.
+   */
+  const virksomme: { selektor: string; regel: CSSStyleRule }[] = []
+
+  function samle(regler: CSSRuleList, gjelder: boolean): void {
+    for (const regel of Array.from(regler)) {
+      if (regel instanceof CSSStyleRule) {
+        if (gjelder) {
+          for (const del of regel.selectorText.split(",")) {
+            virksomme.push({ selektor: del.trim(), regel })
+          }
+        }
+        samle(regel.cssRules, gjelder)
+      } else if (regel instanceof CSSSupportsRule) {
+        samle(regel.cssRules, gjelder && CSS.supports(regel.conditionText))
+      } else if (regel instanceof CSSMediaRule) {
+        samle(
+          regel.cssRules,
+          gjelder && matchMedia(regel.conditionText).matches,
+        )
+      } else if (regel instanceof CSSGroupingRule) {
+        samle(regel.cssRules, gjelder)
+      }
+    }
+  }
+
+  beforeAll(() => {
+    for (const [sti, kilde] of Object.entries(stilark)) {
+      const ark = document.createElement("style")
+      ark.dataset.fra = sti
+      /*
+       * `@import` må bort. Hver fil legges inn for seg, så naboen er alt
+       * med, og en relativ sti ville uansett gitt 404 herfra. I WebKit er
+       * det ikke ufarlig: et stilark med en uløst `@import` blir ikke tatt i
+       * bruk i det hele tatt, og `.fs-legend[data-required]::after` fra
+       * `fieldset.css` regnet seg til `content: none` mens den identiske
+       * regelen i `label.css` virket. Chromium og Firefox hoppet bare over
+       * den døde importen.
+       */
+      ark.textContent = kilde.replace(/@import[^;]*;/g, "")
+      document.head.append(ark)
+      if (ark.sheet) samle(ark.sheet.cssRules, true)
+    }
+  })
+
+  /**
+   * Lista på byggeren, opsjonen som velger verdien, og attributtet den
+   * havner i.
+   *
+   * Alle tre står skrevet ut. Utledet vi opsjonsnavnet av flertalls-s-en,
+   * ble `markers` til `marker`, mens opsjonen heter `required`. Kallet ga da
+   * ingen attributter, og løkka under tolket det som «dette er
+   * standardverdien» og hoppet over. Fire verdier ble aldri kontrollert, og
+   * ingenting sa fra.
+   */
+  const LISTER: [liste: string, opsjon: string, attributt: string][] = [
+    ["variants", "variant", "data-variant"],
+    ["colors", "color", "data-color"],
+    ["sizes", "size", "data-size"],
+    ["states", "state", "data-state"],
+    ["pickers", "picker", "data-picker"],
+    ["markers", "required", "data-required"],
+    ["types", "type", "data-variant"],
+  ]
+
+  type Bygger = ((valg?: Record<string, unknown>) => Record<string, unknown>) &
+    Record<string, unknown>
+
+  /** Ett tilfelle: en bygger, en verdi, og elementet den skal treffe. */
+  type Tilfelle = {
+    navn: string
+    liste: string
+    klasser: string[]
+    attributt: string
+    verdi: string
+  }
+
+  const tilfeller: Tilfelle[] = []
+  const hoppet: string[] = []
+
+  for (const [navn, verdi] of Object.entries(fs)) {
+    if (typeof verdi !== "function") continue
+    const bygger = verdi as unknown as Bygger
+
+    for (const [liste, opsjon, attributt] of LISTER) {
+      const verdier = bygger[liste]
+      if (!Array.isArray(verdier)) continue
+
+      for (const v of verdier) {
+        const ut = bygger({ [opsjon]: v })
+
+        // Verdier som ikke gir noe attributt har ingen regel å kontrollere.
+        // Det er to slag: standardverdien, som CSS-en alt har, og verdier
+        // som ikke er ment å se annerledes ut, som `input.types=text`, der
+        // bare noen få typer får et ikon.
+        if (ut[attributt] === undefined) {
+          hoppet.push(`${navn}.${liste}=${v}`)
+          continue
+        }
+
+        tilfeller.push({
+          navn,
+          liste: `${navn}.${liste}`,
+          klasser: String(ut.class ?? "")
+            .split(" ")
+            .filter(Boolean),
+          attributt,
+          verdi: String(ut[attributt]),
+        })
+      }
+    }
+  }
+
+  it("har verdier å kontrollere", () => {
+    expect(tilfeller.length).toBeGreaterThan(30)
+  })
+
+  it("bruker et opsjonsnavn byggefunksjonen faktisk kjenner", () => {
+    /*
+     * Står feil opsjonsnavn i `LISTER`, tar byggefunksjonen ikke imot noe,
+     * og svarer det samme som den gjør uten argumenter, uansett verdi. Løkka
+     * over leser det som «dette er standardverdien» og hopper over hele
+     * lista uten å si fra. Slik ble `markers` borte: opsjonen heter
+     * `required`, ikke `marker`.
+     *
+     * Bare én verdi i en liste kan gi det samme som standardkallet, nemlig
+     * standardverdien selv. Gjør to det, er navnet feil.
+     */
+    for (const [navn, verdi] of Object.entries(fs)) {
+      if (typeof verdi !== "function") continue
+      const bygger = verdi as unknown as Bygger
+
+      for (const [liste, opsjon] of LISTER) {
+        const verdier = bygger[liste]
+        if (!Array.isArray(verdier)) continue
+
+        const standard = JSON.stringify(bygger())
+        const like = verdier.filter(
+          (v) => JSON.stringify(bygger({ [opsjon]: v })) === standard,
+        )
+        expect(
+          like,
+          `${navn}.${liste} svarer likt for ${like.join(", ")}`,
+        ).toHaveLength(like.length > 1 ? 0 : like.length)
+      }
+    }
+  })
+
+  it("kontrollerer hver liste en byggefunksjon har", () => {
+    /*
+     * `LISTER` er skrevet for hånd, og en liste som mangler der blir aldri
+     * kontrollert uten at noe sier fra. Det er den samme feilklassen som
+     * `SYSTEM_ATTRIBUTES` i `dom.ts` har vært innom: et attributt som ikke
+     * står i en håndskrevet tabell er usynlig for prøven, ikke for brukeren.
+     */
+    const kjente = new Set(LISTER.map(([liste]) => liste))
+    const ukjente: string[] = []
+
+    for (const [navn, verdi] of Object.entries(fs)) {
+      if (typeof verdi !== "function") continue
+      const bygger = verdi as unknown as Bygger
+      for (const [liste, verdier] of Object.entries(bygger)) {
+        // `Object.assign` henger både lovlige verdier og vakter på
+        // funksjonen. Det er listene vi er ute etter.
+        if (!Array.isArray(verdier)) continue
+        if (!kjente.has(liste)) ukjente.push(`${navn}.${liste}`)
+      }
+    }
+
+    expect(ukjente).toEqual([])
+  })
+
+  it("dekker hver liste med minst ett tilfelle", () => {
+    const lister = new Set<string>()
+    for (const [navn, verdi] of Object.entries(fs)) {
+      if (typeof verdi !== "function") continue
+      const bygger = verdi as unknown as Bygger
+      for (const [liste] of LISTER) {
+        if (Array.isArray(bygger[liste])) lister.add(`${navn}.${liste}`)
+      }
+    }
+
+    const dekket = new Set(tilfeller.map((t) => t.liste))
+    expect([...lister].filter((l) => !dekket.has(l))).toEqual([])
+  })
+
+  /**
+   * At verdien faktisk gjør noe, ikke bare at selektoren finnes.
+   *
+   * Et tekstsøk passerer på en regel med tom blokk, på en som bare gjelder i
+   * høykontrastmodus, og på en som blir overstyrt lenger nede. Derfor rendres
+   * elementet to ganger, med og uten attributtet, og noe i den beregnede
+   * stilen må være forskjellig. Pseudoelementene er med, for `data-required`
+   * vises bare gjennom `::after`.
+   *
+   * Noen tilstander farger et barn framfor elementet selv: feltsettet farger
+   * `.fs-legend`, og den stripete tabellen farger radene. Da finnes det
+   * ingen regel på elementet å sammenligne, og prøven faller tilbake på at
+   * selektoren står i et stilark. Fallet er begrenset til nettopp de
+   * tilfellene: finnes det en regel på elementet selv, kreves forskjellen.
+   */
+  it.each(
+    tilfeller.map((t) => [t.liste, t.verdi, t] as const),
+  )("%s=%s endrer noe", (_liste, _verdi, tilfelle) => {
+    // Den nakne selektoren er med fordi noen regler dekker alle verdiene
+    // på én gang: `.fs-label[data-required]` gir stjernen uansett om
+    // verdien er `symbol` eller `text`.
+    const selektorer = tilfelle.klasser.flatMap((klasse) => [
+      `.${klasse}[${tilfelle.attributt}="${tilfelle.verdi}"]`,
+      `.${klasse}[${tilfelle.attributt}]`,
+    ])
+
+    const finnes = selektorer.some((s) => alleRegler.includes(s))
+    expect(finnes, `ingen regel for ${selektorer[0]}`).toBe(true)
+
+    /*
+     * Treffer en regel som gjelder her elementet selv, skal den kunne sees:
+     * elementet rendres to ganger, med og uten attributtet, og noe i den
+     * beregnede stilen må være forskjellig. Pseudoelementene er med hver for
+     * seg, for `data-required` vises bare gjennom `::after`.
+     */
+    const pseudoer = ["", "::after", "::before"]
+    const treffSelv = pseudoer.filter((pseudo) =>
+      virksomme.some(({ selektor }) =>
+        selektorer.some((s) => selektor === `${s}${pseudo}`),
+      ),
+    )
+
+    if (treffSelv.length === 0) {
+      /*
+       * Ellers farger regelen et barn: feltsettet farger `.fs-legend`, og
+       * den stripete tabellen farger annenhver rad. Da finnes det ingenting
+       * på elementet selv å sammenligne, og kravet er i stedet at en regel
+       * som gjelder her faktisk erklærer noe. Et tekstsøk alene passerte på
+       * en tom blokk, og det var nettopp en tom regel jeg klarte å legge inn
+       * uten at prøven sa fra.
+       *
+       * En regel i en `@supports` motoren ikke har, eller i en `@media` som
+       * ikke slår til, er ikke med i `virksomme`, og skal heller ikke telle.
+       */
+      const erklaerer = virksomme.filter(
+        ({ selektor, regel }) =>
+          selektorer.some((s) => selektor.startsWith(s)) &&
+          regel.style.length > 0,
+      )
+      if (erklaerer.length > 0) return
+
+      // Har motoren ingen virksom regel i det hele tatt, er det fordi
+      // regelen står bak en betingelse den ikke oppfyller. Da er det riktig
+      // at den ikke gjør noe her.
+      const noenSomHelst = virksomme.some(({ selektor }) =>
+        selektorer.some((s) => selektor.startsWith(s)),
+      )
+      expect(
+        noenSomHelst,
+        `${selektorer[0]} treffer bare barn, og regelen erklærer ingenting`,
+      ).toBe(false)
+      return
+    }
+
+    const uten = document.createElement("span")
+    uten.className = tilfelle.klasser.join(" ")
+    const med = document.createElement("span")
+    med.className = tilfelle.klasser.join(" ")
+    med.setAttribute(tilfelle.attributt, tilfelle.verdi)
+
+    document.body.append(uten, med)
+    try {
+      const ulik = (pseudo: string) => {
+        const a = getComputedStyle(uten, pseudo || undefined)
+        const b = getComputedStyle(med, pseudo || undefined)
+        for (let i = 0; i < a.length; i += 1) {
+          const navn = a.item(i)
+          if (a.getPropertyValue(navn) !== b.getPropertyValue(navn)) return true
+        }
+        return false
+      }
+
+      for (const pseudo of treffSelv) {
+        expect(ulik(pseudo), `${selektorer[0]}${pseudo} endrer ingenting`).toBe(
+          true,
+        )
+      }
+    } finally {
+      uten.remove()
+      med.remove()
+    }
   })
 })

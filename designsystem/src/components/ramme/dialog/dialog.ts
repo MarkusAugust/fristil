@@ -14,7 +14,7 @@ export type DialogOptions = {
 
 export type DialogAttributes = {
   host: {
-    open?: ""
+    open?: true
   }
   dialog: {
     class: typeof DIALOG_CLASS
@@ -69,7 +69,7 @@ export type DialogAttributes = {
 export const dialog = Object.assign(
   ({ titleId, open = false }: DialogOptions): DialogAttributes => ({
     host: attributes({
-      open: open ? ("" as const) : undefined,
+      open: open ? (true as const) : undefined,
     }),
     dialog: attributes({
       class: DIALOG_CLASS,

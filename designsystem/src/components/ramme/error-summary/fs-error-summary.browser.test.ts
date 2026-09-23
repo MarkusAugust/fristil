@@ -115,7 +115,7 @@ describe("fs-error-summary i en skyggerot", () => {
     const feil = errorSummary({ count: 1 })
 
     rot.innerHTML = `
-      <fs-error-summary ${attr(feil.container)} autofocus="false">
+      <fs-error-summary ${attr(feil.container)} data-autofocus="false">
         <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
       </fs-error-summary>

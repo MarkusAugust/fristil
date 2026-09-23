@@ -128,7 +128,7 @@ Attributtet på selve `<dialog>` må derimot fredes. Serveren skriver det aldri,
 ## TypeScript
 
 ```tsx
-import { fs } from "@fristil/designsystem"
+import { fs } from "@fristil/designsystem/react"
 
 const boks = fs.dialog({ titleId: "kvittering-tittel", open: true })
 
@@ -137,11 +137,13 @@ const boks = fs.dialog({ titleId: "kvittering-tittel", open: true })
     <h2 {...boks.title}>Vedtaket er registrert</h2>
     <div {...boks.body}>Saken er ferdigbehandlet og sendt til arkiv.</div>
     <form method="dialog" {...boks.footer}>
-      <button class="fs-button" value="lukk">Lukk</button>
+      <button {...fs.button()} value="lukk">Lukk</button>
     </form>
   </dialog>
 </fs-dialog>
 ```
+
+Importen går til `/react` her, siden eksempelet er JSX. Derfra heter nøklene `className` og `htmlFor`. Skriver du markupen i noe annet, importer `@fristil/designsystem` og få `class` og `for`.
 
 `fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
 

@@ -16,6 +16,89 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Boolske attributter på en vert er `true`, ikke `""`.** `fs.dialog().host`
+  og `fs.popover().host` sendte ut `open: ""`. React 19 setter egenskaper
+  framfor attributter på egendefinerte elementer, og `el.open = ""` er usant,
+  så setteren i komponenten fjernet attributtet igjen: dialogen og panelet
+  åpnet seg ikke, og om det skjedde kom an på om elementet var oppgradert
+  ennå. `data-*` er noe annet og beholder den tomme strengen, for dem sender
+  React videre som attributter i begge versjoner. `Flag` i `jsx/react.ts` er
+  dermed `true | undefined` igjen, slik dokumentasjonen har sagt hele tiden.
+
+- **Avslaget på fokus i feiloppsummeringen heter `data-autofocus="false"`.**
+  Det het `autofocus="false"`. `autofocus` er en boolsk egenskap på
+  `HTMLElement`, så React 19 satte `el.autofocus = "false"`, som er sant,
+  mens attributtet aldri kom i markupen. Avslaget virket altså ikke i React
+  19, og feilen var taus. Samme feilklasse som `open` over.
+
+- **`ReactAttributes<T>` gir `number` for `tabIndex`.** Typen er eksportert,
+  altså offentlig API, og den sa før `string`. Rettelsen under er grunnen:
+  verdien var feil, og typen beskrev feilen. Kode som tok imot den gamle
+  typen som en streng, for eksempel `const t: string = fs.tabs(...).tabs[0]
+  .tabIndex`, kompilerer ikke lenger. Selve attributtet i DOM-en er uendret.
+
+### Rettet
+
+- **`tabIndex` kom ut som en streng fra React-inngangen.** `NAVN` døpte om
+  `tabindex`, men lot verdien stå. I HTML er den en streng, i React er
+  `tabIndex` et tall, så `fs.tabs()` ga `tabIndex: "0"` og TypeScript avviste
+  den i enhver React-app. Den virket i nettleseren, siden React gjør om
+  verdien selv, så feilen viste seg bare som en typefeil hos konsumenten.
+  Funnet i en ekte React-app, ikke her.
+
+- **`fs.fieldset` lovet en tilstand som ikke fantes.** `states` har alltid
+  oppgitt `success`, men `fieldset.css` hadde bare en regel for `invalid`.
+  Attributtet ble skrevet, og ingenting skjedde.
+
+- **JSX-deklarasjonene godtok ikke det byggerne sender ut.** Et boolsk
+  attributt er `""` fra byggeren, mens `Flag` i `jsx/react.ts` bare tillot
+  `true` og `undefined`. `<fs-popover {...fs.popover({ open: true }).host}>`
+  type-sjekket derfor ikke, altså to deler av det samme API-et som var
+  uenige om det samme attributtet.
+
+### Lagt til
+
+- **En vaktpost på at hver lovlig verdi finnes i CSS-en.** `pakke-css.browser.test.ts`
+  går gjennom listene byggerne reklamerer med, `variants`, `colors`, `sizes`,
+  `states`, `pickers`, `markers` og `types`, kaller byggeren med hver av dem,
+  og rendrer elementet to ganger, med og uten attributtet. Noe i den beregnede
+  stilen må være forskjellig, pseudoelementene medregnet. Et tekstsøk ville
+  passert på en tom regel og på en som blir overstyrt lenger nede.
+  Farger regelen et barn framfor elementet selv, som feltsettet gjør med
+  `.fs-legend`, kreves det i stedet at en regel som gjelder her erklærer noe.
+  Uten det ville en tom blokk passert, og det var nettopp en tom blokk som
+  slapp gjennom første utgave av prøven.
+
+  Verdier som ikke sender ut noe attributt hoppes over: standardverdien, og
+  verdier som ikke er ment å se annerledes ut. To egne prøver passer på at
+  hoppelista ikke blir en bakdør. Den ene krever at opsjonsnavnet er et
+  byggefunksjonen kjenner, siden feil navn ellers tar en hel liste ut av
+  prøven i stillhet. Den andre krever at hver liste en byggefunksjon har,
+  står i tabellen.
+
+  Hvilke regler som gjelder hentes fra CSSOM, ikke fra teksten: en regel i en
+  `@supports` motoren ikke har, eller i en `@media` som ikke slår til, gjør
+  ingenting. Den stylede nedtrekkslista står i begge, og skal ikke endre noe
+  i Firefox.
+
+  `dom.browser.test.ts` sjekket at en verdi kan settes og fjernes, ikke at
+  den betyr noe. Fieldset-feilen over hadde ligget der siden komponenten kom.
+
+- **En vaktpost på at ingen byggefunksjon sender ut et navn React staver
+  annerledes.** `react.browser.test.ts` kalte før ti byggefunksjoner for hånd
+  og så bare etter `class` og `for`. Den går nå gjennom hver byggefunksjon i
+  `/react`, med hver lovlige verdi funksjonen selv oppgir, og avviser hvert
+  navn i Reacts egen tabell, også `readonly`, `maxlength` og `colspan`, som
+  ingen byggefunksjon sender ut ennå. Den krever også at hver byggefunksjon i
+  `fs` finnes i `/react`.
+
+- **En vaktpost på at byggerne passer i JSX-deklarasjonene.**
+  `src/jsx/typer.browser.test.ts` tilordner det byggerne sender ut til
+  `JSX.IntrinsicElements`, og det er `typecheck:tests` som er prøven. Begge
+  deler er offentlig API, og de kan gå fra hverandre uten at noe sier fra.
+
 ## 0.7.0 (2026-09-22)
 
 ### Brytende

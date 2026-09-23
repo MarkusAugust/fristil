@@ -246,7 +246,9 @@ describe("fs-dialog", () => {
   it("freder ikke open på verten, for det er serveren som åpner dialogen", () => {
     // Hadde `open` stått i `data-preserve-attr` her, kunne serveren aldri
     // åpnet dialogen igjen etter at brukeren hadde lukket den én gang.
-    expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: "" })
+    // `true` og ikke `""`: React 19 setter egenskapen, og den tomme
+    // strengen er usann, så setteren i komponenten fjerner attributtet igjen.
+    expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: true })
     expect(dialog({ titleId: "t" }).host).toEqual({})
   })
 

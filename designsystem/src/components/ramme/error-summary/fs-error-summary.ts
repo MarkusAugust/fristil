@@ -26,7 +26,7 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  * ```
  */
 export class FsErrorSummary extends HostElement {
-  static observedAttributes = ["autofocus", "hidden"]
+  static observedAttributes = ["data-autofocus", "hidden"]
 
   private hasFocused = false
   private observer?: MutationObserver
@@ -57,9 +57,18 @@ export class FsErrorSummary extends HostElement {
     this.links.clear()
   }
 
+  /**
+   * Om boksen skal ta fokus når den blir synlig. Standard: ja.
+   *
+   * Attributtet heter `data-autofocus` og ikke `autofocus`, selv om det
+   * siste leser bedre. `autofocus` er en boolsk egenskap på `HTMLElement`,
+   * og React 19 setter egenskaper framfor attributter på egendefinerte
+   * elementer. `autofocus="false"` ble da til `el.autofocus = "false"`, som
+   * er sant, mens attributtet aldri kom i markupen, og avslaget virket ikke.
+   * `data-*` sendes videre som attributt i alle React-versjoner.
+   */
   private get shouldFocus(): boolean {
-    const value = this.getAttribute("autofocus")
-    return value !== "false"
+    return this.dataset.autofocus !== "false"
   }
 
   private sync(): void {

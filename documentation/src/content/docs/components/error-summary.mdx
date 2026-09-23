@@ -159,7 +159,7 @@ Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `t
 
 To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
 
-- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `autofocus="false"` hvis du ikke vil ha det.
+- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket.
 - **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før, altså i oppsummeringen.
 
 Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.
