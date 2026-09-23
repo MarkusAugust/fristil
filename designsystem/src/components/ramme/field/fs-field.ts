@@ -50,12 +50,11 @@ const DERIVED_ATTRIBUTES = [
  * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
  * det ved hver patch.
  *
- * Malen trenger ingen `data-preserve-attr` for feltet. River en morfing bort
- * koblingen, ser komponenten det og setter den tilbake. Skillet er mellom det
- * komponenten utleder, som `id`, `for` og `aria-describedby`, og tilstand
- * brukeren eier, som `open` på et sprettoppvindu: det første kan repareres,
- * det andre må fredes, for der ville en reparasjon kjempet mot en server som
- * med vilje endret noe.
+ * Malen trenger ingenting ekstra. River en morfing bort koblingen, ser
+ * komponenten det og setter den tilbake. Det samme gjør de andre
+ * komponentene med tilstanden brukeren har laget, og `data-preserve-attr`
+ * finnes ikke lenger i pakken. Skal serveren eie tilstanden, sier den det med
+ * `server-controlled` på verten.
  */
 export class FsField extends HostElement {
   static observedAttributes = [
@@ -179,10 +178,8 @@ export class FsField extends HostElement {
      * `data-preserve-attr` for at de skulle overleve. Nå ser komponenten at
      * de er borte, og setter dem tilbake.
      *
-     * Lista er avgrenset til det komponenten selv utleder. Tilstand
-     * brukeren eier, som hvilken fane som er valgt eller om et
-     * sprettoppvindu står åpent, skal fortsatt fredes: der ville en
-     * reparasjon kjempet mot en server som med vilje endret noe.
+     * Lista er avgrenset til det komponenten selv utleder. De andre
+     * komponentene gjør det samme med sin egen tilstand, hver med sin liste.
      *
      * Hver skriving i `sync()` sammenligner først. Uten det ville
      * observatøren utløst seg selv i det uendelige.
@@ -382,8 +379,7 @@ export class FsField extends HostElement {
       addClass(label, computed.label.class)
       // Alltid, ikke bare når den mangler: `for` og `id` er den samme
       // opplysningen, og de to kan ikke få lov til å si hver sin ting.
-      if (label.htmlFor !== computed.label.for)
-        label.htmlFor = computed.label.for
+      setAttr(label, "for", computed.label.for)
       setAttr(label, "data-required", computed.label["data-required"])
       setAttr(label, "data-optional", computed.label["data-optional"])
       setAttr(label, "aria-disabled", computed.label["aria-disabled"])

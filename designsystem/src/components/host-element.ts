@@ -71,6 +71,11 @@ export function setFlag(element: Element, name: string, on: boolean): void {
   element.toggleAttribute(name, on)
 }
 
+/** Skriver tekst i et element, men bare når teksten er en annen. */
+export function setText(element: Element, text: string): void {
+  if (element.textContent !== text) element.textContent = text
+}
+
 /** Legger på en klasse, men bare når den ikke står der fra før. */
 export function addClass(element: Element, name: string): void {
   if (!element.classList.contains(name)) element.classList.add(name)

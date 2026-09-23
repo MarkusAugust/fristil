@@ -111,11 +111,24 @@ export class FsTabs extends HostElement {
     return [...this.querySelectorAll<HTMLElement>("[role='tabpanel']")]
   }
 
-  /** Indeksen på fanen serveren har markert som valgt. */
-  get selected(): number {
-    const index = this.tabs.findIndex(
+  /**
+   * Indeksen på fanen som er markert, eller `-1` når ingen er det.
+   *
+   * `selected` svarer 0 i det tilfellet, fordi den er offentlig API og en
+   * fanerad i praksis alltid har en valgt fane. Men den løgnen kan ikke
+   * brukes internt: sa den 0 når ingenting var markert, returnerte
+   * `select(0)` med en gang, og raden svarte ikke på et klikk i det hele
+   * tatt.
+   */
+  private get markedIndex(): number {
+    return this.tabs.findIndex(
       (tab) => tab.getAttribute("aria-selected") === "true",
     )
+  }
+
+  /** Indeksen på fanen serveren har markert som valgt. */
+  get selected(): number {
+    const index = this.markedIndex
     return index < 0 ? 0 : index
   }
 
@@ -141,9 +154,17 @@ export class FsTabs extends HostElement {
 
     const index = this.tabs.indexOf(this.chosenTab)
     if (index < 0) {
-      // Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
-      // serverens markup som gjelder.
+      /*
+       * Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
+       * serverens markup som gjelder.
+       *
+       * Men markupen må henge sammen etterpå. Fjernet patchen fanen som var
+       * markert, står raden igjen uten en eneste `aria-selected="true"`,
+       * alle panelene er skjult, og et klikk gjør ingenting. Da velges den
+       * første, som er det en fanerad uansett starter på.
+       */
       this.chosenTab = undefined
+      if (this.markedIndex < 0 && this.tabs.length > 0) this.apply(0)
       return
     }
 
@@ -222,7 +243,9 @@ export class FsTabs extends HostElement {
   select(index: number): void {
     const tabs = this.tabs
     if (index < 0 || index >= tabs.length) return
-    if (index === this.selected) return
+    // `markedIndex` og ikke `selected`: den siste svarer 0 også når ingenting
+    // er markert, og da lot den første fanen seg aldri velge.
+    if (index === this.markedIndex) return
 
     // Ingen hukommelse når serveren eier valget. Uten dette ville et valg
     // gjort mens attributtet sto der blitt satt tilbake i det noen fjernet

@@ -40,7 +40,7 @@ kommer i et nytt undertall.
   `<fs-tabs>`, `<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>`, og er
   deklarert for JSX på alle fire.
 
-- **`setAttr`, `setFlag`, `addClass`, `SERVER_CONTROLLED` og
+- **`setAttr`, `setFlag`, `setText`, `addClass`, `SERVER_CONTROLLED` og
   `isServerControlled` er nye eksporter** fra
   `@fristil/designsystem/host-element`. De tre første skriver bare når noe
   faktisk endrer seg, og er de eneste lovlige veiene til et attributt, et
@@ -54,9 +54,10 @@ kommer i et nytt undertall.
   feile. Ingen stakksporing, ingen påstand, bare en kjøring som må drepes for
   hånd.
 
-  Den ser etter fire skrivemåter, ikke bare `setAttribute`. `el.hidden = x`,
-  `el.tabIndex = n` og `classList.add()` gir alle en mutasjonspost når
-  ingenting endrer seg, og alle tre var i bruk.
+  Den ser etter seks skrivemåter, ikke bare `setAttribute`. `el.hidden = x`,
+  `el.tabIndex = n`, `el.htmlFor = s`, `el.textContent = s` og
+  `classList.add()` gir alle en mutasjonspost når ingenting endrer seg, og
+  alle fem var i bruk.
 
 - **`sjekk:server` kjøres nå også fra rota.** Den sto bare i pakkens egen
   `build`, så den kjørte ved publisering og ikke i CI, mens `CLAUDE.md` sa at
@@ -83,12 +84,14 @@ kommer i et nytt undertall.
   Dialogen skiller på samme måte mellom `open` på verten, som er serverens
   beskjed, og `open` på `<dialog>`, som nettleseren setter.
 
-  Komponentene husker identiteter og ikke posisjoner. `<fs-tabs>` husker
-  id-en på fanen brukeren valgte, ikke indeksen: setter serveren inn en fane
-  først i lista, peker den samme indeksen på noe annet. `<fs-suggestion>`
-  husker både id-en og teksten på det markerte alternativet, siden id-ene fra
-  `fs.suggestion()` er posisjonelle og en ny liste gjenbruker dem. Er det
-  borte, glemmer komponenten det framfor å gjette.
+  Komponentene husker identiteter og ikke posisjoner. `<fs-tabs>` husker selve
+  knappen brukeren valgte: en indeks er ingen identitet, og en id virker ikke
+  i håndskrevet markup, som ofte ikke har noen. En attributtmorfing beholder
+  nodene, så referansen overlever den. `<fs-suggestion>` husker både id-en og
+  teksten på det markerte alternativet, siden id-ene fra `fs.suggestion()` er
+  posisjonelle og en ny liste gjenbruker dem. Er det borte, glemmer
+  komponenten det framfor å gjette, og fanene rydder opp etter seg slik at
+  raden fortsatt svarer.
 
 ## 0.9.0 (2026-09-23)
 

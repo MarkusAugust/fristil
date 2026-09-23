@@ -507,6 +507,45 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(paneler[1].hidden).toBe(false)
   })
 
+  it("lar fanene stå i takt når patchen fjerner den valgte", async () => {
+    /*
+     * Serveren kan sende en kortere rad. Komponenten glemmer da valget, for
+     * fanen finnes ikke lenger, men markupen må henge sammen etterpå.
+     *
+     * Uten opprydningen sto raden igjen uten en eneste `aria-selected="true"`,
+     * med alle panelene skjult, og et klikk på den ene fanen som var igjen
+     * gjorde ingenting: `select(0)` sammenlignet mot en `selected` som svarer
+     * 0 også når ingenting er markert. Brukeren fikk en fanerad som ikke
+     * svarte.
+     */
+    const felt = monterMarkup(FANEMARKUP)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    knapper[1].click()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+
+    // Patchen fjerner fanen brukeren valgte, og panelet dens.
+    knapper[1].remove()
+    ;(felt.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const igjen = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const paneler = [
+      ...felt.querySelectorAll("[role='tabpanel']"),
+    ] as HTMLElement[]
+
+    expect(
+      igjen.map((k) => k.getAttribute("aria-selected")),
+      "ingen fane var markert etter patchen",
+    ).toEqual(["true"])
+    expect(paneler[0].hidden, "ingen paneler var synlige etter patchen").toBe(
+      false,
+    )
+  })
+
   it("lar serveren flytte fanen når den sier at den eier valget", async () => {
     /*
      * Det fredningen ga, og som reparasjonen måtte erstatte.

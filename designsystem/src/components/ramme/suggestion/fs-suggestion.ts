@@ -5,6 +5,7 @@ import {
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  setText,
   warnAboutMarkup,
 } from "../../host-element.js"
 import {
@@ -303,7 +304,7 @@ export class FsSuggestion extends HostElement {
     const tekst =
       treff === 0 ? "Ingen treff" : treff === 1 ? "Ett treff" : `${treff} treff`
 
-    if (status.textContent !== tekst) status.textContent = tekst
+    setText(status, tekst)
   }
 
   private markActive(index: number): void {

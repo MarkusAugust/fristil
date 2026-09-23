@@ -26,6 +26,12 @@
  * `removeAttribute`, `toggleAttribute` og `style.setProperty` gir ingen post
  * når ingenting endrer seg, og er trygge.
  *
+ * Sjekken leser tekst, og den fanger ikke alt. `Object.assign(el, { … })`,
+ * en `setAttribute` lagret i en variabel og `replaceChildren()` slipper forbi.
+ * Ingen av dem er i bruk, og en tekstsjekk som skal fange dem ville tatt like
+ * mye riktig kode med seg. Det den fanger er formene som faktisk står i disse
+ * filene, og de som ligger nærmest å skrive neste gang.
+ *
  * `this.…` er unntaket. Verten observeres bare gjennom `observedAttributes`,
  * og der er det `attributeChangedCallback` som svarer. Den kan skrive tilbake
  * til verten, som `<fs-popover>` gjør når den setter `open` tilbake, men da
@@ -48,12 +54,33 @@ function komponentfiler(mappe: string): string[] {
   })
 }
 
-/** Skrivemåtene som gir en mutasjonspost selv når verdien er den samme. */
+/**
+ * Skrivemåtene som gir en mutasjonspost selv når verdien er den samme.
+ *
+ * `(?<!\bthis)` er unntaket for verten, og det må stå på selve mottakeren.
+ * En sjekk på om linja inneholder `this.` var for bred: da slapp
+ * `this.panel.setAttribute(...)` forbi, og det er nettopp skrivemåten en
+ * komponent ville brukt.
+ */
 const FORBUDT: { monster: RegExp; bruk: string }[] = [
-  { monster: /\.setAttribute\(/, bruk: "setAttr()" },
-  { monster: /\.classList\.(add|remove|toggle)\(/, bruk: "addClass()" },
-  { monster: /\.(hidden|disabled|open|checked)\s*=[^=]/, bruk: "setFlag()" },
-  { monster: /\.(tabIndex|id|className)\s*=[^=]/, bruk: "setAttr()" },
+  { monster: /(?<!\bthis)\.setAttribute\(/, bruk: "setAttr()" },
+  {
+    monster: /(?<!\bthis)\.classList\.(add|remove|toggle)\(/,
+    bruk: "addClass()",
+  },
+  {
+    monster: /(?<!\bthis)\.(hidden|disabled|open|checked)\s*=[^=]/,
+    bruk: "setFlag()",
+  },
+  {
+    monster: /(?<!\bthis)\.(tabIndex|id|className|htmlFor)\s*=[^=]/,
+    bruk: "setAttr()",
+  },
+  {
+    monster: /(?<!\bthis)\.(textContent|innerText)\s*=[^=]/,
+    bruk: "setText()",
+  },
+  { monster: /\.style\.cssText\s*=[^=]/, bruk: "style.setProperty()" },
 ]
 
 const funn: string[] = []
@@ -66,8 +93,7 @@ for (const fil of komponentfiler(ROT)) {
     if (trimmet.startsWith("*") || trimmet.startsWith("/*")) return
     const kode = linje.split("//")[0]
 
-    // Verten er unntaket, og en `set`-tilbehører er deklarasjonen av den.
-    if (/\bthis\./.test(kode)) return
+    // En `set`-tilbehører er deklarasjonen av en egenskap, ikke en skriving.
     if (/^\s*(set|get) /.test(kode)) return
 
     for (const { monster, bruk } of FORBUDT) {
