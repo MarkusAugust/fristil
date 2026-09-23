@@ -148,6 +148,12 @@ export class FsDialog extends HostElement {
      * verdien på knappen som lukket dialogen, så en dialog som aldri har
      * vært åpnet har den tom. En mal som bare skrev `open` på verten, som
      * dokumentasjonen viste lenge, har den også tom, og skal åpnes som før.
+     *
+     * Det holder bare når knappen har en `value`. Lukkes dialogen med en
+     * knapp uten verdi, eller med `close()` uten argument, etterlater
+     * nettleseren ingenting å se etter, og dialogen åpner seg igjen slik den
+     * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
+     * en `value`, og det er verdt å holde på.
      */
     if (forste && this.open && !dialog.open && dialog.returnValue !== "") {
       this.removeAttribute("open")
