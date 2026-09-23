@@ -19,21 +19,36 @@ kommer i et nytt undertall.
 ### Endret
 
 - **`fs.dialog({ open: true })` skriver `open` på `<dialog>` også.** Det sto
-  bare på verten, og da var innholdet borte for den som ikke har JavaScript:
-  en `<dialog>` uten `open` er skjult. Nå vises det, plassert over innholdet
-  under seg slik nettleserens egen stil gjør det, og komponenten gjør den om
-  til en ekte modal med `showModal()` når den får kjøre. I React var det dessuten det eneste som stemte: komponenten setter
+  bare på verten, og da var innholdet borte for den som ikke har
+  JavaScript: en `<dialog>` uten `open` er skjult. Nå vises det, plassert
+  over innholdet under seg slik nettleserens egen stil gjør det, og
+  komponenten gjør den om til en ekte modal med `showModal()` når den får
+  kjøre. I React var det dessuten det eneste som stemte: komponenten setter
   `open` før React hydrerer, og sto det ikke i serverens HTML, meldte React
   avvik ved hvert eneste oppslag. Funnet i demoappen i TanStack Start.
 
   `<fs-dialog>` tar attributtet bort med `removeAttribute` framfor `close()`
   før den kaller `showModal()`. `close()` sender en ekte `close`-hendelse, og
-  den ville nå kommet ved hver eneste lasting av en åpen dialog, altså en
-  spøkelseslukking for apper som melder lukkingen til serveren.
+  den ville nå kommet ved hver eneste lasting av en åpen dialog. En app som
+  lytter på `close` rett på `<dialog>` fikk altså en lukking før brukeren
+  hadde sett dialogen. `dialog-toggle` så den ikke, siden komponenten
+  stopper på `:modal`.
+
+  Komponenten ser nå på `:modal` og ikke på `open` når den lukker.
+  Byggefunksjonen sender `open` på `<dialog>`, så i React er det React som
+  eier attributtet, og React oppdaterer barn før forelder: lukker appen
+  dialogen, er attributtet borte før komponenten får vite det. `close()` gjør
+  ingenting uten attributtet, så dialogen ble stående i topplaget, usynlig,
+  med resten av siden inert.
 
   Styrer du dialogen selv fra nettleseren, skal du ikke sende `open` inn i
-  `fs.dialog()`: `showModal()` kaster på en dialog som alt står åpen. Det står
-  nå både i typen og på siden.
+  `fs.dialog()`. `showModal()` kaster `InvalidStateError` på en dialog som alt
+  står åpen, så en app som gjorde begge deler virket før og kaster nå. Det
+  står i typen, i JSDoc-en og på siden.
+
+  Har du JavaScript, ser du dessuten dialogen et øyeblikk som en boks der den
+  står i flyten, før komponenten flytter den til midten som en modal. Før var
+  det ingenting å se før modalen kom.
 
 ### Rettet
 

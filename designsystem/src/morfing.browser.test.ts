@@ -171,15 +171,22 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   /*
    * Og det `data-preserve-attr` på selve `<dialog>` finnes for: nettleseren
-   * setter `open` der når `showModal()` kalles, og serveren skriver det
-   * aldri. Uten fredningen river morfingen det bort, og dialogen lukker seg
-   * i samme øyeblikk som den åpnet seg.
+   * setter `open` der når `showModal()` kalles.
+   *
+   * Serveren skriver riktignok `open` selv når den vet at dialogen skal
+   * vises, men den vet det ikke alltid. Åpnes dialogen av et signal i
+   * nettleseren, eller av en bruker, står `open` bare i den levende siden,
+   * og da er det bare fredningen som holder det der. Prøven sender derfor
+   * serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
+   * morfingen latt attributtet stå uansett, siden den bare fjerner det
+   * serverens node mangler, og prøven kunne ikke feile.
    */
   it("lukker ikke en åpen dialog i en patch", async () => {
     const boks = dialog({ titleId: "tittel", open: true })
+    const { open: _serverensOpen, ...dialogUtenOpen } = boks.dialog
     const MARKUP = `
       <fs-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
+        <dialog ${attr(dialogUtenOpen)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>

@@ -147,14 +147,30 @@ export class FsDialog extends HostElement {
        * Men ikke med `close()`. Den sender en ekte `close`-hendelse, og
        * siden serveren nå skriver `open` på `<dialog>` selv, ville den
        * hendelsen kommet ved hver eneste lasting av en dialog som er åpen.
-       * En app som melder lukkingen til serveren, slik dokumentasjonen viser,
-       * fikk da en spøkelseslukking før brukeren hadde sett dialogen.
-       * `removeAttribute` gir den samme tillatelsen uten hendelsen.
+       * En app som lytter på `close` rett på `<dialog>`, slik det komplette
+       * eksempelet i dokumentasjonen gjør, fikk da en spøkelseslukking før
+       * brukeren hadde sett dialogen. `removeAttribute` gir tillatelsen uten
+       * hendelsen.
        */
       dialog.removeAttribute("open")
       dialog.showModal()
       this.meld(true)
-    } else if (!this.open && dialog.open) {
+    } else if (!this.open && (modal || dialog.open)) {
+      /*
+       * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens
+       * dialogen fortsatt står i topplaget.
+       *
+       * React er grunnen. Serveren skriver `open` på `<dialog>`, så React
+       * eier attributtet, og React oppdaterer barn før forelder. Lukker
+       * appen dialogen, fjerner React først `open` fra `<dialog>` og så fra
+       * `<fs-dialog>`. Så vi kommer hit med `dialog.open` alt usann.
+       *
+       * `close()` gjør ingenting uten attributtet, så uten dette ble
+       * dialogen stående i topplaget, usynlig, med resten av siden inert.
+       * Brukeren satt igjen med en side der ingenting kunne klikkes, og
+       * ingenting synlig som forklarte hvorfor.
+       */
+      if (!dialog.open) dialog.setAttribute("open", "")
       dialog.close()
       this.meld(false, dialog.returnValue)
     }

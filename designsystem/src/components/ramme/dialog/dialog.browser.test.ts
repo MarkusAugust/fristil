@@ -300,24 +300,6 @@ describe("fs-dialog", () => {
     expect(meldinger).toEqual([true, false])
   })
 
-  it("gjør en dialog som allerede står åpen modal", async () => {
-    // `<dialog open>` skrevet for hånd er en boks på siden: ingen fokusfelle,
-    // ingen Escape, ingen flate bak. Komponenten skal rette opp i det, og
-    // `showModal()` kaster hvis attributtet står der fra før.
-    monter(`
-      <fs-dialog open>
-        <dialog class="fs-dialog" aria-labelledby="tittel" open data-preserve-attr="open">
-          <h2 class="fs-dialog__title" id="tittel">Tittel</h2>
-        </dialog>
-      </fs-dialog>
-    `)
-    await customElements.whenDefined("fs-dialog")
-    await ventPaTegning()
-
-    const d = document.querySelector("dialog") as HTMLDialogElement
-    expect(d.matches(":modal"), "dialogen ble stående som en boks").toBe(true)
-  })
-
   it("åpner også når malen glemte open på selve dialogen", async () => {
     // Håndskrevet markup, og dokumentasjonen har vist dette lenge: verten
     // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
@@ -335,13 +317,43 @@ describe("fs-dialog", () => {
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
   })
 
+  it("lukker selv om attributtet på dialogen ble fjernet først", async () => {
+    /*
+     * React eier `open` på `<dialog>` nå, og oppdaterer barn før forelder.
+     * Lukker appen dialogen, fjernes attributtet på `<dialog>` før det på
+     * verten, og komponenten kommer hit med `dialog.open` alt usann.
+     *
+     * Uten at komponenten ser på `:modal` ble dialogen stående i topplaget,
+     * usynlig, med resten av siden inert: en side der ingenting kunne
+     * klikkes, og ingenting synlig som forklarte hvorfor.
+     */
+    const { vert, d } = await monterDialog(true)
+    expect(d.matches(":modal")).toBe(true)
+
+    d.removeAttribute("open")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
+
+    // Og siden er brukbar igjen: en knapp utenfor kan få fokus.
+    const knapp = document.createElement("button")
+    document.body.append(knapp)
+    knapp.focus()
+    const fikkFokus = document.activeElement === knapp
+    knapp.remove()
+    expect(fikkFokus, "resten av siden er fortsatt inert").toBe(true)
+  })
+
   it("sender ingen close-hendelse når serveren sender dialogen åpen", async () => {
     /*
      * Serveren skriver `open` på `<dialog>`, og komponenten må ta det bort
      * før `showModal()`. Gjør den det med `close()`, sender nettleseren en
      * ekte `close`-hendelse, og den kommer ved hver eneste lasting. En app
-     * som melder lukkingen til serveren, slik dokumentasjonen viser, fikk da
-     * en spøkelseslukking før brukeren hadde sett dialogen.
+     * som lytter på `close` rett på `<dialog>`, slik det komplette
+     * eksempelet i dokumentasjonen gjør, fikk da en spøkelseslukking før
+     * brukeren hadde sett dialogen. `dialog-toggle` så den ikke, for
+     * `handleClose` stopper på `:modal`.
      */
     const hendelser: string[] = []
     // `close` bobler ikke. En lytter på dokumentet i bobleefasen ser den
