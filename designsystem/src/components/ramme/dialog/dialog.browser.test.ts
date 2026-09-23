@@ -75,6 +75,14 @@ describe(".fs-dialog", () => {
       "aria-labelledby": "dialog-tittel",
       "data-preserve-attr": "open",
     })
+    // Skal dialogen vises, står `open` begge steder. På `<dialog>` er det
+    // reserven for den som ikke har JavaScript: uten den er innholdet skjult.
+    expect(dialog({ titleId: "t", open: true }).dialog).toEqual({
+      class: "fs-dialog",
+      "aria-labelledby": "t",
+      open: true,
+      "data-preserve-attr": "open",
+    })
     expect(boks.title).toEqual({
       class: "fs-dialog__title",
       id: "dialog-tittel",
@@ -238,9 +246,12 @@ describe("fs-dialog", () => {
     window.removeEventListener("error", lytter)
 
     expect(feil).toEqual([])
-    expect((holder.querySelector("dialog") as HTMLDialogElement).open).toBe(
-      false,
-    )
+    // To ting skal gjelde her. Komponenten skal ikke ha kalt `showModal()`,
+    // som er det `:modal` svarer på. Og serverens eget `open` skal stå
+    // igjen, for det er reserven for den som ikke har JavaScript: uten den
+    // er dialogen skjult, og innholdet finnes ikke.
+    expect(holder.querySelector("dialog")?.matches(":modal")).toBe(false)
+    expect(holder.querySelector("dialog")?.hasAttribute("open")).toBe(true)
   })
 
   it("freder ikke open på verten, for det er serveren som åpner dialogen", () => {
@@ -253,9 +264,10 @@ describe("fs-dialog", () => {
   })
 
   it("freder open på selve dialogen, for den setter nettleseren", () => {
-    // `showModal()` setter `open` på `<dialog>`. Serveren skriver det aldri,
-    // så uten fredningen river morfingen det bort og lukker dialogen i det
-    // øyeblikket den åpnet den.
+    // `showModal()` setter `open` på `<dialog>` selv, og uten fredningen
+    // river morfingen det bort og lukker dialogen i det øyeblikket den
+    // åpnet den. Serveren skriver det også når den vet at dialogen skal
+    // vises, men den vet det ikke når brukeren åpner den selv.
     expect(dialog({ titleId: "t" }).dialog["data-preserve-attr"]).toBe("open")
   })
 
@@ -292,11 +304,10 @@ describe("fs-dialog", () => {
     // `<dialog open>` skrevet for hånd er en boks på siden: ingen fokusfelle,
     // ingen Escape, ingen flate bak. Komponenten skal rette opp i det, og
     // `showModal()` kaster hvis attributtet står der fra før.
-    const boks = dialog({ titleId: "tittel", open: true })
     monter(`
-      <fs-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)} open>
-          <h2 ${attr(boks.title)}>Tittel</h2>
+      <fs-dialog open>
+        <dialog class="fs-dialog" aria-labelledby="tittel" open data-preserve-attr="open">
+          <h2 class="fs-dialog__title" id="tittel">Tittel</h2>
         </dialog>
       </fs-dialog>
     `)
@@ -305,6 +316,47 @@ describe("fs-dialog", () => {
 
     const d = document.querySelector("dialog") as HTMLDialogElement
     expect(d.matches(":modal"), "dialogen ble stående som en boks").toBe(true)
+  })
+
+  it("åpner også når malen glemte open på selve dialogen", async () => {
+    // Håndskrevet markup, og dokumentasjonen har vist dette lenge: verten
+    // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
+    // så dette tilfellet finnes bare i maler noen har skrevet selv.
+    monter(`
+      <fs-dialog open>
+        <dialog class="fs-dialog" aria-labelledby="tittel" data-preserve-attr="open">
+          <h2 class="fs-dialog__title" id="tittel">Tittel</h2>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
+  })
+
+  it("sender ingen close-hendelse når serveren sender dialogen åpen", async () => {
+    /*
+     * Serveren skriver `open` på `<dialog>`, og komponenten må ta det bort
+     * før `showModal()`. Gjør den det med `close()`, sender nettleseren en
+     * ekte `close`-hendelse, og den kommer ved hver eneste lasting. En app
+     * som melder lukkingen til serveren, slik dokumentasjonen viser, fikk da
+     * en spøkelseslukking før brukeren hadde sett dialogen.
+     */
+    const hendelser: string[] = []
+    // `close` bobler ikke. En lytter på dokumentet i bobleefasen ser den
+    // aldri, og prøven ville meldt grønt uansett hva komponenten gjorde.
+    const lytter = (e: Event) => {
+      if ((e.target as HTMLElement)?.tagName === "DIALOG")
+        hendelser.push("close")
+    }
+    document.addEventListener("close", lytter, true)
+
+    const { d } = await monterDialog(true)
+    document.removeEventListener("close", lytter, true)
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(hendelser).toEqual([])
   })
 
   it("lukker ikke seg selv når serveren lukker og åpner i samme omgang", async () => {

@@ -12,7 +12,14 @@ import { attributes } from "../../css/shared.js"
  */
 
 export type FieldOptions = {
-  /** Id på kontrollen. Lages automatisk hvis den utelates. */
+  /**
+   * Id på kontrollen. Lages automatisk hvis den utelates.
+   *
+   * En id som lages her er tilfeldig, og to kjøringer gir to ulike. Rendrer
+   * du det samme feltet to ganger, på en server og så i nettleseren, må
+   * id-en komme utenfra, ellers peker `for` og `aria-describedby` på noe
+   * annet enn det som står der. I React er `useId()` laget for nettopp det.
+   */
   id?: string
   /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
   help?: boolean

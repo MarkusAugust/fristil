@@ -100,7 +100,7 @@ defineFsDialog()
 
 ```html
 <fs-dialog open>
-  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" data-preserve-attr="open">
+  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" open data-preserve-attr="open">
     <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
     <div class="fs-dialog__body">
       <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
@@ -119,11 +119,13 @@ De to `open`-ene i eksempelet er ikke det samme:
 | Hvor | Hvem setter den | Fredet |
 | --- | --- | --- |
 | På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
-| På `<dialog>` | Nettleseren, når `showModal()` kalles | Ja |
+| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Ja |
 
 At verten ikke er fredet, er et valg og ikke en forglemmelse. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
 
-Attributtet på selve `<dialog>` må derimot fredes. Serveren skriver det aldri, så uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
+Attributtet på selve `<dialog>` må fredes, for nettleseren setter det selv i `showModal()`. Uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
+
+Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
 
 ## TypeScript
 
@@ -147,7 +149,9 @@ Importen går til `/react` her, siden eksempelet er JSX. Derfra heter nøklene `
 
 `fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
 
-Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Komplett eksempel» over.
+Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Komplett eksempel» over. Da skal du ikke sende `open` inn i `fs.dialog()`. Attributtet er serverens beskjed til `<fs-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
+
+I React er attributtet dessuten det eneste som stemmer når serveren rendrer dialogen åpen. Komponenten setter `open` på `<dialog>` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
 
 ## Klasser du kan style
 
