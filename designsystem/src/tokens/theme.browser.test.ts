@@ -344,4 +344,11 @@ describe("et tema kan la fargene stå", () => {
   it("sier fra når oppskriften er tom", () => {
     expect(() => buildTheme({})).toThrow(/tomt/)
   })
+
+  it("teller verdier og ikke blokker", () => {
+    // `shape: {}` er et objekt, og en sjekk på at blokka finnes ville sluppet
+    // det gjennom. Resultatet ble en generert fil med et tomt lag i.
+    expect(() => buildTheme({ shape: {} })).toThrow(/tomt/)
+    expect(() => buildTheme({ typography: {}, shape: {} })).toThrow(/tomt/)
+  })
 })

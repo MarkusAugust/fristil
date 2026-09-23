@@ -192,10 +192,10 @@ function sikre(
 }
 
 export function buildTheme(input: ThemeInput): Theme {
-  const farger = [input.interactive, input.danger, input.success, input.warning]
-  const oppgitte = farger.filter(Boolean).length
+  const { interactive, danger, success, warning } = input
+  const oppgitte = [interactive, danger, success, warning].filter(Boolean)
 
-  if (oppgitte > 0 && oppgitte < 4) {
+  if (oppgitte.length > 0 && oppgitte.length < 4) {
     throw new Error(
       "Et fargetema trenger alle fire merkefargene: interactive, danger, " +
         "success og warning. Vil du bare sette skrift og form, utelat " +
@@ -203,14 +203,25 @@ export function buildTheme(input: ThemeInput): Theme {
     )
   }
 
-  if (oppgitte === 0) {
-    if (!input.typography && !input.shape) {
+  if (!interactive || !danger || !success || !warning) {
+    /*
+     * Uten farger er det ingen skalaer å bygge og ingen kontrast å sikre.
+     *
+     * At temaet faktisk setter noe kontrolleres på verdiene og ikke på at
+     * blokkene finnes: `shape: {}` er et objekt, og ville ellers gitt en
+     * generert fil med et tomt lag i.
+     */
+    const noe = {
+      ...typografiVerdier(input.typography ?? {}),
+      ...formVerdier(input.shape ?? {}),
+    }
+
+    if (Object.keys(noe).length === 0) {
       throw new Error(
         "Temaet er tomt. Oppgi enten merkefargene, eller skrift og form.",
       )
     }
 
-    // Uten farger er det ingen skalaer å bygge og ingen kontrast å sikre.
     return {
       light: {},
       dark: {},
@@ -221,11 +232,11 @@ export function buildTheme(input: ThemeInput): Theme {
   }
 
   const palett = {
-    interactive: buildScale(input.interactive as string),
-    danger: buildScale(input.danger as string),
-    success: buildScale(input.success as string),
-    warning: buildScale(input.warning as string),
-    visited: buildScale(input.visited ?? (input.interactive as string)),
+    interactive: buildScale(interactive),
+    danger: buildScale(danger),
+    success: buildScale(success),
+    warning: buildScale(warning),
+    visited: buildScale(input.visited ?? interactive),
     neutral: buildNeutralScale(input.neutral ?? "#1a1a1a"),
   }
 
