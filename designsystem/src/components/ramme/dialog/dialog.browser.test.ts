@@ -238,9 +238,10 @@ describe("fs-dialog", () => {
     window.removeEventListener("error", lytter)
 
     expect(feil).toEqual([])
-    expect((holder.querySelector("dialog") as HTMLDialogElement).open).toBe(
-      false,
-    )
+    // `:modal` og ikke `.open`: serveren skriver `open` selv når dialogen
+    // skal vises, slik at innholdet finnes uten JavaScript. Det som ikke
+    // skal ha skjedd her, er at komponenten kalte `showModal()`.
+    expect(holder.querySelector("dialog")?.matches(":modal")).toBe(false)
   })
 
   it("freder ikke open på verten, for det er serveren som åpner dialogen", () => {

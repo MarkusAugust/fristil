@@ -19,6 +19,7 @@ export type DialogAttributes = {
   dialog: {
     class: typeof DIALOG_CLASS
     "aria-labelledby": string
+    open?: true
     "data-preserve-attr": "open"
   }
   title: {
@@ -74,8 +75,22 @@ export const dialog = Object.assign(
     dialog: attributes({
       class: DIALOG_CLASS,
       "aria-labelledby": titleId,
-      // `showModal()` setter `open` på selve `<dialog>`. Serveren skriver
-      // det aldri, så uten fredningen river morfingen det bort og lukker
+      /*
+       * `open` står begge steder når dialogen skal vises, og det er med
+       * vilje.
+       *
+       * Uten JavaScript er `<dialog>` uten `open` skjult, så innholdet
+       * serveren ville vise fantes ikke for leseren. Med `open` står det
+       * der som en boks på siden, og komponenten gjør den om til en ekte
+       * modal med `showModal()` når den får kjøre.
+       *
+       * I React er det dessuten det eneste som stemmer: komponenten setter
+       * `open` på `<dialog>` før React hydrerer, og sto det ikke i serverens
+       * HTML, meldte React avvik ved hvert eneste oppslag.
+       */
+      open: open ? (true as const) : undefined,
+      // `showModal()` setter også `open` selv, på en dialog serveren har
+      // sendt lukket. Uten fredningen river morfingen det bort og lukker
       // dialogen i det øyeblikket den åpnet den.
       "data-preserve-attr": "open" as const,
     }),

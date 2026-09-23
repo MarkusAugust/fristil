@@ -230,6 +230,16 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
 
     Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
     :::
+
+    :::caution[Bruker du `fs.field()` med SSR, må id-en komme fra `useId()`]
+    `fs.field()` lager en id når den ikke får en, og den kan ikke bli den samme på serveren og i nettleseren. React melder da avvik ved hydreringen på ledeteksten, feltet og hjelpeteksten, og koblingen mellom dem er brutt til React har rettet den opp.
+
+    ```tsx
+    const felt = fs.field({ id: useId(), help: true })
+    ```
+
+    `<fs-field>` har ikke problemet: der settes id-ene i nettleseren, etter at HTML-en står der, og serveren sender ingen.
+    :::
   </TabItem>
   <TabItem label="Astro">
     Trenger feltet bare å vises i én tilstand, gjør `fs.field()` koblingen ved bygging. Da sendes ingen JavaScript for feltet i det hele tatt:

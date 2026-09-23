@@ -100,7 +100,7 @@ defineFsDialog()
 
 ```html
 <fs-dialog open>
-  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" data-preserve-attr="open">
+  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" open data-preserve-attr="open">
     <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
     <div class="fs-dialog__body">
       <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
@@ -119,11 +119,13 @@ De to `open`-ene i eksempelet er ikke det samme:
 | Hvor | Hvem setter den | Fredet |
 | --- | --- | --- |
 | På `<fs-dialog>` | Serveren, når dialogen skal vises | Nei |
-| På `<dialog>` | Nettleseren, når `showModal()` kalles | Ja |
+| På `<dialog>` | Serveren når den vet, og nettleseren når `showModal()` kalles | Ja |
 
 At verten ikke er fredet, er et valg og ikke en forglemmelse. Hadde den vært det, kunne serveren aldri åpnet dialogen igjen etter at brukeren hadde lukket den én gang. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
 
-Attributtet på selve `<dialog>` må derimot fredes. Serveren skriver det aldri, så uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
+Attributtet på selve `<dialog>` må fredes, for nettleseren setter det selv i `showModal()`. Uten `data-preserve-attr="open"` river morfingen det bort og lukker dialogen i det øyeblikket den åpnet den.
+
+Serveren skriver det likevel når den vet at dialogen skal vises, og `fs.dialog({ open: true })` gir det på begge elementene. Det er av to grunner. Uten JavaScript er en `<dialog>` uten `open` skjult, så innholdet serveren ville vise finnes ikke for leseren; med `open` står det der som en boks på siden, og komponenten gjør den om til en ekte modal når den får kjøre. Og i React setter komponenten `open` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
 
 ## TypeScript
 

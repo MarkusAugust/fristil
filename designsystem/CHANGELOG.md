@@ -16,6 +16,24 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Endret
+
+- **`fs.dialog({ open: true })` skriver `open` på `<dialog>` også.** Det sto
+  bare på verten, og da var innholdet borte for den som ikke har JavaScript:
+  en `<dialog>` uten `open` er skjult. Nå står det som en boks på siden, og
+  komponenten gjør den om til en ekte modal med `showModal()` når den får
+  kjøre. I React var det dessuten det eneste som stemte: komponenten setter
+  `open` før React hydrerer, og sto det ikke i serverens HTML, meldte React
+  avvik ved hvert eneste oppslag. Funnet i demoappen i TanStack Start.
+
+### Dokumentasjon
+
+- **`fs.field()` med server-rendring i React trenger `useId()`.**
+  Byggefunksjonen lager en id når den ikke får en, og den kan ikke bli den
+  samme på serveren og i nettleseren. React meldte avvik ved hydreringen på
+  ledeteksten, feltet og hjelpeteksten. Det står nå på feltsiden, sammen med
+  at `<fs-field>` ikke har problemet.
+
 ## 0.8.0 (2026-09-23)
 
 ### Brytende
