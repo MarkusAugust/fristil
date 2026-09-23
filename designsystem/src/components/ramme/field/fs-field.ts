@@ -159,9 +159,20 @@ export class FsField extends HostElement {
       control.getAttribute("aria-invalid") === "true"
 
     const computed = computeFieldAttributes({
+      /*
+       * Id-en leses fra markupen, også fra ledetekstens `for`.
+       *
+       * Uten den siste kilden mister feltet koblingen ved første patch.
+       * Morfingen kan erstatte kontrollen med serverens node, som ikke har
+       * noen id, mens ledeteksten beholder sin `for`, og da fant komponenten
+       * ingen id, fant opp en ny, og skrev den bare på kontrollen. `for`
+       * pekte etter det på et element som ikke fantes. Funnet i spilldemoen,
+       * i appen som sender HTML-biter fra en Kotlin-server.
+       */
       id:
         this.getAttribute("control-id") ||
         control.id ||
+        label?.htmlFor ||
         uniqueId("fs-field-control"),
       help: Boolean(help),
       error: Boolean(error),
@@ -183,7 +194,9 @@ export class FsField extends HostElement {
 
     if (label) {
       label.classList.add(computed.label.class)
-      if (!label.htmlFor) label.htmlFor = computed.label.for
+      // Alltid, ikke bare når den mangler: `for` og `id` er den samme
+      // opplysningen, og de to kan ikke få lov til å si hver sin ting.
+      label.htmlFor = computed.label.for
       setOrRemove(label, "data-required", computed.label["data-required"])
       setOrRemove(label, "data-optional", computed.label["data-optional"])
       setOrRemove(label, "aria-disabled", computed.label["aria-disabled"])

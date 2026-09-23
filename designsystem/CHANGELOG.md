@@ -16,6 +16,21 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`<fs-field>` mistet koblingen mellom ledetekst og felt ved første
+  patch.** Bytter en morfing ut selve kontrollen, finnes det ingen node å
+  frede, og den nye kommer uten id. Ledeteksten står igjen med sin `for`.
+  Komponenten fant da ingen id, fant opp en ny, skrev den bare på
+  kontrollen, og `for` pekte etter det på et element som ikke fantes. Feltet
+  var altså uten ledetekst for en skjermleser, og det holdt seg til siden
+  ble lastet på nytt.
+
+  Id-en leses nå også fra ledetekstens `for`, og `for` skrives hver gang, ikke
+  bare når den mangler: de to er den samme opplysningen og kan ikke få si
+  hver sin ting. Funnet i spilldemoen, i appen som sender HTML-biter fra en
+  Kotlin-server.
+
 ## 0.8.1 (2026-09-23)
 
 ### Endret
