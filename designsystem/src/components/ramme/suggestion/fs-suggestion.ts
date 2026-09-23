@@ -28,8 +28,9 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  * `aria-activedescendant` i synk slik at skjermleseren leser opp alternativet
  * uten at fokus forlater feltet.
  *
- * Patcher serveren lista selv, som i en Datastar-app, slår filtreringen seg
- * av: da er det serveren som bestemmer hva som vises.
+ * Har noen andre alt filtrert, en server eller en React-komponent som
+ * rendrer bare treffene, sier `prefiltered` fra, og komponenten lar
+ * alternativene være i fred.
  *
  * ```html
  * <fs-suggestion>
@@ -45,7 +46,7 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  * ```
  */
 export class FsSuggestion extends HostElement {
-  static observedAttributes = ["server-filtered", SERVER_CONTROLLED]
+  static observedAttributes = ["prefiltered", SERVER_CONTROLLED]
 
   private observer?: MutationObserver
   private control?: HTMLInputElement
@@ -73,6 +74,13 @@ export class FsSuggestion extends HostElement {
    * bare der `aria-activedescendant` skal peke.
    */
   private active?: { id: string; label: string }
+  /**
+   * Antallet som sist ble lest opp, når noen andre filtrerer.
+   *
+   * Bare endringer skal leses opp, og det første antallet er
+   * utgangspunktet og ikke en nyhet. Se `announceFiltered`.
+   */
+  private announcedCount?: number
 
   connectedCallback(): void {
     /*
@@ -100,11 +108,26 @@ export class FsSuggestion extends HostElement {
       this.wantOpen = undefined
       this.active = undefined
     }
+
+    /*
+     * Attributtet kan komme og gå mens siden lever, og da skal lista rettes
+     * opp med en gang framfor ved neste tastetrykk. `this.observer` er
+     * beskjeden om at komponenten står i dokumentet: tilbakekallet kommer
+     * også under oppgraderingen, før barna finnes.
+     */
+    if (navn === "prefiltered" && this.observer) {
+      // Antallet som står der i det attributtet settes er utgangspunktet, og
+      // ikke noe å lese opp. Uten dette ble den første endringen etterpå
+      // regnet som utgangspunktet, og gikk tapt.
+      this.announcedCount = this.prefiltered ? this.visible.length : undefined
+      this.filter()
+    }
   }
 
   private sync(): void {
     this.bind()
     this.repair()
+    this.announceFiltered()
   }
 
   /**
@@ -169,9 +192,34 @@ export class FsSuggestion extends HostElement {
     this.unbind()
   }
 
-  /** Slår av filtreringen på klienten. Da er det serveren som bestemmer. */
-  get serverFiltered(): boolean {
-    return this.hasAttribute("server-filtered")
+  /**
+   * Noen andre har alt filtrert, så komponenten skal la være.
+   *
+   * Navnet het `server-filtered` før, og det var misvisende: det handler ikke
+   * om servere. En React-app som rendrer bare treffene har filtrert like
+   * fullt, uten at noen server er involvert.
+   *
+   * Komponenten skjuler et alternativ når teksten ikke inneholder det som
+   * står i feltet. Filtrerer du på noe annet, uten diakritikk, på en kode som
+   * ikke vises eller uskarpt, blir de to uenige, og da er det ditt filter som
+   * skal gjelde. Attributtet slår av både skjulingen og tommeldingen, altså
+   * alt som handler om hva lista viser. Opplesningen av antall treff blir
+   * igjen, siden den ikke er markup.
+   */
+  get prefiltered(): boolean {
+    return this.hasAttribute("prefiltered")
+  }
+
+  set prefiltered(on: boolean) {
+    /*
+     * Setteren er ikke pynt. React 19 skriver egenskapen framfor attributtet
+     * når et egendefinert element har en med det navnet, og en getter alene
+     * kaster «Cannot set property prefiltered». Attributtet landet aldri, og
+     * komponenten skjulte det React nettopp hadde rendret. Bindestreken i det
+     * gamle navnet skjulte problemet: `server-filtered` kan ikke være et
+     * egenskapsnavn, så React sendte det som attributt.
+     */
+    setFlag(this, "prefiltered", on)
   }
 
   private get listElement(): HTMLElement | null {
@@ -280,8 +328,27 @@ export class FsSuggestion extends HostElement {
     }
   }
 
+  /**
+   * Skjuler det som ikke passer, og melder hvor mange som er igjen.
+   *
+   * Kjøres av det brukeren gjør: hun skriver, eller hun setter fokus i
+   * feltet.
+   */
   private filter(): void {
-    if (this.serverFiltered) return
+    /*
+     * Har noen andre filtrert, eier de hva lista viser, og tommeldingen er
+     * en del av det. Komponenten rører derfor ingenting her, og opplesningen
+     * kommer fra `announceFiltered` i stedet.
+     *
+     * To utgaver var feil før denne. Den første returnerte med en gang, og
+     * da satt en Datastar-app igjen uten opplesning av antall treff i det
+     * hele tatt. Den andre telte her: da meldte et tomt felt «Ingen treff»
+     * allerede ved fokus, før brukeren hadde skrevet et tegn, og et
+     * asynkront søk meldte det på nytt ved hvert tastetrykk mens svaret
+     * fortsatt var underveis. Komponenten satte samtidig tommeldingen synlig
+     * igjen etter at appen hadde skjult den, og det fantes ingen vei utenom.
+     */
+    if (this.prefiltered) return
 
     const query = (this.control?.value ?? "").trim().toLowerCase()
     for (const option of this.options) {
@@ -294,6 +361,29 @@ export class FsSuggestion extends HostElement {
     if (empty) setFlag(empty, "hidden", treff > 0)
 
     this.announce(treff)
+  }
+
+  /**
+   * Leser opp antallet når noen andre har filtrert.
+   *
+   * Lista endrer seg da ikke av et tastetrykk, men av at appen rendrer på
+   * nytt, og det er nettopp den endringen observatøren ser. Beskjeden hører
+   * hjemme her og ikke i `filter()`, for mellom tastetrykket og det nye
+   * svaret kan det gå et halvt sekund over nettverket.
+   *
+   * Bare endringer leses opp. Det første antallet er utgangspunktet og ikke
+   * en nyhet, og det står ofte 0 der fordi appen ikke har rendret lista
+   * ennå.
+   */
+  private announceFiltered(): void {
+    if (!this.prefiltered) return
+
+    const treff = this.visible.length
+    if (treff === this.announcedCount) return
+
+    const forste = this.announcedCount === undefined
+    this.announcedCount = treff
+    if (!forste) this.announce(treff)
   }
 
   /**

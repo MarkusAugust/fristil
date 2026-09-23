@@ -229,6 +229,10 @@ for (const variabel of [...alleVariabler].sort()) {
 const KODEKALL =
   /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
 
+/** Det samme, men bare når kallet har en argumentliste. Se `inlineKode`. */
+const KODEKALL_MED_ARGUMENT =
+  /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g
+
 /**
  * Bare koden.
  *
@@ -250,24 +254,53 @@ function kodebiter(fil: string, innhold: string): string[] {
   return [frontmatter, ...skript]
 }
 
+/**
+ * Det som står i enkle bakoverfnutter i brødteksten.
+ *
+ * `fs.suggestion({ count: treff.length })` uten `id` sto i en setning under
+ * et eksempel og slapp gjennom, siden bare kodegjerdene ble lest. Et kall med
+ * en argumentliste er et eksempel uansett hvor det står.
+ */
+function inlineKode(fil: string, innhold: string): string[] {
+  if (!fil.endsWith(".mdx")) return []
+  const utenGjerder = innhold.replace(/```[\s\S]*?```/g, "")
+  return [...utenGjerder.matchAll(/`([^`\n]+)`/g)].map((treff) => treff[1])
+}
+
+function lesKall(fil: string, treff: RegExpMatchArray): void {
+  const bygger = treff[1]
+  const argument = treff[2]
+  // Ingen argumentliste å lese, altså en variabel. Da sier vi ingenting.
+  if (argument === undefined && !/\(\s*\)/.test(treff[0])) return
+
+  const nokkel = bygger === "dialog" ? "titleId" : "id"
+  // Uten kolon: `{ titleId }` er kortformen, og den teller. Ordgrensene gjør
+  // at `helpId` og `errorId` ikke går for `id`.
+  if (argument && new RegExp(`\\b${nokkel}\\b`).test(argument)) return
+
+  avvik.push({
+    hvor: fil,
+    hva: `\`fs.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
+  })
+}
+
 for (const fil of [
   ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOKUMENTASJON),
 ]) {
-  for (const kode of kodebiter(fil, les(`${DOKUMENTASJON}${fil}`))) {
-    for (const treff of kode.matchAll(KODEKALL)) {
-      const bygger = treff[1]
-      const argument = treff[2]
-      // Ingen argumentliste å lese, altså en variabel. Da sier vi ingenting.
-      if (argument === undefined && !/\(\s*\)/.test(treff[0])) continue
+  const innhold = les(`${DOKUMENTASJON}${fil}`)
 
-      const nokkel = bygger === "dialog" ? "titleId" : "id"
-      if (argument && new RegExp(`\\b${nokkel}\\s*:`).test(argument)) continue
+  for (const kode of kodebiter(fil, innhold)) {
+    for (const treff of kode.matchAll(KODEKALL)) lesKall(fil, treff)
+  }
 
-      avvik.push({
-        hvor: fil,
-        hva: `\`fs.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
-      })
-    }
+  /*
+   * I brødteksten teller bare kallet som faktisk har en argumentliste.
+   * `fs.field()` uten argumenter er navnet på en funksjon, og står slik i
+   * dusinvis av setninger.
+   */
+  for (const kode of inlineKode(fil, innhold)) {
+    for (const treff of kode.matchAll(KODEKALL_MED_ARGUMENT))
+      lesKall(fil, treff)
   }
 }
 

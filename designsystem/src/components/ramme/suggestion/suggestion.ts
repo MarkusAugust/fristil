@@ -32,8 +32,10 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  *
  * Ingen bevaringsliste. Attributtene som endrer seg mens brukeren skriver er
  * komponentens egne, og den setter dem tilbake når en patch river dem bort.
- * Skal serveren eie hva lista viser, settes `server-controlled` på
- * `<fs-suggestion>`.
+ * Har noen andre alt filtrert, settes `prefiltered` på `<fs-suggestion>`, og
+ * komponenten lar både alternativene og tommeldingen være i fred. Skal
+ * serveren i tillegg eie om lista er utvidet og hvilket alternativ som er
+ * markert, settes `server-controlled` ved siden av.
  */
 export const suggestion = ({
   id: oppgittId,
