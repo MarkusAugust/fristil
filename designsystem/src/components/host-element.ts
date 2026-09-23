@@ -59,6 +59,24 @@ export function setAttr(
 }
 
 /**
+ * Slår et boolsk attributt av eller på, uten å skrive når det står slik alt.
+ *
+ * `el.hidden = true` på noe som alt er skjult skriver attributtet på nytt, og
+ * det teller som en endring. `toggleAttribute` gjør ikke det: står
+ * attributtet slik det skal, skjer ingenting. Den er derfor den eneste
+ * lovlige veien til `hidden`, `disabled` og de andre boolske attributtene i en
+ * komponent som observerer sine egne.
+ */
+export function setFlag(element: Element, name: string, on: boolean): void {
+  element.toggleAttribute(name, on)
+}
+
+/** Legger på en klasse, men bare når den ikke står der fra før. */
+export function addClass(element: Element, name: string): void {
+  if (!element.classList.contains(name)) element.classList.add(name)
+}
+
+/**
  * Attributtet som gir serveren tilstanden tilbake.
  *
  * Komponentene reparerer som standard det brukeren har gjort: valgte fanen,

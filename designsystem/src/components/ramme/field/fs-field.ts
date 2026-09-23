@@ -1,7 +1,9 @@
 import {
+  addClass,
   defineElement,
   HostElement,
   setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
@@ -320,14 +322,14 @@ export class FsField extends HostElement {
       if (help.id) this.generatedHelpId = help.id
       else {
         this.generatedHelpId ??= uniqueId("fs-field-help")
-        help.id = this.generatedHelpId
+        setAttr(help, "id", this.generatedHelpId)
       }
     }
     if (error) {
       if (error.id) this.generatedErrorId = error.id
       else {
         this.generatedErrorId ??= uniqueId("fs-field-error")
-        error.id = this.generatedErrorId
+        setAttr(error, "id", this.generatedErrorId)
       }
     }
 
@@ -374,12 +376,10 @@ export class FsField extends HostElement {
       ].filter(Boolean),
     })
 
-    if (control.id !== computed.control.id) control.id = computed.control.id
+    setAttr(control, "id", computed.control.id)
 
     if (label) {
-      if (!label.classList.contains(computed.label.class)) {
-        label.classList.add(computed.label.class)
-      }
+      addClass(label, computed.label.class)
       // Alltid, ikke bare når den mangler: `for` og `id` er den samme
       // opplysningen, og de to kan ikke få lov til å si hver sin ting.
       if (label.htmlFor !== computed.label.for)
@@ -393,8 +393,7 @@ export class FsField extends HostElement {
       // Bare `hidden`. Et skjult element er allerede ute av
       // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
       // hydreringsfeil i React fordi serveren ikke skriver det.
-      const shouldHide = Boolean(computed.error.hidden)
-      if (error.hidden !== shouldHide) error.hidden = shouldHide
+      setFlag(error, "hidden", Boolean(computed.error.hidden))
     }
 
     setAttr(control, "aria-describedby", computed.control["aria-describedby"])
@@ -403,7 +402,12 @@ export class FsField extends HostElement {
     this.lastControl = control
 
     if (disabled) {
-      setAttr(control, "disabled", "")
+      // `setFlag` og ikke `setAttr`: en mal kan ha skrevet
+      // `disabled="disabled"`, og den skal stå som den er. `setAttr` ville
+      // normalisert verdien til den tomme strengen, og siden `disabled` er
+      // blant attributtene komponenten observerer, ville serveren og
+      // komponenten skrevet hver sin verdi ved hver patch.
+      setFlag(control, "disabled", true)
       setAttr(control, "aria-disabled", "true")
     } else {
       control.removeAttribute("disabled")

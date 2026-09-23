@@ -462,6 +462,51 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(paneler[0].hidden).toBe(true)
   })
 
+  it("lar brukeren bytte fane i markup uten id-er", async () => {
+    /*
+     * Håndskrevet markup fra en Go- eller Kotlin-mal har ofte ingen id-er på
+     * fanene, og det er lovlig: `aria-controls` er ikke et krav.
+     *
+     * Husket komponenten valget som en id, ble den tomme strengen en
+     * identitet som traff den første fanen, og reparasjonen satte valget
+     * tilbake i neste mikrooppgave. Brukeren fikk da ikke byttet fane i det
+     * hele tatt, og ingenting sa fra.
+     */
+    const UTEN_IDER = `
+      <fs-tabs>
+        <div class="fs-tabs__list" role="tablist">
+          <button role="tab" aria-selected="true" tabindex="0">Oversikt</button>
+          <button role="tab" aria-selected="false" tabindex="-1">Vedlegg</button>
+        </div>
+        <div class="fs-tabs__panel" role="tabpanel" tabindex="0">Sammendrag</div>
+        <div class="fs-tabs__panel" role="tabpanel" tabindex="0" hidden>Filer</div>
+      </fs-tabs>`
+
+    const felt = monterMarkup(UTEN_IDER)
+    await customElements.whenDefined("fs-tabs")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const paneler = [
+      ...felt.querySelectorAll("[role='tabpanel']"),
+    ] as HTMLElement[]
+
+    knapper[1].click()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(
+      knapper[1].getAttribute("aria-selected"),
+      "valget hoppet tilbake til den første fanen",
+    ).toBe("true")
+    expect(paneler[1].hidden).toBe(false)
+
+    morf(felt, UTEN_IDER)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+    expect(paneler[1].hidden).toBe(false)
+  })
+
   it("lar serveren flytte fanen når den sier at den eier valget", async () => {
     /*
      * Det fredningen ga, og som reparasjonen måtte erstatte.

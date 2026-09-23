@@ -4,6 +4,7 @@ import {
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
@@ -51,16 +52,21 @@ export class FsTabs extends HostElement {
   /**
    * Fanen brukeren valgte, husket så en patch ikke kan ta den.
    *
-   * Id-en og ikke indeksen. En indeks er ikke en identitet: setter serveren
-   * inn en fane først i lista, peker den samme indeksen på noe annet, og
-   * valget hoppet til en fane brukeren aldri trykket på. Er id-en borte etter
-   * en patch, er fanen borte, og da glemmer komponenten valget framfor å
-   * gjette.
+   * Selve noden, ikke indeksen og ikke id-en. En indeks er ingen identitet:
+   * setter serveren inn en fane først i lista, peker den samme indeksen på
+   * noe annet, og valget hopper til en fane brukeren aldri trykket på. Id-en
+   * er heller ikke nok, for håndskrevet markup har ofte ingen, og da ble den
+   * tomme strengen en identitet som traff den første fanen. Det var verre enn
+   * indeksen: brukeren fikk ikke byttet fane i det hele tatt.
+   *
+   * En attributtmorfing beholder nodene, så referansen overlever den. Bytter
+   * patchen ut selve knappen, er fanen en annen, og da glemmer komponenten
+   * valget framfor å gjette.
    *
    * `undefined` betyr at brukeren ikke har valgt noe ennå, og da er det
    * serverens markup som gjelder.
    */
-  private chosenId?: string
+  private chosenTab?: HTMLButtonElement
 
   connectedCallback(): void {
     /*
@@ -83,7 +89,7 @@ export class FsTabs extends HostElement {
     // `server-controlled` slått på midt i: da skal komponenten slippe taket,
     // og neste patch bestemmer.
     if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
-      this.chosenId = undefined
+      this.chosenTab = undefined
     }
   }
 
@@ -131,13 +137,13 @@ export class FsTabs extends HostElement {
    * ting og skjermen en annen.
    */
   private repair(): void {
-    if (this.chosenId === undefined || isServerControlled(this)) return
+    if (!this.chosenTab || isServerControlled(this)) return
 
-    const index = this.tabs.findIndex((tab) => tab.id === this.chosenId)
+    const index = this.tabs.indexOf(this.chosenTab)
     if (index < 0) {
       // Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
       // serverens markup som gjelder.
-      this.chosenId = undefined
+      this.chosenTab = undefined
       return
     }
 
@@ -221,7 +227,7 @@ export class FsTabs extends HostElement {
     // Ingen hukommelse når serveren eier valget. Uten dette ville et valg
     // gjort mens attributtet sto der blitt satt tilbake i det noen fjernet
     // det igjen.
-    if (!isServerControlled(this)) this.chosenId = tabs[index].id
+    if (!isServerControlled(this)) this.chosenTab = tabs[index]
     this.apply(index)
 
     this.dispatchEvent(
@@ -247,11 +253,10 @@ export class FsTabs extends HostElement {
     tabs.forEach((tab, i) => {
       const valgt = i === index
       setAttr(tab, "aria-selected", String(valgt))
-      const tabindex = valgt ? 0 : -1
-      if (tab.tabIndex !== tabindex) tab.tabIndex = tabindex
+      setAttr(tab, "tabindex", valgt ? "0" : "-1")
 
       const panel = panels[i]
-      if (panel && panel.hidden === valgt) panel.hidden = !valgt
+      if (panel) setFlag(panel, "hidden", !valgt)
     })
   }
 }

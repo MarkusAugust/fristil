@@ -80,7 +80,10 @@ export class FsPopover extends HostElement {
     // Beskjeden noteres her, og ikke i `show()` og `hide()`. De går begge
     // gjennom setteren, men det gjør også `meny.open = false` fra en app, og
     // uten dette satte komponenten attributtet rett tilbake igjen.
-    this.wantsOpen = value
+    //
+    // Ingen hukommelse når serveren eier tilstanden. Uten den sperren spratt
+    // vinduet opp av seg selv i det `server-controlled` ble tatt av igjen.
+    this.wantsOpen = isServerControlled(this) ? false : value
     if (value) this.setAttribute("open", "")
     else this.removeAttribute("open")
   }

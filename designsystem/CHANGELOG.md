@@ -40,17 +40,27 @@ kommer i et nytt undertall.
   `<fs-tabs>`, `<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>`, og er
   deklarert for JSX på alle fire.
 
-- **`setAttr` og `SERVER_CONTROLLED` er nye eksporter** fra
-  `@fristil/designsystem/host-element`. `setAttr` skriver et attributt bare
-  når verdien er en annen, og er den eneste lovlige veien til et attributt på
-  et annet element i en komponent som observerer sine egne. En overtatt
-  komponent bruker begge.
+- **`setAttr`, `setFlag`, `addClass`, `SERVER_CONTROLLED` og
+  `isServerControlled` er nye eksporter** fra
+  `@fristil/designsystem/host-element`. De tre første skriver bare når noe
+  faktisk endrer seg, og er de eneste lovlige veiene til et attributt, et
+  boolsk flagg og en klasse i en komponent som observerer sine egne. En
+  overtatt komponent bruker dem.
 
 - **`scripts/sjekk-skriving.ts` håndhever den regelen.** Den kjører som del av
-  `build` og leser kilden, fordi regelen ikke lar seg etterprøve ved å kjøre
-  noe: bryter en komponent den, kaller observatøren seg selv, mikrooppgavekøen
-  tømmes aldri, og en testkjøring **henger** framfor å feile. Ingen
-  stakksporing, ingen påstand, bare en kjøring som må drepes for hånd.
+  `build`, både i pakken og i rota, og leser kilden, fordi regelen ikke lar seg
+  etterprøve ved å kjøre noe: bryter en komponent den, kaller observatøren seg
+  selv, mikrooppgavekøen tømmes aldri, og en testkjøring **henger** framfor å
+  feile. Ingen stakksporing, ingen påstand, bare en kjøring som må drepes for
+  hånd.
+
+  Den ser etter fire skrivemåter, ikke bare `setAttribute`. `el.hidden = x`,
+  `el.tabIndex = n` og `classList.add()` gir alle en mutasjonspost når
+  ingenting endrer seg, og alle tre var i bruk.
+
+- **`sjekk:server` kjøres nå også fra rota.** Den sto bare i pakkens egen
+  `build`, så den kjørte ved publisering og ikke i CI, mens `CLAUDE.md` sa at
+  den var en vaktpost.
 
 - **`stabilitet.browser.test.ts`** teller mutasjoner i hver av de fem
   komponentene etter at brukeren har gjort noe, og krever null. Den fanger en

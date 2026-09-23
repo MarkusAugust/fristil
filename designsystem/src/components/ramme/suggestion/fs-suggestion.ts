@@ -4,6 +4,7 @@ import {
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
+  setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
 import {
@@ -142,8 +143,13 @@ export class FsSuggestion extends HostElement {
           o.id === this.active?.id &&
           (o.textContent ?? "").trim() === this.active?.label,
       )
-      if (!aktiv) this.active = undefined
-      else if (aktiv.getAttribute("aria-selected") !== "true") {
+      if (!aktiv) {
+        // Pekeren må bort sammen med markeringen. Uten dette pekte
+        // `aria-activedescendant` på et alternativ som nå heter noe annet, og
+        // skjermleseren leste opp en kommune brukeren aldri navigerte til.
+        this.active = undefined
+        this.control.removeAttribute("aria-activedescendant")
+      } else if (aktiv.getAttribute("aria-selected") !== "true") {
         this.markOption(aktiv)
       }
     }
@@ -255,7 +261,7 @@ export class FsSuggestion extends HostElement {
     const list = this.listElement
     if (!list || !this.control) return
 
-    if (list.hidden === open) list.hidden = !open
+    setFlag(list, "hidden", !open)
     setAttr(this.control, "aria-expanded", String(open))
 
     if (!open) {
@@ -273,13 +279,12 @@ export class FsSuggestion extends HostElement {
     const query = (this.control?.value ?? "").trim().toLowerCase()
     for (const option of this.options) {
       const label = (option.textContent ?? "").trim().toLowerCase()
-      const skjult = query !== "" && !label.includes(query)
-      if (option.hidden !== skjult) option.hidden = skjult
+      setFlag(option, "hidden", query !== "" && !label.includes(query))
     }
 
     const treff = this.visible.length
     const empty = this.querySelector<HTMLElement>(`.${SUGGESTION_EMPTY_CLASS}`)
-    if (empty && empty.hidden !== treff > 0) empty.hidden = treff > 0
+    if (empty) setFlag(empty, "hidden", treff > 0)
 
     this.announce(treff)
   }
