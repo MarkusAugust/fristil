@@ -66,6 +66,11 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     En feilmelding står til brukeren lukker den, derfor `duration: 0`.
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-toast> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     // main.tsx, kjøres én gang når appen starter
     import { defineFsToast } from "@fristil/designsystem/toast"
@@ -120,10 +125,14 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   <TabItem label="Astro">
     ```astro
     ---
-    // Legg beholderen i sideoppsettet, så finnes den på hver side
     import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/toast.css"
+
+    // Legg beholderen i sideoppsettet, så finnes den på hver side
 
     const varsler = fs.toast({ label: "Meldinger" })
+
     ---
 
     <slot />
@@ -132,8 +141,6 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     <script>
       import { defineFsToast } from "@fristil/designsystem/toast"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/toast.css"
       defineFsToast()
 
       // Gjør køen tilgjengelig for øyene på siden

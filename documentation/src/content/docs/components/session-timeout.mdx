@@ -55,10 +55,15 @@ defineFsSessionTimeout()
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-session-timeout> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     import "@fristil/designsystem/session-timeout.css"
     import { useEffect, useRef } from "react"
-    import { fs } from "@fristil/designsystem"
+    import { fs } from "@fristil/designsystem/react"
     import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
     import "@fristil/designsystem/tokens.css"
 

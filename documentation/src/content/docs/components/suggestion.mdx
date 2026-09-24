@@ -71,6 +71,11 @@ defineFsSuggestion()
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-suggestion> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     import { fs } from "@fristil/designsystem/react"
     import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
@@ -108,9 +113,12 @@ defineFsSuggestion()
     ```astro
     ---
     import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/suggestion.css"
 
     const kommuner = ["Bergen", "Bodø", "Oslo", "Tromsø"]
     const forslag = fs.suggestion({ id: "kommune", count: kommuner.length })
+
     ---
 
     <fs-suggestion>
@@ -127,8 +135,6 @@ defineFsSuggestion()
 
     <script>
       import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/suggestion.css"
       defineFsSuggestion()
     </script>
     ```

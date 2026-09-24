@@ -51,6 +51,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs } from "@fristil/designsystem"
 
 const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
+if (!gruppe) throw new Error("fant ikke elementet")
 
 fs.setAttributes(gruppe, fs.toggleGroup())
 ```

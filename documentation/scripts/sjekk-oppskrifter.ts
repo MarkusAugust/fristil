@@ -125,6 +125,9 @@ function eksempler(tekst: string): string[] {
  * regelen krevd stilark som allerede kommer med.
  */
 const FRA_STILARK = new Map<string, string>()
+
+/** Stilarket hvert `fs-`-element styres av. */
+const FRA_ELEMENT = new Map<string, string>()
 const HENTER = new Map<string, Set<string>>()
 {
   const lesArk = (mappe: string) => {
@@ -139,6 +142,17 @@ const HENTER = new Map<string, Set<string>>()
         const tekst = readFileSync(p, "utf8")
         for (const m of tekst.matchAll(/\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
           if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], oppf.name)
+        /*
+         * Og elementvelgerne.
+         *
+         * Ni stilark styrer et `fs-`-element og ingen klasse: toast, field,
+         * dialog, popover, tabs, suggestion, error-summary,
+         * connection-status og session-timeout. En regel som bare kjenner
+         * klasser kan aldri kreve dem, og da forsvant `toast.css` fra
+         * toast-oppskriften uten at noe sa fra.
+         */
+        for (const m of tekst.matchAll(/^\s*(fs-[a-z0-9-]+)[\s,{]/gm))
+          if (!FRA_ELEMENT.has(m[1])) FRA_ELEMENT.set(m[1], oppf.name)
         HENTER.set(
           oppf.name,
           new Set(
@@ -179,10 +193,35 @@ function lukning(start: string[]): Set<string> {
  */
 function bareKode(tekst: string): string {
   const gjerder = [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) => m[1])
-  return gjerder.length > 0 ? gjerder.join("\n") : ""
+  // Uten kommentarene: en kommentar som *nevner* `<fs-dialog>` er ikke
+  // markup, og en regel som leser den krever en registrering som ikke
+  // trengs.
+  return gjerder
+    .join("\n")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/^\s*\/\/.*$/gm, "")
 }
 
 const MED_BUNTER = new Set(["React", "Astro", "TypeScript"])
+
+/**
+ * Fanenavnene dokumentasjonen bruker, og bare disse.
+ *
+ * Hver regel velges på et navn som streng: `MED_BUNTER`, kravet om URL
+ * framfor pakkenavn, registreringen og `fs`-importen. Skrev noen
+ * `label="Ren html"`, ble to av dem slått av uten at noe sa fra. Et
+ * ordforråd som håndheves gjør klassifiseringen etterprøvbar framfor å være
+ * noe sjekken bare antar.
+ */
+const FANENAVN = new Set([
+  "Prøv den",
+  "Eksempel",
+  "Ren HTML",
+  "React",
+  "Astro",
+  "Datastar",
+  "TypeScript",
+])
 
 /**
  * Verter der byggefunksjonen gir attributter komponenten ikke setter selv.
@@ -333,10 +372,14 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
   for (const f of faner) resten = resten.replace(f.kode, "")
   faner.push({ navn: "resten", kode: resten })
 
-  if (faner.length === 0) faner.push({ navn: "Kode", kode: seksjon })
-
   for (const fane of faner) {
     const hvor = `«${fane.navn}»`
+
+    if (fane.navn !== "resten" && !FANENAVN.has(fane.navn))
+      si(
+        side,
+        `fanen heter «${fane.navn}», som ikke er et av navnene dokumentasjonen bruker. Reglene velges på navnet, så en skrivefeil slår dem av i stillhet.`,
+      )
 
     for (const m of fane.kode.matchAll(
       /@fristil\/designsystem(?:\/([a-z0-9/.-]+))?/g,
@@ -403,8 +446,16 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
      * ingen funksjon å kalle.
      */
+    /*
+     * `className` og ikke `class`.
+     *
+     * TypeScript-fanen viser to scenarier, og det andre er markup en server
+     * eller en mal har sendt. Der er `class="fs-button"` nettopp det riktige,
+     * og en regel som feller den ville gjort fanens eget poeng ulovlig.
+     * `className` finnes bare i JSX, altså der byggefunksjonen skal kalles.
+     */
     if (MED_BUNTER.has(fane.navn)) {
-      for (const m of fane.kode.matchAll(/class(?:Name)?="(fs-[^"]*)"/g))
+      for (const m of fane.kode.matchAll(/className="(fs-[^"]*)"/g))
         for (const k of m[1].split(/\s+/))
           if (FRA_BYGGER.has(k))
             si(
@@ -480,8 +531,33 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * skal ikke gjenta importene seksjonen øverst alt har gitt. Der er det
      * `stiler` på `<Eksempel>` som styrer hva forhåndsvisningen laster.
      */
-    if (fane.iOppskrift && brukteKlasser.size > 0) {
+    /*
+     * Og at arkene oppskriften reklamerer med, finnes.
+     *
+     * Bare retningen «kreves, altså oppgitt» ble sjekket, aldri «oppgitt,
+     * altså finnes». `importer={["knapp.css"]}` ga en 404-lenke og en
+     * byggefeil hos leseren, uten et ord. `exports` har svaret.
+     */
+    for (const ark of oppgitt)
+      if (!inngangspunkter.has(ark))
+        si(side, `${hvor} oppgir ${ark}, som ikke finnes i exports`)
+
+    const brukteElementer = new Set(
+      [...bareKode(fane.kode).matchAll(/<(fs-[a-z0-9-]+)[\s/>]/g)].map(
+        (m) => m[1],
+      ),
+    )
+
+    if (
+      fane.iOppskrift &&
+      (brukteKlasser.size > 0 || brukteElementer.size > 0)
+    ) {
       const har = lukning([...oppgitt])
+      for (const el of brukteElementer) {
+        const ark = FRA_ELEMENT.get(el)
+        if (ark && !har.has(ark))
+          si(side, `${hvor} viser <${el}>, men ${ark} er ikke oppgitt`)
+      }
       const savnet = new Set<string>()
       for (const k of brukteKlasser) {
         const ark = FRA_STILARK.get(k)
@@ -550,7 +626,6 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)
     if (
       !MED_BUNTER.has(fane.navn) &&
-      fane.navn !== "Kode" &&
       fane.navn !== "resten" &&
       fane.navn !== "Prøv den"
     ) {

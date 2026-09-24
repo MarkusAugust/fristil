@@ -33,7 +33,6 @@ defineFsErrorSummary()
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/error-summary/error-summary.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/list/list.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/label/label.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/input/input.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
@@ -80,10 +79,14 @@ defineFsErrorSummary()
     Komponenten flytter fokus hit i det `hidden` tas bort.
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-error-summary> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/error-summary.css"
-    import "@fristil/designsystem/list.css"
 
     import { fs } from "@fristil/designsystem/react"
     import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
@@ -117,7 +120,6 @@ defineFsErrorSummary()
 
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/error-summary.css"
-    import "@fristil/designsystem/list.css"
 
     const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
     ---
@@ -141,7 +143,6 @@ defineFsErrorSummary()
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/error-summary/error-summary.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/list/list.css">
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">

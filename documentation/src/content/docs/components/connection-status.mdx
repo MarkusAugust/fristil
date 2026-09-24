@@ -57,9 +57,14 @@ defineFsConnectionStatus()
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-connection-status> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     import "@fristil/designsystem/connection-status.css"
-    import { fs } from "@fristil/designsystem"
+    import { fs } from "@fristil/designsystem/react"
     import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
     import "@fristil/designsystem/tokens.css"
 

@@ -38,7 +38,6 @@ defineFsPopover()
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/popover/popover.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/list/list.css">
     ```
 
     ```html
@@ -46,7 +45,7 @@ defineFsPopover()
       <button class="fs-button" data-variant="secondary"
               aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
+      <ul class="fs-popover" id="handlinger" popover="manual">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -72,6 +71,11 @@ defineFsPopover()
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-popover> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     // main.tsx, kjøres én gang når appen starter
     import { defineFsPopover } from "@fristil/designsystem/popover"
@@ -101,7 +105,7 @@ defineFsPopover()
             Handlinger
           </button>
 
-          <ul {...boks.panel} data-variant="plain">
+          <ul {...boks.panel}>
             <li>
               <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
                 Arkiver saken
@@ -119,17 +123,19 @@ defineFsPopover()
     ```astro
     ---
     import { fs } from "@fristil/designsystem"
-
     import "@fristil/designsystem/button.css"
     import "@fristil/designsystem/link.css"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/popover.css"
 
     const boks = fs.popover({ id: "handlinger" })
+
     ---
 
     <fs-popover placement="bottom-end" {...boks.host}>
       <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
 
-      <ul {...boks.panel} data-variant="plain">
+      <ul {...boks.panel}>
         <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
         <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
       </ul>
@@ -137,8 +143,6 @@ defineFsPopover()
 
     <script>
       import { defineFsPopover } from "@fristil/designsystem/popover"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/popover.css"
       defineFsPopover()
     </script>
     ```
@@ -163,7 +167,7 @@ defineFsPopover()
         <button class="fs-button" data-variant="secondary"
                 aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
+        <ul class="fs-popover" id="handlinger" popover="manual">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
@@ -197,7 +201,7 @@ const boks = fs.popover({ id: "handlinger" })
   <button class="fs-button" data-variant="secondary"
           aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
+  <ul class="fs-popover" id="handlinger" popover="manual">
     <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
     <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
   </ul>

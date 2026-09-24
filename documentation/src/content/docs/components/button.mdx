@@ -56,7 +56,7 @@ fs.setAttributes(knapp, fs.button({ variant }))
 
 Se [Typesikker bruk](../../typesikker-bruk/).
 
-### Gjenbrukbar knapp i React
+**Gjenbrukbar knapp i React.**
 
 ```tsx
 import { fs } from "@fristil/designsystem/react"
@@ -72,7 +72,7 @@ export function Knapp({ variant, ...rest }: Props) {
 }
 ```
 
-Bytter teamet rammeverk, er det disse tolv linjene som skrives om, ikke designsystemet.
+Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke designsystemet.
 
 `ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
 

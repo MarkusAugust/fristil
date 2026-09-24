@@ -53,6 +53,9 @@ import { fs } from "@fristil/designsystem"
 
 const bryter = document.querySelector<HTMLInputElement>("#varsler")
 
+// Slå av mens lagringen går, så brukeren ikke rekker å trykke to ganger.
+let lagrer = false
+
 fs.setAttributes(bryter, fs.switch({ disabled: lagrer }))
 ```
 

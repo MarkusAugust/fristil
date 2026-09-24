@@ -20,7 +20,7 @@ Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra
 
 ## Slik tar du den i bruk
 
-Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften: markupen, koblingen og kallet. Stilarkene er de samme i alle fire, og står i hver fane.
+Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften. De tre første gjør kallet selv; Datastar-utgaven lar `<fs-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Stilarkene er de samme i alle fire, og står i hver fane.
 
 <Tabs>
   <TabItem label="Prøv den">
@@ -34,7 +34,6 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/dialog/dialog.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
     ```
-
 
     ```html
     <button class="fs-button" data-variant="danger" id="apne" type="button">
@@ -69,7 +68,6 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
 
   </TabItem>
   <TabItem label="React">
-
     ```tsx
     import { useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
@@ -292,7 +290,7 @@ Ett forbehold: dialogen er fastposisjonert før den blir modal, mens en ekte mod
 
 Utenfor verten gjelder dette ikke. En `.fs-dialog` med `open`, uten `<fs-dialog>` rundt, står der den står i flyten, slik nettleserens egen stil gjør det.
 
-## TypeScript
+## Typene
 
 ```tsx
 import { fs } from "@fristil/designsystem/react"

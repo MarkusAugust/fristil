@@ -28,7 +28,6 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/tabs/tabs.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/paragraph/paragraph.css">
     ```
 
     ```html
@@ -61,6 +60,11 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-tabs> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     import { fs } from "@fristil/designsystem/react"
     import { defineFsTabs } from "@fristil/designsystem/tabs"
@@ -95,9 +99,12 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     ```astro
     ---
     import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/tabs.css"
 
     const titler = ["Søknaden", "Vedlegg", "Meldinger"]
     const faner = fs.tabs({ id: "sak", count: titler.length, label: "Deler av saken" })
+
     ---
 
     <fs-tabs>
@@ -109,8 +116,6 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
 
     <script>
       import { defineFsTabs } from "@fristil/designsystem/tabs"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/tabs.css"
       defineFsTabs()
     </script>
     ```

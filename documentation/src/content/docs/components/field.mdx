@@ -172,7 +172,6 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ---
     import { fs } from "@fristil/designsystem"
     import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/button.css"
     import "@fristil/designsystem/field.css"
 
     const navn = fs.field({ id: "navn", required: "symbol", error: true })
@@ -262,7 +261,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 
 ### Merkingen
 
-`required-marker` velger hvordan et påkrevd felt merkes, og `optional` snur det om: merk det valgfrie framfor det påkrevde, når nesten alt i skjemaet må fylles ut. De to har ingen eksempler i oppskriften over, siden den viser ett felt og ikke et skjema.
+`required-marker` velger hvordan et påkrevd felt merkes, og `optional` snur det om: merk det valgfrie framfor det påkrevde, når nesten alt i skjemaet må fylles ut. `optional` har ingen plass i oppskriften over, siden den viser ett felt og ikke et skjema.
 
 ```html
 <fs-field required-marker="text">
