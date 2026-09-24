@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { farge, kontrast, PAR } from "../testing/kontrast"
 import { adjustForContrast, parseHex, rgbToOklch } from "./color"
-import { buildTheme } from "./theme"
+import { buildTheme, type ThemeInput } from "./theme"
 
 import "./tokens.css"
 
@@ -171,5 +171,265 @@ describe("generatoren", () => {
 
     expect(Number.parseInt(b, 16)).toBeGreaterThan(Number.parseInt(g, 16))
     expect(Number.parseInt(r, 16)).toBeGreaterThan(Number.parseInt(g, 16))
+  })
+})
+
+/**
+ * Skrift og form.
+ *
+ * Fargene er det vanskeligste å få riktig, og derfor begynte generatoren
+ * der. Men to systemer med samme palett ser fortsatt ulike ut hvis skriften
+ * og hjørnene er ulike, og da er det ikke det samme temaet.
+ */
+describe("temaet kan også sette skrift og form", () => {
+  const farger = {
+    interactive: "#1362ae",
+    danger: "#a82e39",
+    success: "#316f2a",
+    warning: "#9f7509",
+  }
+
+  it("lar være å skrive noe når ingenting er oppgitt", () => {
+    // Det er hele bakoverforeneligheten: et tema uten skrift og form skal
+    // være nøyaktig det temaet var før disse kom til.
+    const tema = buildTheme(farger)
+
+    expect(tema.css).not.toContain("--font-family-base")
+    expect(tema.css).not.toContain("--fs-button-radius")
+    expect(tema.css).not.toContain("font-family:")
+  })
+
+  it("setter skriften som en ekte regel, ikke bare som et token", () => {
+    // Fristil arver skrift med vilje, så et token alene ville ikke endret
+    // én eneste bokstav på skjermen.
+    const tema = buildTheme({
+      ...farger,
+      typography: { fontFamily: "Helvetica, Arial, sans-serif" },
+    })
+
+    expect(tema.css).toContain(
+      "--font-family-base: Helvetica, Arial, sans-serif;",
+    )
+    expect(tema.css).toContain("font-family: var(--font-family-base);")
+  })
+
+  it("skriver bare de vektene og linjeavstandene som er oppgitt", () => {
+    const tema = buildTheme({
+      ...farger,
+      typography: { weights: { bold: 700 }, lineHeights: { article: 1.666 } },
+    })
+
+    expect(tema.css).toContain("--font-weight-bold: 700;")
+    expect(tema.css).toContain("--semantic-line-height-article: 1.666;")
+    expect(tema.css).not.toContain("--font-weight-regular")
+    expect(tema.css).not.toContain("--semantic-line-height-heading")
+  })
+
+  it("skiller knapp, felt og flate", () => {
+    // Skatteetatens knapper er helt runde, mens feltene deres har nesten
+    // rette hjørner. Ett felles tall ville gjort feltene til kapsler.
+    const tema = buildTheme({
+      ...farger,
+      shape: {
+        buttonRadius: "2.75rem",
+        fieldRadius: "0.25rem",
+        surfaceRadius: "0.5rem",
+      },
+    })
+
+    expect(tema.css).toContain("--fs-button-radius: 2.75rem;")
+    expect(tema.css).toContain("--fs-pagination-radius: 2.75rem;")
+    expect(tema.css).toContain("--fs-input-radius: 0.25rem;")
+    expect(tema.css).toContain("--fs-card-radius: 0.5rem;")
+    expect(tema.css).toContain("--fs-dialog-radius: 0.5rem;")
+  })
+
+  it("rører ikke det som har hjørnet sitt som form", () => {
+    // En avkryssingsboks som blir rund ser ut som en radioknapp, og en
+    // avatar er rund fordi den er en avatar.
+    const tema = buildTheme({
+      ...farger,
+      shape: {
+        buttonRadius: "2.75rem",
+        fieldRadius: "2.75rem",
+        surfaceRadius: "2.75rem",
+      },
+    })
+
+    expect(tema.css).not.toContain("--fs-checkbox-radius")
+    expect(tema.css).not.toContain("--fs-avatar-radius")
+    expect(tema.css).not.toContain("--fs-skeleton-radius")
+    expect(tema.css).not.toContain("--fs-badge-radius")
+  })
+
+  it("vinner over pakkens egne verdier uansett rekkefølge", async () => {
+    /*
+     * Stilarkene lastes ikke alltid i den rekkefølgen appen skriver dem.
+     * Både Astro og TanStack Start legger sin bundlede CSS inn rett før
+     * `</head>`, altså etter en `<link>` appen selv har satt. Temaet må
+     * derfor vinne på laget, ikke på rekkefølgen.
+     */
+    const tema = buildTheme({
+      typography: { lineHeights: { default: 1.9 } },
+      shape: { buttonRadius: "2.75rem" },
+    })
+
+    const temaark = document.createElement("style")
+    temaark.textContent = tema.css
+    document.head.append(temaark)
+
+    // Pakkens egne tokens legges inn ETTER temaet, altså i verste rekkefølge.
+    const tokenark = document.createElement("style")
+    tokenark.textContent = (await import("./tokens.css?inline")).default
+    document.head.append(tokenark)
+
+    const prøve = document.createElement("div")
+    document.body.append(prøve)
+
+    try {
+      const lest = getComputedStyle(prøve)
+        .getPropertyValue("--semantic-line-height-default")
+        .trim()
+
+      expect(lest).toBe("1.9")
+    } finally {
+      prøve.remove()
+      temaark.remove()
+      tokenark.remove()
+    }
+  })
+
+  it("avviser en verdi som kan bryte ut av regelen", () => {
+    /*
+     * Oppskriften er en JSON-fil som kan komme fra et annet repo eller fra et
+     * byggesteg. Alle fire veiene under var åpne, og alle fire er etterprøvd
+     * i nettleser: den første fikk en vilkårlig regel inn i laget vårt, den
+     * andre slukte resten av stilarket med en parentes som aldri lukkes, den
+     * tredje lot en baksnabel spise semikolonet, og den fjerde kjørte et
+     * skript i en side der CSS-en står inline.
+     */
+    const onde = [
+      "4px; } html { display: none } :root { --x: 1",
+      "1px (",
+      "Arial\\",
+      "Arial</style><script>x</script>",
+    ]
+
+    for (const verdi of onde) {
+      expect(() => buildTheme({ shape: { buttonRadius: verdi } })).toThrow()
+    }
+
+    // Og de lovlige verdiene skal fortsatt slippe gjennom.
+    expect(() =>
+      buildTheme({
+        shape: { buttonRadius: "calc(1rem + 2px)" },
+        typography: { fontFamily: '"Segoe UI", Helvetica, Arial, sans-serif' },
+      }),
+    ).not.toThrow()
+  })
+
+  it("virker i nettleseren, ikke bare som tekst", async () => {
+    // Det holder ikke at strengen står der. Regelen må også slå gjennom på
+    // et ekte element, og komponenten må faktisk lese variabelen.
+    const tema = buildTheme({
+      ...farger,
+      typography: { fontFamily: "Courier, monospace" },
+      shape: {
+        buttonRadius: "2.75rem",
+        buttonBorderWidth: "3px",
+        buttonFontWeight: 700,
+      },
+    })
+
+    const stil = document.createElement("style")
+    stil.textContent = `@layer fristil;\n${tema.css}`
+    document.head.append(stil)
+
+    const knappestil = await import(
+      "../components/css/button/button.css?inline"
+    )
+    const knappeark = document.createElement("style")
+    knappeark.textContent = knappestil.default
+    document.head.append(knappeark)
+
+    const knapp = document.createElement("button")
+    knapp.className = "fs-button"
+    knapp.textContent = "Send søknad"
+    document.body.append(knapp)
+
+    try {
+      const beregnet = getComputedStyle(knapp)
+      expect(beregnet.borderTopWidth).toBe("3px")
+      expect(beregnet.fontWeight).toBe("700")
+      expect(beregnet.borderTopLeftRadius).toBe("44px")
+      expect(beregnet.fontFamily).toContain("Courier")
+    } finally {
+      // Uten `finally` ble Courier og de runde hjørnene stående på dokumentet
+      // for hver test som kjører etter, den dagen en påstand feiler.
+      knapp.remove()
+      stil.remove()
+      knappeark.remove()
+    }
+  })
+})
+
+/**
+ * Temaet uten farger.
+ *
+ * Fristils egen palett er Skatteetatens, verdi for verdi. Å kjøre fargene
+ * deres gjennom generatoren ville derfor flyttet dem bort fra der de skal
+ * være: `#1362ae` kommer ut som `#1e6ab7`, siden skalaene regnes om i OKLCH
+ * fra merkefargen. Et tema som bare setter skrift og form er svaret.
+ */
+describe("et tema kan la fargene stå", () => {
+  it("skriver verken palett eller semantiske farger", () => {
+    const tema = buildTheme({
+      typography: { fontFamily: "Helvetica, Arial, sans-serif" },
+      shape: { buttonRadius: "2.75rem" },
+    })
+
+    expect(tema.css).not.toContain("--palette-")
+    expect(tema.css).not.toContain("--semantic-")
+    expect(tema.css).toContain("--font-family-base")
+    expect(tema.light).toEqual({})
+    expect(tema.dark).toEqual({})
+  })
+
+  it("lar være å skrive tomme blokker", () => {
+    // En generert fil full av tomrom ser ut som en feil.
+    const tema = buildTheme({ shape: { buttonRadius: "2.75rem" } })
+
+    expect(tema.css).not.toContain("prefers-color-scheme")
+    expect(tema.css).not.toMatch(/\{\s*\}/)
+  })
+
+  it("krever alle fire fargene, eller ingen", () => {
+    /*
+     * To farger er alltid en feil: resten av temaet ville blitt bygget av
+     * standardfarger, og ingen ba om den blandingen.
+     *
+     * Kastet står her selv om typen alt avviser det. En union lukker fella
+     * for dem som har TypeScript, og meldingen er for de andre: oppskriften
+     * kan komme fra en JSON-fil eller fra et skript uten typer. Derfor må
+     * testen gå utenom typen for å nå kjøretiden, og det er hele poenget med
+     * at den finnes.
+     */
+    const utenTyper = {
+      interactive: "#1362ae",
+      danger: "#a82e39",
+    } as ThemeInput
+
+    expect(() => buildTheme(utenTyper)).toThrow(/alle fire/)
+  })
+
+  it("sier fra når oppskriften er tom", () => {
+    expect(() => buildTheme({})).toThrow(/tomt/)
+  })
+
+  it("teller verdier og ikke blokker", () => {
+    // `shape: {}` er et objekt, og en sjekk på at blokka finnes ville sluppet
+    // det gjennom. Resultatet ble en generert fil med et tomt lag i.
+    expect(() => buildTheme({ shape: {} })).toThrow(/tomt/)
+    expect(() => buildTheme({ typography: {}, shape: {} })).toThrow(/tomt/)
   })
 })

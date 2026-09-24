@@ -5,7 +5,7 @@
     border-collapse: collapse;
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
     /* Tall som står under hverandre skal ha samme bredde per siffer, ellers
        kan ikke kolonnen leses nedover. */
@@ -14,7 +14,7 @@
 
   .fs-table caption {
     text-align: start;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     padding-block-end: var(--size-2);
   }
 
@@ -27,7 +27,7 @@
   }
 
   .fs-table thead th {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     border-block-end: 2px solid var(--semantic-divider-100);
   }
 

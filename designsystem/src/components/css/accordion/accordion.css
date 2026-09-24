@@ -5,7 +5,7 @@
     border-radius: var(--fs-accordion-radius, var(--size-1));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
     background: var(--semantic-page-background);
   }
@@ -20,7 +20,7 @@
     justify-content: space-between;
     gap: var(--size-2);
     padding: var(--fs-accordion-padding, var(--size-3) var(--size-4));
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     cursor: pointer;
     /* Trekanten fra nettleseren er ulik i hver av dem. Den byttes ut med en
        som er lik overalt, og som snur med panelet. */

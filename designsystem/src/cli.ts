@@ -38,7 +38,12 @@ import {
   planTakeover,
   type SourceFile,
 } from "./takeover.js"
-import { buildTheme, type ThemeInput } from "./tokens/theme.js"
+import {
+  buildTheme,
+  type ThemeInput,
+  type ThemeShape,
+  type ThemeTypography,
+} from "./tokens/theme.js"
 
 const NØKLER: Record<string, keyof ThemeInput> = {
   interaktiv: "interactive",
@@ -49,12 +54,33 @@ const NØKLER: Record<string, keyof ThemeInput> = {
   besokt: "visited",
 }
 
+/**
+ * Skrift og form, som flagg.
+ *
+ * Fargene er påkrevd, disse er ikke. Utelates de, står Fristils egen
+ * typografi og form, og temaet endrer bare farger, slik det gjorde før disse
+ * kom til.
+ */
+const SKRIFTFLAGG: Record<string, "fontFamily"> = {
+  skrift: "fontFamily",
+}
+
+const FORMFLAGG: Record<string, keyof ThemeShape> = {
+  "knapp-hjorner": "buttonRadius",
+  "felt-hjorner": "fieldRadius",
+  "flate-hjorner": "surfaceRadius",
+  "knapp-ramme": "buttonBorderWidth",
+  "knapp-vekt": "buttonFontWeight",
+}
+
 function lesArgumenter(argumenter: string[]) {
   const flagg: Record<string, string> = {}
   const filer: string[] = []
 
   for (const del of argumenter) {
-    const treff = /^--([a-zæøå]+)=(.+)$/.exec(del)
+    // Bindestrek er med i navnet: flagg som `--knapp-hjorner` leses ellers
+    // som en fil, og temaet fikk da runde hjørner uten at noen ba om det.
+    const treff = /^--([a-zæøå-]+)=(.+)$/.exec(del)
     if (treff) flagg[treff[1]] = treff[2]
     else filer.push(del)
   }
@@ -206,13 +232,21 @@ const HJELP = `fristil <kommando>
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
 
-  tema                 Lager et fargetema av merkefargene dine
-    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd)
+  tema                 Lager et tema av merkefargene, skriften og formen din
+    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd med farger)
     --fare=<farge>        Feil og sletting (påkrevd)
     --suksess=<farge>     Bekreftelser (påkrevd)
     --advarsel=<farge>    Advarsler (påkrevd)
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
+    --skrift=<stakk>      Skriftstakken temaet skal bruke
+    --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
+    --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
+    --flate-hjorner=<mål> Hjørner på kort, dialog, sprettoppvindu, varsel,
+                          trekkspill, feiloppsummering, filopplasting,
+                          økttidsavbrudd, forslagsliste, melding og hjelpeboble
+    --knapp-ramme=<mål>   Rammetykkelsen på knappen
+    --knapp-vekt=<vekt>   Vekten på knappeteksten
     --ut=<fil>            Skriv til fil i stedet for til utdata
 
 Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
@@ -254,7 +288,7 @@ const { flagg, filer } = lesArgumenter(
   argumenter[0] === "tema" ? argumenter.slice(1) : argumenter,
 )
 
-async function lesTemafil(sti: string): Promise<Record<string, string>> {
+async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
   let innhold: string
 
   try {
@@ -269,7 +303,7 @@ async function lesTemafil(sti: string): Promise<Record<string, string>> {
   }
 
   try {
-    return JSON.parse(innhold) as Record<string, string>
+    return JSON.parse(innhold) as Record<string, unknown>
   } catch (grunn) {
     console.error(
       `«${sti}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
@@ -283,7 +317,98 @@ const fraFil = filer[0] ? await lesTemafil(filer[0]) : {}
 const input: Partial<ThemeInput> = {}
 for (const [norsk, engelsk] of Object.entries(NØKLER)) {
   const verdi = flagg[norsk] ?? fraFil[norsk] ?? fraFil[engelsk]
-  if (verdi) input[engelsk] = verdi
+  if (typeof verdi === "string" && verdi) input[engelsk] = verdi
+}
+
+/*
+ * Skrift og form kan komme fra fila eller fra flagg, og flagget vinner.
+ * Fila kan skrive dem på norsk eller engelsk, som fargene.
+ */
+const typografi: ThemeTypography = {
+  ...((fraFil.typography ?? fraFil.typografi ?? {}) as ThemeTypography),
+}
+for (const [norsk, engelsk] of Object.entries(SKRIFTFLAGG)) {
+  if (flagg[norsk]) typografi[engelsk] = flagg[norsk]
+}
+
+const form: ThemeShape = {
+  ...((fraFil.shape ?? fraFil.form ?? {}) as ThemeShape),
+}
+for (const [norsk, engelsk] of Object.entries(FORMFLAGG)) {
+  if (flagg[norsk]) form[engelsk] = flagg[norsk]
+}
+
+if (Object.keys(typografi).length > 0) input.typography = typografi
+if (Object.keys(form).length > 0) input.shape = form
+
+/*
+ * Et flagg som ikke finnes skal si fra.
+ *
+ * `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens flagget
+ * heter `hjorner`. Den gikk stille gjennom, og temaet kom ut uten hjørnet og
+ * uten et ord om hvorfor. CLI-en har allerede «Ukjent kommando» for den samme
+ * klassen feil.
+ */
+const KJENTE_FLAGG = new Set([
+  ...Object.keys(NØKLER),
+  ...Object.keys(SKRIFTFLAGG),
+  ...Object.keys(FORMFLAGG),
+  "ut",
+])
+
+const ukjente = Object.keys(flagg).filter((navn) => !KJENTE_FLAGG.has(navn))
+
+/*
+ * Det samme gjelder nøklene i oppskriftsfila.
+ *
+ * `{"form": {"buttonRadus": "2rem"}}` gikk stille gjennom, og temaet kom ut
+ * uten hjørnet. Fila er nettopp det som kan komme fra et annet repo, så en
+ * skrivefeil der er vanskeligere å oppdage enn en på kommandolinja.
+ */
+const SKRIFTNØKLER = new Set(["fontFamily", "weights", "lineHeights"])
+const VEKTNØKLER = new Set(["regular", "medium", "semibold", "bold"])
+const LINJENØKLER = new Set(["default", "heading", "article", "compact"])
+const FORMNØKLER = new Set([
+  "buttonRadius",
+  "fieldRadius",
+  "surfaceRadius",
+  "buttonBorderWidth",
+  "buttonFontWeight",
+])
+
+function ukjenteNøkler(
+  objekt: unknown,
+  lovlige: Set<string>,
+  sti: string,
+): string[] {
+  if (!objekt || typeof objekt !== "object") return []
+  return Object.keys(objekt as object)
+    .filter((navn) => !lovlige.has(navn))
+    .map((navn) => `${sti}.${navn}`)
+}
+
+const ukjenteIFil = [
+  ...ukjenteNøkler(typografi, SKRIFTNØKLER, "typografi"),
+  ...ukjenteNøkler(typografi.weights, VEKTNØKLER, "typografi.weights"),
+  ...ukjenteNøkler(typografi.lineHeights, LINJENØKLER, "typografi.lineHeights"),
+  ...ukjenteNøkler(form, FORMNØKLER, "form"),
+]
+
+if (ukjenteIFil.length > 0) {
+  console.error(
+    `Ukjent nøkkel i oppskriften: ${ukjenteIFil.join(", ")}\n\n` +
+      "Hele oversikten: fristil --hjelp\n",
+  )
+  process.exit(1)
+}
+
+if (ukjente.length > 0) {
+  console.error(
+    `Ukjent flagg: ${ukjente.map((navn) => `--${navn}`).join(", ")}\n\n` +
+      `Kjente flagg: ${[...KJENTE_FLAGG].map((navn) => `--${navn}`).join(", ")}\n\n` +
+      "Hele oversikten: fristil --hjelp\n",
+  )
+  process.exit(1)
 }
 
 const påkrevd: (keyof ThemeInput)[] = [
@@ -294,7 +419,17 @@ const påkrevd: (keyof ThemeInput)[] = [
 ]
 const mangler = påkrevd.filter((navn) => !input[navn])
 
-if (mangler.length > 0) {
+/*
+ * Fargene er påkrevd, med ett unntak: et tema som bare setter skrift og form.
+ *
+ * Det er ikke en kuriositet. Bruker organisasjonen allerede Fristils palett,
+ * er det nettopp skriften og hjørnene som skiller, og å kjøre fargene gjennom
+ * generatoren ville da flyttet dem bort fra der de skal være.
+ */
+const bareSkriftOgForm =
+  mangler.length === påkrevd.length && (input.typography || input.shape)
+
+if (mangler.length > 0 && !bareSkriftOgForm) {
   const norske = mangler.map(
     (navn) =>
       Object.entries(NØKLER).find(([, engelsk]) => engelsk === navn)?.[0] ??
@@ -304,6 +439,9 @@ if (mangler.length > 0) {
     `Mangler farger: ${norske.join(", ")}\n\n` +
       "Eksempel:\n  npx @fristil/designsystem tema --interaktiv=#7c3aed" +
       " --fare=#b3261e --suksess=#2b6940 --advarsel=#8a5a00\n\n" +
+      "Vil du bare sette skrift og form, og la fargene stå: utelat alle " +
+      "fire, og oppgi minst én av --skrift, --knapp-hjorner, --felt-hjorner, " +
+      "--flate-hjorner, --knapp-ramme eller --knapp-vekt.\n\n" +
       "Hele oversikten: fristil --hjelp\n",
   )
   process.exit(1)
@@ -314,11 +452,21 @@ let tema: ReturnType<typeof buildTheme>
 try {
   tema = buildTheme(input as ThemeInput)
 } catch (grunn) {
-  // Som regel en farge som ikke er en farge. Et stakkspor sier ingenting om
-  // hva brukeren skrev feil.
+  /*
+   * Et stakkspor sier ingenting om hva brukeren skrev feil.
+   *
+   * Hintet om heksadesimale farger står bare når feilen faktisk handler om en
+   * farge. Sto det alltid, pekte det bort fra en verdi som ble avvist fordi
+   * den kunne bryte ut av CSS-regelen.
+   */
+  const melding = grunn instanceof Error ? grunn.message : String(grunn)
+  const omFarger = !melding.includes("CSS-regel")
+
   console.error(
-    `\n${grunn instanceof Error ? grunn.message : String(grunn)}\n\n` +
-      "Fargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n",
+    `\n${melding}\n` +
+      (omFarger
+        ? "\nFargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n"
+        : ""),
   )
   process.exit(1)
 }

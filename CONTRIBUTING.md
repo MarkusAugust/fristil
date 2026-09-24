@@ -26,11 +26,11 @@ Kjører nøyaktig det CI kjører, i samme rekkefølge:
 | `lint` | Formatering og lintregler, med Biome |
 | `typecheck` | Typene i pakken og dokumentasjonen |
 | `typecheck:tests` | Typene i testene, som ellers ikke leses av `tsc -b` |
-| `test` | 1940 tester i Chromium, Firefox og WebKit, pluss Tailwind-temaet |
+| `test` | godt over tre tusen tester i Chromium, Firefox og WebKit, pluss Tailwind-temaet |
 | `build` | Bygger pakken, og kontrollerer at den inneholder det den lover |
 | `test:docs` | axe mot hver bygde side i begge temaer, og at dokumentasjonen følger koden |
 
-Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under arbeid er `bun run test -- --project chromium` nok.
+Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under arbeid er `bun --filter @fristil/designsystem test:browser --project chromium` nok. `bun run test -- --project chromium` virker ikke: `bun run` legger argumentene bakerst i skriptteksten, og `test` er to kommandoer etter hverandre, så flaggene havner på den siste.
 
 `sjekk` henter nettleserne først, så den virker i et nyklonet repo. Kommandoen er rask når de allerede ligger der. Trenger du bare dem:
 

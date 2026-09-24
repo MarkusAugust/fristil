@@ -19,8 +19,8 @@
     margin-block-end: var(--size-1);
     font-family: inherit;
     font-size: var(--font-size-m);
-    font-weight: 600;
-    line-height: 1.5;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
   }
 
@@ -29,20 +29,20 @@
   .fs-legend[data-required]::after {
     content: " *";
     color: var(--semantic-danger-foreground);
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   .fs-legend[data-required="text"]::after {
     content: " (påkrevd)";
     color: var(--semantic-danger-foreground);
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }
 
   .fs-legend[data-optional]::after {
     content: " (valgfri)";
     color: var(--semantic-disabled-foreground);
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }
 

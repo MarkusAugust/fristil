@@ -8,7 +8,7 @@ byggesteg, ingen server. Åpne fila i en nettleser, eller legg mappa på et
 statisk vertskap.
 
 ```bash
-open presentasjon/designsystemarkitektur-v7.html
+open presentasjon/designsystemarkitektur-v8.html
 ```
 
 ## Versjonene
@@ -18,7 +18,8 @@ Skal du vise fram noe, bruk den nyeste.
 
 | Fil | Hva som er nytt |
 | --- | --- |
-| `designsystemarkitektur-v7.html` | Lesbar på telefon. Se under. |
+| `designsystemarkitektur-v8.html` | Arkitekturen slik den er i dag, med kodepaneler. Se under. |
+| `designsystemarkitektur-v7.html` | Første som var lesbar på telefon |
 | `designsystemarkitektur-v6.html` | Presisert språk, og en kortere avslutning |
 | `designsystemarkitektur-v5.html` | Arkitekturen etter at Lit ble fjernet |
 | `designsystemarkitektur-v4.html` | Skrevet om så også en leder kan følge med |
@@ -30,7 +31,40 @@ Piltaster, mellomrom eller Enter. `Home` og `End` går til første og siste.
 Adressen får `#lysbilde-6`, så en lenke peker på ett bestemt lysbilde. Det
 finnes også to knapper som dukker opp når musa er over.
 
-## Hvordan v7 blir lesbar på en liten skjerm
+## V8
+
+Innholdet følger arkitekturen slik den faktisk er: de to lagene, de tre
+kategoriene, reparasjon framfor fredning, `server-controlled`, og hva
+spilldemoen beviste. Tjue lysbilder.
+
+Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
+linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
+begrunnelsen for kontrakten, og de sier mer enn et avsnitt om dem. Et panel
+som bare viser at det finnes kode er derimot tatt ut.
+
+Ingen webfont. Skriften er `Helvetica, Arial, sans-serif`, som er den stakken
+Skatteetaten selv oppgir for skjerm, og en presentasjon skal ikke kunne feile
+på grunn av nettet i et møterom.
+
+Paletten er Fristils egne tokens, skrevet av med de samme verdiene. Flaten,
+teksten og kanten er valgt for et mørkt lysbilde og hører bare til
+presentasjonen.
+
+### V8 på liten skjerm
+
+Fra og med 860 piksler og nedover forsvinner kortet helt: ingen ramme, ingen skygge, ingen
+skalering. Lysbildet blir vanlig tekst rett på bakgrunnen, med full
+skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
+ligger fast nederst, siden det ikke finnes piltaster på en telefon.
+
+Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de tjue
+lysbildene kan dras sidelengs, og på de tre største får alle plass uten å
+rulle. To ting måtte til, og begge er lette å gjøre feil igjen: et
+rutenettfelt trenger `min-inline-size: 0`, ellers blir det like bredt som den
+lengste kodelinja, og selve dekket må være en vanlig blokk og ikke et
+rutenett, ellers blir kolonnen like bred som innholdet sitt.
+
+## Hvordan v7 ble lesbar på en liten skjerm
 
 Lysbildet er en scene med fast størrelse, 1520 x 855, og hele scenen skaleres
 ned til den passer i vinduet. Da er forholdet mellom overskrift, brødtekst og

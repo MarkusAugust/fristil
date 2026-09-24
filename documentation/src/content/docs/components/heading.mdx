@@ -60,7 +60,12 @@ Kommer størrelsen fra innhold utenfra, valider den med `fs.heading.isSize(x)`. 
 | --- | --- |
 | `.fs-heading` | Overskriften. Størrelsen kommer fra `data-size`. |
 
-Klassen har ingen egne variabler: størrelsene er `--font-size`-tokenene direkte, så en endring i skalaen slår gjennom overalt på én gang.
+Størrelsene er `--font-size`-tokenene direkte, så en endring i skalaen slår gjennom overalt på én gang. Vekten og linjeavstanden er egne variabler, fordi en organisasjon som tar systemet i bruk gjerne har sin egen typografi:
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-heading-font-weight` | `var(--font-weight-bold)` |
+| `--fs-heading-line-height` | `var(--semantic-line-height-heading)` |
 
 Overskriftene bruker `text-wrap: balance`, så en overskrift over to linjer ikke ender med ett ord alene på den siste.
 

@@ -14,7 +14,7 @@
     max-inline-size: var(--fs-tooltip-width, 16rem);
     padding: var(--fs-tooltip-padding, var(--size-1) var(--size-2));
     font-size: var(--font-size-s);
-    line-height: 1.4;
+    line-height: var(--semantic-line-height-compact);
     color: var(--semantic-page-background);
     background: var(--semantic-page-foreground);
     border-radius: var(--fs-tooltip-radius, var(--size-1));

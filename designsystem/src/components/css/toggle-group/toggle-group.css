@@ -21,7 +21,7 @@
     padding: var(--fs-toggle-group-padding, 0 var(--size-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-interactive-main);
     background: var(--semantic-page-background);
     cursor: pointer;
@@ -58,7 +58,7 @@
   .fs-toggle-group__option:has(input:checked) {
     color: var(--semantic-interactive-contrast);
     background: var(--semantic-interactive-main);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .fs-toggle-group__option:has(input:disabled) {

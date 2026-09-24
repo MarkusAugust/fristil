@@ -9,7 +9,7 @@
     overflow: hidden;
     font-family: inherit;
     font-size: var(--font-size-s);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     line-height: 1;
     color: var(--semantic-interactive-foreground);
     background: var(--semantic-interactive-background);

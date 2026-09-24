@@ -7,7 +7,7 @@
     padding: var(--fs-tag-padding, var(--size-0-5) var(--size-2));
     font-family: inherit;
     font-size: var(--font-size-s);
-    line-height: 1.4;
+    line-height: var(--semantic-line-height-compact);
     color: var(--semantic-page-foreground);
     background: transparent;
     border: 1px solid var(--semantic-divider-30);

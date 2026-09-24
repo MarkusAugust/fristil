@@ -27,12 +27,12 @@
 
   .fs-session-timeout__text {
     margin: 0 0 var(--size-4);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
   }
 
   .fs-session-timeout__count {
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .fs-session-timeout__actions {

@@ -24,7 +24,88 @@ import {
  * ```
  */
 
-export type ThemeInput = {
+/**
+ * Typografien i temaet.
+ *
+ * Fargene er det som er vanskelig å få riktig, og det er derfor generatoren
+ * begynte der. Men to designsystemer med samme palett ser fortsatt ulike ut
+ * hvis skriften og linjeavstanden er ulik, og det er nettopp det som skiller
+ * et tema fra det neste. Alt her er valgfritt: utelates det, står Fristils
+ * egne verdier.
+ */
+export type ThemeTypography = {
+  /** Skriftstakken hele temaet skal bruke, skrevet som i CSS. */
+  fontFamily?: string
+  /** Vektene, som tall eller nøkkelord. */
+  weights?: {
+    regular?: string | number
+    medium?: string | number
+    semibold?: string | number
+    bold?: string | number
+  }
+  /** Linjeavstand for kontroller, overskrifter, brødtekst og små flater. */
+  lineHeights?: {
+    default?: string | number
+    heading?: string | number
+    article?: string | number
+    compact?: string | number
+  }
+}
+
+/**
+ * Formen i temaet: hjørner og rammer.
+ *
+ * Knappen står for seg, feltet for seg, og flatene for seg. Skillet er verdt
+ * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
+ * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
+ *
+ * Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
+ * står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
+ * selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp,
+ * og et merke som blir firkantet, ser ut som en knapp.
+ */
+export type ThemeShape = {
+  /** Hjørner på knappen, paginering og hopplenken. */
+  buttonRadius?: string
+  /** Hjørner på feltet, tekstområdet og nedtrekkslista. */
+  fieldRadius?: string
+  /**
+   * Hjørner på kort, dialog, sprettoppvindu, varsel, trekkspill,
+   * feiloppsummering, filopplasting, økttidsavbrudd, forslagslista,
+   * meldingen og hjelpeboblen.
+   */
+  surfaceRadius?: string
+  /** Rammetykkelsen på knappen. */
+  buttonBorderWidth?: string
+  /** Vekten på knappeteksten. */
+  buttonFontWeight?: string | number
+}
+
+/**
+ * Oppskriften på et tema.
+ *
+ * Fargene hører sammen: enten oppgir du alle fire, eller ingen. Utelates de,
+ * lages det et tema som bare setter skrift og form, og fargene blir stående
+ * som de er i `tokens.css`.
+ *
+ * Det siste er ikke en kuriositet. Fristils egen palett er Skatteetatens, med
+ * de samme verdiene, og da ville det å kjøre fargene gjennom generatoren
+ * gjort spillet mindre likt deres og ikke mer: `#1362ae` kommer ut som
+ * `#1e6ab7`, fordi skalaene regnes om i OKLCH fra merkefargen. Et tema som
+ * bare setter skrift og form er da det riktige svaret.
+ */
+type ThemeCommon = {
+  /** Flater, tekst og skillelinjer. Nesten uten kulør. */
+  neutral?: string
+  /** Besøkte lenker. Utledes fra `interactive` hvis den utelates. */
+  visited?: string
+  /** Skrift og linjeavstand. Utelates den, står Fristils egen typografi. */
+  typography?: ThemeTypography
+  /** Hjørner og rammer. Utelates den, står Fristils egen form. */
+  shape?: ThemeShape
+}
+
+type ThemeColors = {
   /** Lenker, knapper og fokusmarkering. */
   interactive: string
   /** Feil, sletting og avslag. */
@@ -33,11 +114,19 @@ export type ThemeInput = {
   success: string
   /** Noe som krever oppmerksomhet. */
   warning: string
-  /** Flater, tekst og skillelinjer. Nesten uten kulør. */
-  neutral?: string
-  /** Besøkte lenker. Utledes fra `interactive` hvis den utelates. */
-  visited?: string
 }
+
+/**
+ * Enten alle fire fargene, eller ingen.
+ *
+ * Unionen er her fordi vilkåret ellers bare ville stått som en `throw` i
+ * kjøretid, og prosjektets egen regel sier at fella skal lukkes i typen med
+ * en beskjed ved siden av for dem typen ikke når. `buildTheme({ interactive,
+ * danger })` er nå en typefeil, ikke en kjøring som stopper.
+ */
+export type ThemeInput =
+  | (ThemeColors & ThemeCommon)
+  | (Partial<Record<keyof ThemeColors, never>> & ThemeCommon)
 
 export type ThemeAdjustment = {
   /** Tokenet som ble flyttet. */
@@ -122,12 +211,51 @@ function sikre(
 }
 
 export function buildTheme(input: ThemeInput): Theme {
+  const { interactive, danger, success, warning } = input
+  const oppgitte = [interactive, danger, success, warning].filter(Boolean)
+
+  if (oppgitte.length > 0 && oppgitte.length < 4) {
+    throw new Error(
+      "Et fargetema trenger alle fire merkefargene: interactive, danger, " +
+        "success og warning. Vil du bare sette skrift og form, utelat " +
+        "fargene helt.",
+    )
+  }
+
+  if (!interactive || !danger || !success || !warning) {
+    /*
+     * Uten farger er det ingen skalaer å bygge og ingen kontrast å sikre.
+     *
+     * At temaet faktisk setter noe kontrolleres på verdiene og ikke på at
+     * blokkene finnes: `shape: {}` er et objekt, og ville ellers gitt en
+     * generert fil med et tomt lag i.
+     */
+    const noe = {
+      ...typografiVerdier(input.typography ?? {}),
+      ...formVerdier(input.shape ?? {}),
+    }
+
+    if (Object.keys(noe).length === 0) {
+      throw new Error(
+        "Temaet er tomt. Oppgi enten merkefargene, eller skrift og form.",
+      )
+    }
+
+    return {
+      light: {},
+      dark: {},
+      adjustments: [],
+      problems: [],
+      css: tilCss({}, {}, {}, input.typography, input.shape),
+    }
+  }
+
   const palett = {
-    interactive: buildScale(input.interactive),
-    danger: buildScale(input.danger),
-    success: buildScale(input.success),
-    warning: buildScale(input.warning),
-    visited: buildScale(input.visited ?? input.interactive),
+    interactive: buildScale(interactive),
+    danger: buildScale(danger),
+    success: buildScale(success),
+    warning: buildScale(warning),
+    visited: buildScale(input.visited ?? interactive),
     neutral: buildNeutralScale(input.neutral ?? "#1a1a1a"),
   }
 
@@ -300,8 +428,186 @@ export function buildTheme(input: ThemeInput): Theme {
     dark,
     adjustments: notater,
     problems: problemer,
-    css: tilCss(palett, light, dark),
+    css: tilCss(palett, light, dark, input.typography, input.shape),
   }
+}
+
+/**
+ * Kontrollene og flatene som har en hjørnevariabel.
+ *
+ * Lista er skrevet ut med vilje framfor å utledes. Et tema skal ikke endre
+ * en komponent ingen har tenkt på, og en ny komponent skal ikke begynne å
+ * følge et tema uten at noen har bestemt at den hører hjemme i den ene eller
+ * andre gruppa.
+ */
+const KNAPPER = ["button", "pagination", "skip-link"] as const
+
+const FELT = ["input", "select", "textarea"] as const
+
+const FLATER = [
+  "card",
+  "dialog",
+  "popover",
+  "alert",
+  "accordion",
+  "error-summary",
+  "file-upload",
+  "session-timeout",
+  "suggestion",
+  "toast",
+  "tooltip",
+] as const
+
+/** Tegn som lar en verdi bryte ut av erklæringen sin. */
+const FARLIGE = /[;{}<>\\]|\/\*|\*\//
+
+/**
+ * Om parenteser og anførselstegn går opp.
+ *
+ * En ubalansert `(` er nok alene: `1px (` åpner en blokk som sluker
+ * semikolonet, begge krøllparentesene og alt som står etter i fila. Testet i
+ * Chromium, der både temaet og konsumentens eget stilark forsvant.
+ */
+function balansert(verdi: string): boolean {
+  let nivå = 0
+  let sitat: string | null = null
+
+  for (const tegn of verdi) {
+    if (sitat) {
+      if (tegn === sitat) sitat = null
+      continue
+    }
+    if (tegn === '"' || tegn === "'") sitat = tegn
+    else if (tegn === "(") nivå += 1
+    else if (tegn === ")" && --nivå < 0) return false
+  }
+
+  return nivå === 0 && sitat === null
+}
+
+/**
+ * Avviser en verdi som kan bryte ut av regelen den skrives inn i.
+ *
+ * Oppskriften er en JSON-fil, og den kan komme fra et annet repo eller fra et
+ * byggesteg. Tre veier ut er etterprøvd i nettleser, og alle tre var åpne da
+ * sjekken bare så etter `;`, `{`, `}` og `/*`:
+ *
+ * - `4px; } html { display: none } :root { --x: 1` lukket erklæringen og
+ *   `:root`-blokka, og fikk en vilkårlig regel inn i `@layer fristil`.
+ * - `1px (` åpnet en parentes som slukte resten av fila, inkludert stilarket
+ *   konsumenten la etter den.
+ * - `Arial\` lot baksnabelen spise semikolonet, så neste erklæring ble en
+ *   del av skriftnavnet.
+ * - `Arial</style><script>…` kjørte skriptet i en side der den genererte
+ *   CSS-en står inline i et `<style>`-element.
+ *
+ * Derfor både en liste over farlige tegn og et krav om at parenteser og
+ * anførselstegn går opp. `calc(1rem + 2px)` og `"Segoe UI", Arial` er
+ * fortsatt lovlige verdier.
+ */
+function kontroller(navn: string, verdi: string): string {
+  /*
+   * Styretegn ses etter med kodepunktet framfor med et regulært uttrykk.
+   * Biome avviser et uttrykk med styretegn i, og med god grunn: de er
+   * vanskelige å se i kilden. Her er de nettopp det vi leter etter.
+   */
+  const harStyretegn = [...verdi].some(
+    (tegn) => (tegn.codePointAt(0) ?? 0) < 0x20,
+  )
+
+  if (FARLIGE.test(verdi) || harStyretegn) {
+    throw new Error(
+      `Verdien til ${oppskriftsnavn(navn)} kan ikke inneholde «;», «{», «}», «<», «>», ` +
+        `«\\», «/*» eller styretegn. Den skrives rett inn i en CSS-regel. ` +
+        `Fikk: ${verdi}`,
+    )
+  }
+
+  if (!balansert(verdi)) {
+    throw new Error(
+      `Verdien til ${oppskriftsnavn(navn)} har en parentes eller et anførselstegn som ikke ` +
+        `går opp. En parentes som ikke lukkes sluker resten av stilarket. ` +
+        `Fikk: ${verdi}`,
+    )
+  }
+
+  return verdi
+}
+
+/**
+ * Skriver en variabel bare når den er oppgitt.
+ *
+ * `0` er oppgitt. Sannhetssjekken sto her først, og ga to motsatte utfall for
+ * den samme nullen: `buttonRadius: 0` ble ignorert, mens `buttonFontWeight: 0`
+ * slapp gjennom.
+ */
+function kanskje(
+  verdier: Record<string, string>,
+  navn: string,
+  verdi: string | number | undefined,
+): void {
+  if (verdi === undefined || verdi === "") return
+  verdier[navn] = kontroller(navn, String(verdi))
+}
+
+function typografiVerdier(t: ThemeTypography): Record<string, string> {
+  const verdier: Record<string, string> = {}
+  kanskje(verdier, "--font-family-base", t.fontFamily)
+  kanskje(verdier, "--font-weight-regular", t.weights?.regular)
+  kanskje(verdier, "--font-weight-medium", t.weights?.medium)
+  kanskje(verdier, "--font-weight-semibold", t.weights?.semibold)
+  kanskje(verdier, "--font-weight-bold", t.weights?.bold)
+  kanskje(verdier, "--semantic-line-height-default", t.lineHeights?.default)
+  kanskje(verdier, "--semantic-line-height-heading", t.lineHeights?.heading)
+  kanskje(verdier, "--semantic-line-height-article", t.lineHeights?.article)
+  kanskje(verdier, "--semantic-line-height-compact", t.lineHeights?.compact)
+  return verdier
+}
+
+/**
+ * Navnet brukeren skrev, til feilmeldingen.
+ *
+ * Verdien lander i `--fs-button-radius`, men det var `buttonRadius` eller
+ * `--knapp-hjorner` som ble skrevet. En feilmelding som navngir vår egen
+ * variabel sender leseren til feil sted i sin egen fil.
+ */
+const OPPSKRIFTSNAVN: Record<string, string> = {
+  "--font-family-base": "fontFamily",
+  "--font-weight-regular": "weights.regular",
+  "--font-weight-medium": "weights.medium",
+  "--font-weight-semibold": "weights.semibold",
+  "--font-weight-bold": "weights.bold",
+  "--semantic-line-height-default": "lineHeights.default",
+  "--semantic-line-height-heading": "lineHeights.heading",
+  "--semantic-line-height-article": "lineHeights.article",
+  "--semantic-line-height-compact": "lineHeights.compact",
+  "--fs-button-border-width": "buttonBorderWidth",
+  "--fs-button-font-weight": "buttonFontWeight",
+}
+
+function oppskriftsnavn(variabel: string): string {
+  if (OPPSKRIFTSNAVN[variabel]) return OPPSKRIFTSNAVN[variabel]
+  if (variabel.endsWith("-radius")) {
+    const navn = variabel.slice("--fs-".length, -"-radius".length)
+    if ((KNAPPER as readonly string[]).includes(navn)) return "buttonRadius"
+    if ((FELT as readonly string[]).includes(navn)) return "fieldRadius"
+    return "surfaceRadius"
+  }
+  return variabel
+}
+
+function formVerdier(f: ThemeShape): Record<string, string> {
+  const verdier: Record<string, string> = {}
+  for (const [verdi, navnene] of [
+    [f.buttonRadius, KNAPPER],
+    [f.fieldRadius, FELT],
+    [f.surfaceRadius, FLATER],
+  ] as const) {
+    for (const navn of navnene) kanskje(verdier, `--fs-${navn}-radius`, verdi)
+  }
+  kanskje(verdier, "--fs-button-border-width", f.buttonBorderWidth)
+  kanskje(verdier, "--fs-button-font-weight", f.buttonFontWeight)
+  return verdier
 }
 
 function linjer(verdier: Record<string, string>, innrykk: string): string {
@@ -314,6 +620,8 @@ function tilCss(
   paletter: Record<string, Record<number, string>>,
   light: Record<string, string>,
   dark: Record<string, string>,
+  typografi?: ThemeTypography,
+  form?: ThemeShape,
 ): string {
   const palett: Record<string, string> = {}
   for (const [navn, skala] of Object.entries(paletter)) {
@@ -322,29 +630,70 @@ function tilCss(
     }
   }
 
+  const typografiske = typografi ? typografiVerdier(typografi) : {}
+  const formen = form ? formVerdier(form) : {}
+
+  /*
+   * Blokkene settes sammen av det som faktisk finnes.
+   *
+   * Et tema uten farger skal ikke gi tomme `:root {}` og en tom mørk blokk.
+   * En generert fil som er full av tomrom ser ut som en feil, og den skal
+   * kunne leses av den som lurer på hva temaet gjorde.
+   */
+  const rotverdier = { ...palett, ...light, ...typografiske, ...formen }
+  const deler: string[] = []
+
+  if (Object.keys(rotverdier).length > 0) {
+    deler.push(`  :root {\n${linjer(rotverdier, "    ")}\n  }`)
+  }
+
+  /*
+   * Skriften settes som en ekte regel, ikke bare som et token.
+   *
+   * Fristil arver skrift med vilje, så et token alene ville ikke endret én
+   * eneste bokstav. Regelen står i det samme laget som resten, slik at
+   * konsumentens egen CSS fortsatt vinner over den.
+   */
+  if (typografi?.fontFamily) {
+    deler.push("  :root {\n    font-family: var(--font-family-base);\n  }")
+  }
+
+  if (Object.keys(dark).length > 0) {
+    deler.push(
+      `  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme="light"]) {\n${linjer(dark, "      ")}\n    }\n  }`,
+    )
+    deler.push(`  [data-theme="dark"] {\n${linjer(dark, "    ")}\n  }`)
+  }
+
+  /*
+   * Temaet ligger i sitt eget lag, og laget er erklært etter `fristil`.
+   *
+   * Det sto i `@layer fristil` før, sammen med pakkens egne stilark, og da
+   * avgjorde rekkefølgen filene ble lastet i. Den rekkefølgen har ikke
+   * konsumenten alltid i hånda: både Astro og TanStack Start legger sin
+   * bundlede CSS inn rett før `</head>`, altså etter en `<link>` appen selv
+   * har skrevet. Temaet tapte da mot pakkens standardverdier, og det viste
+   * seg først når et token fantes begge steder.
+   *
+   * Erklæringen `@layer fristil, fristil-tema;` avgjør rekkefølgen uavhengig
+   * av når filene lastes. Begge lagene ligger fortsatt foran usortert CSS, så
+   * konsumentens egne regler vinner som før.
+   */
   return `/*
- * Generert av @fristil/designsystem. Rediger merkefargene, ikke denne fila.
+ * Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila.
  *
- * Legges etter tokens.css, og overstyrer fargene der. Størrelser,
- * skriftstørrelser og ikoner kommer fortsatt fra tokens.css.
+ * Overstyrer verdiene i tokens.css. Det som ikke står i oppskriften, står
+ * fortsatt der.
+ *
+ * Laget er erklært etter «fristil», så temaet vinner over pakkens
+ * standardverdier uansett hvilken rekkefølge stilarkene lastes i. Din egen
+ * CSS er usortert, og vinner fortsatt over begge.
  */
 
-@layer fristil {
-  :root {
-${linjer(palett, "    ")}
+@layer fristil, fristil-tema;
 
-${linjer(light, "    ")}
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-${linjer(dark, "      ")}
-    }
-  }
-
-  [data-theme="dark"] {
-${linjer(dark, "    ")}
-  }
+@layer fristil-tema {
+${deler.join("\n\n")}
 }
 `
 }

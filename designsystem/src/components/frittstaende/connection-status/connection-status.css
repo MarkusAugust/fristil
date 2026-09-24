@@ -10,7 +10,7 @@
     z-index: var(--fs-connection-status-layer, 1000);
     padding: var(--fs-connection-status-padding, var(--size-2) var(--size-4));
     font-size: var(--font-size-s);
-    line-height: 1.4;
+    line-height: var(--semantic-line-height-compact);
     text-align: center;
     color: var(--semantic-danger-foreground);
     background: var(--semantic-danger-background);

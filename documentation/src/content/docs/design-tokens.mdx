@@ -128,6 +128,25 @@ Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhol
 
 `--font-size-m` er brødteksten. `--font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.
 
+### Vekt og linjeavstand
+
+Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en organisasjon som tar systemet i bruk gjerne har sin egen typografi, og da skal forskjellen settes ett sted framfor i tjue stilark.
+
+| Token | Verdi | Brukt av |
+| --- | --- | --- |
+| `--font-weight-regular` | 400 | merkelappene «(påkrevd)» og «(valgfri)» på ledetekst og feltsett |
+| `--font-weight-medium` | 500 | knapp, feilmelding |
+| `--font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsavbrudd, tabell, faner, valggruppe |
+| `--font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
+| `--semantic-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
+| `--semantic-line-height-heading` | 1.2 | overskrift |
+| `--semantic-line-height-article` | 1.6 | brødtekst, liste, korttekst |
+| `--semantic-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
+
+Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
+
+Tre linjeavstander står fortsatt som tall i stilarkene. `1` i paginering, avatar og lukkeknappen på meldingen er ikke typografi, men en måte å få et tall eller et kryss til å stå midt i en sirkel. `1.3` og `1.55` står i én komponent hver.
+
 ## TypeScript
 
 Alle variabelnavn finnes som en typet oppslagstabell:

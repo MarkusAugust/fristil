@@ -11,7 +11,7 @@
     padding: var(--fs-textarea-padding, var(--size-2) var(--size-3));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
     background: var(--semantic-page-background);
     border: 1px solid var(--semantic-field-border);

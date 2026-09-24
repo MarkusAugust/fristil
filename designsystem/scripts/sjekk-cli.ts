@@ -111,6 +111,138 @@ function krev(påstand: boolean, beskrivelse: string): void {
   )
 }
 
+/*
+ * Skrift og form, som flagg og fra fil.
+ *
+ * Dette er den eneste sjekken som kjører flaggene slik en konsument gjør.
+ * `buildTheme()` testes i nettleseren, men den ser aldri et flagg: reverteres
+ * bindestreken i tegnklassen som leser dem, blir `--knapp-hjorner=2rem` lest
+ * som et filnavn igjen, og alt annet melder grønt.
+ */
+{
+  const { kode, ut } = await kjør([
+    "tema",
+    "--skrift=Helvetica, Arial, sans-serif",
+    "--knapp-hjorner=2.75rem",
+    "--felt-hjorner=0.25rem",
+    "--flate-hjorner=0.25rem",
+    "--knapp-ramme=3px",
+    "--knapp-vekt=700",
+  ])
+
+  krev(kode === 0, `tema uten farger avsluttet med kode ${kode}`)
+  krev(
+    ut.includes("--font-family-base: Helvetica, Arial, sans-serif;"),
+    "skriften kom ikke med",
+  )
+  krev(
+    ut.includes("font-family: var(--font-family-base);"),
+    "skriften ble ikke satt som en regel, bare som et token",
+  )
+  krev(
+    ut.includes("--fs-button-radius: 2.75rem;"),
+    "knappehjørnet kom ikke med",
+  )
+  krev(
+    ut.includes("--fs-textarea-radius: 0.25rem;"),
+    "tekstområdet kom ikke med",
+  )
+  krev(
+    ut.includes("--fs-button-border-width: 3px;"),
+    "knapperammen kom ikke med",
+  )
+  krev(
+    ut.includes("--fs-button-font-weight: 700;"),
+    "knappevekten kom ikke med",
+  )
+  krev(
+    !ut.includes("--palette-") && !ut.includes("--semantic-"),
+    "et tema uten farger skal ikke skrive farger",
+  )
+}
+
+// Skrift og form fra en temafil, sammen med fargene
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const sti = join(mappe, "fristil.tema.json")
+  await writeFile(
+    sti,
+    JSON.stringify({
+      interaktiv: "#7c3aed",
+      fare: "#b3261e",
+      suksess: "#2b6940",
+      advarsel: "#8a5a00",
+      typografi: { fontFamily: "Georgia, serif" },
+      form: { buttonRadius: "1rem" },
+    }),
+  )
+
+  const { kode, ut } = await kjør(["tema", sti])
+
+  krev(kode === 0, `tema fra fil med skrift og form avsluttet med kode ${kode}`)
+  krev(
+    ut.includes("--font-family-base: Georgia, serif;"),
+    "skriften fra fila kom ikke med",
+  )
+  krev(
+    ut.includes("--fs-button-radius: 1rem;"),
+    "hjørnet fra fila kom ikke med",
+  )
+  krev(
+    ut.includes("--semantic-interactive-main"),
+    "fargene fra fila kom ikke med",
+  )
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Sier fra om et flagg som ikke finnes, framfor å ignorere det
+{
+  // `--knapp-hjørner` med ø er den naturlige norske stavemåten, og flagget
+  // heter `hjorner`. Den gikk stille gjennom før, og temaet kom ut uten
+  // hjørnet og uten et ord.
+  const { kode, feil: melding } = await kjør([
+    "tema",
+    "--skrift=Helvetica",
+    "--knapp-hjørner=2rem",
+  ])
+
+  krev(kode !== 0, "et ukjent flagg skulle gitt en feilkode")
+  krev(
+    melding.includes("knapp-hjørner"),
+    "feilmeldingen sier ikke hvilket flagg",
+  )
+}
+
+// Avviser en verdi som kan bryte ut av CSS-regelen den skrives inn i
+{
+  const { kode, feil: melding } = await kjør([
+    "tema",
+    "--knapp-hjorner=4px; } html { display: none } :root { --x: 1",
+  ])
+
+  krev(kode !== 0, "en verdi som lukker regelen skulle gitt en feilkode")
+  krev(
+    melding.includes("CSS-regel"),
+    `feilmeldingen forklarer ikke hvorfor: ${melding.slice(0, 120)}`,
+  )
+  krev(
+    !melding.includes("heksadesimale"),
+    "feilmeldingen peker på fargene, og feilen handler ikke om farger",
+  )
+}
+
+// Sier fra når oppskriften ikke setter noe
+{
+  const { kode, feil: melding } = await kjør(["tema"])
+
+  krev(kode !== 0, "et tomt tema skulle gitt en feilkode")
+  krev(
+    melding.includes("Mangler farger"),
+    `feilmeldingen sier ikke hva som mangler: ${melding.slice(0, 120)}`,
+  )
+}
+
 // Sier fra på en lesbar måte når en farge ikke er en farge
 {
   const { kode, feil: melding } = await kjør([

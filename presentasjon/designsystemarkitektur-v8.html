@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designsystemarkitektur V8</title>
+<style>
+/*
+ * Presentasjonen om designsystemarkitektur, åttende utgave.
+ *
+ * Én fil, ingen avhengigheter, intet byggesteg. Fonten er den samme stakken
+ * Skatteetaten selv oppgir for skjerm, og ikke en webfont fra et annet
+ * domene: en presentasjon skal ikke kunne feile på grunn av nettet i et
+ * møterom.
+ *
+ * Fargene er Fristils egne tokens, skrevet av med samme verdier. Det er ikke
+ * pynt. Presentasjonen handler om designsystemet, og da skal den se ut som
+ * det.
+ */
+
+:root {
+  /* Paletten, ordrett fra designsystem/src/tokens/tokens.ts */
+  --graphite-0: #ffffff;
+  --graphite-5: #f4f4f4;
+  --graphite-10: #e5e5e5;
+  --graphite-30: #b2b2b2;
+  --graphite-50: #757575;
+  --graphite-70: #4d4d4d;
+  --graphite-100: #1a1a1a;
+  --azure-10: #cde1f9;
+  --azure-30: #9ccff2;
+  --azure-70: #1362ae;
+  --azure-100: #093e61;
+  --denim-10: #e2eaf7;
+  --denim-30: #b5cbee;
+  --denim-70: #5a77a8;
+  --denim-100: #2c436b;
+  --forest-10: #e3f5ea;
+  --forest-30: #b9e1c8;
+  --forest-100: #2b6940;
+  --ochre-10: #f9ede2;
+  --ochre-30: #f0d2b6;
+  --ochre-100: #6b492c;
+  --burgundy-10: #f7e2e8;
+  --burgundy-30: #f3a7b0;
+  --burgundy-100: #6f2c3f;
+
+  --flate: #10161f;
+  --flate-kort: #171f2b;
+  --tekst: #f2f5f9;
+  --tekst-dempet: #a7b4c6;
+  --kant: rgba(205, 225, 249, 0.16);
+  --sans: Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Flaten er mørk, og nettleseren skal vite det. Den hører på rotelementet
+     og ikke på `body`: lerretet og vinduets rullefelt følger roten, og på
+     smal skjerm er det nettopp rullefeltet man ser. */
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--flate);
+  color: var(--tekst);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Bakgrunnen: to rolige lysflekker i merkefargene.
+ *
+ * De ligger bak alt og fanger ikke mus. Bevegelsen er lang med vilje, og
+ * stopper helt for den som har bedt om mindre bevegelse.
+ */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -30%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  background: radial-gradient(38% 42% at 50% 50%, rgba(19, 98, 174, 0.34), rgba(19, 98, 174, 0) 70%);
+  animation: lys-en 40s ease-in-out infinite;
+}
+
+body::after {
+  background: radial-gradient(34% 38% at 50% 50%, rgba(44, 67, 107, 0.4), rgba(44, 67, 107, 0) 70%);
+  animation: lys-to 52s ease-in-out infinite;
+}
+
+@keyframes lys-en {
+  0%, 100% { transform: translate3d(-16%, -10%, 0) scale(1); }
+  50% { transform: translate3d(14%, 12%, 0) scale(1.16); }
+}
+
+@keyframes lys-to {
+  0%, 100% { transform: translate3d(18%, 14%, 0) scale(1.08); }
+  50% { transform: translate3d(-12%, -12%, 0) scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
+
+/* ---------- Scenen ---------- */
+
+.dekk {
+  position: relative;
+  z-index: 1;
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vh, 2.5rem);
+}
+
+.lysbilde {
+  display: none;
+  inline-size: min(72rem, 100%);
+  max-block-size: calc(100dvh - 4rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: clamp(1.75rem, 3.4vw, 3.2rem);
+  background: linear-gradient(180deg, rgba(23, 31, 43, 0.96), rgba(16, 22, 31, 0.96));
+  border: 1px solid var(--kant);
+  border-radius: 1.25rem;
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+}
+
+.lysbilde[data-vist] { display: block; }
+
+h1 {
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-block-end: 1.2rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-block-end: 1rem;
+  color: var(--azure-30);
+}
+
+h3 {
+  font-size: 1.02rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-dempet);
+  margin-block-end: 0.5rem;
+}
+
+p { margin-block-end: 0.9rem; font-size: clamp(1rem, 1.25vw, 1.12rem); }
+p:last-child { margin-block-end: 0; }
+
+ul, ol { margin: 0 0 1rem 1.2rem; font-size: clamp(1rem, 1.2vw, 1.08rem); }
+li { margin-block-end: 0.55rem; }
+li:last-child { margin-block-end: 0; }
+
+strong { color: var(--graphite-0); }
+a { color: var(--azure-30); }
+
+.ingress {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  color: var(--tekst);
+  margin-block-end: 1.4rem;
+}
+
+.dempet { color: var(--tekst-dempet); }
+
+/* ---------- Merker ---------- */
+
+.merke {
+  display: inline-block;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-block-end: 0.6rem;
+}
+
+.merke-blaa { background: var(--azure-10); color: var(--azure-100); }
+.merke-gronn { background: var(--forest-10); color: var(--forest-100); }
+.merke-gul { background: var(--ochre-10); color: var(--ochre-100); }
+.merke-roed { background: var(--burgundy-10); color: var(--burgundy-100); }
+
+/* ---------- Kode ---------- */
+
+/*
+ * Kodepanelene er med der koden er poenget, og ingen andre steder. Et panel
+ * som bare viser at det finnes kode forteller ingenting, og tar plassen til
+ * setningen som forklarer hvorfor.
+ */
+pre {
+  font-family: var(--mono);
+  font-size: clamp(0.78rem, 0.95vw, 0.92rem);
+  line-height: 1.55;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  background: rgba(9, 62, 97, 0.34);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  color: var(--azure-10);
+  white-space: pre;
+  tab-size: 2;
+}
+
+pre b { color: var(--graphite-0); font-weight: 700; }
+pre i { color: var(--tekst-dempet); font-style: normal; }
+code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
+
+.kodetittel {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--tekst-dempet);
+  margin-block-end: 0.35rem;
+}
+
+/* ---------- Oppsett ---------- */
+
+/*
+ * `min-inline-size: 0` på barna er ikke pynt.
+ *
+ * Et rutenettfelt har `auto` som minstemål, altså bredden til innholdet, og
+ * en kodelinje som ikke kan brytes gjør da hele feltet bredere enn skjermen.
+ * Kodeblokka fikk rulle for seg selv, men siden kunne dras sidelengs likevel.
+ * Testet på 375 piksler: ti av nitten lysbilder hadde det før denne linja.
+ */
+.rader { display: grid; gap: 1.1rem; }
+.rader > * { min-inline-size: 0; }
+.to { grid-template-columns: 1fr 1fr; }
+.tre { grid-template-columns: repeat(3, 1fr); }
+.to-skjev { grid-template-columns: 1.15fr 1fr; }
+
+.boks {
+  padding: 1rem 1.1rem;
+  background: rgba(205, 225, 249, 0.05);
+  border: 1px solid var(--kant);
+  border-radius: 0.8rem;
+}
+
+.boks h3 { margin-block-end: 0.4rem; }
+.boks p:last-child, .boks ul:last-child { margin-block-end: 0; }
+
+table { inline-size: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.1vw, 1.02rem); }
+th, td { text-align: start; padding: 0.55rem 0.7rem; border-block-end: 1px solid var(--kant); vertical-align: top; }
+th { color: var(--tekst-dempet); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+tr:last-child td { border-block-end: none; }
+
+.tall {
+  font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--azure-30);
+  display: block;
+  margin-block-end: 0.3rem;
+}
+
+/*
+ * Linja nederst: hva punktet betyr for teamene, og hva det koster den som
+ * forvalter systemet. Den står på hvert lysbilde som har et standpunkt.
+ */
+.perspektiv {
+  margin-block-start: 1.2rem;
+  padding-block-start: 0.9rem;
+  border-block-start: 1px solid var(--kant);
+  display: grid;
+  gap: 0.5rem;
+  font-size: clamp(0.92rem, 1.1vw, 1rem);
+}
+
+.rolle {
+  display: inline-block;
+  min-inline-size: 11.5rem;
+  font-weight: 700;
+  color: var(--azure-30);
+}
+
+.rolle-forvalter { color: var(--ochre-30); }
+
+/* ---------- Styring ---------- */
+
+.styring {
+  position: fixed;
+  inset-block-end: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.dekk:hover ~ .styring,
+.styring:hover,
+.styring:focus-within { opacity: 1; }
+
+.styring button {
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.9rem;
+  color: var(--tekst);
+  background: rgba(23, 31, 43, 0.92);
+  border: 1px solid var(--kant);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.styring button:hover { background: var(--azure-70); border-color: var(--azure-70); }
+.styring button:focus-visible { outline: 2px solid var(--azure-30); outline-offset: 2px; }
+
+.teller {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--tekst-dempet);
+  padding-inline: 0.4rem;
+}
+
+/* ---------- Liten skjerm ---------- */
+
+/*
+ * Kortet forsvinner under 860 piksler.
+ *
+ * V7 skalerte hele scenen ned og satte den stående på 560 piksler, altså
+ * fortsatt et kort midt på skjermen med en ramme rundt. På en telefon er det
+ * feil: rammen tar plassen teksten trenger, og skaleringen gjør skriften
+ * mindre enn den skal være. Her faller kortet bort i stedet, og lysbildet
+ * blir vanlig tekst rett på bakgrunnen, med full skriftstørrelse og en
+ * linjelengde som lar seg lese.
+ */
+@media (max-width: 860px) {
+  /* Vanlig blokk og ikke rutenett: en rutenettkolonne med `auto` blir så
+     bred som innholdet sitt, og lysbildet ble 512 piksler bredt på en skjerm
+     på 375. */
+  .dekk { display: block; padding: 0; }
+
+  .lysbilde {
+    inline-size: 100%;
+    max-block-size: none;
+    overflow: visible;
+    padding: 1.5rem 1.15rem 6.5rem;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  h1 { font-size: 2.1rem; }
+  h2 { font-size: 1.45rem; }
+  p, li { font-size: 1.02rem; }
+  pre { font-size: 0.8rem; }
+
+  .to, .tre, .to-skjev { grid-template-columns: 1fr; }
+
+  .boks { padding: 0.9rem; }
+
+  .rolle { display: block; min-inline-size: 0; margin-block-end: 0.1rem; }
+
+  /* Uten tastatur må knappene være der hele tiden. */
+  .styring {
+    opacity: 1;
+    inset-inline: 0;
+    inset-block-end: 0;
+    justify-content: center;
+    padding: 0.7rem;
+    background: rgba(16, 22, 31, 0.96);
+    border-block-start: 1px solid var(--kant);
+  }
+
+  .styring button { flex: 1; max-inline-size: 9rem; }
+
+  /* En tabell får rulle for seg selv framfor å presse siden bred. */
+  .tabellrull { overflow-x: auto; }
+}
+
+@media (max-width: 420px) {
+  h1 { font-size: 1.8rem; }
+  .tall { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+<div class="dekk" id="dekk">
+
+<!-- 1 -->
+<section class="lysbilde">
+  <span class="merke merke-blaa">Arkitektur V8 · september 2026</span>
+  <h1>Rammeverksuavhengig<br>designsystem</h1>
+  <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
+  <p>Hele systemet hviler på én setning, og resten av presentasjonen er hva den fører til:</p>
+  <div class="boks">
+    <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">Fristil, bygget og publisert på <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> og på npm som <code>@fristil/designsystem</code>.</p>
+</section>
+
+<!-- 2 -->
+<section class="lysbilde">
+  <h2>Kort fortalt</h2>
+  <p>Rammeverk kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang noe skifter. Derfor er dette bygget på det nettleseren allerede forstår.</p>
+  <ol>
+    <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og egendefinerte HTML-elementer, og virker likt i React, Astro, ren HTML og i en Kotlin-server.</li>
+    <li><strong>To lag som ikke overlapper.</strong> Serveren skriver klasser og koblinger, komponenten tar tastatur, fokus og posisjonering.</li>
+    <li><strong>Tilgjengelighet er skrevet én gang.</strong> Den samme funksjonen regner ut koblingene, enten den kalles av serveren eller av elementet i nettleseren.</li>
+    <li><strong>Teamene kan overstyre alt utenfra,</strong> og overta en komponent helt hvis de må.</li>
+    <li><strong>Regningen tas av forvalteren, ikke av teamene.</strong> Tre nettlesermotorer i hver testkjøring, venting på den siste motoren, og navn som ikke kan døpes om fordi de står i koden til andre.</li>
+  </ol>
+  <p class="dempet">Nederst på lysbildene står to linjer: hva punktet betyr for teamene som bruker systemet, og hva det koster den som forvalter det.</p>
+</section>
+
+<!-- 3 -->
+<section class="lysbilde">
+  <h2>Slik ser det ut å bruke det</h2>
+  <p>Før arkitekturen, her er hele bruken. Du installerer én pakke, importerer stilarket for det du bruker, og skriver vanlig HTML.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">En knapp: ingen JavaScript i det hele tatt</p>
+      <pre>import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/button.css"
+
+&lt;button class="fs-button"&gt;Send søknad&lt;/button&gt;
+&lt;button class="fs-button" data-variant="secondary"&gt;
+  Lagre
+&lt;/button&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel">Et skjemafelt: ett element til</p>
+      <pre>import { defineFsField } from "@fristil/designsystem/field"
+defineFsField()
+
+&lt;fs-field invalid&gt;
+  &lt;label&gt;E-post&lt;/label&gt;
+  &lt;input class="fs-input" type="email"&gt;
+  &lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;
+&lt;/fs-field&gt;</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">Det er alt. En knapp er en klasse, og koster ingen kode som kjører. Et skjemafelt er de samme elementene du ville skrevet uansett, med ett element rundt som kobler dem sammen for skjermlesere.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Kan begynne med tokens og noen knapper, og ta resten når de trenger det.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde denne enkelheten, også når en komponent blir vanskelig innvendig.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="lysbilde">
+  <h2>Hvorfor plattformen først, og ikke React først</h2>
+  <p>Spørsmålet er ikke hvilket rammeverk som er best i dag, men hva som fortsatt virker når appene rundt systemet er byttet ut.</p>
+  <ul>
+    <li><strong>Retningen går bare én vei.</strong> Av komponenter bygget på plattformen kan vi lage en React-pakke senere. Av et React-bibliotek kan ingen lage en HTML-versjon.</li>
+    <li><strong>Porteføljen er aldri ett rammeverk.</strong> Gamle apper, nye apper, publiseringsløsninger som bare sender HTML, og systemer vi ikke eier selv. En CSS-klasse virker alle stedene.</li>
+    <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til kroker til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En klasse og et egendefinert element fra samme periode virker fortsatt uendret.</li>
+    <li><strong>Utseendet krever ingen kjøretid.</strong> En knapp, et merke og et kort er CSS. Gjør vi dem til React-komponenter, må rammeverket være lastet og kjøre før de ser riktige ut.</li>
+  </ul>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>React-utviklerne får ikke ferdige React-komponenter, men klasser og attributter, med typer og en egen React-inngang.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må gjøre uavhengigheten usynlig i hverdagen, ellers oppleves den som et steg ned fra et React-bibliotek.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="lysbilde">
+  <h2>Regelen alt annet følger av</h2>
+  <p>Problemet i vanlige ord: når serveren sender den samme delen av siden på nytt, og noe klientkode har lagt til et attributt som ikke står i det serveren sendte, blir attributtet borte. Det er ikke en feil i rammeverket, det er slik oppdateringen virker. Her er de to linjene fra Datastar 1.0.4 som gjør det:</p>
+  <p class="kodetittel">datastar.js, attributtsynkroniseringen i morfingen</p>
+  <pre>for (let {name: l} of Array.from(<b>r</b>.attributes))
+  !<b>s</b>.hasAttribute(l) &amp;&amp; !o.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
+
+<i>// r = elementet som står i siden</i>
+<i>// s = det serveren nettopp sendte</i></pre>
+  <p style="margin-block-start: 1rem;">React har det samme problemet i en annen form: en strukturell rendring av foreldrekomponenten kan kaste bort noder et egendefinert element har lagt inn. Derav regelen:</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
+  </div>
+  <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
+</section>
+
+<!-- 6 -->
+<section class="lysbilde">
+  <h2>De to lagene</h2>
+  <p>Arbeidet er delt i to, og de overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Lag</th><th>Innhold</th><th>Hvem produserer det</th></tr></thead>
+    <tbody>
+      <tr><td><code>fs</code>-byggefunksjonene</td><td>Klasser, <code>data-*</code>, tilgjengelighetskoblingen</td><td>Serveren, i hvilket som helst språk</td></tr>
+      <tr><td>Web-komponentene</td><td>Tastatur, fokus, posisjonering</td><td>Nettleseren, etter at HTML-en står der</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="rader to" style="margin-block-start: 1.1rem;">
+    <div>
+      <p class="kodetittel">Ett valgobjekt inn, attributter ut</p>
+      <pre>fs.button({ variant: "secondary" })
+<i>// { class: "fs-button", "data-variant": "secondary" }</i>
+
+fs.input({ type: "email", state: "invalid" })
+<i>// { class: "fs-input", type: "email",</i>
+<i>//   "data-state": "invalid", "aria-invalid": "true" }</i></pre>
+    </div>
+    <div class="boks">
+      <h3>Formen er fast</h3>
+      <ul>
+        <li>Ett valgobjekt inn, aldri posisjonelle argumenter.</li>
+        <li>Standardverdien gir ikke noe attributt. CSS-en har den allerede.</li>
+        <li>Lovlige verdier henges på funksjonen, så <code>fs.button.variants</code> dukker opp i editoren.</li>
+        <li>Ett begrep, én betydning: <code>variant</code> er visuell vekt, <code>color</code> er hva en status betyr, <code>state</code> er validering.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="lysbilde">
+  <h2>Tre kategorier, og ett spørsmål</h2>
+  <p>Kategorien svarer ikke på hvem som skriver HTML-en. I en app med server-rendring skriver serveren all HTML uansett. Den svarer på <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="merke merke-blaa">css</span>
+      <p>Ingen eier noe. Markupen er statisk: en klasse og noen <code>data-*</code>.</p>
+      <pre>&lt;button class="fs-button"
+  data-variant="secondary"&gt;</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gronn">ramme</span>
+      <p>Serveren eier markupen. Komponenten lytter, og rører verken noder eller attributter.</p>
+      <pre>&lt;fs-field&gt;
+  &lt;label&gt;…&lt;/label&gt;
+  &lt;input class="fs-input"&gt;
+&lt;/fs-field&gt;</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gul">frittstående</span>
+      <p>Tre elementer: meldingen, økttidsavbruddet og linja som sier fra når forbindelsen ryker. De bærer ingen verdi inn i en innsending, og innholdet lager de selv, når du kaller dem.</p>
+      <pre>toast.show("Lagret")</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Vilkåret som avgjør plasseringen:</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>En komponent som bærer en verdi inn i en innsending, eller som har innhold serveren må sende, kan ikke eie sin egen markup.</strong> Den hører under <code>ramme</code>.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="lysbilde">
+  <h2>To veier til den samme kontrakten</h2>
+  <p>Det avgjørende er ikke om siden bygges på en server. Det er om koden som lager markupen <strong>kan kalle en funksjon</strong>.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">Koden kan kalle en funksjon: React, Astro, Node</p>
+      <pre>const felt = fs.field({ id: useId(), help: true })
+
+&lt;div&gt;
+  &lt;label {...felt.label}&gt;E-post&lt;/label&gt;
+  &lt;input {...felt.control} type="email" /&gt;
+  &lt;p {...felt.help}&gt;Vi sender aldri spam&lt;/p&gt;
+&lt;/div&gt;
+
+<i>// Koblingen står i markupen serveren sendte.</i>
+<i>// Komponenten trengs ikke.</i></pre>
+    </div>
+    <div>
+      <p class="kodetittel">Markupen blir til uten JavaScript: Go, PHP, Kotlin, håndskrevet</p>
+      <pre>&lt;fs-field&gt;
+  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="fs-input" type="email"&gt;
+  &lt;p class="fs-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
+&lt;/fs-field&gt;
+
+<i>// Ingen id-er, ingen for, ingen aria-describedby.</i>
+<i>// Komponenten setter koblingen i nettleseren.</i></pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">De to er ikke likeverdige alternativer man velger mellom etter smak. De er to veier for to slags kode, og begge ender med den samme HTML-en hos brukeren.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken vei som gjelder før de vet hvor markupen lages.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde de to veiene i takt, for begge kaller den samme funksjonen innvendig.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="lysbilde">
+  <h2>Fra ni navn i en mal til ett attributt</h2>
+  <p>Første løsning på at morfingen river bort attributter var å frede dem: malen listet opp hvert attributt komponenten kunne finne på å sette. Det gjorde kontrakten til noe vi ikke kunne kontrollere.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">Før: malen måtte kjenne pakkens innmat</p>
+      <pre>&lt;label class="fs-label"
+  data-preserve-attr="class for"&gt;
+&lt;input class="fs-input"
+  data-preserve-attr="id aria-describedby"&gt;
+&lt;p class="fs-help-text"
+  data-preserve-attr="id"&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Ni attributtnavn, skrevet av fra dokumentasjonen. Endret vi hva komponenten satte, gikk malen stille i stykker. Ingen kompilator ser på den lista.</p>
+    </div>
+    <div>
+      <p class="kodetittel">Nå: komponenten reparerer det den selv har regnet ut</p>
+      <pre>&lt;label class="fs-label"&gt;
+&lt;input class="fs-input"&gt;
+&lt;p class="fs-help-text"&gt;
+
+<i>// Og vil serveren eie tilstanden selv:</i>
+&lt;fs-field server-controlled&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, framfor ni strenger fordelt på fire komponenter.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">Skillet som løser det: <strong>har komponenten regnet ut attributtet, kan den regne det ut på nytt, og skal reparere det. Har brukeren gjort noe, finnes det ingen kilde å regne fra.</strong> Det viste seg at også det brukeren har gjort kan repareres, for komponenten var jo den som gjorde det.</p>
+  <p>Flimmeret er ikke et argument mot reparasjon, og det er testet: morfingen fjerner attributtet, observatøren setter det tilbake ved mikrooppgavesjekken, og nettleseren tegner først etter den.</p>
+</section>
+
+<!-- 10 -->
+<section class="lysbilde">
+  <h2>Komponenten skal aldri regne ut det den kan lese</h2>
+  <p>Dette er feilen som er lettest å gjøre om igjen, og den ble funnet i ekte apper, ikke i enhetstestene.</p>
+  <p><code>&lt;fs-field&gt;</code> leste <code>invalid</code> fra et attributt på seg selv. Skrev serveren feltet med <code>fs.field()</code>, sto svaret allerede på elementene, men komponenten fant ingenting på verten, regnet ut «ikke ugyldig», og fjernet det serveren nettopp hadde skrevet. I React ble det en hydreringsfeil, i Datastar en feilmelding som dukket opp på et gyldig felt ved neste patch.</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>Finnes tilstanden i markupen, skal komponenten lese den derfra.</strong> En komponent skal aldri ha en parallell utgave av noe serveren også kan skrive.</p>
+  </div>
+  <p style="margin-block-start: 1rem;">Det gjelder hele veien: hvilken fane som er valgt leses fra <code>aria-selected</code>, ikke fra et eget attributt. Og et attributt komponenten både leser og skriver må vite hvem som satte det:</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>Noter verdien komponenten skrev, og på hvilken node. Står det noe annet der neste gang, har noen andre rørt det.</strong> Utled aldri eierskap av hva komponenten trodde sist.</p>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">Første forsøk husket hva verten sa sist. Da ga den samme markupen to ulike svar alt etter hva som hadde skjedd tidligere, og i en Datastar-app strøk komponenten serverens eget <code>aria-invalid</code>.</p>
+</section>
+
+<!-- 11 -->
+<section class="lysbilde">
+  <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
+  <p>En komponent fester oppførsel på markup noen andre har skrevet, i et språk der ingen kompilator ser etter. Fant den ikke delene sine, gjorde den ingenting, uten et ord, og feilen viste seg først når noen leste siden med skjermleser.</p>
+  <p class="kodetittel">host-element.ts</p>
+  <pre>warnAboutMarkup(element, melding, stillBroken)
+<i>// Skriver console.warn én gang per element og melding,</i>
+<i>// i alle miljøer, og først etter at siden har falt til ro.</i></pre>
+  <p style="margin-block-start: 1rem;">Tre ting måtte sitte, og alle tre ble funnet i en gjennomgang av den første utgaven:</p>
+  <ul>
+    <li><strong>Sjekken må gjentas når siden har falt til ro.</strong> HTML som strømmer fra en server leveres i pakker, og et brudd midt mellom ledeteksten og feltet er helt vanlig. Uten den siste sjekken advarte komponenten om markup som var i orden et øyeblikk senere.</li>
+    <li><strong>Meldingen må være den samme hver gang.</strong> Interpolerer du et tall inn i den, er hver runde en ny melding, og dedupliseringen er borte: «har 3 faner, men 1 paneler» ga én advarsel per panel som dukket opp.</li>
+    <li><strong>Beskjeden må peke på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin gjennom panelets id, så et panel uten id ga beskjed om at knappen manglet, og utvikleren lette på feil sted.</li>
+  </ul>
+  <p>To vaktposter holder dette grønt: en test per advarsel, og en sjekk som samler <code>console.warn</code> fra hver eneste bygde dokumentasjonsside. En advarsel som slår ut på våre egne eksempler feller bygget.</p>
+</section>
+
+<!-- 12 -->
+<section class="lysbilde">
+  <h2>Tilgjengelighet skrevet én gang</h2>
+  <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
+  <p class="kodetittel">ramme/field/field-core.ts</p>
+  <pre>computeFieldAttributes(...)
+   ├── fs.field()      <i>← serveren kaller den direkte</i>
+   └── &lt;fs-field&gt;      <i>← komponenten kaller den på elementer som står i DOM-en</i></pre>
+  <p style="margin-block-start: 1rem;">Endrer vi kontrakten, endrer vi den der, ikke i komponenten. Det er også svaret på et spørsmål som kommer hver gang: <em>skal ikke hver server skrive dette selv?</em> Nei. Vi skrev en Kotlin-utgave av <code>fs.field()</code> i demoen, og slettet den igjen. Skulle hver server regne ut Fristils regler på nytt, ville Fristil vært et JavaScript-designsystem med en manuell reserve for alle andre.</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>En id som lages av seg selv, overlever ikke hydrering.</strong> Serveren og nettleseren lager da hver sin, og koblingen er brutt til React har rettet den opp. Derfor er <code>id</code> påkrevd i typen, med en melding i konsollen ved siden av for dem typen ikke når.</p>
+  </div>
+  <p style="margin-block-start: 1rem;" class="dempet">Regelen bak: en sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett miljø. Lukk fella i typen, og legg en beskjed ved siden av.</p>
+</section>
+
+<!-- 13 -->
+<section class="lysbilde">
+  <h2>Din CSS vinner over vår</h2>
+  <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et lag, og et usortert lag vinner over alle lag.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">Uten laget taper du med lik logikk</p>
+      <pre>.fs-button           <i>(0,1,0)</i>
+.fs-button:disabled  <i>(0,2,0)  ← vår vinner</i></pre>
+      <p class="kodetittel" style="margin-block-start: 0.9rem;">Med laget vinner din regel uansett</p>
+      <pre>@layer fristil {
+  .fs-button:disabled { … }
+}
+.fs-button { … }  <i>← usortert, vinner</i></pre>
+    </div>
+    <div>
+      <p class="kodetittel">Form og størrelse leses fra en variabel</p>
+      <pre>padding: var(--fs-button-padding,
+             var(--size-2) var(--size-4));</pre>
+      <p style="margin-block-start: 0.6rem;">Standardverdien følger størrelsesskalaen, også når konsumenten endrer <code>--size-*</code>. Vi bruker med vilje ikke <code>@property</code> på disse: en registrert startverdi blir verdien når variabelen ikke er satt, og da når <code>var()</code> aldri reserven.</p>
+    </div>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Kan overstyre alt fra sin egen CSS, uten å kopiere koden vår.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må teste laget og variablene i nettleser, ikke anta at de virker. Begge deler har egne tester.</p>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="lysbilde">
+  <h2>Fargene holder kontrastkravet</h2>
+  <p>Et team med egne merkefarger skal ikke måtte regne ut kontrast for hånd, og skal ikke kunne velge en kombinasjon som faller under kravet. Generatoren tar merkefargene og lager hele temaet, i lyst og mørkt.</p>
+  <div class="rader to-skjev">
+    <div>
+      <p class="kodetittel">Ett kall, eller én kommando</p>
+      <pre>npx @fristil/designsystem tema \
+  --interaktiv=#1362ae --fare=#a82e39 \
+  --suksess=#2b6940 --advarsel=#9f7509 \
+  --noytral=#757575 --ut=tema.css</pre>
+      <p style="margin-block-start: 0.7rem;">Skalaene lages i <strong>OKLCH</strong>, fordi lyshet i HSL betyr noe ulikt for hver kulør. Merkefargen gir kulør og metning, mens lysheten settes av trinnet. Ellers kan ikke kontrasten garanteres.</p>
+    </div>
+    <div class="boks">
+      <h3>Det generatoren svarer med</h3>
+      <ul>
+        <li>alle <code>--semantic-*</code> for lyst og mørkt tema</li>
+        <li>en liste over hvert trinn den måtte justere for å nå kontrastkravet, med verdien før og etter</li>
+        <li>en liste over det den ikke klarte, framfor å levere noe som ser riktig ut</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er ikke tilfeldige: det er Skatteetatens egne farger, og de er allerede standardpaletten i Fristil.</p>
+</section>
+
+<!-- 15 -->
+<section class="lysbilde">
+  <h2>Etterprøvd mot en ekte etat</h2>
+  <p>Paletten i Fristil er Skatteetatens, og det gjør den lett å etterprøve: den står publisert i deres eget designsystem. Sammenligningen er kjørt mot kilden deres, ikke mot en skjermdump.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">36 / 36</span>
+      <p>palettvariabler finnes i Fristil med nøyaktig samme verdi.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">14 / 15</span>
+      <p>semantiske fargetokens er også like. Den femtende avviker med vilje.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">1</span>
+      <p>verdi vi måtte flytte, og grunnen står i tabellen under.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Den ene er advarselsfargen. Kravet for vanlig tekst er 4,5:1:</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Advarselstekst</th><th>Mot hvit</th><th>Mot egen advarselsflate</th></tr></thead>
+    <tbody>
+      <tr><td>Skatteetaten <code>#9f7509</code></td><td>4,18:1</td><td>3,63:1</td></tr>
+      <tr><td>Fristil <code>#896508</code></td><td>5,35:1</td><td>4,64:1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Det er ikke en kritikk av et godt designsystem. Det er hele argumentet for at fargene skal regnes ut framfor å velges: en verdi som ligger tett på kravet, går under det uten at noen ser det.</p>
+  <p>Førstelinja kjører i deres stil og tone, generert av en oppskrift på seks linjer. Vi har ikke tatt inn en eneste linje av designsystemet deres, og fargene er ikke kjørt gjennom generatoren: paletten er allerede riktig, og en omregning i OKLCH ville gjort den interaktive fargen om fra <code>#1362ae</code> til <code>#1e6ab7</code>.</p>
+</section>
+
+<!-- 16 -->
+<section class="lysbilde">
+  <h2>Prisen for å bygge på nettleseren selv</h2>
+  <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">3</span>
+      <p>nettlesermotorer i hver kjøring: Chromium, Firefox og WebKit, med godt over tre tusen tester. Ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.</p>
+    </div>
+    <div class="boks">
+      <h3>Venting på den siste motoren</h3>
+      <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
+      <pre>appearance: base-select
+<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
+<i>Firefox 150     ✗</i></pre>
+      <p style="margin-block-start: 0.6rem;">Derfor er den valgfri, med <code>data-picker="styled"</code>. Uten støtte får du nettleserens egen nedtrekksliste, altså nøyaktig det feltet hadde før.</p>
+    </div>
+    <div class="boks">
+      <h3>Navn som ikke kan døpes om</h3>
+      <p>Klassenavn, <code>data-*</code>, tokennavn og oppføringer i <code>exports</code> er alt sammen noe en konsument bygger på. Et brudd på dem krever nytt hovedtall, og står i versjonsloggen i den samme pull requesten som endringen.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="lysbilde">
+  <h2>Hva det koster appen din</h2>
+  <p>Et designsystem som drar med seg et rammeverk inn i hver app, er ikke gratis for noen. Tallene her er fra pakken slik den er:</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">0</span>
+      <p>avhengigheter i pakken. Lit ble fjernet i 0.5.0, da ingen komponent lenger rendret sitt eget innhold. Den veide 28 331 byte minifisert, 9 846 gzippet.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">8 361</span>
+      <p>byte for en app som bare bruker <code>fs.button()</code>. Før <code>sideEffects</code> sto riktig i <code>package.json</code>, dro den samme appen med seg 69 737.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">0</span>
+      <p>kode som kjører for en knapp, et merke eller et kort. De er CSS, og ser riktige ut før noe skript er lastet.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Ingenting i pakken gjør noe ved import alene. <code>customElements.define</code> skjer først når konsumenten kaller <code>defineFsField()</code>, og hver modul kan lastes på en server uten DOM. Det siste er ikke teoretisk: ni av inngangspunktene stoppet en gang med «HTMLElement is not defined» i Node, hovedinngangen medregnet, så <code>import { fs }</code> var umulig i en app med server-rendring.</p>
+</section>
+
+<!-- 18 -->
+<section class="lysbilde">
+  <h2>Demoen som viser at det stemmer</h2>
+  <p>Førstelinja er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter. Skjermene ser like ut, og det er hele poenget, så forskjellen måtte vises et annet sted.</p>
+  <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over ledningen</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Utgave</th><th>Med hva</th><th>Hvor tegningen skjer</th></tr></thead>
+    <tbody>
+      <tr><td>Datastar</td><td><code>SSE · datastar-patch-elements · HTML · 17,2 kB</code></td><td>på serveren</td></tr>
+      <tr><td>TanStack Start</td><td><code>SSE · tilstand · JSON · 2,9 kB</code></td><td>i nettleseren</td></tr>
+      <tr><td>Astro</td><td><code>Helsidelasting · HTML · 14,7 kB</code></td><td>på serveren</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Demoen er ikke en utstilling, den er en test. To feil i arkitekturen ble funnet her og ingen andre steder, fordi de bare oppstår når serveren og komponenten møtes: feltet overkjørte serverens eget svar, og sprettoppvinduet mistet tilstanden sin ved en morfing. <code>&lt;fs-dialog&gt;</code> finnes i Fristil på grunn av dette spillet: å åpne en <code>&lt;dialog&gt;</code> er et kall, og en server som bare sender HTML kan ikke kalle noe.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Kan se sitt eget rammeverk i lista, og se at skjermen er den samme.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde tre ekte apper i live ved siden av pakken. Enhetstester ser ikke det disse ser.</p>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="lysbilde">
+  <h2>Når systemet ikke strekker til</h2>
+  <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
+  <p class="kodetittel">Kildekoden til én komponent, inn i prosjektet ditt</p>
+  <pre>npx @fristil/designsystem overta button --ut=src/ui</pre>
+  <p style="margin-block-start: 1rem;">Kommandoen skriver om henvisningene ut av komponentmappa, slik at <code>../shared.js</code> blir <code>@fristil/designsystem/shared</code>. Oppslaget bygges av <code>exports</code> i pakken, så det som kopieres faktisk virker der det lander. En nabo i samme mappe blir med i kopien og står urørt.</p>
+  <div class="boks">
+    <p style="margin: 0;">Rekkefølgen teamet skal prøve: <strong>tokens først, så komponentvariabler, så egen CSS i sitt eget lag, og til sist overta.</strong> De tre første koster ingenting å oppgradere fra.</p>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Står aldri fast på grunn av oss.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Får se hva folk overtar, og det er den beste lista over hva som mangler.</p>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="lysbilde">
+  <h2>Hva vi sitter igjen med</h2>
+  <p class="ingress">Ett designsystem, uten rammeverk under, som virker i det vi har i dag og i det vi bytter til.</p>
+  <div class="rader to">
+    <div class="boks">
+      <h3>For teamene</h3>
+      <ul>
+        <li>Én pakke, ingen avhengigheter, ingen kjøretid for det som bare er utseende.</li>
+        <li>Samme komponenter i React, Astro, ren HTML og i en server som ikke kjører JavaScript.</li>
+        <li>Tilgjengeligheten er med fra start, ikke noe som legges på etterpå.</li>
+        <li>Egen CSS vinner, og kildekoden kan overtas den dagen det trengs.</li>
+      </ul>
+    </div>
+    <div class="boks">
+      <h3>For oss som forvalter det</h3>
+      <ul>
+        <li>Tre nettlesermotorer i hver kjøring, og ventetid på den siste.</li>
+        <li>Tre ekte apper som må holdes i live ved siden av pakken.</li>
+        <li>Navn som ikke kan døpes om i stillhet.</li>
+        <li>Hver ny regel må ha en vaktpost, ellers er den glemt om en måned.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.2rem;"><strong>Dokumentasjon:</strong> <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> · <strong>Pakke:</strong> <code>@fristil/designsystem</code></p>
+</section>
+
+</div>
+
+<div class="styring">
+  <button type="button" id="forrige" aria-label="Forrige lysbilde">Forrige</button>
+  <span class="teller" id="teller" aria-live="polite"></span>
+  <button type="button" id="neste" aria-label="Neste lysbilde">Neste</button>
+</div>
+
+<script>
+/*
+ * Navigeringen.
+ *
+ * Piltaster, mellomrom og Enter blar. Home og End går til første og siste.
+ * Adressen får #lysbilde-6, slik at en lenke peker på ett bestemt lysbilde,
+ * og en oppfriskning lander samme sted.
+ */
+const lysbilder = [...document.querySelectorAll(".lysbilde")]
+const teller = document.getElementById("teller")
+let gjeldende = 0
+
+function vis(nr, medHistorikk = true) {
+  gjeldende = Math.max(0, Math.min(nr, lysbilder.length - 1))
+  lysbilder.forEach((l, i) => {
+    if (i === gjeldende) l.setAttribute("data-vist", "")
+    else l.removeAttribute("data-vist")
+  })
+  teller.textContent = `${gjeldende + 1} / ${lysbilder.length}`
+  lysbilder[gjeldende].scrollTop = 0
+  window.scrollTo(0, 0)
+  if (medHistorikk) history.replaceState(null, "", `#lysbilde-${gjeldende + 1}`)
+}
+
+function fraAdressen() {
+  const treff = /^#lysbilde-(\d+)$/.exec(location.hash)
+  return treff ? Number(treff[1]) - 1 : 0
+}
+
+document.getElementById("neste").addEventListener("click", () => vis(gjeldende + 1))
+document.getElementById("forrige").addEventListener("click", () => vis(gjeldende - 1))
+
+document.addEventListener("keydown", (e) => {
+  // Enter på en lenke skal følge lenken, og mellomrom på en knapp skal trykke
+  // den. Uten denne linja bladde presentasjonen i stedet, og lenkene på
+  // første og siste lysbilde var umulige å følge med tastatur.
+  const påKontroll =
+    e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement
+  if (påKontroll && (e.key === " " || e.key === "Enter")) return
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " " || e.key === "Enter") {
+    e.preventDefault()
+    vis(gjeldende + 1)
+  } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+    e.preventDefault()
+    vis(gjeldende - 1)
+  } else if (e.key === "Home") {
+    e.preventDefault()
+    vis(0)
+  } else if (e.key === "End") {
+    e.preventDefault()
+    vis(lysbilder.length - 1)
+  }
+})
+
+window.addEventListener("hashchange", () => vis(fraAdressen(), false))
+
+vis(fraAdressen(), false)
+</script>
+</body>
+</html>
