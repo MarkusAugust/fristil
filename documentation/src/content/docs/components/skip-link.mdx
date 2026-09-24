@@ -7,16 +7,12 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Den som navigerer med tastatur må ellers gjennom hele menyen på hver eneste side. Lenken ligger utenfor skjermen til den får fokus, og er som regel det første elementet i `<body>`.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/skip-link.css"
-```
-
-## Slik ser den ut når den har fokus
+## Slik tar du den i bruk
 
 Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvinger den fram, slik at du ser hvordan den ser ut når den er synlig. Markupen er den samme som i en ekte side:
 
 <Eksempel
+  importer={["tokens.css", "skip-link.css"]}
   stiler={["skip-link"]}
   layout="stabel"
   maxWidth="32rem"
@@ -27,7 +23,36 @@ Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvin
   `}
   kode={`
 <a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<a {...fs.skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const lenke = document.createElement("a")
+lenke.href = "#hovedinnhold"
+lenke.textContent = "Hopp til hovedinnhold"
+
+fs.setAttributes(lenke, fs.skipLink())
+document.body.prepend(lenke)
+```
+
+</Fragment>
+</Eksempel>
 
 Plasseringen er det eneste som kommer i tillegg. Lenken skal være det første i `<body>`, og målet må kunne få fokus:
 
@@ -48,19 +73,6 @@ Plasseringen er det eneste som kommer i tillegg. Lenken skal være det første i
 Lenken flyttes utenfor skjermen med `transform`, ikke med `display: none` eller `visibility: hidden`. De to siste tar elementet ut av tastaturrekkefølgen, og da finnes lenken ikke for den som trenger den.
 
 Den kommer til syne på `:focus`, ikke `:focus-visible`. Nettleseren regner ikke fokus satt fra kode som synlig fokus, og lenken ville da blitt stående skjult for den som hopper dit fra et skript.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const lenke = document.createElement("a")
-lenke.href = "#hovedinnhold"
-lenke.textContent = "Hopp til hovedinnhold"
-
-fs.setAttributes(lenke, fs.skipLink())
-document.body.prepend(lenke)
-```
 
 ## Klasser du kan style
 

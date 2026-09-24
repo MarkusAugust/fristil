@@ -11,7 +11,7 @@ export type ErrorSummaryOptions = {
 }
 
 export type ErrorSummaryAttributes = {
-  container: {
+  host: {
     class: typeof ERROR_SUMMARY_CLASS
     role: "alert"
     tabindex: "-1"
@@ -34,7 +34,7 @@ export type ErrorSummaryAttributes = {
  * const feil = fs.errorSummary({ count: errors.length, id: "feil" })
  * ```
  * ```html
- * <fs-error-summary {...feil.container}>
+ * <fs-error-summary {...feil.host}>
  *   <h2 {...feil.title}>Du må rette 2 feil</h2>
  *   <ul><li><a href="#epost">E-posten mangler @</a></li></ul>
  * </fs-error-summary>
@@ -44,7 +44,7 @@ export const errorSummary = ({
   count = 0,
   id,
 }: ErrorSummaryOptions = {}): ErrorSummaryAttributes => ({
-  container: attributes({
+  host: attributes({
     class: ERROR_SUMMARY_CLASS,
     role: "alert" as const,
     tabindex: "-1" as const,

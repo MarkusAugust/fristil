@@ -18,63 +18,30 @@ import "@fristil/designsystem/toast.css"
 defineFsToast()
 ```
 
-## Markupen
-
-`fs.toast()` gir tre attributtsett, og bare det første skriver du selv:
-
-```ts
-const varsler = fs.toast({ label: "Meldinger" })
-```
-
-```html
-<fs-toast role="status" aria-live="polite" aria-label="Meldinger" data-ignore-morph></fs-toast>
-```
-
-I JSX sprer du **`region`**, ikke hele objektet:
-
-```tsx
-<fs-toast {...fs.toast().region} />
-```
-
-`varsler.toast` og `varsler.close` er klassene på selve meldingen og lukkeknappen. Dem lager komponenten, så du trenger dem bare hvis serveren patcher inn en melding, som i en Datastar-app.
-
-`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-og-oppforsel/#de-frittstående-komponentene).
-
-## Meldinger
-
-<ToastDemo />
-
-```html
-<fs-toast id="meldinger" label="Meldinger"></fs-toast>
-
-<script type="module">
-  import { defineFsToast } from "@fristil/designsystem/toast"
-  defineFsToast()
-
-  const meldinger = document.getElementById("meldinger")
-
-  document.getElementById("lagre").addEventListener("click", async () => {
-    await lagre()
-    meldinger.show("Søknaden er lagret", { color: "success" })
-  })
-</script>
-```
-
-## I en app
+## Slik tar du den i bruk
 
 Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjellen fra de andre komponentene: her kaller du en metode framfor å sette et attributt.
 
 <Tabs>
+  <TabItem label="Prøv den">
+    <ToastDemo />
+  </TabItem>
   <TabItem label="Ren HTML">
     ```html
-    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+    <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button class="fs-button" id="lagre" type="button">Lagre søknaden</button>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsToast } from "@fristil/designsystem/toast"
-      defineFsToast()
+      import { defineFsToast } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/frittstaende/toast/fs-toast.js"
 
+      defineFsToast()
+    </script>
+
+    <script type="module">
       const meldinger = document.getElementById("meldinger")
 
       document.getElementById("lagre").addEventListener("click", async () => {
@@ -103,7 +70,10 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     ```tsx
     import { createContext, useContext, useRef } from "react"
+    import { fs } from "@fristil/designsystem/react"
     import type { FsToast } from "@fristil/designsystem"
+
+    const varsler = fs.toast({ label: "Meldinger" })
 
     const Meldinger = createContext<(tekst: string, farge?: "success" | "danger") => void>(
       () => {},
@@ -119,7 +89,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
       return (
         <Meldinger.Provider value={meld}>
           {children}
-          <fs-toast ref={kø} label="Meldinger" />
+          <fs-toast ref={kø} {...varsler.host} />
         </Meldinger.Provider>
       )
     }
@@ -141,11 +111,14 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     ```astro
     ---
     // Legg beholderen i sideoppsettet, så finnes den på hver side
+    import { fs } from "@fristil/designsystem"
+
+    const varsler = fs.toast({ label: "Meldinger" })
     ---
 
     <slot />
 
-    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+    <fs-toast id="meldinger" {...varsler.host}></fs-toast>
 
     <script>
       import { defineFsToast } from "@fristil/designsystem/toast"
@@ -161,7 +134,8 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <fs-toast id="meldinger" label="Meldinger"></fs-toast>
+    <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button
       class="fs-button"
@@ -171,8 +145,12 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
       Lagre søknaden
     </button>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsToast } from "@fristil/designsystem/toast"
+      import { defineFsToast } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/frittstaende/toast/fs-toast.js"
+
       defineFsToast()
     </script>
     ```
@@ -180,6 +158,59 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     Meldingene er ikke en tilstand som skal speiles i et signal. De er noe som skjer, og derfor kaller `data-on:click` metoden direkte.
   </TabItem>
 </Tabs>
+
+## Markupen
+
+En toast har tre deler, og `fs.toast()` gir ett attributtsett til hver. Det er den samme `varsler` som står i React- og Astro-oppskriftene over:
+
+```ts
+const varsler = fs.toast({ label: "Meldinger" })
+```
+
+| Sett | Hvilken del | Hvem skriver den |
+| --- | --- | --- |
+| `varsler.host` | Beholderen, altså `<fs-toast>` | **Du**, én gang i appen |
+| `varsler.toast` | Selve meldingen | Komponenten, når du kaller `show()` |
+| `varsler.close` | Lukkeknappen i meldingen | Komponenten |
+
+Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet du skriver:
+
+```tsx
+<fs-toast {...varsler.host} />
+```
+
+Sprer du hele `varsler`, setter du tre attributter som heter `host`, `toast` og `close`, og ingen av de ekte. Beholderen står da uten `role="status"`, og ingen skjermleser leser opp det som kommer i den.
+
+De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
+
+Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Ren HTML» og «Datastar» gjør:
+
+```html
+<fs-toast id="meldinger" role="status" aria-live="polite"
+          aria-label="Meldinger" data-ignore-morph></fs-toast>
+```
+
+`data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
+
+`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-og-oppforsel/#de-frittstående-komponentene).
+
+## Meldinger
+
+```html
+<fs-toast id="meldinger" label="Meldinger"></fs-toast>
+
+<script type="module">
+  import { defineFsToast } from "@fristil/designsystem/toast"
+  defineFsToast()
+
+  const meldinger = document.getElementById("meldinger")
+
+  document.getElementById("lagre").addEventListener("click", async () => {
+    await lagre()
+    meldinger.show("Søknaden er lagret", { color: "success" })
+  })
+</script>
+```
 
 ## Attributter og metoder
 

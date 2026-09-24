@@ -16,53 +16,25 @@ import "@fristil/designsystem/session-timeout.css"
 defineFsSessionTimeout()
 ```
 
-## Prøv den
-
-<SessionTimeoutDemo />
-
-## Hvorfor den eier sitt eget innhold
-
-De fleste komponentene i Fristil rører ikke DOM-en serveren har sendt. Denne gjør, og grunnen er at nedtellingen er klientens klokke. Tallet endrer seg hvert sekund ut fra når brukeren sist rørte tastaturet, og det er en tilstand ingen server kan sende. Å patche den over en strøm hvert sekund ville vært meningsløst.
-
-Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Markup og oppførsel](/markup-og-oppforsel/) for hele regelen.
-
-```html
-<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                    data-ignore-morph></fs-session-timeout>
-```
-
-## Attributter
-
-| Attributt | Betydning | Standard |
-| --- | --- | --- |
-| `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
-| `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
-
-Aktivitet er tastetrykk, klikk og rulling. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
-
-## Hendelser
-
-| Hendelse | Når | Hva du gjør |
-| --- | --- | --- |
-| `session-warn` | Dialogen åpner seg | Som regel ingenting |
-| `session-extend` | Brukeren velger å fortsette | Be serveren forlenge økten |
-| `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
-| `session-expired` | Tiden er ute | Send brukeren til innloggingen |
-
-Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
-
-## I en app
-
+## Slik tar du den i bruk
 <Tabs>
+  <TabItem label="Prøv den">
+    <SessionTimeoutDemo />
+  </TabItem>
   <TabItem label="Ren HTML">
     ```html
     <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
                         data-ignore-morph></fs-session-timeout>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
-      defineFsSessionTimeout()
+      import { defineFsSessionTimeout } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/frittstaende/session-timeout/fs-session-timeout.js"
 
+      defineFsSessionTimeout()
+    </script>
+
+    <script type="module">
       const okt = document.querySelector("fs-session-timeout")
 
       okt.addEventListener("session-extend", async () => {
@@ -118,15 +90,36 @@ Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet
   </TabItem>
 </Tabs>
 
-## Tilgjengelighet
+## Hvorfor den eier sitt eget innhold
 
-Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
+De fleste komponentene i Fristil rører ikke DOM-en serveren har sendt. Denne gjør, og grunnen er at nedtellingen er klientens klokke. Tallet endrer seg hvert sekund ut fra når brukeren sist rørte tastaturet, og det er en tilstand ingen server kan sende. Å patche den over en strøm hvert sekund ville vært meningsløst.
 
-Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
+Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Markup og oppførsel](/markup-og-oppforsel/) for hele regelen.
 
-- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
-- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
-- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+```html
+<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                    data-ignore-morph></fs-session-timeout>
+```
+
+## Attributter
+
+| Attributt | Betydning | Standard |
+| --- | --- | --- |
+| `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
+| `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
+
+Aktivitet er tastetrykk, klikk og rulling. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
+
+## Hendelser
+
+| Hendelse | Når | Hva du gjør |
+| --- | --- | --- |
+| `session-warn` | Dialogen åpner seg | Som regel ingenting |
+| `session-extend` | Brukeren velger å fortsette | Be serveren forlenge økten |
+| `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
+| `session-expired` | Tiden er ute | Send brukeren til innloggingen |
+
+Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
 
 ## Klasser du kan style
 
@@ -152,3 +145,13 @@ Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve
   --fs-session-timeout-width: 32rem;
 }
 ```
+## Tilgjengelighet
+
+Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
+
+Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
+
+- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
+- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
+- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+

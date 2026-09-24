@@ -197,7 +197,7 @@ describe("tabIndex kommer ut som et tall", () => {
   })
 
   it("på feiloppsummeringen", () => {
-    expect(typeof fsReact.errorSummary({ count: 1 }).container.tabIndex).toBe(
+    expect(typeof fsReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
       "number",
     )
   })

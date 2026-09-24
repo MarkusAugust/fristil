@@ -7,21 +7,45 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Størrelsen og nivået er to forskjellige ting. Nivået er `<h1>` til `<h6>` og bestemmer strukturen skjermlesere navigerer etter. `data-size` bestemmer bare hvor stor teksten ser ut.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/heading.css"
-```
+## Slik tar du den i bruk
 
-## Størrelser
-
-<Eksempel stiler={["heading"]} layout="stabel" maxWidth="32rem" kode={`
+<Eksempel importer={["tokens.css", "heading.css"]}
+  stiler={["heading"]} layout="stabel" maxWidth="32rem" kode={`
 <h1 class="fs-heading" data-size="mega">Søknad om bostøtte</h1>
 <h2 class="fs-heading" data-size="xl">Om søkeren</h2>
 <h2 class="fs-heading">Boforhold</h2>
 <h3 class="fs-heading" data-size="m">Vedlegg</h3>
 <h4 class="fs-heading" data-size="s">Fødselsattest</h4>
 <h5 class="fs-heading" data-size="xs">Sist endret</h5>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<h1 {...fs.heading({ size: "mega" })}>Søknad om bostøtte</h1>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs, type HeadingSize } from "@fristil/designsystem"
+
+const tittel = document.querySelector<HTMLHeadingElement>("#seksjon")
+
+fs.setAttributes(tittel, fs.heading({ size: "m" }))
+```
+
+Kommer størrelsen fra innhold utenfra, valider den med `fs.heading.isSize(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-size` | Font |
 | --- | --- |
@@ -41,18 +65,6 @@ En `<h2>` som skal se liten ut er riktig. En `<h4>` valgt fordi den var liten no
 ```
 
 Siden skal ha én `<h1>`, og nivåene under skal følge hverandre uten hopp.
-
-## TypeScript
-
-```ts
-import { fs, type HeadingSize } from "@fristil/designsystem"
-
-const tittel = document.querySelector<HTMLHeadingElement>("#seksjon")
-
-fs.setAttributes(tittel, fs.heading({ size: "m" }))
-```
-
-Kommer størrelsen fra innhold utenfra, valider den med `fs.heading.isSize(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

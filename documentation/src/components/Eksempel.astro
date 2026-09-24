@@ -20,9 +20,46 @@ interface Props {
    * kopierer skal være det som virker i en ekte side.
    */
   visningsCss?: string
+  /**
+   * Stilarkene som skal stå i kodefanen, slik de importeres i en app.
+   *
+   * Uten dem er kodefanen bare markup, og leseren må lete lenger opp på
+   * siden etter hva som må importeres for at den skal se slik ut. Med dem er
+   * fanen hele oppskriften.
+   */
+  importer?: string[]
+  /**
+   * CSS som hører til eksempelet, og som leseren skal ha med seg.
+   *
+   * Forskjellen fra `visningsCss` er hvem den er til for. `visningsCss`
+   * tvinger fram noe som ellers ikke lar seg vise i en boks, og skal ikke
+   * kopieres. Denne er en del av oppskriften: konsumentens egne klasser, som
+   * `.sak-siste-linje` på skjelettsiden. Derfor vises den i kodefanen.
+   *
+   * Uten skillet havnet slik CSS i `visningsCss`, og da sto det klasser i
+   * kodefanen som ikke fantes noe sted leseren kunne se.
+   */
+  egenCss?: string
 }
 
-const { stiler, layout, maxWidth, kode, visningsCss } = Astro.props
+const { stiler, layout, maxWidth, kode, visningsCss, importer, egenCss } =
+  Astro.props
+
+const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
+
+/*
+ * Fanen for byggefunksjonen, når siden har noe å si der.
+ *
+ * Den sto før som en egen `## TypeScript`-seksjon lenger nede. Da hadde
+ * css-sidene den og de ni med oppførsel ikke, siden disse viser `fs` i
+ * React- og Astro-fanene sine i stedet. Nå står alt om hvordan komponenten
+ * lages i den samme seksjonen, på alle sidene.
+ */
+const harTypeScript = Astro.slots.has("ts")
+
+const importlinjer = importer
+  ?.map((fil) => `import "@fristil/designsystem/${fil}"`)
+  .join("\n")
 
 /*
  * Markupen står ett sted.
@@ -36,11 +73,20 @@ const { stiler, layout, maxWidth, kode, visningsCss } = Astro.props
 
 <Tabs>
 	<TabItem label="Eksempel">
-		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={visningsCss}>
+		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={forhaandsvisningsCss}>
 			<Fragment set:html={kode} />
 		</Preview>
 	</TabItem>
-	<TabItem label="Kode">
+	<TabItem label="Ren HTML">
+		{importlinjer && <Code code={importlinjer} lang="js" />}
 		<Code code={kode.trim()} lang="html" />
+		{egenCss && <Code code={egenCss.trim()} lang="css" />}
 	</TabItem>
+	{
+		harTypeScript && (
+			<TabItem label="TypeScript">
+				<slot name="ts" />
+			</TabItem>
+		)
+	}
 </Tabs>

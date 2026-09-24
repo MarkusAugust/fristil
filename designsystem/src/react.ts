@@ -211,7 +211,7 @@ export const fs = {
   errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {
     const boks = errorSummary(options)
     return {
-      container: toReactAttributes(boks.container),
+      host: toReactAttributes(boks.host),
       title: toReactAttributes(boks.title),
     }
   },
@@ -270,7 +270,7 @@ export const fs = {
   toast: (options: Parameters<typeof toast>[0] = {}) => {
     const varsler = toast(options)
     return {
-      region: varsler.region,
+      host: varsler.host,
       toast: toReactAttributes(varsler.toast),
       close: toReactAttributes(varsler.close),
     }

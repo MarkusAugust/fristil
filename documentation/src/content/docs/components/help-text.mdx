@@ -7,19 +7,51 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Den lille teksten under et felt som forklarer hva systemet forventer. Er teksten en feilmelding, bruk [Error Text](../error-text/).
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/help-text.css"
-```
+## Slik tar du den i bruk
 
-## Varianter
-
-<Eksempel stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
+<Eksempel importer={["tokens.css", "help-text.css"]}
+  stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
 <p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
 <p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
 <p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
 <p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<p {...fs.helpText()}>Du finner nummeret øverst til høyre på fakturaen.</p>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = fs.field({ id: "kid", help: true })
+
+fs.setAttributes(ledetekst, felt.label)
+fs.setAttributes(input, { ...fs.input(), ...felt.control })
+fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
+```
+
+[`fs.field`](../field/) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.
+
+Trenger du bare klassen:
+
+```ts
+fs.setAttributes(hjelpetekst, fs.helpText({ variant: "warning" }))
+```
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -39,26 +71,6 @@ Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 `} />
 
 [Field](../field/) genererer `id`-en og setter `aria-describedby` for deg.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const felt = fs.field({ id: "kid", help: true })
-
-fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, { ...fs.input(), ...felt.control })
-fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
-```
-
-[`fs.field`](../../typesikker-bruk/#fsfield) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.
-
-Trenger du bare klassen:
-
-```ts
-fs.setAttributes(hjelpetekst, fs.helpText({ variant: "warning" }))
-```
 
 ## Klasser du kan style
 

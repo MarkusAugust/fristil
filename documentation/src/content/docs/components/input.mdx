@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Ren CSS på et vanlig `<input>`, så nettleserens egen validering, autofyll og tastaturhåndtering virker som før.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/input.css"
-```
+## Slik tar du den i bruk
 
-## Tilstander
-
-<Eksempel stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel importer={["tokens.css", "input.css"]}
+  stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
 <label class="fs-label" for="epost">E-postadresse</label>
 <input class="fs-input" id="epost" type="email" placeholder="ola&#64;eksempel.no" />
 
@@ -26,7 +22,49 @@ import "@fristil/designsystem/input.css"
 
 <label class="fs-label" for="registrert">Registrert e-postadresse</label>
 <input class="fs-input" id="registrert" type="email" value="ola&#64;eksempel.no" disabled />
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<input {...fs.input({ type: "email", state: "invalid" })} id="epost" />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs, type FieldState } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLInputElement>("#epost")
+
+fs.setAttributes(felt, fs.input({ type: "email" }))
+```
+
+`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Fellen over er ikke mulig å gå i.
+
+Ved validering kaller du den på nytt med ny tilstand:
+
+```ts
+felt.addEventListener("blur", () => {
+  const tilstand: FieldState = felt.validity.valid ? "default" : "invalid"
+
+  fs.setAttributes(felt, fs.input({ type: "email", state: tilstand }))
+})
+```
+
+`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` begge. Uten det ville feltet blitt stående rødt etter at feilen var rettet.
+
+Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-state` | Brukes til |
 | --- | --- |
@@ -60,32 +98,6 @@ Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene f
 | --- | --- |
 | Nettleserens egen datovelger holder | **Input** med `type="date"` |
 | Du skal be om en dato | [Dato i et skjema](../../monster/dato/) |
-
-## TypeScript
-
-```ts
-import { fs, type FieldState } from "@fristil/designsystem"
-
-const felt = document.querySelector<HTMLInputElement>("#epost")
-
-fs.setAttributes(felt, fs.input({ type: "email" }))
-```
-
-`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Fellen over er ikke mulig å gå i.
-
-Ved validering kaller du den på nytt med ny tilstand:
-
-```ts
-felt.addEventListener("blur", () => {
-  const tilstand: FieldState = felt.validity.valid ? "default" : "invalid"
-
-  fs.setAttributes(felt, fs.input({ type: "email", state: tilstand }))
-})
-```
-
-`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` begge. Uten det ville feltet blitt stående rødt etter at feilen var rettet.
-
-Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

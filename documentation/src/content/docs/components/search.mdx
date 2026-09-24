@@ -7,21 +7,47 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Et `fs-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/search.css"
-import "@fristil/designsystem/button.css"
-```
+## Slik tar du den i bruk
 
-## Søkefelt med knapp
-
-<Eksempel stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<Eksempel importer={["tokens.css", "search.css", "button.css"]}
+  stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
 <form class="fs-search-row" role="search">
   <label class="fs-label fs-sr-only" for="sok">Søk i saker</label>
   <input class="fs-input fs-search" type="search" id="sok" name="q" placeholder="Søk i saker" />
   <button class="fs-button" type="submit">Søk</button>
 </form>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<form className={fs.search.row} role="search">
+  <label {...fs.label()} htmlFor="sok">Søk i saker</label>
+  <input {...fs.search()} id="sok" />
+</form>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLInputElement>("#sok")
+
+fs.setAttributes(felt, fs.search())
+```
+
+`fs.search()` setter både `fs-input` og `fs-search`, og `type="search"`. `fs.search.row` gir klassen på raden med feltet og knappen.
+
+</Fragment>
+</Eksempel>
 
 `type="search"` gir nettleserens eget kryss for å tømme feltet, og «Søk» i stedet for «Enter» på mobiltastaturet. Hvordan krysset ser ut, og om Escape tømmer feltet, varierer mellom nettleserne.
 
@@ -56,18 +82,6 @@ Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den 
 ```
 
 Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antall treff opp for hvert tastetrykk.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const felt = document.querySelector<HTMLInputElement>("#sok")
-
-fs.setAttributes(felt, fs.search())
-```
-
-`fs.search()` setter både `fs-input` og `fs-search`, og `type="search"`. `fs.search.row` gir klassen på raden med feltet og knappen.
 
 ## Klasser du kan style
 

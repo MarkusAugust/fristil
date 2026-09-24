@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Samme utseende og tilstander som [Input](../input/), på et ekte `<select>`. Da brukes nettleserens egen liste, den som allerede virker med tastatur, skjermleser og mobilens innebygde velger.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/select.css"
-```
+## Slik tar du den i bruk
 
-## Tilstander
-
-<Eksempel stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel importer={["tokens.css", "select.css"]}
+  stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
 <label class="fs-label" for="fylke">Fylke</label>
 <select class="fs-select" id="fylke" name="fylke">
   <option value="">Velg fylke</option>
@@ -32,7 +28,44 @@ import "@fristil/designsystem/select.css"
 <select class="fs-select" id="registrert" disabled>
   <option selected>Vestland</option>
 </select>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<select {...fs.select({ picker: "styled" })} id="fylke" name="fylke">
+  <option value="">Velg fylke</option>
+  <option value="vestland">Vestland</option>
+</select>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs, type FieldState } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLSelectElement>("#fylke")
+
+felt.addEventListener("change", () => {
+  const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
+
+  fs.setAttributes(felt, fs.select({ state: tilstand, picker: "styled" }))
+})
+```
+
+`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
+
+Hvert kall setter hele tilstanden. Utelater du `picker`, fjernes `data-picker` på samme måte som `data-state`, så send med de valgene feltet skal beholde.
+
+</Fragment>
+</Eksempel>
 
 | `data-state` | Brukes til |
 | --- | --- |
@@ -77,24 +110,6 @@ import { fs } from "@fristil/designsystem"
 fs.select({ picker: "styled" })
 // { class: "fs-select", "data-picker": "styled" }
 ```
-
-## TypeScript
-
-```ts
-import { fs, type FieldState } from "@fristil/designsystem"
-
-const felt = document.querySelector<HTMLSelectElement>("#fylke")
-
-felt.addEventListener("change", () => {
-  const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
-
-  fs.setAttributes(felt, fs.select({ state: tilstand, picker: "styled" }))
-})
-```
-
-`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
-
-Hvert kall setter hele tilstanden. Utelater du `picker`, fjernes `data-picker` på samme måte som `data-state`, så send med de valgene feltet skal beholde.
 
 ## Klasser du kan style
 

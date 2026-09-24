@@ -7,20 +7,54 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere. Den setter `for`, `id` og `aria-describedby` for deg.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/label.css"
-```
+## Slik tar du den i bruk
 
-## Markering
-
-<Eksempel stiler={["label"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel importer={["tokens.css", "label.css"]}
+  stiler={["label"]} layout="stabel" maxWidth="26rem" kode={`
 <label class="fs-label" for="navn">Fullt navn</label>
 <label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
 <label class="fs-label" data-required="text" for="telefon">Telefonnummer</label>
 <label class="fs-label" data-optional="" for="adresse">Adresse</label>
 <label class="fs-label" aria-disabled="true" for="orgnr">Organisasjonsnummer</label>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<label {...fs.label()} htmlFor="navn">Fullt navn</label>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ledetekst = document.querySelector<HTMLLabelElement>("#epost-label")
+
+fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
+ledetekst.htmlFor = "epost"
+```
+
+`for` setter du selv. Funksjonen returnerer bare Fristils egne attributter.
+
+Setter du opp et helt felt, gjør [`fs.field`](../field/) både markeringen og koblingen til kontrollen:
+
+```ts
+const felt = fs.field({ id: "epost", required: "symbol" })
+
+fs.setAttributes(ledetekst, felt.label)
+fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+```
+
+</Fragment>
+</Eksempel>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -41,28 +75,6 @@ Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjem
 <input class="fs-input" id="epost" type="email" required aria-describedby="epost-hjelp" />
 <p class="fs-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
 `} />
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const ledetekst = document.querySelector<HTMLLabelElement>("#epost-label")
-
-fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
-ledetekst.htmlFor = "epost"
-```
-
-`for` setter du selv. Funksjonen returnerer bare Fristils egne attributter.
-
-Setter du opp et helt felt, gjør [`fs.field`](../../typesikker-bruk/#fsfield) både markeringen og koblingen til kontrollen:
-
-```ts
-const felt = fs.field({ id: "epost", required: "symbol" })
-
-fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
-```
 
 ## Klasser du kan style
 

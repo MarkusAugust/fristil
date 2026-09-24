@@ -16,64 +16,12 @@ Det er hele grunnen til at den finnes. I en fanerad skal Tab hoppe forbi hele ra
 Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
-```ts
-// main.ts, kjøres én gang når appen starter
-import { defineFsTabs } from "@fristil/designsystem/tabs"
-import "@fristil/designsystem/tabs.css"
-
-defineFsTabs()
-```
-
-## Faner
-
-<TabsDemo />
-
-## Markupen
-
-`fs.tabs()` gir ett attributtsett per element. Id-ene og koblingen mellom fane og panel regnes ut av byggefunksjonen, så de kan ikke komme i utakt.
-
-```ts
-const faner = fs.tabs({ id: "sak", count: 3, selected: 0, label: "Deler av saken" })
-```
-
-```html
-<fs-tabs>
-  <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
-    <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-            aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
-    <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
-            aria-controls="sak-panel-1" tabindex="-1">Vedlegg</button>
-  </div>
-
-  <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-       aria-labelledby="sak-tab-0" tabindex="0">
-    <p class="fs-paragraph">Søknaden ble sendt 4. mars 2026.</p>
-  </div>
-  <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
-       aria-labelledby="sak-tab-1" tabindex="0" hidden>
-    <p class="fs-paragraph">Tre vedlegg er lastet opp.</p>
-  </div>
-</fs-tabs>
-```
-
-`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vises til skriptet hadde kjørt, og innholdet hoppe når de skjulte seg selv.
-
-Sender serveren området på nytt mens brukeren holder på, river oppdateringen fanevalget bort, siden ingenting av det sto i HTML-en den sendte. Komponenten ser det og setter valget tilbake, så malen din trenger ingenting ekstra. Skal serveren kunne flytte fanen selv, som i «gå videre til steg 2», settes `server-controlled` på `<fs-tabs>`. Se [Markup og oppførsel](/markup-og-oppforsel/).
-
-## Hvilken fane som er valgt
-
-Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
-
-```ts
-const faner = document.querySelector("fs-tabs")
-
-faner.selected // 0
-faner.select(1) // velger «Vedlegg» og sender `tab-select`
-```
-
-## I en app
+## Slik tar du den i bruk
 
 <Tabs>
+  <TabItem label="Prøv den">
+    <TabsDemo />
+  </TabItem>
   <TabItem label="Ren HTML">
     ```html
     <fs-tabs id="saksfaner">
@@ -89,10 +37,15 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
            aria-labelledby="sak-tab-1" tabindex="0" hidden>Vedlegg</div>
     </fs-tabs>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsTabs } from "@fristil/designsystem/tabs"
-      defineFsTabs()
+      import { defineFsTabs } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/tabs/fs-tabs.js"
 
+      defineFsTabs()
+    </script>
+
+    <script type="module">
       document.getElementById("saksfaner").addEventListener("tab-select", (evt) => {
         console.log("valgte fane", evt.detail.index)
       })
@@ -166,17 +119,16 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
   </TabItem>
 </Tabs>
 
-## Tilgjengelighet
+## Hvilken fane som er valgt
 
-Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Alt dette står i markupen fra serveren, så semantikken er riktig før skriptet har kjørt.
+Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
 
-| Tast | Gjør |
-| --- | --- |
-| Piltastene | Flytter mellom fanene, og går rundt fra siste til første |
-| Home og End | Første og siste fane |
-| Tab | Ut av raden og inn i det valgte panelet |
+```ts
+const faner = document.querySelector("fs-tabs")
 
-Bare den valgte fanen har `tabindex="0"`. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
+faner.selected // 0
+faner.select(1) // velger «Vedlegg» og sender `tab-select`
+```
 
 ## Klasser du kan style
 
@@ -198,3 +150,15 @@ Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
   --fs-tabs-gap: 0;
 }
 ```
+## Tilgjengelighet
+
+Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Alt dette står i markupen fra serveren, så semantikken er riktig før skriptet har kjørt.
+
+| Tast | Gjør |
+| --- | --- |
+| Piltastene | Flytter mellom fanene, og går rundt fra siste til første |
+| Home og End | Første og siste fane |
+| Tab | Ut av raden og inn i det valgte panelet |
+
+Bare den valgte fanen har `tabindex="0"`. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
+

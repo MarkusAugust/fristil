@@ -22,9 +22,109 @@ import "@fristil/designsystem/error-summary.css"
 defineFsErrorSummary()
 ```
 
-## Oppsummering med to feil
+## Slik tar du den i bruk
+<Tabs>
+  <TabItem label="Prøv den">
+    <ErrorSummaryDemo />
+  </TabItem>
+  <TabItem label="Ren HTML">
+    ```html
+    <form novalidate>
+      <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
+        <h2 class="fs-error-summary__title"></h2>
+        <ul class="fs-list"></ul>
+      </fs-error-summary>
 
-<ErrorSummaryDemo />
+      <label class="fs-label" for="epost">E-postadresse</label>
+      <input class="fs-input" id="epost" type="email" />
+      <button class="fs-button">Send søknad</button>
+    </form>
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsErrorSummary } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/error-summary/fs-error-summary.js"
+
+      defineFsErrorSummary()
+    </script>
+
+    <script type="module">
+      const boks = document.getElementById("feil")
+
+      function visFeil(feilene) {
+        boks.querySelector("ul").innerHTML = feilene
+          .map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+          .join("")
+
+        // Overskriften og hidden skrives her, slik en server ville gjort det.
+        if (feilene.length > 0) {
+          boks.querySelector(".fs-error-summary__title").textContent =
+            feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`
+        }
+        boks.hidden = feilene.length === 0
+      }
+    </script>
+    ```
+
+    Komponenten flytter fokus hit i det `hidden` tas bort.
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { fs } from "@fristil/designsystem/react"
+    import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+
+    defineFsErrorSummary()
+
+    export function Feiloppsummering({ feilene }: { feilene: Feil[] }) {
+      const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
+
+      return (
+        <fs-error-summary {...boks.host}>
+          <h2 {...boks.title}>
+            {feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`}
+          </h2>
+          <ul {...fs.list()}>
+            {feilene.map((f) => (
+              <li key={f.id}><a href={`#${f.id}`}>{f.melding}</a></li>
+            ))}
+          </ul>
+        </fs-error-summary>
+      )
+    }
+    ```
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+
+    const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
+    ---
+
+    <fs-error-summary {...boks.host}>
+      <h2 {...boks.title}>Skjemaet har {feilene.length} feil</h2>
+      <ul {...fs.list()}>
+        {feilene.map((f) => <li><a href={`#${f.id}`}>{f.melding}</a></li>)}
+      </ul>
+    </fs-error-summary>
+
+    <script>
+      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+      defineFsErrorSummary()
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
+      <h2 class="fs-error-summary__title"></h2>
+      <ul class="fs-list"></ul>
+    </fs-error-summary>
+    ```
+
+    Serveren sender hele boksen på nytt når skjemaet valideres, med overskriften og lista ferdig utfylt, og uten `hidden` når det finnes feil. Komponenten oppdager at boksen ble synlig og flytter fokus dit.
+  </TabItem>
+</Tabs>
 
 ## Markupen
 
@@ -56,114 +156,6 @@ Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den p�
 <input class="fs-input" id="fodselsdato" type="date">
 ```
 
-## I en app
-
-<Tabs>
-  <TabItem label="Ren HTML">
-    ```html
-    <form novalidate>
-      <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
-        <h2 class="fs-error-summary__title"></h2>
-        <ul class="fs-list"></ul>
-      </fs-error-summary>
-
-      <label class="fs-label" for="epost">E-postadresse</label>
-      <input class="fs-input" id="epost" type="email" />
-      <button class="fs-button">Send søknad</button>
-    </form>
-
-    <script type="module">
-      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
-      defineFsErrorSummary()
-
-      const boks = document.getElementById("feil")
-
-      function visFeil(feilene) {
-        boks.querySelector("ul").innerHTML = feilene
-          .map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
-          .join("")
-
-        // Overskriften og hidden skrives her, slik en server ville gjort det.
-        if (feilene.length > 0) {
-          boks.querySelector(".fs-error-summary__title").textContent =
-            feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`
-        }
-        boks.hidden = feilene.length === 0
-      }
-    </script>
-    ```
-
-    Komponenten flytter fokus hit i det `hidden` tas bort.
-  </TabItem>
-  <TabItem label="React">
-    ```tsx
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
-
-    defineFsErrorSummary()
-
-    export function Feiloppsummering({ feilene }: { feilene: Feil[] }) {
-      const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
-
-      return (
-        <fs-error-summary {...boks.container}>
-          <h2 {...boks.title}>
-            {feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`}
-          </h2>
-          <ul {...fs.list()}>
-            {feilene.map((f) => (
-              <li key={f.id}><a href={`#${f.id}`}>{f.melding}</a></li>
-            ))}
-          </ul>
-        </fs-error-summary>
-      )
-    }
-    ```
-  </TabItem>
-  <TabItem label="Astro">
-    ```astro
-    ---
-    import { fs } from "@fristil/designsystem"
-
-    const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
-    ---
-
-    <fs-error-summary {...boks.container}>
-      <h2 {...boks.title}>Skjemaet har {feilene.length} feil</h2>
-      <ul class="fs-list">
-        {feilene.map((f) => <li><a href={`#${f.id}`}>{f.melding}</a></li>)}
-      </ul>
-    </fs-error-summary>
-
-    <script>
-      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
-      defineFsErrorSummary()
-    </script>
-    ```
-  </TabItem>
-  <TabItem label="Datastar">
-    ```html
-    <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
-      <h2 class="fs-error-summary__title"></h2>
-      <ul class="fs-list"></ul>
-    </fs-error-summary>
-    ```
-
-    Serveren sender hele boksen på nytt når skjemaet valideres, med overskriften og lista ferdig utfylt, og uten `hidden` når det finnes feil. Komponenten oppdager at boksen ble synlig og flytter fokus dit.
-  </TabItem>
-</Tabs>
-
-## Tilgjengelighet
-
-Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `tabindex="-1"` for å kunne få fokus uten å bli en tabbestopp.
-
-To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
-
-- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket.
-- **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før, altså i oppsummeringen.
-
-Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.
-
 ## Klasser du kan style
 
 | Klasse | Hva det er |
@@ -181,3 +173,14 @@ Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsu
   --fs-error-summary-padding: var(--size-6);
 }
 ```
+## Tilgjengelighet
+
+Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `tabindex="-1"` for å kunne få fokus uten å bli en tabbestopp.
+
+To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
+
+- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket.
+- **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før, altså i oppsummeringen.
+
+Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.
+

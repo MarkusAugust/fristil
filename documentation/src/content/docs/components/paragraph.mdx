@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Brødtekst med lesbar linjelengde. Bredden er begrenset til 70 tegn, fordi lengre linjer gjør det vanskelig å finne tilbake til starten av neste. Det er den vanligste grunnen til at en tekst er tung å lese selv når skriften er stor nok.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/paragraph.css"
-```
+## Slik tar du den i bruk
 
-## Ingress og brødtekst
-
-<Eksempel stiler={["paragraph", "heading"]} layout="stabel" maxWidth="34rem" kode={`
+<Eksempel importer={["tokens.css", "paragraph.css"]}
+  stiler={["paragraph", "heading"]} layout="stabel" maxWidth="34rem" kode={`
 <h2 class="fs-heading">Bostøtte</h2>
 
 <p class="fs-paragraph" data-variant="lead">
@@ -28,7 +24,35 @@ import "@fristil/designsystem/paragraph.css"
 <p class="fs-paragraph" data-size="small">
   Sist oppdatert 4. mars 2026.
 </p>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<p {...fs.paragraph({ variant: "lead" })}>
+  Bostøtte er en behovsprøvd støtte til deg som har lave inntekter.
+</p>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ingress = document.querySelector<HTMLParagraphElement>("#ingress")
+
+fs.setAttributes(ingress, fs.paragraph({ variant: "lead" }))
+```
+
+</Fragment>
+</Eksempel>
 
 | Attributt | Brukes til |
 | --- | --- |
@@ -38,16 +62,6 @@ import "@fristil/designsystem/paragraph.css"
 | `data-size="small"` | Bisetninger, datoer, kildehenvisninger |
 
 Avsnitt som følger hverandre får luft mellom seg av seg selv.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const ingress = document.querySelector<HTMLParagraphElement>("#ingress")
-
-fs.setAttributes(ingress, fs.paragraph({ variant: "lead" }))
-```
 
 ## Klasser du kan style
 

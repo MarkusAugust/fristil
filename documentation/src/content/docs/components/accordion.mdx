@@ -9,14 +9,10 @@ Klassen settes på et `<details>` med et `<summary>` først. Nettleseren tar seg
 
 Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt. Og teksten i et lukket panel forsvinner fra DOM-en, så nettleserens eget søk i siden finner den ikke lenger.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/accordion.css"
-```
+## Slik tar du den i bruk
 
-## Paneler
-
-<Eksempel stiler={["accordion"]} layout="stabel" maxWidth="34rem" kode={`
+<Eksempel importer={["tokens.css", "accordion.css"]}
+  stiler={["accordion"]} layout="stabel" maxWidth="34rem" kode={`
 <details class="fs-accordion">
   <summary>Hvem kan søke om bostøtte?</summary>
   <div class="fs-accordion__content">
@@ -30,7 +26,42 @@ import "@fristil/designsystem/accordion.css"
     <p>Vi behandler søknaden innen tre uker. Mangler vi vedlegg, får du beskjed i digital postkasse.</p>
   </div>
 </details>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<details {...fs.accordion()}>
+  <summary>Hva regnes som inntekt?</summary>
+  <div className={fs.accordion.content}>Lønn, pensjon og næringsinntekt.</div>
+</details>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const panel = document.querySelector<HTMLDetailsElement>("#bostotte")
+
+fs.setAttributes(panel, fs.accordion({ variant: "plain" }))
+
+panel.addEventListener("toggle", () => {
+  console.log(panel.open ? "åpnet" : "lukket")
+})
+```
+
+`fs.accordion.content` gir klassen på innholdet. `toggle` er nettleserens egen hendelse, og kommer både når brukeren åpner og når du setter `open` fra kode.
+
+</Fragment>
+</Eksempel>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -57,22 +88,6 @@ Skal panelene være en del av sidens struktur, legg en overskrift inne i `<summa
 ```
 
 Da kan skjermlesere hoppe mellom spørsmålene med overskriftsnavigasjon. Nivået må passe med resten av siden.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const panel = document.querySelector<HTMLDetailsElement>("#bostotte")
-
-fs.setAttributes(panel, fs.accordion({ variant: "plain" }))
-
-panel.addEventListener("toggle", () => {
-  console.log(panel.open ? "åpnet" : "lukket")
-})
-```
-
-`fs.accordion.content` gir klassen på innholdet. `toggle` er nettleserens egen hendelse, og kommer både når brukeren åpner og når du setter `open` fra kode.
 
 ## Klasser du kan style
 

@@ -21,126 +21,14 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 `<fs-field>` er det eneste unntaket i systemet, fordi koblingen er markup og ikke oppførsel. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
-## Hvorfor koblingen er vanskelig
+## Slik tar du den i bruk
 
-Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samtidig:
-
-```html
-<label for="epost">E-postadresse</label>
-<input id="epost" aria-invalid="true" aria-describedby="epost-hjelp epost-feil" />
-<p id="epost-hjelp">Vi sender kvittering hit.</p>
-<p id="epost-feil">Skriv en gyldig e-postadresse.</p>
-```
-
-Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt. Og det synes ikke på skjermen når en av dem mangler.
-
-## Som funksjon
-
-[`fs.field`](../../typesikker-bruk/#fsfield) regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
-
-```tsx
-const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
-
-<label {...felt.label}>E-postadresse</label>
-<input {...fs.input({ type: "email" })} {...felt.control} />
-<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
-```
-
-Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
-
-**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@fristil/designsystem` og `@fristil/designsystem/react`.
-
-Grunnen er at en id som lages av seg selv er tilfeldig: to kjøringer gir to ulike. Rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der, og React melder avvik ved hydreringen.
-
-Skriver du JavaScript uten typer, ser du ingen type. Da lager funksjonen en id likevel, og sier fra i konsollen, så feltet virker mens du retter det.
-
-## Som element
-
-Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
-
-Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, med de samme id-ene som før, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
-
-Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon.
-
-## Kom i gang
-
-```ts
-// main.ts, kjøres én gang når appen starter
-import { defineFsField } from "@fristil/designsystem/field"
-import "@fristil/designsystem/field.css"
-
-defineFsField()
-```
-
-`defineFsField()` registrerer web componenten i nettleseren. Kall den én gang ved oppstart. Flere kall er ufarlige.
-
-Stilarket må importeres fordi barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
+`defineFsField()` registrerer web componenten i nettleseren, og kalles én gang ved oppstart. Flere kall er ufarlige. Stilarket må importeres fordi barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
 
 <Tabs>
-  <TabItem label="Eksempel">
+  <TabItem label="Prøv den">
     <FieldDemo />
   </TabItem>
-  <TabItem label="Kode">
-    ```html
-    <fs-field required-marker="text" invalid>
-      <label>E-postadresse</label>
-      <input class="fs-input" type="email" value="ola@" />
-      <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
-      <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
-    </fs-field>
-
-    <fs-field optional>
-      <label>Melding til saksbehandler</label>
-      <textarea class="fs-textarea" rows="3"></textarea>
-      <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
-    </fs-field>
-    ```
-  </TabItem>
-</Tabs>
-
-`<label>` har ikke `for`, og tekstene har ikke `id`. Komponenten fyller ut begge deler.
-
-## Enkleste eksempel
-
-```html
-<fs-field>
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" />
-</fs-field>
-```
-
-Klikk på teksten flytter fokus til feltet, og skjermleseren leser riktig ledetekst.
-
-## Automatisk kobling
-
-Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant barna og:
-
-1. Gir kontrollen en `id` hvis den mangler, og setter `label[for]` til den.
-2. Gir hjelpetekst og feilmelding `id` ved behov.
-3. Setter `aria-describedby` på kontrollen, med begge tekstene når begge finnes.
-4. Setter `aria-invalid="true"` på kontrollen når `invalid` er satt.
-5. Setter `data-required` eller `data-optional` på ledeteksten ut fra attributtene på `<fs-field>`.
-6. Viser eller skjuler `fs-error-text` ut fra `invalid`.
-
-Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
-
-## Attributter
-
-| Attributt | Type | Hva det gjør |
-| --- | --- | --- |
-| `invalid` | boolsk | Setter `aria-invalid` på kontrollen og viser feilmeldingen |
-| `disabled` | boolsk | Setter `disabled` på kontrollen og demper ledeteksten |
-| `optional` | boolsk | Setter `data-optional` på ledeteksten |
-| `required-marker` | `none \| symbol \| text` | Setter `data-required` på ledeteksten |
-| `control-id` | streng | Bestemmer `id`-en på kontrollen i stedet for å la komponenten lage en |
-| `described-by` | streng | Legger til ekstra `id`-er i `aria-describedby`, i tillegg til hjelp og feil |
-
-`required-marker` er bare visuelt. `required` må stå på selve `<input>`.
-
-## I en app
-
-<Tabs>
   <TabItem label="Ren HTML">
     ```html
     <form id="kontaktskjema">
@@ -153,10 +41,15 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
       <button class="fs-button" type="submit">Send</button>
     </form>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsField } from "@fristil/designsystem/field"
-      defineFsField()
+      import { defineFsField } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/field/fs-field.js"
 
+      defineFsField()
+    </script>
+
+    <script type="module">
       const skjema = document.getElementById("kontaktskjema")
       const navnFelt = document.getElementById("navn-felt")
       const navnInput = navnFelt.querySelector("input")
@@ -289,8 +182,8 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
 
     <fs-field required-marker="symbol">
       <label>Fullt navn</label>
-      <input class="fs-input" type="text" name="navn" required />
-      <p class="fs-error-text">Fyll inn navnet ditt.</p>
+      <input {...fs.input({ type: "text" })} name="navn" required />
+      <p {...fs.errorText()}>Fyll inn navnet ditt.</p>
     </fs-field>
 
     <script>
@@ -329,8 +222,11 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
       <button class="fs-button" type="submit">Send</button>
     </form>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsField } from "@fristil/designsystem/field"
+      import { defineFsField } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/field/fs-field.js"
+
       defineFsField()
     </script>
     ```
@@ -338,6 +234,74 @@ Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyld
     `data-attr:invalid` setter attributtet når uttrykket er sant og fjerner det når det er usant, nøyaktig slik `<fs-field>` forventer av et boolsk attributt. Ingen av forbeholdene fra React-fanen gjelder her.
   </TabItem>
 </Tabs>
+
+## Hvorfor koblingen er vanskelig
+
+Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samtidig:
+
+```html
+<label for="epost">E-postadresse</label>
+<input id="epost" aria-invalid="true" aria-describedby="epost-hjelp epost-feil" />
+<p id="epost-hjelp">Vi sender kvittering hit.</p>
+<p id="epost-feil">Skriv en gyldig e-postadresse.</p>
+```
+
+Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt. Og det synes ikke på skjermen når en av dem mangler.
+
+## Som funksjon
+
+[`fs.field`](../field/) regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
+
+```tsx
+const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
+
+<label {...felt.label}>E-postadresse</label>
+<input {...fs.input({ type: "email" })} {...felt.control} />
+<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+```
+
+Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
+
+**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@fristil/designsystem` og `@fristil/designsystem/react`.
+
+Grunnen er at en id som lages av seg selv er tilfeldig: to kjøringer gir to ulike. Rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der, og React melder avvik ved hydreringen.
+
+Skriver du JavaScript uten typer, ser du ingen type. Da lager funksjonen en id likevel, og sier fra i konsollen, så feltet virker mens du retter det.
+
+## Som element
+
+Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, og komponenten setter `for`, `id`, `aria-describedby` og `aria-invalid` på dem.
+
+Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, med de samme id-ene som før, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
+
+Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon.
+
+## Automatisk kobling
+
+Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant barna og:
+
+1. Gir kontrollen en `id` hvis den mangler, og setter `label[for]` til den.
+2. Gir hjelpetekst og feilmelding `id` ved behov.
+3. Setter `aria-describedby` på kontrollen, med begge tekstene når begge finnes.
+4. Setter `aria-invalid="true"` på kontrollen når `invalid` er satt.
+5. Setter `data-required` eller `data-optional` på ledeteksten ut fra attributtene på `<fs-field>`.
+6. Viser eller skjuler `fs-error-text` ut fra `invalid`.
+
+Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
+
+## Attributter
+
+| Attributt | Type | Hva det gjør |
+| --- | --- | --- |
+| `invalid` | boolsk | Setter `aria-invalid` på kontrollen og viser feilmeldingen |
+| `disabled` | boolsk | Setter `disabled` på kontrollen og demper ledeteksten |
+| `optional` | boolsk | Setter `data-optional` på ledeteksten |
+| `required-marker` | `none \| symbol \| text` | Setter `data-required` på ledeteksten |
+| `control-id` | streng | Bestemmer `id`-en på kontrollen i stedet for å la komponenten lage en |
+| `described-by` | streng | Legger til ekstra `id`-er i `aria-describedby`, i tillegg til hjelp og feil |
+
+`required-marker` er bare visuelt. `required` må stå på selve `<input>`.
 
 ## Tilgjengelighet
 

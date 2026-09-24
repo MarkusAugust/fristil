@@ -16,6 +16,29 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Verten heter `host` i alle byggefunksjonene.** Den delen serveren skriver,
+  og komponenten fester seg på, het tre ting: `host` i `fs.dialog()` og
+  `fs.popover()`, `region` i `fs.toast()` og `container` i `fs.errorSummary()`.
+  Tre ord for den samme tingen, og to av dem sa ikke hva den var. Nå heter den
+  `host` overalt, som er ordet arkitekturen bruker om den ellers.
+
+  ```diff
+  - <fs-toast {...varsler.region} />
+  + <fs-toast {...varsler.host} />
+  - <fs-error-summary {...feil.container}>
+  + <fs-error-summary {...feil.host}>
+  ```
+
+### Rettet
+
+- **`fs.connectionStatus()` og `fs.sessionTimeout()` reklamerte med en død
+  klasse.** Begge sender ut `fs-connection-status` og `fs-session-timeout`,
+  men stilarkene stylet bare elementnavnet, så klassen gjorde ingenting. Nå
+  treffer regelen begge, og en konsument som setter klassen på noe annet enn
+  elementet får den samme oppførselen.
+
 ## 0.13.0 (2026-09-24)
 
 ### Brytende

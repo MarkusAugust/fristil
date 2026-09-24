@@ -7,19 +7,57 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Klassen settes på et vanlig `<button>`. Ingen JavaScript lastes, og den virker likt i alle rammeverk.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/button.css"
-```
+## Slik tar du den i bruk
 
-## Varianter
-
-<Eksempel stiler={["button"]} kode={`
+<Eksempel importer={["tokens.css", "button.css"]}
+  stiler={["button"]} kode={`
 <button class="fs-button">Send søknad</button>
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 <button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
 <button class="fs-button" data-variant="danger">Slett søknad</button>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<button {...fs.button()}>Send søknad</button>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const knapp = document.querySelector<HTMLButtonElement>("#send")
+
+fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
+```
+
+`fs.button()` uten argument gir primærknappen, som ikke trenger noe `data-variant`.
+
+Kommer varianten fra et API eller en URL, valider den:
+
+```ts
+import { fs, type ButtonVariant } from "@fristil/designsystem"
+
+const variant: ButtonVariant = fs.button.isVariant(svar.variant)
+  ? svar.variant
+  : "primary"
+
+fs.setAttributes(knapp, fs.button({ variant }))
+```
+
+Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -46,29 +84,17 @@ import "@fristil/designsystem/button.css"
 
 Navigerer du brukeren, skal elementet være en `<a>` selv om det ser ut som en knapp. Da virker høyreklikk, midtklikk og «åpne i ny fane».
 
-## TypeScript
+## På smal skjerm
 
-```ts
-import { fs, type ButtonVariant } from "@fristil/designsystem"
+Knappeteksten brekker når den må. En knapp med en lang norsk ledetekst, som «Send søknaden om bostøtte for hele kalenderåret 2026», ville ellers blitt bredere enn telefonen, og da ruller hele siden sidelengs.
 
-const knapp = document.querySelector<HTMLButtonElement>("#send")
+Trenger du en knapp i full bredde, er det appens oppsett:
 
-fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
+```css
+.skjema-knapp {
+	inline-size: 100%;
+}
 ```
-
-`fs.button()` uten argument gir primærknappen, som ikke trenger noe `data-variant`.
-
-Kommer varianten fra et API eller en URL, valider den:
-
-```ts
-const variant: ButtonVariant = fs.button.isVariant(svar.variant)
-  ? svar.variant
-  : "primary"
-
-fs.setAttributes(knapp, fs.button({ variant }))
-```
-
-Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 
@@ -91,18 +117,6 @@ Se [Typesikker bruk](../../typesikker-bruk/).
 ```
 
 Standardverdien følger `--size`-skalaen, så knappen holder seg i takt med resten om du endrer skalaen. Se [Tilpasning](../../tilpasning/).
-
-## På smal skjerm
-
-Knappeteksten brekker når den må. En knapp med en lang norsk ledetekst, som «Send søknaden om bostøtte for hele kalenderåret 2026», ville ellers blitt bredere enn telefonen, og da ruller hele siden sidelengs.
-
-Trenger du en knapp i full bredde, er det appens oppsett:
-
-```css
-.skjema-knapp {
-	inline-size: 100%;
-}
-```
 
 ## Tilgjengelighet
 

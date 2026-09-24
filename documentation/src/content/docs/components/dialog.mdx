@@ -3,6 +3,7 @@ title: Dialog
 description: Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DialogDemo from "../../../components/DialogDemo.astro"
 import Eksempel from "../../../components/Eksempel.astro"
 
@@ -17,9 +18,191 @@ import "@fristil/designsystem/dialog.css"
 
 Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra, fordi all markup blir til på serveren. Til den finnes `<fs-dialog>`, [lenger ned på siden](#når-serveren-åpner-dialogen). Den er valgfri, på samme måte som `<fs-field>` er valgfri ved siden av `fs.field()`.
 
-## Slik ser den ut
+## Slik tar du den i bruk
 
-Forhåndsvisningen viser dialogen slik serveren sender den: en `<dialog>` med `open`, som ennå ikke er gjort modal. En dialog er tatt ut av flyten, så her tvinges den tilbake i boksen for å kunne vises, og det er det eneste forhåndsvisningen legger til.
+Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften: markupen, koblingen og kallet. Stilarkene er de to over, og de samme i alle fire.
+
+<Tabs>
+  <TabItem label="Prøv den">
+    <DialogDemo />
+  </TabItem>
+  <TabItem label="Ren HTML">
+
+    ```html
+    <button class="fs-button" data-variant="danger" id="apne" type="button">
+      Slett søknaden
+    </button>
+
+    <dialog class="fs-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
+      <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+      <div class="fs-dialog__body">
+        <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+      </div>
+      <form method="dialog" class="fs-dialog__footer">
+        <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
+        <button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+      </form>
+    </dialog>
+
+    <script type="module">
+      const dialog = document.getElementById("bekreft")
+
+      document.getElementById("apne").addEventListener("click", () => {
+        dialog.showModal()
+      })
+
+      dialog.addEventListener("close", () => {
+        if (dialog.returnValue === "slett") {
+          // Slett søknaden her
+        }
+      })
+    </script>
+    ```
+
+  </TabItem>
+  <TabItem label="React">
+
+    ```tsx
+    import { useRef } from "react"
+    import { fs } from "@fristil/designsystem/react"
+
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/dialog.css"
+    import "@fristil/designsystem/button.css"
+
+    export function SlettSøknaden({ slett }: { slett: () => void }) {
+      const dialog = useRef<HTMLDialogElement>(null)
+      const boks = fs.dialog({ titleId: "bekreft-tittel" })
+
+      return (
+        <>
+          <button
+            {...fs.button({ variant: "danger" })}
+            type="button"
+            onClick={() => dialog.current?.showModal()}
+          >
+            Slett søknaden
+          </button>
+
+          <dialog
+            {...boks.dialog}
+            ref={dialog}
+            onClose={(e) => {
+              if (e.currentTarget.returnValue === "slett") slett()
+            }}
+          >
+            <h2 {...boks.title}>Slette søknaden?</h2>
+            <div {...boks.body}>
+              <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+            </div>
+            <form method="dialog" {...boks.footer}>
+              <button {...fs.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
+              <button {...fs.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+            </form>
+          </dialog>
+        </>
+      )
+    }
+    ```
+
+  </TabItem>
+  <TabItem label="Astro">
+
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/dialog.css"
+    import "@fristil/designsystem/button.css"
+
+    const boks = fs.dialog({ titleId: "bekreft-tittel" })
+    ---
+
+    <button {...fs.button({ variant: "danger" })} type="button" id="apne">
+      Slett søknaden
+    </button>
+
+    <dialog {...boks.dialog} id="bekreft">
+      <h2 {...boks.title}>Slette søknaden?</h2>
+      <div {...boks.body}>
+        <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+      </div>
+      <form method="dialog" {...boks.footer}>
+        <button {...fs.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
+        <button {...fs.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+      </form>
+    </dialog>
+
+    <script>
+      const dialog = document.getElementById("bekreft") as HTMLDialogElement
+
+      document.getElementById("apne")?.addEventListener("click", () => {
+        dialog.showModal()
+      })
+
+      dialog.addEventListener("close", () => {
+        if (dialog.returnValue === "slett") {
+          // Slett søknaden her
+        }
+      })
+    </script>
+    ```
+
+  </TabItem>
+  <TabItem label="Datastar">
+
+    ```html
+    <!-- I sidemalen, én gang. Registreringen skjer ved oppstart, ikke ved hver
+         patch, og den må stå utenfor området serveren sender på nytt.
+
+         Adressen er en URL og ikke "@fristil/designsystem/dialog", fordi dette
+         er sporet uten byggverktøy: en nettleser kan ikke slå opp et pakkenavn
+         uten en importmap eller en bunter. -->
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsDialog } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/dialog/fs-dialog.js"
+
+      defineFsDialog()
+    </script>
+
+    <!-- Området serveren sender, og sender på nytt ved hver patch. Står
+         `open` på verten, kaller komponenten showModal(). Ingen klientkode
+         åpner noe. -->
+    <fs-dialog id="bekreft" open>
+      <dialog class="fs-dialog" aria-labelledby="bekreft-tittel" open>
+        <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+        <div class="fs-dialog__body">
+          <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+        </div>
+        <form method="dialog" class="fs-dialog__footer">
+          <button class="fs-button" data-variant="secondary" value="avbryt"
+                  data-on:click="@post('/avbryt')">Avbryt</button>
+          <button class="fs-button" data-variant="danger" value="slett"
+                  data-on:click="@post('/slett')">Slett søknaden</button>
+        </form>
+      </dialog>
+    </fs-dialog>
+    ```
+
+  </TabItem>
+</Tabs>
+
+Knappen i «Prøv den» gjør det en server ellers ville gjort: setter `open` på `<fs-dialog>`. Det er Datastar-oppskriften, siden den er den eneste som kan vises uten at siden selv kjører koden din.
+
+## Det som er felles for alle fire
+
+Å åpne dialogen **må** være et kall. `showModal()` flytter fokus inn, holder det der, lukker på Escape og gjør resten av siden utilgjengelig. `<dialog open>` alene gjør ingen av delene, og er bare en boks på siden. De tre første oppskriftene gjør kallet selv; Datastar-oppskriften lar `<fs-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra.
+
+`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Da trenger du ingen lyttere på knappene, og Enter virker som forventet.
+
+Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
+
+## Slik ser kortet ut
+
+Uten `showModal()` er markupen en boks på siden. Det er tilstanden serveren sender, og den du ser hvis JavaScript aldri kjører.
 
 <Eksempel
   stiler={["dialog", "button"]}
@@ -43,51 +226,6 @@ Forhåndsvisningen viser dialogen slik serveren sender den: en `<dialog>` med `o
   </div>
 </dialog>
 `} />
-
-Markupen over er en boks på siden, ikke en modal. `showModal()` er det som flytter fokus inn, holder det der, lukker på Escape og maler flaten bak. Under står de to måtene å få det kallet gjort på.
-
-## Komplett eksempel
-
-```html
-<button class="fs-button" data-variant="danger" id="apne" type="button">
-  Slett søknaden
-</button>
-
-<dialog class="fs-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
-  <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
-  <div class="fs-dialog__body">
-    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
-  </div>
-  <form method="dialog" class="fs-dialog__footer">
-    <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
-    <button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
-  </form>
-</dialog>
-
-<script type="module">
-  const dialog = document.getElementById("bekreft")
-
-  document.getElementById("apne").addEventListener("click", () => {
-    dialog.showModal()
-  })
-
-  dialog.addEventListener("close", () => {
-    if (dialog.returnValue === "slett") {
-      // Slett søknaden her
-    }
-  })
-</script>
-```
-
-`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Da trenger du ingen lyttere på knappene, og Enter virker som forventet.
-
-Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
-
-## Prøv den
-
-Knappen her gjør det en server ellers ville gjort: setter `open` på `<fs-dialog>`. Komponenten kaller `showModal()`, og dialogen legger seg i topplaget med fokus inne i seg. Skriver du markupen i JavaScript, kaller du `showModal()` selv, og trenger ingen `<fs-dialog>` rundt.
-
-<DialogDemo />
 
 ## Når serveren åpner dialogen
 

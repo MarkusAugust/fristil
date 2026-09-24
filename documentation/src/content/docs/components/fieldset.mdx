@@ -9,15 +9,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Komponenten er i praksis to ting: en nullstilling av nettleserens ramme fra 1996, og samme markering av påkrevd og valgfritt som på en vanlig [Label](../label/).
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/fieldset.css"
-import "@fristil/designsystem/radio.css"
-```
+## Slik tar du den i bruk
 
-## En gruppe valg
-
-<Eksempel stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Eksempel importer={["tokens.css", "fieldset.css", "radio.css"]}
+  stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <fieldset class="fs-fieldset">
   <legend class="fs-legend" data-required="symbol">Hvem søker du på vegne av?</legend>
 
@@ -31,7 +26,39 @@ import "@fristil/designsystem/radio.css"
     <label class="fs-label" for="annen">En annen person</label>
   </div>
 </fieldset>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<fieldset {...fs.fieldset({ state: "invalid" })}>
+  <legend {...fs.legend()}>Hvordan vil du ha svar?</legend>
+</fieldset>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const gruppe = document.querySelector<HTMLFieldSetElement>("#levering")
+const tittel = document.querySelector<HTMLLegendElement>("#levering-tittel")
+
+fs.setAttributes(gruppe, fs.fieldset({ state: "invalid" }))
+fs.setAttributes(tittel, fs.legend({ required: "symbol" }))
+```
+
+Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | Attributt på `.fs-legend` | Effekt |
 | --- | --- |
@@ -80,20 +107,6 @@ Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skje
 ```
 
 Merk at `disabled` på gruppen ikke setter `disabled` på hver kontroll. Egenskapen `knapp.disabled` står fortsatt til `false`, mens `knapp.matches(":disabled")` er sann. Sjekker du i JavaScript, bruk den siste.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const gruppe = document.querySelector<HTMLFieldSetElement>("#levering")
-const tittel = document.querySelector<HTMLLegendElement>("#levering-tittel")
-
-fs.setAttributes(gruppe, fs.fieldset({ state: "invalid" }))
-fs.setAttributes(tittel, fs.legend({ required: "symbol" }))
-```
-
-Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

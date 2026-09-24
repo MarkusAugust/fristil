@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne i en `<nav>`: rekkefølgen betyr noe, så listen må være nummerert selv om tallene ikke vises.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/breadcrumbs.css"
-```
+## Slik tar du den i bruk
 
-## Stien
-
-<Eksempel stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
+<Eksempel importer={["tokens.css", "breadcrumbs.css"]}
+  stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
 <nav aria-label="Du er her">
   <ol class="fs-breadcrumbs">
     <li><a href="#">Forsiden</a></li>
@@ -22,7 +18,38 @@ import "@fristil/designsystem/breadcrumbs.css"
     <li><a href="#" aria-current="page">Søknad 2026-0481</a></li>
   </ol>
 </nav>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<nav aria-label="Du er her">
+  <ol {...fs.breadcrumbs()}>
+    <li><a href="/">Forsiden</a></li>
+    <li aria-current="page">Bostøtte</li>
+  </ol>
+</nav>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const sti = document.querySelector<HTMLOListElement>("#brodsmuler")
+
+fs.setAttributes(sti, fs.breadcrumbs())
+```
+
+</Fragment>
+</Eksempel>
 
 Tre ting må stå i markupen:
 
@@ -33,16 +60,6 @@ Tre ting må stå i markupen:
 | `aria-current="page"` på siste steg | Sier hvilken side brukeren er på. Fargen alene sier ingenting. |
 
 Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere lest «skråstrek» mellom hvert steg.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const sti = document.querySelector<HTMLOListElement>("#brodsmuler")
-
-fs.setAttributes(sti, fs.breadcrumbs())
-```
 
 ## Klasser du kan style
 

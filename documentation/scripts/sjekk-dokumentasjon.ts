@@ -159,7 +159,31 @@ for (const { navn, sti } of komponentmapper()) {
     avvik.push({ hvor, hva: "mangler en levende forhåndsvisning" })
   }
 
-  if (!/```(js|ts|bash)\n[^`]*@fristil\/designsystem/.test(tekst)) {
+  /*
+   * Importene hører i oppskriften, ikke hvor som helst på siden.
+   *
+   * Regelen så før etter en `js`-blokk med pakkenavnet i, hvor som helst i
+   * teksten. Den gikk grønn på de fleste sidene av feil grunn: «TypeScript»
+   * nederst nevner `@fristil/designsystem/react`, og det telte. Nå kreves
+   * det at «Slik tar du den i bruk» selv sier hva som skal importeres,
+   * enten i en kodefane eller gjennom `importer` på <Eksempel>.
+   */
+  const oppskriftStart = tekst.indexOf("## Slik tar du den i bruk")
+  const oppskriftSlutt = tekst.indexOf("\n## ", oppskriftStart + 5)
+  const oppskrift =
+    oppskriftStart === -1
+      ? ""
+      : tekst.slice(
+          oppskriftStart,
+          oppskriftSlutt === -1 ? undefined : oppskriftSlutt,
+        )
+
+  if (oppskriftStart === -1) {
+    avvik.push({ hvor, hva: "mangler seksjonen «Slik tar du den i bruk»" })
+  } else if (
+    !/@fristil\/designsystem/.test(oppskrift) &&
+    !/importer=\{/.test(oppskrift)
+  ) {
     avvik.push({ hvor, hva: "viser ikke hva som skal importeres" })
   }
 

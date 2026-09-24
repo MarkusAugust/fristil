@@ -1,0 +1,277 @@
+/**
+ * At koden i «Slik tar du den i bruk» faktisk stemmer.
+ *
+ * Hver komponentside åpner med den seksjonen, og fanene der er det leseren
+ * limer inn. En kodeblokk som ser riktig ut, men peker på et inngangspunkt
+ * som ikke finnes, eller kaller en byggefunksjon som heter noe annet, er
+ * verre enn ingen kode: den ser autoritativ ut og feiler hos konsumenten.
+ *
+ * Sjekken leser mdx-filene som tekst og etterprøver hver påstand mot det
+ * pakken faktisk sender ut:
+ *
+ *   - hvert `@fristil/designsystem/…` finnes i `exports`;
+ *   - hver `defineFsX` er noe den modulen faktisk eksporterer;
+ *   - hver `fs.x()` er en byggefunksjon som finnes;
+ *   - hver `fs-`-klasse står i et stilark pakken sender ut;
+ *   - et pakkenavn står bare i faner som har en bunter, og en URL bare i dem
+ *     som ikke har det.
+ *
+ * Den siste er ikke pedanteri. `import … from "@fristil/designsystem/dialog"`
+ * i et `<script type="module">` slår ikke opp i en nettleser: uten importmap
+ * eller bunter finnes ikke pakkenavnet. Sporene «Ren HTML» og «Datastar» er
+ * definert ved å ikke ha noe byggesteg, så der må adressen være en URL.
+ */
+
+import { readdirSync, readFileSync } from "node:fs"
+import { join } from "node:path"
+
+const ROT = new URL("../..", import.meta.url).pathname
+const SIDER = join(ROT, "documentation/src/content/docs/components")
+const PAKKE = JSON.parse(
+  readFileSync(join(ROT, "designsystem/package.json"), "utf8"),
+)
+
+const funn: string[] = []
+const si = (side: string, melding: string) => funn.push(`${side}: ${melding}`)
+
+/** Inngangspunktene `exports` lover, uten «./»-prefikset. */
+const inngangspunkter = new Set(
+  Object.keys(PAKKE.exports).map((k) =>
+    k === "." ? "" : k.replace(/^\.\//, ""),
+  ),
+)
+
+/** Alle klassenavn pakken faktisk definerer. */
+const klasser = new Set<string>()
+function lesStilark(mappe: string) {
+  for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
+    const sti = join(mappe, oppf.name)
+    if (oppf.isDirectory()) lesStilark(sti)
+    else if (oppf.name.endsWith(".css"))
+      for (const m of readFileSync(sti, "utf8").matchAll(
+        /\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g,
+      ))
+        klasser.add(m[1])
+  }
+}
+lesStilark(join(ROT, "designsystem/src"))
+
+/** Byggefunksjonene som finnes, lest fra pakken selv. */
+const { fs } = await import(join(ROT, "designsystem/dist/fs.js"))
+const byggere = new Set(Object.keys(fs))
+
+/** `defineFsX`-navnene hver modul eksporterer. */
+const definerere = new Map<string, Set<string>>()
+for (const inn of inngangspunkter) {
+  const mål = PAKKE.exports[inn === "" ? "." : `./${inn}`]
+  const js = typeof mål === "string" ? mål : mål?.import
+  if (typeof js !== "string" || !js.endsWith(".js")) continue
+  try {
+    const modul = await import(join(ROT, "designsystem", js))
+    definerere.set(inn, new Set(Object.keys(modul)))
+  } catch {
+    // Et inngangspunkt som ikke lar seg laste er `sjekk-server-import` sin jobb.
+  }
+}
+
+const MED_BUNTER = new Set(["React", "Astro"])
+
+/**
+ * Verter der byggefunksjonen gir attributter komponenten ikke setter selv.
+ *
+ * Bare de frittstående: der er verten noe du skriver én gang i appen, og
+ * fristelsen til å skrive den for hånd er størst.
+ */
+const VERTER: Array<[string, string]> = [
+  ["fs-toast", "toast"],
+  ["fs-connection-status", "connectionStatus"],
+  ["fs-session-timeout", "sessionTimeout"],
+]
+
+/**
+ * Klasser en byggefunksjon faktisk sender ut, og hvilken funksjon det er.
+ *
+ * Uten denne ville regelen felt hver `fs-`-klasse i en React- eller
+ * Astro-fane, også de som ikke har noen funksjon å kalle. `.fs-switch-row`
+ * er en slik: den finnes i CSS-en, men ingen bygger gir den, og da er det å
+ * skrive den for hånd det eneste alternativet.
+ */
+const FRA_BYGGER = new Map<string, string>()
+for (const [navn, f] of Object.entries(fs)) {
+  if (typeof f !== "function") continue
+  let svar: unknown
+  try {
+    svar = (f as (o?: unknown) => unknown)({
+      id: "x",
+      titleId: "t",
+      count: 1,
+      label: "L",
+    })
+  } catch {
+    continue
+  }
+  const samle = (verdi: unknown) => {
+    if (Array.isArray(verdi)) return verdi.forEach(samle)
+    if (!verdi || typeof verdi !== "object") return
+    const o = verdi as Record<string, unknown>
+    if (typeof o.class === "string")
+      for (const k of o.class.split(/\s+/))
+        if (k && !FRA_BYGGER.has(k)) FRA_BYGGER.set(k, navn)
+    for (const v of Object.values(o)) if (typeof v === "object") samle(v)
+  }
+  samle(svar)
+
+  /*
+   * Og klassenavnene som henger på selve funksjonen.
+   *
+   * `fs.switch.row`, `fs.alert.title` og et dusin andre er klasser uten
+   * attributter, så de returneres ikke av et kall, men henges på funksjonen
+   * med `Object.assign`. Ser man bare på returverdien, ser det ut som et hull
+   * i API-et der det ikke er noe. Nitten klasser sto slik, og
+   * `.fs-switch-row` var en av dem.
+   */
+  for (const [nøkkel, verdi] of Object.entries(f))
+    if (
+      typeof verdi === "string" &&
+      verdi.startsWith("fs-") &&
+      !FRA_BYGGER.has(verdi)
+    )
+      FRA_BYGGER.set(verdi, `${navn}.${nøkkel}`)
+}
+
+/** Attributtnavnene en byggefunksjon faktisk sender ut for verten sin. */
+function kreves(bygger: string): string[] {
+  const svar = (fs as Record<string, (o?: unknown) => Record<string, unknown>>)[
+    bygger
+  ]()
+  const sett = (svar.host ?? svar) as Record<string, unknown>
+  return Object.keys(sett).filter((k) => k !== "class")
+}
+
+for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
+  const side = fil.replace(/\.mdx$/, "")
+  const tekst = readFileSync(join(SIDER, fil), "utf8")
+
+  const start = tekst.indexOf("## Slik tar du den i bruk")
+  if (start === -1) {
+    si(side, "mangler seksjonen «Slik tar du den i bruk»")
+    continue
+  }
+  const neste = tekst.indexOf("\n## ", start + 5)
+  const seksjon = tekst.slice(start, neste === -1 ? undefined : neste)
+
+  /*
+   * Hver fane på hele siden, med navnet sitt, ikke bare de i oppskriften.
+   *
+   * Seksjoner om oppførsel har også faner nå, som «Lagring med en gang» på
+   * bryteren. Leste sjekken bare oppskriften, gikk en React-fane lenger nede
+   * fri, og det er den samme koden en leser limer inn.
+   */
+  const faner: Array<{ navn: string; kode: string }> = []
+  for (const m of tekst.matchAll(
+    /<TabItem label="([^"]+)">([\s\S]*?)<\/TabItem>/g,
+  ))
+    faner.push({ navn: m[1], kode: m[2] })
+  if (faner.length === 0) faner.push({ navn: "Kode", kode: seksjon })
+
+  for (const fane of faner) {
+    const hvor = `«${fane.navn}»`
+
+    for (const m of fane.kode.matchAll(
+      /@fristil\/designsystem(?:\/([a-z0-9/.-]+))?/g,
+    )) {
+      const inn = m[1] ?? ""
+      if (!inngangspunkter.has(inn))
+        si(
+          side,
+          `${hvor} importerer «@fristil/designsystem/${inn}», som ikke finnes i exports`,
+        )
+    }
+
+    for (const m of fane.kode.matchAll(/\b(defineFs[A-Za-z]+)\b/g)) {
+      const navn = m[1]
+      const finnes = [...definerere.values()].some((sett) => sett.has(navn))
+      if (!finnes)
+        si(side, `${hvor} kaller ${navn}(), som ingen modul eksporterer`)
+    }
+
+    for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\s*\(/g)) {
+      if (!byggere.has(m[1]))
+        si(side, `${hvor} kaller fs.${m[1]}(), som ikke finnes i fs`)
+    }
+
+    for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g)) {
+      for (const k of m[1].split(/\s+/).filter((k) => k.startsWith("fs-")))
+        if (!klasser.has(k))
+          si(side, `${hvor} bruker klassen .${k}, som ingen stilark definerer`)
+    }
+
+    /*
+     * Attributter byggefunksjonen sender ut, må stå i markupen.
+     *
+     * En oppskrift som skriver verten for hånd framfor å spre
+     * byggefunksjonen, mister det byggefunksjonen ville gitt. Toast-siden
+     * skrev `<fs-toast label="Meldinger">` i alle fire fanene, og da manglet
+     * `data-ignore-morph` i alle fire, Datastar-fanen inkludert, der siden
+     * selv skriver at attributtet ikke er valgfritt. Komponenten setter
+     * `role` og `aria-label` selv, men ikke det, så en patch ville revet
+     * meldingene bort.
+     */
+    for (const [tagg, bygger] of VERTER) {
+      const vert = fane.kode.match(new RegExp(`<${tagg}\\b[^>]*>`))
+      if (!vert || /\{\.\.\./.test(vert[0])) continue
+      for (const attributt of kreves(bygger)) {
+        if (!vert[0].includes(attributt))
+          si(
+            side,
+            `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som fs.${bygger}() gir`,
+          )
+      }
+    }
+
+    /*
+     * Lager du markupen med JavaScript, kaller du byggefunksjonen.
+     *
+     * Det er hele skillet dokumentasjonen skal lære bort, og en fane som
+     * skriver `class="fs-input"` for hånd i React eller Astro lærer leseren
+     * ingenting om `fs`. Fire faner hadde drevet dit uten at noe sa fra.
+     *
+     * Regelen gjelder bare der det finnes en bunter. I «Ren HTML» og
+     * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
+     * ingen funksjon å kalle.
+     */
+    if (MED_BUNTER.has(fane.navn)) {
+      for (const m of fane.kode.matchAll(/class(?:Name)?="(fs-[^"]*)"/g))
+        for (const k of m[1].split(/\s+/))
+          if (FRA_BYGGER.has(k))
+            si(
+              side,
+              `${hvor} skriver class="${k}" for hånd, men fs.${FRA_BYGGER.get(k)} finnes. Der det er en bunter, bruk den.`,
+            )
+    }
+
+    const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(
+      fane.kode,
+    )
+    const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)
+    if (
+      !MED_BUNTER.has(fane.navn) &&
+      fane.navn !== "Kode" &&
+      fane.navn !== "Prøv den"
+    ) {
+      if (pakkenavnIImport && !urlIImport)
+        si(
+          side,
+          `${hvor} importerer et pakkenavn i et miljø uten bunter. En nettleser kan ikke slå det opp, så koden virker ikke limt inn. Bruk hele URL-en.`,
+        )
+    }
+  }
+}
+
+if (funn.length > 0) {
+  console.error(
+    `Fant ${funn.length} avvik i oppskriftene:\n${funn.map((f) => `  - ${f}`).join("\n")}`,
+  )
+  process.exit(1)
+}
+console.log("Oppskriftene peker på noe som finnes.")
