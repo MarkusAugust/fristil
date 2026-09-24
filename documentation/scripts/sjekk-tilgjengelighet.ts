@@ -79,7 +79,6 @@ const axeKilde = readFileSync(
 
 const sider = finnSider()
 const nettleser = await chromium.launch()
-const side = await (await nettleser.newContext()).newPage()
 const brudd: Brudd[] = []
 
 /*
@@ -95,18 +94,58 @@ const brudd: Brudd[] = []
  * bygde side, mønstersidene og forsiden medregnet.
  */
 const advarsler = new Set<string>()
-let gjeldende = ""
 
-side.on("console", (melding) => {
-  const type = melding.type()
-  if (type !== "warning" && type !== "error") return
-  advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
-})
+/*
+ * Sidene deles på flere faner, med én kontekst per tema.
+ *
+ * Kontekstene er delt etter tema og ikke etter arbeider, og det er det som
+ * avgjør om omskrivingen lønner seg. To ting trekker i hver sin retning:
+ *
+ * En kontekst har sin egen hurtigbuffer. Gir hver arbeider sin egen, tolkes
+ * CSS-en og skriptene på nytt for hver eneste side, og prosessortiden går fra
+ * 64 til 202 sekunder. Da hjalp det ikke at fire faner jobbet samtidig:
+ * sjekken ble tregere enn med én. Fanene må altså dele en kontekst.
+ *
+ * Men Starlight skriver temaet til `localStorage`, som deles innenfor en
+ * kontekst. Lastet to faner i samme kontekst hvert sitt tema samtidig, kunne
+ * den ene skrive over den andre. Med én kontekst per tema ser en kontekst
+ * aldri mer enn ett tema, og hasarden finnes ikke. Det er også tettere enn
+ * utgaven med én fane, som lot lagringen veksle mellom lyst og mørkt tema
+ * gjennom hele kjøringen.
+ *
+ * To faner per tema gir fire til sammen, altså det CI-maskinen har av
+ * kjerner. Denne sjekken er prosessorbundet så snart den går parallelt, siden
+ * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
+ * skiller den fra `sjekk-mobil.ts`, som bare venter og derfor får åtte.
+ */
+const FANER_PER_TEMA = Number(Bun.env.FANER_PER_TEMA ?? 2)
 
-for (const url of sider) {
-  for (const tema of TEMAER) {
-    // Merkelappen settes her og ikke i den ytre løkka, slik at en melding
-    // peker på riktig side og riktig tema. Konsollhendelser kommer asynkront.
+// Én kø per tema, slik at en arbeider bare henter jobber for sitt eget tema.
+const koer = new Map(TEMAER.map((tema) => [tema, { neste: 0 }]))
+
+async function sjekkSider(
+  kontekst: Awaited<ReturnType<typeof nettleser.newContext>>,
+  tema: (typeof TEMAER)[number],
+) {
+  const koe = koer.get(tema) as { neste: number }
+  const side = await kontekst.newPage()
+
+  // Etiketten er lokal for arbeideren, ikke felles for skriptet. Med flere
+  // faner ville en delt variabel gitt advarselen navnet til den siden som
+  // tilfeldigvis ble lastet sist. Konsollhendelser kommer asynkront.
+  let gjeldende = ""
+
+  side.on("console", (melding) => {
+    const type = melding.type()
+    if (type !== "warning" && type !== "error") return
+    advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
+  })
+
+  while (true) {
+    // `koe.neste++` er trygt uten lås: JavaScript kjører én ting om gangen,
+    // og her er det ingen `await` mellom avlesningen og økningen.
+    const url = sider[koe.neste++]
+    if (url === undefined) break
     gjeldende = `${url} [${tema}]`
 
     /*
@@ -204,10 +243,35 @@ for (const url of sider) {
 
     for (const f of funn) brudd.push({ side: url, tema, ...f })
   }
+
+  await side.close()
 }
+
+await Promise.all(
+  TEMAER.map(async (tema) => {
+    const kontekst = await nettleser.newContext()
+    await Promise.all(
+      Array.from({ length: FANER_PER_TEMA }, () => sjekkSider(kontekst, tema)),
+    )
+    await kontekst.close()
+  }),
+)
 
 await nettleser.close()
 tjener.stop()
+
+/*
+ * Rapporten sorteres, fordi arbeiderne blir ferdige i tilfeldig rekkefølge.
+ *
+ * Uten dette ville to kjøringer av den samme feilen gitt ulik utskrift, og en
+ * rapport som stokker om på seg selv er vond å sammenligne mellom to kjøringer.
+ */
+brudd.sort(
+  (a, b) =>
+    a.side.localeCompare(b.side) ||
+    a.tema.localeCompare(b.tema) ||
+    a.regel.localeCompare(b.regel),
+)
 
 console.log(`Sjekket ${sider.length} sider i ${TEMAER.length} temaer.`)
 
@@ -231,7 +295,7 @@ if (brudd.length === 0) {
 
 if (advarsler.size > 0) {
   console.log(`\n✗ ${advarsler.size} meldinger i konsollen:`)
-  for (const a of advarsler) console.log(`  ${a}`)
+  for (const a of [...advarsler].sort()) console.log(`  ${a}`)
 }
 
 process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)

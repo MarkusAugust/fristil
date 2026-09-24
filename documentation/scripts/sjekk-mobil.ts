@@ -69,76 +69,106 @@ const tjener = Bun.serve({
 })
 
 const nettleser = await chromium.launch()
-const kontekst = await nettleser.newContext({
-  viewport: { width: BREDDE, height: 800 },
-})
-const side = await kontekst.newPage()
 
 type Funn = { side: string; rullet: number; synder: string }
 const funn: Funn[] = []
 
-for (const url of finnSider()) {
-  await side.goto(`http://localhost:${PORT}${url}`, {
-    waitUntil: "networkidle",
+/*
+ * Sidene deles på flere faner, fordi sjekken venter framfor å regne.
+ *
+ * Med én fane brukte de 59 sidene 32 sekunder, og av det var bare 5 sekunder
+ * prosessortid: 19 prosent av én kjerne. Resten var venting på
+ * `networkidle`. Derfor skalerer den forbi kjernetallet, og tallet er åtte og
+ * ikke fire: 32 s med én fane, 8,7 med fire, 5,0 med åtte, 4,3 med tolv.
+ * Etter åtte er det lite igjen å hente.
+ */
+const PARALLELLE = Number(Bun.env.SIDER_I_PARALLELL ?? 8)
+
+const koe = finnSider()
+let neste = 0
+
+async function sjekkSider() {
+  const kontekst = await nettleser.newContext({
+    viewport: { width: BREDDE, height: 800 },
   })
+  const side = await kontekst.newPage()
 
-  const resultat = await side.evaluate((bredde) => {
-    window.scrollTo(bredde, 0)
-    const rullet = window.scrollX
-    window.scrollTo(0, 0)
+  while (true) {
+    // `neste++` er trygt uten lås: JavaScript kjører én ting om gangen, og
+    // her er det ingen `await` mellom avlesningen og økningen.
+    const url = koe[neste++]
+    if (url === undefined) break
 
-    // Alle elementer, også de som ligger inne i en skyggerot.
-    const alle: HTMLElement[] = []
-    const samle = (rot: ParentNode) => {
-      for (const element of rot.querySelectorAll<HTMLElement>("*")) {
-        alle.push(element)
-        if (element.shadowRoot) samle(element.shadowRoot)
-      }
-    }
-    samle(document.body)
-
-    // Det som stikker ut, og som ikke ligger i noe som kan rulles for seg
-    // selv. Et kodefelt og en bred tabell har sitt eget rullefelt, og er
-    // dermed i orden. `hidden` og `clip` teller ikke: de klipper uten å gi
-    // noen vei til innholdet, og er nettopp feilen vi leter etter.
-    const utenfor: string[] = []
-    for (const element of alle) {
-      const rute = element.getBoundingClientRect()
-      if (rute.width === 0 || rute.right <= bredde + 1) continue
-
-      let forelder = element.parentElement
-      let egenRull = false
-      while (forelder) {
-        const overflow = getComputedStyle(forelder).overflowX
-        if (overflow === "auto" || overflow === "scroll") {
-          egenRull = true
-          break
-        }
-        forelder = forelder.parentElement
-      }
-      if (egenRull) continue
-
-      const klasse = (element.className || "").toString().split(" ")[0]
-      const tekst = (element.textContent ?? "").trim().slice(0, 30)
-      utenfor.push(
-        `${element.tagName.toLowerCase()}${klasse ? `.${klasse}` : ""} er ${Math.round(rute.width)} piksler bred${tekst ? ` («${tekst}»)` : ""}`,
-      )
-    }
-
-    return { rullet, synder: [...new Set(utenfor)].slice(0, 3).join("; ") }
-  }, BREDDE)
-
-  if (resultat.rullet > 0 || resultat.synder !== "") {
-    funn.push({
-      side: url,
-      rullet: resultat.rullet,
-      synder: resultat.synder || "fant ikke hvilket element",
+    await side.goto(`http://localhost:${PORT}${url}`, {
+      waitUntil: "networkidle",
     })
+
+    const resultat = await side.evaluate((bredde) => {
+      window.scrollTo(bredde, 0)
+      const rullet = window.scrollX
+      window.scrollTo(0, 0)
+
+      // Alle elementer, også de som ligger inne i en skyggerot.
+      const alle: HTMLElement[] = []
+      const samle = (rot: ParentNode) => {
+        for (const element of rot.querySelectorAll<HTMLElement>("*")) {
+          alle.push(element)
+          if (element.shadowRoot) samle(element.shadowRoot)
+        }
+      }
+      samle(document.body)
+
+      // Det som stikker ut, og som ikke ligger i noe som kan rulles for seg
+      // selv. Et kodefelt og en bred tabell har sitt eget rullefelt, og er
+      // dermed i orden. `hidden` og `clip` teller ikke: de klipper uten å gi
+      // noen vei til innholdet, og er nettopp feilen vi leter etter.
+      const utenfor: string[] = []
+      for (const element of alle) {
+        const rute = element.getBoundingClientRect()
+        if (rute.width === 0 || rute.right <= bredde + 1) continue
+
+        let forelder = element.parentElement
+        let egenRull = false
+        while (forelder) {
+          const overflow = getComputedStyle(forelder).overflowX
+          if (overflow === "auto" || overflow === "scroll") {
+            egenRull = true
+            break
+          }
+          forelder = forelder.parentElement
+        }
+        if (egenRull) continue
+
+        const klasse = (element.className || "").toString().split(" ")[0]
+        const tekst = (element.textContent ?? "").trim().slice(0, 30)
+        utenfor.push(
+          `${element.tagName.toLowerCase()}${klasse ? `.${klasse}` : ""} er ${Math.round(rute.width)} piksler bred${tekst ? ` («${tekst}»)` : ""}`,
+        )
+      }
+
+      return { rullet, synder: [...new Set(utenfor)].slice(0, 3).join("; ") }
+    }, BREDDE)
+
+    if (resultat.rullet > 0 || resultat.synder !== "") {
+      funn.push({
+        side: url,
+        rullet: resultat.rullet,
+        synder: resultat.synder || "fant ikke hvilket element",
+      })
+    }
   }
+
+  await kontekst.close()
 }
+
+await Promise.all(Array.from({ length: PARALLELLE }, () => sjekkSider()))
 
 await nettleser.close()
 tjener.stop()
+
+// Arbeiderne blir ferdige i tilfeldig rekkefølge, så rapporten sorteres for
+// at to kjøringer av den samme feilen skal se like ut.
+funn.sort((a, b) => a.side.localeCompare(b.side))
 
 if (funn.length > 0) {
   console.error(
