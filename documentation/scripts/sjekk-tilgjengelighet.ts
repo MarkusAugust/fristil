@@ -28,12 +28,29 @@ type Brudd = {
   elementer: string[]
 }
 
+/*
+ * Hver bygde HTML-fil, ikke bare de som heter `index.html`.
+ *
+ * Globben tok bare `index.html`, og det gjorde vakten nederst blind: den
+ * sammenlignet antall besøkte sidevisninger mot antall treff fra den samme
+ * globben, så alt globben ikke fant var usynlig for begge. `dist/404.html`
+ * ble derfor aldri besøkt av noen av sjekkene, og begge meldte grønt.
+ *
+ * Nå tas hver `.html`-fil, så køen er hele settet av bygde sider, og
+ * spørsmålet vakten stiller blir det som betyr noe: ble hver side som
+ * ligger i `dist` besøkt?
+ */
 function finnSider(): string[] {
   const sider: string[] = []
-  const glob = new Bun.Glob("**/index.html")
-  for (const treff of glob.scanSync(DIST)) {
-    const mappe = relative(".", treff).replace(/index\.html$/, "")
-    sider.push(`/${mappe}`)
+  for (const treff of new Bun.Glob("**/*.html").scanSync(DIST)) {
+    const sti = relative(".", treff)
+    sider.push(
+      sti === "index.html"
+        ? "/"
+        : sti.endsWith("/index.html")
+          ? `/${sti.slice(0, -"index.html".length)}`
+          : `/${sti}`,
+    )
   }
   return sider.sort()
 }
@@ -295,10 +312,7 @@ tjener.stop()
  *
  * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
  * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
- * kjøring som melder grønt uten å ha åpnet en side. Den veien er ikke
- * teoretisk. Bygges dokumentasjonen med Astros `build.format: "file"`, heter
- * sidene `/kom-i-gang.html` framfor `/kom-i-gang/index.html`, og globben
- * finner ingenting.
+ * kjøring som melder grønt uten å ha åpnet en side.
  *
  * Utfallet avgjøres nederst, sammen med de andre. Avsluttet vi her, ville en
  * ufullstendig kjøring skjult tilgjengelighetsrapporten den faktisk rakk å
