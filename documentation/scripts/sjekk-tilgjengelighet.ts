@@ -320,7 +320,7 @@ brudd.sort(
     a.regel.localeCompare(b.regel),
 )
 
-console.log(`Sjekket ${sider.length} sider i ${TEMAER.length} temaer.`)
+console.log(`Sjekket ${sjekket} sidevisninger over ${TEMAER.length} temaer.`)
 
 /*
  * Begge rapportene skrives ut, og så avgjøres utfallet.
@@ -351,7 +351,7 @@ if (ufullstendig) {
       ? `\n✗ Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
       : `\n✗ Sjekket ${sjekket} av ${forventet} sidevisninger. Sjekken er ikke til å stole på.`,
   )
+  process.exit(2)
 }
 
-if (ufullstendig) process.exit(2)
 process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)
