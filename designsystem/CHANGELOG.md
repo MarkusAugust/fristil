@@ -28,9 +28,20 @@ kommer i et nytt undertall.
   og flyttet seg tre piksler mot høyre.
 
   `.fs-dialog[open]:not(:modal)` inne i `<fs-dialog>` bruker nå `inset: 0` med
-  `margin: auto` og de to samme maksmålene, altså nøyaktig geometrien
-  nettleseren gir en modal. Testen måler boksen i begge tilstander, i en ramme
-  som er smal nok til at maksmålet slår inn, og krever at den står stille.
+  `margin: auto`, det samme maksmålet på bredden og `overflow: auto`, altså de
+  samme verdiene spesifikasjonen gir en modal, i logisk form. Maksmålet på
+  høyden står med vilje bare på `.fs-dialog`, siden det er det strengeste av
+  de to og dermed gjelder i begge tilstandene. Testen leser boksen før og
+  etter `showModal()`, med to slags innhold, og krever at den står stille.
+
+- **`.fs-dialog__body` ruller nå faktisk.** Klassen har hatt `overflow-y: auto`
+  siden komponenten kom, uten at den kunne gjøre noe: dialogen var en blokk, så
+  kroppens høyde var innholdsbestemt og ble aldri klippet. Det som rullet var
+  dialogen selv, og bare når den var modal, så overskriften og knapperaden
+  forsvant ut av syne sammen med teksten. `.fs-dialog` er nå en kolonne, og
+  kroppen har `min-block-size: 0`, slik at den krymper og ruller mens tittelen
+  og knappene blir stående. Det er også det dokumentasjonen har sagt hele
+  tiden.
 
 ## 0.12.1 (2026-09-24)
 

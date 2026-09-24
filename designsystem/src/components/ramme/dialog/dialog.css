@@ -9,6 +9,14 @@
   .fs-dialog {
     box-sizing: border-box;
     /*
+     * Kolonne, slik at `.fs-dialog__body` er den som ruller når innholdet er
+     * for høyt, mens tittelen og knappene blir stående. I normal flyt er
+     * høyden innholdsbestemt, og `overflow-y` på kroppen fikk da aldri noe å
+     * gjøre: det var dialogen selv som rullet, og bare når den var modal.
+     */
+    display: flex;
+    flex-direction: column;
+    /*
      * `100%` og ikke bare `100vw`: en ekte dialog i topplaget måler seg mot
      * vindusruten, men står den i en smalere boks, som i dokumentasjonen,
      * stakk den utenfor. `min()` tar den minste av de tre.
@@ -59,17 +67,26 @@
     /*
      * Samme geometri som en modal, ikke bare samme sted.
      *
-     * `inset: 0` med `margin: auto` er nøyaktig det nettleseren selv gjør med
-     * `dialog:modal`, og de to maksmålene står i HTML-spesifikasjonens eget
-     * forslag til stilark. Uten dem er bredden vår, og i det dialogen blir
+     * `inset: 0` med `margin: auto` og `overflow: auto` er de samme verdiene
+     * HTML-spesifikasjonens forslag til stilark gir `dialog:modal`, i logisk
+     * form. Uten maksmålet på bredden er den vår, og i det dialogen blir
      * modal klipper nettleseren den: testet på 390 piksler gikk den fra 358
      * til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
      * loddrette hoppet var borte, og et vannrett kom i stedet.
+     *
+     * `6px` og `2em` er nettleserens egne tall, ikke vår avstandsskala. De
+     * skal derfor ikke bli tokens: likheten er hele poenget med dem.
+     *
+     * Maksmålet på høyden står med vilje ikke her. `.fs-dialog` har det
+     * allerede, og det er det strengeste av de to, så det gjelder i begge
+     * tilstandene. Sto det her også, ville det vunnet på spesifisitet før
+     * dialogen ble modal og sluttet å gjelde etterpå, og en høy dialog ville
+     * hoppet 13 piksler loddrett i stedet. Testet i alle tre motorene.
      */
     inset: 0;
     margin: auto;
     max-inline-size: calc(100% - 6px - 2em);
-    max-block-size: calc(100% - 6px - 2em);
+    overflow: auto;
 
     box-shadow:
       var(--semantic-shadow-overlay),
@@ -84,6 +101,9 @@
   }
 
   .fs-dialog__body {
+    /* Uten dette krymper ikke kroppen under sitt eget innhold, og da ruller
+       den ikke. `min-block-size` er `auto` for et flekselement. */
+    min-block-size: 0;
     margin: 0;
     overflow-y: auto;
   }

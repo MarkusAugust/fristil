@@ -509,6 +509,7 @@ describe("dialogen før den er modal", () => {
   async function iRammeUtenSkript(
     markup: string,
     bredde = 800,
+    hoyde = 600,
   ): Promise<{
     dialog: HTMLDialogElement
     vindu: Window
@@ -519,7 +520,7 @@ describe("dialogen før den er modal", () => {
 
     const ramme = document.createElement("iframe")
     ramme.width = String(bredde)
-    ramme.height = "600"
+    ramme.height = String(hoyde)
     ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
     document.body.append(ramme)
 
@@ -597,56 +598,115 @@ describe("dialogen før den er modal", () => {
     }
   })
 
-  it("flytter seg ikke når den blir modal", async () => {
+  /*
+   * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
+   *
+   * Regelen som gir dialogen plassen til en modal før den er det, er skrevet
+   * tre ganger, og hver runde flyttet hoppet framfor å fjerne det. Først sto
+   * den øverst i flyten og landet på midten. Så ble den midtstilt, og
+   * nettleserens eget maksmål for bredden klipte den i det den ble modal. Så
+   * kom maksmålet på høyden med, og da vant det på spesifisitet før modalen
+   * og sluttet å gjelde etterpå, så en høy dialog hoppet i stedet.
+   *
+   * Testen leser boksen i begge tilstander og krever at den står stille. Den
+   * kjøres med to slags innhold, siden et kort innhold aldri treffer
+   * maksmålene og da etterprøver ingenting.
+   */
+  for (const { navn, innhold } of [
+    {
+      navn: "med kort innhold",
+      innhold: "<p>Innhold som finnes uten JavaScript.</p>",
+    },
+    {
+      navn: "med innhold som er høyere enn skjermen",
+      innhold: `<div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
+    },
+  ]) {
+    it(`flytter seg ikke når den blir modal, ${navn}`, async () => {
+      const {
+        dialog: boks,
+        vindu,
+        rydd,
+      } = await iRammeUtenSkript(
+        `
+        <fs-dialog>
+          <dialog class="fs-dialog" open>
+            <h2 class="fs-dialog__title">Velkommen</h2>
+            ${innhold}
+          </dialog>
+        </fs-dialog>`,
+        390,
+        700,
+      )
+
+      try {
+        // I en full kjøring er <fs-dialog> alt registrert av en annen testfil.
+        // Er dialogen allerede modal her, er alle påstandene under sanne uten
+        // at noe er etterprøvd.
+        expect(boks.matches(":modal")).toBe(false)
+
+        const før = boks.getBoundingClientRect()
+
+        /*
+         * Så smal ramme at nettleserens eget maksmål for bredden på en modal
+         * er mindre enn bredden dialogen ellers ville tatt. Uten det er det
+         * ingenting å klippe, og testen ville vært grønn også med feilen i.
+         * Maksmålet regnes med dialogens egen skriftstørrelse, siden `2em`
+         * gjør det.
+         */
+        const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
+        expect(
+          Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
+        ).toBeLessThanOrEqual(1)
+
+        boks.close()
+        boks.showModal()
+        expect(boks.matches(":modal")).toBe(true)
+
+        const etter = boks.getBoundingClientRect()
+
+        // Én piksel slingringsmonn for avrunding, ikke mer.
+        expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
+      } finally {
+        rydd()
+      }
+    })
+  }
+
+  it("lar kroppen rulle, ikke dialogen", async () => {
     /*
-     * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
-     *
-     * Første utgave av regelen over midtstilte dialogen, og da var det
-     * loddrette hoppet borte. Et vannrett kom i stedet: nettleserens egen
-     * regel for `dialog:modal` har et maksmål vi ikke hadde, og i det
-     * dialogen ble modal klipte den bredden. Ramma er derfor smal nok til at
-     * maksmålet faktisk slår inn, ellers etterprøver testen ingenting.
+     * `.fs-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: i normal
+     * flyt er høyden innholdsbestemt, så kroppen ble aldri klippet, og det var
+     * dialogen selv som rullet, og bare når den var modal. Tittelen og knappene
+     * forsvant da ut av syne sammen med teksten.
      */
-    const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(
+    const { dialog: boks, rydd } = await iRammeUtenSkript(
       `
       <fs-dialog>
         <dialog class="fs-dialog" open>
-          <h2 class="fs-dialog__title">Velkommen</h2>
-          <p>Innhold som finnes uten JavaScript.</p>
-        </dialog>
-      </fs-dialog>`,
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          <div class="fs-dialog__footer">
+            <button class="fs-button" type="button">Lukk</button>
+          </div>
+        </dialog>`,
       390,
+      700,
     )
 
     try {
-      const før = boks.getBoundingClientRect()
+      const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+      const bunn = boks.querySelector(".fs-dialog__footer") as HTMLElement
 
-      /*
-       * Så smal ramme at nettleserens eget maksmål for en modal er mindre
-       * enn bredden dialogen ellers ville tatt. Uten det er det ingenting å
-       * klippe, og testen ville vært grønn også med feilen i. Maksmålet
-       * regnes med dialogens egen skriftstørrelse, siden `2em` gjør det.
-       */
-      const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
-      expect(
-        Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
-      ).toBeLessThanOrEqual(1)
-
-      boks.close()
-      boks.showModal()
-      expect(boks.matches(":modal")).toBe(true)
-
-      const etter = boks.getBoundingClientRect()
-
-      // Én piksel slingringsmonn for avrunding, ikke mer.
-      expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
-      expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
-      expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
-      expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
+      expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
+      // Dialogen selv ruller ikke, så knappene blir stående.
+      expect(boks.scrollHeight).toBeLessThanOrEqual(boks.clientHeight + 1)
+      expect(bunn.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        boks.getBoundingClientRect().bottom + 1,
+      )
     } finally {
       rydd()
     }
