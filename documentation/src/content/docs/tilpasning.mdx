@@ -177,6 +177,18 @@ Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="dang
 For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
 :::
 
+### `display` på dialogen
+
+Ett unntak finnes, og det kommer av nettleseren og ikke av oss. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare innenfor ett opphav, så en hvilken som helst forfatterregel med `display` slår den skjulingen. Setter du `display` på `.fs-dialog`, blir en lukket dialog stående som et kort på siden. Ta da med regelen selv, minst like spesifikk som din egen:
+
+```css
+dialog.fs-dialog:not([open]):not(:is(:popover-open)) {
+  display: none;
+}
+```
+
+Fristil setter selv `display: flex` når `.fs-dialog__body` er et direkte barn, slik at kroppen kan rulle, og har den regelen ved siden av.
+
 ### Tailwind og lagrekkefølgen
 
 Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
