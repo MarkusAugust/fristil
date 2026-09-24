@@ -18,26 +18,45 @@ kommer i et nytt undertall.
 
 ## 0.12.0 (2026-09-24)
 
+### Brytende
+
+- **`ThemeInput` er en union.** Merkefargene kan utelates, men da skal ingen av
+  dem stå: enten alle fire, eller ingen. Vilkåret står i typen og ikke bare som
+  en feilmelding i kjøretid, så `buildTheme({ interactive, danger })` er en
+  typefeil. En konsument som leste `input.interactive` fra en variabel av typen
+  `ThemeInput`, må nå skille de to tilfellene. Meldingen i kjøretid står ved
+  siden av, for oppskriften kan komme fra en JSON-fil eller et skript uten
+  typer.
+
 ### Lagt til
 
 - **Temageneratoren kan også sette skrift og form.** Den bygget fargene, og
   bare dem, og to systemer med den samme paletten ser fortsatt ulike ut når
   skriften og hjørnene er ulike. `buildTheme()` tar nå to valgfrie blokker,
-  `typography` og `shape`, og kommandolinja har de samme verdiene som flagg:
-  `--skrift`, `--skrift-kode`, `--knapp-hjorner`, `--felt-hjorner`,
-  `--flate-hjorner`, `--knapp-ramme` og `--knapp-vekt`. Utelates begge, er
-  temaet nøyaktig det det var før.
+  `typography` og `shape`. Seks av verdiene finnes også som flagg: `--skrift`,
+  `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner`, `--knapp-ramme` og
+  `--knapp-vekt`. Vektene og linjeavstandene settes fra fil. Utelates begge
+  blokkene, er temaet nøyaktig det det var før.
 
   Hjørnene er delt i tre framfor ett felles tall, fordi ett tall er feil:
   Skatteetatens knapper er helt runde mens feltene deres har nesten rette
-  hjørner, og med én verdi blir feltene kapsler. Avkryssingsboksen,
-  radioknappen, merket, avataren og skjelettet står utenfor, fordi hjørnet
-  der ikke er et stilvalg, men selve formen.
+  hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
+  paginering og hopplenke, `fieldRadius` felt, tekstområde og nedtrekksliste,
+  og `surfaceRadius` de elleve flatene, meldingen og hjelpeboblen medregnet.
+  Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
+  står utenfor, fordi hjørnet der ikke er et stilvalg, men selve formen.
 
   Skriften skrives som en ekte regel på `:root` og ikke bare som et token.
   Fristil arver skrift med vilje, så et token alene ville ikke endret én
-  eneste bokstav. Regelen står i `@layer fristil`, så konsumentens egen CSS
-  vinner fortsatt over den.
+  eneste bokstav.
+
+- **Den genererte fila ligger i sitt eget lag,** `fristil-tema`, erklært etter
+  `fristil` med `@layer fristil, fristil-tema;`. Den lå i `@layer fristil`
+  først, og da avgjorde rekkefølgen stilarkene ble lastet i. Den rekkefølgen
+  har konsumenten ikke alltid i hånda: både Astro og TanStack Start legger sin
+  bundlede CSS inn rett før `</head>`, altså etter en `<link>` appen selv har
+  skrevet, og temaet tapte da mot pakkens egne verdier. Begge lagene ligger
+  fortsatt foran usortert CSS, så konsumentens egne regler vinner som før.
 
 - **Et tema kan la fargene stå.** Merkefargene er nå valgfrie, og utelates
   alle fire, lages et tema som bare setter skrift og form. Det er ikke en
@@ -46,31 +65,34 @@ kommer i et nytt undertall.
   ville flyttet dem bort fra der de skal være. `#1362ae` kommer ut som
   `#1e6ab7`, siden skalaene regnes om i OKLCH fra merkefargen. Enten alle fire
   fargene, eller ingen: to farger kaster, siden resten av temaet da ville blitt
-  bygget av standardfarger uten at noen ba om det. Vilkåret står i typen som en
-  union, ikke bare som en `throw`, så `buildTheme({ interactive, danger })` er
-  en typefeil. `ThemeInput` er dermed endret: en konsument som leste
-  `input.interactive` fra en variabel av den typen, må nå skille de to
-  tilfellene. Det er en brytende endring på en type, og den står her framfor i
-  et nytt hovedtall fordi pakken ikke har konsumenter ennå.
+  bygget av standardfarger uten at noen ba om det. Se «Brytende» over for hva
+  det gjorde med typen.
 
 - **Verdier i et tema kan ikke bryte ut av regelen de skrives inn i.**
   Oppskriften er en JSON-fil som kan komme fra et annet repo eller fra et
   byggesteg, og `«4px; } html { display: none } :root { --x: 1` lukket både
   erklæringen og `:root`-blokka, og fikk en vilkårlig regel inn i
-  `@layer fristil`. Verdier med `;`, `{`, `}` eller `/*` avvises nå med en
-  melding som sier hvorfor.
+  `@layer fristil`. Tre veier til var åpne, og alle er etterprøvd i nettleser:
+  `1px (` åpnet en parentes som slukte resten av stilarket, `Arial\` lot
+  baksnabelen spise semikolonet, og `Arial</style><script>…` kjørte et skript i
+  en side der CSS-en står inline. Verdier med `;`, `{`, `}`, `<`, `>`, `\`,
+  `/*` eller styretegn avvises nå, parenteser og anførselstegn må gå opp, og
+  meldingen navngir nøkkelen i oppskriften framfor variabelen vi skriver.
 
-- **Et ukjent flagg stopper kjøringen** framfor å bli ignorert.
-  `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens flagget
-  heter `hjorner`, og temaet kom før ut uten hjørnet og uten et ord.
+- **Et ukjent flagg eller en ukjent nøkkel stopper kjøringen** framfor å bli
+  ignorert. `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens
+  flagget heter `hjorner`, og temaet kom før ut uten hjørnet og uten et ord.
+  Det samme gjaldt en skrivefeil inne i oppskriftsfila, altså den som kan
+  komme fra et annet repo.
 
 - **Vekt og linjeavstand er tokens.** `--font-weight-regular`,
   `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`,
-  `--semantic-line-height-default`, `--semantic-line-height-heading` og
-  `--semantic-line-height-article`. Verdiene er nøyaktig dem komponentene
-  hadde skrevet ut fra før, så ingenting ser annerledes ut.
+  `--semantic-line-height-default`, `--semantic-line-height-heading`,
+  `--semantic-line-height-article` og `--semantic-line-height-compact`.
+  Verdiene er nøyaktig dem komponentene hadde skrevet ut fra før, så
+  ingenting ser annerledes ut.
 
-- **Tjueni stilark leser nå vekt og linjeavstand fra tokenene** framfor å
+- **Trettisju stilark leser nå vekt og linjeavstand fra tokenene** framfor å
   skrive tallet. Verdiene er de samme, så ingenting ser annerledes ut, men uten
   dette ville `typography.weights` og `typography.lineHeights` i et tema truffet
   tre komponenter og ikke resten. Knappen, overskriften og avsnittet leser dem

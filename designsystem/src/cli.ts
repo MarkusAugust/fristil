@@ -358,6 +358,50 @@ const KJENTE_FLAGG = new Set([
 
 const ukjente = Object.keys(flagg).filter((navn) => !KJENTE_FLAGG.has(navn))
 
+/*
+ * Det samme gjelder nøklene i oppskriftsfila.
+ *
+ * `{"form": {"buttonRadus": "2rem"}}` gikk stille gjennom, og temaet kom ut
+ * uten hjørnet. Fila er nettopp det som kan komme fra et annet repo, så en
+ * skrivefeil der er vanskeligere å oppdage enn en på kommandolinja.
+ */
+const SKRIFTNØKLER = new Set(["fontFamily", "weights", "lineHeights"])
+const VEKTNØKLER = new Set(["regular", "medium", "semibold", "bold"])
+const LINJENØKLER = new Set(["default", "heading", "article", "compact"])
+const FORMNØKLER = new Set([
+  "buttonRadius",
+  "fieldRadius",
+  "surfaceRadius",
+  "buttonBorderWidth",
+  "buttonFontWeight",
+])
+
+function ukjenteNøkler(
+  objekt: unknown,
+  lovlige: Set<string>,
+  sti: string,
+): string[] {
+  if (!objekt || typeof objekt !== "object") return []
+  return Object.keys(objekt as object)
+    .filter((navn) => !lovlige.has(navn))
+    .map((navn) => `${sti}.${navn}`)
+}
+
+const ukjenteIFil = [
+  ...ukjenteNøkler(typografi, SKRIFTNØKLER, "typografi"),
+  ...ukjenteNøkler(typografi.weights, VEKTNØKLER, "typografi.weights"),
+  ...ukjenteNøkler(typografi.lineHeights, LINJENØKLER, "typografi.lineHeights"),
+  ...ukjenteNøkler(form, FORMNØKLER, "form"),
+]
+
+if (ukjenteIFil.length > 0) {
+  console.error(
+    `Ukjent nøkkel i oppskriften: ${ukjenteIFil.join(", ")}\n\n` +
+      "Hele oversikten: fristil --hjelp\n",
+  )
+  process.exit(1)
+}
+
 if (ukjente.length > 0) {
   console.error(
     `Ukjent flagg: ${ukjente.map((navn) => `--${navn}`).join(", ")}\n\n` +

@@ -106,7 +106,21 @@ Seks av verdiene finnes også som flagg: `--skrift`, `--knapp-hjorner`, `--felt-
 
 Et flagg som ikke finnes stopper kjøringen framfor å bli ignorert, så en skrivefeil sier fra.
 
-Blokknavnene kan stå på norsk eller engelsk, som fargene. Nøklene inni er engelske, og de står i tabellen under.
+Blokknavnene kan stå på norsk eller engelsk, som fargene. Nøklene inni er engelske, og en nøkkel som ikke finnes stopper kjøringen framfor å bli ignorert:
+
+| Nøkkel | Hva den setter |
+| --- | --- |
+| `typografi.fontFamily` | skriftstakken, som token og som regel på `:root` |
+| `typografi.weights.regular` · `.medium` · `.semibold` · `.bold` | de fire vektene |
+| `typografi.lineHeights.default` | kontroller: knapp, felt, tabell |
+| `typografi.lineHeights.heading` | overskrifter |
+| `typografi.lineHeights.article` | brødtekst og lister |
+| `typografi.lineHeights.compact` | små flater: hjelpetekst, hjelpeboble, korttittel |
+| `form.buttonRadius` | knappen, paginering og hopplenken |
+| `form.fieldRadius` | feltet, tekstområdet og nedtrekkslista |
+| `form.surfaceRadius` | kort, dialog, sprettoppvindu, varsel, trekkspill, feiloppsummering, filopplasting, økttidsavbrudd, forslagslista, meldingen og hjelpeboblen |
+| `form.buttonBorderWidth` | rammetykkelsen på knappen |
+| `form.buttonFontWeight` | vekten på knappeteksten |
 
 Alt her er valgfritt. Utelater du begge blokkene, er temaet nøyaktig det det var før: bare farger.
 
@@ -125,15 +139,19 @@ Enten oppgir du alle fire merkefargene, eller ingen. To farger kaster: resten av
 
 ### Hvorfor tre slags hjørner
 
-| Nøkkel | Treffer |
-| --- | --- |
-| `buttonRadius` | knappen, paginering og hopplenken |
-| `fieldRadius` | feltet, tekstområdet og nedtrekkslista |
-| `surfaceRadius` | kort, dialog, sprettoppvindu, varsel, trekkspill, feiloppsummering, filopplasting, økttidsavbrudd, forslagslista, meldingen og hjelpeboblen |
-
 Ett felles tall ville vært enklere og feil. Skatteetatens knapper er helt runde, mens feltene deres har nesten rette hjørner, og med ett tall blir feltene kapsler.
 
-Avkryssingsboksen, radioknappen, merket, etiketten, valggruppa, avataren og skjelettet står utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp, og et merke som blir firkantet, ser ut som en knapp.
+Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet står utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp, og et merke som blir firkantet, ser ut som en knapp.
+
+### Temaet vinner over standardverdiene
+
+Den genererte fila legger seg i sitt eget lag, erklært etter pakkens eget:
+
+```css
+@layer fristil, fristil-tema;
+```
+
+Erklæringen avgjør rekkefølgen uavhengig av når stilarkene lastes, og det er ikke en detalj: både Astro og TanStack Start legger sin bundlede CSS inn rett før `</head>`, altså etter en `<link>` du selv har skrevet. Lå temaet i det samme laget som pakken, ville det tapt mot standardverdiene i de to. Begge lagene ligger fortsatt foran usortert CSS, så dine egne regler vinner som før.
 
 ### Skriften settes som en regel
 

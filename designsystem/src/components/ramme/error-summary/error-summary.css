@@ -30,7 +30,7 @@
     margin: 0 0 var(--size-2);
     font-size: var(--font-size-l);
     font-weight: var(--font-weight-semibold);
-    line-height: 1.4;
+    line-height: var(--semantic-line-height-compact);
   }
 
   .fs-error-summary a {

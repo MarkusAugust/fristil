@@ -134,17 +134,18 @@ Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en or
 
 | Token | Verdi | Brukt av |
 | --- | --- | --- |
-| `--font-weight-regular` | 400 | ledetekst uten vekt, feltsettets valgfrie felt |
+| `--font-weight-regular` | 400 | merkelappene «(påkrevd)» og «(valgfri)» på ledetekst og feltsett |
 | `--font-weight-medium` | 500 | knapp, feilmelding |
-| `--font-weight-semibold` | 600 | ledetekst, korttittel, varsel, trekkspill, tabelloverskrift, fane, merke, avatar, brødsmule, paginering, valggruppe, dialogtittel, feiloppsummering, økttidsavbrudd |
-| `--font-weight-bold` | 700 | overskrift, ledetekst i stor utgave, feltsettets tittel |
-| `--semantic-line-height-default` | 1.5 | knapp, felt, tekstområde, nedtrekksliste, tabell, fane, dialog, sprettoppvindu, varsel, trekkspill, forslagsliste, melding og en rekke til |
+| `--font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsavbrudd, tabell, faner, valggruppe |
+| `--font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
+| `--semantic-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
 | `--semantic-line-height-heading` | 1.2 | overskrift |
 | `--semantic-line-height-article` | 1.6 | brødtekst, liste, korttekst |
+| `--semantic-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
 
 Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
 
-Fire linjeavstander står fortsatt som tall i stilarkene: `1`, `1.3`, `1.4` og `1.55`. De er finjustering i én komponent, ikke en rytme noen vil endre på tvers, og et token for hver av dem ville vært en oppfinnelse.
+Tre linjeavstander står fortsatt som tall i stilarkene. `1` i paginering, avatar og lukkeknappen på meldingen er ikke typografi, men en måte å få et tall eller et kryss til å stå midt i en sirkel. `1.3` og `1.55` står i én komponent hver.
 
 ## TypeScript
 

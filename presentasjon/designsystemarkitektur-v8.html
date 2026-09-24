@@ -52,14 +52,16 @@
   --kant: rgba(205, 225, 249, 0.16);
   --sans: Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Flaten er mørk, og nettleseren skal vite det. Den hører på rotelementet
+     og ikke på `body`: lerretet og vinduets rullefelt følger roten, og på
+     smal skjerm er det nettopp rullefeltet man ser. */
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  /* Flaten er mørk, og nettleseren skal vite det: uten dette tegnes
-     rullefelt og felter i lys utgave oppå. */
-  color-scheme: dark;
   font-family: var(--sans);
   background: var(--flate);
   color: var(--tekst);
@@ -539,7 +541,7 @@ fs.input({ type: "email", state: "invalid" })
     </div>
     <div class="boks">
       <span class="merke merke-gul">frittstående</span>
-      <p>Tre elementer: meldingen, økttidsavbruddet og sambandslinja. De har ingen tilstand serveren kan sende, og du kaller dem framfor å skrive dem.</p>
+      <p>Tre elementer: meldingen, økttidsavbruddet og linja som sier fra når forbindelsen ryker. De bærer ingen verdi inn i en innsending, og innholdet lager de selv, når du kaller dem.</p>
       <pre>toast.show("Lagret")</pre>
     </div>
   </div>

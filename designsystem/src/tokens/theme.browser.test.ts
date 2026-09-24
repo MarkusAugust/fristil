@@ -262,6 +262,72 @@ describe("temaet kan også sette skrift og form", () => {
     expect(tema.css).not.toContain("--fs-badge-radius")
   })
 
+  it("vinner over pakkens egne verdier uansett rekkefølge", async () => {
+    /*
+     * Stilarkene lastes ikke alltid i den rekkefølgen appen skriver dem.
+     * Både Astro og TanStack Start legger sin bundlede CSS inn rett før
+     * `</head>`, altså etter en `<link>` appen selv har satt. Temaet må
+     * derfor vinne på laget, ikke på rekkefølgen.
+     */
+    const tema = buildTheme({
+      typography: { lineHeights: { default: 1.9 } },
+      shape: { buttonRadius: "2.75rem" },
+    })
+
+    const temaark = document.createElement("style")
+    temaark.textContent = tema.css
+    document.head.append(temaark)
+
+    // Pakkens egne tokens legges inn ETTER temaet, altså i verste rekkefølge.
+    const tokenark = document.createElement("style")
+    tokenark.textContent = (await import("./tokens.css?inline")).default
+    document.head.append(tokenark)
+
+    const prøve = document.createElement("div")
+    document.body.append(prøve)
+
+    try {
+      const lest = getComputedStyle(prøve)
+        .getPropertyValue("--semantic-line-height-default")
+        .trim()
+
+      expect(lest).toBe("1.9")
+    } finally {
+      prøve.remove()
+      temaark.remove()
+      tokenark.remove()
+    }
+  })
+
+  it("avviser en verdi som kan bryte ut av regelen", () => {
+    /*
+     * Oppskriften er en JSON-fil som kan komme fra et annet repo eller fra et
+     * byggesteg. Alle fire veiene under var åpne, og alle fire er etterprøvd
+     * i nettleser: den første fikk en vilkårlig regel inn i laget vårt, den
+     * andre slukte resten av stilarket med en parentes som aldri lukkes, den
+     * tredje lot en baksnabel spise semikolonet, og den fjerde kjørte et
+     * skript i en side der CSS-en står inline.
+     */
+    const onde = [
+      "4px; } html { display: none } :root { --x: 1",
+      "1px (",
+      "Arial\\",
+      "Arial</style><script>x</script>",
+    ]
+
+    for (const verdi of onde) {
+      expect(() => buildTheme({ shape: { buttonRadius: verdi } })).toThrow()
+    }
+
+    // Og de lovlige verdiene skal fortsatt slippe gjennom.
+    expect(() =>
+      buildTheme({
+        shape: { buttonRadius: "calc(1rem + 2px)" },
+        typography: { fontFamily: '"Segoe UI", Helvetica, Arial, sans-serif' },
+      }),
+    ).not.toThrow()
+  })
+
   it("virker i nettleseren, ikke bare som tekst", async () => {
     // Det holder ikke at strengen står der. Regelen må også slå gjennom på
     // et ekte element, og komponenten må faktisk lese variabelen.

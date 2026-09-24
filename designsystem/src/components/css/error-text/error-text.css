@@ -7,7 +7,7 @@
     font-family: inherit;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    line-height: 1.4;
+    line-height: var(--semantic-line-height-compact);
     color: var(--semantic-danger-foreground);
   }
 

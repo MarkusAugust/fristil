@@ -43,11 +43,12 @@ export type ThemeTypography = {
     semibold?: string | number
     bold?: string | number
   }
-  /** Linjeavstand for kontroller, overskrifter og brødtekst. */
+  /** Linjeavstand for kontroller, overskrifter, brødtekst og små flater. */
   lineHeights?: {
     default?: string | number
     heading?: string | number
     article?: string | number
+    compact?: string | number
   }
 }
 
@@ -58,8 +59,8 @@ export type ThemeTypography = {
  * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
  * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
  *
- * Avkryssingsboksen, radioknappen, merket, etiketten, valggruppa, avataren og
- * skjelettet står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
+ * Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
+ * står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
  * selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp,
  * og et merke som blir firkantet, ser ut som en knapp.
  */
@@ -457,21 +458,79 @@ const FLATER = [
   "tooltip",
 ] as const
 
+/** Tegn som lar en verdi bryte ut av erklæringen sin. */
+const FARLIGE = /[;{}<>\\]|\/\*|\*\//
+
+/**
+ * Om parenteser og anførselstegn går opp.
+ *
+ * En ubalansert `(` er nok alene: `1px (` åpner en blokk som sluker
+ * semikolonet, begge krøllparentesene og alt som står etter i fila. Testet i
+ * Chromium, der både temaet og konsumentens eget stilark forsvant.
+ */
+function balansert(verdi: string): boolean {
+  let nivå = 0
+  let sitat: string | null = null
+
+  for (const tegn of verdi) {
+    if (sitat) {
+      if (tegn === sitat) sitat = null
+      continue
+    }
+    if (tegn === '"' || tegn === "'") sitat = tegn
+    else if (tegn === "(") nivå += 1
+    else if (tegn === ")" && --nivå < 0) return false
+  }
+
+  return nivå === 0 && sitat === null
+}
+
 /**
  * Avviser en verdi som kan bryte ut av regelen den skrives inn i.
  *
  * Oppskriften er en JSON-fil, og den kan komme fra et annet repo eller fra et
- * byggesteg. Uten denne sjekken lukket `4px; } html { display: none } :root {
- * --x: 1` både erklæringen og `:root`-blokka, og fikk en vilkårlig regel inn i
- * `@layer fristil`. Etterprøvd før den kom på plass.
+ * byggesteg. Tre veier ut er etterprøvd i nettleser, og alle tre var åpne da
+ * sjekken bare så etter `;`, `{`, `}` og `/*`:
+ *
+ * - `4px; } html { display: none } :root { --x: 1` lukket erklæringen og
+ *   `:root`-blokka, og fikk en vilkårlig regel inn i `@layer fristil`.
+ * - `1px (` åpnet en parentes som slukte resten av fila, inkludert stilarket
+ *   konsumenten la etter den.
+ * - `Arial\` lot baksnabelen spise semikolonet, så neste erklæring ble en
+ *   del av skriftnavnet.
+ * - `Arial</style><script>…` kjørte skriptet i en side der den genererte
+ *   CSS-en står inline i et `<style>`-element.
+ *
+ * Derfor både en liste over farlige tegn og et krav om at parenteser og
+ * anførselstegn går opp. `calc(1rem + 2px)` og `"Segoe UI", Arial` er
+ * fortsatt lovlige verdier.
  */
 function kontroller(navn: string, verdi: string): string {
-  if (/[;{}]|\/\*/.test(verdi)) {
+  /*
+   * Styretegn ses etter med kodepunktet framfor med et regulært uttrykk.
+   * Biome avviser et uttrykk med styretegn i, og med god grunn: de er
+   * vanskelige å se i kilden. Her er de nettopp det vi leter etter.
+   */
+  const harStyretegn = [...verdi].some(
+    (tegn) => (tegn.codePointAt(0) ?? 0) < 0x20,
+  )
+
+  if (FARLIGE.test(verdi) || harStyretegn) {
     throw new Error(
-      `Verdien til ${navn} kan ikke inneholde «;», «{», «}» eller «/*». ` +
-        `Den skrives rett inn i en CSS-regel. Fikk: ${verdi}`,
+      `Verdien til ${oppskriftsnavn(navn)} kan ikke inneholde «;», «{», «}», «<», «>», ` +
+        `«\\», «/*» eller styretegn. Den skrives rett inn i en CSS-regel. ` +
+        `Fikk: ${verdi}`,
     )
   }
+
+  if (!balansert(verdi)) {
+    throw new Error(
+      `Verdien til ${oppskriftsnavn(navn)} har en parentes eller et anførselstegn som ikke ` +
+        `går opp. En parentes som ikke lukkes sluker resten av stilarket. ` +
+        `Fikk: ${verdi}`,
+    )
+  }
+
   return verdi
 }
 
@@ -501,7 +560,40 @@ function typografiVerdier(t: ThemeTypography): Record<string, string> {
   kanskje(verdier, "--semantic-line-height-default", t.lineHeights?.default)
   kanskje(verdier, "--semantic-line-height-heading", t.lineHeights?.heading)
   kanskje(verdier, "--semantic-line-height-article", t.lineHeights?.article)
+  kanskje(verdier, "--semantic-line-height-compact", t.lineHeights?.compact)
   return verdier
+}
+
+/**
+ * Navnet brukeren skrev, til feilmeldingen.
+ *
+ * Verdien lander i `--fs-button-radius`, men det var `buttonRadius` eller
+ * `--knapp-hjorner` som ble skrevet. En feilmelding som navngir vår egen
+ * variabel sender leseren til feil sted i sin egen fil.
+ */
+const OPPSKRIFTSNAVN: Record<string, string> = {
+  "--font-family-base": "fontFamily",
+  "--font-weight-regular": "weights.regular",
+  "--font-weight-medium": "weights.medium",
+  "--font-weight-semibold": "weights.semibold",
+  "--font-weight-bold": "weights.bold",
+  "--semantic-line-height-default": "lineHeights.default",
+  "--semantic-line-height-heading": "lineHeights.heading",
+  "--semantic-line-height-article": "lineHeights.article",
+  "--semantic-line-height-compact": "lineHeights.compact",
+  "--fs-button-border-width": "buttonBorderWidth",
+  "--fs-button-font-weight": "buttonFontWeight",
+}
+
+function oppskriftsnavn(variabel: string): string {
+  if (OPPSKRIFTSNAVN[variabel]) return OPPSKRIFTSNAVN[variabel]
+  if (variabel.endsWith("-radius")) {
+    const navn = variabel.slice("--fs-".length, -"-radius".length)
+    if ((KNAPPER as readonly string[]).includes(navn)) return "buttonRadius"
+    if ((FELT as readonly string[]).includes(navn)) return "fieldRadius"
+    return "surfaceRadius"
+  }
+  return variabel
 }
 
 function formVerdier(f: ThemeShape): Record<string, string> {
@@ -573,14 +665,34 @@ function tilCss(
     deler.push(`  [data-theme="dark"] {\n${linjer(dark, "    ")}\n  }`)
   }
 
+  /*
+   * Temaet ligger i sitt eget lag, og laget er erklært etter `fristil`.
+   *
+   * Det sto i `@layer fristil` før, sammen med pakkens egne stilark, og da
+   * avgjorde rekkefølgen filene ble lastet i. Den rekkefølgen har ikke
+   * konsumenten alltid i hånda: både Astro og TanStack Start legger sin
+   * bundlede CSS inn rett før `</head>`, altså etter en `<link>` appen selv
+   * har skrevet. Temaet tapte da mot pakkens standardverdier, og det viste
+   * seg først når et token fantes begge steder.
+   *
+   * Erklæringen `@layer fristil, fristil-tema;` avgjør rekkefølgen uavhengig
+   * av når filene lastes. Begge lagene ligger fortsatt foran usortert CSS, så
+   * konsumentens egne regler vinner som før.
+   */
   return `/*
  * Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila.
  *
- * Legges etter tokens.css, og overstyrer verdiene der. Det som ikke står i
- * oppskriften, står fortsatt i tokens.css.
+ * Overstyrer verdiene i tokens.css. Det som ikke står i oppskriften, står
+ * fortsatt der.
+ *
+ * Laget er erklært etter «fristil», så temaet vinner over pakkens
+ * standardverdier uansett hvilken rekkefølge stilarkene lastes i. Din egen
+ * CSS er usortert, og vinner fortsatt over begge.
  */
 
-@layer fristil {
+@layer fristil, fristil-tema;
+
+@layer fristil-tema {
 ${deler.join("\n\n")}
 }
 `

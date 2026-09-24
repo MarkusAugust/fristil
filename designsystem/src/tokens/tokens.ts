@@ -58,6 +58,8 @@ export const cssTokens = {
   "--semantic-line-height-heading": "1.2",
   /** Brødtekst, der øyet skal finne tilbake til neste linje. */
   "--semantic-line-height-article": "1.6",
+  /** Tettere tekst i små flater: hjelpebobler, merkelapper, korttitler. */
+  "--semantic-line-height-compact": "1.4",
 
   // Size scale (Tailwind-kompatibel, 4px-base)
   "--size-px": "1px",
