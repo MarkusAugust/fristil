@@ -131,6 +131,14 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
 
 ## Hvilken fane som er valgt
 
+`selected` sier hvilken fane som er valgt når markupen lages, og er indeksen i lista:
+
+```ts
+const faner = fs.tabs({ id: "sak", count: 3, selected: 1, label: "Deler av saken" })
+```
+
+Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra.
+
 Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
 
 ```ts

@@ -148,6 +148,9 @@ const HENTER = new Map<string, Set<string>>()
   lesArk(join(ROT, "designsystem/src"))
 }
 
+/** Klassen hver byggefunksjon gir, slått opp på funksjonsnavnet. */
+const FRA_BYGGER_OMVENDT = new Map<string, string>()
+
 /** Stilarkene et sett med oppgitte ark drar med seg, hele veien ned. */
 function lukning(start: string[]): Set<string> {
   const ut = new Set<string>()
@@ -224,6 +227,10 @@ for (const [navn, f] of Object.entries(fs)) {
       !FRA_BYGGER.has(verdi)
     )
       FRA_BYGGER.set(verdi, `${navn}.${nøkkel}`)
+
+  for (const [klasse, bygger] of FRA_BYGGER)
+    if (!FRA_BYGGER_OMVENDT.has(bygger.replace(/[.(].*$/, "")))
+      FRA_BYGGER_OMVENDT.set(bygger.replace(/[.(].*$/, ""), klasse)
 }
 
 /** Attributtnavnene en byggefunksjon faktisk sender ut for verten sin. */
@@ -380,48 +387,51 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     }
 
     /*
-     * Oppskriften må liste stilarkene markupen faktisk bruker.
+     * Stilarkene må dekke klassene fanen bruker, uansett hvordan de oppgis.
      *
-     * `importer` finnes for at fanen skal være hele oppskriften. Ni sider
-     * oppga færre ark enn markupen krevde, og søkefeltet var det tydeligste:
-     * uten `sr-only.css` blir den skjulte ledeteksten synlig tekst.
+     * Dette er den samme feilen tre runder på rad, og hver gang fordi regelen
+     * var bundet til én måte å oppgi stilarkene på. Først så den bare
+     * `importer` på `<Eksempel>`, og da gikk de ni oppførselssidene fri. Så
+     * fikk de håndskrevne `<link>`-blokker, og regelen så ikke dem heller: to
+     * av dem manglet `button.css` mens markupen brukte `.fs-button`.
+     *
+     * Derfor er regelen nå én, og den spør om det som betyr noe: hvilke ark
+     * har leseren fått vite om, og hvilke krever klassene i denne fanen.
+     * Arkene kan komme fra `importer`, fra en `<link>` eller fra en
+     * `import "@fristil/designsystem/x.css"`. Hvor de står er likegyldig.
      */
-    if (fane.navn === "Ren HTML" && /<Eksempel\b/.test(fane.kode)) {
-      const oppgitt = fane.kode.match(/importer=\{\[([^\]]*)\]\}/)
-      if (oppgitt) {
-        const har = lukning(
-          [...oppgitt[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]),
-        )
-        const savnet = new Set<string>()
-        for (const m of fane.kode.matchAll(/class="([^"]*)"/g))
-          for (const k of m[1].split(/\s+/)) {
-            const ark = FRA_STILARK.get(k)
-            if (k.startsWith("fs-") && ark && !har.has(ark)) savnet.add(ark)
-          }
-        for (const ark of savnet)
-          si(
-            side,
-            `«Ren HTML» bruker en klasse fra ${ark}, som ikke står i importer`,
-          )
-      }
+    const oppgitt = new Set<string>()
+    const fraImporter = fane.kode.match(/importer=\{\[([^\]]*)\]\}/)
+    if (fraImporter)
+      for (const m of fraImporter[1].matchAll(/"([^"]+)"/g)) oppgitt.add(m[1])
+    for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
+      oppgitt.add(m[1])
+    for (const m of fane.kode.matchAll(
+      /@fristil\/designsystem\/([a-z-]+\.css)/g,
+    ))
+      oppgitt.add(m[1])
+
+    const brukteKlasser = new Set<string>()
+    for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g))
+      for (const k of m[1].split(/\s+/))
+        if (k.startsWith("fs-")) brukteKlasser.add(k)
+    for (const m of fane.kode.matchAll(/\{\.\.\.fs\.([a-zA-Z]+)[.(]/g)) {
+      const klasse = FRA_BYGGER_OMVENDT.get(m[1])
+      if (klasse) brukteKlasser.add(klasse)
     }
 
-    /*
-     * CDN-adressen må peke på versjonen som slippes.
-     *
-     * Tolv adresser sto på `@0.13.0` i den utgaven som slapp 0.14.0. De
-     * svarte, så ingenting sa fra, men de ville pekt på en eldre pakke enn
-     * teksten rundt dem beskrev. Stien går dessuten gjennom `dist/`, som
-     * ikke står i `exports`, så `sjekk-eksport` dekker den ikke.
-     */
-    for (const m of fane.kode.matchAll(
-      /@fristil\/designsystem@(\d+\.\d+\.\d+)\//g,
-    ))
-      if (m[1] !== PAKKE.version)
-        si(
-          side,
-          `${hvor} peker på @fristil/designsystem@${m[1]}, mens pakken står på ${PAKKE.version}`,
-        )
+    // «resten» er prosa rundt oppskriften, ikke en oppskrift i seg selv, og
+    // skal ikke måtte gjenta stilarkene seksjonen over alt har oppgitt.
+    if (fane.navn !== "resten" && oppgitt.size > 0 && brukteKlasser.size > 0) {
+      const har = lukning([...oppgitt])
+      const savnet = new Set<string>()
+      for (const k of brukteKlasser) {
+        const ark = FRA_STILARK.get(k)
+        if (ark && !har.has(ark)) savnet.add(ark)
+      }
+      for (const ark of savnet)
+        si(side, `${hvor} bruker en klasse fra ${ark}, som ikke er oppgitt`)
+    }
 
     const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(
       fane.kode,

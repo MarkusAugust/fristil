@@ -49,6 +49,17 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **`ref` virker på de egendefinerte elementene i JSX.** Typene bygget på
+  `HTMLAttributes`, som ikke har `ref`; den ligger i `RefAttributes`. Derfor
+  var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
+  dokumentasjonen anbefaler for å kalle `.show()` og `.hide()` fra React. Alle
+  vertene bygger nå på en felles `Vert`-type som har begge.
+
+- **`warn-at` og `expires-at` godtar det byggefunksjonen sender.** De sto som
+  `number` i JSX-typene, mens `fs.sessionTimeout()` sender strenger, slik
+  HTML-attributter er. Det er den samme feilen som `tabIndex: "0"`, motsatt
+  vei, og den viste seg bare i en ekte React-app.
+
 - **`fs.connectionStatus()` og `fs.sessionTimeout()` reklamerte med en død
   klasse.** Begge sender ut `fs-connection-status` og `fs-session-timeout`,
   men stilarkene stylet bare elementnavnet, så klassen gjorde ingenting. Nå
