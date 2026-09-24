@@ -7,17 +7,44 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører rett under feltet, ikke øverst på siden. Skal teksten forklare hva feltet forventer før brukeren har gjort noe, bruk [Help Text](../help-text/).
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/error-text.css"
-```
+## Slik tar du den i bruk
 
-## Varianter
-
-<Eksempel stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
+<Eksempel importer={["tokens.css", "error-text.css"]}
+  stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
 <p class="fs-error-text">Skriv en e-postadresse med krøllalfa, for eksempel ola&#64;eksempel.no.</p>
 <p class="fs-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<p {...fs.errorText()}>Fyll inn navnet ditt.</p>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+function oppdater(erGyldig: boolean) {
+  const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
+
+  fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+  fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
+}
+```
+
+[`fs.field()`](../field/) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -44,20 +71,11 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 
 [Field](../field/) setter alle tre når du gir den `invalid`. Det er grunnen til at den komponenten finnes.
 
-## TypeScript
+## Ordlyd i meldingen
 
-```ts
-import { fs } from "@fristil/designsystem"
-
-function oppdater(erGyldig: boolean) {
-  const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
-
-  fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
-  fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
-}
-```
-
-[`fs.field`](../../typesikker-bruk/#fsfield) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
+- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.
+- Ta med et eksempel når formatet er uvanlig.
+- Ikke legg skylden på brukeren, og dropp utropstegnet.
 
 ## Klasser du kan style
 
@@ -66,12 +84,6 @@ function oppdater(erGyldig: boolean) {
 | `.fs-error-text` | Meldingen. Fargen kommer fra `data-variant`. |
 
 Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
-
-## Ordlyd i meldingen
-
-- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.
-- Ta med et eksempel når formatet er uvanlig.
-- Ikke legg skylden på brukeren, og dropp utropstegnet.
 
 ## Tilgjengelighet
 

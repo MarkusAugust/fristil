@@ -7,18 +7,42 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 En ring som snurrer mens noe lastes. Vet du hvor lenge det tar, eller hvor langt det er kommet, er en fremdriftsindikator bedre. Denne sier bare at noe pågår.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/spinner.css"
-```
+## Slik tar du den i bruk
 
-## Størrelser
-
-<Eksempel stiler={["spinner"]} kode={`
+<Eksempel importer={["tokens.css", "spinner.css"]}
+  stiler={["spinner"]} kode={`
 <span class="fs-spinner" data-size="small" aria-hidden="true"></span>
 <span class="fs-spinner" aria-hidden="true"></span>
 <span class="fs-spinner" data-size="large" aria-hidden="true"></span>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<span {...fs.spinner({ size: "small" })} aria-hidden="true" />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ring = document.querySelector<HTMLElement>("#venter")
+
+fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
+```
+
+`label` gir både `role="status"` og `aria-label`, siden ringen ikke sier noe uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-size` | Brukes til |
 | --- | --- |
@@ -57,18 +81,6 @@ Står ringen alene, snur det:
 ```
 
 La knappeteksten endre seg fra «Send søknad» til «Sender søknad». Da sier knappen hva som skjer, også for den som ikke ser ringen.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const ring = document.querySelector<HTMLElement>("#venter")
-
-fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
-```
-
-`label` gir både `role="status"` og `aria-label`, siden ringen ikke sier noe uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

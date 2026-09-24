@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Samme utseende og tilstander som [Input](../input/), for svar som blir lengre enn én linje.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/textarea.css"
-```
+## Slik tar du den i bruk
 
-## Tilstander
-
-<Eksempel stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel importer={["tokens.css", "textarea.css", "label.css"]}
+  stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
 <label class="fs-label" for="begrunnelse">Begrunnelse</label>
 <textarea class="fs-textarea" id="begrunnelse" rows="3"
   placeholder="Skriv en kort begrunnelse"></textarea>
@@ -30,22 +26,28 @@ import "@fristil/designsystem/textarea.css"
 <label class="fs-label" for="merknad">Merknad</label>
 <textarea class="fs-textarea" id="merknad" rows="2"
   disabled>Saken er avsluttet og kan ikke endres.</textarea>
-`} />
+`}>
+<Fragment slot="ts">
 
-| `data-state` | Brukes til |
-| --- | --- |
-| *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet |
-| `success` | Innholdet er bekreftet gyldig |
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
-`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
-## TypeScript
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<textarea {...fs.textarea({ state: "invalid" })} id="begrunnelse" rows={3} />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
 import { fs, type FieldState } from "@fristil/designsystem"
 
 const felt = document.querySelector<HTMLTextAreaElement>("#begrunnelse")
+if (!felt) throw new Error("fant ikke elementet")
 
 felt.addEventListener("blur", () => {
   const tilstand: FieldState = felt.value.trim().length >= 20 ? "success" : "invalid"
@@ -55,6 +57,17 @@ felt.addEventListener("blur", () => {
 ```
 
 `state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `fs.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
+
+</Fragment>
+</Eksempel>
+
+| `data-state` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Normaltilstand |
+| `invalid` | Valideringen har feilet |
+| `success` | Innholdet er bekreftet gyldig |
+
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
 
 ## Klasser du kan style
 

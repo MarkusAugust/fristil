@@ -7,18 +7,42 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Klassen settes på et vanlig `<input type="file">`. Knappen inni er nettleserens egen, og teksten på den kommer fra operativsystemets språk. Den kan ikke oversettes, så ledeteksten over feltet må si hva som skal lastes opp.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/file-upload.css"
-```
+## Slik tar du den i bruk
 
-## Feltet
-
-<Eksempel stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
+<Eksempel importer={["tokens.css", "file-upload.css", "label.css", "help-text.css"]}
+  stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
 <label class="fs-label" for="vedlegg">Last opp vedlegg</label>
 <input class="fs-file-upload" type="file" id="vedlegg" multiple accept=".pdf,.jpg" aria-describedby="vedlegg-hjelp" />
 <p class="fs-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<input {...fs.fileUpload()} id="vedlegg" accept=".pdf,.jpg" />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const felt = document.querySelector<HTMLInputElement>("#vedlegg")
+
+fs.setAttributes(felt, fs.fileUpload({ multiple: true, accept: ".pdf" }))
+```
+
+`fs.fileUpload.list` gir klassen på lista. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -62,18 +86,6 @@ felt.addEventListener("change", () => {
   felt.value = ""
 })
 ```
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const felt = document.querySelector<HTMLInputElement>("#vedlegg")
-
-fs.setAttributes(felt, fs.fileUpload({ multiple: true, accept: ".pdf" }))
-```
-
-`fs.fileUpload.list` gir klassen på lista. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

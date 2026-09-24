@@ -16,9 +16,106 @@ import "@fristil/designsystem/session-timeout.css"
 defineFsSessionTimeout()
 ```
 
-## Prøv den
+## Slik tar du den i bruk
+<Tabs>
+  <TabItem label="Prøv den">
+    <SessionTimeoutDemo />
+  </TabItem>
+  <TabItem label="Ren HTML">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/session-timeout/session-timeout.css">
+    ```
 
-<SessionTimeoutDemo />
+    ```html
+    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                        data-ignore-morph></fs-session-timeout>
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsSessionTimeout } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/frittstaende/session-timeout/fs-session-timeout.js"
+
+      defineFsSessionTimeout()
+    </script>
+
+    <script type="module">
+      const okt = document.querySelector("fs-session-timeout")
+
+      okt.addEventListener("session-extend", async () => {
+        await fetch("/api/forleng-okt", { method: "POST" })
+      })
+
+      okt.addEventListener("session-expired", () => {
+        location.href = "/logg-inn?arsak=utlopt"
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-session-timeout> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
+    ```tsx
+    import "@fristil/designsystem/session-timeout.css"
+    import { useEffect, useRef } from "react"
+    import { fs } from "@fristil/designsystem/react"
+    import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+    import "@fristil/designsystem/tokens.css"
+
+    defineFsSessionTimeout()
+
+    export function Okt() {
+      const ref = useRef<HTMLElement>(null)
+
+      useEffect(() => {
+        const element = ref.current
+        if (!element) return
+
+        const forleng = () => fetch("/api/forleng-okt", { method: "POST" })
+        const utlopt = () => { location.href = "/logg-inn?arsak=utlopt" }
+
+        element.addEventListener("session-extend", forleng)
+        element.addEventListener("session-expired", utlopt)
+        return () => {
+          element.removeEventListener("session-extend", forleng)
+          element.removeEventListener("session-expired", utlopt)
+        }
+      }, [])
+
+      return <fs-session-timeout ref={ref} {...fs.sessionTimeout({ warnAt: 1500, expiresAt: 1800 })} />
+    }
+    ```
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/session-timeout/session-timeout.css">
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsSessionTimeout } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/frittstaende/session-timeout/fs-session-timeout.js"
+
+      defineFsSessionTimeout()
+    </script>
+
+    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+                        data-ignore-morph
+                        data-on:session-extend="@post('/api/forleng-okt')"
+                        data-on:session-expired="window.location = '/logg-inn?arsak=utlopt'">
+    </fs-session-timeout>
+    ```
+
+    `data-ignore-morph` er nødvendig her. Uten den forsvinner dialogen i det serveren patcher området rundt.
+  </TabItem>
+</Tabs>
 
 ## Hvorfor den eier sitt eget innhold
 
@@ -51,83 +148,6 @@ Aktivitet er tastetrykk, klikk og rulling. Mens dialogen står åpen teller ikke
 
 Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
 
-## I en app
-
-<Tabs>
-  <TabItem label="Ren HTML">
-    ```html
-    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                        data-ignore-morph></fs-session-timeout>
-
-    <script type="module">
-      import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
-      defineFsSessionTimeout()
-
-      const okt = document.querySelector("fs-session-timeout")
-
-      okt.addEventListener("session-extend", async () => {
-        await fetch("/api/forleng-okt", { method: "POST" })
-      })
-
-      okt.addEventListener("session-expired", () => {
-        location.href = "/logg-inn?arsak=utlopt"
-      })
-    </script>
-    ```
-  </TabItem>
-  <TabItem label="React">
-    ```tsx
-    import { useEffect, useRef } from "react"
-    import { fs } from "@fristil/designsystem"
-    import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
-
-    defineFsSessionTimeout()
-
-    export function Okt() {
-      const ref = useRef<HTMLElement>(null)
-
-      useEffect(() => {
-        const element = ref.current
-        if (!element) return
-
-        const forleng = () => fetch("/api/forleng-okt", { method: "POST" })
-        const utlopt = () => { location.href = "/logg-inn?arsak=utlopt" }
-
-        element.addEventListener("session-extend", forleng)
-        element.addEventListener("session-expired", utlopt)
-        return () => {
-          element.removeEventListener("session-extend", forleng)
-          element.removeEventListener("session-expired", utlopt)
-        }
-      }, [])
-
-      return <fs-session-timeout ref={ref} {...fs.sessionTimeout({ warnAt: 1500, expiresAt: 1800 })} />
-    }
-    ```
-  </TabItem>
-  <TabItem label="Datastar">
-    ```html
-    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                        data-ignore-morph
-                        data-on:session-extend="@post('/api/forleng-okt')"
-                        data-on:session-expired="window.location = '/logg-inn?arsak=utlopt'">
-    </fs-session-timeout>
-    ```
-
-    `data-ignore-morph` er nødvendig her. Uten den forsvinner dialogen i det serveren patcher området rundt.
-  </TabItem>
-</Tabs>
-
-## Tilgjengelighet
-
-Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
-
-Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
-
-- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
-- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
-- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
-
 ## Klasser du kan style
 
 | Klasse | Hva det er |
@@ -152,3 +172,13 @@ Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve
   --fs-session-timeout-width: 32rem;
 }
 ```
+## Tilgjengelighet
+
+Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
+
+Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
+
+- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
+- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
+- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+

@@ -7,18 +7,42 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 En merkelapp merker innhold: emneord på en artikkel, valgte filtre over en liste. Sier lappen hvilken tilstand noe er i, som «Innvilget» eller «Forfalt», er [Badge](../badge/) riktig i stedet.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/tag.css"
-```
+## Slik tar du den i bruk
 
-## Varianter
-
-<Eksempel stiler={["tag"]} kode={`
+<Eksempel importer={["tokens.css", "tag.css"]}
+  stiler={["tag"]} kode={`
 <span class="fs-tag">Bostøtte</span>
 <span class="fs-tag" data-variant="filled">Barnehage</span>
 <span class="fs-tag" aria-disabled="true">Arkivert</span>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<span {...fs.tag()}>Bostøtte</span>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const lapp = document.createElement("button")
+lapp.type = "button"
+
+fs.setAttributes(lapp, fs.tag({ selectable: true }))
+lapp.setAttribute("aria-pressed", "false")
+```
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -55,18 +79,6 @@ Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og
 ```
 
 `aria-pressed` er det som gjør at skjermleseren sier «valgt» eller «ikke valgt». Fargen alene sier ingenting.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const lapp = document.createElement("button")
-lapp.type = "button"
-
-fs.setAttributes(lapp, fs.tag({ selectable: true }))
-lapp.setAttribute("aria-pressed", "false")
-```
 
 ## Klasser du kan style
 

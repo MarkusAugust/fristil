@@ -14,7 +14,7 @@ const feil = fs.errorSummary({ count: 2, id: "demo-oppsummering" })
 	maxWidth="34rem"
 >
 	<form id="demo-skjema" novalidate>
-		<fs-error-summary {...feil.container} data-autofocus="false">
+		<fs-error-summary {...feil.host} data-autofocus="false">
 			<h2 {...feil.title}>Skjemaet har to feil</h2>
 			<ul class="fs-list">
 				<li><a href="#demo-epost">Skriv en e-postadresse med krøllalfa</a></li>

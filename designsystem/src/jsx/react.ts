@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react"
+import type { HTMLAttributes, RefAttributes } from "react"
 
 /**
  * Typer for Fristils egendefinerte elementer i JSX.
@@ -60,7 +60,17 @@ type ServerControlled = {
   "server-controlled"?: Flag
 }
 
-type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
+/**
+ * Grunnformen for et egendefinert element i JSX.
+ *
+ * `HTMLAttributes` alene har ikke `ref`. Den ligger i `RefAttributes`, og
+ * uten den var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
+ * dokumentasjonen anbefaler for å kalle `.show()` og `.hide()`. `key` kommer
+ * samme vei.
+ */
+type Host = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
+
+type FsFieldAttributes = Host & {
   invalid?: Flag
   disabled?: Flag
   optional?: Flag
@@ -77,9 +87,9 @@ type FsFieldAttributes = HTMLAttributes<HTMLElement> & {
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = HTMLAttributes<HTMLElement> & ServerControlled
+type FsTabsAttributes = Host & ServerControlled
 
-type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
+type FsErrorSummaryAttributes = Host & {
   /**
    * Flytt fokus hit når boksen kommer til syne. Standard: på.
    * Sett `"false"` for å la være.
@@ -87,7 +97,7 @@ type FsErrorSummaryAttributes = HTMLAttributes<HTMLElement> & {
   "data-autofocus"?: "false"
 }
 
-type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
+type FsSuggestionAttributes = Host & {
   /**
    * Noen andre har alt filtrert, så komponenten skal la være.
    *
@@ -102,34 +112,34 @@ type FsSuggestionAttributes = HTMLAttributes<HTMLElement> & {
   prefiltered?: Flag
 } & ServerControlled
 
-type FsDialogAttributes = HTMLAttributes<HTMLElement> &
+type FsDialogAttributes = Host &
   ServerControlled & {
     /** Dialogen er åpen. Komponenten kaller `showModal()`. */
     open?: Flag
   }
 
-type FsPopoverAttributes = HTMLAttributes<HTMLElement> &
+type FsPopoverAttributes = Host &
   ServerControlled & {
     open?: Flag
     /** Hvilken kant panelet henger fra. */
     placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
   }
 
-type FsSessionTimeoutAttributes = HTMLAttributes<HTMLElement> & {
+type FsSessionTimeoutAttributes = Host & {
   /** Sekunder uten aktivitet før varselet kommer. */
-  "warn-at"?: number
+  "warn-at"?: number | string
   /** Sekunder uten aktivitet før økten er ute. */
-  "expires-at"?: number
+  "expires-at"?: number | string
 }
 
-type FsConnectionStatusAttributes = HTMLAttributes<HTMLElement> & {
+type FsConnectionStatusAttributes = Host & {
   /** Teksten når forbindelsen er borte. */
   "offline-text"?: string
   /** Teksten når den kommer tilbake. */
   "online-text"?: string
 }
 
-type FsToastAttributes = HTMLAttributes<HTMLElement> & {
+type FsToastAttributes = Host & {
   /** Millisekunder før meldingene forsvinner. */
   duration?: number
   /** Tekst som sier hva regionen er. */

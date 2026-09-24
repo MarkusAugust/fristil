@@ -3,21 +3,17 @@ title: Switch
 description: Bryter for en innstilling som slår inn med en gang. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components"
 import Eksempel from "../../../components/Eksempel.astro"
 
 En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» framfor «avkrysset», mens tastaturet og `FormData` virker som for en vanlig boks.
 
 **Velg Switch** når innstillingen trer i kraft med det samme. Skal valget først gjelde når skjemaet sendes inn, er [Checkbox](../checkbox/) riktig: en bryter som ikke gjør noe før du trykker «Lagre» lover mer enn den holder.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/switch.css"
-import "@fristil/designsystem/label.css"
-```
+## Slik tar du den i bruk
 
-## Av og på
-
-<Eksempel stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Eksempel importer={["tokens.css", "switch.css", "label.css"]}
+  stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <div class="fs-switch-row">
   <input class="fs-switch" type="checkbox" role="switch" id="epost" checked />
   <label class="fs-label" for="epost">Varsle meg på e-post</label>
@@ -32,54 +28,36 @@ import "@fristil/designsystem/label.css"
   <input class="fs-switch" type="checkbox" role="switch" id="brev" disabled />
   <label class="fs-label" for="brev">Varsle meg i posten</label>
 </div>
-`} />
+`}>
+<Fragment slot="ts">
 
-## Lagring med en gang
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake:
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
-```html
-<div class="fs-switch-row">
-  <input class="fs-switch" type="checkbox" role="switch" id="varsler" />
-  <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<div className={fs.switch.row}>
+  <input {...fs.switch()} id="varsler" />
+  <label {...fs.label()} htmlFor="varsler">Varsle meg på e-post</label>
 </div>
-<p class="fs-help-text" id="varsler-status" role="status"></p>
-
-<script type="module">
-  const bryter = document.getElementById("varsler")
-  const status = document.getElementById("varsler-status")
-
-  bryter.addEventListener("change", async () => {
-    const pa = bryter.checked
-    bryter.disabled = true
-
-    try {
-      await fetch("/api/varsler", {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ epost: pa }),
-      })
-      status.textContent = pa ? "Varsler er på." : "Varsler er av."
-    } catch {
-      bryter.checked = !pa
-      status.textContent = "Klarte ikke å lagre. Prøv igjen."
-    } finally {
-      bryter.disabled = false
-    }
-  })
-</script>
 ```
 
-`role="status"` gjør at skjermlesere leser opp resultatet uten å avbryte det brukeren holder på med.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
 
-## TypeScript
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
 import { fs } from "@fristil/designsystem"
 
 const bryter = document.querySelector<HTMLInputElement>("#varsler")
 
-fs.setAttributes(bryter, fs.switch({ disabled: lagrer }))
+// Slå av mens lagringen går, så brukeren ikke rekker å trykke to ganger.
+fs.setAttributes(bryter, fs.switch({ disabled: true }))
+
+// Og på igjen når svaret er inne.
+fs.setAttributes(bryter, fs.switch())
 ```
 
 Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `fs.switch.row` gir klassen på raden rundt.
@@ -89,6 +67,118 @@ Importerer du den direkte i stedet for gjennom `fs`, heter den `switchControl`, 
 ```ts
 import { switchControl } from "@fristil/designsystem"
 ```
+
+</Fragment>
+</Eksempel>
+
+## Lagring med en gang
+
+Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
+
+<Tabs>
+  <TabItem label="Ren HTML">
+    ```html
+    <div class="fs-switch-row">
+      <input class="fs-switch" type="checkbox" role="switch" id="varsler" />
+      <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+    </div>
+    <p class="fs-help-text" id="varsler-status" role="status"></p>
+
+    <script type="module">
+      const bryter = document.getElementById("varsler")
+      const status = document.getElementById("varsler-status")
+
+      bryter.addEventListener("change", async () => {
+        const pa = bryter.checked
+        bryter.disabled = true
+
+        try {
+          await fetch("/api/varsler", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ epost: pa }),
+          })
+          status.textContent = pa ? "Varsler er på." : "Varsler er av."
+        } catch {
+          bryter.checked = !pa
+          status.textContent = "Klarte ikke å lagre. Prøv igjen."
+        } finally {
+          bryter.disabled = false
+        }
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { useState } from "react"
+    import { fs } from "@fristil/designsystem/react"
+
+    export function Varslingsbryter({ start }: { start: boolean }) {
+      const [pa, settPa] = useState(start)
+      const [lagrer, settLagrer] = useState(false)
+      const [status, settStatus] = useState("")
+
+      async function endret(nyVerdi: boolean) {
+        // Slå av med en gang, så bryteren ikke henger etter fingeren.
+        settPa(nyVerdi)
+        settLagrer(true)
+        settStatus("")
+
+        try {
+          await fetch("/api/varsler", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ epost: nyVerdi }),
+          })
+          settStatus(nyVerdi ? "Varsler er på." : "Varsler er av.")
+        } catch {
+          // Tilbake dit den var. Bryteren lovet noe den ikke holdt.
+          settPa(!nyVerdi)
+          settStatus("Klarte ikke å lagre. Prøv igjen.")
+        } finally {
+          settLagrer(false)
+        }
+      }
+
+      return (
+        <>
+          <div className={fs.switch.row}>
+            <input
+              {...fs.switch()}
+              id="varsler"
+              checked={pa}
+              disabled={lagrer}
+              onChange={(e) => endret(e.currentTarget.checked)}
+            />
+            <label {...fs.label()} htmlFor="varsler">Varsle meg på e-post</label>
+          </div>
+          <p {...fs.helpText()} role="status">{status}</p>
+        </>
+      )
+    }
+    ```
+
+    `checked` og `onChange` sammen gjør feltet kontrollert, og det er nettopp det som gjør tilbakerullingen mulig: React tegner bryteren etter tilstanden din, ikke etter det brukeren klikket.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <div class="fs-switch-row"
+         data-signals="{varsler: false, lagrer: false, status: ''}">
+      <input class="fs-switch" type="checkbox" role="switch" id="varsler"
+             data-bind:varsler
+             data-attr:disabled="$lagrer"
+             data-on:change="@put('/api/varsler')" />
+      <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+    </div>
+    <p class="fs-help-text" role="status" data-text="$status"></p>
+    ```
+
+    Serveren eier utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren eier.
+  </TabItem>
+</Tabs>
+
+`role="status"` gjør at skjermlesere leser opp resultatet uten å avbryte det brukeren holder på med.
 
 ## Klasser du kan style
 

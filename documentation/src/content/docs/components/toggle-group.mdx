@@ -7,15 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med en `<input type="radio">` inni, krympet bort visuelt. Da beholder du piltastene, `FormData` og at skjermleseren sier «2 av 3», uten at noe av det må skrives på nytt.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/toggle-group.css"
-import "@fristil/designsystem/sr-only.css"
-```
+## Slik tar du den i bruk
 
-## Velg visning
-
-<Eksempel stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<Eksempel importer={["tokens.css", "toggle-group.css", "sr-only.css"]}
+  stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
 <fieldset class="fs-toggle-group">
   <legend class="fs-sr-only">Visning</legend>
 
@@ -29,7 +24,48 @@ import "@fristil/designsystem/sr-only.css"
     <input type="radio" name="visning" value="kalender" /> Kalender
   </label>
 </fieldset>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<fieldset {...fs.toggleGroup()}>
+  <legend {...fs.srOnly()}>Visning</legend>
+  <label className={fs.toggleGroup.option}>
+    <input type="radio" name="visning" value="liste" defaultChecked />
+    Liste
+  </label>
+</fieldset>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
+if (!gruppe) throw new Error("fant ikke elementet")
+
+fs.setAttributes(gruppe, fs.toggleGroup())
+```
+
+`fs.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
+
+```ts
+gruppe.addEventListener("change", (hendelse) => {
+  const valgt = (hendelse.target as HTMLInputElement).value
+})
+```
+
+</Fragment>
+</Eksempel>
 
 `<legend>` er påkrevd selv når den er skjult. Uten den vet ikke den som hører siden hva de tre alternativene velger mellom.
 
@@ -42,24 +78,6 @@ import "@fristil/designsystem/sr-only.css"
 | Flere valg samtidig | [Checkbox](../checkbox/) |
 | Av og på for én innstilling | [Switch](../switch/) |
 | Handlinger, som «fet, kursiv, understreket» | Knapper med `aria-pressed` |
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
-
-fs.setAttributes(gruppe, fs.toggleGroup())
-```
-
-`fs.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
-
-```ts
-gruppe.addEventListener("change", (hendelse) => {
-  const valgt = (hendelse.target as HTMLInputElement).value
-})
-```
 
 ## Klasser du kan style
 

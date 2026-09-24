@@ -74,7 +74,7 @@ Byggerne i `fs` gir markupen, komponentene gir oppførselen, og de to overlapper
 import { fs } from "@fristil/designsystem"
 
 fs.errorSummary({ count: 2, id: "feil" })
-// { container: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
+// { host: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
 //   title:     { class: "fs-error-summary__title" } }
 ```
 

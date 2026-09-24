@@ -31,7 +31,7 @@ describe("fs-error-summary", () => {
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary ${attr(FEIL.container)}>
+      <fs-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
           <li><a href="#epost" id="lenke-epost">Skriv en gyldig e-postadresse</a></li>
@@ -65,8 +65,8 @@ describe("fs-error-summary", () => {
   it("skjules av serveren når det ikke er noen feil", () => {
     const tom = errorSummary({ count: 0 })
 
-    expect(tom.container.hidden).toBe(true)
-    expect(FEIL.container.hidden).toBeUndefined()
+    expect(tom.host.hidden).toBe(true)
+    expect(FEIL.host.hidden).toBeUndefined()
   })
 
   it("flytter fokus til boksen når den kommer til syne", () => {
@@ -115,7 +115,7 @@ describe("fs-error-summary i en skyggerot", () => {
     const feil = errorSummary({ count: 1 })
 
     rot.innerHTML = `
-      <fs-error-summary ${attr(feil.container)} data-autofocus="false">
+      <fs-error-summary ${attr(feil.host)} data-autofocus="false">
         <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
       </fs-error-summary>
@@ -146,7 +146,7 @@ describe("fs-error-summary når skjemaet feiler igjen", () => {
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary ${attr(FEIL.container)} hidden>
+      <fs-error-summary ${attr(FEIL.host)} hidden>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
           <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>

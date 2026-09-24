@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { fs } from "./fs"
 
 describe("fs.setAttributes", () => {
+  it("gjør ingenting når elementet er borte", () => {
+    /*
+     * `document.querySelector()` gir `Element | null`, og uten dette måtte
+     * hvert kallsted i en `strict`-app skrive en vakt rundt et oppslag som
+     * nesten alltid treffer. Den skal ikke kaste, og den skal ikke gjøre noe.
+     */
+    expect(() => fs.setAttributes(null, fs.button())).not.toThrow()
+    expect(() => fs.setAttributes(undefined, fs.button())).not.toThrow()
+  })
+
   let element: HTMLInputElement
 
   beforeEach(() => {

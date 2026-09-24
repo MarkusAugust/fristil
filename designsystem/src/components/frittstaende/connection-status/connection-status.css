@@ -1,5 +1,9 @@
 @layer fristil {
-  fs-connection-status {
+  /* Både elementet og klassen. `fs.connectionStatus()` sender ut
+     `fs-connection-status`, og en klasse en byggefunksjon reklamerer med må gjøre
+     noe. Her sto bare elementvelgeren, så klassen var død. */
+  fs-connection-status,
+  .fs-connection-status {
     display: contents;
   }
 

@@ -16,9 +16,89 @@ import "@fristil/designsystem/connection-status.css"
 defineFsConnectionStatus()
 ```
 
-## Prøv den
+## Slik tar du den i bruk
+<Tabs>
+  <TabItem label="Prøv den">
+    <ConnectionStatusDemo />
+  </TabItem>
+  <TabItem label="Ren HTML">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/connection-status/connection-status.css">
+    ```
 
-<ConnectionStatusDemo />
+    ```html
+    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsConnectionStatus } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/frittstaende/connection-status/fs-connection-status.js"
+
+      defineFsConnectionStatus()
+    </script>
+
+    <script type="module">
+      const samband = document.querySelector("fs-connection-status")
+      if (!samband) throw new Error("fant ikke elementet")
+
+      async function lagre(body) {
+        try {
+          const svar = await fetch("/api/lagre", { method: "POST", body })
+          if (!svar.ok) throw new Error(svar.statusText)
+          samband.reportSuccess()
+        } catch {
+          samband.reportFailure()
+        }
+      }
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-connection-status> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
+    ```tsx
+    import "@fristil/designsystem/connection-status.css"
+    import { fs } from "@fristil/designsystem/react"
+    import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+    import "@fristil/designsystem/tokens.css"
+
+    defineFsConnectionStatus()
+
+    export function Samband() {
+      return <fs-connection-status {...fs.connectionStatus()} />
+    }
+    ```
+
+    Hent elementet med `document.querySelector` der du gjør kallene, og kall
+    `reportFailure()` eller `reportSuccess()`.
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/connection-status/connection-status.css">
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsConnectionStatus } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/frittstaende/connection-status/fs-connection-status.js"
+
+      defineFsConnectionStatus()
+    </script>
+
+    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+    ```
+
+    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Det er nettopp da denne linja er forskjellen på en bruker som vet det og en som ikke gjør det.
+  </TabItem>
+</Tabs>
 
 ## Hvorfor den eier sitt eget innhold
 
@@ -31,13 +111,14 @@ Nettleseren vet bare om maskinen har et nettverk, ikke om serveren svarer. Et ko
 Derfor melder appen selv fra:
 
 ```ts
-const status = document.querySelector("fs-connection-status")
+const samband = document.querySelector("fs-connection-status")
+if (!samband) throw new Error("fant ikke elementet")
 
 try {
   await fetch("/api/lagre", { method: "POST", body })
-  status.reportSuccess()
+  samband.reportSuccess()
 } catch {
-  status.reportFailure()
+  samband.reportFailure()
 }
 ```
 
@@ -60,61 +141,6 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
 | `connection-lost` | Linja kommer til syne |
 | `connection-restored` | Forbindelsen er tilbake |
 
-## I en app
-
-<Tabs>
-  <TabItem label="Ren HTML">
-    ```html
-    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
-
-    <script type="module">
-      import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
-      defineFsConnectionStatus()
-
-      const status = document.querySelector("fs-connection-status")
-
-      async function lagre(body) {
-        try {
-          const svar = await fetch("/api/lagre", { method: "POST", body })
-          if (!svar.ok) throw new Error(svar.statusText)
-          status.reportSuccess()
-        } catch {
-          status.reportFailure()
-        }
-      }
-    </script>
-    ```
-  </TabItem>
-  <TabItem label="React">
-    ```tsx
-    import { fs } from "@fristil/designsystem"
-    import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
-
-    defineFsConnectionStatus()
-
-    export function Samband() {
-      return <fs-connection-status {...fs.connectionStatus()} />
-    }
-    ```
-
-    Hent elementet med `document.querySelector` der du gjør kallene, og kall
-    `reportFailure()` eller `reportSuccess()`.
-  </TabItem>
-  <TabItem label="Datastar">
-    ```html
-    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
-    ```
-
-    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Det er nettopp da denne linja er forskjellen på en bruker som vet det og en som ikke gjør det.
-  </TabItem>
-</Tabs>
-
-## Tilgjengelighet
-
-Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
-
-Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' høykontrastmodus fjernes egne farger og bakgrunner, og linja får derfor en ramme i `CanvasText`, ellers ville den vært usynlig.
-
 ## Klasser du kan style
 
 | Klasse | Hva det er |
@@ -132,3 +158,9 @@ Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' hø
   --fs-connection-status-layer: 9999;
 }
 ```
+## Tilgjengelighet
+
+Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
+
+Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' høykontrastmodus fjernes egne farger og bakgrunner, og linja får derfor en ramme i `CanvasText`, ellers ville den vært usynlig.
+

@@ -7,19 +7,49 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 En rund flate med et bilde eller initialer. Komponenten sier ingenting om hvem personen er: det gjør teksten ved siden av, eller en tekst du gir bildet.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/avatar.css"
-```
+## Slik tar du den i bruk
 
-## Størrelser og former
-
-<Eksempel stiler={["avatar"]} kode={`
+<Eksempel importer={["tokens.css", "avatar.css"]}
+  stiler={["avatar"]} kode={`
 <span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
 <span class="fs-avatar" aria-hidden="true">ON</span>
 <span class="fs-avatar" data-size="large" aria-hidden="true">ON</span>
 <span class="fs-avatar" data-variant="square" aria-hidden="true">KB</span>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const bilde = document.querySelector<HTMLElement>("#profil")
+
+fs.setAttributes(bilde, fs.avatar({ size: "large" }))
+```
+
+Lista som lar bildene overlappe har ingen attributter, bare en klasse, og den ligger på funksjonen:
+
+```tsx
+<ul className={fs.avatar.stack}>
+  <li><span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span></li>
+</ul>
+```
+
+</Fragment>
+</Eksempel>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -57,16 +87,6 @@ Står bildet alene, må det si hvem det er:
 `} />
 
 Rekkefølgen snus i CSS, så det første bildet ligger øverst uten at markupen må skrives baklengs. Navnene må stå et sted, som i teksten under: initialer er ingen identifikasjon.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const bilde = document.querySelector<HTMLElement>("#profil")
-
-fs.setAttributes(bilde, fs.avatar({ size: "large" }))
-```
 
 ## Klasser du kan style
 

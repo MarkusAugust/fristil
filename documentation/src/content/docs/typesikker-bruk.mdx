@@ -84,20 +84,6 @@ fs.button({ variant })
 
 Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
 
-## `fs.input`
-
-Skrevet for hånd må `type` og `data-variant` stemme overens, ellers skjer ingenting når brukeren trykker på ikonet.
-
-```ts
-fs.input({ type: "date" })
-// { class: "fs-input", type: "date", "data-variant": "date" }
-
-fs.input({ type: "email" })
-// { class: "fs-input", type: "email" }, e-post har ikke noe ikon
-```
-
-Én verdi styrer begge. Det samme gjelder tilstand: `state: "invalid"` gir både `data-state` og `aria-invalid`.
-
 ## Ett begrep, én betydning
 
 | Valg | Hva det betyr | Hvor |
@@ -116,66 +102,6 @@ fs.input({ state: tilstand })
 fs.textarea({ state: tilstand })
 fs.select({ state: tilstand })
 ```
-
-## `fs.field`
-
-Fem koblinger må stemme samtidig. `fs.field` regner dem ut:
-
-```ts
-const felt = fs.field({
-	id: "epost",
-	required: "symbol",
-	help: true,
-	error: true,
-	invalid: !erGyldig,
-})
-
-<label {...felt.label}>E-postadresse</label>
-<input {...fs.input({ type: "email" })} {...felt.control} />
-<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
-```
-
-Uten JSX:
-
-```ts
-fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
-fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
-fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
-```
-
-Du får `for`, `id`, `aria-describedby`, `aria-invalid` og `data-state` ferdig utregnet.
-
-Legg merke til at `fs.input` bare får `type`. Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
-
-Feilmeldingen tas med i `aria-describedby` **bare når feltet er ugyldig**. Ellers ville skjermleseren pekt på et skjult element. `felt.error` inneholder `hidden` når den ikke skal vises.
-
-:::note[Samme kjerne som `<fs-field>`]
-[Field](../components/field/) gjør samme utregning, men på elementer som allerede står i DOM-en. De deler kode, så kontrakten finnes ett sted.
-
-Velg `<fs-field>` når du skriver HTML og vil ha koblingen gjort i nettleseren. Velg `fs.field` når du rendrer i et rammeverk eller ved bygging, og heller vil ha attributtene som data.
-:::
-
-## Gjenbrukbar knapp i React
-
-```tsx
-import { fs } from "@fristil/designsystem/react"
-import type { ButtonVariant } from "@fristil/designsystem"
-import type { ComponentProps } from "react"
-
-type Props = ComponentProps<"button"> & {
-	variant?: ButtonVariant
-}
-
-export function Knapp({ variant, ...rest }: Props) {
-	return <button {...fs.button({ variant })} {...rest} />
-}
-```
-
-Bytter teamet rammeverk, er det disse tolv linjene som skrives om, ikke designsystemet.
-
-`ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
 
 ## Web-komponentene
 

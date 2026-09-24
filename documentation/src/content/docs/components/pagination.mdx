@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Navigering mellom sider i en lang liste. Hver side er en lenke med sin egen adresse, ikke en knapp: da kan brukeren åpne side tre i ny fane, kopiere adressen, og komme tilbake med tilbakeknappen.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/pagination.css"
-```
+## Slik tar du den i bruk
 
-## Sidevelgeren
-
-<Eksempel stiler={["pagination"]} layout="stabel" maxWidth="34rem" kode={`
+<Eksempel importer={["tokens.css", "pagination.css"]}
+  stiler={["pagination"]} layout="stabel" maxWidth="34rem" kode={`
 <nav aria-label="Sidenavigering">
   <ul class="fs-pagination">
     <li><a href="#" aria-label="Forrige side">Forrige</a></li>
@@ -26,13 +22,27 @@ import "@fristil/designsystem/pagination.css"
     <li><a href="#" aria-label="Neste side">Neste</a></li>
   </ul>
 </nav>
-`} />
+`}>
+<Fragment slot="ts">
 
-Et tall alene sier lite når det leses opp midt i en rekke. `aria-label="Side 3"` gjør lenken forståelig, og `aria-current="page"` sier hvilken brukeren står på.
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
-Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut med `<span aria-disabled="true">` eller la den være ute.
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
-## TypeScript
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<nav aria-label="Sidenavigering">
+  <ul {...fs.pagination()}>
+    <li><a href="?side=1" aria-current="page">1</a></li>
+    <li><a href="?side=2">2</a></li>
+  </ul>
+</nav>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
 import { fs } from "@fristil/designsystem"
@@ -43,6 +53,13 @@ fs.setAttributes(liste, fs.pagination())
 ```
 
 `fs.pagination.gap` gir klassen på hoppet i nummerrekken. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
+
+Et tall alene sier lite når det leses opp midt i en rekke. `aria-label="Side 3"` gjør lenken forståelig, og `aria-current="page"` sier hvilken brukeren står på.
+
+Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut med `<span aria-disabled="true">` eller la den være ute.
 
 ## Klasser du kan style
 

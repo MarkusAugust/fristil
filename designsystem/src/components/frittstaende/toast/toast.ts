@@ -9,7 +9,7 @@ export type ToastOptions = {
 }
 
 export type ToastAttributes = {
-  region: {
+  host: {
     role: "status"
     "aria-live": "polite"
     "aria-label": string
@@ -34,7 +34,7 @@ export type ToastAttributes = {
 export const toast = ({
   label = "Varsler",
 }: ToastOptions = {}): ToastAttributes => ({
-  region: attributes({
+  host: attributes({
     role: "status" as const,
     "aria-live": "polite" as const,
     "aria-label": label,
