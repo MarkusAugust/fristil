@@ -648,18 +648,31 @@ fs.input({ type: "email", state: "invalid" })
 <!-- 11 -->
 <section class="lysbilde">
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
-  <p>En komponent fester oppførsel på markup noen andre har skrevet, i et språk der ingen kompilator ser etter. Mangler en del, er alternativet å gjøre ingenting i stillhet, og da viser feilen seg først når noen leser siden med skjermleser.</p>
-  <p class="kodetittel">host-element.ts</p>
-  <pre>warnAboutMarkup(element, melding, stillBroken)
-<i>// Skriver console.warn én gang per element og melding,</i>
-<i>// i alle miljøer, og først etter at siden har falt til ro.</i></pre>
-  <p style="margin-block-start: 1rem;">En advarsel som ikke er til å stole på, blir slått av. Derfor er tre ting bygget inn i den:</p>
+  <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
+  <p>Den som merker feilen er den som ikke ser skjermen: feltet blir lest opp uten navn. Tidligere gjorde komponenten ingenting i slike tilfeller, og den sa heller ingenting. Nå skriver den én linje i konsollen, mens utvikleren fortsatt sitter med koden.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">Markupen som ble skrevet</p>
+      <pre>&lt;fs-field&gt;
+  &lt;input class="fs-input" id="fodselsdato"&gt;
+&lt;/fs-field&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel">Det utvikleren får se</p>
+      <pre>fs-field: fant ingen &lt;label&gt;.
+Feltet får da ingen ledetekst, og
+en skjermleser leser det opp uten navn.</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">En advarsel som gir falsk alarm blir slått av i løpet av en uke, og da er den verdiløs. Tre valg gjør at denne er til å stole på:</p>
   <ul>
-    <li><strong>Den sjekker igjen når siden har falt til ro.</strong> HTML som strømmer fra en server leveres i pakker, og et brudd midt mellom ledeteksten og feltet er helt vanlig et øyeblikk.</li>
-    <li><strong>Meldingen er den samme hver gang,</strong> uten tall eller navn i seg. Ellers er hver runde en ny melding, og den ene advarselen blir til tjue.</li>
-    <li><strong>Den peker på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin gjennom panelets id, så et panel uten id skal si nettopp det, og ikke at knappen mangler.</li>
+    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i pakker, så et øyeblikk der feltet har kommet og ledeteksten ikke har det, er helt normalt. Komponenten ser etter en gang til, og sier bare fra hvis det fortsatt er galt.</li>
+    <li><strong>Samme melding hver gang, uten tall eller navn i seg.</strong> «Fant 3 faner, men 1 panel» er en ny melding for hvert panel som dukker opp, og den ene advarselen blir til tjue.</li>
+    <li><strong>Den peker på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin ved å slå opp panelets id. Mangler id-en, er det den som skal stå i meldingen, ikke at knappen mangler, ellers leter utvikleren på feil sted.</li>
   </ul>
-  <p>To vaktposter holder dette grønt: en test per advarsel, og en sjekk som samler <code>console.warn</code> fra hver eneste bygde dokumentasjonsside. En advarsel som slår ut på våre egne eksempler feller bygget.</p>
+  <div class="boks">
+    <p style="margin: 0;">Og meldingene kan ikke råtne: en sjekk leser konsollen på hver eneste bygde dokumentasjonsside, og en advarsel som slår ut på våre egne eksempler feller bygget. Vi tåler altså ikke en eneste falsk alarm selv.</p>
+  </div>
 </section>
 
 <!-- 12 -->
@@ -887,7 +900,7 @@ fs.input({ type: "email", state: "invalid" })
       <h3>For oss som forvalter det</h3>
       <ul>
         <li>Tre nettlesermotorer i hver kjøring, og ventetid på den siste.</li>
-        <li>Tre ekte apper som må holdes i live ved siden av pakken.</li>
+        <li>Demospillet i tre utgaver må holdes i drift. Slutter det å virke, slutter vi å se feilene enhetstestene ikke tar.</li>
         <li>Navn som ikke kan døpes om i stillhet.</li>
         <li>Hver ny regel må ha en vaktpost, ellers er den glemt om en måned.</li>
       </ul>
