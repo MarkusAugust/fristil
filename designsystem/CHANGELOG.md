@@ -16,6 +16,26 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.12.1 (2026-09-24)
+
+### Rettet
+
+- **Dialogen hopper ikke lenger på plass.** En dialog serveren vil vise sendes
+  med `open`, ellers finnes ikke innholdet uten JavaScript, og nettleseren
+  legger den da i den vanlige flyten. Først når komponenten kaller
+  `showModal()` flyttes den til topplaget og midtstilles, og mellom de to
+  øyeblikkene hopper den. På en treg forbindelse er hoppet godt synlig:
+  testet i Chromium sto dialogen på topp 0 og landet på topp 128, og det ble
+  meldt fra en telefon.
+
+  `.fs-dialog[open]:not(:modal)` inne i `<fs-dialog>` plasseres nå som en
+  modal allerede før den er det, med flaten bak malt av en skygge, siden
+  `::backdrop` bare finnes i topplaget. Laget kan settes med
+  `--fs-dialog-layer`, som er 40 i utgangspunktet.
+
+  Regelen gjelder bare inne i verten. En `.fs-dialog` som brukes uten
+  komponenten, og med vilje ikke er modal, står der den står.
+
 ## 0.12.0 (2026-09-24)
 
 ### Brytende

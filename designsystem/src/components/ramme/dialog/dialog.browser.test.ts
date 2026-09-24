@@ -477,3 +477,114 @@ describe("fs-dialog", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+/**
+ * Dialogen skal stå riktig også før den er blitt en ekte modal.
+ *
+ * Serveren sender `<dialog open>` fordi innholdet ellers ikke finnes uten
+ * JavaScript. Nettleseren legger den da i den vanlige flyten, og først når
+ * komponenten kaller `showModal()` flyttes den til topplaget og midtstilles.
+ * På en treg forbindelse er hoppet mellom de to øyeblikkene godt synlig, og
+ * det ble meldt fra en telefon: dialogen sto høyt oppe i siden og landet
+ * midt på et halvt sekund senere.
+ */
+describe("dialogen før den er modal", () => {
+  /*
+   * Tilstanden testes i en ramme uten skript.
+   *
+   * Første utgave laget elementet i selve testsiden, og den var ikke til å
+   * stole på: i en full kjøring er `<fs-dialog>` alt registrert av en annen
+   * testfil, så dialogen rakk å bli modal før stilen ble lest. En ramme med
+   * bare markup og stilark er nøyaktig det serveren sender, og ingenting
+   * annet.
+   */
+  async function iRammeUtenSkript(markup: string): Promise<{
+    dialog: HTMLDialogElement
+    vindu: Window
+    rydd: () => void
+  }> {
+    const tokens = (await import("../../../tokens/tokens.css?inline")).default
+    const dialogstil = (await import("./dialog.css?inline")).default
+
+    const ramme = document.createElement("iframe")
+    ramme.width = "800"
+    ramme.height = "600"
+    ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
+    document.body.append(ramme)
+
+    await new Promise((klar) => {
+      ramme.addEventListener("load", klar, { once: true })
+    })
+
+    const dok = ramme.contentDocument as Document
+    return {
+      dialog: dok.querySelector("dialog") as HTMLDialogElement,
+      vindu: ramme.contentWindow as Window,
+      rydd: () => ramme.remove(),
+    }
+  }
+
+  it("står midt i vinduet, med flaten bak malt", async () => {
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Velkommen</h2>
+          <p>Innhold som finnes uten JavaScript.</p>
+        </dialog>
+      </fs-dialog>`)
+
+    try {
+      // Ingen skript i ramma, så dialogen er åpen uten å være modal. Det er
+      // nøyaktig tilstanden serveren sender.
+      expect(boks.matches(":modal")).toBe(false)
+      expect(boks.open).toBe(true)
+
+      const stil = vindu.getComputedStyle(boks)
+      expect(stil.position).toBe("fixed")
+
+      /*
+       * Skyggen maler flaten bak, siden `::backdrop` bare finnes i
+       * topplaget. `100vmax` leses ut som piksler, så testen ser etter en
+       * spredning som faktisk dekker ramma framfor etter teksten.
+       */
+      const spredning = Math.max(
+        ...[...stil.boxShadow.matchAll(/(\d+(?:\.\d+)?)px/g)].map((t) =>
+          Number(t[1]),
+        ),
+      )
+      expect(spredning).toBeGreaterThanOrEqual(
+        Math.max(vindu.innerWidth, vindu.innerHeight),
+      )
+
+      // Og den står midt i ramma, ikke øverst i flyten.
+      const rute = boks.getBoundingClientRect()
+      expect(
+        Math.abs(rute.top + rute.height / 2 - vindu.innerHeight / 2),
+      ).toBeLessThan(4)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("rører ikke en dialog som brukes uten komponenten", async () => {
+    // En `.fs-dialog` som står alene, og med vilje ikke er modal, skal stå
+    // der den står.
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `<dialog class="fs-dialog" open>Uten vert</dialog>`,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).position).not.toBe("fixed")
+    } finally {
+      rydd()
+    }
+  })
+})

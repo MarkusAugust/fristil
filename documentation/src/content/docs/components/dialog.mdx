@@ -173,6 +173,9 @@ I React er attributtet dessuten det eneste som stemmer når serveren rendrer dia
 | `--fs-dialog-width` | `min(32rem, 100%, calc(100vw - var(--size-8)))` |
 | `--fs-dialog-padding` | `var(--size-5)` |
 | `--fs-dialog-radius` | `var(--size-2)` |
+| `--fs-dialog-layer` | `40` |
+
+`--fs-dialog-layer` gjelder bare i det korte øyeblikket dialogen er åpen uten å være modal, altså før komponenten har kalt `showModal()`. Da ligger den ikke i topplaget ennå, og må stables som alt annet. Er dialogen først modal, ligger den over alt uansett.
 
 `100%` i bredden gjelder når dialogen ikke ligger i topplaget. En `<dialog>` åpnet med `showModal()` forholder seg til vindusruten uansett, men lager du en boks på siden av den, som i forhåndsvisningen over, ville `100vw` gjort den bredere enn boksen.
 
