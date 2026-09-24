@@ -1,6 +1,14 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest"
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import { userEvent } from "vitest/browser"
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -516,6 +524,18 @@ describe("dialogen før den er modal", () => {
       ramme.addEventListener("load", klar, { once: true })
     })
 
+    /*
+     * Vent på at ramma har en størrelse, ikke bare på `load`.
+     *
+     * `100vmax` i stilarket regnes mot rammas eget vindu, og det er null til
+     * den er lagt ut. Lokalt rakk den det før testen leste stilen, i CI ikke,
+     * og da ble skyggen null piksler bred uten at noe var galt med regelen.
+     */
+    await vi.waitFor(() => {
+      if (!(ramme.contentWindow?.innerWidth ?? 0))
+        throw new Error("ramma er ikke lagt ut")
+    })
+
     const dok = ramme.contentDocument as Document
     return {
       dialog: dok.querySelector("dialog") as HTMLDialogElement,
@@ -547,10 +567,14 @@ describe("dialogen før den er modal", () => {
       expect(stil.position).toBe("fixed")
 
       /*
-       * Skyggen maler flaten bak, siden `::backdrop` bare finnes i
-       * topplaget. `100vmax` leses ut som piksler, så testen ser etter en
-       * spredning som faktisk dekker ramma framfor etter teksten.
+       * Skyggen maler flaten bak, siden `::backdrop` bare finnes i topplaget.
+       *
+       * To lag: kortets egen skygge, og flaten. Og flaten skal faktisk dekke
+       * ramma, ikke bare stå der som en tynn kant.
        */
+      const lag = stil.boxShadow.split(/,(?![^(]*\))/)
+      expect(lag).toHaveLength(2)
+
       const spredning = Math.max(
         ...[...stil.boxShadow.matchAll(/(\d+(?:\.\d+)?)px/g)].map((t) =>
           Number(t[1]),
