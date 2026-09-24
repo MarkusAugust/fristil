@@ -53,7 +53,7 @@ kommer i et nytt undertall.
   med handlinger, og `.fs-popover` hadde ingen `list-style`. Markupen i
   dokumentasjonen skrev `data-variant="plain"` for å bøte på det, men det
   attributtet finnes bare på `.fs-list` og traff ingen regel, så panelet sto
-  med nettleserens kuler og innrykk. Nullstillingen hører i pakken og ikke
+  med nettleserens kuler. Nullstillingen hører i pakken og ikke
   hos konsumenten.
 
 - **`ref` virker på de egendefinerte elementene i JSX.** Typene bygget på

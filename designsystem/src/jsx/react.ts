@@ -68,9 +68,9 @@ type ServerControlled = {
  * dokumentasjonen anbefaler for å kalle `.show()` og `.hide()`. `key` kommer
  * samme vei.
  */
-type Vert = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
+type Host = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
 
-type FsFieldAttributes = Vert & {
+type FsFieldAttributes = Host & {
   invalid?: Flag
   disabled?: Flag
   optional?: Flag
@@ -87,9 +87,9 @@ type FsFieldAttributes = Vert & {
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = Vert & ServerControlled
+type FsTabsAttributes = Host & ServerControlled
 
-type FsErrorSummaryAttributes = Vert & {
+type FsErrorSummaryAttributes = Host & {
   /**
    * Flytt fokus hit når boksen kommer til syne. Standard: på.
    * Sett `"false"` for å la være.
@@ -97,7 +97,7 @@ type FsErrorSummaryAttributes = Vert & {
   "data-autofocus"?: "false"
 }
 
-type FsSuggestionAttributes = Vert & {
+type FsSuggestionAttributes = Host & {
   /**
    * Noen andre har alt filtrert, så komponenten skal la være.
    *
@@ -112,34 +112,34 @@ type FsSuggestionAttributes = Vert & {
   prefiltered?: Flag
 } & ServerControlled
 
-type FsDialogAttributes = Vert &
+type FsDialogAttributes = Host &
   ServerControlled & {
     /** Dialogen er åpen. Komponenten kaller `showModal()`. */
     open?: Flag
   }
 
-type FsPopoverAttributes = Vert &
+type FsPopoverAttributes = Host &
   ServerControlled & {
     open?: Flag
     /** Hvilken kant panelet henger fra. */
     placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
   }
 
-type FsSessionTimeoutAttributes = Vert & {
+type FsSessionTimeoutAttributes = Host & {
   /** Sekunder uten aktivitet før varselet kommer. */
   "warn-at"?: number | string
   /** Sekunder uten aktivitet før økten er ute. */
   "expires-at"?: number | string
 }
 
-type FsConnectionStatusAttributes = Vert & {
+type FsConnectionStatusAttributes = Host & {
   /** Teksten når forbindelsen er borte. */
   "offline-text"?: string
   /** Teksten når den kommer tilbake. */
   "online-text"?: string
 }
 
-type FsToastAttributes = Vert & {
+type FsToastAttributes = Host & {
   /** Millisekunder før meldingene forsvinner. */
   duration?: number
   /** Tekst som sier hva regionen er. */

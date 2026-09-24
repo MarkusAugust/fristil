@@ -54,9 +54,10 @@ import { fs } from "@fristil/designsystem"
 const bryter = document.querySelector<HTMLInputElement>("#varsler")
 
 // Slå av mens lagringen går, så brukeren ikke rekker å trykke to ganger.
-let lagrer = false
+fs.setAttributes(bryter, fs.switch({ disabled: true }))
 
-fs.setAttributes(bryter, fs.switch({ disabled: lagrer }))
+// Og på igjen når svaret er inne.
+fs.setAttributes(bryter, fs.switch())
 ```
 
 Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `fs.switch.row` gir klassen på raden rundt.
@@ -72,7 +73,7 @@ import { switchControl } from "@fristil/designsystem"
 
 ## Lagring med en gang
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. Markupen er den samme i alle tre; det er håndteringen som er ulik. Astro bruker det samme skriptet som «Ren HTML».
+Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
 
 <Tabs>
   <TabItem label="Ren HTML">

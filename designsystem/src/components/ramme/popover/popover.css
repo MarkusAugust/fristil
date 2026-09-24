@@ -13,7 +13,8 @@
     margin: 0;
     /* Panelet er ofte en `<ul>` med handlinger. Nullstillingen hører her og
        ikke hos konsumenten: `data-variant="plain"` traff ingen regel på
-       `.fs-popover`, så lista sto med nettleserens kuler og innrykk. */
+       `.fs-popover`, så lista sto med nettleserens kuler. Innrykket var alt borte, siden
+       `padding` settes i den samme regelen. */
     list-style: none;
     box-sizing: border-box;
     inline-size: max-content;

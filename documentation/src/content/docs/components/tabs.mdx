@@ -165,7 +165,7 @@ Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `ari
 
 ```ts
 const faner = document.querySelector("fs-tabs")
-    if (!faner) throw new Error("fant ikke elementet")
+if (!faner) throw new Error("fant ikke elementet")
 
 faner.selected // 0
 faner.select(1) // velger «Vedlegg» og sender `tab-select`

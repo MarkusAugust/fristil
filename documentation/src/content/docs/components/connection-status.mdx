@@ -41,16 +41,16 @@ defineFsConnectionStatus()
     </script>
 
     <script type="module">
-      const status = document.querySelector("fs-connection-status")
-    if (!status) throw new Error("fant ikke elementet")
+      const samband = document.querySelector("fs-connection-status")
+      if (!samband) throw new Error("fant ikke elementet")
 
       async function lagre(body) {
         try {
           const svar = await fetch("/api/lagre", { method: "POST", body })
           if (!svar.ok) throw new Error(svar.statusText)
-          status.reportSuccess()
+          samband.reportSuccess()
         } catch {
-          status.reportFailure()
+          samband.reportFailure()
         }
       }
     </script>
@@ -111,13 +111,14 @@ Nettleseren vet bare om maskinen har et nettverk, ikke om serveren svarer. Et ko
 Derfor melder appen selv fra:
 
 ```ts
-const status = document.querySelector("fs-connection-status")
+const samband = document.querySelector("fs-connection-status")
+if (!samband) throw new Error("fant ikke elementet")
 
 try {
   await fetch("/api/lagre", { method: "POST", body })
-  status.reportSuccess()
+  samband.reportSuccess()
 } catch {
-  status.reportFailure()
+  samband.reportFailure()
 }
 ```
 

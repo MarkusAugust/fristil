@@ -151,7 +151,7 @@ const HENTER = new Map<string, Set<string>>()
          * klasser kan aldri kreve dem, og da forsvant `toast.css` fra
          * toast-oppskriften uten at noe sa fra.
          */
-        for (const m of tekst.matchAll(/^\s*(fs-[a-z0-9-]+)[\s,{]/gm))
+        for (const m of tekst.matchAll(/^\s*(fs-[a-z0-9-]+)[\s,{[:.]/gm))
           if (!FRA_ELEMENT.has(m[1])) FRA_ELEMENT.set(m[1], oppf.name)
         HENTER.set(
           oppf.name,
@@ -191,6 +191,13 @@ function lukning(start: string[]): Set<string> {
  * som *nevner* `<fs-dialog>` felt CI av en grunn som ikke er en feil, og den
  * nærliggende fiksen ville vært å svekke regelen igjen.
  */
+/** Hvert kodegjerde for seg, uten kommentarer. */
+function gjerder(tekst: string): string[] {
+  return [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) =>
+    m[1].replace(/<!--[\s\S]*?-->/g, "").replace(/^\s*\/\/.*$/gm, ""),
+  )
+}
+
 function bareKode(tekst: string): string {
   const gjerder = [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) => m[1])
   // Uten kommentarene: en kommentar som *nevner* `<fs-dialog>` er ikke
@@ -200,6 +207,24 @@ function bareKode(tekst: string): string {
     .join("\n")
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/^\s*\/\/.*$/gm, "")
+}
+
+/**
+ * Stiene `exports` peker på, slik de ser ut inne i tarballen.
+ *
+ * En CDN-adresse må treffe en av dem. I sporene uten byggesteg *er* adressen
+ * oppskriften, og bare siste ledd ble kontrollert: feil mappe, feil versjon
+ * og en oppdiktet fil gikk alle grønt, fordi regexen stoppet på `@` i
+ * `@0.14.0` og inngangspunktet ble den tomme strengen.
+ */
+const FILER = new Set<string>()
+for (const mål of Object.values(
+  PAKKE.exports as Record<string, string | Record<string, string>>,
+)) {
+  if (typeof mål === "string") FILER.add(mål.slice(2))
+  else
+    for (const v of Object.values(mål))
+      if (typeof v === "string") FILER.add(v.slice(2))
 }
 
 const MED_BUNTER = new Set(["React", "Astro", "TypeScript"])
@@ -320,7 +345,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
    */
   const faner: Array<{ navn: string; kode: string; iOppskrift?: boolean }> = []
   for (const m of tekst.matchAll(
-    /<TabItem label="([^"]+)">([\s\S]*?)<\/TabItem>/g,
+    /<TabItem\s+label="([^"]+)"[^>]*>([\s\S]*?)<\/TabItem>/g,
   ))
     faner.push({ navn: m[1], kode: m[2], iOppskrift: seksjon.includes(m[2]) })
 
@@ -422,7 +447,12 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * meldingene bort.
      */
     for (const [tagg, bygger] of VERTER) {
-      const vert = fane.kode.match(new RegExp(`<${tagg}\\b[^>]*>`))
+      const verter = [
+        ...bareKode(fane.kode).matchAll(new RegExp(`<${tagg}\\b[^>]*>`, "g")),
+      ]
+      // Alle vertene, ikke bare den første, og bare i kode: en bar
+      // `<fs-toast>` i en kommentar foran den ekte verten gjorde regelen død.
+      const vert = verter.find((v) => v[0].includes("="))
       // Et bart `<fs-toast>` i en setning er prosa, ikke markup. Kravet
       // gjelder en vert som faktisk er skrevet ut, altså en med attributter.
       if (!vert || /\{\.\.\./.test(vert[0]) || !vert[0].includes("=")) continue
@@ -455,7 +485,13 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * `className` finnes bare i JSX, altså der byggefunksjonen skal kalles.
      */
     if (MED_BUNTER.has(fane.navn)) {
-      for (const m of fane.kode.matchAll(/className="(fs-[^"]*)"/g))
+      // Astro skriver `class`, React `className`. TypeScript-fanen viser
+      // med vilje serverskrevet markup, og der er `class` riktig.
+      const attributt =
+        fane.navn === "Astro"
+          ? /class="(fs-[^"]*)"/g
+          : /className="(fs-[^"]*)"/g
+      for (const m of fane.kode.matchAll(attributt))
         for (const k of m[1].split(/\s+/))
           if (FRA_BYGGER.has(k))
             si(
@@ -598,7 +634,9 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
         const funksjon = `defineFs${tagg
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`
-        if (!kode.includes(funksjon))
+        // Kallet, ikke importen: `includes` traff `import { defineFsX }`,
+        // så en oppskrift som importerte og glemte kallet gikk grønt.
+        if (!new RegExp(`\\b${funksjon}\\s*\\(`).test(kode))
           si(side, `${hvor} viser <${tagg}> uten å kalle ${funksjon}()`)
       }
     }
@@ -611,13 +649,33 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * siden feiler ved bygging. Feilen kom av at håndskrevne klasser ble
      * byttet mot byggefunksjoner uten at importen fulgte med.
      */
-    const fsKode = bareKode(fane.kode)
-    if (fane.navn !== "resten" && /\bfs\.[a-zA-Z]/.test(fsKode)) {
-      const importert =
-        /import \{[^}]*\bfs\b[^}]*\} from "@fristil\/designsystem/.test(
-          fsKode,
-        ) || /<Eksempel\b/.test(fane.kode)
-      if (!importert) si(side, `${hvor} bruker fs. uten å importere fs`)
+    if (fane.navn !== "resten" && !/<Eksempel\b/.test(fane.kode)) {
+      let importert = false
+      for (const gjerde of gjerder(fane.kode)) {
+        if (
+          /import \{[^}]*\bfs\b[^}]*\} from "@fristil\/designsystem/.test(
+            gjerde,
+          )
+        )
+          importert = true
+        if (!importert && /\bfs\.[a-zA-Z]/.test(gjerde)) {
+          si(side, `${hvor} bruker fs. uten å importere fs`)
+          break
+        }
+      }
+    }
+
+    // Hele CDN-adressen: versjonen og stien, ikke bare filnavnet.
+    for (const m of fane.kode.matchAll(
+      /cdn\.jsdelivr\.net\/npm\/@fristil\/designsystem@([^/]+)\/([^"'\s]+)/g,
+    )) {
+      if (m[1] !== PAKKE.version)
+        si(
+          side,
+          `${hvor} peker på @fristil/designsystem@${m[1]}, mens pakken står på ${PAKKE.version}`,
+        )
+      if (!FILER.has(m[2]))
+        si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
     }
 
     const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(
