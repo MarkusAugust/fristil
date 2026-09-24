@@ -54,10 +54,23 @@
    */
   fs-dialog .fs-dialog[open]:not(:modal) {
     position: fixed;
-    inset-block-start: 50%;
-    inset-inline-start: 50%;
-    translate: -50% -50%;
     z-index: var(--fs-dialog-layer, 40);
+
+    /*
+     * Samme geometri som en modal, ikke bare samme sted.
+     *
+     * `inset: 0` med `margin: auto` er nøyaktig det nettleseren selv gjør med
+     * `dialog:modal`, og de to maksmålene står i HTML-spesifikasjonens eget
+     * forslag til stilark. Uten dem er bredden vår, og i det dialogen blir
+     * modal klipper nettleseren den: testet på 390 piksler gikk den fra 358
+     * til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
+     * loddrette hoppet var borte, og et vannrett kom i stedet.
+     */
+    inset: 0;
+    margin: auto;
+    max-inline-size: calc(100% - 6px - 2em);
+    max-block-size: calc(100% - 6px - 2em);
+
     box-shadow:
       var(--semantic-shadow-overlay),
       0 0 0 100vmax var(--semantic-overlay-backdrop);

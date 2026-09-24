@@ -506,7 +506,10 @@ describe("dialogen før den er modal", () => {
    * bare markup og stilark er nøyaktig det serveren sender, og ingenting
    * annet.
    */
-  async function iRammeUtenSkript(markup: string): Promise<{
+  async function iRammeUtenSkript(
+    markup: string,
+    bredde = 800,
+  ): Promise<{
     dialog: HTMLDialogElement
     vindu: Window
     rydd: () => void
@@ -515,7 +518,7 @@ describe("dialogen før den er modal", () => {
     const dialogstil = (await import("./dialog.css?inline")).default
 
     const ramme = document.createElement("iframe")
-    ramme.width = "800"
+    ramme.width = String(bredde)
     ramme.height = "600"
     ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
     document.body.append(ramme)
@@ -589,6 +592,61 @@ describe("dialogen før den er modal", () => {
       expect(
         Math.abs(rute.top + rute.height / 2 - vindu.innerHeight / 2),
       ).toBeLessThan(4)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("flytter seg ikke når den blir modal", async () => {
+    /*
+     * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
+     *
+     * Første utgave av regelen over midtstilte dialogen, og da var det
+     * loddrette hoppet borte. Et vannrett kom i stedet: nettleserens egen
+     * regel for `dialog:modal` har et maksmål vi ikke hadde, og i det
+     * dialogen ble modal klipte den bredden. Ramma er derfor smal nok til at
+     * maksmålet faktisk slår inn, ellers etterprøver testen ingenting.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Velkommen</h2>
+          <p>Innhold som finnes uten JavaScript.</p>
+        </dialog>
+      </fs-dialog>`,
+      390,
+    )
+
+    try {
+      const før = boks.getBoundingClientRect()
+
+      /*
+       * Så smal ramme at nettleserens eget maksmål for en modal er mindre
+       * enn bredden dialogen ellers ville tatt. Uten det er det ingenting å
+       * klippe, og testen ville vært grønn også med feilen i. Maksmålet
+       * regnes med dialogens egen skriftstørrelse, siden `2em` gjør det.
+       */
+      const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
+      expect(
+        Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
+      ).toBeLessThanOrEqual(1)
+
+      boks.close()
+      boks.showModal()
+      expect(boks.matches(":modal")).toBe(true)
+
+      const etter = boks.getBoundingClientRect()
+
+      // Én piksel slingringsmonn for avrunding, ikke mer.
+      expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
+      expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
+      expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
+      expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
     } finally {
       rydd()
     }

@@ -16,6 +16,22 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.12.2 (2026-09-24)
+
+### Rettet
+
+- **Dialogen hopper heller ikke sidelengs.** 0.12.1 ga den plassen til en
+  modal før den var det, og det loddrette hoppet var borte. Et vannrett kom i
+  stedet: nettleserens eget stilark setter `max-width: calc(100% - 6px - 2em)`
+  på `dialog:modal`, og det hadde vi ikke. På en skjerm som er 390 piksler
+  bred gikk dialogen derfor fra 358 til 352 piksler i det `showModal()` kjørte,
+  og flyttet seg tre piksler mot høyre.
+
+  `.fs-dialog[open]:not(:modal)` inne i `<fs-dialog>` bruker nå `inset: 0` med
+  `margin: auto` og de to samme maksmålene, altså nøyaktig geometrien
+  nettleseren gir en modal. Testen måler boksen i begge tilstander, i en ramme
+  som er smal nok til at maksmålet slår inn, og krever at den står stille.
+
 ## 0.12.1 (2026-09-24)
 
 ### Rettet
