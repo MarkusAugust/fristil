@@ -96,6 +96,25 @@ const brudd: Brudd[] = []
 const advarsler = new Set<string>()
 
 /*
+ * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ *
+ * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
+ * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
+ * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
+ * noe er verre enn ingen vaktpost.
+ */
+function lesAntall(navn: string, standard: number): number {
+  const raa = Bun.env[navn]
+  if (raa === undefined) return standard
+  const tall = Number(raa)
+  if (!Number.isInteger(tall) || tall < 1) {
+    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+    process.exit(2)
+  }
+  return tall
+}
+
+/*
  * Sidene deles på flere faner, med én kontekst per tema.
  *
  * Kontekstene er delt etter tema og ikke etter arbeider, og det er det som
@@ -118,25 +137,6 @@ const advarsler = new Set<string>()
  * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
  * skiller den fra `sjekk-mobil.ts`, som bare venter og derfor får åtte.
  */
-/*
- * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
- *
- * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
- * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
- * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
- * noe er verre enn ingen vaktpost.
- */
-function lesAntall(navn: string, standard: number): number {
-  const raa = Bun.env[navn]
-  if (raa === undefined) return standard
-  const tall = Number(raa)
-  if (!Number.isInteger(tall) || tall < 1) {
-    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
-    process.exit(2)
-  }
-  return tall
-}
-
 const FANER_PER_TEMA = lesAntall("FANER_PER_TEMA", 2)
 
 // Én kø per tema, slik at en arbeider bare henter jobber for sitt eget tema.
@@ -287,20 +287,25 @@ await nettleser.close()
 tjener.stop()
 
 /*
- * Til slutt: ble hver side faktisk besøkt, i begge temaer?
+ * Ble hver side faktisk besøkt, i begge temaer?
  *
- * Valideringen over lukker den ene kjente veien til en tom kø, men
- * spørsmålet som betyr noe er om arbeidet ble gjort, ikke om innstillingen
- * så fornuftig ut. Denne tellingen fanger også en framtidig `break` eller
- * `continue` som hopper over sider.
+ * Spørsmålet som betyr noe er om arbeidet ble gjort. `lesAntall` validerer
+ * bare hvor mange arbeidere som startes, og sier ingenting om køen de skulle
+ * tømme, så den lukker ikke dette.
+ *
+ * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
+ * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
+ * kjøring som melder grønt uten å ha åpnet en side. Den veien er ikke
+ * teoretisk. Bygges dokumentasjonen med Astros `build.format: "file"`, heter
+ * sidene `/kom-i-gang.html` framfor `/kom-i-gang/index.html`, og globben
+ * finner ingenting.
+ *
+ * Utfallet avgjøres nederst, sammen med de andre. Avsluttet vi her, ville en
+ * ufullstendig kjøring skjult tilgjengelighetsrapporten den faktisk rakk å
+ * lage, og det er den samme feilen som er beskrevet rett under.
  */
 const forventet = sider.length * TEMAER.length
-if (sjekket !== forventet) {
-  console.error(
-    `Sjekket ${sjekket} sidevisninger, men ventet ${forventet}. Sjekken er ikke til å stole på.`,
-  )
-  process.exit(2)
-}
+const ufullstendig = forventet === 0 || sjekket !== forventet
 
 /*
  * Rapporten sorteres, fordi arbeiderne blir ferdige i tilfeldig rekkefølge.
@@ -340,4 +345,13 @@ if (advarsler.size > 0) {
   for (const a of [...advarsler].sort()) console.log(`  ${a}`)
 }
 
+if (ufullstendig) {
+  console.error(
+    forventet === 0
+      ? `\n✗ Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
+      : `\n✗ Sjekket ${sjekket} av ${forventet} sidevisninger. Sjekken er ikke til å stole på.`,
+  )
+}
+
+if (ufullstendig) process.exit(2)
 process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)

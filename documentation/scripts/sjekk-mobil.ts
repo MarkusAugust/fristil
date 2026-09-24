@@ -192,19 +192,23 @@ await nettleser.close()
 tjener.stop()
 
 /*
- * Til slutt: ble hver side faktisk besøkt?
+ * Ble hver side faktisk besøkt?
  *
- * Valideringen over lukker den ene kjente veien til en tom kø, men
- * spørsmålet som betyr noe er om arbeidet ble gjort, ikke om innstillingen
- * så fornuftig ut. Denne tellingen fanger også en framtidig `break` eller
- * `continue` som hopper over sider.
+ * Spørsmålet som betyr noe er om arbeidet ble gjort. `lesAntall` validerer
+ * bare hvor mange arbeidere som startes, og sier ingenting om køen de skulle
+ * tømme, så den lukker ikke dette.
+ *
+ * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
+ * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
+ * kjøring som melder grønt uten å ha åpnet en side. Den veien er ikke
+ * teoretisk. Bygges dokumentasjonen med Astros `build.format: "file"`, heter
+ * sidene `/kom-i-gang.html` framfor `/kom-i-gang/index.html`, og globben
+ * finner ingenting.
+ *
+ * Utfallet avgjøres nederst, slik at en ufullstendig kjøring ikke skjuler de
+ * sidene den faktisk rakk å felle.
  */
-if (sjekket !== koe.length) {
-  console.error(
-    `Sjekket ${sjekket} sider, men køen hadde ${koe.length}. Sjekken er ikke til å stole på.`,
-  )
-  process.exit(2)
-}
+const ufullstendig = koe.length === 0 || sjekket !== koe.length
 
 // Arbeiderne blir ferdige i tilfeldig rekkefølge, så rapporten sorteres for
 // at to kjøringer av den samme feilen skal se like ut.
@@ -221,7 +225,16 @@ if (funn.length > 0) {
         .join("\n") +
       "\n",
   )
-  process.exit(1)
+  if (!ufullstendig) process.exit(1)
+}
+
+if (ufullstendig) {
+  console.error(
+    koe.length === 0
+      ? `Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
+      : `Sjekket ${sjekket} av ${koe.length} sider. Sjekken er ikke til å stole på.`,
+  )
+  process.exit(2)
 }
 
 console.log(`Alt holder seg innenfor ${BREDDE} piksler.`)
