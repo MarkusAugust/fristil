@@ -6,7 +6,7 @@
 <title>Designsystemarkitektur</title>
 <style>
 /*
- * Presentasjonen om designsystemarkitektur, åttende utgave.
+ * Presentasjonen om designsystemarkitektur.
  *
  * Én fil, ingen avhengigheter, intet byggesteg. Fonten er den samme stakken
  * Skatteetaten selv oppgir for skjerm, og ikke en webfont fra et annet
@@ -233,7 +233,8 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
  * Et rutenettfelt har `auto` som minstemål, altså bredden til innholdet, og
  * en kodelinje som ikke kan brytes gjør da hele feltet bredere enn skjermen.
  * Kodeblokka fikk rulle for seg selv, men siden kunne dras sidelengs likevel.
- * Testet på 375 piksler: ti av nitten lysbilder hadde det før denne linja.
+ * Uten den blir et rutenettfelt like bredt som den lengste kodelinja, og
+ * siden kan dras sidelengs på en telefon.
  */
 .rader { display: grid; gap: 1.1rem; }
 .rader > * { min-inline-size: 0; }
@@ -726,7 +727,7 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er ikke tilfeldige: det er Skatteetatens egne farger, og de er allerede standardpaletten i Fristil.</p>
+  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er Fristils egne. De ligger nær Skatteetatens, og neste lysbilde viser hva sammenligningen med dem gir.</p>
 </section>
 
 <!-- 15 -->
@@ -751,6 +752,7 @@ fs.input({ type: "email", state: "invalid" })
 </section>
 
 <!-- 16 -->
+<!-- 17 -->
 <section class="lysbilde">
   <h2>Hva nettleseren gjør for oss</h2>
   <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
@@ -800,7 +802,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 17 -->
+<!-- 18 -->
 <section class="lysbilde">
   <h2>Hva det koster appen din</h2>
   <p>Et designsystem stiller krav til appen som tar det i bruk. Her er kravene våre, og til sammenligning kravene til et React-basert designsystem, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
@@ -828,7 +830,7 @@ fs.input({ type: "email", state: "invalid" })
   <p class="dempet" style="margin-block-start: 1rem;">Hver modul kan dessuten lastes på en server uten DOM, så <code>import { fs }</code> virker i en app med server-rendring.</p>
 </section>
 
-<!-- 18 -->
+<!-- 19 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det stemmer</h2>
   <p><strong>Førstelinja</strong> er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som sitter i en annen utgave.</p>
@@ -851,7 +853,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
   <h2>Når systemet ikke strekker til</h2>
   <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
@@ -867,7 +869,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 20 -->
+<!-- 21 -->
 <section class="lysbilde">
   <h2>Hva vi sitter igjen med</h2>
   <p class="ingress">Ett designsystem, uten rammeverk under, som virker i det vi har i dag og i det vi bytter til.</p>
