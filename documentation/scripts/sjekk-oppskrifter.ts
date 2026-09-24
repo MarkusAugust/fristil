@@ -74,7 +74,79 @@ for (const inn of inngangspunkter) {
   }
 }
 
-const MED_BUNTER = new Set(["React", "Astro"])
+/**
+ * Hver `<Eksempel>` på siden, med alt som hører til.
+ *
+ * Et enkelt regex duger ikke. `<Eksempel …/>` lukker seg selv, mens
+ * `<Eksempel …>…</Eksempel>` har barn, og et ikke-grådig søk etter `/>`
+ * stopper på den første selvlukkende taggen *inne i* eksempelet. Da ble
+ * TypeScript-blokka kappet i to, og halve den lest som markup.
+ */
+function eksempler(tekst: string): string[] {
+  const ut: string[] = []
+  let i = tekst.indexOf("<Eksempel")
+  while (i !== -1) {
+    const slutt = tekst.indexOf("</Eksempel>", i)
+    const neste = tekst.indexOf("<Eksempel", i + 9)
+    if (slutt !== -1 && (neste === -1 || slutt < neste)) {
+      ut.push(tekst.slice(i, slutt + "</Eksempel>".length))
+    } else {
+      // Selvlukkende: `/>` som avslutter selve åpningstaggen.
+      const lukk = tekst.indexOf("/>", i)
+      ut.push(tekst.slice(i, lukk === -1 ? tekst.length : lukk + 2))
+    }
+    i = neste
+  }
+  return ut
+}
+
+/**
+ * Hvilke stilark en `fs-`-klasse krever, med `@import`-lukningen regnet inn.
+ *
+ * `search.css` henter `input.css` selv, så en oppskrift som bruker
+ * `.fs-input` sammen med `.fs-search` trenger ikke begge. Uten lukningen ville
+ * regelen krevd stilark som allerede kommer med.
+ */
+const FRA_STILARK = new Map<string, string>()
+const HENTER = new Map<string, Set<string>>()
+{
+  const les = (mappe: string) => {
+    for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
+      const sti = join(mappe, oppf.name)
+      if (oppf.isDirectory()) les(sti)
+      else if (oppf.name.endsWith(".css")) {
+        const tekst = readFileSync(sti, "utf8")
+        const navn = oppf.name
+        for (const m of tekst.matchAll(/\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
+          if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], navn)
+        HENTER.set(
+          navn,
+          new Set(
+            [...tekst.matchAll(/@import "[^"]*\/([a-z-]+\.css)"/g)].map(
+              (m) => m[1],
+            ),
+          ),
+        )
+      }
+    }
+  }
+  les(join(ROT, "designsystem/src"))
+}
+
+/** Stilarkene et sett med oppgitte ark drar med seg, hele veien ned. */
+function lukning(start: string[]): Set<string> {
+  const ut = new Set<string>()
+  const kø = [...start]
+  while (kø.length) {
+    const n = kø.pop()
+    if (!n || ut.has(n)) continue
+    ut.add(n)
+    for (const h of HENTER.get(n) ?? []) kø.push(h)
+  }
+  return ut
+}
+
+const MED_BUNTER = new Set(["React", "Astro", "TypeScript"])
 
 /**
  * Verter der byggefunksjonen gir attributter komponenten ikke setter selv.
@@ -172,6 +244,29 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     /<TabItem label="([^"]+)">([\s\S]*?)<\/TabItem>/g,
   ))
     faner.push({ navn: m[1], kode: m[2] })
+
+  /*
+   * Og hver `<Eksempel>`, uansett om siden også har faner.
+   *
+   * Dette sto som en reserve som bare slo inn når siden hadde null
+   * `<TabItem>`. Da forsvant hele `<Eksempel>`-delen ut av sjekken på de ti
+   * sidene som har et `<Tabs>`-blokk et sted, og med den de håndskrevne
+   * TypeScript-blokkene. Verst var at det var stille og asymmetrisk: la noen
+   * et `<Tabs>` på en av css-sidene, slo det av sjekkingen av den sidens
+   * egen oppskrift.
+   */
+  for (const m of eksempler(tekst)) {
+    // De to halvdelene hver for seg: markupen hører til «Ren HTML», og
+    // `slot="ts"` til TypeScript. Slått sammen ville kravet om pakkenavn mot
+    // URL vært umulig å stille, siden de to har hver sin regel.
+    const ts = m.match(/<Fragment slot="ts">([\s\S]*?)<\/Fragment>/)
+    faner.push({
+      navn: "Ren HTML",
+      kode: ts ? m.replace(ts[0], "") : m,
+    })
+    if (ts) faner.push({ navn: "TypeScript", kode: ts[1] })
+  }
+
   if (faner.length === 0) faner.push({ navn: "Kode", kode: seksjon })
 
   for (const fane of faner) {
@@ -249,6 +344,50 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
               `${hvor} skriver class="${k}" for hånd, men fs.${FRA_BYGGER.get(k)} finnes. Der det er en bunter, bruk den.`,
             )
     }
+
+    /*
+     * Oppskriften må liste stilarkene markupen faktisk bruker.
+     *
+     * `importer` finnes for at fanen skal være hele oppskriften. Ni sider
+     * oppga færre ark enn markupen krevde, og søkefeltet var det tydeligste:
+     * uten `sr-only.css` blir den skjulte ledeteksten synlig tekst.
+     */
+    if (fane.navn === "Ren HTML" && /<Eksempel\b/.test(fane.kode)) {
+      const oppgitt = fane.kode.match(/importer=\{\[([^\]]*)\]\}/)
+      if (oppgitt) {
+        const har = lukning(
+          [...oppgitt[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]),
+        )
+        const savnet = new Set<string>()
+        for (const m of fane.kode.matchAll(/class="([^"]*)"/g))
+          for (const k of m[1].split(/\s+/)) {
+            const ark = FRA_STILARK.get(k)
+            if (k.startsWith("fs-") && ark && !har.has(ark)) savnet.add(ark)
+          }
+        for (const ark of savnet)
+          si(
+            side,
+            `«Ren HTML» bruker en klasse fra ${ark}, som ikke står i importer`,
+          )
+      }
+    }
+
+    /*
+     * CDN-adressen må peke på versjonen som slippes.
+     *
+     * Tolv adresser sto på `@0.13.0` i den utgaven som slapp 0.14.0. De
+     * svarte, så ingenting sa fra, men de ville pekt på en eldre pakke enn
+     * teksten rundt dem beskrev. Stien går dessuten gjennom `dist/`, som
+     * ikke står i `exports`, så `sjekk-eksport` dekker den ikke.
+     */
+    for (const m of fane.kode.matchAll(
+      /@fristil\/designsystem@(\d+\.\d+\.\d+)\//g,
+    ))
+      if (m[1] !== PAKKE.version)
+        si(
+          side,
+          `${hvor} peker på @fristil/designsystem@${m[1]}, mens pakken står på ${PAKKE.version}`,
+        )
 
     const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(
       fane.kode,

@@ -1,6 +1,16 @@
 ---
 import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
+import pakke from "../../../designsystem/package.json"
 import Preview, { type Stilark } from "./Preview.astro"
+
+/** Adressene stilarkene ligger på, lest av pakkens egen `exports`. */
+const STILARK: Record<string, string> = Object.fromEntries(
+  Object.entries(pakke.exports as Record<string, unknown>)
+    .filter(([n, m]) => n.endsWith(".css") && typeof m === "string")
+    .map(([n, m]) => [n.slice(2), (m as string).slice(2)]),
+)
+
+const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${pakke.version}`
 
 interface Props {
   /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
@@ -57,6 +67,21 @@ const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
  */
 const harTypeScript = Astro.slots.has("ts")
 
+/*
+ * Stilarkene, på den måten fanen de står i faktisk kan bruke.
+ *
+ * «Ren HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
+ * stå `import "@fristil/designsystem/tokens.css"`: en nettleser slår ikke
+ * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
+ * hører i TypeScript-fanen, der det finnes en bunter.
+ */
+const lenker = importer
+  ?.map(
+    (fil) =>
+      `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
+  )
+  .join("\n")
+
 const importlinjer = importer
   ?.map((fil) => `import "@fristil/designsystem/${fil}"`)
   .join("\n")
@@ -78,13 +103,14 @@ const importlinjer = importer
 		</Preview>
 	</TabItem>
 	<TabItem label="Ren HTML">
-		{importlinjer && <Code code={importlinjer} lang="js" />}
+		{lenker && <Code code={lenker} lang="html" />}
 		<Code code={kode.trim()} lang="html" />
 		{egenCss && <Code code={egenCss.trim()} lang="css" />}
 	</TabItem>
 	{
 		harTypeScript && (
 			<TabItem label="TypeScript">
+				{importlinjer && <Code code={importlinjer} lang="ts" />}
 				<slot name="ts" />
 			</TabItem>
 		)

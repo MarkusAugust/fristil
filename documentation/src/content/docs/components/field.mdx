@@ -44,7 +44,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsField } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/field/fs-field.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/field/fs-field.js"
 
       defineFsField()
     </script>
@@ -225,7 +225,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsField } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/field/fs-field.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/field/fs-field.js"
 
       defineFsField()
     </script>
@@ -234,6 +234,8 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     `data-attr:invalid` setter attributtet når uttrykket er sant og fjerner det når det er usant, nøyaktig slik `<fs-field>` forventer av et boolsk attributt. Ingen av forbeholdene fra React-fanen gjelder her.
   </TabItem>
 </Tabs>
+
+**`fs.input()` skal bare få `type`.** Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
 
 ## Hvorfor koblingen er vanskelig
 
@@ -250,7 +252,7 @@ Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `ar
 
 ## Som funksjon
 
-[`fs.field`](../field/) regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
+`fs.field()` regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
 
 ```tsx
 const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })

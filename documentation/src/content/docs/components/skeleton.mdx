@@ -39,7 +39,7 @@ Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermleser
 ```tsx
 import { fs } from "@fristil/designsystem/react"
 
-<div {...fs.skeleton({ variant: "circle" })} aria-hidden="true" />
+<div {...fs.skeleton({ variant: "circle" })} />
 ```
 
 Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.

@@ -163,7 +163,7 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsDialog } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/dialog/fs-dialog.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/dialog/fs-dialog.js"
 
       defineFsDialog()
     </script>
@@ -200,7 +200,7 @@ Knappen i «Prøv den» gjør det en server ellers ville gjort: setter `open` p�
 
 Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
 
-## Slik ser kortet ut
+## Uten showModal()
 
 Uten `showModal()` er markupen en boks på siden. Det er tilstanden serveren sender, og den du ser hvis JavaScript aldri kjører.
 
@@ -300,7 +300,7 @@ Importen går til `/react` her, siden eksempelet er JSX. Derfra heter nøklene `
 
 `fs.dialog.title`, `fs.dialog.body` og `fs.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../typesikker-bruk/).
 
-Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Komplett eksempel» over. Da skal du ikke sende `open` inn i `fs.dialog()`. Attributtet er serverens beskjed til `<fs-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
+Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Ren HTML»-oppskriften over. Da skal du ikke sende `open` inn i `fs.dialog()`. Attributtet er serverens beskjed til `<fs-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
 
 I React er attributtet dessuten det eneste som stemmer når serveren rendrer dialogen åpen. Komponenten setter `open` på `<dialog>` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
 

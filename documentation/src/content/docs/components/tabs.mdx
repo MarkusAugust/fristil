@@ -40,7 +40,7 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsTabs } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.13.0/dist/components/ramme/tabs/fs-tabs.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/tabs/fs-tabs.js"
 
       defineFsTabs()
     </script>
@@ -118,6 +118,8 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     `server-controlled` hører med når et signal styrer hvilken fane som vises. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
   </TabItem>
 </Tabs>
+
+`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vist seg til skriptet hadde kjørt, og innholdet hoppet når de skjulte seg selv.
 
 ## Hvilken fane som er valgt
 

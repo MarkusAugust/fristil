@@ -23,8 +23,12 @@ kommer i et nytt undertall.
 - **Verten heter `host` i alle byggefunksjonene.** Den delen serveren skriver,
   og komponenten fester seg på, het tre ting: `host` i `fs.dialog()` og
   `fs.popover()`, `region` i `fs.toast()` og `container` i `fs.errorSummary()`.
-  Tre ord for den samme tingen, og to av dem sa ikke hva den var. Nå heter den
-  `host` overalt, som er ordet arkitekturen bruker om den ellers.
+  Tre ord for den samme tingen, og to av dem sa ikke hva den var. De heter nå
+  `host`, som er ordet arkitekturen bruker om den ellers.
+
+  `fs.connectionStatus()` og `fs.sessionTimeout()` er urørt. De har bare én
+  del, og returnerer attributtene flatt, slik `fs.button()` gjør. Nøkkelen
+  finnes bare der en byggefunksjon har flere deler å skille mellom.
 
   ```diff
   - <fs-toast {...varsler.region} />

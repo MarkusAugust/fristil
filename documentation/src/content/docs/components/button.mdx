@@ -56,6 +56,26 @@ fs.setAttributes(knapp, fs.button({ variant }))
 
 Se [Typesikker bruk](../../typesikker-bruk/).
 
+### Gjenbrukbar knapp i React
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+import type { ButtonVariant } from "@fristil/designsystem"
+import type { ComponentProps } from "react"
+
+type Props = ComponentProps<"button"> & {
+  variant?: ButtonVariant
+}
+
+export function Knapp({ variant, ...rest }: Props) {
+  return <button {...fs.button({ variant })} {...rest} />
+}
+```
+
+Bytter teamet rammeverk, er det disse tolv linjene som skrives om, ikke designsystemet.
+
+`ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
+
 </Fragment>
 </Eksempel>
 

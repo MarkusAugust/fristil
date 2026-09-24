@@ -9,7 +9,7 @@ Ren CSS på et vanlig `<input>`, så nettleserens egen validering, autofyll og t
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "input.css"]}
+<Eksempel importer={["tokens.css", "input.css", "label.css"]}
   stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
 <label class="fs-label" for="epost">E-postadresse</label>
 <input class="fs-input" id="epost" type="email" placeholder="ola&#64;eksempel.no" />
@@ -47,7 +47,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email" }))
 ```
 
-`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Fellen over er ikke mulig å gå i.
+`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Med `fs.input()` er den fella ikke mulig å gå i: en verdi som ikke finnes, er en typefeil.
 
 Ved validering kaller du den på nytt med ny tilstand:
 
