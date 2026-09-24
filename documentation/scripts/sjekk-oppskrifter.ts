@@ -24,8 +24,9 @@
 
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const ROT = new URL("../..", import.meta.url).pathname
+const ROT = fileURLToPath(new URL("../..", import.meta.url))
 const SIDER = join(ROT, "documentation/src/content/docs/components")
 const PAKKE = JSON.parse(
   readFileSync(join(ROT, "designsystem/package.json"), "utf8"),
@@ -261,11 +262,11 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
    * bryteren. Leste sjekken bare oppskriften, gikk en React-fane lenger nede
    * fri, og det er den samme koden en leser limer inn.
    */
-  const faner: Array<{ navn: string; kode: string }> = []
+  const faner: Array<{ navn: string; kode: string; iOppskrift?: boolean }> = []
   for (const m of tekst.matchAll(
     /<TabItem label="([^"]+)">([\s\S]*?)<\/TabItem>/g,
   ))
-    faner.push({ navn: m[1], kode: m[2] })
+    faner.push({ navn: m[1], kode: m[2], iOppskrift: seksjon.includes(m[2]) })
 
   /*
    * Og hver `<Eksempel>`, uansett om siden også har faner.
@@ -285,8 +286,17 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     faner.push({
       navn: "Ren HTML",
       kode: ts ? m.replace(ts[0], "") : m,
+      iOppskrift: seksjon.includes(m),
     })
-    if (ts) faner.push({ navn: "TypeScript", kode: ts[1] })
+    // `importer` hører til begge halvdelene: den sier hvilke stilark
+    // eksempelet trenger, uansett hvilken fane de vises i.
+    const erklaering = m.match(/importer=\{\[[^\]]*\]\}/)?.[0] ?? ""
+    if (ts)
+      faner.push({
+        navn: "TypeScript",
+        kode: erklaering + ts[1],
+        iOppskrift: seksjon.includes(m),
+      })
   }
 
   /*
@@ -422,7 +432,19 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
 
     // «resten» er prosa rundt oppskriften, ikke en oppskrift i seg selv, og
     // skal ikke måtte gjenta stilarkene seksjonen over alt har oppgitt.
-    if (fane.navn !== "resten" && oppgitt.size > 0 && brukteKlasser.size > 0) {
+    /*
+     * `oppgitt.size > 0` sto her, og var det samme stille passet en gang til:
+     * en fane som ikke oppga stilark i det hele tatt gikk fri, mens en som
+     * oppga for få ble felt. Tabs-fanene for React og Astro sto slik.
+     */
+    /*
+     * Bare oppskriften.
+     *
+     * Senere eksempler på siden er illustrasjoner, ikke hele oppskrifter, og
+     * skal ikke gjenta importene seksjonen øverst alt har gitt. Der er det
+     * `stiler` på `<Eksempel>` som styrer hva forhåndsvisningen laster.
+     */
+    if (fane.iOppskrift && brukteKlasser.size > 0) {
       const har = lukning([...oppgitt])
       const savnet = new Set<string>()
       for (const k of brukteKlasser) {
@@ -431,6 +453,46 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
       }
       for (const ark of savnet)
         si(side, `${hvor} bruker en klasse fra ${ark}, som ikke er oppgitt`)
+    }
+
+    /*
+     * En oppskrift som viser et `<fs-…>` må registrere det.
+     *
+     * Fem Datastar-faner viste markupen og ingenting mer. Elementet er da en
+     * tom vert: ingen tastatur, ingen fokus, ingen hendelser. Registreringen
+     * sto i en egen blokk lenger nede på siden, og den kjører ikke i en side
+     * uten byggesteg bare fordi den står i teksten.
+     *
+     * «Prøv den» er unntatt: der er det Astro som har registrert den, og
+     * «resten» fordi prosa ikke er en oppskrift.
+     */
+    if (fane.navn !== "Prøv den" && fane.navn !== "resten") {
+      const verter = new Set(
+        [...fane.kode.matchAll(/<(fs-[a-z-]+)[\s>]/g)].map((m) => m[1]),
+      )
+      for (const tagg of verter) {
+        const funksjon = `defineFs${tagg
+          .slice(3)
+          .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`
+        if (!fane.kode.includes(funksjon))
+          si(side, `${hvor} viser <${tagg}> uten å kalle ${funksjon}()`)
+      }
+    }
+
+    /*
+     * Bruker fanen `fs.`, må den importere det.
+     *
+     * Astro-fanen på feltsiden kalte `fs.input()` og `fs.errorText()` mens
+     * frontmatteren bare importerte stilark. Limt inn er `fs` udefinert, og
+     * siden feiler ved bygging. Feilen kom av at håndskrevne klasser ble
+     * byttet mot byggefunksjoner uten at importen fulgte med.
+     */
+    if (fane.navn !== "resten" && /\bfs\.[a-zA-Z]/.test(fane.kode)) {
+      const importert =
+        /import \{[^}]*\bfs\b[^}]*\} from "@fristil\/designsystem/.test(
+          fane.kode,
+        ) || /<Eksempel\b/.test(fane.kode)
+      if (!importert) si(side, `${hvor} bruker fs. uten å importere fs`)
     }
 
     const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(

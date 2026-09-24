@@ -143,6 +143,12 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/toast/toast.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
+
     <fs-toast id="meldinger" role="status" aria-live="polite"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 

@@ -81,6 +81,10 @@ defineFsErrorSummary()
   </TabItem>
   <TabItem label="React">
     ```tsx
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/error-summary.css"
+    import "@fristil/designsystem/list.css"
+
     import { fs } from "@fristil/designsystem/react"
     import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
 
@@ -106,6 +110,10 @@ defineFsErrorSummary()
   </TabItem>
   <TabItem label="Astro">
     ```astro
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/error-summary.css"
+    import "@fristil/designsystem/list.css"
+
     ---
     import { fs } from "@fristil/designsystem"
 
@@ -127,6 +135,20 @@ defineFsErrorSummary()
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/error-summary/error-summary.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/list/list.css">
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsErrorSummary } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/error-summary/fs-error-summary.js"
+
+      defineFsErrorSummary()
+    </script>
+
     <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
       <h2 class="fs-error-summary__title"></h2>
       <ul class="fs-list"></ul>

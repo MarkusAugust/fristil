@@ -131,6 +131,22 @@ defineFsSuggestion()
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/label/label.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/input/input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/sr-only/sr-only.css">
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsSuggestion } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/suggestion/fs-suggestion.js"
+
+      defineFsSuggestion()
+    </script>
+
     <fs-suggestion prefiltered
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
