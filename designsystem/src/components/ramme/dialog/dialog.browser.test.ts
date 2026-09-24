@@ -726,28 +726,65 @@ describe("dialogen før den er modal", () => {
     }
   })
 
-  it("lar dialogen være en blokk når kroppen ikke er et direkte barn", async () => {
+  it("holder en lukket dialog skjult, også med kropp", async () => {
     /*
-     * Kolonnen slås på av `:has(> .fs-dialog__body)`, og det vilkåret er med
-     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
-     * marger mellom avsnitt skal fortsatt falle sammen, og en knapp som står
-     * rett i dialogen skal beholde bredden sin framfor å bli en egen rad.
+     * Kolonnen ga klassen en `display`, og en forfatterregel slår nettleserens
+     * eget stilark uansett lag og spesifisitet. Uten at den skjulte tilstanden
+     * ble tatt tilbake, sto en lukket dialog som et kort oppå innholdet rundt:
+     * fra sidelasting for alt som sender dialogen lukket, og etter hver
+     * lukking. Det er den anbefalte bruken med JavaScript.
      */
     const {
       dialog: boks,
       vindu,
       rydd,
-    } = await iRammeUtenSkript(
-      `
+    } = await iRammeUtenSkript(`
+      <fs-dialog>
+        <dialog class="fs-dialog">
+          <h2 class="fs-dialog__title">Slette søknaden?</h2>
+          <div class="fs-dialog__body">
+            <p>Søknaden og vedleggene blir borte.</p>
+          </div>
+        </dialog>
+      </fs-dialog>`)
+
+    try {
+      expect(boks.open).toBe(false)
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+
+      // Og den kommer tilbake når den åpnes, som en kolonne.
+      boks.showModal()
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+
+      // Og forsvinner igjen etter lukking, som er der den ble stående.
+      boks.close()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når den ikke har en kropp", async () => {
+    /*
+     * Kolonnen slås på av `:has(> .fs-dialog__body)`, og det vilkåret er med
+     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
+     * en knapp som står rett i dialogen skal beholde bredden sin framfor å bli
+     * en egen rad i full bredde.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
       <fs-dialog>
         <dialog class="fs-dialog" open>
           <h2 class="fs-dialog__title">Vilkår</h2>
           <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
           <button class="fs-button" type="button">Lukk</button>
         </dialog>
-      </fs-dialog>`,
-      800,
-    )
+      </fs-dialog>`)
 
     try {
       expect(vindu.getComputedStyle(boks).display).toBe("block")
@@ -757,6 +794,42 @@ describe("dialogen før den er modal", () => {
       expect(bredde).toBeGreaterThan(0)
       // Ikke strukket til full bredde slik et flekselement ville blitt.
       expect(bredde).toBeLessThan(boks.getBoundingClientRect().width / 2)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når kroppen er pakket inn", async () => {
+    /*
+     * Det dokumentasjonen lover i tabellen over klassene: kroppen må være et
+     * direkte barn. Er den pakket inn, i et `<form>` for eksempel, er det
+     * dialogen som ruller, som før kolonnen kom. Da forsvinner overskriften ut
+     * av syne, og det er grunnen til at vilkåret står skrevet.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <form method="dialog">
+            <h2 class="fs-dialog__title">Vilkår</h2>
+            <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          </form>
+        </dialog>
+      </fs-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+      expect(kropp.scrollHeight).toBeLessThanOrEqual(kropp.clientHeight + 1)
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
     } finally {
       rydd()
     }

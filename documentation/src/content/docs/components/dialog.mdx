@@ -128,6 +128,8 @@ Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ titleId, 
 
 Inne i `<fs-dialog>` er en slik dialog stylet som en modal allerede før den er det: midt i vinduet, med flaten bak malt av en skygge, siden `::backdrop` bare finnes i topplaget. Den har også det samme maksmålet på bredden som nettleseren gir en modal. Da er geometrien den samme i begge tilstandene, og dialogen står stille i det komponenten kaller `showModal()`, også på en side som bruker tid på å laste. Laget kan settes med `--fs-dialog-layer`.
 
+Ett forbehold: dialogen er fastposisjonert før den blir modal, mens en ekte modal ligger i topplaget. Står den inne i et element med `transform`, `filter` eller `contain: layout`, er det elementet som blir utgangspunktet for den første, og vinduet for den andre. Da hopper den likevel. Testet i Chromium på 390 piksler: 48 piksler sidelengs og 110 loddrett med `contain: layout` på en forelder. La dialogen stå utenfor slike elementer.
+
 Utenfor verten gjelder dette ikke. En `.fs-dialog` med `open`, uten `<fs-dialog>` rundt, står der den står i flyten, slik nettleserens egen stil gjør det.
 
 ## TypeScript

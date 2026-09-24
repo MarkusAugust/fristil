@@ -42,6 +42,12 @@ kommer i et nytt undertall.
   er nå en kolonne, og da krymper kroppen og ruller mens tittelen og knappene
   blir stående. Det er også det dokumentasjonen har sagt hele tiden.
 
+  Regelen tar samtidig tilbake det den tok: en `<dialog>` uten `open` er skjult
+  av nettleserens eget stilark, og en forfatterregel med `display` slår den
+  uansett lag og spesifisitet. `dialog.fs-dialog:not([open])` setter
+  `display: none` igjen, ellers ville en lukket dialog stått som et kort oppå
+  innholdet rundt, fra sidelasting og etter hver lukking.
+
   Vilkåret i selektoren er en del av oppførselen, og står nå i tabellen over
   klassene. Kolonnen virker bare når kroppen er et direkte barn, og den endrer
   samtidig hvordan alt annet legger seg: marger mellom avsnitt slutter å falle
