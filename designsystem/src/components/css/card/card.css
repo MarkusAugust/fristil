@@ -15,13 +15,13 @@
   .fs-card__title {
     margin: 0;
     font-size: var(--font-size-l);
-    font-weight: 600;
-    line-height: 1.4;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--semantic-line-height-compact);
   }
 
   .fs-card p {
     margin: 0;
-    line-height: 1.6;
+    line-height: var(--semantic-line-height-article);
   }
 
   .fs-card[data-variant="filled"] {

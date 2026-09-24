@@ -21,7 +21,7 @@
     padding: var(--fs-dialog-padding, var(--size-5));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
     background: var(--semantic-page-background);
     border: 1px solid var(--semantic-divider-30);
@@ -38,8 +38,8 @@
   .fs-dialog__title {
     margin: 0 0 var(--size-2);
     font-size: var(--font-size-l);
-    font-weight: 600;
-    line-height: 1.4;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--semantic-line-height-compact);
   }
 
   .fs-dialog__body {

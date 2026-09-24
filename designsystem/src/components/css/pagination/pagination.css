@@ -49,7 +49,7 @@
     color: var(--semantic-interactive-contrast);
     background: var(--semantic-interactive-main);
     border-color: var(--semantic-interactive-main);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .fs-pagination button:disabled,

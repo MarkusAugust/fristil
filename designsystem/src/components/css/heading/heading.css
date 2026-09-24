@@ -2,8 +2,11 @@
   .fs-heading {
     margin: 0;
     font-family: inherit;
-    font-weight: 700;
-    line-height: 1.2;
+    font-weight: var(--fs-heading-font-weight, var(--font-weight-bold));
+    line-height: var(
+      --fs-heading-line-height,
+      var(--semantic-line-height-heading)
+    );
     color: var(--semantic-page-foreground);
     text-wrap: balance;
     font-size: var(--font-size-xl);

@@ -14,6 +14,16 @@
     --font-size-xl: 1.375rem;
     --font-size-xxl: 1.875rem;
     --font-size-mega: 2.625rem;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* semantic-line */
+    --semantic-line-height-default: 1.5;
+    --semantic-line-height-heading: 1.2;
+    --semantic-line-height-article: 1.6;
+    --semantic-line-height-compact: 1.4;
 
     /* size */
     --size-px: 1px;

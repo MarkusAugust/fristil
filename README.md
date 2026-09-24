@@ -62,10 +62,14 @@ Nettleserne hentes med `bun --filter @fristil/designsystem nettlesere`.
 1. Lag mappa under riktig kategori, med komponenten, stilarket og en `*.browser.test.ts` ved siden av.
 2. Legg til `exports`-oppføringer i `designsystem/package.json`, både CSS og JS.
 3. Eksporter fra `designsystem/src/index.ts` hvis den skal med i `fs`.
-4. Legg stilarket inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
-5. Skriv komponentsiden under `documentation/src/content/docs/components/` og legg den i sidebaren i `documentation/astro.config.mjs`.
+4. Legg byggefunksjonen inn i `designsystem/src/react.ts`, med React-navnene på attributtene.
+5. Deklarer elementet og egenskapene i `designsystem/src/jsx/react.ts`.
+6. Legg stilarket inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
+7. Skriv komponentsiden under `documentation/src/content/docs/components/` og legg den i sidebaren i `documentation/astro.config.mjs`.
 
-Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
+Steg 4 og 5 er ikke valgfrie: `react.browser.test.ts` krever at hver funksjon i `fs` finnes i `/react`, og en test leser `static properties` fra komponentene og krever at hvert attributt er deklarert for JSX.
+
+Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 | Sjekk | Hva den krever |
 | --- | --- |
@@ -73,6 +77,8 @@ Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 | `fs.browser.test.ts` | Hver bygger i `fs` gir en klasse og ingen `undefined`-attributter |
 | `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
 | `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har |
+| `react.browser.test.ts` | Hver byggefunksjon finnes i `/react`, og ingen sender ut et attributt React staver annerledes |
+| `sjekk-skriving.ts` | All skriving i en `ramme`-komponent går gjennom `setAttr`, `setFlag` og `addClass` |
 
 ### Navnekonvensjoner
 
@@ -82,7 +88,7 @@ Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 | Egendefinert element | `fs-` + kebab-case | `<fs-session-timeout>` |
 | Klasse | `Fs` + PascalCase | `FsSessionTimeout` |
 | Registreringsfunksjon | `defineFs` + PascalCase | `defineFsSessionTimeout()` |
-| Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_DATE_FIELD_TAG` |
+| Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_SESSION_TIMEOUT_TAG` |
 | Variant | `data-variant` | `data-variant="secondary"` |
 | Tilstand | `data-state` | `data-state="invalid"` |
 
@@ -90,7 +96,7 @@ Fire sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 **Bruk alltid tokens i CSS:** `var(--semantic-…)`, `var(--size-…)`. Hardkodede farger og pikselverdier hører ikke hjemme i en komponent.
 
-**Registrer web components i en eksportert `defineFs*`-funksjon**, ikke med `@customElement`-dekoratoren. Da bestemmer konsumenten når elementet registreres, og pakken får ingen bivirkninger ved import.
+**Registrer web components i en eksportert `defineFs*`-funksjon**, som går gjennom `defineElement`. Da bestemmer konsumenten når elementet registreres, pakken får ingen bivirkninger ved import, og modulen kan lastes på en server uten DOM.
 
 ## Tokens
 

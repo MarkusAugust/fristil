@@ -3,7 +3,7 @@
     color: var(--semantic-interactive-main);
     font-family: inherit;
     font-size: inherit;
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     text-decoration-line: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.14em;

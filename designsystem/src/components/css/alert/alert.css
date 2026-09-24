@@ -7,7 +7,7 @@
     padding: var(--fs-alert-padding, var(--size-3) var(--size-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: 1.5;
+    line-height: var(--semantic-line-height-default);
     color: var(--semantic-page-foreground);
     background: var(--semantic-neutral-background);
     border-radius: var(--fs-alert-radius, var(--size-1));
@@ -20,8 +20,8 @@
   .fs-alert__title {
     margin: 0;
     font-size: var(--font-size-m);
-    font-weight: 600;
-    line-height: 1.5;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--semantic-line-height-default);
   }
 
   .fs-alert p {
