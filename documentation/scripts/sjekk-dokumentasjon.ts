@@ -180,11 +180,16 @@ for (const { navn, sti } of komponentmapper()) {
 
   if (oppskriftStart === -1) {
     avvik.push({ hvor, hva: "mangler seksjonen «Slik tar du den i bruk»" })
-  } else if (
-    !/@fristil\/designsystem/.test(oppskrift) &&
-    !/importer=\{/.test(oppskrift)
-  ) {
-    avvik.push({ hvor, hva: "viser ikke hva som skal importeres" })
+  } else if (!/\.css/.test(oppskrift) && !/importer=\{/.test(oppskrift)) {
+    /*
+     * Et stilark, ikke bare pakkenavnet.
+     *
+     * Regelen krevde før at oppskriften nevnte `@fristil/designsystem`, og
+     * `tabs.mdx` gikk grønn på `@fristil/designsystem/tabs`, altså
+     * JavaScript-modulen, uten å nevne `tabs.css` med et ord. Leseren som
+     * fulgte oppskriften fikk ustylede faner.
+     */
+    avvik.push({ hvor, hva: "sier ikke hvilke stilark oppskriften trenger" })
   }
 
   // Komponenter som ikke rendrer noe selv, som <fs-field>, har ingenting å

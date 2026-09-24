@@ -24,6 +24,14 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
   </TabItem>
   <TabItem label="Ren HTML">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/tabs/tabs.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/paragraph/paragraph.css">
+    ```
+
+    ```html
     <fs-tabs id="saksfaner">
       <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
         <button id="sak-tab-0" role="tab" type="button" aria-selected="true"

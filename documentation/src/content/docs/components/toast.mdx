@@ -28,6 +28,14 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   </TabItem>
   <TabItem label="Ren HTML">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/frittstaende/toast/toast.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
+    ```
+
+    ```html
     <fs-toast id="meldinger" role="status" aria-live="polite"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
@@ -146,7 +154,6 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     </button>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsToast } from
         "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/frittstaende/toast/fs-toast.js"
@@ -179,7 +186,7 @@ Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet
 <fs-toast {...varsler.host} />
 ```
 
-Sprer du hele `varsler`, setter du tre attributter som heter `host`, `toast` og `close`, og ingen av de ekte. Beholderen står da uten `role="status"`, og ingen skjermleser leser opp det som kommer i den.
+Sprer du hele `varsler`, setter du tre attributter som heter `host`, `toast` og `close`, og ingen av de ekte. Beholderen står da uten `role="status"` til `defineFsToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
 
 De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
 
@@ -193,24 +200,6 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 `data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
 
 `data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-og-oppforsel/#de-frittstående-komponentene).
-
-## Meldinger
-
-```html
-<fs-toast id="meldinger" label="Meldinger"></fs-toast>
-
-<script type="module">
-  import { defineFsToast } from "@fristil/designsystem/toast"
-  defineFsToast()
-
-  const meldinger = document.getElementById("meldinger")
-
-  document.getElementById("lagre").addEventListener("click", async () => {
-    await lagre()
-    meldinger.show("Søknaden er lagret", { color: "success" })
-  })
-</script>
-```
 
 ## Attributter og metoder
 

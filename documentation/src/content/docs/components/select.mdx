@@ -52,6 +52,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs, type FieldState } from "@fristil/designsystem"
 
 const felt = document.querySelector<HTMLSelectElement>("#fylke")
+if (!felt) throw new Error("fant ikke elementet")
 
 felt.addEventListener("change", () => {
   const tilstand: FieldState = felt.value === "" ? "invalid" : "default"

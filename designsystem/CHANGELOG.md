@@ -28,7 +28,9 @@ kommer i et nytt undertall.
 
   `fs.connectionStatus()` og `fs.sessionTimeout()` er urørt. De har bare én
   del, og returnerer attributtene flatt, slik `fs.button()` gjør. Nøkkelen
-  finnes bare der en byggefunksjon har flere deler å skille mellom.
+  finnes der verten selv bærer attributter. `fs.field()`, `fs.tabs()` og
+  `fs.suggestion()` har mange deler og ingen `host`, fordi verten deres
+  ikke har noe å bære.
 
   ```diff
   - <fs-toast {...varsler.region} />
@@ -36,6 +38,14 @@ kommer i et nytt undertall.
   - <fs-error-summary {...feil.container}>
   + <fs-error-summary {...feil.host}>
   ```
+
+### Lagt til
+
+- **`setAttributes` tar `null`.** `document.querySelector()` gir
+  `Element | null`, så hvert eneste kallsted i en `strict`-app måtte skrive en
+  vakt eller et utropstegn rundt et oppslag som nesten alltid treffer. Den gjør
+  nå ingenting på `null`, som `element?.classList`. Parameteren er utvidet, så
+  ingen kallsteder brytes.
 
 ### Rettet
 

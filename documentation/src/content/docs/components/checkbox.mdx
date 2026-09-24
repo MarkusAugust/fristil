@@ -54,6 +54,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs, type FieldState } from "@fristil/designsystem"
 
 const boks = document.querySelector<HTMLInputElement>("#bekreft")
+if (!boks) throw new Error("fant ikke elementet")
 
 boks.addEventListener("change", () => {
   const tilstand: FieldState = boks.checked ? "default" : "invalid"

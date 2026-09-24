@@ -77,25 +77,41 @@ for (const inn of inngangspunkter) {
 /**
  * Hver `<Eksempel>` på siden, med alt som hører til.
  *
- * Et enkelt regex duger ikke. `<Eksempel …/>` lukker seg selv, mens
- * `<Eksempel …>…</Eksempel>` har barn, og et ikke-grådig søk etter `/>`
- * stopper på den første selvlukkende taggen *inne i* eksempelet. Da ble
- * TypeScript-blokka kappet i to, og halve den lest som markup.
+ * Dette må parses, ikke matches. Et regex på `/>` stopper på den første
+ * selvlukkende taggen *inne i* eksempelet, og på ni sider er det et
+ * `<input … />` i markupen. Alt bak det punktet ble aldri lest, som er
+ * nøyaktig hullet denne funksjonen finnes for å lukke. Første forsøk flyttet
+ * feilen fra den ene taggformen til den andre.
+ *
+ * Så: skann fram til `>` som faktisk avslutter åpningstaggen, altså det som
+ * står utenfor `{…}` og utenfor en malstreng. Er tegnet foran en skråstrek,
+ * lukker taggen seg selv. Ellers hører alt fram til `</Eksempel>` med.
  */
 function eksempler(tekst: string): string[] {
   const ut: string[] = []
-  let i = tekst.indexOf("<Eksempel")
-  while (i !== -1) {
-    const slutt = tekst.indexOf("</Eksempel>", i)
-    const neste = tekst.indexOf("<Eksempel", i + 9)
-    if (slutt !== -1 && (neste === -1 || slutt < neste)) {
-      ut.push(tekst.slice(i, slutt + "</Eksempel>".length))
-    } else {
-      // Selvlukkende: `/>` som avslutter selve åpningstaggen.
-      const lukk = tekst.indexOf("/>", i)
-      ut.push(tekst.slice(i, lukk === -1 ? tekst.length : lukk + 2))
+  for (let i = tekst.indexOf("<Eksempel"); i !== -1; ) {
+    let dybde = 0
+    let iMal = false
+    let j = i + "<Eksempel".length
+    for (; j < tekst.length; j++) {
+      const c = tekst[j]
+      if (c === "`") iMal = !iMal
+      else if (iMal) continue
+      else if (c === "{") dybde++
+      else if (c === "}") dybde--
+      else if (c === ">" && dybde === 0) break
     }
-    i = neste
+    if (tekst[j - 1] === "/") {
+      ut.push(tekst.slice(i, j + 1))
+    } else {
+      const slutt = tekst.indexOf("</Eksempel>", j)
+      ut.push(
+        slutt === -1
+          ? tekst.slice(i, j + 1)
+          : tekst.slice(i, slutt + "</Eksempel>".length),
+      )
+    }
+    i = tekst.indexOf("<Eksempel", j)
   }
   return ut
 }
@@ -110,17 +126,16 @@ function eksempler(tekst: string): string[] {
 const FRA_STILARK = new Map<string, string>()
 const HENTER = new Map<string, Set<string>>()
 {
-  const les = (mappe: string) => {
+  const lesArk = (mappe: string) => {
     for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
-      const sti = join(mappe, oppf.name)
-      if (oppf.isDirectory()) les(sti)
+      const p = join(mappe, oppf.name)
+      if (oppf.isDirectory()) lesArk(p)
       else if (oppf.name.endsWith(".css")) {
-        const tekst = readFileSync(sti, "utf8")
-        const navn = oppf.name
+        const tekst = readFileSync(p, "utf8")
         for (const m of tekst.matchAll(/\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
-          if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], navn)
+          if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], oppf.name)
         HENTER.set(
-          navn,
+          oppf.name,
           new Set(
             [...tekst.matchAll(/@import "[^"]*\/([a-z-]+\.css)"/g)].map(
               (m) => m[1],
@@ -130,7 +145,7 @@ const HENTER = new Map<string, Set<string>>()
       }
     }
   }
-  les(join(ROT, "designsystem/src"))
+  lesArk(join(ROT, "designsystem/src"))
 }
 
 /** Stilarkene et sett med oppgitte ark drar med seg, hele veien ned. */
@@ -267,6 +282,23 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     if (ts) faner.push({ navn: "TypeScript", kode: ts[1] })
   }
 
+  /*
+   * Og resten av siden.
+   *
+   * Sjekken leste bare `<TabItem>` og `<Eksempel>`, så en kodeblokk som sto
+   * utenfor begge gikk fri. Toast-siden hadde en slik: den gjentok
+   * «Ren HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
+   * uten bunter og uten `data-ignore-morph`, tre avsnitt etter at siden
+   * skriver at attributtet ikke er valgfritt.
+   *
+   * Fanenavnet er «resten», ikke et miljø, så regelen om pakkenavn mot URL
+   * stilles ikke her: en prosablokk kan med rette nevne pakkenavnet. Det
+   * som gjelder er at klasser, byggefunksjoner og adresser finnes.
+   */
+  let resten = tekst
+  for (const f of faner) resten = resten.replace(f.kode, "")
+  faner.push({ navn: "resten", kode: resten })
+
   if (faner.length === 0) faner.push({ navn: "Kode", kode: seksjon })
 
   for (const fane of faner) {
@@ -314,7 +346,9 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      */
     for (const [tagg, bygger] of VERTER) {
       const vert = fane.kode.match(new RegExp(`<${tagg}\\b[^>]*>`))
-      if (!vert || /\{\.\.\./.test(vert[0])) continue
+      // Et bart `<fs-toast>` i en setning er prosa, ikke markup. Kravet
+      // gjelder en vert som faktisk er skrevet ut, altså en med attributter.
+      if (!vert || /\{\.\.\./.test(vert[0]) || !vert[0].includes("=")) continue
       for (const attributt of kreves(bygger)) {
         if (!vert[0].includes(attributt))
           si(
@@ -396,6 +430,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     if (
       !MED_BUNTER.has(fane.navn) &&
       fane.navn !== "Kode" &&
+      fane.navn !== "resten" &&
       fane.navn !== "Prøv den"
     ) {
       if (pakkenavnIImport && !urlIImport)

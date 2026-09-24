@@ -31,6 +31,13 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
   </TabItem>
   <TabItem label="Ren HTML">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/field/field.css">
+    ```
+
+    ```html
     <form id="kontaktskjema">
       <fs-field id="navn-felt" required-marker="symbol">
         <label>Fullt navn</label>

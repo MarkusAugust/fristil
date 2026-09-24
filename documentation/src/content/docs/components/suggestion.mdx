@@ -31,6 +31,14 @@ defineFsSuggestion()
   </TabItem>
   <TabItem label="Ren HTML">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/label/label.css">
+    ```
+
+    ```html
     <fs-suggestion id="kommunesok">
       <label class="fs-label" for="kommune">Kommune</label>
       <div class="fs-suggestion__field">
@@ -84,7 +92,7 @@ defineFsSuggestion()
                 <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
               ))}
             </ul>
-            <p {...forslag.empty} hidden>Ingen treff</p>
+            <p {...forslag.empty}>Ingen treff</p>
             <span {...forslag.status} />
           </div>
         </fs-suggestion>
@@ -110,7 +118,7 @@ defineFsSuggestion()
         <ul {...forslag.list}>
           {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
         </ul>
-        <p {...forslag.empty} hidden>Ingen treff</p>
+        <p {...forslag.empty}>Ingen treff</p>
         <span {...forslag.status}></span>
       </div>
     </fs-suggestion>

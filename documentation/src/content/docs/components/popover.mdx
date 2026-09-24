@@ -33,6 +33,15 @@ defineFsPopover()
   </TabItem>
   <TabItem label="Ren HTML">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/list/list.css">
+    ```
+
+    ```html
     <fs-popover id="meny" placement="bottom-end">
       <button class="fs-button" data-variant="secondary"
               aria-expanded="false" aria-controls="handlinger">Handlinger</button>

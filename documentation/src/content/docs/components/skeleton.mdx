@@ -44,7 +44,7 @@ import { fs } from "@fristil/designsystem/react"
 
 Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
 import { fs } from "@fristil/designsystem"

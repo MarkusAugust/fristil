@@ -50,6 +50,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs } from "@fristil/designsystem"
 
 const panel = document.querySelector<HTMLDetailsElement>("#bostotte")
+if (!panel) throw new Error("fant ikke elementet")
 
 fs.setAttributes(panel, fs.accordion({ variant: "plain" }))
 

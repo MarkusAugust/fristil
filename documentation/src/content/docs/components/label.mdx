@@ -37,6 +37,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs } from "@fristil/designsystem"
 
 const ledetekst = document.querySelector<HTMLLabelElement>("#epost-label")
+if (!ledetekst) throw new Error("fant ikke elementet")
 
 fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
 ledetekst.htmlFor = "epost"

@@ -55,6 +55,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs, type AlertColor } from "@fristil/designsystem"
 
 const boks = document.querySelector<HTMLElement>("#status")
+if (!boks) throw new Error("fant ikke elementet")
 
 function vis(farge: AlertColor, tekst: string) {
   fs.setAttributes(boks, fs.alert({ color: farge }))
