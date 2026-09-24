@@ -74,6 +74,25 @@ type Funn = { side: string; rullet: number; synder: string }
 const funn: Funn[] = []
 
 /*
+ * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ *
+ * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
+ * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
+ * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
+ * noe er verre enn ingen vaktpost.
+ */
+function lesAntall(navn: string, standard: number): number {
+  const raa = Bun.env[navn]
+  if (raa === undefined) return standard
+  const tall = Number(raa)
+  if (!Number.isInteger(tall) || tall < 1) {
+    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+    process.exit(2)
+  }
+  return tall
+}
+
+/*
  * Sidene deles på flere faner, fordi sjekken venter framfor å regne.
  *
  * Med én fane brukte de 59 sidene 32 sekunder, og av det var bare 5 sekunder
@@ -82,10 +101,11 @@ const funn: Funn[] = []
  * ikke fire: 32 s med én fane, 8,7 med fire, 5,0 med åtte, 4,3 med tolv.
  * Etter åtte er det lite igjen å hente.
  */
-const PARALLELLE = Number(Bun.env.SIDER_I_PARALLELL ?? 8)
+const PARALLELLE = lesAntall("SIDER_I_PARALLELL", 8)
 
 const koe = finnSider()
 let neste = 0
+let sjekket = 0
 
 async function sjekkSider() {
   const kontekst = await nettleser.newContext({
@@ -156,6 +176,11 @@ async function sjekkSider() {
         synder: resultat.synder || "fant ikke hvilket element",
       })
     }
+
+    // Sist i kroppen, ikke først. Telleren skal si hvor mange sider som ble
+    // sjekket, ikke hvor mange som ble tatt av køen: et `continue` lagt inn
+    // senere ville ellers hoppet over arbeidet uten at vakten merket det.
+    sjekket++
   }
 
   await kontekst.close()
@@ -165,6 +190,21 @@ await Promise.all(Array.from({ length: PARALLELLE }, () => sjekkSider()))
 
 await nettleser.close()
 tjener.stop()
+
+/*
+ * Til slutt: ble hver side faktisk besøkt?
+ *
+ * Valideringen over lukker den ene kjente veien til en tom kø, men
+ * spørsmålet som betyr noe er om arbeidet ble gjort, ikke om innstillingen
+ * så fornuftig ut. Denne tellingen fanger også en framtidig `break` eller
+ * `continue` som hopper over sider.
+ */
+if (sjekket !== koe.length) {
+  console.error(
+    `Sjekket ${sjekket} sider, men køen hadde ${koe.length}. Sjekken er ikke til å stole på.`,
+  )
+  process.exit(2)
+}
 
 // Arbeiderne blir ferdige i tilfeldig rekkefølge, så rapporten sorteres for
 // at to kjøringer av den samme feilen skal se like ut.

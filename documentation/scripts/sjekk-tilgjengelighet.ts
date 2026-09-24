@@ -118,10 +118,30 @@ const advarsler = new Set<string>()
  * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
  * skiller den fra `sjekk-mobil.ts`, som bare venter og derfor får åtte.
  */
-const FANER_PER_TEMA = Number(Bun.env.FANER_PER_TEMA ?? 2)
+/*
+ * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ *
+ * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
+ * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
+ * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
+ * noe er verre enn ingen vaktpost.
+ */
+function lesAntall(navn: string, standard: number): number {
+  const raa = Bun.env[navn]
+  if (raa === undefined) return standard
+  const tall = Number(raa)
+  if (!Number.isInteger(tall) || tall < 1) {
+    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+    process.exit(2)
+  }
+  return tall
+}
+
+const FANER_PER_TEMA = lesAntall("FANER_PER_TEMA", 2)
 
 // Én kø per tema, slik at en arbeider bare henter jobber for sitt eget tema.
 const koer = new Map(TEMAER.map((tema) => [tema, { neste: 0 }]))
+let sjekket = 0
 
 async function sjekkSider(
   kontekst: Awaited<ReturnType<typeof nettleser.newContext>>,
@@ -242,6 +262,12 @@ async function sjekkSider(
     }, WCAG_AA)
 
     for (const f of funn) brudd.push({ side: url, tema, ...f })
+
+    // Sist i kroppen, ikke først. Telleren skal si hvor mange sidevisninger
+    // som ble sjekket, ikke hvor mange som ble tatt av køen: et `continue`
+    // lagt inn senere ville ellers hoppet over arbeidet uten at vakten
+    // merket det.
+    sjekket++
   }
 
   await side.close()
@@ -259,6 +285,22 @@ await Promise.all(
 
 await nettleser.close()
 tjener.stop()
+
+/*
+ * Til slutt: ble hver side faktisk besøkt, i begge temaer?
+ *
+ * Valideringen over lukker den ene kjente veien til en tom kø, men
+ * spørsmålet som betyr noe er om arbeidet ble gjort, ikke om innstillingen
+ * så fornuftig ut. Denne tellingen fanger også en framtidig `break` eller
+ * `continue` som hopper over sider.
+ */
+const forventet = sider.length * TEMAER.length
+if (sjekket !== forventet) {
+  console.error(
+    `Sjekket ${sjekket} sidevisninger, men ventet ${forventet}. Sjekken er ikke til å stole på.`,
+  )
+  process.exit(2)
+}
 
 /*
  * Rapporten sorteres, fordi arbeiderne blir ferdige i tilfeldig rekkefølge.
