@@ -60,7 +60,7 @@ kommer i et nytt undertall.
   `HTMLAttributes`, som ikke har `ref`; den ligger i `RefAttributes`. Derfor
   var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
   dokumentasjonen anbefaler for å kalle `.show()` og `.hide()` fra React. Alle
-  vertene bygger nå på en felles `Vert`-type som har begge.
+  vertene bygger nå på en felles `Host`-type som har begge.
 
 - **`warn-at` og `expires-at` godtar det byggefunksjonen sender.** De sto som
   `number` i JSX-typene, mens `fs.sessionTimeout()` sender strenger, slik

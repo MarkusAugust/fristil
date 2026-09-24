@@ -35,6 +35,10 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 ```ts
 import { fs } from "@fristil/designsystem"
 
+const ledetekst = document.querySelector<HTMLLabelElement>("#kid-label")
+const input = document.querySelector<HTMLInputElement>("#kid")
+const hjelpetekst = document.querySelector<HTMLElement>("#kid-help")
+
 const felt = fs.field({ id: "kid", help: true })
 
 fs.setAttributes(ledetekst, felt.label)

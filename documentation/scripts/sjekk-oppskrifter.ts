@@ -193,17 +193,33 @@ function lukning(start: string[]): Set<string> {
  */
 /** Hvert kodegjerde for seg, uten kommentarer. */
 function gjerder(tekst: string): string[] {
-  return [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) =>
+  return [...tekst.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) =>
     m[1].replace(/<!--[\s\S]*?-->/g, "").replace(/^\s*\/\/.*$/gm, ""),
   )
 }
 
+/**
+ * Markupen i `<Eksempel kode={`…`}>`, som ikke står i et kodegjerde.
+ *
+ * Tre regler leste bare gjerder, og på de 32 css-sidene er `<Eksempel>` den
+ * eneste markupen som finnes. Registreringen, vertsattributtene og
+ * element-til-stilark kunne dermed strukturelt aldri fyre der. Samme form som
+ * de seks foregående hullene: regelen var bundet til én måte å skrive koden.
+ */
+function eksempelMarkup(tekst: string): string {
+  return [...tekst.matchAll(/(?:kode|egenCss)=\{`([\s\S]*?)`\}/g)]
+    .map((m) => m[1])
+    .join("\n")
+}
+
 function bareKode(tekst: string): string {
-  const gjerder = [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) => m[1])
+  const gjerder = [...tekst.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map(
+    (m) => m[1],
+  )
   // Uten kommentarene: en kommentar som *nevner* `<fs-dialog>` er ikke
   // markup, og en regel som leser den krever en registrering som ikke
   // trengs.
-  return gjerder
+  return [...gjerder, eksempelMarkup(tekst)]
     .join("\n")
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/^\s*\/\/.*$/gm, "")
@@ -264,9 +280,9 @@ const VERTER: Array<[string, string]> = [
  * Klasser en byggefunksjon faktisk sender ut, og hvilken funksjon det er.
  *
  * Uten denne ville regelen felt hver `fs-`-klasse i en React- eller
- * Astro-fane, også de som ikke har noen funksjon å kalle. `.fs-switch-row`
- * er en slik: den finnes i CSS-en, men ingen bygger gir den, og da er det å
- * skrive den for hånd det eneste alternativet.
+ * Astro-fane, også de som ikke har noen funksjon å kalle. Seks klasser er
+ * slik i dag, og alle seks lager komponenten selv:
+ * `fs-connection-status__bar` og de fem `fs-session-timeout__*`.
  */
 const FRA_BYGGER = new Map<string, string>()
 for (const [navn, f] of Object.entries(fs)) {
@@ -345,7 +361,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
    */
   const faner: Array<{ navn: string; kode: string; iOppskrift?: boolean }> = []
   for (const m of tekst.matchAll(
-    /<TabItem\s+label="([^"]+)"[^>]*>([\s\S]*?)<\/TabItem>/g,
+    /<TabItem\b[^>]*?\slabel="([^"]+)"[^>]*>([\s\S]*?)<\/TabItem>/g,
   ))
     faner.push({ navn: m[1], kode: m[2], iOppskrift: seksjon.includes(m[2]) })
 
@@ -424,6 +440,24 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
         si(side, `${hvor} kaller ${navn}(), som ingen modul eksporterer`)
     }
 
+    /*
+     * Og navnene som ikke er kall.
+     *
+     * Regelen krevde parentes, så `fs.card.title`, `fs.switch.row` og tjue
+     * andre egenskapsreferanser var aldri kontrollert. En skrivefeil der gir
+     * `className={undefined}`, altså et element uten klasse, og ingenting sa
+     * fra. Vaktene, som `fs.button.isVariant`, falt mellom begge regler.
+     */
+    for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
+      const bygger = (fs as Record<string, unknown>)[m[1]]
+      if (typeof bygger !== "function") {
+        si(side, `${hvor} bruker fs.${m[1]}, som ikke finnes i fs`)
+        continue
+      }
+      if (!(m[2] in (bygger as object)))
+        si(side, `${hvor} bruker fs.${m[1]}.${m[2]}, som ikke finnes`)
+    }
+
     for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\s*\(/g)) {
       if (!byggere.has(m[1]))
         si(side, `${hvor} kaller fs.${m[1]}(), som ikke finnes i fs`)
@@ -452,17 +486,24 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
       ]
       // Alle vertene, ikke bare den første, og bare i kode: en bar
       // `<fs-toast>` i en kommentar foran den ekte verten gjorde regelen død.
-      const vert = verter.find((v) => v[0].includes("="))
-      // Et bart `<fs-toast>` i en setning er prosa, ikke markup. Kravet
-      // gjelder en vert som faktisk er skrevet ut, altså en med attributter.
-      if (!vert || /\{\.\.\./.test(vert[0]) || !vert[0].includes("=")) continue
-      for (const attributt of kreves(bygger)) {
-        if (!vert[0].includes(attributt))
-          si(
-            side,
-            `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som fs.${bygger}() gir`,
-          )
-      }
+      // Alle vertene som faktisk er skrevet ut, ikke bare den første.
+      /*
+       * Alle vertene som faktisk er skrevet ut, ikke bare den første.
+       *
+       * Et bart `<fs-toast>` i en setning er prosa, ikke markup, så kravet
+       * gjelder dem som har attributter. Og en andre vert i samme fane er
+       * like mye en oppskrift som den første.
+       */
+      for (const vert of verter.filter(
+        (v) => v[0].includes("=") && !/\{\.\.\./.test(v[0]),
+      ))
+        for (const attributt of kreves(bygger)) {
+          if (!vert[0].includes(attributt))
+            si(
+              side,
+              `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som fs.${bygger}() gir`,
+            )
+        }
     }
 
     /*
