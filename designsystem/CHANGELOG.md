@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.14.0 (2026-09-24)
+
 ### Brytende
 
 - **Verten heter `host` i alle byggefunksjonene.** Den delen serveren skriver,
