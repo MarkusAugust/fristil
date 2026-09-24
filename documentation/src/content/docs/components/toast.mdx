@@ -81,6 +81,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     import { createContext, useContext, useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
     import type { FsToast } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
 
     const varsler = fs.toast({ label: "Meldinger" })
 
@@ -131,6 +132,8 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     <script>
       import { defineFsToast } from "@fristil/designsystem/toast"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/toast.css"
       defineFsToast()
 
       // Gjør køen tilgjengelig for øyene på siden

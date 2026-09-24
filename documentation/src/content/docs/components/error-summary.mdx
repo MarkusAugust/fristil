@@ -90,6 +90,8 @@ defineFsErrorSummary()
 
     defineFsErrorSummary()
 
+    type Feil = { id: string; melding: string }
+
     export function Feiloppsummering({ feilene }: { feilene: Feil[] }) {
       const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
 
@@ -110,12 +112,12 @@ defineFsErrorSummary()
   </TabItem>
   <TabItem label="Astro">
     ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/error-summary.css"
     import "@fristil/designsystem/list.css"
-
-    ---
-    import { fs } from "@fristil/designsystem"
 
     const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
     ---

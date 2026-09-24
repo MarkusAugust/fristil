@@ -64,6 +64,8 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     ```tsx
     import { fs } from "@fristil/designsystem/react"
     import { defineFsTabs } from "@fristil/designsystem/tabs"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/tabs.css"
 
     defineFsTabs()
 
@@ -107,6 +109,8 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
 
     <script>
       import { defineFsTabs } from "@fristil/designsystem/tabs"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/tabs.css"
       defineFsTabs()
     </script>
     ```
@@ -156,6 +160,7 @@ Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `ari
 
 ```ts
 const faner = document.querySelector("fs-tabs")
+    if (!faner) throw new Error("fant ikke elementet")
 
 faner.selected // 0
 faner.select(1) // velger «Vedlegg» og sender `tab-select`

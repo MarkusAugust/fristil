@@ -84,6 +84,7 @@ defineFsPopover()
     ```tsx
     import { useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
+    import "@fristil/designsystem/tokens.css"
 
     export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
       const meny = useRef<HTMLElement & { hide(): void }>(null)
@@ -116,10 +117,11 @@ defineFsPopover()
   </TabItem>
   <TabItem label="Astro">
     ```astro
-    import "@fristil/designsystem/button.css"
-    import "@fristil/designsystem/link.css"
     ---
     import { fs } from "@fristil/designsystem"
+
+    import "@fristil/designsystem/button.css"
+    import "@fristil/designsystem/link.css"
 
     const boks = fs.popover({ id: "handlinger" })
     ---
@@ -135,6 +137,8 @@ defineFsPopover()
 
     <script>
       import { defineFsPopover } from "@fristil/designsystem/popover"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/popover.css"
       defineFsPopover()
     </script>
     ```

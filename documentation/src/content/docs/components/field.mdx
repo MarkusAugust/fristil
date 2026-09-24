@@ -147,6 +147,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```tsx
     import { fs } from "@fristil/designsystem/react"
     import { useId } from "react"
+    import "@fristil/designsystem/tokens.css"
 
     export function Navnefelt() {
       const felt = fs.field({ id: useId(), help: true })

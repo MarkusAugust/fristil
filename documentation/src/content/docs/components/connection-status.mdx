@@ -42,6 +42,7 @@ defineFsConnectionStatus()
 
     <script type="module">
       const status = document.querySelector("fs-connection-status")
+    if (!status) throw new Error("fant ikke elementet")
 
       async function lagre(body) {
         try {
@@ -60,6 +61,7 @@ defineFsConnectionStatus()
     import "@fristil/designsystem/connection-status.css"
     import { fs } from "@fristil/designsystem"
     import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+    import "@fristil/designsystem/tokens.css"
 
     defineFsConnectionStatus()
 

@@ -128,7 +128,11 @@ const FRA_STILARK = new Map<string, string>()
 const HENTER = new Map<string, Set<string>>()
 {
   const lesArk = (mappe: string) => {
-    for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
+    // Sortert: usortert `readdirSync` på Linux ville latt `search.css` vinne
+    // over `input.css` for `.fs-input`, og sjekken feilet tilfeldig i CI.
+    for (const oppf of readdirSync(mappe, { withFileTypes: true }).sort(
+      (a, b) => a.name.localeCompare(b.name),
+    )) {
       const p = join(mappe, oppf.name)
       if (oppf.isDirectory()) lesArk(p)
       else if (oppf.name.endsWith(".css")) {
@@ -163,6 +167,19 @@ function lukning(start: string[]): Set<string> {
     for (const h of HENTER.get(n) ?? []) kø.push(h)
   }
   return ut
+}
+
+/**
+ * Bare koden i en fane, uten prosaen rundt.
+ *
+ * To av reglene spør om noe som bare gir mening i kode: at et `<fs-…>` blir
+ * registrert, og at `fs.` er importert. Leste de hele fanen, ville en setning
+ * som *nevner* `<fs-dialog>` felt CI av en grunn som ikke er en feil, og den
+ * nærliggende fiksen ville vært å svekke regelen igjen.
+ */
+function bareKode(tekst: string): string {
+  const gjerder = [...tekst.matchAll(/```\w*\n([\s\S]*?)```/g)].map((m) => m[1])
+  return gjerder.length > 0 ? gjerder.join("\n") : ""
 }
 
 const MED_BUNTER = new Set(["React", "Astro", "TypeScript"])
@@ -425,8 +442,27 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g))
       for (const k of m[1].split(/\s+/))
         if (k.startsWith("fs-")) brukteKlasser.add(k)
+    /*
+     * Byggefunksjonen teller, også når den går gjennom en variabel.
+     *
+     * Regelen leste `class="…"` og `{...fs.x(` bokstavelig. Den dominerende
+     * formen i React- og Astro-faner er `const boks = fs.dialog(...)` og så
+     * `{...boks.dialog}`, og den ga null klasser. Da kunne `dialog.css`
+     * fjernes fra dialogens React-fane uten at noe sa fra, som er den samme
+     * blindheten fire runder på rad.
+     */
     for (const m of fane.kode.matchAll(/\{\.\.\.fs\.([a-zA-Z]+)[.(]/g)) {
       const klasse = FRA_BYGGER_OMVENDT.get(m[1])
+      if (klasse) brukteKlasser.add(klasse)
+    }
+    const variabler = new Map<string, string>()
+    for (const m of fane.kode.matchAll(
+      /(?:const|let)\s+(?:\{[^}]*\}|(\w+))\s*=\s*fs\.([a-zA-Z]+)\(/g,
+    ))
+      if (m[1]) variabler.set(m[1], m[2])
+    for (const m of fane.kode.matchAll(/\{\.\.\.(\w+)[.}\s]/g)) {
+      const bygger = variabler.get(m[1])
+      const klasse = bygger && FRA_BYGGER_OMVENDT.get(bygger)
       if (klasse) brukteKlasser.add(klasse)
     }
 
@@ -453,6 +489,17 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
       }
       for (const ark of savnet)
         si(side, `${hvor} bruker en klasse fra ${ark}, som ikke er oppgitt`)
+
+      /*
+       * Og `tokens.css`, som ingen klasse kan kreve.
+       *
+       * Den definerer ingen `fs-`-klasser, bare variablene alt annet leser.
+       * En klassedrevet regel kan derfor strukturelt aldri be om den, og uten
+       * den står hver `var(--size-…)` uoppløst: padding, skriftstørrelse og
+       * vekt faller bort.
+       */
+      if (!har.has("tokens.css"))
+        si(side, `${hvor} oppgir ikke tokens.css, som alt annet leser`)
     }
 
     /*
@@ -467,14 +514,15 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * «resten» fordi prosa ikke er en oppskrift.
      */
     if (fane.navn !== "Prøv den" && fane.navn !== "resten") {
+      const kode = bareKode(fane.kode)
       const verter = new Set(
-        [...fane.kode.matchAll(/<(fs-[a-z-]+)[\s>]/g)].map((m) => m[1]),
+        [...kode.matchAll(/<(fs-[a-z-]+)[\s>]/g)].map((m) => m[1]),
       )
       for (const tagg of verter) {
         const funksjon = `defineFs${tagg
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`
-        if (!fane.kode.includes(funksjon))
+        if (!kode.includes(funksjon))
           si(side, `${hvor} viser <${tagg}> uten å kalle ${funksjon}()`)
       }
     }
@@ -487,10 +535,11 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * siden feiler ved bygging. Feilen kom av at håndskrevne klasser ble
      * byttet mot byggefunksjoner uten at importen fulgte med.
      */
-    if (fane.navn !== "resten" && /\bfs\.[a-zA-Z]/.test(fane.kode)) {
+    const fsKode = bareKode(fane.kode)
+    if (fane.navn !== "resten" && /\bfs\.[a-zA-Z]/.test(fsKode)) {
       const importert =
         /import \{[^}]*\bfs\b[^}]*\} from "@fristil\/designsystem/.test(
-          fane.kode,
+          fsKode,
         ) || /<Eksempel\b/.test(fane.kode)
       if (!importert) si(side, `${hvor} bruker fs. uten å importere fs`)
     }
