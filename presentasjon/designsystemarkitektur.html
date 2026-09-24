@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Designsystemarkitektur V8</title>
+<title>Designsystemarkitektur</title>
 <style>
 /*
- * Presentasjonen om designsystemarkitektur, åttende utgave.
+ * Presentasjonen om designsystemarkitektur.
  *
  * Én fil, ingen avhengigheter, intet byggesteg. Fonten er den samme stakken
  * Skatteetaten selv oppgir for skjerm, og ikke en webfont fra et annet
@@ -233,7 +233,8 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
  * Et rutenettfelt har `auto` som minstemål, altså bredden til innholdet, og
  * en kodelinje som ikke kan brytes gjør da hele feltet bredere enn skjermen.
  * Kodeblokka fikk rulle for seg selv, men siden kunne dras sidelengs likevel.
- * Testet på 375 piksler: ti av nitten lysbilder hadde det før denne linja.
+ * Uten den blir et rutenettfelt like bredt som den lengste kodelinja, og
+ * siden kan dras sidelengs på en telefon.
  */
 .rader { display: grid; gap: 1.1rem; }
 .rader > * { min-inline-size: 0; }
@@ -270,22 +271,38 @@ tr:last-child td { border-block-end: none; }
  * forvalter systemet. Den står på hvert lysbilde som har et standpunkt.
  */
 .perspektiv {
-  margin-block-start: 1.2rem;
-  padding-block-start: 0.9rem;
+  margin-block-start: 1.4rem;
+  padding-block-start: 1.1rem;
   border-block-start: 1px solid var(--kant);
   display: grid;
-  gap: 0.5rem;
+  gap: 0.7rem 1.4rem;
   font-size: clamp(0.92rem, 1.1vw, 1rem);
 }
 
+/*
+ * To spalter, ikke en merkelapp foran teksten.
+ *
+ * Med `display: inline-block` og en minstebredde brakk den andre linja i
+ * teksten tilbake under merkelappen, og avsnittet mistet venstrekanten sin.
+ * Et rutenett holder de to fra hverandre uansett hvor lang teksten er.
+ */
+.perspektiv p {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: 0.2rem 1.4rem;
+  margin: 0;
+}
+
 .rolle {
-  display: inline-block;
-  min-inline-size: 11.5rem;
   font-weight: 700;
   color: var(--azure-30);
 }
 
 .rolle-forvalter { color: var(--ochre-30); }
+
+@media (max-width: 860px) {
+  .perspektiv p { grid-template-columns: 1fr; }
+}
 
 /* ---------- Styring ---------- */
 
@@ -394,7 +411,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Arkitektur V8 · september 2026</span>
+  <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
   <h1>Rammeverksuavhengig<br>designsystem</h1>
   <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
   <p>Hele systemet hviler på én setning, og resten av presentasjonen er hva den fører til:</p>
@@ -471,14 +488,15 @@ defineFsField()
 <!-- 5 -->
 <section class="lysbilde">
   <h2>Regelen alt annet følger av</h2>
-  <p>Problemet i vanlige ord: når serveren sender den samme delen av siden på nytt, og noe klientkode har lagt til et attributt som ikke står i det serveren sendte, blir attributtet borte. Det er ikke en feil i rammeverket, det er slik oppdateringen virker. Her er de to linjene fra Datastar 1.0.4 som gjør det:</p>
-  <p class="kodetittel">datastar.js, attributtsynkroniseringen i morfingen</p>
-  <pre>for (let {name: l} of Array.from(<b>r</b>.attributes))
-  !<b>s</b>.hasAttribute(l) &amp;&amp; !o.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
+  <p>En server som oppdaterer en side, sender den samme delen av den på nytt. Rammeverket sammenligner det som kom med det som står der, og fjerner alt som ikke sto i det serveren sendte. Under er de to linjene i Datastar som gjør det. De er ikke en feil, men selve mekanismen, og hele arkitekturen følger av dem.</p>
+  <p class="kodetittel">datastar.js, løkka som går gjennom attributtene ved hver oppdatering</p>
+  <pre><i>// r = elementet i siden nå, s = det serveren sendte</i>
+for (let {name: l} of Array.from(<b>r</b>.attributes))
+  !<b>s</b>.hasAttribute(l) &amp;&amp; <b>r</b>.removeAttribute(l)
 
-<i>// r = elementet som står i siden</i>
-<i>// s = det serveren nettopp sendte</i></pre>
-  <p style="margin-block-start: 1rem;">React har det samme problemet i en annen form: en strukturell rendring av foreldrekomponenten kan kaste bort noder et egendefinert element har lagt inn. Derav regelen:</p>
+<i>// Står attributtet på elementet, men ikke i det serveren</i>
+<i>// sendte, så fjern det.</i></pre>
+  <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder et egendefinert element har lagt inn bli kastet. Derav regelen:</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
   </div>
@@ -590,39 +608,33 @@ fs.input({ type: "email", state: "invalid" })
 
 <!-- 9 -->
 <section class="lysbilde">
-  <h2>Fra ni navn i en mal til ett attributt</h2>
-  <p>Første løsning på at morfingen river bort attributter var å frede dem: malen listet opp hvert attributt komponenten kunne finne på å sette. Det gjorde kontrakten til noe vi ikke kunne kontrollere.</p>
+  <h2>Komponenten setter tilbake det oppdateringen tar</h2>
+  <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og setter det tilbake i samme øyeblikk. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel">Før: malen måtte kjenne pakkens innmat</p>
-      <pre>&lt;label class="fs-label"
-  data-preserve-attr="class for"&gt;
-&lt;input class="fs-input"
-  data-preserve-attr="id aria-describedby"&gt;
-&lt;p class="fs-help-text"
-  data-preserve-attr="id"&gt;</pre>
-      <p class="dempet" style="margin-block-start: 0.6rem;">Ni attributtnavn, skrevet av fra dokumentasjonen. Endret vi hva komponenten satte, gikk malen stille i stykker. Ingen kompilator ser på den lista.</p>
+      <p class="kodetittel">Malen, i et hvilket som helst språk</p>
+      <pre>&lt;fs-field&gt;
+  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="fs-input" type="email"&gt;
+  &lt;p class="fs-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
+&lt;/fs-field&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Ingen id-er, ingen <code>for</code>, ingen <code>aria-describedby</code>, og ingen liste over hva som må bevares. Komponenten setter koblingen, og setter den tilbake hver gang den forsvinner.</p>
     </div>
     <div>
-      <p class="kodetittel">Nå: komponenten reparerer det den selv har regnet ut</p>
-      <pre>&lt;label class="fs-label"&gt;
-&lt;input class="fs-input"&gt;
-&lt;p class="fs-help-text"&gt;
-
-<i>// Og vil serveren eie tilstanden selv:</i>
-&lt;fs-field server-controlled&gt;</pre>
-      <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, framfor ni strenger fordelt på fire komponenter.</p>
+      <p class="kodetittel">Vil serveren eie tilstanden selv</p>
+      <pre>&lt;fs-field server-controlled&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, og komponenten reparerer ingenting. Da er det serverens utgave som gjelder, hver gang.</p>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Skillet som løser det: <strong>har komponenten regnet ut attributtet, kan den regne det ut på nytt, og skal reparere det. Har brukeren gjort noe, finnes det ingen kilde å regne fra.</strong> Det viste seg at også det brukeren har gjort kan repareres, for komponenten var jo den som gjorde det.</p>
-  <p>Flimmeret er ikke et argument mot reparasjon, og det er testet: morfingen fjerner attributtet, observatøren setter det tilbake ved mikrooppgavesjekken, og nettleseren tegner først etter den.</p>
+  <p style="margin-block-start: 1rem;">Skillet som gjør det mulig: <strong>har komponenten regnet ut attributtet, kan den regne det ut på nytt. Har brukeren gjort noe, vet komponenten hva det var, for den var der da det skjedde.</strong></p>
+  <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake ved mikrooppgavesjekken, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
 <!-- 10 -->
 <section class="lysbilde">
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
-  <p>Dette er feilen som er lettest å gjøre om igjen, og den ble funnet i ekte apper, ikke i enhetstestene.</p>
-  <p><code>&lt;fs-field&gt;</code> leste <code>invalid</code> fra et attributt på seg selv. Skrev serveren feltet med <code>fs.field()</code>, sto svaret allerede på elementene, men komponenten fant ingenting på verten, regnet ut «ikke ugyldig», og fjernet det serveren nettopp hadde skrevet. I React ble det en hydreringsfeil, i Datastar en feilmelding som dukket opp på et gyldig felt ved neste patch.</p>
+  <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to er uenige.</p>
+  <p>Et felt som er ugyldig, står som <code>aria-invalid</code> på kontrollen. Leser komponenten det derfra, er den alltid enig med serveren. Leser den i stedet av sitt eget attributt på verten, vil den før eller siden fjerne et svar serveren nettopp skrev: i React som en hydreringsfeil, i Datastar som en feilmelding på et gyldig felt.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>Finnes tilstanden i markupen, skal komponenten lese den derfra.</strong> En komponent skal aldri ha en parallell utgave av noe serveren også kan skrive.</p>
   </div>
@@ -630,24 +642,37 @@ fs.input({ type: "email", state: "invalid" })
   <div class="boks">
     <p style="margin: 0;"><strong>Noter verdien komponenten skrev, og på hvilken node. Står det noe annet der neste gang, har noen andre rørt det.</strong> Utled aldri eierskap av hva komponenten trodde sist.</p>
   </div>
-  <p class="dempet" style="margin-block-start: 1rem;">Første forsøk husket hva verten sa sist. Da ga den samme markupen to ulike svar alt etter hva som hadde skjedd tidligere, og i en Datastar-app strøk komponenten serverens eget <code>aria-invalid</code>.</p>
+  <p class="dempet" style="margin-block-start: 1rem;">Eierskapet må leses av noden, ikke av hukommelsen. Husker komponenten hva den trodde sist, gir den samme markupen to ulike svar alt etter hva som skjedde før.</p>
 </section>
 
 <!-- 11 -->
 <section class="lysbilde">
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
-  <p>En komponent fester oppførsel på markup noen andre har skrevet, i et språk der ingen kompilator ser etter. Fant den ikke delene sine, gjorde den ingenting, uten et ord, og feilen viste seg først når noen leste siden med skjermleser.</p>
-  <p class="kodetittel">host-element.ts</p>
-  <pre>warnAboutMarkup(element, melding, stillBroken)
-<i>// Skriver console.warn én gang per element og melding,</i>
-<i>// i alle miljøer, og først etter at siden har falt til ro.</i></pre>
-  <p style="margin-block-start: 1rem;">Tre ting måtte sitte, og alle tre ble funnet i en gjennomgang av den første utgaven:</p>
+  <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
+  <p>Den som merker feilen er den som ikke ser skjermen: feltet blir lest opp uten navn. Tidligere gjorde komponenten ingenting i slike tilfeller, og den sa heller ingenting. Nå skriver den én linje i konsollen, mens utvikleren fortsatt sitter med koden.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel">Markupen som ble skrevet</p>
+      <pre>&lt;fs-field&gt;
+  &lt;input class="fs-input" id="fodselsdato"&gt;
+&lt;/fs-field&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel">Det utvikleren får se</p>
+      <pre>fs-field: fant ingen &lt;label&gt;.
+Feltet får da ingen ledetekst, og
+en skjermleser leser det opp uten navn.</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">En advarsel som gir falsk alarm blir slått av i løpet av en uke, og da er den verdiløs. Tre valg gjør at denne er til å stole på:</p>
   <ul>
-    <li><strong>Sjekken må gjentas når siden har falt til ro.</strong> HTML som strømmer fra en server leveres i pakker, og et brudd midt mellom ledeteksten og feltet er helt vanlig. Uten den siste sjekken advarte komponenten om markup som var i orden et øyeblikk senere.</li>
-    <li><strong>Meldingen må være den samme hver gang.</strong> Interpolerer du et tall inn i den, er hver runde en ny melding, og dedupliseringen er borte: «har 3 faner, men 1 paneler» ga én advarsel per panel som dukket opp.</li>
-    <li><strong>Beskjeden må peke på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin gjennom panelets id, så et panel uten id ga beskjed om at knappen manglet, og utvikleren lette på feil sted.</li>
+    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i pakker, så et øyeblikk der feltet har kommet og ledeteksten ikke har det, er helt normalt. Komponenten ser etter en gang til, og sier bare fra hvis det fortsatt er galt.</li>
+    <li><strong>Samme melding hver gang, uten tall eller navn i seg.</strong> «Fant 3 faner, men 1 panel» er en ny melding for hvert panel som dukker opp, og den ene advarselen blir til tjue.</li>
+    <li><strong>Den peker på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin ved å slå opp panelets id. Mangler id-en, er det den som skal stå i meldingen, ikke at knappen mangler, ellers leter utvikleren på feil sted.</li>
   </ul>
-  <p>To vaktposter holder dette grønt: en test per advarsel, og en sjekk som samler <code>console.warn</code> fra hver eneste bygde dokumentasjonsside. En advarsel som slår ut på våre egne eksempler feller bygget.</p>
+  <div class="boks">
+    <p style="margin: 0;">Og meldingene kan ikke råtne: en sjekk leser konsollen på hver eneste bygde dokumentasjonsside, og en advarsel som slår ut på våre egne eksempler feller bygget. Vi tåler altså ikke en eneste falsk alarm selv.</p>
+  </div>
 </section>
 
 <!-- 12 -->
@@ -658,7 +683,7 @@ fs.input({ type: "email", state: "invalid" })
   <pre>computeFieldAttributes(...)
    ├── fs.field()      <i>← serveren kaller den direkte</i>
    └── &lt;fs-field&gt;      <i>← komponenten kaller den på elementer som står i DOM-en</i></pre>
-  <p style="margin-block-start: 1rem;">Endrer vi kontrakten, endrer vi den der, ikke i komponenten. Det er også svaret på et spørsmål som kommer hver gang: <em>skal ikke hver server skrive dette selv?</em> Nei. Vi skrev en Kotlin-utgave av <code>fs.field()</code> i demoen, og slettet den igjen. Skulle hver server regne ut Fristils regler på nytt, ville Fristil vært et JavaScript-designsystem med en manuell reserve for alle andre.</p>
+  <p style="margin-block-start: 1rem;">Endrer vi kontrakten, endrer vi den der, ikke i komponenten. Det er også svaret på et spørsmål som kommer hver gang: <em>skal ikke hver server skrive dette selv?</em> Nei. Skulle hver server regne ut reglene på nytt, ville Fristil vært et JavaScript-designsystem med en manuell reserve for alle andre, og reserven ville vært den som gikk i stykker.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En id som lages av seg selv, overlever ikke hydrering.</strong> Serveren og nettleseren lager da hver sin, og koblingen er brutt til React har rettet den opp. Derfor er <code>id</code> påkrevd i typen, med en melding i konsollen ved siden av for dem typen ikke når.</p>
   </div>
@@ -715,49 +740,65 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er ikke tilfeldige: det er Skatteetatens egne farger, og de er allerede standardpaletten i Fristil.</p>
+  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er Fristils egne. De ligger nær Skatteetatens, og neste lysbilde viser hva sammenligningen med dem gir.</p>
 </section>
 
 <!-- 15 -->
 <section class="lysbilde">
-  <h2>Etterprøvd mot en ekte etat</h2>
-  <p>Paletten i Fristil er Skatteetatens, og det gjør den lett å etterprøve: den står publisert i deres eget designsystem. Sammenligningen er kjørt mot kilden deres, ikke mot en skjermdump.</p>
-  <div class="rader tre">
-    <div class="boks">
-      <span class="tall">36 / 36</span>
-      <p>palettvariabler finnes i Fristil med nøyaktig samme verdi.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">14 / 15</span>
-      <p>semantiske fargetokens er også like. Den femtende avviker med vilje.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">1</span>
-      <p>verdi vi måtte flytte, og grunnen står i tabellen under.</p>
-    </div>
-  </div>
-  <p style="margin-block-start: 1.1rem;">Den ene er advarselsfargen. Kravet for vanlig tekst er 4,5:1:</p>
+  <h2>Hvorfor generatoren regner ut kontrasten for deg</h2>
+  <p>Paletten i Fristil er tilnærmet lik Skatteetatens, og det gjør den lett å etterprøve mot noe ekte: fargene deres står publisert i deres eget designsystem. Sammenligningen under er kjørt mot kilden deres.</p>
+  <p>Én verdi er ulik, og det er ikke en detalj. Advarselsfargen deres ligger rett under kravet til vanlig tekst, og det er nøyaktig slik en kontrastfeil ser ut: ingen ser den, for fargen er fin, og tallet er nesten riktig.</p>
   <div class="tabellrull">
   <table>
     <thead><tr><th>Advarselstekst</th><th>Mot hvit</th><th>Mot egen advarselsflate</th></tr></thead>
     <tbody>
-      <tr><td>Skatteetaten <code>#9f7509</code></td><td>4,18:1</td><td>3,63:1</td></tr>
-      <tr><td>Fristil <code>#896508</code></td><td>5,35:1</td><td>4,64:1</td></tr>
+      <tr><td><code>#9f7509</code></td><td>4,18:1</td><td>3,63:1</td></tr>
+      <tr><td><code>#896508</code>, etter at generatoren har flyttet den</td><td>5,35:1</td><td>4,64:1</td></tr>
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Det er ikke en kritikk av et godt designsystem. Det er hele argumentet for at fargene skal regnes ut framfor å velges: en verdi som ligger tett på kravet, går under det uten at noen ser det.</p>
-  <p>Førstelinja kjører i deres stil og tone, generert av en oppskrift på seks linjer. Vi har ikke tatt inn en eneste linje av designsystemet deres, og fargene er ikke kjørt gjennom generatoren: paletten er allerede riktig, og en omregning i OKLCH ville gjort den interaktive fargen om fra <code>#1362ae</code> til <code>#1e6ab7</code>.</p>
+  <p style="margin-block-start: 1rem;">Kravet er 4,5:1. Generatoren regner hvert par, flytter lysheten på dem som ikke holder, og sier fra om hva den flyttet. Ingen skal måtte holde et regneark over fargepar ved siden av paletten sin.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Kan ikke velge en kombinasjon som faller under kravet, for den finnes ikke i temaet.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde lista over par oppdatert. Et par ingen har tenkt på, blir ikke kontrollert.</p>
+  </div>
 </section>
 
 <!-- 16 -->
+<!-- 17 -->
+<section class="lysbilde">
+  <h2>Hva nettleseren gjør for oss</h2>
+  <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
+  <div class="rader to">
+    <div class="boks">
+      <h3>Det nettleseren tar</h3>
+      <ul>
+        <li><strong>Fokusfellen i en dialog.</strong> <code>showModal()</code> gjør resten av siden utilgjengelig, holder fokus inne, og lukker på Escape.</li>
+        <li><strong>Topplaget.</strong> En dialog og et sprettoppvindu ligger over alt annet uten at noen teller <code>z-index</code>.</li>
+        <li><strong>Skjemaet.</strong> Validering, innsending og <code>:invalid</code> finnes, og virker uten at vi skriver en linje.</li>
+        <li><strong>Utseendet.</strong> En knapp, et merke og et kort er CSS. De ser riktige ut før noe skript er lastet.</li>
+      </ul>
+    </div>
+    <div class="boks">
+      <h3>Det vi slipper å eie</h3>
+      <ul>
+        <li>Ingen egen fokusfelle, ingen egen lagstyring, ingen egen skjemamotor.</li>
+        <li>Ingen kjøretid for det som bare er utseende.</li>
+        <li>Ingen omskriving når appene rundt bytter rammeverk.</li>
+        <li>Ingen versjon av React, Vue eller Svelte å holde tritt med.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Det som blir igjen til oss er koblingen mellom delene, tastaturet i det nettleseren ikke har en ferdig kontroll for, og at tingene ser like ut. Det er en mye mindre jobb enn å bygge alt.</p>
+</section>
+
 <section class="lysbilde">
   <h2>Prisen for å bygge på nettleseren selv</h2>
   <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
   <div class="rader tre">
     <div class="boks">
       <span class="tall">3</span>
-      <p>nettlesermotorer i hver kjøring: Chromium, Firefox og WebKit, med godt over tre tusen tester. Ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.</p>
+      <p>nettlesermotorer i hver testkjøring i byggeløypa: Chromium, Firefox og WebKit, med godt over tre tusen tester i hver. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
     </div>
     <div class="boks">
       <h3>Venting på den siste motoren</h3>
@@ -774,50 +815,58 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 17 -->
-<section class="lysbilde">
-  <h2>Hva det koster appen din</h2>
-  <p>Et designsystem som drar med seg et rammeverk inn i hver app, er ikke gratis for noen. Tallene her er fra pakken slik den er:</p>
-  <div class="rader tre">
-    <div class="boks">
-      <span class="tall">0</span>
-      <p>avhengigheter i pakken. Lit ble fjernet i 0.5.0, da ingen komponent lenger rendret sitt eget innhold. Den veide 28 331 byte minifisert, 9 846 gzippet.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">8 361</span>
-      <p>byte for en app som bare bruker <code>fs.button()</code>. Før <code>sideEffects</code> sto riktig i <code>package.json</code>, dro den samme appen med seg 69 737.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">0</span>
-      <p>kode som kjører for en knapp, et merke eller et kort. De er CSS, og ser riktige ut før noe skript er lastet.</p>
-    </div>
-  </div>
-  <p style="margin-block-start: 1.1rem;">Ingenting i pakken gjør noe ved import alene. <code>customElements.define</code> skjer først når konsumenten kaller <code>defineFsField()</code>, og hver modul kan lastes på en server uten DOM. Det siste er ikke teoretisk: ni av inngangspunktene stoppet en gang med «HTMLElement is not defined» i Node, hovedinngangen medregnet, så <code>import { fs }</code> var umulig i en app med server-rendring.</p>
-</section>
-
 <!-- 18 -->
 <section class="lysbilde">
-  <h2>Demoen som viser at det stemmer</h2>
-  <p>Førstelinja er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter. Skjermene ser like ut, og det er hele poenget, så forskjellen måtte vises et annet sted.</p>
-  <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over ledningen</p>
+  <h2>Hva det koster appen din</h2>
+  <p>Et designsystem stiller krav til appen som tar det i bruk. Her er kravene våre, og til sammenligning kravene til et React-basert designsystem, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
   <div class="tabellrull">
   <table>
-    <thead><tr><th>Utgave</th><th>Med hva</th><th>Hvor tegningen skjer</th></tr></thead>
+    <thead><tr><th>For å bruke skjemakomponentene</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
     <tbody>
-      <tr><td>Datastar</td><td><code>SSE · datastar-patch-elements · HTML · 17,2 kB</code></td><td>på serveren</td></tr>
-      <tr><td>TanStack Start</td><td><code>SSE · tilstand · JSON · 2,9 kB</code></td><td>i nettleseren</td></tr>
-      <tr><td>Astro</td><td><code>Helsidelasting · HTML · 14,7 kB</code></td><td>på serveren</td></tr>
+      <tr><td>Pakker appen din må ha</td><td>ingen</td><td>React 19, i18next, react-i18next, date-fns, og åtte pakker fra systemet selv</td></tr>
+      <tr><td>Rammeverk</td><td>hvilket som helst, eller ingen</td><td>React</td></tr>
+      <tr><td>Kjøretid for en knapp</td><td>ingen, den er CSS</td><td>React må være lastet og i gang</td></tr>
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Demoen er ikke en utstilling, den er en test. To feil i arkitekturen ble funnet her og ingen andre steder, fordi de bare oppstår når serveren og komponenten møtes: feltet overkjørte serverens eget svar, og sprettoppvinduet mistet tilstanden sin ved en morfing. <code>&lt;fs-dialog&gt;</code> finnes i Fristil på grunn av dette spillet: å åpne en <code>&lt;dialog&gt;</code> er et kall, og en server som bare sender HTML kan ikke kalle noe.</p>
+  <p style="margin-block-start: 1rem;">Det er ikke en kritikk: et React-basert system er et rimelig valg når alt er React. Poenget er hva det koster den som ikke er det, og den dagen noe skal byttes.</p>
+  <div class="rader to">
+    <div class="boks">
+      <span class="tall">8 361</span>
+      <p>byte for en app som bare bruker <code>fs.button()</code>. Resten av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">0</span>
+      <p>avhengigheter i pakken. Ingenting i den gjør noe ved import alene: <code>customElements.define</code> skjer først når du kaller <code>defineFsField()</code>.</p>
+    </div>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">Hver modul kan dessuten lastes på en server uten DOM, så <code>import { fs }</code> virker i en app med server-rendring.</p>
+</section>
+
+<!-- 19 -->
+<section class="lysbilde">
+  <h2>Demoen som viser at det stemmer</h2>
+  <p><strong>Førstelinja</strong> er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som sitter i en annen utgave.</p>
+  <p>Den er også en stresstest av arkitekturen. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server oppdaterer siden under den, og det er de møtene demoen setter opp.</p>
+  <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over ledningen, lest av trafikken</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Utgave</th><th>Over ledningen</th><th>Hvor tegningen skjer</th></tr></thead>
+    <tbody>
+      <tr><td>Datastar</td><td><code>SSE · datastar-patch-elements · HTML · 16 kB</code></td><td>på serveren</td></tr>
+      <tr><td>TanStack Start</td><td><code>SSE · tilstand · JSON · 2,4 kB</code></td><td>i nettleseren</td></tr>
+      <tr><td>Astro</td><td><code>SSE · puls · JSON · 0,5 kB</code>, og en ny side ved innsending</td><td>på serveren</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Samme skjerm, samme komponenter, tre helt ulike måter å få den dit. Spill den selv: <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a>, og trykk «Hva skjedde?» nede til høyre for å se trafikken mens du spiller.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Kan se sitt eget rammeverk i lista, og se at skjermen er den samme.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde tre ekte apper i live ved siden av pakken. Enhetstester ser ikke det disse ser.</p>
   </div>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
   <h2>Når systemet ikke strekker til</h2>
   <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
@@ -833,7 +882,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 20 -->
+<!-- 21 -->
 <section class="lysbilde">
   <h2>Hva vi sitter igjen med</h2>
   <p class="ingress">Ett designsystem, uten rammeverk under, som virker i det vi har i dag og i det vi bytter til.</p>
@@ -851,7 +900,7 @@ fs.input({ type: "email", state: "invalid" })
       <h3>For oss som forvalter det</h3>
       <ul>
         <li>Tre nettlesermotorer i hver kjøring, og ventetid på den siste.</li>
-        <li>Tre ekte apper som må holdes i live ved siden av pakken.</li>
+        <li>Demospillet i tre utgaver må holdes i drift. Slutter det å virke, slutter vi å se feilene enhetstestene ikke tar.</li>
         <li>Navn som ikke kan døpes om i stillhet.</li>
         <li>Hver ny regel må ha en vaktpost, ellers er den glemt om en måned.</li>
       </ul>
