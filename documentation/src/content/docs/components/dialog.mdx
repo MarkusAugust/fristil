@@ -128,7 +128,7 @@ Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ titleId, 
 
 Inne i `<fs-dialog>` er en slik dialog stylet som en modal allerede før den er det: midt i vinduet, med flaten bak malt av en skygge, siden `::backdrop` bare finnes i topplaget. Den har også det samme maksmålet på bredden som nettleseren gir en modal. Da er geometrien den samme i begge tilstandene, og dialogen står stille i det komponenten kaller `showModal()`, også på en side som bruker tid på å laste. Laget kan settes med `--fs-dialog-layer`.
 
-Ett forbehold: dialogen er fastposisjonert før den blir modal, mens en ekte modal ligger i topplaget. Står den inne i et element med `transform`, `filter` eller `contain: layout`, er det elementet som blir utgangspunktet for den første, og vinduet for den andre. Da hopper den likevel, og hvor langt kommer an på hvor det elementet står. Testet i alle tre motorene med hver av de tre egenskapene. La dialogen stå utenfor slike elementer.
+Ett forbehold: dialogen er fastposisjonert før den blir modal, mens en ekte modal ligger i topplaget. Står den inne i et element med `transform`, `filter` eller `contain: layout`, er det elementet som blir utgangspunktet for den første, og vinduet for den andre. Da hopper den likevel, og hvor langt kommer an på hvor det elementet står. La dialogen stå utenfor slike elementer.
 
 Utenfor verten gjelder dette ikke. En `.fs-dialog` med `open`, uten `<fs-dialog>` rundt, står der den står i flyten, slik nettleserens egen stil gjør det.
 
@@ -167,7 +167,7 @@ I React er attributtet dessuten det eneste som stemmer når serveren rendrer dia
 | `.fs-dialog__body` | Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn av `.fs-dialog`, ellers ruller dialogen i stedet, og overskriften og knapperaden forsvinner ut av syne sammen med teksten |
 | `.fs-dialog__footer` | Raden med knapper nederst |
 
-`display` er den ene egenskapen du ikke kan sette fritt på `.fs-dialog`. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og en forfatterregel med `display` slår den uansett lag og spesifisitet, så en lukket dialog blir stående som et kort på siden. Trenger du et annet oppsett, ta med `dialog.fs-dialog:not([open]):not(:popover-open) { display: none }` selv. Systemet setter `display: flex` bare når `.fs-dialog__body` er et direkte barn, og gjør nettopp dette ved siden av.
+`display` er den ene egenskapen du ikke kan sette fritt på `.fs-dialog`. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og en forfatterregel med `display` slår den uansett lag og spesifisitet, så en lukket dialog blir stående som et kort på siden. Trenger du et annet oppsett, ta med `dialog.fs-dialog:not([open]):not(:is(:popover-open)) { display: none }` selv, og gjør den minst like spesifikk som din egen regel. Systemet setter `display: flex` bare når `.fs-dialog__body` er et direkte barn, og gjør nettopp dette ved siden av.
 
 | Variabel | Standard |
 | --- | --- |

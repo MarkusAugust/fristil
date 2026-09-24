@@ -16,7 +16,25 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
-## 0.12.2 (2026-09-24)
+## 0.13.0 (2026-09-24)
+
+### Brytende
+
+- **`.fs-dialog` er en kolonne når `.fs-dialog__body` er et direkte barn.**
+  Det er rettelsen under, men den endrer hvordan innholdet legger seg for
+  markup som alt finnes, og det er den strukturen dokumentasjonen viser. Marger
+  mellom avsnitt slutter å falle sammen, og tekst og knapper som står rett i
+  dialogen ved siden av kroppen blir egne rader i full bredde. En dialog uten
+  `.fs-dialog__body` er urørt.
+
+- **`display` kan ikke lenger settes alene på `.fs-dialog`.** En `<dialog>`
+  uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare
+  innenfor ett opphav, så en hvilken som helst forfatterregel med `display`
+  slår den skjulingen. Setter du din egen, må du ta med
+  `dialog.fs-dialog:not([open]):not(:is(:popover-open)) { display: none }`,
+  minst like spesifikk som din egen regel. Det står på komponentsiden og på
+  siden om tilpasning. Dette er det eneste unntaket fra løftet om at en enkel
+  selektor slår hva som helst i pakken.
 
 ### Rettet
 

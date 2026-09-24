@@ -62,13 +62,21 @@
    * forhåndsvisningen i dokumentasjonen, har ingen skjult tilstand å ta
    * tilbake.
    *
-   * `:not(:popover-open)` står der spesifikasjonens eget stilark har den. En
-   * popover setter aldri `open`, så uten unntaket ble et
+   * Unntaket for popover står der spesifikasjonens eget stilark har det. En
+   * popover setter aldri `open`, så uten det ble et
    * `<dialog class="fs-dialog" popover>` vist med `showPopover()` usynlig, i
-   * alle tre motorene og uten et ord. `popover.css` sender alt
-   * `:popover-open` ut i pakken, så støtten er tatt.
+   * alle tre motorene og uten et ord.
+   *
+   * `:is()` rundt det er ikke pynt. `:not()` tar en ikke-tilgivende liste, så
+   * i en motor som kjenner `:has()` men ikke `:popover-open`, og det finnes et
+   * vindu der begge deler er sant, ville hele regelen vært ugyldig mens
+   * kolonnen over ble stående. Da er vi tilbake til det regelen finnes for:
+   * en lukket dialog liggende som et kort over innholdet. `:is()` er
+   * tilgivende, så en ukjent pseudoklasse inni den gjør bare det leddet
+   * usant. Etterprøvd i alle tre motorene med en pseudoklasse ingen av dem
+   * kjenner.
    */
-  dialog.fs-dialog:not([open]):not(:popover-open) {
+  dialog.fs-dialog:not([open]):not(:is(:popover-open)) {
     display: none;
   }
 
@@ -103,8 +111,9 @@
      * Samme geometri som en modal, ikke bare samme sted.
      *
      * Verdiene er de samme som HTML-spesifikasjonens forslag til stilark gir
-     * en modal: `margin: auto` fra grunnregelen for `dialog`, og de innlinje
-     * insettene, `overflow` og maksmålene fra `dialog:modal`. Maksmålet på
+     * en modal: `margin: auto` og de innlinje insettene fra grunnregelen for
+     * `dialog`, og blokkinsettene, `overflow` og maksmålene fra
+     * `dialog:modal`. Maksmålet på
      * bredden er skrevet logisk, siden huset krever det, og de to formene er
      * like i vannrett skriveretning. Uten det er bredden vår, og når dialogen
      * blir modal klipper nettleseren den: testet på 390 piksler gikk den fra

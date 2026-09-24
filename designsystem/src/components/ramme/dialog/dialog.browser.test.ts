@@ -766,6 +766,39 @@ describe("dialogen før den er modal", () => {
     }
   })
 
+  it("lar dialogen selv rulle når den ikke har en kropp", async () => {
+    /*
+     * `overflow: auto` i regelen før modalen speiler det nettleseren gir en
+     * modal. Uten den er `overflow` `visible` fram til `showModal()`, og høyt
+     * innhold som ikke ligger i `.fs-dialog__body` renner ut av det avrundede
+     * kortet framfor å kunne rulles. Boksen er like stor uansett, så
+     * hopptestene ser det ikke.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          ${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}
+        </dialog>
+      </fs-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(boks.matches(":modal")).toBe(false)
+      expect(vindu.getComputedStyle(boks).overflow).toBe("auto")
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+    } finally {
+      rydd()
+    }
+  })
+
   it("skjuler ikke en dialog som vises som popover", async () => {
     /*
      * En popover setter aldri `open`, så regelen som tar tilbake den skjulte
