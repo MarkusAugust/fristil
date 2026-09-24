@@ -33,6 +33,9 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 ```ts
 import { fs } from "@fristil/designsystem"
 
+const input = document.querySelector<HTMLInputElement>("#epost")
+const feilmelding = document.querySelector<HTMLElement>("#epost-feil")
+
 function oppdater(erGyldig: boolean) {
   const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 

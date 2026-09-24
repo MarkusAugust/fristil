@@ -58,6 +58,8 @@ ledetekst.htmlFor = "epost"
 Setter du opp et helt felt, gjør [`fs.field`](../field/) både markeringen og koblingen til kontrollen:
 
 ```ts
+const input = document.querySelector<HTMLInputElement>("#epost")
+
 const felt = fs.field({ id: "epost", required: "symbol" })
 
 fs.setAttributes(ledetekst, felt.label)
