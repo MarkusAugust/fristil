@@ -506,7 +506,11 @@ describe("dialogen før den er modal", () => {
    * bare markup og stilark er nøyaktig det serveren sender, og ingenting
    * annet.
    */
-  async function iRammeUtenSkript(markup: string): Promise<{
+  async function iRammeUtenSkript(
+    markup: string,
+    bredde = 800,
+    hoyde = 600,
+  ): Promise<{
     dialog: HTMLDialogElement
     vindu: Window
     rydd: () => void
@@ -515,8 +519,8 @@ describe("dialogen før den er modal", () => {
     const dialogstil = (await import("./dialog.css?inline")).default
 
     const ramme = document.createElement("iframe")
-    ramme.width = "800"
-    ramme.height = "600"
+    ramme.width = String(bredde)
+    ramme.height = String(hoyde)
     ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
     document.body.append(ramme)
 
@@ -589,6 +593,309 @@ describe("dialogen før den er modal", () => {
       expect(
         Math.abs(rute.top + rute.height / 2 - vindu.innerHeight / 2),
       ).toBeLessThan(4)
+    } finally {
+      rydd()
+    }
+  })
+
+  /*
+   * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
+   *
+   * Regelen som gir dialogen plassen til en modal før den er det, er skrevet
+   * tre ganger, og hver runde flyttet hoppet framfor å fjerne det. Først sto
+   * den øverst i flyten og landet på midten. Så ble den midtstilt, og
+   * nettleserens eget maksmål for bredden klipte den i det den ble modal. Så
+   * kom maksmålet på høyden med, og da vant det på spesifisitet før modalen
+   * og sluttet å gjelde etterpå, så en høy dialog hoppet i stedet.
+   *
+   * Testen leser boksen i begge tilstander og krever at den står stille. Den
+   * kjøres med to slags innhold, siden et kort innhold aldri treffer
+   * maksmålene og da etterprøver ingenting.
+   */
+  for (const { navn, innhold } of [
+    {
+      navn: "med kort innhold",
+      innhold: "<p>Innhold som finnes uten JavaScript.</p>",
+    },
+    {
+      navn: "med innhold som er høyere enn skjermen",
+      innhold: `<div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
+    },
+  ]) {
+    it(`flytter seg ikke når den blir modal, ${navn}`, async () => {
+      const {
+        dialog: boks,
+        vindu,
+        rydd,
+      } = await iRammeUtenSkript(
+        `
+        <fs-dialog>
+          <dialog class="fs-dialog" open>
+            <h2 class="fs-dialog__title">Velkommen</h2>
+            ${innhold}
+          </dialog>
+        </fs-dialog>`,
+        390,
+        700,
+      )
+
+      try {
+        // Er dialogen allerede modal her, er alle påstandene under sanne
+        // uten at noe er etterprøvd.
+        expect(boks.matches(":modal")).toBe(false)
+
+        const før = boks.getBoundingClientRect()
+
+        /*
+         * Så smal ramme at nettleserens eget maksmål for bredden på en modal
+         * er mindre enn bredden dialogen ellers ville tatt. Uten det er det
+         * ingenting å klippe, og testen ville vært grønn også med feilen i.
+         * Maksmålet regnes med dialogens egen skriftstørrelse, siden `2em`
+         * gjør det.
+         */
+        const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
+        expect(
+          Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
+        ).toBeLessThanOrEqual(1)
+
+        boks.close()
+        boks.showModal()
+        expect(boks.matches(":modal")).toBe(true)
+
+        const etter = boks.getBoundingClientRect()
+
+        // Én piksel slingringsmonn for avrunding, ikke mer.
+        expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
+      } finally {
+        rydd()
+      }
+    })
+  }
+
+  it("lar kroppen rulle, ikke dialogen, i begge tilstander", async () => {
+    /*
+     * `.fs-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
+     * var en blokk, så kroppens høyde var innholdsbestemt og ble aldri
+     * klippet. Det som rullet var dialogen selv, og bare når den var modal, så
+     * overskriften og knapperaden forsvant ut av syne sammen med teksten.
+     */
+    const { dialog: boks, rydd } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          <div class="fs-dialog__footer">
+            <button class="fs-button" type="button">Lukk</button>
+          </div>
+        </dialog>
+      </fs-dialog>`,
+      390,
+      700,
+    )
+
+    const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+    const bunn = boks.querySelector(".fs-dialog__footer") as HTMLElement
+
+    const somDenSkal = () => {
+      expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
+      // Dialogen selv ruller ikke, så tittelen og knappene blir stående.
+      expect(boks.scrollHeight).toBeLessThanOrEqual(boks.clientHeight + 1)
+      const kort = boks.getBoundingClientRect()
+      const rad = bunn.getBoundingClientRect()
+      expect(rad.top).toBeGreaterThanOrEqual(kort.top - 1)
+      expect(rad.bottom).toBeLessThanOrEqual(kort.bottom + 1)
+    }
+
+    try {
+      // Er dialogen allerede modal her, er påstandene under sanne uten at
+      // noe er etterprøvd.
+      expect(boks.matches(":modal")).toBe(false)
+      somDenSkal()
+
+      // Og i topplaget, der nettleseren selv gir dialogen `overflow: auto`.
+      boks.close()
+      boks.showModal()
+      expect(boks.matches(":modal")).toBe(true)
+      somDenSkal()
+    } finally {
+      rydd()
+    }
+  })
+
+  it("holder en lukket dialog skjult, også med kropp", async () => {
+    /*
+     * Kolonnen ga klassen en `display`, og en forfatterregel slår nettleserens
+     * eget stilark uansett lag og spesifisitet. Uten at den skjulte tilstanden
+     * ble tatt tilbake, sto en lukket dialog som et kort oppå innholdet rundt:
+     * fra sidelasting for alt som sender dialogen lukket, og etter hver
+     * lukking. Det er den anbefalte bruken med JavaScript.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <fs-dialog>
+        <dialog class="fs-dialog">
+          <h2 class="fs-dialog__title">Slette søknaden?</h2>
+          <div class="fs-dialog__body">
+            <p>Søknaden og vedleggene blir borte.</p>
+          </div>
+        </dialog>
+      </fs-dialog>`)
+
+    try {
+      expect(boks.open).toBe(false)
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+
+      // Og den kommer tilbake når den åpnes, som en kolonne.
+      boks.showModal()
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+
+      // Og forsvinner igjen etter lukking, som er der den ble stående.
+      boks.close()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen selv rulle når den ikke har en kropp", async () => {
+    /*
+     * `overflow: auto` i regelen før modalen speiler det nettleseren gir en
+     * modal. Uten den er `overflow` `visible` fram til `showModal()`, og høyt
+     * innhold som ikke ligger i `.fs-dialog__body` renner ut av det avrundede
+     * kortet framfor å kunne rulles. Boksen er like stor uansett, så
+     * hopptestene ser det ikke.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          ${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}
+        </dialog>
+      </fs-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(boks.matches(":modal")).toBe(false)
+      expect(vindu.getComputedStyle(boks).overflow).toBe("auto")
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("skjuler ikke en dialog som vises som popover", async () => {
+    /*
+     * En popover setter aldri `open`, så regelen som tar tilbake den skjulte
+     * tilstanden må ha det samme unntaket som nettleserens eget stilark har.
+     * Uten det forsvant et `<dialog popover>` helt, uten et ord.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <dialog class="fs-dialog" popover id="hjelp">
+        <h2 class="fs-dialog__title">Hva betyr dette?</h2>
+        <div class="fs-dialog__body">
+          <p>Søknaden er registrert, men ikke behandlet.</p>
+        </div>
+      </dialog>`)
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+
+      boks.showPopover()
+      expect(boks.matches(":popover-open")).toBe(true)
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+      expect(boks.getBoundingClientRect().width).toBeGreaterThan(0)
+
+      boks.hidePopover()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når den ikke har en kropp", async () => {
+    /*
+     * Kolonnen slås på av `:has(> .fs-dialog__body)`, og det vilkåret er med
+     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
+     * en knapp som står rett i dialogen skal beholde bredden sin framfor å bli
+     * en egen rad i full bredde.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
+          <button class="fs-button" type="button">Lukk</button>
+        </dialog>
+      </fs-dialog>`)
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const knapp = boks.querySelector(".fs-button") as HTMLElement
+      const bredde = knapp.getBoundingClientRect().width
+      expect(bredde).toBeGreaterThan(0)
+      // Ikke strukket til full bredde slik et flekselement ville blitt.
+      expect(bredde).toBeLessThan(boks.getBoundingClientRect().width / 2)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når kroppen er pakket inn", async () => {
+    /*
+     * Det dokumentasjonen lover i tabellen over klassene: kroppen må være et
+     * direkte barn. Er den pakket inn, i et `<form>` for eksempel, er det
+     * dialogen som ruller, som før kolonnen kom. Da forsvinner overskriften ut
+     * av syne, og det er grunnen til at vilkåret står skrevet.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <form method="dialog">
+            <h2 class="fs-dialog__title">Vilkår</h2>
+            <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          </form>
+        </dialog>
+      </fs-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+      expect(kropp.scrollHeight).toBeLessThanOrEqual(kropp.clientHeight + 1)
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
     } finally {
       rydd()
     }

@@ -29,6 +29,57 @@
     box-shadow: var(--semantic-shadow-overlay);
   }
 
+  /*
+   * Kolonne, men bare når kroppen står der den skal.
+   *
+   * `.fs-dialog__body` har hatt `overflow-y: auto` siden komponenten kom, uten
+   * å kunne rulle: dialogen er en blokk, så kroppens høyde er innholdsbestemt
+   * og blir aldri klippet. Det som rullet var dialogen selv, og bare når den
+   * var modal, så overskriften og knapperaden forsvant ut av syne sammen med
+   * teksten.
+   *
+   * Barnevelgeren er ikke pynt. Kolonnen virker bare når kroppen er et direkte
+   * barn, og den endrer samtidig hvordan alt annet legger seg: marger mellom
+   * avsnitt slutter å falle sammen, og tekst og knapper som står rett i
+   * dialogen blir egne rader i full bredde. Er kroppen pakket inn i noe, eller
+   * finnes den ikke, er blokkoppsettet fortsatt det riktige, og da står det.
+   */
+  .fs-dialog:has(> .fs-dialog__body) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /*
+   * Og så tilbake det regelen over tok.
+   *
+   * En `<dialog>` uten `open` er skjult av nettleserens eget stilark, med
+   * `display: none`. En forfatterregel slår nettleserens uansett lag og
+   * spesifisitet, så i det klassen fikk en `display`, ble en lukket dialog
+   * synlig: den la seg som et kort oppå innholdet rundt, fra sidelasting og
+   * etter hver lukking. Testet i alle tre motorene.
+   *
+   * Regelen gjelder bare `<dialog>`. En `<div>` med klassen, som i
+   * forhåndsvisningen i dokumentasjonen, har ingen skjult tilstand å ta
+   * tilbake.
+   *
+   * Unntaket for popover står der spesifikasjonens eget stilark har det. En
+   * popover setter aldri `open`, så uten det ble et
+   * `<dialog class="fs-dialog" popover>` vist med `showPopover()` usynlig, i
+   * alle tre motorene og uten et ord.
+   *
+   * `:is()` rundt det er ikke pynt. `:not()` tar en ikke-tilgivende liste, så
+   * i en motor som kjenner `:has()` men ikke `:popover-open`, og det finnes et
+   * vindu der begge deler er sant, ville hele regelen vært ugyldig mens
+   * kolonnen over ble stående. Da er vi tilbake til det regelen finnes for:
+   * en lukket dialog liggende som et kort over innholdet. `:is()` er
+   * tilgivende, så en ukjent pseudoklasse inni den gjør bare det leddet
+   * usant. Etterprøvd i alle tre motorene med en pseudoklasse ingen av dem
+   * kjenner.
+   */
+  dialog.fs-dialog:not([open]):not(:is(:popover-open)) {
+    display: none;
+  }
+
   /* Flaten bak dialogen. Den finnes bare når dialogen er åpnet med
      showModal(); et vanlig show() gir ingen ::backdrop. */
   .fs-dialog::backdrop {
@@ -54,10 +105,36 @@
    */
   fs-dialog .fs-dialog[open]:not(:modal) {
     position: fixed;
-    inset-block-start: 50%;
-    inset-inline-start: 50%;
-    translate: -50% -50%;
     z-index: var(--fs-dialog-layer, 40);
+
+    /*
+     * Samme geometri som en modal, ikke bare samme sted.
+     *
+     * Verdiene er de samme som HTML-spesifikasjonens forslag til stilark gir
+     * en modal: `margin: auto` og de innlinje insettene fra grunnregelen for
+     * `dialog`, og blokkinsettene, `overflow` og maksmålene fra
+     * `dialog:modal`. Maksmålet på
+     * bredden er skrevet logisk, siden huset krever det, og de to formene er
+     * like i vannrett skriveretning. Uten det er bredden vår, og når dialogen
+     * blir modal klipper nettleseren den: testet på 390 piksler gikk den fra
+     * 358 til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
+     * loddrette hoppet var borte, og et vannrett kom i stedet.
+     *
+     * `6px` og `2em` er nettleserens egne tall, ikke vår avstandsskala. De
+     * skal derfor ikke bli tokens: likheten er hele poenget med dem.
+     *
+     * Maksmålet på høyden står med vilje ikke her. `.fs-dialog` har det
+     * allerede, og en forfatterregel slår nettleserens `dialog:modal`, så den
+     * ene verdien gjelder i begge tilstandene. Sto den her også, ville denne
+     * vunnet på spesifisitet før dialogen ble modal og falt bort etterpå, og
+     * en høy dialog ville hoppet 13 piksler loddrett i stedet. Testet i alle
+     * tre motorene.
+     */
+    inset: 0;
+    margin: auto;
+    max-inline-size: calc(100% - 6px - 2em);
+    overflow: auto;
+
     box-shadow:
       var(--semantic-shadow-overlay),
       0 0 0 100vmax var(--semantic-overlay-backdrop);
@@ -70,6 +147,10 @@
     line-height: var(--semantic-line-height-compact);
   }
 
+  /* Den som ruller når dialogen er full. Et flekselement som ikke har
+     `overflow: visible` har automatisk minstestørrelse null, så den krymper
+     av seg selv; noen `min-block-size: 0` trengs ikke, og er etterprøvd i
+     alle tre motorene. */
   .fs-dialog__body {
     margin: 0;
     overflow-y: auto;

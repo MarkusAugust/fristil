@@ -16,6 +16,68 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.13.0 (2026-09-24)
+
+### Brytende
+
+- **`.fs-dialog` er en kolonne når `.fs-dialog__body` er et direkte barn.**
+  Det er rettelsen under, men den endrer hvordan innholdet legger seg for
+  markup som alt finnes, og det er den strukturen dokumentasjonen viser. Marger
+  mellom avsnitt slutter å falle sammen, og tekst og knapper som står rett i
+  dialogen ved siden av kroppen blir egne rader i full bredde. En dialog uten
+  `.fs-dialog__body` er urørt.
+
+- **`display` kan ikke lenger settes alene på `.fs-dialog`.** En `<dialog>`
+  uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare
+  innenfor ett opphav, så en hvilken som helst forfatterregel med `display`
+  slår den skjulingen. Setter du din egen, må du ta med
+  `dialog.fs-dialog:not([open]):not(:is(:popover-open)) { display: none }`,
+  minst like spesifikk som din egen regel. Det står på komponentsiden og på
+  siden om tilpasning. Dette er det eneste unntaket fra løftet om at en enkel
+  selektor slår hva som helst i pakken.
+
+### Rettet
+
+- **Dialogen hopper heller ikke sidelengs.** 0.12.1 ga den plassen til en
+  modal før den var det, og det loddrette hoppet var borte. Et vannrett kom i
+  stedet: nettleserens eget stilark setter `max-width: calc(100% - 6px - 2em)`
+  på `dialog:modal`, og det hadde vi ikke. På en skjerm som er 390 piksler
+  bred gikk dialogen derfor fra 358 til 352 piksler i det `showModal()` kjørte,
+  og flyttet seg tre piksler mot høyre.
+
+  `.fs-dialog[open]:not(:modal)` inne i `<fs-dialog>` bruker nå `inset: 0` med
+  `margin: auto`, det samme maksmålet på bredden og `overflow: auto`, altså de
+  samme verdiene spesifikasjonen gir en modal, i logisk form. Maksmålet på
+  høyden står med vilje bare på `.fs-dialog`, siden det er det strengeste av
+  de to og dermed gjelder i begge tilstandene. Testen leser boksen før og
+  etter `showModal()`, med to slags innhold, og krever at den står stille.
+
+- **`.fs-dialog__body` ruller nå faktisk.** Klassen har hatt `overflow-y: auto`
+  siden komponenten kom, uten at den kunne gjøre noe: dialogen var en blokk, så
+  kroppens høyde var innholdsbestemt og ble aldri klippet. Det som rullet var
+  dialogen selv, og bare når den var modal, så overskriften og knapperaden
+  forsvant ut av syne sammen med teksten. `.fs-dialog:has(> .fs-dialog__body)`
+  er nå en kolonne, og da krymper kroppen og ruller mens tittelen og knappene
+  blir stående. Det er også det dokumentasjonen har sagt hele tiden.
+
+  Regelen tar samtidig tilbake det den tok: en `<dialog>` uten `open` er skjult
+  av nettleserens eget stilark, og en forfatterregel med `display` slår den
+  uansett lag og spesifisitet. `dialog.fs-dialog:not([open]):not(:popover-open)`
+  setter `display: none` igjen, ellers ville en lukket dialog stått som et kort
+  oppå innholdet rundt, fra sidelasting og etter hver lukking. Unntaket for
+  popover står der spesifikasjonens eget stilark har det, siden en popover
+  aldri setter `open`.
+
+  **Det gjør `display` til den ene egenskapen en konsument ikke kan sette fritt
+  på `.fs-dialog`.** Gjør du det, må du ta den skjulte tilstanden tilbake selv.
+  Det står nå på komponentsiden.
+
+  Vilkåret i selektoren er en del av oppførselen, og står nå i tabellen over
+  klassene. Kolonnen virker bare når kroppen er et direkte barn, og den endrer
+  samtidig hvordan alt annet legger seg: marger mellom avsnitt slutter å falle
+  sammen, og tekst og knapper som står rett i dialogen blir egne rader i full
+  bredde. En dialog uten kropp er derfor urørt.
+
 ## 0.12.1 (2026-09-24)
 
 ### Rettet
