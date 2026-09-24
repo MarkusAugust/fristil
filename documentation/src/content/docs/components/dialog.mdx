@@ -19,15 +19,21 @@ Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra
 
 ## Slik ser den ut
 
-Forhåndsvisningen viser kortet slik det ser ut når dialogen er åpen. En ekte `<dialog>` ligger i topplaget, så her står klassen på en `<div>` for at den skal kunne vises i boksen:
+Forhåndsvisningen viser dialogen slik serveren sender den: en `<dialog>` med `open`, som ennå ikke er gjort modal. En dialog er tatt ut av flyten, så her tvinges den tilbake i boksen for å kunne vises, og det er det eneste forhåndsvisningen legger til.
 
 <Eksempel
   stiler={["dialog", "button"]}
   layout="stabel"
   maxWidth="34rem"
+  visningsCss={`
+    /* Bare for å vise dialogen i boksen. En åpen <dialog> er
+       position: absolute og ville falt ut av forhåndsvisningen. I en ekte
+       side trengs ingenting av dette. */
+    .fs-dialog { position: static; }
+  `}
   kode={`
-<div class="fs-dialog">
-  <h2 class="fs-dialog__title">Slette søknaden?</h2>
+<dialog class="fs-dialog" aria-labelledby="slette-tittel" open>
+  <h2 class="fs-dialog__title" id="slette-tittel">Slette søknaden?</h2>
   <div class="fs-dialog__body">
     <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
   </div>
@@ -35,8 +41,10 @@ Forhåndsvisningen viser kortet slik det ser ut når dialogen er åpen. En ekte 
     <button class="fs-button" data-variant="secondary" type="button">Avbryt</button>
     <button class="fs-button" data-variant="danger" type="button">Slett søknaden</button>
   </div>
-</div>
+</dialog>
 `} />
+
+Markupen over er en boks på siden, ikke en modal. `showModal()` er det som flytter fokus inn, holder det der, lukker på Escape og maler flaten bak. Under står de to måtene å få det kallet gjort på.
 
 ## Komplett eksempel
 
