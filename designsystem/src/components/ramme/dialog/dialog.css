@@ -35,6 +35,34 @@
     background: var(--semantic-overlay-backdrop);
   }
 
+  /*
+   * Dialogen står riktig før den er blitt en ekte modal.
+   *
+   * En dialog serveren vil vise, sendes med `open`, ellers finnes ikke
+   * innholdet uten JavaScript. Nettleseren legger den da i den vanlige
+   * flyten, altså som en boks et sted i siden, og først når komponenten
+   * kaller `showModal()` flyttes den til topplaget og midtstilles. Mellom de
+   * to øyeblikkene hopper den, og på en treg forbindelse er hoppet godt
+   * synlig: testet i Chromium sto den på topp 0 og landet på topp 128.
+   *
+   * Her plasseres den som en modal allerede før den er det, så det ikke er
+   * noe å hoppe fra. Flaten bak males med en skygge, siden `::backdrop` bare
+   * finnes i topplaget.
+   *
+   * Regelen gjelder bare inne i `<fs-dialog>`. En `.fs-dialog` som brukes
+   * uten komponenten, og med vilje ikke er modal, skal stå der den står.
+   */
+  fs-dialog .fs-dialog[open]:not(:modal) {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+    z-index: var(--fs-dialog-layer, 40);
+    box-shadow:
+      var(--semantic-shadow-overlay),
+      0 0 0 100vmax var(--semantic-overlay-backdrop);
+  }
+
   .fs-dialog__title {
     margin: 0 0 var(--size-2);
     font-size: var(--font-size-l);
