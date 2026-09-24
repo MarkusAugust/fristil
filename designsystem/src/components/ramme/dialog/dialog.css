@@ -9,14 +9,6 @@
   .fs-dialog {
     box-sizing: border-box;
     /*
-     * Kolonne, slik at `.fs-dialog__body` er den som ruller når innholdet er
-     * for høyt, mens tittelen og knappene blir stående. I normal flyt er
-     * høyden innholdsbestemt, og `overflow-y` på kroppen fikk da aldri noe å
-     * gjøre: det var dialogen selv som rullet, og bare når den var modal.
-     */
-    display: flex;
-    flex-direction: column;
-    /*
      * `100%` og ikke bare `100vw`: en ekte dialog i topplaget måler seg mot
      * vindusruten, men står den i en smalere boks, som i dokumentasjonen,
      * stakk den utenfor. `min()` tar den minste av de tre.
@@ -35,6 +27,26 @@
     border: 1px solid var(--semantic-divider-30);
     border-radius: var(--fs-dialog-radius, var(--size-2));
     box-shadow: var(--semantic-shadow-overlay);
+  }
+
+  /*
+   * Kolonne, men bare når kroppen står der den skal.
+   *
+   * `.fs-dialog__body` har hatt `overflow-y: auto` siden komponenten kom, uten
+   * å kunne rulle: dialogen er en blokk, så kroppens høyde er innholdsbestemt
+   * og blir aldri klippet. Det som rullet var dialogen selv, og bare når den
+   * var modal, så overskriften og knapperaden forsvant ut av syne sammen med
+   * teksten.
+   *
+   * Barnevelgeren er ikke pynt. Kolonnen virker bare når kroppen er et direkte
+   * barn, og den endrer samtidig hvordan alt annet legger seg: marger mellom
+   * avsnitt slutter å falle sammen, og tekst og knapper som står rett i
+   * dialogen blir egne rader i full bredde. Er kroppen pakket inn i noe, eller
+   * finnes den ikke, er blokkoppsettet fortsatt det riktige, og da står det.
+   */
+  .fs-dialog:has(> .fs-dialog__body) {
+    display: flex;
+    flex-direction: column;
   }
 
   /* Flaten bak dialogen. Den finnes bare når dialogen er åpnet med
@@ -67,9 +79,11 @@
     /*
      * Samme geometri som en modal, ikke bare samme sted.
      *
-     * `inset: 0` med `margin: auto` og `overflow: auto` er de samme verdiene
-     * HTML-spesifikasjonens forslag til stilark gir `dialog:modal`, i logisk
-     * form. Uten maksmålet på bredden er den vår, og i det dialogen blir
+     * Verdiene er de samme som HTML-spesifikasjonens forslag til stilark gir
+     * en modal: `margin: auto` fra grunnregelen for `dialog`, og de innlinje
+     * insettene, `overflow` og maksmålene fra `dialog:modal`. Maksmålet på
+     * bredden er skrevet logisk, siden huset krever det, og de to formene er
+     * like i vannrett skriveretning. Uten det er bredden vår, og når dialogen blir
      * modal klipper nettleseren den: testet på 390 piksler gikk den fra 358
      * til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
      * loddrette hoppet var borte, og et vannrett kom i stedet.
@@ -100,10 +114,11 @@
     line-height: var(--semantic-line-height-compact);
   }
 
+  /* Den som ruller når dialogen er full. Et flekselement som ikke har
+     `overflow: visible` har automatisk minstestørrelse null, så den krymper
+     av seg selv; noen `min-block-size: 0` trengs ikke, og er etterprøvd i
+     alle tre motorene. */
   .fs-dialog__body {
-    /* Uten dette krymper ikke kroppen under sitt eget innhold, og da ruller
-       den ikke. `min-block-size` er `auto` for et flekselement. */
-    min-block-size: 0;
     margin: 0;
     overflow-y: auto;
   }

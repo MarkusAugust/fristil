@@ -19,17 +19,12 @@ Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra
 
 ## Slik ser den ut
 
-Forhåndsvisningen viser dialogen slik den ser ut når den er åpen. En ekte `<dialog>` ligger i topplaget, og tvinges her ned i boksen for å kunne vises:
+Forhåndsvisningen viser kortet slik det ser ut når dialogen er åpen. En ekte `<dialog>` ligger i topplaget, så her står klassen på en `<div>` for at den skal kunne vises i boksen:
 
 <Eksempel
   stiler={["dialog", "button"]}
   layout="stabel"
   maxWidth="34rem"
-  visningsCss={`
-    /* Bare for å vise dialogen i en boks. Med showModal() trengs ingenting
-       av dette. */
-    .fs-dialog { position: static; display: block; }
-  `}
   kode={`
 <div class="fs-dialog">
   <h2 class="fs-dialog__title">Slette søknaden?</h2>
@@ -129,9 +124,11 @@ At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren o
 
 Attributtet på selve `<dialog>` er noe annet: nettleseren setter det i `showModal()`, og serveren sendte det ikke, så en oppdatering river det bort og skjuler dialogen i det øyeblikket den åpnet den. Komponenten setter det tilbake når dialogen fortsatt står i topplaget, så malen din trenger ingenting ekstra.
 
-Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ titleId, open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt. Med attributtet vises det, plassert over innholdet under seg og uten flate bak, slik nettleserens egen stil gjør det. Det er ikke like pent som en modal, men det er der, og komponenten gjør den om til en ekte modal i det skriptet kjører.
+Serveren skriver det likevel når dialogen skal vises, og `fs.dialog({ titleId, open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt.
 
-Det siste gjelder også deg som har JavaScript: dialogen vises først der den står i flyten, og hopper til midten når modulen har kjørt. På en tung side er det et synlig hopp, ikke ett bilde. Vil du unngå det, la serveren sende dialogen lukket og åpne den fra klienten i stedet.
+Inne i `<fs-dialog>` er en slik dialog stylet som en modal allerede før den er det: midt i vinduet, med flaten bak malt av en skygge, siden `::backdrop` bare finnes i topplaget. Den har også det samme maksmålet på bredden som nettleseren gir en modal. Da er geometrien den samme i begge tilstandene, og dialogen står stille i det komponenten kaller `showModal()`, også på en side som bruker tid på å laste. Laget kan settes med `--fs-dialog-layer`.
+
+Utenfor verten gjelder dette ikke. En `.fs-dialog` med `open`, uten `<fs-dialog>` rundt, står der den står i flyten, slik nettleserens egen stil gjør det.
 
 ## TypeScript
 
@@ -165,7 +162,7 @@ I React er attributtet dessuten det eneste som stemmer når serveren rendrer dia
 | --- | --- |
 | `.fs-dialog` | Selve dialogen |
 | `.fs-dialog__title` | Overskriften |
-| `.fs-dialog__body` | Innholdet, som ruller når dialogen blir for høy |
+| `.fs-dialog__body` | Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn av `.fs-dialog`, ellers ruller dialogen i stedet, og overskriften og knapperaden forsvinner ut av syne sammen med teksten |
 | `.fs-dialog__footer` | Raden med knapper nederst |
 
 | Variabel | Standard |

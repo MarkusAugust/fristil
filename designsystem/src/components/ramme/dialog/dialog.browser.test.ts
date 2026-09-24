@@ -676,12 +676,12 @@ describe("dialogen før den er modal", () => {
     })
   }
 
-  it("lar kroppen rulle, ikke dialogen", async () => {
+  it("lar kroppen rulle, ikke dialogen, i begge tilstander", async () => {
     /*
-     * `.fs-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: i normal
-     * flyt er høyden innholdsbestemt, så kroppen ble aldri klippet, og det var
-     * dialogen selv som rullet, og bare når den var modal. Tittelen og knappene
-     * forsvant da ut av syne sammen med teksten.
+     * `.fs-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
+     * var en blokk, så kroppens høyde var innholdsbestemt og ble aldri
+     * klippet. Det som rullet var dialogen selv, og bare når den var modal, så
+     * overskriften og knapperaden forsvant ut av syne sammen med teksten.
      */
     const { dialog: boks, rydd } = await iRammeUtenSkript(
       `
@@ -692,21 +692,71 @@ describe("dialogen før den er modal", () => {
           <div class="fs-dialog__footer">
             <button class="fs-button" type="button">Lukk</button>
           </div>
-        </dialog>`,
+        </dialog>
+      </fs-dialog>`,
       390,
       700,
     )
 
-    try {
-      const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
-      const bunn = boks.querySelector(".fs-dialog__footer") as HTMLElement
+    const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+    const bunn = boks.querySelector(".fs-dialog__footer") as HTMLElement
 
+    const somDenSkal = () => {
       expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
-      // Dialogen selv ruller ikke, så knappene blir stående.
+      // Dialogen selv ruller ikke, så tittelen og knappene blir stående.
       expect(boks.scrollHeight).toBeLessThanOrEqual(boks.clientHeight + 1)
-      expect(bunn.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-        boks.getBoundingClientRect().bottom + 1,
-      )
+      const kort = boks.getBoundingClientRect()
+      const rad = bunn.getBoundingClientRect()
+      expect(rad.top).toBeGreaterThanOrEqual(kort.top - 1)
+      expect(rad.bottom).toBeLessThanOrEqual(kort.bottom + 1)
+    }
+
+    try {
+      // I en full kjøring er <fs-dialog> alt registrert av en annen testfil.
+      expect(boks.matches(":modal")).toBe(false)
+      somDenSkal()
+
+      // Og i topplaget, der nettleseren selv gir dialogen `overflow: auto`.
+      boks.close()
+      boks.showModal()
+      expect(boks.matches(":modal")).toBe(true)
+      somDenSkal()
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når kroppen ikke er et direkte barn", async () => {
+    /*
+     * Kolonnen slås på av `:has(> .fs-dialog__body)`, og det vilkåret er med
+     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
+     * marger mellom avsnitt skal fortsatt falle sammen, og en knapp som står
+     * rett i dialogen skal beholde bredden sin framfor å bli en egen rad.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <fs-dialog>
+        <dialog class="fs-dialog" open>
+          <h2 class="fs-dialog__title">Vilkår</h2>
+          <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
+          <button class="fs-button" type="button">Lukk</button>
+        </dialog>
+      </fs-dialog>`,
+      800,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const knapp = boks.querySelector(".fs-button") as HTMLElement
+      const bredde = knapp.getBoundingClientRect().width
+      expect(bredde).toBeGreaterThan(0)
+      // Ikke strukket til full bredde slik et flekselement ville blitt.
+      expect(bredde).toBeLessThan(boks.getBoundingClientRect().width / 2)
     } finally {
       rydd()
     }
