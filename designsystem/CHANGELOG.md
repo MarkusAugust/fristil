@@ -44,9 +44,15 @@ kommer i et nytt undertall.
 
   Regelen tar samtidig tilbake det den tok: en `<dialog>` uten `open` er skjult
   av nettleserens eget stilark, og en forfatterregel med `display` slår den
-  uansett lag og spesifisitet. `dialog.fs-dialog:not([open])` setter
-  `display: none` igjen, ellers ville en lukket dialog stått som et kort oppå
-  innholdet rundt, fra sidelasting og etter hver lukking.
+  uansett lag og spesifisitet. `dialog.fs-dialog:not([open]):not(:popover-open)`
+  setter `display: none` igjen, ellers ville en lukket dialog stått som et kort
+  oppå innholdet rundt, fra sidelasting og etter hver lukking. Unntaket for
+  popover står der spesifikasjonens eget stilark har det, siden en popover
+  aldri setter `open`.
+
+  **Det gjør `display` til den ene egenskapen en konsument ikke kan sette fritt
+  på `.fs-dialog`.** Gjør du det, må du ta den skjulte tilstanden tilbake selv.
+  Det står nå på komponentsiden.
 
   Vilkåret i selektoren er en del av oppførselen, og står nå i tabellen over
   klassene. Kolonnen virker bare når kroppen er et direkte barn, og den endrer

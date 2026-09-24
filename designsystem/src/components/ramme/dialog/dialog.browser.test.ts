@@ -640,9 +640,8 @@ describe("dialogen før den er modal", () => {
       )
 
       try {
-        // I en full kjøring er <fs-dialog> alt registrert av en annen testfil.
-        // Er dialogen allerede modal her, er alle påstandene under sanne uten
-        // at noe er etterprøvd.
+        // Er dialogen allerede modal her, er alle påstandene under sanne
+        // uten at noe er etterprøvd.
         expect(boks.matches(":modal")).toBe(false)
 
         const før = boks.getBoundingClientRect()
@@ -712,7 +711,8 @@ describe("dialogen før den er modal", () => {
     }
 
     try {
-      // I en full kjøring er <fs-dialog> alt registrert av en annen testfil.
+      // Er dialogen allerede modal her, er påstandene under sanne uten at
+      // noe er etterprøvd.
       expect(boks.matches(":modal")).toBe(false)
       somDenSkal()
 
@@ -761,6 +761,39 @@ describe("dialogen før den er modal", () => {
       boks.close()
       expect(vindu.getComputedStyle(boks).display).toBe("none")
       expect(boks.getBoundingClientRect().height).toBe(0)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("skjuler ikke en dialog som vises som popover", async () => {
+    /*
+     * En popover setter aldri `open`, så regelen som tar tilbake den skjulte
+     * tilstanden må ha det samme unntaket som nettleserens eget stilark har.
+     * Uten det forsvant et `<dialog popover>` helt, uten et ord.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <dialog class="fs-dialog" popover id="hjelp">
+        <h2 class="fs-dialog__title">Hva betyr dette?</h2>
+        <div class="fs-dialog__body">
+          <p>Søknaden er registrert, men ikke behandlet.</p>
+        </div>
+      </dialog>`)
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+
+      boks.showPopover()
+      expect(boks.matches(":popover-open")).toBe(true)
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+      expect(boks.getBoundingClientRect().width).toBeGreaterThan(0)
+
+      boks.hidePopover()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
     } finally {
       rydd()
     }

@@ -61,8 +61,14 @@
    * Regelen gjelder bare `<dialog>`. En `<div>` med klassen, som i
    * forhåndsvisningen i dokumentasjonen, har ingen skjult tilstand å ta
    * tilbake.
+   *
+   * `:not(:popover-open)` står der spesifikasjonens eget stilark har den. En
+   * popover setter aldri `open`, så uten unntaket ble et
+   * `<dialog class="fs-dialog" popover>` vist med `showPopover()` usynlig, i
+   * alle tre motorene og uten et ord. `popover.css` sender alt
+   * `:popover-open` ut i pakken, så støtten er tatt.
    */
-  dialog.fs-dialog:not([open]) {
+  dialog.fs-dialog:not([open]):not(:popover-open) {
     display: none;
   }
 
@@ -100,20 +106,20 @@
      * en modal: `margin: auto` fra grunnregelen for `dialog`, og de innlinje
      * insettene, `overflow` og maksmålene fra `dialog:modal`. Maksmålet på
      * bredden er skrevet logisk, siden huset krever det, og de to formene er
-     * like i vannrett skriveretning. Uten det er bredden vår, og når
-     * dialogen blir modal klipper nettleseren den: testet på 390 piksler
-     * gikk den fra 358
-     * til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
+     * like i vannrett skriveretning. Uten det er bredden vår, og når dialogen
+     * blir modal klipper nettleseren den: testet på 390 piksler gikk den fra
+     * 358 til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
      * loddrette hoppet var borte, og et vannrett kom i stedet.
      *
      * `6px` og `2em` er nettleserens egne tall, ikke vår avstandsskala. De
      * skal derfor ikke bli tokens: likheten er hele poenget med dem.
      *
      * Maksmålet på høyden står med vilje ikke her. `.fs-dialog` har det
-     * allerede, og det er det strengeste av de to, så det gjelder i begge
-     * tilstandene. Sto det her også, ville det vunnet på spesifisitet før
-     * dialogen ble modal og sluttet å gjelde etterpå, og en høy dialog ville
-     * hoppet 13 piksler loddrett i stedet. Testet i alle tre motorene.
+     * allerede, og en forfatterregel slår nettleserens `dialog:modal`, så den
+     * ene verdien gjelder i begge tilstandene. Sto den her også, ville denne
+     * vunnet på spesifisitet før dialogen ble modal og falt bort etterpå, og
+     * en høy dialog ville hoppet 13 piksler loddrett i stedet. Testet i alle
+     * tre motorene.
      */
     inset: 0;
     margin: auto;
