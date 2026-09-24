@@ -119,7 +119,7 @@ En byggefunksjon er en ren funksjon. Du gir den et valgobjekt og får attributte
 import { fs } from "@fristil/designsystem"
 
 fs.errorSummary({ count: 2, id: "feil" })
-// { container: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
+// { host: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
 //   title:     { class: "fs-error-summary__title" } }
 ```
 
@@ -134,7 +134,7 @@ Det er hele grunnen til at det samme API-et virker i alle tre miljøene. Ingenti
 ```tsx
 const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 
-<fs-error-summary {...feil.container}>
+<fs-error-summary {...feil.host}>
   <h2 {...feil.title}>Du må rette {feilene.length} feil</h2>
 </fs-error-summary>
 ```

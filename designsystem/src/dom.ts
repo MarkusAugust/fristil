@@ -58,8 +58,18 @@ export type Attributes = Record<string, string | boolean | undefined>
  * Kall den på nytt for å endre tilstand. Attributter fra forrige kall som
  * ikke er med i det nye settet, fjernes, men bare systemets egne, og bare
  * `fs-`-klassene. Alt annet på elementet står som det står.
+ *
+ * Den tar `null`, og gjør da ingenting. `document.querySelector()` gir
+ * `Element | null`, så uten det måtte hvert eneste kallsted i en `strict`-app
+ * skrive en vakt eller et utropstegn rundt et oppslag som nesten alltid
+ * treffer. Det er den samme avveiningen som `element?.classList`.
  */
-export function setAttributes(element: Element, attributes: Attributes): void {
+export function setAttributes(
+  element: Element | null | undefined,
+  attributes: Attributes,
+): void {
+  if (!element) return
+
   const newClass = attributes.class
 
   if (typeof newClass === "string") {

@@ -11,6 +11,7 @@
  * Kjør med: bun run prepare-version <neste versjon>
  */
 
+import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -117,6 +118,38 @@ if (!lockMonster.test(lock)) {
 }
 
 await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
+
+/*
+ * CDN-adressene i dokumentasjonen står med versjonen i seg.
+ *
+ * Oppskriftene i sporene uten byggesteg peker på en hel URL, siden en
+ * nettleser ikke kan slå opp et pakkenavn. Adressene sto hardkodet 74 steder
+ * i ni filer, og ingenting oppdaterte dem: ved neste utgivelse ville de
+ * pekt på en eldre pakke enn teksten rundt dem beskrev. `sjekk-oppskrifter`
+ * feller det, men først etter at noen har oppdaget det.
+ */
+const dokRot = join(monorepoRot, "documentation/src/content/docs")
+let cdnEndret = 0
+const oppdaterCdn = (mappe: string) => {
+  for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
+    const p = join(mappe, oppf.name)
+    if (oppf.isDirectory()) oppdaterCdn(p)
+    else if (oppf.name.endsWith(".mdx")) {
+      const før = readFileSync(p, "utf8")
+      const etter = før.replaceAll(
+        /@fristil\/designsystem@\d+\.\d+\.\d+\//g,
+        `@fristil/designsystem@${nyVersjon}/`,
+      )
+      if (etter !== før) {
+        writeFileSync(p, etter)
+        cdnEndret += 1
+      }
+    }
+  }
+}
+oppdaterCdn(dokRot)
+if (cdnEndret > 0)
+  console.log(`Oppdaterte CDN-adressene i ${cdnEndret} dokumentasjonsfiler.`)
 
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 

@@ -9,16 +9,10 @@ Ren CSS på et vanlig `<input type="radio">`. Knappene i en gruppe kobles sammen
 
 Kan brukeren velge flere, bruk [Checkbox](../checkbox/). Er alternativene mange, er [Select](../select/) kortere på skjermen.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/radio.css"
-import "@fristil/designsystem/fieldset.css"
-import "@fristil/designsystem/label.css"
-```
+## Slik tar du den i bruk
 
-## En gruppe
-
-<Eksempel stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
+<Eksempel importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
+  stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
 <fieldset class="fs-fieldset">
   <legend class="fs-legend" data-required="symbol">Hvordan vil du ha svaret?</legend>
 
@@ -37,7 +31,42 @@ import "@fristil/designsystem/label.css"
     <label class="fs-label" for="svar-hentes">Hentes på kontoret</label>
   </div>
 </fieldset>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<div className={fs.radio.row}>
+  <input {...fs.radio()} id="svar-digital" name="svar" value="digital" />
+  <label {...fs.label()} htmlFor="svar-digital">Digitalt</label>
+</div>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const knapper = document.querySelectorAll<HTMLInputElement>("[name='svar']")
+
+function marker(ugyldig: boolean) {
+  for (const knapp of knapper) {
+    fs.setAttributes(knapp, fs.radio({ state: ugyldig ? "invalid" : "default" }))
+  }
+}
+```
+
+`name` setter du selv, siden bare du vet hva gruppen heter. `fs.radio.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 Gruppen hører alltid hjemme i en [Fieldset](../fieldset/). Uten den leses bare alternativet opp, ikke spørsmålet det svarer på.
 
@@ -57,22 +86,6 @@ Gruppen hører alltid hjemme i en [Fieldset](../fieldset/). Uten den leses bare 
 | `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
 
 Feiler valideringen, sett tilstanden på alle knappene i gruppen. Det er gruppen som er ugyldig, ikke én av knappene.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const knapper = document.querySelectorAll<HTMLInputElement>("[name='svar']")
-
-function marker(ugyldig: boolean) {
-  for (const knapp of knapper) {
-    fs.setAttributes(knapp, fs.radio({ state: ugyldig ? "invalid" : "default" }))
-  }
-}
-```
-
-`name` setter du selv, siden bare du vet hva gruppen heter. `fs.radio.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

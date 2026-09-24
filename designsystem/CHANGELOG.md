@@ -16,6 +16,63 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.14.0 (2026-09-24)
+
+### Brytende
+
+- **Verten heter `host` i alle byggefunksjonene.** Den delen serveren skriver,
+  og komponenten fester seg på, het tre ting: `host` i `fs.dialog()` og
+  `fs.popover()`, `region` i `fs.toast()` og `container` i `fs.errorSummary()`.
+  Tre ord for den samme tingen, og to av dem sa ikke hva den var. De heter nå
+  `host`, som er ordet arkitekturen bruker om den ellers.
+
+  `fs.connectionStatus()` og `fs.sessionTimeout()` er urørt. De har bare én
+  del, og returnerer attributtene flatt, slik `fs.button()` gjør. Nøkkelen
+  finnes der verten selv bærer attributter. `fs.field()`, `fs.tabs()` og
+  `fs.suggestion()` har mange deler og ingen `host`, fordi verten deres
+  ikke har noe å bære.
+
+  ```diff
+  - <fs-toast {...varsler.region} />
+  + <fs-toast {...varsler.host} />
+  - <fs-error-summary {...feil.container}>
+  + <fs-error-summary {...feil.host}>
+  ```
+
+### Lagt til
+
+- **`setAttributes` tar `null`.** `document.querySelector()` gir
+  `Element | null`, så hvert eneste kallsted i en `strict`-app måtte skrive en
+  vakt eller et utropstegn rundt et oppslag som nesten alltid treffer. Den gjør
+  nå ingenting på `null`, som `element?.classList`. Parameteren er utvidet, så
+  ingen kallsteder brytes.
+
+### Rettet
+
+- **Panelet i `<fs-popover>` nullstiller lista.** Panelet er ofte en `<ul>`
+  med handlinger, og `.fs-popover` hadde ingen `list-style`. Markupen i
+  dokumentasjonen skrev `data-variant="plain"` for å bøte på det, men det
+  attributtet finnes bare på `.fs-list` og traff ingen regel, så panelet sto
+  med nettleserens kuler. Nullstillingen hører i pakken og ikke
+  hos konsumenten.
+
+- **`ref` virker på de egendefinerte elementene i JSX.** Typene bygget på
+  `HTMLAttributes`, som ikke har `ref`; den ligger i `RefAttributes`. Derfor
+  var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
+  dokumentasjonen anbefaler for å kalle `.show()` og `.hide()` fra React. Alle
+  vertene bygger nå på en felles `Vert`-type som har begge.
+
+- **`warn-at` og `expires-at` godtar det byggefunksjonen sender.** De sto som
+  `number` i JSX-typene, mens `fs.sessionTimeout()` sender strenger, slik
+  HTML-attributter er. Det er den samme feilen som `tabIndex: "0"`, motsatt
+  vei, og den viste seg bare i en ekte React-app.
+
+- **`fs.connectionStatus()` og `fs.sessionTimeout()` reklamerte med en død
+  klasse.** Begge sender ut `fs-connection-status` og `fs-session-timeout`,
+  men stilarkene stylet bare elementnavnet, så klassen gjorde ingenting. Nå
+  treffer regelen begge, og en konsument som setter klassen på noe annet enn
+  elementet får den samme oppførselen.
+
 ## 0.13.0 (2026-09-24)
 
 ### Brytende

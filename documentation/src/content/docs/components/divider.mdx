@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Klassen settes på et vanlig `<hr>`. Nettleserens egen strek har både ramme og høyde, og begge må nullstilles før fargen fra tokenene er den eneste som vises.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/divider.css"
-```
+## Slik tar du den i bruk
 
-## Varianter
-
-<Eksempel stiler={["divider"]} layout="stabel" maxWidth="32rem" kode={`
+<Eksempel importer={["tokens.css", "divider.css"]}
+  stiler={["divider"]} layout="stabel" maxWidth="32rem" kode={`
 <p>Saken er registrert.</p>
 <hr class="fs-divider" />
 <p>Du får svar innen tre uker.</p>
@@ -22,7 +18,33 @@ import "@fristil/designsystem/divider.css"
 <p>Kontakt oss hvis noe er uklart.</p>
 <hr class="fs-divider" data-variant="subtle" />
 <p>Saksnummer 2026-0481.</p>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<hr {...fs.divider({ variant: "subtle" })} />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const strek = document.createElement("hr")
+
+fs.setAttributes(strek, fs.divider({ variant: "subtle" }))
+```
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -39,16 +61,6 @@ import "@fristil/designsystem/divider.css"
 ```
 
 Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjengelighetstreet. Den er da den eneste måten skjermleseren får vite at et emne er slutt.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const strek = document.createElement("hr")
-
-fs.setAttributes(strek, fs.divider({ variant: "subtle" }))
-```
 
 ## Klasser du kan style
 

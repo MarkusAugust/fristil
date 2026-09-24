@@ -1,7 +1,11 @@
 @import "../../css/button/button.css";
 
 @layer fristil {
-  fs-session-timeout {
+  /* Både elementet og klassen. `fs.sessionTimeout()` sender ut
+     `fs-session-timeout`, og en klasse en byggefunksjon reklamerer med må gjøre
+     noe. Her sto bare elementvelgeren, så klassen var død. */
+  fs-session-timeout,
+  .fs-session-timeout {
     display: contents;
   }
 

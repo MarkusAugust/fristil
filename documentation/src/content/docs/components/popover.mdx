@@ -26,53 +26,40 @@ import "@fristil/designsystem/popover.css"
 defineFsPopover()
 ```
 
-## En meny under en knapp
-
-<PopoverDemo />
-
-```ts
-const boks = fs.popover({ id: "handlinger" })
-```
-
-```html
-<fs-popover placement="bottom-end">
-  <button class="fs-button" data-variant="secondary"
-          aria-expanded="false" aria-controls="handlinger">Handlinger</button>
-
-  <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
-    <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-    <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
-  </ul>
-</fs-popover>
-```
-
-Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
-
-Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter `open` på verten, `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake når en oppdatering fra serveren river dem bort. Malen din trenger ingenting ekstra.
-
-Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
-
-Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
-
-## I en app
-
+## Slik tar du den i bruk
 <Tabs>
+  <TabItem label="Prøv den">
+    <PopoverDemo />
+  </TabItem>
   <TabItem label="Ren HTML">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
+    ```
+
     ```html
     <fs-popover id="meny" placement="bottom-end">
       <button class="fs-button" data-variant="secondary"
               aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
+      <ul class="fs-popover" id="handlinger" popover="manual">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
     </fs-popover>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsPopover } from "@fristil/designsystem/popover"
-      defineFsPopover()
+      import { defineFsPopover } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/popover/fs-popover.js"
 
+      defineFsPopover()
+    </script>
+
+    <script type="module">
       const meny = document.getElementById("meny")
 
       // Lukk menyen når en handling er valgt
@@ -84,10 +71,16 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
     ```
   </TabItem>
   <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-popover> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
     ```tsx
     // main.tsx, kjøres én gang når appen starter
     import { defineFsPopover } from "@fristil/designsystem/popover"
     import "@fristil/designsystem/popover.css"
+    import "@fristil/designsystem/button.css"
 
     defineFsPopover()
     ```
@@ -95,6 +88,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
     ```tsx
     import { useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
+    import "@fristil/designsystem/tokens.css"
 
     export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
       const meny = useRef<HTMLElement & { hide(): void }>(null)
@@ -111,7 +105,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
             Handlinger
           </button>
 
-          <ul {...boks.panel} data-variant="plain">
+          <ul {...boks.panel}>
             <li>
               <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
                 Arkiver saken
@@ -129,14 +123,19 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
     ```astro
     ---
     import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/button.css"
+    import "@fristil/designsystem/link.css"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/popover.css"
 
     const boks = fs.popover({ id: "handlinger" })
+
     ---
 
     <fs-popover placement="bottom-end" {...boks.host}>
       <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
 
-      <ul {...boks.panel} data-variant="plain">
+      <ul {...boks.panel}>
         <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
         <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
       </ul>
@@ -152,6 +151,12 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/button/button.css">
+
     <div data-signals="{apen: false}">
       <fs-popover
         server-controlled
@@ -162,7 +167,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
         <button class="fs-button" data-variant="secondary"
                 aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger" popover="manual" data-variant="plain">
+        <ul class="fs-popover" id="handlinger" popover="manual">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
@@ -172,8 +177,11 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
       </fs-popover>
     </div>
 
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsPopover } from "@fristil/designsystem/popover"
+      import { defineFsPopover } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/popover/fs-popover.js"
+
       defineFsPopover()
     </script>
     ```
@@ -183,6 +191,30 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
     `server-controlled` hører med når signalet styrer `open`. Komponenten setter ellers attributtet tilbake når noe fjerner det, siden et fjernet attributt ikke er til å skille fra en oppdatering som river det bort, og da lot panelet seg ikke lukke fra signalet. Styrer du panelet fra JavaScript i stedet, med `meny.open = false`, trengs det ikke: en egenskap er en beskjed komponenten kan se.
   </TabItem>
 </Tabs>
+
+```ts
+const boks = fs.popover({ id: "handlinger" })
+```
+
+```html
+<fs-popover placement="bottom-end">
+  <button class="fs-button" data-variant="secondary"
+          aria-expanded="false" aria-controls="handlinger">Handlinger</button>
+
+  <ul class="fs-popover" id="handlinger" popover="manual">
+    <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+    <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+  </ul>
+</fs-popover>
+```
+
+Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
+
+Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter `open` på verten, `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake når en oppdatering fra serveren river dem bort. Malen din trenger ingenting ekstra.
+
+Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
+
+Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Attributter
 

@@ -7,14 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 En boks som sier noe om helheten: at søknaden ble sendt, at tjenesten er nede, at fristen nærmer seg. Gjelder meldingen ett felt, hører den hjemme under feltet som [Error Text](../error-text/) eller [Help Text](../help-text/).
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/alert.css"
-```
+## Slik tar du den i bruk
 
-## Farger
-
-<Eksempel stiler={["alert"]} layout="stabel" maxWidth="34rem" kode={`
+<Eksempel importer={["tokens.css", "alert.css"]}
+  stiler={["alert"]} layout="stabel" maxWidth="34rem" kode={`
 <div class="fs-alert">
   <p class="fs-alert__title">Saken er registrert</p>
   <p>Du får svar innen tre uker.</p>
@@ -36,7 +32,43 @@ import "@fristil/designsystem/alert.css"
   <p class="fs-alert__title">Søknaden ble ikke sendt</p>
   <p>Nettverket svarte ikke. Prøv igjen om litt.</p>
 </div>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<div {...fs.alert({ color: "success" })}>
+  <p>Søknaden er sendt. Kvittering er på vei til e-posten din.</p>
+</div>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs, type AlertColor } from "@fristil/designsystem"
+
+const boks = document.querySelector<HTMLElement>("#status")
+if (!boks) throw new Error("fant ikke elementet")
+
+// Pilfunksjon, ikke `function`: en hoistet funksjonsdeklarasjon arver ikke
+// innsnevringen av `boks` over, og da er den `null` igjen inne i kroppen.
+const vis = (farge: AlertColor, tekst: string) => {
+  fs.setAttributes(boks, fs.alert({ color: farge }))
+  boks.textContent = tekst
+}
+```
+
+Kommer fargen fra et svar utenfra, valider den med `fs.alert.isColor(x)`. `fs.alert.title` gir klassen på overskriften. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-color` | Brukes til |
 | --- | --- |
@@ -66,21 +98,6 @@ Rollen er ikke en del av `data-color`, fordi den avhenger av *når* meldingen ko
 `role="alert"` avbryter det skjermleseren holder på med. Bruk den bare når avbruddet er berettiget. `role="status"` venter til brukeren er ferdig med setningen sin.
 
 Elementet må stå i DOM-en før du fyller det med tekst. Legger du inn hele boksen ferdig utfylt, rekker ikke skjermleseren å se endringen.
-
-## TypeScript
-
-```ts
-import { fs, type AlertColor } from "@fristil/designsystem"
-
-const boks = document.querySelector<HTMLElement>("#status")
-
-function vis(farge: AlertColor, tekst: string) {
-  fs.setAttributes(boks, fs.alert({ color: farge }))
-  boks.textContent = tekst
-}
-```
-
-Kommer fargen fra et svar utenfra, valider den med `fs.alert.isColor(x)`. `fs.alert.title` gir klassen på overskriften. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

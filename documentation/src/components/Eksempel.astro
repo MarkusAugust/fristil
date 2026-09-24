@@ -1,6 +1,16 @@
 ---
 import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
+import pakke from "../../../designsystem/package.json"
 import Preview, { type Stilark } from "./Preview.astro"
+
+/** Adressene stilarkene ligger på, lest av pakkens egen `exports`. */
+const STILARK: Record<string, string> = Object.fromEntries(
+  Object.entries(pakke.exports as Record<string, unknown>)
+    .filter(([n, m]) => n.endsWith(".css") && typeof m === "string")
+    .map(([n, m]) => [n.slice(2), (m as string).slice(2)]),
+)
+
+const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${pakke.version}`
 
 interface Props {
   /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
@@ -20,9 +30,61 @@ interface Props {
    * kopierer skal være det som virker i en ekte side.
    */
   visningsCss?: string
+  /**
+   * Stilarkene som skal stå i kodefanen, slik de importeres i en app.
+   *
+   * Uten dem er kodefanen bare markup, og leseren må lete lenger opp på
+   * siden etter hva som må importeres for at den skal se slik ut. Med dem er
+   * fanen hele oppskriften.
+   */
+  importer?: string[]
+  /**
+   * CSS som hører til eksempelet, og som leseren skal ha med seg.
+   *
+   * Forskjellen fra `visningsCss` er hvem den er til for. `visningsCss`
+   * tvinger fram noe som ellers ikke lar seg vise i en boks, og skal ikke
+   * kopieres. Denne er en del av oppskriften: konsumentens egne klasser, som
+   * `.sak-siste-linje` på skjelettsiden. Derfor vises den i kodefanen.
+   *
+   * Uten skillet havnet slik CSS i `visningsCss`, og da sto det klasser i
+   * kodefanen som ikke fantes noe sted leseren kunne se.
+   */
+  egenCss?: string
 }
 
-const { stiler, layout, maxWidth, kode, visningsCss } = Astro.props
+const { stiler, layout, maxWidth, kode, visningsCss, importer, egenCss } =
+  Astro.props
+
+const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
+
+/*
+ * Fanen for byggefunksjonen, når siden har noe å si der.
+ *
+ * Den sto før som en egen `## TypeScript`-seksjon lenger nede. Da hadde
+ * css-sidene den og de ni med oppførsel ikke, siden disse viser `fs` i
+ * React- og Astro-fanene sine i stedet. Nå står alt om hvordan komponenten
+ * lages i den samme seksjonen, på alle sidene.
+ */
+const harTypeScript = Astro.slots.has("ts")
+
+/*
+ * Stilarkene, på den måten fanen de står i faktisk kan bruke.
+ *
+ * «Ren HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
+ * stå `import "@fristil/designsystem/tokens.css"`: en nettleser slår ikke
+ * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
+ * hører i TypeScript-fanen, der det finnes en bunter.
+ */
+const lenker = importer
+  ?.map(
+    (fil) =>
+      `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
+  )
+  .join("\n")
+
+const importlinjer = importer
+  ?.map((fil) => `import "@fristil/designsystem/${fil}"`)
+  .join("\n")
 
 /*
  * Markupen står ett sted.
@@ -36,11 +98,21 @@ const { stiler, layout, maxWidth, kode, visningsCss } = Astro.props
 
 <Tabs>
 	<TabItem label="Eksempel">
-		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={visningsCss}>
+		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={forhaandsvisningsCss}>
 			<Fragment set:html={kode} />
 		</Preview>
 	</TabItem>
-	<TabItem label="Kode">
+	<TabItem label="Ren HTML">
+		{lenker && <Code code={lenker} lang="html" />}
 		<Code code={kode.trim()} lang="html" />
+		{egenCss && <Code code={egenCss.trim()} lang="css" />}
 	</TabItem>
+	{
+		harTypeScript && (
+			<TabItem label="TypeScript">
+				{importlinjer && <Code code={importlinjer} lang="ts" />}
+				<slot name="ts" />
+			</TabItem>
+		)
+	}
 </Tabs>

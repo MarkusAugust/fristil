@@ -24,9 +24,157 @@ import "@fristil/designsystem/suggestion.css"
 defineFsSuggestion()
 ```
 
-## Kommunesøk
+## Slik tar du den i bruk
+<Tabs>
+  <TabItem label="Prøv den">
+    <SuggestionDemo />
+  </TabItem>
+  <TabItem label="Ren HTML">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/label/label.css">
+    ```
 
-<SuggestionDemo />
+    ```html
+    <fs-suggestion id="kommunesok">
+      <label class="fs-label" for="kommune">Kommune</label>
+      <div class="fs-suggestion__field">
+        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+               aria-autocomplete="list">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
+          <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+          <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
+        </ul>
+        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+              data-ignore-morph></span>
+      </div>
+    </fs-suggestion>
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsSuggestion } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/suggestion/fs-suggestion.js"
+
+      defineFsSuggestion()
+    </script>
+
+    <script type="module">
+      document.getElementById("kommunesok").addEventListener("suggestion-select", (evt) => {
+        console.log("valgte", evt.detail.value)
+      })
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```ts
+    // src/fristil.d.ts, gir <fs-suggestion> typer i JSX
+    import "@fristil/designsystem/react-jsx"
+    ```
+
+    ```tsx
+    import { fs } from "@fristil/designsystem/react"
+    import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/suggestion.css"
+
+    defineFsSuggestion()
+
+    const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+
+    export function Kommunesok() {
+      const forslag = fs.suggestion({ id: "kommune", count: KOMMUNER.length })
+
+      return (
+        <fs-suggestion>
+          <label {...forslag.label}>Kommune</label>
+          <div {...forslag.field}>
+            <input {...forslag.control} name="kommune" />
+            <ul {...forslag.list}>
+              {forslag.options.map((valg, i) => (
+                <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
+              ))}
+            </ul>
+            <p {...forslag.empty}>Ingen treff</p>
+            <span {...forslag.status} />
+          </div>
+        </fs-suggestion>
+      )
+    }
+    ```
+
+    Her rendres hele lista, og komponenten filtrerer. Filtrerer du i React i stedet, og filteret ditt er et annet enn «teksten inneholder søkeordet», settes `prefiltered`. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer).
+  </TabItem>
+  <TabItem label="Astro">
+    ```astro
+    ---
+    import { fs } from "@fristil/designsystem"
+    import "@fristil/designsystem/tokens.css"
+    import "@fristil/designsystem/suggestion.css"
+
+    const kommuner = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+    const forslag = fs.suggestion({ id: "kommune", count: kommuner.length })
+
+    ---
+
+    <fs-suggestion>
+      <label {...forslag.label}>Kommune</label>
+      <div {...forslag.field}>
+        <input {...forslag.control} name="kommune" />
+        <ul {...forslag.list}>
+          {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+        </ul>
+        <p {...forslag.empty}>Ingen treff</p>
+        <span {...forslag.status}></span>
+      </div>
+    </fs-suggestion>
+
+    <script>
+      import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+      defineFsSuggestion()
+    </script>
+    ```
+  </TabItem>
+  <TabItem label="Datastar">
+    ```html
+    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
+         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/ramme/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/label/label.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/input/input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/src/components/css/sr-only/sr-only.css">
+
+    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <script type="module">
+      import { defineFsSuggestion } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.14.0/dist/components/ramme/suggestion/fs-suggestion.js"
+
+      defineFsSuggestion()
+    </script>
+
+    <fs-suggestion prefiltered
+                   data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
+                   data-on:suggestion-select="$kommune = evt.detail.value">
+      <label class="fs-label" for="kommune">Kommune</label>
+      <div class="fs-suggestion__field">
+        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+               aria-autocomplete="list">
+        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden></ul>
+        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+              data-ignore-morph></span>
+      </div>
+    </fs-suggestion>
+    ```
+
+    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
+  </TabItem>
+</Tabs>
 
 ## Markupen
 
@@ -110,132 +258,6 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 
 `prefiltered` handler om hva som vises. Skal serveren i tillegg eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
 
-## I en app
-
-<Tabs>
-  <TabItem label="Ren HTML">
-    ```html
-    <fs-suggestion id="kommunesok">
-      <label class="fs-label" for="kommune">Kommune</label>
-      <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
-               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
-          <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
-          <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
-        </ul>
-        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
-              data-ignore-morph></span>
-      </div>
-    </fs-suggestion>
-
-    <script type="module">
-      import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-      defineFsSuggestion()
-
-      document.getElementById("kommunesok").addEventListener("suggestion-select", (evt) => {
-        console.log("valgte", evt.detail.value)
-      })
-    </script>
-    ```
-  </TabItem>
-  <TabItem label="React">
-    ```tsx
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-
-    defineFsSuggestion()
-
-    const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
-
-    export function Kommunesok() {
-      const forslag = fs.suggestion({ id: "kommune", count: KOMMUNER.length })
-
-      return (
-        <fs-suggestion>
-          <label {...forslag.label}>Kommune</label>
-          <div {...forslag.field}>
-            <input {...forslag.control} name="kommune" />
-            <ul {...forslag.list}>
-              {forslag.options.map((valg, i) => (
-                <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
-              ))}
-            </ul>
-            <p className="fs-suggestion__empty" hidden>Ingen treff</p>
-            <span {...forslag.status} />
-          </div>
-        </fs-suggestion>
-      )
-    }
-    ```
-
-    Her rendres hele lista, og komponenten filtrerer. Filtrerer du i React i stedet, og filteret ditt er et annet enn «teksten inneholder søkeordet», settes `prefiltered`. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer).
-  </TabItem>
-  <TabItem label="Astro">
-    ```astro
-    ---
-    import { fs } from "@fristil/designsystem"
-
-    const kommuner = ["Bergen", "Bodø", "Oslo", "Tromsø"]
-    const forslag = fs.suggestion({ id: "kommune", count: kommuner.length })
-    ---
-
-    <fs-suggestion>
-      <label {...forslag.label}>Kommune</label>
-      <div {...forslag.field}>
-        <input {...forslag.control} name="kommune" />
-        <ul {...forslag.list}>
-          {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
-        </ul>
-        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-        <span {...forslag.status}></span>
-      </div>
-    </fs-suggestion>
-
-    <script>
-      import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-      defineFsSuggestion()
-    </script>
-    ```
-  </TabItem>
-  <TabItem label="Datastar">
-    ```html
-    <fs-suggestion prefiltered
-                   data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
-                   data-on:suggestion-select="$kommune = evt.detail.value">
-      <label class="fs-label" for="kommune">Kommune</label>
-      <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
-               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden></ul>
-        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
-              data-ignore-morph></span>
-      </div>
-    </fs-suggestion>
-    ```
-
-    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
-  </TabItem>
-</Tabs>
-
-## Tilgjengelighet
-
-Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Alt står i markupen fra serveren, så semantikken er riktig før skriptet kjører.
-
-- **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
-- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.
-- **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
-
-| Tast | Gjør |
-| --- | --- |
-| Pil ned | Åpner lista, eller flytter til neste alternativ |
-| Pil opp | Åpner lista på det siste alternativet, eller flytter til forrige |
-| Enter | Velger det markerte |
-| Escape | Lukker lista |
-
 ## Klasser du kan style
 
 | Klasse | Hva det er |
@@ -256,3 +278,18 @@ Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role
   --fs-suggestion-max-height: 24rem;
 }
 ```
+## Tilgjengelighet
+
+Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Alt står i markupen fra serveren, så semantikken er riktig før skriptet kjører.
+
+- **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
+- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.
+- **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
+
+| Tast | Gjør |
+| --- | --- |
+| Pil ned | Åpner lista, eller flytter til neste alternativ |
+| Pil opp | Åpner lista på det siste alternativet, eller flytter til forrige |
+| Enter | Velger det markerte |
+| Escape | Lukker lista |
+

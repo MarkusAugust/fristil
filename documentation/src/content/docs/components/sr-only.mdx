@@ -7,20 +7,46 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Innhold som skal leses opp, men ikke vises. Klassen krymper elementet bort visuelt og lar det bli stående i dokumentet, så skjermlesere fortsatt finner det.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/sr-only.css"
-```
-
-## Utfyllende knappetekst
+## Slik tar du den i bruk
 
 En rad med «Slett»-knapper gir mening for den som ser tabellen. Den som hører den, får fire like knapper. Tillegget i `.fs-sr-only` sier hvilken rad knappen hører til, uten å gjenta det for øyet.
 
-<Eksempel stiler={["button", "sr-only"]} layout="stabel" maxWidth="26rem" kode={`
+<Eksempel importer={["tokens.css", "sr-only.css", "button.css"]}
+  stiler={["button", "sr-only"]} layout="stabel" maxWidth="26rem" kode={`
 <button class="fs-button" data-variant="danger">
   Slett<span class="fs-sr-only"> søknaden fra 4. mars</span>
 </button>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<button {...fs.button({ variant: "ghost" })} type="button">
+  Slett
+  <span {...fs.srOnly()}>søknad 2024/1187</span>
+</button>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const tillegg = document.createElement("span")
+tillegg.textContent = " søknaden fra 4. mars"
+
+fs.setAttributes(tillegg, fs.srOnly())
+```
+
+</Fragment>
+</Eksempel>
 
 Knappen leses opp som «Slett søknaden fra 4. mars», mens den står som «Slett» på skjermen.
 
@@ -34,17 +60,6 @@ Er ledeteksten åpenbar av oppsettet, kan den skjules visuelt. Den skal ikke fje
 `} />
 
 `placeholder` er ingen erstatning for en ledetekst: den forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp i det hele tatt.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const tillegg = document.createElement("span")
-tillegg.textContent = " søknaden fra 4. mars"
-
-fs.setAttributes(tillegg, fs.srOnly())
-```
 
 ## Klasser du kan style
 

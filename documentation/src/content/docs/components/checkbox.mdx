@@ -7,15 +7,10 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Ren CSS på et vanlig `<input type="checkbox">`, så tastatur, `FormData` og nettleserens egen validering virker som før. Skal brukeren velge ett av flere alternativer, er [Radio](../radio/) riktig. Er valget av eller på for en innstilling som slår inn med en gang, bruk [Switch](../switch/).
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/checkbox.css"
-import "@fristil/designsystem/label.css"
-```
+## Slik tar du den i bruk
 
-## Tilstander
-
-<Eksempel stiler={["checkbox", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Eksempel importer={["tokens.css", "checkbox.css", "label.css"]}
+  stiler={["checkbox", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <div class="fs-checkbox-row">
   <input class="fs-checkbox" type="checkbox" id="vilkar" />
   <label class="fs-label" for="vilkar">Jeg godtar vilkårene</label>
@@ -35,7 +30,43 @@ import "@fristil/designsystem/label.css"
   <input class="fs-checkbox" type="checkbox" id="arkivert" checked disabled />
   <label class="fs-label" for="arkivert">Saken er arkivert</label>
 </div>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<div className={fs.checkbox.row}>
+  <input {...fs.checkbox()} id="vilkar" />
+  <label {...fs.label()} htmlFor="vilkar">Jeg godtar vilkårene</label>
+</div>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs, type FieldState } from "@fristil/designsystem"
+
+const boks = document.querySelector<HTMLInputElement>("#bekreft")
+if (!boks) throw new Error("fant ikke elementet")
+
+boks.addEventListener("change", () => {
+  const tilstand: FieldState = boks.checked ? "default" : "invalid"
+
+  fs.setAttributes(boks, fs.checkbox({ state: tilstand }))
+})
+```
+
+`fs.checkbox()` setter `type` for deg, så boksen ikke kan bli et tekstfelt med boksens stil. `fs.checkbox.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 | `data-state` | Brukes til |
 | --- | --- |
@@ -93,22 +124,6 @@ Hører boksene til samme spørsmål, samle dem i en [Fieldset](../fieldset/). Da
 `} />
 
 Like `name`-verdier gir én nøkkel med flere verdier i `FormData`. Les dem med `formData.getAll("varsel")`.
-
-## TypeScript
-
-```ts
-import { fs, type FieldState } from "@fristil/designsystem"
-
-const boks = document.querySelector<HTMLInputElement>("#bekreft")
-
-boks.addEventListener("change", () => {
-  const tilstand: FieldState = boks.checked ? "default" : "invalid"
-
-  fs.setAttributes(boks, fs.checkbox({ state: tilstand }))
-})
-```
-
-`fs.checkbox()` setter `type` for deg, så boksen ikke kan bli et tekstfelt med boksens stil. `fs.checkbox.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 

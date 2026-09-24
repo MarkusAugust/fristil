@@ -7,27 +7,55 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermlesere, så ventingen må meldes ett sted i tillegg. Er det ingen form å vise, eller tar ventingen kort tid, er [Spinner](../spinner/) enklere.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/skeleton.css"
-```
-
-## Former
+## Slik tar du den i bruk
 
 <Eksempel
+  importer={["tokens.css", "skeleton.css"]}
   stiler={["skeleton"]}
   layout="stabel"
   maxWidth="26rem"
-  visningsCss={`
-    .sak-siste-linje { inline-size: 70%; }
-    .sak-bilde { --fs-skeleton-height: var(--size-12); }
+  egenCss={`
+/* Dine egne klasser. De to reglene er alt som skal til. */
+.sak-siste-linje {
+  inline-size: 70%;
+}
+
+.sak-bilde {
+  --fs-skeleton-height: var(--size-12);
+}
   `}
   kode={`
 <div class="fs-skeleton" data-variant="circle" aria-hidden="true"></div>
 <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
 <div class="fs-skeleton sak-siste-linje" data-variant="text" aria-hidden="true"></div>
 <div class="fs-skeleton sak-bilde" aria-hidden="true"></div>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<div {...fs.skeleton({ variant: "circle" })} />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const linje = document.createElement("div")
+
+fs.setAttributes(linje, fs.skeleton({ variant: "text" }))
+```
+
+</Fragment>
+</Eksempel>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -35,17 +63,7 @@ import "@fristil/designsystem/skeleton.css"
 | `text` | Én tekstlinje |
 | `circle` | Profilbilde |
 
-Formene fyller bredden de får. `sak-siste-linje` og `sak-bilde` over er dine egne klasser, og de to reglene er alt som skal til:
-
-```css
-.sak-siste-linje {
-	inline-size: 70%;
-}
-
-.sak-bilde {
-	--fs-skeleton-height: var(--size-12);
-}
-```
+Formene fyller bredden de får. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke Fristils, og de står i «Ren HTML»-fanen over sammen med markupen.
 
 Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
 
@@ -62,16 +80,6 @@ Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle lin
 En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `fs.skeleton()` alltid `aria-hidden="true"`, og beskjeden legges i et eget felt med `role="status"`.
 
 Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const linje = document.createElement("div")
-
-fs.setAttributes(linje, fs.skeleton({ variant: "text" }))
-```
 
 ## Klasser du kan style
 

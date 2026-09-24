@@ -9,16 +9,12 @@ En boble med et tillegg til noe som allerede står på skjermen. Den må aldri b
 
 Er teksten nødvendig for å fylle ut et felt, hører den hjemme i [Help Text](../help-text/) under feltet.
 
-```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/tooltip.css"
-```
-
-## En knapp med forklaring
+## Slik tar du den i bruk
 
 Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen under, eller gå til den med Tab, så kommer den fram:
 
 <Eksempel
+  importer={["tokens.css", "tooltip.css", "button.css"]}
   stiler={["tooltip", "button"]}
   layout="stabel"
   maxWidth="30rem"
@@ -36,7 +32,38 @@ Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen un
     Saken flyttes til arkivet og kan hentes fram igjen
   </span>
 </span>
-`} />
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<span {...fs.tooltip()}>
+  <button {...fs.button({ variant: "ghost" })} type="button" aria-describedby="hjelp">?</button>
+  <span className={fs.tooltip.bubble} id="hjelp" role="tooltip">Vi sender aldri spam.</span>
+</span>
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const omslag = document.querySelector<HTMLElement>("#arkiv")
+
+fs.setAttributes(omslag, fs.tooltip())
+```
+
+`fs.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
 
 To ting må stemme:
 
@@ -64,18 +91,6 @@ En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskje
 ```
 
 `aria-label` er navnet knappen leses opp med. Boblen er tillegget. Bruker du boblen som navn, har knappen ingen navn før den får fokus.
-
-## TypeScript
-
-```ts
-import { fs } from "@fristil/designsystem"
-
-const omslag = document.querySelector<HTMLElement>("#arkiv")
-
-fs.setAttributes(omslag, fs.tooltip())
-```
-
-`fs.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../typesikker-bruk/).
 
 ## Klasser du kan style
 
