@@ -414,7 +414,7 @@ tr:last-child td { border-block-end: none; }
   <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
   <h1>Rammeverksuavhengig<br>designsystem</h1>
   <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
-  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er noe nettleseren har hatt delene til i tjue år. I dag koster det et rammeverk du ikke kan bytte ut. Det er det denne presentasjonen handler om.</p>
+  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er HTML og ARIA. I dag koster det et rammeverk du ikke kan bytte ut. Det er det denne presentasjonen handler om.</p>
   <p>Hele systemet hviler på én setning, og resten er hva den fører til:</p>
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
@@ -540,7 +540,7 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot står utenfor skjemaet rundt, og <code>ElementInternals</code> hjelper bare ved at verten selv melder inn en verdi. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
+  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot står utenfor skjemaet rundt, og <code>ElementInternals</code> løser det ved at verten selv melder inn verdien. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
 <!-- 7 -->
@@ -769,7 +769,7 @@ en skjermleser leser det opp uten navn.</pre>
   </table>
   </div>
   <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som har skrevet regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll i komponentene som bruker det, og da er kravet 3:1 og ikke 4,5:1. Navnet er ikke et bevis på bruken.</p>
-  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Den ene 3:1-rollen vi sjekker, feltrammen, står utenfor lista, i to tester og i generatoren. Men de samme fargene brukes også som ramme i varselet og meldingen, og den bruken er ikke sjekket av noe. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
+  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Den ene 3:1-rollen vi sjekker, feltrammen, står utenfor lista, i to tester og i generatoren. Hover-rammen ved siden av den sjekkes ingen steder, og ikonene kan ikke sjekkes av dette i det hele tatt, siden de er bilder og ikke fargeverdier. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken paragraf som gjelder for hvilken farge.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må vite det for hvert eneste par, og ta feil i full offentlighet når vi gjør det.</p>
