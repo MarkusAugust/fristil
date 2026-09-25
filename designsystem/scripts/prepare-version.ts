@@ -84,6 +84,28 @@ const dato = [
   String(naa.getDate()).padStart(2, "0"),
 ].join("-")
 
+// `web-types.json` har også versjonen i seg. Fila genereres av
+// editor/scripts/generate.ts, og bygget krever at den på disk er byte-lik
+// det generatoren ville skrevet, så versjonen skrives inn her framfor at
+// hver utgivelse måtte huske å kjøre generatoren. Sjekken står før første
+// skriving: stoppet den etterpå, sto loggen, manifestet og bun.lock alt
+// med det nye nummeret, og neste forsøk nektet fordi versjonen var tatt.
+const webTypesSti = join(monorepoRot, "designsystem", "web-types.json")
+let webTypes = ""
+try {
+  webTypes = readFileSync(webTypesSti, "utf8")
+} catch {
+  stopp(
+    "Fant ikke web-types.json. Kjør bun --filter fristil-vscode generate først.",
+  )
+}
+const webTypesFør = `"version": "${naavaerende}"`
+if (!webTypes.includes(webTypesFør)) {
+  stopp(
+    `Fant ikke versjonen ${naavaerende} i web-types.json. Kjør bun --filter fristil-vscode generate først.`,
+  )
+}
+
 await Bun.write(
   loggSti,
   logg.replace(UUTGITT, `${UUTGITT}\n\n## ${nyVersjon} (${dato})`),
@@ -119,18 +141,6 @@ if (!lockMonster.test(lock)) {
 
 await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
 
-// `web-types.json` har også versjonen i seg. Fila genereres av
-// editor/scripts/generate.ts, og bygget krever at den på disk er byte-lik
-// det generatoren ville skrevet, så versjonen skrives inn her framfor at
-// hver utgivelse måtte huske å kjøre generatoren.
-const webTypesSti = join(monorepoRot, "designsystem", "web-types.json")
-const webTypes = readFileSync(webTypesSti, "utf8")
-const webTypesFør = `"version": "${naavaerende}"`
-if (!webTypes.includes(webTypesFør)) {
-  stopp(
-    `Fant ikke versjonen ${naavaerende} i web-types.json. Kjør bun --filter fristil-vscode generate først.`,
-  )
-}
 writeFileSync(
   webTypesSti,
   webTypes.replace(webTypesFør, `"version": "${nyVersjon}"`),
