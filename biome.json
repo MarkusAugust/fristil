@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!presentasjon"]
+    "includes": [
+      "**",
+      "!presentasjon",
+      "!editor/fristil.html-data.json",
+      "!editor/snippets.json",
+      "!designsystem/web-types.json"
+    ]
   },
   "formatter": {
     "enabled": true,

@@ -24,6 +24,7 @@
     "universell-utforming"
   ],
   "type": "module",
+  "web-types": "./web-types.json",
   "sideEffects": [
     "*.css"
   ],
@@ -288,6 +289,7 @@
   },
   "files": [
     "dist",
+    "web-types.json",
     "src/tokens",
     "src/components",
     "src/tailwind",

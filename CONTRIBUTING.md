@@ -84,6 +84,32 @@ En versjon kan aldri publiseres på nytt eller overskrives, og `npm unpublish` e
 
 Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
 
+## Editorutvidelsen
+
+`editor/` er VS Code-utvidelsen, og den har ingen kode: en `package.json` som
+peker på `fristil.html-data.json` og `snippets.json`. Begge genereres fra
+`editor/metadata.ts` og «Ren HTML»-fanene på komponentsidene, sammen med
+`designsystem/web-types.json` for JetBrains. Endrer du et attributt på en
+komponent, stopper typesjekken til `metadata.ts` har en setning om det, og
+`bun run build` stopper til filene er generert på nytt:
+
+```bash
+bun --filter fristil-vscode generate
+```
+
+Utvidelsen har sitt eget versjonsnummer i `editor/package.json` og sin egen
+logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:
+
+```bash
+git tag utvidelse-v0.1.0 && git push origin utvidelse-v0.1.0
+```
+
+Taggen starter `.github/workflows/publiser-utvidelse.yml`. Marketplace har
+ingen OIDC, så arbeidsflyten trenger hemmeligheten `VSCE_PAT`: et personlig
+token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
+som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
+opprettes der før første utgivelse.
+
 ## Commit-meldinger
 
 På norsk, i imperativ, med et prefiks som sier hva slags endring det er: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`. Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.

@@ -1,0 +1,59 @@
+name: Publiser utvidelsen
+
+# Kjører når en tagg på formen utvidelse-v* dyttes opp, og kan startes for
+# hånd. Utvidelsen har sitt eget nummer, adskilt fra pakkens v*-tagger.
+on:
+  push:
+    tags: ["utvidelse-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publiser:
+    name: Pakk og publiser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      - name: Les versjonen
+        id: versjon
+        working-directory: editor
+        run: echo "nummer=$(bun -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Se at taggen og versjonen stemmer
+        if: github.ref_type == 'tag'
+        run: |
+          tagg="${GITHUB_REF_NAME#utvidelse-v}"
+          if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
+            echo "Taggen $GITHUB_REF_NAME sier $tagg, mens editor/package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
+            exit 1
+          fi
+
+      # Generatoren leser komponentklassene fra dist, så pakken må bygges
+      # først. `bun run typecheck` gjør det med repoets egen tsc, og
+      # typesjekker utvidelsen i samme slengen.
+      - name: Bygg pakken
+        run: bun run typecheck
+
+      # Kontrollerer at filene i repoet er de generatoren ville skrevet nå,
+      # og pakker editor/fristil.vsix.
+      - name: Sjekk og pakk
+        run: bun --filter fristil-vscode sjekk
+
+      # Marketplace har ingen OIDC. Tokenet lages under utgiveren på
+      # marketplace.visualstudio.com og legges inn som hemmeligheten VSCE_PAT.
+      - name: Publiser
+        working-directory: editor
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: ./node_modules/.bin/vsce publish --packagePath fristil.vsix

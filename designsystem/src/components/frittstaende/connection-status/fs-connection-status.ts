@@ -38,7 +38,7 @@ const KVITTERING_MS = 4000
  * ```
  */
 export class FsConnectionStatus extends HostElement {
-  static observedAttributes = ["offline-text", "online-text"]
+  static observedAttributes = ["offline-text", "online-text"] as const
 
   private bar?: HTMLElement
   private timer?: number

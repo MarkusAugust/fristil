@@ -50,7 +50,7 @@ const PLACEMENTS: readonly Placement[] = [
  * ```
  */
 export class FsPopover extends HostElement {
-  static observedAttributes = ["open", "placement", SERVER_CONTROLLED]
+  static observedAttributes = ["open", "placement", SERVER_CONTROLLED] as const
 
   private panel?: HTMLElement
   private triggerElement?: HTMLElement

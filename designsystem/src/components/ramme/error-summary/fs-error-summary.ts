@@ -31,7 +31,7 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  * ```
  */
 export class FsErrorSummary extends HostElement {
-  static observedAttributes = ["data-autofocus", "hidden"]
+  static observedAttributes = ["data-autofocus", "hidden"] as const
 
   private hasFocused = false
   private observer?: MutationObserver

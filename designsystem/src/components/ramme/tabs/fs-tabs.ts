@@ -45,7 +45,7 @@ export class FsTabs extends HostElement {
    * leses derfra. Et eget `selected` ville vært en parallell utgave av det
    * samme.
    */
-  static observedAttributes: string[] = [SERVER_CONTROLLED]
+  static observedAttributes = [SERVER_CONTROLLED] as const
 
   private readonly bound = new Set<HTMLButtonElement>()
   private observer?: MutationObserver
