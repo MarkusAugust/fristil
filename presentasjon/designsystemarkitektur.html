@@ -757,6 +757,442 @@ defineFsField()
   <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>null avhengigheter</strong>, og ingenting i den gjør noe ved import alene. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med server-rendring.</p>
 </section>
 
+<!-- 9b · Avhengighetsgrafen -->
+<section class="lysbilde avh">
+<style>
+/*
+ * Avhengighetsgrafen.
+ *
+ * Én knapp i en React- og TypeScript-app som har React fra før. Fem kopier av
+ * den appen, ett `npm install` i hver med det dokumentasjonen sier for en
+ * knapp, og så er package-lock.json lest. Hver pakke er en prikk, hver
+ * avhengighet en strek. Grafen legges i lag fra venstre mot høyre etter lengste
+ * vei fra appen, så det alt til slutt hviler på står lengst til høyre.
+ *
+ * Fargen sier bare én ting: om pakken er designsystemets egen (azure) eller
+ * noe designsystemet drar inn (ochre, paletten sin varselfarge, for det er
+ * dette som koster). Blått mot oransje holder også for fargesvakt syn. Det appen hadde fra før er en hul
+ * firkant, og telles ikke.
+ *
+ * Radene med tall er sammenligningen, og står alltid. De to radene med et
+ * CSS-spor har i tillegg hva én knapp koster å laste der. Grafene er like
+ * høye, og et lag sprer pakkene sine over hele høyden. Én rad om gangen viser
+ * grafen sin under, i samme målestokk som de andre, og grafflaten har fast
+ * høyde så lysbildet ikke hopper når du bytter.
+ */
+/* Ochre-50 står ikke i roten, og er skrevet av fra tokens.ts som de andre. */
+.avh { --ochre-50: #e7b78a; }
+.avh h2 { margin-block-end: 0.7rem; }
+.avh-forklaring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1.1rem;
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.86rem;
+  color: var(--tekst-dempet);
+}
+.avh-forklaring svg { inline-size: 26px; block-size: 14px; vertical-align: -2px; margin-inline-end: 0.35rem; }
+.avh-bytt {
+  margin-inline-start: auto;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--azure-30);
+  background: none;
+  border: 1px solid var(--kant);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  cursor: pointer;
+}
+.avh-bytt:hover, .avh-bytt:focus-visible { border-color: var(--azure-30); outline: none; }
+
+/* Radene: én knapp per system, og den valgte har en kant i azure. */
+.avh-liste { display: grid; margin-block-end: 0.5rem; border-block-start: 1px solid var(--kant); }
+.avh-hode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+  inline-size: 100%;
+  padding: 0.4rem 0.6rem 0.4rem 0.8rem;
+  font: inherit;
+  text-align: start;
+  color: var(--tekst);
+  background: none;
+  border: 0;
+  border-block-end: 1px solid var(--kant);
+  border-inline-start: 3px solid transparent;
+  cursor: pointer;
+}
+.avh-hode:hover { background: rgba(205, 225, 249, 0.05); }
+.avh-hode:focus-visible { outline: 2px solid var(--azure-30); outline-offset: -2px; }
+.avh-hode[aria-selected="true"] { border-inline-start-color: var(--azure-30); background: rgba(205, 225, 249, 0.07); }
+.avh-hode strong { font-size: 1.05rem; color: var(--graphite-0); }
+.avh-hode code { font-size: 0.82rem; }
+.avh-tall { margin-inline-start: auto; display: flex; gap: 1.1rem; font-size: 0.82rem; color: var(--tekst-dempet); white-space: nowrap; }
+.avh-tall b { font-size: 1.05rem; font-weight: 700; color: var(--tekst); margin-inline-end: 0.25rem; }
+
+/* Grafflaten: alle fire ligger oppå hverandre, så høyden er den høyestes. */
+.avh-scene { position: relative; }
+.avh-graf { display: grid; }
+.avh-graf > svg { grid-area: 1 / 1; visibility: hidden; }
+.avh-graf > svg[data-valgt] { visibility: visible; }
+
+.avh-svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; font-family: var(--sans); }
+.avh-kant { fill: none; stroke: rgba(205, 225, 249, 0.3); stroke-width: 1.25; transition: opacity 0.12s, stroke 0.12s; }
+.avh-kant[data-peer] { stroke-dasharray: 4 3; }
+.avh-node { cursor: default; outline: none; transition: opacity 0.12s; }
+.avh-node .prikk { stroke: var(--flate-kort); stroke-width: 2; }
+.avh-node[data-type="system"] .prikk { fill: var(--azure-30); }
+.avh-node[data-type="annen"] .prikk { fill: var(--ochre-50); }
+.avh-node[data-type="grunn"] .prikk { fill: var(--flate-kort); stroke: var(--graphite-50); stroke-width: 1.75; }
+.avh-node[data-type="app"] .prikk { fill: none; stroke: var(--tekst-dempet); stroke-width: 1.25; }
+/* Glorien i flatens farge holder navnet lesbart der strekene går gjennom det. */
+.avh-node text { fill: var(--tekst-dempet); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--flate-kort); stroke-width: 3px; stroke-linejoin: round; }
+.avh-node[data-type="app"] text { fill: var(--tekst); font-weight: 700; }
+/* Treffflaten er større enn prikken. */
+.avh-node .treff { fill: transparent; }
+.avh-node:focus-visible .prikk, .avh-node:hover .prikk { stroke: var(--graphite-0); }
+
+/* Når én pakke er valgt, trer resten tilbake. */
+.avh-svg[data-aktiv] .avh-kant { opacity: 0.1; }
+.avh-svg[data-aktiv] .avh-kant[data-aktiv] { opacity: 1; stroke: var(--azure-30); stroke-width: 1.75; }
+.avh-svg[data-aktiv] .avh-node { opacity: 0.28; }
+.avh-svg[data-aktiv] .avh-node[data-aktiv] { opacity: 1; }
+.avh-svg[data-aktiv] .avh-node[data-aktiv] text { fill: var(--tekst); }
+
+.avh-tips {
+  position: absolute;
+  z-index: 3;
+  max-inline-size: 22rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--flate);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.8);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--tekst-dempet);
+  pointer-events: none;
+}
+.avh-tips strong { display: block; color: var(--graphite-0); font-size: 0.95rem; }
+.avh-tips b { color: var(--tekst); font-weight: 700; }
+.avh-tips p { margin: 0; font-size: inherit; }
+
+.avh-tabeller h3 { margin-block-start: 0.9rem; }
+.avh-tabeller table { font-size: 0.86rem; }
+.avh-tabeller td, .avh-tabeller th { padding: 0.35rem 0.55rem; }
+.avh-tabeller td:nth-child(4) { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.avh[data-visning="tabell"] .avh-liste, .avh[data-visning="tabell"] .avh-scene { display: none; }
+.avh:not([data-visning="tabell"]) .avh-tabeller { display: none; }
+@media (max-width: 860px) {
+  /* På smal skjerm er tabellen visningen. En graf på 375 piksler sier ingenting. */
+  .avh .avh-liste, .avh .avh-scene, .avh .avh-bytt { display: none; }
+  .avh:not([data-visning="tabell"]) .avh-tabeller { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .avh-kant, .avh-node { transition: none; }
+}
+</style>
+
+  <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
+  <h2>Hva én knapp legger i <code>node_modules</code></h2>
+  <p>En React- og TypeScript-app som har React 19 fra før, i fem kopier. I hver installeres det dokumentasjonen sier for én knapp, og så leses <code>package-lock.json</code>. Lengst til høyre i grafen står det alt hviler på. Velg en rad for å se den.</p>
+
+  <div class="avh-forklaring" aria-label="Tegnforklaring">
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#9ccff2" stroke="#171f2b" stroke-width="2"/></svg>Designsystemets egne pakker</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#e7b78a" stroke="#171f2b" stroke-width="2"/></svg>Pakker det drar inn</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><rect x="7.5" y="1.5" width="11" height="11" rx="2" fill="#171f2b" stroke="#757575" stroke-width="1.75"/></svg>Har appen fra før</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M1 7 H25" stroke="rgba(205,225,249,0.6)" stroke-width="1.5"/></svg>Avhengighet</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M1 7 H25" stroke="rgba(205,225,249,0.6)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>Peer-avhengighet</span>
+    <button type="button" class="avh-bytt" aria-pressed="false">Vis som tabell</button>
+  </div>
+
+  <div class="avh-liste" role="tablist" aria-label="Designsystem"></div>
+  <div class="avh-scene"><div class="avh-graf"></div></div>
+  <div class="avh-tabeller"></div>
+
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;">Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er samme ene pakke med klassene som med byggefunksjonen: importen avgjør bundelen, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp i CSS-sporet, tokens og knapp, minifisert og gzippet som på forrige lysbilde. Stiplet er peer-avhengigheter, som npm 7 og nyere henter selv. Lest 25. september 2026.</p>
+
+<script>
+(() => {
+  // Noder: [navn, versjon, type, utpakkede byte]. Kanter: [fra, til, 0 = vanlig, 1 = peer].
+  // Typen «grunn» er det appen har fra før, og telles ikke.
+  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.7","annen",247667],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.2","annen",521383],["react-i18next","17.0.15","annen",955997],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","system",2280957],["@navikt/ds-css","8.17.1","system",2297115],["@navikt/ds-react","8.17.1","system",7586468],["@navikt/ds-tokens","8.17.1","system",446875],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css,theme}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-theme","1.10.0","system",325013],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","annen",2280957],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.3.3","annen",44851],["@tanstack/react-virtual","3.14.13","annen",60900],["@tanstack/virtual-core","3.17.11","annen",437568],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[0,3,0],[1,4,0],[2,4,0],[2,5,0],[2,7,0],[2,8,0],[2,11,0],[2,13,0],[2,14,0],[2,20,0],[2,22,1],[2,23,1],[3,4,0],[5,7,0],[5,16,0],[5,17,0],[5,18,0],[5,19,0],[6,10,0],[7,6,0],[7,10,0],[8,9,0],[8,10,0],[8,21,0],[8,22,1],[8,23,1],[9,7,0],[9,22,1],[9,23,1],[12,22,1],[13,12,0],[13,22,1],[14,15,0],[14,22,1],[14,23,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{css,theme}","knapp":6572,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-theme","1.10.0","system",325013],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":1974,"n":[["appen din","","app",0],["@fristil/designsystem","0.14.0","system",1007674]],"e":[[0,1,0]]}}
+
+  const TYPENAVN = { system: "Designsystemets egen", annen: "Dratt inn", grunn: "Har appen fra før", app: "Appen" }
+  const BREDDE = 1136 // fast, så alle grafene har samme målestokk
+  const RAD = 30      // avstand mellom pakker i samme lag
+  const VENSTRE = 70
+  const HOYRE = 70
+  const R = 6
+  const NS = "http://www.w3.org/2000/svg"
+
+  const mb = (b) => {
+    if (b >= 1e6) return (b / 1e6).toFixed(1).replace(".", ",") + " MB"
+    return Math.round(b / 1e3) + " kB"
+  }
+  const kb = (b) => (b / 1e3).toFixed(1).replace(".", ",") + " kB"
+  const el = (navn, attr = {}) => {
+    const e = document.createElementNS(NS, navn)
+    for (const [k, v] of Object.entries(attr)) e.setAttribute(k, v)
+    return e
+  }
+  const lag = (navn, klasse, tekst) => {
+    const e = document.createElement(navn)
+    if (klasse) e.className = klasse
+    if (tekst !== undefined) e.textContent = tekst
+    return e
+  }
+
+  /* Legger grafen i lag: rang er lengste vei fra appen. Sykler brytes med DFS,
+     så en pakke som viser tilbake ikke får rangen til å vokse uten ende. */
+  function lagdel(sys) {
+    const n = sys.n.length
+    const ut = Array.from({ length: n }, () => [])
+    const inn = Array.from({ length: n }, () => [])
+    for (const [a, b] of sys.e) { ut[a].push(b); inn[b].push(a) }
+    const farge = new Array(n).fill(0)
+    const bak = new Set()
+    ;(function dfs(v) {
+      farge[v] = 1
+      for (const t of ut[v]) {
+        if (farge[t] === 1) bak.add(v + ">" + t)
+        else if (!farge[t]) dfs(t)
+      }
+      farge[v] = 2
+    })(0)
+    const rang = new Array(n).fill(0)
+    let endret = true
+    while (endret) {
+      endret = false
+      for (const [a, b] of sys.e) {
+        if (bak.has(a + ">" + b)) continue
+        if (rang[b] < rang[a] + 1) { rang[b] = rang[a] + 1; endret = true }
+      }
+    }
+    const lagene = []
+    for (let i = 0; i < n; i++) (lagene[rang[i]] ??= []).push(i)
+    // Rekkefølgen i hvert lag: tyngdepunktet av naboene i laget før, så
+    // strekene krysser hverandre minst mulig. Tre sveip, fram og tilbake.
+    const plass = new Array(n).fill(0)
+    const sorter = (l) => l.forEach((i, p) => { plass[i] = p })
+    lagene.forEach(sorter)
+    const sveip = (naboer) => {
+      for (let r = 1; r < lagene.length; r++) {
+        const midt = (i) => {
+          const nb = naboer[i].filter((j) => rang[j] !== rang[i])
+          return nb.length ? nb.reduce((s, j) => s + plass[j], 0) / nb.length : plass[i]
+        }
+        lagene[r].sort((a, b) => midt(a) - midt(b) || sys.n[a][0].localeCompare(sys.n[b][0]))
+        sorter(lagene[r])
+      }
+    }
+    sveip(inn); sveip(ut); sveip(inn)
+    return { lag: lagene, rang, inn, ut }
+  }
+
+  const systemer = Object.values(DATA).map((sys) => ({
+    ...sys,
+    ...lagdel(sys),
+    nye: sys.n.filter((p) => p[2] === "system" || p[2] === "annen").length,
+    sum: sys.n.reduce((s, p) => s + p[3], 0),
+  }))
+  // Flest nye pakker øverst: lista er en rangering.
+  systemer.sort((a, b) => b.nye - a.nye)
+
+  const maksRang = Math.max(...systemer.map((s) => s.lag.length - 1))
+  const KOL = (BREDDE - VENSTRE - HOYRE) / maksRang // avstand mellom lagene
+  // Alle grafene er like høye, og et lag sprer pakkene sine over hele høyden.
+  // Da får en liten graf like mye luft som den største, og ingen står i en klump.
+  const maksRader = Math.max(...systemer.map((s) => Math.max(...s.lag.map((l) => l.length))))
+  const HOYDE = maksRader * RAD + 20
+
+  const seksjon = document.querySelector(".avh")
+  const liste = seksjon.querySelector(".avh-liste")
+  const scene = seksjon.querySelector(".avh-scene")
+  const graf = seksjon.querySelector(".avh-graf")
+  const tabeller = seksjon.querySelector(".avh-tabeller")
+  const tips = lag("div", "avh-tips")
+  tips.setAttribute("role", "tooltip")
+  tips.hidden = true
+  scene.append(tips)
+
+  const faner = []
+  function velg(nr) {
+    faner.forEach(({ knapp, svg }, i) => {
+      knapp.setAttribute("aria-selected", String(i === nr))
+      knapp.tabIndex = i === nr ? 0 : -1
+      svg.toggleAttribute("data-valgt", i === nr)
+    })
+    tips.hidden = true
+  }
+
+  systemer.forEach((sys, nr) => {
+    const { lag: lagene, rang, inn, ut } = sys
+    // Designsystemets eget scope står i raden, og strippes. Andres beholdes.
+    const kort = (navn) => navn.startsWith(sys.scope) ? navn.slice(sys.scope.length) : navn
+    const hoyde = HOYDE
+    const x = (i) => VENSTRE + rang[i] * KOL
+    const y = (i) => 10 + (lagene[rang[i]].indexOf(i) + 0.5) * ((hoyde - 20) / lagene[rang[i]].length)
+
+    // Raden med tall, som også er fanen.
+    const knapp = lag("button", "avh-hode")
+    knapp.type = "button"
+    knapp.setAttribute("role", "tab")
+    knapp.id = `avh-fane-${nr}`
+    knapp.append(lag("strong", "", sys.navn), lag("code", "", sys.kommando))
+    const tall = lag("span", "avh-tall")
+    const tallene = [[sys.nye, sys.nye === 1 ? "ny pakke" : "nye pakker"], [sys.e.length, sys.e.length === 1 ? "kobling" : "koblinger"], [mb(sys.sum), "utpakket"]]
+    if (sys.knapp) tallene.push([kb(sys.knapp), "CSS til knappen"])
+    for (const [verdi, tekst] of tallene) {
+      const s = lag("span")
+      s.append(lag("b", "", verdi), tekst)
+      tall.append(s)
+    }
+    knapp.append(tall)
+    knapp.addEventListener("click", () => velg(nr))
+    liste.append(knapp)
+
+    const svg = el("svg", { class: "avh-svg", viewBox: `0 0 ${BREDDE} ${hoyde}`, role: "tabpanel", "aria-labelledby": knapp.id })
+    const kanter = el("g")
+    const noder = el("g")
+    svg.append(kanter, noder)
+
+    const kantEl = sys.e.map(([a, b, peer]) => {
+      const x1 = x(a) + (a === 0 ? 34 : R), y1 = y(a), x2 = x(b) - R, y2 = y(b)
+      const d = rang[a] === rang[b]
+        ? `M${x1 - R} ${y1} C${x1 + 26} ${y1}, ${x2 + 26 + R} ${y2}, ${x2 + R} ${y2}`
+        : `M${x1} ${y1} C${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`
+      const p = el("path", { class: "avh-kant", d })
+      if (peer) p.setAttribute("data-peer", "")
+      kanter.append(p)
+      return p
+    })
+
+    sys.n.forEach((p, i) => {
+      const [fulltNavn, versjon, type] = p
+      const g = el("g", { class: "avh-node", "data-type": type, tabindex: "0", transform: `translate(${x(i)} ${y(i)})` })
+      g.setAttribute("aria-label", type === "app" ? fulltNavn : `${fulltNavn} ${versjon}, ${TYPENAVN[type].toLowerCase()}, kreves av ${inn[i].length}`)
+      if (type === "app") {
+        g.append(el("rect", { class: "prikk", x: -34, y: -11, width: 68, height: 22, rx: 6 }))
+        const t = el("text", { "text-anchor": "middle", y: 4 })
+        t.textContent = fulltNavn
+        g.append(t)
+      } else {
+        g.append(el("circle", { class: "treff", r: 16 }))
+        g.append(type === "grunn"
+          ? el("rect", { class: "prikk", x: -R, y: -R, width: 2 * R, height: 2 * R, rx: 1.5 })
+          : el("circle", { class: "prikk", r: R }))
+        // Annenhver kolonne får teksten over og under, så naboer på samme rad
+        // ikke skriver oppå hverandre. I samme kolonne holder radavstanden.
+        const over = rang[i] % 2 === 1
+        const t = el("text", { "text-anchor": "middle", y: over ? -10 : 19 })
+        t.textContent = kort(fulltNavn)
+        g.append(t)
+      }
+      g.addEventListener("pointerenter", () => marker(i))
+      g.addEventListener("focus", () => marker(i))
+      g.addEventListener("pointerleave", avmarker)
+      g.addEventListener("blur", avmarker)
+      noder.append(g)
+    })
+
+    const nodeEl = [...noder.children]
+    function marker(i) {
+      svg.setAttribute("data-aktiv", "")
+      const nabo = new Set([i, ...inn[i], ...ut[i]])
+      nodeEl.forEach((g, j) => g.toggleAttribute("data-aktiv", nabo.has(j)))
+      kantEl.forEach((k, j) => { const [a, b] = sys.e[j]; k.toggleAttribute("data-aktiv", a === i || b === i) })
+      visTips(i)
+    }
+    function avmarker() {
+      svg.removeAttribute("data-aktiv")
+      nodeEl.forEach((g) => g.removeAttribute("data-aktiv"))
+      kantEl.forEach((k) => k.removeAttribute("data-aktiv"))
+      tips.hidden = true
+    }
+    function visTips(i) {
+      const [fulltNavn, versjon, type, byte] = sys.n[i]
+      tips.replaceChildren(lag("strong", "", type === "app" ? "Appen din" : `${fulltNavn} ${versjon}`))
+      if (type === "app") {
+        tips.append(lag("p", "", `Ber om ${ut[i].length} ${ut[i].length === 1 ? "pakke" : "pakker"} og får ${sys.nye}.`))
+      } else if (type === "grunn") {
+        tips.append(lag("p", "", `${TYPENAVN[type]}, ${versjon}. Telles ikke.`))
+      } else {
+        tips.append(lag("p", "", `${TYPENAVN[type]} · ${mb(byte)} utpakket`))
+      }
+      if (type !== "app") {
+        const kreves = lag("p")
+        kreves.append(lag("b", "", inn[i].length === 1 ? "Kreves av 1: " : `Kreves av ${inn[i].length}: `), inn[i].map((j) => (j === 0 ? "appen din" : kort(sys.n[j][0]))).join(", "))
+        tips.append(kreves)
+        if (ut[i].length) {
+          const krever = lag("p")
+          krever.append(lag("b", "", `Krever ${ut[i].length}: `), ut[i].map((j) => kort(sys.n[j][0])).join(", "))
+          tips.append(krever)
+        }
+      }
+      const s = scene.getBoundingClientRect()
+      const n = nodeEl[i].getBoundingClientRect()
+      tips.hidden = false
+      let venstre = n.right - s.left + 10
+      if (venstre + tips.offsetWidth > s.width) venstre = n.left - s.left - tips.offsetWidth - 10
+      tips.style.left = Math.max(0, venstre) + "px"
+      tips.style.top = Math.max(0, n.top - s.top - 6) + "px"
+    }
+
+    graf.append(svg)
+    faner.push({ knapp, svg })
+
+    // Tabellen: det samme, uten tegning.
+    tabeller.append(lag("h3", "", `${sys.navn}: ${sys.nye} ${sys.nye === 1 ? "ny pakke" : "nye pakker"}, ${mb(sys.sum)} utpakket`))
+    const rull = lag("div", "tabellrull")
+    const tabell = lag("table")
+    const thead = lag("thead")
+    const hr = lag("tr")
+    for (const t of ["Pakke", "Versjon", "Type", "Utpakket", "Kreves av"]) hr.append(lag("th", "", t))
+    thead.append(hr)
+    const tbody = lag("tbody")
+    sys.n.forEach((p, i) => {
+      if (i === 0 || p[2] === "grunn") return
+      const tr = lag("tr")
+      for (const v of [p[0], p[1], TYPENAVN[p[2]], mb(p[3]), inn[i].map((j) => (j === 0 ? "appen din" : kort(sys.n[j][0]))).join(", ")]) tr.append(lag("td", "", v))
+      tbody.append(tr)
+    })
+    tabell.append(thead, tbody)
+    rull.append(tabell)
+    tabeller.append(rull)
+  })
+
+  // Piltaster opp og ned bytter rad når en rad har fokus. Venstre og høyre
+  // blar i presentasjonen, og røres ikke.
+  liste.addEventListener("keydown", (e) => {
+    const nr = faner.findIndex((f) => f.knapp === document.activeElement)
+    if (nr < 0) return
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault()
+      e.stopPropagation()
+      const neste = (nr + (e.key === "ArrowDown" ? 1 : faner.length - 1)) % faner.length
+      velg(neste)
+      faner[neste].knapp.focus()
+    }
+  })
+  velg(0)
+
+  const bytt = seksjon.querySelector(".avh-bytt")
+  bytt.addEventListener("click", () => {
+    const tilTabell = seksjon.getAttribute("data-visning") !== "tabell"
+    if (tilTabell) seksjon.setAttribute("data-visning", "tabell")
+    else seksjon.removeAttribute("data-visning")
+    bytt.setAttribute("aria-pressed", String(tilTabell))
+    bytt.textContent = tilTabell ? "Vis som graf" : "Vis som tabell"
+  })
+})()
+</script>
+</section>
+
+
 <!-- 10 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 2 av 7</span>
@@ -782,7 +1218,119 @@ defineFsField()
   <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>Hva server-rendring krever av en komponent</h2>
   <p>Systemet skal virke i apper som bygger HTML-en på serveren, altså server-rendring (SSR). Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Under er de to linjene i Datastar som gjør det, og de er grunnen til at systemet er bygget som det er.</p>
-  <p class="kodetittel">datastar.js 1.0.4, løkka som går gjennom attributtene ved hver oppdatering</p>
+<style>
+/*
+ * Morfingen, steg for steg.
+ *
+ * Panelet forteller hele historien: siden kommer fra serveren, brukeren
+ * skriver en adresse uten domene, komponenten viser feilmeldingen og kobler
+ * den med aria-describedby, skjemaet sendes, serveren svarer med en
+ * Server-Sent Event, og Datastar morfer. Det kjører de to Datastar-linjene på
+ * to virkelige elementer og tegner brikkene fra r.attributes etter hvert
+ * steg, så det kan ikke lyve om hva morfingen gjør. Det skjermleseren sier
+ * regnes ut fra det samme elementet.
+ *
+ * Kodevisningen er urørt: panelet byttes inn i stedet for koden. Panelet har
+ * samme høyde i alle steg, så ingenting under hopper mens du klikker. Stegene
+ * styres av presentatøren, ett knappetrykk om gangen. Utgangen velges med to knapper og ikke radioknapper:
+ * piltastene tilhører presentasjonen.
+ */
+.morf-topp { display: flex; align-items: baseline; gap: 1rem; }
+.morf-topp .kodetittel { margin: 0 0 0.35rem; }
+.morf-bytt, .morf-knapp {
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--azure-30);
+  background: none;
+  border: 1px solid var(--kant);
+  border-radius: 999px;
+  padding: 0.15rem 0.75rem;
+  cursor: pointer;
+}
+.morf-bytt { margin-inline-start: auto; }
+.morf-bytt:hover, .morf-bytt:focus-visible, .morf-knapp:hover, .morf-knapp:focus-visible { border-color: var(--azure-30); outline: none; }
+.morf-knapp[disabled] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
+.morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--azure-30); color: var(--graphite-0); }
+
+.morf-scene > [data-skjult] { display: none; }
+
+.morf-panel {
+  padding: 0.35rem 1rem 0.4rem;
+  background: rgba(9, 62, 97, 0.34);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  font-size: 0.86rem;
+}
+.morf-rad { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.morf-rad .morf-utgang { font-size: 0.8rem; color: var(--tekst-dempet); margin-inline-end: 0.2rem; }
+.morf-rad .morf-styring { margin-inline-start: auto; display: flex; gap: 0.5rem; }
+/* r får litt mer plass enn s: etter morfingen har r flest brikker, og de skal stå på to rader. */
+.morf-kolonner { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; margin-block: 0.25rem 0.2rem; }
+.morf-kolonne h4 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tekst-dempet); margin-block-end: 0.2rem; }
+.morf-kolonne h4 code { color: var(--azure-30); text-transform: none; letter-spacing: 0; }
+
+/* Det brukeren ser: etikett, felt og feilmelding, på én linje. */
+.morf-felt { display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.2rem; font-size: 0.82rem; }
+.morf-etikett { color: var(--tekst-dempet); }
+.morf-input {
+  min-inline-size: 9rem;
+  padding: 0.12rem 0.5rem;
+  border: 1px solid var(--graphite-30);
+  border-radius: 0.3rem;
+  background: var(--graphite-0);
+  color: var(--graphite-100);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  transition: border-color 0.2s;
+}
+.morf-input:empty::before { content: "\00a0"; }
+.morf-input[data-ugyldig] { border-color: #e7b78a; box-shadow: 0 0 0 1px #e7b78a; }
+.morf-feil { color: #e7b78a; }
+.morf-feil[hidden] { display: none; }
+.morf-opplest { margin: 0 0 0 auto; font-size: 0.78rem; color: var(--tekst-dempet); }
+.morf-opplest b { color: var(--tekst); font-weight: 400; }
+
+.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.3rem; min-block-size: 3.8rem; align-content: flex-start; }
+.morf-brikke {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  padding: 0.16rem 0.42rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--kant);
+  color: var(--azure-10);
+  background: rgba(205, 225, 249, 0.06);
+  transition: opacity 0.3s, transform 0.3s, border-color 0.2s, background 0.2s;
+}
+.morf-brikke[data-kilde="komponent"] { border-color: var(--azure-30); background: rgba(156, 207, 242, 0.16); color: var(--graphite-0); }
+.morf-brikke[data-tilstand="sjekkes"] { border-color: var(--graphite-0); background: rgba(205, 225, 249, 0.18); }
+.morf-brikke[data-tilstand="fjernes"] { border-color: #e7b78a; color: #e7b78a; background: rgba(231, 183, 138, 0.14); text-decoration: line-through; }
+.morf-brikke[data-tilstand="borte"] { opacity: 0; transform: translateY(0.4rem); }
+.morf-brikke[data-tilstand="ny"], .morf-linje[data-tilstand="ny"] { animation: morf-inn 0.3s ease-out; }
+@keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
+
+/* Trafikken: det som går til serveren, og det som kommer tilbake. */
+.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.32; min-block-size: 3.8rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
+.morf-linje { display: block; }
+.morf-linje i { color: var(--tekst-dempet); font-style: normal; }
+.morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
+.morf-tekst { margin: 0; font-size: 0.86rem; color: var(--tekst); min-block-size: 1.3em; }
+.morf-tekst[data-tone="varsel"] { color: #e7b78a; }
+.morf-tekst[data-tone="ok"] { color: var(--forest-30); }
+@media (max-width: 860px) {
+  /* På smal skjerm står koden, som før. */
+  .morf-bytt { display: none; }
+  .morf-scene > .morf-panel { display: none; }
+  .morf-scene > pre[data-skjult] { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .morf-brikke, .morf-linje, .morf-input { transition: none; animation: none; }
+}
+</style>
+  <div class="morf-topp">
+    <p class="kodetittel">datastar.js 1.0.4, løkka som går gjennom attributtene ved hver oppdatering</p>
+    <button type="button" class="morf-bytt" aria-pressed="false">Vis morfingen</button>
+  </div>
+  <div class="morf-scene">
   <pre><i>// r = elementet i siden nå, s = det serveren sendte,</i>
 <i>// o = navnene i data-preserve-attr, lest av serverens node</i>
 for (let {name: l} of Array.from(<b>r</b>.attributes))
@@ -790,6 +1338,217 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 
 <i>// Står attributtet der, men ikke i det serveren sendte,</i>
 <i>// så fjern det. Med mindre malen har fredet navnet.</i></pre>
+  <div class="morf-panel" data-skjult aria-label="Morfingen, steg for steg">
+    <div class="morf-rad">
+      <span class="morf-utgang">Utgang:</span>
+      <button type="button" class="morf-knapp" data-utgang="uten" aria-pressed="true">Uten fredning</button>
+      <button type="button" class="morf-knapp" data-utgang="fredet" aria-pressed="false">Med data-preserve-attr</button>
+      <span class="morf-styring">
+        <button type="button" class="morf-knapp" data-steg="neste">Neste steg</button>
+        <button type="button" class="morf-knapp" data-steg="start">Fra start</button>
+      </span>
+    </div>
+    <div class="morf-felt">
+      <span class="morf-etikett">E-post</span><span class="morf-input"></span><span class="morf-feil" hidden>Skriv en gyldig e-postadresse</span>
+      <p class="morf-opplest"></p>
+    </div>
+    <div class="morf-kolonner">
+      <div class="morf-kolonne">
+        <h4>Nettleseren, elementet <code>r</code></h4>
+        <div class="morf-brikker" data-side="r"></div>
+      </div>
+      <div class="morf-kolonne">
+        <h4>Til og fra serveren, elementet <code>s</code></h4>
+        <div class="morf-trafikk"></div>
+      </div>
+    </div>
+    <p class="morf-tekst" aria-live="polite"></p>
+  </div>
+  </div>
+<script>
+(() => {
+  const seksjon = document.currentScript.closest(".lysbilde")
+  const scene = seksjon.querySelector(".morf-scene")
+  const kode = scene.querySelector("pre")
+  const panel = scene.querySelector(".morf-panel")
+  const bytt = seksjon.querySelector(".morf-bytt")
+  const brikkerR = panel.querySelector('[data-side="r"]')
+  const trafikk = panel.querySelector(".morf-trafikk")
+  const felt = panel.querySelector(".morf-input")
+  const feil = panel.querySelector(".morf-feil")
+  const opplest = panel.querySelector(".morf-opplest")
+  const tekst = panel.querySelector(".morf-tekst")
+  const neste = panel.querySelector('[data-steg="neste"]')
+  const start = panel.querySelector('[data-steg="start"]')
+  const utganger = [...panel.querySelectorAll("[data-utgang]")]
+  const stille = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const ADRESSE = "kari@example"
+
+  // To virkelige elementer. r er det som står i siden, s det serveren sendte.
+  let r, s, steg, utgang = "uten", lopende = 0
+
+  const brikke = (navn, verdi, kilde) => {
+    const b = document.createElement("span")
+    b.className = "morf-brikke"
+    b.dataset.navn = navn
+    if (kilde) b.dataset.kilde = kilde
+    b.textContent = verdi === "" ? navn : `${navn}="${verdi}"`
+    return b
+  }
+  // Tegner r fra elementets egne attributter, og fra ingenting annet.
+  function tegnR(komponentens = []) {
+    brikkerR.replaceChildren()
+    for (const { name, value } of r.attributes) {
+      brikkerR.append(brikke(name, value, komponentens.includes(name) ? "komponent" : ""))
+    }
+  }
+  // Én linje i trafikken. Den første delen er dempet, resten er nyttelasten.
+  function linje(merke, innhold) {
+    const l = document.createElement("span")
+    l.className = "morf-linje"
+    l.dataset.tilstand = "ny"
+    const m = document.createElement("i")
+    m.textContent = merke
+    l.append(m, innhold)
+    trafikk.append(l)
+  }
+  const som = (el) => {
+    const a = [...el.attributes].map(({ name, value }) => (value === "" ? name : `${name}="${value}"`)).join(" ")
+    return `<input ${a}>`
+  }
+  // Det en skjermleser sier om feltet, regnet ut fra r: navnet fra etiketten,
+  // ugyldig fra aria-invalid, og beskrivelsen fra elementet aria-describedby peker på.
+  function lesOpp() {
+    let t = "E-post"
+    if (r.getAttribute("aria-invalid") === "true") t += ", ugyldig"
+    if (r.getAttribute("aria-describedby") === "epost-feil" && !feil.hidden) t += `, ${feil.textContent}`
+    opplest.replaceChildren("Skjermleseren sier: ")
+    const b = document.createElement("b")
+    b.textContent = `«${t}»`
+    opplest.append(b)
+  }
+  const si = (t, tone) => {
+    tekst.textContent = t
+    if (tone) tekst.dataset.tone = tone
+    else delete tekst.dataset.tone
+  }
+  const vent = (ms) => new Promise((klar) => setTimeout(klar, stille ? 0 : ms))
+
+  function fraStart() {
+    lopende++
+    r = document.createElement("input")
+    r.setAttribute("id", "epost")
+    r.setAttribute("class", "fs-input")
+    r.setAttribute("required", "")
+    s = null
+    steg = 0
+    felt.textContent = ""
+    delete felt.dataset.ugyldig
+    feil.hidden = true
+    trafikk.replaceChildren()
+    const t = document.createElement("span")
+    t.className = "morf-tom"
+    t.textContent = "ingenting ennå"
+    trafikk.append(t)
+    tegnR()
+    lesOpp()
+    si("Serveren sendte siden, med et tomt e-postfelt. Alt som står i r kom derfra.")
+    neste.disabled = false
+  }
+
+  async function nesteSteg() {
+    steg++
+    const mitt = ++lopende
+    if (steg === 1) {
+      felt.textContent = ADRESSE
+      si(`Brukeren skriver «${ADRESSE}» og går videre til neste felt.`)
+    } else if (steg === 2) {
+      feil.hidden = false
+      felt.dataset.ugyldig = ""
+      r.setAttribute("aria-describedby", "epost-feil")
+      tegnR(["aria-describedby"])
+      brikkerR.lastElementChild.dataset.tilstand = "ny"
+      lesOpp()
+      si("Komponenten i nettleseren ser at adressen mangler domene, viser feilmeldingen, og kobler den til feltet med aria-describedby.")
+    } else if (steg === 3) {
+      trafikk.replaceChildren()
+      linje("→ ", `POST /svar  {"epost": "${ADRESSE}"}`)
+      si("Brukeren sender skjemaet. Datastar sender feltene til serveren som JSON.")
+    } else if (steg === 4) {
+      s = document.createElement("input")
+      s.setAttribute("id", "epost")
+      s.setAttribute("class", "fs-input")
+      s.setAttribute("required", "")
+      s.setAttribute("aria-invalid", "true")
+      if (utgang === "fredet") s.setAttribute("data-preserve-attr", "aria-describedby")
+      linje("← ", "event: datastar-patch-elements")
+      linje("  ", `data: elements ${som(s)}`)
+      si(utgang === "fredet"
+        ? "Serveren validerer og svarer med en Server-Sent Event: feltet på nytt, med aria-invalid, og aria-describedby fredet i data-preserve-attr."
+        : "Serveren validerer og svarer med en Server-Sent Event: feltet på nytt, med aria-invalid. Den vet ikke om aria-describedby.")
+    } else if (steg === 5) {
+      neste.disabled = true
+      si("Datastar finner elementet i siden med samme id, og løkka går gjennom attributtene i r, ett om gangen.")
+      // De to linjene fra datastar.js, med o lest slik Datastar leser det.
+      const o = (s.getAttribute("data-preserve-attr") ?? "").split(" ").filter(Boolean)
+      const fjernet = []
+      for (let { name: l } of Array.from(r.attributes)) {
+        const b = brikkerR.querySelector(`[data-navn="${l}"]`)
+        b.dataset.tilstand = "sjekkes"
+        await vent(550)
+        if (mitt !== lopende) return
+        if (!s.hasAttribute(l) && !o.includes(l)) {
+          r.removeAttribute(l)
+          fjernet.push(l)
+          b.dataset.tilstand = "fjernes"
+          await vent(650)
+          if (mitt !== lopende) return
+          b.dataset.tilstand = "borte"
+        } else {
+          delete b.dataset.tilstand
+        }
+      }
+      // Så kopierer Datastar inn det serveren sendte. Det er ikke stridens kjerne,
+      // men r skal være sant etterpå.
+      for (const { name, value } of s.attributes) r.setAttribute(name, value)
+      await vent(350)
+      if (mitt !== lopende) return
+      tegnR(fjernet.includes("aria-describedby") ? [] : ["aria-describedby"])
+      neste.disabled = false
+      si(fjernet.includes("aria-describedby")
+        ? "aria-describedby var ikke i det serveren sendte, og er fjernet. aria-invalid er kopiert inn."
+        : "aria-describedby sto i data-preserve-attr, og fikk stå. aria-invalid er kopiert inn.")
+    } else if (steg === 6) {
+      neste.disabled = true
+      lesOpp()
+      if (r.hasAttribute("aria-describedby")) {
+        si("Skjermleseren leser feilmeldingen, men bare fordi malen fredet navnet. Endrer komponenten hva den setter, må hver mal endres i takt.", "ok")
+      } else {
+        si("Feilmeldingen står der på skjermen, men koblingen er borte. Skjermleseren leser feltet uten den, og ingenting sier fra.", "varsel")
+      }
+    }
+  }
+
+  neste.addEventListener("click", nesteSteg)
+  start.addEventListener("click", fraStart)
+  for (const k of utganger) {
+    k.addEventListener("click", () => {
+      utgang = k.dataset.utgang
+      for (const a of utganger) a.setAttribute("aria-pressed", String(a === k))
+      fraStart()
+    })
+  }
+  bytt.addEventListener("click", () => {
+    const visPanel = kode.hasAttribute("data-skjult") === false
+    kode.toggleAttribute("data-skjult", visPanel)
+    panel.toggleAttribute("data-skjult", !visPanel)
+    bytt.setAttribute("aria-pressed", String(visPanel))
+    bytt.textContent = visPanel ? "Vis koden" : "Vis morfingen"
+    if (visPanel) fraStart()
+  })
+  fraStart()
+})()
+</script>
   <p style="margin-block-start: 1rem;">Nødutgangen er <code>data-preserve-attr</code>, som HTML-malen på serveren må fylle med navnene på alt komponenten har satt. Endrer vi hva komponenten setter, må hver mal endres i takt, uten at noen kompilator sier fra. Derfor bygger vi ikke på den.</p>
   <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder en web component har lagt inn bli kastet. Derfor:</p>
   <div class="boks">
