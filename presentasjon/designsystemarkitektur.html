@@ -414,7 +414,7 @@ tr:last-child td { border-block-end: none; }
   <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
   <h1>Rammeverksuavhengig<br>designsystem</h1>
   <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
-  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er noe HTML har kunnet siden nittitallet. I dag koster det et rammeverk du ikke kan bytte ut. Det er det denne presentasjonen handler om.</p>
+  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er noe nettleseren har hatt delene til i tjue år. I dag koster det et rammeverk du ikke kan bytte ut. Det er det denne presentasjonen handler om.</p>
   <p>Hele systemet hviler på én setning, og resten er hva den fører til:</p>
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
@@ -477,7 +477,7 @@ defineFsField()
   <ul>
     <li><strong>Retningen går bare én vei.</strong> Av komponenter bygget på plattformen kan vi lage en React-pakke senere. Av et React-bibliotek kan ingen lage en HTML-versjon.</li>
     <li><strong>Porteføljen er aldri ett rammeverk.</strong> Gamle apper, nye apper, publiseringsløsninger som bare sender HTML, og systemer vi ikke eier selv. En CSS-klasse virker alle stedene.</li>
-    <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til hooks til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En klasse og en web component fra samme periode virker fortsatt uendret.</li>
+    <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til hooks til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En CSS-klasse fra den tiden virker fortsatt uendret, og det gjør en web component skrevet mot Custom Elements v1 også.</li>
     <li><strong>Utseendet krever ingen kjøretid.</strong> En knapp, et merke og et kort er CSS. Gjør vi dem til React-komponenter, må rammeverket være lastet og kjøre før de ser riktige ut.</li>
   </ul>
   <div class="perspektiv">
@@ -540,7 +540,7 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot hører ikke til skjemaet utenfor før du kobler det på igjen med <code>ElementInternals</code>. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
+  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot står utenfor skjemaet rundt, og <code>ElementInternals</code> hjelper bare ved at verten selv melder inn en verdi. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
 <!-- 7 -->
@@ -769,7 +769,7 @@ en skjermleser leser det opp uten navn.</pre>
   </table>
   </div>
   <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som har skrevet regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll i komponentene som bruker det, og da er kravet 3:1 og ikke 4,5:1. Navnet er ikke et bevis på bruken.</p>
-  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Rollene med 3:1 står ikke i den lista i det hele tatt. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
+  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Den ene 3:1-rollen vi sjekker, feltrammen, står utenfor lista, i to tester og i generatoren. Men de samme fargene brukes også som ramme i varselet og meldingen, og den bruken er ikke sjekket av noe. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken paragraf som gjelder for hvilken farge.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må vite det for hvert eneste par, og ta feil i full offentlighet når vi gjør det.</p>
@@ -810,14 +810,14 @@ en skjermleser leser det opp uten navn.</pre>
   <div class="rader tre">
     <div class="boks">
       <span class="tall">3</span>
-      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med godt over tre tusen tester i hver. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
+      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med rundt tusen ett hundre og femti tester i hver, og tre og et halvt tusen til sammen. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
     </div>
     <div class="boks">
       <h3>Venting på den siste motoren</h3>
       <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
       <pre>appearance: base-select
-<i>Chromium 153 ✓  WebKit 26.6 ✓</i>
-<i>Firefox 155     ✗</i></pre>
+<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
+<i>Firefox 150     ✗</i></pre>
       <p style="margin-block-start: 0.6rem;">Derfor er den valgfri, med <code>data-picker="styled"</code>. Uten støtte får du nettleserens egen nedtrekksliste, altså nøyaktig det feltet hadde før.</p>
     </div>
     <div class="boks">
@@ -845,7 +845,7 @@ en skjermleser leser det opp uten navn.</pre>
   <div class="rader to">
     <div class="boks">
       <span class="tall">11,7 kB</span>
-      <p>minifisert for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
+      <p>minifisert med <code>bun build</code> for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
     </div>
     <div class="boks">
       <span class="tall">0</span>
