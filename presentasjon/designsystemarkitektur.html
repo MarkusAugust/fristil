@@ -180,20 +180,11 @@ a { color: var(--azure-30); }
 /*
  * Kapittelforsidene.
  *
- * Ikonet ligger på en grå plate med Windows 3.1-fasen, fordi ikonenes egen
- * marineblå forsvinner mot lysbildets bakgrunn. Platen gjør dem lesbare og
- * er samtidig periodekorrekt.
+ * Ikonet ligger på en grå plate med Windows 3.1-fasen. Ikonene er tegnet for
+ * en lys flate, og den svarte strektegningen som bærer formen i alle sju ville
+ * forsvunnet mot lysbildets bakgrunn. Platen gjør dem lesbare og er samtidig
+ * periodekorrekt.
  */
-.lysbilde.kapittel[data-vist] {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-@media (max-width: 860px) {
-  /* Under brekkpunktet er lysbildet vanlig tekst i flyten, ikke et kort å
-     sentrere noe inni. */
-  .lysbilde.kapittel[data-vist] { display: block; }
-}
 .kapittel-topp {
   display: flex;
   align-items: center;
@@ -514,7 +505,7 @@ defineFsField()
     <h2>Nettleseren er plattformen</h2>
   </div>
   <p class="ingress">Systemet bygger bare på det nettleseren allerede kan. Ingen kjøretid for utseende, ingen avhengigheter, og ingenting som må skrives om når appene rundt bytter rammeverk.</p>
-  <p class="dempet">Hva det koster oss: tre nettlesermotorer i hver kjøring, og venting på den siste.</p>
+  <p class="dempet">Kapittelet: hvorfor plattformen framfor React, hva nettleseren gjør for oss, hva det koster oss, og hva et rammeverksbundet system koster appen din.</p>
 </section>
 
 <!-- 5 -->
@@ -534,6 +525,85 @@ defineFsField()
 </section>
 
 <!-- 6 -->
+<section class="lysbilde">
+  <h2>Hva nettleseren gjør for oss</h2>
+  <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
+  <div class="rader to">
+    <div class="boks">
+      <h3>Det nettleseren tar</h3>
+      <ul>
+        <li><strong>Fokusfellen i en dialog.</strong> <code>showModal()</code> gjør resten av siden utilgjengelig, holder fokus inne, og lukker på Escape.</li>
+        <li><strong>Topplaget.</strong> En dialog og et sprettoppvindu ligger over alt annet uten at noen teller <code>z-index</code>.</li>
+        <li><strong>Skjemaet.</strong> Validering, innsending og <code>:invalid</code> finnes, og virker uten at vi skriver en linje.</li>
+        <li><strong>Utseendet.</strong> En knapp, et merke og et kort er CSS. De ser riktige ut før noe skript er lastet.</li>
+      </ul>
+    </div>
+    <div class="boks">
+      <h3>Det vi slipper å eie</h3>
+      <ul>
+        <li>Ingen egen fokusfelle, ingen egen lagstyring, ingen egen skjemamotor.</li>
+        <li>Ingen kjøretid for det som bare er utseende.</li>
+        <li>Ingen omskriving når appene rundt bytter rammeverk.</li>
+        <li>Ingen versjon av React, Vue eller Svelte å holde tritt med.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">Det som blir igjen til oss er koblingen mellom delene, tastaturet i det nettleseren ikke har en ferdig kontroll for, og at tingene ser like ut. Det er en mye mindre jobb enn å bygge alt.</p>
+</section>
+
+<!-- 7 -->
+<section class="lysbilde">
+  <h2>Prisen for å bygge på nettleseren selv</h2>
+  <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">3</span>
+      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med rundt tusen ett hundre og femti tester i hver, og tre og et halvt tusen til sammen. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
+    </div>
+    <div class="boks">
+      <h3>Venting på den siste motoren</h3>
+      <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
+      <pre>appearance: base-select
+<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
+<i>Firefox 150     ✗</i></pre>
+      <p style="margin-block-start: 0.6rem;">Derfor er den valgfri, med <code>data-picker="styled"</code>. Uten støtte får du nettleserens egen nedtrekksliste, altså nøyaktig det feltet hadde før.</p>
+    </div>
+    <div class="boks">
+      <h3>Navn som ikke kan døpes om</h3>
+      <p>Klassenavn, <code>data-*</code>, tokennavn og oppføringer i <code>exports</code> er alt sammen noe en konsument bygger på. Et brudd på dem krever ny hovedversjon, og står i versjonsloggen i den samme pull requesten som endringen.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="lysbilde">
+  <h2>Hva det koster appen din</h2>
+  <p>Et designsystem stiller krav til appen som tar det i bruk. Her er kravene våre, og til sammenligning kravene til et React-basert designsystem, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>For å bruke skjemakomponentene</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
+    <tbody>
+      <tr><td>Pakker appen din må ha</td><td>ingen</td><td>React 19, i18next, react-i18next, date-fns, og åtte pakker fra systemet selv</td></tr>
+      <tr><td>Rammeverk</td><td>hvilket som helst, eller ingen</td><td>React</td></tr>
+      <tr><td>Kjøretid for en knapp</td><td>ingen, den er CSS</td><td>React må være lastet og i gang</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Det er ikke en kritikk: et React-basert system er et rimelig valg når alt er React. Poenget er hva det koster den som ikke er det, og den dagen noe skal byttes.</p>
+  <div class="rader to">
+    <div class="boks">
+      <span class="tall">11,7 kB</span>
+      <p>minifisert med <code>bun build</code> for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
+    </div>
+    <div class="boks">
+      <span class="tall">0</span>
+      <p>avhengigheter i pakken. Ingenting i den gjør noe ved import alene: <code>customElements.define</code> skjer først når du kaller <code>defineFsField()</code>.</p>
+    </div>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">Hver modul kan dessuten lastes på en server uten DOM, så <code>import { fs }</code> virker i en app med server-rendring.</p>
+</section>
+
+<!-- 9 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 2 av 7</span>
   <div class="kapittel-topp">
@@ -545,24 +615,23 @@ defineFsField()
 <rect x="26" y="26" width="4" height="4" fill="#FFFF00"/></g></svg>
     <h2>Serveren eier markupen, komponenten eier oppførselen</h2>
   </div>
-  <p class="ingress">Den som sender HTML-en bestemmer hva som står der. Komponenten fester tastatur, fokus og koblinger på den, og legger aldri til noder eller attributter serveren eier. Derfor bruker vi heller ikke shadow DOM.</p>
+  <p class="ingress">Den som sender HTML-en bestemmer hva som står der. Komponenten fester tastatur, fokus og koblinger på den, og legger aldri til noder eller attributter serveren eier. Av samme grunn gjemmer vi ikke markupen i en skyggerot.</p>
   <p class="dempet">Kapittelet: hva server-rendring krever, de to lagene, de tre kategoriene, og de to veiene inn.</p>
 </section>
 
-<!-- 7 -->
+<!-- 10 -->
 <section class="lysbilde">
   <h2>Hva server-rendring krever av en komponent</h2>
-  <p>Systemet skal virke i apper som bygger HTML-en på serveren, altså server-rendring, forkortet SSR. Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden som står der. Det kalles morfing, på engelsk <i>DOM morphing</i>. Under er de to linjene i Datastar som gjør det, og de er grunnen til at systemet er bygget som det er.</p>
+  <p>Systemet skal virke i apper som bygger HTML-en på serveren, altså server-rendring, forkortet SSR. Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Under er de to linjene i Datastar som gjør det, og de er grunnen til at systemet ser ut som det gjør.</p>
   <p class="kodetittel">datastar.js 1.0.4, løkka som går gjennom attributtene ved hver oppdatering</p>
   <pre><i>// r = elementet i siden nå, s = det serveren sendte,</i>
 <i>// o = navnene i data-preserve-attr, lest av serverens node</i>
 for (let {name: l} of Array.from(<b>r</b>.attributes))
   !<b>s</b>.hasAttribute(l) &amp;&amp; !<b>o</b>.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
 
-<i>// Står attributtet på elementet, men ikke i det serveren</i>
-<i>// sendte, så fjern det. Med mindre serverens mal har</i>
-<i>// skrevet navnet inn i en liste på forhånd.</i></pre>
-  <p style="margin-block-start: 1rem;">Nødutgangen er attributtet <code>data-preserve-attr</code>, som HTML-malen på serveren, altså filen som skriver ut HTML-en i Go, PHP eller Kotlin, må fylle med navnene på alt komponenten har satt. Endrer vi hva komponenten setter, må hver mal endres i takt, og ingen kompilator sier fra når de kommer i utakt. Derfor bygger vi ikke på den.</p>
+<i>// Står attributtet der, men ikke i det serveren sendte,</i>
+<i>// så fjern det. Med mindre malen har fredet navnet.</i></pre>
+  <p style="margin-block-start: 1rem;">Nødutgangen er attributtet <code>data-preserve-attr</code>. HTML-malen på serveren, altså filen som skriver ut HTML-en i Go, PHP eller Kotlin, må fylle det med navnene på alt komponenten har satt. Endrer vi hva komponenten setter, må hver mal endres i takt, og ingen kompilator sier fra. Derfor bygger vi ikke på den.</p>
   <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder en web component har lagt inn bli kastet. Derav regelen:</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
@@ -570,10 +639,10 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
 </section>
 
-<!-- 8 -->
+<!-- 11 -->
 <section class="lysbilde">
   <h2>De to lagene</h2>
-  <p>Følgen av regelen over er at vi deler systemet i to lag: det serveren skriver, og det nettleseren gjør etterpå. Delingen er nødvendig fordi bare det ene av dem overlever en oppdatering fra serveren. De overlapper derfor ikke: en byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
+  <p>Følgen av regelen på forrige lysbilde er at vi deler systemet i to lag: det serveren skriver, og det nettleseren gjør etterpå. Delingen er nødvendig fordi en oppdatering river bort attributter og noder som ikke sto i det serveren sendte, mens hendelseslyttere blir stående. De to lagene overlapper derfor ikke: en byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
   <div class="tabellrull">
   <table>
     <thead><tr><th>Lag</th><th>Innhold</th><th>Hvem produserer det</th></tr></thead>
@@ -583,11 +652,10 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     </tbody>
   </table>
   </div>
-  
   <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot står utenfor skjemaet rundt, og du må melde verdien inn fra verten med <code>ElementInternals</code> for å få den med i innsendingen. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
-<!-- 9 -->
+<!-- 12 -->
 <section class="lysbilde">
   <h2>Tre kategorier, og ett spørsmål</h2>
   <p>Kategorien svarer ikke på hvem som skriver HTML-en. I en app med server-rendring skriver serveren all HTML uansett. Den svarer på <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
@@ -618,7 +686,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 10 -->
+<!-- 13 -->
 <section class="lysbilde">
   <h2>To veier til den samme kontrakten</h2>
   <p>Det avgjørende er ikke om siden bygges på en server. Det er om koden som lager markupen <strong>kan kalle en funksjon</strong>.</p>
@@ -655,7 +723,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 11 -->
+<!-- 14 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 3 av 7</span>
   <div class="kapittel-topp">
@@ -668,11 +736,11 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 <rect x="10" y="28" width="12" height="2" fill="#000000"/></g></svg>
     <h2>Tilgjengeligheten skrives ett sted, og nås fra to</h2>
   </div>
-  <p class="ingress">Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den som én funksjon, og både serveren og komponenten kaller den.</p>
-  <p class="dempet">Uten dette ville hver server skrevet reglene selv, og da er reserven den som ryker først.</p>
+  <p class="ingress">Reglene for hvordan et skjemafelt kobles sammen for en skjermleser finnes ett sted i koden, og både serveren og komponenten kaller det samme stedet.</p>
+  <p class="dempet">Kapittelet: den ene funksjonen, og de to inngangene til den.</p>
 </section>
 
-<!-- 12 -->
+<!-- 15 -->
 <section class="lysbilde">
   <h2>Én funksjon, to innganger</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
@@ -687,7 +755,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;" class="dempet">Regelen bak: en sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett miljø. Lukk fella i typen, og legg en beskjed ved siden av.</p>
 </section>
 
-<!-- 13 -->
+<!-- 16 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 4 av 7</span>
   <div class="kapittel-topp">
@@ -702,7 +770,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="dempet">Kapittelet: reparasjonen, regelen om å lese framfor å regne, og hva komponenten sier fra om.</p>
 </section>
 
-<!-- 14 -->
+<!-- 17 -->
 <section class="lysbilde">
   <h2>Når serveren river bort det komponenten satte</h2>
   <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og setter det tilbake i samme øyeblikk. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
@@ -726,7 +794,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
-<!-- 15 -->
+<!-- 18 -->
 <section class="lysbilde">
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
   <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to er uenige.</p>
@@ -741,7 +809,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="dempet" style="margin-block-start: 1rem;">Eierskapet må leses av noden, ikke av hukommelsen. Husker komponenten hva den trodde sist, gir den samme markupen to ulike svar alt etter hva som skjedde før.</p>
 </section>
 
-<!-- 16 -->
+<!-- 19 -->
 <section class="lysbilde">
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
   <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
@@ -771,7 +839,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 17 -->
+<!-- 20 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 5 av 7</span>
   <div class="kapittel-topp">
@@ -785,13 +853,13 @@ en skjermleser leser det opp uten navn.</pre>
   <p class="dempet">Det er dette som gjør at rammeverksuavhengighet ikke oppleves som et steg ned.</p>
 </section>
 
-<!-- 18 -->
+<!-- 21 -->
 <section class="lysbilde">
   <h2>Ett valgobjekt inn, attributter ut</h2>
   <p>Innvendingen mot å forlate React er som regel utvikleropplevelsen: du mister komponenter som kjenner sine egne valg. Svaret er at en byggefunksjon gir det samme, fordi den er en vanlig TypeScript-funksjon. Den returnerer attributter, og editoren kjenner dem.</p>
-<div class="rader to" style="margin-block-start: 1.1rem;">
+  <div class="rader to" style="margin-block-start: 1.1rem;">
     <div>
-      <p class="kodetittel">Ett valgobjekt inn, attributter ut</p>
+      <p class="kodetittel">Kallet, og det som kommer ut</p>
       <pre>fs.button({ variant: "secondary" })
 <i>// { class: "fs-button", "data-variant": "secondary" }</i>
 
@@ -816,7 +884,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 19 -->
+<!-- 22 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 6 av 7</span>
   <div class="kapittel-topp">
@@ -833,7 +901,7 @@ fs.input({ type: "email", state: "invalid" })
   <p class="dempet">Kapittelet: laget, fargegeneratoren, og hvorfor kontrastterskelen følger rollen.</p>
 </section>
 
-<!-- 20 -->
+<!-- 23 -->
 <section class="lysbilde">
   <h2>Laget som gjør det mulig</h2>
   <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et lag, og et usortert lag vinner over alle lag.</p>
@@ -861,7 +929,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 21 -->
+<!-- 24 -->
 <section class="lysbilde">
   <h2>Fargene holder kontrastkravet</h2>
   <p>Et team med egne merkefarger skal ikke måtte regne ut kontrast for hånd, og skal ikke kunne velge en kombinasjon som faller under kravet. Generatoren tar merkefargene og lager hele temaet, i lyst og mørkt.</p>
@@ -890,7 +958,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 22 -->
+<!-- 25 -->
 <section class="lysbilde">
   <h2>Terskelen følger rollen, ikke fargen</h2>
   <p>Grunnen til at dette ikke lar seg gjøre for hånd er ikke at regnestykket er vanskelig. Det er at kravet endrer seg med hva fargen brukes til, og den samme verdien kan bestå og stryke i samme palett.</p>
@@ -914,7 +982,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 23 -->
+<!-- 26 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 7 av 7</span>
   <div class="kapittel-topp">
@@ -928,10 +996,10 @@ fs.input({ type: "email", state: "invalid" })
     <h2>Du kan ta over koden og gå</h2>
   </div>
   <p class="ingress">Et designsystem dekker aldri alt. Framfor at teamet skriver et omslag rundt noe som ikke strekker til, kopierer én kommando kildekoden inn i prosjektet deres.</p>
-  <p class="dempet">Det er garantien mot innlåsing, og den beste lista vi har over hva som mangler.</p>
+  <p class="dempet">Kapittelet: kommandoen, og hva den skriver om på veien.</p>
 </section>
 
-<!-- 24 -->
+<!-- 27 -->
 <section class="lysbilde">
   <h2>Når systemet ikke strekker til</h2>
   <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
@@ -945,85 +1013,6 @@ fs.input({ type: "email", state: "invalid" })
     <p><span class="rolle">Produktteamene</span>Står aldri fast på grunn av oss.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Får se hva folk overtar, og det er den beste lista over hva som mangler.</p>
   </div>
-</section>
-
-<!-- 25 -->
-<section class="lysbilde">
-  <h2>Hva nettleseren gjør for oss</h2>
-  <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
-  <div class="rader to">
-    <div class="boks">
-      <h3>Det nettleseren tar</h3>
-      <ul>
-        <li><strong>Fokusfellen i en dialog.</strong> <code>showModal()</code> gjør resten av siden utilgjengelig, holder fokus inne, og lukker på Escape.</li>
-        <li><strong>Topplaget.</strong> En dialog og et sprettoppvindu ligger over alt annet uten at noen teller <code>z-index</code>.</li>
-        <li><strong>Skjemaet.</strong> Validering, innsending og <code>:invalid</code> finnes, og virker uten at vi skriver en linje.</li>
-        <li><strong>Utseendet.</strong> En knapp, et merke og et kort er CSS. De ser riktige ut før noe skript er lastet.</li>
-      </ul>
-    </div>
-    <div class="boks">
-      <h3>Det vi slipper å eie</h3>
-      <ul>
-        <li>Ingen egen fokusfelle, ingen egen lagstyring, ingen egen skjemamotor.</li>
-        <li>Ingen kjøretid for det som bare er utseende.</li>
-        <li>Ingen omskriving når appene rundt bytter rammeverk.</li>
-        <li>Ingen versjon av React, Vue eller Svelte å holde tritt med.</li>
-      </ul>
-    </div>
-  </div>
-  <p style="margin-block-start: 1.1rem;">Det som blir igjen til oss er koblingen mellom delene, tastaturet i det nettleseren ikke har en ferdig kontroll for, og at tingene ser like ut. Det er en mye mindre jobb enn å bygge alt.</p>
-</section>
-
-<!-- 26 -->
-<section class="lysbilde">
-  <h2>Prisen for å bygge på nettleseren selv</h2>
-  <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
-  <div class="rader tre">
-    <div class="boks">
-      <span class="tall">3</span>
-      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med rundt tusen ett hundre og femti tester i hver, og tre og et halvt tusen til sammen. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
-    </div>
-    <div class="boks">
-      <h3>Venting på den siste motoren</h3>
-      <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
-      <pre>appearance: base-select
-<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
-<i>Firefox 150     ✗</i></pre>
-      <p style="margin-block-start: 0.6rem;">Derfor er den valgfri, med <code>data-picker="styled"</code>. Uten støtte får du nettleserens egen nedtrekksliste, altså nøyaktig det feltet hadde før.</p>
-    </div>
-    <div class="boks">
-      <h3>Navn som ikke kan døpes om</h3>
-      <p>Klassenavn, <code>data-*</code>, tokennavn og oppføringer i <code>exports</code> er alt sammen noe en konsument bygger på. Et brudd på dem krever ny hovedversjon, og står i versjonsloggen i den samme pull requesten som endringen.</p>
-    </div>
-  </div>
-</section>
-
-<!-- 27 -->
-<section class="lysbilde">
-  <h2>Hva det koster appen din</h2>
-  <p>Et designsystem stiller krav til appen som tar det i bruk. Her er kravene våre, og til sammenligning kravene til et React-basert designsystem, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
-  <div class="tabellrull">
-  <table>
-    <thead><tr><th>For å bruke skjemakomponentene</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
-    <tbody>
-      <tr><td>Pakker appen din må ha</td><td>ingen</td><td>React 19, i18next, react-i18next, date-fns, og åtte pakker fra systemet selv</td></tr>
-      <tr><td>Rammeverk</td><td>hvilket som helst, eller ingen</td><td>React</td></tr>
-      <tr><td>Kjøretid for en knapp</td><td>ingen, den er CSS</td><td>React må være lastet og i gang</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <p style="margin-block-start: 1rem;">Det er ikke en kritikk: et React-basert system er et rimelig valg når alt er React. Poenget er hva det koster den som ikke er det, og den dagen noe skal byttes.</p>
-  <div class="rader to">
-    <div class="boks">
-      <span class="tall">11,7 kB</span>
-      <p>minifisert med <code>bun build</code> for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">0</span>
-      <p>avhengigheter i pakken. Ingenting i den gjør noe ved import alene: <code>customElements.define</code> skjer først når du kaller <code>defineFsField()</code>.</p>
-    </div>
-  </div>
-  <p class="dempet" style="margin-block-start: 1rem;">Hver modul kan dessuten lastes på en server uten DOM, så <code>import { fs }</code> virker i en app med server-rendring.</p>
 </section>
 
 <!-- 28 -->
@@ -1075,6 +1064,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
   <p style="margin-block-start: 1.2rem;"><strong>Dokumentasjon:</strong> <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> · <strong>Pakke:</strong> <code>@fristil/designsystem</code></p>
 </section>
+
 
 
 </div>

@@ -34,7 +34,7 @@ det er godt for.
 De er delt i sju kapitler, ett per arkitektonisk beslutning. Hvert kapittel
 åpner med en forside som sier beslutningen i én setning, og som bærer et ikon
 tegnet i Windows 3.1-stil. Ikonene ligger på en grå plate med tidens hevede
-kant, fordi marineblåen i dem ellers forsvinner mot den mørke flaten.
+kant, fordi den svarte strektegningen i dem ellers ville forsvunnet mot den mørke flaten.
 
 Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
 linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
