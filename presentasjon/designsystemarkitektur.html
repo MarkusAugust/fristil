@@ -608,7 +608,7 @@ defineFsField()
       <circle cx="20.5" cy="22" r="1.9" fill="#cde1f9"/>
       <circle cx="27" cy="22" r="1.9" fill="#b5cbee" opacity="0.75"/>
       <circle cx="33.5" cy="22" r="1.9" fill="#b5cbee" opacity="0.5"/>
-      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg><div><strong>Nettleseren er plattformen</strong><span>4 lysbilder</span></div></li>
+      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg><div><strong>Nettleseren er plattformen</strong><span>5 lysbilder</span></div></li>
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foeierskap)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goeierskap)"/>
       <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
             stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
@@ -888,7 +888,7 @@ defineFsField()
 .avh:not([data-visning="tabell"]) .avh-tabeller { display: none; }
 @media (max-width: 860px) {
   /* På smal skjerm er tabellen visningen. En graf på 375 piksler sier ingenting. */
-  .avh .avh-liste, .avh .avh-scene, .avh .avh-bytt { display: none; }
+  .avh .avh-liste, .avh .avh-scene, .avh .avh-bytt, .avh .avh-forklaring { display: none; }
   .avh:not([data-visning="tabell"]) .avh-tabeller { display: block; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -898,9 +898,9 @@ defineFsField()
 
   <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hva én knapp legger i <code>node_modules</code></h2>
-  <p>En React- og TypeScript-app som har React 19 fra før, i fem kopier. I hver installeres det dokumentasjonen sier for én knapp, og så leses <code>package-lock.json</code>. Lengst til høyre i grafen står det alt hviler på. Velg en rad for å se den.</p>
+  <p>En React- og TypeScript-app som har React 19 fra før, i fem kopier. I hver installeres det dokumentasjonen sier for én knapp, og så leses <code>package-lock.json</code>. Lengst til høyre i grafen står det alt hviler på.</p>
 
-  <div class="avh-forklaring" aria-label="Tegnforklaring">
+  <div class="avh-forklaring" role="group" aria-label="Tegnforklaring">
     <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#9ccff2" stroke="#171f2b" stroke-width="2"/></svg>Designsystemets egne pakker</span>
     <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#e7b78a" stroke="#171f2b" stroke-width="2"/></svg>Pakker det drar inn</span>
     <span><svg viewBox="0 0 26 14" aria-hidden="true"><rect x="7.5" y="1.5" width="11" height="11" rx="2" fill="#171f2b" stroke="#757575" stroke-width="1.75"/></svg>Har appen fra før</span>
@@ -909,7 +909,7 @@ defineFsField()
     <button type="button" class="avh-bytt" aria-pressed="false">Vis som tabell</button>
   </div>
 
-  <div class="avh-liste" role="tablist" aria-label="Designsystem"></div>
+  <div class="avh-liste" role="tablist" aria-orientation="vertical" aria-label="Designsystem"></div>
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
@@ -933,7 +933,8 @@ defineFsField()
     if (b >= 1e6) return (b / 1e6).toFixed(1).replace(".", ",") + " MB"
     return Math.round(b / 1e3) + " kB"
   }
-  const kb = (b) => (b / 1e3).toFixed(1).replace(".", ",") + " kB"
+  // Delt på 1024, som forrige lysbilde: da er Fristils knapp 1,9 kB begge steder.
+  const kb = (b) => (b / 1024).toFixed(1).replace(".", ",") + " kB"
   const el = (navn, attr = {}) => {
     const e = document.createElementNS(NS, navn)
     for (const [k, v] of Object.entries(attr)) e.setAttribute(k, v)
@@ -952,24 +953,33 @@ defineFsField()
     const n = sys.n.length
     const ut = Array.from({ length: n }, () => [])
     const inn = Array.from({ length: n }, () => [])
-    for (const [a, b] of sys.e) { ut[a].push(b); inn[b].push(a) }
+    for (const [a, b] of sys.e) {
+      ut[a].push(b)
+      inn[b].push(a)
+    }
     const farge = new Array(n).fill(0)
     const bak = new Set()
-    ;(function dfs(v) {
+    const dfs = (v) => {
       farge[v] = 1
       for (const t of ut[v]) {
         if (farge[t] === 1) bak.add(v + ">" + t)
         else if (!farge[t]) dfs(t)
       }
       farge[v] = 2
-    })(0)
+    }
+    // Fra hver ubesøkt node, ikke bare fra appen: en pakke ingen når fra appen
+    // kan fortsatt stå i en sykel, og da ville rangen vokse uten ende.
+    for (let v = 0; v < n; v++) if (!farge[v]) dfs(v)
     const rang = new Array(n).fill(0)
     let endret = true
-    while (endret) {
+    for (let runde = 0; endret && runde < n; runde++) {
       endret = false
       for (const [a, b] of sys.e) {
         if (bak.has(a + ">" + b)) continue
-        if (rang[b] < rang[a] + 1) { rang[b] = rang[a] + 1; endret = true }
+        if (rang[b] < rang[a] + 1) {
+          rang[b] = rang[a] + 1
+          endret = true
+        }
       }
     }
     const lagene = []
@@ -989,7 +999,9 @@ defineFsField()
         sorter(lagene[r])
       }
     }
-    sveip(inn); sveip(ut); sveip(inn)
+    sveip(inn)
+    sveip(ut)
+    sveip(inn)
     return { lag: lagene, rang, inn, ut }
   }
 
@@ -1055,7 +1067,8 @@ defineFsField()
     knapp.addEventListener("click", () => velg(nr))
     liste.append(knapp)
 
-    const svg = el("svg", { class: "avh-svg", viewBox: `0 0 ${BREDDE} ${hoyde}`, role: "tabpanel", "aria-labelledby": knapp.id })
+    const svg = el("svg", { class: "avh-svg", id: `avh-graf-${nr}`, viewBox: `0 0 ${BREDDE} ${hoyde}`, role: "tabpanel", "aria-labelledby": knapp.id })
+    knapp.setAttribute("aria-controls", svg.id)
     const kanter = el("g")
     const noder = el("g")
     svg.append(kanter, noder)
@@ -1073,7 +1086,7 @@ defineFsField()
 
     sys.n.forEach((p, i) => {
       const [fulltNavn, versjon, type] = p
-      const g = el("g", { class: "avh-node", "data-type": type, tabindex: "0", transform: `translate(${x(i)} ${y(i)})` })
+      const g = el("g", { class: "avh-node", role: "img", "data-type": type, tabindex: "0", transform: `translate(${x(i)} ${y(i)})` })
       g.setAttribute("aria-label", type === "app" ? fulltNavn : `${fulltNavn} ${versjon}, ${TYPENAVN[type].toLowerCase()}, kreves av ${inn[i].length}`)
       if (type === "app") {
         g.append(el("rect", { class: "prikk", x: -34, y: -11, width: 68, height: 22, rx: 6 }))
@@ -1099,12 +1112,23 @@ defineFsField()
       noder.append(g)
     })
 
+    // Nodene er fokuserbare, men ikke knapper: Enter og mellomrom skal ikke nå
+    // presentasjonens tastelytter og bla videre.
+    noder.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    })
     const nodeEl = [...noder.children]
     function marker(i) {
       svg.setAttribute("data-aktiv", "")
       const nabo = new Set([i, ...inn[i], ...ut[i]])
       nodeEl.forEach((g, j) => g.toggleAttribute("data-aktiv", nabo.has(j)))
-      kantEl.forEach((k, j) => { const [a, b] = sys.e[j]; k.toggleAttribute("data-aktiv", a === i || b === i) })
+      kantEl.forEach((k, j) => {
+        const [a, b] = sys.e[j]
+        k.toggleAttribute("data-aktiv", a === i || b === i)
+      })
       visTips(i)
     }
     function avmarker() {
@@ -1249,7 +1273,9 @@ defineFsField()
 }
 .morf-bytt { margin-inline-start: auto; }
 .morf-bytt:hover, .morf-bytt:focus-visible, .morf-knapp:hover, .morf-knapp:focus-visible { border-color: var(--azure-30); outline: none; }
-.morf-knapp[disabled] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
+/* Knappen skrus aldri av med disabled: det kaster fokus til body, og neste Enter
+   går til presentasjonen. aria-disabled gir utseendet, og nesteSteg avviser. */
+.morf-knapp[aria-disabled="true"] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
 .morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--azure-30); color: var(--graphite-0); }
 
 .morf-scene > [data-skjult] { display: none; }
@@ -1338,7 +1364,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 
 <i>// Står attributtet der, men ikke i det serveren sendte,</i>
 <i>// så fjern det. Med mindre malen har fredet navnet.</i></pre>
-  <div class="morf-panel" data-skjult aria-label="Morfingen, steg for steg">
+  <div class="morf-panel" role="group" data-skjult aria-label="Morfingen, steg for steg">
     <div class="morf-rad">
       <span class="morf-utgang">Utgang:</span>
       <button type="button" class="morf-knapp" data-utgang="uten" aria-pressed="true">Uten fredning</button>
@@ -1385,7 +1411,9 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   const ADRESSE = "kari@example"
 
   // To virkelige elementer. r er det som står i siden, s det serveren sendte.
-  let r, s, steg, utgang = "uten", lopende = 0
+  let r, s, steg, utgang = "uten", lopende = 0, opptatt = false
+  const SISTE = 6
+  const oppdaterKnapp = () => neste.setAttribute("aria-disabled", String(opptatt || steg >= SISTE))
 
   const brikke = (navn, verdi, kilde) => {
     const b = document.createElement("span")
@@ -1453,11 +1481,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     tegnR()
     lesOpp()
     si("Serveren sendte siden, med et tomt e-postfelt. Alt som står i r kom derfra.")
-    neste.disabled = false
+    opptatt = false
+    oppdaterKnapp()
   }
 
   async function nesteSteg() {
+    if (opptatt || steg >= SISTE) return
     steg++
+    oppdaterKnapp()
     const mitt = ++lopende
     if (steg === 1) {
       felt.textContent = ADRESSE
@@ -1487,10 +1518,19 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
         ? "Serveren validerer og svarer med en Server-Sent Event: feltet på nytt, med aria-invalid, og aria-describedby fredet i data-preserve-attr."
         : "Serveren validerer og svarer med en Server-Sent Event: feltet på nytt, med aria-invalid. Den vet ikke om aria-describedby.")
     } else if (steg === 5) {
-      neste.disabled = true
-      si("Datastar finner elementet i siden med samme id, og løkka går gjennom attributtene i r, ett om gangen.")
-      // De to linjene fra datastar.js, med o lest slik Datastar leser det.
+      opptatt = true
+      oppdaterKnapp()
+      si("Datastar finner elementet med samme id, kopierer først inn det serveren sendte, og går så gjennom attributtene i r, ett om gangen.")
+      // Slik datastar.js gjør det, med o lest slik Datastar leser det: først
+      // kopieres det serveren sendte, utenom det som er fredet, så går løkka
+      // fra kodepanelet over det som står i r.
       const o = (s.getAttribute("data-preserve-attr") ?? "").split(" ").filter(Boolean)
+      const hadde = [...r.attributes].map((a) => a.name)
+      for (let { name: l, value: f } of s.attributes) r.getAttribute(l) !== f && !o.includes(l) && r.setAttribute(l, f)
+      tegnR(["aria-describedby"])
+      for (const b of brikkerR.children) if (!hadde.includes(b.dataset.navn)) b.dataset.tilstand = "ny"
+      await vent(700)
+      if (mitt !== lopende) return
       const fjernet = []
       for (let { name: l } of Array.from(r.attributes)) {
         const b = brikkerR.querySelector(`[data-navn="${l}"]`)
@@ -1508,19 +1548,17 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
           delete b.dataset.tilstand
         }
       }
-      // Så kopierer Datastar inn det serveren sendte. Det er ikke stridens kjerne,
-      // men r skal være sant etterpå.
-      for (const { name, value } of s.attributes) r.setAttribute(name, value)
       await vent(350)
       if (mitt !== lopende) return
       tegnR(fjernet.includes("aria-describedby") ? [] : ["aria-describedby"])
-      neste.disabled = false
-      si(fjernet.includes("aria-describedby")
-        ? "aria-describedby var ikke i det serveren sendte, og er fjernet. aria-invalid er kopiert inn."
-        : "aria-describedby sto i data-preserve-attr, og fikk stå. aria-invalid er kopiert inn.")
-    } else if (steg === 6) {
-      neste.disabled = true
       lesOpp()
+      opptatt = false
+      oppdaterKnapp()
+      si(fjernet.includes("aria-describedby")
+        ? "aria-describedby var ikke i det serveren sendte, og er fjernet. aria-invalid kom inn i kopieringen."
+        : "aria-describedby sto i data-preserve-attr, og fikk stå. aria-invalid kom inn i kopieringen.")
+    } else if (steg === 6) {
+      oppdaterKnapp()
       if (r.hasAttribute("aria-describedby")) {
         si("Skjermleseren leser feilmeldingen, men bare fordi malen fredet navnet. Endrer komponenten hva den setter, må hver mal endres i takt.", "ok")
       } else {
