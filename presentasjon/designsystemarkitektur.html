@@ -180,22 +180,104 @@ a { color: var(--azure-30); }
 /*
  * Kapittelforsidene.
  *
- * Ikonet ligger på en grå plate med Windows 3.1-fasen. Ikonene er tegnet for
- * en lys flate, og den svarte strektegningen som bærer formen i alle sju ville
- * forsvunnet mot lysbildets bakgrunn. Platen gjør dem lesbare og er samtidig
- * periodekorrekt.
+ * Ikonene er tegnet i presentasjonens egen palett, som en glassflate med lys
+ * kant og et glanslys på toppen. Motivene er plattformnære framfor
+ * skrivebordsmetaforer: et nettleservindu, en komponent som legger seg rundt
+ * markup, én kilde med to innganger, et DOM-tre, klammer med hake, stablede
+ * lag, og en pakke med vei ut.
  */
+.lysbilde.kapittel[data-vist] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-block-size: min(30rem, 68vh);
+}
+/* Uten dette strekker fleksen pillen til full bredde. */
+.lysbilde.kapittel .merke { align-self: flex-start; }
 .kapittel-topp {
   display: flex;
   align-items: center;
-  gap: 1.1rem;
-  margin-block-end: 1.1rem;
+  gap: 1.35rem;
+  margin-block-end: 1.35rem;
+  margin-block-start: 1.6rem;
 }
 .kapittel-topp h2 { margin: 0; }
 .kapittelikon { flex: none; }
 @media (max-width: 860px) {
-  .kapittel-topp { gap: 0.8rem; }
-  .kapittelikon { width: 64px; height: 64px; }
+  .lysbilde.kapittel[data-vist] { display: block; min-block-size: 0; }
+  .kapittel-topp { gap: 0.9rem; margin-block-start: 1rem; }
+  .kapittelikon { width: 56px; height: 56px; }
+}
+
+/* Hvor lysbildet hører hjemme, over overskriften. */
+.kapittelmerke {
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--azure-30);
+  opacity: 0.72;
+}
+/* Lysbildene i kapittelet, på forsiden. */
+.kapittelliste {
+  margin: 1.1rem 0 0;
+  padding-inline-start: 1.3rem;
+  color: var(--tekst-dempet);
+}
+.kapittelliste li { margin-block-end: 0.3rem; }
+/* Oversikten over alle syv. */
+.beslutninger {
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.beslutninger li { display: flex; align-items: center; gap: 1rem; }
+.beslutninger .kapittelikon { width: 46px; height: 46px; flex: none; }
+.beslutninger strong { display: block; }
+.beslutninger span { color: var(--tekst-dempet); font-size: 0.88rem; }
+@media (max-width: 860px) {
+  .beslutninger .kapittelikon { width: 40px; height: 40px; }
+}
+
+/* Logoen ved siden av tittelen på førstesiden. */
+.tittel-topp {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  margin-block-end: 1.2rem;
+}
+.tittel-topp h1 {
+  margin: 0;
+  /* Et hakk under ordmerket, med samme forhold i alle tre leddene, så
+     avstanden mellom dem er den samme på enhver bredde. */
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  line-height: 1.14;
+  /* Ett hardt linjeskift tvang to linjer også når det var plass til én.
+     Nå brytes den bare når den må, og da jevnt. */
+  text-wrap: balance;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: none;
+  padding-inline-end: 1.6rem;
+  border-inline-end: 1px solid var(--kant);
+}
+.logomerke { flex: none; }
+.ordmerke {
+  font-size: clamp(1.9rem, 3.1vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+@media (max-width: 860px) {
+  .tittel-topp { flex-direction: column; align-items: flex-start; gap: 0.9rem; }
+  .logo { padding-inline-end: 0; border-inline-end: none; }
+  .logomerke { width: 56px; height: 56px; }
 }
 
 .merke {
@@ -432,11 +514,36 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
-  <h1>Rammeverksuavhengig<br>designsystem</h1>
-  <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
-  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er HTML og ARIA. I dag koster det et rammeverk du ikke kan bytte ut. Det er det denne presentasjonen handler om.</p>
-  <p>Hele systemet hviler på én setning, og resten er hva den fører til:</p>
+  <span class="merke merke-blaa">Designsystemarkitektur · Versjon 0.3.0 - 25 september 2026</span>
+  <div class="tittel-topp">
+    <div class="logo">
+      <svg class="logomerke" width="80" height="80" viewBox="0 0 100 100" fill="none" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="fristilStrek" x1="8%" y1="10%" x2="88%" y2="90%">
+            <stop offset="0%" stop-color="#00f2fe"/>
+            <stop offset="50%" stop-color="#4facfe"/>
+            <stop offset="100%" stop-color="#b15cff"/>
+          </linearGradient>
+          <radialGradient id="fristilGlod" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4facfe" stop-opacity="0.28"/>
+            <stop offset="65%" stop-color="#4facfe" stop-opacity="0.08"/>
+            <stop offset="100%" stop-color="#4facfe" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="50" cy="52" rx="24" ry="24" fill="url(#fristilGlod)"/>
+        <path d="M21 63C17 48 25 32 39 27C49 23 60 26 68 34C75 41 78 52 74 63C70 73 61 80 50 81C38 82 26 75 21 63Z" fill="none" stroke="url(#fristilStrek)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+        <path d="M28 67C35 57 42 50 50 44C57 39 66 33 73 26" fill="none" stroke="url(#fristilStrek)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M28 32C35 41 42 48 50 54C58 60 66 66 73 74" fill="none" stroke="url(#fristilStrek)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38 22C46 33 53 43 62 50C69 56 75 61 81 67" fill="none" stroke="url(#fristilStrek)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.82"/>
+        <path d="M18 52C28 49 36 49 43 52C47 54 50 58 50 62C50 66 47 70 42 72" fill="none" stroke="url(#fristilStrek)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+      </svg>
+      <span class="ordmerke">Fristil</span>
+    </div>
+    <h1>Rammeverksuavhengig designsystem</h1>
+  </div>
+  <p class="ingress">Et tekstfelt med ledetekst, hjelpetekst og feilmelding er HTML og ARIA, og har vært det lenger enn noe rammeverk i bruk i dag. Likevel koster det nå et rammeverk du ikke kan bytte ut, og en omskriving hver gang det rammeverket skifter retning.</p>
+  <p>Dette er syv arkitektoniske beslutninger som gjør det unødvendig. For hver av dem: hva den går ut på, hva den koster, og hvor den ikke holder. Ingen av dem er gratis, og prisen står oppgitt på hvert eneste lysbilde.</p>
+  <p>Alt henger på denne ene setningen:</p>
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
   </div>
@@ -445,14 +552,14 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 2 -->
 <section class="lysbilde">
-  <h2>Kort fortalt</h2>
+  <h2>TL;DR</h2>
   <p>Rammeverk kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang noe skifter. Derfor er dette bygget på det nettleseren allerede forstår.</p>
   <ol>
     <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og web components, og virker likt i React, Astro, ren HTML og i en Kotlin-server.</li>
     <li><strong>To lag som ikke overlapper.</strong> Serveren skriver klasser og koblinger, komponenten tar tastatur, fokus og posisjonering.</li>
     <li><strong>Tilgjengelighet er skrevet én gang.</strong> Den samme funksjonen regner ut koblingene, enten den kalles av serveren eller av elementet i nettleseren.</li>
     <li><strong>Teamene kan overstyre alt utenfra,</strong> og overta en komponent helt hvis de må.</li>
-    <li><strong>Regningen tas av forvalteren, ikke av teamene.</strong> Tre nettlesermotorer i hver testkjøring, venting på den siste motoren, og navn som ikke kan døpes om fordi de står i koden til andre.</li>
+    <li><strong>Arbeidet flyttes, det forsvinner ikke.</strong> Tre nettlesermotorer i hver testkjøring, venting på den siste som mangler en funksjon, og klassenavn vi ikke kan røre fordi de står i koden til andre.</li>
   </ol>
   <p class="dempet">Nederst på lysbildene står to linjer: hva punktet betyr for teamene som bruker systemet, og hva det koster den som forvalter det.</p>
 </section>
@@ -460,7 +567,7 @@ tr:last-child td { border-block-end: none; }
 <!-- 3 -->
 <section class="lysbilde">
   <h2>Slik ser det ut å bruke det</h2>
-  <p>Før arkitekturen, her er hele bruken. Du installerer én pakke, importerer stilarket for det du bruker, og skriver vanlig HTML.</p>
+  <p>Før vi går inn i arkitekturen: dette er hele bruken. Du installerer én pakke, importerer stilarket for det du trenger, og skriver vanlig HTML.</p>
   <div class="rader to">
     <div>
       <p class="kodetittel">Bare klasser: ingen JavaScript i det hele tatt</p>
@@ -491,27 +598,78 @@ defineFsField()
 </section>
 
 <!-- 4 -->
-<section class="lysbilde kapittel">
-  <span class="merke merke-blaa">Beslutning 1 av 7</span>
-  <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><rect x="2" y="2" width="36" height="36" fill="#000000"/>
-<rect x="0" y="0" width="36" height="36" fill="#FFFFFF"/>
-<rect x="1" y="1" width="34" height="34" fill="#C0C0C0"/>
-<rect x="2" y="2" width="32" height="6" fill="#000080"/>
-<rect x="4" y="10" width="28" height="22" fill="#FFFFFF"/>
-<rect x="6" y="14" width="20" height="2" fill="#000000"/>
-<rect x="6" y="20" width="24" height="2" fill="#000000"/>
-<rect x="6" y="26" width="16" height="2" fill="#000000"/></g></svg>
-    <h2>Nettleseren er plattformen</h2>
-  </div>
-  <p class="ingress">Systemet bygger bare på det nettleseren allerede kan. Ingen kjøretid for utseende, ingen avhengigheter, og ingenting som må skrives om når appene rundt bytter rammeverk.</p>
-  <p class="dempet">Kapittelet: hvorfor plattformen framfor React, hva nettleseren gjør for oss, hva det koster oss, og hva et rammeverksbundet system koster appen din.</p>
+<section class="lysbilde">
+  <h2>Syv arkitektoniske beslutninger</h2>
+  <p>Resten av presentasjonen tar én beslutning om gangen, med begrunnelsen og hva den fører til. De henger sammen: den første gjør de andre mulige, og den siste er garantien for at du kan gå fra alt sammen hvis du vil, når du vil.</p>
+  <ol class="beslutninger">
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goplattform)"/>
+      <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
+      <path d="M14 27 H58" stroke="#9ccff2" stroke-width="2.4"/>
+      <circle cx="20.5" cy="22" r="1.9" fill="#cde1f9"/>
+      <circle cx="27" cy="22" r="1.9" fill="#b5cbee" opacity="0.75"/>
+      <circle cx="33.5" cy="22" r="1.9" fill="#b5cbee" opacity="0.5"/>
+      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg><div><strong>Nettleseren er plattformen</strong><span>4 lysbilder</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foeierskap)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goeierskap)"/>
+      <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
+            stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
+      <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg><div><strong>Serveren eier markupen</strong><span>4 lysbilder</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fokontrakt)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gokontrakt)"/>
+      <rect x="26" y="45" width="20" height="14" rx="4" fill="#1362ae" stroke="#9ccff2" stroke-width="2.2"/>
+      <path d="M20 17 v10 a6 6 0 0 0 6 6 h4 a6 6 0 0 1 6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M52 17 v10 a6 6 0 0 1 -6 6 h-4 a6 6 0 0 0 -6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20" cy="15" r="3.4" fill="#cde1f9"/>
+      <circle cx="52" cy="15" r="3.4" fill="#cde1f9"/></svg><div><strong>Tilgjengeligheten skrives ett sted</strong><span>1 lysbilde</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fofasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gofasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fofasit)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gofasit)"/>
+      <rect x="28" y="13" width="16" height="12" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M36 25 v8 M22 41 v-4 a4 4 0 0 1 4-4 h20 a4 4 0 0 1 4 4 v4" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="14" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/>
+      <rect x="42" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/></svg><div><strong>DOM-en er fasiten</strong><span>3 lysbilder</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fotyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gotyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fotyper)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gotyper)"/>
+      <path d="M24 17 a8 8 0 0 0 -8 8 v6 a5 5 0 0 1 -5 5 a5 5 0 0 1 5 5 v6 a8 8 0 0 0 8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 17 a8 8 0 0 1 8 8 v6 a5 5 0 0 0 5 5 a5 5 0 0 0 -5 5 v6 a8 8 0 0 1 -8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Typesikkerhet uten rammeverk</strong><span>1 lysbilde</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="folag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="golag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#folag)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#golag)"/>
+      <path d="M36 40 L14 50 L36 60 L58 50 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.5" stroke-linejoin="round"/>
+      <path d="M36 28 L14 38 L36 48 L58 38 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.75" stroke-linejoin="round"/>
+      <path d="M36 16 L14 26 L36 36 L58 26 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/></svg><div><strong>Konsumentens CSS vinner</strong><span>3 lysbilder</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fooverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gooverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fooverta)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gooverta)"/>
+      <path d="M16 32 v20 a4 4 0 0 0 4 4 h32 a4 4 0 0 0 4 -4 v-20" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 24 h48 v8 h-48 Z" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 46 V14" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 21 L36 13 L44 21" fill="none" stroke="#cde1f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Du kan ta over koden</strong><span>1 lysbilde</span></div></li>
+  </ol>
 </section>
 
 <!-- 5 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Beslutning 1 av 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gplattform)"/>
+      <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
+      <path d="M14 27 H58" stroke="#9ccff2" stroke-width="2.4"/>
+      <circle cx="20.5" cy="22" r="1.9" fill="#cde1f9"/>
+      <circle cx="27" cy="22" r="1.9" fill="#b5cbee" opacity="0.75"/>
+      <circle cx="33.5" cy="22" r="1.9" fill="#b5cbee" opacity="0.5"/>
+      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg>
+    <h2>Nettleseren er plattformen</h2>
+  </div>
+  <p class="ingress">Systemet bygger bare på det nettleseren allerede kan. Ingen kjøretid for utseende, ingen avhengigheter, og ingenting som må skrives om når appene rundt bytter rammeverk.</p>
+  <ol class="kapittelliste">
+      <li>Hvorfor plattformen først, og ikke React først</li>
+      <li>Hva nettleseren gjør for oss</li>
+      <li>Prisen for å bygge på nettleseren selv</li>
+      <li>Hva det koster appen din</li>
+  </ol>
+</section>
+
+<!-- 6 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hvorfor plattformen først, og ikke React først</h2>
-  <p>Spørsmålet er ikke hvilket rammeverk som er best i dag, men hva som fortsatt virker når appene rundt systemet er byttet ut.</p>
+  <p>Vi valgte ikke bort React fordi noe annet er bedre i dag. Vi valgte det bort fordi appene rundt systemet kommer til å byttes ut, og systemet skal stå igjen.</p>
   <ul>
     <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til hooks til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En CSS-klasse fra den tiden virker fortsatt uendret, og det gjør en web component skrevet mot Custom Elements v1 også.</li>
     <li><strong>Retningen går bare én vei.</strong> Av komponenter bygget på plattformen kan vi lage en React-pakke senere. Av et React-bibliotek kan ingen lage en HTML-versjon.</li>
@@ -524,10 +682,11 @@ defineFsField()
   </div>
 </section>
 
-<!-- 6 -->
+<!-- 7 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hva nettleseren gjør for oss</h2>
-  <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
+  <p>Det meste av det som er vanskelig i et designsystem, er allerede løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
   <div class="rader to">
     <div class="boks">
       <h3>Det nettleseren tar</h3>
@@ -535,34 +694,35 @@ defineFsField()
         <li><strong>Fokusfellen i en dialog.</strong> <code>showModal()</code> gjør resten av siden utilgjengelig, holder fokus inne, og lukker på Escape.</li>
         <li><strong>Topplaget.</strong> En dialog og et sprettoppvindu ligger over alt annet uten at noen teller <code>z-index</code>.</li>
         <li><strong>Skjemaet.</strong> Validering, innsending og <code>:invalid</code> finnes, og virker uten at vi skriver en linje.</li>
-        <li><strong>Utseendet.</strong> En knapp, et merke og et kort er CSS. De ser riktige ut før noe skript er lastet.</li>
+        <li><strong>Utseendet.</strong> Farge, form og avstand er CSS, og står ferdig før noe skript har rukket å kjøre.</li>
       </ul>
     </div>
     <div class="boks">
       <h3>Det vi slipper å eie</h3>
       <ul>
-        <li>Ingen egen fokusfelle, ingen egen lagstyring, ingen egen skjemamotor.</li>
+        <li>Ingen egen fokusfelle, ingen egen z-index-stige, ingen egen skjemamotor.</li>
         <li>Ingen kjøretid for det som bare er utseende.</li>
         <li>Ingen omskriving når appene rundt bytter rammeverk.</li>
         <li>Ingen versjon av React, Vue eller Svelte å holde tritt med.</li>
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1.1rem;">Det som blir igjen til oss er koblingen mellom delene, tastaturet i det nettleseren ikke har en ferdig kontroll for, og at tingene ser like ut. Det er en mye mindre jobb enn å bygge alt.</p>
+  <p style="margin-block-start: 1.1rem;">Igjen står koblingen mellom delene, tastaturet der nettleseren ikke har en ferdig kontroll, og at alt ser likt ut. Det er en langt mindre jobb enn å bygge fokus, lag og skjemaer selv.</p>
 </section>
 
-<!-- 7 -->
+<!-- 8 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
   <h2>Prisen for å bygge på nettleseren selv</h2>
-  <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
+  <p>Uavhengigheten er ikke gratis, den er bare betalt et annet sted: av oss som lager systemet, ikke av teamene som bruker det. Her er hva den koster.</p>
   <div class="rader tre">
     <div class="boks">
       <span class="tall">3</span>
-      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med rundt tusen ett hundre og femti tester i hver, og tre og et halvt tusen til sammen. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
+      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med rundt 1 150 tester i hver og nær 3 500 til sammen. Hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som oppfører seg ulikt fra motor til motor.</p>
     </div>
     <div class="boks">
       <h3>Venting på den siste motoren</h3>
-      <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
+      <p>Vi krever ikke at alle tre motorene har funksjonen. Vi krever at motoren som mangler den gir noe som virker.</p>
       <pre>appearance: base-select
 <i>Chromium 148 ✓  WebKit 26.4 ✓</i>
 <i>Firefox 150     ✗</i></pre>
@@ -575,54 +735,53 @@ defineFsField()
   </div>
 </section>
 
-<!-- 8 -->
+<!-- 9 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hva det koster appen din</h2>
   <p>Et designsystem stiller krav til appen som tar det i bruk. Her er kravene våre, og til sammenligning kravene til et React-basert designsystem, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
+  <p>For å bruke skjemakomponentene deres må appen din ha tolv pakker: React 19, i18next, react-i18next, date-fns, og åtte pakker fra systemet selv. Hos oss er svaret ingen, og hvilket rammeverk du bruker spiller ingen rolle.</p>
+  <p>Dette er ingen kritikk. Et React-basert system er et rimelig valg når alt er React. Spørsmålet er hva det koster den som ikke er det.</p>
+  <p class="kodetittel" style="margin-block-start: 1.1rem;">Én knapp på skjermen, i en tom app. Bygget med esbuild, gzippet.</p>
   <div class="tabellrull">
   <table>
-    <thead><tr><th>For å bruke skjemakomponentene</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
+    <thead><tr><th>Det som må lastes</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
     <tbody>
-      <tr><td>Pakker appen din må ha</td><td>ingen</td><td>React 19, i18next, react-i18next, date-fns, og åtte pakker fra systemet selv</td></tr>
-      <tr><td>Rammeverk</td><td>hvilket som helst, eller ingen</td><td>React</td></tr>
-      <tr><td>Kjøretid for en knapp</td><td>ingen, den er CSS</td><td>React må være lastet og i gang</td></tr>
+      <tr><td>JavaScript</td><td><strong>0 kB</strong>, knappen er en klasse</td><td>119,1 kB</td></tr>
+      <tr><td>CSS</td><td>1,9 kB</td><td>4,3 kB</td></tr>
+      <tr><td>Til sammen</td><td><strong>1,9 kB</strong></td><td><strong>123,5 kB</strong></td></tr>
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Det er ikke en kritikk: et React-basert system er et rimelig valg når alt er React. Poenget er hva det koster den som ikke er det, og den dagen noe skal byttes.</p>
-  <div class="rader to">
-    <div class="boks">
-      <span class="tall">11,7 kB</span>
-      <p>minifisert med <code>bun build</code> for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
-    </div>
-    <div class="boks">
-      <span class="tall">0</span>
-      <p>avhengigheter i pakken. Ingenting i den gjør noe ved import alene: <code>customElements.define</code> skjer først når du kaller <code>defineFsField()</code>.</p>
-    </div>
-  </div>
-  <p class="dempet" style="margin-block-start: 1rem;">Hver modul kan dessuten lastes på en server uten DOM, så <code>import { fs }</code> virker i en app med server-rendring.</p>
-</section>
-
-<!-- 9 -->
-<section class="lysbilde kapittel">
-  <span class="merke merke-blaa">Beslutning 2 av 7</span>
-  <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><rect x="0" y="0" width="24" height="32" fill="#000000"/>
-<rect x="1" y="1" width="22" height="30" fill="#FFFFFF"/>
-<polygon points="16,1 16,8 23,8" fill="#000000"/>
-<rect x="20" y="20" width="16" height="16" fill="#000000"/>
-<rect x="22" y="22" width="12" height="12" fill="#808080"/>
-<rect x="26" y="26" width="4" height="4" fill="#FFFF00"/></g></svg>
-    <h2>Serveren eier markupen, komponenten eier oppførselen</h2>
-  </div>
-  <p class="ingress">Den som sender HTML-en bestemmer hva som står der. Komponenten fester tastatur, fokus og koblinger på den, og legger aldri til noder eller attributter serveren eier. Av samme grunn gjemmer vi ikke markupen i en skyggerot.</p>
-  <p class="dempet">Kapittelet: hva server-rendring krever, de to lagene, de tre kategoriene, og de to veiene inn.</p>
+  <p style="margin-block-start: 1rem;">Av de 119 kilobytene er 67 React selv, så har du React fra før legger designsystemet deres til rundt 52 kB for den ene knappen. Vil du ha byggefunksjonen med typer i tillegg, koster <code>fs</code> 3,9 kB hos oss.</p>
+  <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>null avhengigheter</strong>, og ingenting i den gjør noe ved import alene. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med server-rendring.</p>
 </section>
 
 <!-- 10 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Beslutning 2 av 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="feierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="geierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#feierskap)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#geierskap)"/>
+      <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
+            stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
+      <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <h2>Serveren eier markupen, komponenten eier oppførselen</h2>
+  </div>
+  <p class="ingress">Den som sender HTML-en bestemmer hva som står der. Komponenten fester tastatur, fokus og koblinger på den, og legger aldri til noder eller attributter serveren eier. Av samme grunn gjemmer vi den ikke i en shadow root.</p>
+  <ol class="kapittelliste">
+      <li>Hva server-rendring krever av en komponent</li>
+      <li>De to lagene</li>
+      <li>Tre kategorier, og ett spørsmål</li>
+      <li>To veier til den samme kontrakten</li>
+  </ol>
+</section>
+
+<!-- 11 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>Hva server-rendring krever av en komponent</h2>
-  <p>Systemet skal virke i apper som bygger HTML-en på serveren, altså server-rendring, forkortet SSR. Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Under er de to linjene i Datastar som gjør det, og de er grunnen til at systemet ser ut som det gjør.</p>
+  <p>Systemet skal virke i apper som bygger HTML-en på serveren, altså server-rendring (SSR). Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Under er de to linjene i Datastar som gjør det, og de er grunnen til at systemet er bygget som det er.</p>
   <p class="kodetittel">datastar.js 1.0.4, løkka som går gjennom attributtene ved hver oppdatering</p>
   <pre><i>// r = elementet i siden nå, s = det serveren sendte,</i>
 <i>// o = navnene i data-preserve-attr, lest av serverens node</i>
@@ -631,16 +790,17 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 
 <i>// Står attributtet der, men ikke i det serveren sendte,</i>
 <i>// så fjern det. Med mindre malen har fredet navnet.</i></pre>
-  <p style="margin-block-start: 1rem;">Nødutgangen er attributtet <code>data-preserve-attr</code>. HTML-malen på serveren, altså filen som skriver ut HTML-en i Go, PHP eller Kotlin, må fylle det med navnene på alt komponenten har satt. Endrer vi hva komponenten setter, må hver mal endres i takt, og ingen kompilator sier fra. Derfor bygger vi ikke på den.</p>
-  <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder en web component har lagt inn bli kastet. Derav regelen:</p>
+  <p style="margin-block-start: 1rem;">Nødutgangen er <code>data-preserve-attr</code>, som HTML-malen på serveren må fylle med navnene på alt komponenten har satt. Endrer vi hva komponenten setter, må hver mal endres i takt, uten at noen kompilator sier fra. Derfor bygger vi ikke på den.</p>
+  <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder en web component har lagt inn bli kastet. Derfor:</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
   </div>
   <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
 </section>
 
-<!-- 11 -->
+<!-- 12 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>De to lagene</h2>
   <p>Følgen av regelen på forrige lysbilde er at vi deler systemet i to lag: det serveren skriver, og det nettleseren gjør etterpå. Delingen er nødvendig fordi en oppdatering river bort attributter og noder som ikke sto i det serveren sendte, mens hendelseslyttere blir stående. De to lagene overlapper derfor ikke: en byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
   <div class="tabellrull">
@@ -652,13 +812,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot står utenfor skjemaet rundt, og du må melde verdien inn fra verten med <code>ElementInternals</code> for å få den med i innsendingen. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
+  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en shadow root står utenfor skjemaet rundt, og du må melde verdien inn fra verten med <code>ElementInternals</code> for å få den med i innsendingen. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
-<!-- 12 -->
+<!-- 13 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>Tre kategorier, og ett spørsmål</h2>
-  <p>Kategorien svarer ikke på hvem som skriver HTML-en. I en app med server-rendring skriver serveren all HTML uansett. Den svarer på <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
+  <p>I en app med server-rendring skriver serveren all HTML uansett, så kategorien handler ikke om det. Den handler om <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
   <div class="rader tre">
     <div class="boks">
       <span class="merke merke-blaa">css</span>
@@ -680,16 +841,17 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       <pre>toast.show("Lagret")</pre>
     </div>
   </div>
-  <p style="margin-block-start: 1.1rem;">Vilkåret som avgjør plasseringen:</p>
+  <p style="margin-block-start: 1.1rem;">Én setning avgjør hvor en komponent havner.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent som bærer en verdi inn i en innsending, eller som har innhold serveren må sende, kan ikke eie sin egen markup.</strong> Den hører under <code>ramme</code>.</p>
   </div>
 </section>
 
-<!-- 13 -->
+<!-- 14 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>To veier til den samme kontrakten</h2>
-  <p>Det avgjørende er ikke om siden bygges på en server. Det er om koden som lager markupen <strong>kan kalle en funksjon</strong>.</p>
+  <p>Det avgjørende er om koden som lager markupen <strong>kan kalle en funksjon</strong>. Hvor den kjører spiller ingen rolle.</p>
   <div class="rader to">
     <div>
       <p class="kodetittel">Koden kan kalle en funksjon: React, Astro, Node</p>
@@ -716,64 +878,71 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 <i>// Komponenten setter koblingen i nettleseren.</i></pre>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">De to er ikke likeverdige alternativer man velger mellom etter smak. De er to veier for to slags kode, og begge ender med den samme HTML-en hos brukeren.</p>
+  <p style="margin-block-start: 1rem;">De to er ikke to smaksvalg. De er to veier for to slags kode, og begge ender med den samme HTML-en hos brukeren.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken vei som gjelder før de vet hvor markupen lages.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde de to veiene i takt, for begge kaller den samme funksjonen innvendig.</p>
   </div>
 </section>
 
-<!-- 14 -->
+<!-- 15 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 3 av 7</span>
   <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><rect x="2" y="2" width="34" height="36" fill="#000000"/>
-<rect x="4" y="4" width="30" height="32" fill="#000080"/>
-<rect x="10" y="4" width="16" height="10" fill="#C0C0C0"/>
-<rect x="20" y="6" width="4" height="6" fill="#000000"/>
-<rect x="8" y="20" width="20" height="16" fill="#FFFFFF"/>
-<rect x="10" y="24" width="16" height="2" fill="#000000"/>
-<rect x="10" y="28" width="12" height="2" fill="#000000"/></g></svg>
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fkontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gkontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fkontrakt)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gkontrakt)"/>
+      <rect x="26" y="45" width="20" height="14" rx="4" fill="#1362ae" stroke="#9ccff2" stroke-width="2.2"/>
+      <path d="M20 17 v10 a6 6 0 0 0 6 6 h4 a6 6 0 0 1 6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M52 17 v10 a6 6 0 0 1 -6 6 h-4 a6 6 0 0 0 -6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20" cy="15" r="3.4" fill="#cde1f9"/>
+      <circle cx="52" cy="15" r="3.4" fill="#cde1f9"/></svg>
     <h2>Tilgjengeligheten skrives ett sted, og nås fra to</h2>
   </div>
   <p class="ingress">Reglene for hvordan et skjemafelt kobles sammen for en skjermleser finnes ett sted i koden, og både serveren og komponenten kaller det samme stedet.</p>
-  <p class="dempet">Kapittelet: den ene funksjonen, og de to inngangene til den.</p>
+  <ol class="kapittelliste">
+      <li>Én funksjon, to innganger</li>
+  </ol>
 </section>
 
-<!-- 15 -->
+<!-- 16 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 3 av 7 · Tilgjengeligheten skrives ett sted</p>
   <h2>Én funksjon, to innganger</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
   <p class="kodetittel">ramme/field/field-core.ts</p>
   <pre>computeFieldAttributes(...)
    ├── fs.field()      <i>← serveren kaller den direkte</i>
    └── &lt;fs-field&gt;      <i>← komponenten kaller den på elementer som står i DOM-en</i></pre>
-  <p style="margin-block-start: 1rem;">Endrer vi kontrakten, endrer vi den der, ikke i komponenten. Det er også svaret på et spørsmål som kommer hver gang: <em>skal ikke hver server skrive dette selv?</em> Nei. Skulle hver server regne ut reglene på nytt, ville Fristil vært et JavaScript-designsystem med en manuell reserve for alle andre, og reserven ville vært den som gikk i stykker.</p>
+  <p style="margin-block-start: 1rem;">Endrer vi kontrakten, endrer vi den der, ikke i komponenten. Det svarer også på spørsmålet som alltid kommer. <em>Skal ikke hver server skrive dette selv?</em> Den dagen de må, er Fristil et JavaScript-designsystem med en manuell reserve for alle andre, og det er reserven som ryker først.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En id som lages av seg selv, overlever ikke hydrering.</strong> Serveren og nettleseren lager da hver sin, og koblingen er brutt til React har rettet den opp. Derfor er <code>id</code> påkrevd i typen, med en melding i konsollen ved siden av for dem typen ikke når.</p>
   </div>
-  <p style="margin-block-start: 1rem;" class="dempet">Regelen bak: en sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett miljø. Lukk fella i typen, og legg en beskjed ved siden av.</p>
-</section>
-
-<!-- 16 -->
-<section class="lysbilde kapittel">
-  <span class="merke merke-blaa">Beslutning 4 av 7</span>
-  <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><path d="M 0 20 L 18 4 L 36 20 L 18 36 Z" fill="#000000"/>
-<path d="M 2 20 L 18 6 L 34 20 L 18 34 Z" fill="#FFFFFF"/>
-<rect x="14" y="16" width="8" height="8" fill="#000080"/>
-<rect x="16" y="18" width="4" height="4" fill="#000000"/>
-<rect x="14" y="16" width="2" height="2" fill="#FFFFFF"/></g></svg>
-    <h2>DOM-en er fasiten</h2>
-  </div>
-  <p class="ingress">Finnes tilstanden i markupen, leser komponenten den derfra. Den holder aldri en egen kopi av noe serveren også kan skrive, og setter tilbake det en oppdatering river bort.</p>
-  <p class="dempet">Kapittelet: reparasjonen, regelen om å lese framfor å regne, og hva komponenten sier fra om.</p>
+  <p style="margin-block-start: 1rem;" class="dempet">En sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett av dem. Lukk fella i typen framfor å gjette.</p>
 </section>
 
 <!-- 17 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Beslutning 4 av 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="ffasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gfasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#ffasit)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gfasit)"/>
+      <rect x="28" y="13" width="16" height="12" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M36 25 v8 M22 41 v-4 a4 4 0 0 1 4-4 h20 a4 4 0 0 1 4 4 v4" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="14" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/>
+      <rect x="42" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/></svg>
+    <h2>DOM-en er fasiten</h2>
+  </div>
+  <p class="ingress">Finnes tilstanden i markupen, leser komponenten den derfra. Den holder aldri en egen kopi av noe serveren også kan skrive, og setter tilbake det en oppdatering river bort.</p>
+  <ol class="kapittelliste">
+      <li>Når serveren river bort det komponenten satte</li>
+      <li>Komponenten skal aldri regne ut det den kan lese</li>
+      <li>Komponenten sier fra når markupen ikke henger sammen</li>
+  </ol>
+</section>
+
+<!-- 18 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Når serveren river bort det komponenten satte</h2>
-  <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og setter det tilbake i samme øyeblikk. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
+  <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og skriver det inn igjen med én gang. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
   <div class="rader to">
     <div>
       <p class="kodetittel">Malen, i et hvilket som helst språk</p>
@@ -790,27 +959,29 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, og komponenten reparerer ingenting. Da er det serverens utgave som gjelder, hver gang.</p>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Skillet som gjør det mulig: <strong>har komponenten regnet ut attributtet, kan den regne det ut på nytt. Har brukeren gjort noe, vet komponenten hva det var, for den var der da det skjedde.</strong></p>
-  <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
+  <p style="margin-block-start: 1rem;"><strong>Har komponenten regnet ut attributtet, kan den regne det ut på nytt. Har brukeren gjort noe, vet komponenten hva det var, for den var til stede da det skjedde.</strong> Det er det som gjør reparasjonen mulig.</p>
+  <p>Det flimrer ikke, og det er testet. Oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren rekker ikke å tegne imellom. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
-<!-- 18 -->
+<!-- 19 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
   <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to er uenige.</p>
   <p>Et felt som er ugyldig, står som <code>aria-invalid</code> på kontrollen. Leser komponenten det derfra, er den alltid enig med serveren. Leser den i stedet av sitt eget attributt på verten, vil den før eller siden fjerne et svar serveren nettopp skrev: i React som en hydreringsfeil, i Datastar som en feilmelding på et gyldig felt.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>Finnes tilstanden i markupen, skal komponenten lese den derfra.</strong> En komponent skal aldri ha en parallell utgave av noe serveren også kan skrive.</p>
   </div>
-  <p style="margin-block-start: 1rem;">Det gjelder hele veien: hvilken fane som er valgt leses fra <code>aria-selected</code>, ikke fra et eget attributt. Og et attributt komponenten både leser og skriver må vite hvem som satte det:</p>
+  <p style="margin-block-start: 1rem;">Hvilken fane som er valgt leses derfor fra <code>aria-selected</code> og ikke fra et eget attributt. Et attributt komponenten både leser og skriver må i tillegg vite hvem som satte det.</p>
   <div class="boks">
     <p style="margin: 0;"><strong>Noter verdien komponenten skrev, og på hvilken node. Står det noe annet der neste gang, har noen andre rørt det.</strong> Utled aldri eierskap av hva komponenten trodde sist.</p>
   </div>
-  <p class="dempet" style="margin-block-start: 1rem;">Eierskapet må leses av noden, ikke av hukommelsen. Husker komponenten hva den trodde sist, gir den samme markupen to ulike svar alt etter hva som skjedde før.</p>
+  <p class="dempet" style="margin-block-start: 1rem;">Uten det gir den samme markupen to ulike svar, alt etter hva verten har vært innom før.</p>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
   <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
   <p>Den som merker feilen er den som ikke ser skjermen: feltet blir lest opp uten navn. Tidligere gjorde komponenten ingenting i slike tilfeller, og den sa heller ingenting. Nå skriver den én linje i konsollen, mens utvikleren fortsatt sitter med koden.</p>
@@ -828,33 +999,39 @@ Feltet får da ingen ledetekst, og
 en skjermleser leser det opp uten navn.</pre>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">En advarsel som gir falsk alarm blir slått av i løpet av en uke, og da er den verdiløs. Tre valg gjør at denne er til å stole på:</p>
+  <p style="margin-block-start: 1rem;">En advarsel som gir falsk alarm blir slått av i løpet av en uke. Tre valg gjør at denne er til å stole på:</p>
   <ul>
-    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i pakker, så et øyeblikk der feltet har kommet og ledeteksten ikke har det, er helt normalt. Komponenten ser etter en gang til, og sier bare fra hvis det fortsatt er galt.</li>
-    <li><strong>Samme melding hver gang, uten tall eller navn i seg.</strong> «Fant 3 faner, men 1 panel» er en ny melding for hvert panel som dukker opp, og den ene advarselen blir til tjue.</li>
+    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i pakker, så et øyeblikk uten ledetekst er helt normalt. Komponenten ser etter en gang til, og sier bare fra hvis det fortsatt er galt.</li>
+    <li><strong>Samme melding hver gang.</strong> «Fant 3 faner, men 1 panel» er en ny melding for hvert panel som dukker opp, og den ene advarselen blir til tjue.</li>
     <li><strong>Den peker på den ekte feilen.</strong> Sprettoppvinduet finner knappen sin ved å slå opp panelets id. Mangler id-en, er det den som skal stå i meldingen, ikke at knappen mangler, ellers leter utvikleren på feil sted.</li>
   </ul>
   <div class="boks">
-    <p style="margin: 0;">Og meldingene kan ikke råtne: en sjekk leser konsollen på hver eneste bygde dokumentasjonsside, og en advarsel som slår ut på våre egne eksempler feller bygget. Vi tåler altså ikke en eneste falsk alarm selv.</p>
+    <p style="margin: 0;">Meldingene kan ikke råtne: en sjekk leser konsollen på hver bygde dokumentasjonsside, og en advarsel som slår ut på våre egne eksempler feller bygget.</p>
   </div>
 </section>
 
-<!-- 20 -->
+<!-- 21 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 5 av 7</span>
   <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><rect x="0" y="0" width="36" height="36" fill="#C0C0C0"/>
-<rect x="2" y="2" width="32" height="32" fill="#000000"/>
-<rect x="4" y="4" width="8" height="4" fill="#FFFFFF"/>
-<path d="M 16 24 L 20 28 L 30 12 L 28 10 L 20 24 L 18 20 Z" fill="#FFFF00"/></g></svg>
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="ftyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gtyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#ftyper)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gtyper)"/>
+      <path d="M24 17 a8 8 0 0 0 -8 8 v6 a5 5 0 0 1 -5 5 a5 5 0 0 1 5 5 v6 a8 8 0 0 0 8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 17 a8 8 0 0 1 8 8 v6 a5 5 0 0 0 5 5 a5 5 0 0 0 -5 5 v6 a8 8 0 0 1 -8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <h2>Typesikkerhet uten rammeverk</h2>
   </div>
   <p class="ingress">Du skal ikke miste autofullføring og røde streker i editoren fordi du forlot React. Byggefunksjonene er vanlige TypeScript-funksjoner som returnerer attributter.</p>
   <p class="dempet">Det er dette som gjør at rammeverksuavhengighet ikke oppleves som et steg ned.</p>
+  <ol class="kapittelliste">
+      <li>Ett valgobjekt inn, attributter ut</li>
+  </ol>
 </section>
 
-<!-- 21 -->
+<!-- 22 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 5 av 7 · Typesikkerhet uten rammeverk</p>
   <h2>Ett valgobjekt inn, attributter ut</h2>
   <p>Innvendingen mot å forlate React er som regel utvikleropplevelsen: du mister komponenter som kjenner sine egne valg. Svaret er at en byggefunksjon gir det samme, fordi den er en vanlig TypeScript-funksjon. Den returnerer attributter, og editoren kjenner dem.</p>
   <div class="rader to" style="margin-block-start: 1.1rem;">
@@ -870,7 +1047,7 @@ fs.input({ type: "email", state: "invalid" })
     <div class="boks">
       <h3>Formen er fast</h3>
       <ul>
-        <li>Ett valgobjekt inn, aldri posisjonelle argumenter.</li>
+        <li>Alltid et objekt, aldri posisjonelle argumenter.</li>
         <li>Standardverdien gir ikke noe attributt. CSS-en har den allerede.</li>
         <li>Lovlige verdier henges på funksjonen, så <code>fs.button.variants</code> dukker opp i editoren.</li>
         <li>Ett begrep, én betydning: <code>variant</code> er visuell vekt, <code>color</code> er hva en status betyr, <code>state</code> er validering.</li>
@@ -884,27 +1061,29 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 22 -->
+<!-- 23 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 6 av 7</span>
   <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><rect x="0" y="0" width="20" height="20" fill="#000000"/>
-<rect x="1" y="1" width="18" height="18" fill="#808080"/>
-<rect x="8" y="8" width="20" height="20" fill="#000000"/>
-<rect x="9" y="9" width="18" height="18" fill="#C0C0C0"/>
-<rect x="16" y="16" width="20" height="20" fill="#000000"/>
-<rect x="17" y="17" width="18" height="18" fill="#FFFFFF"/>
-<rect x="17" y="17" width="18" height="4" fill="#000080"/></g></svg>
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="flag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="glag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#flag)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#glag)"/>
+      <path d="M36 40 L14 50 L36 60 L58 50 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.5" stroke-linejoin="round"/>
+      <path d="M36 28 L14 38 L36 48 L58 38 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.75" stroke-linejoin="round"/>
+      <path d="M36 16 L14 26 L36 36 L58 26 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/></svg>
     <h2>Konsumentens CSS vinner</h2>
   </div>
   <p class="ingress">All komponent-CSS ligger i et eget lag. En helt vanlig regel skrevet av teamet slår våre, uten <code>!important</code> og uten spesifisitetstriks.</p>
-  <p class="dempet">Kapittelet: laget, fargegeneratoren, og hvorfor kontrastterskelen følger rollen.</p>
+  <ol class="kapittelliste">
+      <li>Laget som gjør det mulig</li>
+      <li>Fargene holder kontrastkravet</li>
+      <li>Terskelen følger rollen, ikke fargen</li>
+  </ol>
 </section>
 
-<!-- 23 -->
+<!-- 24 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Laget som gjør det mulig</h2>
-  <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et lag, og et usortert lag vinner over alle lag.</p>
+  <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i <code>@layer fristil</code>, og en regel uten lag slår alt som står i ett.</p>
   <div class="rader to">
     <div>
       <p class="kodetittel">Uten laget taper du med lik logikk</p>
@@ -929,8 +1108,9 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 24 -->
+<!-- 25 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Fargene holder kontrastkravet</h2>
   <p>Et team med egne merkefarger skal ikke måtte regne ut kontrast for hånd, og skal ikke kunne velge en kombinasjon som faller under kravet. Generatoren tar merkefargene og lager hele temaet, i lyst og mørkt.</p>
   <div class="rader to-skjev">
@@ -958,10 +1138,11 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 25 -->
+<!-- 26 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Terskelen følger rollen, ikke fargen</h2>
-  <p>Grunnen til at dette ikke lar seg gjøre for hånd er ikke at regnestykket er vanskelig. Det er at kravet endrer seg med hva fargen brukes til, og den samme verdien kan bestå og stryke i samme palett.</p>
+  <p>Regnestykket er enkelt nok. Det vanskelige er at kravet endrer seg med hva fargen brukes til, så den samme verdien kan bestå ett sted og stryke et annet i den samme paletten.</p>
   <div class="tabellrull">
   <table>
     <thead><tr><th>Det fargen er</th><th>Krav</th><th>Hvor det står</th></tr></thead>
@@ -974,33 +1155,34 @@ fs.input({ type: "email", state: "invalid" })
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som har skrevet regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll i komponentene som bruker det, og da er kravet 3:1 og ikke 4,5:1. Navnet er ikke et bevis på bruken.</p>
-  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Den ene 3:1-rollen vi sjekker, feltrammen, står utenfor lista, i to tester og i generatoren. Hover-rammen ved siden av den sjekkes ingen steder, og ikonene kan ikke sjekkes av dette i det hele tatt, siden de er bilder og ikke fargeverdier. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
+  <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som skrev regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll der det brukes, og da er kravet 3:1. Navnet er ikke et bevis på bruken.</p>
+  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av testen for våre egne farger og testen for et generert tema. Den ene 3:1-rollen vi sjekker, feltrammen, står utenfor lista. Hover-rammen ved siden av den sjekkes ingen steder, og ikonene er bilder, så de kan ikke sjekkes av dette i det hele tatt. Hullet dette lysbildet handler om har vi altså selv.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken paragraf som gjelder for hvilken farge.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må vite det for hvert eneste par, og ta feil i full offentlighet når vi gjør det.</p>
   </div>
 </section>
 
-<!-- 26 -->
+<!-- 27 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 7 av 7</span>
   <div class="kapittel-topp">
-    <svg class="kapittelikon" viewBox="0 0 60 60" width="96" height="96" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="60" fill="#C0C0C0"/><rect x="0" y="0" width="60" height="2" fill="#FFFFFF"/><rect x="0" y="0" width="2" height="60" fill="#FFFFFF"/><rect x="0" y="58" width="60" height="2" fill="#000000"/><rect x="58" y="0" width="2" height="60" fill="#000000"/><g transform="translate(11, 11)"><path d="M 0 10 L 12 10 L 16 16 L 36 16 L 36 36 L 0 36 Z" fill="#000000"/>
-<path d="M 2 12 L 10 12 L 14 18 L 34 18 L 34 34 L 2 34 Z" fill="#FFFF00"/>
-<rect x="8" y="0" width="16" height="20" fill="#000000"/>
-<rect x="9" y="1" width="14" height="18" fill="#FFFFFF"/>
-<path d="M 14 14 L 18 8 L 22 14 L 20 14 L 20 18 L 16 18 L 16 14 Z" fill="#000000"/>
-<polygon points="0,20 6,36 36,36 30,20" fill="#808080"/>
-<polyline points="0,20 30,20 36,36" fill="none" stroke="#000000" stroke-width="1"/></g></svg>
-    <h2>Du kan ta over koden og gå</h2>
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foverta)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goverta)"/>
+      <path d="M16 32 v20 a4 4 0 0 0 4 4 h32 a4 4 0 0 0 4 -4 v-20" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 24 h48 v8 h-48 Z" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 46 V14" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 21 L36 13 L44 21" fill="none" stroke="#cde1f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Du kan ta over koden og gå din egen vei</h2>
   </div>
   <p class="ingress">Et designsystem dekker aldri alt. Framfor at teamet skriver et omslag rundt noe som ikke strekker til, kopierer én kommando kildekoden inn i prosjektet deres.</p>
-  <p class="dempet">Kapittelet: kommandoen, og hva den skriver om på veien.</p>
+  <ol class="kapittelliste">
+      <li>Når systemet ikke strekker til</li>
+  </ol>
 </section>
 
-<!-- 27 -->
+<!-- 28 -->
 <section class="lysbilde">
+  <p class="kapittelmerke">Beslutning 7 av 7 · Du kan ta over koden</p>
   <h2>Når systemet ikke strekker til</h2>
   <p>Et team som trenger noe vi ikke har tenkt på, skal komme videre samme dag. Alternativet er at de kopierer komponenten vår inn i prosjektet for hånd, og da mister vi både kontakten og muligheten til å rette feil.</p>
   <p class="kodetittel">Kildekoden til én komponent, inn i prosjektet ditt</p>
@@ -1015,11 +1197,11 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 28 -->
+<!-- 29 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det stemmer</h2>
   <p><strong>Førstelinja</strong> er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som sitter i en annen utgave.</p>
-  <p>Den er også en stresstest av arkitekturen. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server oppdaterer siden under den, og det er de møtene demoen setter opp.</p>
+  <p>Den er også en stresstest. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server oppdaterer siden under den, og demoen er stedet der de to faktisk møtes.</p>
   <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over nettverket, lest av trafikken</p>
   <div class="tabellrull">
   <table>
@@ -1031,22 +1213,22 @@ fs.input({ type: "email", state: "invalid" })
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Samme skjerm, samme komponenter, tre helt ulike måter å få den dit. Spill den selv: <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a>, og trykk «Hva skjedde?» nede til høyre for å se trafikken mens du spiller.</p>
+  <p style="margin-block-start: 1rem;">Tre helt ulike veier, og brukeren ser ingen forskjell. Spill den selv: <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a>, og trykk «Hva skjedde?» nede til høyre for å se trafikken mens du spiller.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Kan se sitt eget rammeverk i lista, og se at skjermen er den samme.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde tre ekte apper i live ved siden av pakken. Enhetstester ser ikke det disse ser.</p>
   </div>
 </section>
 
-<!-- 29 -->
+<!-- 30 -->
 <section class="lysbilde">
   <h2>Hva vi sitter igjen med</h2>
-  <p class="ingress">Ett designsystem, uten rammeverk under, som virker i det vi har i dag og i det vi bytter til.</p>
+  <p class="ingress">Ett designsystem uten rammeverk i bunnen, som virker i det vi har i dag og i det vi bytter til.</p>
   <div class="rader to">
     <div class="boks">
       <h3>For teamene</h3>
       <ul>
-        <li>Én pakke, ingen avhengigheter, ingen kjøretid for det som bare er utseende.</li>
+        <li>Én pakke, null avhengigheter, og ingen kode som må kjøre før en knapp ser riktig ut.</li>
         <li>Samme komponenter i React, Astro, ren HTML og i en server som ikke kjører JavaScript.</li>
         <li>Tilgjengeligheten er med fra start, ikke noe som legges på etterpå.</li>
         <li>Egen CSS vinner, og kildekoden kan overtas den dagen det trengs.</li>
@@ -1055,15 +1237,16 @@ fs.input({ type: "email", state: "invalid" })
     <div class="boks">
       <h3>For oss som forvalter det</h3>
       <ul>
-        <li>Tre nettlesermotorer i hver kjøring, og ventetid på den siste.</li>
+        <li>Hver testkjøring i tre motorer, og en ny nettleserfunksjon må vente på den tregeste.</li>
         <li>Demospillet i tre utgaver må holdes i drift. Slutter det å virke, slutter vi å se feilene enhetstestene ikke tar.</li>
-        <li>Navn som ikke kan døpes om i stillhet.</li>
+        <li>Et klassenavn kan ikke døpes om uten at det blir en brytende endring.</li>
         <li>Hver ny regel må ha en vaktpost, ellers er den glemt om en måned.</li>
       </ul>
     </div>
   </div>
   <p style="margin-block-start: 1.2rem;"><strong>Dokumentasjon:</strong> <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> · <strong>Pakke:</strong> <code>@fristil/designsystem</code></p>
 </section>
+
 
 
 

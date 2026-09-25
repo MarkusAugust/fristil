@@ -31,7 +31,7 @@ Tjueni lysbilder om hva systemet er og hvorfor, ikke om hvordan vi kom dit.
 Et publikum trenger ikke vite hva vi prøvde først, bare hva som gjelder og hva
 det er godt for.
 
-De er delt i sju kapitler, ett per arkitektonisk beslutning. Hvert kapittel
+De er delt i syv kapitler, ett per arkitektonisk beslutning. Hvert kapittel
 åpner med en forside som sier beslutningen i én setning, og som bærer et ikon
 tegnet i Windows 3.1-stil. Ikonene ligger på en grå plate med tidens hevede
 kant, fordi den svarte strektegningen i dem ellers ville forsvunnet mot den mørke flaten.
