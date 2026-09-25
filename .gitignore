@@ -15,3 +15,6 @@ documentation/scripts/.lokal/
 
 # Midlertidige demoapper for etterprøving mot ekte SSR, ikke del av pakken
 demoer-lokalt/
+
+# Pakket utvidelse, lages av `bun --filter fristil-vscode sjekk`
+*.vsix
