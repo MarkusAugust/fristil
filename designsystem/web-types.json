@@ -50,7 +50,7 @@
                 },
                 {
                   "name": "none",
-                  "description": "Ingen markering."
+                  "description": "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier."
                 }
               ]
             },
@@ -79,7 +79,7 @@
           "attributes": [
             {
               "name": "server-controlled",
-              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
               "value": {
                 "kind": "no-value"
               }
@@ -136,25 +136,25 @@
               "values": [
                 {
                   "name": "bottom-start",
-                  "description": "Under knappen, venstrekantene på linje. Standard."
+                  "description": "Under knappen, langs startkanten. Standard."
                 },
                 {
                   "name": "bottom-end",
-                  "description": "Under knappen, høyrekantene på linje."
+                  "description": "Under knappen, langs sluttkanten."
                 },
                 {
                   "name": "top-start",
-                  "description": "Over knappen, venstrekantene på linje."
+                  "description": "Over knappen, langs startkanten."
                 },
                 {
                   "name": "top-end",
-                  "description": "Over knappen, høyrekantene på linje."
+                  "description": "Over knappen, langs sluttkanten."
                 }
               ]
             },
             {
               "name": "server-controlled",
-              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
               "value": {
                 "kind": "no-value"
               }
@@ -175,7 +175,7 @@
             },
             {
               "name": "server-controlled",
-              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
               "value": {
                 "kind": "no-value"
               }
@@ -196,7 +196,7 @@
             },
             {
               "name": "server-controlled",
-              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
               "value": {
                 "kind": "no-value"
               }

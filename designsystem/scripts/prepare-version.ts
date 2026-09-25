@@ -119,6 +119,23 @@ if (!lockMonster.test(lock)) {
 
 await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
 
+// `web-types.json` har også versjonen i seg. Fila genereres av
+// editor/scripts/generate.ts, og bygget krever at den på disk er byte-lik
+// det generatoren ville skrevet, så versjonen skrives inn her framfor at
+// hver utgivelse måtte huske å kjøre generatoren.
+const webTypesSti = join(monorepoRot, "designsystem", "web-types.json")
+const webTypes = readFileSync(webTypesSti, "utf8")
+const webTypesFør = `"version": "${naavaerende}"`
+if (!webTypes.includes(webTypesFør)) {
+  stopp(
+    `Fant ikke versjonen ${naavaerende} i web-types.json. Kjør bun --filter fristil-vscode generate først.`,
+  )
+}
+writeFileSync(
+  webTypesSti,
+  webTypes.replace(webTypesFør, `"version": "${nyVersjon}"`),
+)
+
 /*
  * CDN-adressene i dokumentasjonen står med versjonen i seg.
  *

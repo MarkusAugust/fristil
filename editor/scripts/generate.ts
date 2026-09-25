@@ -5,9 +5,9 @@
  *
  *   - `editor/fristil.html-data.json`: VS Codes eget format for tagger og
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
- *   - `editor/snippets.json`: én snippet per element, med markupen fra
- *     «Ren HTML»-fanen på komponentsiden. Den fanen er alt etterprøvd av
- *     `sjekk-oppskrifter.ts`, så snippeten kan ikke vise noe som ikke virker.
+ *   - `editor/snippets.json`: én snippet per element, med markupen som viser
+ *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
+ *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
  *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
  *
@@ -109,25 +109,37 @@ export function webTypes(version: string) {
 }
 
 /**
- * Markupen fra «Ren HTML»-fanen på komponentsiden.
+ * Markupen som viser elementet, fra komponentsiden.
  *
- * Fanen har to kodeblokker med HTML: først `<link>`-ene til stilarkene, så
- * markupen med registreringen og et eksempelskript under. Snippeten er bare
- * markupen, fram til det første skriptet: stilarkene og registreringen
- * hører i sidemalen, én gang for hele appen, ikke der markøren står.
+ * Den første kodeblokken med HTML på siden som faktisk inneholder `<fs-…>`,
+ * uten stilark og uten Datastar. Som regel er det «Ren HTML»-fanen. På
+ * dialogsiden er det ikke: der åpner «Ren HTML»-oppskriften dialogen med
+ * `showModal()` fra skript, uten web-komponenten, og en snippet for
+ * `<fs-dialog>` uten `<fs-dialog>` i seg var det første reviewfunnet.
+ *
+ * Snippeten er markupen fram til det første skriptet: stilarkene og
+ * registreringen hører i sidemalen, én gang for hele appen, ikke der
+ * markøren står.
  */
 export function recipe(element: ElementDoc): string {
   const page = readFileSync(join(PAGES, `${element.slug}.mdx`), "utf8")
-  const start = page.indexOf('label="Ren HTML"')
-  if (start === -1)
-    throw new Error(`${element.slug}.mdx har ingen «Ren HTML»-fane`)
-  const tab = page.slice(start, page.indexOf("</TabItem>", start))
-  const blocks = [...tab.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
-  const markup = blocks.find((b) => !b.includes('rel="stylesheet"'))
+  const blocks = [...page.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
+  const markup = blocks.find(
+    (b) =>
+      b.includes(`<${element.tag}`) &&
+      !b.includes('rel="stylesheet"') &&
+      !b.includes("data-on"),
+  )
   if (!markup)
-    throw new Error(`${element.slug}.mdx har ingen markup i «Ren HTML»-fanen`)
+    throw new Error(
+      `${element.slug}.mdx har ingen HTML-blokk med <${element.tag}> i`,
+    )
 
-  const body = markup.split(/\n[ \t]*(?:<!--[^\n]*-->\n[ \t]*)?<script\b/)[0]
+  // Kommentaren rett før skriptet kan gå over flere linjer, men aldri forbi
+  // sin egen `-->`: ellers ville den slukt markupen mellom to kommentarer.
+  const body = markup.split(
+    /\n[ \t]*(?:<!--(?:(?!-->)[\s\S])*-->\n[ \t]*)?<script\b/,
+  )[0]
   const lines = body.replace(/\s+$/, "").split("\n")
   const indent = Math.min(
     ...lines

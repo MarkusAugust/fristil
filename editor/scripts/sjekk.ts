@@ -48,6 +48,8 @@ const pkg = JSON.parse(
  * samme elementet ikke telles to ganger om det står bak to inngangspunkter.
  */
 const registered = new Map<string, readonly string[]>()
+/** Hver tagg noen modul eksporterer, hovedinngangen medregnet. */
+const allTags = new Set<string>()
 for (const target of Object.values(
   pkg.exports as Record<string, string | Record<string, string>>,
 )) {
@@ -65,6 +67,7 @@ for (const target of Object.values(
     (value): value is Component =>
       typeof value === "function" && "observedAttributes" in value,
   )
+  for (const tag of tags) allTags.add(tag)
   if (tags.length !== 1 || components.length !== 1) continue
   registered.set(tags[0], components[0].observedAttributes)
 }
@@ -87,21 +90,29 @@ for (const [tag, attributes] of registered) {
       `<${tag}> har attributter i metadata.ts som ikke finnes: ${extra}`,
     )
 }
+// En tagg som bare finnes i en modul med flere elementer, som hovedinngangen,
+// ville ellers hoppet stille over både denne sjekken og metadataen.
+for (const tag of allTags)
+  if (!registered.has(tag))
+    findings.push(
+      `<${tag}> eksporteres, men ikke fra et inngangspunkt med ett element`,
+    )
 for (const tag of documented.keys())
   if (!registered.has(tag))
     findings.push(
       `<${tag}> står i metadata.ts, men pakken registrerer det ikke`,
     )
 
-// 3. Hver snippet har markup, og hvert element har en snippet.
+// 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
+// snippet hadde en `<dialog>` og ikke noe `<fs-dialog>`.
 const snippets = JSON.parse(generated["editor/snippets.json"]) as Record<
   string,
   { body: string[] }
 >
 for (const element of elements) {
   const body = snippets[element.tag]?.body ?? []
-  if (!body.some((line) => line.includes("<")))
-    findings.push(`Snippeten for <${element.tag}> har ingen markup`)
+  if (!body.some((line) => line.includes(`<${element.tag}`)))
+    findings.push(`Snippeten for <${element.tag}> inneholder ikke elementet`)
 }
 
 // 4. Tell, sist. Både likt det forventede og større enn null.

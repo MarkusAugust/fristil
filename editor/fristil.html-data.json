@@ -57,7 +57,7 @@
               "name": "none",
               "description": {
                 "kind": "markdown",
-                "value": "Ingen markering."
+                "value": "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier."
               }
             }
           ]
@@ -95,7 +95,7 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev."
+            "value": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
           },
           "valueSet": "v"
         }
@@ -172,28 +172,28 @@
               "name": "bottom-start",
               "description": {
                 "kind": "markdown",
-                "value": "Under knappen, venstrekantene på linje. Standard."
+                "value": "Under knappen, langs startkanten. Standard."
               }
             },
             {
               "name": "bottom-end",
               "description": {
                 "kind": "markdown",
-                "value": "Under knappen, høyrekantene på linje."
+                "value": "Under knappen, langs sluttkanten."
               }
             },
             {
               "name": "top-start",
               "description": {
                 "kind": "markdown",
-                "value": "Over knappen, venstrekantene på linje."
+                "value": "Over knappen, langs startkanten."
               }
             },
             {
               "name": "top-end",
               "description": {
                 "kind": "markdown",
-                "value": "Over knappen, høyrekantene på linje."
+                "value": "Over knappen, langs sluttkanten."
               }
             }
           ]
@@ -202,7 +202,7 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev."
+            "value": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
           },
           "valueSet": "v"
         }
@@ -233,7 +233,7 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev."
+            "value": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
           },
           "valueSet": "v"
         }
@@ -264,7 +264,7 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev."
+            "value": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
           },
           "valueSet": "v"
         }

@@ -25,16 +25,6 @@ jobs:
       - name: Installer avhengigheter
         run: bun install --frozen-lockfile
 
-      # Generatoren leser komponentklassene fra dist, så pakken må bygges
-      # først. Typene alene holder: ingen sjekk av tarballen trengs her.
-      - name: Bygg pakken
-        run: bunx tsc -b
-
-      # Kontrollerer at filene i repoet er de generatoren ville skrevet nå,
-      # og pakker editor/fristil.vsix.
-      - name: Sjekk og pakk
-        run: bun --filter fristil-vscode sjekk
-
       - name: Les versjonen
         id: versjon
         working-directory: editor
@@ -49,10 +39,21 @@ jobs:
             exit 1
           fi
 
+      # Generatoren leser komponentklassene fra dist, så pakken må bygges
+      # først. `bun run typecheck` gjør det med repoets egen tsc, og
+      # typesjekker utvidelsen i samme slengen.
+      - name: Bygg pakken
+        run: bun run typecheck
+
+      # Kontrollerer at filene i repoet er de generatoren ville skrevet nå,
+      # og pakker editor/fristil.vsix.
+      - name: Sjekk og pakk
+        run: bun --filter fristil-vscode sjekk
+
       # Marketplace har ingen OIDC. Tokenet lages under utgiveren på
       # marketplace.visualstudio.com og legges inn som hemmeligheten VSCE_PAT.
       - name: Publiser
         working-directory: editor
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: bunx vsce publish --packagePath fristil.vsix
+        run: ./node_modules/.bin/vsce publish --packagePath fristil.vsix

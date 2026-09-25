@@ -88,9 +88,15 @@ const number = (description: string): AttributeDoc => ({
   value: "number",
 })
 
-/** Det samme attributtet på fire komponenter, med den samme setningen. */
+/**
+ * Det samme attributtet på fire komponenter, med den samme setningen.
+ *
+ * Det attributtet slår av er at komponenten setter *brukerens* tilstand
+ * tilbake etter en morfing: valgt fane, åpent panel, åpen liste, modal
+ * dialog. Koblingen ellers, som `aria-expanded` på knappen, settes uansett.
+ */
 const serverControlled = flag(
-  "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+  "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
 )
 
 export const elements: readonly ElementDoc[] = [
@@ -110,7 +116,11 @@ export const elements: readonly ElementDoc[] = [
           values: [
             { name: "symbol", description: "En stjerne etter ledeteksten." },
             { name: "text", description: "Ordet «må fylles ut»." },
-            { name: "none", description: "Ingen markering." },
+            {
+              name: "none",
+              description:
+                "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier.",
+            },
           ],
         },
       },
@@ -162,19 +172,19 @@ export const elements: readonly ElementDoc[] = [
           values: [
             {
               name: "bottom-start",
-              description: "Under knappen, venstrekantene på linje. Standard.",
+              description: "Under knappen, langs startkanten. Standard.",
             },
             {
               name: "bottom-end",
-              description: "Under knappen, høyrekantene på linje.",
+              description: "Under knappen, langs sluttkanten.",
             },
             {
               name: "top-start",
-              description: "Over knappen, venstrekantene på linje.",
+              description: "Over knappen, langs startkanten.",
             },
             {
               name: "top-end",
-              description: "Over knappen, høyrekantene på linje.",
+              description: "Over knappen, langs sluttkanten.",
             },
           ],
         },

@@ -87,20 +87,17 @@
   "fs-dialog": {
     "prefix": "fs-dialog",
     "body": [
-      "<button class=\"fs-button\" data-variant=\"danger\" id=\"apne\" type=\"button\">",
-      "  Slett søknaden",
-      "</button>",
-      "",
-      "<dialog class=\"fs-dialog\" id=\"bekreft\" aria-labelledby=\"bekreft-tittel\">",
-      "  <h2 class=\"fs-dialog__title\" id=\"bekreft-tittel\">Slette søknaden?</h2>",
-      "  <div class=\"fs-dialog__body\">",
-      "    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>",
-      "  </div>",
-      "  <form method=\"dialog\" class=\"fs-dialog__footer\">",
-      "    <button class=\"fs-button\" data-variant=\"secondary\" value=\"avbryt\">Avbryt</button>",
-      "    <button class=\"fs-button\" data-variant=\"danger\" value=\"slett\">Slett søknaden</button>",
-      "  </form>",
-      "</dialog>"
+      "<fs-dialog open>",
+      "  <dialog class=\"fs-dialog\" aria-labelledby=\"kvittering-tittel\" open>",
+      "    <h2 class=\"fs-dialog__title\" id=\"kvittering-tittel\">Vedtaket er registrert</h2>",
+      "    <div class=\"fs-dialog__body\">",
+      "      <p>Saken er ferdigbehandlet og sendt til arkiv.</p>",
+      "    </div>",
+      "    <form method=\"dialog\" class=\"fs-dialog__footer\">",
+      "      <button class=\"fs-button\" value=\"lukk\">Lukk</button>",
+      "    </form>",
+      "  </dialog>",
+      "</fs-dialog>"
     ],
     "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen."
   },
