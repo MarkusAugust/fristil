@@ -1257,7 +1257,9 @@ defineFsField()
  * regnes ut fra det samme elementet.
  *
  * Kodevisningen er urørt: panelet byttes inn i stedet for koden. Panelet har
- * samme høyde i alle steg, så ingenting under hopper mens du klikker. Stegene
+ * samme høyde i alle steg fra 1280 piksler bredt og opp, så ingenting under
+ * hopper mens du klikker. Smalere enn det brytes svaret fra serveren på
+ * flere linjer, og panelet vokser med. Stegene
  * styres av presentatøren, ett knappetrykk om gangen. Utgangen velges med to knapper og ikke radioknapper:
  * piltastene tilhører presentasjonen.
  */
@@ -2072,16 +2074,22 @@ const lysbilder = [...document.querySelectorAll(".lysbilde")]
 const teller = document.getElementById("teller")
 let gjeldende = 0
 
-function vis(nr, medHistorikk = true) {
+function vis(nr) {
   gjeldende = Math.max(0, Math.min(nr, lysbilder.length - 1))
   lysbilder.forEach((l, i) => {
     if (i === gjeldende) l.setAttribute("data-vist", "")
     else l.removeAttribute("data-vist")
   })
+  // Sto fokus på noe i lysbildet som nettopp ble skjult, for eksempel en
+  // grafnode klikket med musa, blir det stående der i Safari og Firefox, og
+  // Enter og mellomrom går til den skjulte kontrollen i stedet for å bla.
+  // Knappene i styringa beholder fokus, de er alltid synlige.
+  const aktiv = document.activeElement
+  if (aktiv && aktiv !== document.body && !lysbilder[gjeldende].contains(aktiv) && !aktiv.closest(".styring")) aktiv.blur()
   teller.textContent = `${gjeldende + 1} / ${lysbilder.length}`
   lysbilder[gjeldende].scrollTop = 0
   window.scrollTo(0, 0)
-  if (medHistorikk) history.replaceState(null, "", `#lysbilde-${gjeldende + 1}`)
+  history.replaceState(null, "", `#lysbilde-${gjeldende + 1}`)
 }
 
 function fraAdressen() {
@@ -2093,6 +2101,8 @@ document.getElementById("neste").addEventListener("click", () => vis(gjeldende +
 document.getElementById("forrige").addEventListener("click", () => vis(gjeldende - 1))
 
 document.addEventListener("keydown", (e) => {
+  // Cmd+pil og Alt+pil er nettleserens egne fram og tilbake, og skal ikke bla.
+  if (e.altKey || e.ctrlKey || e.metaKey) return
   // Enter på en lenke skal følge lenken, og mellomrom på en knapp skal trykke
   // den. Uten denne linja bladde presentasjonen i stedet, og lenkene på
   // første og siste lysbilde var umulige å følge med tastatur.
