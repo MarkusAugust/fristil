@@ -514,7 +514,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · Versjon 0.3.0 - 25 september 2026</span>
+  <span class="merke merke-blaa">Designsystemarkitektur · Versjon 0.3.0 · 25. september 2026</span>
   <div class="tittel-topp">
     <div class="logo">
       <svg class="logomerke" width="80" height="80" viewBox="0 0 100 100" fill="none" aria-hidden="true" focusable="false">
@@ -542,7 +542,7 @@ tr:last-child td { border-block-end: none; }
     <h1>Rammeverksuavhengig designsystem</h1>
   </div>
   <p class="ingress">Et tekstfelt med ledetekst, hjelpetekst og feilmelding er HTML og ARIA, og har vært det lenger enn noe rammeverk i bruk i dag. Likevel koster det nå et rammeverk du ikke kan bytte ut, og en omskriving hver gang det rammeverket skifter retning.</p>
-  <p>Dette er syv arkitektoniske beslutninger som gjør det unødvendig. For hver av dem: hva den går ut på, hva den koster, og hvor den ikke holder. Ingen av dem er gratis, og prisen står oppgitt på hvert eneste lysbilde.</p>
+  <p>Dette er syv arkitektoniske beslutninger som gjør det unødvendig. For hver av dem: hva den går ut på, hva den koster, og hvor den ikke holder. Ingen av dem er gratis, og prisen står nederst på lysbildene som tar et standpunkt.</p>
   <p>Alt henger på denne ene setningen:</p>
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
@@ -662,6 +662,8 @@ defineFsField()
       <li>Hva nettleseren gjør for oss</li>
       <li>Prisen for å bygge på nettleseren selv</li>
       <li>Hva det koster appen din</li>
+      <li>Hva én knapp legger i node_modules</li>
+      <li>Hva én knapp legger i <code>node_modules</code></li>
   </ol>
 </section>
 
@@ -919,7 +921,7 @@ defineFsField()
 (() => {
   // Noder: [navn, versjon, type, utpakkede byte]. Kanter: [fra, til, 0 = vanlig, 1 = peer].
   // Typen «grunn» er det appen har fra før, og telles ikke.
-  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.7","annen",247667],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.2","annen",521383],["react-i18next","17.0.15","annen",955997],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","system",2280957],["@navikt/ds-css","8.17.1","system",2297115],["@navikt/ds-react","8.17.1","system",7586468],["@navikt/ds-tokens","8.17.1","system",446875],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css,theme}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-theme","1.10.0","system",325013],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","annen",2280957],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.3.3","annen",44851],["@tanstack/react-virtual","3.14.13","annen",60900],["@tanstack/virtual-core","3.17.11","annen",437568],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[0,3,0],[1,4,0],[2,4,0],[2,5,0],[2,7,0],[2,8,0],[2,11,0],[2,13,0],[2,14,0],[2,20,0],[2,22,1],[2,23,1],[3,4,0],[5,7,0],[5,16,0],[5,17,0],[5,18,0],[5,19,0],[6,10,0],[7,6,0],[7,10,0],[8,9,0],[8,10,0],[8,21,0],[8,22,1],[8,23,1],[9,7,0],[9,22,1],[9,23,1],[12,22,1],[13,12,0],[13,22,1],[14,15,0],[14,22,1],[14,23,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{css,theme}","knapp":6572,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-theme","1.10.0","system",325013],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":1974,"n":[["appen din","","app",0],["@fristil/designsystem","0.14.0","system",1007674]],"e":[[0,1,0]]}}
+  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.7","annen",247667],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.2","annen",521383],["react-i18next","17.0.15","annen",955997],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","system",2280957],["@navikt/ds-css","8.17.1","system",2297115],["@navikt/ds-react","8.17.1","system",7586468],["@navikt/ds-tokens","8.17.1","system",446875],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.1","annen",2280957],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.3.3","annen",44851],["@tanstack/react-virtual","3.14.13","annen",60900],["@tanstack/virtual-core","3.17.11","annen",437568],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":1956,"n":[["appen din","","app",0],["@fristil/designsystem","0.14.0","system",1007674]],"e":[[0,1,0]]}}
 
   const TYPENAVN = { system: "Designsystemets egen", annen: "Dratt inn", grunn: "Har appen fra før", app: "Appen" }
   const BREDDE = 1136 // fast, så alle grafene har samme målestokk
@@ -929,11 +931,11 @@ defineFsField()
   const R = 6
   const NS = "http://www.w3.org/2000/svg"
 
+  // Alt deles på 1024, som forrige lysbilde: da er Fristils knapp 1,9 kB begge steder.
   const mb = (b) => {
-    if (b >= 1e6) return (b / 1e6).toFixed(1).replace(".", ",") + " MB"
-    return Math.round(b / 1e3) + " kB"
+    if (b >= 1024 * 1024) return (b / 1024 / 1024).toFixed(1).replace(".", ",") + " MB"
+    return Math.round(b / 1024) + " kB"
   }
-  // Delt på 1024, som forrige lysbilde: da er Fristils knapp 1,9 kB begge steder.
   const kb = (b) => (b / 1024).toFixed(1).replace(".", ",") + " kB"
   const el = (navn, attr = {}) => {
     const e = document.createElementNS(NS, navn)
@@ -1064,6 +1066,7 @@ defineFsField()
       tall.append(s)
     }
     knapp.append(tall)
+    knapp.setAttribute("aria-label", `${sys.navn}: ${sys.nye} ${sys.nye === 1 ? "ny pakke" : "nye pakker"}, ${sys.e.length} ${sys.e.length === 1 ? "kobling" : "koblinger"}, ${mb(sys.sum)} utpakket${sys.knapp ? `, ${kb(sys.knapp)} CSS til knappen` : ""}`)
     knapp.addEventListener("click", () => velg(nr))
     liste.append(knapp)
 
@@ -1292,8 +1295,8 @@ defineFsField()
 .morf-rad .morf-styring { margin-inline-start: auto; display: flex; gap: 0.5rem; }
 /* r får litt mer plass enn s: etter morfingen har r flest brikker, og de skal stå på to rader. */
 .morf-kolonner { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; margin-block: 0.25rem 0.2rem; }
-.morf-kolonne h4 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tekst-dempet); margin-block-end: 0.2rem; }
-.morf-kolonne h4 code { color: var(--azure-30); text-transform: none; letter-spacing: 0; }
+.morf-kolonne h3 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tekst-dempet); margin-block-end: 0.2rem; }
+.morf-kolonne h3 code { color: var(--azure-30); text-transform: none; letter-spacing: 0; }
 
 /* Det brukeren ser: etikett, felt og feilmelding, på én linje. */
 .morf-felt { display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.2rem; font-size: 0.82rem; }
@@ -1316,11 +1319,11 @@ defineFsField()
 .morf-opplest { margin: 0 0 0 auto; font-size: 0.78rem; color: var(--tekst-dempet); }
 .morf-opplest b { color: var(--tekst); font-weight: 400; }
 
-.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.3rem; min-block-size: 3.8rem; align-content: flex-start; }
+.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.28rem; min-block-size: 4rem; align-content: flex-start; }
 .morf-brikke {
   font-family: var(--mono);
-  font-size: 0.74rem;
-  padding: 0.16rem 0.42rem;
+  font-size: 0.7rem;
+  padding: 0.16rem 0.36rem;
   border-radius: 0.4rem;
   border: 1px solid var(--kant);
   color: var(--azure-10);
@@ -1335,7 +1338,7 @@ defineFsField()
 @keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
 
 /* Trafikken: det som går til serveren, og det som kommer tilbake. */
-.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.32; min-block-size: 3.8rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
+.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.32; min-block-size: 4rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
 .morf-linje { display: block; }
 .morf-linje i { color: var(--tekst-dempet); font-style: normal; }
 .morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
@@ -1375,16 +1378,16 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       </span>
     </div>
     <div class="morf-felt">
-      <span class="morf-etikett">E-post</span><span class="morf-input"></span><span class="morf-feil" hidden>Skriv en gyldig e-postadresse</span>
+      <span class="morf-etikett">E-post</span><span class="morf-input"></span><span class="morf-feil" id="epost-feil" hidden>Skriv en gyldig e-postadresse</span>
       <p class="morf-opplest"></p>
     </div>
     <div class="morf-kolonner">
       <div class="morf-kolonne">
-        <h4>Nettleseren, elementet <code>r</code></h4>
+        <h3>Nettleseren, elementet <code>r</code></h3>
         <div class="morf-brikker" data-side="r"></div>
       </div>
       <div class="morf-kolonne">
-        <h4>Til og fra serveren, elementet <code>s</code></h4>
+        <h3>Til og fra serveren, elementet <code>s</code></h3>
         <div class="morf-trafikk"></div>
       </div>
     </div>
@@ -1445,11 +1448,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     return `<input ${a}>`
   }
   // Det en skjermleser sier om feltet, regnet ut fra r: navnet fra etiketten,
-  // ugyldig fra aria-invalid, og beskrivelsen fra elementet aria-describedby peker på.
+  // ugyldig fra aria-invalid, og beskrivelsen ved å følge aria-describedby til
+  // elementet med den id-en, slik skjermleseren gjør.
   function lesOpp() {
     let t = "E-post"
     if (r.getAttribute("aria-invalid") === "true") t += ", ugyldig"
-    if (r.getAttribute("aria-describedby") === "epost-feil" && !feil.hidden) t += `, ${feil.textContent}`
+    const peker = r.getAttribute("aria-describedby")
+    const beskrivelse = peker && document.getElementById(peker)
+    if (beskrivelse && !beskrivelse.hidden) t += `, ${beskrivelse.textContent}`
     opplest.replaceChildren("Skjermleseren sier: ")
     const b = document.createElement("b")
     b.textContent = `«${t}»`
