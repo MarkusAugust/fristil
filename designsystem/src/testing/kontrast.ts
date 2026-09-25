@@ -1,10 +1,10 @@
 /**
  * Kontrastkravene systemet lover, på ett sted.
  *
- * Lista brukes av to tester: den som måler Fristils egne farger, og den som
- * måler et tema generatoren har laget av noen andre sine merkefarger. Uten
+ * Lista brukes av to tester: den som sjekker Fristils egne farger, og den som
+ * sjekker et tema generatoren har laget av noen andre sine merkefarger. Uten
  * delingen ville generatoren blitt sjekket mot en kopi som kunne gå fra
- * hverandre, og da måler den ikke lenger det samme løftet.
+ * hverandre, og da etterprøver den ikke lenger det samme løftet.
  */
 
 function lin(kanal: number): number {

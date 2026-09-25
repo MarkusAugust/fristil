@@ -39,7 +39,7 @@ export function defineElement(
  * Komponentene observerer de attributtene de selv setter, for å kunne sette
  * dem tilbake etter en patch. En skriving av en verdi som alt står der teller
  * som en endring, så observatøren kaller seg selv, skriver på nytt, og
- * mikrooppgavekøen tømmes aldri. Siden fryser, og en testkjøring henger uten
+ * mikrotaskkøen tømmes aldri. Siden fryser, og en testkjøring henger uten
  * feilmelding: ingen stakksporing, ingen påstand, bare stillhet. Det er
  * derfor ingen test kan fange det, og hvorfor skrivingen går gjennom én
  * funksjon som alle komponentene bruker.

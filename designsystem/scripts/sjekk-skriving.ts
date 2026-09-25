@@ -4,7 +4,7 @@
  * Komponentene observerer de attributtene de selv setter, for å kunne sette
  * dem tilbake etter en patch fra serveren. Skriver en av dem en verdi som alt
  * står der, teller det som en endring, observatøren kaller seg selv, skriver
- * på nytt, og mikrooppgavekøen tømmes aldri. Siden fryser.
+ * på nytt, og mikrotaskkøen tømmes aldri. Siden fryser.
  *
  * Det er derfor denne sjekken finnes, og hvorfor den er et skript og ikke en
  * nettlesertest: bryter en komponent regelen, **henger** en testkjøring
