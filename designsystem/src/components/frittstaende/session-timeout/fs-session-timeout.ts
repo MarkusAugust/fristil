@@ -49,7 +49,7 @@ function ord(sekunder: number): string {
  * ```
  */
 export class FsSessionTimeout extends HostElement {
-  static observedAttributes = ["warn-at", "expires-at"]
+  static observedAttributes = ["warn-at", "expires-at"] as const
 
   private dialog?: HTMLDialogElement
   private countElement?: HTMLElement

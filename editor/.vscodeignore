@@ -1,0 +1,5 @@
+scripts/**
+metadata.ts
+tsconfig.json
+node_modules/**
+*.vsix

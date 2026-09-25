@@ -56,7 +56,7 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * ```
  */
 export class FsDialog extends HostElement {
-  static observedAttributes = ["open", SERVER_CONTROLLED]
+  static observedAttributes = ["open", SERVER_CONTROLLED] as const
 
   private observer?: MutationObserver
   /**

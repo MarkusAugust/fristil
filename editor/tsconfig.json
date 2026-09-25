@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "types": ["bun"],
+    "noEmit": true,
+    // bun-types 1.3.14 stemmer ikke med @types/node 24 på fire linjer i sine
+    // egne filer. Det er ikke vår kode, og uten dette feiler typesjekken på
+    // dem. designsystem/scripts/tsconfig.json har de samme feilene, men
+    // kjøres ikke av noe.
+    "skipLibCheck": true
+  },
+  "include": ["metadata.ts", "scripts/**/*"]
+}
