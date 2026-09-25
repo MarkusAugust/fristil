@@ -499,7 +499,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
      *
      * Husket komponenten valget som en id, ble den tomme strengen en
      * identitet som traff den første fanen, og reparasjonen satte valget
-     * tilbake i neste mikrooppgave. Brukeren fikk da ikke byttet fane i det
+     * tilbake i neste mikrotask. Brukeren fikk da ikke byttet fane i det
      * hele tatt, og ingenting sa fra.
      */
     const UTEN_IDER = `

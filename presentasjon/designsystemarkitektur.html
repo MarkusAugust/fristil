@@ -409,24 +409,25 @@ tr:last-child td { border-block-end: none; }
 <body>
 <div class="dekk" id="dekk">
 
-<!-- 1 -->
+<!-- 2 -->
 <section class="lysbilde">
   <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
   <h1>Rammeverksuavhengig<br>designsystem</h1>
   <p class="ingress">Ett sett komponenter som virker i alle appene våre, uansett hvilket rammeverk de er skrevet i, og som fortsatt virker når rammeverkene byttes ut.</p>
-  <p>Hele systemet hviler på én setning, og resten av presentasjonen er hva den fører til:</p>
+  <p>Et tekstfelt med ledetekst, hjelpetekst og feilmelding er noe HTML har kunnet siden nittitallet. I dag koster det tolv pakker i <code>package.json</code> og et rammeverk du ikke kan bytte. Det er det denne presentasjonen handler om.</p>
+  <p>Hele systemet hviler på én setning, og resten er hva den fører til:</p>
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
   </div>
   <p class="dempet" style="margin-block-start: 1rem;">Fristil, bygget og publisert på <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> og på npm som <code>@fristil/designsystem</code>.</p>
 </section>
 
-<!-- 2 -->
+<!-- 3 -->
 <section class="lysbilde">
   <h2>Kort fortalt</h2>
   <p>Rammeverk kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang noe skifter. Derfor er dette bygget på det nettleseren allerede forstår.</p>
   <ol>
-    <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og egendefinerte HTML-elementer, og virker likt i React, Astro, ren HTML og i en Kotlin-server.</li>
+    <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og web components, og virker likt i React, Astro, ren HTML og i en Kotlin-server.</li>
     <li><strong>To lag som ikke overlapper.</strong> Serveren skriver klasser og koblinger, komponenten tar tastatur, fokus og posisjonering.</li>
     <li><strong>Tilgjengelighet er skrevet én gang.</strong> Den samme funksjonen regner ut koblingene, enten den kalles av serveren eller av elementet i nettleseren.</li>
     <li><strong>Teamene kan overstyre alt utenfra,</strong> og overta en komponent helt hvis de må.</li>
@@ -435,7 +436,7 @@ tr:last-child td { border-block-end: none; }
   <p class="dempet">Nederst på lysbildene står to linjer: hva punktet betyr for teamene som bruker systemet, og hva det koster den som forvalter det.</p>
 </section>
 
-<!-- 3 -->
+<!-- 4 -->
 <section class="lysbilde">
   <h2>Slik ser det ut å bruke det</h2>
   <p>Før arkitekturen, her er hele bruken. Du installerer én pakke, importerer stilarket for det du bruker, og skriver vanlig HTML.</p>
@@ -469,14 +470,14 @@ defineFsField()
   </div>
 </section>
 
-<!-- 4 -->
+<!-- 5 -->
 <section class="lysbilde">
   <h2>Hvorfor plattformen først, og ikke React først</h2>
   <p>Spørsmålet er ikke hvilket rammeverk som er best i dag, men hva som fortsatt virker når appene rundt systemet er byttet ut.</p>
   <ul>
     <li><strong>Retningen går bare én vei.</strong> Av komponenter bygget på plattformen kan vi lage en React-pakke senere. Av et React-bibliotek kan ingen lage en HTML-versjon.</li>
     <li><strong>Porteføljen er aldri ett rammeverk.</strong> Gamle apper, nye apper, publiseringsløsninger som bare sender HTML, og systemer vi ikke eier selv. En CSS-klasse virker alle stedene.</li>
-    <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til kroker til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En klasse og et egendefinert element fra samme periode virker fortsatt uendret.</li>
+    <li><strong>Levetiden er ulik.</strong> React har gått fra klasser til hooks til serverkomponenter på ti år, og hvert skifte traff alle som bygde på det. En klasse og en web component fra samme periode virker fortsatt uendret.</li>
     <li><strong>Utseendet krever ingen kjøretid.</strong> En knapp, et merke og et kort er CSS. Gjør vi dem til React-komponenter, må rammeverket være lastet og kjøre før de ser riktige ut.</li>
   </ul>
   <div class="perspektiv">
@@ -485,25 +486,28 @@ defineFsField()
   </div>
 </section>
 
-<!-- 5 -->
+<!-- 6 -->
 <section class="lysbilde">
   <h2>Regelen alt annet følger av</h2>
   <p>En server som oppdaterer en side, sender den samme delen av den på nytt. Rammeverket sammenligner det som kom med det som står der, og fjerner alt som ikke sto i det serveren sendte. Under er de to linjene i Datastar som gjør det. De er ikke en feil, men selve mekanismen, og hele arkitekturen følger av dem.</p>
-  <p class="kodetittel">datastar.js, løkka som går gjennom attributtene ved hver oppdatering</p>
-  <pre><i>// r = elementet i siden nå, s = det serveren sendte</i>
+  <p class="kodetittel">datastar.js 1.0.4, løkka som går gjennom attributtene ved hver oppdatering</p>
+  <pre><i>// r = elementet i siden nå, s = det serveren sendte,</i>
+<i>// o = navnene i data-preserve-attr, lest av serverens node</i>
 for (let {name: l} of Array.from(<b>r</b>.attributes))
-  !<b>s</b>.hasAttribute(l) &amp;&amp; <b>r</b>.removeAttribute(l)
+  !<b>s</b>.hasAttribute(l) &amp;&amp; !<b>o</b>.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
 
 <i>// Står attributtet på elementet, men ikke i det serveren</i>
-<i>// sendte, så fjern det.</i></pre>
-  <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder et egendefinert element har lagt inn bli kastet. Derav regelen:</p>
+<i>// sendte, så fjern det. Med mindre malen har skrevet</i>
+<i>// navnet inn i en liste ingen kompilator ser på.</i></pre>
+  <p style="margin-block-start: 1rem;">Nødutgangen finnes, men den er en liste med attributtnavn hver mal må skrive av og holde oppdatert, i Go, i PHP, i Kotlin. Endrer vi hva komponenten setter, går malen stille i stykker. Derfor bygger vi ikke på den.</p>
+  <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendrer foreldrekomponenten på nytt, kan noder en web component har lagt inn bli kastet. Derav regelen:</p>
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
   </div>
   <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
 </section>
 
-<!-- 6 -->
+<!-- 7 -->
 <section class="lysbilde">
   <h2>De to lagene</h2>
   <p>Arbeidet er delt i to, og de overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
@@ -536,9 +540,14 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
+  <div class="boks" style="margin-block-start: 1rem;">
+    <h3>Ingen shadow DOM</h3>
+    <p style="margin: 0;">Web components forbindes med shadow DOM, og det er grunnen til at mange har prøvd dem og gitt opp. Et felt inne i en skyggerot hører ikke til skjemaet utenfor, så innsendingen tar det ikke med før du kobler det på igjen med <code>ElementInternals</code>, og testverktøy finner det ikke uten videre.</p>
+    <p style="margin-block-start: 0.6rem; margin-block-end: 0;">Fristil bruker vanlig DOM. Du skriver <code>&lt;input&gt;</code> selv, og komponenten legger seg rundt og kobler delene. Da er det heller ingenting å eksponere med <code>::part()</code>, for alt er ditt allerede.</p>
+  </div>
 </section>
 
-<!-- 7 -->
+<!-- 8 -->
 <section class="lysbilde">
   <h2>Tre kategorier, og ett spørsmål</h2>
   <p>Kategorien svarer ikke på hvem som skriver HTML-en. I en app med server-rendring skriver serveren all HTML uansett. Den svarer på <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
@@ -559,7 +568,7 @@ fs.input({ type: "email", state: "invalid" })
     </div>
     <div class="boks">
       <span class="merke merke-gul">frittstående</span>
-      <p>Tre elementer: meldingen, økttidsavbruddet og linja som sier fra når forbindelsen ryker. De bærer ingen verdi inn i en innsending, og innholdet lager de selv, når du kaller dem.</p>
+      <p>Tre elementer: meldingen, varselet om at økten løper ut, og linja som sier fra når forbindelsen ryker. De bærer ingen verdi inn i en innsending, og innholdet lager de selv, når du kaller dem.</p>
       <pre>toast.show("Lagret")</pre>
     </div>
   </div>
@@ -569,7 +578,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 8 -->
+<!-- 9 -->
 <section class="lysbilde">
   <h2>To veier til den samme kontrakten</h2>
   <p>Det avgjørende er ikke om siden bygges på en server. Det er om koden som lager markupen <strong>kan kalle en funksjon</strong>.</p>
@@ -606,7 +615,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 9 -->
+<!-- 10 -->
 <section class="lysbilde">
   <h2>Komponenten setter tilbake det oppdateringen tar</h2>
   <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og setter det tilbake i samme øyeblikk. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
@@ -627,10 +636,10 @@ fs.input({ type: "email", state: "invalid" })
     </div>
   </div>
   <p style="margin-block-start: 1rem;">Skillet som gjør det mulig: <strong>har komponenten regnet ut attributtet, kan den regne det ut på nytt. Har brukeren gjort noe, vet komponenten hva det var, for den var der da det skjedde.</strong></p>
-  <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake ved mikrooppgavesjekken, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
+  <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
-<!-- 10 -->
+<!-- 11 -->
 <section class="lysbilde">
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
   <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to er uenige.</p>
@@ -645,7 +654,7 @@ fs.input({ type: "email", state: "invalid" })
   <p class="dempet" style="margin-block-start: 1rem;">Eierskapet må leses av noden, ikke av hukommelsen. Husker komponenten hva den trodde sist, gir den samme markupen to ulike svar alt etter hva som skjedde før.</p>
 </section>
 
-<!-- 11 -->
+<!-- 12 -->
 <section class="lysbilde">
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
   <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
@@ -675,7 +684,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 12 -->
+<!-- 13 -->
 <section class="lysbilde">
   <h2>Tilgjengelighet skrevet én gang</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
@@ -690,7 +699,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p style="margin-block-start: 1rem;" class="dempet">Regelen bak: en sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett miljø. Lukk fella i typen, og legg en beskjed ved siden av.</p>
 </section>
 
-<!-- 13 -->
+<!-- 14 -->
 <section class="lysbilde">
   <h2>Din CSS vinner over vår</h2>
   <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et lag, og et usortert lag vinner over alle lag.</p>
@@ -718,7 +727,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 14 -->
+<!-- 15 -->
 <section class="lysbilde">
   <h2>Fargene holder kontrastkravet</h2>
   <p>Et team med egne merkefarger skal ikke måtte regne ut kontrast for hånd, og skal ikke kunne velge en kombinasjon som faller under kravet. Generatoren tar merkefargene og lager hele temaet, i lyst og mørkt.</p>
@@ -740,24 +749,7 @@ en skjermleser leser det opp uten navn.</pre>
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;" class="dempet">Verdiene over er Fristils egne. De ligger nær Skatteetatens, og neste lysbilde viser hva sammenligningen med dem gir.</p>
-</section>
-
-<!-- 15 -->
-<section class="lysbilde">
-  <h2>Hvorfor generatoren regner ut kontrasten for deg</h2>
-  <p>Paletten i Fristil er tilnærmet lik Skatteetatens, og det gjør den lett å etterprøve mot noe ekte: fargene deres står publisert i deres eget designsystem. Sammenligningen under er kjørt mot kilden deres.</p>
-  <p>Én verdi er ulik, og det er ikke en detalj. Advarselsfargen deres ligger rett under kravet til vanlig tekst, og det er nøyaktig slik en kontrastfeil ser ut: ingen ser den, for fargen er fin, og tallet er nesten riktig.</p>
-  <div class="tabellrull">
-  <table>
-    <thead><tr><th>Advarselstekst</th><th>Mot hvit</th><th>Mot egen advarselsflate</th></tr></thead>
-    <tbody>
-      <tr><td><code>#9f7509</code></td><td>4,18:1</td><td>3,63:1</td></tr>
-      <tr><td><code>#896508</code>, etter at generatoren har flyttet den</td><td>5,35:1</td><td>4,64:1</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <p style="margin-block-start: 1rem;">Kravet er 4,5:1. Generatoren regner hvert par, flytter lysheten på dem som ikke holder, og sier fra om hva den flyttet. Ingen skal måtte holde et regneark over fargepar ved siden av paletten sin.</p>
+  <p style="margin-block-start: 1rem;">Ingen skal måtte holde et regneark over fargepar ved siden av paletten sin.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Kan ikke velge en kombinasjon som faller under kravet, for den finnes ikke i temaet.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde lista over par oppdatert. Et par ingen har tenkt på, blir ikke kontrollert.</p>
@@ -765,6 +757,35 @@ en skjermleser leser det opp uten navn.</pre>
 </section>
 
 <!-- 16 -->
+<section class="lysbilde">
+  <h2>Terskelen følger rollen, ikke fargen</h2>
+  <p>Grunnen til at dette ikke lar seg gjøre for hånd er ikke at regnestykket er vanskelig. Det er at kravet endrer seg med hva fargen brukes til, og den samme verdien kan bestå og stryke i samme palett.</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Det fargen er</th><th>Krav</th><th>Hvor det står</th></tr></thead>
+    <tbody>
+      <tr><td>Brødtekst og ledetekster</td><td>4,5:1</td><td>WCAG 1.4.3</td></tr>
+      <tr><td>Stor tekst</td><td>3:1</td><td>WCAG 1.4.3</td></tr>
+      <tr><td>Ramme eller ikon som bærer betydning</td><td>3:1</td><td>WCAG 1.4.11</td></tr>
+      <tr><td>Avslått kontroll</td><td>unntatt</td><td>WCAG 1.4.3</td></tr>
+      <tr><td>To flater ved siden av hverandre</td><td>ingen krav</td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som har skrevet regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll i komponentene som bruker det, og da er kravet 3:1 og ikke 4,5:1. Navnet er ikke et bevis på bruken.</p>
+  <p class="kodetittel">src/testing/kontrast.ts</p>
+  <pre>export const PAR = [
+  ["brødtekst", "--semantic-page-foreground",
+               "--semantic-page-background"],
+  <i>// … ett par per rolle, og terskelen som hører til</i>
+]</pre>
+  <p style="margin-block-start: 1rem;">Derfor er ikke lista over par en detalj i testene, men selve løftet. Generatoren og komponentene leser den samme lista, så et krav kan ikke gjelde ett sted og ikke det andre.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken paragraf som gjelder for hvilken farge.</p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må vite det for hvert eneste par, og ta feil i full offentlighet når vi gjør det.</p>
+  </div>
+</section>
+
 <!-- 17 -->
 <section class="lysbilde">
   <h2>Hva nettleseren gjør for oss</h2>
@@ -798,19 +819,19 @@ en skjermleser leser det opp uten navn.</pre>
   <div class="rader tre">
     <div class="boks">
       <span class="tall">3</span>
-      <p>nettlesermotorer i hver testkjøring i byggeløypa: Chromium, Firefox og WebKit, med godt over tre tusen tester i hver. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
+      <p>nettlesermotorer i hver testkjøring i CI: Chromium, Firefox og WebKit, med godt over tre tusen tester i hver. Ikke pynt: premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker mellom motorene.</p>
     </div>
     <div class="boks">
       <h3>Venting på den siste motoren</h3>
       <p>Regelen er ikke at alle tre må ha funksjonen. Den er at en motor uten den skal gi noe som virker.</p>
       <pre>appearance: base-select
-<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
-<i>Firefox 150     ✗</i></pre>
+<i>Chromium 153 ✓  WebKit 26.6 ✓</i>
+<i>Firefox 155     ✗</i></pre>
       <p style="margin-block-start: 0.6rem;">Derfor er den valgfri, med <code>data-picker="styled"</code>. Uten støtte får du nettleserens egen nedtrekksliste, altså nøyaktig det feltet hadde før.</p>
     </div>
     <div class="boks">
       <h3>Navn som ikke kan døpes om</h3>
-      <p>Klassenavn, <code>data-*</code>, tokennavn og oppføringer i <code>exports</code> er alt sammen noe en konsument bygger på. Et brudd på dem krever nytt hovedtall, og står i versjonsloggen i den samme pull requesten som endringen.</p>
+      <p>Klassenavn, <code>data-*</code>, tokennavn og oppføringer i <code>exports</code> er alt sammen noe en konsument bygger på. Et brudd på dem krever ny hovedversjon, og står i versjonsloggen i den samme pull requesten som endringen.</p>
     </div>
   </div>
 </section>
@@ -832,8 +853,8 @@ en skjermleser leser det opp uten navn.</pre>
   <p style="margin-block-start: 1rem;">Det er ikke en kritikk: et React-basert system er et rimelig valg når alt er React. Poenget er hva det koster den som ikke er det, og den dagen noe skal byttes.</p>
   <div class="rader to">
     <div class="boks">
-      <span class="tall">8 361</span>
-      <p>byte for en app som bare bruker <code>fs.button()</code>. Resten av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes.</p>
+      <span class="tall">11,7 kB</span>
+      <p>minifisert for en app som bare bruker <code>fs.button()</code>, mot 50,5 kB for hele hovedinngangen. Over tre firedeler av pakken følger ikke med, fordi <code>sideEffects</code> sier hva som kan kastes. Gzippet er det 4,1 kB.</p>
     </div>
     <div class="boks">
       <span class="tall">0</span>
@@ -848,10 +869,10 @@ en skjermleser leser det opp uten navn.</pre>
   <h2>Demoen som viser at det stemmer</h2>
   <p><strong>Førstelinja</strong> er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som sitter i en annen utgave.</p>
   <p>Den er også en stresstest av arkitekturen. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server oppdaterer siden under den, og det er de møtene demoen setter opp.</p>
-  <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over ledningen, lest av trafikken</p>
+  <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over nettverket, lest av trafikken</p>
   <div class="tabellrull">
   <table>
-    <thead><tr><th>Utgave</th><th>Over ledningen</th><th>Hvor tegningen skjer</th></tr></thead>
+    <thead><tr><th>Utgave</th><th>Over nettverket</th><th>Hvor det rendres</th></tr></thead>
     <tbody>
       <tr><td>Datastar</td><td><code>SSE · datastar-patch-elements · HTML · 16 kB</code></td><td>på serveren</td></tr>
       <tr><td>TanStack Start</td><td><code>SSE · tilstand · JSON · 2,4 kB</code></td><td>i nettleseren</td></tr>
