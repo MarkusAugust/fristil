@@ -514,7 +514,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · Versjon 0.3.0 · 25. september 2026</span>
+  <span class="merke merke-blaa">Designsystemarkitektur · Fristil 0.14.0 · 25. september 2026</span>
   <div class="tittel-topp">
     <div class="logo">
       <svg class="logomerke" width="80" height="80" viewBox="0 0 100 100" fill="none" aria-hidden="true" focusable="false">
@@ -662,7 +662,6 @@ defineFsField()
       <li>Hva nettleseren gjør for oss</li>
       <li>Prisen for å bygge på nettleseren selv</li>
       <li>Hva det koster appen din</li>
-      <li>Hva én knapp legger i node_modules</li>
       <li>Hva én knapp legger i <code>node_modules</code></li>
   </ol>
 </section>
@@ -759,7 +758,7 @@ defineFsField()
   <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>null avhengigheter</strong>, og ingenting i den gjør noe ved import alene. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med server-rendring.</p>
 </section>
 
-<!-- 9b · Avhengighetsgrafen -->
+<!-- 10 · Avhengighetsgrafen -->
 <section class="lysbilde avh">
 <style>
 /*
@@ -834,7 +833,7 @@ defineFsField()
 .avh-tall { margin-inline-start: auto; display: flex; gap: 1.1rem; font-size: 0.82rem; color: var(--tekst-dempet); white-space: nowrap; }
 .avh-tall b { font-size: 1.05rem; font-weight: 700; color: var(--tekst); margin-inline-end: 0.25rem; }
 
-/* Grafflaten: alle fire ligger oppå hverandre, så høyden er den høyestes. */
+/* Grafflaten: alle fem ligger oppå hverandre, så høyden er den høyestes. */
 .avh-scene { position: relative; }
 .avh-graf { display: grid; }
 .avh-graf > svg { grid-area: 1 / 1; visibility: hidden; }
@@ -1066,7 +1065,7 @@ defineFsField()
       tall.append(s)
     }
     knapp.append(tall)
-    knapp.setAttribute("aria-label", `${sys.navn}: ${sys.nye} ${sys.nye === 1 ? "ny pakke" : "nye pakker"}, ${sys.e.length} ${sys.e.length === 1 ? "kobling" : "koblinger"}, ${mb(sys.sum)} utpakket${sys.knapp ? `, ${kb(sys.knapp)} CSS til knappen` : ""}`)
+    knapp.setAttribute("aria-label", `${sys.navn}, ${sys.kommando}: ${sys.nye} ${sys.nye === 1 ? "ny pakke" : "nye pakker"}, ${sys.e.length} ${sys.e.length === 1 ? "kobling" : "koblinger"}, ${mb(sys.sum)} utpakket${sys.knapp ? `, ${kb(sys.knapp)} CSS til knappen` : ""}`)
     knapp.addEventListener("click", () => velg(nr))
     liste.append(knapp)
 
@@ -1192,18 +1191,18 @@ defineFsField()
     tabeller.append(rull)
   })
 
-  // Piltaster opp og ned bytter rad når en rad har fokus. Venstre og høyre
-  // blar i presentasjonen, og røres ikke.
+  // Piltaster opp og ned bytter rad når en rad har fokus, og Home og End går
+  // til første og siste, som fanemønsteret sier. Venstre og høyre blar i
+  // presentasjonen, og røres ikke.
   liste.addEventListener("keydown", (e) => {
     const nr = faner.findIndex((f) => f.knapp === document.activeElement)
     if (nr < 0) return
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault()
-      e.stopPropagation()
-      const neste = (nr + (e.key === "ArrowDown" ? 1 : faner.length - 1)) % faner.length
-      velg(neste)
-      faner[neste].knapp.focus()
-    }
+    const til = { ArrowDown: (nr + 1) % faner.length, ArrowUp: (nr + faner.length - 1) % faner.length, Home: 0, End: faner.length - 1 }[e.key]
+    if (til === undefined) return
+    e.preventDefault()
+    e.stopPropagation()
+    velg(til)
+    faner[til].knapp.focus()
   })
   velg(0)
 
@@ -1220,7 +1219,7 @@ defineFsField()
 </section>
 
 
-<!-- 10 -->
+<!-- 11 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 2 av 7</span>
   <div class="kapittel-topp">
@@ -1240,7 +1239,7 @@ defineFsField()
   </ol>
 </section>
 
-<!-- 11 -->
+<!-- 12 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>Hva server-rendring krever av en komponent</h2>
@@ -1361,7 +1360,7 @@ defineFsField()
   </div>
   <div class="morf-scene">
   <pre><i>// r = elementet i siden nå, s = det serveren sendte,</i>
-<i>// o = navnene i data-preserve-attr, lest av serverens node</i>
+<i>// o = navnene i data-preserve-attr. Like før er s kopiert inn i r.</i>
 for (let {name: l} of Array.from(<b>r</b>.attributes))
   !<b>s</b>.hasAttribute(l) &amp;&amp; !<b>o</b>.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
 
@@ -1601,7 +1600,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
 </section>
 
-<!-- 12 -->
+<!-- 13 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>De to lagene</h2>
@@ -1611,14 +1610,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     <thead><tr><th>Lag</th><th>Innhold</th><th>Hvem produserer det</th></tr></thead>
     <tbody>
       <tr><td><code>fs</code>-byggefunksjonene</td><td>Klasser, <code>data-*</code>, tilgjengelighetskoblingen</td><td>Serveren, i hvilket som helst språk</td></tr>
-      <tr><td>Web-komponentene</td><td>Tastatur, fokus, posisjonering</td><td>Nettleseren, etter at HTML-en står der</td></tr>
+      <tr><td>Web components</td><td>Tastatur, fokus, posisjonering</td><td>Nettleseren, etter at HTML-en står der</td></tr>
     </tbody>
   </table>
   </div>
   <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en shadow root står utenfor skjemaet rundt, og du må melde verdien inn fra verten med <code>ElementInternals</code> for å få den med i innsendingen. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
-<!-- 13 -->
+<!-- 14 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>Tre kategorier, og ett spørsmål</h2>
@@ -1650,7 +1649,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 14 -->
+<!-- 15 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 2 av 7 · Serveren eier markupen</p>
   <h2>To veier til den samme kontrakten</h2>
@@ -1688,7 +1687,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 15 -->
+<!-- 16 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 3 av 7</span>
   <div class="kapittel-topp">
@@ -1706,7 +1705,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </ol>
 </section>
 
-<!-- 16 -->
+<!-- 17 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 3 av 7 · Tilgjengeligheten skrives ett sted</p>
   <h2>Én funksjon, to innganger</h2>
@@ -1722,7 +1721,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;" class="dempet">En sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett av dem. Lukk fella i typen framfor å gjette.</p>
 </section>
 
-<!-- 17 -->
+<!-- 18 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 4 av 7</span>
   <div class="kapittel-topp">
@@ -1741,7 +1740,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </ol>
 </section>
 
-<!-- 18 -->
+<!-- 19 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Når serveren river bort det komponenten satte</h2>
@@ -1766,7 +1765,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>Det flimrer ikke, og det er testet. Oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren rekker ikke å tegne imellom. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
@@ -1782,7 +1781,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="dempet" style="margin-block-start: 1rem;">Uten det gir den samme markupen to ulike svar, alt etter hva verten har vært innom før.</p>
 </section>
 
-<!-- 20 -->
+<!-- 21 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
@@ -1813,7 +1812,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 21 -->
+<!-- 22 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 5 av 7</span>
   <div class="kapittel-topp">
@@ -1832,7 +1831,7 @@ en skjermleser leser det opp uten navn.</pre>
   </ol>
 </section>
 
-<!-- 22 -->
+<!-- 23 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 5 av 7 · Typesikkerhet uten rammeverk</p>
   <h2>Ett valgobjekt inn, attributter ut</h2>
@@ -1864,7 +1863,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 23 -->
+<!-- 24 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 6 av 7</span>
   <div class="kapittel-topp">
@@ -1882,7 +1881,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 24 -->
+<!-- 25 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Laget som gjør det mulig</h2>
@@ -1911,7 +1910,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 25 -->
+<!-- 26 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Fargene holder kontrastkravet</h2>
@@ -1941,7 +1940,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 26 -->
+<!-- 27 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Terskelen følger rollen, ikke fargen</h2>
@@ -1966,7 +1965,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 27 -->
+<!-- 28 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Beslutning 7 av 7</span>
   <div class="kapittel-topp">
@@ -1983,7 +1982,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 28 -->
+<!-- 29 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Beslutning 7 av 7 · Du kan ta over koden</p>
   <h2>Når systemet ikke strekker til</h2>
@@ -2000,7 +1999,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 29 -->
+<!-- 30 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det stemmer</h2>
   <p><strong>Førstelinja</strong> er det samme spillet i tre utgaver: Kotlin med Datastar, React med TanStack Start, og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som sitter i en annen utgave.</p>
@@ -2023,7 +2022,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 30 -->
+<!-- 31 -->
 <section class="lysbilde">
   <h2>Hva vi sitter igjen med</h2>
   <p class="ingress">Ett designsystem uten rammeverk i bunnen, som virker i det vi har i dag og i det vi bytter til.</p>

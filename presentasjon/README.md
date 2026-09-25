@@ -33,8 +33,10 @@ det er godt for.
 
 De er delt i syv kapitler, ett per arkitektonisk beslutning. Hvert kapittel
 åpner med en forside som sier beslutningen i én setning, og som bærer et ikon
-tegnet i Windows 3.1-stil. Ikonene ligger på en grå plate med tidens hevede
-kant, fordi den svarte strektegningen i dem ellers ville forsvunnet mot den mørke flaten.
+tegnet i presentasjonens egen palett: en glassflate med lys kant og et
+glanslys på toppen, og et motiv som er plattformnært framfor en
+skrivebordsmetafor, som et nettleservindu, et DOM-tre eller en pakke med vei
+ut. Et eget lysbilde før kapitlene viser alle syv med hvert sitt ikon.
 
 Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
 linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
@@ -55,7 +57,8 @@ Avhengighetsgrafen og morfingen er de to lysbildene med eget skript. Regelen
 for begge er at det som vises skal være sant fordi det er regnet ut, ikke
 fordi det er skrevet inn. Grafen tegnes fra et datasett lest ut av
 `package-lock.json`, med dato, og kan tegnes på nytt fra en ny lesning.
-Morfingen kjører Datastars egne to linjer på to virkelige elementer og
+Morfingen kjører Datastars egen løkke, med kopieringen like før, på to
+virkelige elementer og
 tegner brikkene fra `r.attributes` etter hvert steg, og linja med hva
 skjermleseren sier regnes ut fra det samme elementet. Fjern
 `!o.includes(l)` fra løkka, og utgangen med `data-preserve-attr` slutter å
@@ -68,7 +71,8 @@ dem sier noe på 375 piksler.
 
 ## Slik blar du
 
-Piltaster, mellomrom eller Enter. `Home` og `End` går til første og siste.
+Piltaster, `PageUp` og `PageDown`, mellomrom eller Enter. `Home` og `End` går
+til første og siste.
 Adressen får `#lysbilde-6`, så en lenke peker på ett bestemt lysbilde. Det
 finnes også to knapper som dukker opp når musa er over.
 
