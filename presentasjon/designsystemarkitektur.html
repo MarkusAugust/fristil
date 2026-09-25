@@ -601,7 +601,7 @@ defineFsField()
 <section class="lysbilde">
   <h2>Syv arkitektoniske beslutninger</h2>
   <p>Resten av presentasjonen tar én beslutning om gangen, med begrunnelsen og hva den fører til. De henger sammen: den første gjør de andre mulige, og den siste er garantien for at du kan gå fra alt sammen hvis du vil, når du vil.</p>
-  <ol class="beslutninger">
+  <ol class="beslutninger" role="list">
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goplattform)"/>
       <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
       <path d="M14 27 H58" stroke="#9ccff2" stroke-width="2.4"/>
@@ -1318,7 +1318,7 @@ defineFsField()
 .morf-opplest { margin: 0 0 0 auto; font-size: 0.78rem; color: var(--tekst-dempet); }
 .morf-opplest b { color: var(--tekst); font-weight: 400; }
 
-.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.28rem; min-block-size: 4rem; align-content: flex-start; }
+.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.28rem; min-block-size: 3.75rem; align-content: flex-start; }
 .morf-brikke {
   font-family: var(--mono);
   font-size: 0.7rem;
@@ -1337,7 +1337,7 @@ defineFsField()
 @keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
 
 /* Trafikken: det som går til serveren, og det som kommer tilbake. */
-.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.32; min-block-size: 4rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
+.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.25; min-block-size: 3.75rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
 .morf-linje { display: block; }
 .morf-linje i { color: var(--tekst-dempet); font-style: normal; }
 .morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
@@ -2114,9 +2114,11 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-window.addEventListener("hashchange", () => vis(fraAdressen(), false))
+// Adressen rettes etter klemmingen, så #lysbilde-99 blir #lysbilde-31.
+// replaceState utløser ikke hashchange, så det gir ingen sløyfe.
+window.addEventListener("hashchange", () => vis(fraAdressen()))
 
-vis(fraAdressen(), false)
+vis(fraAdressen())
 </script>
 </body>
 </html>

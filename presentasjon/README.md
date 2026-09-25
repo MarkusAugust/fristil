@@ -55,12 +55,11 @@ presentasjonen.
 
 Avhengighetsgrafen og morfingen er de to lysbildene med eget skript. Regelen
 for begge er at det som vises skal være sant fordi det er regnet ut, ikke
-fordi det er skrevet inn. Grafen tegnes fra et datasett lest ut av
-`package-lock.json`, med dato, og kan tegnes på nytt fra en ny lesning.
-Morfingen kjører Datastars egen løkke, med kopieringen like før, på to
-virkelige elementer og
-tegner brikkene fra `r.attributes` etter hvert steg, og linja med hva
-skjermleseren sier regnes ut fra det samme elementet. Fjern
+fordi det er skrevet inn. Grafen tegnes fra et datasett lest ut av `package-
+lock.json`, med dato, og kan tegnes på nytt fra en ny lesning. Morfingen
+kjører Datastars egen løkke, med kopieringen like før, på to virkelige
+elementer og tegner brikkene fra `r.attributes` etter hvert steg, og linja med
+hva skjermleseren sier regnes ut fra det samme elementet. Fjern
 `!o.includes(l)` fra løkka, og utgangen med `data-preserve-attr` slutter å
 virke, i animasjonen som i Datastar.
 
@@ -85,8 +84,10 @@ ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
 Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de trettien
 lysbildene kan dras sidelengs, og på 1440 får alle plass uten å rulle. På 1280
-ruller avhengighetsgrafen 73 piksler, resten får plass. Høydesjekken må se på lysbildets **egen** boks og ikke bare på om siden
-ruller: et lysbilde kan vokse forbi kortet uten at siden merker det. To ting måtte til, og begge er lette å gjøre feil igjen: et
-rutenettfelt trenger `min-inline-size: 0`, ellers blir det like bredt som den
-lengste kodelinja, og selve dekket må være en vanlig blokk og ikke et
-rutenett, ellers blir kolonnen like bred som innholdet sitt.
+ruller avhengighetsgrafen 73 piksler, resten får plass, også morfingen med
+panelet vist. Høydesjekken må se på lysbildets **egen** boks og ikke bare på
+om siden ruller: et lysbilde kan vokse forbi kortet uten at siden merker det.
+To ting måtte til, og begge er lette å gjøre feil igjen: et rutenettfelt
+trenger `min-inline-size: 0`, ellers blir det like bredt som den lengste
+kodelinja, og selve dekket må være en vanlig blokk og ikke et rutenett, ellers
+blir kolonnen like bred som innholdet sitt.
