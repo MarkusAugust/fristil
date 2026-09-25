@@ -28,12 +28,29 @@ type Brudd = {
   elementer: string[]
 }
 
+/*
+ * Hver bygde HTML-fil, ikke bare de som heter `index.html`.
+ *
+ * Globben tok bare `index.html`, og det gjorde vakten nederst blind: den
+ * sammenlignet antall besøkte sidevisninger mot antall treff fra den samme
+ * globben, så alt globben ikke fant var usynlig for begge. `dist/404.html`
+ * ble derfor aldri besøkt av noen av sjekkene, og begge meldte grønt.
+ *
+ * Nå tas hver `.html`-fil, så køen er hele settet av bygde sider, og
+ * spørsmålet vakten stiller blir det som betyr noe: ble hver side som
+ * ligger i `dist` besøkt?
+ */
 function finnSider(): string[] {
   const sider: string[] = []
-  const glob = new Bun.Glob("**/index.html")
-  for (const treff of glob.scanSync(DIST)) {
-    const mappe = relative(".", treff).replace(/index\.html$/, "")
-    sider.push(`/${mappe}`)
+  for (const treff of new Bun.Glob("**/*.html").scanSync(DIST)) {
+    const sti = relative(".", treff)
+    sider.push(
+      sti === "index.html"
+        ? "/"
+        : sti.endsWith("/index.html")
+          ? `/${sti.slice(0, -"index.html".length)}`
+          : `/${sti}`,
+    )
   }
   return sider.sort()
 }
@@ -79,7 +96,6 @@ const axeKilde = readFileSync(
 
 const sider = finnSider()
 const nettleser = await chromium.launch()
-const side = await (await nettleser.newContext()).newPage()
 const brudd: Brudd[] = []
 
 /*
@@ -95,18 +111,78 @@ const brudd: Brudd[] = []
  * bygde side, mønstersidene og forsiden medregnet.
  */
 const advarsler = new Set<string>()
-let gjeldende = ""
 
-side.on("console", (melding) => {
-  const type = melding.type()
-  if (type !== "warning" && type !== "error") return
-  advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
-})
+/*
+ * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ *
+ * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
+ * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
+ * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
+ * noe er verre enn ingen vaktpost.
+ */
+function lesAntall(navn: string, standard: number): number {
+  const raa = Bun.env[navn]
+  if (raa === undefined) return standard
+  const tall = Number(raa)
+  if (!Number.isInteger(tall) || tall < 1) {
+    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+    process.exit(2)
+  }
+  return tall
+}
 
-for (const url of sider) {
-  for (const tema of TEMAER) {
-    // Merkelappen settes her og ikke i den ytre løkka, slik at en melding
-    // peker på riktig side og riktig tema. Konsollhendelser kommer asynkront.
+/*
+ * Sidene deles på flere faner, med én kontekst per tema.
+ *
+ * Kontekstene er delt etter tema og ikke etter arbeider, og det er det som
+ * avgjør om omskrivingen lønner seg. To ting trekker i hver sin retning:
+ *
+ * En kontekst har sin egen hurtigbuffer. Gir hver arbeider sin egen, tolkes
+ * CSS-en og skriptene på nytt for hver eneste side, og prosessortiden går fra
+ * 64 til 202 sekunder. Da hjalp det ikke at fire faner jobbet samtidig:
+ * sjekken ble tregere enn med én. Fanene må altså dele en kontekst.
+ *
+ * Men Starlight skriver temaet til `localStorage`, som deles innenfor en
+ * kontekst. Lastet to faner i samme kontekst hvert sitt tema samtidig, kunne
+ * den ene skrive over den andre. Med én kontekst per tema ser en kontekst
+ * aldri mer enn ett tema, og hasarden finnes ikke. Det er også tettere enn
+ * utgaven med én fane, som lot lagringen veksle mellom lyst og mørkt tema
+ * gjennom hele kjøringen.
+ *
+ * To faner per tema gir fire til sammen, altså det CI-maskinen har av
+ * kjerner. Denne sjekken er prosessorbundet så snart den går parallelt, siden
+ * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
+ * skiller den fra `sjekk-mobil.ts`, som bare venter og derfor får åtte.
+ */
+const FANER_PER_TEMA = lesAntall("FANER_PER_TEMA", 2)
+
+// Én kø per tema, slik at en arbeider bare henter jobber for sitt eget tema.
+const koer = new Map(TEMAER.map((tema) => [tema, { neste: 0 }]))
+let sjekket = 0
+
+async function sjekkSider(
+  kontekst: Awaited<ReturnType<typeof nettleser.newContext>>,
+  tema: (typeof TEMAER)[number],
+) {
+  const koe = koer.get(tema) as { neste: number }
+  const side = await kontekst.newPage()
+
+  // Etiketten er lokal for arbeideren, ikke felles for skriptet. Med flere
+  // faner ville en delt variabel gitt advarselen navnet til den siden som
+  // tilfeldigvis ble lastet sist. Konsollhendelser kommer asynkront.
+  let gjeldende = ""
+
+  side.on("console", (melding) => {
+    const type = melding.type()
+    if (type !== "warning" && type !== "error") return
+    advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
+  })
+
+  while (true) {
+    // `koe.neste++` er trygt uten lås: JavaScript kjører én ting om gangen,
+    // og her er det ingen `await` mellom avlesningen og økningen.
+    const url = sider[koe.neste++]
+    if (url === undefined) break
     gjeldende = `${url} [${tema}]`
 
     /*
@@ -121,9 +197,23 @@ for (const url of sider) {
      */
     await side.emulateMedia({ colorScheme: tema })
 
-    await side.goto(`http://localhost:${PORT}${url}`, {
+    /*
+     * Statuskoden må leses. `goto` kaster ikke på 404.
+     *
+     * Tjeneren over svarer «Ikke funnet» med status 404 for en sti den ikke
+     * har. Uten denne sjekken ville en side som ikke ble servert telt som
+     * besøkt: axe finner ingenting på en linje med ren tekst, og
+     * mobilsjekken finner ikke noe som stikker utenfor. Vakten nederst ville
+     * heller ikke fanget det, siden siden faktisk var innom køen.
+     */
+    const svar = await side.goto(`http://localhost:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
+    if (!svar?.ok()) {
+      throw new Error(
+        `${url} svarte ${svar?.status() ?? "ingenting"}. Sjekken ville ellers meldt siden som bestått uten å ha sett den.`,
+      )
+    }
     /*
      * Overgangene slås av FØR temaet settes, ikke etter.
      *
@@ -203,13 +293,62 @@ for (const url of sider) {
     }, WCAG_AA)
 
     for (const f of funn) brudd.push({ side: url, tema, ...f })
+
+    // Sist i kroppen, ikke først. Telleren skal si hvor mange sidevisninger
+    // som ble sjekket, ikke hvor mange som ble tatt av køen: et `continue`
+    // lagt inn senere ville ellers hoppet over arbeidet uten at vakten
+    // merket det.
+    sjekket++
   }
+
+  await side.close()
 }
+
+await Promise.all(
+  TEMAER.map(async (tema) => {
+    const kontekst = await nettleser.newContext()
+    await Promise.all(
+      Array.from({ length: FANER_PER_TEMA }, () => sjekkSider(kontekst, tema)),
+    )
+    await kontekst.close()
+  }),
+)
 
 await nettleser.close()
 tjener.stop()
 
-console.log(`Sjekket ${sider.length} sider i ${TEMAER.length} temaer.`)
+/*
+ * Ble hver side faktisk besøkt, i begge temaer?
+ *
+ * Spørsmålet som betyr noe er om arbeidet ble gjort. `lesAntall` validerer
+ * bare hvor mange arbeidere som startes, og sier ingenting om køen de skulle
+ * tømme, så den lukker ikke dette.
+ *
+ * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
+ * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
+ * kjøring som melder grønt uten å ha åpnet en side.
+ *
+ * Utfallet avgjøres nederst, sammen med de andre. Avsluttet vi her, ville en
+ * ufullstendig kjøring skjult tilgjengelighetsrapporten den faktisk rakk å
+ * lage, og det er den samme feilen som er beskrevet rett under.
+ */
+const forventet = sider.length * TEMAER.length
+const ufullstendig = forventet === 0 || sjekket !== forventet
+
+/*
+ * Rapporten sorteres, fordi arbeiderne blir ferdige i tilfeldig rekkefølge.
+ *
+ * Uten dette ville to kjøringer av den samme feilen gitt ulik utskrift, og en
+ * rapport som stokker om på seg selv er vond å sammenligne mellom to kjøringer.
+ */
+brudd.sort(
+  (a, b) =>
+    a.side.localeCompare(b.side) ||
+    a.tema.localeCompare(b.tema) ||
+    a.regel.localeCompare(b.regel),
+)
+
+console.log(`Sjekket ${sjekket} sidevisninger over ${TEMAER.length} temaer.`)
 
 /*
  * Begge rapportene skrives ut, og så avgjøres utfallet.
@@ -231,7 +370,16 @@ if (brudd.length === 0) {
 
 if (advarsler.size > 0) {
   console.log(`\n✗ ${advarsler.size} meldinger i konsollen:`)
-  for (const a of advarsler) console.log(`  ${a}`)
+  for (const a of [...advarsler].sort()) console.log(`  ${a}`)
+}
+
+if (ufullstendig) {
+  console.error(
+    forventet === 0
+      ? `\n✗ Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
+      : `\n✗ Sjekket ${sjekket} av ${forventet} sidevisninger. Sjekken er ikke til å stole på.`,
+  )
+  process.exit(2)
 }
 
 process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)
