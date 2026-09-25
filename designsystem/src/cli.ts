@@ -244,7 +244,7 @@ const HJELP = `fristil <kommando>
     --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
     --flate-hjorner=<mål> Hjørner på kort, dialog, sprettoppvindu, varsel,
                           trekkspill, feiloppsummering, filopplasting,
-                          økttidsavbrudd, forslagsliste, melding og hjelpeboble
+                          økttidsvarsel, forslagsliste, melding og hjelpeboble
     --knapp-ramme=<mål>   Rammetykkelsen på knappen
     --knapp-vekt=<vekt>   Vekten på knappeteksten
     --ut=<fil>            Skriv til fil i stedet for til utdata

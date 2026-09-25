@@ -71,7 +71,7 @@ export type ThemeShape = {
   fieldRadius?: string
   /**
    * Hjørner på kort, dialog, sprettoppvindu, varsel, trekkspill,
-   * feiloppsummering, filopplasting, økttidsavbrudd, forslagslista,
+   * feiloppsummering, filopplasting, økttidsvarsel, forslagslista,
    * meldingen og hjelpeboblen.
    */
   surfaceRadius?: string

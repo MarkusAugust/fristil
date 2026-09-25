@@ -2,7 +2,7 @@
 
 Versjonsnumrene følger [semantisk versjonering](https://semver.org/lang/no/).
 Det offentlige API-et er større enn funksjonene pakken eksporterer, så disse
-regnes som brytende endringer og krever et nytt hovedtall:
+regnes som brytende endringer og krever en ny hovedversjon:
 
 - et klassenavn, et `data-*`-attributt eller en lovlig verdi som forsvinner
   eller endrer betydning,
