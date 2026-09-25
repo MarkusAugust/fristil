@@ -184,7 +184,16 @@ a { color: var(--azure-30); }
  * marineblå forsvinner mot lysbildets bakgrunn. Platen gjør dem lesbare og
  * er samtidig periodekorrekt.
  */
-.lysbilde.kapittel { justify-content: center; }
+.lysbilde.kapittel[data-vist] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 860px) {
+  /* Under brekkpunktet er lysbildet vanlig tekst i flyten, ikke et kort å
+     sentrere noe inni. */
+  .lysbilde.kapittel[data-vist] { display: block; }
+}
 .kapittel-topp {
   display: flex;
   align-items: center;
@@ -483,7 +492,7 @@ defineFsField()
 <b>&lt;/fs-field&gt;</b></pre>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode: en knapp, et merke og et kort er bare klasser, og ser riktige ut med én gang. Til høyre står de samme elementene, med ett element rundt. Det er <code>&lt;fs-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser feltet med både ledetekst og feilmelding.</p>
+  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode. Ledeteksten, feltet og feilmeldingen er vanlige HTML-elementer med klasser fra systemet, og de ser riktige ut med én gang. Til høyre står nøyaktig de samme elementene, med ett element rundt. Det er <code>&lt;fs-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser feltet med både ledetekst og feilmelding.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Kan begynne med tokens og noen knapper, og ta resten når de trenger det.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde denne enkelheten, også når en komponent blir vanskelig innvendig.</p>
@@ -800,7 +809,7 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Skriver du <code>fs.button({ variant: "sekundr" })</code>, får du rød strek i editoren før du lagrer, i JSX, i Astro og i ren JavaScript. <code>src/react.ts</code> er den samme <code>fs</code> med <code>className</code> og <code>htmlFor</code>, slik at React ikke advarer i konsollen.</p>
+  <p style="margin-block-start: 1rem;">Skriver du <code>fs.button({ variant: "sekundr" })</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro, og i JavaScript med typesjekking slått på. Uten typesjekking finnes svaret ved kjøring i stedet, som <code>fs.button.isVariant("sekundr")</code>. <code>src/react.ts</code> er den samme <code>fs</code> med <code>className</code> og <code>htmlFor</code>, slik at React ikke advarer i konsollen.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Får typene uten å installere et rammeverk, og uten at vi har skrevet en komponent for dem.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må holde lovlige verdier, typene og CSS-en i takt. En verdi som ikke gjør noe er verre enn ingen verdi.</p>
