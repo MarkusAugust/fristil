@@ -409,7 +409,7 @@ tr:last-child td { border-block-end: none; }
 <body>
 <div class="dekk" id="dekk">
 
-<!-- 2 -->
+<!-- 1 -->
 <section class="lysbilde">
   <span class="merke merke-blaa">Designsystemarkitektur · september 2026</span>
   <h1>Rammeverksuavhengig<br>designsystem</h1>
@@ -422,7 +422,7 @@ tr:last-child td { border-block-end: none; }
   <p class="dempet" style="margin-block-start: 1rem;">Fristil, bygget og publisert på <a href="https://fristil.netlify.app/" target="_blank" rel="noreferrer">fristil.netlify.app</a> og på npm som <code>@fristil/designsystem</code>.</p>
 </section>
 
-<!-- 3 -->
+<!-- 2 -->
 <section class="lysbilde">
   <h2>Kort fortalt</h2>
   <p>Rammeverk kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang noe skifter. Derfor er dette bygget på det nettleseren allerede forstår.</p>
@@ -436,7 +436,7 @@ tr:last-child td { border-block-end: none; }
   <p class="dempet">Nederst på lysbildene står to linjer: hva punktet betyr for teamene som bruker systemet, og hva det koster den som forvalter det.</p>
 </section>
 
-<!-- 4 -->
+<!-- 3 -->
 <section class="lysbilde">
   <h2>Slik ser det ut å bruke det</h2>
   <p>Før arkitekturen, her er hele bruken. Du installerer én pakke, importerer stilarket for det du bruker, og skriver vanlig HTML.</p>
@@ -470,7 +470,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 5 -->
+<!-- 4 -->
 <section class="lysbilde">
   <h2>Hvorfor plattformen først, og ikke React først</h2>
   <p>Spørsmålet er ikke hvilket rammeverk som er best i dag, men hva som fortsatt virker når appene rundt systemet er byttet ut.</p>
@@ -486,7 +486,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 6 -->
+<!-- 5 -->
 <section class="lysbilde">
   <h2>Regelen alt annet følger av</h2>
   <p>En server som oppdaterer en side, sender den samme delen av den på nytt. Rammeverket sammenligner det som kom med det som står der, og fjerner alt som ikke sto i det serveren sendte. Under er de to linjene i Datastar som gjør det. De er ikke en feil, men selve mekanismen, og hele arkitekturen følger av dem.</p>
@@ -507,7 +507,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
 </section>
 
-<!-- 7 -->
+<!-- 6 -->
 <section class="lysbilde">
   <h2>De to lagene</h2>
   <p>Arbeidet er delt i to, og de overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
@@ -540,14 +540,10 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <div class="boks" style="margin-block-start: 1rem;">
-    <h3>Ingen shadow DOM</h3>
-    <p style="margin: 0;">Web components forbindes med shadow DOM, og det er grunnen til at mange har prøvd dem og gitt opp. Et felt inne i en skyggerot hører ikke til skjemaet utenfor, så innsendingen tar det ikke med før du kobler det på igjen med <code>ElementInternals</code>, og testverktøy finner det ikke uten videre.</p>
-    <p style="margin-block-start: 0.6rem; margin-block-end: 0;">Fristil bruker vanlig DOM. Du skriver <code>&lt;input&gt;</code> selv, og komponenten legger seg rundt og kobler delene. Da er det heller ingenting å eksponere med <code>::part()</code>, for alt er ditt allerede.</p>
-  </div>
+  <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Det er grunnen til at mange har prøvd web components og gitt opp: et felt i en skyggerot hører ikke til skjemaet utenfor før du kobler det på igjen med <code>ElementInternals</code>. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og komponenten legger seg rundt.</p>
 </section>
 
-<!-- 8 -->
+<!-- 7 -->
 <section class="lysbilde">
   <h2>Tre kategorier, og ett spørsmål</h2>
   <p>Kategorien svarer ikke på hvem som skriver HTML-en. I en app med server-rendring skriver serveren all HTML uansett. Den svarer på <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
@@ -578,7 +574,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 9 -->
+<!-- 8 -->
 <section class="lysbilde">
   <h2>To veier til den samme kontrakten</h2>
   <p>Det avgjørende er ikke om siden bygges på en server. Det er om koden som lager markupen <strong>kan kalle en funksjon</strong>.</p>
@@ -615,7 +611,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 10 -->
+<!-- 9 -->
 <section class="lysbilde">
   <h2>Komponenten setter tilbake det oppdateringen tar</h2>
   <p>Oppdateringen fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut, og setter det tilbake i samme øyeblikk. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
@@ -639,7 +635,7 @@ fs.input({ type: "email", state: "invalid" })
   <p>Det flimrer ikke, og det er testet: oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren tegner først etter den. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
 </section>
 
-<!-- 11 -->
+<!-- 10 -->
 <section class="lysbilde">
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
   <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to er uenige.</p>
@@ -654,7 +650,7 @@ fs.input({ type: "email", state: "invalid" })
   <p class="dempet" style="margin-block-start: 1rem;">Eierskapet må leses av noden, ikke av hukommelsen. Husker komponenten hva den trodde sist, gir den samme markupen to ulike svar alt etter hva som skjedde før.</p>
 </section>
 
-<!-- 12 -->
+<!-- 11 -->
 <section class="lysbilde">
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
   <p class="ingress">HTML har ingen kompilator. Skriver et team et felt uten ledetekst, er det ingenting som stopper dem, og siden ser helt riktig ut.</p>
@@ -684,7 +680,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 13 -->
+<!-- 12 -->
 <section class="lysbilde">
   <h2>Tilgjengelighet skrevet én gang</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
@@ -699,7 +695,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p style="margin-block-start: 1rem;" class="dempet">Regelen bak: en sjekk som må slutte fra miljøet til hva utvikleren mente, gjetter feil i minst ett miljø. Lukk fella i typen, og legg en beskjed ved siden av.</p>
 </section>
 
-<!-- 14 -->
+<!-- 13 -->
 <section class="lysbilde">
   <h2>Din CSS vinner over vår</h2>
   <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et lag, og et usortert lag vinner over alle lag.</p>
@@ -727,7 +723,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 15 -->
+<!-- 14 -->
 <section class="lysbilde">
   <h2>Fargene holder kontrastkravet</h2>
   <p>Et team med egne merkefarger skal ikke måtte regne ut kontrast for hånd, og skal ikke kunne velge en kombinasjon som faller under kravet. Generatoren tar merkefargene og lager hele temaet, i lyst og mørkt.</p>
@@ -756,7 +752,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 16 -->
+<!-- 15 -->
 <section class="lysbilde">
   <h2>Terskelen følger rollen, ikke fargen</h2>
   <p>Grunnen til at dette ikke lar seg gjøre for hånd er ikke at regnestykket er vanskelig. Det er at kravet endrer seg med hva fargen brukes til, og den samme verdien kan bestå og stryke i samme palett.</p>
@@ -773,20 +769,14 @@ en skjermleser leser det opp uten navn.</pre>
   </table>
   </div>
   <p style="margin-block-start: 1rem;">Det er lett å ta feil av, også for den som har skrevet regnestykket. Et token som heter <code>-foreground</code> kan vise seg å være en ramme og et ikonfyll i komponentene som bruker det, og da er kravet 3:1 og ikke 4,5:1. Navnet er ikke et bevis på bruken.</p>
-  <p class="kodetittel">src/testing/kontrast.ts</p>
-  <pre>export const PAR = [
-  ["brødtekst", "--semantic-page-foreground",
-               "--semantic-page-background"],
-  <i>// … ett par per rolle, og terskelen som hører til</i>
-]</pre>
-  <p style="margin-block-start: 1rem;">Derfor er ikke lista over par en detalj i testene, men selve løftet. Generatoren og komponentene leser den samme lista, så et krav kan ikke gjelde ett sted og ikke det andre.</p>
+  <p style="margin-block-start: 1rem;">Lista i <code>src/testing/kontrast.ts</code> dekker parene som må holde 4,5:1, og deles av to tester: den for Fristils egne farger og den for et tema generatoren har laget av noen andre sine merkefarger. Rollene med 3:1 står ikke i den lista i det hele tatt. Det er hullet dette lysbildet handler om, og vi har det selv.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span>Trenger ikke vite hvilken paragraf som gjelder for hvilken farge.</p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span>Må vite det for hvert eneste par, og ta feil i full offentlighet når vi gjør det.</p>
   </div>
 </section>
 
-<!-- 17 -->
+<!-- 16 -->
 <section class="lysbilde">
   <h2>Hva nettleseren gjør for oss</h2>
   <p>Det meste av det som er vanskelig i et designsystem, er alt løst i nettleseren. Bygger vi på det, er det ikke kode vi må vedlikeholde.</p>
@@ -813,6 +803,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p style="margin-block-start: 1.1rem;">Det som blir igjen til oss er koblingen mellom delene, tastaturet i det nettleseren ikke har en ferdig kontroll for, og at tingene ser like ut. Det er en mye mindre jobb enn å bygge alt.</p>
 </section>
 
+<!-- 17 -->
 <section class="lysbilde">
   <h2>Prisen for å bygge på nettleseren selv</h2>
   <p>Regningen tas av dem som lager systemet, ikke av teamene som bruker det, og det er verdt å si hva den består av.</p>
