@@ -157,9 +157,19 @@ async function sjekkSider() {
     }
 
     const resultat = await side.evaluate((bredde) => {
-      window.scrollTo(bredde, 0)
+      /*
+       * `behavior: "instant"`, ellers leser vi alltid 0.
+       *
+       * Starlight setter `scroll-behavior: smooth` på `<html>`, så en vanlig
+       * `scrollTo` animeres og `window.scrollX` på linja etter står fortsatt
+       * på 0. Denne målingen har derfor vært død på hver eneste side, og den
+       * er den eneste av de to som dekker `body` selv og pseudoelementer,
+       * siden `samle(document.body)` bare samler etterkommere. En side med et
+       * bredt `body::after` kunne dras 375 piksler sidelengs og meldte grønt.
+       */
+      window.scrollTo({ left: bredde, behavior: "instant" })
       const rullet = window.scrollX
-      window.scrollTo(0, 0)
+      window.scrollTo({ left: 0, behavior: "instant" })
 
       // Alle elementer, også de som ligger inne i en skyggerot.
       const alle: HTMLElement[] = []
