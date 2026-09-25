@@ -138,9 +138,23 @@ async function sjekkSider() {
     const url = koe[neste++]
     if (url === undefined) break
 
-    await side.goto(`http://localhost:${PORT}${url}`, {
+    /*
+     * Statuskoden må leses. `goto` kaster ikke på 404.
+     *
+     * Tjeneren over svarer «Ikke funnet» med status 404 for en sti den ikke
+     * har. Uten denne sjekken ville en side som ikke ble servert telt som
+     * besøkt: axe finner ingenting på en linje med ren tekst, og
+     * mobilsjekken finner ikke noe som stikker utenfor. Vakten nederst ville
+     * heller ikke fanget det, siden siden faktisk var innom køen.
+     */
+    const svar = await side.goto(`http://localhost:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
+    if (!svar?.ok()) {
+      throw new Error(
+        `${url} svarte ${svar?.status() ?? "ingenting"}. Sjekken ville ellers meldt siden som bestått uten å ha sett den.`,
+      )
+    }
 
     const resultat = await side.evaluate((bredde) => {
       window.scrollTo(bredde, 0)
