@@ -27,9 +27,14 @@ git show <commit>:presentasjon/designsystemarkitektur.html > /tmp/gammel.html
 
 ## Hva den sier
 
-Tjueen lysbilder om hva systemet er og hvorfor, ikke om hvordan vi kom dit.
+Tjueni lysbilder om hva systemet er og hvorfor, ikke om hvordan vi kom dit.
 Et publikum trenger ikke vite hva vi prøvde først, bare hva som gjelder og hva
 det er godt for.
+
+De er delt i sju kapitler, ett per arkitektonisk beslutning. Hvert kapittel
+åpner med en forside som sier beslutningen i én setning, og som bærer et ikon
+tegnet i Windows 3.1-stil. Ikonene ligger på en grå plate med tidens hevede
+kant, fordi marineblåen i dem ellers forsvinner mot den mørke flaten.
 
 Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
 linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
@@ -57,9 +62,10 @@ skygge, ingen skalering. Lysbildet blir vanlig tekst rett på bakgrunnen, med
 full skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
-Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de tjueen
+Testet i Chromium på 1440, 1280, 820 og 375 piksler: ingen av de tjueni
 lysbildene kan dras sidelengs, og på de tre største får alle plass uten å
-rulle. To ting måtte til, og begge er lette å gjøre feil igjen: et
+rulle. Høydesjekken må se på lysbildets **egen** boks og ikke bare på om siden
+ruller: et lysbilde kan vokse forbi kortet uten at siden merker det. To ting måtte til, og begge er lette å gjøre feil igjen: et
 rutenettfelt trenger `min-inline-size: 0`, ellers blir det like bredt som den
 lengste kodelinja, og selve dekket må være en vanlig blokk og ikke et
 rutenett, ellers blir kolonnen like bred som innholdet sitt.
