@@ -1,0 +1,278 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JetBrains/web-types/master/schema/web-types.json",
+  "name": "@fristil/designsystem",
+  "version": "0.14.0",
+  "description-markup": "markdown",
+  "contributions": {
+    "html": {
+      "elements": [
+        {
+          "name": "fs-field",
+          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+          "doc-url": "https://fristil.netlify.app/components/field/",
+          "attributes": [
+            {
+              "name": "invalid",
+              "description": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`.",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "disabled",
+              "description": "Kontrollen er slått av.",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "optional",
+              "description": "Feltet er valgfritt, og ledeteksten sier det.",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "required-marker",
+              "description": "Hvordan ledeteksten viser at feltet er påkrevd.",
+              "value": {
+                "kind": "plain",
+                "type": "enum"
+              },
+              "values": [
+                {
+                  "name": "symbol",
+                  "description": "En stjerne etter ledeteksten."
+                },
+                {
+                  "name": "text",
+                  "description": "Ordet «må fylles ut»."
+                },
+                {
+                  "name": "none",
+                  "description": "Ingen markering."
+                }
+              ]
+            },
+            {
+              "name": "control-id",
+              "description": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "described-by",
+              "description": "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-tabs",
+          "description": "Fanerad. Gir tastatur og fokus til en `role=\"tablist\"` med faner og paneler serveren har skrevet. Hvilken fane som er valgt leses fra `aria-selected`.",
+          "doc-url": "https://fristil.netlify.app/components/tabs/",
+          "attributes": [
+            {
+              "name": "server-controlled",
+              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "value": {
+                "kind": "no-value"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-error-summary",
+          "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
+          "doc-url": "https://fristil.netlify.app/components/error-summary/",
+          "attributes": [
+            {
+              "name": "data-autofocus",
+              "description": "Om fokus flyttes til boksen når den kommer til syne. Standard er på.",
+              "value": {
+                "kind": "plain",
+                "type": "enum"
+              },
+              "values": [
+                {
+                  "name": "false",
+                  "description": "La fokus stå der det er."
+                }
+              ]
+            },
+            {
+              "name": "hidden",
+              "description": "Boksen er skjult. Serveren tar attributtet bort når skjemaet feiler, og komponenten flytter fokus da.",
+              "value": {
+                "kind": "no-value"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-popover",
+          "description": "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id.",
+          "doc-url": "https://fristil.netlify.app/components/popover/",
+          "attributes": [
+            {
+              "name": "open",
+              "description": "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet.",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "placement",
+              "description": "Hvilken kant av knappen panelet henger fra.",
+              "value": {
+                "kind": "plain",
+                "type": "enum"
+              },
+              "values": [
+                {
+                  "name": "bottom-start",
+                  "description": "Under knappen, venstrekantene på linje. Standard."
+                },
+                {
+                  "name": "bottom-end",
+                  "description": "Under knappen, høyrekantene på linje."
+                },
+                {
+                  "name": "top-start",
+                  "description": "Over knappen, venstrekantene på linje."
+                },
+                {
+                  "name": "top-end",
+                  "description": "Over knappen, høyrekantene på linje."
+                }
+              ]
+            },
+            {
+              "name": "server-controlled",
+              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "value": {
+                "kind": "no-value"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-suggestion",
+          "description": "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+          "doc-url": "https://fristil.netlify.app/components/suggestion/",
+          "attributes": [
+            {
+              "name": "prefiltered",
+              "description": "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet».",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "server-controlled",
+              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "value": {
+                "kind": "no-value"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-dialog",
+          "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen.",
+          "doc-url": "https://fristil.netlify.app/components/dialog/",
+          "attributes": [
+            {
+              "name": "open",
+              "description": "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
+              "value": {
+                "kind": "no-value"
+              }
+            },
+            {
+              "name": "server-controlled",
+              "description": "Serveren eier tilstanden alene. Komponenten setter ingenting tilbake når en morfing har fjernet det den selv skrev.",
+              "value": {
+                "kind": "no-value"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-toast",
+          "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
+          "doc-url": "https://fristil.netlify.app/components/toast/",
+          "attributes": [
+            {
+              "name": "duration",
+              "description": "Millisekunder før en melding forsvinner. Standard er 6000, og 0 lar meldingene stå.",
+              "value": {
+                "kind": "plain",
+                "type": "number"
+              }
+            },
+            {
+              "name": "label",
+              "description": "Tekst som sier hva regionen er for skjermlesere.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-session-timeout",
+          "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute.",
+          "doc-url": "https://fristil.netlify.app/components/session-timeout/",
+          "attributes": [
+            {
+              "name": "warn-at",
+              "description": "Sekunder uten aktivitet før varselet kommer.",
+              "value": {
+                "kind": "plain",
+                "type": "number"
+              }
+            },
+            {
+              "name": "expires-at",
+              "description": "Sekunder uten aktivitet før økten er ute.",
+              "value": {
+                "kind": "plain",
+                "type": "number"
+              }
+            }
+          ]
+        },
+        {
+          "name": "fs-connection-status",
+          "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
+          "doc-url": "https://fristil.netlify.app/components/connection-status/",
+          "attributes": [
+            {
+              "name": "offline-text",
+              "description": "Teksten når forbindelsen er borte.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "online-text",
+              "description": "Teksten når den kommer tilbake.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

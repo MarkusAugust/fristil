@@ -64,7 +64,7 @@ export class FsField extends HostElement {
     "required-marker",
     "control-id",
     "described-by",
-  ]
+  ] as const
 
   private observer?: MutationObserver
   /** Id-ene komponenten laget selv, så en patch ikke gir nye hver gang. */

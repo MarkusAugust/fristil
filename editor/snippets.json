@@ -1,0 +1,132 @@
+{
+  "fs-field": {
+    "prefix": "fs-field",
+    "body": [
+      "<form id=\"kontaktskjema\">",
+      "  <fs-field id=\"navn-felt\" required-marker=\"symbol\">",
+      "    <label>Fullt navn</label>",
+      "    <input class=\"fs-input\" type=\"text\" name=\"navn\" required />",
+      "    <p class=\"fs-error-text\">Fyll inn navnet ditt.</p>",
+      "  </fs-field>",
+      "",
+      "  <button class=\"fs-button\" type=\"submit\">Send</button>",
+      "</form>"
+    ],
+    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
+  },
+  "fs-tabs": {
+    "prefix": "fs-tabs",
+    "body": [
+      "<fs-tabs id=\"saksfaner\">",
+      "  <div class=\"fs-tabs__list\" role=\"tablist\" aria-label=\"Deler av saken\">",
+      "    <button id=\"sak-tab-0\" role=\"tab\" type=\"button\" aria-selected=\"true\"",
+      "            aria-controls=\"sak-panel-0\" tabindex=\"0\">Søknaden</button>",
+      "    <button id=\"sak-tab-1\" role=\"tab\" type=\"button\" aria-selected=\"false\"",
+      "            aria-controls=\"sak-panel-1\" tabindex=\"-1\">Vedlegg</button>",
+      "  </div>",
+      "  <div id=\"sak-panel-0\" class=\"fs-tabs__panel\" role=\"tabpanel\"",
+      "       aria-labelledby=\"sak-tab-0\" tabindex=\"0\">Søknaden</div>",
+      "  <div id=\"sak-panel-1\" class=\"fs-tabs__panel\" role=\"tabpanel\"",
+      "       aria-labelledby=\"sak-tab-1\" tabindex=\"0\" hidden>Vedlegg</div>",
+      "</fs-tabs>"
+    ],
+    "description": "Fanerad. Gir tastatur og fokus til en `role=\"tablist\"` med faner og paneler serveren har skrevet. Hvilken fane som er valgt leses fra `aria-selected`."
+  },
+  "fs-error-summary": {
+    "prefix": "fs-error-summary",
+    "body": [
+      "<form novalidate>",
+      "  <fs-error-summary class=\"fs-error-summary\" role=\"alert\" tabindex=\"-1\" id=\"feil\" hidden>",
+      "    <h2 class=\"fs-error-summary__title\"></h2>",
+      "    <ul class=\"fs-list\"></ul>",
+      "  </fs-error-summary>",
+      "",
+      "  <label class=\"fs-label\" for=\"epost\">E-postadresse</label>",
+      "  <input class=\"fs-input\" id=\"epost\" type=\"email\" />",
+      "  <button class=\"fs-button\">Send søknad</button>",
+      "</form>"
+    ],
+    "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges."
+  },
+  "fs-popover": {
+    "prefix": "fs-popover",
+    "body": [
+      "<fs-popover id=\"meny\" placement=\"bottom-end\">",
+      "  <button class=\"fs-button\" data-variant=\"secondary\"",
+      "          aria-expanded=\"false\" aria-controls=\"handlinger\">Handlinger</button>",
+      "",
+      "  <ul class=\"fs-popover\" id=\"handlinger\" popover=\"manual\">",
+      "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Arkiver saken</button></li>",
+      "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Last ned som PDF</button></li>",
+      "  </ul>",
+      "</fs-popover>"
+    ],
+    "description": "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id."
+  },
+  "fs-suggestion": {
+    "prefix": "fs-suggestion",
+    "body": [
+      "<fs-suggestion id=\"kommunesok\">",
+      "  <label class=\"fs-label\" for=\"kommune\">Kommune</label>",
+      "  <div class=\"fs-suggestion__field\">",
+      "    <input class=\"fs-input\" id=\"kommune\" name=\"kommune\" type=\"text\" role=\"combobox\"",
+      "           autocomplete=\"off\" aria-expanded=\"false\" aria-controls=\"kommune-list\"",
+      "           aria-autocomplete=\"list\">",
+      "    <ul class=\"fs-suggestion__list\" id=\"kommune-list\" role=\"listbox\" hidden>",
+      "      <li class=\"fs-suggestion__option\" id=\"kommune-option-0\" role=\"option\">Bergen</li>",
+      "      <li class=\"fs-suggestion__option\" id=\"kommune-option-1\" role=\"option\">Bodø</li>",
+      "    </ul>",
+      "    <p class=\"fs-suggestion__empty\" hidden>Ingen treff</p>",
+      "    <span class=\"fs-sr-only\" id=\"kommune-status\" role=\"status\" aria-live=\"polite\"",
+      "          data-ignore-morph></span>",
+      "  </div>",
+      "</fs-suggestion>"
+    ],
+    "description": "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+  },
+  "fs-dialog": {
+    "prefix": "fs-dialog",
+    "body": [
+      "<button class=\"fs-button\" data-variant=\"danger\" id=\"apne\" type=\"button\">",
+      "  Slett søknaden",
+      "</button>",
+      "",
+      "<dialog class=\"fs-dialog\" id=\"bekreft\" aria-labelledby=\"bekreft-tittel\">",
+      "  <h2 class=\"fs-dialog__title\" id=\"bekreft-tittel\">Slette søknaden?</h2>",
+      "  <div class=\"fs-dialog__body\">",
+      "    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>",
+      "  </div>",
+      "  <form method=\"dialog\" class=\"fs-dialog__footer\">",
+      "    <button class=\"fs-button\" data-variant=\"secondary\" value=\"avbryt\">Avbryt</button>",
+      "    <button class=\"fs-button\" data-variant=\"danger\" value=\"slett\">Slett søknaden</button>",
+      "  </form>",
+      "</dialog>"
+    ],
+    "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen."
+  },
+  "fs-toast": {
+    "prefix": "fs-toast",
+    "body": [
+      "<fs-toast id=\"meldinger\" role=\"status\" aria-live=\"polite\"",
+      "          aria-label=\"Meldinger\" data-ignore-morph></fs-toast>",
+      "",
+      "<button class=\"fs-button\" id=\"lagre\" type=\"button\">Lagre søknaden</button>"
+    ],
+    "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`."
+  },
+  "fs-session-timeout": {
+    "prefix": "fs-session-timeout",
+    "body": [
+      "<fs-session-timeout class=\"fs-session-timeout\" warn-at=\"1500\" expires-at=\"1800\"",
+      "                    data-ignore-morph></fs-session-timeout>"
+    ],
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute."
+  },
+  "fs-connection-status": {
+    "prefix": "fs-connection-status",
+    "body": [
+      "<fs-connection-status class=\"fs-connection-status\" data-ignore-morph></fs-connection-status>"
+    ],
+    "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`."
+  }
+}

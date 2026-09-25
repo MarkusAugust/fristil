@@ -46,7 +46,7 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  * ```
  */
 export class FsSuggestion extends HostElement {
-  static observedAttributes = ["prefiltered", SERVER_CONTROLLED]
+  static observedAttributes = ["prefiltered", SERVER_CONTROLLED] as const
 
   private observer?: MutationObserver
   private control?: HTMLInputElement

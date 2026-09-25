@@ -16,6 +16,14 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+- **`web-types.json` følger med pakken.** JetBrains-IDE-ene leser den selv
+  fra `node_modules`, og gir fullføring og forklaring for de ni
+  `<fs-*>`-elementene og attributtene deres i HTML. Fila genereres fra
+  `editor/metadata.ts` i repoet, der VS Code-utvidelsen også lages.
+- `observedAttributes` på komponentklassene er nå skrivebeskyttede tupler
+  (`as const`) i stedet for `string[]`. Verdiene er de samme; bare typen er
+  smalere, slik at editorfilene kan typesjekkes mot dem.
+
 ## 0.14.0 (2026-09-24)
 
 ### Brytende

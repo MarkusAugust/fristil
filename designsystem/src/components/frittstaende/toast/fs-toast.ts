@@ -45,7 +45,7 @@ export type ShowOptions = {
  * ```
  */
 export class FsToast extends HostElement {
-  static observedAttributes = ["duration", "label"]
+  static observedAttributes = ["duration", "label"] as const
 
   /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
   get duration(): number {
