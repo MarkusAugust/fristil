@@ -86,16 +86,27 @@ Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, 
 
 ## Editorutvidelsen
 
-`editor/` er VS Code-utvidelsen, og den har ingen kode: en `package.json` som
-peker på `fristil.html-data.json` og `snippets.json`. Begge genereres fra
-`editor/metadata.ts` og «Ren HTML»-fanene på komponentsidene, sammen med
-`designsystem/web-types.json` for JetBrains. Endrer du et attributt på en
-komponent, stopper typesjekken til `metadata.ts` har en setning om det, og
-`bun run build` stopper til filene er generert på nytt:
+`editor/` er VS Code-utvidelsen. `package.json` peker på
+`fristil.html-data.json` og `snippets.json`, som gir fullføring og snippets
+uten kode, og på `dist/extension.js`, som er diagnostikken: `src/diagnostikk.ts`
+leser hver `<fs-…>`-tagg i et HTML-dokument og sjekker den mot
+`elementer.json`, og `src/extension.ts` kobler den til editoren. De tre
+JSON-filene genereres fra `editor/metadata.ts` og «Ren HTML»-fanene på
+komponentsidene, sammen med `designsystem/web-types.json` for JetBrains.
+Endrer du et attributt på en komponent, stopper typesjekken til
+`metadata.ts` har en setning om det, og `bun run build` stopper til filene
+er generert på nytt:
 
 ```bash
 bun --filter fristil-vscode generate
 ```
+
+Diagnostikken har ingen VS Code i seg, og `scripts/sjekk-diagnostikk.ts`
+kjører den over hver feiltype den skal fange, snippetene medregnet som rene
+tilfeller. Legger du til en regel, legg til tilfellet som feller den, og se
+at det faktisk feller ved å skru regelen av. `bun --filter fristil-vscode
+sjekk` kjører begge sjekkene, bygger `dist/extension.js` og pakker
+`fristil.vsix`.
 
 Utvidelsen har sitt eget versjonsnummer i `editor/package.json` og sin egen
 logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:

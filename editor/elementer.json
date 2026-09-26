@@ -1,0 +1,127 @@
+{
+  "fs-field": {
+    "lenke": "https://fristil.netlify.app/components/field/",
+    "attributter": {
+      "invalid": {
+        "type": "flag"
+      },
+      "disabled": {
+        "type": "flag"
+      },
+      "optional": {
+        "type": "flag"
+      },
+      "required-marker": {
+        "type": "values",
+        "verdier": [
+          "symbol",
+          "text",
+          "none"
+        ]
+      },
+      "control-id": {
+        "type": "text"
+      },
+      "described-by": {
+        "type": "text"
+      }
+    }
+  },
+  "fs-tabs": {
+    "lenke": "https://fristil.netlify.app/components/tabs/",
+    "attributter": {
+      "server-controlled": {
+        "type": "flag"
+      }
+    }
+  },
+  "fs-error-summary": {
+    "lenke": "https://fristil.netlify.app/components/error-summary/",
+    "attributter": {
+      "data-autofocus": {
+        "type": "values",
+        "verdier": [
+          "false"
+        ]
+      },
+      "hidden": {
+        "type": "flag"
+      }
+    }
+  },
+  "fs-popover": {
+    "lenke": "https://fristil.netlify.app/components/popover/",
+    "attributter": {
+      "open": {
+        "type": "flag"
+      },
+      "placement": {
+        "type": "values",
+        "verdier": [
+          "bottom-start",
+          "bottom-end",
+          "top-start",
+          "top-end"
+        ]
+      },
+      "server-controlled": {
+        "type": "flag"
+      }
+    }
+  },
+  "fs-suggestion": {
+    "lenke": "https://fristil.netlify.app/components/suggestion/",
+    "attributter": {
+      "prefiltered": {
+        "type": "flag"
+      },
+      "server-controlled": {
+        "type": "flag"
+      }
+    }
+  },
+  "fs-dialog": {
+    "lenke": "https://fristil.netlify.app/components/dialog/",
+    "attributter": {
+      "open": {
+        "type": "flag"
+      },
+      "server-controlled": {
+        "type": "flag"
+      }
+    }
+  },
+  "fs-toast": {
+    "lenke": "https://fristil.netlify.app/components/toast/",
+    "attributter": {
+      "duration": {
+        "type": "number"
+      },
+      "label": {
+        "type": "text"
+      }
+    }
+  },
+  "fs-session-timeout": {
+    "lenke": "https://fristil.netlify.app/components/session-timeout/",
+    "attributter": {
+      "warn-at": {
+        "type": "number"
+      },
+      "expires-at": {
+        "type": "number"
+      }
+    }
+  },
+  "fs-connection-status": {
+    "lenke": "https://fristil.netlify.app/components/connection-status/",
+    "attributter": {
+      "offline-text": {
+        "type": "text"
+      },
+      "online-text": {
+        "type": "text"
+      }
+    }
+  }
+}

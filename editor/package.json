@@ -1,8 +1,8 @@
 {
   "name": "fristil-vscode",
   "displayName": "Fristil",
-  "description": "Fullføring, forklaringer og snippets for <fs-*>-elementene i Fristil-designsystemet.",
-  "version": "0.1.0",
+  "description": "Fullføring, forklaringer, snippets og feilmeldinger for <fs-*>-elementene i Fristil-designsystemet.",
+  "version": "0.2.0",
   "publisher": "fristil",
   "license": "MIT",
   "private": true,
@@ -15,8 +15,13 @@
   "engines": {
     "vscode": "^1.90.0"
   },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:html"
+  ],
   "categories": [
     "Snippets",
+    "Linters",
     "Other"
   ],
   "keywords": [
@@ -36,16 +41,23 @@
         "language": "html",
         "path": "./snippets.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[html]": {
+        "editor.snippetSuggestions": "top"
+      }
+    }
   },
   "scripts": {
     "generate": "bun scripts/generate.ts",
-    "sjekk": "bun scripts/sjekk.ts && vsce package --no-dependencies --out fristil.vsix",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode",
+    "sjekk": "bun scripts/sjekk.ts && bun scripts/sjekk-diagnostikk.ts && bun run build && vsce package --no-dependencies --out fristil.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@fristil/designsystem": "workspace:*",
     "@types/node": "24.12.4",
+    "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.6.0"
   }
 }

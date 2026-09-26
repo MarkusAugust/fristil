@@ -8,6 +8,9 @@
  *   - `editor/snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
+ *   - `editor/elementer.json`: det diagnostikken i utvidelsen trenger, tagg
+ *     for tagg. `html-data` skiller ikke et tall fra en tekst, og har ingen
+ *     plass til det, så diagnostikken får sin egen fil fra samme kilde.
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
  *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
  *
@@ -20,6 +23,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
+import type { Attributt, Elementer } from "../src/diagnostikk"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.netlify.app/components/"
@@ -171,6 +175,25 @@ export function snippets() {
   return out
 }
 
+/*
+ * Diagnostikken: hva hvert attributt tar, i den formen `src/diagnostikk.ts`
+ * leser. Lenken er komponentsiden, som blir lenke i meldingen.
+ */
+export function elementer(): Elementer {
+  const ut: Elementer = {}
+  for (const element of elements) {
+    const attributter: Record<string, Attributt> = {}
+    for (const [name, doc] of Object.entries(element.attributes)) {
+      attributter[name] =
+        typeof doc.value === "object"
+          ? { type: "values", verdier: doc.value.values.map((v) => v.name) }
+          : { type: doc.value }
+    }
+    ut[element.tag] = { lenke: docsUrl(element), attributter }
+  }
+  return ut
+}
+
 /** Hver fil generatoren skriver, med stien fra rota. */
 export function files(): Record<string, string> {
   const version: string = JSON.parse(
@@ -180,6 +203,7 @@ export function files(): Record<string, string> {
   return {
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
+    "editor/elementer.json": json(elementer()),
     "designsystem/web-types.json": json(webTypes(version)),
   }
 }

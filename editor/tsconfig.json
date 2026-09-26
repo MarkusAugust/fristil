@@ -12,5 +12,5 @@
     // kjøres ikke av noe.
     "skipLibCheck": true
   },
-  "include": ["metadata.ts", "scripts/**/*"]
+  "include": ["metadata.ts", "scripts/**/*", "src/**/*"]
 }
