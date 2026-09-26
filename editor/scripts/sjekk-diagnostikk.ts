@@ -541,6 +541,17 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "en klamme inne i et anførselstegn i uttrykket avslutter det ikke",
+    html: `<fs-popover placement={a ? "}" : "x"} open></fs-popover>`,
+    count: 0,
+  },
+  {
+    name: "klammer i klammer, og feilen etter dem felles fortsatt",
+    html: `<fs-popover placement={c ? {a:1}.p : "top-start"} plasement="x"></fs-popover>`,
+    count: 1,
+    mentions: ["«plasement»"],
+  },
+  {
     name: "Svelte: en klasse med et uttrykk i sjekkes ikke, de andre gjør",
     html: `<div class="fs-card fs-{b} fs-buton"></div>`,
     count: 1,
