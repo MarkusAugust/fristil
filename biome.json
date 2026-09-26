@@ -12,6 +12,7 @@
       "!presentasjon",
       "!editor/fristil.html-data.json",
       "!editor/snippets.json",
+      "!editor/elements.json",
       "!designsystem/web-types.json"
     ]
   },
