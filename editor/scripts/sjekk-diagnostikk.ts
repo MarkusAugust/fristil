@@ -16,10 +16,11 @@
  * Kjør med: bun scripts/sjekk-diagnostikk.ts
  */
 
-import { diagnose, type Elements } from "../src/diagnostics"
-import { diagnosticsData, snippets } from "./generate"
+import { type Classes, diagnose, type Elements } from "../src/diagnostics"
+import { classesData, diagnosticsData, snippets } from "./generate"
 
 const all: Elements = diagnosticsData()
+const classes: Classes = classesData()
 const findings: string[] = []
 
 type Case = {
@@ -30,6 +31,11 @@ type Case = {
   severity?: "error" | "warning"
   /** Teksten funnet skal dekke, når posisjonen er poenget. */
   covers?: string
+  /** Det meldingen ikke skal nevne. */
+  notMentions?: string[]
+  /** Rettelsen anvendt på html skal gi dette. */
+  fixed?: string
+  fixTitle?: string
 }
 
 const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
@@ -345,6 +351,100 @@ const cases: Case[] = [
     mentions: ["«stjerne»"],
   },
   {
+    name: "en klasse som ikke finnes, med forslag og rettelse",
+    html: `<button class="fs-buton">Send</button>`,
+    count: 1,
+    mentions: ["«fs-buton» finnes ikke", "Mente du fs-button?"],
+    severity: "warning",
+    covers: "fs-buton",
+    fixed: `<button class="fs-button">Send</button>`,
+    fixTitle: "Bytt til fs-button",
+  },
+  {
+    name: "en klasse langt fra alle kjente får ikke forslag",
+    html: `<button class="fs-knapp">Send</button>`,
+    count: 1,
+    mentions: ["«fs-knapp» finnes ikke"],
+    notMentions: ["Mente du"],
+  },
+  {
+    name: "en ren verdi i en tagg med mal sjekkes likevel",
+    html: `<button class="fs-button" {{ if .X }}disabled{{ end }} data-variant="ghots"></button>`,
+    count: 1,
+    mentions: ["«ghots»"],
+  },
+  {
+    name: "en klasse med mal i navnet er ingen skrivefeil",
+    html: `<div class="fs-{{ .Type }} kort"></div><div class="fs-<?= $x ?>"></div>`,
+    count: 0,
+  },
+  {
+    name: "kjente klasser, også flere i samme attributt og med mal",
+    html: `<input class="fs-input fs-search" type="search"><div class="{{ .Klasse }} fs-card"></div><p class="kort fs-paragraph"></p>`,
+    count: 0,
+  },
+  {
+    name: "en variant utenfor lista, med forslag og rettelse",
+    html: `<button class="fs-button" data-variant="ghots">Send</button>`,
+    count: 1,
+    mentions: [
+      "data-variant kan ikke være «ghots» på button",
+      "secondary, ghost, danger",
+      "primary uten attributt",
+    ],
+    fixed: `<button class="fs-button" data-variant="ghost">Send</button>`,
+    fixTitle: "Bytt til ghost",
+  },
+  {
+    name: "lovlige varianter, standardverdien og type på input",
+    html: `<button class="fs-button" data-variant="danger"></button><button class="fs-button" data-variant="primary"></button><input class="fs-input" type="email"><h2 class="fs-heading" data-size="xl"></h2>`,
+    count: 0,
+  },
+  {
+    name: "en type input ikke tar",
+    html: `<input class="fs-input" type="color">`,
+    count: 1,
+    mentions: ["type kan ikke være «color»"],
+  },
+  {
+    name: "et attributt en annen klasse tar, sjekkes ikke her",
+    html: `<div class="fs-card" data-variant="ghost"></div><span class="fs-badge" data-size="xl"></span>`,
+    count: 1,
+    mentions: ["data-variant kan ikke være «ghost» på card"],
+  },
+  {
+    name: "variantverdi fra en mal sjekkes ikke",
+    html: `<button class="fs-button" data-variant="{{ .Variant }}"></button><button class="fs-button" data-variant="@Model.V"></button>`,
+    count: 0,
+  },
+  {
+    name: "rettelsen for et attributtnavn",
+    html: `<fs-connection-status onlinetext="Tilkoblet"></fs-connection-status>`,
+    count: 1,
+    fixed: `<fs-connection-status online-text="Tilkoblet"></fs-connection-status>`,
+    fixTitle: "Bytt til online-text",
+  },
+  {
+    name: "rettelsen for et boolsk attributt tar med verdien",
+    html: `<fs-field invalid="false" id="x"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field  id="x"><label>N</label><input></fs-field>`,
+    fixTitle: "Ta bort invalid",
+  },
+  {
+    name: "rettelsen for et felt uten ledetekst",
+    html: `<fs-field><input class="fs-input"></fs-field>`,
+    count: 1,
+    fixed: `<fs-field><label>Ledetekst</label><input class="fs-input"></fs-field>`,
+    fixTitle: "Sett inn en ledetekst",
+  },
+  {
+    name: "funnene kommer i tekstens rekkefølge",
+    html: `<fs-popover placemnet="x"></fs-popover><button class="fs-buton"></button><fs-tull></fs-tull>`,
+    count: 3,
+    mentions: ["placemnet"],
+  },
+  {
     name: "flere funn i samme tagg meldes hver for seg",
     html: `<fs-popover placemnet="top-start" open="false"></fs-popover>`,
     count: 2,
@@ -368,7 +468,7 @@ for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
   let found: ReturnType<typeof diagnose>
   try {
-    found = diagnose(c.html, all)
+    found = diagnose(c.html, all, classes)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue
@@ -384,6 +484,9 @@ for (const c of cases) {
   for (const m of c.mentions ?? [])
     if (!first.message.includes(m))
       fail(`meldingen nevner ikke «${m}»: ${first.message}`)
+  for (const m of c.notMentions ?? [])
+    if (first.message.includes(m))
+      fail(`meldingen nevner «${m}»: ${first.message}`)
   if (c.severity && first.severity !== c.severity)
     fail(`ventet ${c.severity}, fikk ${first.severity}`)
   if (c.covers) {
@@ -393,6 +496,19 @@ for (const c of cases) {
   }
   if (!first.link.startsWith("https://fristil.netlify.app/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
+  if (c.fixed !== undefined) {
+    if (!first.fix) fail("funnet har ingen rettelse")
+    else {
+      const applied =
+        c.html.slice(0, first.fix.start) +
+        first.fix.text +
+        c.html.slice(first.fix.end)
+      if (applied !== c.fixed)
+        fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
+      if (c.fixTitle && first.fix.title !== c.fixTitle)
+        fail(`rettelsen heter «${first.fix.title}», ikke «${c.fixTitle}»`)
+    }
+  }
 }
 
 if (findings.length) {
@@ -402,5 +518,5 @@ if (findings.length) {
   process.exit(1)
 }
 console.log(
-  `Diagnostikken består ${cases.length} tilfeller, ${Object.keys(all).length} elementer.`,
+  `Diagnostikken består ${cases.length} tilfeller, ${Object.keys(all).length} elementer og ${Object.keys(classes).length} klasser.`,
 )

@@ -1,8 +1,8 @@
 {
   "name": "fristil-vscode",
   "displayName": "Fristil",
-  "description": "Fullføring, forklaringer, snippets og feilmeldinger for <fs-*>-elementene i Fristil-designsystemet.",
-  "version": "0.2.0",
+  "description": "Fullføring, forklaringer, snippets, feilmeldinger og hurtigrettelser for Fristil-designsystemet: <fs-*>-elementene, fs-klassene og variantene deres.",
+  "version": "0.3.0",
   "publisher": "Fristil",
   "license": "MIT",
   "icon": "ikon.png",
@@ -18,7 +18,7 @@
   },
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onLanguage:html"
+    "onStartupFinished"
   ],
   "categories": [
     "Snippets",
@@ -29,7 +29,9 @@
     "fristil",
     "designsystem",
     "web-components",
-    "html"
+    "html",
+    "css",
+    "lint"
   ],
   "contributes": {
     "html": {
@@ -41,11 +43,97 @@
       {
         "language": "html",
         "path": "./snippets.json"
+      },
+      {
+        "language": "php",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "razor",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "aspnetcorerazor",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "astro",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "svelte",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "vue",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "twig",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "blade",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "jinja-html",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "django-html",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "handlebars",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "erb",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "gotmpl",
+        "path": "./snippets.json"
       }
     ],
     "configurationDefaults": {
       "[html]": {
         "editor.snippetSuggestions": "top"
+      }
+    },
+    "configuration": {
+      "title": "Fristil",
+      "properties": {
+        "fristil.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "html",
+            "php",
+            "razor",
+            "aspnetcorerazor",
+            "astro",
+            "svelte",
+            "vue",
+            "twig",
+            "blade",
+            "jinja",
+            "jinja-html",
+            "django-html",
+            "handlebars",
+            "erb",
+            "gotmpl",
+            "go-template",
+            "ejs",
+            "liquid",
+            "nunjucks",
+            "edge"
+          ],
+          "description": "Språkene, som VS Code-språk-id-er, der utvidelsen sjekker markupen og fullfører klasser og verdier. Fullføringen av <fs-*>-elementene fra VS Codes egen HTML-tjeneste gjelder bare html."
+        }
       }
     }
   },
