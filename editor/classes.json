@@ -118,21 +118,12 @@
         ],
         "default": "default"
       },
-      "type": {
+      "data-variant": {
         "values": [
-          "password",
-          "email",
-          "number",
           "date",
           "datetime-local",
-          "week",
-          "month",
-          "tel",
-          "url",
-          "search",
           "time"
-        ],
-        "default": "text"
+        ]
       }
     }
   },
@@ -254,7 +245,14 @@
     "title": "Label",
     "description": "Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
     "link": "https://fristil.netlify.app/components/label/",
-    "attributes": {}
+    "attributes": {
+      "data-required": {
+        "values": [
+          "symbol",
+          "text"
+        ]
+      }
+    }
   },
   "fs-spinner": {
     "component": "spinner",
@@ -482,7 +480,14 @@
     "title": "Fieldset",
     "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
     "link": "https://fristil.netlify.app/components/fieldset/",
-    "attributes": {}
+    "attributes": {
+      "data-required": {
+        "values": [
+          "symbol",
+          "text"
+        ]
+      }
+    }
   },
   "fs-switch": {
     "component": "switch",

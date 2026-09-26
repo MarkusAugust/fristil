@@ -219,7 +219,8 @@ const OPTION_LISTS: Record<string, string> = {
   states: "state",
   types: "type",
   pickers: "picker",
-  markers: "marker",
+  // `fs.label({ required: "text" })`: lista heter markers, opsjonen required.
+  markers: "required",
 }
 
 const frontmatter = (slug: string, key: string) => {
@@ -275,7 +276,8 @@ export function classesData(): Classes {
     const build = builder as (options?: Record<string, unknown>) => unknown
     let base: unknown
     try {
-      base = build({})
+      // En id, så byggefunksjonene som ellers lager en tilfeldig ikke sier fra.
+      base = build({ id: "x" })
     } catch {
       continue
     }
@@ -284,29 +286,43 @@ export function classesData(): Classes {
     for (const [list, option] of Object.entries(OPTION_LISTS)) {
       const values = (builder as unknown as Record<string, unknown>)[list]
       if (!Array.isArray(values)) continue
-      let attribute: string | undefined
-      const emitted: string[] = []
-      let fallback: string | undefined
+      // Hvert attributt en verdi blir til: `fs.input({ type: "date" })` gir både
+      // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
+      // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et fs-input.
+      const emitted = new Map<string, string[]>()
+      const silent: string[] = []
       for (const value of values as string[]) {
-        const result = build({ [option]: value }) as Record<string, unknown>
-        const extra = Object.entries(result).find(
+        const result = build({ id: "x", [option]: value }) as Record<
+          string,
+          unknown
+        >
+        const extra = Object.entries(result).filter(
           ([key, v]) =>
             typeof v === "string" &&
             key !== "class" &&
+            key !== "type" &&
             (base as Record<string, unknown>)[key] !== v &&
             v === value,
         )
-        if (extra) {
-          attribute = extra[0]
-          emitted.push(value)
-        } else fallback = value
-      }
-      if (!attribute) continue
-      for (const target of targets)
-        out[target].attributes[attribute] = {
-          values: emitted,
-          ...(fallback ? { default: fallback } : {}),
+        if (!extra.length) {
+          silent.push(value)
+          continue
         }
+        for (const [attribute] of extra) {
+          emitted.set(attribute, [...(emitted.get(attribute) ?? []), value])
+        }
+      }
+      for (const [attribute, list] of emitted)
+        for (const target of targets)
+          out[target].attributes[attribute] = {
+            values: list,
+            // Standardverdien er den ene verdien som ikke gir noe attributt,
+            // som `primary` for `data-variant`. Gir flere ingenting, som de
+            // fleste typene på et input, betyr fraværet ikke én av dem.
+            ...(silent.length === 1 && emitted.size === 1
+              ? { default: silent[0] }
+              : {}),
+          }
     }
   }
   return out

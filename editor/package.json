@@ -77,6 +77,10 @@
         "path": "./snippets.json"
       },
       {
+        "language": "jinja",
+        "path": "./snippets.json"
+      },
+      {
         "language": "jinja-html",
         "path": "./snippets.json"
       },
@@ -94,6 +98,26 @@
       },
       {
         "language": "gotmpl",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "go-template",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "ejs",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "liquid",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "nunjucks",
+        "path": "./snippets.json"
+      },
+      {
+        "language": "edge",
         "path": "./snippets.json"
       }
     ],

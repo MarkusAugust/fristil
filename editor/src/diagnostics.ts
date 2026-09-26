@@ -55,8 +55,18 @@
 
 export type Severity = "error" | "warning"
 
-/** En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`. */
-export type Fix = { title: string; start: number; end: number; text: string }
+/**
+ * En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
+ * `preferred` er den sikre, som `onlinetext` til `online-text`: samme
+ * bokstaver, bare skrevet annerledes. Et forslag på avstand er et forslag.
+ */
+export type Fix = {
+  title: string
+  start: number
+  end: number
+  text: string
+  preferred?: boolean
+}
 
 export type Finding = {
   start: number
@@ -163,41 +173,71 @@ const isTemplatedContent = (text: string) =>
 /** Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil. */
 const normalized = (name: string) => name.toLowerCase().replace(/[-_]/g, "")
 
-/** Redigeringsavstanden mellom to navn: hvor mange tegn som må byttes, settes inn eller tas bort. */
+/*
+ * Redigeringsavstanden mellom to navn: tegn som må byttes, settes inn, tas
+ * bort eller bytte plass. At to nabotegn har byttet plass teller som én,
+ * for `ghots` er `ghost`. Tre rader er nok, ikke en tabell.
+ */
 function distance(a: string, b: string): number {
-  const rows = Array.from({ length: a.length + 1 }, (_, i) => [i])
-  for (let j = 1; j <= b.length; j++) rows[0][j] = j
-  for (let i = 1; i <= a.length; i++)
-    for (let j = 1; j <= b.length; j++)
-      rows[i][j] = Math.min(
-        rows[i - 1][j] + 1,
-        rows[i][j - 1] + 1,
-        rows[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+  let before = new Array<number>(b.length + 1)
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    const current: number[] = [i]
+    for (let j = 1; j <= b.length; j++) {
+      let d = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
       )
-  return rows[a.length][b.length]
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        d = Math.min(d, before[j - 2] + 1)
+      current[j] = d
+    }
+    before = previous
+    previous = current
+  }
+  return previous[b.length]
 }
 
-/*
- * Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil:
- * samme bokstaver uten bindestreker, eller høyst to tegn unna. `fs-buton` er
- * `fs-button`, `fs-knapp` er ingenting.
+/**
+ * Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil.
+ * `sure` er sant når navnet har de samme bokstavene uten bindestreker og
+ * understreker, som `onlinetext`. Ellers må navnet være høyst ett tegn unna,
+ * og to når det er langt nok til at to feil er sannsynlig: `fs-buton` er
+ * `fs-button`, mens `fs-tabs` ikke er `fs-table`. Svarene huskes per kjøring: den samme ukjente klassen kan stå på
+ * hver rad i en tabell, og avstanden skal regnes én gang.
  */
 export function closest(
   name: string,
   candidates: readonly string[],
-): string | undefined {
-  const same = candidates.find((c) => normalized(c) === normalized(name))
-  if (same) return same
+  cache?: Map<string, { name: string; sure: boolean } | undefined>,
+): { name: string; sure: boolean } | undefined {
+  if (cache?.has(name)) return cache.get(name)
+  const result = find(name, candidates)
+  cache?.set(name, result)
+  return result
+}
+
+function find(
+  name: string,
+  candidates: readonly string[],
+): { name: string; sure: boolean } | undefined {
+  const wanted = normalized(name)
+  const same = candidates.find((c) => normalized(c) === wanted)
+  if (same) return { name: same, sure: true }
+  const lower = name.toLowerCase()
+  const max = name.length >= 8 ? 2 : 1
   let best: string | undefined
-  let bestDistance = 3
+  let bestDistance = max + 1
   for (const candidate of candidates) {
-    const d = distance(name.toLowerCase(), candidate)
+    if (Math.abs(candidate.length - lower.length) > max) continue
+    const d = distance(lower, candidate)
     if (d < bestDistance) {
       bestDistance = d
       best = candidate
     }
   }
-  return best
+  return best ? { name: best, sure: false } : undefined
 }
 
 /** Bytter hvert treff med like mange mellomrom, så posisjonene står. */
@@ -243,6 +283,8 @@ type ReadAttribute = {
   end: number
   /** Der hele attributtet slutter, med verdi og anførselstegn. */
   valueEnd: number
+  /** Der mellomrommet foran attributtet begynner, så det kan tas bort helt. */
+  spaceStart: number
   /** Der selve verdien står, uten anførselstegn, når den finnes. */
   valueStart: number
 }
@@ -257,12 +299,14 @@ function readAttributes(body: string, offset: number): ReadAttribute[] {
     const start = offset + (hit.index ?? 0)
     const valueEnd = start + hit[0].length
     const quoted = hit[2] !== undefined || hit[3] !== undefined
+    const space = body.slice(0, hit.index ?? 0).match(/\s*$/)?.[0].length ?? 0
     out.push({
       name: hit[1].toLowerCase(),
       value,
       start,
       end: start + hit[1].length,
       valueEnd,
+      spaceStart: start - space,
       valueStart:
         value === undefined
           ? valueEnd
@@ -308,6 +352,7 @@ function checkAttribute(
           start: attribute.start,
           end: attribute.end,
           text: meant,
+          preferred: true,
         },
       }
     // I en tagg med mal i er navnene ikke til å stole på: `{{ if }}` blir
@@ -335,9 +380,10 @@ function checkAttribute(
           "for å slå det av.",
         fix: {
           title: `Ta bort ${name}`,
-          start: attribute.start,
+          start: attribute.spaceStart,
           end: attribute.valueEnd,
           text: "",
+          preferred: true,
         },
       }
     return undefined
@@ -413,6 +459,8 @@ function checkField(
 ): Finding[] {
   if (!/<[a-z]/i.test(content) || isTemplatedContent(content)) return []
   const base = { start: nameStart, end: nameEnd, link }
+  // Innrykket før første tagg, så en innsatt ledetekst får sin egen linje.
+  const leading = content.match(/^\s*/)?.[0] ?? ""
   const control = findControl(content)
   if (!control)
     return [
@@ -446,9 +494,10 @@ function checkField(
         "skjermleser leser det opp uten navn.",
       fix: {
         title: "Sett inn en ledetekst",
-        start: contentStart,
-        end: contentStart,
-        text: "<label>Ledetekst</label>",
+        start: contentStart + leading.length,
+        end: contentStart + leading.length,
+        text: `<label>Ledetekst</label>${leading.includes("\n") ? leading : ""}`,
+        preferred: true,
       },
     },
   ]
@@ -464,6 +513,7 @@ function checkField(
 function checkClasses(
   attributes: ReadAttribute[],
   classes: Classes,
+  cache: Map<string, { name: string; sure: boolean } | undefined>,
 ): Finding[] {
   const findings: Finding[] = []
   const classAttribute = attributes.find((a) => a.name === "class")
@@ -481,22 +531,23 @@ function checkClasses(
       present.push(info)
       continue
     }
-    const meant = closest(token, names)
+    const meant = closest(token, names, cache)
     findings.push({
       start,
       end: start + token.length,
       severity: "warning",
-      link: meant ? classes[meant].link : DOCS,
+      link: meant ? classes[meant.name].link : DOCS,
       message:
         `Klassen «${token}» finnes ikke i Fristil.` +
-        (meant ? ` Mente du ${meant}?` : ""),
+        (meant ? ` Mente du ${meant.name}?` : ""),
       ...(meant
         ? {
             fix: {
-              title: `Bytt til ${meant}`,
+              title: `Bytt til ${meant.name}`,
               start,
               end: start + token.length,
-              text: meant,
+              text: meant.name,
+              preferred: meant.sure,
             },
           }
         : {}),
@@ -505,8 +556,8 @@ function checkClasses(
   // Verdiene sjekkes også i en tagg med mal i: et rent attributt med en ren
   // verdi er til å stole på, det er bare navnene rundt malen som ikke er det.
   for (const attribute of attributes) {
-    if (attribute.value === undefined || isTemplatedValue(attribute.value))
-      continue
+    // Tom verdi er ingen verdi, og sjekkes ikke.
+    if (!attribute.value || isTemplatedValue(attribute.value)) continue
     for (const info of present) {
       const takes = info.attributes[attribute.name]
       if (!takes) continue
@@ -519,22 +570,24 @@ function checkClasses(
         ...takes.values,
         ...(takes.default ? [takes.default] : []),
       ])
+      const shown = attribute.value.replace(/\s+/g, " ")
       findings.push({
         start: attribute.start,
         end: attribute.valueEnd,
         severity: "warning",
         link: info.link,
         message:
-          `${attribute.name} kan ikke være «${attribute.value}» på ${info.title.toLowerCase()}. ` +
+          `${attribute.name} kan ikke være «${shown}» på ${info.title.toLowerCase()}. ` +
           `Lovlige verdier: ${list(takes.values)}` +
           (takes.default ? `, og ${takes.default} uten attributt.` : "."),
         ...(meant
           ? {
               fix: {
-                title: `Bytt til ${meant}`,
+                title: `Bytt til ${meant.name}`,
                 start: attribute.valueStart,
                 end: attribute.valueStart + attribute.value.length,
-                text: meant,
+                text: meant.name,
+                preferred: meant.sure,
               },
             }
           : {}),
@@ -555,6 +608,7 @@ export function diagnose(
   const findings: Finding[] = []
   const known = Object.keys(elements)
   let labels: Set<string> | undefined
+  const nearest = new Map<string, { name: string; sure: boolean } | undefined>()
 
   // Klassene, på alle tagger.
   for (const hit of source.matchAll(/<([a-z][a-z0-9-]*)(?=[\s/>])/gi)) {
@@ -563,7 +617,9 @@ export function diagnose(
     if (end < 0) continue
     const body = source.slice(nameEnd, end).replace(/\/$/, "")
     if (!/\bclass\s*=/i.test(body)) continue
-    findings.push(...checkClasses(readAttributes(body, nameEnd), classes))
+    findings.push(
+      ...checkClasses(readAttributes(body, nameEnd), classes, nearest),
+    )
   }
 
   for (const hit of source.matchAll(/<(fs-[a-z0-9-]*)(?=[\s/>])/gi)) {

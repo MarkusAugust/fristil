@@ -10,12 +10,19 @@
  *     komponentsiden som lenke. Endringer ventes ut i et kort øyeblikk, og
  *     en ventende kjøring for et dokument som lukkes avlyses;
  *   - funn med en rettelse blir en lyspære, som bytter navnet, tar bort
- *     attributtet eller setter inn ledeteksten;
+ *     attributtet eller setter inn ledeteksten. Den sikre rettelsen, samme
+ *     bokstaver skrevet annerledes, er foretrukket; et forslag på avstand
+ *     er et forslag;
  *   - inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en
  *     klasse tar, som `data-variant` på `fs-button`, fullføres verdiene.
  *     I andre språk enn HTML, der VS Codes egen HTML-tjeneste ikke er med,
- *     fullføres også `<fs-…>`-elementene og attributtene deres;
- *   - musa over en `fs-`-klasse gir komponenten, beskrivelsen og lenken.
+ *     fullføres også `<fs-…>`-elementene, attributtene og verdiene deres;
+ *   - musa over en `fs-`-klasse i et `class`-attributt gir komponenten,
+ *     beskrivelsen og lenken.
+ *
+ * Taggen markøren står i leses fra et vindu bakover, ikke fra hele
+ * dokumentet: fullføringen utløses på mellomrom og bindestrek, og en stor
+ * fil skal ikke kopieres for hvert tastetrykk.
  */
 
 import { readFileSync } from "node:fs"
@@ -30,6 +37,8 @@ import {
 
 const DELAY_MS = 250
 const SOURCE = "Fristil"
+/** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
+const WINDOW = 4000
 
 export function activate(context: vscode.ExtensionContext) {
   const read = <T>(file: string): T =>
@@ -126,7 +135,7 @@ export function activate(context: vscode.ExtensionContext) {
           vscode.CodeActionKind.QuickFix,
         )
         action.diagnostics = [diagnostic]
-        action.isPreferred = true
+        action.isPreferred = finding.fix.preferred ?? false
         action.edit = new vscode.WorkspaceEdit()
         action.edit.replace(
           document.uri,
@@ -138,6 +147,47 @@ export function activate(context: vscode.ExtensionContext) {
       return actions
     },
   }
+
+  /* Taggen markøren står i */
+
+  type Tag = {
+    /** Fra `<` til markøren. */
+    before: string
+    /** Fra markøren til `>`, eller til vinduet slutter. */
+    after: string
+  }
+
+  const tagAt = (
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): Tag | undefined => {
+    const offset = document.offsetAt(position)
+    const before = document.getText(
+      new vscode.Range(
+        document.positionAt(Math.max(0, offset - WINDOW)),
+        position,
+      ),
+    )
+    const start = before.lastIndexOf("<")
+    if (start < 0) return undefined
+    const head = before.slice(start)
+    if (head.includes(">")) return undefined
+    const after = document.getText(
+      new vscode.Range(position, document.positionAt(offset + WINDOW)),
+    )
+    const end = after.indexOf(">")
+    return { before: head, after: end < 0 ? after : after.slice(0, end) }
+  }
+
+  /** Klassene i taggen, foran og bak markøren. */
+  const classesIn = (tag: Tag) =>
+    (tag.before + tag.after)
+      .match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1]
+      ?.split(/\s+/) ?? []
+
+  /** Om markøren står inne i verdien til `class`. */
+  const inClassValue = (tag: Tag) =>
+    /\bclass\s*=\s*["']?[^"'>]*$/i.test(tag.before)
 
   /* Fullføringen */
 
@@ -160,106 +210,103 @@ export function activate(context: vscode.ExtensionContext) {
     )
   }
 
-  /** Teksten fra taggen begynner til markøren, om markøren står i en tagg. */
-  const tagBefore = (
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ) => {
-    const before = document.getText(
-      new vscode.Range(new vscode.Position(0, 0), position),
-    )
-    const start = before.lastIndexOf("<")
-    if (start < 0) return undefined
-    const tag = before.slice(start)
-    return tag.includes(">") ? undefined : tag
-  }
-
   const completions: vscode.CompletionItemProvider = {
     provideCompletionItems(document, position) {
-      const tag = tagBefore(document, position)
+      const tag = tagAt(document, position)
       if (!tag) return undefined
       const items: vscode.CompletionItem[] = []
       const wordRange =
         document.getWordRangeAtPosition(position, /[A-Za-z0-9_-]+/) ??
         new vscode.Range(position, position)
+      const item = (
+        label: string,
+        kind: vscode.CompletionItemKind,
+        detail?: string,
+        documentation?: vscode.MarkdownString,
+      ) => {
+        const it = new vscode.CompletionItem(label, kind)
+        it.detail = detail
+        it.documentation = documentation
+        it.range = wordRange
+        items.push(it)
+      }
 
       // Klassene, inne i class="…".
-      if (/\bclass\s*=\s*["']?[^"'>]*$/i.test(tag)) {
-        for (const name of classNames) {
-          const item = new vscode.CompletionItem(
+      if (inClassValue(tag)) {
+        for (const name of classNames)
+          item(
             name,
             vscode.CompletionItemKind.Value,
+            classes[name].title,
+            classDocumentation(name),
           )
-          item.detail = classes[name].title
-          item.documentation = classDocumentation(name)
-          item.range = wordRange
-          items.push(item)
-        }
         return items
       }
 
-      // Verdiene til et attributt en klasse på taggen tar.
-      const inValue = /([A-Za-z][\w:-]*)\s*=\s*["']?[^"'>]*$/.exec(tag)
+      const isHtml = document.languageId === "html"
+      const element = /^<(fs-[a-z0-9-]+)(?=[\s/])/i
+        .exec(tag.before)?.[1]
+        .toLowerCase()
+
+      // Verdiene til et attributt: det en klasse på taggen tar, eller det et
+      // <fs-…>-element tar utenfor HTML.
+      const inValue = /([A-Za-z][\w:-]*)\s*=\s*["']?[^"'>]*$/.exec(tag.before)
       if (inValue) {
         const attribute = inValue[1].toLowerCase()
-        const present =
-          tag.match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1]?.split(/\s+/) ?? []
-        for (const name of present) {
+        for (const name of classesIn(tag)) {
           const takes = classes[name]?.attributes[attribute]
           if (!takes) continue
-          for (const value of takes.values) {
-            const item = new vscode.CompletionItem(
+          for (const value of takes.values)
+            item(
               value,
               vscode.CompletionItemKind.EnumMember,
+              `${attribute} på ${classes[name].title}`,
             )
-            item.detail = `${attribute} på ${classes[name].title}`
-            item.range = wordRange
-            items.push(item)
-          }
-          if (takes.default) {
-            const item = new vscode.CompletionItem(
+          if (takes.default)
+            item(
               takes.default,
               vscode.CompletionItemKind.EnumMember,
+              `standard: det samme som uten ${attribute}`,
             )
-            item.detail = `standard: det samme som uten ${attribute}`
-            item.range = wordRange
-            items.push(item)
-          }
         }
-        if (items.length) return items
+        if (!isHtml && element && elements[element]) {
+          const takes = elements[element].attributes[attribute]
+          if (takes?.type === "values")
+            for (const value of takes.values)
+              item(
+                value,
+                vscode.CompletionItemKind.EnumMember,
+                `${attribute} på <${element}>`,
+              )
+        }
+        return items.length ? items : undefined
       }
 
       // Utenfor HTML finnes ingen HTML-tjeneste, så elementene og attributtene
       // deres fullføres her.
-      if (document.languageId === "html") return undefined
-      const element = /^<(fs-[a-z0-9-]*)$/i.exec(tag)
-      if (element) {
-        for (const name of elementNames) {
-          const item = new vscode.CompletionItem(
+      if (isHtml) return undefined
+      if (/^<fs-[a-z0-9-]*$/i.test(tag.before)) {
+        for (const name of elementNames)
+          item(
             name,
             vscode.CompletionItemKind.Class,
+            undefined,
+            markdown(`[Dokumentasjon](${elements[name].link})`),
           )
-          item.documentation = markdown(
-            `[Dokumentasjon](${elements[name].link})`,
-          )
-          item.range = wordRange
-          items.push(item)
-        }
         return items
       }
-      const inElement = /^<(fs-[a-z0-9-]+)\s[^>]*?([a-z-]*)$/i.exec(tag)
-      if (inElement && elements[inElement[1].toLowerCase()]) {
-        for (const [name, a] of Object.entries(
-          elements[inElement[1].toLowerCase()].attributes,
-        )) {
-          const item = new vscode.CompletionItem(
+      // Attributtnavn: markøren står i taggen, utenfor anførselstegn.
+      if (
+        element &&
+        elements[element] &&
+        /^<[^"'>]*(?:"[^"]*"[^"'>]*|'[^']*'[^"'>]*)*$/.test(tag.before)
+      ) {
+        for (const [name, a] of Object.entries(elements[element].attributes))
+          item(
             name,
             vscode.CompletionItemKind.Property,
+            a.type === "values" ? a.values.join(" | ") : a.type,
           )
-          item.detail = a.type === "values" ? a.values.join(" | ") : a.type
-          item.range = wordRange
-          items.push(item)
-        }
         return items
       }
       return undefined
@@ -277,6 +324,9 @@ export function activate(context: vscode.ExtensionContext) {
       if (!range) return undefined
       const word = document.getText(range)
       if (!classes[word]) return undefined
+      // Bare i et class-attributt: «bruk fs-button her» i løpende tekst er tekst.
+      const tag = tagAt(document, range.start)
+      if (!tag || !inClassValue(tag)) return undefined
       return new vscode.Hover(classDocumentation(word), range)
     },
   }

@@ -36,6 +36,7 @@ type Case = {
   /** Rettelsen anvendt på html skal gi dette. */
   fixed?: string
   fixTitle?: string
+  fixPreferred?: boolean
 }
 
 const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
@@ -401,12 +402,6 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "en type input ikke tar",
-    html: `<input class="fs-input" type="color">`,
-    count: 1,
-    mentions: ["type kan ikke være «color»"],
-  },
-  {
     name: "et attributt en annen klasse tar, sjekkes ikke her",
     html: `<div class="fs-card" data-variant="ghost"></div><span class="fs-badge" data-size="xl"></span>`,
     count: 1,
@@ -425,11 +420,18 @@ const cases: Case[] = [
     fixTitle: "Bytt til online-text",
   },
   {
-    name: "rettelsen for et boolsk attributt tar med verdien",
+    name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
     html: `<fs-field invalid="false" id="x"><label>N</label><input></fs-field>`,
     count: 1,
-    fixed: `<fs-field  id="x"><label>N</label><input></fs-field>`,
+    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
     fixTitle: "Ta bort invalid",
+    fixPreferred: true,
+  },
+  {
+    name: "rettelsen for et boolsk attributt sist i taggen",
+    html: `<fs-field id="x" invalid="false"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
   },
   {
     name: "rettelsen for et felt uten ledetekst",
@@ -437,6 +439,66 @@ const cases: Case[] = [
     count: 1,
     fixed: `<fs-field><label>Ledetekst</label><input class="fs-input"></fs-field>`,
     fixTitle: "Sett inn en ledetekst",
+  },
+  {
+    name: "ledeteksten får sin egen linje med samme innrykk",
+    html: `<fs-field>\n  <input class="fs-input">\n</fs-field>`,
+    count: 1,
+    fixed: `<fs-field>\n  <label>Ledetekst</label>\n  <input class="fs-input">\n</fs-field>`,
+  },
+  {
+    name: "data-required på ledetekst og legend",
+    html: `<label class="fs-label" data-required="stjerne">N</label><legend class="fs-legend" data-required="text">G</legend>`,
+    count: 1,
+    mentions: ["data-required kan ikke være «stjerne»", "symbol, text"],
+  },
+  {
+    name: "data-variant på input, som CSS-en leser",
+    html: `<input class="fs-input" data-variant="dato" type="date"><input class="fs-input" data-variant="date" type="date">`,
+    count: 1,
+    mentions: [
+      "data-variant kan ikke være «dato»",
+      "date, datetime-local, time",
+    ],
+    fixed: `<input class="fs-input" data-variant="date" type="date"><input class="fs-input" data-variant="date" type="date">`,
+  },
+  {
+    name: "type på input er HTML sitt eget, og sjekkes ikke",
+    html: `<input class="fs-input" type="color"><input class="fs-input" type="hidden"><input class="fs-input" type="file">`,
+    count: 0,
+  },
+  {
+    name: "et kort navn får ikke forslag to tegn unna",
+    html: `<div class="fs-tabs"></div>`,
+    count: 1,
+    notMentions: ["Mente du"],
+  },
+  {
+    name: "en byttet plass er én feil, og forslaget er ikke foretrukket",
+    html: `<button class="fs-button" data-variant="ghots"></button>`,
+    count: 1,
+    fixTitle: "Bytt til ghost",
+    fixPreferred: false,
+  },
+  {
+    name: "samme bokstaver er den sikre rettelsen",
+    html: `<fs-connection-status onlinetext="x"></fs-connection-status>`,
+    count: 1,
+    mentions: ["Mente du online-text"],
+    fixPreferred: true,
+  },
+  {
+    name: "en tom verdi er ingen verdi",
+    html: `<button class="fs-button" data-variant=""></button>`,
+    count: 0,
+  },
+  {
+    name: "samme ukjente klasse mange ganger går fort",
+    html: Array.from(
+      { length: 3000 },
+      () => `<td class="fs-cell fs-celle">x</td>`,
+    ).join("\n"),
+    count: 6000,
   },
   {
     name: "funnene kommer i tekstens rekkefølge",
@@ -464,6 +526,7 @@ for (const [tag, snippet] of Object.entries(snippets()))
     count: 0,
   })
 
+const started = performance.now()
 for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
   let found: ReturnType<typeof diagnose>
@@ -496,20 +559,31 @@ for (const c of cases) {
   }
   if (!first.link.startsWith("https://fristil.netlify.app/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
-  if (c.fixed !== undefined) {
+  if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")
     else {
       const applied =
         c.html.slice(0, first.fix.start) +
         first.fix.text +
         c.html.slice(first.fix.end)
-      if (applied !== c.fixed)
+      if (c.fixed !== undefined && applied !== c.fixed)
         fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
       if (c.fixTitle && first.fix.title !== c.fixTitle)
         fail(`rettelsen heter «${first.fix.title}», ikke «${c.fixTitle}»`)
+      const preferred = first.fix.preferred ?? false
+      if (c.fixPreferred !== undefined && preferred !== c.fixPreferred)
+        fail(
+          `rettelsen er ${preferred ? "" : "ikke "}foretrukket, og skulle ${c.fixPreferred ? "" : "ikke "}vært det`,
+        )
     }
   }
 }
+
+const elapsed = performance.now() - started
+if (elapsed > 2000)
+  findings.push(
+    `alle tilfellene tok ${Math.round(elapsed)} ms, og skal ta under 2000`,
+  )
 
 if (findings.length) {
   console.error(
