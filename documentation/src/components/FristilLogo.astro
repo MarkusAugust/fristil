@@ -2,9 +2,11 @@
 export interface Props {
   size?: "sm" | "md" | "lg"
   className?: string
+  /** Ordet «Designsystem» under navnet. Forsiden har det i overskriften rett under, så der er det av. */
+  subtitle?: boolean
 }
 
-const { size = "md", className = "" } = Astro.props
+const { size = "md", className = "", subtitle = true } = Astro.props
 
 const sizeMap = {
   sm: { svg: 40, gap: "12px", textSize: "1.4rem", subtitleSize: "0.65rem" },
@@ -93,10 +95,12 @@ const glowId = `fristilGlow-${size}`
     >
       Fristil
     </span>
-    <span
-      style={`font-size: ${s.subtitleSize}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: currentColor; opacity: 0.6; margin-top: 4px;`}
-    >
-      Designsystem
-    </span>
+    {subtitle && (
+      <span
+        style={`font-size: ${s.subtitleSize}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: currentColor; opacity: 0.6; margin-top: 4px;`}
+      >
+        Designsystem
+      </span>
+    )}
   </div>
 </div>
