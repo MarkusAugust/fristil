@@ -508,7 +508,7 @@ const cases: Case[] = [
       () => `<td class="fs-cell fs-celle">x</td>`,
     ).join("\n"),
     count: 6000,
-    maxMs: 200,
+    maxMs: 60,
   },
   {
     name: "funnene kommer i tekstens rekkefølge",
