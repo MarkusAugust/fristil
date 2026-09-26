@@ -218,6 +218,12 @@ export function closest(
   return result
 }
 
+function commonPrefix(a: string, b: string): number {
+  let i = 0
+  while (i < a.length && i < b.length && a[i] === b[i]) i++
+  return i
+}
+
 function find(
   name: string,
   candidates: readonly string[],
@@ -232,7 +238,14 @@ function find(
   for (const candidate of candidates) {
     if (Math.abs(candidate.length - lower.length) > max) continue
     const d = distance(lower, candidate)
-    if (d < bestDistance) {
+    // Ved lik avstand vinner den som deler lengst begynnelse: `fs-tabel` er
+    // `fs-table`, ikke `fs-label`.
+    if (
+      d < bestDistance ||
+      (d === bestDistance &&
+        best &&
+        commonPrefix(lower, candidate) > commonPrefix(lower, best))
+    ) {
       bestDistance = d
       best = candidate
     }
@@ -257,7 +270,7 @@ export function withoutHidden(text: string): string {
  * `<?…?>` og `<%…%>` inne i taggen hoppes over, så PHP og ASP ikke
  * avslutter den før tiden.
  */
-function tagEnd(text: string, from: number): number {
+export function tagEnd(text: string, from: number): number {
   let quote: string | null = null
   for (let i = from; i < text.length; i++) {
     const char = text[i]
@@ -508,7 +521,7 @@ function checkField(
  * `fs-button` står på en `<button>`. Et klassenavn som begynner på `fs-` og
  * ikke finnes, meldes med det nærmeste kjente som forslag. Har taggen en
  * kjent klasse, sjekkes verdiene på attributtene klassen tar, som
- * `data-variant` på `fs-button` og `type` på `fs-input`.
+ * `data-variant` på `fs-button` og `data-state` på `fs-input`.
  */
 function checkClasses(
   attributes: ReadAttribute[],

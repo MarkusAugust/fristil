@@ -465,7 +465,7 @@ const cases: Case[] = [
     fixed: `<input class="fs-input" data-variant="date" type="date"><input class="fs-input" data-variant="date" type="date">`,
   },
   {
-    name: "type på input er HTML sitt eget, og sjekkes ikke",
+    name: "type på input er HTML sitt eget, og sjekkes ikke, heller ikke hidden",
     html: `<input class="fs-input" type="color"><input class="fs-input" type="hidden"><input class="fs-input" type="file">`,
     count: 0,
   },
@@ -488,6 +488,47 @@ const cases: Case[] = [
     count: 1,
     mentions: ["Mente du online-text"],
     fixPreferred: true,
+  },
+  {
+    name: "et langt navn får to tegns slingring",
+    html: `<p class="fs-eror-txt"></p>`,
+    count: 1,
+    mentions: ["Mente du fs-error-text?"],
+  },
+  {
+    name: "lengdefilteret slipper gjennom akkurat på grensen",
+    html: `<a class="fs-lin"></a>`,
+    count: 1,
+    mentions: ["Mente du fs-link?"],
+  },
+  {
+    name: "ved lik avstand vinner den som deler begynnelsen",
+    html: `<table class="fs-tabel"></table>`,
+    count: 1,
+    mentions: ["Mente du fs-table?"],
+  },
+  {
+    name: "«Ta bort» over flere linjer",
+    html: `<fs-field\n  invalid="false"\n  id="x"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field\n  id="x"><label>N</label><input></fs-field>`,
+  },
+  {
+    name: "rettelse på en klasse uten anførselstegn",
+    html: `<p class=fs-buton></p>`,
+    count: 1,
+    fixed: `<p class=fs-button></p>`,
+  },
+  {
+    name: "rettelse på en verdi uten anførselstegn",
+    html: `<button class=fs-button data-variant=ghots></button>`,
+    count: 1,
+    fixed: `<button class=fs-button data-variant=ghost></button>`,
+  },
+  {
+    name: "to klasser som tar samme attributt gir ett funn",
+    html: `<input class="fs-input fs-search" data-state="ugyldig">`,
+    count: 1,
   },
   {
     name: "en tom verdi er ingen verdi",
@@ -547,8 +588,10 @@ for (const c of cases) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue
   }
+  // Tidsgrensen er en lokal vakt for hurtigbufferen, ikke en påstand om en
+  // delt CI-maskin: der kan veggklokka gi rødt uten at noe er galt.
   const took = performance.now() - before
-  if (c.maxMs && took > c.maxMs)
+  if (c.maxMs && took > c.maxMs && !process.env.CI)
     fail(`tok ${Math.round(took)} ms, og skal ta under ${c.maxMs}`)
   if (found.length !== c.count) {
     fail(

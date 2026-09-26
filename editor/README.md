@@ -42,8 +42,8 @@ der ingen kompilator ser på attributtene.
   attributtene deres og de lovlige verdiene. Inne i `class="…"` fullføres
   `fs-`-klassene, og inne i et attributt en klasse tar, som `data-variant`
   på `fs-button`, fullføres verdiene byggefunksjonen kjenner.
-- **Forklaring** når du holder musa over et element, et attributt eller en
-  `fs-`-klasse, med lenke til komponentsiden.
+- **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer
+  også over et element eller et attributt, med lenke til komponentsiden.
 - **Snippets**: skriv `fs-popover`, velg snippeten øverst i lista, og
   markupen fra komponentsiden står der. Utvidelsen setter snippets øverst i
   HTML-filer, for ellers ligger Emmet der: `fs-popover` er også en

@@ -33,6 +33,7 @@ import {
   diagnose,
   type Elements,
   type Finding,
+  tagEnd,
 } from "./diagnostics"
 
 const DELAY_MS = 250
@@ -171,23 +172,26 @@ export function activate(context: vscode.ExtensionContext) {
     const start = before.lastIndexOf("<")
     if (start < 0) return undefined
     const head = before.slice(start)
-    if (head.includes(">")) return undefined
+    // En `>` inne i en verdi, som `x-show="n > 0"`, avslutter ikke taggen.
+    if (tagEnd(head, 1) >= 0) return undefined
     const after = document.getText(
       new vscode.Range(position, document.positionAt(offset + WINDOW)),
     )
-    const end = after.indexOf(">")
+    const end = tagEnd(after, 0)
     return { before: head, after: end < 0 ? after : after.slice(0, end) }
   }
 
-  /** Klassene i taggen, foran og bak markøren. */
+  /** Klassene i taggen, foran og bak markøren, med eller uten anførselstegn. */
   const classesIn = (tag: Tag) =>
     (tag.before + tag.after)
-      .match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1]
+      .match(/(?:^|\s):?class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i)
+      ?.slice(1)
+      .find((v) => v !== undefined)
       ?.split(/\s+/) ?? []
 
   /** Om markøren står inne i verdien til `class`. */
   const inClassValue = (tag: Tag) =>
-    /\bclass\s*=\s*["']?[^"'>]*$/i.test(tag.before)
+    /(?:^|\s):?class\s*=\s*(?:"[^"]*|'[^']*|[^\s"'>]*)$/i.test(tag.before)
 
   /* Fullføringen */
 
