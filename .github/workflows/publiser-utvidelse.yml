@@ -15,8 +15,9 @@ jobs:
     name: Pakk og publiser
     runs-on: ubuntu-latest
     env:
-      # Open VSX har heller ingen OIDC. Tokenet lages på open-vsx.org og
-      # legges inn som hemmeligheten OVSX_PAT. Står på jobben, fordi et
+      # Open VSX kan også publisere over OIDC, men det krever id-token: write
+      # og en «trusted publisher» på open-vsx.org. Her er det et token, laget
+      # der og lagt inn som hemmeligheten OVSX_PAT. Står på jobben, fordi et
       # steg ikke ser sin egen env i sitt eget if.
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
