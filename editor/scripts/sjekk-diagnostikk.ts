@@ -67,6 +67,22 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "Angulars strukturdirektiver og i18n, og hyperscripts _, slipper gjennom",
+    html: `<fs-popover *ngIf="x" i18n placement="top-start"></fs-popover><fs-dialog _="on click toggle @open"></fs-dialog>`,
+    count: 0,
+  },
+  {
+    name: "ledetekst via kontrollens id når control-id peker et annet sted",
+    html: `<label for="epost">E-post</label><fs-field control-id="x"><input id="epost"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "et egendefinert element som begynner på select er ingen kontroll",
+    html: `<fs-field><label-x>N</label-x><select-all></select-all></fs-field>`,
+    count: 1,
+    mentions: ["fant ingen kontroll"],
+  },
+  {
     name: "Alpine i taggen gjør ikke resten til en mal",
     html: `<fs-popover @click="a" placemnet="top-start"></fs-popover>`,
     count: 1,

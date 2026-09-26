@@ -16,11 +16,12 @@
  *   1. Elementet finnes. `<fs-dialog-header>` finnes ikke, og nettleseren
  *      sier ingenting om det.
  *   2. Attributtet finnes på elementet. Et navn som bare skiller seg fra et
- *      kjent i bindestreker eller store bokstaver, som `onlinetext`, meldes
- *      som skrivefeil. Ellers slipper globale HTML-attributter, `data-*`,
- *      `aria-*`, hendelser og rammeverkenes egne gjennom: `hx-`, `x-`,
- *      `v-`, og alt med `:`, `@`, klammer, parenteser eller `%$#?` i
- *      navnet.
+ *      kjent i bindestreker, understreker eller store bokstaver, som
+ *      `onlinetext`, meldes som skrivefeil, også i en tagg med mal i.
+ *      Ellers slipper globale HTML-attributter, `data-*`, `aria-*`,
+ *      hendelser og rammeverkenes egne gjennom: `hx-`, `x-`, `v-`,
+ *      hyperscripts `_`, Angulars `i18n`, og alt med `:`, `@`, `*`,
+ *      klammer, parenteser eller `%$#?` i navnet.
  *   3. Verdien er lovlig: i den lukkede lista der det finnes en, et tall der
  *      det skal være et tall, og ikke `="false"` på et boolsk attributt, som
  *      betyr på.
@@ -31,9 +32,9 @@
  * Markup som blir til på en server er ofte en mal, og en mal er ikke hel:
  * `{{ if .Feil }}invalid{{ end }}` i en tagg, `{{ template "input" . }}`
  * der kontrollen skulle stått. Der det står malsyntaks, Go, Jinja, PHP, ASP,
- * JS-maler eller Razor, holder diagnostikken seg unna: attributtnavn sjekkes
- * ikke i en tagg med mal i, en verdi med mal i sjekkes ikke, og et felt med
- * mal i regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en
+ * JS-maler eller Razor, holder diagnostikken seg unna: ukjente attributtnavn
+ * meldes ikke i en tagg med mal i, en verdi med mal i sjekkes ikke, og et
+ * felt med mal i regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en
  * mal.
  *
  * Posisjonene er tegnindekser i den opprinnelige teksten. Kommentarer,
@@ -69,9 +70,10 @@ const DOCS = "https://fristil.netlify.app/components/"
 /*
  * Attributter ethvert element kan ha, uten at komponenten leser dem: de
  * globale attributtene i HTML. Prefiksene under er `data-*`, `aria-*`,
- * hendelsene, og HTMX, Alpine og Vue. Svelte, Angular, Alpines korte former
- * og malspråkenes rester har `:`, `@`, klammer, parenteser eller `%$#?` i
- * navnet, og det har aldri et Fristil-attributt. Et navn utenfor alt dette
+ * hendelsene, HTMX, Alpine og Vue, og hyperscripts `_` og Angulars `i18n`.
+ * Svelte, Angular, Alpines korte former og malspråkenes rester har `:`,
+ * `@`, `*`, klammer, parenteser eller `%$#?` i navnet, og det har aldri et
+ * Fristil-attributt. Et navn utenfor alt dette
  * som komponenten ikke kjenner, er nesten alltid en skrivefeil.
  */
 const GLOBAL = new Set([
@@ -110,8 +112,9 @@ const GLOBAL = new Set([
 
 const isGlobal = (name: string) =>
   GLOBAL.has(name) ||
-  /^(data-|aria-|on|hx-|x-|v-)/.test(name) ||
-  /[:@[\](){}%$#?]/.test(name)
+  name === "_" ||
+  /^(data-|aria-|on|hx-|x-|v-|i18n)/.test(name) ||
+  /[:@*[\](){}%$#?]/.test(name)
 
 /*
  * Go, Jinja, PHP, ASP, JS-maler og Razor. Razors `@Navn` regnes bare i en
@@ -274,7 +277,7 @@ function checkAttribute(
  * ikke har fylt ennå, og meldes ikke. Det samme gjelder et element med mal
  * i: kontrollen kan stå i en partial.
  */
-const CONTROL = /<(input|textarea|select)\b/gi
+const CONTROL = /<(input|textarea|select)(?=[\s/>])/gi
 
 /** Den første kontrollen i innholdet, slik komponenten teller dem: ikke `type="hidden"`. */
 function findControl(content: string): ReadAttribute[] | undefined {
@@ -328,14 +331,18 @@ function checkField(
           "kan ikke lages. Sett inn et <input>, <textarea> eller <select>.",
       },
     ]
-  if (/<label\b/i.test(content)) return []
+  if (/<label(?=[\s/>])/i.test(content)) return []
 
   const has = (name: string) => control.find((a) => a.name === name)
   if (has("aria-label") || has("aria-labelledby")) return []
 
-  const id =
-    attributes.find((a) => a.name === "control-id")?.value ?? has("id")?.value
-  if (id && labels.has(id)) return []
+  // Komponenten finner ledeteksten via kontrollens id ved første
+  // synkronisering, og via control-id siden. Begge teller.
+  const ids = [
+    attributes.find((a) => a.name === "control-id")?.value,
+    has("id")?.value,
+  ]
+  if (ids.some((id) => id && labels.has(id))) return []
   return [
     {
       ...base,
