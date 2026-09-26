@@ -23,7 +23,9 @@ der ingen kompilator ser på attributtene.
   verdi utenfor lista, et tall som ikke er et tall, og `invalid="false"`,
   som betyr på. `<fs-field>` uten kontroll eller uten ledetekst får den
   samme beskjeden som komponenten gir i nettleseren, med de samme
-  unntakene. Kommentarer, skript og stilark leses ikke, og der det står
+  unntakene, med én grense: en `<label for>` utenfor feltet må stå i samme
+  fil, for utvidelsen ser én fil om gangen. Kommentarer, skript og stilark
+  leses ikke, og der det står
   malsyntaks, Go, Jinja, PHP, ASP, JS-maler eller Razor, holder den seg unna: en mal er
   ikke hel, og kontrollen kan stå i en partial.
 
