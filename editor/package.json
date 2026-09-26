@@ -3,8 +3,9 @@
   "displayName": "Fristil",
   "description": "Fullføring, forklaringer, snippets og feilmeldinger for <fs-*>-elementene i Fristil-designsystemet.",
   "version": "0.2.0",
-  "publisher": "fristil",
+  "publisher": "Fristil",
   "license": "MIT",
+  "icon": "ikon.png",
   "private": true,
   "repository": {
     "type": "git",
