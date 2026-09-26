@@ -18,16 +18,15 @@ der ingen kompilator ser på attributtene.
   markupen fra komponentsiden står der. Utvidelsen setter snippets øverst i
   HTML-filer, for ellers ligger Emmet der: `fs-popover` er også en
   Emmet-forkortelse, og Tab tar det som ligger øverst.
-- **Feilmeldinger**, som røde og gule streker med komponentsiden som lenke:
-  et `<fs-…>`-element som ikke finnes, et attributt elementet ikke har, en
-  verdi utenfor lista, et tall som ikke er et tall, og `invalid="false"`,
-  som betyr på. `<fs-field>` uten kontroll eller uten ledetekst får den
-  samme beskjeden som komponenten gir i nettleseren, med de samme
-  unntakene, med én grense: en `<label for>` utenfor feltet må stå i samme
-  fil, for utvidelsen ser én fil om gangen. Kommentarer, skript og stilark
-  leses ikke, og der det står
-  malsyntaks, Go, Jinja, PHP, ASP, JS-maler eller Razor, holder den seg unna: en mal er
-  ikke hel, og kontrollen kan stå i en partial.
+- **Feilmeldinger**, som røde og gule streker med komponentsiden som lenke: et
+  `<fs-…>`-element som ikke finnes, et attributt elementet ikke har, en verdi
+  utenfor lista, et tall som ikke er et tall, og `invalid="false"`, som betyr
+  på. `<fs-field>` uten kontroll eller uten ledetekst får den samme beskjeden
+  som komponenten gir i nettleseren, med de samme unntakene, med én grense: en
+  `<label for>` utenfor feltet må stå i samme fil, for utvidelsen ser én fil
+  om gangen. Kommentarer, skript og stilark leses ikke, og der det står
+  malsyntaks, Go, Jinja, PHP, ASP, JS-maler eller Razor, holder den seg unna:
+  en mal er ikke hel, og kontrollen kan stå i en partial.
 
 Det utvidelsen ikke gjør, er å validere HTML. En `</body>` for mye er en
 jobb for en HTML-linter, og Fristil sier bare fra om Fristil.
