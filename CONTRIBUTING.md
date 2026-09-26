@@ -123,6 +123,13 @@ token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
 som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
 opprettes der før første utgivelse.
 
+Open VSX, som VSCodium og Cursor henter utvidelser fra, får den samme
+vsix-en i samme kjøring. Det trenger hemmeligheten `OVSX_PAT`: et token fra
+open-vsx.org, laget av den som eier navnerommet `Fristil` der. Navnerommet
+må hete det samme som `publisher` i `editor/package.json`, og opprettes én
+gang med `bunx ovsx create-namespace Fristil -p <token>`. Mangler
+hemmeligheten, hopper arbeidsflyten over steget, så Marketplace går som før.
+
 ## Dokumentasjonen
 
 Teksten er på norsk bokmål og skal lese som om en norsk utvikler har skrevet
