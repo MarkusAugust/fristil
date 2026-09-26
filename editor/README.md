@@ -8,6 +8,33 @@ i `@fristil/designsystem/react-jsx`. Utvidelsen finnes for markup som blir
 til uten JavaScript, som en Go-mal, en Razor-visning eller håndskrevet HTML,
 der ingen kompilator ser på attributtene.
 
+## Slik kommer du i gang
+
+1. **Installer utvidelsen.** Søk etter «Fristil» under Extensions i VS Code,
+   eller kjør `code --install-extension Fristil.fristil-vscode`.
+2. **Installer Fristil i appen.** Pakken har ingen avhengigheter:
+
+   ```bash
+   npm install @fristil/designsystem
+   ```
+
+   Ta med tokens og stilarket til det du bruker, og registrer
+   web-komponentene du bruker, én gang for hele appen:
+
+   ```js
+   import "@fristil/designsystem/tokens.css"
+   import "@fristil/designsystem/field.css"
+   import { defineFsField } from "@fristil/designsystem/field"
+
+   defineFsField()
+   ```
+
+   Uten byggverktøy hentes de samme filene fra en CDN. Det, og resten, står
+   i [kom i gang](https://fristil.netlify.app/kom-i-gang/).
+3. **Skriv markupen.** Åpne en HTML-fil, skriv `<fs-` og velg fra lista, eller
+   skriv `fs-field` og trykk Tab for markupen fra komponentsiden. Hold musa
+   over et element for forklaringen, og se etter røde og gule streker.
+
 ## Det du får
 
 - **Fullføring** av `<fs-field>`, `<fs-popover>` og de andre elementene, med
