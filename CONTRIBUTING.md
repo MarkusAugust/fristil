@@ -110,6 +110,17 @@ token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
 som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
 opprettes der før første utgivelse.
 
+## Dokumentasjonen
+
+Teksten er på norsk bokmål og skal lese som om en norsk utvikler har skrevet
+den. Anglisismer i brødtekst oversettes, overskrifter har stor forbokstav
+bare i første ord, og eksempler skal vise hvordan komponenten faktisk tas i
+bruk, med import, registrering og realistiske verdier.
+
+Levende eksempler går gjennom `Preview.astro`, som legger innholdet i en
+shadow root. Uten isolasjonen treffer dokumentasjonssidens egen CSS
+eksempelet, og du ser ikke lenger det en konsument får.
+
 ## Commit-meldinger
 
 På norsk, i imperativ, med et prefiks som sier hva slags endring det er: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`. Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
