@@ -15,9 +15,12 @@
  *
  *   1. Elementet finnes. `<fs-dialog-header>` finnes ikke, og nettleseren
  *      sier ingenting om det.
- *   2. Attributtet finnes på elementet. Globale HTML-attributter, `data-*`,
- *      `aria-*`, hendelser og rammeverkenes egne (`hx-`, `x-`, `v-`, og alt
- *      med `:`, `@`, klammer eller parenteser i navnet) slipper gjennom.
+ *   2. Attributtet finnes på elementet. Et navn som bare skiller seg fra et
+ *      kjent i bindestreker eller store bokstaver, som `onlinetext`, meldes
+ *      som skrivefeil. Ellers slipper globale HTML-attributter, `data-*`,
+ *      `aria-*`, hendelser og rammeverkenes egne gjennom: `hx-`, `x-`,
+ *      `v-`, og alt med `:`, `@`, klammer, parenteser eller `%$#?` i
+ *      navnet.
  *   3. Verdien er lovlig: i den lukkede lista der det finnes en, et tall der
  *      det skal være et tall, og ikke `="false"` på et boolsk attributt, som
  *      betyr på.
@@ -27,10 +30,11 @@
  *
  * Markup som blir til på en server er ofte en mal, og en mal er ikke hel:
  * `{{ if .Feil }}invalid{{ end }}` i en tagg, `{{ template "input" . }}`
- * der kontrollen skulle stått. Der det står malsyntaks, Go, Jinja, PHP, ASP
- * eller Razor, holder diagnostikken seg unna: attributtnavn sjekkes ikke i
- * en tagg med mal i, en verdi med mal i sjekkes ikke, og et felt med mal i
- * regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en mal.
+ * der kontrollen skulle stått. Der det står malsyntaks, Go, Jinja, PHP, ASP,
+ * JS-maler eller Razor, holder diagnostikken seg unna: attributtnavn sjekkes
+ * ikke i en tagg med mal i, en verdi med mal i sjekkes ikke, og et felt med
+ * mal i regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en
+ * mal.
  *
  * Posisjonene er tegnindekser i den opprinnelige teksten. Kommentarer,
  * skript og stilark blankes ut med like mange tegn før lesingen, så en
@@ -65,10 +69,10 @@ const DOCS = "https://fristil.netlify.app/components/"
 /*
  * Attributter ethvert element kan ha, uten at komponenten leser dem: de
  * globale attributtene i HTML. Prefiksene under er `data-*`, `aria-*`,
- * hendelsene, og HTMX, Alpine og Vue. Svelte, Angular og Alpines korte
- * former har `:`, `@`, klammer eller parenteser i navnet, og det har aldri
- * et Fristil-attributt. Et navn utenfor alt dette som komponenten ikke
- * kjenner, er nesten alltid en skrivefeil.
+ * hendelsene, og HTMX, Alpine og Vue. Svelte, Angular, Alpines korte former
+ * og malspråkenes rester har `:`, `@`, klammer, parenteser eller `%$#?` i
+ * navnet, og det har aldri et Fristil-attributt. Et navn utenfor alt dette
+ * som komponenten ikke kjenner, er nesten alltid en skrivefeil.
  */
 const GLOBAL = new Set([
   "accesskey",
@@ -107,22 +111,24 @@ const GLOBAL = new Set([
 const isGlobal = (name: string) =>
   GLOBAL.has(name) ||
   /^(data-|aria-|on|hx-|x-|v-)/.test(name) ||
-  /[:@[\](){}%$#?<>]/.test(name)
+  /[:@[\](){}%$#?]/.test(name)
 
 /*
  * Go, Jinja, PHP, ASP, JS-maler og Razor. Razors `@Navn` regnes bare i en
  * verdi og i innhold, ikke i en tagg: der er `@click` Alpine, et attributt
  * som skal slippe gjennom uten å gjøre resten av taggen til en mal.
  */
-const TEMPLATE = /\{\{|\{%|<\?|<%|\$\{|@\(/
+const TEMPLATE = /\{\{|\{%|\{#|<\?|<%|\$\{|@\(/
 const isTemplated = (text: string) => TEMPLATE.test(text)
 const isTemplatedValue = (text: string) =>
   isTemplated(text) || /^\s*@[A-Za-z]/.test(text)
+// Razor i innholdet, utenfor taggene: `<input @input="…">` er Alpine på en
+// kontroll, og skal ikke gjøre feltet til en mal.
 const isTemplatedContent = (text: string) =>
-  isTemplated(text) || /(^|[\s>])@[A-Za-z]/.test(text)
+  isTemplated(text) || /(^|\s)@[A-Za-z]/.test(text.replace(/<[^>]*>/g, " "))
 
-const escapeRegExp = (text: string) =>
-  text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+/** Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil. */
+const normalized = (name: string) => name.toLowerCase().replace(/[-_]/g, "")
 
 /** Bytter hvert treff med like mange mellomrom, så posisjonene står. */
 const blankOut = (text: string, pattern: RegExp) =>
@@ -136,15 +142,25 @@ export function withoutHidden(text: string): string {
   return out
 }
 
-/** Der taggen som begynner på `from` slutter: indeksen til `>`, eller -1. */
+/*
+ * Der taggen som begynner på `from` slutter: indeksen til `>`, eller -1.
+ * `<?…?>` og `<%…%>` inne i taggen hoppes over, så PHP og ASP ikke
+ * avslutter den før tiden.
+ */
 function tagEnd(text: string, from: number): number {
   let quote: string | null = null
   for (let i = from; i < text.length; i++) {
     const char = text[i]
     if (quote) {
       if (char === quote) quote = null
-    } else if (char === '"' || char === "'") quote = char
-    else if (char === ">") return i
+      continue
+    }
+    if (char === '"' || char === "'") quote = char
+    else if (char === "<" && (text[i + 1] === "?" || text[i + 1] === "%")) {
+      const closer = text.indexOf(`${text[i + 1]}>`, i + 2)
+      if (closer < 0) return -1
+      i = closer + 1
+    } else if (char === ">") return i
   }
   return -1
 }
@@ -174,7 +190,9 @@ function readAttributes(body: string, offset: number): ReadAttribute[] {
 
 const list = (names: readonly string[]) => names.join(", ")
 
-const NUMBER = /^-?\d+(\.\d+)?$/
+/** Slik komponentene leser tallet: `Number(verdi)`, og tomt er ikke et tall. */
+const isNumber = (value: string) =>
+  value.trim() !== "" && !Number.isNaN(Number(value))
 
 function checkAttribute(
   tag: string,
@@ -190,6 +208,18 @@ function checkAttribute(
   }
   const known = element.attributes[name]
   if (!known) {
+    // `onlinetext` ville sluppet gjennom som en hendelse, og `requiredmarker`
+    // som en skrivefeil uten hjelp. Et kjent navn med samme bokstaver er
+    // sterkere enn begge deler.
+    const meant = Object.keys(element.attributes).find(
+      (candidate) => normalized(candidate) === normalized(name),
+    )
+    if (meant)
+      return {
+        ...base,
+        severity: "warning",
+        message: `<${tag}> har ikke attributtet «${name}». Mente du ${meant}?`,
+      }
     // I en tagg med mal i er navnene ikke til å stole på: `{{ if }}` blir
     // til «if» og «end», og ingen av dem er en skrivefeil.
     if (templatedTag || isGlobal(name)) return undefined
@@ -227,7 +257,7 @@ function checkAttribute(
       }
     return undefined
   }
-  if (known.type === "number" && value !== undefined && !NUMBER.test(value))
+  if (known.type === "number" && value !== undefined && !isNumber(value))
     return {
       ...base,
       severity: "error",
@@ -250,10 +280,10 @@ const CONTROL = /<(input|textarea|select)\b/gi
 function findControl(content: string): ReadAttribute[] | undefined {
   for (const hit of content.matchAll(CONTROL)) {
     const from = (hit.index ?? 0) + hit[0].length
-    const attributes = readAttributes(
-      content.slice(from, tagEnd(content, from)),
-      0,
-    )
+    const to = tagEnd(content, from)
+    // En kontroll uten `>`, mens noen skriver, er ingen kontroll ennå.
+    if (to < 0) continue
+    const attributes = readAttributes(content.slice(from, to), 0)
     const type = attributes.find((a) => a.name === "type")?.value
     if (hit[1].toLowerCase() === "input" && type?.toLowerCase() === "hidden")
       continue
@@ -262,8 +292,21 @@ function findControl(content: string): ReadAttribute[] | undefined {
   return undefined
 }
 
+/*
+ * Verdiene i hver `<label for>` i dokumentet, lest én gang: oppslaget per
+ * felt skal ikke gå gjennom hele dokumentet, for det kjøres ved hvert
+ * tastetrykk, og tusen felt ganger hele fila ble sekunder.
+ */
+function labelTargets(text: string): Set<string> {
+  const out = new Set<string>()
+  const pattern =
+    /<label\b[^>]*?\sfor\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi
+  for (const hit of text.matchAll(pattern)) out.add(hit[1] ?? hit[2] ?? hit[3])
+  return out
+}
+
 function checkField(
-  text: string,
+  labels: Set<string>,
   tag: string,
   nameStart: number,
   nameEnd: number,
@@ -292,14 +335,7 @@ function checkField(
 
   const id =
     attributes.find((a) => a.name === "control-id")?.value ?? has("id")?.value
-  if (id) {
-    const quoted = escapeRegExp(id)
-    const outside = new RegExp(
-      `<label\\b[^>]*\\sfor\\s*=\\s*(?:"${quoted}"|'${quoted}'|${quoted}(?=[\\s>]))`,
-      "i",
-    )
-    if (outside.test(text)) return []
-  }
+  if (id && labels.has(id)) return []
   return [
     {
       ...base,
@@ -316,6 +352,7 @@ export function diagnose(text: string, elements: Elements): Finding[] {
   const source = withoutHidden(text)
   const findings: Finding[] = []
   const known = Object.keys(elements)
+  let labels: Set<string> | undefined
 
   for (const hit of source.matchAll(/<(fs-[a-z0-9-]*)(?=[\s/>])/gi)) {
     const tag = hit[1].toLowerCase()
@@ -344,11 +381,15 @@ export function diagnose(text: string, elements: Elements): Finding[] {
     }
 
     if (tag === "fs-field") {
-      const close = source.indexOf(`</${tag}`, end)
+      // Lukketaggen kan ha store bokstaver, som åpningstaggen.
+      const closer = /<\/fs-field\b/gi
+      closer.lastIndex = end
+      const close = closer.exec(source)?.index ?? -1
       const content = source.slice(end + 1, close < 0 ? source.length : close)
+      labels ??= labelTargets(source)
       findings.push(
         ...checkField(
-          source,
+          labels,
           tag,
           nameStart,
           nameEnd,

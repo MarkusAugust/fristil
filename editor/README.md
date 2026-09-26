@@ -24,7 +24,7 @@ der ingen kompilator ser på attributtene.
   som betyr på. `<fs-field>` uten kontroll eller uten ledetekst får den
   samme beskjeden som komponenten gir i nettleseren, med de samme
   unntakene. Kommentarer, skript og stilark leses ikke, og der det står
-  malsyntaks, Go, Jinja, PHP eller Razor, holder den seg unna: en mal er
+  malsyntaks, Go, Jinja, PHP, ASP, JS-maler eller Razor, holder den seg unna: en mal er
   ikke hel, og kontrollen kan stå i en partial.
 
 Det utvidelsen ikke gjør, er å validere HTML. En `</body>` for mye er en

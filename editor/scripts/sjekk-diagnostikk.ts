@@ -158,6 +158,11 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "ledetekst utenfor, med for uten anførselstegn",
+    html: `<label for=epost>E-post</label><fs-field><input id="epost"></fs-field>`,
+    count: 0,
+  },
+  {
     name: "ledetekst utenfor via control-id",
     html: `<label for="epost">E-post</label><fs-field control-id="epost"><input></fs-field>`,
     count: 0,
@@ -263,6 +268,65 @@ const cases: Case[] = [
     name: "et felt uten lukketagg",
     html: `<fs-field><label>A</label><input>`,
     count: 0,
+  },
+  {
+    name: "Alpine på kontrollen gjør ikke feltet til en mal",
+    html: `<fs-field><input @input="x = 1"></fs-field>`,
+    count: 1,
+    mentions: ["fant ingen <label>"],
+  },
+  {
+    name: "Alpine på en knapp i feltet heller",
+    html: `<fs-field><label>N</label><button @click="x">Send</button></fs-field>`,
+    count: 1,
+    mentions: ["fant ingen kontroll"],
+  },
+  {
+    name: "store bokstaver i felt: tomt felt er stille",
+    html: `<FS-FIELD id="senere"></FS-FIELD>\n<p>tekst</p>`,
+    count: 0,
+  },
+  {
+    name: "store bokstaver i felt: uten ledetekst felles",
+    html: `<FS-FIELD><INPUT></FS-FIELD>\n<label>x</label>`,
+    count: 1,
+    mentions: ["fant ingen <label>"],
+  },
+  {
+    name: "en skrivefeil som ligner et kjent attributt",
+    html: `<fs-connection-status onlinetext="Tilkoblet"></fs-connection-status>`,
+    count: 1,
+    mentions: ["Mente du online-text?"],
+    covers: "onlinetext",
+  },
+  {
+    name: "en skrivefeil uten bindestrek",
+    html: `<fs-field requiredMarker="symbol"><label>N</label><input></fs-field>`,
+    count: 1,
+    mentions: ["Mente du required-marker?"],
+  },
+  {
+    name: "en uavsluttet kontroll leser ikke resten som sine attributter",
+    html: `<fs-field><input placeholder=it's><span aria-label="x"></span></fs-field>`,
+    count: 1,
+    mentions: ["fant ingen"],
+  },
+  {
+    name: "tall slik komponentene leser dem",
+    html: `<fs-toast duration=" 5000 "></fs-toast><fs-toast duration="1e3"></fs-toast><fs-toast duration=""></fs-toast>`,
+    count: 1,
+    mentions: ["skal være et tall"],
+  },
+  {
+    name: "en Jinja-kommentar i taggen",
+    html: `<fs-popover {# note #} placement="top-start"></fs-popover>`,
+    count: 0,
+  },
+  {
+    name: "PHP i taggen avslutter den ikke, og feilen etter felles",
+    html: `<fs-field <?= $x ?> required-marker="stjerne"><label>N</label><input></fs-field>`,
+    count: 1,
+    mentions: ["«stjerne»"],
   },
   {
     name: "flere funn i samme tagg meldes hver for seg",
