@@ -282,7 +282,8 @@ export function classesData(): Classes {
     let base: unknown
     try {
       // En id, så byggefunksjonene som ellers lager en tilfeldig ikke sier fra.
-      base = build({ id: "x" })
+      // Dialogen kaller sin titleId, siden id-en sitter på overskriften.
+      base = build({ id: "x", titleId: "x" })
     } catch {
       continue
     }
@@ -297,7 +298,7 @@ export function classesData(): Classes {
       const emitted = new Map<string, string[]>()
       const silent: string[] = []
       for (const value of values as string[]) {
-        const result = build({ id: "x", [option]: value }) as Record<
+        const result = build({ id: "x", titleId: "x", [option]: value }) as Record<
           string,
           unknown
         >
