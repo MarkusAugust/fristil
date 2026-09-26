@@ -1,0 +1,36 @@
+---
+title: Editoren
+description: Fullføring, forklaring og feilmeldinger for Fristil i VS Code og JetBrains, også der ingen kompilator ser på markupen.
+---
+
+Skriver du TypeScript eller JSX, får du hjelp fra typene: `fs.` viser hele systemet, og en variant som ikke finnes stopper bygget. Se [Typesikker bruk](../typesikker-bruk/). Skriver du markup uten JavaScript, i en Go-mal, en Razor-visning, PHP eller håndskrevet HTML, ser ingen kompilator på attributtene. Da er det editoren som må si fra, og det gjør den.
+
+## VS Code
+
+Utvidelsen [Fristil](https://marketplace.visualstudio.com/items?itemName=Fristil.fristil-vscode) finnes på Marketplace. Søk etter «Fristil» under Extensions, eller kjør:
+
+```bash
+code --install-extension Fristil.fristil-vscode
+```
+
+Det du får, i HTML-filer og i malspråkene:
+
+- **Fullføring** av `<fs-field>`, `<fs-popover>` og de andre elementene, med attributtene og de lovlige verdiene. Inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en klasse tar, som `data-variant` på `fs-button`, verdiene byggefunksjonen kjenner.
+- **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer også over et element eller et attributt, med lenke til komponentsiden.
+- **Feilmeldinger**, som røde og gule streker: et element som ikke finnes, et attributt elementet ikke har, en verdi utenfor lista, en klasse som `fs-buton`, og `data-variant="secundary"` på en knapp. `<fs-field>` uten kontroll eller uten ledetekst får samme beskjed som komponenten gir i nettleseren.
+- **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter `fs-buton` til `fs-button`, tar bort `invalid="false"`, og setter inn en ledetekst.
+- **Snippets**: skriv `fs-popover` og velg snippeten, og markupen fra komponentsiden står der.
+
+Malspråkene den virker i uten innstillinger: PHP, Razor, Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go-maler, EJS, Liquid, Nunjucks og Edge. Der det står malsyntaks, holder den seg unna: en mal er ikke hel, og kontrollen kan stå i en partial. Lista er innstillingen `fristil.languages`.
+
+Fullføringen og listene den sjekker mot genereres fra komponentene i repoet. Utvidelsen har sitt eget versjonsnummer, og følger ikke pakken, siden den bare endrer seg når et element, en klasse eller et attributt gjør det.
+
+## JetBrains
+
+IntelliJ IDEA Ultimate og WebStorm trenger ingen utvidelse. Fra `@fristil/designsystem` 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt eget format, og IDE-en tar den i bruk så snart pakken står i `package.json` i prosjektet. Du får fullføring av elementene, attributtene og verdiene, og forklaring med lenke til komponentsiden. Etterprøvd i IntelliJ IDEA Ultimate 2026.2.
+
+Feilmeldingene og hurtigrettelsene finnes bare i VS Code. IntelliJ IDEA Community har ikke JavaScript-støtten dette bygger på.
+
+## Det ingen av dem ser
+
+Editoren ser én fil om gangen. En ledetekst i én partial og et felt i en annen henger sammen først i nettleseren, og der sier komponenten fra hvis koblingen mangler. Se [Markup og oppførsel](../markup-og-oppforsel/).

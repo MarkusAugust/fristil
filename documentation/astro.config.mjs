@@ -91,6 +91,7 @@ export default defineConfig({
             { label: "Tilgjengelighet", slug: "tilgjengelighet" },
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
+            { label: "Editoren", slug: "editoren" },
           ],
         },
         {

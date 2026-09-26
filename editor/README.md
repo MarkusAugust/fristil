@@ -77,6 +77,15 @@ selv, siden VS Codes egen HTML-tjeneste bare er med i HTML-filer.
 Filer med en annen endelse enn språket ventet kan knyttes til det i
 innstillingene, for eksempel `"files.associations": { "*.gohtml": "html" }`.
 
+## JetBrains
+
+Bruker du IntelliJ IDEA Ultimate eller WebStorm, trenger du ingen utvidelse:
+fra 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt format, og
+IDE-en tar den i bruk så snart `@fristil/designsystem` står i
+`package.json`. Etterprøvd i IntelliJ IDEA Ultimate 2026.2, med fullføring av elementene, attributtene
+og verdiene, og forklaring med lenke. Feilmeldingene og hurtigrettelsene
+finnes bare i VS Code.
+
 ## Slik lages den
 
 Fullføringen, snippetene og listene diagnostikken sjekker mot genereres fra
