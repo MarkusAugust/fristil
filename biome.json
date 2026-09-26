@@ -13,6 +13,7 @@
       "!editor/fristil.html-data.json",
       "!editor/snippets.json",
       "!editor/elements.json",
+      "!editor/classes.json",
       "!designsystem/web-types.json"
     ]
   },

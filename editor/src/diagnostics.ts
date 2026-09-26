@@ -28,14 +28,26 @@
  *   4. `<fs-field>` har en kontroll og en ledetekst, med de samme
  *      unntakene og den samme teksten som komponenten selv bruker i
  *      nettleseren.
+ *   5. Klassene finnes. `class="fs-buton"` meldes, med den nærmeste kjente
+ *      som forslag. Klassene leses fra `classes.json`, som genereres fra
+ *      pakkens CSS.
+ *   6. Verdiene på det klassen tar er lovlige: `data-variant="ghots"` på
+ *      `fs-button` meldes, med lista fra byggefunksjonen. Standardverdien,
+ *      den som ikke gir noe attributt, nevnes også.
+ *
+ * Et funn kan ha en rettelse: bytt navnet til det som var ment, ta bort et
+ * boolsk attributt med `="false"`, sett inn en ledetekst. Rettelsen er
+ * bare tekst og posisjoner, så den kan sjekkes her, og editoren gjør den om
+ * til en lyspære.
  *
  * Markup som blir til på en server er ofte en mal, og en mal er ikke hel:
  * `{{ if .Feil }}invalid{{ end }}` i en tagg, `{{ template "input" . }}`
  * der kontrollen skulle stått. Der det står malsyntaks, Go, Jinja, PHP, ASP,
  * JS-maler eller Razor, holder diagnostikken seg unna: ukjente attributtnavn
  * meldes ikke i en tagg med mal i, en verdi med mal i sjekkes ikke, og et
- * felt med mal i regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en
- * mal.
+ * felt med mal i regnes som ufylt. En verdi i klammer, `open={isOpen}` i Astro og
+ * Svelte, er et uttrykk og sjekkes ikke. Elementnavnet sjekkes alltid: det
+ * står aldri i en mal.
  *
  * Posisjonene er tegnindekser i den opprinnelige teksten. Kommentarer,
  * skript og stilark blankes ut med like mange tegn før lesingen, så en
@@ -44,6 +56,19 @@
 
 export type Severity = "error" | "warning"
 
+/**
+ * En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
+ * `preferred` er den sikre, som `onlinetext` til `online-text`: samme
+ * bokstaver, bare skrevet annerledes. Et forslag på avstand er et forslag.
+ */
+export type Fix = {
+  title: string
+  start: number
+  end: number
+  text: string
+  preferred?: boolean
+}
+
 export type Finding = {
   start: number
   end: number
@@ -51,6 +76,7 @@ export type Finding = {
   severity: Severity
   /** Komponentsiden, som lenke i meldingen. */
   link: string
+  fix?: Fix
 }
 
 export type Attribute =
@@ -64,6 +90,21 @@ export type Element = {
 
 /** Innholdet i `elements.json`: tagg til element. */
 export type Elements = Record<string, Element>
+
+/** Et attributt en klasse tar, som `data-variant` på `fs-button`. */
+export type ClassAttribute = { values: readonly string[]; default?: string }
+
+export type ClassInfo = {
+  /** Adressen til komponentsiden, som `button`. */
+  component: string
+  title: string
+  description: string
+  link: string
+  attributes: Record<string, ClassAttribute>
+}
+
+/** Innholdet i `classes.json`: klasse til komponent og attributter. */
+export type Classes = Record<string, ClassInfo>
 
 const DOCS = "https://fristil.netlify.app/components/"
 
@@ -123,8 +164,9 @@ const isGlobal = (name: string) =>
  */
 const TEMPLATE = /\{\{|\{%|\{#|<\?|<%|\$\{|@\(/
 const isTemplated = (text: string) => TEMPLATE.test(text)
+// En verdi i klammer er Astro eller Svelte, og et uttrykk, ikke en verdi.
 const isTemplatedValue = (text: string) =>
-  isTemplated(text) || /^\s*@[A-Za-z]/.test(text)
+  isTemplated(text) || /^\s*[@{]/.test(text)
 // Razor i innholdet, utenfor taggene: `<input @input="…">` er Alpine på en
 // kontroll, og skal ikke gjøre feltet til en mal.
 const isTemplatedContent = (text: string) =>
@@ -132,6 +174,86 @@ const isTemplatedContent = (text: string) =>
 
 /** Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil. */
 const normalized = (name: string) => name.toLowerCase().replace(/[-_]/g, "")
+
+/*
+ * Redigeringsavstanden mellom to navn: tegn som må byttes, settes inn, tas
+ * bort eller bytte plass. At to nabotegn har byttet plass teller som én,
+ * for `ghots` er `ghost`. Tre rader er nok, ikke en tabell.
+ */
+function distance(a: string, b: string): number {
+  let before = new Array<number>(b.length + 1)
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    const current: number[] = [i]
+    for (let j = 1; j <= b.length; j++) {
+      let d = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      )
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        d = Math.min(d, before[j - 2] + 1)
+      current[j] = d
+    }
+    before = previous
+    previous = current
+  }
+  return previous[b.length]
+}
+
+/**
+ * Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil.
+ * `sure` er sant når navnet har de samme bokstavene uten bindestreker og
+ * understreker, som `onlinetext`. Ellers må navnet være høyst ett tegn unna,
+ * og to når det er langt nok til at to feil er sannsynlig: `fs-buton` er
+ * `fs-button`, mens `fs-tabs` ikke er `fs-table`. Svarene huskes per kjøring: den samme ukjente klassen kan stå på
+ * hver rad i en tabell, og avstanden skal regnes én gang.
+ */
+export function closest(
+  name: string,
+  candidates: readonly string[],
+  cache?: Map<string, { name: string; sure: boolean } | undefined>,
+): { name: string; sure: boolean } | undefined {
+  if (cache?.has(name)) return cache.get(name)
+  const result = find(name, candidates)
+  cache?.set(name, result)
+  return result
+}
+
+function commonPrefix(a: string, b: string): number {
+  let i = 0
+  while (i < a.length && i < b.length && a[i] === b[i]) i++
+  return i
+}
+
+function find(
+  name: string,
+  candidates: readonly string[],
+): { name: string; sure: boolean } | undefined {
+  const wanted = normalized(name)
+  const same = candidates.find((c) => normalized(c) === wanted)
+  if (same) return { name: same, sure: true }
+  const lower = name.toLowerCase()
+  const max = name.length >= 8 ? 2 : 1
+  let best: string | undefined
+  let bestDistance = max + 1
+  for (const candidate of candidates) {
+    if (Math.abs(candidate.length - lower.length) > max) continue
+    const d = distance(lower, candidate)
+    // Ved lik avstand vinner den som deler lengst begynnelse: `fs-tabel` er
+    // `fs-table`, ikke `fs-label`.
+    if (
+      d < bestDistance ||
+      (d === bestDistance &&
+        best &&
+        commonPrefix(lower, candidate) > commonPrefix(lower, best))
+    ) {
+      bestDistance = d
+      best = candidate
+    }
+  }
+  return best ? { name: best, sure: false } : undefined
+}
 
 /** Bytter hvert treff med like mange mellomrom, så posisjonene står. */
 const blankOut = (text: string, pattern: RegExp) =>
@@ -150,7 +272,7 @@ export function withoutHidden(text: string): string {
  * `<?…?>` og `<%…%>` inne i taggen hoppes over, så PHP og ASP ikke
  * avslutter den før tiden.
  */
-function tagEnd(text: string, from: number): number {
+export function tagEnd(text: string, from: number): number {
   let quote: string | null = null
   for (let i = from; i < text.length; i++) {
     const char = text[i]
@@ -172,23 +294,89 @@ type ReadAttribute = {
   name: string
   value: string | undefined
   start: number
+  /** Der navnet slutter. */
   end: number
+  /** Der hele attributtet slutter, med verdi og anførselstegn. */
+  valueEnd: number
+  /** Der mellomrommet foran attributtet begynner, så det kan tas bort helt. */
+  spaceStart: number
+  /** Der selve verdien står, uten anførselstegn, når den finnes. */
+  valueStart: number
 }
 
-/** Attributtene i en tagg, lest fra teksten mellom navnet og `>`. */
+/*
+ * Attributtene i en tagg, lest fra teksten mellom navnet og `>`. En verdi
+ * står i anførselstegn, uten, eller i klammer: `open={isOpen}` er Astro og
+ * Svelte, og klammene kan ha klammer i seg. Den leses som én verdi, så det
+ * som står inni ikke blir attributtnavn.
+ */
 function readAttributes(body: string, offset: number): ReadAttribute[] {
   const out: ReadAttribute[] = []
-  const pattern =
-    /([^\s"'=<>/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
-  for (const hit of body.matchAll(pattern)) {
+  let i = 0
+  const skipSpace = () => {
+    while (i < body.length && /\s/.test(body[i])) i++
+  }
+  while (i < body.length) {
+    const spaceStart = i
+    skipSpace()
+    const nameStart = i
+    while (i < body.length && !/[\s"'=<>/]/.test(body[i])) i++
+    if (i === nameStart) {
+      i++
+      continue
+    }
+    const name = body.slice(nameStart, i)
+    let value: string | undefined
+    let valueStart = i
+    const afterName = i
+    skipSpace()
+    if (body[i] === "=") {
+      i++
+      skipSpace()
+      const open = body[i]
+      if (open === '"' || open === "'") {
+        const close = body.indexOf(open, i + 1)
+        valueStart = i + 1
+        value = body.slice(valueStart, close < 0 ? body.length : close)
+        i = close < 0 ? body.length : close + 1
+      } else if (open === "{") {
+        valueStart = i
+        i = bracesEnd(body, i)
+        value = body.slice(valueStart, i)
+      } else {
+        valueStart = i
+        while (i < body.length && !/[\s"'=<>`]/.test(body[i])) i++
+        value = body.slice(valueStart, i)
+      }
+    } else i = afterName
     out.push({
-      name: hit[1].toLowerCase(),
-      value: hit[2] ?? hit[3] ?? hit[4],
-      start: offset + (hit.index ?? 0),
-      end: offset + (hit.index ?? 0) + hit[1].length,
+      name: name.toLowerCase(),
+      value,
+      start: offset + nameStart,
+      end: offset + nameStart + name.length,
+      valueEnd: offset + (value === undefined ? afterName : i),
+      spaceStart: offset + spaceStart,
+      valueStart: offset + (value === undefined ? afterName : valueStart),
     })
   }
   return out
+}
+
+/** Der en klammeverdi som begynner på `from` slutter, etter den matchende `}`. */
+function bracesEnd(text: string, from: number): number {
+  let depth = 0
+  let quote: string | null = null
+  for (let i = from; i < text.length; i++) {
+    const char = text[i]
+    if (quote) {
+      if (char === quote) quote = null
+      continue
+    }
+    if (char === '"' || char === "'" || char === "`") quote = char
+    else if (char === "{") depth++
+    else if (char === "}" && --depth === 0) return i + 1
+  }
+  return text.length
 }
 
 const list = (names: readonly string[]) => names.join(", ")
@@ -222,6 +410,13 @@ function checkAttribute(
         ...base,
         severity: "warning",
         message: `<${tag}> har ikke attributtet «${name}». Mente du ${meant}?`,
+        fix: {
+          title: `Bytt til ${meant}`,
+          start: attribute.start,
+          end: attribute.end,
+          text: meant,
+          preferred: true,
+        },
       }
     // I en tagg med mal i er navnene ikke til å stole på: `{{ if }}` blir
     // til «if» og «end», og ingen av dem er en skrivefeil.
@@ -246,6 +441,13 @@ function checkAttribute(
           `${name} er et boolsk attributt: det står der eller ikke. ` +
           `${name}="${value}" betyr det samme som ${name}. Ta det bort ` +
           "for å slå det av.",
+        fix: {
+          title: `Ta bort ${name}`,
+          start: attribute.spaceStart,
+          end: attribute.valueEnd,
+          text: "",
+          preferred: true,
+        },
       }
     return undefined
   }
@@ -314,11 +516,14 @@ function checkField(
   nameStart: number,
   nameEnd: number,
   content: string,
+  contentStart: number,
   attributes: ReadAttribute[],
   link: string,
 ): Finding[] {
   if (!/<[a-z]/i.test(content) || isTemplatedContent(content)) return []
   const base = { start: nameStart, end: nameEnd, link }
+  // Innrykket før første tagg, så en innsatt ledetekst får sin egen linje.
+  const leading = content.match(/^\s*/)?.[0] ?? ""
   const control = findControl(content)
   if (!control)
     return [
@@ -350,16 +555,137 @@ function checkField(
       message:
         `<${tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en ` +
         "skjermleser leser det opp uten navn.",
+      fix: {
+        title: "Sett inn en ledetekst",
+        start: contentStart + leading.length,
+        end: contentStart + leading.length,
+        text: `<label>Ledetekst</label>${leading.includes("\n") ? leading : ""}`,
+        preferred: true,
+      },
     },
   ]
 }
 
+/*
+ * Klassene og det de tar. Kjøres over hver tagg, ikke bare `<fs-…>`: en
+ * `fs-button` står på en `<button>`. Et klassenavn som begynner på `fs-` og
+ * ikke finnes, meldes med det nærmeste kjente som forslag. Har taggen en
+ * kjent klasse, sjekkes verdiene på attributtene klassen tar, som
+ * `data-variant` på `fs-button` og `data-state` på `fs-input`.
+ */
+function checkClasses(
+  attributes: ReadAttribute[],
+  classes: Classes,
+  cache: Map<string, { name: string; sure: boolean } | undefined>,
+): Finding[] {
+  const findings: Finding[] = []
+  const classAttribute = attributes.find((a) => a.name === "class")
+  if (!classAttribute?.value || isTemplatedValue(classAttribute.value))
+    return findings
+  const names = Object.keys(classes)
+  const present: ClassInfo[] = []
+  let offset = classAttribute.valueStart
+  for (const token of classAttribute.value.split(/(\s+)/)) {
+    const start = offset
+    offset += token.length
+    // `fs-{b}` i Svelte er et uttrykk, og har ingen klasse å sjekke ennå.
+    if (!token.trim() || !token.startsWith("fs-") || /[{}]/.test(token))
+      continue
+    const info = classes[token]
+    if (info) {
+      present.push(info)
+      continue
+    }
+    const meant = closest(token, names, cache)
+    findings.push({
+      start,
+      end: start + token.length,
+      severity: "warning",
+      link: meant ? classes[meant.name].link : DOCS,
+      message:
+        `Klassen «${token}» finnes ikke i Fristil.` +
+        (meant ? ` Mente du ${meant.name}?` : ""),
+      ...(meant
+        ? {
+            fix: {
+              title: `Bytt til ${meant.name}`,
+              start,
+              end: start + token.length,
+              text: meant.name,
+              preferred: meant.sure,
+            },
+          }
+        : {}),
+    })
+  }
+  // Verdiene sjekkes også i en tagg med mal i: et rent attributt med en ren
+  // verdi er til å stole på, det er bare navnene rundt malen som ikke er det.
+  for (const attribute of attributes) {
+    // Tom verdi er ingen verdi, og sjekkes ikke.
+    if (!attribute.value || isTemplatedValue(attribute.value)) continue
+    for (const info of present) {
+      const takes = info.attributes[attribute.name]
+      if (!takes) continue
+      if (
+        takes.values.includes(attribute.value) ||
+        attribute.value === takes.default
+      )
+        continue
+      const meant = closest(attribute.value, [
+        ...takes.values,
+        ...(takes.default ? [takes.default] : []),
+      ])
+      const shown = attribute.value.replace(/\s+/g, " ")
+      findings.push({
+        start: attribute.start,
+        end: attribute.valueEnd,
+        severity: "warning",
+        link: info.link,
+        message:
+          `${attribute.name} kan ikke være «${shown}» på ${info.title.toLowerCase()}. ` +
+          `Lovlige verdier: ${list(takes.values)}` +
+          (takes.default ? `, og ${takes.default} uten attributt.` : "."),
+        ...(meant
+          ? {
+              fix: {
+                title: `Bytt til ${meant.name}`,
+                start: attribute.valueStart,
+                end: attribute.valueStart + attribute.value.length,
+                text: meant.name,
+                preferred: meant.sure,
+              },
+            }
+          : {}),
+      })
+      break
+    }
+  }
+  return findings
+}
+
 /** Alle funn i teksten, i den rekkefølgen de står. */
-export function diagnose(text: string, elements: Elements): Finding[] {
+export function diagnose(
+  text: string,
+  elements: Elements,
+  classes: Classes = {},
+): Finding[] {
   const source = withoutHidden(text)
   const findings: Finding[] = []
   const known = Object.keys(elements)
   let labels: Set<string> | undefined
+  const nearest = new Map<string, { name: string; sure: boolean } | undefined>()
+
+  // Klassene, på alle tagger.
+  for (const hit of source.matchAll(/<([a-z][a-z0-9-]*)(?=[\s/>])/gi)) {
+    const nameEnd = (hit.index ?? 0) + hit[0].length
+    const end = tagEnd(source, nameEnd)
+    if (end < 0) continue
+    const body = source.slice(nameEnd, end).replace(/\/$/, "")
+    if (!/\bclass\s*=/i.test(body)) continue
+    findings.push(
+      ...checkClasses(readAttributes(body, nameEnd), classes, nearest),
+    )
+  }
 
   for (const hit of source.matchAll(/<(fs-[a-z0-9-]*)(?=[\s/>])/gi)) {
     const tag = hit[1].toLowerCase()
@@ -401,11 +727,12 @@ export function diagnose(text: string, elements: Elements): Finding[] {
           nameStart,
           nameEnd,
           content,
+          end + 1,
           attributes,
           element.link,
         ),
       )
     }
   }
-  return findings
+  return findings.sort((a, b) => a.start - b.start)
 }
