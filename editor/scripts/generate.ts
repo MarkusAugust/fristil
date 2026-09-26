@@ -249,10 +249,13 @@ export function classesData(): Classes {
   for (const dir of COMPONENT_DIRS) {
     for (const slug of readdirSync(dir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
-      .map((d) => d.name)) {
-      const files = readdirSync(join(dir, slug)).filter((f) =>
-        f.endsWith(".css"),
-      )
+      .map((d) => d.name)
+      // Sortert: Linux leverer mappene i en annen rekkefølge enn macOS, og
+      // fila skal være den samme uansett hvor den genereres.
+      .sort()) {
+      const files = readdirSync(join(dir, slug))
+        .filter((f) => f.endsWith(".css"))
+        .sort()
       const link = `${DOCS}${slug}/`
       const title = frontmatter(slug, "title")
       const description = frontmatter(slug, "description")
