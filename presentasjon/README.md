@@ -4,8 +4,10 @@ Lysbildene som forklarer hvorfor Fristil er satt sammen som det er: hvem som
 eier markupen, hvem som eier oppførselen, og hva det koster.
 
 Hele presentasjonen er ett dokument. Ingen avhengigheter, intet byggesteg,
-ingen server. Åpne fila i en nettleser, eller legg mappa på et statisk
-vertskap.
+ingen server. Åpne fila i en nettleser, eller se den på
+[designsystemarkitetktur.netlify.app](https://designsystemarkitetktur.netlify.app/),
+som bygger fra master på hver push. `netlify.toml` her sier hvordan: fila
+kopieres til `index.html`, og det er alt.
 
 ```bash
 open presentasjon/designsystemarkitektur.html
