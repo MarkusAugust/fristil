@@ -1,0 +1,11 @@
+# Presentasjonen på designsystemarkitetktur.netlify.app.
+#
+# Det er et eget Netlify-prosjekt, med denne mappa som basemappe, og det
+# bygger fra master på hver push, som dokumentasjonen. Ingenting kompileres:
+# dekket er én HTML-fil, og bygget kopierer den til index.html så adressen
+# er rota, som den var da fila ble lastet opp for hånd. Kopien lages under
+# bygget og er ikke sporet i git.
+[build]
+  base = "presentasjon"
+  publish = "."
+  command = "cp designsystemarkitektur.html index.html"
