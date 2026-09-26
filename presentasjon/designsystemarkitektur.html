@@ -833,6 +833,17 @@ defineFsField()
 .avh-tall { margin-inline-start: auto; display: flex; gap: 1.1rem; font-size: 0.82rem; color: var(--tekst-dempet); white-space: nowrap; }
 .avh-tall b { font-size: 1.05rem; font-weight: 700; color: var(--tekst); margin-inline-end: 0.25rem; }
 
+/* I korte vinduer, som 1280×800, rullet lysbildet 73 piksler. Radene og
+ * avstandene strammes til det står, uten at grafen endrer målestokk. */
+@media (max-height: 840px) {
+  .lysbilde.avh { padding-block: 1.6rem; }
+  .avh h2 { margin-block-end: 0.4rem; }
+  .avh > p:not(.dempet, .kapittelmerke) { margin-block-end: 0.5rem; }
+  .avh-forklaring { margin-block-end: 0.3rem; }
+  .avh-liste { margin-block-end: 0.3rem; }
+  .avh-hode { padding-block: 0.2rem; }
+}
+
 /* Grafflaten: alle fem ligger oppå hverandre, så høyden er den høyestes. */
 .avh-scene { position: relative; }
 .avh-graf { display: grid; }
