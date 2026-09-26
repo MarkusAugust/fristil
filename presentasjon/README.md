@@ -13,17 +13,9 @@ open presentasjon/designsystemarkitektur.html
 
 ## Én fil, og git som historikk
 
-Mappa hadde lenge én fil per utgave, fra `v3` til `v9`. Det var en
-versjonskontroll ved siden av den vi allerede har: git vet hvordan
-presentasjonen så ut i går, og hvorfor hver setning ble som den ble.
-
-Nå finnes bare `designsystemarkitektur.html`. Skal du se en eldre utgave, er
-den i historikken:
-
-```bash
-git log --oneline -- presentasjon/
-git show <commit>:presentasjon/designsystemarkitektur.html > /tmp/gammel.html
-```
+Mappa hadde lenge én fil per utgave, fra `v3` til `v8`. Nå finnes bare
+`designsystemarkitektur.html`, og de eldre utgavene ligger i git-historikken
+til mappa.
 
 ## Hva den sier
 
@@ -53,8 +45,8 @@ presentasjonen.
 
 ## To lysbilder som viser i stedet for å påstå
 
-Avhengighetsgrafen og morfingen er de to lysbildene med eget skript, og
-regelen for begge er at det som vises er regnet ut, ikke skrevet inn.
+Avhengighetsgrafen og morfingen er de to lysbildene med eget skript, og i
+begge er det som vises regnet ut, ikke skrevet inn.
 Grafen tegnes fra et datasett lest ut av `package-lock.json`, med dato.
 Morfingen kjører Datastars egen løkke på to virkelige elementer, og linja
 med hva skjermleseren sier regnes ut fra det samme elementet. På smal skjerm
