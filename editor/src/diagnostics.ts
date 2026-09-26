@@ -45,8 +45,9 @@
  * der kontrollen skulle stått. Der det står malsyntaks, Go, Jinja, PHP, ASP,
  * JS-maler eller Razor, holder diagnostikken seg unna: ukjente attributtnavn
  * meldes ikke i en tagg med mal i, en verdi med mal i sjekkes ikke, og et
- * felt med mal i regnes som ufylt. Elementnavnet sjekkes alltid: det står aldri i en
- * mal.
+ * felt med mal i regnes som ufylt. En verdi i klammer, `open={isOpen}` i Astro og
+ * Svelte, er et uttrykk og sjekkes ikke. Elementnavnet sjekkes alltid: det
+ * står aldri i en mal.
  *
  * Posisjonene er tegnindekser i den opprinnelige teksten. Kommentarer,
  * skript og stilark blankes ut med like mange tegn før lesingen, så en
@@ -163,8 +164,9 @@ const isGlobal = (name: string) =>
  */
 const TEMPLATE = /\{\{|\{%|\{#|<\?|<%|\$\{|@\(/
 const isTemplated = (text: string) => TEMPLATE.test(text)
+// En verdi i klammer er Astro eller Svelte, og et uttrykk, ikke en verdi.
 const isTemplatedValue = (text: string) =>
-  isTemplated(text) || /^\s*@[A-Za-z]/.test(text)
+  isTemplated(text) || /^\s*[@{]/.test(text)
 // Razor i innholdet, utenfor taggene: `<input @input="…">` er Alpine på en
 // kontroll, og skal ikke gjøre feltet til en mal.
 const isTemplatedContent = (text: string) =>
@@ -302,31 +304,79 @@ type ReadAttribute = {
   valueStart: number
 }
 
-/** Attributtene i en tagg, lest fra teksten mellom navnet og `>`. */
+/*
+ * Attributtene i en tagg, lest fra teksten mellom navnet og `>`. En verdi
+ * står i anførselstegn, uten, eller i klammer: `open={isOpen}` er Astro og
+ * Svelte, og klammene kan ha klammer i seg. Den leses som én verdi, så det
+ * som står inni ikke blir attributtnavn.
+ */
 function readAttributes(body: string, offset: number): ReadAttribute[] {
   const out: ReadAttribute[] = []
-  const pattern =
-    /([^\s"'=<>/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
-  for (const hit of body.matchAll(pattern)) {
-    const value = hit[2] ?? hit[3] ?? hit[4]
-    const start = offset + (hit.index ?? 0)
-    const valueEnd = start + hit[0].length
-    const quoted = hit[2] !== undefined || hit[3] !== undefined
-    const space = body.slice(0, hit.index ?? 0).match(/\s*$/)?.[0].length ?? 0
+  let i = 0
+  const skipSpace = () => {
+    while (i < body.length && /\s/.test(body[i])) i++
+  }
+  while (i < body.length) {
+    const spaceStart = i
+    skipSpace()
+    const nameStart = i
+    while (i < body.length && !/[\s"'=<>/]/.test(body[i])) i++
+    if (i === nameStart) {
+      i++
+      continue
+    }
+    const name = body.slice(nameStart, i)
+    let value: string | undefined
+    let valueStart = i
+    const afterName = i
+    skipSpace()
+    if (body[i] === "=") {
+      i++
+      skipSpace()
+      const open = body[i]
+      if (open === '"' || open === "'") {
+        const close = body.indexOf(open, i + 1)
+        valueStart = i + 1
+        value = body.slice(valueStart, close < 0 ? body.length : close)
+        i = close < 0 ? body.length : close + 1
+      } else if (open === "{") {
+        valueStart = i
+        i = bracesEnd(body, i)
+        value = body.slice(valueStart, i)
+      } else {
+        valueStart = i
+        while (i < body.length && !/[\s"'=<>`]/.test(body[i])) i++
+        value = body.slice(valueStart, i)
+      }
+    } else i = afterName
     out.push({
-      name: hit[1].toLowerCase(),
+      name: name.toLowerCase(),
       value,
-      start,
-      end: start + hit[1].length,
-      valueEnd,
-      spaceStart: start - space,
-      valueStart:
-        value === undefined
-          ? valueEnd
-          : valueEnd - value.length - (quoted ? 1 : 0),
+      start: offset + nameStart,
+      end: offset + nameStart + name.length,
+      valueEnd: offset + (value === undefined ? afterName : i),
+      spaceStart: offset + spaceStart,
+      valueStart: offset + (value === undefined ? afterName : valueStart),
     })
   }
   return out
+}
+
+/** Der en klammeverdi som begynner på `from` slutter, etter den matchende `}`. */
+function bracesEnd(text: string, from: number): number {
+  let depth = 0
+  let quote: string | null = null
+  for (let i = from; i < text.length; i++) {
+    const char = text[i]
+    if (quote) {
+      if (char === quote) quote = null
+      continue
+    }
+    if (char === '"' || char === "'" || char === "`") quote = char
+    else if (char === "{") depth++
+    else if (char === "}" && --depth === 0) return i + 1
+  }
+  return text.length
 }
 
 const list = (names: readonly string[]) => names.join(", ")
@@ -538,7 +588,9 @@ function checkClasses(
   for (const token of classAttribute.value.split(/(\s+)/)) {
     const start = offset
     offset += token.length
-    if (!token.trim() || !token.startsWith("fs-")) continue
+    // `fs-{b}` i Svelte er et uttrykk, og har ingen klasse å sjekke ennå.
+    if (!token.trim() || !token.startsWith("fs-") || /[{}]/.test(token))
+      continue
     const info = classes[token]
     if (info) {
       present.push(info)

@@ -531,6 +531,29 @@ const cases: Case[] = [
     count: 1,
   },
   {
+    name: "Astro og Svelte: en verdi i klammer er et uttrykk",
+    html: `<fs-popover placement={placement} open={isOpen}></fs-popover><fs-toast duration={ms}></fs-toast><button class="fs-button" data-variant={v}></button>`,
+    count: 0,
+  },
+  {
+    name: "Astro og Svelte: klammer med anførselstegn og nøsting inni",
+    html: `<input class="fs-input" data-state={feil ? "invalid" : undefined}><fs-field class:list={["fs-card", { kort }]}></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "Svelte: en klasse med et uttrykk i sjekkes ikke, de andre gjør",
+    html: `<div class="fs-card fs-{b} fs-buton"></div>`,
+    count: 1,
+    mentions: ["«fs-buton»"],
+  },
+  {
+    name: "klammeverdi og så en ekte feil etter",
+    html: `<fs-popover open={isOpen} placemnet="top-start"></fs-popover>`,
+    count: 1,
+    mentions: ["«placemnet»"],
+    covers: "placemnet",
+  },
+  {
     name: "en tom verdi er ingen verdi",
     html: `<button class="fs-button" data-variant=""></button>`,
     count: 0,

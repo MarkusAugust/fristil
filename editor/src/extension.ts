@@ -154,8 +154,19 @@ export function activate(context: vscode.ExtensionContext) {
   type Tag = {
     /** Fra `<` til markøren. */
     before: string
-    /** Fra markøren til `>`, eller til vinduet slutter. */
+    /** Fra markøren til `>`, tom når taggen ikke er lukket i vinduet. */
     after: string
+  }
+
+  /** Anførselstegnet teksten slutter inne i, om noe. */
+  const openQuote = (text: string) => {
+    let quote: string | null = null
+    for (const char of text) {
+      if (quote) {
+        if (char === quote) quote = null
+      } else if (char === '"' || char === "'") quote = char
+    }
+    return quote
   }
 
   const tagAt = (
@@ -174,20 +185,30 @@ export function activate(context: vscode.ExtensionContext) {
     const head = before.slice(start)
     // En `>` inne i en verdi, som `x-show="n > 0"`, avslutter ikke taggen.
     if (tagEnd(head, 1) >= 0) return undefined
-    const after = document.getText(
+    const rest = document.getText(
       new vscode.Range(position, document.positionAt(offset + WINDOW)),
     )
-    const end = tagEnd(after, 0)
-    return { before: head, after: end < 0 ? after : after.slice(0, end) }
+    // Står markøren inne i en verdi, lukkes den først, ellers snur pariteten
+    // og en `"` i en senere tagg leses som en åpning.
+    const quote = openQuote(head)
+    const from = quote ? rest.indexOf(quote) : -1
+    const end = quote && from < 0 ? -1 : tagEnd(rest, quote ? from + 1 : 0)
+    return { before: head, after: end < 0 ? "" : rest.slice(0, end) }
   }
 
-  /** Klassene i taggen, foran og bak markøren, med eller uten anførselstegn. */
-  const classesIn = (tag: Tag) =>
-    (tag.before + tag.after)
-      .match(/(?:^|\s):?class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i)
-      ?.slice(1)
-      .find((v) => v !== undefined)
-      ?.split(/\s+/) ?? []
+  /** Klassene i taggen, foran og bak markøren. `class` går foran `:class`. */
+  const classesIn = (tag: Tag) => {
+    const text = tag.before + tag.after
+    const hit =
+      text.match(/(?:^|\s)class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i) ??
+      text.match(/(?:^|\s):class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i)
+    return (
+      hit
+        ?.slice(1)
+        .find((v) => v !== undefined)
+        ?.split(/\s+/) ?? []
+    )
+  }
 
   /** Om markøren står inne i verdien til `class`. */
   const inClassValue = (tag: Tag) =>
