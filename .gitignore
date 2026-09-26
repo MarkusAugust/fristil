@@ -18,3 +18,4 @@ demoer-lokalt/
 
 # Pakket utvidelse, lages av `bun --filter fristil-vscode sjekk`
 *.vsix
+presentasjon/index.html
