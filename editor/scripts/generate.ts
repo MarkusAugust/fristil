@@ -298,10 +298,11 @@ export function classesData(): Classes {
       const emitted = new Map<string, string[]>()
       const silent: string[] = []
       for (const value of values as string[]) {
-        const result = build({ id: "x", titleId: "x", [option]: value }) as Record<
-          string,
-          unknown
-        >
+        const result = build({
+          id: "x",
+          titleId: "x",
+          [option]: value,
+        }) as Record<string, unknown>
         const extra = Object.entries(result).filter(
           ([key, v]) =>
             typeof v === "string" &&
