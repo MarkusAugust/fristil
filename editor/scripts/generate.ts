@@ -78,8 +78,10 @@ export function htmlData() {
 /*
  * JetBrains: https://github.com/JetBrains/web-types
  *
- * Skjemaet er skrevet etter beskrivelsen der, og er ikke etterprøvd i en
- * JetBrains-IDE ennå. Se README.
+ * Skjemaet er skrevet etter beskrivelsen der, og prøvd i IntelliJ IDEA
+ * Ultimate 2026.2: fullføring av elementer, attributter og verdier, og
+ * forklaring med lenke, uten annet oppsett enn at pakken står i
+ * `package.json`.
  */
 function webTypesAttribute(name: string, doc: AttributeDoc) {
   const base = { name, description: doc.description }

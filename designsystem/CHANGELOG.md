@@ -18,9 +18,10 @@ kommer i et nytt undertall.
 
 - **`web-types.json` følger med pakken.** Det er JetBrains sitt format for
   fullføring og forklaring i HTML, med de ni `<fs-*>`-elementene og
-  attributtene deres. WebStorm skal finne den selv fra `node_modules`; det er
-  skrevet etter beskrivelsen av formatet og ikke etterprøvd i en JetBrains-IDE
-  ennå. Fila genereres fra `editor/metadata.ts` i repoet, der
+  attributtene deres. IDE-en finner den selv fra `node_modules`, gjennom
+  feltet `web-types` i `package.json`. Prøvd i IntelliJ IDEA Ultimate 2026.2:
+  fullføring av elementene, attributtene og verdiene, og forklaring med
+  lenke. Fila genereres fra `editor/metadata.ts` i repoet, der
   VS Code-utvidelsen også lages.
 - `observedAttributes` på komponentklassene er nå skrivebeskyttede tupler
   (`as const`) i stedet for `string[]`. Verdiene er de samme. En klasse som
