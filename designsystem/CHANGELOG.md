@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.15.0 (2026-09-26)
+
 - **`web-types.json` følger med pakken.** Det er JetBrains sitt format for
   fullføring og forklaring i HTML, med de ni `<fs-*>`-elementene og
   attributtene deres. WebStorm skal finne den selv fra `node_modules`; det er
