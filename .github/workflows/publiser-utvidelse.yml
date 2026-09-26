@@ -14,6 +14,11 @@ jobs:
   publiser:
     name: Pakk og publiser
     runs-on: ubuntu-latest
+    env:
+      # Open VSX har heller ingen OIDC. Tokenet lages på open-vsx.org og
+      # legges inn som hemmeligheten OVSX_PAT. Står på jobben, fordi et
+      # steg ikke ser sin egen env i sitt eget if.
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
     steps:
       - uses: actions/checkout@v7
@@ -57,3 +62,11 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: ./node_modules/.bin/vsce publish --packagePath fristil.vsix
+
+      # Open VSX er registeret VSCodium, Cursor og andre uten Microsofts
+      # Marketplace leser fra. Samme vsix, samme versjon. Mangler tokenet,
+      # hoppes steget over, så Marketplace ikke stopper på det.
+      - name: Publiser til Open VSX
+        if: env.OVSX_PAT != ''
+        working-directory: editor
+        run: ./node_modules/.bin/ovsx publish fristil.vsix --pat "$OVSX_PAT"
