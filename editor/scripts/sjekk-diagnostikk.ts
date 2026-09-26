@@ -37,6 +37,8 @@ type Case = {
   fixed?: string
   fixTitle?: string
   fixPreferred?: boolean
+  /** Hvor lang tid tilfellet får, når farten er poenget. */
+  maxMs?: number
 }
 
 const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
@@ -493,12 +495,20 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "samme bokstaver i en klasse er den sikre rettelsen",
+    html: `<button class="fs_button"></button>`,
+    count: 1,
+    fixTitle: "Bytt til fs-button",
+    fixPreferred: true,
+  },
+  {
     name: "samme ukjente klasse mange ganger går fort",
     html: Array.from(
       { length: 3000 },
       () => `<td class="fs-cell fs-celle">x</td>`,
     ).join("\n"),
     count: 6000,
+    maxMs: 200,
   },
   {
     name: "funnene kommer i tekstens rekkefølge",
@@ -530,12 +540,16 @@ const started = performance.now()
 for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
   let found: ReturnType<typeof diagnose>
+  const before = performance.now()
   try {
     found = diagnose(c.html, all, classes)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue
   }
+  const took = performance.now() - before
+  if (c.maxMs && took > c.maxMs)
+    fail(`tok ${Math.round(took)} ms, og skal ta under ${c.maxMs}`)
   if (found.length !== c.count) {
     fail(
       `ventet ${c.count} funn, fikk ${found.length}: ${found.map((f) => f.message).join(" | ") || "ingen"}`,
