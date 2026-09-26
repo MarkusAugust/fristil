@@ -496,9 +496,9 @@ const cases: Case[] = [
   },
   {
     name: "samme bokstaver i en klasse er den sikre rettelsen",
-    html: `<button class="fs_button"></button>`,
+    html: `<p class="fs-error_text"></p>`,
     count: 1,
-    fixTitle: "Bytt til fs-button",
+    fixTitle: "Bytt til fs-error-text",
     fixPreferred: true,
   },
   {
