@@ -78,7 +78,7 @@ export function htmlData() {
 /*
  * JetBrains: https://github.com/JetBrains/web-types
  *
- * Skjemaet er skrevet etter beskrivelsen der, og prøvd i IntelliJ IDEA
+ * Skjemaet er skrevet etter beskrivelsen der, og etterprøvd i IntelliJ IDEA
  * Ultimate 2026.2: fullføring av elementer, attributter og verdier, og
  * forklaring med lenke, uten annet oppsett enn at pakken står i
  * `package.json`.

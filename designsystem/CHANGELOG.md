@@ -19,7 +19,7 @@ kommer i et nytt undertall.
 - **`web-types.json` følger med pakken.** Det er JetBrains sitt format for
   fullføring og forklaring i HTML, med de ni `<fs-*>`-elementene og
   attributtene deres. IDE-en finner den selv fra `node_modules`, gjennom
-  feltet `web-types` i `package.json`. Prøvd i IntelliJ IDEA Ultimate 2026.2:
+  feltet `web-types` i `package.json`. Etterprøvd i IntelliJ IDEA Ultimate 2026.2:
   fullføring av elementene, attributtene og verdiene, og forklaring med
   lenke. Fila genereres fra `editor/metadata.ts` i repoet, der
   VS Code-utvidelsen også lages.
