@@ -1,7 +1,7 @@
 {
   "fs-field": {
-    "lenke": "https://fristil.netlify.app/components/field/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/field/",
+    "attributes": {
       "invalid": {
         "type": "flag"
       },
@@ -13,7 +13,7 @@
       },
       "required-marker": {
         "type": "values",
-        "verdier": [
+        "values": [
           "symbol",
           "text",
           "none"
@@ -28,19 +28,19 @@
     }
   },
   "fs-tabs": {
-    "lenke": "https://fristil.netlify.app/components/tabs/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/tabs/",
+    "attributes": {
       "server-controlled": {
         "type": "flag"
       }
     }
   },
   "fs-error-summary": {
-    "lenke": "https://fristil.netlify.app/components/error-summary/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/error-summary/",
+    "attributes": {
       "data-autofocus": {
         "type": "values",
-        "verdier": [
+        "values": [
           "false"
         ]
       },
@@ -50,14 +50,14 @@
     }
   },
   "fs-popover": {
-    "lenke": "https://fristil.netlify.app/components/popover/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/popover/",
+    "attributes": {
       "open": {
         "type": "flag"
       },
       "placement": {
         "type": "values",
-        "verdier": [
+        "values": [
           "bottom-start",
           "bottom-end",
           "top-start",
@@ -70,8 +70,8 @@
     }
   },
   "fs-suggestion": {
-    "lenke": "https://fristil.netlify.app/components/suggestion/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/suggestion/",
+    "attributes": {
       "prefiltered": {
         "type": "flag"
       },
@@ -81,8 +81,8 @@
     }
   },
   "fs-dialog": {
-    "lenke": "https://fristil.netlify.app/components/dialog/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/dialog/",
+    "attributes": {
       "open": {
         "type": "flag"
       },
@@ -92,8 +92,8 @@
     }
   },
   "fs-toast": {
-    "lenke": "https://fristil.netlify.app/components/toast/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/toast/",
+    "attributes": {
       "duration": {
         "type": "number"
       },
@@ -103,8 +103,8 @@
     }
   },
   "fs-session-timeout": {
-    "lenke": "https://fristil.netlify.app/components/session-timeout/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/session-timeout/",
+    "attributes": {
       "warn-at": {
         "type": "number"
       },
@@ -114,8 +114,8 @@
     }
   },
   "fs-connection-status": {
-    "lenke": "https://fristil.netlify.app/components/connection-status/",
-    "attributter": {
+    "link": "https://fristil.netlify.app/components/connection-status/",
+    "attributes": {
       "offline-text": {
         "type": "text"
       },

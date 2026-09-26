@@ -17,7 +17,10 @@ noen sa at det ikke finnes, for VS Codes fullføring validerer ingenting.
 - Snippets ligger øverst i forslagslista i HTML-filer. Før lå Emmets
   forkortelse over dem, og Tab ga `<fs-field></fs-field>` i stedet for
   markupen fra komponentsiden.
-- Lista diagnostikken sjekker mot, `elementer.json`, genereres fra samme
+- Der det står malsyntaks, Go, Jinja, PHP eller Razor, holder diagnostikken
+  seg unna: en mal er ikke hel, og kontrollen kan stå i en partial. HTMX,
+  Alpine, Vue, Svelte og Angular sine attributter slipper gjennom.
+- Lista diagnostikken sjekker mot, `elements.json`, genereres fra samme
   `metadata.ts` som fullføringen.
 
 ## 0.1.0

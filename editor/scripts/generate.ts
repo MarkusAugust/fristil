@@ -8,7 +8,7 @@
  *   - `editor/snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `editor/elementer.json`: det diagnostikken i utvidelsen trenger, tagg
+ *   - `editor/elements.json`: det diagnostikken i utvidelsen trenger, tagg
  *     for tagg. `html-data` skiller ikke et tall fra en tekst, og har ingen
  *     plass til det, så diagnostikken får sin egen fil fra samme kilde.
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
@@ -23,7 +23,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
-import type { Attributt, Elementer } from "../src/diagnostikk"
+import type { Attribute, Elements } from "../src/diagnostics"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.netlify.app/components/"
@@ -176,22 +176,22 @@ export function snippets() {
 }
 
 /*
- * Diagnostikken: hva hvert attributt tar, i den formen `src/diagnostikk.ts`
+ * Diagnostikken: hva hvert attributt tar, i den formen `src/diagnostics.ts`
  * leser. Lenken er komponentsiden, som blir lenke i meldingen.
  */
-export function elementer(): Elementer {
-  const ut: Elementer = {}
+export function diagnosticsData(): Elements {
+  const out: Elements = {}
   for (const element of elements) {
-    const attributter: Record<string, Attributt> = {}
+    const attributes: Record<string, Attribute> = {}
     for (const [name, doc] of Object.entries(element.attributes)) {
-      attributter[name] =
+      attributes[name] =
         typeof doc.value === "object"
-          ? { type: "values", verdier: doc.value.values.map((v) => v.name) }
+          ? { type: "values", values: doc.value.values.map((v) => v.name) }
           : { type: doc.value }
     }
-    ut[element.tag] = { lenke: docsUrl(element), attributter }
+    out[element.tag] = { link: docsUrl(element), attributes }
   }
-  return ut
+  return out
 }
 
 /** Hver fil generatoren skriver, med stien fra rota. */
@@ -203,7 +203,7 @@ export function files(): Record<string, string> {
   return {
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
-    "editor/elementer.json": json(elementer()),
+    "editor/elements.json": json(diagnosticsData()),
     "designsystem/web-types.json": json(webTypes(version)),
   }
 }

@@ -88,9 +88,9 @@ Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, 
 
 `editor/` er VS Code-utvidelsen. `package.json` peker på
 `fristil.html-data.json` og `snippets.json`, som gir fullføring og snippets
-uten kode, og på `dist/extension.js`, som er diagnostikken: `src/diagnostikk.ts`
+uten kode, og på `dist/extension.js`, som er diagnostikken: `src/diagnostics.ts`
 leser hver `<fs-…>`-tagg i et HTML-dokument og sjekker den mot
-`elementer.json`, og `src/extension.ts` kobler den til editoren. De tre
+`elements.json`, og `src/extension.ts` kobler den til editoren. De tre
 JSON-filene genereres fra `editor/metadata.ts` og «Ren HTML»-fanene på
 komponentsidene, sammen med `designsystem/web-types.json` for JetBrains.
 Endrer du et attributt på en komponent, stopper typesjekken til
