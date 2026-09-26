@@ -3,6 +3,26 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.3.0
+
+Klassene, hurtigrettelser og malspråkene.
+
+- `fs-`-klassene fullføres inne i `class="…"`, med komponenten og lenken i
+  forklaringen, og musa over en klasse gir det samme. En klasse som ikke
+  finnes, som `fs-buton`, får en gul strek med den nærmeste kjente som
+  forslag.
+- Det en klasse tar sjekkes og fullføres: `data-variant` på `fs-button`,
+  `data-size` på `fs-heading`, `data-state` på `fs-input`, `data-required`
+  på `fs-label`, og de andre. `type` er HTML sitt eget og sjekkes ikke. Listene leses ved å kalle byggefunksjonene i
+  `fs`, så de er det pakken faktisk gir, med standardverdien nevnt.
+- Hurtigrettelser som lyspære: bytt et navn til det som var ment, ta bort et
+  boolsk attributt med `="false"`, sett inn en ledetekst i et felt uten.
+- Utvidelsen virker i malspråkene, ikke bare i HTML: PHP, Razor, Astro,
+  Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go-maler, EJS,
+  Liquid, Nunjucks og Edge, styrt av innstillingen `fristil.languages`.
+  Utenfor HTML fullføres også elementene og attributtene deres av
+  utvidelsen selv, og snippetene er med i alle.
+
 ## 0.2.0
 
 Utvidelsen sier fra. Til nå kunne du skrive `<fs-dialog-header>` uten at

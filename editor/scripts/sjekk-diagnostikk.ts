@@ -16,10 +16,11 @@
  * Kjør med: bun scripts/sjekk-diagnostikk.ts
  */
 
-import { diagnose, type Elements } from "../src/diagnostics"
-import { diagnosticsData, snippets } from "./generate"
+import { type Classes, diagnose, type Elements } from "../src/diagnostics"
+import { classesData, diagnosticsData, snippets } from "./generate"
 
 const all: Elements = diagnosticsData()
+const classes: Classes = classesData()
 const findings: string[] = []
 
 type Case = {
@@ -30,6 +31,14 @@ type Case = {
   severity?: "error" | "warning"
   /** Teksten funnet skal dekke, når posisjonen er poenget. */
   covers?: string
+  /** Det meldingen ikke skal nevne. */
+  notMentions?: string[]
+  /** Rettelsen anvendt på html skal gi dette. */
+  fixed?: string
+  fixTitle?: string
+  fixPreferred?: boolean
+  /** Hvor lang tid tilfellet får, når farten er poenget. */
+  maxMs?: number
 }
 
 const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
@@ -345,6 +354,244 @@ const cases: Case[] = [
     mentions: ["«stjerne»"],
   },
   {
+    name: "en klasse som ikke finnes, med forslag og rettelse",
+    html: `<button class="fs-buton">Send</button>`,
+    count: 1,
+    mentions: ["«fs-buton» finnes ikke", "Mente du fs-button?"],
+    severity: "warning",
+    covers: "fs-buton",
+    fixed: `<button class="fs-button">Send</button>`,
+    fixTitle: "Bytt til fs-button",
+  },
+  {
+    name: "en klasse langt fra alle kjente får ikke forslag",
+    html: `<button class="fs-knapp">Send</button>`,
+    count: 1,
+    mentions: ["«fs-knapp» finnes ikke"],
+    notMentions: ["Mente du"],
+  },
+  {
+    name: "en ren verdi i en tagg med mal sjekkes likevel",
+    html: `<button class="fs-button" {{ if .X }}disabled{{ end }} data-variant="ghots"></button>`,
+    count: 1,
+    mentions: ["«ghots»"],
+  },
+  {
+    name: "en klasse med mal i navnet er ingen skrivefeil",
+    html: `<div class="fs-{{ .Type }} kort"></div><div class="fs-<?= $x ?>"></div>`,
+    count: 0,
+  },
+  {
+    name: "kjente klasser, også flere i samme attributt og med mal",
+    html: `<input class="fs-input fs-search" type="search"><div class="{{ .Klasse }} fs-card"></div><p class="kort fs-paragraph"></p>`,
+    count: 0,
+  },
+  {
+    name: "en variant utenfor lista, med forslag og rettelse",
+    html: `<button class="fs-button" data-variant="ghots">Send</button>`,
+    count: 1,
+    mentions: [
+      "data-variant kan ikke være «ghots» på button",
+      "secondary, ghost, danger",
+      "primary uten attributt",
+    ],
+    fixed: `<button class="fs-button" data-variant="ghost">Send</button>`,
+    fixTitle: "Bytt til ghost",
+  },
+  {
+    name: "lovlige varianter, standardverdien og type på input",
+    html: `<button class="fs-button" data-variant="danger"></button><button class="fs-button" data-variant="primary"></button><input class="fs-input" type="email"><h2 class="fs-heading" data-size="xl"></h2>`,
+    count: 0,
+  },
+  {
+    name: "et attributt en annen klasse tar, sjekkes ikke her",
+    html: `<div class="fs-card" data-variant="ghost"></div><span class="fs-badge" data-size="xl"></span>`,
+    count: 1,
+    mentions: ["data-variant kan ikke være «ghost» på card"],
+  },
+  {
+    name: "variantverdi fra en mal sjekkes ikke",
+    html: `<button class="fs-button" data-variant="{{ .Variant }}"></button><button class="fs-button" data-variant="@Model.V"></button>`,
+    count: 0,
+  },
+  {
+    name: "rettelsen for et attributtnavn",
+    html: `<fs-connection-status onlinetext="Tilkoblet"></fs-connection-status>`,
+    count: 1,
+    fixed: `<fs-connection-status online-text="Tilkoblet"></fs-connection-status>`,
+    fixTitle: "Bytt til online-text",
+  },
+  {
+    name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
+    html: `<fs-field invalid="false" id="x"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
+    fixTitle: "Ta bort invalid",
+    fixPreferred: true,
+  },
+  {
+    name: "rettelsen for et boolsk attributt sist i taggen",
+    html: `<fs-field id="x" invalid="false"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
+  },
+  {
+    name: "rettelsen for et felt uten ledetekst",
+    html: `<fs-field><input class="fs-input"></fs-field>`,
+    count: 1,
+    fixed: `<fs-field><label>Ledetekst</label><input class="fs-input"></fs-field>`,
+    fixTitle: "Sett inn en ledetekst",
+  },
+  {
+    name: "ledeteksten får sin egen linje med samme innrykk",
+    html: `<fs-field>\n  <input class="fs-input">\n</fs-field>`,
+    count: 1,
+    fixed: `<fs-field>\n  <label>Ledetekst</label>\n  <input class="fs-input">\n</fs-field>`,
+  },
+  {
+    name: "data-required på ledetekst og legend",
+    html: `<label class="fs-label" data-required="stjerne">N</label><legend class="fs-legend" data-required="text">G</legend>`,
+    count: 1,
+    mentions: ["data-required kan ikke være «stjerne»", "symbol, text"],
+  },
+  {
+    name: "data-variant på input, som CSS-en leser",
+    html: `<input class="fs-input" data-variant="dato" type="date"><input class="fs-input" data-variant="date" type="date">`,
+    count: 1,
+    mentions: [
+      "data-variant kan ikke være «dato»",
+      "date, datetime-local, time",
+    ],
+    fixed: `<input class="fs-input" data-variant="date" type="date"><input class="fs-input" data-variant="date" type="date">`,
+  },
+  {
+    name: "type på input er HTML sitt eget, og sjekkes ikke, heller ikke hidden",
+    html: `<input class="fs-input" type="color"><input class="fs-input" type="hidden"><input class="fs-input" type="file">`,
+    count: 0,
+  },
+  {
+    name: "et kort navn får ikke forslag to tegn unna",
+    html: `<div class="fs-tabs"></div>`,
+    count: 1,
+    notMentions: ["Mente du"],
+  },
+  {
+    name: "en byttet plass er én feil, og forslaget er ikke foretrukket",
+    html: `<button class="fs-button" data-variant="ghots"></button>`,
+    count: 1,
+    fixTitle: "Bytt til ghost",
+    fixPreferred: false,
+  },
+  {
+    name: "samme bokstaver er den sikre rettelsen",
+    html: `<fs-connection-status onlinetext="x"></fs-connection-status>`,
+    count: 1,
+    mentions: ["Mente du online-text"],
+    fixPreferred: true,
+  },
+  {
+    name: "et langt navn får to tegns slingring",
+    html: `<p class="fs-eror-txt"></p>`,
+    count: 1,
+    mentions: ["Mente du fs-error-text?"],
+  },
+  {
+    name: "lengdefilteret slipper gjennom akkurat på grensen",
+    html: `<a class="fs-lin"></a>`,
+    count: 1,
+    mentions: ["Mente du fs-link?"],
+  },
+  {
+    name: "ved lik avstand vinner den som deler begynnelsen",
+    html: `<table class="fs-tabel"></table>`,
+    count: 1,
+    mentions: ["Mente du fs-table?"],
+  },
+  {
+    name: "«Ta bort» over flere linjer",
+    html: `<fs-field\n  invalid="false"\n  id="x"><label>N</label><input></fs-field>`,
+    count: 1,
+    fixed: `<fs-field\n  id="x"><label>N</label><input></fs-field>`,
+  },
+  {
+    name: "rettelse på en klasse uten anførselstegn",
+    html: `<p class=fs-buton></p>`,
+    count: 1,
+    fixed: `<p class=fs-button></p>`,
+  },
+  {
+    name: "rettelse på en verdi uten anførselstegn",
+    html: `<button class=fs-button data-variant=ghots></button>`,
+    count: 1,
+    fixed: `<button class=fs-button data-variant=ghost></button>`,
+  },
+  {
+    name: "to klasser som tar samme attributt gir ett funn",
+    html: `<input class="fs-input fs-search" data-state="ugyldig">`,
+    count: 1,
+  },
+  {
+    name: "Astro og Svelte: en verdi i klammer er et uttrykk",
+    html: `<fs-popover placement={placement} open={isOpen}></fs-popover><fs-toast duration={ms}></fs-toast><button class="fs-button" data-variant={v}></button>`,
+    count: 0,
+  },
+  {
+    name: "Astro og Svelte: klammer med anførselstegn og nøsting inni",
+    html: `<input class="fs-input" data-state={feil ? "invalid" : undefined}><fs-field class:list={["fs-card", { kort }]}></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en klamme inne i et anførselstegn i uttrykket avslutter det ikke",
+    html: `<fs-popover placement={a ? "}" : "x"} open></fs-popover>`,
+    count: 0,
+  },
+  {
+    name: "klammer i klammer, og feilen etter dem felles fortsatt",
+    html: `<fs-popover placement={c ? {a:1}.p : "top-start"} plasement="x"></fs-popover>`,
+    count: 1,
+    mentions: ["«plasement»"],
+  },
+  {
+    name: "Svelte: en klasse med et uttrykk i sjekkes ikke, de andre gjør",
+    html: `<div class="fs-card fs-{b} fs-buton"></div>`,
+    count: 1,
+    mentions: ["«fs-buton»"],
+  },
+  {
+    name: "klammeverdi og så en ekte feil etter",
+    html: `<fs-popover open={isOpen} placemnet="top-start"></fs-popover>`,
+    count: 1,
+    mentions: ["«placemnet»"],
+    covers: "placemnet",
+  },
+  {
+    name: "en tom verdi er ingen verdi",
+    html: `<button class="fs-button" data-variant=""></button>`,
+    count: 0,
+  },
+  {
+    name: "samme bokstaver i en klasse er den sikre rettelsen",
+    html: `<p class="fs-error_text"></p>`,
+    count: 1,
+    fixTitle: "Bytt til fs-error-text",
+    fixPreferred: true,
+  },
+  {
+    name: "samme ukjente klasse mange ganger går fort",
+    html: Array.from(
+      { length: 3000 },
+      () => `<td class="fs-cell fs-celle">x</td>`,
+    ).join("\n"),
+    count: 6000,
+    maxMs: 60,
+  },
+  {
+    name: "funnene kommer i tekstens rekkefølge",
+    html: `<fs-popover placemnet="x"></fs-popover><button class="fs-buton"></button><fs-tull></fs-tull>`,
+    count: 3,
+    mentions: ["placemnet"],
+  },
+  {
     name: "flere funn i samme tagg meldes hver for seg",
     html: `<fs-popover placemnet="top-start" open="false"></fs-popover>`,
     count: 2,
@@ -364,15 +611,22 @@ for (const [tag, snippet] of Object.entries(snippets()))
     count: 0,
   })
 
+const started = performance.now()
 for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
   let found: ReturnType<typeof diagnose>
+  const before = performance.now()
   try {
-    found = diagnose(c.html, all)
+    found = diagnose(c.html, all, classes)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue
   }
+  // Tidsgrensen er en lokal vakt for hurtigbufferen, ikke en påstand om en
+  // delt CI-maskin: der kan veggklokka gi rødt uten at noe er galt.
+  const took = performance.now() - before
+  if (c.maxMs && took > c.maxMs && !process.env.CI)
+    fail(`tok ${Math.round(took)} ms, og skal ta under ${c.maxMs}`)
   if (found.length !== c.count) {
     fail(
       `ventet ${c.count} funn, fikk ${found.length}: ${found.map((f) => f.message).join(" | ") || "ingen"}`,
@@ -384,6 +638,9 @@ for (const c of cases) {
   for (const m of c.mentions ?? [])
     if (!first.message.includes(m))
       fail(`meldingen nevner ikke «${m}»: ${first.message}`)
+  for (const m of c.notMentions ?? [])
+    if (first.message.includes(m))
+      fail(`meldingen nevner «${m}»: ${first.message}`)
   if (c.severity && first.severity !== c.severity)
     fail(`ventet ${c.severity}, fikk ${first.severity}`)
   if (c.covers) {
@@ -393,7 +650,31 @@ for (const c of cases) {
   }
   if (!first.link.startsWith("https://fristil.netlify.app/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
+  if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
+    if (!first.fix) fail("funnet har ingen rettelse")
+    else {
+      const applied =
+        c.html.slice(0, first.fix.start) +
+        first.fix.text +
+        c.html.slice(first.fix.end)
+      if (c.fixed !== undefined && applied !== c.fixed)
+        fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
+      if (c.fixTitle && first.fix.title !== c.fixTitle)
+        fail(`rettelsen heter «${first.fix.title}», ikke «${c.fixTitle}»`)
+      const preferred = first.fix.preferred ?? false
+      if (c.fixPreferred !== undefined && preferred !== c.fixPreferred)
+        fail(
+          `rettelsen er ${preferred ? "" : "ikke "}foretrukket, og skulle ${c.fixPreferred ? "" : "ikke "}vært det`,
+        )
+    }
+  }
 }
+
+const elapsed = performance.now() - started
+if (elapsed > 2000)
+  findings.push(
+    `alle tilfellene tok ${Math.round(elapsed)} ms, og skal ta under 2000`,
+  )
 
 if (findings.length) {
   console.error(
@@ -402,5 +683,5 @@ if (findings.length) {
   process.exit(1)
 }
 console.log(
-  `Diagnostikken består ${cases.length} tilfeller, ${Object.keys(all).length} elementer.`,
+  `Diagnostikken består ${cases.length} tilfeller, ${Object.keys(all).length} elementer og ${Object.keys(classes).length} klasser.`,
 )

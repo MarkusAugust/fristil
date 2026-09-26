@@ -9,7 +9,12 @@
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
  *   - `editor/elements.json`: det diagnostikken i utvidelsen trenger, tagg
- *     for tagg. `html-data` skiller ikke et tall fra en tekst, og har ingen
+ *     for tagg.
+ *   - `editor/classes.json`: hver `fs-`-klasse i pakkens CSS, med komponenten
+ *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
+ *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
+ *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken
+ *     faktisk gir. `html-data` skiller ikke et tall fra en tekst, og har ingen
  *     plass til det, så diagnostikken får sin egen fil fra samme kilde.
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
  *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
@@ -19,11 +24,12 @@
  * er utdaterte.
  */
 
-import { readFileSync, writeFileSync } from "node:fs"
+import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { fs } from "@fristil/designsystem"
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
-import type { Attribute, Elements } from "../src/diagnostics"
+import type { Attribute, Classes, Elements } from "../src/diagnostics"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.netlify.app/components/"
@@ -194,6 +200,137 @@ export function diagnosticsData(): Elements {
   return out
 }
 
+/*
+ * Klassene. Lista kommer fra CSS-filene, én mappe per komponent, og navnet
+ * på mappa er adressen til komponentsiden. Tittel og beskrivelse er sidens
+ * egen frontmatter. Attributtene kommer fra byggefunksjonene i `fs`: hver
+ * funksjon med `variants`, `sizes`, `colors`, `states`, `types` eller
+ * `pickers` kalles én gang per verdi, og attributtet den skriver ut er det
+ * som noteres, med verdien som ikke gir noe attributt som standard.
+ */
+const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
+  join(ROOT, "designsystem/src/components", d),
+)
+
+const OPTION_LISTS: Record<string, string> = {
+  variants: "variant",
+  sizes: "size",
+  colors: "color",
+  states: "state",
+  types: "type",
+  pickers: "picker",
+  // `fs.label({ required: "text" })`: lista heter markers, opsjonen required.
+  markers: "required",
+}
+
+const frontmatter = (slug: string, key: string) => {
+  const page = readFileSync(join(PAGES, `${slug}.mdx`), "utf8")
+  return page.match(new RegExp(`^${key}: (.*)$`, "m"))?.[1]?.trim() ?? ""
+}
+
+function classesInCss(css: string): string[] {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, "")
+  return [...new Set(clean.match(/\.fs-[\w-]+/g) ?? [])].map((c) => c.slice(1))
+}
+
+/** Klassene i det en byggefunksjon gir, også når svaret er nøstet. */
+function classesIn(value: unknown): string[] {
+  if (!value || typeof value !== "object") return []
+  const out: string[] = []
+  for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+    if (key === "class" && typeof v === "string") out.push(...v.split(/\s+/))
+    else if (v && typeof v === "object") out.push(...classesIn(v))
+  }
+  return out
+}
+
+export function classesData(): Classes {
+  const out: Classes = {}
+  for (const dir of COMPONENT_DIRS) {
+    for (const slug of readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      // Sortert: Linux leverer mappene i en annen rekkefølge enn macOS, og
+      // fila skal være den samme uansett hvor den genereres.
+      .sort()) {
+      const files = readdirSync(join(dir, slug))
+        .filter((f) => f.endsWith(".css"))
+        .sort()
+      const link = `${DOCS}${slug}/`
+      const title = frontmatter(slug, "title")
+      const description = frontmatter(slug, "description")
+      for (const file of files) {
+        for (const name of classesInCss(
+          readFileSync(join(dir, slug, file), "utf8"),
+        ))
+          out[name] ??= {
+            component: slug,
+            title,
+            description,
+            link,
+            attributes: {},
+          }
+      }
+    }
+  }
+
+  for (const builder of Object.values(fs as Record<string, unknown>)) {
+    if (typeof builder !== "function") continue
+    const build = builder as (options?: Record<string, unknown>) => unknown
+    let base: unknown
+    try {
+      // En id, så byggefunksjonene som ellers lager en tilfeldig ikke sier fra.
+      base = build({ id: "x" })
+    } catch {
+      continue
+    }
+    const targets = [...new Set(classesIn(base))].filter((c) => out[c])
+    if (!targets.length) continue
+    for (const [list, option] of Object.entries(OPTION_LISTS)) {
+      const values = (builder as unknown as Record<string, unknown>)[list]
+      if (!Array.isArray(values)) continue
+      // Hvert attributt en verdi blir til: `fs.input({ type: "date" })` gir både
+      // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
+      // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et fs-input.
+      const emitted = new Map<string, string[]>()
+      const silent: string[] = []
+      for (const value of values as string[]) {
+        const result = build({ id: "x", [option]: value }) as Record<
+          string,
+          unknown
+        >
+        const extra = Object.entries(result).filter(
+          ([key, v]) =>
+            typeof v === "string" &&
+            key !== "class" &&
+            key !== "type" &&
+            (base as Record<string, unknown>)[key] !== v &&
+            v === value,
+        )
+        if (!extra.length) {
+          silent.push(value)
+          continue
+        }
+        for (const [attribute] of extra) {
+          emitted.set(attribute, [...(emitted.get(attribute) ?? []), value])
+        }
+      }
+      for (const [attribute, list] of emitted)
+        for (const target of targets)
+          out[target].attributes[attribute] = {
+            values: list,
+            // Standardverdien er den ene verdien som ikke gir noe attributt,
+            // som `primary` for `data-variant`. Gir flere ingenting, som de
+            // fleste typene på et input, betyr fraværet ikke én av dem.
+            ...(silent.length === 1 && emitted.size === 1
+              ? { default: silent[0] }
+              : {}),
+          }
+    }
+  }
+  return out
+}
+
 /** Hver fil generatoren skriver, med stien fra rota. */
 export function files(): Record<string, string> {
   const version: string = JSON.parse(
@@ -204,6 +341,7 @@ export function files(): Record<string, string> {
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
     "editor/elements.json": json(diagnosticsData()),
+    "editor/classes.json": json(classesData()),
     "designsystem/web-types.json": json(webTypes(version)),
   }
 }
