@@ -145,9 +145,3 @@ Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og
 ### Sjekkene mot dokumentasjonen
 
 Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
-
-## Dokumentasjonen
-
-Teksten er på norsk (bokmål) og skal lese som om en norsk utvikler har skrevet den. Anglisismer i brødtekst oversettes, overskrifter bruker norsk stor forbokstav bare i første ord, og eksempler skal vise hvordan komponenten faktisk tas i bruk, med import, registrering og realistiske verdier.
-
-Levende eksempler går gjennom `Preview.astro`, som legger innholdet i en shadow root. Uten isolasjonen treffer dokumentasjonssidens egen CSS eksempelet, og du ser ikke lenger det en konsument får.
