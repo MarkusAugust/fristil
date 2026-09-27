@@ -38,8 +38,8 @@ export function parseHex(hex: string): Rgb {
 }
 
 export function toHex({ r, g, b }: Rgb): string {
-  const tall = (verdi: number) =>
-    Math.round(Math.min(255, Math.max(0, verdi)))
+  const tall = (value: number) =>
+    Math.round(Math.min(255, Math.max(0, value)))
       .toString(16)
       .padStart(2, "0")
 

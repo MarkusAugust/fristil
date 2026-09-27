@@ -122,7 +122,7 @@ export class FsDialog extends HostElement {
     return this.querySelector(":scope > dialog")
   }
 
-  private meld(open: boolean, returnValue = ""): void {
+  private notify(open: boolean, returnValue = ""): void {
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
         bubbles: true,
@@ -171,7 +171,7 @@ export class FsDialog extends HostElement {
     // gangen noen kan melde fra: `sync()` og `handleClose` ser etterpå en
     // dialog som alt er lukket, og tier.
     if (this.open) this.removeAttribute("open")
-    this.meld(false, dialog.returnValue)
+    this.notify(false, dialog.returnValue)
   }
 
   private handleClose = (): void => {
@@ -184,7 +184,7 @@ export class FsDialog extends HostElement {
     if (!this.open) return
 
     this.removeAttribute("open")
-    this.meld(false, this.dialog?.returnValue ?? "")
+    this.notify(false, this.dialog?.returnValue ?? "")
   }
 
   private sync(): void {
@@ -218,8 +218,8 @@ export class FsDialog extends HostElement {
       return
     }
 
-    const forste = dialog !== this.dialogElement
-    if (forste) {
+    const first = dialog !== this.dialogElement
+    if (first) {
       this.dialogElement?.removeEventListener("close", this.handleClose)
       this.dialogElement = dialog
       dialog.addEventListener("close", this.handleClose)
@@ -253,7 +253,7 @@ export class FsDialog extends HostElement {
      * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
      * en `value`, og det er verdt å holde på.
      */
-    if (forste && this.open && !dialog.open && dialog.returnValue !== "") {
+    if (first && this.open && !dialog.open && dialog.returnValue !== "") {
       this.removeAttribute("open")
       return
     }
@@ -280,7 +280,7 @@ export class FsDialog extends HostElement {
        */
       dialog.removeAttribute("open")
       dialog.showModal()
-      this.meld(true)
+      this.notify(true)
     } else if (!this.open && (modal || dialog.open)) {
       /*
        * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens
@@ -298,7 +298,7 @@ export class FsDialog extends HostElement {
        */
       setAttr(dialog, "open", "")
       dialog.close()
-      this.meld(false, dialog.returnValue)
+      this.notify(false, dialog.returnValue)
     }
   }
 }
