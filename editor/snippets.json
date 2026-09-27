@@ -17,27 +17,26 @@
   "fs-tabs": {
     "prefix": "fs-tabs",
     "body": [
+      "<!-- Rollene, id-ene og koblingen setter komponenten. Vil du at en annen",
+      "     fane enn den første skal være valgt, sett `hidden` på de andre panelene. -->",
       "<fs-tabs id=\"saksfaner\">",
-      "  <div class=\"fs-tabs__list\" role=\"tablist\" aria-label=\"Deler av saken\">",
-      "    <button id=\"sak-tab-0\" role=\"tab\" type=\"button\" aria-selected=\"true\"",
-      "            aria-controls=\"sak-panel-0\" tabindex=\"0\">Søknaden</button>",
-      "    <button id=\"sak-tab-1\" role=\"tab\" type=\"button\" aria-selected=\"false\"",
-      "            aria-controls=\"sak-panel-1\" tabindex=\"-1\">Vedlegg</button>",
+      "  <div class=\"fs-tabs__list\" aria-label=\"Deler av saken\">",
+      "    <button>Søknaden</button>",
+      "    <button>Vedlegg</button>",
       "  </div>",
-      "  <div id=\"sak-panel-0\" class=\"fs-tabs__panel\" role=\"tabpanel\"",
-      "       aria-labelledby=\"sak-tab-0\" tabindex=\"0\">Søknaden</div>",
-      "  <div id=\"sak-panel-1\" class=\"fs-tabs__panel\" role=\"tabpanel\"",
-      "       aria-labelledby=\"sak-tab-1\" tabindex=\"0\" hidden>Vedlegg</div>",
+      "  <div class=\"fs-tabs__panel\">Søknaden</div>",
+      "  <div class=\"fs-tabs__panel\">Vedlegg</div>",
       "</fs-tabs>"
     ],
-    "description": "Fanerad. Gir tastatur og fokus til en `role=\"tablist\"` med faner og paneler serveren har skrevet. Hvilken fane som er valgt leses fra `aria-selected`."
+    "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene."
   },
   "fs-error-summary": {
     "prefix": "fs-error-summary",
     "body": [
       "<form novalidate>",
-      "  <fs-error-summary class=\"fs-error-summary\" role=\"alert\" tabindex=\"-1\" id=\"feil\" hidden>",
-      "    <h2 class=\"fs-error-summary__title\"></h2>",
+      "  <!-- Klassen, role=\"alert\" og tabindex=\"-1\" setter komponenten. -->",
+      "  <fs-error-summary id=\"feil\" hidden>",
+      "    <h2></h2>",
       "    <ul class=\"fs-list\"></ul>",
       "  </fs-error-summary>",
       "",

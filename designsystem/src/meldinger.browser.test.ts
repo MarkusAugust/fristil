@@ -118,14 +118,16 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(label.getAttribute("data-required")).toBe("symbol")
   })
 
-  it("fanene uten roller", async () => {
+  it("fanene uten knapper", async () => {
+    // Knapper i raden er nok: komponenten gir dem rollen. Lenker er det ikke,
+    // og uten `role="tab"` finner den ingen faner å koble.
     const advarsel = lytt()
 
     monter(`
       <fs-tabs>
         <div class="fs-tabs__list">
-          <button>Søknaden</button>
-          <button>Vedlegg</button>
+          <a href="#soknad">Søknaden</a>
+          <a href="#vedlegg">Vedlegg</a>
         </div>
       </fs-tabs>
     `)
@@ -306,24 +308,6 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const sagt = meldinger(advarsel)
     expect(sagt.some((m) => m.includes("#finnes-ikke"))).toBe(true)
     expect(sagt.some((m) => m.includes("#heller-ikke"))).toBe(true)
-  })
-
-  it("feiloppsummeringen uten tabindex", async () => {
-    // Uten `tabindex` gjør `focus()` ingenting, og hele grunnen til
-    // komponenten forsvinner i stillhet. Verten er serverens, så komponenten
-    // kan ikke sette det selv.
-    const advarsel = lytt()
-
-    monter(`
-      <fs-error-summary class="fs-error-summary" role="alert">
-        <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
-        <ul class="fs-list"><li><a href="#tab-epost">Skriv en gyldig adresse</a></li></ul>
-      </fs-error-summary>
-      <input id="tab-epost" />
-    `)
-    await ventTilRo()
-
-    expect(meldinger(advarsel).some((m) => m.includes("tabindex"))).toBe(true)
   })
 
   it("sier det én gang, ikke én gang per synkronisering", async () => {

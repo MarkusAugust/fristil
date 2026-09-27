@@ -214,9 +214,15 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     await gaFram(4)
     expect(dialog().open).toBe(true)
 
-    // Slik nettleseren lukker på Escape: uten returverdi.
+    // Slik nettleseren lukker på Escape: uten returverdi. `close` er en køet
+    // oppgave, og i Firefox kom tegningen før hendelsen én gang av ti, så
+    // testen venter på hendelsen. Komponentens lytter ble lagt på først, og
+    // kjører derfor før denne.
+    const lukket = new Promise((r) =>
+      dialog().addEventListener("close", r, { once: true }),
+    )
     dialog().close()
-    await ventPaTegning()
+    await lukket
 
     expect(hendelser).toEqual(["session-warn", "session-extend"])
     await gaFram(2)

@@ -25,6 +25,25 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`<fs-tabs>` og `<fs-error-summary>` kobler fra bar struktur.** En
+  `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp er nok:
+  komponenten setter rollene, lager id-ene, kobler `aria-controls` og
+  `aria-labelledby`, og skjuler panelene som ikke er valgt. Valget leses fra
+  `aria-selected`, ellers fra hvilket panel som ikke er `hidden`.
+  Feiloppsummeringen får klassen, `role="alert"` og `tabindex="-1"`, og
+  overskriften klassen sin. Det serveren har skrevet står, og det
+  komponenten fylte inn settes tilbake etter en patch, med de samme id-ene.
+  `tabs.css` viser bare det første synlige panelet til komponenten er
+  registrert, så innholdet ikke hopper. Kotlin-malen i spilldemoen skrev sju
+  attributter per fane for hånd. `fs.tabs()` og `fs.errorSummary()` er som
+  før, for markup som lages med JavaScript.
+
+  To ting endrer seg for markup som alt fantes. Under `server-controlled`
+  setter fanene fortsatt ikke brukerens valg tilbake, men skriver nå ut det
+  markupen sier: `aria-selected`, tabbestoppet og `hidden` i takt, så en
+  patch som bare rørte panelene flytter også markeringen. Det komponenten
+  selv skrev teller ikke som markupens svar. Og advarselen om manglende
+  `tabindex` på feiloppsummeringen er borte, siden komponenten setter den.
 - **`@fristil/designsystem/register`: `defineFs()` registrerer alle ni
   web-komponentene i ett kall,** også fra `dist/register.js` på en CDN.
   Spilldemoen sto med sju `defineFs*`-kall i en `useEffect`, altså etter

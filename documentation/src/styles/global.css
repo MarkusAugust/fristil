@@ -50,6 +50,14 @@
     --sl-text-5xl: 3.25rem;
   }
 
+  /* Starlights Tailwind-tema gir lenker og det gjeldende punktet i
+     innholdsfortegnelsen aksent-600 i lyst tema. Det er 3,98:1 mot hvit i
+     13 piksler, under kravet på 4,5. axe fant det først på én side: på de
+     andre står en gradient bak, og da avstår den. Aksent-700 gir 5,9:1. */
+  :root[data-theme="light"] {
+    --sl-color-text-accent: var(--color-accent-700);
+  }
+
   html {
     @apply scroll-smooth;
   }
