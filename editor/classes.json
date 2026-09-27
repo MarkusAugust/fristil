@@ -565,42 +565,42 @@
   "fs-dialog": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },
   "fs-dialog__body": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },
   "fs-dialog__title": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },
   "fs-dialog__footer": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },
   "fs-dialog__header": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },
   "fs-dialog__subtitle": {
     "component": "dialog",
     "title": "Dialog",
-    "description": "Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+    "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.netlify.app/components/dialog/",
     "attributes": {}
   },

@@ -181,19 +181,35 @@
   .fs-dialog__header {
     flex: none;
     padding: var(--fs-dialog-padding, var(--size-5));
-    border-start-start-radius: inherit;
-    border-start-end-radius: inherit;
+    /* Én piksel mindre enn dialogen: toppen står innenfor rammen, og
+       innsiden av et hjørne er radiusen minus rammens bredde. */
+    border-start-start-radius: calc(
+      var(--fs-dialog-radius, var(--size-2)) -
+      1px
+    );
+    border-start-end-radius: calc(var(--fs-dialog-radius, var(--size-2)) - 1px);
+  }
+
+  /* Uten farge er toppen ingen stripe: den slipper bunnluften, og kroppen
+     under starter med samme avstand som overskriften ellers har. */
+  .fs-dialog:not([data-color]) > .fs-dialog__header {
+    padding-block-end: 0;
+  }
+
+  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__body {
+    padding-block-start: var(--size-2);
   }
 
   .fs-dialog__header .fs-dialog__title {
     margin: 0;
   }
 
+  /* Samme farge som overskriften, uten opasitet: med 0,85 falt teksten
+     under 4,5:1 på suksess- og advarselsbåndet. */
   .fs-dialog__subtitle {
     margin: var(--size-1) 0 0;
     font-size: var(--font-size-s);
     line-height: var(--semantic-line-height-default);
-    opacity: 0.85;
   }
 
   .fs-dialog:has(> .fs-dialog__header) > .fs-dialog__body {

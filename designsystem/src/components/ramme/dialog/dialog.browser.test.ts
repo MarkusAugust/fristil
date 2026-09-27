@@ -1040,19 +1040,46 @@ describe("dialogen med farget topp", () => {
     const topp = d.querySelector(".fs-dialog__header") as HTMLElement
     const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
     const fot = d.querySelector(".fs-dialog__footer") as HTMLElement
-    const rot = getComputedStyle(document.documentElement)
-    const forventet = rot
-      .getPropertyValue("--semantic-success-background")
-      .trim()
+    // En referanse med tokenet rett på, så fargen sammenlignes ferdig regnet.
+    const referanse = document.createElement("div")
+    referanse.style.background = "var(--semantic-success-background)"
+    document.body.append(referanse)
 
     expect(getComputedStyle(d).paddingTop).toBe("0px")
     expect(getComputedStyle(topp).paddingTop).not.toBe("0px")
     expect(getComputedStyle(kropp).paddingTop).not.toBe("0px")
     expect(getComputedStyle(fot).marginTop).toBe("0px")
+    expect(getComputedStyle(topp).backgroundColor).toBe(
+      getComputedStyle(referanse).backgroundColor,
+    )
     expect(getComputedStyle(topp).backgroundColor).not.toBe(
       getComputedStyle(kropp).backgroundColor,
     )
-    expect(forventet.length).toBeGreaterThan(0)
+    referanse.remove()
+  })
+
+  it("gir ingen stripe når toppen står uten farge", async () => {
+    const boks = dialog({ titleId: "noytral-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Nøytral</h2></div>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const topp = document.querySelector(".fs-dialog__header") as HTMLElement
+    const kropp = document.querySelector(".fs-dialog__body") as HTMLElement
+    const referanse = document.createElement("div")
+    referanse.style.paddingTop = "var(--size-2)"
+    document.body.append(referanse)
+
+    expect(getComputedStyle(topp).paddingBottom).toBe("0px")
+    // Samme avstand ned til teksten som uten topp: overskriftens vanlige marg.
+    expect(getComputedStyle(kropp).paddingTop).toBe(
+      getComputedStyle(referanse).paddingTop,
+    )
+    referanse.remove()
   })
 
   it("står som før uten en topp", async () => {
