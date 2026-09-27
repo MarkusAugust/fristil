@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.18.0 (2026-09-27)
+
 ### Lagt til
 
 - **`fristil sjekk <fil…>` og `@fristil/designsystem/diagnostics`.** Sjekken
@@ -33,9 +35,8 @@ egen overskrift «Brytende».
   `fil:linje:kolonne: melding`, med feilkode ved funn. `diagnoseMarkup(html)`
   er den samme sjekken som funksjon, for en test i appen som kjører den over
   HTML-en serveren faktisk sender, der det ikke finnes noen malfil å sjekke.
-  Editorutvidelsen importerer nå diagnostikken fra
-  pakken, og listene den sjekker mot genereres inn i pakken som
-  `elements.ts` og `classes.ts`.
+  Editorutvidelsen importerer nå diagnostikken fra pakken, og listene den
+  sjekker mot genereres inn i pakken som `elements.ts` og `classes.ts`.
 - **`<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>` kobler fra bar
   struktur,** som fanene og feiloppsummeringen. En knapp og et panel med
   klassen `fs-popover` er nok: komponenten setter `popover="manual"`, lager
@@ -47,9 +48,9 @@ egen overskrift «Brytende».
   Dialogen får klassen, og navnet sitt fra den første overskriften når den
   ikke alt har et fra `aria-labelledby` eller `aria-label`, med en id
   komponenten lager om den mangler; peker `aria-labelledby` på en overskrift,
-  er det den som får tittelklassen. Bare det som
-  mangler skrives, `suggestion.css` holder en bar liste skjult til
-  komponenten er registrert, og advarslene sier hva som faktisk mangler.
+  er det den som får tittelklassen. Bare det som mangler skrives,
+  `suggestion.css` holder en bar liste skjult til komponenten er
+  registrert, og advarslene sier hva som faktisk mangler.
   `derivedParts` og `uniqueId` i `/host-element` er hjelperne bak.
 - **`<fs-tabs>` og `<fs-error-summary>` kobler fra bar struktur.** En
   `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp er nok:
