@@ -156,6 +156,23 @@ describe("bredden på dialogen", () => {
  * hele tatt: `showModal()` er et kall, og `<dialog open>` er bare en boks på
  * siden. Det ble funnet i en app skrevet i Kotlin med Datastar.
  */
+/**
+ * Lukker dialogen og venter på `close`-hendelsen, ikke på en tegning.
+ *
+ * Hendelsen er en køet oppgave, og komponentens lytter kjører i den. En
+ * tegning kan komme før, og da leste testen verten før komponenten hadde
+ * fjernet `open`. Lytteren her legges til etter komponentens, så den kjører
+ * sist.
+ */
+async function lukkOgVent(d: HTMLDialogElement, verdi?: string) {
+  const lukket = new Promise((ferdig) =>
+    d.addEventListener("close", ferdig, { once: true }),
+  )
+  d.close(verdi)
+  await lukket
+  await ventPaTegning()
+}
+
 describe("fs-dialog", () => {
   beforeAll(() => {
     defineFsDialog()
@@ -219,8 +236,7 @@ describe("fs-dialog", () => {
   it("fjerner open fra verten når brukeren lukker", async () => {
     const { vert, d } = await monterDialog(true)
 
-    d.close()
-    await ventPaTegning()
+    await lukkOgVent(d)
 
     // Markupen skal si det samme som skjermen. Ellers ville neste patch
     // åpnet dialogen igjen, siden verten fortsatt sa `open`.
@@ -279,8 +295,7 @@ describe("fs-dialog", () => {
   it("åpner igjen når serveren sender open på nytt", async () => {
     const { vert, d } = await monterDialog(true)
 
-    d.close()
-    await ventPaTegning()
+    await lukkOgVent(d)
     expect(vert.hasAttribute("open")).toBe(false)
 
     // Dette er det en morfing gjør: serverens node sier fortsatt `open`.
@@ -299,8 +314,7 @@ describe("fs-dialog", () => {
 
     vert.setAttribute("open", "")
     await ventPaTegning()
-    d.close()
-    await ventPaTegning()
+    await lukkOgVent(d)
 
     expect(meldinger).toEqual([true, false])
   })
@@ -473,8 +487,7 @@ describe("fs-dialog", () => {
       svar = (event as CustomEvent<{ returnValue: string }>).detail.returnValue
     })
 
-    d.close("slett")
-    await ventPaTegning()
+    await lukkOgVent(d, "slett")
 
     expect(svar).toBe("slett")
   })

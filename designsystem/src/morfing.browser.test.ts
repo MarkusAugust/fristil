@@ -204,8 +204,13 @@ describe("morfing river ikke bort det komponenten setter", () => {
     const d = vert.querySelector("dialog") as HTMLDialogElement
     expect(d.open, "dialogen åpnet seg ikke i det hele tatt").toBe(true)
 
+    // Vent på `close`, ikke på en tegning: hendelsen er en køet oppgave, og
+    // i Firefox kom en tegning før den én gang av åtte.
+    const lukket = new Promise((ferdig) =>
+      d.addEventListener("close", ferdig, { once: true }),
+    )
     d.close()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await lukket
     expect(vert.hasAttribute("open")).toBe(false)
 
     morf(vert, MARKUP)

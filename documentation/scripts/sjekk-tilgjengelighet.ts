@@ -240,7 +240,7 @@ async function sjekkSider(
       tema,
     )
 
-    await side.evaluate(async () => {
+    const ventetForgjeves = await side.evaluate(async () => {
       const komponenter = [...document.querySelectorAll("*")].filter(
         (el): el is HTMLElement & { updateComplete: Promise<unknown> } =>
           "updateComplete" in el,
@@ -250,7 +250,7 @@ async function sjekkSider(
       /*
        * Kodefeltene får tastaturtilgang av et skript, ikke av markupen.
        * Expressive Code setter `tabindex` på de feltene som kan rulles, og
-       * gjør det etter at siden er tegnet. Målte axe før det, meldte den
+       * gjør det etter at siden er tegnet. Kjørte axe før det, meldte den
        * «Scrollable region must have keyboard access» på et felt som fikk
        * tilgangen et øyeblikk senere, og sjekken feilet tilfeldig.
        *
@@ -266,15 +266,37 @@ async function sjekkSider(
             !felt.hasAttribute("tabindex"),
         )
 
-      const frist = Date.now() + 3000
+      /*
+       * Fristen er romslig, og et utløp er en feil med navn, ikke stillhet.
+       * Den var tre sekunder og gikk ut uten et ord når maskinen var travel,
+       * så axe fikk se feltene før skriptet hadde rukket dem, og meldte ni
+       * brudd på «Scrollable region must have keyboard access» som var borte
+       * ved neste kjøring. Et vilkår som slår av en venting er det samme som
+       * et vilkår som slår av en sjekk.
+       */
+      const frist = Date.now() + 20_000
       while (uten().length > 0 && Date.now() < frist) {
         await new Promise((r) => setTimeout(r, 50))
       }
-
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
       )
+
+      return uten().map((felt) => felt.outerHTML.slice(0, 160))
     })
+    // Et brudd med eget navn, ikke et kast: da står det i rapporten sammen
+    // med resten, og vakten nederst avgjør utfallet som ellers.
+    if (ventetForgjeves.length > 0) {
+      brudd.push({
+        side: url,
+        tema,
+        regel: "ventet-forgjeves-paa-tabindex",
+        forklaring:
+          "Rullbare <pre> uten tabindex etter 20 sekunder. Enten kjørte ikke " +
+          "Expressive Code sitt skript, eller så mangler feltet tastaturtilgang for godt.",
+        elementer: ventetForgjeves,
+      })
+    }
     await side.addScriptTag({ content: axeKilde })
 
     const funn = await side.evaluate(async (regler) => {
