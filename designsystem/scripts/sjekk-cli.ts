@@ -528,7 +528,35 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     tom.exited,
   ])
   krev(tomKode === 1, `tom standard inn avsluttet med kode ${tomKode}`)
-  krev(tomFeil.includes("tom"), "feilmeldingen sier ikke at inndata var tom")
+  krev(
+    tomFeil.includes("standard inn var tom"),
+    "feilmeldingen sier ikke at inndata var tom",
+  )
+
+  // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
+  // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
+  // rørt, siden strømmen da setter røret i ikke-blokkende modus.
+  const treg = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: "pipe",
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  await Bun.sleep(300)
+  treg.stdin.write(`<button class="fs-buton">Lagre</button>`)
+  treg.stdin.end()
+  const [tregUt, tregFeil, tregKode] = await Promise.all([
+    new Response(treg.stdout).text(),
+    new Response(treg.stderr).text(),
+    treg.exited,
+  ])
+  krev(
+    tregKode === 1 &&
+      tregUt.includes("stdin:1:") &&
+      tregUt.includes("fs-buton"),
+    `et tregt rør ga ikke funnet: kode ${tregKode}, ${tregFeil.slice(0, 80)}`,
+  )
+  krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
 
   await rm(mappe, { recursive: true, force: true })
 }

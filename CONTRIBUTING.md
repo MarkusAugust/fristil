@@ -96,7 +96,7 @@ lyspærer, fullføring og hover. Diagnostikken ligger i pakken, som
 `@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen
 importerer den derfra. `classes.ts` leses fra pakkens CSS og fra
 byggefunksjonene i `fs`, kalt én gang per variant, så en ny variant er med
-når `fs` gir den. De fem filene genereres fra `editor/metadata.ts`, CSS-en
+når `fs` gir den. De fire filene genereres fra `editor/metadata.ts`, CSS-en
 og «Ren HTML»-fanene på komponentsidene, sammen med
 `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en

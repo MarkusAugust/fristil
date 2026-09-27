@@ -29,7 +29,6 @@
  * kjøringen med feil framfor å levere et tema som ser riktig ut.
  */
 
-import { readFileSync } from "node:fs"
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -251,7 +250,11 @@ async function check(paths: string[]): Promise<void> {
     if (process.stdin.isTTY) {
       console.error("Leser markup fra standard inn. Avslutt med Ctrl-D.")
     }
-    const text = readFileSync(0, "utf8")
+    // Strømmen, ikke `readFileSync(0)`. Å røre `process.stdin` setter et rør
+    // i ikke-blokkerende modus, og en synkron lesing kastet da EAGAIN når
+    // skriveren ikke var ferdig ennå, som i `curl … | fristil sjekk`.
+    let text = ""
+    for await (const chunk of process.stdin) text += chunk
     // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
     // eller en test som glemte å sende noe, ville ellers meldt grønt uten å
     // ha sett på noe.
