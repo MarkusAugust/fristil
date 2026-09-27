@@ -13,8 +13,9 @@
  * understrek, og feller på to ting: æ, ø eller å i navnet, og et ord fra
  * lista under. Bare æ, ø og å ville ikke funnet ett eneste av de ni; lista er
  * det som fanger dem. Ordene er valgt fordi de ikke er engelske ord: `rot`,
- * `rad`, `side` og `tom` står ikke der, siden de er begge deler. Finner du et
- * norsk ord lista ikke kjenner, legg det til i samme endring.
+ * `rad`, `side`, `tom`, `tall`, `del`, `sett`, `vis` og `meld` står ikke der,
+ * siden de er begge deler. Finner du et norsk ord lista ikke kjenner, legg
+ * det til i samme endring.
  *
  * Testfiler og `src/testing/` er unntatt, som regelen sier, og `src/types/`
  * er deklarasjoner uten egne navn. Skriptene i `scripts/` sendes ikke ut og
@@ -36,14 +37,16 @@ const KILDER = [
 /**
  * Filer som er norske tvers igjennom, og som ryddes i hver sin pull request.
  *
- * De er ikke unntatt: sjekken leser dem, og krever at de fortsatt har funn.
- * Den dagen en av dem er ren, feller sjekken til fila er tatt ut herfra. Da
- * kan lista bare krympe, og et vilkår som slår av sjekken finnes ikke.
+ * De er ikke unntatt: sjekken leser dem, og tallet er antall funn i dag.
+ * Flere funn enn tallet feller, så et nytt norsk navn ikke forsvinner i
+ * mengden, og færre funn feller også, til tallet er skrevet ned i samme
+ * endring. Den dagen en fil er ren, tas den ut. Lista kan altså bare
+ * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
-const KJENT_GJELD = new Set([
-  "designsystem/src/cli.ts",
-  "designsystem/src/tokens/color.ts",
-  "designsystem/src/tokens/theme.ts",
+const KJENT_GJELD = new Map<string, number>([
+  ["designsystem/src/cli.ts", 136],
+  ["designsystem/src/tokens/color.ts", 14],
+  ["designsystem/src/tokens/theme.ts", 232],
 ])
 
 const NORSKE_ORD = new Set([
@@ -58,7 +61,6 @@ const NORSKE_ORD = new Set([
   "bundne",
   "bygger",
   "byggere",
-  "del",
   "deler",
   "egen",
   "eller",
@@ -71,7 +73,6 @@ const NORSKE_ORD = new Set([
   "felter",
   "ferdig",
   "fil",
-  "filer",
   "finnes",
   "flate",
   "flater",
@@ -110,9 +111,7 @@ const NORSKE_ORD = new Set([
   "lukk",
   "lukke",
   "lukket",
-  "mangler",
   "mappe",
-  "meld",
   "melde",
   "melding",
   "meldinger",
@@ -125,7 +124,6 @@ const NORSKE_ORD = new Set([
   "palett",
   "ramme",
   "sagt",
-  "sett",
   "siste",
   "sjekk",
   "skille",
@@ -135,9 +133,7 @@ const NORSKE_ORD = new Set([
   "stil",
   "synlig",
   "synlige",
-  "tall",
   "tekst",
-  "teller",
   "tittel",
   "tomt",
   "treff",
@@ -153,7 +149,6 @@ const NORSKE_ORD = new Set([
   "verdier",
   "vert",
   "verten",
-  "vis",
   "vises",
 ])
 
@@ -190,7 +185,7 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
  *
  * Et regulært uttrykk kjennes igjen på det som står foran skråstreken: etter
  * en verdi er `/` divisjon, etter `(`, `,`, `=`, `:`, `[`, `!`, `&`, `|`,
- * `?`, `{`, `}`, `;` eller `return` er det et uttrykk.
+ * `?`, `{`, `}`, `;`, `>`, `return`, `typeof` eller `case` er det et uttrykk.
  */
 function bareKode(innhold: string): string {
   const ut: string[] = []
@@ -218,6 +213,8 @@ function bareKode(innhold: string): string {
         hopp(innhold.slice(i, i + 2))
       } else if (tegn === "`") {
         hopp("`")
+        // En streng er en verdi: `/` rett etter den er divisjon.
+        sisteKode = "v"
         return
       } else if (tegn === "$" && innhold[i + 1] === "{") {
         hopp("${")
@@ -236,6 +233,7 @@ function bareKode(innhold: string): string {
       if (tegn === "\\") hopp(innhold.slice(i, i + 2))
       else if (tegn === avslutter || tegn === "\n") {
         hopp(tegn)
+        sisteKode = "v"
         return
       } else hopp(tegn)
     }
@@ -257,6 +255,7 @@ function bareKode(innhold: string): string {
       } else if (tegn === "/") {
         hopp(tegn)
         while (/[a-z]/.test(innhold[i] ?? "")) hopp(innhold[i])
+        sisteKode = "v"
         return
       } else hopp(tegn)
     }
@@ -264,7 +263,10 @@ function bareKode(innhold: string): string {
 
   function erUttrykkStart(): boolean {
     if (sisteKode === "") return true
-    if (/[(,=:[!&|?{};]/.test(sisteKode)) return true
+    // `>` er med for `=>`: en pilfunksjon som returnerer et regulært uttrykk.
+    // Uten den ble `(s) => /\`/.test(s)` lest som divisjon, backticken åpnet
+    // en malstreng, og resten av fila ble usynlig for sjekken.
+    if (/[(,=:[!&|?{};>]/.test(sisteKode)) return true
     const bak = ut.join("").slice(-12)
     return /\breturn\s*$|\btypeof\s*$|\bcase\s*$/.test(bak)
   }
@@ -346,11 +348,19 @@ for (const { rot, unntatt } of KILDER) {
   }
 }
 
-// En fil i gjeldslista som er ren, skal ut av lista. Ellers kunne lista vokse
-// uten at noen så det.
-for (const fil of KJENT_GJELD) {
-  if (!gjeld.has(fil)) {
+// Gjelden må stemme på tallet, begge veier.
+for (const [fil, tillatt] of KJENT_GJELD) {
+  const antall = gjeld.get(fil) ?? 0
+  if (antall === 0) {
     funn.push(`${fil}  står i KJENT_GJELD, men er ren. Ta den ut av lista.`)
+  } else if (antall > tillatt) {
+    funn.push(
+      `${fil}  har ${antall} norske identifikatorer, men KJENT_GJELD tillater ${tillatt}. Nye norske navn er ikke lov, heller ikke der.`,
+    )
+  } else if (antall < tillatt) {
+    funn.push(
+      `${fil}  har ${antall} norske identifikatorer, men KJENT_GJELD sier ${tillatt}. Skriv tallet ned til ${antall}.`,
+    )
   }
 }
 

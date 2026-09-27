@@ -9,7 +9,7 @@
  * denne kommandoen er veien imellom.
  *
  * Etter omleggingen er det en overkommelig vei: en komponent er et stilark
- * og en file på mellom hundre og tre hundre linjer, uten avhengigheter, som
+ * og en fil på mellom hundre og tre hundre linjer, uten avhengigheter, som
  * fester oppførsel på markup serveren har sendt. Det er noe man kan overta
  * og vedlikeholde selv.
  *
@@ -24,7 +24,7 @@
  * hva kopien fremdeles henter fra pakken.
  */
 
-/** En file i pakken, slik `cli.ts` har lest den. */
+/** En fil i pakken, slik `cli.ts` har lest den. */
 export type SourceFile = {
   /** Stien i pakken, som «src/components/css/button/button.ts». */
   path: string
@@ -68,7 +68,7 @@ export type TakeoverPlan = {
 }
 
 /**
- * Bygger oppslaget fra en file i pakken til inngangspunktet som peker på den.
+ * Bygger oppslaget fra en fil i pakken til inngangspunktet som peker på den.
  *
  * `exports` peker på `dist` for JavaScript og på `src` for CSS. Begge føres
  * tilbake til kilden, siden det er kilden som kopieres.
@@ -110,7 +110,7 @@ export function resolvePath(fromDirectory: string, relative: string): string {
 const IMPORT_PATTERN = /(from\s+|@import\s+)(["'])([^"']+)\2/g
 
 /**
- * Skriver om henvisningene i én file.
+ * Skriver om henvisningene i én fil.
  *
  * Bare stier som peker ut av mappa røres. En nabo i samme mappe blir med i
  * kopien, og skal fortsatt finnes der.
@@ -131,7 +131,7 @@ export function rewriteReferences(
 
       const target = resolvePath(directory, specifier)
 
-      // En file som blir med i kopien skal stå urørt. Sammenligningen går på
+      // En fil som blir med i kopien skal stå urørt. Sammenligningen går på
       // hele stien: filnavnet alene ville latt `../shared.js` stå så snart
       // mappa selv hadde en `shared.ts`, og kopien hadde pekt ut av seg selv.
       // Importen i koden peker dessuten på «.js», altså filen etter bygging,
