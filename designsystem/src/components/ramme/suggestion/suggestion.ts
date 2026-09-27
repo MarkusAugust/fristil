@@ -50,7 +50,10 @@ export const suggestion = ({
   const listId = `${id}-list`
   const statusId = `${id}-status`
   const optionId = (index: number) => `${id}-option-${index}`
-  const aktiv = open && activeIndex >= 0 && activeIndex < count
+  // Markeringen skrives bare når lista er åpen, begge halvdelene sammen.
+  // Komponenten fjerner begge i det lista lukkes, og en lukket liste med et
+  // markert alternativ ville pekt `aria-activedescendant` inn i noe skjult.
+  const marked = open && activeIndex >= 0 && activeIndex < count
 
   return {
     label: computed.label,
@@ -67,7 +70,7 @@ export const suggestion = ({
         .filter(Boolean)
         .join(" "),
       "aria-autocomplete": "list" as const,
-      "aria-activedescendant": aktiv ? optionId(activeIndex) : undefined,
+      "aria-activedescendant": marked ? optionId(activeIndex) : undefined,
     }),
     list: attributes({
       class: SUGGESTION_LIST_CLASS,
@@ -80,7 +83,7 @@ export const suggestion = ({
         class: SUGGESTION_OPTION_CLASS,
         id: optionId(index),
         role: "option" as const,
-        "aria-selected": (index === activeIndex ? "true" : "false") as
+        "aria-selected": (marked && index === activeIndex ? "true" : "false") as
           | "true"
           | "false",
       }),
@@ -88,14 +91,14 @@ export const suggestion = ({
     /**
      * Teksten som vises når ingenting passer.
      *
-     * Den er skjult så lenge serveren sender noe å velge mellom, og
-     * komponenten skjuler og viser den igjen mens brukeren skriver. Uten
-     * reparasjonen dukket «Ingen treff» opp igjen ved hver patch, også når
-     * noe passet.
+     * Den følger lista: synlig bare når lista er åpen og tom. Sto den synlig
+     * på et lukket felt uten alternativer, viste det anbefalte oppsettet for
+     * asynkront søk «Ingen treff» alt ved sidelasting. Komponenten skjuler
+     * og viser den igjen mens brukeren skriver.
      */
     empty: attributes({
       class: SUGGESTION_EMPTY_CLASS,
-      hidden: count > 0 ? (true as const) : undefined,
+      hidden: open && count === 0 ? undefined : (true as const),
     }),
     /**
      * Området som melder antall treff til skjermlesere.

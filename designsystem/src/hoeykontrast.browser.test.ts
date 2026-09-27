@@ -17,6 +17,7 @@ import "./components/css/tag/tag.css"
 import "./components/css/toggle-group/toggle-group.css"
 import "./components/css/pagination/pagination.css"
 import "./components/css/tooltip/tooltip.css"
+import "./components/ramme/suggestion/suggestion.css"
 
 /**
  * At komponentene fortsatt viser tilstanden sin i høykontrastmodus.
@@ -104,6 +105,11 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
         <li><a href="#" aria-current="page" id="side-na">2</a></li>
         <li><a href="#" id="side-annen">3</a></li>
       </ul>
+
+      <ul class="fs-suggestion__list" role="listbox">
+        <li class="fs-suggestion__option" role="option" aria-selected="true" id="forslag-på">Bergen</li>
+        <li class="fs-suggestion__option" role="option" aria-selected="false" id="forslag-av">Bodø</li>
+      </ul>
     `)
 
     await settHoeykontrast(true)
@@ -112,6 +118,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
       ["valgt", "uvalgt"],
       ["lapp-på", "lapp-av"],
       ["side-na", "side-annen"],
+      ["forslag-på", "forslag-av"],
     ]) {
       expect(stil(på).backgroundColor, på).not.toBe(stil(av).backgroundColor)
       expect(stil(på).color, på).not.toBe(stil(av).color)

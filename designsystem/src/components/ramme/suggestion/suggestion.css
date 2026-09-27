@@ -18,7 +18,7 @@
     position: absolute;
     inset-inline: 0;
     inset-block-start: calc(100% + var(--size-1));
-    z-index: 30;
+    z-index: var(--fs-suggestion-layer, 30);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -59,5 +59,14 @@
     padding: var(--fs-suggestion-option-padding, var(--size-2) var(--size-3));
     font-size: var(--font-size-m);
     color: var(--semantic-muted-foreground);
+  }
+
+  /* Høykontrast: markeringen vises bare med bakgrunn og tekstfarge, som
+     modusen bytter ut. Systemfargene gir forskjellen tilbake. */
+  @media (forced-colors: active) {
+    .fs-suggestion__option[aria-selected="true"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
   }
 }

@@ -919,3 +919,86 @@ describe("dialogen før den er modal", () => {
     }
   })
 })
+
+describe("fs-dialog med server-controlled", () => {
+  beforeAll(() => {
+    defineFsDialog()
+  })
+
+  it("melder fra én gang også når React tar open fra barnet før verten", async () => {
+    // React oppdaterer barn før forelder. Da er vertens `open` alt borte i
+    // det komponenten lukker dialogen, og uten en melding herfra fikk appen
+    // aldri vite at den ble lukket.
+    const boks = dialog({ titleId: "sc2-tittel", open: true })
+    monter(`
+      <fs-dialog server-controlled ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+
+    d.removeAttribute("open")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(false)
+    expect(meldinger).toEqual([false])
+  })
+
+  it("lukker en modal dialog når patchen tar open fra den", async () => {
+    /*
+     * Serveren eier tilstanden, og sender området på nytt uten `open` på
+     * `<dialog>`. Reparasjonen var slått av, men ingen kalte `close()`:
+     * dialogen sto igjen med `:modal` og `display: none`, og ingenting på
+     * siden kunne klikkes. Dokumentasjonen lover at hver patch bestemmer,
+     * også når dialogen står i topplaget.
+     */
+    const boks = dialog({ titleId: "sc-tittel", open: true })
+    monter(`
+      <fs-dialog server-controlled ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="fs-button" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </fs-dialog>
+      <button id="utenfor">Utenfor</button>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+    expect(d.matches(":modal")).toBe(true)
+
+    d.removeAttribute("open")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldinger).toEqual([false])
+
+    const knapp = document.getElementById("utenfor") as HTMLElement
+    knapp.focus()
+    expect(document.activeElement, "resten av siden er fortsatt inert").toBe(
+      knapp,
+    )
+  })
+})
