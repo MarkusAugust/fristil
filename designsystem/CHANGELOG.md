@@ -33,9 +33,6 @@ egen overskrift «Brytende».
   bygges av CSS-oppføringene i `exports`, med `tokens.css` først, uten
   `@import` og uten kommentarer. Buntere bruker de enkelte stilarkene som
   før. Tailwind-temaet er ikke med, siden det ikke er et stilark for en side.
-
-### Lagt til
-
 - **Dialogen kan ha en farget topp.** `fs.dialog({ color })` gir `data-color`
   på dialogen og en ny `header`-del som pakker overskriften, med en valgfri
   `subtitle` under. Fargene er varslerens, `info`, `success`, `warning` og

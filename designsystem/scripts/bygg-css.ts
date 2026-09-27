@@ -26,8 +26,9 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const PAKKE = new URL("../", import.meta.url).pathname
+const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 const UT = join(PAKKE, "dist", "fristil.css")
 
 const manifest = JSON.parse(readFileSync(join(PAKKE, "package.json"), "utf8"))
@@ -68,11 +69,19 @@ function ta(fil: string, fra: string | null): void {
   }
   tatt.add(fil)
 
-  const innhold = readFileSync(fil, "utf8")
-  // Importene først, slik nettleseren ville lest dem: de står øverst i fila,
-  // og det de definerer skal være der før fila selv.
-  const uten = innhold.replace(
-    /^@import\s+(?:url\()?["']([^"']+)["']\)?\s*;\s*$/gm,
+  // Kommentarene først, så en `@import` i en kommentar ikke hentes. De er
+  // for den som leser kilden, og de er mange: uten dem er fila under
+  // halvparten så stor. Kildefilene ligger i pakken som før.
+  const utenKommentarer = readFileSync(fil, "utf8").replace(
+    /\/\*[\s\S]*?\*\//g,
+    "",
+  )
+
+  // Importene, slik nettleseren ville lest dem: det de definerer skal være
+  // der før fila selv. Bare den enkle formen kjennes igjen; en `@import` med
+  // lag eller medieliste blir stående, og vakten under feller den.
+  const uten = utenKommentarer.replace(
+    /^\s*@import\s+(?:url\()?["']([^"']+)["']\)?\s*;[ \t]*$/gm,
     (_, sti: string) => {
       importer += 1
       ta(resolve(dirname(fil), sti), fil)
@@ -80,13 +89,8 @@ function ta(fil: string, fra: string | null): void {
     },
   )
 
-  // Kommentarene er for den som leser kilden, og de er mange: uten dem er
-  // fila under halvparten så stor. Kildefilene ligger i pakken som før.
-  const utenKommentarer = uten
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-  deler.push(`/* ${relative(PAKKE, fil)} */\n${utenKommentarer.trim()}\n`)
+  const ryddet = uten.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
+  deler.push(`/* ${relative(PAKKE, fil)} */\n${ryddet.trim()}\n`)
 }
 
 for (const { fil } of oppføringer) ta(fil, null)
@@ -100,14 +104,24 @@ const hode = [
 
 const resultat = hode + deler.join("\n")
 
-// Vakten: ingenting igjen å hente, og alt som ble lovet er med.
-if (/^@import\b/m.test(resultat)) {
-  console.error("✗ fristil.css har fortsatt en @import.")
+/*
+ * Vakten teller det som faktisk står i resultatet, ikke det skriptet tror
+ * det gjorde. Hver kildefil pakker alt i `@layer fristil { … }`, så antall
+ * slike blokker i utdata skal være antall filer som ble tatt. Et tall
+ * mindre er en fil som ble hentet uten å komme med, eller en kildefil uten
+ * lag; det siste ville latt konsumentens regler tape mot våre. Og ingen
+ * `@import` skal stå igjen, heller ikke en innrykket eller en med lag.
+ */
+const gjenstaaende = resultat.match(/^\s*@import\b.*$/gm) ?? []
+if (gjenstaaende.length > 0) {
+  console.error(`✗ fristil.css har fortsatt @import: ${gjenstaaende[0].trim()}`)
   process.exit(1)
 }
-const mangler = oppføringer.filter(({ fil }) => !tatt.has(fil))
-if (mangler.length > 0 || tatt.size < oppføringer.length) {
-  console.error(`✗ ${mangler.length} oppføringer kom ikke med i fristil.css.`)
+const lag = (resultat.match(/^@layer fristil \{/gm) ?? []).length
+if (lag !== tatt.size || tatt.size < oppføringer.length) {
+  console.error(
+    `✗ fristil.css har ${lag} @layer fristil-blokker, men ${tatt.size} filer ble tatt av ${oppføringer.length} oppføringer.`,
+  )
   process.exit(1)
 }
 
