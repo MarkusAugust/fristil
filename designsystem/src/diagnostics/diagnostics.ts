@@ -5,11 +5,15 @@
  * den validerer ingenting: et element som ikke finnes er lovlig HTML, og et
  * attributt komponenten aldri leser står der like stille. Dette er den
  * andre halvdelen. Det leser hver `<fs-…>`-tagg i dokumentet og sjekker den
- * mot `elements.json`, som genereres fra den samme `metadata.ts` som
- * fullføringen, så de to kan ikke sprike.
+ * mot `elements.ts` ved siden av, som genereres fra den samme `metadata.ts`
+ * i editorutvidelsen som fullføringen, så de to kan ikke sprike.
  *
- * Fila har ingen avhengighet til VS Code. Da kan `scripts/sjekk-diagnostikk.ts`
- * kjøre den med bun over kjente feil og se at hver av dem felles.
+ * Fila ligger i pakken og har ingen avhengighet til VS Code eller til DOM.
+ * Utvidelsen importerer den fra `@fristil/designsystem/diagnostics`, det
+ * samme gjør `fristil sjekk` på kommandolinjen, og en app kan kjøre den i
+ * sine egne tester over HTML-en serveren faktisk sender. Da kan
+ * `editor/scripts/sjekk-diagnostikk.ts` kjøre den med bun over kjente feil
+ * og se at hver av dem felles.
  *
  * Det som sjekkes, i rekkefølgen det meldes:
  *
@@ -29,7 +33,7 @@
  *      unntakene og den samme teksten som komponenten selv bruker i
  *      nettleseren.
  *   5. Klassene finnes. `class="fs-buton"` meldes, med den nærmeste kjente
- *      som forslag. Klassene leses fra `classes.json`, som genereres fra
+ *      som forslag. Klassene leses fra `classes.ts`, som genereres fra
  *      pakkens CSS.
  *   6. Verdiene på det klassen tar er lovlige: `data-variant="ghots"` på
  *      `fs-button` meldes, med lista fra byggefunksjonen. Standardverdien,
@@ -88,7 +92,7 @@ export type Element = {
   attributes: Record<string, Attribute>
 }
 
-/** Innholdet i `elements.json`: tagg til element. */
+/** Innholdet i `elements.ts`: tagg til element. */
 export type Elements = Record<string, Element>
 
 /** Et attributt en klasse tar, som `data-variant` på `fs-button`. */
@@ -103,7 +107,7 @@ export type ClassInfo = {
   attributes: Record<string, ClassAttribute>
 }
 
-/** Innholdet i `classes.json`: klasse til komponent og attributter. */
+/** Innholdet i `classes.ts`: klasse til komponent og attributter. */
 export type Classes = Record<string, ClassInfo>
 
 const DOCS = "https://fristil.netlify.app/components/"

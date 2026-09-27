@@ -8,9 +8,9 @@
  *   - `editor/snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `editor/elements.json`: det diagnostikken i utvidelsen trenger, tagg
+ *   - `designsystem/src/diagnostics/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
  *     for tagg.
- *   - `editor/classes.json`: hver `fs-`-klasse i pakkens CSS, med komponenten
+ *   - `designsystem/src/diagnostics/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
  *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
  *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken
@@ -28,8 +28,12 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fs } from "@fristil/designsystem"
+import type {
+  Attribute,
+  Classes,
+  Elements,
+} from "@fristil/designsystem/diagnostics"
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
-import type { Attribute, Classes, Elements } from "../src/diagnostics"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.netlify.app/components/"
@@ -341,11 +345,29 @@ export function files(): Record<string, string> {
     readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
   ).version
   const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`
+  /*
+   * Diagnostikkens lister skrives som TypeScript-moduler inn i pakken, ikke
+   * som JSON: Node krever `with { type: "json" }` for å importere JSON i
+   * ESM, og `tsc` skriver ikke attributtet. Biome hopper over filene, siden
+   * `JSON.stringify` ikke setter avsluttende komma.
+   */
+  const module = (name: string, type: string, value: unknown) =>
+    `// Generert av editor/scripts/generate.ts. Ikke rediger.\n` +
+    `import type { ${type} } from "./diagnostics.js"\n\n` +
+    `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
-    "editor/elements.json": json(diagnosticsData()),
-    "editor/classes.json": json(classesData()),
+    "designsystem/src/diagnostics/elements.ts": module(
+      "elements",
+      "Elements",
+      diagnosticsData(),
+    ),
+    "designsystem/src/diagnostics/classes.ts": module(
+      "classes",
+      "Classes",
+      classesData(),
+    ),
     "designsystem/web-types.json": json(webTypes(version)),
   }
 }
