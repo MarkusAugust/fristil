@@ -253,6 +253,9 @@ async function check(paths: string[]): Promise<void> {
     // Strømmen, ikke `readFileSync(0)`. Å røre `process.stdin` setter et rør
     // i ikke-blokkerende modus, og en synkron lesing kastet da EAGAIN når
     // skriveren ikke var ferdig ennå, som i `curl … | fristil sjekk`.
+    // Som tekst, ikke `Buffer`: et flerbytetegn delt over to biter ble
+    // ellers to erstatningstegn, og «fs-knøpp» sto som «fs-kn��pp» i funnet.
+    process.stdin.setEncoding("utf8")
     let text = ""
     for await (const chunk of process.stdin) text += chunk
     // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
