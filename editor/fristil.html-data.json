@@ -309,7 +309,7 @@
       "name": "fs-session-timeout",
       "description": {
         "kind": "markdown",
-        "value": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute."
+        "value": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute."
       },
       "attributes": [
         {

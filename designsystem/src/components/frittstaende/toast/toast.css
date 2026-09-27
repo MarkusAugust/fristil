@@ -5,7 +5,7 @@
     position: fixed;
     inset-block-end: var(--fs-toast-space, var(--size-4));
     inset-inline-end: var(--fs-toast-space, var(--size-4));
-    z-index: 60;
+    z-index: var(--fs-toast-layer, 60);
     display: flex;
     flex-direction: column;
     gap: var(--size-2);

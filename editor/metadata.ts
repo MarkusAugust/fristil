@@ -232,7 +232,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsSessionTimeout>(
     FS_SESSION_TIMEOUT_TAG,
     "session-timeout",
-    "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute.",
+    "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
     {
       "warn-at": number("Sekunder uten aktivitet før varselet kommer."),
       "expires-at": number("Sekunder uten aktivitet før økten er ute."),

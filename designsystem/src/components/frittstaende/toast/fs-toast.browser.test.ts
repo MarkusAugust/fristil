@@ -8,6 +8,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { defineFsToast, type FsToast } from "./fs-toast"
+import { toast as fsToast } from "./toast"
 
 import "../../../tokens/tokens.css"
 import "./toast.css"
@@ -85,5 +86,96 @@ describe("fs-toast", () => {
 
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-toast holder pausen og fokus", () => {
+  beforeAll(() => {
+    defineFsToast()
+  })
+
+  it("holder pausen til både musa og fokus har forlatt meldingen", async () => {
+    // Pausen var to uavhengige par: musa som gikk ut startet klokka igjen
+    // mens fokus sto i meldingen, og meldingen forsvant under brukeren.
+    monter(`<fs-toast></fs-toast><button id="annet">Annet</button>`)
+    const toast = await tegn()
+    const melding = toast.show("Lagret", { duration: 40 })
+    const lukk = melding.querySelector("button") as HTMLElement
+
+    lukk.focus()
+    melding.dispatchEvent(new MouseEvent("mouseenter"))
+    melding.dispatchEvent(new MouseEvent("mouseleave"))
+    await new Promise((r) => setTimeout(r, 120))
+    expect(
+      toast.querySelectorAll(".fs-toast"),
+      "forsvant med fokus i",
+    ).toHaveLength(1)
+    ;(document.getElementById("annet") as HTMLElement).focus()
+    await new Promise((r) => setTimeout(r, 120))
+    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+  })
+
+  it("flytter fokus til meldingen ved siden av når den som hadde fokus lukkes", async () => {
+    monter(`<fs-toast></fs-toast>`)
+    const toast = await tegn()
+    const eldste = toast.show("Første", { duration: 0 })
+    const midten = toast.show("Andre", { duration: 0 })
+    toast.show("Tredje", { duration: 0 })
+    const lukk = midten.querySelector("button") as HTMLElement
+
+    lukk.focus()
+    lukk.click()
+
+    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(2)
+    // Den under, altså den eldre, ikke den nyeste øverst.
+    expect(document.activeElement).toBe(eldste.querySelector("button"))
+  })
+
+  it("lar duration=0 på elementet bety at meldingene blir stående", async () => {
+    monter(`<fs-toast duration="0"></fs-toast>`)
+    const toast = await tegn()
+    toast.show("Blir stående")
+    await new Promise((r) => setTimeout(r, 50))
+    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(1)
+  })
+
+  it("lar et tomt duration bety standardverdien", async () => {
+    // `Number("")` er 0, og `<fs-toast duration>` lot meldingene stå.
+    monter(`<fs-toast duration></fs-toast>`)
+    const toast = await tegn()
+    expect(toast.duration).toBe(6000)
+  })
+
+  it("er ikke atomisk, så bare den nye meldingen leses opp", async () => {
+    monter(`<fs-toast></fs-toast>`)
+    const toast = await tegn()
+    expect(toast.getAttribute("aria-atomic")).toBe("false")
+    expect(fsToast().host["aria-atomic"]).toBe("false")
+  })
+
+  it("heter Varsler både i byggefunksjonen og i komponenten", async () => {
+    monter(`<fs-toast></fs-toast>`)
+    const toast = await tegn()
+    expect(toast.getAttribute("aria-label")).toBe("Varsler")
+    expect(fsToast().host["aria-label"]).toBe("Varsler")
+  })
+
+  it("gir en ukjent farge ingen kant", async () => {
+    monter(`<fs-toast></fs-toast>`)
+    const toast = await tegn()
+    const melding = toast.show("Rar", {
+      color: "lilla" as unknown as "success",
+      duration: 0,
+    })
+    expect(melding.hasAttribute("data-color")).toBe(false)
+  })
+
+  it("fjerner alle med clear()", async () => {
+    monter(`<fs-toast></fs-toast>`)
+    const toast = await tegn()
+    toast.show("En", { duration: 0 })
+    toast.show("To", { duration: 0 })
+    toast.clear()
+    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
   })
 })

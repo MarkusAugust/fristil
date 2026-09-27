@@ -37,6 +37,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     ```html
     <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button class="fs-button" id="lagre" type="button">Lagre søknaden</button>
@@ -160,6 +161,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.15.0/src/components/css/button/button.css">
 
     <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button
@@ -211,6 +213,7 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 
 ```html
 <fs-toast id="meldinger" role="status" aria-live="polite"
+          aria-atomic="false"
           aria-label="Meldinger" data-ignore-morph></fs-toast>
 ```
 
@@ -223,10 +226,10 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 | Navn | Hva det er |
 | --- | --- |
 | `duration` | Standard levetid i millisekunder. `0` lar meldingene bli stående. |
-| `label` | Tekst som sier hva regionen er. Blir `aria-label`. |
+| `label` | Tekst som sier hva regionen er. Blir `aria-label`. Standard: «Varsler» |
 | `show(tekst, valg)` | Viser en melding og returnerer elementet |
-| `dismiss(melding)` | Fjerner én melding |
-| `clear()` | Fjerner alle |
+| `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
+| `clear()` | Fjerner alle, uten å sende noe |
 
 Valgene til `show()`:
 
@@ -241,7 +244,7 @@ Valgene til `show()`:
 En melding som forsvinner av seg selv er en tilgjengelighetsfelle: den som leser sakte, bruker forstørrelse eller skjermleser rekker ikke å lese den. Komponenten gjør to ting med det:
 
 - Lukkeknappen er alltid der.
-- Tiden stopper mens musa er over meldingen, eller mens fokus er inne i den.
+- Tiden stopper mens musa er over meldingen eller fokus er inne i den, og går først når begge er ute.
 
 Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvittering skal stå i siden.
 
@@ -258,6 +261,7 @@ Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvitteri
 | `--fs-toast-width` | `min(24rem, calc(100vw - var(--size-8)))` |
 | `--fs-toast-padding` | `var(--size-3) var(--size-4)` |
 | `--fs-toast-radius` | `var(--size-1)` |
+| `--fs-toast-layer` | `60` |
 
 Beholderen slipper klikk gjennom når den er tom, så den ikke stenger for knapper under seg.
 

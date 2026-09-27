@@ -67,7 +67,7 @@ import { setAttributes } from "./dom.js"
  * variantene og vakten som validerer verdier utenfra.
  *
  * Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et
- * virker i React, Vue, Svelte og ren HTML.
+ * virker i React, Astro, Datastar og ren HTML.
  */
 export const fs = {
   accordion,
@@ -103,8 +103,8 @@ export const fs = {
    * <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
    * ```
    *
-   * Samme utregning som `<fs-field>` gjør, men som data, så du kan eie
-   * markupen selv uten å registrere et custom element.
+   * Samme utregning som `<fs-field>` gjør, men som data, for markup som
+   * lages med JavaScript. Da trengs ingen web component.
    */
   field: computeFieldAttributes,
   /** Gruppe av kontroller som hører sammen. Ledeteksten er `fs.legend`. */
