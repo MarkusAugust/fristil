@@ -25,6 +25,17 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`fristil sjekk <fil…>` og `@fristil/designsystem/diagnostics`.** Sjekken
+  editorutvidelsen kjører mens du skriver, elementer som ikke finnes,
+  attributter elementet ikke har, verdier utenfor lista, klasser som
+  `fs-buton` og `<fs-field>` uten kontroll, ligger nå i pakken.
+  Kommandolinjen leser filer eller standard inn og skriver hvert funn som
+  `fil:linje:kolonne: melding`, med feilkode ved funn. `diagnoseMarkup(html)`
+  er den samme sjekken som funksjon, for en test i appen som kjører den over
+  HTML-en serveren faktisk sender. Spilldemoen sjekket markupen sin med
+  `contains` på strenger. Editorutvidelsen importerer nå diagnostikken fra
+  pakken, og listene den sjekker mot genereres inn i pakken som
+  `elements.ts` og `classes.ts`.
 - **`<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>` kobler fra bar
   struktur,** som fanene og feiloppsummeringen. En knapp og et panel med
   klassen `fs-popover` er nok: komponenten setter `popover="manual"`, lager

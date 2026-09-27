@@ -450,6 +450,69 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// `sjekk`: filer som stemmer gir 0, ett funn gir 1 med fil, linje og kolonne
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const riktig = join(mappe, "riktig.html")
+  const galt = join(mappe, "galt.html")
+  await writeFile(
+    riktig,
+    `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>\n`,
+  )
+  await writeFile(
+    galt,
+    `<p>Hei</p>\n<button class="fs-buton">Lagre</button>\n<fs-dialog-header>Tittel</fs-dialog-header>\n`,
+  )
+
+  const rent = await kjør(["sjekk", riktig])
+  krev(
+    rent.kode === 0,
+    `sjekk av riktig markup avsluttet med kode ${rent.kode}`,
+  )
+  krev(rent.ut.includes("stemmer"), "sjekk sier ikke at markupen stemmer")
+
+  const funn = await kjør(["sjekk", galt, riktig])
+  krev(funn.kode === 1, `sjekk med funn avsluttet med kode ${funn.kode}`)
+  krev(
+    funn.ut.includes(`${galt}:2:`) && funn.ut.includes("fs-buton"),
+    `funnet står ikke med fil og linje: ${funn.ut.slice(0, 160)}`,
+  )
+  krev(
+    funn.ut.includes(`${galt}:3:`) && funn.ut.includes("fs-dialog-header"),
+    "elementet som ikke finnes ble ikke meldt på linje 3",
+  )
+  krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
+
+  // Fra standard inn, slik en test i en app sender HTML-en serveren lager
+  const prosess = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [stdinUt, stdinKode] = await Promise.all([
+    new Response(prosess.stdout).text(),
+    prosess.exited,
+  ])
+  krev(
+    stdinKode === 1,
+    `sjekk fra standard inn avsluttet med kode ${stdinKode}`,
+  )
+  krev(
+    stdinUt.includes("stdin:1:") && stdinUt.includes("placement"),
+    `funnet fra standard inn mangler: ${stdinUt.slice(0, 120)}`,
+  )
+
+  const borte = await kjør(["sjekk", join(mappe, "finnes-ikke.html")])
+  krev(borte.kode === 1, "en fil som ikke finnes skulle gitt feilkode")
+  krev(
+    borte.feil.includes("Fant ikke fila"),
+    "feilmeldingen sier ikke at fila mangler",
+  )
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
 if (feil.length > 0) {
   console.error(
     `Kommandolinjeverktøyet oppfører seg ikke som lovet:\n\n${feil

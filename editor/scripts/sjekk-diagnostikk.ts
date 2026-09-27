@@ -16,7 +16,11 @@
  * Kjør med: bun scripts/sjekk-diagnostikk.ts
  */
 
-import { type Classes, diagnose, type Elements } from "../src/diagnostics"
+import {
+  type Classes,
+  diagnose,
+  type Elements,
+} from "@fristil/designsystem/diagnostics"
 import { classesData, diagnosticsData, snippets } from "./generate"
 
 const all: Elements = diagnosticsData()

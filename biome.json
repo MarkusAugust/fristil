@@ -12,8 +12,8 @@
       "!presentasjon",
       "!editor/fristil.html-data.json",
       "!editor/snippets.json",
-      "!editor/elements.json",
-      "!editor/classes.json",
+      "!designsystem/src/diagnostics/elements.ts",
+      "!designsystem/src/diagnostics/classes.ts",
       "!designsystem/web-types.json"
     ]
   },

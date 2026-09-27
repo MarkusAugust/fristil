@@ -29,9 +29,11 @@
  * kjøringen med feil framfor å levere et tema som ser riktig ut.
  */
 
+import { readFileSync } from "node:fs"
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { diagnoseMarkup, type Finding } from "./diagnostics/index.js"
 import {
   buildEntryPoints,
   type PackageExports,
@@ -225,8 +227,62 @@ async function overta(argumenter: string[]): Promise<void> {
   console.error(`${linjer.join("\n")}\n`)
 }
 
+/**
+ * `fristil sjekk <fil…>`: den samme sjekken som editoren kjører mens du
+ * skriver, over ferdige filer. Uten filer leses standard inn, så en test
+ * kan sende HTML-en serveren faktisk sender. Hvert funn skrives som
+ * `fil:linje:kolonne: melding`, som en kompilator, og ett funn er nok til
+ * å avslutte med feil: en advarsel fra editoren er en feil i en mal ingen
+ * kompilator ser på.
+ */
+async function check(paths: string[]): Promise<void> {
+  const sources =
+    paths.length > 0
+      ? await Promise.all(
+          paths.map(async (path) => {
+            try {
+              return { name: path, text: await readFile(path, "utf8") }
+            } catch {
+              console.error(`Fant ikke fila «${path}».`)
+              process.exit(1)
+            }
+          }),
+        )
+      : [{ name: "stdin", text: readFileSync(0, "utf8") }]
+
+  let count = 0
+  for (const { name, text } of sources) {
+    for (const finding of diagnoseMarkup(text)) {
+      count += 1
+      console.log(`${name}:${describe(text, finding)}`)
+    }
+  }
+
+  if (count > 0) {
+    console.error(
+      `\n${count} ${count === 1 ? "funn" : "funn"} i ${sources.length} ${sources.length === 1 ? "fil" : "filer"}.`,
+    )
+    process.exit(1)
+  }
+  console.log(
+    `Markupen stemmer med Fristil i ${sources.length} ${sources.length === 1 ? "fil" : "filer"}.`,
+  )
+}
+
+/** Linje, kolonne, alvor og melding, slik en kompilator skriver det. */
+function describe(text: string, finding: Finding): string {
+  const before = text.slice(0, finding.start)
+  const line = before.split("\n").length
+  const column = finding.start - before.lastIndexOf("\n")
+  const kind = finding.severity === "error" ? "feil" : "advarsel"
+  return `${line}:${column}: ${kind}: ${finding.message}`
+}
+
 /** Det kommandoen kan, skrevet ut på én skjerm. */
 const HJELP = `fristil <kommando>
+
+  sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
+                       Uten filer leses standard inn. Ett funn gir feilkode
 
   overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
@@ -253,13 +309,14 @@ Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
 fra en JSON-fil: fristil tema fristil.tema.json
 
 Eksempler:
+  npx @fristil/designsystem sjekk maler/*.html
   npx @fristil/designsystem overta button --ut=src/ui
   npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 
 const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
-const KOMMANDOER = new Set(["overta", "tema"])
+const KOMMANDOER = new Set(["sjekk", "overta", "tema"])
 
 const argumenter = process.argv.slice(2)
 
@@ -279,6 +336,11 @@ if (!KOMMANDOER.has(argumenter[0]) && !argumenter[0].startsWith("--")) {
 
 if (argumenter[0] === "overta") {
   await overta(argumenter.slice(1))
+  process.exit(0)
+}
+
+if (argumenter[0] === "sjekk") {
+  await check(argumenter.slice(1))
   process.exit(0)
 }
 

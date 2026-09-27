@@ -31,6 +31,25 @@ IntelliJ IDEA Ultimate og WebStorm trenger ingen utvidelse. Fra `@fristil/design
 
 Feilmeldingene og hurtigrettelsene finnes bare i VS Code. IntelliJ IDEA Community har ikke JavaScript-støtten dette bygger på.
 
+## Kommandolinjen og testene
+
+Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, eller standard inn, og skriver hvert funn som `fil:linje:kolonne: melding`. Ett funn gir feilkode, så den kan stå i CI:
+
+```bash
+npx @fristil/designsystem sjekk maler/*.html
+```
+
+Lager serveren HTML-en i kode, som i en Kotlin- eller Go-app, er det den ferdige HTML-en som skal sjekkes, ikke malen. Da kjører du sjekken i appens egne tester, over det serveren faktisk sender:
+
+```ts
+import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"
+
+const funn = diagnoseMarkup(html)
+expect(funn).toEqual([])
+```
+
+Hvert funn har `start`, `end`, `severity` og `message`, og noen har en `fix`. `diagnose(text, elements, classes)` tar egne lister, om du vil sjekke mot et utvalg.
+
 ## Det ingen av dem ser
 
 Editoren ser én fil om gangen. En ledetekst i én partial og et felt i en annen henger sammen først i nettleseren, og der sier komponenten fra hvis koblingen mangler. Se [Markup og oppførsel](../markup-og-oppforsel/).
