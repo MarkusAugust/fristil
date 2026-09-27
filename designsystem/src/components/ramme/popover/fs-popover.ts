@@ -129,10 +129,10 @@ export class FsPopover extends HostElement {
     this.panel = undefined
   }
 
-  attributeChangedCallback(navn: string): void {
+  attributeChangedCallback(name: string): void {
     // `server-controlled` slått på midt i: komponenten slipper taket, og neste
     // patch bestemmer.
-    if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
+    if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.wantsOpen = false
     }
 

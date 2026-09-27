@@ -177,7 +177,7 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
 
     expect(
       mangler,
-      "Disse må inn i NAVN-tabellen i src/react.ts, ellers advarer React",
+      "Disse må inn i REACT_NAMES-tabellen i src/react.ts, ellers advarer React",
     ).toEqual([])
   })
 
