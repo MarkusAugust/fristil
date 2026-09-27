@@ -27,11 +27,12 @@ kommer i et nytt undertall.
 
 ### Rettet
 
-- **`<fs-suggestion>` lukker lista når fokus forlater feltet.** Tab gikk
-  videre til neste felt, og lista ble stående over det med
+- **`<fs-suggestion>` lukker lista når fokus forlater komponenten.** Tab
+  gikk videre til neste felt, og lista ble stående over det med
   `aria-expanded="true"` på et felt som ikke lenger hadde fokus. Lytteren på
-  `document` er borte: et trykk i lista holder fokus i feltet, og alt annet
-  lukker den. Dermed virker feltet også inne i en skyggerot, der klikket i
+  `document` er borte: et trykk i lista holder fokus i feltet, fokus på noe
+  inne i komponenten lar lista stå, og alt utenfor lukker den. Dermed virker
+  feltet også inne i en skyggerot, der klikket i
   feltet før ble regnet som et klikk utenfor og lukket lista i samme klikk
   som åpnet den.
 - **«Ingen treff» følger lista.** Meldingen er søsken til lista og ble
