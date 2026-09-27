@@ -136,7 +136,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toBe(true)
   })
 
-  it("flere faner enn paneler", async () => {
+  it("faner uten et panel", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -151,7 +151,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).some((m) => m.includes("flere faner enn paneler")),
+      meldinger(advarsel).some((m) => m.includes("faner uten et panel")),
     ).toBe(true)
   })
 
@@ -285,6 +285,24 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(sagt.some((m) => m.includes("#heller-ikke"))).toBe(true)
   })
 
+  it("feiloppsummeringen uten tabindex", async () => {
+    // Uten `tabindex` gjør `focus()` ingenting, og hele grunnen til
+    // komponenten forsvinner i stillhet. Verten er serverens, så komponenten
+    // kan ikke sette det selv.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-error-summary class="fs-error-summary" role="alert">
+        <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
+        <ul class="fs-list"><li><a href="#tab-epost">Skriv en gyldig adresse</a></li></ul>
+      </fs-error-summary>
+      <input id="tab-epost" />
+    `)
+    await ventTilRo()
+
+    expect(meldinger(advarsel).some((m) => m.includes("tabindex"))).toBe(true)
+  })
+
   it("sier det én gang, ikke én gang per synkronisering", async () => {
     const advarsel = lytt()
 
@@ -337,7 +355,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     }
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("flere faner enn paneler")),
+      meldinger(advarsel).filter((m) => m.includes("faner uten et panel")),
     ).toHaveLength(1)
   })
 

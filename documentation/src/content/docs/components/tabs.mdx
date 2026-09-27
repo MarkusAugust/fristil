@@ -169,7 +169,10 @@ if (!faner) throw new Error("fant ikke elementet")
 
 faner.selected // 0
 faner.select(1) // velger «Vedlegg» og sender `tab-select`
+faner.selected = 2 // det samme som select(2)
 ```
+
+Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Bare markup uten `aria-controls` kobles etter rekkefølgen.
 
 ## Klasser du kan style
 
@@ -200,6 +203,8 @@ Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` p
 | Piltastene | Flytter mellom fanene, og går rundt fra siste til første |
 | Home og End | Første og siste fane |
 | Tab | Ut av raden og inn i det valgte panelet |
+
+En fane med `disabled` hoppes over, og i en side med `dir="rtl"` bytter venstre og høyre pil retning, slik at neste fane alltid er den som står ved siden av i leseretningen.
 
 Bare den valgte fanen har `tabindex="0"`. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
 

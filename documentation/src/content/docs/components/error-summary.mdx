@@ -184,7 +184,7 @@ Er det ingen feil, setter byggefunksjonen `hidden` på boksen. En tom oppsummeri
 
 ## Lenkene peker på feltets id
 
-Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den på en `<label>`, følger komponenten `for` videre til kontrollen.
+Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den på en `<label>`, følger komponenten ledeteksten videre til kontrollen, enten den peker med `for` eller omslutter den.
 
 ```html
 <li><a href="#fodselsdato">Skriv datoen som dag, måned og år</a></li>
@@ -215,7 +215,7 @@ Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `t
 
 To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
 
-- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket.
+- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket. Signalet er at `hidden` tas bort. Står boksen synlig fra før når skjemaet feiler på nytt, må appen slå `hidden` på og av, eller kalle `focus()` selv. Komponenten flytter ikke fokus av at lista endrer seg, for da ville en oppsummering som krymper mens brukeren retter, rykket fokus ut av feltet. Ett unntak: landet ikke fokus første gang, fordi boksen sto i et skjult panel, prøver den igjen ved neste endring i lista, men bare når ingen står i et felt. Mangler `tabindex` på boksen, sier komponenten fra i konsollen.
 - **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før, altså i oppsummeringen.
 
 Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.
