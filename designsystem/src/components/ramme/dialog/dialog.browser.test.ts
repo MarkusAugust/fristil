@@ -1245,6 +1245,38 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(meldt).toEqual([false])
   })
 
+  it("åpner ikke igjen når en node endres inne i dialogen i samme oppgave", async () => {
+    // Samme løp som over, gjennom en annen dør: en `childList`-post inne i
+    // dialogen, som `knapp.textContent = "Sletter…"` eller en patch fra en
+    // hendelsesstrøm, er ikke et bytte av dialogen og skal ikke kjøre
+    // åpne-og-lukke-logikken.
+    const { d } = await monterBar(
+      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    kropp.append(document.createElement("p"))
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
+  })
+
   it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
     const { d, tittel } = await monterBar()
     const id = tittel.id

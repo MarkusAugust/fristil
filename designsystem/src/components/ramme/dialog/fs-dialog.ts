@@ -87,9 +87,10 @@ export class FsDialog extends HostElement {
   connectedCallback(): void {
     /*
      * Serveren kan sende dialogen inn i et område som allerede står i siden,
-     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare egne
-     * barn observeres: dialogen er alltid et direkte barn, og innholdet inni
-     * den endrer seg ved hver patch.
+     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare en
+     * endring blant vertens egne barn kjører hele `sync()`: dialogen er
+     * alltid et direkte barn, og innholdet inni den endrer seg ved hver
+     * patch uten at det sier noe om hvilken dialog som er komponentens.
      *
      * `open` på selve `<dialog>` er med. Nettleseren setter det når
      * `showModal()` kalles, og en morfing river det bort igjen, siden
@@ -109,7 +110,10 @@ export class FsDialog extends HostElement {
      * observatøren utløst seg selv.
      */
     this.observer = new MutationObserver((records) => {
-      if (records.some((record) => record.type === "childList")) this.sync()
+      const swapped = records.some(
+        (record) => record.type === "childList" && record.target === this,
+      )
+      if (swapped) this.sync()
       else this.rewire()
     })
     this.observer.observe(this, {
@@ -166,9 +170,14 @@ export class FsDialog extends HostElement {
 
     const named = dialog.getAttribute("aria-labelledby")
     if (named) {
+      // Attributtet kan liste flere id-er. Tittelen er den første som står
+      // inne i dialogen.
       const root = this.getRootNode() as Document | ShadowRoot
-      const title = root.getElementById?.(named)
-      if (title && dialog.contains(title)) addClass(title, DIALOG_TITLE_CLASS)
+      const title = named
+        .split(/\s+/)
+        .map((id) => root.getElementById?.(id) ?? null)
+        .find((element) => element !== null && dialog.contains(element))
+      if (title) addClass(title, DIALOG_TITLE_CLASS)
       return
     }
     if (dialog.hasAttribute("aria-label")) return

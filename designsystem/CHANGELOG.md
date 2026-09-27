@@ -33,8 +33,10 @@ egen overskrift «Brytende».
   en `.fs-suggestion__list` med `<li>` og et statuselement er nok for
   forslagsfeltet: komponenten setter rollene, lager id-ene, skriver `for`
   og `aria-controls`, og holder lista lukket til brukeren rører feltet.
-  Dialogen får klassen og navnet sitt fra den første overskriften, med
-  `aria-labelledby` mot en id komponenten lager om den mangler. Bare det som
+  Dialogen får klassen, og navnet sitt fra den første overskriften når den
+  ikke alt har et fra `aria-labelledby` eller `aria-label`, med en id
+  komponenten lager om den mangler; peker `aria-labelledby` på en overskrift,
+  er det den som får tittelklassen. Bare det som
   mangler skrives, `suggestion.css` holder en bar liste skjult til
   komponenten er registrert, og advarslene sier hva som faktisk mangler.
   `derivedParts` og `uniqueId` i `/host-element` er hjelperne bak.
