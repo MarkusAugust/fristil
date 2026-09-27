@@ -316,8 +316,11 @@ export class FsPopover extends HostElement {
     const below = this.placement.startsWith("bottom")
     // `start` og `end` følger leseretningen: i et dokument som leses fra
     // høyre er `start` knappens høyre kant. Uten dette lå panelet på feil
-    // side av knappen i RTL.
-    const rtl = getComputedStyle(this.panel).direction === "rtl"
+    // side av knappen i RTL. `:dir(rtl)` og ikke `direction` fra
+    // `getComputedStyle`: stilarket snur verdien med `:dir(rtl)`, og de to
+    // må lese den samme kilden, ellers kunne en side med `direction: rtl`
+    // i CSS uten `dir` fått høyre kant fra JavaScript og venstre fra CSS.
+    const rtl = this.panel.matches(":dir(rtl)")
     const alignRight = this.placement.endsWith("end") !== rtl
 
     let top = below ? anchor.bottom + space : anchor.top - panel.height - space

@@ -206,7 +206,7 @@ Knappen i «Prøv den» gjør det en server ellers ville gjort: setter `open` p�
 
 ## Det som er felles for alle fire
 
-Å åpne dialogen **må** være et kall. `showModal()` flytter fokus inn, holder det der, lukker på Escape og gjør resten av siden utilgjengelig. `<dialog open>` alene gjør ingen av delene, og er bare en boks på siden. De tre første oppskriftene gjør kallet selv; Datastar-oppskriften lar `<fs-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Velg én av delene: inne i `<fs-dialog>` er det `open` på verten som åpner, og et eget `showModal()`-kall der lukkes igjen ved neste patch, siden verten ikke sier `open`.
+Å åpne dialogen **må** være et kall. `showModal()` flytter fokus inn, holder det der, lukker på Escape og gjør resten av siden utilgjengelig. `<dialog open>` alene gjør ingen av delene, og er bare en boks på siden. De tre første oppskriftene gjør kallet selv; Datastar-oppskriften lar `<fs-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Velg én av delene: inne i `<fs-dialog>` er det `open` på verten som åpner, og et eget `showModal()`-kall der lukkes av komponenten ved neste patch som rører verten eller barna dens, siden verten ikke sier `open`.
 
 `<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Da trenger du ingen lyttere på knappene, og Enter virker som forventet.
 

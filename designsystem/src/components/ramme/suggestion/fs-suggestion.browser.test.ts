@@ -471,6 +471,37 @@ describe("fs-suggestion lukker og rydder", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
+  it("lukker lista når fokus går ut av komponenten via en knapp inni den", async () => {
+    // En knapp ved siden av feltet er inne i komponenten, så lista står når
+    // fokus går dit. Går fokus videre ut derfra, skal lista lukkes da også.
+    monter(`
+      <fs-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <button type="button" id="tom-knapp">Tøm</button>
+          <ul ${attr(FORSLAG.list)}>
+            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          </ul>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </fs-suggestion>
+      <input id="neste-felt" />
+    `)
+    const felt = await tegn()
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+
+    ;(felt.querySelector("input") as HTMLInputElement).focus()
+    await tegn()
+    ;(document.getElementById("tom-knapp") as HTMLElement).focus()
+    await tegn()
+    expect(liste.hidden, "lista lukket seg for en knapp inni").toBe(false)
+    ;(document.getElementById("neste-felt") as HTMLElement).focus()
+    await tegn()
+
+    expect(liste.hidden).toBe(true)
+  })
+
   it("holder lista åpen når brukeren klikker i feltet inne i en skyggerot", async () => {
     // Dokumentasjonens forhåndsvisninger ligger i en skyggerot. Lytteren på
     // `document` så `event.target` omdirigert til skyggeverten, regnet

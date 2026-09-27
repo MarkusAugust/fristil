@@ -166,10 +166,12 @@ export class FsDialog extends HostElement {
      * igjen å gjøre og hendelsen kommer én gang.
      */
     dialog.close()
-    if (this.open) {
-      this.removeAttribute("open")
-      this.meld(false, dialog.returnValue)
-    }
+    // Hendelsen kommer uansett hvem som fjernet `open` på verten. Har React
+    // alt tatt det, i sin rekkefølge med barn før forelder, er dette den ene
+    // gangen noen kan melde fra: `sync()` og `handleClose` ser etterpå en
+    // dialog som alt er lukket, og tier.
+    if (this.open) this.removeAttribute("open")
+    this.meld(false, dialog.returnValue)
   }
 
   private handleClose = (): void => {

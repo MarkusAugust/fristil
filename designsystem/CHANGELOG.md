@@ -16,6 +16,15 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`fs.popover()` tar `placement`.** `fs.popover.isPlacement` sjekker en
+  verdi, også i `/react`, og `popoverPlacements` fra hovedinngangen lister
+  dem, med typen `PopoverPlacement`. Før måtte attributtet skrives for hånd
+  uten typesjekk.
+- **`--fs-suggestion-layer`** styrer `z-index` på forslagslista, med `30`
+  som reserve.
+
 ### Rettet
 
 - **`<fs-suggestion>` lukker lista når fokus forlater feltet.** Tab gikk
@@ -40,7 +49,6 @@ kommer i et nytt undertall.
   under samme vilkår**, altså bare når lista er åpen. Før fikk en lukket
   liste det ene uten det andre.
 - **Det markerte alternativet vises i høykontrastmodus**, med systemfargene.
-  `--fs-suggestion-layer` styrer `z-index` på lista, med `30` som reserve.
 - **`<fs-popover>` står på riktig side i `dir="rtl"`.** Posisjonen er
   fysisk, men stilarket brukte den som `inset-inline-start`, som er høyre
   kant i en side som leses fra høyre. `start` og `end` i `placement` følger
@@ -52,9 +60,6 @@ kommer i et nytt undertall.
   Håndskrevet markup med bare `popover` er `auto`, og etter en lett
   avvisning sto verten med `open` og knappen med `aria-expanded="true"`
   over et lukket panel. Komponenten lytter nå på `toggle`.
-- **`fs.popover()` tar `placement`.** `fs.popover.isPlacement` sjekker en
-  verdi, og `popoverPlacements` fra hovedinngangen lister dem, med typen
-  `PopoverPlacement`. Før måtte attributtet skrives for hånd uten typesjekk.
 - **Klikk utenfor et sprettoppvindu i en skyggerot** leser
   `composedPath()`, så et klikk i panelet ikke regnes som utenfor.
 - **`<fs-dialog server-controlled>` lukker når patchen tar `open` fra en

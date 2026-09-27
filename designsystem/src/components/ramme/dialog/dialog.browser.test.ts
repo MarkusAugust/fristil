@@ -925,6 +925,37 @@ describe("fs-dialog med server-controlled", () => {
     defineFsDialog()
   })
 
+  it("melder fra én gang også når React tar open fra barnet før verten", async () => {
+    // React oppdaterer barn før forelder. Da er vertens `open` alt borte i
+    // det komponenten lukker dialogen, og uten en melding herfra fikk appen
+    // aldri vite at den ble lukket.
+    const boks = dialog({ titleId: "sc2-tittel", open: true })
+    monter(`
+      <fs-dialog server-controlled ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+        </dialog>
+      </fs-dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+
+    d.removeAttribute("open")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(false)
+    expect(meldinger).toEqual([false])
+  })
+
   it("lukker en modal dialog når patchen tar open fra den", async () => {
     /*
      * Serveren eier tilstanden, og sender området på nytt uten `open` på

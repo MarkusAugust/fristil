@@ -52,6 +52,7 @@ export class FsSuggestion extends HostElement {
   private observer?: MutationObserver
   private control?: HTMLInputElement
   private list?: HTMLElement
+  private empty?: HTMLElement
   /** Alternativene som alt har fått lytteren sin. */
   private readonly bound = new WeakSet<HTMLElement>()
   /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
@@ -102,6 +103,11 @@ export class FsSuggestion extends HostElement {
       ],
     })
     this.sync()
+    // Lista lukkes når fokus forlater komponenten, med Tab som med alt annet.
+    // På verten og ikke på feltet: går fokus via en knapp inni komponenten og
+    // så videre ut, skal lista lukkes da også. Uten dette ble den stående
+    // over neste felt, med `aria-expanded` sann på et felt uten fokus.
+    this.addEventListener("focusout", this.handleFocusOut)
   }
 
   attributeChangedCallback(name: string): void {
@@ -187,6 +193,7 @@ export class FsSuggestion extends HostElement {
   }
 
   disconnectedCallback(): void {
+    this.removeEventListener("focusout", this.handleFocusOut)
     this.observer?.disconnect()
     this.observer = undefined
     this.unbind()
@@ -268,11 +275,12 @@ export class FsSuggestion extends HostElement {
       control.removeEventListener("input", this.handleInput)
       control.removeEventListener("keydown", this.handleKeydown)
       control.removeEventListener("focus", this.handleFocus)
-      control.removeEventListener("focusout", this.handleFocusOut)
       this.control = undefined
     }
     this.list?.removeEventListener("mousedown", this.handleListMouseDown)
     this.list = undefined
+    this.empty?.removeEventListener("mousedown", this.handleListMouseDown)
+    this.empty = undefined
   }
 
   private bind(): void {
@@ -318,28 +326,29 @@ export class FsSuggestion extends HostElement {
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)
-      this.control?.removeEventListener("focusout", this.handleFocusOut)
       control.addEventListener("input", this.handleInput)
       control.addEventListener("keydown", this.handleKeydown)
       control.addEventListener("focus", this.handleFocus)
-      // Lista lukkes når fokus forlater feltet, med Tab som med alt annet.
-      // Uten dette ble den stående over neste felt, med `aria-expanded`
-      // sann på et felt som ikke lenger hadde fokus.
-      control.addEventListener("focusout", this.handleFocusOut)
       this.control = control
     }
 
     /*
-     * Et trykk i lista skal ikke ta fokus fra feltet, heller ikke på
-     * rullefeltet eller tommeldingen. Ellers lukket `focusout` lista før
-     * valget rakk å skje. Lista kan byttes ut av en patch, så lytteren
-     * følger elementet.
+     * Et trykk i lista eller på tommeldingen skal ikke ta fokus fra feltet,
+     * heller ikke på rullefeltet. Ellers lukket `focusout` lista før valget
+     * rakk å skje. Begge kan byttes ut av en patch, så lytterne følger
+     * elementene.
      */
     const list = this.listElement
     if (list !== this.list) {
       this.list?.removeEventListener("mousedown", this.handleListMouseDown)
       list?.addEventListener("mousedown", this.handleListMouseDown)
       this.list = list ?? undefined
+    }
+    const empty = this.emptyElement
+    if (empty !== this.empty) {
+      this.empty?.removeEventListener("mousedown", this.handleListMouseDown)
+      empty?.addEventListener("mousedown", this.handleListMouseDown)
+      this.empty = empty ?? undefined
     }
 
     // Alternativene byttes ut uavhengig av feltet: i en Datastar-app sender
