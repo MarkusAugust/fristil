@@ -1074,12 +1074,44 @@ describe("dialogen med farget topp", () => {
     referanse.style.paddingTop = "var(--size-2)"
     document.body.append(referanse)
 
-    expect(getComputedStyle(topp).paddingBottom).toBe("0px")
-    // Samme avstand ned til teksten som uten topp: overskriftens vanlige marg.
-    expect(getComputedStyle(kropp).paddingTop).toBe(
+    // Toppens bunnluft er overskriftens vanlige marg, og kroppen legger
+    // ingenting til, så avstanden ned til teksten er den samme som uten topp.
+    expect(getComputedStyle(topp).paddingBottom).toBe(
       getComputedStyle(referanse).paddingTop,
     )
+    expect(getComputedStyle(kropp).paddingTop).toBe("0px")
     referanse.remove()
+  })
+
+  it("holder avstanden til knapperaden når toppen uten farge står rett over den", async () => {
+    // En bekreftelsesdialog med bare overskrift og knapper. Med bunnluften
+    // satt til null sto knappene helt inntil overskriften.
+    const medTopp = dialog({ titleId: "kort-tittel" })
+    monter(`
+      <dialog ${attr(medTopp.dialog)} open id="med">
+        <div ${attr(medTopp.header)}><h2 ${attr(medTopp.title)}>Slette?</h2></div>
+        <form method="dialog" ${attr(medTopp.footer)}><button class="fs-button" value="ja">Ja</button></form>
+      </dialog>
+      <dialog ${attr(dialog({ titleId: "kort-tittel-2" }).dialog)} open id="uten">
+        <h2 class="fs-dialog__title" id="kort-tittel-2">Slette?</h2>
+        <form method="dialog" class="fs-dialog__footer"><button class="fs-button" value="ja">Ja</button></form>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    // Til knappen, ikke til knapperadens boks: radens luft ligger inni boksen
+    // med topp, og under boksen som marg uten. Det brukeren ser er knappen.
+    const avstand = (id: string) => {
+      const d = document.getElementById(id) as HTMLElement
+      const tittel = d.querySelector("h2") as HTMLElement
+      const knapp = d.querySelector("button") as HTMLElement
+      return (
+        knapp.getBoundingClientRect().top -
+        tittel.getBoundingClientRect().bottom
+      )
+    }
+    expect(Math.round(avstand("med"))).toBe(Math.round(avstand("uten")))
+    expect(avstand("med")).toBeGreaterThan(0)
   })
 
   it("står som før uten en topp", async () => {

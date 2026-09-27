@@ -190,14 +190,27 @@
     border-start-end-radius: calc(var(--fs-dialog-radius, var(--size-2)) - 1px);
   }
 
-  /* Uten farge er toppen ingen stripe: den slipper bunnluften, og kroppen
-     under starter med samme avstand som overskriften ellers har. */
+  /*
+   * Uten farge er toppen ingen stripe. Bunnluften er overskriftens vanlige
+   * marg, og det som følger regner derfra: kroppen begynner uten egen
+   * toppluft, så avstanden ned til teksten er den samme som uten topp, og
+   * knapperaden får resten av dialogens luft, så avstanden dit også er den
+   * samme. Første utgave satte bunnluften til null, og en dialog med bare
+   * overskrift og knapper fikk da null piksler mellom dem.
+   */
   .fs-dialog:not([data-color]) > .fs-dialog__header {
-    padding-block-end: 0;
+    padding-block-end: var(--size-2);
   }
 
   .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__body {
-    padding-block-start: var(--size-2);
+    padding-block-start: 0;
+  }
+
+  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__footer {
+    padding-block-start: calc(
+      var(--fs-dialog-padding, var(--size-5)) -
+      var(--size-2)
+    );
   }
 
   .fs-dialog__header .fs-dialog__title {
