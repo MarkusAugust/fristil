@@ -535,15 +535,23 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
   // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
-  // rørt, siden strømmen da setter røret i ikke-blokkende modus.
+  // rørt, siden strømmen da setter røret i ikke-blokkerende modus. Bitene
+  // deles midt i `ø`: lest som `Buffer` ble hver halvdel et erstatningstegn,
+  // og funnet siterte «fs-kn��pp». Første bit skrives før pausen, så barnet
+  // må lese to ganger uansett hvor travel maskinen er.
+  const bytes = new TextEncoder().encode(
+    `<button class="fs-knøpp">Lagre</button>`,
+  )
+  const kutt = bytes.indexOf(0xc3) + 1
   const treg = Bun.spawn(["node", cli, "sjekk"], {
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
   })
   antallKjøringer += 1
+  treg.stdin.write(bytes.slice(0, kutt))
   await Bun.sleep(300)
-  treg.stdin.write(`<button class="fs-buton">Lagre</button>`)
+  treg.stdin.write(bytes.slice(kutt))
   treg.stdin.end()
   const [tregUt, tregFeil, tregKode] = await Promise.all([
     new Response(treg.stdout).text(),
@@ -553,8 +561,8 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(
     tregKode === 1 &&
       tregUt.includes("stdin:1:") &&
-      tregUt.includes("fs-buton"),
-    `et tregt rør ga ikke funnet: kode ${tregKode}, ${tregFeil.slice(0, 80)}`,
+      tregUt.includes("«fs-knøpp»"),
+    `et tregt rør ga ikke funnet med hel tekst: kode ${tregKode}, ${(tregUt + tregFeil).slice(0, 120)}`,
   )
   krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
 
