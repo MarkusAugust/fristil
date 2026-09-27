@@ -11,7 +11,9 @@ import { attr } from "../../../testing/markup"
 import { connectionStatus } from "./connection-status"
 import {
   defineFsConnectionStatus,
-  type FsConnectionStatus,
+  FsConnectionStatus,
+  reportFailure,
+  reportSuccess,
 } from "./fs-connection-status"
 
 import "../../../tokens/tokens.css"
@@ -211,5 +213,39 @@ describe("fs-connection-status sier fra én gang og kommer tilbake", () => {
     status.onlineText = "Her igjen."
     expect(status.getAttribute("offline-text")).toBe("Borte.")
     expect(status.onlineText).toBe("Her igjen.")
+  })
+})
+
+/*
+ * Et sent registrert tagnavn, som en underklasse: konstruktøren til
+ * `fs-connection-status` kan ikke registreres én gang til.
+ */
+describe("reportFailure() og reportSuccess() venter på registreringen", () => {
+  it("gjør kallene i rekkefølge når elementet er oppgradert", async () => {
+    monter(
+      `<fs-connection-status-sen class="fs-connection-status"></fs-connection-status-sen>`,
+    )
+    const element = document.querySelector(
+      "fs-connection-status-sen",
+    ) as Element
+
+    let ferdig = false
+    const løfte = reportFailure(element).then(() => {
+      ferdig = true
+    })
+    await ventPaTegning()
+    expect(ferdig).toBe(false)
+    expect(linje()).toBeNull()
+
+    customElements.define(
+      "fs-connection-status-sen",
+      class extends FsConnectionStatus {},
+    )
+
+    await løfte
+    expect(linje()?.dataset.state).toBe("offline")
+
+    await reportSuccess(element)
+    expect(linje()?.dataset.state).toBe("online")
   })
 })

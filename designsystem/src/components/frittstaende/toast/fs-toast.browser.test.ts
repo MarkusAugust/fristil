@@ -7,7 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { defineFsToast, type FsToast } from "./fs-toast"
+import { defineFsToast, FsToast, showToast } from "./fs-toast"
 import { toast as fsToast } from "./toast"
 
 import "../../../tokens/tokens.css"
@@ -177,5 +177,35 @@ describe("fs-toast holder pausen og fokus", () => {
     toast.show("To", { duration: 0 })
     toast.clear()
     expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+  })
+})
+
+/*
+ * Et sent registrert tagnavn. `defineFsToast("fs-toast-sen")` går ikke: en
+ * konstruktør kan bare registreres én gang, og `fs-toast` har alt tatt den.
+ * En underklasse er en ny konstruktør med samme oppførsel.
+ */
+describe("showToast() venter på registreringen", () => {
+  it("viser meldingen først når elementet er oppgradert", async () => {
+    monter(`<fs-toast-sen role="status" aria-live="polite"></fs-toast-sen>`)
+    const element = document.querySelector("fs-toast-sen") as Element
+
+    let ferdig = false
+    const løfte = showToast(element, "Søknaden er lagret", {
+      color: "success",
+    }).then((melding) => {
+      ferdig = true
+      return melding
+    })
+    await ventPaTegning()
+    expect(ferdig).toBe(false)
+    expect(element.querySelector(".fs-toast")).toBeNull()
+
+    customElements.define("fs-toast-sen", class extends FsToast {})
+
+    const melding = await løfte
+    expect(element.contains(melding)).toBe(true)
+    expect(melding.getAttribute("data-color")).toBe("success")
+    expect(melding.textContent).toContain("Søknaden er lagret")
   })
 })

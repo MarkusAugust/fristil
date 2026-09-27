@@ -3,6 +3,7 @@ import {
   HostElement,
   setText,
   warnAboutMarkup,
+  whenUpgraded,
 } from "../../host-element.js"
 import {
   SESSION_TIMEOUT_CLASS,
@@ -336,4 +337,16 @@ declare global {
 
 export function defineFsSessionTimeout(tagName = FS_SESSION_TIMEOUT_TAG): void {
   defineElement(tagName, FsSessionTimeout)
+}
+
+/** `element.extend()`, men venter først på registreringen. Se `whenUpgraded`. */
+export async function extendSession(element: Element): Promise<void> {
+  const session = await whenUpgraded<FsSessionTimeout>(element)
+  session.extend()
+}
+
+/** `element.reset()`, men venter først på registreringen. Se `whenUpgraded`. */
+export async function resetSession(element: Element): Promise<void> {
+  const session = await whenUpgraded<FsSessionTimeout>(element)
+  session.reset()
 }

@@ -65,7 +65,11 @@ defineFsConnectionStatus()
     ```tsx
     import "@fristil/designsystem/connection-status.css"
     import { fs } from "@fristil/designsystem/react"
-    import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+    import {
+      defineFsConnectionStatus,
+      reportFailure,
+      reportSuccess,
+    } from "@fristil/designsystem/connection-status"
     import "@fristil/designsystem/tokens.css"
 
     defineFsConnectionStatus()
@@ -73,10 +77,21 @@ defineFsConnectionStatus()
     export function Samband() {
       return <fs-connection-status {...fs.connectionStatus()} />
     }
+
+    export async function lagre(body: BodyInit) {
+      const samband = document.querySelector("fs-connection-status")
+      if (!samband) throw new Error("fant ikke elementet")
+      try {
+        const svar = await fetch("/api/lagre", { method: "POST", body })
+        if (!svar.ok) throw new Error(svar.statusText)
+        await reportSuccess(samband)
+      } catch {
+        await reportFailure(samband)
+      }
+    }
     ```
 
-    Hent elementet med `document.querySelector` der du gjør kallene, og kall
-    `reportFailure()` eller `reportSuccess()`.
+    `reportFailure(element)` og `reportSuccess(element)` venter på at registreringen har kjørt før de kaller metoden. Et kall som kommer før `defineFsConnectionStatus()`, som den første meldingen fra en hendelsesstrøm, blir da gjort i det elementet er klart, i stedet for å feile.
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -126,6 +141,8 @@ try {
 | --- | --- |
 | `reportFailure()` | Et kall til serveren feilet |
 | `reportSuccess()` | Et kall lyktes igjen |
+
+`reportFailure(element)` og `reportSuccess(element)` fra `@fristil/designsystem/connection-status` gjør det samme, men venter først på at elementet er registrert.
 
 Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nettverk som forsvinner fanges uten at du gjør noe.
 

@@ -286,7 +286,11 @@
       "types": "./dist/components/frittstaende/connection-status/fs-connection-status.d.ts",
       "import": "./dist/components/frittstaende/connection-status/fs-connection-status.js"
     },
-    "./connection-status.css": "./src/components/frittstaende/connection-status/connection-status.css"
+    "./connection-status.css": "./src/components/frittstaende/connection-status/connection-status.css",
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "import": "./dist/register.js"
+    }
   },
   "files": [
     "dist",
