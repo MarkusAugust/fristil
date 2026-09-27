@@ -10,10 +10,8 @@ Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, t
 
 Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
 
-:::note[Bruk byggefunksjonen og komponenten sammen]
-`fs.suggestion()` gir deg feltet og lista, som ekte HTML. Elementet gir deg filtreringen, piltastene og antall treff, som en funksjon ikke kan gjøre. Her trenger du **begge**.
-
-Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::note[To veier til den samme markupen]
+Lages markupen med JavaScript, gir `fs.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et statuselement: komponenten setter rollene, lager id-ene, kobler delene og holder lista lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
@@ -39,19 +37,18 @@ defineFsSuggestion()
     ```
 
     ```html
+    <!-- Rollene, id-ene og koblingen setter komponenten. Statuselementet
+         skriver du: det er der antall treff leses opp. -->
     <fs-suggestion id="kommunesok">
-      <label class="fs-label" for="kommune">Kommune</label>
+      <label class="fs-label">Kommune</label>
       <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
-               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
-          <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
-          <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
+        <input class="fs-input" name="kommune" type="text">
+        <ul class="fs-suggestion__list">
+          <li>Bergen</li>
+          <li>Bodø</li>
         </ul>
         <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
-              data-ignore-morph></span>
+        <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
       </div>
     </fs-suggestion>
 
@@ -160,14 +157,11 @@ defineFsSuggestion()
     <fs-suggestion prefiltered
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
-      <label class="fs-label" for="kommune">Kommune</label>
+      <label class="fs-label">Kommune</label>
       <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
-               autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-               aria-autocomplete="list">
-        <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden></ul>
-        <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
-              data-ignore-morph></span>
+        <input class="fs-input" name="kommune" type="text">
+        <ul class="fs-suggestion__list"></ul>
+        <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
       </div>
     </fs-suggestion>
     ```
@@ -206,6 +200,8 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
 ```
 
 Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-og-oppforsel/).
+
+Kommer markupen fra en mal uten JavaScript, er strukturen nok, slik «Ren HTML»-oppskriften viser. Komponenten setter rollene, lager id-ene, skriver `for` på ledeteksten og `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
 Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 
@@ -281,7 +277,7 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 ```
 ## Tilgjengelighet
 
-Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Alt står i markupen fra serveren, så semantikken er riktig før skriptet kjører.
+Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `fs.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
 
 - **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
 - **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.

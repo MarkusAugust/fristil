@@ -1,12 +1,15 @@
 import {
+  addClass,
   defineElement,
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
+import { DIALOG_CLASS, DIALOG_TITLE_CLASS } from "./dialog.js"
 
 export const FS_DIALOG_TAG = "fs-dialog" as const
 
@@ -84,9 +87,10 @@ export class FsDialog extends HostElement {
   connectedCallback(): void {
     /*
      * Serveren kan sende dialogen inn i et område som allerede står i siden,
-     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare egne
-     * barn observeres: dialogen er alltid et direkte barn, og innholdet inni
-     * den endrer seg ved hver patch.
+     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare en
+     * endring blant vertens egne barn kjører hele `sync()`: dialogen er
+     * alltid et direkte barn, og innholdet inni den endrer seg ved hver
+     * patch uten at det sier noe om hvilken dialog som er komponentens.
      *
      * `open` på selve `<dialog>` er med. Nettleseren setter det når
      * `showModal()` kalles, og en morfing river det bort igjen, siden
@@ -94,8 +98,30 @@ export class FsDialog extends HostElement {
      * i området rundt ble patchet, og malen måtte skrive
      * `data-preserve-attr="open"` for å hindre det.
      */
-    this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true })
+    /*
+     * Attributtene er med for koblingen komponenten fyller inn når markupen
+     * kom uten den: klassen, overskriftens id og `aria-labelledby`. Men en
+     * attributtpost kjører bare koblingen, ikke hele `sync()`. `close()`
+     * fjerner `open` synkront og køer `close`-hendelsen som en egen oppgave,
+     * og observatøren kjører før den. Endret et klikk en klasse på knappen
+     * i samme oppgave som det lukket dialogen, så `sync()` en vert med `open`
+     * og en dialog som ikke var modal, og åpnet den igjen før lukkingen rakk
+     * å bli håndtert. Hver skriving sammenligner først, ellers ville
+     * observatøren utløst seg selv.
+     */
+    this.observer = new MutationObserver((records) => {
+      const swapped = records.some(
+        (record) => record.type === "childList" && record.target === this,
+      )
+      if (swapped) this.sync()
+      else this.rewire()
+    })
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "id", "aria-labelledby"],
+    })
     this.sync()
   }
 
@@ -120,6 +146,50 @@ export class FsDialog extends HostElement {
    */
   private get dialog(): HTMLDialogElement | null {
     return this.querySelector(":scope > dialog")
+  }
+
+  /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
+  private titleId?: string
+
+  /** Koblingen alene, for en attributtpost. Se observatøren. */
+  private rewire(): void {
+    const dialog = this.dialog
+    if (dialog?.isConnected) this.wire(dialog)
+  }
+
+  /**
+   * Fyller inn det en mal uten JavaScript ikke skrev: klassen på dialogen,
+   * og tittelen. Tittelen er det `aria-labelledby` peker på når serveren
+   * skrev det, ellers den første overskriften, og bare når dialogen ikke alt
+   * har et navn fra `aria-label`. Klassen og id-en skrives bare på tittelen:
+   * en overskrift i kroppen til en dialog med `aria-label` er ikke tittelen,
+   * og skal ikke stiles som den.
+   */
+  private wire(dialog: HTMLDialogElement): void {
+    addClass(dialog, DIALOG_CLASS)
+
+    const named = dialog.getAttribute("aria-labelledby")
+    if (named) {
+      // Attributtet kan liste flere id-er. Tittelen er den første som står
+      // inne i dialogen.
+      const root = this.getRootNode() as Document | ShadowRoot
+      const title = named
+        .split(/\s+/)
+        .map((id) => root.getElementById?.(id) ?? null)
+        .find((element) => element !== null && dialog.contains(element))
+      if (title) addClass(title, DIALOG_TITLE_CLASS)
+      return
+    }
+    if (dialog.hasAttribute("aria-label")) return
+
+    const title = dialog.querySelector("h1, h2, h3, h4, h5, h6")
+    if (!title) return
+    addClass(title, DIALOG_TITLE_CLASS)
+    if (!title.id) {
+      this.titleId ??= uniqueId("fs-dialog-title")
+      setAttr(title, "id", this.titleId)
+    }
+    setAttr(dialog, "aria-labelledby", title.id)
   }
 
   private notify(open: boolean, returnValue = ""): void {
@@ -217,6 +287,8 @@ export class FsDialog extends HostElement {
       )
       return
     }
+
+    this.wire(dialog)
 
     const first = dialog !== this.dialogElement
     if (first) {

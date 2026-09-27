@@ -1,17 +1,15 @@
 import {
   defineElement,
+  derivedParts,
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
-
-function uniqueId(prefix: string): string {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
-}
 
 /** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
 const LIST_SELECTOR = "[role='tablist'], .fs-tabs__list"
@@ -180,30 +178,22 @@ export class FsTabs extends HostElement {
    * sto i, og begge komponentene festet lyttere på de samme knappene.
    */
   private get tabs(): HTMLButtonElement[] {
-    return this.parts<HTMLButtonElement>(TAB_SELECTOR, "tab")
+    return derivedParts<HTMLButtonElement>(
+      this,
+      TAB_SELECTOR,
+      "tab",
+      this.roledByMe,
+    )
   }
 
   /** Panelene som står inni denne raden. Reserven når koblingen mangler. */
   private get ownPanels(): HTMLElement[] {
-    return this.parts<HTMLElement>(PANEL_SELECTOR, "tabpanel")
-  }
-
-  /**
-   * Delene med en rolle, og de uten bare når raden er bar.
-   *
-   * Har serveren skrevet rollene, er en knapp uten rolle i raden noe annet
-   * enn en fane, og skal ikke få rolle, id og `tabindex="-1"` av komponenten.
-   * Har komponenten satt alle rollene selv, er raden bar, og en knapp
-   * serveren sender inn senere er en ny fane.
-   */
-  private parts<T extends HTMLElement>(selector: string, role: string): T[] {
-    const own = [...this.querySelectorAll<T>(selector)].filter(
-      (part) => part.closest(this.localName) === this,
+    return derivedParts<HTMLElement>(
+      this,
+      PANEL_SELECTOR,
+      "tabpanel",
+      this.roledByMe,
     )
-    const bare = own
-      .filter((part) => part.getAttribute("role") === role)
-      .every((part) => this.roledByMe.has(part))
-    return bare ? own : own.filter((part) => part.getAttribute("role") === role)
   }
 
   /** Serverens ord om et attributt, mot hva komponenten selv skrev sist. */

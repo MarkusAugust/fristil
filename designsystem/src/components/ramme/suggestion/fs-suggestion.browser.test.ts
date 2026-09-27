@@ -649,3 +649,158 @@ describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
     expect(apen.control["aria-activedescendant"]).toBe("k-option-1")
   })
 })
+
+/*
+ * Markup skrevet uten JavaScript: ledetekst, felt, liste med `<li>` og et
+ * statuselement, uten roller, id-er eller kobling. Komponenten fyller inn
+ * resten. Statuselementet må skrives: det er innhold serveren sender.
+ */
+const BAR = `
+  <fs-suggestion>
+    <label>Kommune</label>
+    <div class="fs-suggestion__field">
+      <input class="fs-input" name="kommune">
+      <ul class="fs-suggestion__list">
+        ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
+      </ul>
+      <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+      <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
+    </div>
+  </fs-suggestion>`
+
+describe("fs-suggestion kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  function deler() {
+    return {
+      felt: document.querySelector("fs-suggestion") as FsSuggestion,
+      label: document.querySelector("label") as HTMLLabelElement,
+      input: document.querySelector("input") as HTMLInputElement,
+      liste: document.querySelector("ul") as HTMLElement,
+      valg: [...document.querySelectorAll<HTMLElement>("li")],
+    }
+  }
+
+  it("setter roller, id-er og kobling, og holder lista lukket", async () => {
+    monter(BAR)
+    await tegn()
+    const { felt, label, input, liste, valg } = deler()
+
+    expect(input.getAttribute("role")).toBe("combobox")
+    expect(input.getAttribute("autocomplete")).toBe("off")
+    expect(input.getAttribute("aria-autocomplete")).toBe("list")
+    expect(input.id).not.toBe("")
+    expect(label.htmlFor).toBe(input.id)
+    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(liste.getAttribute("role")).toBe("listbox")
+    expect(liste.id).not.toBe("")
+    expect(input.getAttribute("aria-controls")).toBe(liste.id)
+    expect(input.getAttribute("aria-expanded")).toBe("false")
+    expect(liste.hidden).toBe(true)
+    for (const v of valg) {
+      expect(v.getAttribute("role")).toBe("option")
+      expect(v.id).not.toBe("")
+      expect(v.classList.contains("fs-suggestion__option")).toBe(true)
+    }
+
+    skriv(felt, "b")
+    await ventPaTegning()
+    expect(liste.hidden).toBe(false)
+    expect(valg.filter((v) => !v.hidden).map((v) => v.textContent)).toEqual([
+      "Bergen",
+      "Bodø",
+    ])
+    expect(document.querySelector("[role='status']")?.textContent).toBe(
+      "2 treff",
+    )
+
+    await forventIngenTilgjengelighetsbrudd()
+  })
+
+  it("lar det serveren skrev stå", async () => {
+    monter(
+      BAR.replace(
+        '<input class="fs-input" name="kommune">',
+        '<input class="fs-input" name="kommune" id="egen" aria-expanded="true">',
+      ).replace(
+        '<ul class="fs-suggestion__list">',
+        '<ul class="fs-suggestion__list" id="egen-liste">',
+      ),
+    )
+    await tegn()
+    const { label, input, liste } = deler()
+
+    expect(input.id).toBe("egen")
+    expect(label.htmlFor).toBe("egen")
+    expect(liste.id).toBe("egen-liste")
+    expect(input.getAttribute("aria-controls")).toBe("egen-liste")
+    // Serveren sa at lista er åpen, og da står den åpen.
+    expect(input.getAttribute("aria-expanded")).toBe("true")
+    expect(liste.hidden).toBe(false)
+  })
+
+  it("setter koblingen tilbake med de samme id-ene etter en patch", async () => {
+    monter(BAR)
+    await tegn()
+    const { label, input, liste, valg } = deler()
+    const ider = [input.id, liste.id, valg[0].id]
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    for (const navn of [
+      "role",
+      "id",
+      "aria-controls",
+      "aria-expanded",
+      "autocomplete",
+      "aria-autocomplete",
+    ]) {
+      input.removeAttribute(navn)
+    }
+    label.removeAttribute("for")
+    for (const navn of ["role", "id", "hidden"]) liste.removeAttribute(navn)
+    for (const navn of ["role", "id", "class"]) valg[0].removeAttribute(navn)
+    await ventPaTegning()
+
+    expect([input.id, liste.id, valg[0].id]).toEqual(ider)
+    expect(label.htmlFor).toBe(ider[0])
+    expect(input.getAttribute("aria-controls")).toBe(ider[1])
+    expect(valg[0].getAttribute("role")).toBe("option")
+    expect(liste.hidden).toBe(true)
+  })
+
+  it("skriver ingenting på markup fra fs.suggestion()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <fs-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <ul ${attr(FORSLAG.list)}>
+            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          </ul>
+          <p ${attr(FORSLAG.empty)} hidden>Ingen treff</p>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+        <p class="fs-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
+      </fs-suggestion>`
+    const vert = omslag.querySelector("fs-suggestion") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await tegn()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
+  })
+})

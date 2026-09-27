@@ -50,45 +50,44 @@
   "fs-popover": {
     "prefix": "fs-popover",
     "body": [
+      "<!-- `popover`, id-en og `aria-controls` setter komponenten. -->",
       "<fs-popover id=\"meny\" placement=\"bottom-end\">",
-      "  <button class=\"fs-button\" data-variant=\"secondary\"",
-      "          aria-expanded=\"false\" aria-controls=\"handlinger\">Handlinger</button>",
+      "  <button class=\"fs-button\" data-variant=\"secondary\">Handlinger</button>",
       "",
-      "  <ul class=\"fs-popover\" id=\"handlinger\" popover=\"manual\">",
+      "  <ul class=\"fs-popover\">",
       "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Arkiver saken</button></li>",
       "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Last ned som PDF</button></li>",
       "  </ul>",
       "</fs-popover>"
     ],
-    "description": "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id."
+    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten."
   },
   "fs-suggestion": {
     "prefix": "fs-suggestion",
     "body": [
+      "<!-- Rollene, id-ene og koblingen setter komponenten. Statuselementet",
+      "     skriver du: det er der antall treff leses opp. -->",
       "<fs-suggestion id=\"kommunesok\">",
-      "  <label class=\"fs-label\" for=\"kommune\">Kommune</label>",
+      "  <label class=\"fs-label\">Kommune</label>",
       "  <div class=\"fs-suggestion__field\">",
-      "    <input class=\"fs-input\" id=\"kommune\" name=\"kommune\" type=\"text\" role=\"combobox\"",
-      "           autocomplete=\"off\" aria-expanded=\"false\" aria-controls=\"kommune-list\"",
-      "           aria-autocomplete=\"list\">",
-      "    <ul class=\"fs-suggestion__list\" id=\"kommune-list\" role=\"listbox\" hidden>",
-      "      <li class=\"fs-suggestion__option\" id=\"kommune-option-0\" role=\"option\">Bergen</li>",
-      "      <li class=\"fs-suggestion__option\" id=\"kommune-option-1\" role=\"option\">Bodø</li>",
+      "    <input class=\"fs-input\" name=\"kommune\" type=\"text\">",
+      "    <ul class=\"fs-suggestion__list\">",
+      "      <li>Bergen</li>",
+      "      <li>Bodø</li>",
       "    </ul>",
       "    <p class=\"fs-suggestion__empty\" hidden>Ingen treff</p>",
-      "    <span class=\"fs-sr-only\" id=\"kommune-status\" role=\"status\" aria-live=\"polite\"",
-      "          data-ignore-morph></span>",
+      "    <span class=\"fs-sr-only\" role=\"status\" aria-live=\"polite\" data-ignore-morph></span>",
       "  </div>",
       "</fs-suggestion>"
     ],
-    "description": "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+    "description": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
   },
   "fs-dialog": {
     "prefix": "fs-dialog",
     "body": [
       "<fs-dialog open>",
-      "  <dialog class=\"fs-dialog\" aria-labelledby=\"kvittering-tittel\" open>",
-      "    <h2 class=\"fs-dialog__title\" id=\"kvittering-tittel\">Vedtaket er registrert</h2>",
+      "  <dialog class=\"fs-dialog\" open>",
+      "    <h2>Vedtaket er registrert</h2>",
       "    <div class=\"fs-dialog__body\">",
       "      <p>Saken er ferdigbehandlet og sendt til arkiv.</p>",
       "    </div>",
@@ -98,7 +97,7 @@
       "  </dialog>",
       "</fs-dialog>"
     ],
-    "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen."
+    "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler."
   },
   "fs-toast": {
     "prefix": "fs-toast",
