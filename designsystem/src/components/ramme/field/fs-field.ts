@@ -118,8 +118,8 @@ export class FsField extends HostElement {
    * Id-ene hjelpeteksten og feilmeldingen sist hadde, enten de kom fra
    * markupen eller herfra, så en patch som river dem bort får den samme
    * tilbake og ikke en ny. `managedIds` er alle id-er komponenten noen gang
-   * har forvaltet, så de kan skilles fra dem serveren selv la i
-   * `aria-describedby`.
+   * har forvaltet. Sammen med om id-en fortsatt peker på et element skiller
+   * det dem fra id-ene serveren selv la i `aria-describedby`.
    */
   private lastHelpId?: string
   private lastErrorId?: string
@@ -441,18 +441,16 @@ export class FsField extends HostElement {
     /*
      * Id-ene serveren selv la i `aria-describedby`, utenom dem komponenten
      * forvalter. `fs.field({ describedBy })` skriver dem rett på kontrollen,
-     * og de skal med videre. Hjelpetekstens og feilmeldingens id-er strykes
-     * her og legges til igjen etter dagens tilstand, ellers ble
-     * feilmeldingens id stående etter at feilen var borte.
-     */
-    /*
-     * Id-ene komponenten forvalter strykes fra serverens ord og legges til
-     * igjen etter dagens tilstand: dagens hjelpetekst og feilmelding, og en
-     * id komponenten har forvaltet før som ikke lenger peker på noe. Det
-     * siste er for et skript som fjerner hjelpeteksten uten å røre
-     * kontrollen. Eierskapet avgjøres av DOM-en og ikke av historikken
-     * alene: peker id-en fortsatt på et element, som når serveren flytter
-     * hjelpeteksten ut av feltet og beholder id-en, er den serverens.
+     * og de skal med videre. De forvaltede strykes her og legges til igjen
+     * etter dagens tilstand, ellers ble feilmeldingens id stående etter at
+     * feilen var borte.
+     *
+     * Forvaltet er dagens hjelpetekst og feilmelding, og en id komponenten
+     * har forvaltet før som ikke lenger peker på noe. Det siste er for et
+     * skript som fjerner hjelpeteksten uten å røre kontrollen. Eierskapet
+     * avgjøres av DOM-en og ikke av historikken alene: peker id-en fortsatt
+     * på et element, som når serveren flytter hjelpeteksten ut av feltet og
+     * beholder id-en, er den serverens.
      */
     const root = this.getRootNode() as Document | ShadowRoot
     const managedNow = (id: string) =>

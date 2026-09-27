@@ -825,10 +825,13 @@ describe("fs-field eier bare det den selv skrev", () => {
     `
     await Promise.resolve()
 
+    const felt = document.querySelector("fs-field") as FsField
     const hjelp = document.querySelector(".fs-help-text") as HTMLElement
-    document.getElementById("ramme")?.append(hjelp)
+    const ramme = document.getElementById("ramme") as HTMLElement
+    ramme.append(hjelp)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
+    expect(felt.contains(hjelp)).toBe(false)
     const input = document.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-describedby")).toBe("epost-help")
   })
