@@ -677,8 +677,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
        * treffer ikke, og en import uten kall treffer heller ikke.
        */
       const samlet = /\bdefineFs\s*\(/.test(kode)
-      for (const tagg of verter) {
-        if (samlet) break
+      for (const tagg of samlet ? [] : verter) {
         const funksjon = `defineFs${tagg
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`

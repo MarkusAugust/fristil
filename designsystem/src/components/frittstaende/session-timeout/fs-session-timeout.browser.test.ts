@@ -394,7 +394,11 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     await løfte
     expect(forlenget).toHaveLength(1)
 
+    // `reset()` sender ingenting, så kallet må ses på metoden selv.
+    const nullstilt = vi.spyOn(FsSessionTimeout.prototype, "reset")
     await resetSession(element)
+    expect(nullstilt).toHaveBeenCalledTimes(1)
     expect(forlenget).toHaveLength(1)
+    nullstilt.mockRestore()
   })
 })

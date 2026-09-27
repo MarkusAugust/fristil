@@ -53,6 +53,16 @@ describe("whenUpgraded()", () => {
     )
   })
 
+  it("avviser et element som ikke kan være en komponent, uten å advare", async () => {
+    vi.useFakeTimers()
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    await expect(whenUpgraded(document.createElement("div"))).rejects.toThrow()
+    vi.advanceTimersByTime(3000)
+
+    expect(advarsel).not.toHaveBeenCalled()
+  })
+
   it("tier når registreringen kommer før fristen", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})

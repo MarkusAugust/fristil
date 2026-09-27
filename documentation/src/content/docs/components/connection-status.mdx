@@ -84,9 +84,9 @@ defineFsConnectionStatus()
       try {
         const svar = await fetch("/api/lagre", { method: "POST", body })
         if (!svar.ok) throw new Error(svar.statusText)
-        reportSuccess(samband)
+        await reportSuccess(samband)
       } catch {
-        reportFailure(samband)
+        await reportFailure(samband)
       }
     }
     ```

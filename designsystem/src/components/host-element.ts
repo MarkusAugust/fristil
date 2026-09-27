@@ -266,8 +266,14 @@ export async function whenUpgraded<T extends HTMLElement>(
         element,
       )
     }, UPGRADE_WARNING_MS)
-    await customElements.whenDefined(tag)
-    clearTimeout(timer)
+    // `finally`: `whenDefined` avviser et navn uten bindestrek, og uten
+    // opprydning ville timeren advart om «ikke registrert» tre sekunder
+    // etter at kallet alt hadde feilet med den riktige feilen.
+    try {
+      await customElements.whenDefined(tag)
+    } finally {
+      clearTimeout(timer)
+    }
   }
   customElements.upgrade(element)
   return element as T
