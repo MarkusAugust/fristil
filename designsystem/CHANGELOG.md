@@ -23,6 +23,14 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`idEllerReserve` heter `idOrFallback`.** Hjelperen i `@fristil/designsystem/shared`
+  var den siste eksporterte identifikatoren på norsk, og identifikatorer i
+  pakken skal være engelske. Ingen alias: pakken har ingen konsumenter ennå,
+  og en brytende endring gjøres én gang. Parameteren `oppgittId` i
+  byggefunksjonene heter `givenId`; den er intern.
+
 ## 0.16.0 (2026-09-27)
 
 ### Lagt til

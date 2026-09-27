@@ -47,15 +47,15 @@ export const isRequiredMarker = createGuard(requiredMarkers)
  * en app som rendrer en liste med felt ville ellers sagt det samme per felt og
  * per rendring.
  */
-const sagt = new Set<string>()
+const said = new Set<string>()
 
-function advarEnGang(melding: string): void {
-  if (typeof console === "undefined" || sagt.has(melding)) return
-  sagt.add(melding)
-  console.warn(melding)
+function warnOnce(message: string): void {
+  if (typeof console === "undefined" || said.has(message)) return
+  said.add(message)
+  console.warn(message)
 }
 
-let idTeller = 0
+let idCounter = 0
 
 /**
  * Lager en id som er unik innenfor dokumentet.
@@ -65,8 +65,8 @@ let idTeller = 0
  * koblingen brutt til rammeverket har rettet den opp.
  */
 export function createFieldId(): string {
-  idTeller += 1
-  return `fs-field-${idTeller}-${Math.random().toString(36).slice(2, 8)}`
+  idCounter += 1
+  return `fs-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**
@@ -84,11 +84,11 @@ export function createFieldId(): string {
  * Navnet på byggeren står i meldingen. Uten det sa forslagsfeltet «fs.field()»
  * og sendte utvikleren til feil sted.
  */
-export function idEllerReserve(bygger: string, id: string | undefined): string {
+export function idOrFallback(builder: string, id: string | undefined): string {
   if (typeof id === "string" && id.trim() !== "") return id
 
-  advarEnGang(
-    `${bygger}: ingen id oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
+  warnOnce(
+    `${builder}: ingen id oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
       "da to ulike, og rendres markupen både på en server og i nettleseren, " +
       "peker koblingen på noe som ikke finnes. Oppgi id, i React fra useId().",
   )

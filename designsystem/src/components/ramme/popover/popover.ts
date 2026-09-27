@@ -1,4 +1,4 @@
-import { attributes, idEllerReserve } from "../../css/shared.js"
+import { attributes, idOrFallback } from "../../css/shared.js"
 
 export const POPOVER_CLASS = "fs-popover" as const
 
@@ -58,12 +58,12 @@ export type PopoverAttributes = {
  */
 export const popover = Object.assign(
   ({
-    id: oppgittId,
+    id: givenId,
     open = false,
     placement = "bottom-start",
   }: PopoverOptions): PopoverAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const id = idEllerReserve("fs.popover()", oppgittId)
+    const id = idOrFallback("fs.popover()", givenId)
 
     return {
       host: attributes({

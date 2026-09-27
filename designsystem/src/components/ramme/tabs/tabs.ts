@@ -1,4 +1,4 @@
-import { attributes, idEllerReserve } from "../../css/shared.js"
+import { attributes, idOrFallback } from "../../css/shared.js"
 
 export const TABS_LIST_CLASS = "fs-tabs__list" as const
 export const TABS_PANEL_CLASS = "fs-tabs__panel" as const
@@ -54,13 +54,13 @@ export type TabsAttributes = {
  * ```
  */
 export const tabs = ({
-  id: oppgittId,
+  id: givenId,
   count,
   selected = 0,
   label,
 }: TabsOptions): TabsAttributes => {
   // Reserven gjelder bare den som ikke har en typesjekk.
-  const id = idEllerReserve("fs.tabs()", oppgittId)
+  const id = idOrFallback("fs.tabs()", givenId)
 
   // Er `selected` utenfor rekkevidde, rettes den her. Ellers ville markupen
   // sagt noe annet enn det brukeren ser.

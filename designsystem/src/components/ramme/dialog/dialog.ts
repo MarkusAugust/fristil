@@ -1,4 +1,4 @@
-import { attributes, idEllerReserve } from "../../css/shared.js"
+import { attributes, idOrFallback } from "../../css/shared.js"
 
 export const DIALOG_CLASS = "fs-dialog" as const
 export const DIALOG_TITLE_CLASS = "fs-dialog__title" as const
@@ -76,9 +76,9 @@ export type DialogAttributes = {
  * ```
  */
 export const dialog = Object.assign(
-  ({ titleId: oppgittId, open = false }: DialogOptions): DialogAttributes => {
+  ({ titleId: givenId, open = false }: DialogOptions): DialogAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const titleId = idEllerReserve("fs.dialog()", oppgittId)
+    const titleId = idOrFallback("fs.dialog()", givenId)
 
     return {
       host: attributes({
