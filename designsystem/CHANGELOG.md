@@ -25,6 +25,14 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`@fristil/designsystem/fristil.css`: alle stilarkene i én fil.** For den
+  som lenker fra CDN eller `node_modules` uten bunter. De enkelte stilarkene
+  henter delene sine med `@import`, som nettleseren først ser når fila er
+  lastet, og på mobilnett sto feltene uten ramme til den andre runden kom;
+  spilldemoen forhåndslastet fem filer for hånd for å komme rundt det. Fila
+  bygges av CSS-oppføringene i `exports`, med `tokens.css` først, uten
+  `@import` og uten kommentarer. Buntere bruker de enkelte stilarkene som
+  før. Tailwind-temaet er ikke med, siden det ikke er et stilark for en side.
 - **Dialogen kan ha en farget topp.** `fs.dialog({ color })` gir `data-color`
   på dialogen og en ny `header`-del som pakker overskriften, med en valgfri
   `subtitle` under. Fargene er varslerens, `info`, `success`, `warning` og

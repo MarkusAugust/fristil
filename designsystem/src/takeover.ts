@@ -70,8 +70,10 @@ export type TakeoverPlan = {
 /**
  * Bygger oppslaget fra en fil i pakken til inngangspunktet som peker på den.
  *
- * `exports` peker på `dist` for JavaScript og på `src` for CSS. Begge føres
- * tilbake til kilden, siden det er kilden som kopieres.
+ * `exports` peker på `dist` for JavaScript og på `src` for komponentenes
+ * CSS. Begge føres tilbake til kilden, siden det er kilden som kopieres.
+ * `fristil.css`, den samlede fila, ligger i `dist` og importeres aldri fra en
+ * komponent, så oppslaget den gir treffer ingenting.
  */
 export function buildEntryPoints(
   name: string,
