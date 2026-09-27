@@ -386,7 +386,7 @@ export class FsField extends HostElement {
     )
 
     /*
-     * Id-ene komponenten selv laget, husket mellom rundene.
+     * Id-ene hjelpeteksten og feilmeldingen sist hadde, husket mellom rundene.
      *
      * Markupen er kilden så lenge den har dem. River en morfing dem bort,
      * ville en ny id blitt laget for hver eneste patch, og en skjermleser som
@@ -445,12 +445,23 @@ export class FsField extends HostElement {
      * her og legges til igjen etter dagens tilstand, ellers ble
      * feilmeldingens id stående etter at feilen var borte.
      */
-    // Alle id-er komponenten noen gang har forvaltet, ikke bare dagens:
-    // fjerner et skript hjelpeteksten uten å røre kontrollen, sto id-en
-    // ellers igjen som «serverens».
+    /*
+     * Id-ene komponenten forvalter strykes fra serverens ord og legges til
+     * igjen etter dagens tilstand: dagens hjelpetekst og feilmelding, og en
+     * id komponenten har forvaltet før som ikke lenger peker på noe. Det
+     * siste er for et skript som fjerner hjelpeteksten uten å røre
+     * kontrollen. Eierskapet avgjøres av DOM-en og ikke av historikken
+     * alene: peker id-en fortsatt på et element, som når serveren flytter
+     * hjelpeteksten ut av feltet og beholder id-en, er den serverens.
+     */
+    const root = this.getRootNode() as Document | ShadowRoot
+    const managedNow = (id: string) =>
+      id === help?.id ||
+      id === error?.id ||
+      (this.managedIds.has(id) && !root.getElementById?.(id))
     const serverExtras = (server.describedBy ?? "")
       .split(/\s+/)
-      .filter((id) => id && !this.managedIds.has(id))
+      .filter((id) => id && !managedNow(id))
 
     const computed = computeFieldAttributes({
       id: this.resolveControlId(control, label),

@@ -798,6 +798,39 @@ describe("fs-field eier bare det den selv skrev", () => {
     const error = document.querySelector(".fs-error-text") as HTMLElement
     expect(input.getAttribute("data-state")).toBeNull()
     expect(error.hidden).toBe(true)
+
+    // Verten slår på og av igjen. Serverens tomme streng kommer tilbake.
+    const felt = document.querySelector("fs-field") as FsField
+    felt.invalid = true
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    felt.invalid = false
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("")
+    expect(error.hidden).toBe(true)
+  })
+
+  it("lar en id stå når serveren flytter hjelpeteksten ut og beholder den", async () => {
+    // Id-en har vært komponentens å forvalte. Peker den fortsatt på et
+    // element, er den serverens: eierskapet avgjøres av DOM-en, ikke av
+    // hva komponenten har vært borti før.
+    document.body.innerHTML = `
+      <div id="ramme">
+        <fs-field>
+          <label for="epost">E-post</label>
+          <input id="epost" class="fs-input" aria-describedby="epost-help" />
+          <p class="fs-help-text" id="epost-help">Hjelp</p>
+        </fs-field>
+      </div>
+    `
+    await Promise.resolve()
+
+    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
+    document.getElementById("ramme")?.append(hjelp)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe("epost-help")
   })
 
   it("regner ikke en fjernet hjelpetekst som serverens ekstra id", async () => {
