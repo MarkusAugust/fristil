@@ -16,6 +16,14 @@ function uniqueId(prefix: string): string {
 
 const CONTROL_SELECTOR = "input:not([type='hidden']), textarea, select"
 
+type Marker = "none" | "symbol" | "text"
+
+function readMarker(value: string | null | undefined): Marker | undefined {
+  return value === "none" || value === "symbol" || value === "text"
+    ? value
+    : undefined
+}
+
 /**
  * Attributtene `<fs-field>` regner ut selv, og setter tilbake om de blir
  * borte.
@@ -39,6 +47,46 @@ const DERIVED_ATTRIBUTES = [
 ]
 
 /**
+ * Det komponenten sist skrev på en kontroll, og hva serveren sist sa.
+ *
+ * Tre attributter både leses fra kontrollen og skrives dit igjen:
+ * `aria-invalid`, `aria-describedby` og `disabled`. De leses fordi serveren
+ * kan ha skrevet feltet med `fs.field()`, og da står svaret allerede der. Men
+ * en naiv avlesning er komponentens eget ekko fra forrige runde. For
+ * `aria-invalid` gjorde det at `felt.invalid = false` fjernet flagget på
+ * verten mens den røde rammen ble stående for godt. For `aria-describedby`
+ * krympet lista aldri: feilmeldingens id sto igjen etter at feilen var
+ * borte. For `disabled` lot feltet seg ikke slå på igjen fra verten.
+ *
+ * Løsningen er ikke å huske hva verten sa sist. Det ble prøvd, og gjorde
+ * komponenten avhengig av historien sin: den samme markupen ga to ulike svar
+ * alt etter om verten hadde hatt `invalid` innom en gang.
+ *
+ * I stedet noteres verdien komponenten skrev, og på hvilken kontroll. Står
+ * det noe annet der neste gang, har noen andre rørt attributtet, og det er
+ * serverens ord. Avlesningen er dermed alltid utledet av en endring som
+ * faktisk har skjedd, og det samme dokumentet gir alltid det samme svaret.
+ */
+type ControlMemory = {
+  written: ControlWord
+  server: ControlWord
+}
+
+type ControlWord = {
+  invalid: string | null
+  describedBy: string | null
+  disabled: boolean
+}
+
+function readControlWord(control: Element): ControlWord {
+  return {
+    invalid: control.getAttribute("aria-invalid"),
+    describedBy: control.getAttribute("aria-describedby"),
+    disabled: control.hasAttribute("disabled"),
+  }
+}
+
+/**
  * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
  *
  * Komponenten er for markup som blir til uten JavaScript: en Go-mal, en
@@ -51,10 +99,9 @@ const DERIVED_ATTRIBUTES = [
  * det ved hver patch.
  *
  * Malen trenger ingenting ekstra. River en morfing bort koblingen, ser
- * komponenten det og setter den tilbake. Det samme gjør de andre
- * komponentene med tilstanden brukeren har laget, og `data-preserve-attr`
- * finnes ikke lenger i pakken. Skal serveren eie tilstanden, sier den det med
- * `server-controlled` på verten.
+ * komponenten det og setter den tilbake. Feltet har ingen tilstand brukeren
+ * lager selv, så det finnes heller ingenting `server-controlled` kunne slått
+ * av her: alt komponenten skriver er utledet av markupen serveren sendte.
  */
 export class FsField extends HostElement {
   static observedAttributes = [
@@ -67,9 +114,16 @@ export class FsField extends HostElement {
   ] as const
 
   private observer?: MutationObserver
-  /** Id-ene komponenten laget selv, så en patch ikke gir nye hver gang. */
-  private generatedHelpId?: string
-  private generatedErrorId?: string
+  /**
+   * Id-ene hjelpeteksten og feilmeldingen sist hadde, enten de kom fra
+   * markupen eller herfra, så en patch som river dem bort får den samme
+   * tilbake og ikke en ny. `managedIds` er alle id-er komponenten noen gang
+   * har forvaltet. Sammen med om id-en fortsatt peker på et element skiller
+   * det dem fra id-ene serveren selv la i `aria-describedby`.
+   */
+  private lastHelpId?: string
+  private lastErrorId?: string
+  private readonly managedIds = new Set<string>()
   private generatedControlId?: string
   /**
    * Id-en kontrollen hadde sist, enten den kom fra markupen eller herfra.
@@ -83,29 +137,17 @@ export class FsField extends HostElement {
    */
   private lastId?: string
   /**
-   * Hva noen andre enn komponenten sist sa om `aria-invalid`.
+   * Hva komponenten skrev på hver kontroll, nøklet på selve kontrollen.
    *
-   * `sync()` må lese `aria-invalid` fra kontrollen, fordi serveren kan ha
-   * skrevet feltet med `fs.field()` og da står svaret allerede der. Men
-   * komponenten skriver det samme attributtet selv, så en naiv avlesning er
-   * komponentens eget ekko fra forrige runde, og `felt.invalid = false`
-   * fjernet flagget på verten mens den røde rammen og feilmeldingen ble
-   * stående for godt.
-   *
-   * Løsningen er ikke å huske hva verten sa sist. Det ble prøvd, og gjorde
-   * komponenten avhengig av historien sin: den samme markupen ga to ulike
-   * svar alt etter om verten hadde hatt `invalid` innom en gang. Da kunne
-   * den stryke serverens eget `aria-invalid` uten at noe sa fra.
-   *
-   * I stedet noteres verdien komponenten skrev, og hvilken kontroll den ble
-   * skrevet på. Står det noe annet der neste gang, har noen andre rørt
-   * attributtet, og det er serverens ord. Avlesningen er dermed alltid
-   * utledet av en endring som faktisk har skjedd, aldri av en gjetning, og
-   * det samme dokumentet gir alltid det samme svaret.
+   * Et `WeakMap` og ikke et felt med «forrige kontroll». Minnet skal
+   * overleve at verten kobles fra og til igjen, som når React flytter et
+   * felt, og at kontrollen forsvinner og kommer tilbake i en patch. Et felt
+   * som ble nullstilt i `disconnectedCallback` gjorde at komponenten leste
+   * sitt eget `aria-invalid="true"` som serverens ord etter en flytting, og
+   * feltet kunne aldri bli gyldig igjen. Samtidig holder et `WeakMap` ingen
+   * løsrevet node i live: er kontrollen borte for godt, er minnet det også.
    */
-  private serverInvalid = false
-  private writtenInvalid: string | null = null
-  private lastControl?: Element
+  private readonly memory = new WeakMap<Element, ControlMemory>()
 
   /**
    * Egenskapene speiler attributtene.
@@ -138,13 +180,30 @@ export class FsField extends HostElement {
     this.toggleAttribute("optional", value)
   }
 
-  get requiredMarker(): "none" | "symbol" | "text" {
-    const value = this.getAttribute("required-marker")
-    return value === "symbol" || value === "text" ? value : "none"
+  /**
+   * Markeringen ledeteksten faktisk har.
+   *
+   * Leses fra markupen: først attributtet på verten, så `data-required` på
+   * ledeteksten, som serveren skriver med `fs.field()`. En getter som bare så
+   * på sitt eget attributt svarte «none» mens ledeteksten viste en stjerne.
+   *
+   * `none` er en egen verdi og ikke fraværet av en: står den på verten,
+   * overstyrer den det serveren skrev på ledeteksten. Setteren skriver den
+   * derfor bokstavelig. En setter som oversatte `none` til «fjern
+   * attributtet» ga `felt.requiredMarker = "none"` en annen betydning enn
+   * `required-marker="none"`, og markeringen serveren skrev kom tilbake.
+   */
+  get requiredMarker(): Marker {
+    const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+    return (
+      readMarker(this.getAttribute("required-marker")) ??
+      readMarker(this.resolveLabel(control)?.getAttribute("data-required")) ??
+      "none"
+    )
   }
 
-  set requiredMarker(value: "none" | "symbol" | "text") {
-    setAttr(this, "required-marker", value === "none" ? null : value)
+  set requiredMarker(value: Marker) {
+    setAttr(this, "required-marker", value)
   }
 
   get controlId(): string | undefined {
@@ -194,7 +253,6 @@ export class FsField extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
-    this.lastControl = undefined
   }
 
   attributeChangedCallback(): void {
@@ -250,6 +308,34 @@ export class FsField extends HostElement {
     )
   }
 
+  /**
+   * Serverens ord om kontrollen, utledet av hva som står der nå mot hva
+   * komponenten selv skrev sist.
+   *
+   * En kontroll komponenten aldri har skrevet på, sier bare serverens ord.
+   * Ellers er hvert attributt serverens hvis det er et annet enn det
+   * komponenten skrev, og uendret hvis det er det samme.
+   */
+  private serverWord(control: Element, now: ControlWord): ControlWord {
+    const known = this.memory.get(control)
+    if (!known) return now
+
+    return {
+      invalid:
+        now.invalid !== known.written.invalid
+          ? now.invalid
+          : known.server.invalid,
+      describedBy:
+        now.describedBy !== known.written.describedBy
+          ? now.describedBy
+          : known.server.describedBy,
+      disabled:
+        now.disabled !== known.written.disabled
+          ? now.disabled
+          : known.server.disabled,
+    }
+  }
+
   private sync(): void {
     const control = this.querySelector<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -272,10 +358,6 @@ export class FsField extends HostElement {
         () =>
           this.childElementCount > 0 && !this.querySelector(CONTROL_SELECTOR),
       )
-      // Ingen grunn til å holde på den forrige kontrollen. Den er borte, og
-      // en referanse hit ville holdt en løsrevet node i live så lenge verten
-      // lever.
-      this.lastControl = undefined
       return
     }
 
@@ -304,7 +386,7 @@ export class FsField extends HostElement {
     )
 
     /*
-     * Id-ene komponenten selv laget, husket mellom rundene.
+     * Id-ene hjelpeteksten og feilmeldingen sist hadde, husket mellom rundene.
      *
      * Markupen er kilden så lenge den har dem. River en morfing dem bort,
      * ville en ny id blitt laget for hver eneste patch, og en skjermleser som
@@ -313,18 +395,20 @@ export class FsField extends HostElement {
      * markupen, er det den som gjelder.
      */
     if (help) {
-      if (help.id) this.generatedHelpId = help.id
+      if (help.id) this.lastHelpId = help.id
       else {
-        this.generatedHelpId ??= uniqueId("fs-field-help")
-        setAttr(help, "id", this.generatedHelpId)
+        this.lastHelpId ??= uniqueId("fs-field-help")
+        setAttr(help, "id", this.lastHelpId)
       }
+      this.managedIds.add(help.id)
     }
     if (error) {
-      if (error.id) this.generatedErrorId = error.id
+      if (error.id) this.lastErrorId = error.id
       else {
-        this.generatedErrorId ??= uniqueId("fs-field-error")
-        setAttr(error, "id", this.generatedErrorId)
+        this.lastErrorId ??= uniqueId("fs-field-error")
+        setAttr(error, "id", this.lastErrorId)
       }
+      this.managedIds.add(error.id)
     }
 
     // Markeringene leses også fra markupen. Skrev serveren dem med
@@ -333,24 +417,49 @@ export class FsField extends HostElement {
     // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
     // tok det bort, og så mente React at HTML-en ikke stemte.
     const marker =
-      this.getAttribute("required-marker") ??
-      label?.getAttribute("data-required") ??
-      null
-    const disabled =
-      this.hasAttribute("disabled") || control.hasAttribute("disabled")
+      readMarker(this.getAttribute("required-marker")) ??
+      readMarker(label?.getAttribute("data-required"))
 
     // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
     // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
-    // igjen. Da kranglet de to halvdelene av API-et med hverandre.
-    const nowInvalid = control.getAttribute("aria-invalid")
-    if (control !== this.lastControl || nowInvalid !== this.writtenInvalid) {
-      // Noen andre enn komponenten har rørt attributtet siden sist, eller
-      // dette er en kontroll vi aldri har skrevet på. Da er det serverens ord.
-      this.serverInvalid = nowInvalid === "true"
-    }
+    // igjen. Da kranglet de to halvdelene av API-et med hverandre. Se
+    // `ControlMemory` for hvordan serverens ord skilles fra komponentens eget.
+    const server = this.serverWord(control, readControlWord(control))
 
-    const invalid = this.hasAttribute("invalid") || this.serverInvalid
+    // `aria-invalid` har fire lovlige verdier, og både `grammar` og
+    // `spelling` betyr ugyldig. Fravær, `false` og tom streng betyr gyldig;
+    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
+    // det, så komponenten kan ikke vise rød ramme på den.
+    const serverInvalid =
+      server.invalid !== null &&
+      server.invalid !== "false" &&
+      server.invalid !== ""
+    const invalid = this.hasAttribute("invalid") || serverInvalid
+    const disabled = this.hasAttribute("disabled") || server.disabled
+
+    /*
+     * Id-ene serveren selv la i `aria-describedby`, utenom dem komponenten
+     * forvalter. `fs.field({ describedBy })` skriver dem rett på kontrollen,
+     * og de skal med videre. De forvaltede strykes her og legges til igjen
+     * etter dagens tilstand, ellers ble feilmeldingens id stående etter at
+     * feilen var borte.
+     *
+     * Forvaltet er dagens hjelpetekst og feilmelding, og en id komponenten
+     * har forvaltet før som ikke lenger peker på noe. Det siste er for et
+     * skript som fjerner hjelpeteksten uten å røre kontrollen. Eierskapet
+     * avgjøres av DOM-en og ikke av historikken alene: peker id-en fortsatt
+     * på et element, som når serveren flytter hjelpeteksten ut av feltet og
+     * beholder id-en, er den serverens.
+     */
+    const root = this.getRootNode() as Document | ShadowRoot
+    const managedNow = (id: string) =>
+      id === help?.id ||
+      id === error?.id ||
+      (this.managedIds.has(id) && !root.getElementById?.(id))
+    const serverExtras = (server.describedBy ?? "")
+      .split(/\s+/)
+      .filter((id) => id && !managedNow(id))
 
     const computed = computeFieldAttributes({
       id: this.resolveControlId(control, label),
@@ -364,10 +473,7 @@ export class FsField extends HostElement {
         label?.hasAttribute("data-optional") === true,
       invalid,
       disabled,
-      describedBy: [
-        control.getAttribute("aria-describedby") ?? "",
-        this.getAttribute("described-by") ?? "",
-      ].filter(Boolean),
+      describedBy: [...serverExtras, this.getAttribute("described-by") ?? ""],
     })
 
     setAttr(control, "id", computed.control.id)
@@ -389,25 +495,41 @@ export class FsField extends HostElement {
       setFlag(error, "hidden", Boolean(computed.error.hidden))
     }
 
+    // Serverens ord står ordrett når det er serveren som sier feltet er
+    // ugyldig, også `spelling` og `grammar`. Ellers skriver komponenten
+    // `true` når verten sier det, og lar et `false` serveren skrev stå:
+    // det er gyldig og vanlig i håndskrevet HTML, og ble strøket ved hver
+    // patch.
+    const ariaInvalid = serverInvalid
+      ? server.invalid
+      : invalid
+        ? "true"
+        : server.invalid
+
     setAttr(control, "aria-describedby", computed.control["aria-describedby"])
-    setAttr(control, "aria-invalid", computed.control["aria-invalid"])
-    this.writtenInvalid = computed.control["aria-invalid"] ?? null
-    this.lastControl = control
+    setAttr(control, "aria-invalid", ariaInvalid)
+    // `setFlag` og ikke `setAttr`: en mal kan ha skrevet
+    // `disabled="disabled"`, og den skal stå som den er. `setAttr` ville
+    // normalisert verdien til den tomme strengen, og siden `disabled` er
+    // blant attributtene komponenten observerer, ville serveren og
+    // komponenten skrevet hver sin verdi ved hver patch. Ingen `aria-disabled`
+    // ved siden av: et ekte `disabled` er alt synlig for hjelpemidlene, og
+    // `computeFieldAttributes` skriver det bare på ledeteksten.
+    setFlag(control, "disabled", disabled)
 
-    if (disabled) {
-      // `setFlag` og ikke `setAttr`: en mal kan ha skrevet
-      // `disabled="disabled"`, og den skal stå som den er. `setAttr` ville
-      // normalisert verdien til den tomme strengen, og siden `disabled` er
-      // blant attributtene komponenten observerer, ville serveren og
-      // komponenten skrevet hver sin verdi ved hver patch.
-      setFlag(control, "disabled", true)
-      setAttr(control, "aria-disabled", "true")
-    } else {
-      control.removeAttribute("disabled")
-      control.removeAttribute("aria-disabled")
-    }
+    this.memory.set(control, {
+      written: {
+        invalid: ariaInvalid,
+        describedBy: computed.control["aria-describedby"] ?? null,
+        disabled,
+      },
+      server,
+    })
 
-    // data-state settes bare når konsumenten ikke har satt den selv.
+    // `data-state` settes bare på systemets egne kontroller, og bare når
+    // konsumenten ikke har satt den selv. Den fjernes bare når den sier
+    // «invalid» og feltet ikke lenger er det: da er den komponentens egen
+    // fra forrige runde.
     const isSystemField =
       control.classList.contains("fs-input") ||
       control.classList.contains("fs-textarea") ||

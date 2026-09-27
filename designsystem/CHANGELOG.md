@@ -16,6 +16,34 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`<fs-field>` eier bare det den selv skrev.** Komponenten leser
+  `aria-invalid`, `aria-describedby` og `disabled` fra kontrollen, fordi
+  serveren kan ha skrevet feltet med `fs.field()`. Skillet mellom serverens
+  ord og komponentens eget ekko fantes bare for `aria-invalid`, og de to
+  andre hadde samme feil: `aria-describedby` pekte fortsatt på feilmeldingen
+  etter at feltet var gyldig, og på en hjelpetekst en patch hadde fjernet, og
+  `felt.disabled = false` slo ikke av et `disabled` komponenten selv hadde
+  satt. Minnet er nå nøklet på kontrollen og overlever at feltet flyttes,
+  slik React gjør ved en omstrukturering, og at kontrollen forsvinner og
+  kommer tilbake i en patch. Id-er serveren selv la i `aria-describedby` blir
+  med videre.
+- **Ingen `aria-disabled` på kontrollen.** Komponenten skrev det ved siden av
+  `disabled`, og strøk samtidig et `aria-disabled` konsumenten selv hadde
+  skrevet. `computeFieldAttributes` er kontrakten, og den skriver det bare på
+  ledeteksten; et ekte `disabled` er alt synlig for hjelpemidlene.
+- **Serverens `aria-invalid` står ordrett når det er serveren som sier feltet
+  er ugyldig.** `false` er gyldig og vanlig i håndskrevet HTML, og ble strøket
+  ved hver patch. `grammar` og `spelling` betyr ugyldig, men ble lest som
+  «ikke true» og strøket på samme måte. Tom streng leses som `false`, slik
+  ARIA sier.
+- **`requiredMarker` som egenskap betyr det samme som attributtet.** Setteren
+  skriver `"none"` bokstavelig, siden `required-marker="none"` overstyrer en
+  `data-required` serveren skrev på ledeteksten. Før fjernet setteren
+  attributtet, og markeringen kom tilbake fra ledeteksten. Getteren leser nå
+  markupen, ledeteksten medregnet, framfor bare sitt eget attributt.
+
 ## 0.15.0 (2026-09-26)
 
 - **`web-types.json` følger med pakken.** Det er JetBrains sitt format for

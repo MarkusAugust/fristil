@@ -507,3 +507,378 @@ describe("fs-field er et blokkelement", () => {
     expect(getComputedStyle(felt).display).toBe("block")
   })
 })
+
+/**
+ * Komponenten eier bare det den selv skrev.
+ *
+ * Tre attributter leses fra kontrollen og skrives dit igjen: `aria-invalid`,
+ * `aria-describedby` og `disabled`. For hvert av dem må komponenten vite hva
+ * den skrev sist, ellers leser den sitt eget ekko som serverens ord. Det var
+ * løst for `aria-invalid` alene, og de to andre hadde nøyaktig samme feil:
+ * `aria-describedby` krympet aldri, og `disabled` lot seg ikke slå av igjen.
+ */
+describe("fs-field eier bare det den selv skrev", () => {
+  beforeAll(() => {
+    defineFsField()
+  })
+
+  beforeEach(() => {
+    document.body.innerHTML = ""
+  })
+
+  it("tar feilmeldingen ut av aria-describedby når invalid slås av", async () => {
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-help-text" id="h">Hjelp</p>
+        <p class="fs-error-text" id="x">Feil</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe("h x")
+
+    const felt = document.querySelector("fs-field") as FsField
+    felt.invalid = false
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-describedby")).toBe("h")
+  })
+
+  it("tar hjelpeteksten ut av aria-describedby når en patch fjerner den", async () => {
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-help-text" id="h">Hjelp</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe("h")
+
+    document.querySelector(".fs-help-text")?.remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(input.getAttribute("aria-describedby")).toBeNull()
+  })
+
+  it("tar de ekstra id-ene ut igjen når described-by fjernes fra verten", async () => {
+    document.body.innerHTML = `
+      <p id="ekstra">Les vilkårene først.</p>
+      <fs-field described-by="ekstra">
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe("ekstra")
+
+    const felt = document.querySelector("fs-field") as FsField
+    felt.describedBy = undefined
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-describedby")).toBeNull()
+  })
+
+  it("beholder id-er serveren selv la i aria-describedby", async () => {
+    // `fs.field({ describedBy: ["vilkar"] })` skriver id-en rett på
+    // kontrollen. Den er serverens, og skal stå, også etter at komponenten
+    // har skrevet attributtet på nytt for å ta bort feilmeldingen.
+    document.body.innerHTML = `
+      <p id="vilkar">Vilkår</p>
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email"
+               aria-describedby="epost-help epost-error vilkar" />
+        <p class="fs-help-text" id="epost-help">Hjelp</p>
+        <p class="fs-error-text" id="epost-error">Feil</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe(
+      "epost-help epost-error vilkar",
+    )
+
+    const felt = document.querySelector("fs-field") as FsField
+    felt.invalid = false
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-describedby")).toBe("epost-help vilkar")
+  })
+
+  it("slår disabled av igjen når verten slår det av", async () => {
+    document.body.innerHTML = `
+      <fs-field disabled>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const label = document.querySelector("label") as HTMLLabelElement
+    expect(input.disabled).toBe(true)
+    expect(label.getAttribute("aria-disabled")).toBe("true")
+    // Et ekte `disabled` trenger ingen kopi, og `fs.field()` skriver ingen.
+    expect(input.hasAttribute("aria-disabled")).toBe(false)
+
+    const felt = document.querySelector("fs-field") as FsField
+    felt.disabled = false
+    await Promise.resolve()
+
+    expect(input.disabled).toBe(false)
+    expect(label.hasAttribute("aria-disabled")).toBe(false)
+  })
+
+  it("lar et disabled serveren skrev på kontrollen stå", async () => {
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" disabled="disabled" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const label = document.querySelector("label") as HTMLLabelElement
+    expect(input.getAttribute("disabled")).toBe("disabled")
+    expect(label.getAttribute("aria-disabled")).toBe("true")
+
+    // Verten har vært innom `disabled` og ut igjen. Serverens ord på
+    // kontrollen står fortsatt.
+    const felt = document.querySelector("fs-field") as FsField
+    felt.disabled = true
+    await Promise.resolve()
+    felt.disabled = false
+    await Promise.resolve()
+
+    expect(input.getAttribute("disabled")).toBe("disabled")
+  })
+
+  it("rører ikke et aria-disabled konsumenten selv skrev", async () => {
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-disabled="true" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-disabled")).toBe("true")
+  })
+
+  it("husker hva den skrev også etter å ha blitt flyttet", async () => {
+    /*
+     * React kaster og lager noder på nytt ved en omstrukturering, og flytter
+     * dem ved en `key`-endring. Glemte komponenten hva den hadde skrevet i det
+     * den ble koblet fra, leste den sitt eget `aria-invalid="true"` som
+     * serverens ord da den kom tilbake, og feltet kunne aldri bli gyldig.
+     */
+    document.body.innerHTML = `
+      <div id="a"></div>
+      <div id="b"></div>
+    `
+    const a = document.getElementById("a") as HTMLElement
+    const b = document.getElementById("b") as HTMLElement
+    a.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+        <p class="fs-error-text">Feil</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const felt = a.querySelector("fs-field") as FsField
+    const input = felt.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
+    b.append(felt)
+    await Promise.resolve()
+    felt.invalid = false
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBeNull()
+    expect(felt.querySelector(".fs-error-text")?.hasAttribute("hidden")).toBe(
+      true,
+    )
+  })
+
+  it("husker hva den skrev på en kontroll som forsvinner og kommer tilbake", async () => {
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const felt = document.querySelector("fs-field") as FsField
+    const input = felt.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
+    input.remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    felt.append(input)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    felt.invalid = false
+    await Promise.resolve()
+
+    expect(input.getAttribute("aria-invalid")).toBeNull()
+  })
+
+  it("lar serverens aria-invalid=false stå", async () => {
+    // Gyldig og vanlig i håndskrevet HTML, altså nettopp markupen komponenten
+    // finnes for. Den ble strøket, og hver patch som sendte den fikk den
+    // strøket igjen.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" type="email" aria-invalid="false" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-invalid")).toBe("false")
+
+    // Verten slår på og av igjen. Serverens «false» kommer tilbake.
+    const felt = document.querySelector("fs-field") as FsField
+    felt.invalid = true
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    felt.invalid = false
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("false")
+  })
+
+  it("lar serverens aria-invalid=spelling stå, og regner feltet som ugyldig", async () => {
+    // `grammar` og `spelling` er lovlige verdier og betyr ugyldig. De ble
+    // lest som «ikke true», og strøket.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="tekst">Tekst</label>
+        <input id="tekst" class="fs-input" aria-invalid="spelling" />
+        <p class="fs-error-text">Ordet finnes ikke.</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("spelling")
+    expect(input.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("leser aria-invalid med tom streng som gyldig", async () => {
+    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
+    // det. Komponenten regnet den som ugyldig, og viste rød ramme og
+    // feilmelding på et felt skjermleseren kalte gyldig.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" aria-invalid="" />
+        <p class="fs-error-text">Feil</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("data-state")).toBeNull()
+    expect(error.hidden).toBe(true)
+
+    // Verten slår på og av igjen. Serverens tomme streng kommer tilbake.
+    const felt = document.querySelector("fs-field") as FsField
+    felt.invalid = true
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    felt.invalid = false
+    await Promise.resolve()
+    expect(input.getAttribute("aria-invalid")).toBe("")
+    expect(error.hidden).toBe(true)
+  })
+
+  it("lar en id stå når serveren flytter hjelpeteksten ut og beholder den", async () => {
+    // Id-en har vært komponentens å forvalte. Peker den fortsatt på et
+    // element, er den serverens: eierskapet avgjøres av DOM-en, ikke av
+    // hva komponenten har vært borti før.
+    document.body.innerHTML = `
+      <div id="ramme">
+        <fs-field>
+          <label for="epost">E-post</label>
+          <input id="epost" class="fs-input" aria-describedby="epost-help" />
+          <p class="fs-help-text" id="epost-help">Hjelp</p>
+        </fs-field>
+      </div>
+    `
+    await Promise.resolve()
+
+    const felt = document.querySelector("fs-field") as FsField
+    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
+    const ramme = document.getElementById("ramme") as HTMLElement
+    ramme.append(hjelp)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(felt.contains(hjelp)).toBe(false)
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBe("epost-help")
+  })
+
+  it("regner ikke en fjernet hjelpetekst som serverens ekstra id", async () => {
+    // Serveren skrev `aria-describedby="epost-help"`. Et skript fjerner
+    // hjelpeteksten uten å røre kontrollen. Id-en var komponentens å
+    // forvalte, og skal ikke bli stående som om serveren la den til.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" aria-describedby="epost-help" />
+        <p class="fs-help-text" id="epost-help">Hjelp</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    document.querySelector(".fs-help-text")?.remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBeNull()
+  })
+
+  it("lar requiredMarker som egenskap bety det samme som attributtet", async () => {
+    // `required-marker="none"` på verten overstyrer en `data-required`
+    // serveren skrev på ledeteksten, så veien gjennom setteren må bety det
+    // samme. Setteren fjernet attributtet for `none`, og markeringen kom
+    // tilbake fra ledeteksten.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="navn" data-required="symbol">Navn</label>
+        <input id="navn" class="fs-input" />
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const felt = document.querySelector("fs-field") as FsField
+    const label = document.querySelector("label") as HTMLLabelElement
+    // Getteren leser markupen, ikke bare sitt eget attributt.
+    expect(felt.requiredMarker).toBe("symbol")
+
+    felt.requiredMarker = "none"
+    await Promise.resolve()
+
+    expect(felt.getAttribute("required-marker")).toBe("none")
+    expect(label.hasAttribute("data-required")).toBe(false)
+    expect(felt.requiredMarker).toBe("none")
+  })
+})
