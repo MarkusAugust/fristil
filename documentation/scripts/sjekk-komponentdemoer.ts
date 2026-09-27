@@ -343,9 +343,25 @@ await pa(
   "demo-samband",
   "fs-connection-status",
   async (side, id) => {
-    const svar = await side.evaluate((id) => {
+    await side.evaluate((id) => {
       const rot = document.getElementById(id)?.shadowRoot
       ;(rot?.getElementById("demo-samband-av") as HTMLElement | null)?.click()
+    }, id)
+    // Linja settes inn tom og fylles i neste tegning, så live-området finnes
+    // før innholdet kommer. Vent på teksten, ikke på klokka.
+    await side.waitForFunction(
+      (id) =>
+        (
+          document
+            .getElementById(id)
+            ?.shadowRoot?.querySelector(".fs-connection-status__bar")
+            ?.textContent ?? ""
+        ).trim().length > 0,
+      id,
+      { timeout: 2000 },
+    )
+    const svar = await side.evaluate((id) => {
+      const rot = document.getElementById(id)?.shadowRoot
       const linje = rot?.querySelector(".fs-connection-status__bar")
       return {
         tekst: (linje?.textContent ?? "").trim(),

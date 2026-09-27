@@ -1,6 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -90,6 +90,10 @@ describe("fs-connection-status", () => {
     await ventPaTegning()
 
     expect(meldinger).toEqual(["connection-lost", "connection-restored"])
+    // Offline-teksten skrives i neste tegning, og skal ikke lande oppå
+    // kvitteringen når begge kom i samme tegning.
+    expect(linje()?.dataset.state).toBe("online")
+    expect(linje()?.textContent).toContain("tilbake")
   })
 
   it("reagerer på at nettverket forsvinner", async () => {
@@ -119,5 +123,93 @@ describe("fs-connection-status", () => {
     await ventPaTegning()
 
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-connection-status sier fra én gang og kommer tilbake", () => {
+  beforeAll(() => {
+    defineFsConnectionStatus()
+  })
+
+  async function monterLinje(attributter = attr(connectionStatus())) {
+    monter(`<fs-connection-status ${attributter}></fs-connection-status>`)
+    await customElements.whenDefined("fs-connection-status")
+    await ventPaTegning()
+    return document.querySelector("fs-connection-status") as FsConnectionStatus
+  }
+
+  it("melder connection-lost én gang selv om offline kommer flere ganger", async () => {
+    // Nettlesere fyrer gjerne flere `offline` på rad, og appen kan melde en
+    // feil oppå et nettverk som alt er borte. Hver ga en ny hendelse og en
+    // ny opplesning av den samme linja.
+    const status = await monterLinje()
+    const hendelser: string[] = []
+    status.addEventListener("connection-lost", () => hendelser.push("lost"))
+
+    window.dispatchEvent(new Event("offline"))
+    window.dispatchEvent(new Event("offline"))
+    status.reportFailure()
+    await ventPaTegning()
+
+    expect(hendelser).toEqual(["lost"])
+    expect(linje()?.textContent).toContain("Ingen forbindelse")
+  })
+
+  it("fjerner kvitteringen etter en stund", async () => {
+    const status = await monterLinje()
+    status.reportFailure()
+    await ventPaTegning()
+
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    try {
+      status.reportSuccess()
+      expect(linje()?.dataset.state).toBe("online")
+      await vi.advanceTimersByTimeAsync(4000)
+      expect(linje()).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("kommer tilbake på nett når nettverket gjør det", async () => {
+    await monterLinje()
+    window.dispatchEvent(new Event("offline"))
+    await ventPaTegning()
+    window.dispatchEvent(new Event("online"))
+    await ventPaTegning()
+
+    expect(linje()?.dataset.state).toBe("online")
+  })
+
+  it("lar ikke nettverket overstyre en feil appen har meldt", async () => {
+    const status = await monterLinje()
+    status.reportFailure()
+    await ventPaTegning()
+    window.dispatchEvent(new Event("online"))
+    await ventPaTegning()
+
+    expect(linje()?.dataset.state, "nettverket overstyrte appen").toBe(
+      "offline",
+    )
+
+    status.reportSuccess()
+    await ventPaTegning()
+    expect(linje()?.dataset.state).toBe("online")
+  })
+
+  it("lar online-text overstyre, også som egenskap", async () => {
+    const status = await monterLinje(
+      attr(connectionStatus({ onlineText: "Tilbake." })),
+    )
+    status.reportFailure()
+    await ventPaTegning()
+    status.reportSuccess()
+    await ventPaTegning()
+    expect(linje()?.textContent).toBe("Tilbake.")
+
+    status.offlineText = "Borte."
+    status.onlineText = "Her igjen."
+    expect(status.getAttribute("offline-text")).toBe("Borte.")
+    expect(status.onlineText).toBe("Her igjen.")
   })
 })

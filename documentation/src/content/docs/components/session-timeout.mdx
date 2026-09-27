@@ -135,18 +135,29 @@ Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet
 | `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
 | `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
 
-Aktivitet er tastetrykk, klikk og rulling. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
+Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det. Escape i dialogen regnes derimot som «jeg er her», og gjør det samme som knappen: forlenger, og sender `session-extend`.
+
+Er `warn-at` eller `expires-at` ikke et tall større enn eller lik null, brukes standardverdien, og er `warn-at` ikke mindre enn `expires-at`, kommer varselet aldri. Komponenten sier fra om begge deler i konsollen.
+
+Etter `session-expired` og `session-logout` står komponenten stille til `extend()` eller `reset()` kalles. Uten det fikk en app som ikke navigerte bort ny dialog og ny `session-expired` hvert `expires-at`-sekund, for en økt som alt var borte.
 
 ## Hendelser
 
 | Hendelse | Når | Hva du gjør |
 | --- | --- | --- |
 | `session-warn` | Dialogen åpner seg | Som regel ingenting |
-| `session-extend` | Brukeren velger å fortsette | Be serveren forlenge økten |
+| `session-extend` | Brukeren velger å fortsette, med knappen eller Escape | Be serveren forlenge økten |
 | `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
 | `session-expired` | Tiden er ute | Send brukeren til innloggingen |
 
 Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
+
+## Metoder
+
+| Metode | Hva den gjør |
+| --- | --- |
+| `extend()` | Nullstiller klokka, lukker varselet og sender `session-extend` |
+| `reset()` | Nullstiller klokka og lukker varselet uten å sende noe. For en app som alt har forlenget økten selv, som når en autolagring gikk gjennom |
 
 ## Klasser du kan style
 

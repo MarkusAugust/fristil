@@ -18,6 +18,12 @@ kommer i et nytt undertall.
 
 ### Lagt til
 
+- **`reset()` på `<fs-session-timeout>`** nullstiller klokka uten å sende
+  `session-extend`, for en app som alt har forlenget økten selv, som når en
+  autolagring gikk gjennom.
+- **`--fs-toast-layer`** styrer `z-index` på varselregionen, med `60` som
+  reserve.
+- **`isToastColor`** eksporteres ved siden av `toastColors`.
 - **`fs.popover()` tar `placement`.** `fs.popover.isPlacement` sjekker en
   verdi, også i `/react`, og `popoverPlacements` fra hovedinngangen lister
   dem, med typen `PopoverPlacement`. Før måtte attributtet skrives for hånd
@@ -27,6 +33,41 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **Escape i `<fs-session-timeout>` forlenger, og dialogen kommer ikke
+  tilbake.** Komponenten lyttet ikke på `close`, så neste tikk så en lukket
+  dialog etter varselgrensen og åpnet den igjen, ett sekund etter Escape,
+  hver gang, med en ny `session-warn`. Escape regnes nå som «jeg er her» og
+  gjør det samme som knappen.
+- **Skjermleseren får vite hvor lenge det er igjen i det varselet åpnes.**
+  Tallet i avsnittet er `aria-hidden`, og live-området ble fylt først ved
+  neste terskel, så med standardverdiene hørte skjermleseren «Vi logger deg
+  ut om  for å beskytte opplysningene dine», og første tall kom tre minutter
+  senere.
+- **`<fs-session-timeout>` står stille etter utløpet og etter «Logg ut nå»**
+  til `extend()` eller `reset()` kalles. Før startet syklusen på nytt av seg
+  selv, med ny dialog og ny `session-expired` hvert `expires-at`-sekund, og
+  en app som brukte mer enn ett sekund på utloggingen fikk dialogen tilbake.
+- **`warn-at` og `expires-at` sjekkes.** Et tall som ikke er et tall, eller
+  et varsel som ikke kommer før utløpet, gir beskjed i konsollen framfor
+  stillhet. `warnAt` og `expiresAt` har fått settere, rulling i en boks
+  teller som aktivitet, og hver forekomst har sin egen overskrift-id.
+- **Pausen i `<fs-toast>` holder til både musa og fokus har forlatt
+  meldingen.** Den var to uavhengige par, og musa som gikk ut startet klokka
+  igjen mens fokus sto i meldingen, som så forsvant under brukeren.
+- **`dismiss()` flytter fokus til meldingen ved siden av** når meldingen som
+  lukkes hadde fokus. Før falt fokus til `body`, og neste Tab startet øverst
+  på siden.
+- **Varselregionen er `aria-atomic="false"`**, både fra `fs.toast()` og fra
+  komponenten. `status` er atomisk som standard, og hele stabelen ble lest
+  opp på nytt for hver ny melding.
+- **Regionen heter «Varsler» begge steder.** Komponenten sa «Meldinger» når
+  attributtet manglet, `fs.toast()` sa «Varsler». Et tomt `duration` gir
+  standardverdien framfor null, og en ukjent `color` gir ingen kant.
+- **`<fs-connection-status>` melder `connection-lost` én gang per utfall.**
+  Nettlesere fyrer gjerne flere `offline` på rad, og hver ga en ny hendelse
+  og en ny opplesning av den samme linja. Linja settes nå inn tom og fylles
+  i neste tegning, slik at live-området finnes før innholdet kommer.
+  `offlineText` og `onlineText` har fått settere.
 - **`<fs-suggestion>` lukker lista når fokus forlater komponenten.** Tab
   gikk videre til neste felt, og lista ble stående over det med
   `aria-expanded="true"` på et felt som ikke lenger hadde fokus. Lytteren på
