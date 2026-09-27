@@ -136,7 +136,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsTabs>(
     FS_TABS_TAG,
     "tabs",
-    'Fanerad. Gir tastatur og fokus til en `role="tablist"` med faner og paneler serveren har skrevet. Hvilken fane som er valgt leses fra `aria-selected`.',
+    "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
     { "server-controlled": serverControlled },
   ),
 

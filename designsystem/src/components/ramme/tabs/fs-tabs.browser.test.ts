@@ -557,19 +557,21 @@ describe("fs-tabs kobler fra bar struktur", () => {
   })
 
   it("lar det serveren skrev stå", async () => {
+    // Verdier komponenten aldri ville skrevet selv, så testen skiller «lot
+    // stå» fra «skrev det samme».
     monter(
       BAR.replace("<button>Vedlegg", '<button id="egen-fane">Vedlegg').replace(
         '<div class="fs-tabs__panel"><p>Tre',
-        '<div class="fs-tabs__panel" tabindex="-1" role="region"><p>Tre',
+        '<div class="fs-tabs__panel" id="eget-panel" tabindex="-1"><p>Tre',
       ),
     )
     await tegn()
     const { faner, paneler } = deler()
 
     expect(faner[1].id).toBe("egen-fane")
+    expect(faner[1].getAttribute("aria-controls")).toBe("eget-panel")
     expect(paneler[1].getAttribute("aria-labelledby")).toBe("egen-fane")
     expect(paneler[1].tabIndex).toBe(-1)
-    expect(paneler[1].getAttribute("role")).toBe("region")
   })
 
   it("setter koblingen tilbake med de samme id-ene etter en patch", async () => {
@@ -608,6 +610,95 @@ describe("fs-tabs kobler fra bar struktur", () => {
     expect(faner[1].getAttribute("role")).toBe("tab")
     expect(faner[1].getAttribute("aria-selected")).toBe("false")
     expect(paneler[1].hidden).toBe(true)
+  })
+
+  it("lar serveren bytte fane med bare hidden under server-controlled", async () => {
+    /*
+     * Den idiomatiske Datastar-måten: `data-attr:hidden` på hvert panel, og
+     * ingenting på fanene. Komponenten hadde selv skrevet
+     * `aria-selected="true"` på den første, og leste den tilbake som
+     * serverens ord, så panelet serveren nettopp viste ble skjult igjen.
+     */
+    monter(BAR.replace("<fs-tabs>", "<fs-tabs server-controlled>"))
+    await tegn()
+    const { faner, paneler } = deler()
+    expect(faner[0].getAttribute("aria-selected")).toBe("true")
+
+    paneler[0].setAttribute("hidden", "")
+    paneler[1].removeAttribute("hidden")
+    await ventPaTegning()
+
+    expect(paneler.map((p) => p.hidden)).toEqual([true, false, true])
+    expect(faner.map((f) => f.getAttribute("aria-selected"))).toEqual([
+      "false",
+      "true",
+      "false",
+    ])
+    expect(faner.map((f) => f.tabIndex)).toEqual([-1, 0, -1])
+  })
+
+  it("lar en knapp uten rolle være i fred når serveren skrev rollene", async () => {
+    monter(`
+      <fs-tabs>
+        <div ${attr(FANER.list)}>
+          ${FANER.tabs.map((fane, i) => `<button ${attr(fane)}>${TEKST[i]}</button>`).join("")}
+          <button type="button" id="lukk">Lukk</button>
+        </div>
+        ${FANER.panels.map((panel, i) => `<div ${attr(panel)}>${INNHOLD[i]}</div>`).join("")}
+      </fs-tabs>
+    `)
+    await tegn()
+    const lukk = document.getElementById("lukk") as HTMLButtonElement
+
+    expect(lukk.hasAttribute("role")).toBe(false)
+    expect(lukk.hasAttribute("aria-selected")).toBe(false)
+    expect(lukk.tabIndex).toBe(0)
+  })
+
+  it("tar imot en ny knapp i en bar rad som en fane", async () => {
+    monter(BAR)
+    await tegn()
+    const { liste, paneler } = deler()
+
+    const ny = document.createElement("button")
+    ny.textContent = "Historikk"
+    liste.append(ny)
+    const panel = document.createElement("div")
+    panel.className = "fs-tabs__panel"
+    paneler[2].after(panel)
+    await ventPaTegning()
+
+    expect(ny.getAttribute("role")).toBe("tab")
+    expect(ny.getAttribute("aria-controls")).toBe(panel.id)
+    expect(panel.hidden).toBe(true)
+  })
+
+  it("skriver ingenting på markup fra fs.tabs()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <fs-tabs>
+        <div ${attr(FANER.list)}>
+          ${FANER.tabs.map((fane, i) => `<button ${attr(fane)}>${TEKST[i]}</button>`).join("")}
+        </div>
+        ${FANER.panels.map((panel, i) => `<div ${attr(panel)}>${INNHOLD[i]}</div>`).join("")}
+      </fs-tabs>`
+    const vert = omslag.querySelector("fs-tabs") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await tegn()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
   })
 
   it("holder brukerens valg gjennom en patch som tar alt komponenten skrev", async () => {

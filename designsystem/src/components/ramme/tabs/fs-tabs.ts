@@ -15,10 +15,23 @@ function uniqueId(prefix: string): string {
 
 /** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
 const LIST_SELECTOR = "[role='tablist'], .fs-tabs__list"
-/** En fane: rollen når den står der, ellers en knapp i raden. */
-const TAB_SELECTOR = "[role='tab'], .fs-tabs__list > button"
-/** Et panel: rollen når den står der, ellers klassen. */
-const PANEL_SELECTOR = "[role='tabpanel'], .fs-tabs__panel"
+/** En fane: rollen når den står der, ellers en knapp uten rolle i raden. */
+const TAB_SELECTOR = "[role='tab'], .fs-tabs__list > button:not([role])"
+/** Et panel: rollen når den står der, ellers klassen uten rolle. */
+const PANEL_SELECTOR = "[role='tabpanel'], .fs-tabs__panel:not([role])"
+
+/**
+ * Det komponenten sist skrev på en node, og hva serveren sist sa.
+ *
+ * `aria-selected` på fanene og `hidden` på panelene både leses og skrives.
+ * En naiv avlesning er komponentens eget ekko: bar markup fikk
+ * `aria-selected="true"` på første fane av komponenten, og da serveren
+ * byttet fane med en patch som bare rørte panelene, leste komponenten sin
+ * egen markering tilbake og skjulte panelet serveren nettopp viste. Står
+ * det noe annet enn det komponenten skrev, har serveren rørt det, og det er
+ * serverens ord. Står det det samme, gjelder det serveren sa sist.
+ */
+type Word = { written: string | null; server: string | null }
 
 /**
  * Tastaturet i en fanerad, og koblingen når markupen kommer uten.
@@ -94,6 +107,14 @@ export class FsTabs extends HostElement {
    * midt i en opplesning skal ikke følge en peker som skifter under den.
    */
   private readonly ids = new WeakMap<Element, string>()
+  /**
+   * Roller komponenten selv har satt. Skiller en bar rad, der hver knapp er
+   * en fane, fra en rad serveren har skrevet rollene i, der en knapp uten
+   * rolle er noe annet, som en «lukk»-knapp.
+   */
+  private readonly roledByMe = new WeakSet<Element>()
+  private selectedMemory = new WeakMap<Element, Word>()
+  private hiddenMemory = new WeakMap<Element, Word>()
 
   connectedCallback(): void {
     /*
@@ -134,6 +155,10 @@ export class FsTabs extends HostElement {
     // og neste patch bestemmer.
     if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.chosenTab = undefined
+      // Det som står der nå er utgangspunktet. Uten dette hoppet raden
+      // tilbake til fanen serveren sa sist, før brukeren valgte en annen.
+      this.selectedMemory = new WeakMap()
+      this.hiddenMemory = new WeakMap()
     }
   }
 
@@ -155,15 +180,58 @@ export class FsTabs extends HostElement {
    * sto i, og begge komponentene festet lyttere på de samme knappene.
    */
   private get tabs(): HTMLButtonElement[] {
-    return [...this.querySelectorAll<HTMLButtonElement>(TAB_SELECTOR)].filter(
-      (tab) => tab.closest(this.localName) === this,
-    )
+    return this.parts<HTMLButtonElement>(TAB_SELECTOR, "tab")
   }
 
   /** Panelene som står inni denne raden. Reserven når koblingen mangler. */
   private get ownPanels(): HTMLElement[] {
-    return [...this.querySelectorAll<HTMLElement>(PANEL_SELECTOR)].filter(
-      (panel) => panel.closest(this.localName) === this,
+    return this.parts<HTMLElement>(PANEL_SELECTOR, "tabpanel")
+  }
+
+  /**
+   * Delene med en rolle, og de uten bare når raden er bar.
+   *
+   * Har serveren skrevet rollene, er en knapp uten rolle i raden noe annet
+   * enn en fane, og skal ikke få rolle, id og `tabindex="-1"` av komponenten.
+   * Har komponenten satt alle rollene selv, er raden bar, og en knapp
+   * serveren sender inn senere er en ny fane.
+   */
+  private parts<T extends HTMLElement>(selector: string, role: string): T[] {
+    const own = [...this.querySelectorAll<T>(selector)].filter(
+      (part) => part.closest(this.localName) === this,
+    )
+    const bare = own
+      .filter((part) => part.getAttribute("role") === role)
+      .every((part) => this.roledByMe.has(part))
+    return bare ? own : own.filter((part) => part.getAttribute("role") === role)
+  }
+
+  /** Serverens ord om et attributt, mot hva komponenten selv skrev sist. */
+  private serverWord(
+    memory: WeakMap<Element, Word>,
+    element: Element,
+    now: string | null,
+  ): string | null {
+    const known = memory.get(element)
+    if (!known) return now
+    return now !== known.written ? now : known.server
+  }
+
+  private serverSelected(tab: Element): string | null {
+    return this.serverWord(
+      this.selectedMemory,
+      tab,
+      tab.getAttribute("aria-selected"),
+    )
+  }
+
+  private serverHidden(panel: Element): boolean {
+    return (
+      this.serverWord(
+        this.hiddenMemory,
+        panel,
+        panel.hasAttribute("hidden") ? "" : null,
+      ) !== null
     )
   }
 
@@ -262,7 +330,10 @@ export class FsTabs extends HostElement {
     if (list && !list.hasAttribute("role")) setAttr(list, "role", "tablist")
 
     this.tabs.forEach((tab, index) => {
-      if (!tab.hasAttribute("role")) setAttr(tab, "role", "tab")
+      if (!tab.hasAttribute("role")) {
+        setAttr(tab, "role", "tab")
+        this.roledByMe.add(tab)
+      }
       // En knapp uten `type` sender skjemaet den står i. Bare på knapper:
       // en fane kan være noe annet, og da betyr `type` noe annet.
       if (tab.localName === "button" && !tab.hasAttribute("type")) {
@@ -273,7 +344,10 @@ export class FsTabs extends HostElement {
       const panel = this.panelFor(tab, index)
       if (!panel) return
 
-      if (!panel.hasAttribute("role")) setAttr(panel, "role", "tabpanel")
+      if (!panel.hasAttribute("role")) {
+        setAttr(panel, "role", "tabpanel")
+        this.roledByMe.add(panel)
+      }
       if (!panel.id) {
         setAttr(panel, "id", this.rememberedId(panel, "fs-tabs-panel"))
       }
@@ -290,20 +364,23 @@ export class FsTabs extends HostElement {
   }
 
   /**
-   * Fanen markupen sier er valgt, når brukeren ikke har valgt noe.
+   * Fanen serveren sier er valgt, når brukeren ikke har valgt noe.
    *
-   * `aria-selected` først. Mangler den, som i markup skrevet uten
-   * JavaScript, sier `hidden` på panelene det samme: det første panelet som
-   * vises hører til den valgte fanen. Sier markupen ingenting, er det den
-   * første, som er det en fanerad uansett starter på.
+   * Serverens ord, ikke det som står der: det komponenten selv skrev
+   * teller ikke, se `Word`. `aria-selected` først. Mangler den, som i markup
+   * skrevet uten JavaScript, sier `hidden` på panelene det samme: det
+   * første panelet serveren viser hører til den valgte fanen. Sier markupen
+   * ingenting, eller skjuler den alle panelene, er det den første, som er
+   * det en fanerad uansett starter på.
    */
   private get derivedIndex(): number {
-    const marked = this.markedIndex
+    const tabs = this.tabs
+    const marked = tabs.findIndex((tab) => this.serverSelected(tab) === "true")
     if (marked >= 0) return marked
 
-    const shown = this.tabs.findIndex((tab, index) => {
+    const shown = tabs.findIndex((tab, index) => {
       const panel = this.panelFor(tab, index)
-      return panel !== null && !panel.hidden
+      return panel !== null && !this.serverHidden(panel)
     })
     return shown < 0 ? 0 : shown
   }
@@ -323,11 +400,14 @@ export class FsTabs extends HostElement {
   private repair(): void {
     if (!this.chosenTab || isServerControlled(this)) {
       /*
-       * Ingen brukervalg å sette tilbake, så markupen bestemmer, og det den
-       * sier skrives helt ut. Bar struktur uten `aria-selected` får dermed
-       * den første fanen valgt og resten av panelene skjult, og en patch som
-       * bare rørte panelene kommer i takt med fanene igjen. Stemmer alt fra
-       * før, skriver `apply()` ingenting.
+       * Ingen brukervalg å sette tilbake, så serverens ord bestemmer, og det
+       * skrives helt ut: `aria-selected`, tabbestoppet og `hidden` i takt.
+       * Bar struktur uten `aria-selected` får dermed den første fanen valgt
+       * og resten av panelene skjult, og en patch som bare rørte panelene
+       * flytter også markeringen. Det gjelder også under
+       * `server-controlled`: komponenten setter ikke brukerens valg tilbake
+       * der, men skriver fortsatt ut det serverens markup sier. Stemmer alt
+       * fra før, skriver `apply()` ingenting.
        */
       if (this.tabs.length > 0) this.apply(this.derivedIndex)
       return
@@ -506,14 +586,22 @@ export class FsTabs extends HostElement {
 
     tabs.forEach((tab, i) => {
       const chosen = i === index
+      // Serverens ord noteres før skrivingen, ellers ble skrivingen lest
+      // som serverens i neste runde.
+      const server = this.serverSelected(tab)
       setAttr(tab, "aria-selected", String(chosen))
+      this.selectedMemory.set(tab, { written: String(chosen), server })
       setAttr(tab, "tabindex", i === stop ? "0" : "-1")
 
       const panel = this.panelFor(tab, i)
       if (panel) panels.set(panel, (panels.get(panel) ?? false) || chosen)
     })
 
-    for (const [panel, shown] of panels) setFlag(panel, "hidden", !shown)
+    for (const [panel, shown] of panels) {
+      const server = this.serverHidden(panel) ? "" : null
+      setFlag(panel, "hidden", !shown)
+      this.hiddenMemory.set(panel, { written: shown ? null : "", server })
+    }
   }
 }
 

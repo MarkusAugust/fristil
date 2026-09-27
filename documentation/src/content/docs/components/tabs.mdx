@@ -155,7 +155,9 @@ Skriver serveren `hidden` på panelene, står det. Kommer markupen uten, viser `
 const faner = fs.tabs({ id: "sak", count: 3, selected: 1, label: "Deler av saken" })
 ```
 
-Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra. Mangler `aria-selected`, som i markup skrevet uten JavaScript, leser den valget fra panelene: det første som ikke har `hidden` hører til den valgte fanen. Sier markupen ingenting, er det den første.
+Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra. Mangler `aria-selected`, som i markup skrevet uten JavaScript, leser den valget fra panelene: det første som ikke har `hidden` hører til den valgte fanen. Sier markupen ingenting, eller skjuler den alle panelene, er det den første. Det komponenten selv har skrevet teller ikke som markupens svar: bytter serveren fane ved bare å flytte `hidden`, følger markeringen med.
+
+`server-controlled` slår av at komponenten setter brukerens valg tilbake etter en patch. Den skriver fortsatt ut det markupen sier, altså `aria-selected`, tabbestoppet og `hidden` i takt, så en bar rad får rollene og valget også der.
 
 Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
 
