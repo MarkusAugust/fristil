@@ -9,7 +9,7 @@
  * denne kommandoen er veien imellom.
  *
  * Etter omleggingen er det en overkommelig vei: en komponent er et stilark
- * og en fil på mellom hundre og tre hundre linjer, uten avhengigheter, som
+ * og en file på mellom hundre og tre hundre linjer, uten avhengigheter, som
  * fester oppførsel på markup serveren har sendt. Det er noe man kan overta
  * og vedlikeholde selv.
  *
@@ -24,7 +24,7 @@
  * hva kopien fremdeles henter fra pakken.
  */
 
-/** En fil i pakken, slik `cli.ts` har lest den. */
+/** En file i pakken, slik `cli.ts` har lest den. */
 export type SourceFile = {
   /** Stien i pakken, som «src/components/css/button/button.ts». */
   path: string
@@ -68,7 +68,7 @@ export type TakeoverPlan = {
 }
 
 /**
- * Bygger oppslaget fra en fil i pakken til inngangspunktet som peker på den.
+ * Bygger oppslaget fra en file i pakken til inngangspunktet som peker på den.
  *
  * `exports` peker på `dist` for JavaScript og på `src` for CSS. Begge føres
  * tilbake til kilden, siden det er kilden som kopieres.
@@ -110,7 +110,7 @@ export function resolvePath(fromDirectory: string, relative: string): string {
 const IMPORT_PATTERN = /(from\s+|@import\s+)(["'])([^"']+)\2/g
 
 /**
- * Skriver om henvisningene i én fil.
+ * Skriver om henvisningene i én file.
  *
  * Bare stier som peker ut av mappa røres. En nabo i samme mappe blir med i
  * kopien, og skal fortsatt finnes der.
@@ -126,27 +126,27 @@ export function rewriteReferences(
 
   const content = file.content.replace(
     IMPORT_PATTERN,
-    (treff, innledning: string, hermetegn: string, specifier: string) => {
-      if (!specifier.startsWith(".")) return treff
+    (match, lead: string, quote: string, specifier: string) => {
+      if (!specifier.startsWith(".")) return match
 
       const target = resolvePath(directory, specifier)
 
-      // En fil som blir med i kopien skal stå urørt. Sammenligningen går på
+      // En file som blir med i kopien skal stå urørt. Sammenligningen går på
       // hele stien: filnavnet alene ville latt `../shared.js` stå så snart
       // mappa selv hadde en `shared.ts`, og kopien hadde pekt ut av seg selv.
       // Importen i koden peker dessuten på «.js», altså filen etter bygging,
       // mens kilden heter «.ts».
       const asSource = target.replace(/\.js$/, ".ts")
-      if (ownFiles.has(target) || ownFiles.has(asSource)) return treff
+      if (ownFiles.has(target) || ownFiles.has(asSource)) return match
 
       const entry =
         entryPoints.get(target) ??
         entryPoints.get(target.replace(/\.js$/, ".ts"))
 
-      if (!entry) return treff
+      if (!entry) return match
 
       rewrites.push({ from: specifier, to: entry })
-      return `${innledning}${hermetegn}${entry}${hermetegn}`
+      return `${lead}${quote}${entry}${quote}`
     },
   )
 
@@ -163,17 +163,17 @@ export function planTakeover(
   files: SourceFile[],
   entryPoints: Map<string, string>,
 ): TakeoverPlan {
-  const ownFiles = new Set(files.map((fil) => fil.path))
-  const planned = files.map((fil) =>
-    rewriteReferences(fil, entryPoints, ownFiles),
+  const ownFiles = new Set(files.map((file) => file.path))
+  const planned = files.map((file) =>
+    rewriteReferences(file, entryPoints, ownFiles),
   )
 
   const dependencies = new Set<string>()
   const keptImports = new Set<string>()
 
-  for (const fil of planned) {
-    for (const treff of fil.content.matchAll(IMPORT_PATTERN)) {
-      const specifier = treff[3]
+  for (const file of planned) {
+    for (const match of file.content.matchAll(IMPORT_PATTERN)) {
+      const specifier = match[3]
       if (specifier.startsWith(".")) continue
 
       if (specifier.startsWith("@fristil/")) {
@@ -181,15 +181,15 @@ export function planTakeover(
         continue
       }
 
-      const deler = specifier.split("/")
+      const parts = specifier.split("/")
       dependencies.add(
-        specifier.startsWith("@") ? deler.slice(0, 2).join("/") : deler[0],
+        specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0],
       )
     }
   }
 
   const replacedEntries = files
-    .map((fil) => entryPoints.get(fil.path))
+    .map((file) => entryPoints.get(file.path))
     .filter((entry): entry is string => entry !== undefined)
 
   return {

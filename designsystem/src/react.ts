@@ -112,7 +112,7 @@ export type ReactAttributes<T> = {
  * så en byggefunksjon som en dag sender ut `readonly` eller `maxlength`
  * stopper der og ikke i konsollen hos en konsument.
  */
-const NAVN: Record<string, string> = {
+const REACT_NAMES: Record<string, string> = {
   class: "className",
   for: "htmlFor",
   tabindex: "tabIndex",
@@ -126,7 +126,8 @@ export function toReactAttributes<T extends Record<string, unknown>>(
   for (const [name, value] of Object.entries(attributes)) {
     // `tabindex` er en streng i HTML og et tall i React. Alt annet går rett
     // gjennom: det er navnene som er ulike, ikke verdiene.
-    result[NAVN[name] ?? name] = name === "tabindex" ? Number(value) : value
+    result[REACT_NAMES[name] ?? name] =
+      name === "tabindex" ? Number(value) : value
   }
   return result as ReactAttributes<T>
 }
@@ -209,22 +210,22 @@ export const fs = {
    * har både `tabindex` og `class`.
    */
   errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {
-    const boks = errorSummary(options)
+    const built = errorSummary(options)
     return {
-      host: toReactAttributes(boks.host),
-      title: toReactAttributes(boks.title),
+      host: toReactAttributes(built.host),
+      title: toReactAttributes(built.title),
     }
   },
 
   dialog: Object.assign(
     (options: Parameters<typeof dialog>[0]) => {
-      const boks = dialog(options)
+      const built = dialog(options)
       return {
-        host: boks.host,
-        dialog: toReactAttributes(boks.dialog),
-        title: toReactAttributes(boks.title),
-        body: toReactAttributes(boks.body),
-        footer: toReactAttributes(boks.footer),
+        host: built.host,
+        dialog: toReactAttributes(built.dialog),
+        title: toReactAttributes(built.title),
+        body: toReactAttributes(built.body),
+        footer: toReactAttributes(built.footer),
       }
     },
     {
@@ -237,22 +238,22 @@ export const fs = {
 
   popover: Object.assign(
     (options: Parameters<typeof popover>[0]) => {
-      const boks = popover(options)
+      const built = popover(options)
       return {
-        host: boks.host,
-        trigger: toReactAttributes(boks.trigger),
-        panel: toReactAttributes(boks.panel),
+        host: built.host,
+        trigger: toReactAttributes(built.trigger),
+        panel: toReactAttributes(built.panel),
       }
     },
     { isPlacement: popover.isPlacement },
   ),
 
   tabs: (options: Parameters<typeof tabs>[0]) => {
-    const faner = tabs(options)
+    const built = tabs(options)
     return {
-      list: toReactAttributes(faner.list),
-      tabs: faner.tabs.map(toReactAttributes),
-      panels: faner.panels.map(toReactAttributes),
+      list: toReactAttributes(built.list),
+      tabs: built.tabs.map(toReactAttributes),
+      panels: built.panels.map(toReactAttributes),
     }
   },
 
@@ -271,11 +272,11 @@ export const fs = {
   },
 
   toast: (options: Parameters<typeof toast>[0] = {}) => {
-    const varsler = toast(options)
+    const built = toast(options)
     return {
-      host: varsler.host,
-      toast: toReactAttributes(varsler.toast),
-      close: toReactAttributes(varsler.close),
+      host: built.host,
+      toast: toReactAttributes(built.toast),
+      close: toReactAttributes(built.close),
     }
   },
 
