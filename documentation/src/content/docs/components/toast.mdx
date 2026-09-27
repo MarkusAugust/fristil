@@ -214,7 +214,7 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 ```html
 <fs-toast id="meldinger" role="status" aria-live="polite"
           aria-atomic="false"
-              aria-label="Meldinger" data-ignore-morph></fs-toast>
+          aria-label="Meldinger" data-ignore-morph></fs-toast>
 ```
 
 `data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
@@ -228,7 +228,7 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 | `duration` | Standard levetid i millisekunder. `0` lar meldingene bli stående. |
 | `label` | Tekst som sier hva regionen er. Blir `aria-label`. Standard: «Varsler» |
 | `show(tekst, valg)` | Viser en melding og returnerer elementet |
-| `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til neste melding |
+| `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
 | `clear()` | Fjerner alle, uten å sende noe |
 
 Valgene til `show()`:

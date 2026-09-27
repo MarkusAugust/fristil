@@ -43,9 +43,10 @@ kommer i et nytt undertall.
   neste terskel, så med standardverdiene hørte skjermleseren «Vi logger deg
   ut om  for å beskytte opplysningene dine», og første tall kom tre minutter
   senere.
-- **`<fs-session-timeout>` står stille etter utløpet** til `extend()` eller
-  `reset()` kalles. Før startet syklusen på nytt av seg selv, med ny dialog
-  og ny `session-expired` hvert `expires-at`-sekund.
+- **`<fs-session-timeout>` står stille etter utløpet og etter «Logg ut nå»**
+  til `extend()` eller `reset()` kalles. Før startet syklusen på nytt av seg
+  selv, med ny dialog og ny `session-expired` hvert `expires-at`-sekund, og
+  en app som brukte mer enn ett sekund på utloggingen fikk dialogen tilbake.
 - **`warn-at` og `expires-at` sjekkes.** Et tall som ikke er et tall, eller
   et varsel som ikke kommer før utløpet, gir beskjed i konsollen framfor
   stillhet. `warnAt` og `expiresAt` har fått settere, rulling i en boks

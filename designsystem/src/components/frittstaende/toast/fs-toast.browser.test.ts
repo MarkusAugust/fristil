@@ -115,18 +115,20 @@ describe("fs-toast holder pausen og fokus", () => {
     expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
   })
 
-  it("flytter fokus til neste melding når den som hadde fokus lukkes", async () => {
+  it("flytter fokus til meldingen ved siden av når den som hadde fokus lukkes", async () => {
     monter(`<fs-toast></fs-toast>`)
     const toast = await tegn()
     const eldste = toast.show("Første", { duration: 0 })
-    toast.show("Andre", { duration: 0 })
-    const lukk = eldste.querySelector("button") as HTMLElement
+    const midten = toast.show("Andre", { duration: 0 })
+    toast.show("Tredje", { duration: 0 })
+    const lukk = midten.querySelector("button") as HTMLElement
 
     lukk.focus()
     lukk.click()
 
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(1)
-    expect(document.activeElement).toBe(toast.querySelector(".fs-toast__close"))
+    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(2)
+    // Den under, altså den eldre, ikke den nyeste øverst.
+    expect(document.activeElement).toBe(eldste.querySelector("button"))
   })
 
   it("lar duration=0 på elementet bety at meldingene blir stående", async () => {

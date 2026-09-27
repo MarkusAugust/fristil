@@ -139,7 +139,7 @@ Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et pa
 
 Er `warn-at` eller `expires-at` ikke et tall større enn eller lik null, brukes standardverdien, og er `warn-at` ikke mindre enn `expires-at`, kommer varselet aldri. Komponenten sier fra om begge deler i konsollen.
 
-Etter `session-expired` står komponenten stille til `extend()` eller `reset()` kalles. Uten det fikk en app som ikke navigerte bort ny dialog og ny `session-expired` hvert `expires-at`-sekund, for en økt som alt var borte.
+Etter `session-expired` og `session-logout` står komponenten stille til `extend()` eller `reset()` kalles. Uten det fikk en app som ikke navigerte bort ny dialog og ny `session-expired` hvert `expires-at`-sekund, for en økt som alt var borte.
 
 ## Hendelser
 

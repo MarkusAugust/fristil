@@ -322,7 +322,11 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
 
   it("melder session-logout når brukeren logger ut, uten å forlenge", async () => {
     const vert = await monterKort()
-    const hendelser = lytt(vert, ["session-logout", "session-extend"])
+    const hendelser = lytt(vert, [
+      "session-logout",
+      "session-extend",
+      "session-warn",
+    ])
     await gaFram(4)
     ;(
       document.querySelectorAll(
@@ -332,12 +336,12 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     await ventPaTegning()
 
     expect(dialog().open).toBe(false)
-    expect(hendelser).toEqual(["session-logout"])
+    expect(hendelser).toEqual(["session-warn", "session-logout"])
 
     // Og den kommer ikke tilbake mens appen logger ut.
     await gaFram(3)
     expect(dialog().open).toBe(false)
-    expect(hendelser).toEqual(["session-logout"])
+    expect(hendelser).toEqual(["session-warn", "session-logout"])
   })
 
   it("gir hver forekomst sin egen overskrift", async () => {
