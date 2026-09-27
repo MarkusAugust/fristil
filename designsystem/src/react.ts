@@ -223,16 +223,22 @@ export const fs = {
       return {
         host: built.host,
         dialog: toReactAttributes(built.dialog),
+        header: toReactAttributes(built.header),
         title: toReactAttributes(built.title),
+        subtitle: toReactAttributes(built.subtitle),
         body: toReactAttributes(built.body),
         footer: toReactAttributes(built.footer),
       }
     },
     {
       dialog: dialog.dialog,
+      header: dialog.header,
       title: dialog.title,
+      subtitle: dialog.subtitle,
       body: dialog.body,
       footer: dialog.footer,
+      colors: dialog.colors,
+      isColor: dialog.isColor,
     },
   ),
 

@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 // Serveren skriver hele dialogen og sier om den er åpen. Komponenten kaller
 // showModal(), som en server ikke kan gjøre selv.
-const boks = fs.dialog({ titleId: "demo-dialog-tittel" })
+const boks = fs.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
 ---
 
 <Preview id="demo-dialog" stiler={["dialog", "button"]} maxWidth="30rem">
@@ -14,7 +14,10 @@ const boks = fs.dialog({ titleId: "demo-dialog-tittel" })
 
 	<fs-dialog {...boks.host}>
 		<dialog {...boks.dialog}>
-			<h2 {...boks.title}>Slette søknaden?</h2>
+			<div {...boks.header}>
+				<h2 {...boks.title}>Slette søknaden?</h2>
+				<p {...boks.subtitle}>Dette kan ikke angres</p>
+			</div>
 			<div {...boks.body}>
 				<p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
 			</div>

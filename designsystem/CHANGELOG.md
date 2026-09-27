@@ -23,6 +23,17 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **Dialogen kan ha en farget topp.** `fs.dialog({ color })` gir `data-color`
+  på dialogen og en ny `header`-del som pakker overskriften, med en valgfri
+  `subtitle` under. Fargene er varslerens, `info`, `success`, `warning` og
+  `danger`, og `brand` for merkefargen. Med toppen i markupen flyttes luften
+  fra dialogen til delene, så båndet går helt ut i kantene; uten den står
+  dialogen som før. To dialoger i spilldemoen skrev om padding på tre
+  klasser for å få til dette, og det brakk ved en oppgradering.
+  `fs.dialog.colors` og `fs.dialog.isColor` lister og sjekker verdiene.
+
 ## 0.17.0 (2026-09-27)
 
 ### Brytende
