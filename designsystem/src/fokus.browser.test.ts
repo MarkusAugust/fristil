@@ -112,15 +112,32 @@ function ringenSomVises(element: HTMLElement): CSSStyleDeclaration {
   return getComputedStyle(element)
 }
 
-/** Alt som fikk synlig fokus mens vi tabbet, med ringen hvert av dem har. */
-async function tabbGjennom(steg: number) {
+/**
+ * Alt som kan få fokus, med ringen hvert av dem har.
+ *
+ * Ett ekte Tab, og så `focus()` fra kode på resten. Nettleseren regner fokus
+ * som tastaturstyrt etter et tastetrykk, så et programmert `focus()` etterpå
+ * får `:focus-visible` også. Det er etterprøvd i alle tre motorene. Første
+ * utgave tabbet seg gjennom med 24 rundturer til nettleseren, og på en
+ * travel maskin tok de over femten sekunder i Firefox: testen feilet på
+ * klokka, ikke på noe den sjekker.
+ */
+async function fokuserGjennom() {
   const funnet: Array<{ hvem: string; bredde: string; stil: string }> = []
 
-  for (let i = 0; i < steg; i++) {
-    await userEvent.tab()
+  await userEvent.tab()
+
+  const kandidater = [
+    ...document.querySelectorAll<HTMLElement>(
+      "a[href], button, input, select, textarea, summary, [tabindex]",
+    ),
+  ]
+
+  for (const kandidat of kandidater) {
+    kandidat.focus()
     const aktiv = document.activeElement
 
-    if (!(aktiv instanceof HTMLElement) || aktiv === document.body) continue
+    if (aktiv !== kandidat) continue
     if (!aktiv.matches(":focus-visible")) continue
 
     // Ringen ligger ikke alltid på elementet som har fokus. I
@@ -144,7 +161,7 @@ describe("tastaturfokus er synlig", () => {
     monter(SIDEN)
     await ventPaTegning()
 
-    const funnet = await tabbGjennom(24)
+    const funnet = await fokuserGjennom()
 
     // Uten dette kunne en endring i markupen gjort sveipet tomt, og en tom
     // liste ville meldt grønt.
@@ -156,12 +173,7 @@ describe("tastaturfokus er synlig", () => {
       uten.map((f) => `${f.hvem}: ${f.bredde} ${f.stil}`),
       "disse mangler fokusringen",
     ).toEqual([])
-
-    // Hver tabb er en tur til nettleseren, og 24 av dem tar over femten
-    // sekunder i Firefox på en travel maskin. Testen feilet da tilfeldig på
-    // klokka framfor på noe den sjekker, og en port som feiler tilfeldig blir
-    // ignorert.
-  }, 45_000)
+  })
 
   it("henter ringen fra tokenet, ikke fra hver komponent", async () => {
     monter(`<button class="fs-button" type="button">Send</button>`)
