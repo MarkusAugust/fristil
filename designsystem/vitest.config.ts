@@ -20,7 +20,7 @@ export default defineConfig({
       /*
        * Tre minutter og ikke ett på å få kontakt med en nettleserside.
        *
-       * Standarden er 60 sekunder, og på en travel maskin, som når to
+       * Standarden er 30 sekunder, og på en travel maskin, som når to
        * testkjøringer deler tre nettlesere, rakk ikke Firefox å svare før
        * fristen: «Failed to connect to the browser session … within the
        * timeout», midt i en kjøring der 31 filer alt var grønne. Fristen er

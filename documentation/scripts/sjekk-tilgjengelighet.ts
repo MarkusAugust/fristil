@@ -250,7 +250,7 @@ async function sjekkSider(
       /*
        * Kodefeltene får tastaturtilgang av et skript, ikke av markupen.
        * Expressive Code setter `tabindex` på de feltene som kan rulles, og
-       * gjør det etter at siden er tegnet. Målte axe før det, meldte den
+       * gjør det etter at siden er tegnet. Kjørte axe før det, meldte den
        * «Scrollable region must have keyboard access» på et felt som fikk
        * tilgangen et øyeblikk senere, og sjekken feilet tilfeldig.
        *
