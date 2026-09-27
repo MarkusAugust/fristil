@@ -86,7 +86,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     ```tsx
     import { createContext, useContext, useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
-    import type { FsToast } from "@fristil/designsystem"
+    import { type FsToast, showToast } from "@fristil/designsystem/toast"
     import "@fristil/designsystem/tokens.css"
 
     const varsler = fs.toast({ label: "Meldinger" })
@@ -99,7 +99,8 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
       const kø = useRef<FsToast>(null)
 
       const meld = (tekst: string, farge?: "success" | "danger") => {
-        kø.current?.show(tekst, { color: farge, duration: farge === "danger" ? 0 : undefined })
+        if (!kø.current) return
+        showToast(kø.current, tekst, { color: farge, duration: farge === "danger" ? 0 : undefined })
       }
 
       return (
@@ -121,7 +122,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     </button>
     ```
 
-    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt.
+    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt. `showToast()` venter på at `defineFsToast()` har kjørt, så et kall før registreringen blir gjort i det den er der, i stedet for å feile.
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -230,6 +231,8 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 | `show(tekst, valg)` | Viser en melding og returnerer elementet |
 | `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
 | `clear()` | Fjerner alle, uten å sende noe |
+
+`showToast(element, tekst, valg)` fra `@fristil/designsystem/toast` gjør det samme som `show()`, men venter først på at elementet er registrert. Bruk den der kallet kan komme før `defineFsToast()`, som i en modul som lastes ved siden av registreringen.
 
 Valgene til `show()`:
 

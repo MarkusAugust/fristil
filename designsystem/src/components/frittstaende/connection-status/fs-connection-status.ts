@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, whenUpgraded } from "../../host-element.js"
 import {
   CONNECTION_STATUS_BAR_CLASS,
   CONNECTION_STATUS_CLASS,
@@ -187,4 +187,22 @@ export function defineFsConnectionStatus(
   tagName = FS_CONNECTION_STATUS_TAG,
 ): void {
   defineElement(tagName, FsConnectionStatus)
+}
+
+/**
+ * `element.reportFailure()`, men venter først på registreringen.
+ *
+ * Det var her gapet viste seg i drift: den første meldingen fra
+ * hendelsesstrømmen kom før `defineFsConnectionStatus()`, og appen fikk
+ * «reportSuccess is not a function». Se `whenUpgraded`.
+ */
+export async function reportFailure(element: Element): Promise<void> {
+  const status = await whenUpgraded<FsConnectionStatus>(element)
+  status.reportFailure()
+}
+
+/** `element.reportSuccess()`, men venter først på registreringen. */
+export async function reportSuccess(element: Element): Promise<void> {
+  const status = await whenUpgraded<FsConnectionStatus>(element)
+  status.reportSuccess()
 }

@@ -671,7 +671,14 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
       const verter = new Set(
         [...kode.matchAll(/<(fs-[a-z-]+)[\s>]/g)].map((m) => m[1]),
       )
+      /*
+       * `defineFs()` fra `/register` registrerer alle, og dekker da hvert
+       * element i fanen. Uttrykket krever parentesen: `defineFsField(`
+       * treffer ikke, og en import uten kall treffer heller ikke.
+       */
+      const samlet = /\bdefineFs\s*\(/.test(kode)
       for (const tagg of verter) {
+        if (samlet) break
         const funksjon = `defineFs${tagg
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`

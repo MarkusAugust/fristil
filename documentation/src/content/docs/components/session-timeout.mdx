@@ -159,6 +159,8 @@ Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet
 | `extend()` | Nullstiller klokka, lukker varselet og sender `session-extend` |
 | `reset()` | Nullstiller klokka og lukker varselet uten å sende noe. For en app som alt har forlenget økten selv, som når en autolagring gikk gjennom |
 
+`extendSession(element)` og `resetSession(element)` fra `@fristil/designsystem/session-timeout` gjør det samme, men venter først på at elementet er registrert.
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |

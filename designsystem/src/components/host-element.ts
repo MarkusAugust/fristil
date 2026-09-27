@@ -227,3 +227,48 @@ function whenSettled(run: () => void): void {
 
   afterTwoFrames()
 }
+
+/**
+ * Venter til elementet er oppgradert til komponenten sin, og gir det tilbake
+ * med riktig type.
+ *
+ * De frittstående komponentene har et imperativt API: `show()`,
+ * `reportFailure()`, `extend()`. Kalles en av dem før `defineFs*` har kjørt,
+ * er elementet fortsatt et vanlig `HTMLElement`, og kallet feiler med
+ * «reportSuccess is not a function». I drift skjedde det i gapet mellom at
+ * serverens HTML sto der og at registreringen var lastet: den første
+ * meldingen fra hendelsesstrømmen kom inn i det gapet, og appen la en
+ * `typeof`-vakt rundt hvert kall for å komme rundt det.
+ *
+ * Hjelperne rundt metodene venter i stedet på `whenDefined` for elementets
+ * eget tagnavn, så et kall som kommer for tidlig blir gjort i det
+ * registreringen er der. `upgrade()` tar med et element som ennå ikke står i
+ * dokumentet; et som står der, er alt oppgradert når `whenDefined` løses.
+ *
+ * Et element ingen registrerer ville ellers ventet i stillhet for alltid.
+ * Etter tre sekunder sier hjelperen fra i konsollen, én gang per tagnavn,
+ * og venter videre: kommer registreringen sent, skal kallet fortsatt gjøres.
+ */
+const UPGRADE_WARNING_MS = 3000
+const warnedTags = new Set<string>()
+
+export async function whenUpgraded<T extends HTMLElement>(
+  element: Element,
+): Promise<T> {
+  const tag = element.localName
+  if (!customElements.get(tag)) {
+    const timer = setTimeout(() => {
+      if (customElements.get(tag) || warnedTags.has(tag)) return
+      warnedTags.add(tag)
+      console.warn(
+        `<${tag}> er ikke registrert etter ${UPGRADE_WARNING_MS / 1000} sekunder. ` +
+          `Kall defineFs() fra @fristil/designsystem/register ved oppstart, ikke i en effekt.`,
+        element,
+      )
+    }, UPGRADE_WARNING_MS)
+    await customElements.whenDefined(tag)
+    clearTimeout(timer)
+  }
+  customElements.upgrade(element)
+  return element as T
+}

@@ -25,6 +25,20 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`@fristil/designsystem/register`: `defineFs()` registrerer alle ni
+  web-komponentene i ett kall,** også fra `dist/register.js` på en CDN.
+  Spilldemoen sto med sju `defineFs*`-kall i en `useEffect`, altså etter
+  første tegning, og den første meldingen fra hendelsesstrømmen kom i gapet:
+  «reportSuccess is not a function». Dokumentasjonen sier nå: registrer ved
+  import, aldri i en effekt.
+- **De frittstående komponentene har funksjoner som venter på
+  registreringen:** `showToast(element, tekst, valg)`,
+  `reportFailure(element)`, `reportSuccess(element)`,
+  `extendSession(element)` og `resetSession(element)`. De venter på
+  `customElements.whenDefined` for elementets tagnavn og kaller så metoden,
+  så et kall som kommer for tidlig blir gjort i stedet for å feile. Et
+  element ingen registrerer gir en advarsel i konsollen etter tre sekunder.
+  `whenUpgraded(element)` i `/host-element` er hjelperen bak dem.
 - **`@fristil/designsystem/fristil.css`: alle stilarkene i én fil.** For den
   som lenker fra CDN eller `node_modules` uten bunter. De enkelte stilarkene
   henter delene sine med `@import`, som nettleseren først ser når fila er

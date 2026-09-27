@@ -18,7 +18,9 @@ import {
 import { attr } from "../../../testing/markup"
 import {
   defineFsSessionTimeout,
-  type FsSessionTimeout,
+  extendSession,
+  FsSessionTimeout,
+  resetSession,
 } from "./fs-session-timeout"
 import { sessionTimeout } from "./session-timeout"
 
@@ -360,5 +362,39 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     for (const id of ider) {
       expect(document.getElementById(id as string)).not.toBeNull()
     }
+  })
+})
+
+/*
+ * Et sent registrert tagnavn, som en underklasse: konstruktøren til
+ * `fs-session-timeout` kan ikke registreres én gang til.
+ */
+describe("extendSession() og resetSession() venter på registreringen", () => {
+  it("sender session-extend først når elementet er oppgradert", async () => {
+    monter(
+      `<fs-session-timeout-sen class="fs-session-timeout" warn-at="3" expires-at="13"></fs-session-timeout-sen>`,
+    )
+    const element = document.querySelector("fs-session-timeout-sen") as Element
+    const forlenget: Event[] = []
+    element.addEventListener("session-extend", (e) => forlenget.push(e))
+
+    let ferdig = false
+    const løfte = extendSession(element).then(() => {
+      ferdig = true
+    })
+    await ventPaTegning()
+    expect(ferdig).toBe(false)
+    expect(forlenget).toHaveLength(0)
+
+    customElements.define(
+      "fs-session-timeout-sen",
+      class extends FsSessionTimeout {},
+    )
+
+    await løfte
+    expect(forlenget).toHaveLength(1)
+
+    await resetSession(element)
+    expect(forlenget).toHaveLength(1)
   })
 })
