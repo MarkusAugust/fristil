@@ -37,6 +37,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     ```html
     <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button class="fs-button" id="lagre" type="button">Lagre søknaden</button>
@@ -160,6 +161,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.15.0/src/components/css/button/button.css">
 
     <fs-toast id="meldinger" role="status" aria-live="polite"
+              aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
     <button
@@ -211,7 +213,8 @@ Har du ingen bunter, skriver du det samme settet ut som vanlige attributter, sli
 
 ```html
 <fs-toast id="meldinger" role="status" aria-live="polite"
-          aria-label="Meldinger" data-ignore-morph></fs-toast>
+          aria-atomic="false"
+              aria-label="Meldinger" data-ignore-morph></fs-toast>
 ```
 
 `data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
