@@ -148,11 +148,28 @@ export class FsDialog extends HostElement {
    * en dialog noen har tatt attributtet fra.
    */
   private repairOpen(): void {
-    if (isServerControlled(this)) return
-
     const dialog = this.dialogElement
-    if (!dialog?.isConnected) return
-    if (dialog.matches(":modal")) setAttr(dialog, "open", "")
+    if (!dialog?.isConnected || !dialog.matches(":modal") || dialog.open) {
+      return
+    }
+
+    // Attributtet må tilbake uansett: uten det gjør `close()` ingenting, og
+    // dialogen ble stående i topplaget, usynlig, med resten av siden inert.
+    setAttr(dialog, "open", "")
+    if (!isServerControlled(this)) return
+
+    /*
+     * Serveren eier tilstanden, og patchen tok `open` fra en modal dialog.
+     * Da er beskjeden at den skal lukkes, ikke settes tilbake. Uten dette
+     * sto dialogen med `:modal` og `display: none`, og ingenting på siden
+     * kunne klikkes. Verten følger med her, så `handleClose` har ingenting
+     * igjen å gjøre og hendelsen kommer én gang.
+     */
+    dialog.close()
+    if (this.open) {
+      this.removeAttribute("open")
+      this.meld(false, dialog.returnValue)
+    }
   }
 
   private handleClose = (): void => {

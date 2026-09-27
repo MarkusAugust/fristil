@@ -7,23 +7,19 @@ import {
   setFlag,
   warnAboutMarkup,
 } from "../../host-element.js"
+import { isPopoverPlacement, type PopoverPlacement } from "./popover.js"
+
 export const FS_POPOVER_TAG = "fs-popover" as const
-
-type Placement = "bottom-start" | "bottom-end" | "top-start" | "top-end"
-
-const PLACEMENTS: readonly Placement[] = [
-  "bottom-start",
-  "bottom-end",
-  "top-start",
-  "top-end",
-]
 
 /**
  * Et panel som henger under en knapp, og som lukker seg selv.
  *
- * Panelet bruker nettleserens egen `popover`, så det havner i topplaget. Det
- * løser tre ting som ellers krever kode: panelet legger seg over alt annet
- * uten `z-index`, Escape lukker det, og et klikk utenfor lukker det.
+ * Panelet bruker nettleserens egen `popover`, så det havner i topplaget og
+ * legger seg over alt annet uten `z-index`. `fs.popover()` skriver
+ * `popover="manual"`, så Escape og klikk utenfor er komponentens: med `auto`
+ * rakk nettleseren å lukke panelet før knappen fikk klikket sitt, og knappen
+ * kunne ikke brukes til å lukke igjen. Håndskrevet markup med bare `popover`
+ * er `auto`, og da følger komponenten med når nettleseren lukker det.
  *
  * Det topplaget ikke gjør er å plassere panelet. `position-anchor` finnes
  * ennå ikke i alle nettlesere, så posisjonen regnes ut her.
@@ -89,12 +85,12 @@ export class FsPopover extends HostElement {
   }
 
   /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
-  get placement(): Placement {
-    const value = this.getAttribute("placement") as Placement | null
-    return value && PLACEMENTS.includes(value) ? value : "bottom-start"
+  get placement(): PopoverPlacement {
+    const value = this.getAttribute("placement")
+    return isPopoverPlacement(value) ? value : "bottom-start"
   }
 
-  set placement(value: Placement) {
+  set placement(value: PopoverPlacement) {
     setAttr(this, "placement", value)
   }
 
@@ -125,6 +121,7 @@ export class FsPopover extends HostElement {
     this.observer?.disconnect()
     this.observer = undefined
     this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
+    this.panel?.removeEventListener("toggle", this.handlePanelToggle)
     // Referansen må nullstilles, ellers ser `sync()` at knappen er den samme
     // når elementet settes inn igjen, og hopper over å feste lytteren på
     // nytt. Da lar panelet seg ikke åpne lenger.
@@ -239,6 +236,7 @@ export class FsPopover extends HostElement {
        */
       this.triggerElement?.removeEventListener("click", this.handleTriggerClick)
       this.triggerElement = undefined
+      this.panel?.removeEventListener("toggle", this.handlePanelToggle)
       this.panel = undefined
       document.removeEventListener("click", this.handleOutsideClick, true)
       document.removeEventListener("keydown", this.handleKeydown)
@@ -250,7 +248,18 @@ export class FsPopover extends HostElement {
       trigger.addEventListener("click", this.handleTriggerClick)
       this.triggerElement = trigger
     }
-    this.panel = panel
+    if (this.panel !== panel) {
+      /*
+       * Tilstanden står i markupen som `:popover-open`, og skal leses derfra.
+       * Lukker nettleseren et `popover="auto"` selv, fordi et annet åpnes
+       * eller brukeren klikker utenfor, sier `toggle` fra. Uten lytteren sto
+       * verten med `open` og knappen med `aria-expanded="true"` over et
+       * lukket panel, og neste klikk gjorde ingenting synlig.
+       */
+      this.panel?.removeEventListener("toggle", this.handlePanelToggle)
+      panel.addEventListener("toggle", this.handlePanelToggle)
+      this.panel = panel
+    }
 
     // Komponentens eget, og satt på nytt hvis en patch tok det.
     setAttr(trigger, "aria-expanded", String(this.open))
@@ -271,8 +280,19 @@ export class FsPopover extends HostElement {
     this.toggle()
   }
 
+  private handlePanelToggle = (event: Event): void => {
+    const state = (event as ToggleEvent).newState
+    // Komponentens egne `showPopover()` og `hidePopover()` gir også
+    // hendelsen, men da stemmer `open` alt, og ingenting skjer.
+    if (state === "closed" && this.open) this.hide()
+    else if (state === "open" && !this.open) this.show()
+  }
+
   private handleOutsideClick = (event: Event): void => {
-    const target = event.target as Node
+    // `composedPath()` og ikke `target`: står komponenten i en skyggerot,
+    // er `target` omdirigert til skyggeverten, og et klikk i selve panelet
+    // så ut som et klikk utenfor.
+    const target = event.composedPath()[0] as Node
     if (this.contains(target) || this.panel?.contains(target)) return
     this.hide()
   }
@@ -294,20 +314,33 @@ export class FsPopover extends HostElement {
     const space = 4
 
     const below = this.placement.startsWith("bottom")
-    const alignEnd = this.placement.endsWith("end")
+    // `start` og `end` følger leseretningen: i et dokument som leses fra
+    // høyre er `start` knappens høyre kant. Uten dette lå panelet på feil
+    // side av knappen i RTL.
+    const rtl = getComputedStyle(this.panel).direction === "rtl"
+    const alignRight = this.placement.endsWith("end") !== rtl
 
     let top = below ? anchor.bottom + space : anchor.top - panel.height - space
-    let left = alignEnd ? anchor.right - panel.width : anchor.left
+    let left = alignRight ? anchor.right - panel.width : anchor.left
 
     // Panelet skal ikke havne utenfor skjermen. Går det ut på siden, flyttes
-    // det inn; er det ikke plass under, legges det over knappen i stedet.
+    // det inn. Er det ikke plass på den siden av knappen plasseringen ber
+    // om, legges det på den andre, og klemmes så inn i vinduet uansett.
+    // `top-*` manglet den siste delen, og et panel ved toppen av siden lå
+    // helt utenfor skjermen, uten å kunne rulles fram.
     left = Math.max(
       space,
       Math.min(left, window.innerWidth - panel.width - space),
     )
     if (below && top + panel.height > window.innerHeight) {
-      top = Math.max(space, anchor.top - panel.height - space)
+      top = anchor.top - panel.height - space
+    } else if (!below && top < space) {
+      top = anchor.bottom + space
     }
+    top = Math.max(
+      space,
+      Math.min(top, window.innerHeight - panel.height - space),
+    )
 
     this.panel.style.setProperty("--fs-popover-top", `${Math.round(top)}px`)
     this.panel.style.setProperty("--fs-popover-left", `${Math.round(left)}px`)

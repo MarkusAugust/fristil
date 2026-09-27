@@ -18,6 +18,49 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **`<fs-suggestion>` lukker lista når fokus forlater feltet.** Tab gikk
+  videre til neste felt, og lista ble stående over det med
+  `aria-expanded="true"` på et felt som ikke lenger hadde fokus. Lytteren på
+  `document` er borte: et trykk i lista holder fokus i feltet, og alt annet
+  lukker den. Dermed virker feltet også inne i en skyggerot, der klikket i
+  feltet før ble regnet som et klikk utenfor og lukket lista i samme klikk
+  som åpnet den.
+- **«Ingen treff» følger lista.** Meldingen er søsken til lista og ble
+  stående synlig under et lukket felt etter Escape. `fs.suggestion()` skriver
+  den også skjult på et lukket felt uten alternativer, som er det anbefalte
+  oppsettet for asynkront søk; før sto meldingen der alt ved sidelasting.
+- **Markeringen ryddes i det alternativet filtreres bort**, også med
+  `server-controlled`. Før pekte `aria-activedescendant` på et skjult
+  alternativ, og skjermleseren leste det opp.
+- **Alternativene kjennes igjen på `role="option"`**, ikke på klassen. En mal
+  med egen styling fikk verken filtrering eller piltaster, uten et ord.
+- **`<fs-suggestion>` sier fra når `[role="status"]` mangler.** Antall treff
+  leses opp der, og uten elementet sto komponenten stille.
+- **`fs.suggestion()` skriver `aria-selected` og `aria-activedescendant`
+  under samme vilkår**, altså bare når lista er åpen. Før fikk en lukket
+  liste det ene uten det andre.
+- **Det markerte alternativet vises i høykontrastmodus**, med systemfargene.
+  `--fs-suggestion-layer` styrer `z-index` på lista, med `30` som reserve.
+- **`<fs-popover>` står på riktig side i `dir="rtl"`.** Posisjonen er
+  fysisk, men stilarket brukte den som `inset-inline-start`, som er høyre
+  kant i en side som leses fra høyre. `start` og `end` i `placement` følger
+  nå leseretningen.
+- **`top-start` og `top-end` klemmes inn i vinduet.** Et panel ved toppen av
+  siden lå helt utenfor skjermen, uten å kunne rulles fram. Er det ikke
+  plass på den siden plasseringen ber om, legges panelet på den andre.
+- **Verten følger med når nettleseren selv lukker et `popover="auto"`.**
+  Håndskrevet markup med bare `popover` er `auto`, og etter en lett
+  avvisning sto verten med `open` og knappen med `aria-expanded="true"`
+  over et lukket panel. Komponenten lytter nå på `toggle`.
+- **`fs.popover()` tar `placement`.** `fs.popover.isPlacement` sjekker en
+  verdi, og `popoverPlacements` fra hovedinngangen lister dem, med typen
+  `PopoverPlacement`. Før måtte attributtet skrives for hånd uten typesjekk.
+- **Klikk utenfor et sprettoppvindu i en skyggerot** leser
+  `composedPath()`, så et klikk i panelet ikke regnes som utenfor.
+- **`<fs-dialog server-controlled>` lukker når patchen tar `open` fra en
+  modal dialog.** Reparasjonen var slått av, men ingen kalte `close()`, og
+  dialogen sto igjen i topplaget med `display: none` mens resten av siden
+  var inert.
 - **`<fs-tabs>` hopper over deaktiverte faner.** Piltastene, Home og End
   valgte en fane med `disabled`, `focus()` på en deaktivert knapp gjør
   ingenting, og raden sto uten en eneste fane som kunne få fokus.

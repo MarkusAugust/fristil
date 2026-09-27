@@ -9,7 +9,7 @@ import {
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { defineFsPopover } from "./fs-popover"
-import { popover } from "./popover"
+import { popover, popoverPlacements } from "./popover"
 
 import "../../../tokens/tokens.css"
 import "./popover.css"
@@ -188,5 +188,135 @@ describe("fs-popover finner delene sine", () => {
     await ventPaTegning()
 
     expect(panel.matches(":popover-open")).toBe(true)
+  })
+})
+
+describe("fs-popover plasserer panelet", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  function markup(id: string, vert = "", panel = 'popover="manual"') {
+    return `
+      <fs-popover ${vert}>
+        <button aria-controls="${id}" aria-expanded="false" class="fs-button" id="${id}-knapp">Handlinger</button>
+        <ul class="fs-popover" id="${id}" ${panel}><li>Arkiver saken</li><li>Slett saken</li></ul>
+      </fs-popover>
+    `
+  }
+
+  async function apne(id: string) {
+    ;(document.getElementById(`${id}-knapp`) as HTMLElement).click()
+    await tegn()
+    return {
+      knapp: (
+        document.getElementById(`${id}-knapp`) as HTMLElement
+      ).getBoundingClientRect(),
+      panel: (
+        document.getElementById(id) as HTMLElement
+      ).getBoundingClientRect(),
+    }
+  }
+
+  it("henger under knappen, med samme venstrekant", async () => {
+    monter(markup("p1"))
+    await tegn()
+    const { knapp, panel } = await apne("p1")
+
+    expect(Math.abs(panel.left - knapp.left)).toBeLessThan(1.5)
+    expect(Math.abs(panel.top - (knapp.bottom + 4))).toBeLessThan(1.5)
+  })
+
+  it("høyrekanter med bottom-end", async () => {
+    monter(markup("p2", 'placement="bottom-end"'))
+    await tegn()
+    const { knapp, panel } = await apne("p2")
+
+    expect(Math.abs(panel.right - knapp.right)).toBeLessThan(1.5)
+  })
+
+  it("lar start være høyre kant i høyre-til-venstre", async () => {
+    // Posisjonen er fysisk, men `start` og `end` følger leseretningen. Med
+    // logisk `inset-inline-start` og en fysisk verdi lå panelet på motsatt
+    // side av knappen.
+    monter(`<div dir="rtl">${markup("p3")}</div>`)
+    await tegn()
+    const { knapp, panel } = await apne("p3")
+
+    expect(Math.abs(panel.right - knapp.right)).toBeLessThan(1.5)
+    expect(Math.abs(panel.top - (knapp.bottom + 4))).toBeLessThan(1.5)
+  })
+
+  it("faller ned under knappen når det ikke er plass over", async () => {
+    // `top-start` klemte ikke, og et panel ved toppen av siden lå helt
+    // utenfor skjermen, uten å kunne rulles fram.
+    monter(markup("p4", 'placement="top-start"'))
+    await tegn()
+    const { knapp, panel } = await apne("p4")
+
+    expect(panel.top).toBeGreaterThanOrEqual(4)
+    expect(Math.abs(panel.top - (knapp.bottom + 4))).toBeLessThan(1.5)
+  })
+
+  it("følger med når nettleseren selv lukker et auto-popover", async () => {
+    // Håndskrevet markup med bare `popover` er `auto`, og da lukker
+    // nettleseren panelet selv. Verten sto igjen med `open`, og neste klikk
+    // på knappen gjorde ingenting synlig.
+    monter(markup("p5", "", "popover"))
+    await tegn()
+    const vert = document.querySelector("fs-popover") as HTMLElement
+    const knapp = document.getElementById("p5-knapp") as HTMLElement
+    const panel = document.getElementById("p5") as HTMLElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("popover-toggle", (e) =>
+      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+
+    knapp.click()
+    await tegn()
+    expect(vert.hasAttribute("open")).toBe(true)
+
+    // Slik nettleseren gjør det ved lett avvisning.
+    panel.hidePopover()
+    await tegn()
+
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(knapp.getAttribute("aria-expanded")).toBe("false")
+    expect(meldinger).toEqual([true, false])
+
+    knapp.click()
+    await tegn()
+    expect(panel.matches(":popover-open")).toBe(true)
+  })
+
+  it("setter posisjonen igjen etter en patch som river style bort", async () => {
+    monter(markup("p6"))
+    await tegn()
+    await apne("p6")
+    const panel = document.getElementById("p6") as HTMLElement
+    // Attributtet leses direkte: WebKit gir tom streng fra
+    // `style.getPropertyValue` for en egendefinert egenskap.
+    const posisjon = () => panel.getAttribute("style") ?? ""
+    expect(posisjon()).toContain("--fs-popover-top")
+
+    panel.removeAttribute("style")
+    await tegn()
+
+    expect(posisjon()).toContain("--fs-popover-top")
+  })
+
+  it("lar byggefunksjonen sette placement på verten", () => {
+    expect(popover({ id: "x" }).host.placement).toBeUndefined()
+    expect(popover({ id: "x", placement: "top-end" }).host.placement).toBe(
+      "top-end",
+    )
+    expect(popoverPlacements).toEqual([
+      "bottom-start",
+      "bottom-end",
+      "top-start",
+      "top-end",
+    ])
+    expect(popover.isPlacement("top-end")).toBe(true)
+    expect(popover.isPlacement("midt")).toBe(false)
   })
 })

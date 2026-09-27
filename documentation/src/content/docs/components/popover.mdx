@@ -8,7 +8,7 @@ import PopoverDemo from "../../../components/PopoverDemo.astro"
 
 Panelet bruker nettleserens egen `popover`, så det havner i topplaget og legger seg over alt annet uten at noen trenger å finne en `z-index` som er høy nok.
 
-Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden nettleserens egen lukking rekker å lukke panelet før knappen får klikket sitt, og knappen da ikke kan brukes til å lukke igjen. Escape, klikk utenfor og fokus tilbake til knappen er derfor skrevet i komponenten.
+Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden nettleserens egen lukking rekker å lukke panelet før knappen får klikket sitt, og knappen da ikke kan brukes til å lukke igjen. Escape, klikk utenfor og fokus tilbake til knappen er derfor skrevet i komponenten. Skriver du `popover` uten verdi for hånd, er panelet `auto`, og da følger komponenten med når nettleseren lukker det.
 
 Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
 
@@ -92,7 +92,7 @@ defineFsPopover()
 
     export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
       const meny = useRef<HTMLElement & { hide(): void }>(null)
-      const boks = fs.popover({ id: "handlinger" })
+      const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
 
       const velg = (handling: () => void) => () => {
         handling()
@@ -100,7 +100,7 @@ defineFsPopover()
       }
 
       return (
-        <fs-popover ref={meny} placement="bottom-end" {...boks.host}>
+        <fs-popover ref={meny} {...boks.host}>
           <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>
             Handlinger
           </button>
@@ -128,11 +128,11 @@ defineFsPopover()
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/popover.css"
 
-    const boks = fs.popover({ id: "handlinger" })
+    const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
 
     ---
 
-    <fs-popover placement="bottom-end" {...boks.host}>
+    <fs-popover {...boks.host}>
       <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
 
       <ul {...boks.panel}>
@@ -221,7 +221,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
 | Attributt | Type | Effekt |
 | --- | --- | --- |
 | `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
-| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end` |
+| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass på den siden av knappen, legges panelet på den andre. `fs.popover({ id, placement })` skriver det på verten, `fs.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
 | `server-controlled` | boolsk | Serveren eier tilstanden. Komponenten setter ikke `open` tilbake etter en oppdatering. |
 
 ## Hendelser og metoder

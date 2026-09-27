@@ -8,10 +8,7 @@ import {
   setText,
   warnAboutMarkup,
 } from "../../host-element.js"
-import {
-  SUGGESTION_EMPTY_CLASS,
-  SUGGESTION_OPTION_CLASS,
-} from "./suggestion.js"
+import { SUGGESTION_EMPTY_CLASS } from "./suggestion.js"
 
 export const FS_SUGGESTION_TAG = "fs-suggestion" as const
 
@@ -37,10 +34,14 @@ export const FS_SUGGESTION_TAG = "fs-suggestion" as const
  *   <label class="fs-label" for="kommune">Kommune</label>
  *   <div class="fs-suggestion__field">
  *     <input class="fs-input" id="kommune" role="combobox" aria-controls="kommune-list"
- *            aria-expanded="false">
+ *            aria-expanded="false" aria-autocomplete="list" autocomplete="off"
+ *            aria-describedby="kommune-status">
  *     <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
  *       <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
  *     </ul>
+ *     <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+ *     <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
+ *           data-ignore-morph></span>
  *   </div>
  * </fs-suggestion>
  * ```
@@ -50,8 +51,9 @@ export class FsSuggestion extends HostElement {
 
   private observer?: MutationObserver
   private control?: HTMLInputElement
+  private list?: HTMLElement
   /** Alternativene som alt har fått lytteren sin. */
-  private readonly bundne = new WeakSet<HTMLElement>()
+  private readonly bound = new WeakSet<HTMLElement>()
   /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
   private choosing = false
   /**
@@ -100,11 +102,10 @@ export class FsSuggestion extends HostElement {
       ],
     })
     this.sync()
-    document.addEventListener("click", this.handleOutsideClick, true)
   }
 
-  attributeChangedCallback(navn: string): void {
-    if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
+  attributeChangedCallback(name: string): void {
+    if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.wantOpen = undefined
       this.active = undefined
     }
@@ -115,7 +116,7 @@ export class FsSuggestion extends HostElement {
      * beskjeden om at komponenten står i dokumentet: tilbakekallet kommer
      * også under oppgraderingen, før barna finnes.
      */
-    if (navn === "prefiltered" && this.observer) {
+    if (name === "prefiltered" && this.observer) {
       // Antallet som står der i det attributtet settes er utgangspunktet, og
       // ikke noe å lese opp. Uten dette ble den første endringen etterpå
       // regnet som utgangspunktet, og gikk tapt.
@@ -162,31 +163,30 @@ export class FsSuggestion extends HostElement {
        * Ellers markerte komponenten noe serveren nettopp hadde filtrert bort,
        * og `aria-activedescendant` pekte på et skjult element.
        */
-      const aktiv = this.visible.find(
+      const option = this.visible.find(
         (o) =>
           o.id === this.active?.id &&
           (o.textContent ?? "").trim() === this.active?.label,
       )
-      if (!aktiv) {
+      if (!option) {
         // Pekeren må bort sammen med markeringen. Uten dette pekte
         // `aria-activedescendant` på et alternativ som nå heter noe annet, og
         // skjermleseren leste opp en kommune brukeren aldri navigerte til.
         this.active = undefined
         this.control.removeAttribute("aria-activedescendant")
       } else if (
-        aktiv.getAttribute("aria-selected") !== "true" ||
-        this.control.getAttribute("aria-activedescendant") !== aktiv.id
+        option.getAttribute("aria-selected") !== "true" ||
+        this.control.getAttribute("aria-activedescendant") !== option.id
       ) {
         // Begge sidene av koblingen sjekkes. Rev patchen bare
         // `aria-activedescendant`, mens markeringen sto igjen, mistet
         // skjermleseren lesepunktet sitt uten at noe annet så galt ut.
-        this.markOption(aktiv)
+        this.markOption(option)
       }
     }
   }
 
   disconnectedCallback(): void {
-    document.removeEventListener("click", this.handleOutsideClick, true)
     this.observer?.disconnect()
     this.observer = undefined
     this.unbind()
@@ -226,10 +226,19 @@ export class FsSuggestion extends HostElement {
     return this.querySelector<HTMLElement>("[role='listbox']")
   }
 
+  private get emptyElement(): HTMLElement | null {
+    return this.querySelector<HTMLElement>(`.${SUGGESTION_EMPTY_CLASS}`)
+  }
+
+  /**
+   * Alternativene, kjent igjen på rollen og ikke på klassen.
+   *
+   * Rollen må stå der uansett, for skjermleseren. En mal som skriver
+   * `<li role="option">` med egen styling fikk verken filtrering eller
+   * piltaster da komponenten så etter klassen, og ingen sa fra.
+   */
   private get options(): HTMLElement[] {
-    return [
-      ...this.querySelectorAll<HTMLElement>(`.${SUGGESTION_OPTION_CLASS}`),
-    ]
+    return [...this.querySelectorAll<HTMLElement>("[role='option']")]
   }
 
   /**
@@ -255,11 +264,15 @@ export class FsSuggestion extends HostElement {
 
   private unbind(): void {
     const control = this.control
-    if (!control) return
-    control.removeEventListener("input", this.handleInput)
-    control.removeEventListener("keydown", this.handleKeydown)
-    control.removeEventListener("focus", this.handleFocus)
-    this.control = undefined
+    if (control) {
+      control.removeEventListener("input", this.handleInput)
+      control.removeEventListener("keydown", this.handleKeydown)
+      control.removeEventListener("focus", this.handleFocus)
+      control.removeEventListener("focusout", this.handleFocusOut)
+      this.control = undefined
+    }
+    this.list?.removeEventListener("mousedown", this.handleListMouseDown)
+    this.list = undefined
   }
 
   private bind(): void {
@@ -287,12 +300,46 @@ export class FsSuggestion extends HostElement {
         this.querySelector("[role='combobox']") !== null && !this.listElement,
     )
 
+    // Antall treff leses opp i et statuselement serveren sender. Uten det
+    // får den som ikke ser skjermen ingen beskjed om at lista snevret seg
+    // inn, og før sto komponenten da bare stille.
+    warnAboutMarkup(
+      this,
+      'fant ingen [role="status"]. Antall treff leses da ikke opp for den ' +
+        "som ikke ser skjermen. `fs.suggestion()` skriver elementet, med " +
+        "data-ignore-morph så teksten overlever en patch.",
+      () =>
+        this.querySelector("[role='combobox']") !== null &&
+        this.listElement !== null &&
+        this.querySelector("[role='status']") === null,
+    )
+
     if (control !== this.control) {
-      this.unbind()
+      this.control?.removeEventListener("input", this.handleInput)
+      this.control?.removeEventListener("keydown", this.handleKeydown)
+      this.control?.removeEventListener("focus", this.handleFocus)
+      this.control?.removeEventListener("focusout", this.handleFocusOut)
       control.addEventListener("input", this.handleInput)
       control.addEventListener("keydown", this.handleKeydown)
       control.addEventListener("focus", this.handleFocus)
+      // Lista lukkes når fokus forlater feltet, med Tab som med alt annet.
+      // Uten dette ble den stående over neste felt, med `aria-expanded`
+      // sann på et felt som ikke lenger hadde fokus.
+      control.addEventListener("focusout", this.handleFocusOut)
       this.control = control
+    }
+
+    /*
+     * Et trykk i lista skal ikke ta fokus fra feltet, heller ikke på
+     * rullefeltet eller tommeldingen. Ellers lukket `focusout` lista før
+     * valget rakk å skje. Lista kan byttes ut av en patch, så lytteren
+     * følger elementet.
+     */
+    const list = this.listElement
+    if (list !== this.list) {
+      this.list?.removeEventListener("mousedown", this.handleListMouseDown)
+      list?.addEventListener("mousedown", this.handleListMouseDown)
+      this.list = list ?? undefined
     }
 
     // Alternativene byttes ut uavhengig av feltet: i en Datastar-app sender
@@ -300,9 +347,9 @@ export class FsSuggestion extends HostElement {
     // fikk de nye alternativene aldri lytteren sin, og valg med mus sluttet
     // å virke etter første oppdatering.
     for (const option of this.options) {
-      if (this.bundne.has(option)) continue
+      if (this.bound.has(option)) continue
       option.addEventListener("mousedown", this.handleOptionMouseDown)
-      this.bundne.add(option)
+      this.bound.add(option)
     }
   }
 
@@ -318,6 +365,7 @@ export class FsSuggestion extends HostElement {
 
     setFlag(list, "hidden", !open)
     setAttr(this.control, "aria-expanded", String(open))
+    this.syncEmpty()
 
     if (!open) {
       this.active = undefined
@@ -329,10 +377,26 @@ export class FsSuggestion extends HostElement {
   }
 
   /**
+   * Tommeldingen følger lista: synlig bare når lista er åpen og tom.
+   *
+   * Den er søsken til lista og ikke barn, så `hidden` på lista skjulte den
+   * ikke, og «Ingen treff» ble stående under et lukket felt etter Escape.
+   * Har noen andre filtrert, eier de også tommeldingen.
+   */
+  private syncEmpty(): void {
+    if (this.prefiltered) return
+    const empty = this.emptyElement
+    const list = this.listElement
+    if (!empty || !list) return
+    setFlag(empty, "hidden", Boolean(list.hidden) || this.visible.length > 0)
+  }
+
+  /**
    * Skjuler det som ikke passer, og melder hvor mange som er igjen.
    *
-   * Kjøres av det brukeren gjør: hun skriver, eller hun setter fokus i
-   * feltet.
+   * Kjøres når brukeren skriver eller setter fokus i feltet, og på nytt
+   * etter en patch mens lista er åpen, siden patchen kan ha byttet ut
+   * alternativene.
    */
   private filter(): void {
     /*
@@ -356,11 +420,38 @@ export class FsSuggestion extends HostElement {
       setFlag(option, "hidden", query !== "" && !label.includes(query))
     }
 
-    const treff = this.visible.length
-    const empty = this.querySelector<HTMLElement>(`.${SUGGESTION_EMPTY_CLASS}`)
-    if (empty) setFlag(empty, "hidden", treff > 0)
+    this.dropHiddenMark()
+    this.syncEmpty()
+    this.announce(this.visible.length)
+  }
 
-    this.announce(treff)
+  /**
+   * Tar bort markeringen fra et alternativ filtreringen nettopp skjulte.
+   *
+   * Ryddingen hører her, der skjulingen skjer, og ikke bare i `repair()`:
+   * den returnerer med en gang under `server-controlled`, og da pekte
+   * `aria-activedescendant` på et skjult alternativ, som skjermleseren leste
+   * opp likevel.
+   */
+  private dropHiddenMark(): void {
+    const control = this.control
+    if (!control) return
+
+    const marked = this.options.find(
+      (option) => option.getAttribute("aria-selected") === "true",
+    )
+    if (marked?.hidden) {
+      setAttr(marked, "aria-selected", "false")
+      if (this.active?.id === marked.id) this.active = undefined
+    }
+
+    const pointed = control.getAttribute("aria-activedescendant")
+    if (pointed) {
+      const target = this.options.find((option) => option.id === pointed)
+      if (!target || target.hidden) {
+        control.removeAttribute("aria-activedescendant")
+      }
+    }
   }
 
   /**
@@ -378,12 +469,12 @@ export class FsSuggestion extends HostElement {
   private announceFiltered(): void {
     if (!this.prefiltered) return
 
-    const treff = this.visible.length
-    if (treff === this.announcedCount) return
+    const hits = this.visible.length
+    if (hits === this.announcedCount) return
 
-    const forste = this.announcedCount === undefined
-    this.announcedCount = treff
-    if (!forste) this.announce(treff)
+    const first = this.announcedCount === undefined
+    this.announcedCount = hits
+    if (!first) this.announce(hits)
   }
 
   /**
@@ -391,40 +482,41 @@ export class FsSuggestion extends HostElement {
    *
    * Uten dette får den som ikke ser skjermen ingen beskjed om at lista
    * snevret seg inn mens hun skrev. Teksten er klientgenerert, så elementet
-   * har `data-ignore-morph` fra byggeren.
+   * har `data-ignore-morph` fra byggeren. Mangler elementet, har `bind()`
+   * alt sagt fra.
    */
-  private announce(treff: number): void {
+  private announce(hits: number): void {
     const status = this.querySelector<HTMLElement>("[role='status']")
     if (!status) return
 
-    const tekst =
-      treff === 0 ? "Ingen treff" : treff === 1 ? "Ett treff" : `${treff} treff`
+    const text =
+      hits === 0 ? "Ingen treff" : hits === 1 ? "Ett treff" : `${hits} treff`
 
-    setText(status, tekst)
+    setText(status, text)
   }
 
   private markActive(index: number): void {
-    const synlige = this.visible
-    if (synlige.length === 0 || !this.control) return
+    const shown = this.visible
+    if (shown.length === 0 || !this.control) return
 
-    const neste = (index + synlige.length) % synlige.length
+    const next = (index + shown.length) % shown.length
 
-    this.markOption(synlige[neste])
-    synlige[neste].scrollIntoView({ block: "nearest" })
+    this.markOption(shown[next])
+    shown[next].scrollIntoView({ block: "nearest" })
   }
 
   /** Markerer ett alternativ, og husker hvilket. */
-  private markOption(aktiv: HTMLElement): void {
+  private markOption(option: HTMLElement): void {
     if (!this.control) return
 
-    for (const option of this.options) {
-      setAttr(option, "aria-selected", option === aktiv ? "true" : "false")
+    for (const other of this.options) {
+      setAttr(other, "aria-selected", other === option ? "true" : "false")
     }
 
-    this.active = { id: aktiv.id, label: (aktiv.textContent ?? "").trim() }
+    this.active = { id: option.id, label: (option.textContent ?? "").trim() }
     // aria-activedescendant flytter skjermleserens lesepunkt uten at fokus
     // forlater feltet. Uten den leses alternativet aldri opp.
-    setAttr(this.control, "aria-activedescendant", aktiv.id)
+    setAttr(this.control, "aria-activedescendant", option.id)
   }
 
   private choose(option: HTMLElement): void {
@@ -463,12 +555,20 @@ export class FsSuggestion extends HostElement {
     this.setOpen(true)
   }
 
+  private handleFocusOut = (event: FocusEvent): void => {
+    // Går fokus til noe inne i komponenten, som en knapp ved siden av
+    // feltet, står lista.
+    const next = event.relatedTarget
+    if (next instanceof Node && this.contains(next)) return
+    this.setOpen(false)
+  }
+
   private handleKeydown = (event: KeyboardEvent): void => {
-    const åpen = this.listElement?.hidden === false
+    const open = this.listElement?.hidden === false
 
     if (event.key === "ArrowDown") {
       event.preventDefault()
-      if (!åpen) {
+      if (!open) {
         this.filter()
         this.setOpen(true)
       }
@@ -479,21 +579,25 @@ export class FsSuggestion extends HostElement {
       // `aria-activedescendant` på et alternativ i en liste feltet samtidig
       // meldte som lukket, og skjermleseren leste opp noe som ikke sto på
       // skjermen.
-      if (!åpen) {
+      if (!open) {
         this.filter()
         this.setOpen(true)
       }
       // Er ingenting markert, går pil opp til det siste. `activeIndex - 1`
       // ville gitt det nest siste, siden ingenting markert er -1.
       this.markActive(this.activeIndex < 0 ? -1 : this.activeIndex - 1)
-    } else if (event.key === "Enter" && åpen && this.activeIndex >= 0) {
+    } else if (event.key === "Enter" && open && this.activeIndex >= 0) {
       event.preventDefault()
-      const valgt = this.visible[this.activeIndex]
-      if (valgt) this.choose(valgt)
-    } else if (event.key === "Escape" && åpen) {
+      const chosen = this.visible[this.activeIndex]
+      if (chosen) this.choose(chosen)
+    } else if (event.key === "Escape" && open) {
       event.preventDefault()
       this.setOpen(false)
     }
+  }
+
+  private handleListMouseDown = (event: Event): void => {
+    event.preventDefault()
   }
 
   private handleOptionMouseDown = (event: Event): void => {
@@ -501,11 +605,6 @@ export class FsSuggestion extends HostElement {
     // å skje, og lista lukker seg først.
     event.preventDefault()
     this.choose(event.currentTarget as HTMLElement)
-  }
-
-  private handleOutsideClick = (event: Event): void => {
-    if (this.contains(event.target as Node)) return
-    this.setOpen(false)
   }
 }
 
