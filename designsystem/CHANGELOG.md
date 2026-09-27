@@ -6,13 +6,20 @@ regnes som brytende endringer og krever en ny hovedversjon:
 
 - et klassenavn, et `data-*`-attributt eller en lovlig verdi som forsvinner
   eller endrer betydning,
+- et hvilket som helst annet attributt en byggefunksjon skriver ut, `aria-*`
+  medregnet, som forsvinner eller endrer betydning. Det byggefunksjonene
+  sender ut står i konsumentens markup, og kan styles og testes mot. Det en
+  web component setter i nettleseren er ikke API på samme måte: det er
+  oppførsel, og rettes som oppførsel,
 - et `part`-navn i en komponent med shadow DOM,
 - et tokennavn eller en `--fs-*`-variabel,
 - en funksjon eller en type i `fs`,
 - en oppføring i `exports` i `package.json`.
 
-Nye komponenter, nye valgfrie attributter og rettelser som ikke endrer markup
-kommer i et nytt undertall.
+Nye komponenter, nye valgfrie attributter, nye attributter en byggefunksjon
+legger til, og rettelser som ikke endrer markup kommer i et nytt undertall.
+Før 1.0 kan et undertall også ha brytende endringer, og da står de under en
+egen overskrift «Brytende».
 
 ## Ikke utgitt
 
