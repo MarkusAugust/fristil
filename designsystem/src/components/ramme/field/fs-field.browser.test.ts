@@ -762,10 +762,50 @@ describe("fs-field eier bare det den selv skrev", () => {
     expect(input.getAttribute("aria-invalid")).toBe("false")
   })
 
+  it("lar serverens aria-invalid=spelling stå, og regner feltet som ugyldig", async () => {
+    // `grammar` og `spelling` er lovlige verdier og betyr ugyldig. De ble
+    // lest som «ikke true», og strøket.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="tekst">Tekst</label>
+        <input id="tekst" class="fs-input" aria-invalid="spelling" />
+        <p class="fs-error-text">Ordet finnes ikke.</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("aria-invalid")).toBe("spelling")
+    expect(input.getAttribute("data-state")).toBe("invalid")
+    expect(error.hidden).toBe(false)
+  })
+
+  it("regner ikke en fjernet hjelpetekst som serverens ekstra id", async () => {
+    // Serveren skrev `aria-describedby="epost-help"`. Et skript fjerner
+    // hjelpeteksten uten å røre kontrollen. Id-en var komponentens å
+    // forvalte, og skal ikke bli stående som om serveren la den til.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" aria-describedby="epost-help" />
+        <p class="fs-help-text" id="epost-help">Hjelp</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    document.querySelector(".fs-help-text")?.remove()
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const input = document.querySelector("input") as HTMLInputElement
+    expect(input.getAttribute("aria-describedby")).toBeNull()
+  })
+
   it("lar requiredMarker som egenskap bety det samme som attributtet", async () => {
     // `required-marker="none"` på verten overstyrer en `data-required`
-    // serveren skrev på ledeteksten. React 19 skriver egenskapen, så veien
-    // gjennom setteren må bety det samme.
+    // serveren skrev på ledeteksten, så veien gjennom setteren må bety det
+    // samme. Setteren fjernet attributtet for `none`, og markeringen kom
+    // tilbake fra ledeteksten.
     document.body.innerHTML = `
       <fs-field>
         <label for="navn" data-required="symbol">Navn</label>

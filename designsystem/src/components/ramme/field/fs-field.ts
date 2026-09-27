@@ -182,9 +182,9 @@ export class FsField extends HostElement {
    *
    * `none` er en egen verdi og ikke fraværet av en: står den på verten,
    * overstyrer den det serveren skrev på ledeteksten. Setteren skriver den
-   * derfor bokstavelig. React 19 skriver egenskapen framfor attributtet, så
-   * en setter som oversatte `none` til «fjern attributtet» gjorde det umulig
-   * å slå markeringen av fra en React-app.
+   * derfor bokstavelig. En setter som oversatte `none` til «fjern
+   * attributtet» ga `felt.requiredMarker = "none"` en annen betydning enn
+   * `required-marker="none"`, og markeringen serveren skrev kom tilbake.
    */
   get requiredMarker(): Marker {
     const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
@@ -418,7 +418,10 @@ export class FsField extends HostElement {
     // `ControlMemory` for hvordan serverens ord skilles fra komponentens eget.
     const server = this.serverWord(control, readControlWord(control))
 
-    const invalid = this.hasAttribute("invalid") || server.invalid === "true"
+    // `aria-invalid` har fire lovlige verdier, og både `grammar` og
+    // `spelling` betyr ugyldig. Alt annet enn fravær og `false` er det.
+    const serverInvalid = server.invalid !== null && server.invalid !== "false"
+    const invalid = this.hasAttribute("invalid") || serverInvalid
     const disabled = this.hasAttribute("disabled") || server.disabled
 
     /*
@@ -428,7 +431,16 @@ export class FsField extends HostElement {
      * her og legges til igjen etter dagens tilstand, ellers ble
      * feilmeldingens id stående etter at feilen var borte.
      */
-    const managedIds = new Set([help?.id, error?.id].filter(Boolean))
+    const managedIds = new Set(
+      [
+        help?.id,
+        error?.id,
+        // Også dem komponenten forvaltet før: fjerner et skript hjelpeteksten
+        // uten å røre kontrollen, sto id-en ellers igjen som «serverens».
+        this.generatedHelpId,
+        this.generatedErrorId,
+      ].filter(Boolean),
+    )
     const serverExtras = (server.describedBy ?? "")
       .split(/\s+/)
       .filter((id) => id && !managedIds.has(id))
@@ -467,12 +479,16 @@ export class FsField extends HostElement {
       setFlag(error, "hidden", Boolean(computed.error.hidden))
     }
 
-    // `aria-invalid="false"` er gyldig og vanlig i håndskrevet HTML. Skrev
-    // serveren det, blir det stående når feltet ikke er ugyldig, framfor å
-    // bli strøket ved hver patch.
-    const ariaInvalid =
-      computed.control["aria-invalid"] ??
-      (server.invalid === "false" ? "false" : null)
+    // Serverens ord står ordrett når det er serveren som sier feltet er
+    // ugyldig, også `spelling` og `grammar`. Ellers skriver komponenten
+    // `true` når verten sier det, og lar et `false` serveren skrev stå:
+    // det er gyldig og vanlig i håndskrevet HTML, og ble strøket ved hver
+    // patch.
+    const ariaInvalid = serverInvalid
+      ? server.invalid
+      : invalid
+        ? "true"
+        : server.invalid
 
     setAttr(control, "aria-describedby", computed.control["aria-describedby"])
     setAttr(control, "aria-invalid", ariaInvalid)
