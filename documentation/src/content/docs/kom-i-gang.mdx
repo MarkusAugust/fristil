@@ -73,18 +73,29 @@ Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
 
 ## Registrer web components
 
-Ramme- og frittstående komponenter er egendefinerte elementer, og må registreres én gang når appen starter:
+Ramme- og frittstående komponenter er egendefinerte elementer, og må registreres én gang når appen starter. `defineFs()` registrerer alle ni:
 
 ```ts
-// main.ts, kjøres én gang
+// main.ts, kjøres én gang, ved import og ikke i en effekt
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
-import { defineFsField } from "@fristil/designsystem/field"
+import { defineFs } from "@fristil/designsystem/register"
 
-defineFsField()
+defineFs()
 ```
 
-Flere kall er ufarlige, for funksjonen sjekker selv om elementet er registrert. Den gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så den kan stå i en fil som kjøres begge steder.
+Uten byggverktøy peker du på den bygde fila:
+
+```html
+<script type="module">
+  import { defineFs } from "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.17.0/dist/register.js"
+  defineFs()
+</script>
+```
+
+Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et kall på `show()` eller `reportFailure()` i det gapet feiler. Registreringen drar koden til alle ni inn i bunten. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
+
+Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
 
 ```html
 <fs-field required-marker="symbol">
@@ -132,13 +143,14 @@ Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra
 | `@fristil/designsystem/react` | Samme `fs`, men med `className` og `htmlFor` |
 | `@fristil/designsystem/react-jsx` | Typer for de egendefinerte elementene i JSX |
 | `@fristil/designsystem/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
+| `@fristil/designsystem/register` | `defineFs`: registrerer alle web-komponentene i ett kall |
 | `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
-| `@fristil/designsystem/session-timeout` | `defineFsSessionTimeout`, klassen `FsSessionTimeout` |
-| `@fristil/designsystem/connection-status` | `defineFsConnectionStatus`, klassen `FsConnectionStatus` |
+| `@fristil/designsystem/session-timeout` | `defineFsSessionTimeout`, klassen `FsSessionTimeout`, `extendSession` og `resetSession` |
+| `@fristil/designsystem/connection-status` | `defineFsConnectionStatus`, klassen `FsConnectionStatus`, `reportFailure` og `reportSuccess` |
 | `@fristil/designsystem/tabs` | `defineFsTabs`, klassen `FsTabs` |
 | `@fristil/designsystem/error-summary` | `defineFsErrorSummary`, klassen `FsErrorSummary` |
 | `@fristil/designsystem/popover` | `defineFsPopover`, klassen `FsPopover` |
-| `@fristil/designsystem/toast` | `defineFsToast`, klassen `FsToast` |
+| `@fristil/designsystem/toast` | `defineFsToast`, klassen `FsToast`, `showToast` |
 | `@fristil/designsystem/suggestion` | `defineFsSuggestion`, klassen `FsSuggestion` |
 | `@fristil/designsystem/dialog` | `defineFsDialog`, klassen `FsDialog` |
 | `@fristil/designsystem/field-core` | `computeFieldAttributes`: det `fs.field` og `<fs-field>` deler |

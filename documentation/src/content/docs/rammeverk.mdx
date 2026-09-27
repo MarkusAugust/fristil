@@ -79,12 +79,12 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     import "@fristil/designsystem/field.css"
     import "@fristil/designsystem/suggestion.css"
 
-    import { defineFsField } from "@fristil/designsystem/field"
-    import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+    import { defineFs } from "@fristil/designsystem/register"
 
-    defineFsField()
-    defineFsSuggestion()
+    defineFs()
     ```
+
+    Kallet står øverst i modulen, ikke i en `useEffect`. En effekt kjører etter første tegning, så elementene i markupen er vanlige `HTMLElement` i det React tegner dem, og et kall på `show()` eller `reportFailure()` før effekten feiler med «is not a function». Funksjonen gjør ingenting på en server, så den kan stå i en rotmodul som kjøres begge steder, som i TanStack Start. Bruker du én komponent, kall dens egen `defineFsField()` og slipp resten ut av bunten.
 
     Bruker du CSS-komponentene, importer `fs` fra React-inngangen:
 
@@ -94,7 +94,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     <button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
     ```
 
-    Importerer du dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
+    Står dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
   </TabItem>
   <TabItem label="TypeScript-typer">
     Importer typene for de egendefinerte elementene én gang. Legg importen i en `.d.ts`-fil, så havner den aldri i bygget:

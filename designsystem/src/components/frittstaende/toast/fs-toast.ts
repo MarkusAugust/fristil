@@ -1,4 +1,4 @@
-import { defineElement, HostElement } from "../../host-element.js"
+import { defineElement, HostElement, whenUpgraded } from "../../host-element.js"
 import { TOAST_CLASS, TOAST_CLOSE_CLASS } from "./toast.js"
 
 export const FS_TOAST_TAG = "fs-toast" as const
@@ -197,4 +197,19 @@ declare global {
 
 export function defineFsToast(tagName = FS_TOAST_TAG): void {
   defineElement(tagName, FsToast)
+}
+
+/**
+ * `element.show()`, men venter først på at `defineFsToast()` har kjørt.
+ *
+ * Se `whenUpgraded` for hvorfor: et kall før registreringen traff et vanlig
+ * `HTMLElement` uten `show`.
+ */
+export async function showToast(
+  element: Element,
+  message: string,
+  options: ShowOptions = {},
+): Promise<HTMLElement> {
+  const toast = await whenUpgraded<FsToast>(element)
+  return toast.show(message, options)
 }
