@@ -1015,3 +1015,71 @@ describe("fs-dialog med server-controlled", () => {
     )
   })
 })
+
+describe("dialogen med farget topp", () => {
+  it("gir toppen fargen og flytter luften ut i delene", async () => {
+    // Uten dette skrev to dialoger i spilldemoen om padding på tre klasser
+    // for å få et farget bånd helt ut i kantene.
+    const boks = dialog({ titleId: "farge-tittel", color: "success" })
+    expect(boks.dialog["data-color"]).toBe("success")
+    expect(dialog({ titleId: "x" }).dialog["data-color"]).toBeUndefined()
+
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <div ${attr(boks.header)}>
+          <h2 ${attr(boks.title)}>Full pott</h2>
+          <p ${attr(boks.subtitle)}>25 av 25 poeng</p>
+        </div>
+        <div ${attr(boks.body)}><p>Alle fire traff.</p></div>
+        <form method="dialog" ${attr(boks.footer)}><button class="fs-button" value="lukk">Lukk</button></form>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const d = document.querySelector("dialog") as HTMLElement
+    const topp = d.querySelector(".fs-dialog__header") as HTMLElement
+    const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
+    const fot = d.querySelector(".fs-dialog__footer") as HTMLElement
+    const rot = getComputedStyle(document.documentElement)
+    const forventet = rot
+      .getPropertyValue("--semantic-success-background")
+      .trim()
+
+    expect(getComputedStyle(d).paddingTop).toBe("0px")
+    expect(getComputedStyle(topp).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(kropp).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(fot).marginTop).toBe("0px")
+    expect(getComputedStyle(topp).backgroundColor).not.toBe(
+      getComputedStyle(kropp).backgroundColor,
+    )
+    expect(forventet.length).toBeGreaterThan(0)
+  })
+
+  it("står som før uten en topp", async () => {
+    const boks = dialog({ titleId: "vanlig-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <h2 ${attr(boks.title)}>Vanlig</h2>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const d = document.querySelector("dialog") as HTMLElement
+    expect(getComputedStyle(d).paddingTop).not.toBe("0px")
+  })
+
+  it("kjenner fargene sine", () => {
+    expect(dialog.colors).toEqual([
+      "neutral",
+      "brand",
+      "info",
+      "success",
+      "warning",
+      "danger",
+    ])
+    expect(dialog.isColor("brand")).toBe(true)
+    expect(dialog.isColor("lilla")).toBe(false)
+    expect(dialog.header).toBe("fs-dialog__header")
+  })
+})

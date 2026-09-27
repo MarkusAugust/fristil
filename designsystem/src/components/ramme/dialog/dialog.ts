@@ -1,9 +1,28 @@
-import { attributes, idOrFallback } from "../../css/shared.js"
+import { attributes, createGuard, idOrFallback } from "../../css/shared.js"
 
 export const DIALOG_CLASS = "fs-dialog" as const
+export const DIALOG_HEADER_CLASS = "fs-dialog__header" as const
 export const DIALOG_TITLE_CLASS = "fs-dialog__title" as const
+export const DIALOG_SUBTITLE_CLASS = "fs-dialog__subtitle" as const
 export const DIALOG_BODY_CLASS = "fs-dialog__body" as const
 export const DIALOG_FOOTER_CLASS = "fs-dialog__footer" as const
+
+/**
+ * Fargen på toppen, og hva den betyr.
+ *
+ * `neutral` er standard og gir ingen farge. De fire statusfargene er de
+ * samme som varsleren bruker, og `brand` er merkefargen, for en topp som
+ * sier hvem som snakker framfor hvordan det gikk.
+ */
+export const dialogColors = [
+  "neutral",
+  "brand",
+  "info",
+  "success",
+  "warning",
+  "danger",
+] as const
+export type DialogColor = (typeof dialogColors)[number]
 
 export type DialogOptions = {
   /** Id på overskriften. Dialogen navngis av den med `aria-labelledby`. */
@@ -16,6 +35,14 @@ export type DialogOptions = {
    * `InvalidStateError` på en dialog som alt står åpen.
    */
   open?: boolean
+  /**
+   * Farge på toppen. Standard: ingen.
+   *
+   * Fargen gjelder `header`, så den må stå i markupen for å synes:
+   * `<div {...boks.header}>` rundt overskriften. Uten en topp har fargen
+   * ingenting å farge.
+   */
+  color?: DialogColor
 }
 
 export type DialogAttributes = {
@@ -26,11 +53,16 @@ export type DialogAttributes = {
     class: typeof DIALOG_CLASS
     "aria-labelledby": string
     open?: true
+    "data-color"?: Exclude<DialogColor, "neutral">
   }
+  /** Toppen, med overskriften og en eventuell undertekst i. Valgfri. */
+  header: { class: typeof DIALOG_HEADER_CLASS }
   title: {
     class: typeof DIALOG_TITLE_CLASS
     id: string
   }
+  /** En linje under overskriften, inne i toppen. Valgfri. */
+  subtitle: { class: typeof DIALOG_SUBTITLE_CLASS }
   body: { class: typeof DIALOG_BODY_CLASS }
   footer: { class: typeof DIALOG_FOOTER_CLASS }
 }
@@ -76,7 +108,11 @@ export type DialogAttributes = {
  * ```
  */
 export const dialog = Object.assign(
-  ({ titleId: givenId, open = false }: DialogOptions): DialogAttributes => {
+  ({
+    titleId: givenId,
+    open = false,
+    color = "neutral",
+  }: DialogOptions): DialogAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
     const titleId = idOrFallback("fs.dialog()", givenId)
 
@@ -101,8 +137,11 @@ export const dialog = Object.assign(
          * HTML, meldte React avvik ved hvert eneste oppslag.
          */
         open: open ? (true as const) : undefined,
+        "data-color": color === "neutral" ? undefined : color,
       }),
+      header: attributes({ class: DIALOG_HEADER_CLASS }),
       title: attributes({ class: DIALOG_TITLE_CLASS, id: titleId }),
+      subtitle: attributes({ class: DIALOG_SUBTITLE_CLASS }),
       body: attributes({ class: DIALOG_BODY_CLASS }),
       footer: attributes({ class: DIALOG_FOOTER_CLASS }),
     }
@@ -110,11 +149,17 @@ export const dialog = Object.assign(
   {
     /** Klassen på selve `<dialog>`. */
     dialog: DIALOG_CLASS,
+    /** Klassen på toppen, som kan farges med `color`. */
+    header: DIALOG_HEADER_CLASS,
     /** Klassen på overskriften i dialogen. */
     title: DIALOG_TITLE_CLASS,
+    /** Klassen på underteksten i toppen. */
+    subtitle: DIALOG_SUBTITLE_CLASS,
     /** Klassen på innholdet, som ruller når dialogen blir for høy. */
     body: DIALOG_BODY_CLASS,
     /** Klassen på raden med knapper nederst. */
     footer: DIALOG_FOOTER_CLASS,
+    colors: dialogColors,
+    isColor: createGuard(dialogColors),
   },
 )
