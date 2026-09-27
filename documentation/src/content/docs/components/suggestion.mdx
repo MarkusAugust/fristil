@@ -230,7 +230,7 @@ Filtrerer du på nøyaktig det samme, altså at teksten inneholder søkeordet, t
 | Uskarpt søk, `oslo` finner `Osloveien` | Treffene komponenten ikke kjenner igjen blir borte |
 | Asynkront søk | Lista blinker mens svaret er underveis |
 
-Et smalere filter enn komponentens, som `startsWith`, er derimot trygt: alt du beholder inneholder også søkeordet, så komponenten skjuler ingenting av det. Da er `prefiltered` likevel riktig for tommeldingen, som forklart under.
+Rendrer du bare treffene, og filteret ditt er smalere enn komponentens, som `startsWith`, er det derimot trygt: alt du beholder inneholder også søkeordet, så komponenten skjuler ingenting av det. Da er `prefiltered` likevel riktig for tommeldingen, som forklart under.
 
 Det gjelder like mye i React som i Datastar. I React er det lett å overse, for der er ingen server involvert:
 
@@ -272,6 +272,7 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 | `--fs-suggestion-max-height` | `18rem` |
 | `--fs-suggestion-option-padding` | `var(--size-2) var(--size-3)` |
 | `--fs-suggestion-radius` | `var(--size-1)` |
+| `--fs-suggestion-layer` | `30` |
 
 ```css
 .fs-suggestion__list {

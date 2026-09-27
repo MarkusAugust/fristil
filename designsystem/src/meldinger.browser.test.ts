@@ -199,6 +199,29 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("listbox"))).toBe(true)
   })
 
+  it("forslagsfeltet uten et statuselement", async () => {
+    // Antall treff leses opp i statuselementet. Uten det sto komponenten
+    // stille, og den som ikke ser skjermen fikk aldri vite at lista snevret
+    // seg inn.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-suggestion>
+        <label class="fs-label" for="kommune">Kommune</label>
+        <input class="fs-input" id="kommune" role="combobox"
+               aria-expanded="false" aria-controls="kommuner" aria-autocomplete="list" />
+        <ul class="fs-suggestion__list" id="kommuner" role="listbox" hidden>
+          <li class="fs-suggestion__option" id="kommune-0" role="option">Bergen</li>
+        </ul>
+      </fs-suggestion>
+    `)
+    await ventTilRo()
+
+    expect(meldinger(advarsel).some((m) => m.includes('[role="status"]'))).toBe(
+      true,
+    )
+  })
+
   it("sprettoppvinduet uten et panel", async () => {
     const advarsel = lytt()
 
@@ -449,6 +472,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
             <li class="fs-suggestion__option" id="kommune-0" role="option"
                 aria-selected="false">Bergen</li>
           </ul>
+          <span class="fs-sr-only" role="status" aria-live="polite"></span>
         </fs-suggestion>
 
         <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1"

@@ -33,6 +33,15 @@
     box-shadow: var(--semantic-shadow-overlay);
   }
 
+  /* Posisjonen er fysisk: `--fs-popover-left` er avstanden fra venstre
+     vinduskant, regnet ut mot knappen. `inset-inline-start` er høyre kant i
+     et dokument som leses fra høyre, så der snus den, slik ikonene i
+     bakgrunnen snus med `:dir(rtl)`. */
+  .fs-popover:dir(rtl) {
+    inset-inline-start: auto;
+    inset-inline-end: var(--fs-popover-left, 0);
+  }
+
   .fs-popover:not(:popover-open) {
     display: none;
   }

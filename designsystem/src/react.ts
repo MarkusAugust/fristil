@@ -235,14 +235,17 @@ export const fs = {
     },
   ),
 
-  popover: (options: Parameters<typeof popover>[0]) => {
-    const boks = popover(options)
-    return {
-      host: boks.host,
-      trigger: toReactAttributes(boks.trigger),
-      panel: toReactAttributes(boks.panel),
-    }
-  },
+  popover: Object.assign(
+    (options: Parameters<typeof popover>[0]) => {
+      const boks = popover(options)
+      return {
+        host: boks.host,
+        trigger: toReactAttributes(boks.trigger),
+        panel: toReactAttributes(boks.panel),
+      }
+    },
+    { isPlacement: popover.isPlacement },
+  ),
 
   tabs: (options: Parameters<typeof tabs>[0]) => {
     const faner = tabs(options)

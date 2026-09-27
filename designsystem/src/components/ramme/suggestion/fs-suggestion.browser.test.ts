@@ -427,3 +427,225 @@ describe("fs-suggestion med pil opp", () => {
     expect(input.getAttribute("aria-activedescendant")).toBe(siste.id)
   })
 })
+
+describe("fs-suggestion lukker og rydder", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  function markup(ekstraVert = "") {
+    return `
+      <fs-suggestion ${ekstraVert}>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <ul ${attr(FORSLAG.list)}>
+            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          </ul>
+          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </fs-suggestion>
+      <input id="neste-felt" />
+    `
+  }
+
+  const tast = (input: HTMLInputElement, key: string) =>
+    input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }))
+
+  it("lukker lista når fokus forlater feltet", async () => {
+    // Tab gikk videre til neste felt, og lista ble stående over det med
+    // `aria-expanded="true"` på et felt som ikke lenger hadde fokus.
+    monter(markup())
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+
+    input.focus()
+    await tegn()
+    expect(liste.hidden).toBe(false)
+    ;(document.getElementById("neste-felt") as HTMLInputElement).focus()
+    await tegn()
+
+    expect(liste.hidden).toBe(true)
+    expect(input.getAttribute("aria-expanded")).toBe("false")
+  })
+
+  it("lukker lista når fokus går ut av komponenten via en knapp inni den", async () => {
+    // En knapp ved siden av feltet er inne i komponenten, så lista står når
+    // fokus går dit. Går fokus videre ut derfra, skal lista lukkes da også.
+    monter(`
+      <fs-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <button type="button" id="tom-knapp">Tøm</button>
+          <ul ${attr(FORSLAG.list)}>
+            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          </ul>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </fs-suggestion>
+      <input id="neste-felt" />
+    `)
+    const felt = await tegn()
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+
+    ;(felt.querySelector("input") as HTMLInputElement).focus()
+    await tegn()
+    ;(document.getElementById("tom-knapp") as HTMLElement).focus()
+    await tegn()
+    expect(liste.hidden, "lista lukket seg for en knapp inni").toBe(false)
+    ;(document.getElementById("neste-felt") as HTMLElement).focus()
+    await tegn()
+
+    expect(liste.hidden).toBe(true)
+  })
+
+  it("holder lista åpen når brukeren klikker i feltet inne i en skyggerot", async () => {
+    // Dokumentasjonens forhåndsvisninger ligger i en skyggerot. Lytteren på
+    // `document` så `event.target` omdirigert til skyggeverten, regnet
+    // klikket som utenfor, og lukket lista i samme klikk som åpnet den.
+    const vert = document.createElement("div")
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = markup()
+    await customElements.whenDefined("fs-suggestion")
+    await ventPaTegning()
+
+    const input = rot.querySelector("input") as HTMLInputElement
+    const liste = rot.querySelector("[role='listbox']") as HTMLElement
+    input.focus()
+    input.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, composed: true }),
+    )
+    await ventPaTegning()
+
+    expect(liste.hidden, "lista ble lukket av klikket i feltet").toBe(false)
+    vert.remove()
+  })
+
+  it("skjuler «Ingen treff» sammen med lista", async () => {
+    // Tommeldingen er søsken til lista, ikke barn, så `hidden` på lista
+    // skjulte den ikke, og den ble stående under et lukket felt.
+    monter(markup())
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+
+    skriv(felt, "xyz")
+    await tegn()
+    expect(tom.hidden).toBe(false)
+
+    tast(input, "Escape")
+    await tegn()
+    expect(tom.hidden).toBe(true)
+    expect(getComputedStyle(tom).display).toBe("none")
+  })
+
+  it("rydder markeringen når det markerte filtreres bort, også med server-controlled", async () => {
+    monter(markup("server-controlled"))
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+
+    tast(input, "ArrowDown")
+    await tegn()
+    const bergen = felt.querySelector("[role='option']") as HTMLElement
+    expect(bergen.getAttribute("aria-selected")).toBe("true")
+
+    skriv(felt, "o")
+    await tegn()
+
+    expect(bergen.hidden).toBe(true)
+    expect(bergen.getAttribute("aria-selected")).toBe("false")
+    expect(input.getAttribute("aria-activedescendant")).toBeNull()
+  })
+
+  it("finner alternativene på rollen, ikke på klassen", async () => {
+    monter(`
+      <fs-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div ${attr(FORSLAG.field)}>
+          <input ${attr(FORSLAG.control)} name="kommune">
+          <ul ${attr(FORSLAG.list)}>
+            <li id="egen-0" role="option">Bergen</li>
+            <li id="egen-1" role="option">Oslo</li>
+          </ul>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+
+    tast(input, "ArrowDown")
+    await tegn()
+    expect(input.getAttribute("aria-activedescendant")).toBe("egen-0")
+
+    skriv(felt, "os")
+    await tegn()
+    expect((document.getElementById("egen-0") as HTMLElement).hidden).toBe(true)
+    expect((document.getElementById("egen-1") as HTMLElement).hidden).toBe(
+      false,
+    )
+  })
+
+  it("lar et smalere filter i appen stå", async () => {
+    /*
+     * Appen rendrer bare treffene av et `startsWith`-søk, uten `prefiltered`.
+     * Alt den beholder inneholder også søkeordet, så komponentens filter
+     * skjuler ingenting av det. Påstanden står i dokumentasjonen, og her.
+     */
+    const smalt = suggestion({ id: "sted", count: 2 })
+    monter(`
+      <fs-suggestion>
+        <label ${attr(smalt.label)}>Sted</label>
+        <div ${attr(smalt.field)}>
+          <input ${attr(smalt.control)} value="o">
+          <ul ${attr(smalt.list)}>
+            <li ${attr(smalt.options[0])}>Oslo</li>
+            <li ${attr(smalt.options[1])}>Odda</li>
+          </ul>
+          <span ${attr(smalt.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+
+    input.focus()
+    await tegn()
+
+    const synlige = [
+      ...felt.querySelectorAll<HTMLElement>("[role='option']"),
+    ].filter((o) => !o.hidden)
+    expect(synlige.map((o) => o.textContent)).toEqual(["Oslo", "Odda"])
+    expect(
+      (felt.querySelector("[role='status']") as HTMLElement).textContent,
+    ).toBe("2 treff")
+  })
+})
+
+describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
+  it("skjuler tommeldingen på et lukket felt uten alternativer", () => {
+    // Det anbefalte oppsettet for asynkront søk: tom liste til svaret
+    // kommer. Meldingen sto synlig alt ved sidelasting.
+    expect(suggestion({ id: "k", count: 0 }).empty.hidden).toBe(true)
+    expect(suggestion({ id: "k", count: 0, open: true }).empty.hidden).toBe(
+      undefined,
+    )
+    expect(suggestion({ id: "k", count: 2, open: true }).empty.hidden).toBe(
+      true,
+    )
+  })
+
+  it("skriver markeringen bare når lista er åpen, begge halvdelene sammen", () => {
+    const lukket = suggestion({ id: "k", count: 3, activeIndex: 1 })
+    expect(lukket.options[1]["aria-selected"]).toBe("false")
+    expect(lukket.control["aria-activedescendant"]).toBeUndefined()
+
+    const apen = suggestion({ id: "k", count: 3, activeIndex: 1, open: true })
+    expect(apen.options[1]["aria-selected"]).toBe("true")
+    expect(apen.control["aria-activedescendant"]).toBe("k-option-1")
+  })
+})
