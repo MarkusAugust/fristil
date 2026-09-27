@@ -1,5 +1,5 @@
 import type { FieldState, RequiredMarker } from "../../css/shared.js"
-import { attributes, createFieldId, idEllerReserve } from "../../css/shared.js"
+import { attributes, createFieldId, idOrFallback } from "../../css/shared.js"
 
 // Videreeksportert her, der den hørte hjemme før, så konsumenter som
 // importerer fra `./field-core` ikke merker flyttingen.
@@ -101,7 +101,7 @@ export function joinDescribedBy(
 
 export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   const {
-    id: oppgittId,
+    id: givenId,
     help = false,
     error = false,
     required,
@@ -111,8 +111,8 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
     describedBy = [],
   } = options
 
-  // Reserven gjelder bare den som ikke har en typesjekk. Se `idEllerReserve`.
-  const id = idEllerReserve("fs.field()", oppgittId)
+  // Reserven gjelder bare den som ikke har en typesjekk. Se `idOrFallback`.
+  const id = idOrFallback("fs.field()", givenId)
   const helpId = options.helpId ?? `${id}-help`
   const errorId = options.errorId ?? `${id}-error`
 

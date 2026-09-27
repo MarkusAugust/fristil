@@ -1,4 +1,4 @@
-import { attributes, idEllerReserve } from "../../css/shared.js"
+import { attributes, idOrFallback } from "../../css/shared.js"
 import {
   computeFieldAttributes,
   type FieldOptions,
@@ -38,14 +38,14 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  * markert, settes `server-controlled` ved siden av.
  */
 export const suggestion = ({
-  id: oppgittId,
+  id: givenId,
   count = 0,
   activeIndex = -1,
   open = false,
   ...field
 }: SuggestionOptions) => {
   // Reserven gjelder bare den som ikke har en typesjekk.
-  const id = idEllerReserve("fs.suggestion()", oppgittId)
+  const id = idOrFallback("fs.suggestion()", givenId)
   const computed = computeFieldAttributes({ ...field, id })
   const listId = `${id}-list`
   const statusId = `${id}-status`
