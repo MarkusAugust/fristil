@@ -1,6 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -317,6 +317,73 @@ describe("fs-tabs leser koblingen og hopper over det som ikke kan velges", () =>
       (document.getElementById(id) as HTMLElement).hidden
     expect(hidden("sak-panel-0")).toBe(true)
     expect(hidden("sak-panel-1")).toBe(false)
+  })
+
+  it("sier fra om en aria-controls som peker på ingenting, uten å fryse", async () => {
+    /*
+     * Rekkefølgen er reserve bare når `aria-controls` mangler. Falt
+     * komponenten tilbake på den også ved en skrivefeil, kunne to faner få
+     * det samme panelet og skrive motsatt `hidden` på det i hver runde, og
+     * siden frøs.
+     */
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const { knapper, faner } = rad()
+    const [forste, ...resten] = faner.panels
+    const paneler = [...resten, forste]
+      .map((panel) => `<div ${attr(panel)}>${panel.id}</div>`)
+      .join("")
+    monter(`
+      <fs-tabs>
+        <div class="fs-tabs__list" role="tablist">${knapper.replace(
+          'aria-controls="sak-panel-1"',
+          'aria-controls="sak-panel-1x"',
+        )}</div>
+        ${paneler}
+      </fs-tabs>
+    `)
+    await tegn()
+    ;(document.getElementById("sak-tab-2") as HTMLElement).click()
+    await tegn()
+    ;(document.getElementById("sak-tab-0") as HTMLElement).click()
+    await tegn()
+    await tegn()
+
+    const hidden = (id: string) =>
+      (document.getElementById(id) as HTMLElement).hidden
+    expect(hidden("sak-panel-0")).toBe(false)
+    expect(hidden("sak-panel-2")).toBe(true)
+    expect(
+      advarsel.mock.calls.some((k) => String(k[0]).includes("aria-controls")),
+    ).toBe(true)
+    vi.restoreAllMocks()
+  })
+
+  it("flytter tabbestoppet når den valgte fanen deaktiveres av en patch", async () => {
+    const { knapper, paneler } = rad()
+    monter(`
+      <fs-tabs>
+        <div class="fs-tabs__list" role="tablist">${knapper}</div>
+        ${paneler}
+      </fs-tabs>
+    `)
+    await tegn()
+    ;(document.getElementById("sak-tab-1") as HTMLElement).click()
+    await tegn()
+    ;(document.getElementById("sak-tab-1") as HTMLButtonElement).disabled = true
+    await tegn()
+
+    const tabindex = [
+      ...document.querySelectorAll<HTMLElement>("[role='tab']"),
+    ].map((f) => f.tabIndex)
+    // Valget står, men tabbestoppet er en fane som kan få fokus.
+    expect(valgt()).toEqual([false, true, false])
+    expect(tabindex).toEqual([-1, -1, 0])
+  })
+
+  it("gir en tom rad for et negativt antall", () => {
+    const faner = tabs({ id: "tom", count: -1 })
+    expect(faner.tabs).toEqual([])
+    expect(faner.panels).toEqual([])
   })
 
   it("lar selected settes som egenskap", async () => {

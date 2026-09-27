@@ -136,7 +136,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toBe(true)
   })
 
-  it("flere faner enn paneler", async () => {
+  it("faner uten et panel", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -151,7 +151,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).some((m) => m.includes("flere faner enn paneler")),
+      meldinger(advarsel).some((m) => m.includes("faner uten et panel")),
     ).toBe(true)
   })
 
@@ -355,7 +355,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     }
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("flere faner enn paneler")),
+      meldinger(advarsel).filter((m) => m.includes("faner uten et panel")),
     ).toHaveLength(1)
   })
 

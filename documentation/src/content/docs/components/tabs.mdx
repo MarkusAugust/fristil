@@ -172,7 +172,7 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
 faner.selected = 2 // det samme som select(2)
 ```
 
-Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv.
+Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Bare markup uten `aria-controls` kobles etter rekkefølgen.
 
 ## Klasser du kan style
 

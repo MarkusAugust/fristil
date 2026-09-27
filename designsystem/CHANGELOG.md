@@ -25,8 +25,12 @@ kommer i et nytt undertall.
 - **Faner i faner er hver sin rad.** Komponenten fant faner og paneler i hele
   undertreet, så et klikk på en indre fane skjulte det ytre panelet den sto i.
 - **Panelet finnes gjennom `aria-controls`.** Koblingen står i markupen og
-  leses derfra, med rekkefølgen som reserve for markup uten id-er. Panelene
-  kan dermed stå i en annen rekkefølge enn fanene, og utenfor verten.
+  leses derfra, med rekkefølgen som reserve bare for markup uten
+  `aria-controls`. Panelene kan dermed stå i en annen rekkefølge enn fanene,
+  og utenfor verten. Peker `aria-controls` på en id som ikke finnes, sier
+  komponenten fra i konsollen, og et panel skrives aldri av to faner.
+- **Tabbestoppet flyttes når en patch deaktiverer den valgte fanen**, til den
+  første fanen som kan få fokus. Valget står.
 - **Venstre og høyre pil bytter retning i `dir="rtl"`.**
 - **`selected` på `<fs-tabs>` kan settes.** Getteren sto uten setter, og
   `faner.selected = 1`, som dokumentasjonen viste, kastet.
@@ -34,7 +38,11 @@ kommer i et nytt undertall.
 - **`<fs-error-summary>` prøver igjen når fokus ikke landet.** Sto boksen i et
   skjult panel eller en lukket dialog i det den kom, feilet `focus()` i
   stillhet mens flagget «har flyttet fokus» ble satt, og boksen fikk aldri
-  fokus da forelderen ble synlig og lista byttet ut.
+  fokus da forelderen ble synlig og lista byttet ut. Gjenforsøket skjer bare
+  når ingen står i et felt, så live-validering som patcher lista ikke river
+  fokus ut av feltet brukeren retter i.
+- **En lenke til en `<label>` uten kontroll følger `for`** dit den peker,
+  som til en gruppe.
 - **`<fs-error-summary>` sier fra når `tabindex` mangler.** Uten det gjør
   `focus()` ingenting, og hele grunnen til komponenten forsvant i stillhet.
 - **En lenke til en `<label>` som omslutter kontrollen** sender fokus til

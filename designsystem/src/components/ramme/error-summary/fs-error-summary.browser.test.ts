@@ -217,6 +217,47 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     expect(document.activeElement).toBe(boks)
   })
 
+  it("river ikke fokus ut av et felt brukeren står i", async () => {
+    // Landet ikke første forsøk, prøver komponenten igjen ved neste endring
+    // i lista. Men ikke mens noen skriver: da patcher live-valideringen
+    // lista, og fokus skal bli der det er.
+    monter(`
+      <div id="panel" hidden>
+        <fs-error-summary ${attr(FEIL.host)}>
+          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+          <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
+        </fs-error-summary>
+      </div>
+      <input id="epost" />
+    `)
+    await tegn()
+
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const felt = document.getElementById("epost") as HTMLInputElement
+    ;(document.getElementById("panel") as HTMLElement).hidden = false
+    felt.focus()
+    ;(boks.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#epost">Adressen mangler krøllalfa</a></li>`
+    await tegn()
+
+    expect(document.activeElement).toBe(felt)
+  })
+
+  it("følger for til en gruppe når ledeteksten ikke har en kontroll", async () => {
+    monter(`
+      <fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#valg-label" id="valg-lenke">Velg minst ett alternativ</a></li></ul>
+      </fs-error-summary>
+      <label id="valg-label" for="valg">Alternativer</label>
+      <div id="valg" role="group"><input type="checkbox" /></div>
+    `)
+    await tegn()
+    ;(document.getElementById("valg-lenke") as HTMLElement).click()
+
+    expect(document.activeElement?.id).toBe("valg")
+  })
+
   it("følger en ledetekst som omslutter kontrollen", async () => {
     // `for` er ikke den eneste koblingen mellom ledetekst og kontroll. Med
     // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`

@@ -34,6 +34,16 @@ export class FsErrorSummary extends HostElement {
   static observedAttributes = ["data-autofocus", "hidden"] as const
 
   private hasFocused = false
+  /**
+   * Om komponenten har prøvd å flytte fokus siden boksen sist ble synlig.
+   *
+   * Første forsøk skjer uansett hvor fokus står: en ny innsending har
+   * feilet, og det er beskjeden. Landet det ikke, fordi boksen sto i et
+   * skjult panel, prøver komponenten igjen ved neste endring i lista, men
+   * bare når ingen står i et felt. Uten det skillet rev gjenforsøket fokus
+   * ut av feltet brukeren rettet i, i det live-valideringen patchet lista.
+   */
+  private focusAttempted = false
   private observer?: MutationObserver
   private readonly links = new Set<HTMLAnchorElement>()
 
@@ -82,6 +92,8 @@ export class FsErrorSummary extends HostElement {
     ]
 
     if (links.length === 0) {
+      this.hasFocused = false
+      this.focusAttempted = false
       warnAboutMarkup(
         this,
         'fant ingen lenker til feltene. Hvert punkt trenger en <a href="#id"> ' +
@@ -94,7 +106,6 @@ export class FsErrorSummary extends HostElement {
           this.querySelector("li") !== null &&
           this.querySelector("li a[href^='#']") === null,
       )
-      this.hasFocused = false
       return
     }
 
@@ -143,16 +154,23 @@ export class FsErrorSummary extends HostElement {
     // svar på om dette er en ny innsending.
     if (this.hidden) {
       this.hasFocused = false
+      this.focusAttempted = false
       return
     }
 
     // Er boksen synlig nå, og vi ikke har flyttet fokus hit ennå, er det
     // denne innsendingen som feilet. Flagget settes bare når fokus faktisk
     // landet: står boksen i et skjult panel eller en lukket dialog, gjør
-    // `focus()` ingenting, og da skal neste forsøk få lov.
+    // `focus()` ingenting, og da skal neste forsøk få lov, så sant ingen
+    // står i et felt.
     if (this.shouldFocus && !this.hasFocused) {
-      this.focus()
       const root = this.getRootNode() as Document | ShadowRoot
+      const active = root.activeElement
+      const nobodyTyping = !active || active === document.body
+      if (this.focusAttempted && !nobodyTyping) return
+
+      this.focusAttempted = true
+      this.focus()
       this.hasFocused = root.activeElement === this
     }
   }
@@ -183,10 +201,16 @@ export class FsErrorSummary extends HostElement {
 
     event.preventDefault()
 
-    // Er lenken til en ledetekst, skal fokus til kontrollen den hører til,
-    // enten den peker med `for` eller omslutter den. `control` dekker begge.
+    // Er lenken til en ledetekst, skal fokus til det den hører til, enten
+    // den peker med `for` eller omslutter kontrollen. `control` dekker begge
+    // for ekte kontroller; peker `for` på noe annet, som en gruppe, følges
+    // id-en dit.
     const focusable =
-      target instanceof HTMLLabelElement ? (target.control ?? target) : target
+      target instanceof HTMLLabelElement
+        ? (target.control ??
+          (target.htmlFor ? this.resolveTarget(target.htmlFor) : null) ??
+          target)
+        : target
 
     // Et mål som ikke kan få fokus, som en overskrift, får en `tabindex`
     // for dette ene hoppet. Det er en skriving på markup serveren eier, og

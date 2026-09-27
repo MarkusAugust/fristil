@@ -80,7 +80,15 @@ export class FsTabs extends HostElement {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-selected", "tabindex", "hidden"],
+      // `disabled` er med fordi komponenten leser det: deaktiverer en patch
+      // den valgte fanen, skal tabbestoppet flyttes til en som kan få fokus.
+      attributeFilter: [
+        "aria-selected",
+        "tabindex",
+        "hidden",
+        "disabled",
+        "aria-disabled",
+      ],
     })
     this.sync()
   }
@@ -129,17 +137,20 @@ export class FsTabs extends HostElement {
    * Koblingen står i markupen som `aria-controls`, og leses derfra. Da kan
    * panelene stå i en annen rekkefølge enn fanene, og utenfor verten. Et
    * panel utenfor ligger likevel ikke i det komponenten observerer, så river
-   * en patch `hidden` av det, kommer det ikke tilbake av seg selv. Markup
-   * uten id-er faller tilbake på rekkefølgen.
+   * en patch `hidden` av det, kommer det ikke tilbake av seg selv.
+   *
+   * Rekkefølgen er reserve bare for markup **uten** `aria-controls`. Står
+   * attributtet der og peker på ingenting, er svaret ingenting, og
+   * komponenten sier fra. Falt den tilbake på rekkefølgen også da, kunne to
+   * faner få det samme panelet, og de to skrev motsatt `hidden` på det i
+   * hver eneste runde: observatøren kalte seg selv, og siden frøs.
    */
   private panelFor(tab: HTMLElement, index: number): HTMLElement | null {
     const id = tab.getAttribute("aria-controls")
-    if (id) {
-      const root = this.getRootNode() as Document | ShadowRoot
-      const panel = root.getElementById?.(id)
-      if (panel) return panel
-    }
-    return this.ownPanels[index] ?? null
+    if (id === null) return this.ownPanels[index] ?? null
+
+    const root = this.getRootNode() as Document | ShadowRoot
+    return root.getElementById?.(id) ?? null
   }
 
   /** En fane som ikke kan velges, verken med mus eller tastatur. */
@@ -247,8 +258,9 @@ export class FsTabs extends HostElement {
     // opp framfor én gang.
     warnAboutMarkup(
       this,
-      'har flere faner enn paneler med role="tabpanel". Fanene uten et ' +
-        "panel kan velges uten at noe vises.",
+      "har faner uten et panel: enten mangler et element med " +
+        'role="tabpanel", eller aria-controls peker på en id som ikke ' +
+        "finnes. Fanene uten et panel kan velges uten at noe vises.",
       () => this.tabs.some((tab, i) => this.panelFor(tab, i) === null),
     )
 
@@ -349,13 +361,31 @@ export class FsTabs extends HostElement {
    * observatøren, som ville skrevet på nytt, i det uendelige.
    */
   private apply(index: number): void {
-    this.tabs.forEach((tab, i) => {
+    const tabs = this.tabs
+    /*
+     * Tabbestoppet er den valgte fanen, med mindre en patch har deaktivert
+     * den. Da får den første fanen som kan velges det, ellers hopper Tab
+     * forbi hele raden, og `keydown` fyrer ikke på en deaktivert knapp, så
+     * piltastene hjelper heller ikke.
+     */
+    const stop = this.isDisabled(tabs[index])
+      ? (this.nextEnabled(index, 1) ?? index)
+      : index
+    // Et panel skrives én gang, av den første fanen som peker på det. Peker
+    // to faner på det samme, ved en feil i markupen, ville de ellers skrevet
+    // motsatt `hidden` på det i hver runde, og siden frosset.
+    const written = new Set<HTMLElement>()
+
+    tabs.forEach((tab, i) => {
       const chosen = i === index
       setAttr(tab, "aria-selected", String(chosen))
-      setAttr(tab, "tabindex", chosen ? "0" : "-1")
+      setAttr(tab, "tabindex", i === stop ? "0" : "-1")
 
       const panel = this.panelFor(tab, i)
-      if (panel) setFlag(panel, "hidden", !chosen)
+      if (panel && !written.has(panel)) {
+        written.add(panel)
+        setFlag(panel, "hidden", !chosen)
+      }
     })
   }
 }
