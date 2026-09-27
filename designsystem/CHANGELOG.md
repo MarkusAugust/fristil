@@ -16,6 +16,8 @@ kommer i et nytt undertall.
 
 ## Ikke utgitt
 
+## 0.16.0 (2026-09-27)
+
 ### Lagt til
 
 - **`reset()` på `<fs-session-timeout>`** nullstiller klokka uten å sende
