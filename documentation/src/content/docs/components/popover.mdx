@@ -205,7 +205,7 @@ const boks = fs.popover({ id: "handlinger" })
 </fs-popover>
 ```
 
-Komponenten kjenner igjen panelet på `popover` eller klassen `fs-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet.
+Komponenten kjenner igjen panelet på `popover` eller klassen `fs-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet som ikke peker på noe annet med `aria-controls`.
 
 Lages markupen med JavaScript, skriver `fs.popover()` koblingen, id-en, klassen og `popover`. Kommer den fra en mal uten JavaScript, setter komponenten `popover="manual"`, id-en og `aria-controls`, og lar det serveren har skrevet stå. Komponenten setter dessuten `open` på verten, `aria-expanded` på knappen og posisjonen på panelet. Alt den har skrevet setter den tilbake når en oppdatering fra serveren river det bort. Malen din trenger ingenting ekstra.
 

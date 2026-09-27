@@ -129,6 +129,8 @@ export class FsSuggestion extends HostElement {
         "id",
         "for",
         "aria-controls",
+        "autocomplete",
+        "aria-autocomplete",
         "class",
       ],
     })

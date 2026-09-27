@@ -26,7 +26,7 @@ egen overskrift «Brytende».
 ### Lagt til
 
 - **`<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>` kobler fra bar
-  struktur,** som fanene og feiloppsummingen. En knapp og et panel med
+  struktur,** som fanene og feiloppsummeringen. En knapp og et panel med
   klassen `fs-popover` er nok: komponenten setter `popover="manual"`, lager
   id-en og skriver `aria-controls` på knappen, ellers den første knappen
   utenfor panelet som ikke peker på noe annet. En `<label>`, et `<input>`,

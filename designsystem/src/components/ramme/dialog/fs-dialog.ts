@@ -97,10 +97,21 @@ export class FsDialog extends HostElement {
      * i området rundt ble patchet, og malen måtte skrive
      * `data-preserve-attr="open"` for å hindre det.
      */
-    this.observer = new MutationObserver(() => this.sync())
-    // Attributtene er med for koblingen komponenten fyller inn når markupen
-    // kom uten den: klassen, overskriftens id og `aria-labelledby`. Hver
-    // skriving sammenligner først, ellers ville observatøren utløst seg selv.
+    /*
+     * Attributtene er med for koblingen komponenten fyller inn når markupen
+     * kom uten den: klassen, overskriftens id og `aria-labelledby`. Men en
+     * attributtpost kjører bare koblingen, ikke hele `sync()`. `close()`
+     * fjerner `open` synkront og køer `close`-hendelsen som en egen oppgave,
+     * og observatøren kjører før den. Endret et klikk en klasse på knappen
+     * i samme oppgave som det lukket dialogen, så `sync()` en vert med `open`
+     * og en dialog som ikke var modal, og åpnet den igjen før lukkingen rakk
+     * å bli håndtert. Hver skriving sammenligner først, ellers ville
+     * observatøren utløst seg selv.
+     */
+    this.observer = new MutationObserver((records) => {
+      if (records.some((record) => record.type === "childList")) this.sync()
+      else this.rewire()
+    })
     this.observer.observe(this, {
       childList: true,
       subtree: true,
@@ -136,13 +147,31 @@ export class FsDialog extends HostElement {
   /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
   private titleId?: string
 
+  /** Koblingen alene, for en attributtpost. Se observatøren. */
+  private rewire(): void {
+    const dialog = this.dialog
+    if (dialog?.isConnected) this.wire(dialog)
+  }
+
   /**
    * Fyller inn det en mal uten JavaScript ikke skrev: klassen på dialogen,
-   * klassen og id-en på overskriften, og `aria-labelledby` mellom dem. Bare
-   * det som mangler, og ikke når dialogen alt har et navn fra `aria-label`.
+   * og tittelen. Tittelen er det `aria-labelledby` peker på når serveren
+   * skrev det, ellers den første overskriften, og bare når dialogen ikke alt
+   * har et navn fra `aria-label`. Klassen og id-en skrives bare på tittelen:
+   * en overskrift i kroppen til en dialog med `aria-label` er ikke tittelen,
+   * og skal ikke stiles som den.
    */
   private wire(dialog: HTMLDialogElement): void {
     addClass(dialog, DIALOG_CLASS)
+
+    const named = dialog.getAttribute("aria-labelledby")
+    if (named) {
+      const root = this.getRootNode() as Document | ShadowRoot
+      const title = root.getElementById?.(named)
+      if (title && dialog.contains(title)) addClass(title, DIALOG_TITLE_CLASS)
+      return
+    }
+    if (dialog.hasAttribute("aria-label")) return
 
     const title = dialog.querySelector("h1, h2, h3, h4, h5, h6")
     if (!title) return
@@ -151,12 +180,7 @@ export class FsDialog extends HostElement {
       this.titleId ??= uniqueId("fs-dialog-title")
       setAttr(title, "id", this.titleId)
     }
-    if (
-      !dialog.hasAttribute("aria-labelledby") &&
-      !dialog.hasAttribute("aria-label")
-    ) {
-      setAttr(dialog, "aria-labelledby", title.id)
-    }
+    setAttr(dialog, "aria-labelledby", title.id)
   }
 
   private notify(open: boolean, returnValue = ""): void {

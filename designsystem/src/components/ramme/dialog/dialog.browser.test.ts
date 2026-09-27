@@ -1183,14 +1183,66 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
   })
 
-  it("lar et navn fra aria-label stå", async () => {
+  it("lar et navn fra aria-label stå, og rører ikke overskriften", async () => {
+    // Overskriften er da ikke tittelen, og skal verken få id eller klassen
+    // som stiler den som en.
     const { d, tittel } = await monterBar(
       BAR.replace("<dialog>", '<dialog aria-label="Slett søknaden">'),
     )
 
     expect(d.hasAttribute("aria-labelledby")).toBe(false)
     expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
-    expect(tittel.id).not.toBe("")
+    expect(tittel.id).toBe("")
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(false)
+  })
+
+  it("gir klassen til overskriften serveren pekte på", async () => {
+    const { d } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-labelledby="egen-tittel">').replace(
+        "<h2>Slette søknaden?</h2>",
+        '<p id="egen-tittel">Slette søknaden?</p><h2>Vedlegg</h2>',
+      ),
+    )
+    const egen = document.getElementById("egen-tittel") as HTMLElement
+    const h2 = d.querySelector("h2") as HTMLElement
+
+    expect(egen.classList.contains("fs-dialog__title")).toBe(true)
+    expect(h2.classList.contains("fs-dialog__title")).toBe(false)
+    expect(h2.id).toBe("")
+  })
+
+  it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {
+    /*
+     * `close()` fjerner `open` synkront og køer `close`-hendelsen, og
+     * observatøren kjører før den. Så komponenten en klassepost og kjørte
+     * hele `sync()`, fant den en vert med `open` og en dialog som ikke var
+     * modal, og åpnet den igjen. Brukeren måtte lukke to ganger.
+     */
+    const { d } = await monterBar(
+      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const knapp = d.querySelector("button") as HTMLButtonElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    knapp.classList.add("opptatt")
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
   })
 
   it("setter koblingen tilbake med den samme id-en etter en patch", async () => {

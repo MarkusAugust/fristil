@@ -201,7 +201,7 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
 
 Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
-Kommer markupen fra en mal uten JavaScript, er strukturen nok, slik «Ren HTML»-oppskriften viser. Komponenten setter rollene, lager id-ene, skriver `for` på ledeteksten og `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
+Kommer markupen fra en mal uten JavaScript, er strukturen nok, slik «Ren HTML»-oppskriften viser. Komponenten setter rollene, lager id-ene, skriver `for` på ledeteksten og `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
 Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
 
