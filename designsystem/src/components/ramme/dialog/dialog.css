@@ -163,4 +163,110 @@
     gap: var(--size-2);
     margin-block-start: var(--size-5);
   }
+
+  /*
+   * En topp, som kan farges.
+   *
+   * Med `.fs-dialog__header` som direkte barn flyttes luften fra dialogen til
+   * delene: toppen, kroppen og knapperaden får hver sin `padding`, så et
+   * farget bånd går helt ut i kantene. Uten toppen står alt som før. Vilkåret
+   * står i selektoren, som for kolonnen over: to dialoger i demoen skrev om
+   * padding på tre klasser for å få til dette, og det er en kobling til
+   * hvordan dialogen fordeler luften sin, som brakk ved en oppgradering.
+   */
+  .fs-dialog:has(> .fs-dialog__header) {
+    padding: 0;
+  }
+
+  .fs-dialog__header {
+    flex: none;
+    padding: var(--fs-dialog-padding, var(--size-5));
+    /* Én piksel mindre enn dialogen: toppen står innenfor rammen, og
+       innsiden av et hjørne er radiusen minus rammens bredde. */
+    border-start-start-radius: calc(
+      var(--fs-dialog-radius, var(--size-2)) -
+      1px
+    );
+    border-start-end-radius: calc(var(--fs-dialog-radius, var(--size-2)) - 1px);
+  }
+
+  /*
+   * Uten farge er toppen ingen stripe. Bunnluften er overskriftens vanlige
+   * marg, og det som følger regner derfra: kroppen begynner uten egen
+   * toppluft, så avstanden ned til teksten er den samme som uten topp, og
+   * knapperaden får resten av dialogens luft, så avstanden dit også er den
+   * samme. Første utgave satte bunnluften til null, og en dialog med bare
+   * overskrift og knapper fikk da null piksler mellom dem.
+   */
+  .fs-dialog:not([data-color]) > .fs-dialog__header {
+    padding-block-end: var(--size-2);
+  }
+
+  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__body {
+    padding-block-start: 0;
+  }
+
+  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__footer {
+    padding-block-start: calc(
+      var(--fs-dialog-padding, var(--size-5)) -
+      var(--size-2)
+    );
+  }
+
+  .fs-dialog__header .fs-dialog__title {
+    margin: 0;
+  }
+
+  /* Samme farge som overskriften, uten opasitet: med 0,85 falt teksten
+     under 4,5:1 på suksess- og advarselsbåndet. */
+  .fs-dialog__subtitle {
+    margin: var(--size-1) 0 0;
+    font-size: var(--font-size-s);
+    line-height: var(--semantic-line-height-default);
+  }
+
+  .fs-dialog:has(> .fs-dialog__header) > .fs-dialog__body {
+    padding: var(--fs-dialog-padding, var(--size-5));
+  }
+
+  .fs-dialog:has(> .fs-dialog__header) > .fs-dialog__footer {
+    margin-block-start: 0;
+    padding: 0 var(--fs-dialog-padding, var(--size-5))
+      var(--fs-dialog-padding, var(--size-5));
+  }
+
+  /* Fargene er varslerens, med merkefargen i tillegg. Teksten følger med,
+     så kontrasten holder på hvert bånd. */
+  .fs-dialog[data-color="brand"] > .fs-dialog__header {
+    color: var(--semantic-interactive-contrast);
+    background: var(--semantic-interactive-main);
+  }
+
+  .fs-dialog[data-color="info"] > .fs-dialog__header {
+    color: var(--semantic-interactive-foreground);
+    background: var(--semantic-interactive-background);
+  }
+
+  .fs-dialog[data-color="success"] > .fs-dialog__header {
+    color: var(--semantic-success-foreground);
+    background: var(--semantic-success-background);
+  }
+
+  .fs-dialog[data-color="warning"] > .fs-dialog__header {
+    color: var(--semantic-warning-foreground);
+    background: var(--semantic-warning-background);
+  }
+
+  .fs-dialog[data-color="danger"] > .fs-dialog__header {
+    color: var(--semantic-danger-foreground);
+    background: var(--semantic-danger-background);
+  }
+
+  /* Høykontrast fjerner bakgrunnsfargene. En strek under toppen holder
+     skillet mellom toppen og kroppen. */
+  @media (forced-colors: active) {
+    .fs-dialog__header {
+      border-block-end: 1px solid CanvasText;
+    }
+  }
 }

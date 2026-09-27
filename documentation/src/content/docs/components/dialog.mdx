@@ -1,6 +1,6 @@
 ---
 title: Dialog
-description: Modal dialog bygget på det native dialog-elementet. Fire klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().
+description: Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
@@ -321,12 +321,43 @@ Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen k
 
 I React er attributtet dessuten det eneste som stemmer når serveren rendrer dialogen åpen. Komponenten setter `open` på `<dialog>` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
 
+## Farget topp
+
+Skal dialogen si hvordan det gikk før leseren har lest et ord, får den en topp med farge. `fs.dialog({ titleId, color })` gir `data-color` på dialogen og en `header`-del som pakker overskriften. Fargene er de samme som [varsleren](../alert/) bruker, med `brand` i tillegg for merkefargen.
+
+| `color` | Betyr |
+| --- | --- |
+| `neutral` | Ingen farge. Standard |
+| `brand` | Merkefargen, for en topp som sier hvem som snakker |
+| `info` | Til orientering |
+| `success` | Det gikk bra |
+| `warning` | Se på dette |
+| `danger` | Noe er galt, eller kan ikke angres |
+
+```astro
+---
+const boks = fs.dialog({ titleId: "resultat-tittel", color: "success" })
+---
+<dialog {...boks.dialog}>
+  <div {...boks.header}>
+    <h2 {...boks.title}>Full pott</h2>
+    <p {...boks.subtitle}>25 av 25 poeng</p>
+  </div>
+  <div {...boks.body}>…</div>
+  <form method="dialog" {...boks.footer}>…</form>
+</dialog>
+```
+
+Toppen er valgfri, og uten den står dialogen som før. Fargen gjelder toppen, så uten `header` i markupen har den ingenting å farge. En topp uten farge er heller ingen stripe: da slipper den bunnluften, og avstanden ned til teksten er den samme som ellers.
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-dialog` | Selve dialogen |
+| `.fs-dialog` | Selve dialogen. `data-color` farger toppen |
+| `.fs-dialog__header` | Toppen, med overskriften og en eventuell undertekst i. Valgfri: med den flyttes luften fra dialogen til delene, så et farget bånd går helt ut i kantene |
 | `.fs-dialog__title` | Overskriften |
+| `.fs-dialog__subtitle` | En linje under overskriften, inne i toppen |
 | `.fs-dialog__body` | Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn av `.fs-dialog`, ellers ruller dialogen i stedet, og overskriften og knapperaden forsvinner ut av syne sammen med teksten |
 | `.fs-dialog__footer` | Raden med knapper nederst |
 

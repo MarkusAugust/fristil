@@ -403,6 +403,29 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
   type Bygger = ((valg?: Record<string, unknown>) => Record<string, unknown>) &
     Record<string, unknown>
 
+  /**
+   * En fast id til byggerne som krever en. Uten den lager `idOrFallback` en
+   * tilfeldig id per kall, og to kall gir aldri det samme svaret, så
+   * standardverdien lot seg ikke kjenne igjen. De flate byggerne ignorerer
+   * nøklene.
+   */
+  const STABIL_ID = { id: "vakt", titleId: "vakt" }
+
+  /** Attributtsettet som bærer attributtet, i et flatt eller sammensatt svar. */
+  function delMed(
+    svar: Record<string, unknown>,
+    attributt: string,
+  ): Record<string, unknown> | undefined {
+    if (svar[attributt] !== undefined) return svar
+    for (const del of Object.values(svar)) {
+      if (del && typeof del === "object" && !Array.isArray(del)) {
+        const funnet = delMed(del as Record<string, unknown>, attributt)
+        if (funnet) return funnet
+      }
+    }
+    return undefined
+  }
+
   /** Ett tilfelle: en bygger, en verdi, og elementet den skal treffe. */
   type Tilfelle = {
     navn: string
@@ -424,13 +447,16 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
       if (!Array.isArray(verdier)) continue
 
       for (const v of verdier) {
-        const ut = bygger({ [opsjon]: v })
+        // De sammensatte byggerne gir ett attributtsett per del, som
+        // `fs.dialog()` med `host`, `dialog` og `header`. Attributtet ligger
+        // da på den delen som bærer det, og det er den som rendres.
+        const ut = delMed(bygger({ ...STABIL_ID, [opsjon]: v }), attributt)
 
         // Verdier som ikke gir noe attributt har ingen regel å kontrollere.
         // Det er to slag: standardverdien, som CSS-en alt har, og verdier
         // som ikke er ment å se annerledes ut, som `input.types=text`, der
         // bare noen få typer får et ikon.
-        if (ut[attributt] === undefined) {
+        if (ut === undefined) {
           hoppet.push(`${navn}.${liste}=${v}`)
           continue
         }
@@ -471,9 +497,10 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
         const verdier = bygger[liste]
         if (!Array.isArray(verdier)) continue
 
-        const standard = JSON.stringify(bygger())
+        const standard = JSON.stringify(bygger(STABIL_ID))
         const like = verdier.filter(
-          (v) => JSON.stringify(bygger({ [opsjon]: v })) === standard,
+          (v) =>
+            JSON.stringify(bygger({ ...STABIL_ID, [opsjon]: v })) === standard,
         )
         expect(
           like,
