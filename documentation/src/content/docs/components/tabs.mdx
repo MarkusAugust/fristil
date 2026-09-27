@@ -6,14 +6,12 @@ description: Fanerad koblet til panelene sine. Rammekomponent.
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
 
-Serveren skriver rollene og skjuler panelene som ikke er valgt. Komponenten tar piltastene.
+Komponenten tar piltastene, og kobler fanene til panelene når markupen kommer uten koblingen.
 
-Det er hele grunnen til at den finnes. I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
 
-:::note[Bruk byggefunksjonen og komponenten sammen]
-`fs.tabs()` gir deg rollene, hvilke paneler som er skjult og hvilken fane som er tabbestopp. Elementet gir deg piltastene, Home og End, som en funksjon ikke kan gjøre. Her trenger du **begge**.
-
-Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::note[To veier til den samme markupen]
+Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ## Slik tar du den i bruk
@@ -31,17 +29,15 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     ```
 
     ```html
+    <!-- Rollene, id-ene og koblingen setter komponenten. Vil du at en annen
+         fane enn den første skal være valgt, sett `hidden` på de andre panelene. -->
     <fs-tabs id="saksfaner">
-      <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
-        <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-                aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
-        <button id="sak-tab-1" role="tab" type="button" aria-selected="false"
-                aria-controls="sak-panel-1" tabindex="-1">Vedlegg</button>
+      <div class="fs-tabs__list" aria-label="Deler av saken">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
       </div>
-      <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-0" tabindex="0">Søknaden</div>
-      <div id="sak-panel-1" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-1" tabindex="0" hidden>Vedlegg</div>
+      <div class="fs-tabs__panel">Søknaden</div>
+      <div class="fs-tabs__panel">Vedlegg</div>
     </fs-tabs>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
@@ -136,12 +132,12 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
     </script>
 
     <fs-tabs server-controlled data-on:tab-select="$valgtFane = evt.detail.index">
-      <div class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
-        <button id="sak-tab-0" role="tab" type="button" aria-selected="true"
-                aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
+      <div class="fs-tabs__list" aria-label="Deler av saken">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
       </div>
-      <div id="sak-panel-0" class="fs-tabs__panel" role="tabpanel"
-           aria-labelledby="sak-tab-0" tabindex="0">Søknaden</div>
+      <div class="fs-tabs__panel">Søknaden</div>
+      <div class="fs-tabs__panel" hidden>Vedlegg</div>
     </fs-tabs>
     ```
 
@@ -149,7 +145,7 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
   </TabItem>
 </Tabs>
 
-`hidden` på panelene kommer fra serveren, ikke fra komponenten. Gjorde komponenten det, ville alle panelene vist seg til skriptet hadde kjørt, og innholdet hoppet når de skjulte seg selv.
+Skriver serveren `hidden` på panelene, står det. Kommer markupen uten, viser `tabs.css` bare det første synlige panelet til komponenten er registrert, og komponenten skjuler resten i det den kobles til. Innholdet hopper derfor ikke i noen av tilfellene.
 
 ## Hvilken fane som er valgt
 
@@ -159,7 +155,7 @@ Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben d
 const faner = fs.tabs({ id: "sak", count: 3, selected: 1, label: "Deler av saken" })
 ```
 
-Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra.
+Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra. Mangler `aria-selected`, som i markup skrevet uten JavaScript, leser den valget fra panelene: det første som ikke har `hidden` hører til den valgte fanen. Sier markupen ingenting, er det den første.
 
 Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
 
@@ -172,13 +168,13 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
 faner.selected = 2 // det samme som select(2)
 ```
 
-Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Bare markup uten `aria-controls` kobles etter rekkefølgen.
+Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Markup uten `aria-controls` kobles etter rekkefølgen, og komponenten skriver da koblingen inn, med id-er den lager selv og husker: en patch som river dem bort får de samme tilbake.
 
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tabs__list` | Raden med knapper. Serveren gir den `role="tablist"` |
+| `.fs-tabs__list` | Raden med knapper. Får `role="tablist"` av serveren eller komponenten |
 | `.fs-tabs__panel` | Ett panel. Den valgte er uten `hidden` |
 
 Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
@@ -196,7 +192,7 @@ Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
 ```
 ## Tilgjengelighet
 
-Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Alt dette står i markupen fra serveren, så semantikken er riktig før skriptet har kjørt.
+Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Skriver serveren dem med `fs.tabs()`, står de i HTML-en før skriptet har kjørt. Kommer markupen uten, setter komponenten dem i det den registreres, og setter dem tilbake om en patch tar dem.
 
 | Tast | Gjør |
 | --- | --- |

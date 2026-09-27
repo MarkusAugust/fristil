@@ -51,7 +51,7 @@ describe("fs-tabs", () => {
     await tegn()
   })
 
-  it("får rollene fra serveren, ikke fra komponenten", () => {
+  it("lar rollene og id-ene serveren skrev stå", () => {
     const liste = document.querySelector(".fs-tabs__list") as HTMLElement
     const fane = document.getElementById("sak-tab-0") as HTMLElement
     const panel = document.getElementById("sak-panel-0") as HTMLElement
@@ -462,5 +462,176 @@ describe("fs-tabs leser koblingen og hopper over det som ikke kan velges", () =>
     tast("sak-tab-0", "ArrowLeft")
     await tegn()
     expect(document.activeElement?.id).toBe("sak-tab-1")
+  })
+})
+
+/*
+ * Markup skrevet uten JavaScript: en rad med knapper og ett panel per knapp,
+ * uten roller, id-er eller kobling. Komponenten fyller inn resten.
+ */
+const BAR = `
+  <fs-tabs>
+    <div class="fs-tabs__list" aria-label="Deler av saken">
+      <button>Søknaden</button>
+      <button>Vedlegg</button>
+      <button>Meldinger</button>
+    </div>
+    <div class="fs-tabs__panel"><p>Søknaden ble sendt 4. mars.</p></div>
+    <div class="fs-tabs__panel"><p>Tre vedlegg.</p></div>
+    <div class="fs-tabs__panel"><p>Ingen meldinger.</p></div>
+  </fs-tabs>`
+
+describe("fs-tabs kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsTabs()
+  })
+
+  function deler() {
+    return {
+      liste: document.querySelector(".fs-tabs__list") as HTMLElement,
+      faner: [
+        ...document.querySelectorAll<HTMLButtonElement>(
+          ".fs-tabs__list button",
+        ),
+      ],
+      paneler: [...document.querySelectorAll<HTMLElement>(".fs-tabs__panel")],
+    }
+  }
+
+  it("setter roller, id-er, kobling, type og tabbestopp", async () => {
+    monter(BAR)
+    await tegn()
+    const { liste, faner, paneler } = deler()
+
+    expect(liste.getAttribute("role")).toBe("tablist")
+    expect(faner.map((f) => f.getAttribute("role"))).toEqual([
+      "tab",
+      "tab",
+      "tab",
+    ])
+    expect(faner.map((f) => f.type)).toEqual(["button", "button", "button"])
+    expect(paneler.map((p) => p.getAttribute("role"))).toEqual([
+      "tabpanel",
+      "tabpanel",
+      "tabpanel",
+    ])
+    faner.forEach((fane, i) => {
+      expect(fane.id).not.toBe("")
+      expect(paneler[i].id).not.toBe("")
+      expect(fane.getAttribute("aria-controls")).toBe(paneler[i].id)
+      expect(paneler[i].getAttribute("aria-labelledby")).toBe(fane.id)
+    })
+    expect(paneler.map((p) => p.tabIndex)).toEqual([0, 0, 0])
+
+    expect(faner.map((f) => f.getAttribute("aria-selected"))).toEqual([
+      "true",
+      "false",
+      "false",
+    ])
+    expect(faner.map((f) => f.tabIndex)).toEqual([0, -1, -1])
+    expect(paneler.map((p) => p.hidden)).toEqual([false, true, true])
+
+    await forventIngenTilgjengelighetsbrudd()
+  })
+
+  it("leser valget fra hidden når ingen fane er markert", async () => {
+    monter(
+      BAR.replace(
+        '<div class="fs-tabs__panel"><p>Søknaden',
+        '<div class="fs-tabs__panel" hidden><p>Søknaden',
+      ).replace(
+        '<div class="fs-tabs__panel"><p>Ingen',
+        '<div class="fs-tabs__panel" hidden><p>Ingen',
+      ),
+    )
+    await tegn()
+    const { faner, paneler } = deler()
+
+    expect(faner.map((f) => f.getAttribute("aria-selected"))).toEqual([
+      "false",
+      "true",
+      "false",
+    ])
+    expect(faner.map((f) => f.tabIndex)).toEqual([-1, 0, -1])
+    expect(paneler.map((p) => p.hidden)).toEqual([true, false, true])
+  })
+
+  it("lar det serveren skrev stå", async () => {
+    monter(
+      BAR.replace("<button>Vedlegg", '<button id="egen-fane">Vedlegg').replace(
+        '<div class="fs-tabs__panel"><p>Tre',
+        '<div class="fs-tabs__panel" tabindex="-1" role="region"><p>Tre',
+      ),
+    )
+    await tegn()
+    const { faner, paneler } = deler()
+
+    expect(faner[1].id).toBe("egen-fane")
+    expect(paneler[1].getAttribute("aria-labelledby")).toBe("egen-fane")
+    expect(paneler[1].tabIndex).toBe(-1)
+    expect(paneler[1].getAttribute("role")).toBe("region")
+  })
+
+  it("setter koblingen tilbake med de samme id-ene etter en patch", async () => {
+    monter(BAR)
+    await tegn()
+    const { faner, paneler } = deler()
+    const faneId = faner[1].id
+    const panelId = paneler[1].id
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    for (const navn of [
+      "id",
+      "role",
+      "type",
+      "aria-controls",
+      "aria-selected",
+      "tabindex",
+    ]) {
+      faner[1].removeAttribute(navn)
+    }
+    for (const navn of [
+      "id",
+      "role",
+      "aria-labelledby",
+      "tabindex",
+      "hidden",
+    ]) {
+      paneler[1].removeAttribute(navn)
+    }
+    await ventPaTegning()
+
+    expect(faner[1].id).toBe(faneId)
+    expect(paneler[1].id).toBe(panelId)
+    expect(faner[1].getAttribute("aria-controls")).toBe(panelId)
+    expect(paneler[1].getAttribute("aria-labelledby")).toBe(faneId)
+    expect(faner[1].getAttribute("role")).toBe("tab")
+    expect(faner[1].getAttribute("aria-selected")).toBe("false")
+    expect(paneler[1].hidden).toBe(true)
+  })
+
+  it("holder brukerens valg gjennom en patch som tar alt komponenten skrev", async () => {
+    monter(BAR)
+    await tegn()
+    const { faner, paneler } = deler()
+
+    faner[2].click()
+    await ventPaTegning()
+    expect(paneler[2].hidden).toBe(false)
+
+    for (const fane of faner) {
+      for (const navn of ["aria-selected", "tabindex", "aria-controls"]) {
+        fane.removeAttribute(navn)
+      }
+    }
+    for (const panel of paneler) panel.removeAttribute("hidden")
+    await ventPaTegning()
+
+    expect(faner.map((f) => f.getAttribute("aria-selected"))).toEqual([
+      "false",
+      "false",
+      "true",
+    ])
+    expect(paneler.map((p) => p.hidden)).toEqual([true, true, false])
   })
 })

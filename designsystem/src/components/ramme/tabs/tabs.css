@@ -51,6 +51,16 @@
     padding-block-start: var(--fs-tabs-panel-space, var(--size-4));
   }
 
+  /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
+     komponenten setter det først når den er registrert. Fram til da vises
+     bare det første synlige panelet, så innholdet ikke hopper når resten
+     skjules. Skrev serveren `hidden` selv, er det første synlige det
+     serveren valgte. */
+  fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
+    ~ .fs-tabs__panel:not([hidden]) {
+    display: none;
+  }
+
   .fs-tabs__panel:focus-visible {
     outline: var(--semantic-focus-ring);
     outline-offset: 2px;

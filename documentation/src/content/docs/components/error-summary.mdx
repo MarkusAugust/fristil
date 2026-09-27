@@ -6,12 +6,10 @@ description: Samler feilene i et skjema og sender brukeren til feltet som feilet
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
 
-Når en innsending stopper, skal brukeren få vite hvorfor, og komme til feltet med ett klikk. Serveren skriver hele boksen. Komponenten gjør de to tingene nettleseren ikke gjør selv: flytter fokus hit når boksen kommer til syne, og gir fokus til selve kontrollen når en lenke følges.
+Når en innsending stopper, skal brukeren få vite hvorfor, og komme til feltet med ett klikk. Serveren skriver overskriften og lista. Komponenten gjør de to tingene nettleseren ikke gjør selv: flytter fokus hit når boksen kommer til syne, og gir fokus til selve kontrollen når en lenke følges.
 
-:::note[Bruk byggefunksjonen og komponenten sammen]
-`fs.errorSummary()` gir deg boksen, `role="alert"` og overskriften. Elementet gir deg fokus hit, og videre til feltet som feilet, som en funksjon ikke kan gjøre. Her trenger du **begge**.
-
-Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::note[To veier til den samme markupen]
+Lages markupen med JavaScript, gir `fs.errorSummary()` boksen klassen, `role="alert"` og `tabindex="-1"`, ferdig i HTML-en. Blir den til uten JavaScript, holder det med `<fs-error-summary>` rundt en overskrift og en liste: komponenten setter de tre, og klassen på overskriften. Fokus hit, og videre til feltet, kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
@@ -40,8 +38,9 @@ defineFsErrorSummary()
 
     ```html
     <form novalidate>
-      <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
-        <h2 class="fs-error-summary__title"></h2>
+      <!-- Klassen, role="alert" og tabindex="-1" setter komponenten. -->
+      <fs-error-summary id="feil" hidden>
+        <h2></h2>
         <ul class="fs-list"></ul>
       </fs-error-summary>
 
@@ -68,7 +67,7 @@ defineFsErrorSummary()
 
         // Overskriften og hidden skrives her, slik en server ville gjort det.
         if (feilene.length > 0) {
-          boks.querySelector(".fs-error-summary__title").textContent =
+          boks.querySelector("h2").textContent =
             feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`
         }
         boks.hidden = feilene.length === 0
@@ -152,8 +151,8 @@ defineFsErrorSummary()
       defineFsErrorSummary()
     </script>
 
-    <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil" hidden>
-      <h2 class="fs-error-summary__title"></h2>
+    <fs-error-summary id="feil" hidden>
+      <h2></h2>
       <ul class="fs-list"></ul>
     </fs-error-summary>
     ```
@@ -178,7 +177,7 @@ const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 </fs-error-summary>
 ```
 
-Klassen, `role="alert"`, `tabindex="-1"` og overskriften kommer fra serveren. Komponenten lagde dem tidligere selv, og da forsvant både klassen og overskriften ved første oppdatering fra serveren, uten å komme tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Overskriften og lista skriver serveren. Komponenten lagde overskriften tidligere selv, og da forsvant den ved første oppdatering fra serveren, uten å komme tilbake. Klassen, `role="alert"` og `tabindex="-1"` skriver `fs.errorSummary()` når markupen lages med JavaScript; ellers setter komponenten dem, og klassen på overskriften, og setter dem tilbake om en patch tar dem. Har serveren skrevet en annen rolle, står den. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 Er det ingen feil, setter byggefunksjonen `hidden` på boksen. En tom oppsummering med overskriften «Skjemaet har 0 feil» er verre enn ingen.
 
@@ -215,7 +214,7 @@ Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `t
 
 To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
 
-- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket. Signalet er at `hidden` tas bort. Står boksen synlig fra før når skjemaet feiler på nytt, må appen slå `hidden` på og av, eller kalle `focus()` selv. Komponenten flytter ikke fokus av at lista endrer seg, for da ville en oppsummering som krymper mens brukeren retter, rykket fokus ut av feltet. Ett unntak: landet ikke fokus første gang, fordi boksen sto i et skjult panel, prøver den igjen ved neste endring i lista, men bare når ingen står i et felt. Mangler `tabindex` på boksen, sier komponenten fra i konsollen.
+- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket. Signalet er at `hidden` tas bort. Står boksen synlig fra før når skjemaet feiler på nytt, må appen slå `hidden` på og av, eller kalle `focus()` selv. Komponenten flytter ikke fokus av at lista endrer seg, for da ville en oppsummering som krymper mens brukeren retter, rykket fokus ut av feltet. Ett unntak: landet ikke fokus første gang, fordi boksen sto i et skjult panel, prøver den igjen ved neste endring i lista, men bare når ingen står i et felt. Mangler `tabindex` på boksen, setter komponenten den.
 - **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke ruller bare dit, og neste tastetrykk fortsetter der fokus sto før, altså i oppsummeringen.
 
 Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.

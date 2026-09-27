@@ -305,3 +305,71 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     ).toBe(false)
   })
 })
+
+describe("fs-error-summary kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  beforeEach(async () => {
+    monter(`
+      <fs-error-summary id="bar-feil">
+        <h2>Skjemaet har én feil</h2>
+        <ul>
+          <li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li>
+        </ul>
+      </fs-error-summary>
+
+      <label class="fs-label" for="bar-epost">E-postadresse</label>
+      <input class="fs-input" id="bar-epost" type="email" />
+    `)
+    await tegn()
+  })
+
+  function boks() {
+    return document.getElementById("bar-feil") as HTMLElement
+  }
+
+  it("gir boksen klassen, rollen og tabbestoppen, og overskriften klassen", async () => {
+    const tittel = boks().querySelector("h2") as HTMLElement
+
+    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+    expect(boks().getAttribute("role")).toBe("alert")
+    expect(boks().tabIndex).toBe(-1)
+    expect(tittel.classList.contains("fs-error-summary__title")).toBe(true)
+    // Og da kan den få fokus, som er hele grunnen til komponenten.
+    expect(document.activeElement).toBe(boks())
+
+    await forventIngenTilgjengelighetsbrudd()
+  })
+
+  it("lar en rolle serveren skrev stå", async () => {
+    monter(`
+      <fs-error-summary id="bar-feil" role="status">
+        <h2>Skjemaet har én feil</h2>
+        <ul><li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li></ul>
+      </fs-error-summary>
+      <input class="fs-input" id="bar-epost" type="email" />
+    `)
+    await tegn()
+
+    expect(boks().getAttribute("role")).toBe("status")
+    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+  })
+
+  it("setter klassene og tabbestoppen tilbake etter en patch", async () => {
+    const tittel = boks().querySelector("h2") as HTMLElement
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    boks().removeAttribute("class")
+    boks().removeAttribute("role")
+    boks().removeAttribute("tabindex")
+    tittel.removeAttribute("class")
+    await ventPaTegning()
+
+    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+    expect(boks().getAttribute("role")).toBe("alert")
+    expect(boks().tabIndex).toBe(-1)
+    expect(tittel.classList.contains("fs-error-summary__title")).toBe(true)
+  })
+})
