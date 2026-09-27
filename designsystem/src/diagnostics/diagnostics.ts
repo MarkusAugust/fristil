@@ -92,7 +92,7 @@ export type Element = {
   attributes: Record<string, Attribute>
 }
 
-/** Innholdet i `elements.json`: tagg til element. */
+/** Innholdet i `elements.ts`: tagg til element. */
 export type Elements = Record<string, Element>
 
 /** Et attributt en klasse tar, som `data-variant` på `fs-button`. */
@@ -107,7 +107,7 @@ export type ClassInfo = {
   attributes: Record<string, ClassAttribute>
 }
 
-/** Innholdet i `classes.json`: klasse til komponent og attributter. */
+/** Innholdet i `classes.ts`: klasse til komponent og attributter. */
 export type Classes = Record<string, ClassInfo>
 
 const DOCS = "https://fristil.netlify.app/components/"

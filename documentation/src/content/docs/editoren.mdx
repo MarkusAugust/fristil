@@ -39,7 +39,7 @@ Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, eller standar
 npx @fristil/designsystem sjekk maler/*.html
 ```
 
-Lager serveren HTML-en i kode, som i en Kotlin- eller Go-app, er det den ferdige HTML-en som skal sjekkes, ikke malen. Da kjører du sjekken i appens egne tester, over det serveren faktisk sender:
+Lager serveren HTML-en i kode, som strenger i en Kotlin-app, finnes det ingen malfil å sjekke. Da kjører du sjekken i appens egne tester, over HTML-en serveren faktisk sender:
 
 ```ts
 import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"

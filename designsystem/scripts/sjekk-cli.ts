@@ -503,12 +503,32 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     `funnet fra standard inn mangler: ${stdinUt.slice(0, 120)}`,
   )
 
-  const borte = await kjør(["sjekk", join(mappe, "finnes-ikke.html")])
+  const borte = await kjør([
+    "sjekk",
+    join(mappe, "finnes-ikke.html"),
+    join(mappe, "heller-ikke.html"),
+  ])
   krev(borte.kode === 1, "en fil som ikke finnes skulle gitt feilkode")
   krev(
-    borte.feil.includes("Fant ikke fila"),
-    "feilmeldingen sier ikke at fila mangler",
+    borte.feil.includes("finnes-ikke.html") &&
+      borte.feil.includes("heller-ikke.html"),
+    "begge filene som mangler skulle vært nevnt",
   )
+
+  // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
+  // test som glemte å sende noe skal ikke melde grønt.
+  const tom = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: new Blob([""]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [tomFeil, tomKode] = await Promise.all([
+    new Response(tom.stderr).text(),
+    tom.exited,
+  ])
+  krev(tomKode === 1, `tom standard inn avsluttet med kode ${tomKode}`)
+  krev(tomFeil.includes("tom"), "feilmeldingen sier ikke at inndata var tom")
 
   await rm(mappe, { recursive: true, force: true })
 }

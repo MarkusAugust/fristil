@@ -32,8 +32,8 @@ egen overskrift «Brytende».
   Kommandolinjen leser filer eller standard inn og skriver hvert funn som
   `fil:linje:kolonne: melding`, med feilkode ved funn. `diagnoseMarkup(html)`
   er den samme sjekken som funksjon, for en test i appen som kjører den over
-  HTML-en serveren faktisk sender. Spilldemoen sjekket markupen sin med
-  `contains` på strenger. Editorutvidelsen importerer nå diagnostikken fra
+  HTML-en serveren faktisk sender, der det ikke finnes noen malfil å sjekke.
+  Editorutvidelsen importerer nå diagnostikken fra
   pakken, og listene den sjekker mot genereres inn i pakken som
   `elements.ts` og `classes.ts`.
 - **`<fs-popover>`, `<fs-suggestion>` og `<fs-dialog>` kobler fra bar

@@ -236,19 +236,36 @@ async function overta(argumenter: string[]): Promise<void> {
  * kompilator ser på.
  */
 async function check(paths: string[]): Promise<void> {
-  const sources =
-    paths.length > 0
-      ? await Promise.all(
-          paths.map(async (path) => {
-            try {
-              return { name: path, text: await readFile(path, "utf8") }
-            } catch {
-              console.error(`Fant ikke fila «${path}».`)
-              process.exit(1)
-            }
-          }),
-        )
-      : [{ name: "stdin", text: readFileSync(0, "utf8") }]
+  const sources: Array<{ name: string; text: string }> = []
+  const missing: string[] = []
+
+  if (paths.length > 0) {
+    for (const path of paths) {
+      try {
+        sources.push({ name: path, text: await readFile(path, "utf8") })
+      } catch {
+        missing.push(path)
+      }
+    }
+  } else {
+    if (process.stdin.isTTY) {
+      console.error("Leser markup fra standard inn. Avslutt med Ctrl-D.")
+    }
+    const text = readFileSync(0, "utf8")
+    // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
+    // eller en test som glemte å sende noe, ville ellers meldt grønt uten å
+    // ha sett på noe.
+    if (text.trim() === "") {
+      console.error("Ingen markup å sjekke: standard inn var tom.")
+      process.exit(1)
+    }
+    sources.push({ name: "stdin", text })
+  }
+
+  if (missing.length > 0) {
+    for (const path of missing) console.error(`Fant ikke fila «${path}».`)
+    process.exit(1)
+  }
 
   let count = 0
   for (const { name, text } of sources) {
@@ -258,15 +275,12 @@ async function check(paths: string[]): Promise<void> {
     }
   }
 
+  const files = `${sources.length} ${sources.length === 1 ? "fil" : "filer"}`
   if (count > 0) {
-    console.error(
-      `\n${count} ${count === 1 ? "funn" : "funn"} i ${sources.length} ${sources.length === 1 ? "fil" : "filer"}.`,
-    )
+    console.error(`\n${count} funn i ${files}.`)
     process.exit(1)
   }
-  console.log(
-    `Markupen stemmer med Fristil i ${sources.length} ${sources.length === 1 ? "fil" : "filer"}.`,
-  )
+  console.log(`Markupen stemmer med Fristil i ${files}.`)
 }
 
 /** Linje, kolonne, alvor og melding, slik en kompilator skriver det. */

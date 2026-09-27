@@ -8,9 +8,9 @@
  *   - `editor/snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `editor/elements.json`: det diagnostikken i utvidelsen trenger, tagg
+ *   - `designsystem/src/diagnostics/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
  *     for tagg.
- *   - `editor/classes.json`: hver `fs-`-klasse i pakkens CSS, med komponenten
+ *   - `designsystem/src/diagnostics/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
  *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
  *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken

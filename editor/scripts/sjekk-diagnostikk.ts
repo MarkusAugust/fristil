@@ -1,9 +1,11 @@
 /**
  * At diagnostikken feller hver feiltype den skal, og bare dem.
  *
- * Elementene leses fra generatoren i minnet, ikke fra `elements.json` på
+ * Elementene leses fra generatoren i minnet, ikke fra `elements.ts` på
  * disk, så sjekken bruker den samme kilden som utvidelsen ville fått etter
- * `bun run generate`. Hvert tilfelle sier hvor mange funn det skal gi og
+ * `bun run generate`. Diagnostikken importeres fra kilden i pakken, ikke fra
+ * `dist`: da feller en regel som er skrudd av med en gang, uten et bygg
+ * imellom, slik en mutasjonstest skal. Hvert tilfelle sier hvor mange funn det skal gi og
  * hva meldingen skal nevne, og de rene tilfellene skal gi null. Snippetene
  * fra komponentsidene er med som rene tilfeller: gir en av dem funn, er
  * enten regelen eller oppskriften feil, og begge deler skal fram.
@@ -20,7 +22,7 @@ import {
   type Classes,
   diagnose,
   type Elements,
-} from "@fristil/designsystem/diagnostics"
+} from "../../designsystem/src/diagnostics/index.js"
 import { classesData, diagnosticsData, snippets } from "./generate"
 
 const all: Elements = diagnosticsData()
