@@ -33,13 +33,15 @@ kommer i et nytt undertall.
   `disabled`, og strøk samtidig et `aria-disabled` konsumenten selv hadde
   skrevet. `computeFieldAttributes` er kontrakten, og den skriver det bare på
   ledeteksten; et ekte `disabled` er alt synlig for hjelpemidlene.
-- **Serverens `aria-invalid` står ordrett.** `false` er gyldig og vanlig i
-  håndskrevet HTML, og ble strøket ved hver patch. `grammar` og `spelling`
-  betyr ugyldig, og ble lest som «ikke true» og strøket de også.
+- **Serverens `aria-invalid` står ordrett når det er serveren som sier feltet
+  er ugyldig.** `false` er gyldig og vanlig i håndskrevet HTML, og ble strøket
+  ved hver patch. `grammar` og `spelling` betyr ugyldig, men ble lest som
+  «ikke true» og strøket på samme måte. Tom streng leses som `false`, slik
+  ARIA sier.
 - **`requiredMarker` som egenskap betyr det samme som attributtet.** Setteren
   skriver `"none"` bokstavelig, siden `required-marker="none"` overstyrer en
-  `data-required` serveren skrev på ledeteksten. Setteren fjernet attributtet
-  i stedet, og markeringen kom tilbake fra ledeteksten. Getteren leser nå
+  `data-required` serveren skrev på ledeteksten. Før fjernet setteren
+  attributtet, og markeringen kom tilbake fra ledeteksten. Getteren leser nå
   markupen, ledeteksten medregnet, framfor bare sitt eget attributt.
 
 ## 0.15.0 (2026-09-26)

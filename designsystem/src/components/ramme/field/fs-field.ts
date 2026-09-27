@@ -114,9 +114,16 @@ export class FsField extends HostElement {
   ] as const
 
   private observer?: MutationObserver
-  /** Id-ene komponenten laget selv, så en patch ikke gir nye hver gang. */
-  private generatedHelpId?: string
-  private generatedErrorId?: string
+  /**
+   * Id-ene hjelpeteksten og feilmeldingen sist hadde, enten de kom fra
+   * markupen eller herfra, så en patch som river dem bort får den samme
+   * tilbake og ikke en ny. `managedIds` er alle id-er komponenten noen gang
+   * har forvaltet, så de kan skilles fra dem serveren selv la i
+   * `aria-describedby`.
+   */
+  private lastHelpId?: string
+  private lastErrorId?: string
+  private readonly managedIds = new Set<string>()
   private generatedControlId?: string
   /**
    * Id-en kontrollen hadde sist, enten den kom fra markupen eller herfra.
@@ -388,18 +395,20 @@ export class FsField extends HostElement {
      * markupen, er det den som gjelder.
      */
     if (help) {
-      if (help.id) this.generatedHelpId = help.id
+      if (help.id) this.lastHelpId = help.id
       else {
-        this.generatedHelpId ??= uniqueId("fs-field-help")
-        setAttr(help, "id", this.generatedHelpId)
+        this.lastHelpId ??= uniqueId("fs-field-help")
+        setAttr(help, "id", this.lastHelpId)
       }
+      this.managedIds.add(help.id)
     }
     if (error) {
-      if (error.id) this.generatedErrorId = error.id
+      if (error.id) this.lastErrorId = error.id
       else {
-        this.generatedErrorId ??= uniqueId("fs-field-error")
-        setAttr(error, "id", this.generatedErrorId)
+        this.lastErrorId ??= uniqueId("fs-field-error")
+        setAttr(error, "id", this.lastErrorId)
       }
+      this.managedIds.add(error.id)
     }
 
     // Markeringene leses også fra markupen. Skrev serveren dem med
@@ -419,8 +428,13 @@ export class FsField extends HostElement {
     const server = this.serverWord(control, readControlWord(control))
 
     // `aria-invalid` har fire lovlige verdier, og både `grammar` og
-    // `spelling` betyr ugyldig. Alt annet enn fravær og `false` er det.
-    const serverInvalid = server.invalid !== null && server.invalid !== "false"
+    // `spelling` betyr ugyldig. Fravær, `false` og tom streng betyr gyldig;
+    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
+    // det, så komponenten kan ikke vise rød ramme på den.
+    const serverInvalid =
+      server.invalid !== null &&
+      server.invalid !== "false" &&
+      server.invalid !== ""
     const invalid = this.hasAttribute("invalid") || serverInvalid
     const disabled = this.hasAttribute("disabled") || server.disabled
 
@@ -431,19 +445,12 @@ export class FsField extends HostElement {
      * her og legges til igjen etter dagens tilstand, ellers ble
      * feilmeldingens id stående etter at feilen var borte.
      */
-    const managedIds = new Set(
-      [
-        help?.id,
-        error?.id,
-        // Også dem komponenten forvaltet før: fjerner et skript hjelpeteksten
-        // uten å røre kontrollen, sto id-en ellers igjen som «serverens».
-        this.generatedHelpId,
-        this.generatedErrorId,
-      ].filter(Boolean),
-    )
+    // Alle id-er komponenten noen gang har forvaltet, ikke bare dagens:
+    // fjerner et skript hjelpeteksten uten å røre kontrollen, sto id-en
+    // ellers igjen som «serverens».
     const serverExtras = (server.describedBy ?? "")
       .split(/\s+/)
-      .filter((id) => id && !managedIds.has(id))
+      .filter((id) => id && !this.managedIds.has(id))
 
     const computed = computeFieldAttributes({
       id: this.resolveControlId(control, label),

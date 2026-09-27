@@ -781,6 +781,25 @@ describe("fs-field eier bare det den selv skrev", () => {
     expect(error.hidden).toBe(false)
   })
 
+  it("leser aria-invalid med tom streng som gyldig", async () => {
+    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
+    // det. Komponenten regnet den som ugyldig, og viste rød ramme og
+    // feilmelding på et felt skjermleseren kalte gyldig.
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="epost">E-post</label>
+        <input id="epost" class="fs-input" aria-invalid="" />
+        <p class="fs-error-text">Feil</p>
+      </fs-field>
+    `
+    await Promise.resolve()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const error = document.querySelector(".fs-error-text") as HTMLElement
+    expect(input.getAttribute("data-state")).toBeNull()
+    expect(error.hidden).toBe(true)
+  })
+
   it("regner ikke en fjernet hjelpetekst som serverens ekstra id", async () => {
     // Serveren skrev `aria-describedby="epost-help"`. Et skript fjerner
     // hjelpeteksten uten å røre kontrollen. Id-en var komponentens å
