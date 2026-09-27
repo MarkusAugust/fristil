@@ -135,10 +135,9 @@ async function fokuserGjennom() {
 
   for (const kandidat of kandidater) {
     kandidat.focus()
-    const aktiv = document.activeElement
-
-    if (aktiv !== kandidat) continue
-    if (!aktiv.matches(":focus-visible")) continue
+    if (document.activeElement !== kandidat) continue
+    if (!kandidat.matches(":focus-visible")) continue
+    const aktiv = kandidat
 
     // Ringen ligger ikke alltid på elementet som har fokus. I
     // `.fs-toggle-group` er radioknappen usynlig, og valget rundt den tegner
