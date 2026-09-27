@@ -1,4 +1,7 @@
-{
+// Generert av editor/scripts/generate.ts. Ikke rediger.
+import type { Classes } from "./diagnostics.js"
+
+export const classes: Classes = {
   "fs-accordion": {
     "component": "accordion",
     "title": "Accordion",

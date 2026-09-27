@@ -450,6 +450,127 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// `sjekk`: filer som stemmer gir 0, ett funn gir 1 med fil, linje og kolonne
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const riktig = join(mappe, "riktig.html")
+  const galt = join(mappe, "galt.html")
+  await writeFile(
+    riktig,
+    `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>\n`,
+  )
+  await writeFile(
+    galt,
+    `<p>Hei</p>\n<button class="fs-buton">Lagre</button>\n<fs-dialog-header>Tittel</fs-dialog-header>\n`,
+  )
+
+  const rent = await kjør(["sjekk", riktig])
+  krev(
+    rent.kode === 0,
+    `sjekk av riktig markup avsluttet med kode ${rent.kode}`,
+  )
+  krev(rent.ut.includes("stemmer"), "sjekk sier ikke at markupen stemmer")
+
+  const funn = await kjør(["sjekk", galt, riktig])
+  krev(funn.kode === 1, `sjekk med funn avsluttet med kode ${funn.kode}`)
+  krev(
+    funn.ut.includes(`${galt}:2:`) && funn.ut.includes("fs-buton"),
+    `funnet står ikke med fil og linje: ${funn.ut.slice(0, 160)}`,
+  )
+  krev(
+    funn.ut.includes(`${galt}:3:`) && funn.ut.includes("fs-dialog-header"),
+    "elementet som ikke finnes ble ikke meldt på linje 3",
+  )
+  krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
+
+  // Fra standard inn, slik en test i en app sender HTML-en serveren lager
+  const prosess = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [stdinUt, stdinKode] = await Promise.all([
+    new Response(prosess.stdout).text(),
+    prosess.exited,
+  ])
+  krev(
+    stdinKode === 1,
+    `sjekk fra standard inn avsluttet med kode ${stdinKode}`,
+  )
+  krev(
+    stdinUt.includes("stdin:1:") && stdinUt.includes("placement"),
+    `funnet fra standard inn mangler: ${stdinUt.slice(0, 120)}`,
+  )
+
+  const borte = await kjør([
+    "sjekk",
+    join(mappe, "finnes-ikke.html"),
+    join(mappe, "heller-ikke.html"),
+  ])
+  krev(borte.kode === 1, "en fil som ikke finnes skulle gitt feilkode")
+  krev(
+    borte.feil.includes("finnes-ikke.html") &&
+      borte.feil.includes("heller-ikke.html"),
+    "begge filene som mangler skulle vært nevnt",
+  )
+
+  // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
+  // test som glemte å sende noe skal ikke melde grønt.
+  const tom = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: new Blob([""]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [tomFeil, tomKode] = await Promise.all([
+    new Response(tom.stderr).text(),
+    tom.exited,
+  ])
+  krev(tomKode === 1, `tom standard inn avsluttet med kode ${tomKode}`)
+  krev(
+    tomFeil.includes("standard inn var tom"),
+    "feilmeldingen sier ikke at inndata var tom",
+  )
+
+  // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
+  // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
+  // rørt, siden strømmen da setter røret i ikke-blokkerende modus. Bitene
+  // deles midt i `ø`: lest som `Buffer` ble hver halvdel et erstatningstegn,
+  // og funnet siterte «fs-kn��pp». Første bit skrives før pausen, så barnet
+  // må lese to ganger uansett hvor travel maskinen er.
+  const bytes = new TextEncoder().encode(
+    `<button class="fs-knøpp">Lagre</button>`,
+  )
+  const kutt = bytes.indexOf(0xc3) + 1
+  // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
+  krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
+  const treg = Bun.spawn(["node", cli, "sjekk"], {
+    stdin: "pipe",
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  treg.stdin.write(bytes.slice(0, kutt))
+  await Bun.sleep(300)
+  treg.stdin.write(bytes.slice(kutt))
+  treg.stdin.end()
+  const [tregUt, tregFeil, tregKode] = await Promise.all([
+    new Response(treg.stdout).text(),
+    new Response(treg.stderr).text(),
+    treg.exited,
+  ])
+  krev(
+    tregKode === 1 &&
+      tregUt.includes("stdin:1:") &&
+      tregUt.includes("«fs-knøpp»"),
+    `et tregt rør ga ikke funnet med hel tekst: kode ${tregKode}, ${(tregUt + tregFeil).slice(0, 120)}`,
+  )
+  krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
 if (feil.length > 0) {
   console.error(
     `Kommandolinjeverktøyet oppfører seg ikke som lovet:\n\n${feil

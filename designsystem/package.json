@@ -290,6 +290,10 @@
     "./register": {
       "types": "./dist/register.d.ts",
       "import": "./dist/register.js"
+    },
+    "./diagnostics": {
+      "types": "./dist/diagnostics/index.d.ts",
+      "import": "./dist/diagnostics/index.js"
     }
   },
   "files": [

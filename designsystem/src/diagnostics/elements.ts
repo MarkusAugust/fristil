@@ -1,4 +1,7 @@
-{
+// Generert av editor/scripts/generate.ts. Ikke rediger.
+import type { Elements } from "./diagnostics.js"
+
+export const elements: Elements = {
   "fs-field": {
     "link": "https://fristil.netlify.app/components/field/",
     "attributes": {

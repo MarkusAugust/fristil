@@ -3,7 +3,7 @@
  * hurtigrettelser oppå den.
  *
  * Alt som sjekker noe står i `diagnostics.ts`, uten VS Code i seg. Her leses
- * `elements.json` og `classes.json` fra utvidelsens mappe, og:
+ * `elements` og `classes` fra pakken, og:
  *
  *   - hvert dokument i et av språkene i `fristil.languages` kjøres gjennom
  *     når det åpnes og endres, og funnene blir røde og gule streker med
@@ -25,16 +25,14 @@
  * fil skal ikke kopieres for hvert tastetrykk.
  */
 
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
-import * as vscode from "vscode"
 import {
-  type Classes,
+  classes,
   diagnose,
-  type Elements,
+  elements,
   type Finding,
   tagEnd,
-} from "./diagnostics"
+} from "@fristil/designsystem/diagnostics"
+import * as vscode from "vscode"
 
 const DELAY_MS = 250
 const SOURCE = "Fristil"
@@ -42,10 +40,6 @@ const SOURCE = "Fristil"
 const WINDOW = 4000
 
 export function activate(context: vscode.ExtensionContext) {
-  const read = <T>(file: string): T =>
-    JSON.parse(readFileSync(join(context.extensionPath, file), "utf8"))
-  const elements = read<Elements>("elements.json")
-  const classes = read<Classes>("classes.json")
   const classNames = Object.keys(classes)
   const elementNames = Object.keys(elements)
 

@@ -32,6 +32,7 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { diagnoseMarkup, type Finding } from "./diagnostics/index.js"
 import {
   buildEntryPoints,
   type PackageExports,
@@ -225,8 +226,83 @@ async function overta(argumenter: string[]): Promise<void> {
   console.error(`${linjer.join("\n")}\n`)
 }
 
+/**
+ * `fristil sjekk <fil…>`: den samme sjekken som editoren kjører mens du
+ * skriver, over ferdige filer. Uten filer leses standard inn, så en test
+ * kan sende HTML-en serveren faktisk sender. Hvert funn skrives som
+ * `fil:linje:kolonne: melding`, som en kompilator, og ett funn er nok til
+ * å avslutte med feil: en advarsel fra editoren er en feil i en mal ingen
+ * kompilator ser på.
+ */
+async function check(paths: string[]): Promise<void> {
+  const sources: Array<{ name: string; text: string }> = []
+  const missing: string[] = []
+
+  if (paths.length > 0) {
+    for (const path of paths) {
+      try {
+        sources.push({ name: path, text: await readFile(path, "utf8") })
+      } catch {
+        missing.push(path)
+      }
+    }
+  } else {
+    if (process.stdin.isTTY) {
+      console.error("Leser markup fra standard inn. Avslutt med Ctrl-D.")
+    }
+    // Strømmen, ikke `readFileSync(0)`. Å røre `process.stdin` setter et rør
+    // i ikke-blokkerende modus, og en synkron lesing kastet da EAGAIN når
+    // skriveren ikke var ferdig ennå, som i `curl … | fristil sjekk`.
+    // Som tekst, ikke `Buffer`: et flerbytetegn delt over to biter ble
+    // ellers to erstatningstegn, og «fs-knøpp» sto som «fs-kn��pp» i funnet.
+    process.stdin.setEncoding("utf8")
+    let text = ""
+    for await (const chunk of process.stdin) text += chunk
+    // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
+    // eller en test som glemte å sende noe, ville ellers meldt grønt uten å
+    // ha sett på noe.
+    if (text.trim() === "") {
+      console.error("Ingen markup å sjekke: standard inn var tom.")
+      process.exit(1)
+    }
+    sources.push({ name: "stdin", text })
+  }
+
+  if (missing.length > 0) {
+    for (const path of missing) console.error(`Fant ikke fila «${path}».`)
+    process.exit(1)
+  }
+
+  let count = 0
+  for (const { name, text } of sources) {
+    for (const finding of diagnoseMarkup(text)) {
+      count += 1
+      console.log(`${name}:${describe(text, finding)}`)
+    }
+  }
+
+  const files = `${sources.length} ${sources.length === 1 ? "fil" : "filer"}`
+  if (count > 0) {
+    console.error(`\n${count} funn i ${files}.`)
+    process.exit(1)
+  }
+  console.log(`Markupen stemmer med Fristil i ${files}.`)
+}
+
+/** Linje, kolonne, alvor og melding, slik en kompilator skriver det. */
+function describe(text: string, finding: Finding): string {
+  const before = text.slice(0, finding.start)
+  const line = before.split("\n").length
+  const column = finding.start - before.lastIndexOf("\n")
+  const kind = finding.severity === "error" ? "feil" : "advarsel"
+  return `${line}:${column}: ${kind}: ${finding.message}`
+}
+
 /** Det kommandoen kan, skrevet ut på én skjerm. */
 const HJELP = `fristil <kommando>
+
+  sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
+                       Uten filer leses standard inn. Ett funn gir feilkode
 
   overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
@@ -253,13 +329,14 @@ Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
 fra en JSON-fil: fristil tema fristil.tema.json
 
 Eksempler:
+  npx @fristil/designsystem sjekk maler/*.html
   npx @fristil/designsystem overta button --ut=src/ui
   npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 
 const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
-const KOMMANDOER = new Set(["overta", "tema"])
+const KOMMANDOER = new Set(["sjekk", "overta", "tema"])
 
 const argumenter = process.argv.slice(2)
 
@@ -279,6 +356,11 @@ if (!KOMMANDOER.has(argumenter[0]) && !argumenter[0].startsWith("--")) {
 
 if (argumenter[0] === "overta") {
   await overta(argumenter.slice(1))
+  process.exit(0)
+}
+
+if (argumenter[0] === "sjekk") {
+  await check(argumenter.slice(1))
   process.exit(0)
 }
 

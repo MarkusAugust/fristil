@@ -88,14 +88,17 @@ Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, 
 
 `editor/` er VS Code-utvidelsen. `package.json` peker på
 `fristil.html-data.json` og `snippets.json`, som gir fullføring og snippets
-uten kode, og på `dist/extension.js`: `src/diagnostics.ts` leser hver
-`<fs-…>`-tagg og hver `class="…"` i et dokument og sjekker dem mot
-`elements.json` og `classes.json`, og `src/extension.ts` kobler den til
-editoren med streker, lyspærer, fullføring og hover. `classes.json` leses
-fra pakkens CSS og fra byggefunksjonene i `fs`, kalt én gang per variant,
-så en ny variant er med når `fs` gir den. De fire JSON-filene genereres fra
-`editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
-sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
+uten kode, og på `dist/extension.js`: diagnostikken i
+`designsystem/src/diagnostics/` leser hver `<fs-…>`-tagg og hver
+`class="…"` i et dokument og sjekker dem mot `elements.ts` og `classes.ts`
+ved siden av, og `src/extension.ts` kobler den til editoren med streker,
+lyspærer, fullføring og hover. Diagnostikken ligger i pakken, som
+`@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen
+importerer den derfra. `classes.ts` leses fra pakkens CSS og fra
+byggefunksjonene i `fs`, kalt én gang per variant, så en ny variant er med
+når `fs` gir den. De fire filene genereres fra `editor/metadata.ts`, CSS-en
+og «Ren HTML»-fanene på komponentsidene, sammen med
+`designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
 setning om det, og `bun run build` stopper til filene er generert på nytt:
 
