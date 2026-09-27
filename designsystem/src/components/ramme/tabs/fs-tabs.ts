@@ -85,10 +85,10 @@ export class FsTabs extends HostElement {
     this.sync()
   }
 
-  attributeChangedCallback(navn: string): void {
+  attributeChangedCallback(name: string): void {
     // `server-controlled` slått på midt i: da skal komponenten slippe taket,
     // og neste patch bestemmer.
-    if (navn === SERVER_CONTROLLED && isServerControlled(this)) {
+    if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.chosenTab = undefined
     }
   }
@@ -103,12 +103,51 @@ export class FsTabs extends HostElement {
     this.bound.clear()
   }
 
+  /**
+   * Fanene som hører til denne raden, og bare dem.
+   *
+   * Faner i faner er vanlig markup. Uten avgrensningen ble en indre rad en
+   * del av den ytre: et klikk på en indre fane skjulte det ytre panelet den
+   * sto i, og begge komponentene festet lyttere på de samme knappene.
+   */
   private get tabs(): HTMLButtonElement[] {
-    return [...this.querySelectorAll<HTMLButtonElement>("[role='tab']")]
+    return [...this.querySelectorAll<HTMLButtonElement>("[role='tab']")].filter(
+      (tab) => tab.closest(this.localName) === this,
+    )
   }
 
-  private get panels(): HTMLElement[] {
-    return [...this.querySelectorAll<HTMLElement>("[role='tabpanel']")]
+  /** Panelene som står inni denne raden. Reserven når koblingen mangler. */
+  private get ownPanels(): HTMLElement[] {
+    return [...this.querySelectorAll<HTMLElement>("[role='tabpanel']")].filter(
+      (panel) => panel.closest(this.localName) === this,
+    )
+  }
+
+  /**
+   * Panelet en fane styrer.
+   *
+   * Koblingen står i markupen som `aria-controls`, og leses derfra. Da kan
+   * panelene stå i en annen rekkefølge enn fanene, og utenfor verten. Et
+   * panel utenfor ligger likevel ikke i det komponenten observerer, så river
+   * en patch `hidden` av det, kommer det ikke tilbake av seg selv. Markup
+   * uten id-er faller tilbake på rekkefølgen.
+   */
+  private panelFor(tab: HTMLElement, index: number): HTMLElement | null {
+    const id = tab.getAttribute("aria-controls")
+    if (id) {
+      const root = this.getRootNode() as Document | ShadowRoot
+      const panel = root.getElementById?.(id)
+      if (panel) return panel
+    }
+    return this.ownPanels[index] ?? null
+  }
+
+  /** En fane som ikke kan velges, verken med mus eller tastatur. */
+  private isDisabled(tab: HTMLElement): boolean {
+    return (
+      tab.hasAttribute("disabled") ||
+      tab.getAttribute("aria-disabled") === "true"
+    )
   }
 
   /**
@@ -126,10 +165,16 @@ export class FsTabs extends HostElement {
     )
   }
 
-  /** Indeksen på fanen serveren har markert som valgt. */
+  /** Indeksen på fanen som er valgt. */
   get selected(): number {
     const index = this.markedIndex
     return index < 0 ? 0 : index
+  }
+
+  set selected(index: number) {
+    // React 19 skriver egenskapen når den finnes, og dokumentasjonen viser
+    // `faner.selected` som API. En getter alene kastet ved tilordning.
+    this.select(index)
   }
 
   private sync(): void {
@@ -173,7 +218,7 @@ export class FsTabs extends HostElement {
       this.chosenTab = undefined
       if (this.markedIndex < 0 && this.tabs.length > 0) {
         this.apply(0)
-        this.meld(0)
+        this.notify(0)
       }
       return
     }
@@ -204,7 +249,7 @@ export class FsTabs extends HostElement {
       this,
       'har flere faner enn paneler med role="tabpanel". Fanene uten et ' +
         "panel kan velges uten at noe vises.",
-      () => this.tabs.length > 0 && this.panels.length < this.tabs.length,
+      () => this.tabs.some((tab, i) => this.panelFor(tab, i) === null),
     )
 
     for (const tab of tabs) {
@@ -225,9 +270,12 @@ export class FsTabs extends HostElement {
     const current = tabs.indexOf(event.currentTarget as HTMLButtonElement)
     if (current < 0) return
 
+    // I en side som leses fra høyre står neste fane til venstre. Uten dette
+    // flyttet høyrepil fokus visuelt bakover.
+    const rtl = getComputedStyle(this).direction === "rtl"
     const steps: Record<string, number> = {
-      ArrowRight: 1,
-      ArrowLeft: -1,
+      ArrowRight: rtl ? -1 : 1,
+      ArrowLeft: rtl ? 1 : -1,
       ArrowDown: 1,
       ArrowUp: -1,
     }
@@ -235,11 +283,11 @@ export class FsTabs extends HostElement {
     let next: number | undefined
 
     if (event.key in steps) {
-      next = (current + steps[event.key] + tabs.length) % tabs.length
+      next = this.nextEnabled(current, steps[event.key])
     } else if (event.key === "Home") {
-      next = 0
+      next = this.nextEnabled(-1, 1)
     } else if (event.key === "End") {
-      next = tabs.length - 1
+      next = this.nextEnabled(tabs.length, -1)
     }
 
     if (next === undefined) return
@@ -249,10 +297,27 @@ export class FsTabs extends HostElement {
     tabs[next].focus()
   }
 
+  /**
+   * Neste fane som kan velges, i en retning, rundt om nødvendig.
+   *
+   * En deaktivert fane hoppes over. Ble den valgt, gjorde `focus()` på en
+   * deaktivert knapp ingenting, og raden sto uten en eneste fane som kunne
+   * få fokus. Tastaturbrukeren var låst ute av raden.
+   */
+  private nextEnabled(from: number, step: number): number | undefined {
+    const tabs = this.tabs
+    for (let i = 1; i <= tabs.length; i++) {
+      const index = (from + step * i + tabs.length * i) % tabs.length
+      if (!this.isDisabled(tabs[index])) return index
+    }
+    return undefined
+  }
+
   /** Velger en fane og melder fra. */
   select(index: number): void {
     const tabs = this.tabs
     if (index < 0 || index >= tabs.length) return
+    if (this.isDisabled(tabs[index])) return
     // `markedIndex` og ikke `selected`: den siste svarer 0 også når ingenting
     // er markert, og da lot den første fanen seg aldri velge.
     if (index === this.markedIndex) return
@@ -262,11 +327,11 @@ export class FsTabs extends HostElement {
     // det igjen.
     if (!isServerControlled(this)) this.chosenTab = tabs[index]
     this.apply(index)
-    this.meld(index)
+    this.notify(index)
   }
 
   /** Sier fra om hvilken fane som er valgt nå. */
-  private meld(index: number): void {
+  private notify(index: number): void {
     this.dispatchEvent(
       new CustomEvent("tab-select", {
         detail: { index },
@@ -284,16 +349,13 @@ export class FsTabs extends HostElement {
    * observatøren, som ville skrevet på nytt, i det uendelige.
    */
   private apply(index: number): void {
-    const tabs = this.tabs
-    const panels = this.panels
+    this.tabs.forEach((tab, i) => {
+      const chosen = i === index
+      setAttr(tab, "aria-selected", String(chosen))
+      setAttr(tab, "tabindex", chosen ? "0" : "-1")
 
-    tabs.forEach((tab, i) => {
-      const valgt = i === index
-      setAttr(tab, "aria-selected", String(valgt))
-      setAttr(tab, "tabindex", valgt ? "0" : "-1")
-
-      const panel = panels[i]
-      if (panel) setFlag(panel, "hidden", !valgt)
+      const panel = this.panelFor(tab, i)
+      if (panel) setFlag(panel, "hidden", !chosen)
     })
   }
 }

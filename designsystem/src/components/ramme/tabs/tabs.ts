@@ -67,7 +67,11 @@ export const tabs = ({
   const valid = Math.min(Math.max(selected, 0), Math.max(count - 1, 0))
   const tabId = (index: number) => `${id}-tab-${index}`
   const panelId = (index: number) => `${id}-panel-${index}`
-  const indices = Array.from({ length: count }, (_, index) => index)
+  // `Array.from` kaster på en negativ lengde. Null faner er en tom rad.
+  const indices = Array.from(
+    { length: Math.max(count, 0) },
+    (_, index) => index,
+  )
 
   return {
     list: attributes({
@@ -87,8 +91,6 @@ export const tabs = ({
         // Rullerende tabindex: bare den valgte fanen er en tabbestopp, så Tab
         // går fra raden og rett inn i panelet.
         tabindex: (index === valid ? "0" : "-1") as "0" | "-1",
-        // Komponenten flytter valget når brukeren klikker. Morfingen ville
-        // ellers satt det tilbake til det serveren sendte.
       }),
     ),
     panels: indices.map((index) =>

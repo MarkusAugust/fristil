@@ -18,6 +18,29 @@ kommer i et nytt undertall.
 
 ### Rettet
 
+- **`<fs-tabs>` hopper over deaktiverte faner.** Piltastene, Home og End
+  valgte en fane med `disabled`, `focus()` på en deaktivert knapp gjør
+  ingenting, og raden sto uten en eneste fane som kunne få fokus.
+  Tastaturbrukeren var låst ute. `select()` avviser dem også.
+- **Faner i faner er hver sin rad.** Komponenten fant faner og paneler i hele
+  undertreet, så et klikk på en indre fane skjulte det ytre panelet den sto i.
+- **Panelet finnes gjennom `aria-controls`.** Koblingen står i markupen og
+  leses derfra, med rekkefølgen som reserve for markup uten id-er. Panelene
+  kan dermed stå i en annen rekkefølge enn fanene, og utenfor verten.
+- **Venstre og høyre pil bytter retning i `dir="rtl"`.**
+- **`selected` på `<fs-tabs>` kan settes.** Getteren sto uten setter, og
+  `faner.selected = 1`, som dokumentasjonen viste, kastet.
+- **`fs.tabs()` med negativt `count` gir en tom rad** framfor å kaste.
+- **`<fs-error-summary>` prøver igjen når fokus ikke landet.** Sto boksen i et
+  skjult panel eller en lukket dialog i det den kom, feilet `focus()` i
+  stillhet mens flagget «har flyttet fokus» ble satt, og boksen fikk aldri
+  fokus da forelderen ble synlig og lista byttet ut.
+- **`<fs-error-summary>` sier fra når `tabindex` mangler.** Uten det gjør
+  `focus()` ingenting, og hele grunnen til komponenten forsvant i stillhet.
+- **En lenke til en `<label>` som omslutter kontrollen** sender fokus til
+  kontrollen, ikke til ledeteksten.
+- **Rullingen til feltet følger sidens `scroll-behavior`** framfor å tvinge
+  `smooth`, så `prefers-reduced-motion` gjelder av seg selv.
 - **`<fs-field>` eier bare det den selv skrev.** Komponenten leser
   `aria-invalid`, `aria-describedby` og `disabled` fra kontrollen, fordi
   serveren kan ha skrevet feltet med `fs.field()`. Skillet mellom serverens
