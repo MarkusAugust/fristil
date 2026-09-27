@@ -28,9 +28,11 @@ kommer i et nytt undertall.
   leses derfra, med rekkefølgen som reserve bare for markup uten
   `aria-controls`. Panelene kan dermed stå i en annen rekkefølge enn fanene,
   og utenfor verten. Peker `aria-controls` på en id som ikke finnes, sier
-  komponenten fra i konsollen, og et panel skrives aldri av to faner.
-- **Tabbestoppet flyttes når en patch deaktiverer den valgte fanen**, til den
-  første fanen som kan få fokus. Valget står.
+  komponenten fra i konsollen. Peker to faner på det samme panelet, vises
+  det når en av dem er valgt.
+- **Tabbestoppet flyttes når en patch deaktiverer fanen brukeren valgte**,
+  til den neste fanen som kan få fokus. Valget står. Har brukeren ikke valgt
+  noe, er markupen serverens, og komponenten rører den ikke.
 - **Venstre og høyre pil bytter retning i `dir="rtl"`.**
 - **`selected` på `<fs-tabs>` kan settes.** Getteren sto uten setter, og
   `faner.selected = 1`, som dokumentasjonen viste, kastet.

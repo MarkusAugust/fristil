@@ -258,6 +258,33 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     expect(document.activeElement?.id).toBe("valg")
   })
 
+  it("river ikke fokus ut av et felt utenfor skyggerota boksen står i", async () => {
+    // Rotas `activeElement` er null når fokus står utenfor skyggetreet, så
+    // brukeren ble regnet som «ingen», og gjenforsøket tok fokus.
+    monter(`<input id="ute" />`)
+    const vert = document.createElement("div")
+    vert.hidden = true
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `
+      <fs-error-summary ${attr(FEIL.host)}>
+        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#ute">Skriv noe</a></li></ul>
+      </fs-error-summary>
+    `
+    await tegn()
+
+    const felt = document.getElementById("ute") as HTMLInputElement
+    vert.hidden = false
+    felt.focus()
+    ;(rot.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#ute">Skriv noe annet</a></li>`
+    await tegn()
+
+    expect(document.activeElement).toBe(felt)
+    vert.remove()
+  })
+
   it("følger en ledetekst som omslutter kontrollen", async () => {
     // `for` er ikke den eneste koblingen mellom ledetekst og kontroll. Med
     // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`

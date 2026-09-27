@@ -327,16 +327,50 @@ describe("fs-tabs leser koblingen og hopper over det som ikke kan velges", () =>
      * siden frøs.
      */
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const { knapper, faner } = rad()
-    const [forste, ...resten] = faner.panels
-    const paneler = [...resten, forste]
-      .map((panel) => `<div ${attr(panel)}>${panel.id}</div>`)
-      .join("")
+    try {
+      const { knapper, faner } = rad()
+      const [forste, ...resten] = faner.panels
+      const paneler = [...resten, forste]
+        .map((panel) => `<div ${attr(panel)}>${panel.id}</div>`)
+        .join("")
+      monter(`
+        <fs-tabs>
+          <div class="fs-tabs__list" role="tablist">${knapper.replace(
+            'aria-controls="sak-panel-1"',
+            'aria-controls="sak-panel-1x"',
+          )}</div>
+          ${paneler}
+        </fs-tabs>
+      `)
+      await tegn()
+      ;(document.getElementById("sak-tab-2") as HTMLElement).click()
+      await tegn()
+      ;(document.getElementById("sak-tab-0") as HTMLElement).click()
+      await tegn()
+      await tegn()
+
+      const hidden = (id: string) =>
+        (document.getElementById(id) as HTMLElement).hidden
+      expect(hidden("sak-panel-0")).toBe(false)
+      expect(hidden("sak-panel-2")).toBe(true)
+      expect(
+        advarsel.mock.calls.some((k) => String(k[0]).includes("aria-controls")),
+      ).toBe(true)
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
+
+  it("viser et panel to faner deler når en av dem er valgt", async () => {
+    // En feil i markupen, men et galt svar i stillhet er verre enn å vise
+    // panelet: skrev bare den første fanen, sto panelet skjult mens den
+    // andre var valgt.
+    const { knapper, paneler } = rad()
     monter(`
       <fs-tabs>
         <div class="fs-tabs__list" role="tablist">${knapper.replace(
-          'aria-controls="sak-panel-1"',
-          'aria-controls="sak-panel-1x"',
+          'aria-controls="sak-panel-2"',
+          'aria-controls="sak-panel-0"',
         )}</div>
         ${paneler}
       </fs-tabs>
@@ -344,18 +378,12 @@ describe("fs-tabs leser koblingen og hopper over det som ikke kan velges", () =>
     await tegn()
     ;(document.getElementById("sak-tab-2") as HTMLElement).click()
     await tegn()
-    ;(document.getElementById("sak-tab-0") as HTMLElement).click()
-    await tegn()
-    await tegn()
 
     const hidden = (id: string) =>
       (document.getElementById(id) as HTMLElement).hidden
+    expect(valgt()).toEqual([false, false, true])
     expect(hidden("sak-panel-0")).toBe(false)
-    expect(hidden("sak-panel-2")).toBe(true)
-    expect(
-      advarsel.mock.calls.some((k) => String(k[0]).includes("aria-controls")),
-    ).toBe(true)
-    vi.restoreAllMocks()
+    expect(hidden("sak-panel-1")).toBe(true)
   })
 
   it("flytter tabbestoppet når den valgte fanen deaktiveres av en patch", async () => {

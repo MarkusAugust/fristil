@@ -164,10 +164,14 @@ export class FsErrorSummary extends HostElement {
     // `focus()` ingenting, og da skal neste forsøk få lov, så sant ingen
     // står i et felt.
     if (this.shouldFocus && !this.hasFocused) {
-      const root = this.getRootNode() as Document | ShadowRoot
-      const active = root.activeElement
+      // `document.activeElement` og ikke rotas: står boksen i en skyggerot
+      // og feltet i vanlig DOM, er rotas `activeElement` null, og brukeren
+      // ville blitt regnet som «ingen». Dokumentets peker på skyggeverten når
+      // fokus står i et skyggetre, og er aldri null for et felt i siden.
+      const active = document.activeElement
       const nobodyTyping = !active || active === document.body
       if (this.focusAttempted && !nobodyTyping) return
+      const root = this.getRootNode() as Document | ShadowRoot
 
       this.focusAttempted = true
       this.focus()

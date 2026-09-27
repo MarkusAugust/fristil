@@ -81,7 +81,9 @@ export class FsTabs extends HostElement {
       subtree: true,
       attributes: true,
       // `disabled` er med fordi komponenten leser det: deaktiverer en patch
-      // den valgte fanen, skal tabbestoppet flyttes til en som kan få fokus.
+      // fanen brukeren valgte, skal tabbestoppet flyttes til en som kan få
+      // fokus. Har brukeren ikke valgt noe, er markupen serverens, og
+      // komponenten rører den ikke.
       attributeFilter: [
         "aria-selected",
         "tabindex",
@@ -364,17 +366,19 @@ export class FsTabs extends HostElement {
     const tabs = this.tabs
     /*
      * Tabbestoppet er den valgte fanen, med mindre en patch har deaktivert
-     * den. Da får den første fanen som kan velges det, ellers hopper Tab
+     * den. Da får den neste fanen som kan velges det, ellers hopper Tab
      * forbi hele raden, og `keydown` fyrer ikke på en deaktivert knapp, så
      * piltastene hjelper heller ikke.
      */
     const stop = this.isDisabled(tabs[index])
       ? (this.nextEnabled(index, 1) ?? index)
       : index
-    // Et panel skrives én gang, av den første fanen som peker på det. Peker
-    // to faner på det samme, ved en feil i markupen, ville de ellers skrevet
-    // motsatt `hidden` på det i hver runde, og siden frosset.
-    const written = new Set<HTMLElement>()
+    /*
+     * Et panel er synlig når noen fane som peker på det er valgt, og skrives
+     * én gang. Peker to faner på det samme, ved en feil i markupen, ville de
+     * ellers skrevet motsatt `hidden` på det i hver runde, og siden frosset.
+     */
+    const panels = new Map<HTMLElement, boolean>()
 
     tabs.forEach((tab, i) => {
       const chosen = i === index
@@ -382,11 +386,10 @@ export class FsTabs extends HostElement {
       setAttr(tab, "tabindex", i === stop ? "0" : "-1")
 
       const panel = this.panelFor(tab, i)
-      if (panel && !written.has(panel)) {
-        written.add(panel)
-        setFlag(panel, "hidden", !chosen)
-      }
+      if (panel) panels.set(panel, (panels.get(panel) ?? false) || chosen)
     })
+
+    for (const [panel, shown] of panels) setFlag(panel, "hidden", !shown)
   }
 }
 
