@@ -543,6 +543,8 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     `<button class="fs-knøpp">Lagre</button>`,
   )
   const kutt = bytes.indexOf(0xc3) + 1
+  // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
+  krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
   const treg = Bun.spawn(["node", cli, "sjekk"], {
     stdin: "pipe",
     stdout: "pipe",
