@@ -1,18 +1,26 @@
 import {
+  addClass,
   defineElement,
   HostElement,
   setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
+import {
+  ERROR_SUMMARY_CLASS,
+  ERROR_SUMMARY_TITLE_CLASS,
+} from "./error-summary.js"
 export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
 
 /**
  * Sender brukeren fra en feil i oppsummeringen til feltet som feilet.
  *
- * Serveren skriver hele boksen med `fs.errorSummary()`: klassen, `role`,
- * `tabindex`, overskriften og lista. Komponenten lager ingenting. Den gjorde
- * det før, og da forsvant både klassen og overskriften ved første morfing i
- * Datastar, uten å komme tilbake.
+ * Serveren skriver innholdet: overskriften og lista med lenker. Lages
+ * markupen med JavaScript, skriver `fs.errorSummary()` også klassen,
+ * `role="alert"` og `tabindex="-1"` på boksen, og komponenten lar det stå.
+ * Kommer markupen fra en mal uten JavaScript, fyller komponenten inn de
+ * tre, og klassen på overskriften, og setter dem tilbake når en patch
+ * river dem bort. Komponenten lager ingen noder: den gjorde det før, og da
+ * forsvant overskriften ved første morfing i Datastar uten å komme tilbake.
  *
  * Det som er igjen er to ting nettleseren ikke gjør selv:
  *
@@ -22,8 +30,8 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  *    ruller bare dit, og neste tastetrykk fortsetter der fokus sto før.
  *
  * ```html
- * <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1">
- *   <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
+ * <fs-error-summary>
+ *   <h2>Skjemaet har to feil</h2>
  *   <ul class="fs-list">
  *     <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
  *   </ul>
@@ -49,10 +57,16 @@ export class FsErrorSummary extends HostElement {
 
   connectedCallback(): void {
     // Feilene kommer og går mens brukeren retter, og `slotchange` melder ikke
-    // fra i vanlig DOM. Bare childList: komponenten setter ingen attributter
-    // på barna, så observatøren kan ikke utløse seg selv.
+    // fra i vanlig DOM. Attributtene er de komponenten selv fyller inn, så
+    // en patch som river dem bort får dem tilbake. Hver skriving
+    // sammenligner først, ellers ville observatøren utløst seg selv.
     this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true, subtree: true })
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "role", "tabindex"],
+    })
     this.sync()
   }
 
@@ -86,7 +100,24 @@ export class FsErrorSummary extends HostElement {
     return this.dataset.autofocus !== "false"
   }
 
+  /**
+   * Fyller inn det en mal uten JavaScript ikke skrev. Bare det som mangler:
+   * en rolle serveren har valgt selv står, og det gjør en `tabindex` også.
+   */
+  private wire(): void {
+    addClass(this, ERROR_SUMMARY_CLASS)
+    if (!this.hasAttribute("role")) setAttr(this, "role", "alert")
+    // Uten `tabindex` gjør `focus()` ingenting, og hele grunnen til
+    // komponenten forsvinner i stillhet.
+    if (!this.hasAttribute("tabindex")) setAttr(this, "tabindex", "-1")
+
+    const title = this.querySelector("h1, h2, h3, h4, h5, h6")
+    if (title) addClass(title, ERROR_SUMMARY_TITLE_CLASS)
+  }
+
   private sync(): void {
+    this.wire()
+
     const links = [
       ...this.querySelectorAll<HTMLAnchorElement>("li a[href^='#']"),
     ]
@@ -135,17 +166,6 @@ export class FsErrorSummary extends HostElement {
       link.addEventListener("click", this.handleLinkClick)
       this.links.add(link)
     }
-
-    // Uten `tabindex` gjør `focus()` ingenting, og hele grunnen til
-    // komponenten forsvinner i stillhet. Verten er serverens, så komponenten
-    // kan ikke sette det selv.
-    warnAboutMarkup(
-      this,
-      'mangler tabindex="-1", så boksen kan ikke få fokus, og den som ' +
-        "hører siden får ikke vite at innsendingen stoppet. " +
-        "`fs.errorSummary()` setter det.",
-      () => this.shouldFocus && !this.hasAttribute("tabindex"),
-    )
 
     // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
     // nullstillingen tok boksen fokus bare første gang: mønsteret i en
