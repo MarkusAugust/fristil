@@ -1,24 +1,44 @@
+import { LABEL_CLASS } from "../../css/label/label.js"
 import {
+  addClass,
   defineElement,
+  derivedParts,
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
   setText,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
-import { SUGGESTION_EMPTY_CLASS } from "./suggestion.js"
+import {
+  SUGGESTION_EMPTY_CLASS,
+  SUGGESTION_LIST_CLASS,
+  SUGGESTION_OPTION_CLASS,
+} from "./suggestion.js"
 
 export const FS_SUGGESTION_TAG = "fs-suggestion" as const
+
+/** Feltet: rollen når den står der, ellers det første inndatafeltet. */
+const CONTROL_SELECTOR = "[role='combobox'], input:not([type='hidden'])"
+/** Lista: rollen når den står der, ellers klassen. */
+const LIST_SELECTOR = `[role='listbox'], .${SUGGESTION_LIST_CLASS}`
+/** Et alternativ: rollen når den står der, ellers en `<li>` uten rolle i lista. */
+const OPTION_SELECTOR = `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([role])`
 
 /**
  * Tastaturet og filtreringen i et felt med forslagsliste.
  *
- * Serveren skriver feltet og lista med `fs.suggestion()`. Komponenten rendrer
- * ingenting. Den lagde tidligere hele feltet selv, og da fantes det verken
- * ledetekst eller inndatafelt før skriptet hadde kjørt, og ingenting ble med
- * i innsendingen.
+ * Serveren skriver feltet og lista. Lages markupen med JavaScript, skriver
+ * `fs.suggestion()` rollene, id-ene og koblingen. Kommer den fra en mal uten
+ * JavaScript, holder det med en `<label>`, et `<input>`, en
+ * `.fs-suggestion__list` med `<li>` og et `[role="status"]`: komponenten
+ * setter rollene, lager id-ene, kobler ledeteksten og lista til feltet, og
+ * lukker lista til brukeren rører feltet. Bare det som mangler, så det
+ * serveren skrev står. Komponenten rendrer ingenting. Den lagde tidligere
+ * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
+ * skriptet hadde kjørt, og ingenting ble med i innsendingen.
  *
  * Det komponenten gjør er det nettleseren ikke gjør: filtrerer alternativene
  * mens brukeren skriver, flytter markeringen med piltastene, og holder
@@ -55,6 +75,10 @@ export class FsSuggestion extends HostElement {
   private empty?: HTMLElement
   /** Alternativene som alt har fått lytteren sin. */
   private readonly bound = new WeakSet<HTMLElement>()
+  /** Id-ene komponenten selv har laget, per node, så en patch får de samme tilbake. */
+  private readonly ids = new WeakMap<Element, string>()
+  /** Rollene komponenten selv har satt. Se `derivedParts`. */
+  private readonly roledByMe = new WeakSet<Element>()
   /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
   private choosing = false
   /**
@@ -100,6 +124,14 @@ export class FsSuggestion extends HostElement {
         "aria-expanded",
         "aria-selected",
         "aria-activedescendant",
+        // Koblingen komponenten fyller inn når markupen kom uten den.
+        "role",
+        "id",
+        "for",
+        "aria-controls",
+        "autocomplete",
+        "aria-autocomplete",
+        "class",
       ],
     })
     this.sync()
@@ -132,9 +164,78 @@ export class FsSuggestion extends HostElement {
   }
 
   private sync(): void {
+    this.wire()
     this.bind()
     this.repair()
     this.announceFiltered()
+  }
+
+  /** Id-en et element skal ha: sin egen, ellers den komponenten laget sist. */
+  private rememberedId(element: Element, prefix: string): string {
+    if (element.id) return element.id
+    let id = this.ids.get(element)
+    if (!id) {
+      id = uniqueId(prefix)
+      this.ids.set(element, id)
+    }
+    return id
+  }
+
+  /**
+   * Fyller inn koblingen der markupen kom uten den. Bare det som mangler.
+   *
+   * Lista lukkes når markupen ikke sier noe om den, altså når verken
+   * `aria-expanded` på feltet eller `hidden` på lista står der. Sier
+   * markupen én av delene, er det serverens ord om begge, som med
+   * `fs.suggestion({ open: true })`.
+   */
+  private wire(): void {
+    const control = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
+    if (!control) return
+
+    if (!control.hasAttribute("role")) setAttr(control, "role", "combobox")
+    if (!control.hasAttribute("autocomplete")) {
+      setAttr(control, "autocomplete", "off")
+    }
+    if (!control.hasAttribute("aria-autocomplete")) {
+      setAttr(control, "aria-autocomplete", "list")
+    }
+    if (!control.id) {
+      setAttr(control, "id", this.rememberedId(control, "fs-suggestion"))
+    }
+
+    const label = this.querySelector("label")
+    if (label) {
+      addClass(label, LABEL_CLASS)
+      if (!label.hasAttribute("for")) setAttr(label, "for", control.id)
+    }
+
+    const list = this.listElement
+    if (list) {
+      addClass(list, SUGGESTION_LIST_CLASS)
+      if (!list.hasAttribute("role")) setAttr(list, "role", "listbox")
+      if (!list.id) {
+        setAttr(list, "id", this.rememberedId(list, "fs-suggestion-list"))
+      }
+      if (!control.hasAttribute("aria-controls")) {
+        setAttr(control, "aria-controls", list.id)
+      }
+      if (!control.hasAttribute("aria-expanded")) {
+        if (!list.hasAttribute("hidden")) setFlag(list, "hidden", true)
+        setAttr(control, "aria-expanded", "false")
+      }
+    }
+
+    for (const option of this.options) {
+      addClass(option, SUGGESTION_OPTION_CLASS)
+      if (!option.hasAttribute("role")) {
+        setAttr(option, "role", "option")
+        this.roledByMe.add(option)
+      }
+      if (!option.id) {
+        setAttr(option, "id", this.rememberedId(option, "fs-suggestion-option"))
+      }
+    }
   }
 
   /**
@@ -230,7 +331,7 @@ export class FsSuggestion extends HostElement {
   }
 
   private get listElement(): HTMLElement | null {
-    return this.querySelector<HTMLElement>("[role='listbox']")
+    return this.querySelector<HTMLElement>(LIST_SELECTOR)
   }
 
   private get emptyElement(): HTMLElement | null {
@@ -245,7 +346,12 @@ export class FsSuggestion extends HostElement {
    * piltaster da komponenten så etter klassen, og ingen sa fra.
    */
   private get options(): HTMLElement[] {
-    return [...this.querySelectorAll<HTMLElement>("[role='option']")]
+    return derivedParts<HTMLElement>(
+      this,
+      OPTION_SELECTOR,
+      "option",
+      this.roledByMe,
+    )
   }
 
   /**
@@ -284,28 +390,28 @@ export class FsSuggestion extends HostElement {
   }
 
   private bind(): void {
-    const control = this.querySelector<HTMLInputElement>("[role='combobox']")
+    const control = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
     if (!control) {
       warnAboutMarkup(
         this,
-        'fant ingen [role="combobox"]. Uten den vet komponenten ikke ' +
-          "hvilket felt den skal lytte på, og verken filtrering eller " +
-          "piltaster virker. `fs.suggestion()` setter rollen.",
+        'fant ingen felt: verken et <input> eller en [role="combobox"]. ' +
+          "Uten det vet komponenten ikke hvilket felt den skal lytte på, " +
+          "og verken filtrering eller piltaster virker.",
         // Et tomt element er et område serveren ikke har fylt ennå, og det
         // er ikke en feil i markupen.
         () =>
           this.childElementCount > 0 &&
-          this.querySelector("[role='combobox']") === null,
+          this.querySelector(CONTROL_SELECTOR) === null,
       )
       return
     }
 
     warnAboutMarkup(
       this,
-      'fant ingen [role="listbox"]. Alternativene kan da verken vises, ' +
+      'fant ingen liste: verken en [role="listbox"] eller en ' +
+        ".fs-suggestion__list. Alternativene kan da verken vises, " +
         "filtreres eller velges med tastaturet.",
-      () =>
-        this.querySelector("[role='combobox']") !== null && !this.listElement,
+      () => this.querySelector(CONTROL_SELECTOR) !== null && !this.listElement,
     )
 
     // Antall treff leses opp i et statuselement serveren sender. Uten det
@@ -317,7 +423,7 @@ export class FsSuggestion extends HostElement {
         "som ikke ser skjermen. `fs.suggestion()` skriver elementet, med " +
         "data-ignore-morph så teksten overlever en patch.",
       () =>
-        this.querySelector("[role='combobox']") !== null &&
+        this.querySelector(CONTROL_SELECTOR) !== null &&
         this.listElement !== null &&
         this.querySelector("[role='status']") === null,
     )

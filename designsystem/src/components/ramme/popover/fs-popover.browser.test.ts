@@ -8,7 +8,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
-import { defineFsPopover } from "./fs-popover"
+import { defineFsPopover, type FsPopover } from "./fs-popover"
 import { popover, popoverPlacements } from "./popover"
 
 import "../../../tokens/tokens.css"
@@ -318,5 +318,128 @@ describe("fs-popover plasserer panelet", () => {
     ])
     expect(popover.isPlacement("top-end")).toBe(true)
     expect(popover.isPlacement("midt")).toBe(false)
+  })
+})
+
+/*
+ * Markup skrevet uten JavaScript: en knapp og et panel med klassen, uten
+ * `popover`, id eller `aria-controls`. Komponenten fyller inn resten.
+ */
+const BAR = `
+  <fs-popover>
+    <button class="fs-button" id="bar-knapp">Handlinger</button>
+    <ul class="fs-popover" data-variant="plain">
+      <li><button class="fs-button" data-variant="ghost" type="button">Arkiver</button></li>
+    </ul>
+  </fs-popover>`
+
+describe("fs-popover kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  function deler() {
+    return {
+      knapp: document.getElementById("bar-knapp") as HTMLButtonElement,
+      panel: document.querySelector("ul.fs-popover") as HTMLElement,
+    }
+  }
+
+  it("setter popover, id og kobling, og åpner på klikk", async () => {
+    monter(BAR)
+    await tegn()
+    const { knapp, panel } = deler()
+
+    expect(panel.getAttribute("popover")).toBe("manual")
+    expect(panel.id).not.toBe("")
+    expect(knapp.getAttribute("aria-controls")).toBe(panel.id)
+    expect(knapp.getAttribute("aria-expanded")).toBe("false")
+
+    knapp.click()
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(true)
+    expect(knapp.getAttribute("aria-expanded")).toBe("true")
+
+    await forventIngenTilgjengelighetsbrudd()
+    ;(document.querySelector("fs-popover") as FsPopover).hide()
+  })
+
+  it("lar det serveren skrev stå", async () => {
+    // `popover` uten verdi er `auto`, og det er en annen verdi enn
+    // komponentens `manual`. Id-en er også serverens.
+    monter(
+      BAR.replace(
+        '<ul class="fs-popover" data-variant="plain">',
+        '<ul class="fs-popover" id="eget-panel" popover data-variant="plain">',
+      ),
+    )
+    await tegn()
+    const { knapp, panel } = deler()
+
+    expect(panel.getAttribute("popover")).toBe("")
+    expect(panel.id).toBe("eget-panel")
+    expect(knapp.getAttribute("aria-controls")).toBe("eget-panel")
+  })
+
+  it("velger ikke en knapp som peker på noe annet", async () => {
+    monter(
+      BAR.replace(
+        '<button class="fs-button" id="bar-knapp">',
+        '<button class="fs-button" aria-controls="noe-annet" id="feil-knapp">Filter</button>' +
+          '<button class="fs-button" id="bar-knapp">',
+      ),
+    )
+    await tegn()
+    const { knapp, panel } = deler()
+    const feil = document.getElementById("feil-knapp") as HTMLElement
+
+    expect(knapp.getAttribute("aria-controls")).toBe(panel.id)
+    expect(feil.getAttribute("aria-controls")).toBe("noe-annet")
+    expect(feil.hasAttribute("aria-expanded")).toBe(false)
+  })
+
+  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
+    monter(BAR)
+    await tegn()
+    const { knapp, panel } = deler()
+    const id = panel.id
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    for (const navn of ["popover", "id"]) panel.removeAttribute(navn)
+    for (const navn of ["aria-controls", "aria-expanded"]) {
+      knapp.removeAttribute(navn)
+    }
+    await ventPaTegning()
+
+    expect(panel.id).toBe(id)
+    expect(panel.getAttribute("popover")).toBe("manual")
+    expect(knapp.getAttribute("aria-controls")).toBe(id)
+    expect(knapp.getAttribute("aria-expanded")).toBe("false")
+  })
+
+  it("skriver ingenting på markup fra fs.popover()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <fs-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} class="fs-button">Handlinger</button>
+        <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
+      </fs-popover>`
+    const vert = omslag.querySelector("fs-popover") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await tegn()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
   })
 })

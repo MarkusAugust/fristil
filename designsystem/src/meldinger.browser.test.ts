@@ -172,13 +172,15 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("<dialog>"))).toBe(true)
   })
 
-  it("forslagsfeltet uten en combobox", async () => {
+  it("forslagsfeltet uten et felt", async () => {
+    // Et `<input>` er nok: komponenten gir det rollen. Uten et felt i det
+    // hele tatt finner den ingenting å lytte på.
     const advarsel = lytt()
 
     monter(`
       <fs-suggestion>
         <label class="fs-label">Kommune</label>
-        <input class="fs-input" />
+        <ul class="fs-suggestion__list"><li>Bergen</li></ul>
       </fs-suggestion>
     `)
     await ventTilRo()
@@ -234,35 +236,20 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     `)
     await ventTilRo()
 
-    expect(meldinger(advarsel).some((m) => m.includes("[popover]"))).toBe(true)
+    expect(
+      meldinger(advarsel).some((m) => m.includes("fant ingen panel")),
+    ).toBe(true)
   })
 
-  it("sprettoppvinduet der panelet mangler id", async () => {
-    // Oppslaget etter knappen går gjennom panelets id, så den faller bort av
-    // seg selv når id-en mangler. Beskjeden må peke på panelet og ikke på
-    // knappen, ellers leter utvikleren på feil sted.
+  it("sprettoppvinduet uten en knapp", async () => {
+    // En knapp utenfor panelet er nok: komponenten kobler den. Uten en
+    // eneste, eller med bare en som peker på noe annet, finner den ingen.
     const advarsel = lytt()
 
     monter(`
       <fs-popover>
-        <button class="fs-button" aria-expanded="false">Handlinger</button>
-        <div popover class="fs-popover__panel">Flytt saken</div>
-      </fs-popover>
-    `)
-    await ventTilRo()
-
-    const sagt = meldinger(advarsel)
-    expect(sagt.some((m) => m.includes("panelet har ingen id"))).toBe(true)
-    expect(sagt.some((m) => m.includes("fant ingen knapp"))).toBe(false)
-  })
-
-  it("sprettoppvinduet uten en knapp som peker på panelet", async () => {
-    const advarsel = lytt()
-
-    monter(`
-      <fs-popover>
-        <button class="fs-button">Handlinger</button>
-        <div popover id="handlinger" class="fs-popover__panel">Flytt saken</div>
+        <a href="/handlinger" class="fs-link">Handlinger</a>
+        <div popover id="handlinger" class="fs-popover">Flytt saken</div>
       </fs-popover>
     `)
     await ventTilRo()

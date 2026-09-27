@@ -184,8 +184,8 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
          `open` på verten, kaller komponenten showModal(). Ingen klientkode
          åpner noe. -->
     <fs-dialog id="bekreft" open>
-      <dialog class="fs-dialog" aria-labelledby="bekreft-tittel" open>
-        <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+      <dialog class="fs-dialog" open>
+        <h2>Slette søknaden?</h2>
         <div class="fs-dialog__body">
           <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
         </div>
@@ -253,8 +253,8 @@ defineFsDialog()
 
 ```html
 <fs-dialog open>
-  <dialog class="fs-dialog" aria-labelledby="kvittering-tittel" open>
-    <h2 class="fs-dialog__title" id="kvittering-tittel">Vedtaket er registrert</h2>
+  <dialog class="fs-dialog" open>
+    <h2>Vedtaket er registrert</h2>
     <div class="fs-dialog__body">
       <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
     </div>
@@ -264,6 +264,8 @@ defineFsDialog()
   </dialog>
 </fs-dialog>
 ```
+
+Inne i `<fs-dialog>` gir komponenten dialogen navnet sitt fra den første overskriften: `aria-labelledby` mot overskriftens id, som den lager om den mangler, og klassen `fs-dialog__title` på overskriften. Har serveren skrevet `aria-labelledby` eller `aria-label`, står det. Lages markupen med JavaScript, skriver `fs.dialog({ titleId })` det samme.
 
 **Gi knappen som lukker dialogen en `value`.** Uten JavaScript er dialogen en boks på siden, og `<form method="dialog">` lukker den før noe skript har kjørt. Komponenten kjenner igjen det som alt har skjedd på `returnValue`, som nettleseren setter til verdien på knappen. Er den tom, ser komponenten en vert som sier «åpen» og en lukket dialog, og åpner den igjen.
 
@@ -380,7 +382,7 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 
-- Dialogen trenger et navn. `fs.dialog({ titleId })` skriver `aria-labelledby` mot overskriften. Skriver du markupen selv og ikke har noen overskrift, bruk `aria-label` i stedet.
+- Dialogen trenger et navn. `fs.dialog({ titleId })` skriver `aria-labelledby` mot overskriften, og inne i `<fs-dialog>` setter komponenten det fra den første overskriften når det mangler. Har du ingen overskrift, bruk `aria-label`.
 - Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».
 - Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
 - Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.

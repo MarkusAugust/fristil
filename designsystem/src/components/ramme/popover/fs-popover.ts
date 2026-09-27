@@ -1,13 +1,19 @@
 import {
+  addClass,
   defineElement,
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
-import { isPopoverPlacement, type PopoverPlacement } from "./popover.js"
+import {
+  isPopoverPlacement,
+  POPOVER_CLASS,
+  type PopoverPlacement,
+} from "./popover.js"
 
 export const FS_POPOVER_TAG = "fs-popover" as const
 
@@ -24,10 +30,15 @@ export const FS_POPOVER_TAG = "fs-popover" as const
  * Det topplaget ikke gjør er å plassere panelet. `position-anchor` finnes
  * ennå ikke i alle nettlesere, så posisjonen regnes ut her.
  *
- * Serveren skriver koblingen med `fs.popover()`: `aria-controls` på knappen,
- * klassen og `popover` på panelet. Komponenten setter `open` på verten,
- * `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake
- * når en patch river dem bort. Malen trenger ingen `data-preserve-attr`.
+ * Lages markupen med JavaScript, skriver `fs.popover()` koblingen:
+ * `aria-controls` på knappen, klassen, id-en og `popover` på panelet.
+ * Kommer markupen fra en mal uten JavaScript, holder det med en knapp og et
+ * panel med klassen `fs-popover`: komponenten setter `popover="manual"`,
+ * lager id-en og skriver `aria-controls` på knappen. Bare det som mangler,
+ * så det serveren skrev står. Komponenten setter `open` på verten,
+ * `aria-expanded` på knappen og posisjonen på panelet, og setter alt den
+ * har skrevet tilbake når en patch river det bort. Malen trenger ingen
+ * `data-preserve-attr`.
  *
  * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
  * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
@@ -51,6 +62,8 @@ export class FsPopover extends HostElement {
   private panel?: HTMLElement
   private triggerElement?: HTMLElement
   private observer?: MutationObserver
+  /** Id-en komponenten ga panelet, så en patch som river den bort får den samme tilbake. */
+  private panelId?: string
   /**
    * Hva komponenten sist ble bedt om, gjennom `open`-egenskapen.
    *
@@ -108,7 +121,15 @@ export class FsPopover extends HostElement {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-expanded", "style"],
+      attributeFilter: [
+        "aria-expanded",
+        "style",
+        // Koblingen komponenten fyller inn når markupen kom uten den.
+        "popover",
+        "id",
+        "aria-controls",
+        "class",
+      ],
     })
     this.sync()
   }
@@ -170,57 +191,46 @@ export class FsPopover extends HostElement {
     // den gangen komponenten hadde shadow DOM. Uten en skyggerot gjør `slot`
     // ingenting i HTML, så attributtet var en merkelapp som så ut som noe
     // annet enn det var.
-    const panel = this.querySelector<HTMLElement>("[popover]")
-    const trigger = panel?.id
-      ? this.querySelector<HTMLElement>(
-          `[aria-controls="${CSS.escape(panel.id)}"]`,
-        )
-      : null
+    const panel = this.findPanel()
+    if (panel) {
+      // Bare det som mangler. En mal kan ha skrevet `popover` uten verdi, og
+      // det er `auto`; da følger komponenten med når nettleseren lukker.
+      addClass(panel, POPOVER_CLASS)
+      if (!panel.hasAttribute("popover")) setAttr(panel, "popover", "manual")
+      if (!panel.id) {
+        this.panelId ??= uniqueId("fs-popover")
+        setAttr(panel, "id", this.panelId)
+      }
+    }
+    const trigger = panel ? this.findTrigger(panel) : null
+    if (panel && trigger && !trigger.hasAttribute("aria-controls")) {
+      setAttr(trigger, "aria-controls", panel.id)
+    }
 
     if (!trigger || !panel) {
       /*
-       * Tre ulike feil, og hver sin beskjed. Uten skillet fikk et panel
-       * uten `id` beskjed om at knappen manglet, og utvikleren lette på feil
-       * sted: oppslaget etter knappen går gjennom panelets id, så den faller
-       * bort av seg selv når id-en mangler.
-       *
-       * Et tomt element er et område serveren ikke har fylt ennå, og det er
-       * ikke en feil i markupen.
+       * To ulike feil, og hver sin beskjed, så utvikleren leter på riktig
+       * sted. Et tomt element er et område serveren ikke har fylt ennå, og
+       * det er ikke en feil i markupen.
        */
       const isEmpty = () => this.childElementCount === 0
 
       if (!panel) {
         warnAboutMarkup(
           this,
-          "fant ingen [popover]. Panelet kan da verken åpnes eller plasseres.",
-          () => !isEmpty() && this.querySelector("[popover]") === null,
-        )
-      } else if (!panel.id) {
-        warnAboutMarkup(
-          this,
-          "panelet har ingen id, så knappen kan ikke peke på det med " +
-            "aria-controls, og komponenten finner ikke ut hva som åpner " +
-            "vinduet.",
-          () => {
-            const found = this.querySelector("[popover]")
-            return !isEmpty() && found !== null && found.id === ""
-          },
+          "fant ingen panel: et element med popover eller klassen " +
+            "fs-popover. Uten det kan ingenting åpnes eller plasseres.",
+          () => !isEmpty() && this.findPanel() === null,
         )
       } else {
         warnAboutMarkup(
           this,
-          "fant ingen knapp med [aria-controls] som peker på panelet. " +
-            "Uten koblingen vet komponenten ikke hva som åpner vinduet.",
+          "fant ingen knapp: verken en med aria-controls som peker på " +
+            "panelet, eller en <button> utenfor panelet. Uten den vet " +
+            "komponenten ikke hva som åpner vinduet.",
           () => {
-            const found = this.querySelector("[popover]")
-            return (
-              !isEmpty() &&
-              found !== null &&
-              found.id !== "" &&
-              this.querySelector(
-                `[aria-controls="${CSS.escape(found.id)}"]`,
-              ) === null
-            )
+            const found = this.findPanel()
+            return !isEmpty() && found !== null && !this.findTrigger(found)
           },
         )
       }
@@ -274,6 +284,32 @@ export class FsPopover extends HostElement {
       document.removeEventListener("click", this.handleOutsideClick, true)
       document.removeEventListener("keydown", this.handleKeydown)
     }
+  }
+
+  /** Panelet: det som har `popover`, ellers det med klassen. */
+  private findPanel(): HTMLElement | null {
+    return this.querySelector<HTMLElement>(`[popover], .${POPOVER_CLASS}`)
+  }
+
+  /**
+   * Knappen: den som peker på panelet med `aria-controls`, ellers den første
+   * knappen utenfor panelet som ikke peker på noe annet. En knapp med en
+   * `aria-controls` som peker et annet sted er ikke en reserve: da har
+   * serveren sagt noe annet, og det skal ikke gjettes rundt.
+   */
+  private findTrigger(panel: HTMLElement): HTMLElement | null {
+    if (panel.id) {
+      const pointing = this.querySelector<HTMLElement>(
+        `[aria-controls="${CSS.escape(panel.id)}"]`,
+      )
+      if (pointing) return pointing
+    }
+    return (
+      [...this.querySelectorAll<HTMLElement>("button, [role='button']")].find(
+        (button) =>
+          !panel.contains(button) && !button.hasAttribute("aria-controls"),
+      ) ?? null
+    )
   }
 
   private handleTriggerClick = (): void => {

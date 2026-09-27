@@ -1142,3 +1142,185 @@ describe("dialogen med farget topp", () => {
     expect(dialog.header).toBe("fs-dialog__header")
   })
 })
+
+describe("fs-dialog kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsDialog()
+  })
+
+  afterEach(() => {
+    const d = document.querySelector("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  const BAR = `
+    <fs-dialog>
+      <dialog>
+        <h2>Slette søknaden?</h2>
+        <div class="fs-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
+        <form method="dialog" class="fs-dialog__footer">
+          <button class="fs-button" value="avbryt">Avbryt</button>
+        </form>
+      </dialog>
+    </fs-dialog>`
+
+  async function monterBar(markup = BAR) {
+    monter(markup)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+    return {
+      d: document.querySelector("dialog") as HTMLDialogElement,
+      tittel: document.querySelector("h2") as HTMLElement,
+    }
+  }
+
+  it("gir dialogen klassen og navnet sitt fra overskriften", async () => {
+    const { d, tittel } = await monterBar()
+
+    expect(d.classList.contains("fs-dialog")).toBe(true)
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(tittel.id).not.toBe("")
+    expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
+  })
+
+  it("lar et navn fra aria-label stå, og rører ikke overskriften", async () => {
+    // Overskriften er da ikke tittelen, og skal verken få id eller klassen
+    // som stiler den som en.
+    const { d, tittel } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-label="Slett søknaden">'),
+    )
+
+    expect(d.hasAttribute("aria-labelledby")).toBe(false)
+    expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
+    expect(tittel.id).toBe("")
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(false)
+  })
+
+  it("gir klassen til overskriften serveren pekte på", async () => {
+    const { d } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-labelledby="egen-tittel">').replace(
+        "<h2>Slette søknaden?</h2>",
+        '<p id="egen-tittel">Slette søknaden?</p><h2>Vedlegg</h2>',
+      ),
+    )
+    const egen = document.getElementById("egen-tittel") as HTMLElement
+    const h2 = d.querySelector("h2") as HTMLElement
+
+    expect(egen.classList.contains("fs-dialog__title")).toBe(true)
+    expect(h2.classList.contains("fs-dialog__title")).toBe(false)
+    expect(h2.id).toBe("")
+  })
+
+  it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {
+    /*
+     * `close()` fjerner `open` synkront og køer `close`-hendelsen, og
+     * observatøren kjører før den. Så komponenten en klassepost og kjørte
+     * hele `sync()`, fant den en vert med `open` og en dialog som ikke var
+     * modal, og åpnet den igjen. Brukeren måtte lukke to ganger.
+     */
+    const { d } = await monterBar(
+      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const knapp = d.querySelector("button") as HTMLButtonElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    knapp.classList.add("opptatt")
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
+  })
+
+  it("åpner ikke igjen når en node endres inne i dialogen i samme oppgave", async () => {
+    // Samme løp som over, gjennom en annen dør: en `childList`-post inne i
+    // dialogen, som `knapp.textContent = "Sletter…"` eller en patch fra en
+    // hendelsesstrøm, er ikke et bytte av dialogen og skal ikke kjøre
+    // åpne-og-lukke-logikken.
+    const { d } = await monterBar(
+      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) =>
+      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
+    )
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    kropp.append(document.createElement("p"))
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
+  })
+
+  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
+    const { d, tittel } = await monterBar()
+    const id = tittel.id
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    d.removeAttribute("class")
+    d.removeAttribute("aria-labelledby")
+    tittel.removeAttribute("id")
+    tittel.removeAttribute("class")
+    await ventPaTegning()
+
+    expect(tittel.id).toBe(id)
+    expect(d.getAttribute("aria-labelledby")).toBe(id)
+    expect(d.classList.contains("fs-dialog")).toBe(true)
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+  })
+
+  it("skriver ingenting på markup fra fs.dialog()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const boks = dialog({ titleId: "tittel" })
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </fs-dialog>`
+    const vert = omslag.querySelector("fs-dialog") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
+  })
+})

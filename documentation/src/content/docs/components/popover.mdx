@@ -12,10 +12,8 @@ Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden ne
 
 Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
 
-:::note[Bruk byggefunksjonen og komponenten sammen]
-`fs.popover()` gir deg koblingen mellom knapp og panel, og `popover`-attributtet. Elementet gir deg posisjonen, Escape og klikk utenfor, som en funksjon ikke kan gjøre. Her trenger du **begge**.
-
-Det er bare [`<fs-field>`](../field/) som er enten eller, fordi den ene jobben dens, koblingen, er markup. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::note[To veier til den samme markupen]
+Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `fs-popover`: komponenten setter `popover="manual"`, lager id-en og skriver `aria-controls` på knappen. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
@@ -41,11 +39,11 @@ defineFsPopover()
     ```
 
     ```html
+    <!-- `popover`, id-en og `aria-controls` setter komponenten. -->
     <fs-popover id="meny" placement="bottom-end">
-      <button class="fs-button" data-variant="secondary"
-              aria-expanded="false" aria-controls="handlinger">Handlinger</button>
+      <button class="fs-button" data-variant="secondary">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger" popover="manual">
+      <ul class="fs-popover">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -61,11 +59,11 @@ defineFsPopover()
 
     <script type="module">
       const meny = document.getElementById("meny")
+      const panel = meny.querySelector(".fs-popover")
 
       // Lukk menyen når en handling er valgt
       meny.addEventListener("click", (hendelse) => {
-        if (hendelse.target.closest("[aria-controls='handlinger']")) return
-        if (hendelse.target.closest("button")) meny.hide()
+        if (panel.contains(hendelse.target) && hendelse.target.closest("button")) meny.hide()
       })
     </script>
     ```
@@ -164,10 +162,9 @@ defineFsPopover()
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
-        <button class="fs-button" data-variant="secondary"
-                aria-expanded="false" aria-controls="handlinger">Handlinger</button>
+        <button class="fs-button" data-variant="secondary">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger" popover="manual">
+        <ul class="fs-popover">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
@@ -208,9 +205,9 @@ const boks = fs.popover({ id: "handlinger" })
 </fs-popover>
 ```
 
-Komponenten kjenner igjen delene på koblingen som må være der uansett: panelet er det som har `popover`, og knappen er den som peker på panelet med `aria-controls`.
+Komponenten kjenner igjen panelet på `popover` eller klassen `fs-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet som ikke peker på noe annet med `aria-controls`.
 
-Koblingen, `popover`-attributtet og klassen kommer fra serveren med `fs.popover()`. Komponenten setter `open` på verten, `aria-expanded` på knappen og posisjonen på panelet, og setter dem tilbake når en oppdatering fra serveren river dem bort. Malen din trenger ingenting ekstra.
+Lages markupen med JavaScript, skriver `fs.popover()` koblingen, id-en, klassen og `popover`. Kommer den fra en mal uten JavaScript, setter komponenten `popover="manual"`, id-en og `aria-controls`, og lar det serveren har skrevet stå. Komponenten setter dessuten `open` på verten, `aria-expanded` på knappen og posisjonen på panelet. Alt den har skrevet setter den tilbake når en oppdatering fra serveren river det bort. Malen din trenger ingenting ekstra.
 
 Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
 
@@ -247,7 +244,7 @@ Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-popover` | Panelet. Komponenten setter klassen på elementet du la inn. |
+| `.fs-popover` | Panelet. Komponenten kjenner det igjen på klassen eller på `popover`, og fyller inn den andre |
 
 | Variabel | Standard |
 | --- | --- |
