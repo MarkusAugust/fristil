@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.17.0 (2026-09-27)
+
 ### Brytende
 
 - **`idEllerReserve` heter `idOrFallback`.** Hjelperen i `@fristil/designsystem/shared`
