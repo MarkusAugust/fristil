@@ -39,6 +39,7 @@
       "import": "./dist/index.js"
     },
     "./tokens.css": "./src/tokens/tokens.css",
+    "./fristil.css": "./dist/fristil.css",
     "./button.css": "./src/components/css/button/button.css",
     "./link.css": "./src/components/css/link/link.css",
     "./sr-only.css": "./src/components/css/sr-only/sr-only.css",
@@ -303,7 +304,8 @@
   },
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
-    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:identifikatorer && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "bygg:css": "bun scripts/bygg-css.ts",
+    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:identifikatorer && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
