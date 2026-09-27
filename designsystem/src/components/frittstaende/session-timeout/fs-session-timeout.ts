@@ -84,7 +84,8 @@ export class FsSessionTimeout extends HostElement {
   private lastActivity = Date.now()
   private previousFocus: HTMLElement | null = null
   /**
-   * Sant fra økten gikk ut til `extend()` eller `reset()` er kalt.
+   * Sant fra økten gikk ut, eller brukeren valgte å logge ut, til `extend()`
+   * eller `reset()` er kalt.
    *
    * Uten dette startet syklusen på nytt av seg selv, og en app som ikke
    * navigerte bort fikk ny dialog og ny `session-expired` hvert
@@ -216,6 +217,10 @@ export class FsSessionTimeout extends HostElement {
     logout.dataset.variant = "secondary"
     logout.textContent = "Logg ut nå"
     logout.addEventListener("click", () => {
+      // Som ved utløp: komponenten står stille til `extend()` eller
+      // `reset()`. Ellers så neste tikk en lukket dialog etter
+      // varselgrensen og åpnet den igjen mens appen logget ut.
+      this.expired = true
       this.closeDialog("logout")
       this.emit("session-logout")
     })

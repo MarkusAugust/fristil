@@ -102,13 +102,23 @@ export class FsConnectionStatus extends HostElement {
     return { bar, fresh: true }
   }
 
-  private write(bar: HTMLElement, fresh: boolean, text: string): void {
+  private write(
+    bar: HTMLElement,
+    fresh: boolean,
+    state: "offline" | "online",
+    text: string,
+  ): void {
     if (!fresh || typeof requestAnimationFrame === "undefined") {
       bar.textContent = text
       return
     }
     requestAnimationFrame(() => {
-      if (this.bar === bar) bar.textContent = text
+      // Vakten er tilstanden, ikke linja: kom `reportSuccess()` i samme
+      // tegning, står linja alt som «online», og offline-teksten skal ikke
+      // skrives oppå kvitteringen.
+      if (this.bar === bar && bar.dataset.state === state) {
+        bar.textContent = text
+      }
     })
   }
 
@@ -122,7 +132,7 @@ export class FsConnectionStatus extends HostElement {
     if (this.timer) window.clearTimeout(this.timer)
     const { bar, fresh } = this.ensureBar()
     bar.dataset.state = "offline"
-    this.write(bar, fresh, this.offlineText)
+    this.write(bar, fresh, "offline", this.offlineText)
     this.emit("connection-lost")
   }
 
@@ -130,7 +140,7 @@ export class FsConnectionStatus extends HostElement {
     if (!this.bar || this.bar.dataset.state === "online") return
     const bar = this.bar
     bar.dataset.state = "online"
-    this.write(bar, false, this.onlineText)
+    this.write(bar, false, "online", this.onlineText)
     this.emit("connection-restored")
 
     this.timer = window.setTimeout(() => {

@@ -90,6 +90,10 @@ describe("fs-connection-status", () => {
     await ventPaTegning()
 
     expect(meldinger).toEqual(["connection-lost", "connection-restored"])
+    // Offline-teksten skrives i neste tegning, og skal ikke lande oppå
+    // kvitteringen når begge kom i samme tegning.
+    expect(linje()?.dataset.state).toBe("online")
+    expect(linje()?.textContent).toContain("tilbake")
   })
 
   it("reagerer på at nettverket forsvinner", async () => {

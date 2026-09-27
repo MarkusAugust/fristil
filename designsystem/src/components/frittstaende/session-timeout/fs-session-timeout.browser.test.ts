@@ -241,7 +241,9 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     await ventPaTegning()
 
     expect(
-      advarsel.mock.calls.some((k) => String(k[0]).includes("expires-at")),
+      advarsel.mock.calls.some((k) =>
+        String(k[0]).includes("ikke er mindre enn"),
+      ),
     ).toBe(true)
 
     advarsel.mockClear()
@@ -329,6 +331,11 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     ).click()
     await ventPaTegning()
 
+    expect(dialog().open).toBe(false)
+    expect(hendelser).toEqual(["session-logout"])
+
+    // Og den kommer ikke tilbake mens appen logger ut.
+    await gaFram(3)
     expect(dialog().open).toBe(false)
     expect(hendelser).toEqual(["session-logout"])
   })

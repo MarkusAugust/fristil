@@ -53,9 +53,9 @@ kommer i et nytt undertall.
 - **Pausen i `<fs-toast>` holder til både musa og fokus har forlatt
   meldingen.** Den var to uavhengige par, og musa som gikk ut startet klokka
   igjen mens fokus sto i meldingen, som så forsvant under brukeren.
-- **`dismiss()` flytter fokus til neste melding** når meldingen som lukkes
-  hadde fokus. Før falt fokus til `body`, og neste Tab startet øverst på
-  siden.
+- **`dismiss()` flytter fokus til meldingen ved siden av** når meldingen som
+  lukkes hadde fokus. Før falt fokus til `body`, og neste Tab startet øverst
+  på siden.
 - **Varselregionen er `aria-atomic="false"`**, både fra `fs.toast()` og fra
   komponenten. `status` er atomisk som standard, og hele stabelen ble lest
   opp på nytt for hver ny melding.

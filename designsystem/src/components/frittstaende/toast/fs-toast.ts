@@ -165,13 +165,15 @@ export class FsToast extends HostElement {
 
     /*
      * Sto fokus i meldingen, som på lukkeknappen etter Enter, faller det
-     * ellers til `body`, og neste Tab starter øverst på siden. Neste melding
-     * i stabelen er det nærmeste stedet å fortsette fra.
+     * ellers til `body`, og neste Tab starter øverst på siden. Meldingen ved
+     * siden av er det nærmeste stedet å fortsette fra: den under, ellers den
+     * over.
      */
     const hadFocus = toast.contains(document.activeElement)
+    const neighbour = toast.nextElementSibling ?? toast.previousElementSibling
     toast.remove()
     if (hadFocus) {
-      this.querySelector<HTMLElement>(`.${TOAST_CLOSE_CLASS}`)?.focus()
+      neighbour?.querySelector<HTMLElement>(`.${TOAST_CLOSE_CLASS}`)?.focus()
     }
 
     this.dispatchEvent(
