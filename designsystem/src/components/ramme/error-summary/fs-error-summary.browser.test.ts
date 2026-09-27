@@ -181,3 +181,127 @@ describe("fs-error-summary når skjemaet feiler igjen", () => {
     ).toBe(boks)
   })
 })
+
+describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  it("tar fokus når forelderen vises og lista byttes ut", async () => {
+    /*
+     * Boksen kan stå i et fanepanel eller en lukket dialog i det den kobles
+     * til. `focus()` gjør da ingenting, men flagget «har flyttet fokus» ble
+     * satt likevel, og boksen fikk aldri fokus da forelderen ble synlig og
+     * lista byttet ut.
+     */
+    monter(`
+      <div id="panel" hidden>
+        <fs-error-summary ${attr(FEIL.host)}>
+          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+          <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
+        </fs-error-summary>
+      </div>
+      <input id="epost" />
+    `)
+    await tegn()
+
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    expect(document.activeElement).not.toBe(boks)
+
+    const panel = document.getElementById("panel") as HTMLElement
+    panel.hidden = false
+    ;(boks.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#epost">Skriv en gyldig e-postadresse</a></li>`
+    await tegn()
+
+    expect(document.activeElement).toBe(boks)
+  })
+
+  it("river ikke fokus ut av et felt brukeren står i", async () => {
+    // Landet ikke første forsøk, prøver komponenten igjen ved neste endring
+    // i lista. Men ikke mens noen skriver: da patcher live-valideringen
+    // lista, og fokus skal bli der det er.
+    monter(`
+      <div id="panel" hidden>
+        <fs-error-summary ${attr(FEIL.host)}>
+          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+          <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
+        </fs-error-summary>
+      </div>
+      <input id="epost" />
+    `)
+    await tegn()
+
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const felt = document.getElementById("epost") as HTMLInputElement
+    ;(document.getElementById("panel") as HTMLElement).hidden = false
+    felt.focus()
+    ;(boks.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#epost">Adressen mangler krøllalfa</a></li>`
+    await tegn()
+
+    expect(document.activeElement).toBe(felt)
+  })
+
+  it("følger for til en gruppe når ledeteksten ikke har en kontroll", async () => {
+    monter(`
+      <fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#valg-label" id="valg-lenke">Velg minst ett alternativ</a></li></ul>
+      </fs-error-summary>
+      <label id="valg-label" for="valg">Alternativer</label>
+      <div id="valg" role="group"><input type="checkbox" /></div>
+    `)
+    await tegn()
+    ;(document.getElementById("valg-lenke") as HTMLElement).click()
+
+    expect(document.activeElement?.id).toBe("valg")
+  })
+
+  it("river ikke fokus ut av et felt utenfor skyggerota boksen står i", async () => {
+    // Rotas `activeElement` er null når fokus står utenfor skyggetreet, så
+    // brukeren ble regnet som «ingen», og gjenforsøket tok fokus.
+    monter(`<input id="ute" />`)
+    const vert = document.createElement("div")
+    vert.hidden = true
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `
+      <fs-error-summary ${attr(FEIL.host)}>
+        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#ute">Skriv noe</a></li></ul>
+      </fs-error-summary>
+    `
+    await tegn()
+
+    const felt = document.getElementById("ute") as HTMLInputElement
+    vert.hidden = false
+    felt.focus()
+    ;(rot.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#ute">Skriv noe annet</a></li>`
+    await tegn()
+
+    expect(document.activeElement).toBe(felt)
+    vert.remove()
+  })
+
+  it("følger en ledetekst som omslutter kontrollen", async () => {
+    // `for` er ikke den eneste koblingen mellom ledetekst og kontroll. Med
+    // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`
+    // den ikke skulle hatt.
+    monter(`
+      <fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+        <ul><li><a href="#navn-label" id="navn-lenke">Skriv navnet ditt</a></li></ul>
+      </fs-error-summary>
+      <label id="navn-label">Navn <input id="navn" /></label>
+    `)
+    await tegn()
+    ;(document.getElementById("navn-lenke") as HTMLElement).click()
+
+    expect(document.activeElement?.id).toBe("navn")
+    expect(
+      document.getElementById("navn-label")?.hasAttribute("tabindex"),
+    ).toBe(false)
+  })
+})
