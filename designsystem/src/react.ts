@@ -71,7 +71,7 @@ import { setAttributes } from "./dom.js"
  * annen. Dette er ren omdøping av to nøkler, så pakken får ingen
  * avhengighet til React av det.
  *
- * Vue, Svelte, Solid og Preact tar `class` og `for` som de er. Der bruker du
+ * Astro og ren HTML tar `class` og `for` som de er. Der bruker du
  * `@fristil/designsystem` direkte.
  */
 
@@ -205,8 +205,8 @@ export const fs = {
 
   /**
    * De sammensatte byggerne gir ett attributtsett per element, og hvert sett
-   * må døpes om for seg. `host` har `tabindex`, fanene har både
-   * `tabindex` og `class`.
+   * må døpes om for seg. `host` har `tabindex`, og panelene i `fs.tabs()`
+   * har både `tabindex` og `class`.
    */
   errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {
     const boks = errorSummary(options)

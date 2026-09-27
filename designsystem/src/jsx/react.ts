@@ -17,8 +17,8 @@ import type { HTMLAttributes, RefAttributes } from "react"
  * import "@fristil/designsystem/react-jsx"
  * ```
  *
- * Vue og Svelte trenger ikke dette. Vue godtar ukjente elementer når `fs-` er
- * satt opp i `isCustomElement`, og Svelte klager ikke.
+ * Astro trenger ikke dette: der er `<fs-field>` vanlig HTML, og ingen
+ * typesjekk ser på elementnavnet.
  */
 
 /**

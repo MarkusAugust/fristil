@@ -117,7 +117,7 @@
       "<fs-session-timeout class=\"fs-session-timeout\" warn-at=\"1500\" expires-at=\"1800\"",
       "                    data-ignore-morph></fs-session-timeout>"
     ],
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute."
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute."
   },
   "fs-connection-status": {
     "prefix": "fs-connection-status",

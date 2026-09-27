@@ -6,11 +6,11 @@ import {
 
 export const FS_CONNECTION_STATUS_TAG = "fs-connection-status" as const
 
-const STANDARD_OFFLINE = "Ingen forbindelse. Det du skriver blir ikke lagret."
-const STANDARD_ONLINE = "Forbindelsen er tilbake."
+const DEFAULT_OFFLINE = "Ingen forbindelse. Det du skriver blir ikke lagret."
+const DEFAULT_ONLINE = "Forbindelsen er tilbake."
 
 /** Hvor lenge «tilbake på nett» blir stående. */
-const KVITTERING_MS = 4000
+const RECEIPT_MS = 4000
 
 /**
  * Sier fra når forbindelsen til serveren er borte.
@@ -46,11 +46,19 @@ export class FsConnectionStatus extends HostElement {
   private failing = false
 
   get offlineText(): string {
-    return this.getAttribute("offline-text") ?? STANDARD_OFFLINE
+    return this.getAttribute("offline-text") ?? DEFAULT_OFFLINE
+  }
+
+  set offlineText(value: string) {
+    this.setAttribute("offline-text", value)
   }
 
   get onlineText(): string {
-    return this.getAttribute("online-text") ?? STANDARD_ONLINE
+    return this.getAttribute("online-text") ?? DEFAULT_ONLINE
+  }
+
+  set onlineText(value: string) {
+    this.setAttribute("online-text", value)
   }
 
   connectedCallback(): void {
@@ -67,8 +75,21 @@ export class FsConnectionStatus extends HostElement {
     this.timer = undefined
   }
 
-  private ensureBar(): HTMLElement {
-    if (this.bar) return this.bar
+  /**
+   * Linja, laget tom først og fylt etterpå.
+   *
+   * Et live-område må finnes før innholdet kommer, ellers annonserer
+   * hjelpemidlene ikke den første endringen. Sto linja ferdig fylt i det
+   * den ble satt inn, oppsto regionen ferdig for skjermleseren, og «Ingen
+   * forbindelse», den viktigste meldingen, kunne gå tapt. Derfor settes
+   * teksten i neste tegning når linja er ny. Det lar seg ikke etterprøve
+   * uten en skjermleser; regelen er kjent fra NVDA, JAWS og VoiceOver.
+   *
+   * Linja lages først når den trengs, ikke ved tilkobling: sto den i DOM-en
+   * før React hydrerte, fant React et element den ikke hadde rendret.
+   */
+  private ensureBar(): { bar: HTMLElement; fresh: boolean } {
+    if (this.bar) return { bar: this.bar, fresh: false }
 
     const bar = document.createElement("div")
     bar.className = CONNECTION_STATUS_BAR_CLASS
@@ -78,28 +99,44 @@ export class FsConnectionStatus extends HostElement {
     bar.setAttribute("aria-live", "polite")
     this.append(bar)
     this.bar = bar
-    return bar
+    return { bar, fresh: true }
+  }
+
+  private write(bar: HTMLElement, fresh: boolean, text: string): void {
+    if (!fresh || typeof requestAnimationFrame === "undefined") {
+      bar.textContent = text
+      return
+    }
+    requestAnimationFrame(() => {
+      if (this.bar === bar) bar.textContent = text
+    })
   }
 
   private showOffline(): void {
+    // Nettlesere fyrer gjerne flere `offline` på rad, og appen kan melde
+    // en feil oppå et nettverk som alt er borte. Sier linja alt «offline»,
+    // er det ingenting nytt å skrive eller melde: hver skriving ble lest opp
+    // på nytt, og hver melding ga appen en ny `connection-lost`.
+    if (this.bar?.dataset.state === "offline") return
+
     if (this.timer) window.clearTimeout(this.timer)
-    const bar = this.ensureBar()
+    const { bar, fresh } = this.ensureBar()
     bar.dataset.state = "offline"
-    bar.textContent = this.offlineText
+    this.write(bar, fresh, this.offlineText)
     this.emit("connection-lost")
   }
 
   private showOnline(): void {
-    if (!this.bar) return
+    if (!this.bar || this.bar.dataset.state === "online") return
     const bar = this.bar
     bar.dataset.state = "online"
-    bar.textContent = this.onlineText
+    this.write(bar, false, this.onlineText)
     this.emit("connection-restored")
 
     this.timer = window.setTimeout(() => {
       bar.remove()
       this.bar = undefined
-    }, KVITTERING_MS)
+    }, RECEIPT_MS)
   }
 
   private handleOffline = (): void => {
@@ -111,8 +148,8 @@ export class FsConnectionStatus extends HostElement {
     this.showOnline()
   }
 
-  private emit(navn: string): void {
-    this.dispatchEvent(new CustomEvent(navn, { bubbles: true, composed: true }))
+  private emit(name: string): void {
+    this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true }))
   }
 
   /** Meld fra at et kall til serveren feilet. */

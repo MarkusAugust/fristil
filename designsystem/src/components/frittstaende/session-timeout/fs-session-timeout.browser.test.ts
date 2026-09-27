@@ -169,3 +169,185 @@ describe("fs-session-timeout", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
+  beforeAll(() => {
+    defineFsSessionTimeout()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function monterKort(attributter = attr(KORT)) {
+    monter(`<fs-session-timeout ${attributter}></fs-session-timeout>`)
+    await customElements.whenDefined("fs-session-timeout")
+    return document.querySelector("fs-session-timeout") as FsSessionTimeout
+  }
+
+  function lytt(vert: HTMLElement, navn: string[]) {
+    const hendelser: string[] = []
+    for (const n of navn) vert.addEventListener(n, () => hendelser.push(n))
+    return hendelser
+  }
+
+  it("forlenger når brukeren lukker med Escape, og åpner ikke igjen", async () => {
+    // Escape kommer fra nettleseren. Uten en lytter på `close` så neste tikk
+    // en lukket dialog etter varselgrensen, og åpnet den igjen hvert sekund.
+    const vert = await monterKort()
+    const hendelser = lytt(vert, ["session-warn", "session-extend"])
+    await gaFram(4)
+    expect(dialog().open).toBe(true)
+
+    // Slik nettleseren lukker på Escape: uten returverdi.
+    dialog().close()
+    await ventPaTegning()
+
+    expect(hendelser).toEqual(["session-warn", "session-extend"])
+    await gaFram(2)
+    expect(dialog().open).toBe(false)
+    expect(hendelser).toEqual(["session-warn", "session-extend"])
+  })
+
+  it("leser opp tiden som er igjen i det dialogen åpnes", async () => {
+    // Tallet i avsnittet er `aria-hidden`, så uten dette hørte skjermleseren
+    // «Vi logger deg ut om  for å beskytte opplysningene dine», og første
+    // tall kom først ved neste terskel.
+    await monterKort(attr(sessionTimeout({ warnAt: 3, expiresAt: 30 })))
+    await gaFram(3)
+
+    const live = document.querySelector("[role='status']") as HTMLElement
+    expect(dialog().open).toBe(true)
+    expect(live.textContent).toBe("Du blir logget ut om 27 sekunder.")
+  })
+
+  it("sier fra om tall som ikke henger sammen", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    await monterKort('warn-at="10" expires-at="5"')
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(
+      advarsel.mock.calls.some((k) => String(k[0]).includes("expires-at")),
+    ).toBe(true)
+
+    advarsel.mockClear()
+    const vert = await monterKort('warn-at="abc" expires-at="-3"')
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(advarsel.mock.calls.some((k) => String(k[0]).includes("tall"))).toBe(
+      true,
+    )
+    expect(vert.warnAt).toBe(25 * 60)
+    expect(vert.expiresAt).toBe(30 * 60)
+  })
+
+  it("stopper etter utløpet, til extend() kalles", async () => {
+    // En app som ikke navigerer bort fikk ny dialog og ny `session-expired`
+    // hvert `expires-at`-sekund, for en økt som alt var borte.
+    const vert = await monterKort()
+    const hendelser = lytt(vert, ["session-warn", "session-expired"])
+
+    await gaFram(14)
+    expect(hendelser).toEqual(["session-warn", "session-expired"])
+
+    await gaFram(14)
+    expect(hendelser).toEqual(["session-warn", "session-expired"])
+    expect(dialog().open).toBe(false)
+
+    vert.extend()
+    await gaFram(4)
+    expect(dialog().open).toBe(true)
+  })
+
+  it("lar warnAt og expiresAt settes som egenskaper", async () => {
+    const vert = await monterKort()
+    vert.warnAt = 5
+    vert.expiresAt = 9
+    expect(vert.getAttribute("warn-at")).toBe("5")
+    expect(vert.getAttribute("expires-at")).toBe("9")
+    expect(vert.warnAt).toBe(5)
+  })
+
+  it("teller rulling i en boks som aktivitet", async () => {
+    // `scroll` bobler ikke. Lyttet uten fangst telte bare rulling av selve
+    // siden, mens dokumentasjonen lovet «rulling».
+    monter(`
+      <fs-session-timeout ${attr(KORT)}></fs-session-timeout>
+      <div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>
+    `)
+    await customElements.whenDefined("fs-session-timeout")
+
+    await gaFram(2)
+    ;(document.getElementById("boks") as HTMLElement).dispatchEvent(
+      new Event("scroll"),
+    )
+    await gaFram(2)
+    expect(document.querySelector("dialog")?.open ?? false).toBe(false)
+
+    await gaFram(2)
+    expect(dialog().open).toBe(true)
+  })
+
+  it("nullstiller uten å melde fra med reset()", async () => {
+    const vert = await monterKort()
+    const hendelser = lytt(vert, ["session-extend"])
+    await gaFram(4)
+    expect(dialog().open).toBe(true)
+
+    vert.reset()
+    await ventPaTegning()
+
+    expect(dialog().open).toBe(false)
+    expect(hendelser).toEqual([])
+    await gaFram(2)
+    expect(dialog().open).toBe(false)
+  })
+
+  it("melder session-logout når brukeren logger ut, uten å forlenge", async () => {
+    const vert = await monterKort()
+    const hendelser = lytt(vert, ["session-logout", "session-extend"])
+    await gaFram(4)
+    ;(
+      document.querySelectorAll(
+        ".fs-session-timeout__actions button",
+      )[1] as HTMLElement
+    ).click()
+    await ventPaTegning()
+
+    expect(dialog().open).toBe(false)
+    expect(hendelser).toEqual(["session-logout"])
+  })
+
+  it("gir hver forekomst sin egen overskrift", async () => {
+    monter(`
+      <fs-session-timeout ${attr(KORT)}></fs-session-timeout>
+      <fs-session-timeout ${attr(KORT)}></fs-session-timeout>
+    `)
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(4)
+
+    const ider = [...document.querySelectorAll("dialog")].map((d) =>
+      d.getAttribute("aria-labelledby"),
+    )
+    expect(ider).toHaveLength(2)
+    expect(ider[0]).not.toBe(ider[1])
+    for (const id of ider) {
+      expect(document.getElementById(id as string)).not.toBeNull()
+    }
+  })
+})

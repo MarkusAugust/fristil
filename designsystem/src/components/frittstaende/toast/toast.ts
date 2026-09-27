@@ -12,6 +12,7 @@ export type ToastAttributes = {
   host: {
     role: "status"
     "aria-live": "polite"
+    "aria-atomic": "false"
     "aria-label": string
     "data-ignore-morph": ""
   }
@@ -37,6 +38,9 @@ export const toast = ({
   host: attributes({
     role: "status" as const,
     "aria-live": "polite" as const,
+    // `status` er atomisk som standard, og da leses hele stabelen opp på
+    // nytt for hver melding som kommer til.
+    "aria-atomic": "false" as const,
     "aria-label": label,
     "data-ignore-morph": "" as const,
   }),

@@ -228,7 +228,7 @@
         },
         {
           "name": "fs-session-timeout",
-          "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-extend` når brukeren vil fortsette og `session-expired` når tiden er ute.",
+          "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
           "doc-url": "https://fristil.netlify.app/components/session-timeout/",
           "attributes": [
             {

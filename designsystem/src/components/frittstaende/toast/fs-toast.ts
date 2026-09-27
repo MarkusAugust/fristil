@@ -6,6 +6,13 @@ export const FS_TOAST_TAG = "fs-toast" as const
 export const toastColors = ["neutral", "success", "warning", "danger"] as const
 export type ToastColor = (typeof toastColors)[number]
 
+export function isToastColor(value: unknown): value is ToastColor {
+  return (toastColors as readonly unknown[]).includes(value)
+}
+
+const DEFAULT_DURATION = 6000
+const DEFAULT_LABEL = "Varsler"
+
 export type ShowOptions = {
   /** Hva meldingen betyr. Standard: `neutral`. */
   color?: ToastColor
@@ -18,9 +25,9 @@ export type ShowOptions = {
 /**
  * Køen av korte meldinger i hjørnet av skjermen.
  *
- * Dette er den eneste frittstående komponenten, og den eneste delen av pakken
- * du kaller i stedet for å skrive. Elementet er beholderen, ikke meldingen:
- * du legger det inn én gang i appen og kaller `show()` når noe skal meldes.
+ * Dette er en av de tre frittstående komponentene, og en del av pakken du
+ * kaller i stedet for å skrive. Elementet er beholderen, ikke meldingen: du
+ * legger det inn én gang i appen og kaller `show()` når noe skal meldes.
  * Meldingene finnes ikke før en hendelse på klienten skaper dem, så det er
  * ingenting for serveren å rendre.
  *
@@ -31,7 +38,9 @@ export type ShowOptions = {
  * Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding
  * som dukker opp i hjørnet skal ikke avbryte det skjermleseren holder på med;
  * er beskjeden så viktig at den må avbryte, hører den hjemme i en
- * [Alert](../../css/alert/alert.js) i selve siden.
+ * [Alert](../../css/alert/alert.js) i selve siden. Regionen har
+ * `aria-atomic="false"`: `status` er atomisk som standard, og da ble hele
+ * stabelen lest opp på nytt for hver ny melding.
  *
  * Meldinger som forsvinner av seg selv er en tilgjengelighetsfelle: den som
  * leser sakte eller bruker forstørrelse rekker ikke lese dem. Derfor er
@@ -51,11 +60,12 @@ export class FsToast extends HostElement {
   get duration(): number {
     // `0` er en gyldig verdi og betyr at meldingene blir stående. Uten
     // sjekken mot null her forsvant de likevel etter seks sekunder, og bare
-    // `show(..., { duration: 0 })` virket.
-    const rå = this.getAttribute("duration")
-    if (rå === null) return 6000
-    const value = Number(rå)
-    return Number.isFinite(value) && value >= 0 ? value : 6000
+    // `show(..., { duration: 0 })` virket. Et tomt attributt er ikke null:
+    // `Number("")` er 0, og `<fs-toast duration>` lot meldingene stå.
+    const raw = this.getAttribute("duration")
+    if (raw === null || raw.trim() === "") return DEFAULT_DURATION
+    const value = Number(raw)
+    return Number.isFinite(value) && value >= 0 ? value : DEFAULT_DURATION
   }
 
   set duration(value: number) {
@@ -70,15 +80,21 @@ export class FsToast extends HostElement {
     if (!this.hasAttribute("aria-live")) {
       this.setAttribute("aria-live", "polite")
     }
+    if (!this.hasAttribute("aria-atomic")) {
+      this.setAttribute("aria-atomic", "false")
+    }
     if (!this.hasAttribute("aria-label")) {
-      this.setAttribute("aria-label", this.getAttribute("label") ?? "Meldinger")
+      this.setAttribute(
+        "aria-label",
+        this.getAttribute("label") ?? DEFAULT_LABEL,
+      )
     }
   }
 
-  attributeChangedCallback(navn: string, _gammel: string, ny: string): void {
+  attributeChangedCallback(name: string, _old: string, value: string): void {
     // `label` kan settes etter at elementet står i DOM-en, for eksempel av et
     // rammeverk som fyller inn attributtene i et senere steg.
-    if (navn === "label" && ny) this.setAttribute("aria-label", ny)
+    if (name === "label" && value) this.setAttribute("aria-label", value)
   }
 
   /** Viser en melding, og returnerer elementet den ble lagt i. */
@@ -91,7 +107,8 @@ export class FsToast extends HostElement {
 
     const toast = document.createElement("div")
     toast.className = TOAST_CLASS
-    if (color !== "neutral") toast.dataset.color = color
+    // En ukjent farge gir ingen kant, framfor et `data-color` uten regel.
+    if (isToastColor(color) && color !== "neutral") toast.dataset.color = color
 
     const text = document.createElement("span")
     text.textContent = message
@@ -110,16 +127,33 @@ export class FsToast extends HostElement {
     if (duration > 0) {
       let timer = window.setTimeout(() => this.dismiss(toast), duration)
 
-      // Tiden stopper mens brukeren leser eller er på vei til lukkeknappen.
-      const pause = () => window.clearTimeout(timer)
-      const resume = () => {
+      /*
+       * Tiden stopper mens brukeren leser eller er på vei til lukkeknappen,
+       * og går først når verken musa eller fokus er i meldingen. Pausen var
+       * to uavhengige par, og musa som gikk ut startet klokka igjen mens
+       * fokus sto i meldingen: den forsvant under fingrene på brukeren.
+       */
+      const holds = new Set<"pointer" | "focus">()
+      const pause = (reason: "pointer" | "focus") => {
+        holds.add(reason)
+        window.clearTimeout(timer)
+      }
+      const resume = (reason: "pointer" | "focus") => {
+        holds.delete(reason)
+        if (holds.size > 0) return
+        window.clearTimeout(timer)
         timer = window.setTimeout(() => this.dismiss(toast), duration)
       }
 
-      toast.addEventListener("mouseenter", pause)
-      toast.addEventListener("mouseleave", resume)
-      toast.addEventListener("focusin", pause)
-      toast.addEventListener("focusout", resume)
+      toast.addEventListener("mouseenter", () => pause("pointer"))
+      toast.addEventListener("mouseleave", () => resume("pointer"))
+      toast.addEventListener("focusin", () => pause("focus"))
+      toast.addEventListener("focusout", (event) => {
+        // Innenfor meldingen, fra teksten til knappen: fortsatt pause.
+        const next = event.relatedTarget
+        if (next instanceof Node && toast.contains(next)) return
+        resume("focus")
+      })
     }
 
     return toast
@@ -128,7 +162,17 @@ export class FsToast extends HostElement {
   /** Fjerner en melding. */
   dismiss(toast: HTMLElement): void {
     if (!this.contains(toast)) return
+
+    /*
+     * Sto fokus i meldingen, som på lukkeknappen etter Enter, faller det
+     * ellers til `body`, og neste Tab starter øverst på siden. Neste melding
+     * i stabelen er det nærmeste stedet å fortsette fra.
+     */
+    const hadFocus = toast.contains(document.activeElement)
     toast.remove()
+    if (hadFocus) {
+      this.querySelector<HTMLElement>(`.${TOAST_CLOSE_CLASS}`)?.focus()
+    }
 
     this.dispatchEvent(
       new CustomEvent("toast-dismiss", { bubbles: true, composed: true }),
