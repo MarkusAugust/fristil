@@ -150,7 +150,7 @@
       "name": "fs-popover",
       "description": {
         "kind": "markdown",
-        "value": "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id."
+        "value": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten."
       },
       "attributes": [
         {
@@ -218,7 +218,7 @@
       "name": "fs-suggestion",
       "description": {
         "kind": "markdown",
-        "value": "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+        "value": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
       },
       "attributes": [
         {
@@ -249,7 +249,7 @@
       "name": "fs-dialog",
       "description": {
         "kind": "markdown",
-        "value": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen."
+        "value": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler."
       },
       "attributes": [
         {

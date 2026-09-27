@@ -92,6 +92,38 @@ export function addClass(element: Element, name: string): void {
   if (!element.classList.contains(name)) element.classList.add(name)
 }
 
+/** En id komponenten lager selv, når markupen ikke hadde noen. */
+export function uniqueId(prefix: string): string {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+/**
+ * Delene med en rolle, og de uten bare når komponenten satte rollene selv.
+ *
+ * Komponentene fyller inn roller der markupen kom uten: en knapp i raden
+ * blir en fane, en `<li>` i lista blir et alternativ. Men har serveren
+ * skrevet rollene, er et element uten rolle noe annet, som en «lukk»-knapp
+ * i raden, og skal ikke få rolle, id og `tabindex="-1"` av komponenten.
+ * `roledByHost` er rollene komponenten selv satte: er hver rolle som finnes
+ * komponentens, er markupen bar, og et element uten rolle som serveren
+ * sender inn senere er en ny del. Delene avgrenses til verten, siden
+ * komponenter i komponenter er vanlig markup.
+ */
+export function derivedParts<T extends Element>(
+  host: Element,
+  selector: string,
+  role: string,
+  roledByHost: WeakSet<Element>,
+): T[] {
+  const own = [...host.querySelectorAll<T>(selector)].filter(
+    (part) => part.closest(host.localName) === host,
+  )
+  const bare = own
+    .filter((part) => part.getAttribute("role") === role)
+    .every((part) => roledByHost.has(part))
+  return bare ? own : own.filter((part) => part.getAttribute("role") === role)
+}
+
 /**
  * Attributtet som gir serveren tilstanden tilbake.
  *

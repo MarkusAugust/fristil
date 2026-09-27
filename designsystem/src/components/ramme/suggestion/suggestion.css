@@ -34,6 +34,13 @@
     display: none;
   }
 
+  /* Markup skrevet uten JavaScript kommer uten `hidden` på lista, og
+     komponenten lukker den først når den er registrert. Fram til da er den
+     skjult, så den ikke står åpen under et felt ingen har rørt. */
+  fs-suggestion:not(:defined) .fs-suggestion__list {
+    display: none;
+  }
+
   .fs-suggestion__option {
     padding: var(--fs-suggestion-option-padding, var(--size-2) var(--size-3));
     font-family: inherit;

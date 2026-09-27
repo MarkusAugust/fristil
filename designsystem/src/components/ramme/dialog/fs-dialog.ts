@@ -1,12 +1,15 @@
 import {
+  addClass,
   defineElement,
   HostElement,
   isServerControlled,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
+import { DIALOG_CLASS, DIALOG_TITLE_CLASS } from "./dialog.js"
 
 export const FS_DIALOG_TAG = "fs-dialog" as const
 
@@ -95,7 +98,15 @@ export class FsDialog extends HostElement {
      * `data-preserve-attr="open"` for å hindre det.
      */
     this.observer = new MutationObserver(() => this.sync())
-    this.observer.observe(this, { childList: true })
+    // Attributtene er med for koblingen komponenten fyller inn når markupen
+    // kom uten den: klassen, overskriftens id og `aria-labelledby`. Hver
+    // skriving sammenligner først, ellers ville observatøren utløst seg selv.
+    this.observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "id", "aria-labelledby"],
+    })
     this.sync()
   }
 
@@ -120,6 +131,32 @@ export class FsDialog extends HostElement {
    */
   private get dialog(): HTMLDialogElement | null {
     return this.querySelector(":scope > dialog")
+  }
+
+  /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
+  private titleId?: string
+
+  /**
+   * Fyller inn det en mal uten JavaScript ikke skrev: klassen på dialogen,
+   * klassen og id-en på overskriften, og `aria-labelledby` mellom dem. Bare
+   * det som mangler, og ikke når dialogen alt har et navn fra `aria-label`.
+   */
+  private wire(dialog: HTMLDialogElement): void {
+    addClass(dialog, DIALOG_CLASS)
+
+    const title = dialog.querySelector("h1, h2, h3, h4, h5, h6")
+    if (!title) return
+    addClass(title, DIALOG_TITLE_CLASS)
+    if (!title.id) {
+      this.titleId ??= uniqueId("fs-dialog-title")
+      setAttr(title, "id", this.titleId)
+    }
+    if (
+      !dialog.hasAttribute("aria-labelledby") &&
+      !dialog.hasAttribute("aria-label")
+    ) {
+      setAttr(dialog, "aria-labelledby", title.id)
+    }
   }
 
   private notify(open: boolean, returnValue = ""): void {
@@ -217,6 +254,8 @@ export class FsDialog extends HostElement {
       )
       return
     }
+
+    this.wire(dialog)
 
     const first = dialog !== this.dialogElement
     if (first) {

@@ -1142,3 +1142,101 @@ describe("dialogen med farget topp", () => {
     expect(dialog.header).toBe("fs-dialog__header")
   })
 })
+
+describe("fs-dialog kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineFsDialog()
+  })
+
+  afterEach(() => {
+    const d = document.querySelector("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  const BAR = `
+    <fs-dialog>
+      <dialog>
+        <h2>Slette søknaden?</h2>
+        <div class="fs-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
+        <form method="dialog" class="fs-dialog__footer">
+          <button class="fs-button" value="avbryt">Avbryt</button>
+        </form>
+      </dialog>
+    </fs-dialog>`
+
+  async function monterBar(markup = BAR) {
+    monter(markup)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+    return {
+      d: document.querySelector("dialog") as HTMLDialogElement,
+      tittel: document.querySelector("h2") as HTMLElement,
+    }
+  }
+
+  it("gir dialogen klassen og navnet sitt fra overskriften", async () => {
+    const { d, tittel } = await monterBar()
+
+    expect(d.classList.contains("fs-dialog")).toBe(true)
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(tittel.id).not.toBe("")
+    expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
+  })
+
+  it("lar et navn fra aria-label stå", async () => {
+    const { d, tittel } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-label="Slett søknaden">'),
+    )
+
+    expect(d.hasAttribute("aria-labelledby")).toBe(false)
+    expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
+    expect(tittel.id).not.toBe("")
+  })
+
+  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
+    const { d, tittel } = await monterBar()
+    const id = tittel.id
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    d.removeAttribute("class")
+    d.removeAttribute("aria-labelledby")
+    tittel.removeAttribute("id")
+    tittel.removeAttribute("class")
+    await ventPaTegning()
+
+    expect(tittel.id).toBe(id)
+    expect(d.getAttribute("aria-labelledby")).toBe(id)
+    expect(d.classList.contains("fs-dialog")).toBe(true)
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+  })
+
+  it("skriver ingenting på markup fra fs.dialog()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const boks = dialog({ titleId: "tittel" })
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <fs-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </fs-dialog>`
+    const vert = omslag.querySelector("fs-dialog") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
+  })
+})

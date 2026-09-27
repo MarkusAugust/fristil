@@ -48,11 +48,11 @@ Dette er spørsmålet folk stopper på. Svaret avhenger av om koden som lager ma
 
 ### Koblingen: enten byggefunksjonen eller komponenten
 
-Koblingen mellom delene er markup: `for` og `id` i et felt, `aria-controls` og `role="tab"` i en fanerad, `role="alert"` og `tabindex="-1"` på en feiloppsummering. Byggefunksjonen og komponenten skriver den samme koblingen, så du bruker den ene.
+Koblingen mellom delene er markup: `for` og `id` i et felt, `aria-controls` og `role="tab"` i en fanerad, `popover` og `aria-controls` i et sprettoppvindu, `role="combobox"` og `role="listbox"` i et forslagsfelt, `aria-labelledby` på en dialog, `role="alert"` og `tabindex="-1"` på en feiloppsummering. Byggefunksjonen og komponenten skriver den samme koblingen, så du bruker den ene.
 
 | Lager du markupen med JavaScript? | Bruk |
 | --- | --- |
-| **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`, `fs.tabs()`, `fs.errorSummary()`. Attributtene står ferdig i HTML-en |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`, `fs.tabs()`, `fs.popover()`, `fs.suggestion()`, `fs.dialog()`, `fs.errorSummary()`. Attributtene står ferdig i HTML-en |
 | **Nei.** En Go-mal, en PHP-fil, en Razor-visning, en publiseringsløsning eller håndskrevet HTML | Strukturen alene. Komponenten setter rollene, id-ene og koblingen i nettleseren |
 
 Byggefunksjonene er TypeScript. Kan koden som lager HTML-en kalle dem, er det den korteste veien: nettleseren trenger ingen registrert komponent for at semantikken skal stemme. Kan den ikke det, fyller komponenten inn det som mangler, lar det serveren skrev stå, og setter det tilbake om en patch tar det. `<fs-field>` trenger ikke komponenten i det hele tatt når `fs.field()` har skrevet feltet; de andre trenger den uansett, for oppførselen.
@@ -70,10 +70,10 @@ defineFsTabs()                                    // piltastene, fra komponenten
 | --- | --- | --- |
 | `<fs-field>` | koblingen | den samme koblingen, så velg én |
 | `<fs-tabs>` | roller, id-er, kobling, `hidden`, tabbestopp | det samme når markupen kom uten, og piltaster, Home og End |
-| `<fs-popover>` | koblingen, `popover`-attributtet | posisjon, Escape, klikk utenfor |
-| `<fs-suggestion>` | feltet og lista | filtrering, piltaster, antall treff |
+| `<fs-popover>` | koblingen, id-en, `popover`-attributtet | det samme når markupen kom uten, og posisjon, Escape, klikk utenfor |
+| `<fs-suggestion>` | rollene, id-ene og koblingen i feltet og lista | det samme når markupen kom uten, og filtrering, piltaster, antall treff |
 | `<fs-error-summary>` | klassen, `role="alert"`, `tabindex="-1"` | det samme når markupen kom uten, og fokus hit og videre til feltet |
-| `<fs-dialog>` | dialogen og koblingen til overskriften | `showModal()`, som en server ikke kan kalle |
+| `<fs-dialog>` | dialogen og koblingen til overskriften | det samme når markupen kom uten, og `showModal()`, som en server ikke kan kalle |
 
 Regelen bak tabellen: **byggefunksjonen gir markup, komponenten gir oppførsel, og der koblingen er markup fyller komponenten den inn når serveren ikke kunne.**
 

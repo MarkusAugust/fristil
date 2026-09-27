@@ -116,7 +116,7 @@
         },
         {
           "name": "fs-popover",
-          "description": "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id.",
+          "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten.",
           "doc-url": "https://fristil.netlify.app/components/popover/",
           "attributes": [
             {
@@ -163,7 +163,7 @@
         },
         {
           "name": "fs-suggestion",
-          "description": "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+          "description": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
           "doc-url": "https://fristil.netlify.app/components/suggestion/",
           "attributes": [
             {
@@ -184,7 +184,7 @@
         },
         {
           "name": "fs-dialog",
-          "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen.",
+          "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler.",
           "doc-url": "https://fristil.netlify.app/components/dialog/",
           "attributes": [
             {

@@ -161,7 +161,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsPopover>(
     FS_POPOVER_TAG,
     "popover",
-    "Panel som henger under en knapp og lukker seg selv. Knappen har `aria-controls`, panelet har `popover` og samme id.",
+    "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten.",
     {
       open: flag(
         "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet.",
@@ -196,7 +196,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsSuggestion>(
     FS_SUGGESTION_TAG,
     "suggestion",
-    "Felt med forslagsliste. Filtrerer alternativene mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+    "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
     {
       prefiltered: flag(
         "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet».",
@@ -208,7 +208,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsDialog>(
     FS_DIALOG_TAG,
     "dialog",
-    'Gjør en `<dialog class="fs-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen.',
+    'Gjør en `<dialog class="fs-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler.',
     {
       open: flag(
         "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
