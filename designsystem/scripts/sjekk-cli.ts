@@ -499,9 +499,14 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     const fraFil = await kjør(["tema", sti])
 
     krev(fraFil.kode === 0, `${nøkkel} i fil ga kode ${fraFil.kode}`)
+    /*
+     * At det ble et *annet* tema enn uten tak er ikke nok: den påstanden er
+     * like sann om fila ble lest med feil skalering, eller alltid som 0,33.
+     * Den som binder verdien er at fila gir nøyaktig det flagget gir.
+     */
     krev(
-      fraFil.ut !== standard.ut,
-      `${nøkkel} i fil ga nøyaktig det samme temaet som uten tak`,
+      fraFil.ut === hevet.ut,
+      `${nøkkel} i fil ga et annet tema enn --maks-metning=0.32`,
     )
   }
 
