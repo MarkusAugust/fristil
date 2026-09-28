@@ -86,6 +86,8 @@ const HOPP_OVER = [
   ".astro/",
   // Fila du leser nå, som må kunne skrive ordene for å lete etter dem.
   "scripts/sjekk-ordbruk.ts",
+  // Generert av generate-agent.ts; kilden er oppskriftene der.
+  "designsystem/agent/",
   // Generert fra tokens.ts.
   "designsystem/src/tokens/tokens.css",
   // Generert av editor/scripts/generate.ts fra metadata.ts, som leses.

@@ -93,6 +93,7 @@ export default defineConfig({
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
             { label: "Editoren", slug: "editoren" },
+            { label: "Kodeagenter", slug: "kodeagenter" },
           ],
         },
         {

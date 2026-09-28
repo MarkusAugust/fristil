@@ -28,12 +28,15 @@ type Kjøring = { kode: number; ut: string; feil: string }
 
 let antallKjøringer = 0
 
-async function kjør(argumenter: string[]): Promise<Kjøring> {
+async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   antallKjøringer += 1
 
   const prosess = Bun.spawn(["node", cli, ...argumenter], {
     stdout: "pipe",
     stderr: "pipe",
+    // `agent` leser package.json i arbeidsmappa. Uten dette ville hver kjøring
+    // sett pakkens egen, og deteksjonen aldri blitt prøvd.
+    cwd: mappe,
   })
 
   const [ut, feil, kode] = await Promise.all([
@@ -699,6 +702,140 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     `et tregt rør ga ikke funnet med hel tekst: kode ${tregKode}, ${(tregUt + tregFeil).slice(0, 120)}`,
   )
   krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// `agent`: regelboka til utdata, meldinga til feilkanalen, og ingen fil skrevet
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-agent-"))
+
+  // Uten package.json er markupen serverens, og malregelboka er den riktige.
+  const mal = await kjør(["agent"], mappe)
+
+  krev(mal.kode === 0, `agent uten package.json avsluttet med kode ${mal.kode}`)
+  krev(
+    mal.ut.startsWith("# Fristil i maler"),
+    `agent uten package.json ga ikke malregelboka: ${mal.ut.slice(0, 60)}`,
+  )
+  krev(
+    mal.feil.includes("maler") && mal.feil.includes("ingen package.json"),
+    `grunnen til valget står ikke i feilkanalen: ${mal.feil.slice(0, 80)}`,
+  )
+  // Hele poenget med at meldinga går til feilkanalen: utdata kan pipes rent.
+  // Teksten det letes etter står bare i meldinga; regelboka begynner selv med
+  // ordene «Regelboka for», så den kan ikke brukes til å skille de to.
+  krev(
+    !mal.ut.includes("ingen package.json i denne mappa"),
+    "meldinga om valget havnet i utdata, som da ikke kan pipes rent",
+  )
+  // Kommandoen skal ikke ha rørt mappa den ble kjørt i.
+  krev(
+    (await readdir(mappe)).length === 0,
+    "agent skrev en fil i arbeidsmappa; den skal aldri skrive noe",
+  )
+
+  // Avhengighetene avgjør, og de tre utfallene er ulike regelbøker.
+  const oppdaget: [Record<string, string>, string, string][] = [
+    [{ react: "19.0.0" }, "react", "# Fristil i React"],
+    [{ vue: "3.5.0" }, "bundles", "# Fristil med bundles"],
+    [{ astro: "6.0.0" }, "astro", "# Fristil i Astro"],
+    // En package.json betyr et byggesteg, og da importeres stilarkene.
+    [{ typescript: "6.0.0" }, "bundles", "# Fristil med bundles"],
+  ]
+
+  for (const [avhengigheter, navn, overskrift] of oppdaget) {
+    await writeFile(
+      join(mappe, "package.json"),
+      JSON.stringify({ dependencies: avhengigheter }),
+    )
+    const kjøring = await kjør(["agent"], mappe)
+
+    krev(kjøring.kode === 0, `agent med ${navn} ga kode ${kjøring.kode}`)
+    krev(
+      kjøring.ut.startsWith(overskrift),
+      `${Object.keys(avhengigheter)[0]} ga ikke ${navn}-regelboka: ${kjøring.ut.slice(0, 50)}`,
+    )
+  }
+
+  // En Astro-app med React-øyer har begge, og Astro bestemmer stilarkene.
+  await writeFile(
+    join(mappe, "package.json"),
+    JSON.stringify({ dependencies: { astro: "6.0.0", react: "19.0.0" } }),
+  )
+  const begge = await kjør(["agent"], mappe)
+
+  krev(
+    begge.ut.startsWith("# Fristil i Astro"),
+    "astro tapte mot react, men den bestemmer hvordan stilarkene kommer inn",
+  )
+
+  // Vue, Svelte, Solid og Lit deler regelbok, og den som skriver navnet sitt
+  // skal ikke måtte vite det. Aliaset skal likevel være synlig i meldinga.
+  const svelte = await kjør(["agent", "--rammeverk=svelte"], mappe)
+
+  krev(svelte.kode === 0, `--rammeverk=svelte ga kode ${svelte.kode}`)
+  krev(
+    svelte.ut.startsWith("# Fristil med bundles"),
+    "svelte pekte ikke på bundles-regelboka",
+  )
+  krev(
+    svelte.feil.includes("bundles") && svelte.feil.includes("svelte"),
+    `meldinga viser ikke at svelte ble et alias: ${svelte.feil.slice(0, 80)}`,
+  )
+
+  const ukjent = await kjør(["agent", "--rammeverk=kohana"], mappe)
+
+  krev(ukjent.kode === 1, `et ukjent navn ga kode ${ukjent.kode}`)
+  krev(
+    ukjent.feil.includes("Kjenner ikke") && ukjent.feil.includes("bundles"),
+    `et ukjent navn fikk ikke lista over valgene: ${ukjent.feil.slice(0, 80)}`,
+  )
+
+  // Flagget slår deteksjonen: astro og react står fortsatt i package.json her.
+  const html = await kjør(["agent", "--rammeverk=html"], mappe)
+
+  krev(html.kode === 0, `--rammeverk=html avsluttet med kode ${html.kode}`)
+  krev(
+    html.ut.startsWith("# Fristil i ren HTML"),
+    "--rammeverk=html overstyrte ikke deteksjonen",
+  )
+  // Regelboka skal være regelboka, ikke en tom fil som ser riktig ut.
+  for (const del of ["fristil.css", "data-variant", "defineFsField", "sjekk"]) {
+    krev(html.ut.includes(del), `regelboka nevner ikke ${del}`)
+  }
+
+  // Markupen i regelbøkene må tåle Fristils egen sjekk. En agent-instruksjon
+  // med et eksempel sjekken ville avvist er verre enn ingen instruksjon.
+  for (const rammeverk of [
+    "html",
+    "maler",
+    "bundles",
+    "react",
+    "astro",
+    "datastar",
+  ]) {
+    const bok = await kjør(["agent", `--rammeverk=${rammeverk}`], mappe)
+    const blokker = [...bok.ut.matchAll(/```html\n([\s\S]*?)```/g)]
+
+    for (const [nummer, blokk] of blokker.entries()) {
+      const prøve = Bun.spawn(["node", cli, "sjekk"], {
+        stdin: new Blob([blokk[1]]),
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      antallKjøringer += 1
+      const [ut, kode] = await Promise.all([
+        new Response(prøve.stdout).text(),
+        prøve.exited,
+      ])
+
+      krev(
+        kode === 0,
+        `eksempel ${nummer + 1} i ${rammeverk}-regelboka stemmer ikke med Fristil: ${ut.slice(0, 120)}`,
+      )
+    }
+  }
 
   await rm(mappe, { recursive: true, force: true })
 }
