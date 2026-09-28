@@ -324,9 +324,8 @@ describe("formen på navnerommet", () => {
 describe("attributter bare morferen leser", () => {
   /*
    * Fredning og «ikke rør dette» er ikke egenskaper ved morfing. De er
-   * `data-`attributter, og et `data-`attributt betyr bare noe for koden som
-   * leser det. Reparasjonen trenger ingen av dem: komponenten leser markupen,
-   * og det avhenger ikke av hvem som morfer.
+   * `data-*`-attributter, og et slikt attributt betyr bare noe for koden som
+   * leser det. Reparasjonen trenger ingen av dem: komponenten leser markupen.
    *
    * Unntaket er de som eier innholdet sitt selv. En komponent kan sette et
    * attributt tilbake, men den kan ikke gjette seg fram til meldinger den
@@ -341,6 +340,16 @@ describe("attributter bare morferen leser", () => {
 
   /** Alt i `fs` som ikke er en byggefunksjon. */
   const HJELPERE = ["setAttributes", "isState", "isMarker"]
+
+  /**
+   * Hvor mange byggefunksjoner `fs` har.
+   *
+   * Tallet står skrevet her framfor å bli lest ut av `byggere.length`. Ellers
+   * ville vakten sammenlignet køen med seg selv, og halve settet kunne
+   * forsvinne uten at noe sa fra. Legg til en byggefunksjon, og tallet skal
+   * opp i samme endring.
+   */
+  const ANTALL_BYGGERE = 43
 
   /** De sammensatte byggerne krever argumenter. Ett gyldig kall hver. */
   const SAMMENSATTE: Record<string, () => unknown> = {
@@ -357,6 +366,9 @@ describe("attributter bare morferen leser", () => {
     ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
   ) as [string, () => unknown][]
 
+  const kall = ([navn, bygger]: [string, () => unknown]) =>
+    (SAMMENSATTE[navn] ?? bygger)()
+
   /** Hvert attributtnavn i svaret, uansett hvor dypt det ligger. */
   function attributtnavn(verdi: unknown, ut: string[] = []): string[] {
     if (Array.isArray(verdi)) {
@@ -372,15 +384,24 @@ describe("attributter bare morferen leser", () => {
     return ut
   }
 
-  it("kaller hver byggefunksjon, og bare byggefunksjoner", () => {
-    // Uten dette kunne tabellen under ha vært tom, eller ha mistet en bygger
-    // som fikk nytt navn, og folketellingen ville stemt likevel.
-    expect(byggere.length).toBeGreaterThan(20)
+  it("har hver byggefunksjon i fs, og bare byggefunksjoner", () => {
+    // Uten dette kunne tabellen under vært tom, eller mistet en bygger som
+    // fikk nytt navn, og folketellingen ville stemt likevel. Og en ny vakt i
+    // `fs`, som `isColor`, ville blitt kalt som en bygger og gitt `false`,
+    // altså ingen attributter å telle.
+    expect(byggere.length).toBe(ANTALL_BYGGERE)
+
     for (const navn of Object.keys(SAMMENSATTE)) {
       expect(
         byggere.map(([n]) => n),
         `fs.${navn} finnes ikke`,
       ).toContain(navn)
+    }
+
+    for (const bygger of byggere) {
+      expect(typeof kall(bygger), `fs.${bygger[0]}() ga ikke attributter`).toBe(
+        "object",
+      )
     }
   })
 
@@ -388,19 +409,18 @@ describe("attributter bare morferen leser", () => {
     const funn: Record<string, string[]> = {}
     let kalt = 0
 
-    for (const [navn, bygger] of byggere) {
-      const svar = (SAMMENSATTE[navn] ?? bygger)()
-      kalt += 1
+    for (const bygger of byggere) {
+      const svar = kall(bygger)
       const treff = [
         ...new Set(
           attributtnavn(svar).filter((n) => MORFERATTRIBUTTER.includes(n)),
         ),
       ].sort()
-      if (treff.length > 0) funn[navn] = treff
+      if (treff.length > 0) funn[bygger[0]] = treff
+      kalt += 1
     }
 
-    expect(kalt).toBe(byggere.length)
-    expect(kalt).toBeGreaterThan(20)
+    expect(kalt).toBe(ANTALL_BYGGERE)
     expect(funn).toEqual({
       connectionStatus: ["data-ignore-morph"],
       sessionTimeout: ["data-ignore-morph"],

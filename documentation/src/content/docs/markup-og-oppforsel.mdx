@@ -141,10 +141,11 @@ const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 
 **Datastar.** Malen på serveren skriver de samme attributtene. Fordi de står i serverens utgave, finner morfingen ingenting å fjerne.
 
-Datastar er det strengeste av de tre, for der kan et attributt forsvinne mens
-siden lever. Kravet komponentene bygges etter er derfor skrevet uten å nevne
-noen av miljøene: det en komponent har satt, skal overleve at attributter blir
-fjernet fra et element som står.
+Datastar er det strengeste av de tre: en patch fjerner hvert attributt som
+ikke står i det serveren sendte, også dem malen aldri har sett. Kravet
+komponentene bygges etter er derfor skrevet som en invariant framfor som en
+etterlikning av den løkka: det en komponent har satt, skal overleve at
+attributter blir fjernet fra et element som står.
 
 ## Når komponenten må endre noe
 
@@ -280,10 +281,10 @@ Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene på
 hvert attributt komponenten kom til å røre. Ni strenger å holde i takt med en
 pakke som kunne endre seg, uten at noen kompilator så på dem.
 
-Fredningen har en svakhet til. `data-preserve-attr` er et vanlig
-`data-`attributt, og et `data-`attributt betyr bare noe for koden som leser
-det. Fredning virker altså fordi morferen leser lista. Reparasjon virker fordi
-komponenten leser markupen, og det avhenger ikke av hvem som morfer.
+Fredningen har en svakhet til. `data-preserve-attr` er et `data-*`-attributt,
+og et slikt attributt betyr bare noe for koden som leser det. Fredning virker
+altså fordi morferen leser lista. Reparasjon virker fordi komponenten leser
+markupen, og det avhenger ikke av hvem som morfer.
 
 #### Når serveren skal eie tilstanden
 
@@ -366,9 +367,9 @@ Tre komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/in
 
 [`<fs-toast>`](/components/toast/) viser meldinger appen lager mens siden står. Serveren har ingen utgave av dem å sende.
 
-Alle tre setter `data-ignore-morph`, som ber morfingen la innholdet stå. Det samme gjør området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff. Byggefunksjonene skriver attributtet ut, så du trenger ikke huske det.
+Alle tre setter `data-ignore-morph`, som ber morfingen la innholdet stå. Det gjør også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut, så du trenger ikke huske det.
 
-Dette er det ene stedet reparasjon ikke holder. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils: attributtet betyr bare noe for koden som leser det.
+Her holder reparasjon ikke. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 
 ## Det som ikke finnes
 

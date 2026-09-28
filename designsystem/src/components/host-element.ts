@@ -141,7 +141,7 @@ export function derivedParts<T extends Element>(
  * stedet for ni, og standardvalget er det som er riktig nesten alltid.
  *
  * Fredningen er dessuten morferens egen mekanisme: `data-preserve-attr` er et
- * `data-`attributt, og et `data-`attributt betyr bare noe for koden som leser
+ * `data-*`-attributt, og et slikt attributt betyr bare noe for koden som leser
  * det. Reparasjon leser markupen, og virker uansett hvem som morfer.
  */
 export const SERVER_CONTROLLED = "server-controlled" as const

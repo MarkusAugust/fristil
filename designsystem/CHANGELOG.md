@@ -39,9 +39,11 @@ egen overskrift «Brytende».
   `data-preserve-attr` ikke kommer ut fra noen. Vakten feller både et nytt
   sted attributtet dukker opp og et sted det forsvinner fra, siden begge
   endrer hva malen må skrive. Hjelperen i `morfing.browser.test.ts` hopper
-  over attributter som står i en fredningsliste, og uten vakten kunne en
-  byggefunksjon som begynte å sende den ut slått av hele den filen i
-  stillhet.
+  over attributter som står i en fredningsliste, slik den ekte løkka gjør, og
+  fixturene der bygges av byggefunksjonene. En bygger som begynte å sende ut
+  `data-preserve-attr` ville gjort fjerningsløkka til et null-steg for nettopp
+  de attributtene testene handler om. Hjelperen påstår nå i tillegg at lista er
+  tom, så det samme kan ikke skrives for hånd i en fixture.
 
 ### Rettet
 
@@ -54,7 +56,8 @@ egen overskrift «Brytende».
 
 - **«To komponenter eier sitt eget innhold» var tre.** `<fs-toast>` sto ikke i
   lista i «Markup og oppførsel», og at `fs.suggestion()` setter
-  `data-ignore-morph` på området som melder antall treff sto ingen steder.
+  `data-ignore-morph` på statusområdet sto bare på komponentsiden, ikke der
+  regelen forklares.
 
 - **`overta` sa ingenting om tilgjengelighetsansvaret.** Siden om tilpasning
   sier nå at en overtatt og endret komponent ikke dekkes av en
