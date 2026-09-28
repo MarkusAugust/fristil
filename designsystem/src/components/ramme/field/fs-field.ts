@@ -340,12 +340,8 @@ export class FsField extends HostElement {
     const control = this.querySelector<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >(CONTROL_SELECTOR)
-    const help = this.querySelector<HTMLElement>(
-      ".fs-help-text, [data-role='help']",
-    )
-    const error = this.querySelector<HTMLElement>(
-      ".fs-error-text, [data-role='error']",
-    )
+    const help = this.querySelector<HTMLElement>(".fs-help-text")
+    const error = this.querySelector<HTMLElement>(".fs-error-text")
 
     if (!control) {
       warnAboutMarkup(

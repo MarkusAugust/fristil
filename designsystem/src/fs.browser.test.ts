@@ -272,6 +272,30 @@ describe("fs.field sammen med feltfunksjonene", () => {
   })
 })
 
+/**
+ * Hvor mange byggefunksjoner `fs` har, utenom `setAttributes`, `isState` og
+ * `isMarker`.
+ *
+ * Tallet står skrevet her framfor å bli lest ut av lista det skal kontrollere.
+ * Ellers sammenligner vakten køen med seg selv, og halve settet kan forsvinne
+ * uten at noe sier fra. Legg til en byggefunksjon, og tallet skal opp i samme
+ * endring. Merk at summen alene ikke fanger et bytte: legger du til en bygger
+ * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
+ * ikke i det hele tatt.
+ */
+const ANTALL_BYGGERE = 43
+
+/** De sju som gir attributter per del framfor ett flatt sett. */
+const SAMMENSATTE_NAVN = [
+  "dialog",
+  "errorSummary",
+  "field",
+  "popover",
+  "suggestion",
+  "tabs",
+  "toast",
+]
+
 describe("formen på navnerommet", () => {
   /** Byggefunksjonene, altså alt i `fs` som kan kalles uten argumenter. */
   const byggere = Object.entries(fs).filter(
@@ -282,19 +306,11 @@ describe("formen på navnerommet", () => {
       navn !== "isMarker" &&
       // De sammensatte byggerne gir ett attributtsett per element i stedet
       // for ett flatt sett, og krever en id for å kunne koble dem sammen.
-      ![
-        "dialog",
-        "field",
-        "errorSummary",
-        "popover",
-        "tabs",
-        "suggestion",
-        "toast",
-      ].includes(navn),
+      !SAMMENSATTE_NAVN.includes(navn),
   ) as [string, () => Record<string, unknown>][]
 
   it("har byggere å kontrollere", () => {
-    expect(byggere.length).toBeGreaterThan(20)
+    expect(byggere.length).toBe(ANTALL_BYGGERE - SAMMENSATTE_NAVN.length)
   })
 
   it.each(
@@ -318,5 +334,119 @@ describe("formen på navnerommet", () => {
     // Et attributt med verdien undefined blir «undefined» som streng i maler
     // som skriver ut attributtene bokstavelig, som Astro og ren HTML.
     expect(tomme).toEqual([])
+  })
+})
+
+describe("attributter bare morferen leser", () => {
+  /*
+   * Fredning og «ikke rør dette» er ikke egenskaper ved morfing. De er
+   * `data-*`-attributter, og et slikt attributt betyr bare noe for koden som
+   * leser det. Reparasjonen trenger ingen av dem: komponenten leser markupen.
+   *
+   * Unntaket er de som eier innholdet sitt selv. En komponent kan sette et
+   * attributt tilbake, men den kan ikke gjette seg fram til meldinger den
+   * selv lagde og en patch tømte. Der må serverens markup si fra, og navnet
+   * på attributtet er morferens.
+   *
+   * Testen er en folketelling og ikke et forbud. Den feller både et nytt sted
+   * attributtet dukker opp, og et sted det forsvinner fra, siden begge er en
+   * endring i hva malen må skrive.
+   */
+  const MORFERATTRIBUTTER = ["data-ignore-morph", "data-preserve-attr"]
+
+  /** Alt i `fs` som ikke er en byggefunksjon. */
+  const HJELPERE = ["setAttributes", "isState", "isMarker"]
+
+  /**
+   * Ett gyldig kall per bygger som gir attributter per del framfor ett flatt
+   * sett. De fleste av dem krever argumenter. `toast` gjør ikke det, og står
+   * her for at lista skal være hele settet.
+   */
+  const SAMMENSATTE: Record<string, () => unknown> = Object.assign(
+    Object.create(null),
+    {
+      dialog: () => fs.dialog({ titleId: "tittel" }),
+      errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
+      field: () => fs.field({ id: "epost", help: true, error: true }),
+      popover: () => fs.popover({ id: "panel" }),
+      suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
+      tabs: () => fs.tabs({ id: "faner", count: 2 }),
+      toast: () => fs.toast(),
+    },
+  )
+
+  const byggere = Object.entries(fs).filter(
+    ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
+  ) as [string, () => unknown][]
+
+  const kall = ([navn, bygger]: [string, () => unknown]) =>
+    (SAMMENSATTE[navn] ?? bygger)()
+
+  /** Hvert attributtnavn i svaret, uansett hvor dypt det ligger. */
+  function attributtnavn(verdi: unknown, ut: string[] = []): string[] {
+    if (Array.isArray(verdi)) {
+      for (const del of verdi) attributtnavn(del, ut)
+      return ut
+    }
+    if (verdi && typeof verdi === "object") {
+      for (const [navn, del] of Object.entries(verdi)) {
+        ut.push(navn)
+        attributtnavn(del, ut)
+      }
+    }
+    return ut
+  }
+
+  it("har hver byggefunksjon i fs, og bare byggefunksjoner", () => {
+    // Uten dette kunne tabellen under vært tom, eller mistet en bygger som
+    // fikk nytt navn, og folketellingen ville stemt likevel. Og en ny vakt i
+    // `fs`, som `isColor`, ville blitt kalt som en bygger og gitt `false`,
+    // altså ingen attributter å telle.
+    expect(byggere.length).toBe(ANTALL_BYGGERE)
+    expect(Object.keys(SAMMENSATTE).sort()).toEqual(
+      [...SAMMENSATTE_NAVN].sort(),
+    )
+
+    for (const navn of SAMMENSATTE_NAVN) {
+      expect(
+        byggere.map(([n]) => n),
+        `fs.${navn} finnes ikke`,
+      ).toContain(navn)
+    }
+
+    for (const bygger of byggere) {
+      // At svaret er et objekt er for lite: `typeof null` er også «object»,
+      // og et tomt objekt ville passert. Påstanden må være at traverseringen
+      // finner noe, for det er den folketellingen under hviler på: «ingen
+      // morferattributter» skal betyde at de ikke er der, ikke at ingen så.
+      expect(
+        attributtnavn(kall(bygger)).length,
+        `fs.${bygger[0]}() ga ingen attributter`,
+      ).toBeGreaterThan(0)
+    }
+  })
+
+  it("sender dem ut fra nøyaktig de fire som eier innholdet sitt", () => {
+    const funn: Record<string, string[]> = {}
+    let kalt = 0
+
+    for (const bygger of byggere) {
+      const svar = kall(bygger)
+      const treff = [
+        ...new Set(
+          attributtnavn(svar).filter((n) => MORFERATTRIBUTTER.includes(n)),
+        ),
+      ].sort()
+      if (treff.length > 0) funn[bygger[0]] = treff
+      kalt += 1
+    }
+
+    expect(kalt).toBe(ANTALL_BYGGERE)
+    expect(funn).toEqual({
+      connectionStatus: ["data-ignore-morph"],
+      sessionTimeout: ["data-ignore-morph"],
+      suggestion: ["data-ignore-morph"],
+      toast: ["data-ignore-morph"],
+    })
   })
 })
