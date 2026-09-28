@@ -499,9 +499,73 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     const fraFil = await kjør(["tema", sti])
 
     krev(fraFil.kode === 0, `${nøkkel} i fil ga kode ${fraFil.kode}`)
+    /*
+     * At det ble et *annet* tema enn uten tak er ikke nok: den påstanden er
+     * like sann om fila ble lest med feil skalering, eller alltid som 0,33.
+     * Den som binder verdien er at fila gir nøyaktig det flagget gir.
+     */
     krev(
-      fraFil.ut !== standard.ut,
-      `${nøkkel} i fil ga nøyaktig det samme temaet som uten tak`,
+      fraFil.ut === hevet.ut,
+      `${nøkkel} i fil ga et annet tema enn --maks-metning=0.32`,
+    )
+  }
+
+  /*
+   * `$schema` er den ene toppnøkkelen som slipper gjennom. Uten en sak her
+   * kunne noen tatt den ut av lista uten at noe ble rødt, og da slutter en helt
+   * vanlig konfigurasjonsfil å virke.
+   */
+  const medSkjema = join(mappe, "skjema.json")
+  await writeFile(
+    medSkjema,
+    JSON.stringify({
+      $schema: "https://example.com/fristil.json",
+      interaktiv: "#7c3aed",
+      fare: "#b3261e",
+      suksess: "#2b6940",
+      advarsel: "#8a5a00",
+    }),
+  )
+  const skjema = await kjør(["tema", medSkjema])
+
+  krev(skjema.kode === 0, `$schema i oppskriften ga kode ${skjema.kode}`)
+
+  // Og den slipper gjennom bare seg selv, bare på toppnivå.
+  for (const [navn, innhold] of [
+    ["$comment", JSON.stringify({ $comment: "hei", interaktiv: "#7c3aed" })],
+    [
+      "form.$schema",
+      JSON.stringify({ interaktiv: "#7c3aed", form: { $schema: "x" } }),
+    ],
+  ]) {
+    const fil = join(mappe, `${navn}.json`)
+    await writeFile(fil, innhold)
+    const kjøring = await kjør(["tema", fil])
+
+    krev(kjøring.kode === 1, `${navn} slapp gjennom med kode ${kjøring.kode}`)
+  }
+
+  /*
+   * En oppskrift som er gyldig JSON, men ikke et objekt. `null` ga et stakkspor
+   * fra Node, og en streng ga «Ukjent nøkkel i oppskriften: 0, 1, 2», altså
+   * indeksene i den.
+   */
+  for (const [navn, innhold] of [
+    ["null", "null"],
+    ["streng", '"hei"'],
+    ["liste", "[1, 2]"],
+  ]) {
+    const fil = join(mappe, `ikke-objekt-${navn}.json`)
+    await writeFile(fil, innhold)
+    const kjøring = await kjør(["tema", fil])
+
+    krev(
+      kjøring.kode === 1,
+      `en oppskrift som er ${navn} ga kode ${kjøring.kode}`,
+    )
+    krev(
+      kjøring.feil.includes("ikke en oppskrift"),
+      `en oppskrift som er ${navn} fikk ingen forklarende melding: ${kjøring.feil.slice(0, 80)}`,
     )
   }
 

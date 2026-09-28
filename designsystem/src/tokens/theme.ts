@@ -239,16 +239,18 @@ export function buildTheme(input: ThemeInput): Theme {
    * Uten kontrollen gikk verdien urørt inn i `Math.min`: et negativt tak
    * speiler fargen og gjør knallgrønt til magenta, `NaN` gir en feilmelding om
    * en heksadesimal farge brukeren aldri skrev, og 0 gir et helt grått tema i
-   * stillhet. Kontrollen står før den tidlige returnen, så et tema som bare
-   * setter skrift og form også sier fra framfor å svelge verdien.
+   * stillhet. Kontrollen står før den tidlige returnen, så en ugyldig verdi
+   * meldes også i et tema som bare setter skrift og form. En gyldig verdi blir
+   * derimot liggende ubrukt der, og det er riktig: da finnes det ingen skalaer
+   * å bygge.
    */
   if (input.maxChroma !== undefined) {
-    const tak = input.maxChroma
+    const cap = input.maxChroma
 
-    if (!Number.isFinite(tak) || tak < CHROMA_FLOOR || tak > CHROMA_CEILING) {
+    if (!Number.isFinite(cap) || cap < CHROMA_FLOOR || cap > CHROMA_CEILING) {
       throw new Error(
         `maxChroma må være et metningstak mellom ${CHROMA_FLOOR} og ` +
-          `${CHROMA_CEILING}, målt i OKLCH. Fikk «${tak}».`,
+          `${CHROMA_CEILING}, målt i OKLCH. Fikk «${cap}».`,
       )
     }
   }
@@ -291,14 +293,14 @@ export function buildTheme(input: ThemeInput): Theme {
 
   // Taket gjelder de fem kulørte skalaene. Den nøytrale har sitt eget, som er
   // mye lavere, og som ikke er et valg: en nøytral flate med kulør ser malt ut.
-  const tak = input.maxChroma
+  const cap = input.maxChroma
 
   const palett = {
-    interactive: buildScale(interactive, tak),
-    danger: buildScale(danger, tak),
-    success: buildScale(success, tak),
-    warning: buildScale(warning, tak),
-    visited: buildScale(input.visited ?? interactive, tak),
+    interactive: buildScale(interactive, cap),
+    danger: buildScale(danger, cap),
+    success: buildScale(success, cap),
+    warning: buildScale(warning, cap),
+    visited: buildScale(input.visited ?? interactive, cap),
     neutral: buildNeutralScale(input.neutral ?? "#1a1a1a"),
   }
 

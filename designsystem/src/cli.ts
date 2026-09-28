@@ -48,20 +48,34 @@ import {
 } from "./tokens/theme.js"
 
 /**
+ * Temaet slik det bygges opp, før det er kontrollert.
+ *
+ * `Partial<ThemeInput>` gikk ikke: typen er en union som sier «enten alle fire
+ * fargene, eller ingen», og et halvferdig tema er nettopp det som ikke er noen
+ * av delene ennå. `Extract` plukker den grenen som har fargene, og `Partial`
+ * gjør hver nøkkel valgfri. Kontrollen nederst avgjør hvilken av de to det ble.
+ *
+ * Utledet framfor skrevet av, slik at den fortsatt henger sammen med
+ * `ThemeInput`: kommer det en ny valgfri verdi i temaet, er den med her, og
+ * døpes en nøkkel om, slutter `NØKLER` å kompilere.
+ */
+type ThemeDraft = Partial<Extract<ThemeInput, { interactive: string }>>
+
+/**
  * Nøklene som tar en farge, altså en streng.
  *
  * Lista sto som `keyof ThemeInput`, og det holdt så lenge hver verdi i temaet
  * var en streng eller et objekt. `maxChroma` er et tall, og da har nøklene
  * ikke lenger noen felles verditype: en skriving gjennom en union av nøkler
  * krever en verdi som passer dem alle, og `string & number` finnes ikke.
+ *
+ * `Extract` binder lista til typen: forsvinner en av dem fra `ThemeInput`,
+ * faller den ut her, og `NØKLER` under stopper bygget.
  */
-type ColorKey =
-  | "interactive"
-  | "danger"
-  | "success"
-  | "warning"
-  | "neutral"
-  | "visited"
+type ColorKey = Extract<
+  keyof ThemeDraft,
+  "interactive" | "danger" | "success" | "warning" | "neutral" | "visited"
+>
 
 const NØKLER: Record<string, ColorKey> = {
   interaktiv: "interactive",
@@ -333,7 +347,8 @@ const HJELP = `fristil <kommando>
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
     --maks-metning=<tall> Taket på metningen i skalaene, målt i OKLCH.
-                          Standard ${MAX_CHROMA}. Hev det for en neonfarge
+                          ${CHROMA_FLOOR} til ${CHROMA_CEILING}, standard ${MAX_CHROMA}.
+                          Hev det for å beholde en neonfarge
     --skrift=<stakk>      Skriftstakken temaet skal bruke
     --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
     --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
@@ -389,14 +404,14 @@ const { flagg, filer } = lesArgumenter(
   argumenter[0] === "tema" ? argumenter.slice(1) : argumenter,
 )
 
-async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
+async function lesTemafil(path: string): Promise<Record<string, unknown>> {
   let innhold: string
 
   try {
-    innhold = await readFile(sti, "utf8")
+    innhold = await readFile(path, "utf8")
   } catch {
     console.error(
-      `Fant ikke fila «${sti}».\n\n` +
+      `Fant ikke fila «${path}».\n\n` +
         "Oppgi en JSON-fil med fargene, eller sett dem som flagg. " +
         "Se `fristil --hjelp`.\n",
     )
@@ -404,30 +419,36 @@ async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
   }
 
   try {
-    return JSON.parse(innhold) as Record<string, unknown>
+    const parsed: unknown = JSON.parse(innhold)
+
+    /*
+     * `null`, en liste og en streng er alle gyldig JSON, og ingen av dem er en
+     * oppskrift. `null` ga et stakkspor fra Node, og en streng ga «Ukjent
+     * nøkkel i oppskriften: 0, 1, 2», altså indeksene i den.
+     */
+    if (
+      parsed === null ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed)
+    ) {
+      console.error(
+        `«${path}» er gyldig JSON, men ikke en oppskrift.\n\n` +
+          "Fila skal være et objekt med fargene i seg, for eksempel:\n" +
+          '  {"interaktiv": "#7c3aed", "fare": "#b3261e"}\n',
+      )
+      process.exit(1)
+    }
+
+    return parsed as Record<string, unknown>
   } catch (grunn) {
     console.error(
-      `«${sti}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
+      `«${path}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
     )
     process.exit(1)
   }
 }
 
 const fromFile = filer[0] ? await lesTemafil(filer[0]) : {}
-
-/**
- * Temaet slik det bygges opp, før det er kontrollert.
- *
- * `Partial<ThemeInput>` gikk ikke: typen er en union som sier «enten alle fire
- * fargene, eller ingen», og et halvferdig tema er nettopp det som ikke er noen
- * av delene ennå. Kontrollen under avgjør hvilken av de to det ble, og
- * `buildTheme` får det som `ThemeInput` først da.
- */
-type ThemeDraft = Partial<Record<ColorKey, string>> & {
-  typography?: ThemeTypography
-  shape?: ThemeShape
-  maxChroma?: number
-}
 
 const input: ThemeDraft = {}
 for (const [norsk, engelsk] of Object.entries(NØKLER)) {
@@ -484,11 +505,22 @@ if (rawChroma !== undefined) {
     chroma < CHROMA_FLOOR ||
     chroma > CHROMA_CEILING
   ) {
+    /*
+     * Forklaringen om grensene står bare når verdien faktisk er et tall som
+     * ligger utenfor dem. Sto den alltid, fikk `abc` beskjed om at 16 er 0.16
+     * uten komma, og meldinga pekte bort fra den ekte feilen.
+     */
+    const outOfRange = Number.isFinite(chroma)
+
     console.error(
       `«${rawChroma}» er ikke et metningstak.\n\n` +
         `Oppgi et tall mellom ${CHROMA_FLOOR} og ${CHROMA_CEILING}, med punktum\n` +
-        `som desimalskilletegn. Standard er ${MAX_CHROMA}. Det høyeste sRGB kan\n` +
-        "vise er 0.3225, som er magenta, så over det endrer ingenting seg.\n",
+        `som desimalskilletegn. Standard er ${MAX_CHROMA}.\n` +
+        (outOfRange
+          ? "\nGrensene er der for å fange en verdi som var ment som noe annet:\n" +
+            "16 er nesten alltid 0.16 uten komma, og et tak under 0.01 gir et\n" +
+            "helt grått tema av kulørte merkefarger.\n"
+          : ""),
     )
     process.exit(1)
   }
@@ -558,6 +590,10 @@ const TOP_LEVEL_KEYS = new Set([
   "typography",
   "form",
   "shape",
+  // `$schema` er konvensjonen for en JSON-konfigurasjonsfil, og editorer
+  // skriver den inn av seg selv. Den sa ingenting om temaet før, og skal ikke
+  // begynne å felle kjøringen nå.
+  "$schema",
 ])
 
 const unknownKeys = [
