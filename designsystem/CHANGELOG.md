@@ -43,8 +43,10 @@ egen overskrift «Brytende».
   og er uendret.
 
   Oppskriftsfila sier nå fra om en ukjent toppnøkkel, slik dokumentasjonen
-  alltid har lovet, og `$schema` er fortsatt lovlig der: editorer skriver den
-  inn av seg selv, og den sier ingenting om temaet.
+  alltid har lovet. En fil som har stått med en skrivefeil og virket, stopper
+  derfor nå. `$schema` er fortsatt lovlig: editorer skriver den inn av seg selv,
+  og den sier ingenting om temaet. En fil som er gyldig JSON, men ikke et
+  objekt, får også en forklaring framfor et stakkspor fra Node.
 
   `buildTheme` avviser et tak utenfor 0,01 til 0,33. Et negativt tak speilet
   fargen og gjorde knallgrønt til magenta, `NaN` ga en feilmelding om en

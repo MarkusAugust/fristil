@@ -43,7 +43,7 @@ npx @fristil/designsystem tema fristil.tema.json --ut=tema.css
 | `--advarsel` | Noe som krever oppmerksomhet |
 | `--noytral` | Flater, tekst og skillelinjer. Valgfri, nesten uten kulør. |
 | `--besokt` | Besøkte lenker. Valgfri, utledes fra `--interaktiv`. |
-| `--maks-metning` | Taket på metningen i skalaene, målt i OKLCH. Valgfri, standard 0.16. |
+| `--maks-metning` | Taket på metningen i skalaene, målt i OKLCH. Valgfri, 0.01 til 0.33, standard 0.16. |
 
 ## Ta det i bruk
 
@@ -71,7 +71,9 @@ npx @fristil/designsystem tema --interaktiv=#39ff14 --fare=#ff2d6f \
   --suksess=#00e676 --advarsel=#ffd600 --maks-metning=0.32
 ```
 
-I en oppskriftsfil heter den `maksMetning`. Det høyeste sRGB kan vise er 0,3225, som er magenta, så over det endrer ingenting seg.
+I en oppskriftsfil heter den `maksMetning`, eller `maxChroma` om du heller vil skrive engelsk.
+
+Lovlige verdier er 0,01 til 0,33, og noe utenfor stopper kjøringen. Grensene er der for å fange en verdi som var ment som noe annet: 16 er nesten alltid 0,16 uten komma, og et tak under 0,01 gir et helt grått tema av kulørte merkefarger. Det høyeste sRGB kan vise er uansett 0,3225, som er magenta.
 
 Kontrastkravet holder uansett hvor taket står. Taket styrer metningen, mens kontrasten kommer av de faste lyshetene og av passet som måler hvert par etterpå. Mer metning betyr bare at generatoren flytter lysheten flere steder, og hver flytting skrives ut som under.
 
@@ -118,7 +120,7 @@ Fargene er det vanskeligste å få riktig, og det er derfor generatoren begynte 
 
 Seks av verdiene finnes også som flagg: `--skrift`, `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner`, `--knapp-ramme` og `--knapp-vekt`. Vektene og linjeavstandene settes bare fra fil. En kommandolinje med sju skrifttall er ikke til å lese, og typografi er dessuten noe man bestemmer én gang og beholder, altså nettopp det en fil i repoet er til for.
 
-Et flagg som ikke finnes stopper kjøringen framfor å bli ignorert, så en skrivefeil sier fra.
+Et flagg som ikke finnes stopper kjøringen framfor å bli ignorert, så en skrivefeil sier fra. Det samme gjelder en nøkkel i oppskriftsfila. Unntaket er `$schema`, som editorer skriver inn av seg selv og som ikke sier noe om temaet.
 
 Blokknavnene kan stå på norsk eller engelsk, som fargene. Nøklene inni er engelske, og en nøkkel som ikke finnes stopper kjøringen framfor å bli ignorert:
 

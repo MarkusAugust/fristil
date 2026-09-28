@@ -347,8 +347,8 @@ const HJELP = `fristil <kommando>
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
     --maks-metning=<tall> Taket på metningen i skalaene, målt i OKLCH.
-                          ${CHROMA_FLOOR} til ${CHROMA_CEILING}, standard
-                          ${MAX_CHROMA}. Hev det for en neonfarge
+                          ${CHROMA_FLOOR} til ${CHROMA_CEILING}, standard ${MAX_CHROMA}.
+                          Hev det for å beholde en neonfarge
     --skrift=<stakk>      Skriftstakken temaet skal bruke
     --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
     --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
@@ -404,14 +404,14 @@ const { flagg, filer } = lesArgumenter(
   argumenter[0] === "tema" ? argumenter.slice(1) : argumenter,
 )
 
-async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
+async function lesTemafil(path: string): Promise<Record<string, unknown>> {
   let innhold: string
 
   try {
-    innhold = await readFile(sti, "utf8")
+    innhold = await readFile(path, "utf8")
   } catch {
     console.error(
-      `Fant ikke fila «${sti}».\n\n` +
+      `Fant ikke fila «${path}».\n\n` +
         "Oppgi en JSON-fil med fargene, eller sett dem som flagg. " +
         "Se `fristil --hjelp`.\n",
     )
@@ -419,10 +419,30 @@ async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
   }
 
   try {
-    return JSON.parse(innhold) as Record<string, unknown>
+    const parsed: unknown = JSON.parse(innhold)
+
+    /*
+     * `null`, en liste og en streng er alle gyldig JSON, og ingen av dem er en
+     * oppskrift. `null` ga et stakkspor fra Node, og en streng ga «Ukjent
+     * nøkkel i oppskriften: 0, 1, 2», altså indeksene i den.
+     */
+    if (
+      parsed === null ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed)
+    ) {
+      console.error(
+        `«${path}» er gyldig JSON, men ikke en oppskrift.\n\n` +
+          "Fila skal være et objekt med fargene i seg, for eksempel:\n" +
+          '  {"interaktiv": "#7c3aed", "fare": "#b3261e"}\n',
+      )
+      process.exit(1)
+    }
+
+    return parsed as Record<string, unknown>
   } catch (grunn) {
     console.error(
-      `«${sti}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
+      `«${path}» er ikke gyldig JSON: ${grunn instanceof Error ? grunn.message : String(grunn)}\n`,
     )
     process.exit(1)
   }
@@ -485,13 +505,22 @@ if (rawChroma !== undefined) {
     chroma < CHROMA_FLOOR ||
     chroma > CHROMA_CEILING
   ) {
+    /*
+     * Forklaringen om grensene står bare når verdien faktisk er et tall som
+     * ligger utenfor dem. Sto den alltid, fikk `abc` beskjed om at 16 er 0.16
+     * uten komma, og meldinga pekte bort fra den ekte feilen.
+     */
+    const outOfRange = Number.isFinite(chroma)
+
     console.error(
       `«${rawChroma}» er ikke et metningstak.\n\n` +
         `Oppgi et tall mellom ${CHROMA_FLOOR} og ${CHROMA_CEILING}, med punktum\n` +
-        `som desimalskilletegn. Standard er ${MAX_CHROMA}.\n\n` +
-        "Grensene er der for å fange en verdi som var ment som noe annet: 16 er\n" +
-        "nesten alltid 0.16 uten komma, og et tak under 0.01 gir et helt grått\n" +
-        "tema av kulørte merkefarger.\n",
+        `som desimalskilletegn. Standard er ${MAX_CHROMA}.\n` +
+        (outOfRange
+          ? "\nGrensene er der for å fange en verdi som var ment som noe annet:\n" +
+            "16 er nesten alltid 0.16 uten komma, og et tak under 0.01 gir et\n" +
+            "helt grått tema av kulørte merkefarger.\n"
+          : ""),
     )
     process.exit(1)
   }
