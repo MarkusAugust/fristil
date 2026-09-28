@@ -49,13 +49,6 @@ egen overskrift «Brytende».
   noe sa fra. Komponentsiden sier nå hva komponenten faktisk krever, og en test
   holder fjerningen på plass.
 
-  Skillet som gjelder, og som ikke sto skrevet noe sted: et attributt en
-  byggefunksjon **skriver** står i markup vi selv leverer, og `data-variant`,
-  `data-state` og de elleve andre er derfor greie uten prefiks. Et attributt en
-  komponent **leter etter** i markup konsumenten alt eier, må være prefikset,
-  for der er navnet vårt bare ett av flere som kan stå der. Skal en slik krok
-  tilbake, skal den hete `data-fs-*`.
-
   Fjerningen er ingen brytende endring etter reglene øverst. Ingen
   byggefunksjon skrev attributtet og ingen komponent satte det, så ingenting i
   konsumentens markup endrer betydning: den virker som før, den blir bare ikke
@@ -63,8 +56,8 @@ egen overskrift «Brytende».
 
 - **Dokumentasjonen påsto mer enn den kunne vise.** «Holder markupen der,
   holder den overalt» var en påstand om alle morfere, mens vi kjører løkka til
-  én. Kravet står nå som det det er: det en komponent har satt, skal overleve
-  at attributter blir fjernet fra et element som står. Og `data-preserve-attr`
+  én. Kravet står nå slik det er: det en komponent har satt, skal overleve at
+  attributter blir fjernet fra et element som består. Og `data-preserve-attr`
   og `data-ignore-morph` er beskrevet som morferens egne attributtnavn, siden
   et `data-*`-attributt bare betyr noe for koden som leser det.
 

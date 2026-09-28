@@ -488,13 +488,14 @@ describe("fs-field kobler markup som bare har struktur", () => {
     expect(input.getAttribute("data-state")).toBe("invalid")
     expect(feilmelding.hidden).toBe(false)
   })
+
   /*
    * Komponenten leter etter hjelpetekst og feilmelding på systemets egne
    * klasser, og bare der. Den leste en gang også `[data-role='help']` og
    * `[data-role='error']`, en krok ingen dokumentasjon nevnte. `data-role` er
    * uprefikset, og eies i praksis av andre: en app som bruker det til noe
    * annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding,
-   * uten at noe sa fra. Skal en slik krok tilbake, skal den hete `data-fs-*`.
+   * uten at noe sa fra.
    */
   it("adopterer ikke et avsnitt som bare har en rolle på seg", async () => {
     monter(`
