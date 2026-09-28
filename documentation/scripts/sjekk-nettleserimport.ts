@@ -61,18 +61,16 @@ const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@fristil\/[^"']*)["']/g
  * versjonen som er utgitt.
  *
  * `sjekk-oppskrifter.ts` har den samme regelen, men leser bare komponentsidene.
- * De to adressene denne endringen legger inn står utenfor den mappa, sammen med
- * to som sto der fra før, og en skrivefeil som `fs-fields.js` ville passert
- * hver eneste vaktpost i repoet og gitt 404 i nettleseren. Vakten har adressen
- * i hånda uansett, så den kontrollerer den.
+ * Fire av adressene står utenfor den mappa, og en skrivefeil som `fs-fields.js`
+ * ville passert hver eneste vaktpost i repoet og gitt 404 i nettleseren. Vakten
+ * har adressen i hånda uansett, så den kontrollerer den.
+ *
+ * Versjonsleddet skal være plassholderen, ikke et tall: `remark-versjon.mjs`
+ * bytter den når siden bygges, og `sjekk-bygget-versjon.ts` kontrollerer at det
+ * faktisk skjedde.
  */
 const CDN =
   /cdn\.jsdelivr\.net\/npm\/@fristil\/designsystem@([^/]+)\/([^"'\s]+)/g
-const VERSJON = (
-  JSON.parse(readFileSync(`${ROT}designsystem/package.json`, "utf8")) as {
-    version: string
-  }
-).version
 
 const linjen = (tekst: string, indeks: number) =>
   tekst.slice(0, indeks).split("\n").length
@@ -97,9 +95,9 @@ for (const rel of new Glob(SIDER).scanSync(ROT)) {
     const [, versjon, filsti] = treff
     const hvor = `${rel}:${linjen(tekst, treff.index ?? 0)}`
 
-    if (versjon !== VERSJON) {
+    if (versjon !== "VERSJON") {
       funn.push(
-        `${hvor} peker på @fristil/designsystem@${versjon}, mens pakken er ${VERSJON}.`,
+        `${hvor} peker på @fristil/designsystem@${versjon}. Skriv @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut når siden bygges.`,
       )
     }
 
@@ -137,5 +135,5 @@ if (funn.length > 0) {
 }
 
 console.log(
-  `Ingen av ${blokker} markupblokker i ${leste} sider importerer et pakkenavn, og hver CDN-adresse peker på ${VERSJON} og en fil som finnes.`,
+  `Ingen av ${blokker} markupblokker i ${leste} sider importerer et pakkenavn, og hver CDN-adresse bruker plassholderen og peker på en fil som finnes.`,
 )

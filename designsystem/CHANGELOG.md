@@ -25,6 +25,16 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Versjonen i dokumentasjonens CDN-adresser kom fra 74 hardkodede steder.**
+  `prepare-version` skrev dem om ved hver utgivelse, men et omskrivingssteg må
+  finne den gamle versjonen for å bytte den, så en adresse som hadde glidd ble
+  stående og pekte på en eldre pakke enn teksten rundt beskrev. Kilden har nå
+  plassholderen `@fristil/designsystem@VERSJON`, og `remark-versjon.mjs` setter
+  inn versjonen fra `package.json` når siden bygges. Omskrivingssteget er
+  fjernet, og fire vaktposter passer på: tre på at kilden bruker plassholderen,
+  og `sjekk-bygget-versjon.ts` på at den faktisk ble byttet ut i det bygde
+  resultatet.
+
 - **To kodeeksempler i dokumentasjonen importerte et pakkenavn i nettleseren.**
   Datastar-sporet på [Rammeverk](https://fristil.netlify.app/rammeverk/) og
   dialogen på

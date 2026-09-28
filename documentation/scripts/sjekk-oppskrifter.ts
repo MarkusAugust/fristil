@@ -716,10 +716,17 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     for (const m of fane.kode.matchAll(
       /cdn\.jsdelivr\.net\/npm\/@fristil\/designsystem@([^/]+)\/([^"'\s]+)/g,
     )) {
-      if (m[1] !== PAKKE.version)
+      /*
+       * Versjonen skal stå som plassholderen `VERSJON`, som
+       * `remark-versjon.mjs` bytter med den fra `package.json` når siden
+       * bygges. Sto tallet her i kilden, måtte alle 74 adressene endres ved
+       * hver utgivelse, og en som ble glemt pekte på en eldre pakke enn teksten
+       * rundt den beskrev.
+       */
+      if (m[1] !== "VERSJON")
         si(
           side,
-          `${hvor} peker på @fristil/designsystem@${m[1]}, mens pakken står på ${PAKKE.version}`,
+          `${hvor} peker på @fristil/designsystem@${m[1]}. Skriv @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut.`,
         )
       if (!FILER.has(m[2]))
         si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
