@@ -139,6 +139,10 @@ export function derivedParts<T extends Element>(
  * Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene
  * på hvert attributt komponenten kom til å røre. Ett attributt å huske i
  * stedet for ni, og standardvalget er det som er riktig nesten alltid.
+ *
+ * Fredningen er dessuten morferens egen mekanisme: `data-preserve-attr` er et
+ * `data-*`-attributt, og et slikt attributt betyr bare noe for koden som leser
+ * det. Reparasjon leser markupen, og virker uansett hvem som morfer.
  */
 export const SERVER_CONTROLLED = "server-controlled" as const
 

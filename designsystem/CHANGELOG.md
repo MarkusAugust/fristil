@@ -23,6 +23,53 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **Folketelling over attributter bare morferen leser.** `fs.browser.test.ts`
+  kaller hver byggefunksjon og krever at `data-ignore-morph` kommer ut fra
+  nøyaktig `connectionStatus`, `sessionTimeout`, `suggestion` og `toast`, og at
+  `data-preserve-attr` ikke kommer ut fra noen. Vakten feller både et nytt
+  sted attributtet dukker opp og et sted det forsvinner fra, siden begge
+  endrer hva malen må skrive. Hjelperen i `morfing.browser.test.ts` hopper
+  over attributter som står i en fredningsliste, slik den ekte løkka gjør. Står
+  et navn der, fjerner løkka ingenting for nettopp det attributtet, og testen
+  etterprøver ingenting. Noen av fixturene bygges av byggefunksjonene, og der
+  feller folketellingen. Andre er skrevet for hånd, som en Go-mal ville gjort,
+  og der feller en ny påstand i hjelperen om at lista er tom.
+
+### Rettet
+
+- **`<fs-field>` leter ikke lenger etter `data-role` på hjelpetekst og
+  feilmelding.** Komponenten leste `[data-role='help']` og
+  `[data-role='error']` ved siden av klassene `fs-help-text` og
+  `fs-error-text`. Kroken sto bare i en `querySelector` i kilden, uten tester
+  og uten omtale noe sted, så ingen kunne bygge på den med vilje. `data-role`
+  er uprefikset og eies i praksis av andre, og en app som brukte det til noe
+  annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding, uten at
+  noe sa fra. Komponentsiden sier nå hva komponenten faktisk krever, og en test
+  holder fjerningen på plass.
+
+  Fjerningen er ingen brytende endring etter reglene øverst. Ingen
+  byggefunksjon skrev attributtet og ingen komponent satte det, så ingenting i
+  konsumentens markup endrer betydning: den virker som før, den blir bare ikke
+  koblet.
+
+- **Dokumentasjonen påsto mer enn den kunne vise.** «Holder markupen der,
+  holder den overalt» var en påstand om alle morfere, mens vi kjører løkka til
+  én. Kravet står nå slik det er: det en komponent har satt, skal overleve at
+  attributter blir fjernet fra et element som består. Og `data-preserve-attr`
+  og `data-ignore-morph` er beskrevet som morferens egne attributtnavn, siden
+  et `data-*`-attributt bare betyr noe for koden som leser det.
+
+- **«To komponenter eier sitt eget innhold» var tre.** `<fs-toast>` sto ikke i
+  lista i «Markup og oppførsel», og at `fs.suggestion()` setter
+  `data-ignore-morph` på statusområdet sto bare på komponentsiden, ikke der
+  regelen forklares.
+
+- **`overta` sa ingenting om tilgjengelighetsansvaret.** Siden om tilpasning
+  sier nå at en overtatt og endret komponent ikke dekkes av en
+  tilgjengelighetserklæring som viser til designsystemet.
+
 ## 0.20.0 (2026-09-28)
 
 ### Lagt til

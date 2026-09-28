@@ -1630,7 +1630,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <div class="boks">
     <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter på DOM som serveren eier.</strong></p>
   </div>
-  <p style="margin-block-start: 1rem;">Kravet er at hver komponent virker i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste av dem. Bygger vi for den, er de andre oppfylt.</p>
+  <p style="margin-block-start: 1rem;">Hver komponent skal virke i en app med server-rendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastars morfing er den strengeste, så det er den vi bygger etter. Kravet er likevel formulert uten navn: det komponenten har satt, skal overleve at attributter blir fjernet.</p>
 </section>
 
 <!-- 13 -->

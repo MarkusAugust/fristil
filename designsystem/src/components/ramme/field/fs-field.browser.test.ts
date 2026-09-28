@@ -12,6 +12,11 @@ import { defineFsField, type FsField } from "./fs-field"
 import "../../../tokens/tokens.css"
 import "./field.css"
 
+/** Attributtnavnene på et element, sortert. */
+function navnene(element: Element): string[] {
+  return [...element.attributes].map((a) => a.name).sort()
+}
+
 describe("fs-field", () => {
   beforeAll(() => {
     defineFsField()
@@ -482,6 +487,36 @@ describe("fs-field kobler markup som bare har struktur", () => {
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("data-state")).toBe("invalid")
     expect(feilmelding.hidden).toBe(false)
+  })
+
+  /*
+   * Komponenten leter etter hjelpetekst og feilmelding på systemets egne
+   * klasser, og bare der. Den leste en gang også `[data-role='help']` og
+   * `[data-role='error']`, en krok ingen dokumentasjon nevnte. `data-role` er
+   * uprefikset, og eies i praksis av andre: en app som bruker det til noe
+   * annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding,
+   * uten at noe sa fra.
+   */
+  it("adopterer ikke et avsnitt som bare har en rolle på seg", async () => {
+    monter(`
+      <fs-field invalid>
+        <label for="postnummer">Postnummer</label>
+        <input id="postnummer" class="fs-input">
+        <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
+      </fs-field>
+    `)
+
+    await ventPaTegning()
+
+    const input = document.querySelector("input") as HTMLInputElement
+    const avsnitt = document.querySelector(".egen-feil") as HTMLElement
+
+    // Ett positivt anker. Uten det ville testen bestått også om `sync()` ga
+    // opp før den kom så langt, og da påstår den bare at ingenting skjedde.
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
+    expect(navnene(avsnitt)).toEqual(["class", "data-role"])
+    expect(input.hasAttribute("aria-describedby")).toBe(false)
   })
 })
 

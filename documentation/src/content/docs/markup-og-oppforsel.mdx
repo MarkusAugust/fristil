@@ -141,7 +141,11 @@ const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 
 **Datastar.** Malen på serveren skriver de samme attributtene. Fordi de står i serverens utgave, finner morfingen ingenting å fjerne.
 
-Datastar er det strengeste av de tre. Holder markupen der, holder den overalt.
+Datastar er det strengeste av de tre, og det som skiller er at et attributt
+kan forsvinne mens siden lever: hver patch river bort det som ikke står i
+svaret fra serveren. Kravet er derfor stilt til fjerningen og ikke til
+Datastar: det en komponent har satt, skal overleve at attributter blir fjernet
+fra et element som består.
 
 ## Når komponenten må endre noe
 
@@ -277,6 +281,11 @@ Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene på
 hvert attributt komponenten kom til å røre. Ni strenger å holde i takt med en
 pakke som kunne endre seg, uten at noen kompilator så på dem.
 
+Fredningen har en svakhet til. `data-preserve-attr` er et `data-*`-attributt,
+og et slikt attributt betyr bare noe for koden som leser det. Fredning virker
+altså fordi morferen leser lista. Reparasjon virker fordi komponenten leser
+markupen, og det avhenger ikke av hvem som morfer.
+
 #### Når serveren skal eie tilstanden
 
 Fredningen ga én ting reparasjonen måtte erstatte: den som skrev markupen
@@ -350,13 +359,17 @@ Meldingen kommer én gang per element, ikke én gang per oppdatering, og bare n�
 
 ## Komponenter som eier sitt eget innhold
 
-To komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/introduksjon/#tre-kategorier):
+Tre komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/introduksjon/#tre-kategorier):
 
 [`<fs-session-timeout>`](/components/session-timeout/) teller ned mot at en innlogget økt går ut. Tallet kommer fra klientens klokke og endrer seg hvert sekund.
 
 [`<fs-connection-status>`](/components/connection-status/) sier fra når forbindelsen er borte. Serveren kan ikke melde det selv: er den utilgjengelig, kommer det ingenting derfra.
 
-Begge setter `data-ignore-morph`, som ber Datastar la innholdet være. Byggefunksjonene skriver det ut, så du trenger ikke huske det.
+[`<fs-toast>`](/components/toast/) viser meldinger appen lager mens siden står. Serveren har ingen utgave av dem å sende.
+
+Alle tre setter `data-ignore-morph`, som ber morfingen la innholdet stå. Det gjør også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut, så du trenger ikke huske det.
+
+Her holder ikke reparasjon. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 
 ## Det som ikke finnes
 

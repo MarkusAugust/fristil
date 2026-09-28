@@ -330,6 +330,8 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 
 Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
 
+Komponenten krever to klassenavn av deg: `fs-help-text` på hjelpeteksten og `fs-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet. Står ledeteksten utenfor, må du koble de to selv: gi kontrollen en `id` og ledeteksten en `for` som peker på den.
+
 ## Attributter
 
 | Attributt | Type | Hva det gjør |
