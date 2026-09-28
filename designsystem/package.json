@@ -313,7 +313,7 @@
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts",
     "bygg:css": "bun scripts/bygg-css.ts",
-    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:identifikatorer && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:identifikatorer && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
@@ -328,7 +328,8 @@
     "prepublishOnly": "bun run build",
     "sjekk:skriving": "bun scripts/sjekk-skriving.ts",
     "sjekk:identifikatorer": "bun scripts/sjekk-identifikatorer.ts",
-    "typecheck:scripts": "tsc --noEmit -p scripts/tsconfig.json"
+    "typecheck:scripts": "tsc --noEmit -p scripts/tsconfig.json",
+    "sjekk:ordbruk": "bun scripts/sjekk-ordbruk.ts"
   },
   "devDependencies": {
     "@types/node": "24.12.4",

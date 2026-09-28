@@ -2,7 +2,7 @@
  * Registrerer alle web-komponentene i ett kall.
  *
  * Hver komponent har sin egen `defineFs*`, og en app som bare bruker feltet
- * kan nøye seg med `defineFsField()` og slippe resten ut av bunten. Men de
+ * kan nøye seg med `defineFsField()` og holde resten utenfor bundelen. Men de
  * fleste appene bruker flere, og spilldemoen sto med sju kall i en
  * `useEffect`, altså etter første tegning. Da er elementene i markupen
  * vanlige `HTMLElement` i det React tegner dem, og det første kallet på

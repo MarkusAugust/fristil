@@ -84,7 +84,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     defineFs()
     ```
 
-    Kallet står øverst i modulen, ikke i en `useEffect`. En effekt kjører etter første tegning, så elementene i markupen er vanlige `HTMLElement` i det React tegner dem, og et kall på `show()` eller `reportFailure()` før effekten feiler med «is not a function». Funksjonen gjør ingenting på en server, så den kan stå i en rotmodul som kjøres begge steder, som i TanStack Start. Bruker du én komponent, kall dens egen `defineFsField()` og slipp resten ut av bunten.
+    Kallet står øverst i modulen, ikke i en `useEffect`. En effekt kjører etter første tegning, så elementene i markupen er vanlige `HTMLElement` i det React tegner dem, og et kall på `show()` eller `reportFailure()` før effekten feiler med «is not a function». Funksjonen gjør ingenting på en server, så den kan stå i en rotmodul som kjøres begge steder, som i TanStack Start. Bruker du én komponent, kall dens egen `defineFsField()` og hold resten utenfor bundelen.
 
     Bruker du CSS-komponentene, importer `fs` fra React-inngangen:
 

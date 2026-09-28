@@ -13,12 +13,12 @@
  *   - hver `defineFsX` er noe den modulen faktisk eksporterer;
  *   - hver `fs.x()` er en byggefunksjon som finnes;
  *   - hver `fs-`-klasse står i et stilark pakken sender ut;
- *   - et pakkenavn står bare i faner som har en bunter, og en URL bare i dem
+ *   - et pakkenavn står bare i faner som har bundles, og en URL bare i dem
  *     som ikke har det.
  *
  * Den siste er ikke pedanteri. `import … from "@fristil/designsystem/dialog"`
  * i et `<script type="module">` slår ikke opp i en nettleser: uten importmap
- * eller bunter finnes ikke pakkenavnet. Sporene «Ren HTML» og «Datastar» er
+ * eller bundles finnes ikke pakkenavnet. Sporene «Ren HTML» og «Datastar» er
  * definert ved å ikke ha noe byggesteg, så der må adressen være en URL.
  */
 
@@ -243,12 +243,12 @@ for (const mål of Object.values(
       if (typeof v === "string") FILER.add(v.slice(2))
 }
 
-const MED_BUNTER = new Set(["React", "Astro", "TypeScript"])
+const MED_BUNDLES = new Set(["React", "Astro", "TypeScript"])
 
 /**
  * Fanenavnene dokumentasjonen bruker, og bare disse.
  *
- * Hver regel velges på et navn som streng: `MED_BUNTER`, kravet om URL
+ * Hver regel velges på et navn som streng: `MED_BUNDLES`, kravet om URL
  * framfor pakkenavn, registreringen og `fs`-importen. Skrev noen
  * `label="Ren html"`, ble to av dem slått av uten at noe sa fra. Et
  * ordforråd som håndheves gjør klassifiseringen etterprøvbar framfor å være
@@ -402,7 +402,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
    * Sjekken leste bare `<TabItem>` og `<Eksempel>`, så en kodeblokk som sto
    * utenfor begge gikk fri. Toast-siden hadde en slik: den gjentok
    * «Ren HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
-   * uten bunter og uten `data-ignore-morph`, tre avsnitt etter at siden
+   * uten bundles og uten `data-ignore-morph`, tre avsnitt etter at siden
    * skriver at attributtet ikke er valgfritt.
    *
    * Fanenavnet er «resten», ikke et miljø, så regelen om pakkenavn mot URL
@@ -513,7 +513,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * skriver `class="fs-input"` for hånd i React eller Astro lærer leseren
      * ingenting om `fs`. Fire faner hadde drevet dit uten at noe sa fra.
      *
-     * Regelen gjelder bare der det finnes en bunter. I «Ren HTML» og
+     * Regelen gjelder bare der det finnes bundles. I «Ren HTML» og
      * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
      * ingen funksjon å kalle.
      */
@@ -525,7 +525,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
      * og en regel som feller den ville gjort fanens eget poeng ulovlig.
      * `className` finnes bare i JSX, altså der byggefunksjonen skal kalles.
      */
-    if (MED_BUNTER.has(fane.navn)) {
+    if (MED_BUNDLES.has(fane.navn)) {
       // Astro skriver `class`, React `className`. TypeScript-fanen viser
       // med vilje serverskrevet markup, og der er `class` riktig.
       const attributt =
@@ -537,7 +537,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
           if (FRA_BYGGER.has(k))
             si(
               side,
-              `${hvor} skriver class="${k}" for hånd, men fs.${FRA_BYGGER.get(k)} finnes. Der det er en bunter, bruk den.`,
+              `${hvor} skriver class="${k}" for hånd, men fs.${FRA_BYGGER.get(k)} finnes. Der det er bundles, bruk den.`,
             )
     }
 
@@ -730,14 +730,14 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     )
     const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)
     if (
-      !MED_BUNTER.has(fane.navn) &&
+      !MED_BUNDLES.has(fane.navn) &&
       fane.navn !== "resten" &&
       fane.navn !== "Prøv den"
     ) {
       if (pakkenavnIImport && !urlIImport)
         si(
           side,
-          `${hvor} importerer et pakkenavn i et miljø uten bunter. En nettleser kan ikke slå det opp, så koden virker ikke limt inn. Bruk hele URL-en.`,
+          `${hvor} importerer et pakkenavn i et miljø uten bundles. En nettleser kan ikke slå det opp, så koden virker ikke limt inn. Bruk hele URL-en.`,
         )
     }
   }

@@ -132,12 +132,12 @@ egen overskrift «Brytende».
   element ingen registrerer gir en advarsel i konsollen etter tre sekunder.
   `whenUpgraded(element)` i `/host-element` er hjelperen bak dem.
 - **`@fristil/designsystem/fristil.css`: alle stilarkene i én fil.** For den
-  som lenker fra CDN eller `node_modules` uten bunter. De enkelte stilarkene
+  som lenker fra CDN eller `node_modules` uten bundles. De enkelte stilarkene
   henter delene sine med `@import`, som nettleseren først ser når fila er
   lastet, og på mobilnett sto feltene uten ramme til den andre runden kom;
   spilldemoen forhåndslastet fem filer for hånd for å komme rundt det. Fila
   bygges av CSS-oppføringene i `exports`, med `tokens.css` først, uten
-  `@import` og uten kommentarer. Buntere bruker de enkelte stilarkene som
+  `@import` og uten kommentarer. Bundles bruker de enkelte stilarkene som
   før. Tailwind-temaet er ikke med, siden det ikke er et stilark for en side.
 - **Dialogen kan ha en farget topp.** `fs.dialog({ color })` gir `data-color`
   på dialogen og en ny `header`-del som pakker overskriften, med en valgfri
@@ -1350,7 +1350,7 @@ egen overskrift «Brytende».
 
 - `lit` er en vanlig avhengighet, ikke en valgfri `peerDependency`. Du trenger
   bare `npm install @fristil/designsystem`, og ikke lenger vite at Lit finnes.
-  Bunten din er upåvirket: ingenting registreres ved import alene, så Lit
+  Bundelen din er upåvirket: ingenting registreres ved import alene, så Lit
   kommer først med når du kaller en `defineFs*`.
 
 ## 0.3.0 (2026-09-21)
@@ -1388,7 +1388,7 @@ egen overskrift «Brytende».
   kan komme ut uten `dist`.
 
 - `bun run sjekk:pakke` kjører [publint](https://publint.dev) mot pakken, som
-  en del av bygget. Den leser `exports` slik nettlesere, buntere og TypeScript
+  en del av bygget. Den leser `exports` slik nettlesere, bundles og TypeScript
   faktisk gjør det.
 
 ### Rettet
