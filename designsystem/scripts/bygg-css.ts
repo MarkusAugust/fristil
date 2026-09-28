@@ -2,13 +2,13 @@
  * Bygger `dist/fristil.css`: alle stilarkene i én fil, uten `@import`.
  *
  * De enkelte stilarkene henter delene sine med `@import`, og en nettleser
- * uten bundles må først laste og lese den ytre fila før den vet at de finnes.
+ * uten byggesteg må først laste og lese den ytre fila før den vet at de finnes.
  * På et mobilnett er det en synlig forsinkelse, og den rammet nettopp
  * feltene: kommunefeltet i spilldemoen sto uten ramme og bakgrunn til den
  * andre runden kom. Demoen forhåndslastet fem filer for hånd for å komme
  * rundt det, og en liste hver konsument må vedlikeholde er ikke en løsning.
  *
- * Her flates alt ut til én fil som lenkes alene. Bundles bruker de enkelte
+ * Her flates alt ut til én fil som lenkes alene. Et byggesteg bruker de
  * stilarkene som før, og laster bare det de trenger; denne er for dem som
  * lenker fra CDN eller `node_modules` og heller vil ha én rundtur enn et
  * utvalg.
@@ -97,7 +97,7 @@ for (const { fil } of oppføringer) ta(fil, null)
 
 const hode = [
   `/* @fristil/designsystem ${versjon}. Alle stilarkene i én fil, uten @import,`,
-  " * for den som lenker fra CDN eller node_modules. Bundles bruker de enkelte",
+  " * for den som lenker fra CDN eller node_modules. Et byggesteg bruker",
   " * stilarkene. Generert av scripts/bygg-css.ts; rediger kildene, ikke denne. */",
   "",
 ].join("\n")

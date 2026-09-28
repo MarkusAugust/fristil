@@ -2,7 +2,7 @@
  * At ingen markup for nettleseren importerer et pakkenavn.
  *
  * `import … from "@fristil/designsystem/field"` i en `<script type="module">`
- * slår ikke opp i en nettleser: uten bundles eller importmap finnes ikke
+ * slår ikke opp i en nettleser: uten byggesteg eller importmap finnes ikke
  * pakkenavnet, og importen feiler stille. Koden ser riktig ut, og virker ikke
  * limt inn.
  *

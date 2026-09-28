@@ -210,7 +210,7 @@ Sprer du hele `varsler`, setter du tre attributter som heter `host`, `toast` og 
 
 De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
 
-Har du ingen bundles, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Ren HTML» og «Datastar» gjør:
+Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Ren HTML» og «Datastar» gjør:
 
 ```html
 <fs-toast id="meldinger" role="status" aria-live="polite"
