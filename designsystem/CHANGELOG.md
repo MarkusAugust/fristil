@@ -23,6 +23,30 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.19.0 (2026-09-28)
+
+### Lagt til
+
+- **`maxChroma` i temageneratoren, og `--maks-metning` på kommandolinja.**
+  Taket på metningen i de kulørte skalaene har stått fast på 0,16 i OKLCH. De
+  fleste merkefarger ligger under det, men neon gjør ikke: `#39ff14` ligger på
+  0,286 og mistet 44 prosent mot taket, `#ff2d6f` på 0,240 og mistet 33. Taket
+  kan nå settes, i `buildTheme({ maxChroma })`, med `--maks-metning` på
+  kommandolinja, eller som `maksMetning` i en oppskriftsfil. Standarden er den
+  samme som før, så et tema som ikke oppgir noe kommer ut likt.
+
+  Kontrastkravet berøres ikke. Taket styrer metning, mens kontrasten kommer av
+  de faste lyshetene i skalaen og av passet som måler hvert par etterpå og
+  flytter lysheten. Mer metning gir flere slike justeringer, ikke en svakere
+  garanti, og et merke med hevet tak kjøres nå gjennom hele listen av par i
+  `theme.browser.test.ts`. Den nøytrale skalaen har sitt eget, mye lavere tak,
+  og er uendret.
+
+  `buildTheme` avviser et tak utenfor 0,01 til 0,33. Et negativt tak speilet
+  fargen og gjorde knallgrønt til magenta, `NaN` ga en feilmelding om en
+  heksadesimal farge som aldri var oppgitt, og 0 ga et helt grått tema, alle
+  tre i stillhet.
+
 ## 0.18.0 (2026-09-27)
 
 ### Lagt til

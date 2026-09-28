@@ -180,14 +180,63 @@ export const NEUTRAL_STEPS = {
 } as const
 
 /**
+ * Taket på metningen i en generert skala, målt i OKLCH.
+ *
+ * Merkefarger ligger sjelden over dette, og de som gjør det er som regel
+ * neon: `#39ff14` ligger på 0,286 og mister 44 prosent mot taket, `#ff2d6f`
+ * på 0,240 og mister 33. Mesteparten av paletten er upåvirket: `#1362ae`,
+ * `#2b6940` og `#8a5a00` ligger alle under.
+ *
+ * Det høyeste sRGB i det hele tatt kan vise er 0,3225, som er magenta.
+ */
+export const MAX_CHROMA = 0.16
+
+/**
+ * Grensene et metningstak må ligge innenfor.
+ *
+ * Det øvre er det høyeste sRGB kan vise, målt over hele rommet: 0,3225, som er
+ * magenta. Over det skjer ingenting, siden fargen klemmes inn i området
+ * uansett, og et tall som 16 er nesten alltid 0,16 uten komma.
+ *
+ * Det nedre er der et tema slutter å ha farger. 0,001 gir en helt grå palett
+ * av knallgrønne merkefarger, uten at noe sier fra, og det er aldri det noen
+ * ba om.
+ */
+export const CHROMA_FLOOR = 0.01
+export const CHROMA_CEILING = 0.33
+
+/**
  * Bygger en skala fra én farge.
  *
  * Kuløren beholdes, mens lysheten settes av trinnet. Metningen tas fra fargen
  * som ble oppgitt, og dempes i endene.
+ *
+ * `maxChroma` hever eller senker taket. Kontrastgarantien berøres ikke av det:
+ * kontrasten kommer av `SCALE_STEPS` og av passet i `theme.ts` som måler hvert
+ * par etterpå og flytter lysheten til det holder. Mer metning gir flere slike
+ * justeringer, ikke en svakere garanti.
+ *
+ * Et hevet tak slår ikke inn like sterkt over hele skalaen. Målt på `#39ff14`
+ * med taket hevet fra 0,16 til 0,32:
+ *
+ * | Trinn | 5 | 10 | 30 | 50 | 70 | 100 |
+ * | --- | --- | --- | --- | --- | --- | --- |
+ * | Før | 0,015 | 0,039 | 0,099 | 0,170 | 0,160 | 0,126 |
+ * | Etter | 0,026 | 0,068 | 0,177 | 0,239 | 0,184 | 0,127 |
+ *
+ * Endene rører seg lite, av to ulike grunner. De lyse trinnene holdes nede av
+ * `CHROMA_FACTOR`, som står på 0,09 og 0,24 der, og det er med vilje: lyse
+ * trinn ser skitne ut med mye metning. Det mørkeste trinnet holdes nede av
+ * sRGB, som ikke kan vise så mye metning ved den lysheten, og klemmes inn i
+ * området uansett hva taket sier. Det er trinn 30 til 70 som endrer seg, og
+ * det er der knapper og tekst bor.
  */
-export function buildScale(hex: string): Record<number, string> {
+export function buildScale(
+  hex: string,
+  maxChroma: number = MAX_CHROMA,
+): Record<number, string> {
   const { c, h } = rgbToOklch(parseHex(hex))
-  const referanse = Math.min(c, 0.16)
+  const referanse = Math.min(c, maxChroma)
 
   const skala: Record<number, string> = {}
   for (const [trinn, lyshet] of Object.entries(SCALE_STEPS)) {
