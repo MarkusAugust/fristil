@@ -73,7 +73,7 @@ const harTypeScript = Astro.slots.has("ts")
  * «Ren HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
  * stå `import "@fristil/designsystem/tokens.css"`: en nettleser slår ikke
  * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
- * hører i TypeScript-fanen, der det finnes en bunter.
+ * hører i TypeScript-fanen, der det finnes et byggesteg.
  */
 const lenker = importer
   ?.map(
