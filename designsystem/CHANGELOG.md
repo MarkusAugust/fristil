@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.19.0 (2026-09-28)
+
 ### Lagt til
 
 - **`maxChroma` i temageneratoren, og `--maks-metning` på kommandolinja.**
