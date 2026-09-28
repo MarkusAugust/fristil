@@ -44,11 +44,11 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
     </head>
     ```
 
-    Uten bunter henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Serverer du filene fra en CDN som støtter npm-pakker, bruker du stien `@fristil/designsystem/tokens.css` direkte.
+    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Serverer du filene fra en CDN som støtter npm-pakker, bruker du stien `@fristil/designsystem/tokens.css` direkte.
   </TabItem>
 </Tabs>
 
-Med bunter importerer du bare stilarkene du bruker, så en side med bare knapper laster ikke CSS for en dialog. Uten bunter er `fristil.css` det enkleste: én fil, rundt 75 kB, under 10 kB komprimert.
+Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper laster ikke CSS for en dialog. Uten er `fristil.css` det enkleste: én fil, rundt 75 kB, under 10 kB komprimert.
 
 ## Første komponent
 
@@ -93,7 +93,7 @@ Uten byggverktøy peker du på den bygde fila:
 </script>
 ```
 
-Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et kall på `show()` eller `reportFailure()` i det gapet feiler. Registreringen drar koden til alle ni inn i bunten. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
+Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et kall på `show()` eller `reportFailure()` i det gapet feiler. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
 
 Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
 
