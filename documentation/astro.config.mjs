@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
+import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
 
 // https://astro.build/config
 export default defineConfig({
@@ -14,7 +15,7 @@ export default defineConfig({
    * skilletegn. Blir stående til MDX leser prosessoren.
    */
   markdown: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkVersjon],
     rehypePlugins: [rehypeTabellrull],
   },
   vite: {
