@@ -32,7 +32,9 @@ En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, 
 <fs-toast id="meldinger" label="Meldinger"></fs-toast>
 
 <script type="module">
-  import { defineFsToast } from "@fristil/designsystem/toast"
+  import { defineFsToast } from
+    "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/frittstaende/toast/fs-toast.js"
+
   defineFsToast()
 
   const dialog = document.getElementById("bekreft")

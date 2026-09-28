@@ -23,6 +23,22 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **To kodeeksempler i dokumentasjonen importerte et pakkenavn i nettleseren.**
+  Datastar-sporet på [Rammeverk](https://fristil.netlify.app/rammeverk/) og
+  dialogen på
+  [Bekreft en handling](https://fristil.netlify.app/monster/bekreftelse/) hadde
+  `import … from "@fristil/designsystem/field"` i en `<script type="module">`.
+  Ingen av sidene har et byggesteg, og en nettleser slår ikke opp et pakkenavn
+  uten bundles eller importmap, så koden feilet stille for den som limte den
+  inn. Begge bruker nå hele URL-en.
+
+  Regelen fantes i `sjekk-oppskrifter.ts`, men den leser bare komponentsidene
+  og velger regel ut fra navnet på fanen, så de to sto med feilen i flere
+  runder. `sjekk-nettleserimport.ts` dekker nå alle sidene uavhengig av fane:
+  en `html`-blokk er markup for nettleseren uansett hvor den står.
+
 ## 0.19.0 (2026-09-28)
 
 ### Lagt til
