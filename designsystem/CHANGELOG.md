@@ -31,11 +31,11 @@ egen overskrift «Brytende».
   `data-preserve-attr` ikke kommer ut fra noen. Vakten feller både et nytt
   sted attributtet dukker opp og et sted det forsvinner fra, siden begge
   endrer hva malen må skrive. Hjelperen i `morfing.browser.test.ts` hopper
-  over attributter som står i en fredningsliste, slik den ekte løkka gjør, og
-  fixturene der bygges av byggefunksjonene. En bygger som begynte å sende ut
-  `data-preserve-attr` ville gjort fjerningsløkka til et null-steg for nettopp
-  de attributtene testene handler om. Hjelperen påstår nå i tillegg at lista er
-  tom, så det samme kan ikke skrives for hånd i en fixture.
+  over attributter som står i en fredningsliste, slik den ekte løkka gjør. Står
+  et navn der, fjerner løkka ingenting for nettopp det attributtet, og testen
+  etterprøver ingenting. Noen av fixturene bygges av byggefunksjonene, og der
+  feller folketellingen. Andre er skrevet for hånd, som en Go-mal ville gjort,
+  og der feller en ny påstand i hjelperen om at lista er tom.
 
 ### Rettet
 
@@ -47,8 +47,19 @@ egen overskrift «Brytende».
   er uprefikset og eies i praksis av andre, og en app som brukte det til noe
   annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding, uten at
   noe sa fra. Komponentsiden sier nå hva komponenten faktisk krever, og en test
-  holder fjerningen på plass. Skal en slik krok tilbake, skal den hete
-  `data-fs-*`.
+  holder fjerningen på plass.
+
+  Skillet som gjelder, og som ikke sto skrevet noe sted: et attributt en
+  byggefunksjon **skriver** står i markup vi selv leverer, og `data-variant`,
+  `data-state` og de elleve andre er derfor greie uten prefiks. Et attributt en
+  komponent **leter etter** i markup konsumenten alt eier, må være prefikset,
+  for der er navnet vårt bare ett av flere som kan stå der. Skal en slik krok
+  tilbake, skal den hete `data-fs-*`.
+
+  Fjerningen er ingen brytende endring etter reglene øverst. Ingen
+  byggefunksjon skrev attributtet og ingen komponent satte det, så ingenting i
+  konsumentens markup endrer betydning: den virker som før, den blir bare ikke
+  koblet.
 
 - **Dokumentasjonen påsto mer enn den kunne vise.** «Holder markupen der,
   holder den overalt» var en påstand om alle morfere, mens vi kjører løkka til

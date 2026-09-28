@@ -510,6 +510,10 @@ describe("fs-field kobler markup som bare har struktur", () => {
     const input = document.querySelector("input") as HTMLInputElement
     const avsnitt = document.querySelector(".egen-feil") as HTMLElement
 
+    // Ett positivt anker. Uten det ville testen bestått også om `sync()` ga
+    // opp før den kom så langt, og da påstår den bare at ingenting skjedde.
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+
     expect(navnene(avsnitt)).toEqual(["class", "data-role"])
     expect(input.hasAttribute("aria-describedby")).toBe(false)
   })

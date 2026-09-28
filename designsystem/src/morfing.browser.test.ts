@@ -37,13 +37,13 @@ defineFsDialog()
 /** Datastars attributtsynkronisering, på ett element. */
 function morfElement(live: Element, server: Element): void {
   // Fredningslista er med for at hjelperen skal være den samme løkka vi
-  // siterer, og påstanden under holder den tom. En fredet fixture ville gjort
-  // fjerningsløkka til et null-steg for nettopp de attributtene testen
-  // handler om, og da etterprøvde filen ingenting. Fixturene bygges av
-  // `dialog()`, `popover()`, `suggestion()` og `tabs()`, så folketellingen i
-  // `fs.browser.test.ts` dekker den ene halvdelen: at ingen byggefunksjon
-  // begynner å sende den ut. Denne linja dekker den andre: at ingen skriver
-  // den for hånd her.
+  // siterer, og påstanden under holder den tom. Står et navn der, fjerner
+  // løkka ingenting for nettopp det attributtet, og testen etterprøver
+  // ingenting. Fixturene kommer to veier, og hver vei har sin vakt: noen
+  // bygges av `dialog()`, `popover()`, `suggestion()` og `tabs()`, og der
+  // feller folketellingen i `fs.browser.test.ts` en byggefunksjon som begynner
+  // å sende ut lista. Andre er skrevet for hånd, som en Go-mal ville gjort, og
+  // der er det denne linja som feller den.
   const bevar = (server.getAttribute("data-preserve-attr") ?? "")
     .split(/\s+/)
     .filter(Boolean)

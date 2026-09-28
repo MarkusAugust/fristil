@@ -141,11 +141,11 @@ const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
 
 **Datastar.** Malen på serveren skriver de samme attributtene. Fordi de står i serverens utgave, finner morfingen ingenting å fjerne.
 
-Datastar er det strengeste av de tre: en patch fjerner hvert attributt som
-ikke står i det serveren sendte, også dem malen aldri har sett. Kravet
-komponentene bygges etter er derfor skrevet som en invariant framfor som en
-etterlikning av den løkka: det en komponent har satt, skal overleve at
-attributter blir fjernet fra et element som står.
+Datastar er det strengeste av de tre, og det som skiller er at et attributt
+kan forsvinne mens siden lever: hver patch river bort det som ikke står i
+svaret fra serveren. Kravet er derfor stilt til fjerningen og ikke til
+Datastar: det en komponent har satt, skal overleve at attributter blir fjernet
+fra et element som består.
 
 ## Når komponenten må endre noe
 
@@ -369,7 +369,7 @@ Tre komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/in
 
 Alle tre setter `data-ignore-morph`, som ber morfingen la innholdet stå. Det gjør også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut, så du trenger ikke huske det.
 
-Her holder reparasjon ikke. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
+Her holder ikke reparasjon. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 
 ## Det som ikke finnes
 

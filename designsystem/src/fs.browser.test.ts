@@ -272,6 +272,30 @@ describe("fs.field sammen med feltfunksjonene", () => {
   })
 })
 
+/**
+ * Hvor mange byggefunksjoner `fs` har, utenom `setAttributes`, `isState` og
+ * `isMarker`.
+ *
+ * Tallet står skrevet her framfor å bli lest ut av lista det skal kontrollere.
+ * Ellers sammenligner vakten køen med seg selv, og halve settet kan forsvinne
+ * uten at noe sier fra. Legg til en byggefunksjon, og tallet skal opp i samme
+ * endring. Merk at summen alene ikke fanger et bytte: legger du til en bygger
+ * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
+ * ikke i det hele tatt.
+ */
+const ANTALL_BYGGERE = 43
+
+/** De sju som gir attributter per del framfor ett flatt sett. */
+const SAMMENSATTE_NAVN = [
+  "dialog",
+  "errorSummary",
+  "field",
+  "popover",
+  "suggestion",
+  "tabs",
+  "toast",
+]
+
 describe("formen på navnerommet", () => {
   /** Byggefunksjonene, altså alt i `fs` som kan kalles uten argumenter. */
   const byggere = Object.entries(fs).filter(
@@ -282,19 +306,11 @@ describe("formen på navnerommet", () => {
       navn !== "isMarker" &&
       // De sammensatte byggerne gir ett attributtsett per element i stedet
       // for ett flatt sett, og krever en id for å kunne koble dem sammen.
-      ![
-        "dialog",
-        "field",
-        "errorSummary",
-        "popover",
-        "tabs",
-        "suggestion",
-        "toast",
-      ].includes(navn),
+      !SAMMENSATTE_NAVN.includes(navn),
   ) as [string, () => Record<string, unknown>][]
 
   it("har byggere å kontrollere", () => {
-    expect(byggere.length).toBeGreaterThan(20)
+    expect(byggere.length).toBe(ANTALL_BYGGERE - SAMMENSATTE_NAVN.length)
   })
 
   it.each(
@@ -342,25 +358,22 @@ describe("attributter bare morferen leser", () => {
   const HJELPERE = ["setAttributes", "isState", "isMarker"]
 
   /**
-   * Hvor mange byggefunksjoner `fs` har.
-   *
-   * Tallet står skrevet her framfor å bli lest ut av `byggere.length`. Ellers
-   * ville vakten sammenlignet køen med seg selv, og halve settet kunne
-   * forsvinne uten at noe sa fra. Legg til en byggefunksjon, og tallet skal
-   * opp i samme endring.
+   * Ett gyldig kall per bygger som gir attributter per del framfor ett flatt
+   * sett. De fleste av dem krever argumenter. `toast` gjør ikke det, og står
+   * her for at lista skal være hele settet.
    */
-  const ANTALL_BYGGERE = 43
-
-  /** De sammensatte byggerne krever argumenter. Ett gyldig kall hver. */
-  const SAMMENSATTE: Record<string, () => unknown> = {
-    dialog: () => fs.dialog({ titleId: "tittel" }),
-    errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
-    field: () => fs.field({ id: "epost", help: true, error: true }),
-    popover: () => fs.popover({ id: "panel" }),
-    suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
-    tabs: () => fs.tabs({ id: "faner", count: 2 }),
-    toast: () => fs.toast(),
-  }
+  const SAMMENSATTE: Record<string, () => unknown> = Object.assign(
+    Object.create(null),
+    {
+      dialog: () => fs.dialog({ titleId: "tittel" }),
+      errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
+      field: () => fs.field({ id: "epost", help: true, error: true }),
+      popover: () => fs.popover({ id: "panel" }),
+      suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
+      tabs: () => fs.tabs({ id: "faner", count: 2 }),
+      toast: () => fs.toast(),
+    },
+  )
 
   const byggere = Object.entries(fs).filter(
     ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
@@ -390,8 +403,11 @@ describe("attributter bare morferen leser", () => {
     // `fs`, som `isColor`, ville blitt kalt som en bygger og gitt `false`,
     // altså ingen attributter å telle.
     expect(byggere.length).toBe(ANTALL_BYGGERE)
+    expect(Object.keys(SAMMENSATTE).sort()).toEqual(
+      [...SAMMENSATTE_NAVN].sort(),
+    )
 
-    for (const navn of Object.keys(SAMMENSATTE)) {
+    for (const navn of SAMMENSATTE_NAVN) {
       expect(
         byggere.map(([n]) => n),
         `fs.${navn} finnes ikke`,
@@ -399,9 +415,14 @@ describe("attributter bare morferen leser", () => {
     }
 
     for (const bygger of byggere) {
-      expect(typeof kall(bygger), `fs.${bygger[0]}() ga ikke attributter`).toBe(
-        "object",
-      )
+      // At svaret er et objekt er for lite: `typeof null` er også «object»,
+      // og et tomt objekt ville passert. Påstanden må være at traverseringen
+      // finner noe, for det er den folketellingen under hviler på: «ingen
+      // morferattributter» skal betyde at de ikke er der, ikke at ingen så.
+      expect(
+        attributtnavn(kall(bygger)).length,
+        `fs.${bygger[0]}() ga ingen attributter`,
+      ).toBeGreaterThan(0)
     }
   })
 
