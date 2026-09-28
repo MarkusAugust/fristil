@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.21.0 (2026-09-28)
+
 ### Lagt til
 
 - **Folketelling over attributter bare morferen leser.** `fs.browser.test.ts`
