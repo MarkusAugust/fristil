@@ -5,7 +5,8 @@
     "moduleResolution": "bundler",
     "strict": true,
     "types": ["bun"],
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["./**/*", "../src/**/*"]
 }

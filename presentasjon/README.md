@@ -70,5 +70,10 @@ full skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
 Testet i Chromium på 1440×900, 1280×800, 820 og 375 piksler bredt: ingen av de
-trettien lysbildene kan dras sidelengs, og på 1440 får alle plass uten å
-rulle. På 1280 ruller avhengighetsgrafen 73 piksler, resten får plass.
+trettien lysbildene kan dras sidelengs, og ingen av dem ruller. Tallet sto
+lenge på at avhengighetsgrafen rullet 73 piksler på 1280; den fikk plass igjen
+da mellomrommene i lysbildet ble strammet, og målingen her er gjort på nytt.
+
+Grafen er det strammeste lysbildet, og tåler ikke en linje til. En egen blokk
+med datoen for målingen fikk det til å rulle 15 piksler på 1280, og datoen ble
+derfor stående inne i avsnittet under grafen framfor over den.
