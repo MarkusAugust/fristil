@@ -56,39 +56,39 @@ Standardvarianten har ingen attributt.
 
 | Klasse | Stilark | Attributter |
 | --- | --- | --- |
-| `fs-accordion`<br>`fs-accordion__content` | `accordion.css` | `data-variant`: plain |
-| `fs-alert`<br>`fs-alert__title` | `alert.css` | `data-color`: info, success, warning, danger |
-| `fs-avatar`<br>`fs-avatar-stack` | `avatar.css` | `data-variant`: square<br>`data-size`: small, large |
-| `fs-badge` | `badge.css` | `data-color`: success, warning, danger, neutral |
-| `fs-breadcrumbs` | `breadcrumbs.css` | ingen |
-| `fs-button` | `button.css` | `data-variant`: secondary, ghost, danger |
-| `fs-card`<br>`fs-card__title` | `card.css` | `data-variant`: filled |
-| `fs-checkbox`<br>`fs-checkbox-row` | `checkbox.css` | `data-state`: invalid, success |
-| `fs-divider` | `divider.css` | `data-variant`: subtle, strong |
-| `fs-error-text` | `error-text.css` | `data-variant`: warning |
-| `fs-fieldset`<br>`fs-legend` | `fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text |
-| `fs-file-upload`<br>`fs-file-upload-list` | `file-upload.css` | `data-state`: invalid, success |
-| `fs-heading` | `heading.css` | `data-size`: xs, s, m, xl, mega |
-| `fs-help-text` | `help-text.css` | `data-variant`: default, success, warning |
-| `fs-input` | `input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
-| `fs-label` | `label.css` | `data-required`: symbol, text |
-| `fs-link` | `link.css` | ingen |
-| `fs-list` | `list.css` | `data-variant`: plain, divided |
-| `fs-pagination`<br>`fs-pagination__gap` | `pagination.css` | ingen |
-| `fs-paragraph` | `paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
-| `fs-radio`<br>`fs-radio-row` | `radio.css` | `data-state`: invalid, success |
-| `fs-search`<br>`fs-search-row` | `search.css` | `data-state`: invalid, success |
-| `fs-select` | `select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
-| `fs-skeleton` | `skeleton.css` | `data-variant`: text, circle |
-| `fs-skip-link` | `skip-link.css` | ingen |
-| `fs-spinner` | `spinner.css` | `data-size`: small, large |
-| `fs-sr-only` | `sr-only.css` | ingen |
-| `fs-switch`<br>`fs-switch-row` | `switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `table.css` | `data-variant`: striped |
-| `fs-tag` | `tag.css` | `data-variant`: filled |
-| `fs-textarea` | `textarea.css` | `data-state`: invalid, success |
-| `fs-toggle-group`<br>`fs-toggle-group__option` | `toggle-group.css` | ingen |
-| `fs-tooltip`<br>`fs-tooltip__bubble` | `tooltip.css` | ingen |
+| `fs-accordion`<br>`fs-accordion__content` | `@fristil/designsystem/accordion.css` | `data-variant`: plain |
+| `fs-alert`<br>`fs-alert__title` | `@fristil/designsystem/alert.css` | `data-color`: info, success, warning, danger |
+| `fs-avatar`<br>`fs-avatar-stack` | `@fristil/designsystem/avatar.css` | `data-variant`: square<br>`data-size`: small, large |
+| `fs-badge` | `@fristil/designsystem/badge.css` | `data-color`: success, warning, danger, neutral |
+| `fs-breadcrumbs` | `@fristil/designsystem/breadcrumbs.css` | ingen |
+| `fs-button` | `@fristil/designsystem/button.css` | `data-variant`: secondary, ghost, danger |
+| `fs-card`<br>`fs-card__title` | `@fristil/designsystem/card.css` | `data-variant`: filled |
+| `fs-checkbox`<br>`fs-checkbox-row` | `@fristil/designsystem/checkbox.css` | `data-state`: invalid, success |
+| `fs-divider` | `@fristil/designsystem/divider.css` | `data-variant`: subtle, strong |
+| `fs-error-text` | `@fristil/designsystem/error-text.css` | `data-variant`: warning |
+| `fs-fieldset`<br>`fs-legend` | `@fristil/designsystem/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text |
+| `fs-file-upload`<br>`fs-file-upload-list` | `@fristil/designsystem/file-upload.css` | `data-state`: invalid, success |
+| `fs-heading` | `@fristil/designsystem/heading.css` | `data-size`: xs, s, m, xl, mega |
+| `fs-help-text` | `@fristil/designsystem/help-text.css` | `data-variant`: default, success, warning |
+| `fs-input` | `@fristil/designsystem/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
+| `fs-label` | `@fristil/designsystem/label.css` | `data-required`: symbol, text |
+| `fs-link` | `@fristil/designsystem/link.css` | ingen |
+| `fs-list` | `@fristil/designsystem/list.css` | `data-variant`: plain, divided |
+| `fs-pagination`<br>`fs-pagination__gap` | `@fristil/designsystem/pagination.css` | ingen |
+| `fs-paragraph` | `@fristil/designsystem/paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
+| `fs-radio`<br>`fs-radio-row` | `@fristil/designsystem/radio.css` | `data-state`: invalid, success |
+| `fs-search`<br>`fs-search-row` | `@fristil/designsystem/search.css` | `data-state`: invalid, success |
+| `fs-select` | `@fristil/designsystem/select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
+| `fs-skeleton` | `@fristil/designsystem/skeleton.css` | `data-variant`: text, circle |
+| `fs-skip-link` | `@fristil/designsystem/skip-link.css` | ingen |
+| `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
+| `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
+| `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
+| `fs-table`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
+| `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled |
+| `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
+| `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
+| `fs-tooltip`<br>`fs-tooltip__bubble` | `@fristil/designsystem/tooltip.css` | ingen |
 
 ## 3. Tokens
 
@@ -151,15 +151,15 @@ Tre regler gjelder alle sammen:
 
 | Element | Kategori | Stilark | Registrering | Attributter | Klasser inni |
 | --- | --- | --- | --- | --- | --- |
-| `<fs-field>` | ramme | `field.css` | `defineFsField()` fra `@fristil/designsystem/field` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen |
-| `<fs-tabs>` | ramme | `tabs.css` | `defineFsTabs()` fra `@fristil/designsystem/tabs` | `server-controlled` (flag) | `fs-tabs__list`<br>`fs-tabs__panel` |
-| `<fs-error-summary>` | ramme | `error-summary.css` | `defineFsErrorSummary()` fra `@fristil/designsystem/error-summary` | `data-autofocus`: false<br>`hidden` (flag) | `fs-error-summary`<br>`fs-error-summary__title` |
-| `<fs-popover>` | ramme | `popover.css` | `defineFsPopover()` fra `@fristil/designsystem/popover` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
-| `<fs-dialog>` | ramme | `dialog.css` | `defineFsDialog()` fra `@fristil/designsystem/dialog` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
-| `<fs-toast>` | frittstaende | `toast.css` | `defineFsToast()` fra `@fristil/designsystem/toast` | `duration` (number)<br>`label` (text) | `fs-toast`<br>`fs-toast__close` |
-| `<fs-session-timeout>` | frittstaende | `session-timeout.css` | `defineFsSessionTimeout()` fra `@fristil/designsystem/session-timeout` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
-| `<fs-connection-status>` | frittstaende | `connection-status.css` | `defineFsConnectionStatus()` fra `@fristil/designsystem/connection-status` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
+| `<fs-field>` | ramme | `@fristil/designsystem/field.css` | `defineFsField()` fra `@fristil/designsystem/field` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen |
+| `<fs-tabs>` | ramme | `@fristil/designsystem/tabs.css` | `defineFsTabs()` fra `@fristil/designsystem/tabs` | `server-controlled` (flag) | `fs-tabs__list`<br>`fs-tabs__panel` |
+| `<fs-error-summary>` | ramme | `@fristil/designsystem/error-summary.css` | `defineFsErrorSummary()` fra `@fristil/designsystem/error-summary` | `data-autofocus`: false<br>`hidden` (flag) | `fs-error-summary`<br>`fs-error-summary__title` |
+| `<fs-popover>` | ramme | `@fristil/designsystem/popover.css` | `defineFsPopover()` fra `@fristil/designsystem/popover` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `fs-popover` |
+| `<fs-suggestion>` | ramme | `@fristil/designsystem/suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-dialog>` | ramme | `@fristil/designsystem/dialog.css` | `defineFsDialog()` fra `@fristil/designsystem/dialog` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
+| `<fs-toast>` | frittstaende | `@fristil/designsystem/toast.css` | `defineFsToast()` fra `@fristil/designsystem/toast` | `duration` (number)<br>`label` (text) | `fs-toast`<br>`fs-toast__close` |
+| `<fs-session-timeout>` | frittstaende | `@fristil/designsystem/session-timeout.css` | `defineFsSessionTimeout()` fra `@fristil/designsystem/session-timeout` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
+| `<fs-connection-status>` | frittstaende | `@fristil/designsystem/connection-status.css` | `defineFsConnectionStatus()` fra `@fristil/designsystem/connection-status` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 `querySelector`, `FormData` og vanlig CSS virker rett inn i det.

@@ -119,19 +119,25 @@ function cssKomponenter(): Map<string, Klasse> {
   return kart
 }
 
-/** Tabellen over CSS-komponentene, sortert på komponentnavn. */
-export function cssTabell(): string {
+/**
+ * Tabellen over CSS-komponentene, sortert på komponentnavn.
+ *
+ * `stilark` er adressen leseren skal skrive, og den er ikke den samme overalt:
+ * uten byggesteg er det en hel URL, med byggesteg er det pakkenavnet. Kolonna
+ * sto lenge med bare filnavnet, og da måtte leseren gjette stien. En agent som
+ * generaliserte fra knappe-eksempelet skrev `src/components/css/field/field.css`
+ * for `<fs-field>`, som ligger under `ramme/`, og fikk 404.
+ */
+export function cssTabell(stilark: (komponent: string) => string): string {
   const rader = [...cssKomponenter()].sort(([a], [b]) => a.localeCompare(b))
 
   return [
     "| Klasse | Stilark | Attributter |",
     "| --- | --- | --- |",
     ...rader.map(([navn, rad]) => {
-      const ark = stilark(navn)
-      if (!ark) throw new Error(`${navn} har ingen stilark i exports`)
       const klasser = rad.klasser.map((klasse) => `\`${klasse}\``).join("<br>")
       const attributter = rad.attributter.join("<br>") || "ingen"
-      return `| ${klasser} | \`${ark}\` | ${attributter} |`
+      return `| ${klasser} | \`${stilark(navn)}\` | ${attributter} |`
     }),
   ].join("\n")
 }
@@ -154,11 +160,10 @@ function klasserUnder(komponent: string): string {
  */
 export function webTabell(
   adresse: (komponent: string, modul: string) => string,
+  stilark: (komponent: string) => string,
 ): string {
   const rader = Object.keys(elements).map((tagg) => {
     const komponent = tagg.replace(/^fs-/, "")
-    const ark = stilark(komponent)
-    if (!ark) throw new Error(`${komponent} har ingen stilark i exports`)
 
     const attributter =
       Object.entries(elements[tagg].attributes ?? {})
@@ -172,7 +177,7 @@ export function webTabell(
     const kall = `\`${registrering(komponent)}()\``
     const fra = `\`${adresse(komponent, modul(komponent))}\``
 
-    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${ark}\` | ${kall} fra ${fra} | ${attributter} | ${klasserUnder(komponent)} |`
+    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} fra ${fra} | ${attributter} | ${klasserUnder(komponent)} |`
   })
 
   return [
@@ -286,6 +291,7 @@ export function ombrekk(markdown: string): string {
   const ut: string[] = []
   let avsnitt: string[] = []
   let iKode = false
+  let innrykk = ""
 
   /** Punktlister henger under sitt eget merke, så teksten står i kolonne. */
   function tøm(): void {
@@ -293,7 +299,7 @@ export function ombrekk(markdown: string): string {
 
     const tekst = avsnitt.join(" ").replace(/\s+/g, " ").trim()
     const merke = /^(\d+\.\s+|[-*]\s+)/.exec(tekst)
-    const heng = merke ? " ".repeat(merke[1].length) : ""
+    const heng = innrykk + (merke ? " ".repeat(merke[1].length) : "")
     /*
      * Et ord er tegn og kodespenn i ett, mellomrommene inne i spennet
      * medregnet. Uten dette ble `npx @fristil/designsystem sjekk side.html`
@@ -305,7 +311,7 @@ export function ombrekk(markdown: string): string {
     let linje = ""
 
     for (const del of ord) {
-      const kandidat = linje === "" ? del : `${linje} ${del}`
+      const kandidat = linje === "" ? `${innrykk}${del}` : `${linje} ${del}`
       if (linje !== "" && kandidat.length > BREDDE) {
         ut.push(linje)
         linje = heng + del
@@ -316,17 +322,33 @@ export function ombrekk(markdown: string): string {
 
     if (linje !== "") ut.push(linje)
     avsnitt = []
+    innrykk = ""
   }
 
   for (const linje of linjer) {
-    if (linje.startsWith("```")) {
+    /*
+     * Innrykk teller ikke. Et gjerde under et nummerert punkt står med tre
+     * mellomrom foran, og uten dette så ombrekkeren det ikke: hele kodeblokka
+     * ble flytt om som prosa, og `sjekk-agent` fant den ikke igjen, siden
+     * mønsteret krever at gjerdet står på egen linje. Samme for en innrykket
+     * tabellrad.
+     */
+    const rent = linje.trimStart()
+
+    if (rent.startsWith("```")) {
       tøm()
       iKode = !iKode
       ut.push(linje)
       continue
     }
 
-    if (iKode || linje.startsWith("|") || linje.startsWith("#")) {
+    // Blokksitat er linjestyrt: flyter det om, blir `> a` og `> b` til `> a > b`.
+    if (
+      iKode ||
+      rent.startsWith("|") ||
+      rent.startsWith("#") ||
+      rent.startsWith(">")
+    ) {
       tøm()
       ut.push(linje)
       continue
@@ -339,9 +361,17 @@ export function ombrekk(markdown: string): string {
     }
 
     // Et nytt punkt begynner et nytt avsnitt, ellers ville hele lista blitt én.
-    if (/^(\d+\.\s|[-*]\s)/.test(linje.trimStart()) && avsnitt.length > 0) tøm()
+    if (/^(\d+\.\s|[-*]\s)/.test(rent) && avsnitt.length > 0) tøm()
 
-    avsnitt.push(linje.trim())
+    /*
+     * Innrykket på det første punktet i avsnittet beholdes, så en nøstet liste
+     * ikke flates ut til én nivå. Uten det ble «- topp / ␣␣- nivå to» til to
+     * punkter på samme nivå.
+     */
+    if (avsnitt.length === 0)
+      innrykk = linje.slice(0, linje.length - rent.length)
+
+    avsnitt.push(rent)
   }
 
   tøm()

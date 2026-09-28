@@ -38,6 +38,19 @@ import {
 /** Pakkenavnet, som bundles slår opp. */
 const PAKKENAVN = (komponent: string) => `@fristil/designsystem/${komponent}`
 
+/** Stilarket, slik det skrives der det finnes et byggesteg. */
+const STILARK_PAKKE = (komponent: string) =>
+  `@fristil/designsystem/${komponent}.css`
+
+/**
+ * Stilarket uten byggesteg: hele adressen.
+ *
+ * Kolonna sto med bare filnavnet, og da måtte leseren gjette stien. `field.css`
+ * ligger under `ramme/`, ikke under `css/`, så en agent som generaliserte fra
+ * knappe-eksempelet fikk 404 på ni av komponentene.
+ */
+const STILARK_URL = (komponent: string) => cdnTil(`${komponent}.css`)
+
 /**
  * Adressen uten bundles: en URL.
  *
@@ -63,6 +76,8 @@ type Oppskrift = {
   stilark: string
   /** Adressen importen skal ha i dette miljøet. */
   adresse: (komponent: string, modul: string) => string
+  /** Adressen stilarket skal ha i dette miljøet. */
+  stilarkAdresse: (komponent: string) => string
   /** Seksjon 5: alt satt sammen, slik det faktisk skrives her. */
   markup: string
   /** Det bare dette miljøet har. Står mellom markupen og fallgruvene. */
@@ -94,7 +109,7 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
    noe.`
 }`
 
-const HVA_SOM_FINNES = `## 2. Hva som finnes
+const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. Hva som finnes
 
 ${antallCssKomponenter()} CSS-komponenter og ${antallElementer()} egendefinerte elementer, og dette er
 hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
@@ -103,7 +118,7 @@ hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
 
 ### CSS-komponenter (ingen JavaScript)
 
-${cssTabell()}`
+${cssTabell(oppskrift.stilarkAdresse)}`
 
 const TOKENS = `## 3. Tokens
 
@@ -137,7 +152,7 @@ Tre regler gjelder alle sammen:
    lagt inn, med \`id\`, \`for\` og \`aria-describedby\`. Et \`<fs-field>\`
    uten kontroll, eller uten ledetekst, er en feil komponenten melder fra om.
 
-${webTabell(oppskrift.adresse)}
+${webTabell(oppskrift.adresse, oppskrift.stilarkAdresse)}
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 \`querySelector\`, \`FormData\` og vanlig CSS virker rett inn i det.`
@@ -195,6 +210,7 @@ const funn = diagnoseMarkup(html)
 const OPPSKRIFTER: Oppskrift[] = [
   {
     navn: "html",
+    stilarkAdresse: STILARK_URL,
     tittel: "Fristil i ren HTML",
     innledning: `Regelboka for Fristil i et prosjekt uten byggesteg:
 håndskrevet HTML, der nettleseren laster filene direkte. Bruker du bundles,
@@ -263,7 +279,10 @@ ser når fila er lastet. \`dist/fristil.css\` har alt flatet ut, uten
 Feltet slås ugyldig ved å sette attributtet, ikke ved å bytte klasse:
 
 \`\`\`js
-navnFelt.toggleAttribute("invalid", verdien === "")
+const felt = document.getElementById("navn-felt")
+const verdi = felt.querySelector("input").value
+
+felt.toggleAttribute("invalid", verdi.trim() === "")
 \`\`\`
 
 TypeScript hører ikke hjemme i en \`<script type="module">\`. Taggen kjøres av
@@ -291,6 +310,7 @@ ${SJEKK_I_TESTER}`,
   },
   {
     navn: "maler",
+    stilarkAdresse: STILARK_URL,
     tittel: "Fristil i maler og serverskrevet HTML",
     innledning: `Regelboka for Fristil der serveren lager markupen: Go-maler,
 Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars, Nunjucks og
@@ -417,6 +437,7 @@ pakken uten noen utvidelse.`,
   },
   {
     navn: "bundles",
+    stilarkAdresse: STILARK_PAKKE,
     tittel: "Fristil med bundles",
     innledning: `Regelboka for Fristil i et prosjekt med et byggesteg, der
 markupen er vanlig HTML: Vue, Svelte, Solid, Lit, og vanlig TypeScript med Vite,
@@ -522,6 +543,7 @@ ${SJEKK_I_TESTER}`,
   },
   {
     navn: "react",
+    stilarkAdresse: STILARK_PAKKE,
     tittel: "Fristil i React",
     innledning: `Regelboka for Fristil i en React-app.
 
@@ -667,6 +689,7 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
   },
   {
     navn: "astro",
+    stilarkAdresse: STILARK_PAKKE,
     tittel: "Fristil i Astro",
     innledning: `Regelboka for Fristil i et Astro-prosjekt.
 
@@ -785,6 +808,7 @@ vanlige egendefinerte elementer, og trenger verken en Astro-integrasjon eller et
   },
   {
     navn: "datastar",
+    stilarkAdresse: STILARK_URL,
     tittel: "Fristil med Datastar",
     innledning: `Regelboka for Fristil sammen med
 [Datastar](https://data-star.dev), som legger reaktivitet på vanlig HTML med
@@ -924,7 +948,7 @@ function sammensett(oppskrift: Oppskrift): string {
       `Dette er @fristil/designsystem ${VERSJON}. Fila er generert av pakken og følger versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.`,
       kortversjon(oppskrift),
       oppskrift.stilark,
-      HVA_SOM_FINNES,
+      hvaSomFinnes(oppskrift),
       TOKENS,
       webComponents(oppskrift),
       oppskrift.markup,

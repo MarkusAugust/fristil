@@ -21,7 +21,7 @@
  * Kjør med: bun scripts/sjekk-agent.ts, eller som en del av `bun run build`.
  */
 
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { classes } from "../src/diagnostics/classes.js"
 import { elements } from "../src/diagnostics/elements.js"
@@ -48,6 +48,38 @@ const blokkerPerFil = new Map<string, number>()
 
 function krev(påstand: boolean, beskrivelse: string): void {
   if (!påstand) avvik.push(beskrivelse)
+}
+
+/*
+ * Mappa på disk er den uavhengige kilden.
+ *
+ * Alt annet i denne vakten kommer fra `OPPSKRIFTER`: køen, det forventede
+ * antallet, og innholdet det sammenlignes med. Den spør altså generatoren om
+ * generatoren, og CLAUDE.md er kategorisk om at det forventede ikke skal komme
+ * fra samme kilde som køen.
+ *
+ * Feilsituasjonen er konkret: døp om en oppskrift, og generatoren skriver den
+ * nye fila uten å slette den gamle. Den gamle blir liggende, foreldet, og den
+ * følger med i tarballen fordi `files` tar hele mappa, og serveres på
+ * `/agent/<navn>.md` fordi ruten leser mappa. `fristil agent` kan ikke skrive
+ * den ut, og ingenting sier fra.
+ */
+const påDisk = readdirSync(join(PAKKE, "agent"))
+  .filter((navn) => navn.endsWith(".md"))
+  .sort()
+const skalFinnes = NAVN.map((navn) => `${navn}.md`).sort()
+
+if (påDisk.join(",") !== skalFinnes.join(",")) {
+  const tilOvers = påDisk.filter((navn) => !skalFinnes.includes(navn))
+  const mangler = skalFinnes.filter((navn) => !påDisk.includes(navn))
+
+  if (tilOvers.length > 0)
+    krev(
+      false,
+      `agent/ har filer generatoren ikke skriver: ${tilOvers.join(", ")}. Slett dem.`,
+    )
+  if (mangler.length > 0)
+    krev(false, `agent/ mangler ${mangler.join(", ")}. Kjør bun run generate.`)
 }
 
 // 1. Filene på disk er ferske.
@@ -201,7 +233,10 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   for (const [nummer, blokk] of [
     ...innhold.matchAll(/```html\n([\s\S]*?)```/g),
   ].entries()) {
-    const naken = /from\s*\n?\s*"@fristil\/designsystem/.test(blokk[1])
+    // Bivirkningsimport uten `from`, dynamisk import og enkeltfnutter feiler
+    // like stille i en nettleser som den ene formen som sto her før.
+    const naken =
+      /(?:from|import)\s*\(?\s*\n?\s*["']@fristil\/designsystem/.test(blokk[1])
     krev(
       !naken,
       `${sti}, markupblokk ${nummer + 1} importerer et pakkenavn i nettleseren. Bruk hele URL-en.`,

@@ -330,7 +330,15 @@ async function detectFramework(): Promise<{ name: string; reason: string }> {
   let manifest: { dependencies?: Dependencies; devDependencies?: Dependencies }
 
   try {
-    manifest = JSON.parse(text)
+    const parsed: unknown = JSON.parse(text)
+
+    // `null` er gyldig JSON, så `catch` fanget det ikke, og oppslaget på
+    // `dependencies` ga et stakkspor fra Node.
+    if (parsed === null || typeof parsed !== "object") {
+      return { name: "maler", reason: "package.json er ikke et objekt" }
+    }
+
+    manifest = parsed
   } catch {
     return { name: "maler", reason: "package.json kunne ikke leses" }
   }
@@ -366,7 +374,23 @@ async function detectFramework(): Promise<{ name: string; reason: string }> {
  */
 async function agent(args: string[]): Promise<void> {
   // Flaggnavnet er norsk, som de andre flaggene i denne kommandoen.
-  const flags = lesArgumenter(args).flagg
+  const { flagg: flags, filer: rest } = lesArgumenter(args)
+
+  /*
+   * `lesArgumenter` krever likhetstegn. `--rammeverk react` ble derfor lest som
+   * to filnavn, deteksjonen overtok, og den som ba om React fikk bundles-boka
+   * uten et ord om hvorfor.
+   */
+  const withoutValue = rest.find((part) => part.startsWith("--"))
+
+  if (withoutValue) {
+    console.error(
+      `«${withoutValue}» mangler en verdi.\n\n` +
+        `Skriv ${withoutValue}=<verdi>, med likhetstegn og uten mellomrom.\n`,
+    )
+    process.exit(1)
+  }
+
   const requested = flags.rammeverk
   const chosen = requested
     ? { name: requested, reason: "oppgitt med --rammeverk" }
