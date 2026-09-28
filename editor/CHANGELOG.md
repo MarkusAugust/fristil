@@ -3,6 +3,25 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.4.0
+
+Klassene og forklaringene er i takt med pakken igjen.
+
+- `fs-dialog__header` og `fs-dialog__subtitle` finnes. De kom med den fargede
+  toppen i dialogen, og 0.3.0 kjente dem ikke: en gul strek sa at klassen ikke
+  fantes, på markup som var riktig.
+- `<fs-session-timeout>` sender fire hendelser, og hover-teksten nevnte to.
+  `session-warn` kommer når dialogen åpner og `session-logout` når brukeren
+  logger ut, ved siden av `session-extend` og `session-expired`.
+- Forklaringene på `<fs-tabs>`, `<fs-popover>`, `<fs-suggestion>` og
+  `<fs-dialog>` sier nå at komponenten kobler fra bar struktur. Fanene trenger
+  ikke `role="tablist"` skrevet i malen, sprettoppvinduet klarer seg med en
+  knapp og et panel med klassen, og dialogen tar navnet sitt fra den første
+  overskriften.
+- Diagnostikken kommer fra `@fristil/designsystem/diagnostics` framfor fra to
+  JSON-filer i utvidelsens egen mappe. Samme regler, og `fristil sjekk` i
+  kommandolinjen kjører dem nå på de samme filene.
+
 ## 0.3.0
 
 Klassene, hurtigrettelser og malspråkene.
