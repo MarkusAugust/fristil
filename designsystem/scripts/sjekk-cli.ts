@@ -450,6 +450,74 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// `tema`: metningstaket kan settes, og et tall som ikke gir mening avvises
+{
+  const standard = await kjør(["tema", ...FARGER])
+  const hevet = await kjør(["tema", ...FARGER, "--maks-metning=0.32"])
+
+  krev(hevet.kode === 0, `--maks-metning avsluttet med kode ${hevet.kode}`)
+  krev(
+    hevet.ut.includes("--semantic-interactive-main"),
+    "temaet med hevet tak mangler tokenene",
+  )
+  /*
+   * Uten denne kunne flagget blitt lest og aldri brukt, og alle de andre
+   * påstandene ville holdt. Lilla i `FARGER` ligger på 0,247 i OKLCH, altså
+   * over standardtaket, så et hevet tak må gi andre verdier.
+   */
+  krev(
+    hevet.ut !== standard.ut,
+    "et hevet metningstak ga nøyaktig det samme temaet",
+  )
+
+  // 16 er den ekte skrivefeilen: 0,16 uten komma. Den ville ellers gitt full
+  // metning overalt uten et ord om hvorfor.
+  for (const verdi of ["16", "0", "-1", "abc", "0.0001"]) {
+    const avvist = await kjør(["tema", ...FARGER, `--maks-metning=${verdi}`])
+
+    krev(avvist.kode === 1, `--maks-metning=${verdi} ga kode ${avvist.kode}`)
+    krev(
+      avvist.feil.includes("metningstak"),
+      `--maks-metning=${verdi} fikk ingen forklarende melding: ${avvist.feil.slice(0, 80)}`,
+    )
+  }
+
+  // Fra fil, som er den andre veien inn, og en skrivefeil der skal si fra.
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-metning-"))
+  const oppskrift = (nøkkel: string) =>
+    JSON.stringify({
+      interaktiv: "#7c3aed",
+      fare: "#b3261e",
+      suksess: "#2b6940",
+      advarsel: "#8a5a00",
+      [nøkkel]: 0.32,
+    })
+
+  for (const nøkkel of ["maksMetning", "maxChroma"]) {
+    const sti = join(mappe, `${nøkkel}.json`)
+    await writeFile(sti, oppskrift(nøkkel))
+    const fraFil = await kjør(["tema", sti])
+
+    krev(fraFil.kode === 0, `${nøkkel} i fil ga kode ${fraFil.kode}`)
+    krev(
+      fraFil.ut !== standard.ut,
+      `${nøkkel} i fil ga nøyaktig det samme temaet som uten tak`,
+    )
+  }
+
+  const skrivefeil = join(mappe, "skrivefeil.json")
+  await writeFile(skrivefeil, oppskrift("maksmetning"))
+  const avvist = await kjør(["tema", skrivefeil])
+
+  krev(avvist.kode === 1, `en skrivefeil i toppnøkkelen ga kode ${avvist.kode}`)
+  krev(
+    avvist.feil.includes("maksmetning"),
+    `meldinga sier ikke hvilken nøkkel som er ukjent: ${avvist.feil.slice(0, 80)}`,
+  )
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // `sjekk`: filer som stemmer gir 0, ett funn gir 1 med fil, linje og kolonne
 {
   const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))

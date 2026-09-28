@@ -39,6 +39,7 @@ import {
   planTakeover,
   type SourceFile,
 } from "./takeover.js"
+import { CHROMA_CEILING, CHROMA_FLOOR, MAX_CHROMA } from "./tokens/color.js"
 import {
   buildTheme,
   type ThemeInput,
@@ -46,7 +47,23 @@ import {
   type ThemeTypography,
 } from "./tokens/theme.js"
 
-const NØKLER: Record<string, keyof ThemeInput> = {
+/**
+ * Nøklene som tar en farge, altså en streng.
+ *
+ * Lista sto som `keyof ThemeInput`, og det holdt så lenge hver verdi i temaet
+ * var en streng eller et objekt. `maxChroma` er et tall, og da har nøklene
+ * ikke lenger noen felles verditype: en skriving gjennom en union av nøkler
+ * krever en verdi som passer dem alle, og `string & number` finnes ikke.
+ */
+type ColorKey =
+  | "interactive"
+  | "danger"
+  | "success"
+  | "warning"
+  | "neutral"
+  | "visited"
+
+const NØKLER: Record<string, ColorKey> = {
   interaktiv: "interactive",
   fare: "danger",
   suksess: "success",
@@ -315,6 +332,8 @@ const HJELP = `fristil <kommando>
     --advarsel=<farge>    Advarsler (påkrevd)
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
+    --maks-metning=<tall> Taket på metningen i skalaene, målt i OKLCH.
+                          Standard ${MAX_CHROMA}. Hev det for en neonfarge
     --skrift=<stakk>      Skriftstakken temaet skal bruke
     --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
     --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
@@ -394,11 +413,25 @@ async function lesTemafil(sti: string): Promise<Record<string, unknown>> {
   }
 }
 
-const fraFil = filer[0] ? await lesTemafil(filer[0]) : {}
+const fromFile = filer[0] ? await lesTemafil(filer[0]) : {}
 
-const input: Partial<ThemeInput> = {}
+/**
+ * Temaet slik det bygges opp, før det er kontrollert.
+ *
+ * `Partial<ThemeInput>` gikk ikke: typen er en union som sier «enten alle fire
+ * fargene, eller ingen», og et halvferdig tema er nettopp det som ikke er noen
+ * av delene ennå. Kontrollen under avgjør hvilken av de to det ble, og
+ * `buildTheme` får det som `ThemeInput` først da.
+ */
+type ThemeDraft = Partial<Record<ColorKey, string>> & {
+  typography?: ThemeTypography
+  shape?: ThemeShape
+  maxChroma?: number
+}
+
+const input: ThemeDraft = {}
 for (const [norsk, engelsk] of Object.entries(NØKLER)) {
-  const verdi = flagg[norsk] ?? fraFil[norsk] ?? fraFil[engelsk]
+  const verdi = flagg[norsk] ?? fromFile[norsk] ?? fromFile[engelsk]
   if (typeof verdi === "string" && verdi) input[engelsk] = verdi
 }
 
@@ -407,14 +440,14 @@ for (const [norsk, engelsk] of Object.entries(NØKLER)) {
  * Fila kan skrive dem på norsk eller engelsk, som fargene.
  */
 const typografi: ThemeTypography = {
-  ...((fraFil.typography ?? fraFil.typografi ?? {}) as ThemeTypography),
+  ...((fromFile.typography ?? fromFile.typografi ?? {}) as ThemeTypography),
 }
 for (const [norsk, engelsk] of Object.entries(SKRIFTFLAGG)) {
   if (flagg[norsk]) typografi[engelsk] = flagg[norsk]
 }
 
 const form: ThemeShape = {
-  ...((fraFil.shape ?? fraFil.form ?? {}) as ThemeShape),
+  ...((fromFile.shape ?? fromFile.form ?? {}) as ThemeShape),
 }
 for (const [norsk, engelsk] of Object.entries(FORMFLAGG)) {
   if (flagg[norsk]) form[engelsk] = flagg[norsk]
@@ -422,6 +455,46 @@ for (const [norsk, engelsk] of Object.entries(FORMFLAGG)) {
 
 if (Object.keys(typografi).length > 0) input.typography = typografi
 if (Object.keys(form).length > 0) input.shape = form
+
+/*
+ * Taket på metningen er et tall, ikke en farge, og leses derfor for seg.
+ *
+ * Flagget heter `--maks-metning`, og i fila går både `maksMetning` og
+ * `maxChroma`, som for de andre verdiene.
+ */
+const CHROMA_FLAG = "maks-metning"
+const CHROMA_FILE_KEYS = ["maksMetning", "maxChroma"]
+
+const rawChroma =
+  flagg[CHROMA_FLAG] ??
+  CHROMA_FILE_KEYS.map((key) => fromFile[key]).find(
+    (value) => value !== undefined,
+  )
+
+if (rawChroma !== undefined) {
+  const chroma = typeof rawChroma === "number" ? rawChroma : Number(rawChroma)
+
+  /*
+   * Grensene er de samme som `buildTheme` krever, og kommer fra samme sted.
+   * Kontrollen står likevel her, slik at meldinga kan nevne flagget og
+   * desimalskilletegnet framfor navnet på en funksjon konsumenten ikke kalte.
+   */
+  if (
+    !Number.isFinite(chroma) ||
+    chroma < CHROMA_FLOOR ||
+    chroma > CHROMA_CEILING
+  ) {
+    console.error(
+      `«${rawChroma}» er ikke et metningstak.\n\n` +
+        `Oppgi et tall mellom ${CHROMA_FLOOR} og ${CHROMA_CEILING}, med punktum\n` +
+        `som desimalskilletegn. Standard er ${MAX_CHROMA}. Det høyeste sRGB kan\n` +
+        "vise er 0.3225, som er magenta, så over det endrer ingenting seg.\n",
+    )
+    process.exit(1)
+  }
+
+  input.maxChroma = chroma
+}
 
 /*
  * Et flagg som ikke finnes skal si fra.
@@ -435,6 +508,7 @@ const KJENTE_FLAGG = new Set([
   ...Object.keys(NØKLER),
   ...Object.keys(SKRIFTFLAGG),
   ...Object.keys(FORMFLAGG),
+  CHROMA_FLAG,
   "ut",
 ])
 
@@ -469,16 +543,34 @@ function ukjenteNøkler(
     .map((navn) => `${sti}.${navn}`)
 }
 
-const ukjenteIFil = [
+/*
+ * Toppnøklene i oppskriftsfila.
+ *
+ * Fargene redder seg selv: en skrivefeil der gir «Mangler farger». Taket gjør
+ * ikke det, og `{"maksmetning": 0.32}` med liten m ga et tema uten tak og uten
+ * et ord om hvorfor. Dokumentasjonen lover at en nøkkel som ikke finnes stopper
+ * kjøringen, og det gjelder hele fila, ikke bare det som står inni `form`.
+ */
+const TOP_LEVEL_KEYS = new Set([
+  ...Object.entries(NØKLER).flat(),
+  ...CHROMA_FILE_KEYS,
+  "typografi",
+  "typography",
+  "form",
+  "shape",
+])
+
+const unknownKeys = [
+  ...Object.keys(fromFile).filter((key) => !TOP_LEVEL_KEYS.has(key)),
   ...ukjenteNøkler(typografi, SKRIFTNØKLER, "typografi"),
   ...ukjenteNøkler(typografi.weights, VEKTNØKLER, "typografi.weights"),
   ...ukjenteNøkler(typografi.lineHeights, LINJENØKLER, "typografi.lineHeights"),
   ...ukjenteNøkler(form, FORMNØKLER, "form"),
 ]
 
-if (ukjenteIFil.length > 0) {
+if (unknownKeys.length > 0) {
   console.error(
-    `Ukjent nøkkel i oppskriften: ${ukjenteIFil.join(", ")}\n\n` +
+    `Ukjent nøkkel i oppskriften: ${unknownKeys.join(", ")}\n\n` +
       "Hele oversikten: fristil --hjelp\n",
   )
   process.exit(1)
@@ -493,12 +585,7 @@ if (ukjente.length > 0) {
   process.exit(1)
 }
 
-const påkrevd: (keyof ThemeInput)[] = [
-  "interactive",
-  "danger",
-  "success",
-  "warning",
-]
+const påkrevd: ColorKey[] = ["interactive", "danger", "success", "warning"]
 const mangler = påkrevd.filter((navn) => !input[navn])
 
 /*

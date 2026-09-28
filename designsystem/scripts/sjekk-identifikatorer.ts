@@ -44,7 +44,7 @@ const KILDER = [
  * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
 const KJENT_GJELD = new Map<string, number>([
-  ["designsystem/src/cli.ts", 136],
+  ["designsystem/src/cli.ts", 127],
   ["designsystem/src/tokens/color.ts", 14],
   ["designsystem/src/tokens/theme.ts", 232],
 ])

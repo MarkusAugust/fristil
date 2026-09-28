@@ -2,6 +2,8 @@ import {
   adjustForContrast,
   buildNeutralScale,
   buildScale,
+  CHROMA_CEILING,
+  CHROMA_FLOOR,
   contrastRatio,
   parseHex,
 } from "./color.js"
@@ -103,6 +105,19 @@ type ThemeCommon = {
   typography?: ThemeTypography
   /** Hjørner og rammer. Utelates den, står Fristils egen form. */
   shape?: ThemeShape
+  /**
+   * Taket på metningen i skalaene, målt i OKLCH. Standard er 0,16.
+   *
+   * En neonfarge mister mye mot standardtaket: `#39ff14` ligger på 0,286 og
+   * mister 44 prosent, `#ff2d6f` på 0,240 og mister 33. Vil merkevaren beholde
+   * den, heves taket. Det høyeste sRGB kan vise er 0,3225.
+   *
+   * Kontrastkravet holder uansett. Mer metning betyr bare at generatoren
+   * flytter lysheten flere steder for å nå det, og hver flytting står i
+   * `adjustments`. Den nøytrale skalaen har sitt eget, mye lavere tak, og
+   * berøres ikke: en nøytral flate med kulør ser malt ut.
+   */
+  maxChroma?: number
 }
 
 type ThemeColors = {
@@ -214,6 +229,30 @@ export function buildTheme(input: ThemeInput): Theme {
   const { interactive, danger, success, warning } = input
   const oppgitte = [interactive, danger, success, warning].filter(Boolean)
 
+  /*
+   * Taket kontrolleres her, ikke bare i kommandolinja.
+   *
+   * `number` kan ikke snevres inn i typen, så fella må lukkes med en beskjed,
+   * slik regelen i CLAUDE.md sier. Og det er dette kallet en konsument gjør
+   * fra et byggesteg, der ingen kommandolinje står imellom.
+   *
+   * Uten kontrollen gikk verdien urørt inn i `Math.min`: et negativt tak
+   * speiler fargen og gjør knallgrønt til magenta, `NaN` gir en feilmelding om
+   * en heksadesimal farge brukeren aldri skrev, og 0 gir et helt grått tema i
+   * stillhet. Kontrollen står før den tidlige returnen, så et tema som bare
+   * setter skrift og form også sier fra framfor å svelge verdien.
+   */
+  if (input.maxChroma !== undefined) {
+    const tak = input.maxChroma
+
+    if (!Number.isFinite(tak) || tak < CHROMA_FLOOR || tak > CHROMA_CEILING) {
+      throw new Error(
+        `maxChroma må være et metningstak mellom ${CHROMA_FLOOR} og ` +
+          `${CHROMA_CEILING}, målt i OKLCH. Fikk «${tak}».`,
+      )
+    }
+  }
+
   if (oppgitte.length > 0 && oppgitte.length < 4) {
     throw new Error(
       "Et fargetema trenger alle fire merkefargene: interactive, danger, " +
@@ -250,12 +289,16 @@ export function buildTheme(input: ThemeInput): Theme {
     }
   }
 
+  // Taket gjelder de fem kulørte skalaene. Den nøytrale har sitt eget, som er
+  // mye lavere, og som ikke er et valg: en nøytral flate med kulør ser malt ut.
+  const tak = input.maxChroma
+
   const palett = {
-    interactive: buildScale(interactive),
-    danger: buildScale(danger),
-    success: buildScale(success),
-    warning: buildScale(warning),
-    visited: buildScale(input.visited ?? interactive),
+    interactive: buildScale(interactive, tak),
+    danger: buildScale(danger, tak),
+    success: buildScale(success, tak),
+    warning: buildScale(warning, tak),
+    visited: buildScale(input.visited ?? interactive, tak),
     neutral: buildNeutralScale(input.neutral ?? "#1a1a1a"),
   }
 

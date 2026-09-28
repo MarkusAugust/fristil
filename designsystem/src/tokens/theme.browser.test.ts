@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest"
 
 import { farge, kontrast, PAR } from "../testing/kontrast"
-import { adjustForContrast, parseHex, rgbToOklch } from "./color"
+import { adjustForContrast, buildScale, parseHex, rgbToOklch } from "./color"
 import { buildTheme, type ThemeInput } from "./theme"
 
 import "./tokens.css"
@@ -44,6 +44,25 @@ const MERKER = [
       success: "#65a30d",
       warning: "#f59e0b",
       neutral: "#1c1917",
+    },
+  },
+  {
+    /*
+     * Neon med taket hevet, altså det verste tilfellet for kontrastkravet.
+     * Fargene her ligger godt over standardtaket på 0,16: `#39ff14` på 0,286
+     * og `#ff2d6f` på 0,240. Hele listen av par kjøres mot dette merket som
+     * mot de tre andre, og det er påstanden om at et hevet tak ikke svekker
+     * garantien. Taket styrer metning; kontrasten styres av trinnene og av
+     * justeringspasset, som måler hvert par etterpå.
+     */
+    navn: "neon med hevet metningstak",
+    farger: {
+      interactive: "#39ff14",
+      danger: "#ff2d6f",
+      success: "#00e676",
+      warning: "#ffd600",
+      neutral: "#1a1a1a",
+      maxChroma: 0.32,
     },
   },
 ]
@@ -148,6 +167,30 @@ describe("generatoren", () => {
     expect(flyttet).toBeDefined()
     expect(flyttet?.before).toBeLessThan(4.5)
     expect(flyttet?.after).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it("slipper mer metning gjennom når taket heves", () => {
+    /*
+     * Uten denne kunne `maxChroma` blitt lest inn og aldri brukt, og alle de
+     * andre testene ville meldt grønt: et tema bygget med standardtaket holder
+     * jo kravene. Neongrønn ligger på 0,286 i OKLCH og kappes til 0,16.
+     */
+    const standard = buildScale("#39ff14")
+    const hevet = buildScale("#39ff14", 0.32)
+    const metning = (hex: string) => rgbToOklch(parseHex(hex)).c
+
+    expect(metning(hevet[50])).toBeGreaterThan(metning(standard[50]))
+    expect(metning(hevet[70])).toBeGreaterThan(metning(standard[70]))
+
+    /*
+     * Endene rører seg mindre, og det er med vilje. De lyse trinnene holdes
+     * nede av `CHROMA_FACTOR`, fordi lyse trinn ser skitne ut med mye metning,
+     * og det mørkeste av hva sRGB kan vise ved den lysheten. Står ikke dette
+     * her, ser en senere endring av faktorene ut som en forbedring.
+     */
+    expect(metning(hevet[50]) - metning(standard[50])).toBeGreaterThan(
+      metning(hevet[5]) - metning(standard[5]),
+    )
   })
 
   it("sier fra når et krav ikke kan oppfylles", () => {
