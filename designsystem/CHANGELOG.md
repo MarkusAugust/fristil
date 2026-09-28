@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.20.0 (2026-09-28)
+
 ### Lagt til
 
 - **`fristil agent` og regelbøkene i `agent/`.** Seks regelbøker skrevet for
