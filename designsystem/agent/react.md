@@ -8,7 +8,7 @@ til å ha sin egen fil: React skriver om attributtnavnene. `class` heter
 skriver React «Invalid DOM property» i konsollen for hvert element. Derfor har
 pakken en egen React-inngang.
 
-Dette er @fristil/designsystem 0.19.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.20.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon

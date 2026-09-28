@@ -10,7 +10,7 @@ importeres i inngangsmodulen, attributtene heter det de heter i HTML, og
 annerledes og `react.md` gjelder i stedet. Skriver du Astro, importeres
 stilarkene i frontmatteret og `astro.md` gjelder.
 
-Dette er @fristil/designsystem 0.19.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.20.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
