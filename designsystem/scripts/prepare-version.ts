@@ -14,6 +14,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { norskDato } from "./norsk-dato.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const monorepoRot = fileURLToPath(new URL("../../", import.meta.url))
@@ -106,6 +107,38 @@ if (!webTypes.includes(webTypesFør)) {
   )
 }
 
+/*
+ * Merket øverst i presentasjonen bærer versjonen og dagen den kom.
+ *
+ * Det sto «Fristil 0.15.0 · 26. september 2026» mens pakken var på 0.19.0,
+ * altså fire versjoner bak, og ingenting oppdaterte det. Presentasjonen har
+ * ingen byggesteg, så den kan ikke hente verdien selv slik dokumentasjonen nå
+ * gjør; den må skrives, og `sjekk-versjon.ts` feller hvis den glir fra igjen.
+ *
+ * Lesingen og kontrollen står her, sammen med de andre forhåndssjekkene, av
+ * samme grunn som web-types over: stoppet den etter skrivingene, sto loggen,
+ * manifestet, bun.lock og CDN-adressene alt med det nye nummeret, og neste
+ * forsøk nektet fordi versjonen var tatt.
+ *
+ * Datasettet i avhengighetsgrafen røres ikke. Det er en måling med sin egen
+ * dato, og et tall som er målt skal ikke settes av et skript som ikke har målt
+ * noe.
+ */
+const dekkSti = join(monorepoRot, "presentasjon/designsystemarkitektur.html")
+let dekk = ""
+try {
+  dekk = readFileSync(dekkSti, "utf8")
+} catch {
+  stopp(`Fant ikke ${dekkSti}. Er presentasjonen flyttet?`)
+}
+
+const merke = /(Designsystemarkitektur · Fristil )[^<·]+ · [^<·]+/
+if (!merke.test(dekk)) {
+  stopp(
+    `Fant ikke merket med versjonen i ${dekkSti}. Står det fortsatt der, og heter det det samme?`,
+  )
+}
+
 await Bun.write(
   loggSti,
   logg.replace(UUTGITT, `${UUTGITT}\n\n## ${nyVersjon} (${dato})`),
@@ -177,6 +210,11 @@ const oppdaterCdn = (mappe: string) => {
 oppdaterCdn(dokRot)
 if (cdnEndret > 0)
   console.log(`Oppdaterte CDN-adressene i ${cdnEndret} dokumentasjonsfiler.`)
+
+const paaNorsk = norskDato(dato)
+
+writeFileSync(dekkSti, dekk.replace(merke, `$1${nyVersjon} · ${paaNorsk}`))
+console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
 
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
