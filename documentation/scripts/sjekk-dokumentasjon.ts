@@ -333,6 +333,43 @@ for (const fil of [
   }
 }
 
+/*
+ * Versjonen i en CDN-adresse skal komme fra `remark-versjon.mjs`, ikke fra
+ * tastaturet.
+ *
+ * Adressene sto hardkodet 74 steder i 12 filer, og `prepare-version` skrev dem
+ * om ved hver utgivelse. Et omskrivingssteg må finne den gamle versjonen for å
+ * bytte den, så en fil som hadde glidd ble stående og pekte på en eldre pakke
+ * enn teksten rundt beskrev. Plassholderen kan ikke gli.
+ *
+ * Kravet er at versjonsleddet er nøyaktig `VERSJON`, ikke bare at det lar være
+ * å være siffer: `@latest` ville ellers passert og gitt en adresse jsdelivr
+ * svarer annerledes på enn teksten lover.
+ */
+for (const fil of [
+  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOKUMENTASJON),
+]) {
+  const innhold = les(`${DOKUMENTASJON}${fil}`)
+
+  for (const treff of innhold.matchAll(
+    /@fristil\/designsystem@([^/\s"'`)]+)/g,
+  )) {
+    // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
+    // der er den riktige formen å lese versjonen av `package.json` i koden.
+    // Unntaket må være bundet til filtypen: uten det slapp
+    // `@fristil/designsystem@${versjon}` gjennom i en mdx-kodeblokk også, der
+    // ingen bytter den ut og ingen annen vakt ser etter den.
+    if (treff[1] === "VERSJON") continue
+    if (fil.endsWith(".astro") && treff[1].startsWith("${")) continue
+
+    const linje = innhold.slice(0, treff.index).split("\n").length
+    avvik.push({
+      hvor: `${fil}:${linje}`,
+      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut.`,
+    })
+  }
+}
+
 if (avvik.length > 0) {
   const oppsummering = avvik.map((a) => `  ${a.hvor}: ${a.hva}`).join("\n")
   console.error(
