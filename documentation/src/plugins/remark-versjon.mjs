@@ -10,7 +10,13 @@
  * `sjekk-dokumentasjon.ts` feller hvis noen skriver tallet for hånd likevel.
  *
  * Plassholderen byttes i kodeblokker, i kode inne i en setning, i brødtekst og
- * i lenkeadresser, altså overalt en adresse kan stå.
+ * i lenkeadresser. Det dekker alle adressene i dag.
+ *
+ * Det den ikke når, er verdier som ikke ligger i `children`: JSX-attributter
+ * som `kode={…}`, bildeadresser, mdx-uttrykk og frontmatter. Skriver noen en
+ * adresse et slikt sted, blir plassholderen stående, og det er
+ * `sjekk-bygget-versjon.ts` som fanger den: den krever at hver adresse
+ * plassholderen står i, finnes i det bygde med versjonen satt inn.
  */
 
 import { readFileSync } from "node:fs"

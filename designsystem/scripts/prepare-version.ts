@@ -117,8 +117,8 @@ if (!webTypes.includes(webTypesFør)) {
  *
  * Lesingen og kontrollen står her, sammen med de andre forhåndssjekkene, av
  * samme grunn som web-types over: stoppet den etter skrivingene, sto loggen,
- * manifestet, bun.lock og CDN-adressene alt med det nye nummeret, og neste
- * forsøk nektet fordi versjonen var tatt.
+ * manifestet og bun.lock alt med det nye nummeret, og neste forsøk nektet
+ * fordi versjonen var tatt.
  *
  * Datasettet i avhengighetsgrafen røres ikke. Det er en måling med sin egen
  * dato, og et tall som er målt skal ikke settes av et skript som ikke har målt

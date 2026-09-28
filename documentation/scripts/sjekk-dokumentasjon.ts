@@ -356,7 +356,11 @@ for (const fil of [
   )) {
     // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
     // der er den riktige formen å lese versjonen av `package.json` i koden.
-    if (treff[1] === "VERSJON" || treff[1].startsWith("${")) continue
+    // Unntaket må være bundet til filtypen: uten det slapp
+    // `@fristil/designsystem@${versjon}` gjennom i en mdx-kodeblokk også, der
+    // ingen bytter den ut og ingen annen vakt ser etter den.
+    if (treff[1] === "VERSJON") continue
+    if (fil.endsWith(".astro") && treff[1].startsWith("${")) continue
 
     const linje = innhold.slice(0, treff.index).split("\n").length
     avvik.push({

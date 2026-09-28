@@ -29,12 +29,42 @@ const PLASSHOLDER = "@fristil/designsystem@VERSJON"
 const MED_VERSJON = `@fristil/designsystem@${version}`
 
 const funn: string[] = []
+
+/*
+ * Det forventede kommer fra kilden, ikke fra det bygde.
+ *
+ * Første utgave talte hver adresse i `dist` som hadde versjonen i seg, og kom
+ * til 320. Men 172 av dem skrives av `Eksempel.astro` på hver eneste
+ * eksempelside, og de går aldri gjennom remark. Tallet kunne altså stå høyt og
+ * grønt selv om hver eneste plassholder forsvant ut av kilden, og vakten påsto
+ * arbeid den ikke hadde gjort.
+ *
+ * Nå samles adressene plassholderen står i, og hver av dem må finnes i det
+ * bygde med versjonen satt inn. Det dekker samtidig de nodetypene plugin-en
+ * ikke når: står plassholderen i en JSX-attributt som `kode={…}`, blir den ikke
+ * byttet, og da mangler adressen her.
+ */
+const iKilden = new Set<string>()
+
+for (const rel of new Glob("documentation/src/**/*.{mdx,md,astro}").scanSync(
+  ROT,
+)) {
+  const tekst = readFileSync(ROT + rel, "utf8")
+
+  for (const treff of tekst.matchAll(
+    /@fristil\/designsystem@VERSJON(\/[^"'`\s)]+)/g,
+  )) {
+    iKilden.add(treff[1])
+  }
+}
+
 let leste = 0
-let adresser = 0
+const manglende: string[] = []
+const bygget: string[] = []
 
 for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
   const tekst = readFileSync(ROT + rel, "utf8")
-  leste += 1
+  bygget.push(tekst)
 
   // Starlight rømmer `@` i noen sammenhenger, så det er ordet VERSJON rett
   // etter pakkenavnet som letes etter, ikke plassholderen tegn for tegn.
@@ -44,17 +74,24 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
   )
     funn.push(`${rel} har en plassholder som ikke ble byttet ut`)
 
-  adresser += tekst.split(MED_VERSJON).length - 1
+  leste += 1
 }
 
-/*
- * Tell hva som faktisk ble gjort. Er `leste` null, ble ingenting bygd; er
- * `adresser` null, ble ingen adresse skrevet ut med versjon i seg, og da har
- * plugin-en sluttet å virke selv om ingen plassholder er synlig.
- */
-if (leste === 0 || adresser === 0) {
+for (const filsti of iKilden) {
+  if (!bygget.some((tekst) => tekst.includes(MED_VERSJON + filsti))) {
+    manglende.push(filsti)
+  }
+}
+
+if (leste === 0 || iKilden.size === 0) {
   funn.push(
-    `Sjekken så ikke på noe: ${leste} sider og ${adresser} adresser med versjon. Er dist bygd?`,
+    `Sjekken så ikke på noe: ${leste} bygde sider og ${iKilden.size} adresser med plassholder i kilden. Er dist bygd?`,
+  )
+}
+
+for (const filsti of manglende) {
+  funn.push(
+    `${MED_VERSJON}${filsti} finnes ikke i det bygde, men plassholderen står i kilden.`,
   )
 }
 
@@ -68,5 +105,5 @@ if (funn.length > 0) {
 }
 
 console.log(
-  `Versjonen står i ${adresser} adresser over ${leste} bygde sider, ingen plassholder igjen.`,
+  `Alle ${iKilden.size} adressene fra kilden står i det bygde med ${version} i seg, over ${leste} sider, og ingen plassholder er igjen.`,
 )

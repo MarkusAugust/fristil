@@ -67,7 +67,7 @@ Netlify i det master endrer seg, og oppskriftene der peker på
 `cdn.jsdelivr.net/npm/@fristil/designsystem@<versjon>`, altså på den versjonen
 `package.json` oppgir. Den finnes ikke på npm før taggen har kjørt
 `publish.yml`. Venter du med taggen, står «Ren HTML»- og Datastar-oppskriftene
-på ni sider og peker på en pakke som ikke er der ennå. Begge byggene tar et par
+på tolv sider og peker på en pakke som ikke er der ennå. Begge byggene tar et par
 minutter, så tagger du med det samme, er vinduet i praksis lukket.
 
 Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollen i `publish.yml` kjøringen, og taggen må fjernes med `git push origin :refs/tags/v0.4.0` og `git tag -d v0.4.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
