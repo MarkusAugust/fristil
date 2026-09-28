@@ -23,6 +23,43 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`data-role="help"` og `data-role="error"` er dokumentert.** `<fs-field>`
+  har lenge funnet hjelpetekst og feilmelding på `[data-role='help']` og
+  `[data-role='error']` ved siden av klassene `fs-help-text` og
+  `fs-error-text`, men krokene sto bare i en `querySelector` i kilden, uten
+  tester og uten omtale noe sted. De er nå beskrevet på komponentsiden og
+  dekket av to tester, slik at markup som bruker andre klassenavn enn
+  systemets fortsatt kan si hvilket element som er hva.
+
+- **Folketelling over attributter bare morferen leser.** `fs.browser.test.ts`
+  kaller hver byggefunksjon og krever at `data-ignore-morph` kommer ut fra
+  nøyaktig `connectionStatus`, `sessionTimeout`, `suggestion` og `toast`, og at
+  `data-preserve-attr` ikke kommer ut fra noen. Vakten feller både et nytt
+  sted attributtet dukker opp og et sted det forsvinner fra, siden begge
+  endrer hva malen må skrive. Hjelperen i `morfing.browser.test.ts` hopper
+  over attributter som står i en fredningsliste, og uten vakten kunne en
+  byggefunksjon som begynte å sende den ut slått av hele den filen i
+  stillhet.
+
+### Rettet
+
+- **Dokumentasjonen påsto mer enn den kunne vise.** «Holder markupen der,
+  holder den overalt» var en påstand om alle morfere, mens vi kjører løkka til
+  én. Kravet står nå som det det er: det en komponent har satt, skal overleve
+  at attributter blir fjernet fra et element som står. Og `data-preserve-attr`
+  og `data-ignore-morph` er beskrevet som morferens egne attributtnavn, siden
+  et `data-`attributt bare betyr noe for koden som leser det.
+
+- **«To komponenter eier sitt eget innhold» var tre.** `<fs-toast>` sto ikke i
+  lista i «Markup og oppførsel», og at `fs.suggestion()` setter
+  `data-ignore-morph` på området som melder antall treff sto ingen steder.
+
+- **`overta` sa ingenting om tilgjengelighetsansvaret.** Siden om tilpasning
+  sier nå at en overtatt og endret komponent ikke dekkes av en
+  tilgjengelighetserklæring som viser til designsystemet.
+
 ## 0.20.0 (2026-09-28)
 
 ### Lagt til

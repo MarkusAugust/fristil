@@ -320,3 +320,92 @@ describe("formen på navnerommet", () => {
     expect(tomme).toEqual([])
   })
 })
+
+describe("attributter bare morferen leser", () => {
+  /*
+   * Fredning og «ikke rør dette» er ikke egenskaper ved morfing. De er
+   * `data-`attributter, og et `data-`attributt betyr bare noe for koden som
+   * leser det. Reparasjonen trenger ingen av dem: komponenten leser markupen,
+   * og det avhenger ikke av hvem som morfer.
+   *
+   * Unntaket er de som eier innholdet sitt selv. En komponent kan sette et
+   * attributt tilbake, men den kan ikke gjette seg fram til meldinger den
+   * selv lagde og en patch tømte. Der må serverens markup si fra, og navnet
+   * på attributtet er morferens.
+   *
+   * Testen er en folketelling og ikke et forbud. Den feller både et nytt sted
+   * attributtet dukker opp, og et sted det forsvinner fra, siden begge er en
+   * endring i hva malen må skrive.
+   */
+  const MORFERATTRIBUTTER = ["data-ignore-morph", "data-preserve-attr"]
+
+  /** Alt i `fs` som ikke er en byggefunksjon. */
+  const HJELPERE = ["setAttributes", "isState", "isMarker"]
+
+  /** De sammensatte byggerne krever argumenter. Ett gyldig kall hver. */
+  const SAMMENSATTE: Record<string, () => unknown> = {
+    dialog: () => fs.dialog({ titleId: "tittel" }),
+    errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
+    field: () => fs.field({ id: "epost", help: true, error: true }),
+    popover: () => fs.popover({ id: "panel" }),
+    suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
+    tabs: () => fs.tabs({ id: "faner", count: 2 }),
+    toast: () => fs.toast(),
+  }
+
+  const byggere = Object.entries(fs).filter(
+    ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
+  ) as [string, () => unknown][]
+
+  /** Hvert attributtnavn i svaret, uansett hvor dypt det ligger. */
+  function attributtnavn(verdi: unknown, ut: string[] = []): string[] {
+    if (Array.isArray(verdi)) {
+      for (const del of verdi) attributtnavn(del, ut)
+      return ut
+    }
+    if (verdi && typeof verdi === "object") {
+      for (const [navn, del] of Object.entries(verdi)) {
+        ut.push(navn)
+        attributtnavn(del, ut)
+      }
+    }
+    return ut
+  }
+
+  it("kaller hver byggefunksjon, og bare byggefunksjoner", () => {
+    // Uten dette kunne tabellen under ha vært tom, eller ha mistet en bygger
+    // som fikk nytt navn, og folketellingen ville stemt likevel.
+    expect(byggere.length).toBeGreaterThan(20)
+    for (const navn of Object.keys(SAMMENSATTE)) {
+      expect(
+        byggere.map(([n]) => n),
+        `fs.${navn} finnes ikke`,
+      ).toContain(navn)
+    }
+  })
+
+  it("sender dem ut fra nøyaktig de fire som eier innholdet sitt", () => {
+    const funn: Record<string, string[]> = {}
+    let kalt = 0
+
+    for (const [navn, bygger] of byggere) {
+      const svar = (SAMMENSATTE[navn] ?? bygger)()
+      kalt += 1
+      const treff = [
+        ...new Set(
+          attributtnavn(svar).filter((n) => MORFERATTRIBUTTER.includes(n)),
+        ),
+      ].sort()
+      if (treff.length > 0) funn[navn] = treff
+    }
+
+    expect(kalt).toBe(byggere.length)
+    expect(kalt).toBeGreaterThan(20)
+    expect(funn).toEqual({
+      connectionStatus: ["data-ignore-morph"],
+      sessionTimeout: ["data-ignore-morph"],
+      suggestion: ["data-ignore-morph"],
+      toast: ["data-ignore-morph"],
+    })
+  })
+})

@@ -36,6 +36,10 @@ defineFsDialog()
 
 /** Datastars attributtsynkronisering, på ett element. */
 function morfElement(live: Element, server: Element): void {
+  // Fredningslista er med for at hjelperen skal være den samme løkka vi
+  // siterer. Ingen byggefunksjon sender den ut, og folketellingen i
+  // `fs.browser.test.ts` feller om noen begynner: uten den vakten kunne
+  // grenen her slått av hele denne filen i stillhet.
   const bevar = (server.getAttribute("data-preserve-attr") ?? "")
     .split(/\s+/)
     .filter(Boolean)
@@ -221,14 +225,13 @@ describe("morfing river ikke bort det komponenten setter", () => {
   })
 
   /*
-   * Og det `data-preserve-attr` på selve `<dialog>` finnes for: nettleseren
-   * setter `open` der når `showModal()` kalles.
+   * Nettleseren setter `open` på selve `<dialog>` når `showModal()` kalles.
    *
    * Serveren skriver riktignok `open` selv når den vet at dialogen skal
    * vises, men den vet det ikke alltid. Åpnes dialogen av et signal i
    * nettleseren, eller av en bruker, står `open` bare i den levende siden,
-   * og da er det bare fredningen som holder det der. Testen sender derfor
-   * serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
+   * og da er det bare komponenten som kan sette det tilbake. Testen sender
+   * derfor serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
    * morfingen latt attributtet stå uansett, siden den bare fjerner det
    * serverens node mangler, og testen kunne ikke feile.
    */

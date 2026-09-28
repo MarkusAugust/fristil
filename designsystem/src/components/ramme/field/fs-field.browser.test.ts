@@ -483,6 +483,56 @@ describe("fs-field kobler markup som bare har struktur", () => {
     expect(input.getAttribute("data-state")).toBe("invalid")
     expect(feilmelding.hidden).toBe(false)
   })
+  /*
+   * `data-role` er veien inn for markup som ikke bruker systemets klassenavn.
+   * Uten dekningen sto krokene bare i en `querySelector` i kilden, og kunne
+   * blitt strøket i en opprydding uten at noe sa fra.
+   */
+  it("finds help and error text through data-role", async () => {
+    document.body.innerHTML = `
+      <fs-field invalid>
+        <label for="postnummer">Postnummer</label>
+        <input id="postnummer" class="egen-kontroll" />
+        <p class="egen-hjelp" data-role="help">Fire siffer</p>
+        <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const input = document.getElementById("postnummer") as HTMLInputElement
+    const help = document.querySelector(".egen-hjelp") as HTMLElement
+    const error = document.querySelector(".egen-feil") as HTMLElement
+
+    expect(help.id.length).toBeGreaterThan(0)
+    expect(error.id.length).toBeGreaterThan(0)
+
+    const describedBy = input.getAttribute("aria-describedby") || ""
+    expect(describedBy).toContain(help.id)
+    expect(describedBy).toContain(error.id)
+    expect(error.hasAttribute("hidden")).toBe(false)
+  })
+
+  it("hides a data-role error until the field is invalid", async () => {
+    document.body.innerHTML = `
+      <fs-field>
+        <label for="postnummer">Postnummer</label>
+        <input id="postnummer" class="egen-kontroll" />
+        <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
+      </fs-field>
+    `
+
+    await Promise.resolve()
+
+    const felt = document.querySelector("fs-field") as FsField
+    const error = document.querySelector(".egen-feil") as HTMLElement
+    expect(error.hasAttribute("hidden")).toBe(true)
+
+    felt.invalid = true
+    await Promise.resolve()
+
+    expect(error.hasAttribute("hidden")).toBe(false)
+  })
 })
 
 describe("fs-field er et blokkelement", () => {
