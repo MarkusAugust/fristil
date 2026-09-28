@@ -514,7 +514,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · Fristil 0.15.0 · 26. september 2026</span>
+  <span class="merke merke-blaa">Designsystemarkitektur · Fristil 0.19.0 · 28. september 2026</span>
   <div class="tittel-topp">
     <div class="logo">
       <svg class="logomerke" width="80" height="80" viewBox="0 0 100 100" fill="none" aria-hidden="true" focusable="false">
@@ -794,6 +794,20 @@ defineFsField()
   color: var(--tekst-dempet);
 }
 .avh-forklaring svg { inline-size: 26px; block-size: 14px; vertical-align: -2px; margin-inline-end: 0.35rem; }
+/*
+ * Datoen målingen ble gjort.
+ *
+ * Den sto til slutt i avsnittet under grafen, i dempet 0.86-rem-tekst, og
+ * ingen som så på tallene fikk med seg når de ble lest. Tallene er en måling
+ * med en holdbarhet, og da må datoen stå der målingen er.
+ */
+.avh-maalt {
+  margin: 0 0 0.6rem;
+  font-size: 0.86rem;
+  color: var(--tekst-dempet);
+  border-inline-start: 2px solid var(--azure-30);
+  padding-inline-start: 0.6rem;
+}
 .avh-bytt {
   margin-inline-start: auto;
   font: inherit;
@@ -921,11 +935,13 @@ defineFsField()
     <button type="button" class="avh-bytt" aria-pressed="false">Vis som tabell</button>
   </div>
 
+  <p class="avh-maalt">Målt 26. september 2026, mot versjonene som da var nyeste.</p>
+
   <div class="avh-liste" role="tablist" aria-orientation="vertical" aria-label="Designsystem"></div>
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
-  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;">Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er samme ene pakke med klassene som med byggefunksjonen: importen avgjør bundelen, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp i CSS-sporet, tokens og knapp, minifisert og gzippet som på forrige lysbilde. Stiplet er peer-avhengigheter, som npm 7 og nyere henter selv. Lest 26. september 2026.</p>
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;">Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er samme ene pakke med klassene som med byggefunksjonen: importen avgjør bundelen, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp i CSS-sporet, tokens og knapp, minifisert og gzippet som på forrige lysbilde. Stiplet er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
 
 <script>
 (() => {

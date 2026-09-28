@@ -178,6 +178,30 @@ oppdaterCdn(dokRot)
 if (cdnEndret > 0)
   console.log(`Oppdaterte CDN-adressene i ${cdnEndret} dokumentasjonsfiler.`)
 
+/*
+ * Merket øverst i presentasjonen bærer versjonen og dagen den kom.
+ *
+ * Det sto «Fristil 0.15.0 · 26. september 2026» mens pakken var på 0.19.0,
+ * altså fire versjoner bak, og ingenting oppdaterte det. Presentasjonen har
+ * ingen byggesteg, så den kan ikke hente verdien selv slik dokumentasjonen nå
+ * gjør; den må skrives, og `sjekk-versjon.ts` feller hvis den glir fra igjen.
+ *
+ * Datasettet i avhengighetsgrafen røres ikke. Det er en måling med sin egen
+ * dato, og et tall som er målt skal ikke settes av et skript som ikke har målt
+ * noe.
+ */
+const paaNorsk = norskDato(dato)
+const dekkSti = join(monorepoRot, "presentasjon/designsystemarkitektur.html")
+const dekk = readFileSync(dekkSti, "utf8")
+const merke = /(Designsystemarkitektur · Fristil )[^<·]+ · [^<]+/
+
+if (!merke.test(dekk)) {
+  stopp(`Fant ikke merket med versjonen i ${dekkSti}. Står det fortsatt der?`)
+}
+
+writeFileSync(dekkSti, dekk.replace(merke, `$1${nyVersjon} · ${paaNorsk}`))
+console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
+
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
 Slik gir du den ut:
