@@ -114,7 +114,9 @@ const resultat = hode + deler.join("\n")
  */
 const gjenstaaende = resultat.match(/^\s*@import\b.*$/gm) ?? []
 if (gjenstaaende.length > 0) {
-  console.error(`✗ fristil.css har fortsatt @import: ${gjenstaaende[0].trim()}`)
+  console.error(
+    `✗ fristil.css har fortsatt @import: ${gjenstaaende[0]?.trim() ?? ""}`,
+  )
   process.exit(1)
 }
 const lag = (resultat.match(/^@layer fristil \{/gm) ?? []).length

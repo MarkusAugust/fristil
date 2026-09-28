@@ -7,7 +7,7 @@
  * forskjell den selv hadde laget.
  */
 
-const MAANEDER = [
+export const MAANEDER = [
   "januar",
   "februar",
   "mars",
@@ -29,6 +29,14 @@ export function norskDato(iso: string): string {
   if (!treff) throw new Error(`«${iso}» er ikke en dato på formen 2026-09-28`)
 
   const [, aar, maaned, dag] = treff
+  const navn = MAANEDER[Number(maaned) - 1]
 
-  return `${Number(dag)}. ${MAANEDER[Number(maaned) - 1]} ${aar}`
+  /*
+   * Formen alene er ikke nok. `2026-13-01` traff mønsteret og kom ut som
+   * «1. undefined 2026», altså en feilmelding som pekte på seg selv framfor på
+   * skrivefeilen i datoen.
+   */
+  if (!navn) throw new Error(`«${iso}» har ingen måned mellom 01 og 12`)
+
+  return `${Number(dag)}. ${navn} ${aar}`
 }

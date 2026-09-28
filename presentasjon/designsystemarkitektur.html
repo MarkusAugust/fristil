@@ -801,12 +801,18 @@ defineFsField()
  * ingen som så på tallene fikk med seg når de ble lest. Tallene er en måling
  * med en holdbarhet, og da må datoen stå der målingen er.
  */
+/*
+ * Datoen målingen ble gjort.
+ *
+ * Den sto til slutt i dette avsnittet, etter tre setninger om noe annet, og
+ * ingen som så på tallene fikk med seg når de ble lest. Tallene er en måling
+ * med en holdbarhet, så datoen står først, og markert. Den ligger inne i
+ * avsnittet framfor i en egen blokk fordi lysbildet ikke har plass til en linje
+ * til: en egen blokk fikk det til å rulle 15 piksler på 1280x800.
+ */
 .avh-maalt {
-  margin: 0 0 0.6rem;
-  font-size: 0.86rem;
-  color: var(--tekst-dempet);
-  border-inline-start: 2px solid var(--azure-30);
-  padding-inline-start: 0.6rem;
+  color: var(--graphite-0);
+  font-weight: 600;
 }
 .avh-bytt {
   margin-inline-start: auto;
@@ -935,13 +941,11 @@ defineFsField()
     <button type="button" class="avh-bytt" aria-pressed="false">Vis som tabell</button>
   </div>
 
-  <p class="avh-maalt">Målt 26. september 2026, mot versjonene som da var nyeste.</p>
-
   <div class="avh-liste" role="tablist" aria-orientation="vertical" aria-label="Designsystem"></div>
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
-  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;">Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er samme ene pakke med klassene som med byggefunksjonen: importen avgjør bundelen, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp i CSS-sporet, tokens og knapp, minifisert og gzippet som på forrige lysbilde. Stiplet er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 26. september 2026</span>, mot versjonene som da var nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er samme ene pakke med klassene som med byggefunksjonen: importen avgjør bundelen, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp i CSS-sporet, tokens og knapp, minifisert og gzippet som på forrige lysbilde. Stiplet er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
 
 <script>
 (() => {

@@ -9,7 +9,7 @@
 
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { norskDato } from "./norsk-dato.js"
+import { MAANEDER, norskDato } from "./norsk-dato.js"
 
 const ROT = fileURLToPath(new URL("..", import.meta.url))
 const pakke = await Bun.file(join(ROT, "package.json")).json()
@@ -91,7 +91,18 @@ if (!iDekket) {
     )
   }
 
-  if (utgittDato && iDekket[2].trim() !== norskDato(utgittDato)) {
+  /*
+   * Mangler datoen i overskrifta, hoppes datosjekken over, og merket kan stå
+   * med hva som helst. Et vilkår som slår av en sjekk er farligere enn en sjekk
+   * som mangler, så det feller i stedet. Den eksisterende sjekken over krever
+   * bare at overskrifta begynner med et versjonsnummer, så «## 0.19.0» uten
+   * dato passerer den.
+   */
+  if (!utgittDato) {
+    feil.push(
+      `Overskrifta for ${pakke.version} i CHANGELOG.md mangler en dato på formen «## ${pakke.version} (2026-09-28)», så datoen i presentasjonen kan ikke kontrolleres.`,
+    )
+  } else if (iDekket[2].trim() !== norskDato(utgittDato)) {
     feil.push(
       `Presentasjonen er datert «${iDekket[2].trim()}», mens ${pakke.version} ble gitt ut ${norskDato(utgittDato)}.`,
     )
@@ -106,7 +117,9 @@ if (!iDekket) {
  * i repoet, så vakten kan bare kreve at den står der, og at den er en dato.
  * Det er nok til at den ikke kan bli borte i stillhet.
  */
-const maalt = /class="avh-maalt">Målt (\d{1,2}\. \p{L}+ \d{4})/u.exec(dekk)
+const maalt = new RegExp(
+  `class="[^"]*\\bavh-maalt\\b[^"]*"\\s*>\\s*Målt (\\d{1,2}\\. (?:${MAANEDER.join("|")}) \\d{4})`,
+).exec(dekk)
 
 if (!maalt) {
   feil.push(
@@ -122,5 +135,5 @@ if (feil.length > 0) {
 }
 
 console.log(
-  `Versjonsloggen stemmer: ${pakke.version} er beskrevet, «Ikke utgitt» står øverst, og presentasjonen står på samme versjon.`,
+  `Versjonsloggen stemmer: ${pakke.version} er beskrevet, «Ikke utgitt» står øverst, presentasjonen står på ${iDekket?.[1]} datert ${iDekket?.[2].trim()}, og avhengighetsgrafen er ${maalt?.[1]}.`,
 )
