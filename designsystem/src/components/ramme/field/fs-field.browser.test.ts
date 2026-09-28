@@ -489,16 +489,18 @@ describe("fs-field kobler markup som bare har struktur", () => {
     expect(feilmelding.hidden).toBe(false)
   })
   /*
-   * `data-role` er veien inn for markup som ikke bruker systemets klassenavn.
-   * Uten dekningen sto krokene bare i en `querySelector` i kilden, og kunne
-   * blitt strøket i en opprydding uten at noe sa fra.
+   * Komponenten leter etter hjelpetekst og feilmelding på systemets egne
+   * klasser, og bare der. Den leste en gang også `[data-role='help']` og
+   * `[data-role='error']`, en krok ingen dokumentasjon nevnte. `data-role` er
+   * uprefikset, og eies i praksis av andre: en app som bruker det til noe
+   * annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding,
+   * uten at noe sa fra. Skal en slik krok tilbake, skal den hete `data-fs-*`.
    */
-  it("finner hjelpetekst og feilmelding gjennom data-role", async () => {
+  it("adopterer ikke et avsnitt som bare har en rolle på seg", async () => {
     monter(`
       <fs-field invalid>
         <label for="postnummer">Postnummer</label>
-        <input id="postnummer" class="egen-kontroll">
-        <p class="egen-hjelp" data-role="help">Fire siffer.</p>
+        <input id="postnummer" class="fs-input">
         <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
       </fs-field>
     `)
@@ -506,46 +508,10 @@ describe("fs-field kobler markup som bare har struktur", () => {
     await ventPaTegning()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const hjelp = document.querySelector(".egen-hjelp") as HTMLElement
-    const feilmelding = document.querySelector(".egen-feil") as HTMLElement
+    const avsnitt = document.querySelector(".egen-feil") as HTMLElement
 
-    expect(hjelp.id.length).toBeGreaterThan(0)
-    expect(feilmelding.id.length).toBeGreaterThan(0)
-    expect(feilmelding.hasAttribute("hidden")).toBe(false)
-
-    const beskrivelse = input.getAttribute("aria-describedby") ?? ""
-    expect(beskrivelse).toContain(hjelp.id)
-    expect(beskrivelse).toContain(feilmelding.id)
-
-    // Og ingenting mer enn det. Uten denne halvdelen ville en regresjon som
-    // stemplet `fs-error-text` eller en `aria-*` på konsumentens avsnitt gått
-    // grønt gjennom.
-    expect(navnene(hjelp)).toEqual(["class", "data-role", "id"])
-    expect(navnene(feilmelding)).toEqual(["class", "data-role", "id"])
-    expect(hjelp.className).toBe("egen-hjelp")
-    expect(feilmelding.className).toBe("egen-feil")
-  })
-
-  it("skjuler en feilmelding med data-role til feltet er ugyldig", async () => {
-    monter(`
-      <fs-field>
-        <label for="postnummer">Postnummer</label>
-        <input id="postnummer" class="egen-kontroll">
-        <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
-      </fs-field>
-    `)
-
-    await ventPaTegning()
-
-    const felt = document.querySelector("fs-field") as FsField
-    const feilmelding = document.querySelector(".egen-feil") as HTMLElement
-    expect(feilmelding.hasAttribute("hidden")).toBe(true)
-    expect(navnene(feilmelding)).toEqual(["class", "data-role", "hidden", "id"])
-
-    felt.invalid = true
-    await ventPaTegning()
-
-    expect(feilmelding.hasAttribute("hidden")).toBe(false)
+    expect(navnene(avsnitt)).toEqual(["class", "data-role"])
+    expect(input.hasAttribute("aria-describedby")).toBe(false)
   })
 })
 

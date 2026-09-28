@@ -25,14 +25,6 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
-- **`data-role="help"` og `data-role="error"` er dokumentert.** `<fs-field>`
-  har lenge funnet hjelpetekst og feilmelding på `[data-role='help']` og
-  `[data-role='error']` ved siden av klassene `fs-help-text` og
-  `fs-error-text`, men krokene sto bare i en `querySelector` i kilden, uten
-  tester og uten omtale noe sted. De er nå beskrevet på komponentsiden og
-  dekket av to tester, slik at markup som bruker andre klassenavn enn
-  systemets fortsatt kan si hvilket element som er hva.
-
 - **Folketelling over attributter bare morferen leser.** `fs.browser.test.ts`
   kaller hver byggefunksjon og krever at `data-ignore-morph` kommer ut fra
   nøyaktig `connectionStatus`, `sessionTimeout`, `suggestion` og `toast`, og at
@@ -47,12 +39,23 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-field>` leter ikke lenger etter `data-role` på hjelpetekst og
+  feilmelding.** Komponenten leste `[data-role='help']` og
+  `[data-role='error']` ved siden av klassene `fs-help-text` og
+  `fs-error-text`. Kroken sto bare i en `querySelector` i kilden, uten tester
+  og uten omtale noe sted, så ingen kunne bygge på den med vilje. `data-role`
+  er uprefikset og eies i praksis av andre, og en app som brukte det til noe
+  annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding, uten at
+  noe sa fra. Komponentsiden sier nå hva komponenten faktisk krever, og en test
+  holder fjerningen på plass. Skal en slik krok tilbake, skal den hete
+  `data-fs-*`.
+
 - **Dokumentasjonen påsto mer enn den kunne vise.** «Holder markupen der,
   holder den overalt» var en påstand om alle morfere, mens vi kjører løkka til
   én. Kravet står nå som det det er: det en komponent har satt, skal overleve
   at attributter blir fjernet fra et element som står. Og `data-preserve-attr`
   og `data-ignore-morph` er beskrevet som morferens egne attributtnavn, siden
-  et `data-`attributt bare betyr noe for koden som leser det.
+  et `data-*`-attributt bare betyr noe for koden som leser det.
 
 - **«To komponenter eier sitt eget innhold» var tre.** `<fs-toast>` sto ikke i
   lista i «Markup og oppførsel», og at `fs.suggestion()` setter

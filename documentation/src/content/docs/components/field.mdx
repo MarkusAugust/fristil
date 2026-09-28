@@ -330,9 +330,7 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 
 Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
 
-Komponenten finner hjelpeteksten og feilmeldingen på klassene `fs-help-text` og `fs-error-text`, eller på `data-role="help"` og `data-role="error"`. Bruker markupen andre klassenavn enn systemets, er `data-role` måten å si hvilket element som er hva. Kontrollen og ledeteksten trenger ingen merkelapp: de finnes på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og `<label>`.
-
-To ting følger med egne klassenavn. Ledeteksten får `fs-label` lagt til uansett, siden det er den klassen merkingen henger på. Og `data-state="invalid"` settes bare på `fs-input`, `fs-textarea` og `fs-select`, så den røde rammen er din å style. Koblingen, altså `for`, `id`, `aria-describedby` og `aria-invalid`, er den samme.
+Komponenten finner delene sine uten merkelapper: kontrollen på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, ledeteksten på `<label>`, og hjelpetekst og feilmelding på klassene `fs-help-text` og `fs-error-text`. De to klassene er det eneste den krever av deg.
 
 ## Attributter
 
