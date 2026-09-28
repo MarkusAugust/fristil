@@ -68,6 +68,22 @@ jobs:
       - name: Bygg
         run: bun run build
 
+      # De genererte filene skal være de generatoren ville skrevet nå.
+      #
+      # `build` kjører `generate` som første steg, så vaktpostene sammenligner
+      # alltid med det som nettopp ble skrevet, og en utdatert fil på disk kan
+      # ikke felle dem. Her spørres git i stedet: står det noe å commite etter
+      # bygget, er en generert fil merget uten å være regenerert, og filene på
+      # GitHub er det agenter og npm-lesere faktisk får.
+      - name: Ingenting er ugenerert
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Bygget endret sporede filer. Kjør bun run build og commit:"
+            git status --porcelain
+            git diff
+            exit 1
+          fi
+
       # Kjører axe mot hver bygde side i begge temaer, og kontrollerer at
       # dokumentasjonen følger koden.
       - name: Dokumentasjon

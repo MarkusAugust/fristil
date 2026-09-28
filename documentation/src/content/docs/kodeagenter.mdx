@@ -1,0 +1,140 @@
+---
+title: Kodeagenter
+description: Fristil for Claude Code, GitHub Copilot og andre kodeagenter. Regelboka følger pakken, og ingenting skrives i filene dine.
+---
+
+En kodeagent som ikke kjenner Fristil gjetter, og den gjetter på de samme fire
+tingene hver gang: den glemmer stilarket og skriver egen CSS for å «fikse» at
+knappen ser ustilt ut, den finner opp `fs-modal` og `data-variant="outline"`
+fordi de finnes i andre designsystemer, den hardkoder `#0062ba` i stedet for å
+bruke et token, og den skriver `invalid="false"` og tror det slår av.
+
+Fristil har derfor en regelbok skrevet for agenter, med nøyaktig de fire
+tingene øverst.
+
+## Regelboka er i pakken
+
+```bash
+npx @fristil/designsystem agent
+```
+
+Kommandoen skriver regelboka for *dette* prosjektet til utdata. Den leser
+miljøet av `package.json`, og forteller på feilkanalen hva den valgte og hvorfor,
+så utdata kan pipes rent:
+
+```bash
+npx @fristil/designsystem agent > fristil.md            # til en fil du eier
+npx @fristil/designsystem agent --rammeverk=datastar    # velg selv
+```
+
+Seks regelbøker, én per miljø:
+
+| Navn | For |
+| --- | --- |
+| `html` | ren HTML uten byggesteg |
+| `maler` | Go, Razor, PHP, Blade, Twig, Jinja, ERB, Liquid, Handlebars, og HTML bygget som strenger i Kotlin, Java, C# eller Python |
+| `bundles` | Vue, Svelte, Solid, Lit, og vanlig TypeScript med Vite, Rollup, esbuild eller webpack |
+| `react` | React |
+| `astro` | Astro |
+| `datastar` | HTML med Datastar |
+
+Vue, Svelte, Solid og Lit deler `bundles`, fordi de gjør det samme med
+stilarkene, attributtnavnene og registreringen. `--rammeverk=svelte` virker
+likevel, og kommandoen sier at svaret ble `bundles`.
+
+Er pakken installert, ligger den samme fila på disk:
+
+```
+node_modules/@fristil/designsystem/agent/datastar.md
+```
+
+Fila følger pakkeversjonen. Oppgraderer du Fristil, er regelboka oppdatert i
+samme slengen, og den kan aldri stå og si noe annet enn koden ved siden av.
+
+## Uten å installere noe
+
+Den viktigste agenten har ingen `node_modules`. Blir noen bedt om å «lage et
+skjema med Fristil» i en tom mappe, skrives markupen før `npm install` har
+kjørt, og fila i pakken er da usynlig. Derfor ligger de samme filene her, på
+stabile adresser:
+
+| Adresse | Hva |
+| --- | --- |
+| [`/llms.txt`](https://fristil.netlify.app/llms.txt) | Inngangen: de fire reglene, sjekkekommandoen, og lenker til alt annet |
+| [`/agent/react.md`](https://fristil.netlify.app/agent/react.md) | Regelboka, komplett. Bytt `react` for miljøet ditt |
+
+Filene er byte for byte de samme som pakken sender med. De bygges av `agent/`
+i pakken, og en vaktpost feller hvis de skiller seg. En agent med nettilgang
+trenger altså ikke installere noe for å kunne reglene, og `npx` virker også uten
+at pakken står i prosjektet.
+
+:::note[Fristil skriver ingenting i filene dine]
+`AGENTS.md`, `CLAUDE.md` og `.github/copilot-instructions.md` er dine. Et
+verktøy som skriver i dem må gjette stier, flette med innhold det ikke har
+skrevet, og holde en kopi i takt med pakken. Ingen av de tre problemene finnes
+når regelboka blir stående i pakken, og `fristil agent` skriver aldri en fil.
+Vil du ha den på disk, er det ett rør unna, og da er det din beslutning.
+:::
+
+## Linja du limer inn
+
+Agenten finner ikke regelboka av seg selv. Én linje i instruksjonsfila du
+allerede har er nok. Bytt `react` for miljøet ditt:
+
+```md
+Prosjektet bruker Fristil (@fristil/designsystem). Les reglene før du skriver
+markup eller CSS: node_modules/@fristil/designsystem/agent/react.md, eller
+https://fristil.netlify.app/agent/react.md hvis pakken ikke er installert. Kjør
+`npx @fristil/designsystem sjekk <fil>` på markup du har skrevet.
+```
+
+Hvor den hører hjemme:
+
+| Agent | Fil |
+| --- | --- |
+| Claude Code | `CLAUDE.md`, eller `AGENTS.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor, Windsurf og andre | `AGENTS.md` |
+
+Limer du ikke inn noe, er ikke alt tapt: `npx @fristil/designsystem sjekk`
+forteller agenten hva som er galt i markupen den skrev, med fil, linje og
+kolonne. Det er den samme sjekken som editoren kjører, og den kjenner hver
+klasse, hvert element, hvert attributt og hver lovlige verdi.
+
+## Hva som står i den
+
+Regelboka er komplett for ett miljø, og bare for det ene. En agent som leser
+om `className` i et prosjekt med Go-maler er en agent som skriver `className` i
+en Go-mal. Hver av dem har de fire reglene øverst, og så:
+
+- **stilarket**, slik det kommer inn i nettopp dette miljøet;
+- **alle komponentene**, med klasse eller element, stilark, attributter og
+  lovlige verdier, så ingenting må gjettes;
+- **tokenlagene**, med de semantiske navnene skrevet ut;
+- **de tre reglene for web components**, som ingen kompilator fanger;
+- **sjekken**, med kommandoen og hvordan den kjøres i CI eller i testene.
+
+Filene genereres av pakken. Komponentlista, attributtverdiene, tokennavnene og
+byggerne leses av koden, og en vaktpost i `bun run sjekk` feller hvis en
+komponent mangler i en av dem, hvis et markupeksempel ikke tåler Fristils egen
+sjekk, eller hvis en importsti ikke finnes i `exports`. En regelbok kan derfor
+ikke stå og si noe annet enn koden.
+
+## Sjekken er løkka
+
+En agent retter seg selv når noe forteller den hva som er galt. Det er derfor
+regelboka slutter med sjekken, og derfor linja over ber om at den kjøres:
+
+```bash
+npx @fristil/designsystem sjekk maler/*.html
+```
+
+Ett funn gir feilkode, så den hører i CI. Den er laget for maler og går ikke i
+baret på malsyntaks: `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>` gir
+ingen falske funn. Lager koden HTML-en som strenger, kjører du den samme sjekken
+i testene med `diagnoseMarkup` fra `@fristil/designsystem/diagnostics`. Alt om
+dette står på [Editoren](../editoren/).
+
+I et typet prosjekt er typene den første sjekken: importerer du
+`@fristil/designsystem/react-jsx`, blir en variant som ikke finnes en
+kompileringsfeil. Se [Typesikker bruk](../typesikker-bruk/).

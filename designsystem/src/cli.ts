@@ -258,6 +258,167 @@ async function overta(argumenter: string[]): Promise<void> {
 }
 
 /**
+ * Regelbøkene i `agent/`, med miljøet hver av dem gjelder for.
+ *
+ * Kunnskapen følger pakken. En kodeagent leser derfor den samme regelboka som
+ * versjonen i `node_modules`, og Fristil trenger ikke skrive en eneste fil i
+ * konsumentens prosjekt for å nå den.
+ */
+const RULEBOOKS = new Map<string, string>([
+  ["html", "agent/html.md"],
+  ["maler", "agent/maler.md"],
+  ["bundles", "agent/bundles.md"],
+  ["react", "agent/react.md"],
+  ["astro", "agent/astro.md"],
+  ["datastar", "agent/datastar.md"],
+])
+
+/**
+ * Rammeverk som deler regelbok, og navnet de peker på.
+ *
+ * Vue, Svelte, Solid og Lit gjør det samme på de tre tingene regelboka handler
+ * om: stilarkene importeres i inngangsmodulen, attributtene heter det de heter
+ * i HTML, og `defineFs*()` kjøres øverst i `main.ts`. Én tekst dekker dem, men
+ * den som skriver `--rammeverk=svelte` skal ikke måtte vite det.
+ */
+const ALIASES = new Map<string, string>([
+  ["vue", "bundles"],
+  ["svelte", "bundles"],
+  ["solid", "bundles"],
+  ["solid-js", "bundles"],
+  ["lit", "bundles"],
+  ["vite", "bundles"],
+])
+
+/**
+ * Avhengigheten som avgjør miljøet, i den rekkefølgen den leses.
+ *
+ * Astro står først: en Astro-app med React-øyer har begge i `package.json`, og
+ * det er Astro som bestemmer hvordan stilarkene kommer inn. `vite` står sist,
+ * siden et Vue- eller Svelte-prosjekt har den også, og da er rammeverket det
+ * mer presise svaret.
+ *
+ * Datastar lastes oftest fra en CDN og står ikke i `package.json` i det hele
+ * tatt, og SDK-en er bare for serveren. Treffet her er derfor et hint, ikke et
+ * svar, og `--rammeverk=datastar` er den sikre veien.
+ */
+const DEPENDENCY_HINTS: [string, string][] = [
+  ["astro", "astro"],
+  ["react", "react"],
+  ["vue", "bundles"],
+  ["svelte", "bundles"],
+  ["solid-js", "bundles"],
+  ["lit", "bundles"],
+  ["@starfederation/datastar-sdk", "datastar"],
+  ["vite", "bundles"],
+]
+
+/** Miljøet prosjektet i arbeidsmappa bruker, og hvorfor vi tror det. */
+async function detectFramework(): Promise<{ name: string; reason: string }> {
+  let text: string
+
+  try {
+    text = await readFile("package.json", "utf8")
+  } catch {
+    // Go, Kotlin, PHP og Razor har ingen package.json. Da er markupen
+    // serverens, og malregelboka er riktigere enn HTML-regelboka: den er den
+    // eneste som forteller hvordan sjekken leser malsyntaks.
+    return { name: "maler", reason: "ingen package.json i denne mappa" }
+  }
+
+  type Dependencies = Record<string, string> | undefined
+  let manifest: { dependencies?: Dependencies; devDependencies?: Dependencies }
+
+  try {
+    const parsed: unknown = JSON.parse(text)
+
+    // `null` er gyldig JSON, så `catch` fanget det ikke, og oppslaget på
+    // `dependencies` ga et stakkspor fra Node.
+    if (parsed === null || typeof parsed !== "object") {
+      return { name: "maler", reason: "package.json er ikke et objekt" }
+    }
+
+    manifest = parsed
+  } catch {
+    return { name: "maler", reason: "package.json kunne ikke leses" }
+  }
+
+  const dependencies = { ...manifest.dependencies, ...manifest.devDependencies }
+
+  for (const [dependency, framework] of DEPENDENCY_HINTS) {
+    if (dependency in dependencies) {
+      return { name: framework, reason: `${dependency} står i package.json` }
+    }
+  }
+
+  // Det finnes en package.json, så det finnes et byggesteg. Da importeres
+  // stilarkene, og `<link>`-regelboka ville sendt agenten feil vei.
+  return {
+    name: "bundles",
+    reason: "package.json nevner ingen kjent rammeverk",
+  }
+}
+
+/**
+ * `fristil agent`: regelboka for dette prosjektet, til utdata.
+ *
+ * Til utdata, ikke til en fil. `AGENTS.md`, `CLAUDE.md` og
+ * `.github/copilot-instructions.md` er konsumentens egne filer, og et verktøy
+ * som skriver i dem må gjette stier, flette med innhold det ikke har skrevet,
+ * og holde en kopi i takt med pakken. Ingen av de tre problemene finnes når
+ * kunnskapen blir stående i pakken. Vil noen ha den på disk, er det ett rør
+ * unna, og da er det deres beslutning.
+ *
+ * Valget av miljø skrives til feilkanalen, så utdata kan pipes rent samtidig
+ * som valget er mulig å ettergå.
+ */
+async function agent(args: string[]): Promise<void> {
+  // Flaggnavnet er norsk, som de andre flaggene i denne kommandoen.
+  const { flagg: flags, filer: rest } = lesArgumenter(args)
+
+  /*
+   * `lesArgumenter` krever likhetstegn. `--rammeverk react` ble derfor lest som
+   * to filnavn, deteksjonen overtok, og den som ba om React fikk bundles-boka
+   * uten et ord om hvorfor.
+   */
+  const withoutValue = rest.find((part) => part.startsWith("--"))
+
+  if (withoutValue) {
+    console.error(
+      `«${withoutValue}» mangler en verdi.\n\n` +
+        `Skriv ${withoutValue}=<verdi>, med likhetstegn og uten mellomrom.\n`,
+    )
+    process.exit(1)
+  }
+
+  const requested = flags.rammeverk
+  const chosen = requested
+    ? { name: requested, reason: "oppgitt med --rammeverk" }
+    : await detectFramework()
+
+  const name = RULEBOOKS.has(chosen.name)
+    ? chosen.name
+    : ALIASES.get(chosen.name)
+  const path = name ? RULEBOOKS.get(name) : undefined
+
+  if (!path || !name) {
+    console.error(
+      `Kjenner ikke «${chosen.name}».\n\n` +
+        `Velg mellom: ${[...RULEBOOKS.keys()].join(", ")}\n\n` +
+        `Vue, Svelte, Solid og Lit deler «bundles», siden de gjør det samme med\n` +
+        `stilarkene, attributtnavnene og registreringen.\n`,
+    )
+    process.exit(1)
+  }
+
+  // Aliaset skal være synlig: den som ba om «svelte» skal se at svaret er
+  // bundles-regelboka, ellers ser det ut som flagget ble ignorert.
+  const via = name === chosen.name ? "" : ` via ${chosen.name}`
+  console.error(`Regelboka for ${name}${via} (${chosen.reason}).`)
+  process.stdout.write(await readFile(join(PAKKEROT, path), "utf8"))
+}
+
+/**
  * `fristil sjekk <fil…>`: den samme sjekken som editoren kjører mens du
  * skriver, over ferdige filer. Uten filer leses standard inn, så en test
  * kan sende HTML-en serveren faktisk sender. Hvert funn skrives som
@@ -335,6 +496,11 @@ const HJELP = `fristil <kommando>
   sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
                        Uten filer leses standard inn. Ett funn gir feilkode
 
+  agent                Skriver regelboka for kodeagenter til utdata. Ingen
+    --rammeverk=<navn> fil skrives noe sted. Uten flagget leses miljøet av
+                       package.json. Navn: html, maler, bundles, react, astro,
+                       datastar. Vue, Svelte, Solid og Lit deler «bundles»
+
   overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
@@ -364,13 +530,14 @@ fra en JSON-fil: fristil tema fristil.tema.json
 
 Eksempler:
   npx @fristil/designsystem sjekk maler/*.html
+  npx @fristil/designsystem agent
   npx @fristil/designsystem overta button --ut=src/ui
   npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 
 const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
-const KOMMANDOER = new Set(["sjekk", "overta", "tema"])
+const KOMMANDOER = new Set(["agent", "sjekk", "overta", "tema"])
 
 const argumenter = process.argv.slice(2)
 
@@ -386,6 +553,11 @@ if (argumenter.length === 0 || HJELPEFLAGG.has(argumenter[0])) {
 if (!KOMMANDOER.has(argumenter[0]) && !argumenter[0].startsWith("--")) {
   console.error(`Ukjent kommando «${argumenter[0]}».\n\n${HJELP}`)
   process.exit(1)
+}
+
+if (argumenter[0] === "agent") {
+  await agent(argumenter.slice(1))
+  process.exit(0)
 }
 
 if (argumenter[0] === "overta") {
