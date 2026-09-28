@@ -28,12 +28,15 @@ type Kjøring = { kode: number; ut: string; feil: string }
 
 let antallKjøringer = 0
 
-async function kjør(argumenter: string[]): Promise<Kjøring> {
+async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   antallKjøringer += 1
 
   const prosess = Bun.spawn(["node", cli, ...argumenter], {
     stdout: "pipe",
     stderr: "pipe",
+    // `agent` leser package.json i arbeidsmappa. Uten dette ville hver kjøring
+    // sett pakkens egen, og deteksjonen aldri blitt prøvd.
+    cwd: mappe,
   })
 
   const [ut, feil, kode] = await Promise.all([

@@ -23,6 +23,40 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`fristil agent` og regelbøkene i `agent/`.** Seks regelbøker skrevet for
+  kodeagenter som Claude Code og GitHub Copilot, én per miljø: `html`, `maler`,
+  `bundles`, `react`, `astro` og `datastar`. Hver er komplett for sitt miljø og
+  nevner ingen andre, siden en agent som leser om `className` i et prosjekt med
+  Go-maler er en agent som skriver `className` i en Go-mal. Vue, Svelte, Solid
+  og Lit deler `bundles`, og `--rammeverk=svelte` peker dit.
+
+  Hver fil har de fire feilene en agent gjør oftest øverst: glemt stilark,
+  oppfunne komponenter og varianter, hardkodede farger og bommet registrering.
+  Så følger alle komponentene med klasse, element, attributter og lovlige
+  verdier, tokenlagene, de tre reglene for web components, og sjekken som
+  retteløkke. Kommandoen leser miljøet av `package.json`, og `--rammeverk=<navn>`
+  overstyrer.
+
+  Kommandoen skriver aldri en fil. `AGENTS.md`, `CLAUDE.md` og
+  `.github/copilot-instructions.md` er konsumentens egne, og et verktøy som
+  skriver i dem må gjette stier, flette med innhold det ikke har skrevet, og
+  holde en kopi i takt med pakken. Regelboka blir derfor stående i pakken, på
+  `node_modules/@fristil/designsystem/agent/<navn>.md`, og følger versjonen.
+  Mappa er med i tarballen.
+
+  De samme filene ligger også på dokumentasjonssiden, på `/llms.txt` og
+  `/agent/<navn>.md`. Den viktigste agenten har ingen `node_modules`: blir noen
+  bedt om å lage et skjema med Fristil i en tom mappe, skrives markupen før
+  `npm install` har kjørt.
+
+  Filene genereres av `scripts/generate-agent.ts`, og `scripts/sjekk-agent.ts`
+  feller hvis de er utdaterte, hvis en komponent mangler i en av dem, hvis et
+  markupeksempel ikke tåler `diagnoseMarkup`, hvis en importsti ikke finnes i
+  `exports`, hvis et tokennavn ikke finnes, eller hvis en `html`-blokk
+  importerer et pakkenavn der nettleseren trenger en URL.
+
 ### Rettet
 
 - **Versjonen i dokumentasjonens CDN-adresser kom fra 74 hardkodede steder.**

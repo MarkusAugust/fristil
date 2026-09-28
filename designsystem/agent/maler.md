@@ -1,0 +1,281 @@
+# Fristil i maler og serverskrevet HTML
+
+Regelboka for Fristil der serveren lager markupen: Go-maler, Razor, PHP,
+Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars, Nunjucks og Edge, og HTML
+bygget som strenger i Kotlin, Java, C# eller Python.
+
+Dette er miljøet Fristil er laget for. Komponentene er CSS-klasser og web
+components, altså ting nettleseren forstår direkte, så en Go-mal får de samme
+komponentene som en React-app uten å ta inn noe JavaScript-rammeverk.
+
+Det er også miljøet med minst sikkerhetsnett. Ingen kompilator ser på
+attributtene i en mal, og ingen type stopper `data-variant="outline"`. Derfor
+gjelder punkt 5 strengere her enn noe annet sted: sjekken er det eneste som
+leser markupen din.
+
+Dette er @fristil/designsystem 0.19.0. Fila er generert av pakken og følger
+versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
+
+## Kortversjon
+
+1. **Én `<link>` til `fristil.css` i sidemalen,** én gang for hele appen.
+   Mangler den, ser komponentene ustilte ut. Svaret er da å legge inn lenka,
+   aldri å skrive egen CSS for å få dem til å se riktige ut.
+2. **Bruk bare klassene og elementene i tabellene under.** `fs-modal`,
+   `fs-datepicker` og `data-variant="outline"` finnes i andre designsystemer,
+   ikke i Fristil. Er du usikker på om noe finnes, står det her eller så gjør
+   det ikke det.
+3. **Ingen hardkodede farger eller piksler.** `var(--semantic-…)` og
+   `var(--size-…)`. Paletten (`--palette-…`) er råverdier og brukes ikke
+   direkte.
+4. **Web components registreres én gang med `defineFs*()`** i sidemalen, og et
+   boolsk attributt er sant så lenge det står der. I en mal betyr det en
+   betingelse rundt hele attributtet, `{{if .Ugyldig}}invalid{{end}}`, ikke
+   `invalid="{{.Ugyldig}}"`.
+5. **Kjør sjekken på det du har skrevet:**
+   `npx @fristil/designsystem sjekk maler/*.html`. Den kjenner hver klasse,
+   hvert element, hvert attributt og hver lovlige verdi, skriver
+   `fil:linje:kolonne: melding`, og avslutter med feilkode hvis den finner
+   noe.
+
+## 1. Stilarket
+
+Én lenke i sidemalen, med alle komponentene:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/fristil.css">
+```
+
+Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene
+dine. `fristil.css` er rundt 75 kB, under 10 kB komprimert, og har alt flatet
+ut uten `@import`, og er det raskeste valget når du lenker.
+
+Vil du bare ha stilarkene sidene faktisk bruker, gjelder at `tokens.css`
+definerer alle variablene, og alle de andre stilarkene bygger på den. Den
+lastes derfor først. Deretter ett stilark per komponent, fra tabellene under.
+Uten bundles er det flere rundturer, og én glemt lenke er nok til at noe ser
+ustilt ut. For en mal er én fil nesten alltid riktig valg.
+
+## 2. Hva som finnes
+
+33 CSS-komponenter og 9 egendefinerte elementer, og dette er hele lista.
+Klassene er `fs-` + kebab-case. Varianter er alltid `data-*`-attributter,
+aldri egne klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+Standardvarianten har ingen attributt.
+
+### CSS-komponenter (ingen JavaScript)
+
+| Klasse | Stilark | Attributter |
+| --- | --- | --- |
+| `fs-accordion`<br>`fs-accordion__content` | `accordion.css` | `data-variant`: plain |
+| `fs-alert`<br>`fs-alert__title` | `alert.css` | `data-color`: info, success, warning, danger |
+| `fs-avatar`<br>`fs-avatar-stack` | `avatar.css` | `data-variant`: square<br>`data-size`: small, large |
+| `fs-badge` | `badge.css` | `data-color`: success, warning, danger, neutral |
+| `fs-breadcrumbs` | `breadcrumbs.css` | ingen |
+| `fs-button` | `button.css` | `data-variant`: secondary, ghost, danger |
+| `fs-card`<br>`fs-card__title` | `card.css` | `data-variant`: filled |
+| `fs-checkbox`<br>`fs-checkbox-row` | `checkbox.css` | `data-state`: invalid, success |
+| `fs-divider` | `divider.css` | `data-variant`: subtle, strong |
+| `fs-error-text` | `error-text.css` | `data-variant`: warning |
+| `fs-fieldset`<br>`fs-legend` | `fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text |
+| `fs-file-upload`<br>`fs-file-upload-list` | `file-upload.css` | `data-state`: invalid, success |
+| `fs-heading` | `heading.css` | `data-size`: xs, s, m, xl, mega |
+| `fs-help-text` | `help-text.css` | `data-variant`: default, success, warning |
+| `fs-input` | `input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
+| `fs-label` | `label.css` | `data-required`: symbol, text |
+| `fs-link` | `link.css` | ingen |
+| `fs-list` | `list.css` | `data-variant`: plain, divided |
+| `fs-pagination`<br>`fs-pagination__gap` | `pagination.css` | ingen |
+| `fs-paragraph` | `paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
+| `fs-radio`<br>`fs-radio-row` | `radio.css` | `data-state`: invalid, success |
+| `fs-search`<br>`fs-search-row` | `search.css` | `data-state`: invalid, success |
+| `fs-select` | `select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
+| `fs-skeleton` | `skeleton.css` | `data-variant`: text, circle |
+| `fs-skip-link` | `skip-link.css` | ingen |
+| `fs-spinner` | `spinner.css` | `data-size`: small, large |
+| `fs-sr-only` | `sr-only.css` | ingen |
+| `fs-switch`<br>`fs-switch-row` | `switch.css` | ingen |
+| `fs-table`<br>`fs-table-scroll` | `table.css` | `data-variant`: striped |
+| `fs-tag` | `tag.css` | `data-variant`: filled |
+| `fs-textarea` | `textarea.css` | `data-state`: invalid, success |
+| `fs-toggle-group`<br>`fs-toggle-group__option` | `toggle-group.css` | ingen |
+| `fs-tooltip`<br>`fs-tooltip__bubble` | `tooltip.css` | ingen |
+
+## 3. Tokens
+
+To lag. `--palette-…` er råfarger og brukes ikke direkte. `--semantic-…` sier
+hva fargen betyr, peker på en palettfarge, og er det du skal bruke. Da følger
+markupen med når paletten justeres eller konsumenten lager sitt eget tema.
+
+```
+--semantic-danger-background      --semantic-danger-contrast
+--semantic-danger-foreground      --semantic-danger-main
+--semantic-disabled-background    --semantic-disabled-foreground
+--semantic-divider-100            --semantic-divider-30
+--semantic-field-border           --semantic-field-border-hover
+--semantic-focus-ring             --semantic-icon-calendar
+--semantic-icon-check             --semantic-icon-clock
+--semantic-icon-dash              --semantic-icon-search
+--semantic-interactive-background --semantic-interactive-contrast
+--semantic-interactive-foreground --semantic-interactive-main
+--semantic-interactive-visited    --semantic-muted-foreground
+--semantic-neutral-background     --semantic-neutral-foreground
+--semantic-overlay-backdrop       --semantic-page-background
+--semantic-page-foreground        --semantic-shadow-overlay
+--semantic-size-default           --semantic-spacing-default
+--semantic-success-background     --semantic-success-foreground
+--semantic-warning-background     --semantic-warning-foreground
+```
+
+Mål: `--size-0-5`, `--size-1`, `--size-10`, `--size-12`, `--size-16`,
+`--size-2`, `--size-3`, `--size-4`, `--size-5`, `--size-6`, `--size-7`,
+`--size-8`, `--size-px`.
+
+Skrift: `--font-size-l`, `--font-size-m`, `--font-size-mega`,
+`--font-size-reference`, `--font-size-s`, `--font-size-xl`, `--font-size-xs`,
+`--font-size-xxl`, `--font-size-xxs`, `--font-weight-bold`,
+`--font-weight-medium`, `--font-weight-regular`, `--font-weight-semibold`.
+
+Linjehøyde: `--semantic-line-height-article`,
+`--semantic-line-height-compact`, `--semantic-line-height-default`,
+`--semantic-line-height-heading`.
+
+`disabled` og `neutral` er ikke det samme. `disabled` er for kontroller som er
+slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet
+informasjon brukeren faktisk skal lese eller trykke på, og holder 4,5:1. Bruk
+aldri `disabled`-fargene for å dempe noe som skal leses.
+
+## 4. Web components
+
+Tre regler gjelder alle sammen:
+
+1. **`defineFs*()` kjøres én gang** i sidemalen, ikke én gang per komponent.
+   Importen har ingen bivirkning alene; det er `define`-kallet som registrerer
+   elementet.
+2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"`,
+   `disabled="false"` og `open="false"` slår *på*. Skal noe av det bort, må
+   attributtet fjernes helt.
+3. **Du skriver markupen, komponenten fester oppførselen.** `<fs-field>` lager
+   ikke ledeteksten eller kontrollen din. Den kobler sammen dem du har lagt
+   inn, med `id`, `for` og `aria-describedby`. Et `<fs-field>` uten kontroll,
+   eller uten ledetekst, er en feil komponenten melder fra om.
+
+| Element | Kategori | Stilark | Registrering | Attributter | Klasser inni |
+| --- | --- | --- | --- | --- | --- |
+| `<fs-field>` | ramme | `field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/field/fs-field.js` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen |
+| `<fs-tabs>` | ramme | `tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `fs-tabs__list`<br>`fs-tabs__panel` |
+| `<fs-error-summary>` | ramme | `error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false<br>`hidden` (flag) | `fs-error-summary`<br>`fs-error-summary__title` |
+| `<fs-popover>` | ramme | `popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `fs-popover` |
+| `<fs-suggestion>` | ramme | `suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-dialog>` | ramme | `dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
+| `<fs-toast>` | frittstaende | `toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text) | `fs-toast`<br>`fs-toast__close` |
+| `<fs-session-timeout>` | frittstaende | `session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/frittstaende/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
+| `<fs-connection-status>` | frittstaende | `connection-status.css` | `defineFsConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/frittstaende/connection-status/fs-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
+
+Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
+`querySelector`, `FormData` og vanlig CSS virker rett inn i det.
+
+## 5. Et felt i en mal
+
+```html
+<fs-field {{if .Feil}}invalid{{end}} required-marker="symbol">
+  <label>Fullt navn</label>
+  <input class="fs-input" type="text" name="navn" value="{{.Navn}}" required />
+  {{if .Feil}}<p class="fs-error-text">{{.Feil}}</p>{{end}}
+</fs-field>
+```
+
+Registreringen, én gang i sidemalen:
+
+```html
+<script type="module">
+  import { defineFsField } from
+    "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.19.0/dist/components/ramme/field/fs-field.js"
+
+  defineFsField()
+</script>
+```
+
+## 6. Når serveren sender ny HTML
+
+Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
+`innerHTML`-oppdatering, er spørsmålet hvem som eier tilstanden. Som standard
+eier komponenten den: `<fs-tabs>` husker fanen brukeren valgte, og setter den
+tilbake når en patch river den bort. Malen trenger ingenting for det.
+
+Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
+det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å
+sette brukerens valg tilbake:
+
+```html
+<fs-tabs server-controlled>
+  <div class="fs-tabs__list" aria-label="Deler av saken">
+    <button>Søknaden</button>
+    <button>Vedlegg</button>
+  </div>
+  <div class="fs-tabs__panel">…</div>
+  <div class="fs-tabs__panel" hidden>…</div>
+</fs-tabs>
+```
+
+Attributtet finnes på `<fs-tabs>`, `<fs-popover>`, `<fs-dialog>` og
+`<fs-suggestion>`. Uten det ville serveren og komponenten kjempet om samme
+tilstand. Merk at tilstanden alltid står i markupen serveren sendte, altså
+`aria-selected` på fanen, `hidden` på panelet, ikke i et eget attributt.
+
+## 7. Sjekken er det eneste som leser markupen din
+
+```bash
+npx @fristil/designsystem sjekk maler/*.html
+```
+
+Ett funn gir feilkode, så den hører i CI ved siden av testene. Den fanger
+`fs-buton`, `data-variant="secundary"`, `<fs-modal>` og `<fs-field>` uten
+kontroll eller ledetekst.
+
+Den er laget for maler. Kommentarer, `<script>` og `<style>` hoppes over, og
+`<?…?>` og `<%…%>` inne i en tagg avslutter den ikke før tiden. Disse er
+etterprøvde og gir ingen falske funn:
+
+```html
+<button class="fs-button {{.Ekstra}}">Send</button>
+<button class="fs-button" data-variant="{{.Variant}}">Send</button>
+<span class="fs-badge" data-color="{% if x %}danger{% endif %}">1</span>
+<button class="fs-button" data-variant="<?= $variant ?>">Send</button>
+<button class="fs-button" data-variant="@variant">Send</button>
+<button class="fs-button" data-variant="<%= variant %>">Send</button>
+```
+
+Lager koden HTML-en som strenger, finnes det ingen fil å sjekke. Kjør da den
+samme sjekken i testene:
+
+```js
+import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"
+
+const funn = diagnoseMarkup(html)
+// funn er tom når markupen stemmer
+```
+
+Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «Fristil»
+gir fullføring, forklaring, feilmeldinger og hurtigrettelser i seksten
+malspråk, og WebStorm og IntelliJ IDEA Ultimate leser `web-types.json` fra
+pakken uten noen utvidelse.
+
+## Kjente fallgruver
+
+| Symptom | Årsak |
+| --- | --- |
+| Stilene mangler | `tokens.css` er ikke lastet, eller lastes etter komponentens eget stilark |
+| Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
+| Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
+| `customElements is not defined` | Registreringen kjøres der det ikke finnes noen nettleser |
+| `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
+
+## Når CSS ikke strekker til
+
+Komponentene tilpasses med tokens og `--fs-`-variabler. Holder ikke det,
+kopierer `npx @fristil/designsystem overta <komponent>` kildekoden til én
+komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
+dine lages med `npx @fristil/designsystem tema`.
+
+Alt dette, med levende eksempler: https://fristil.netlify.app/
