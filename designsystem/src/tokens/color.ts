@@ -149,6 +149,7 @@ export const SCALE_STEPS = {
   30: 0.83,
   50: 0.72,
   70: 0.55,
+  80: 0.5,
   100: 0.38,
 } as const
 
@@ -157,7 +158,10 @@ export const SCALE_STEPS = {
  *
  * Lyse trinn tåler lite metning før de ser skitne ut, og mørke trinn mister
  * den likevel i sRGB. Forholdstallene er lest av Fristils egen palett, så en
- * generert skala får samme rytme som den håndlagde.
+ * generert skala får samme rytme som den håndlagde. Regnet som trinnets
+ * metning delt på trinn 70, ligger 80 på 1,20 i danger, 1,47 i warning og
+ * 1,36 i success, altså sterkere enn 70. Det er ikke en feil: trinn 80 er
+ * statusfargen som tekst på lys flate, og den skal rope litt.
  */
 const CHROMA_FACTOR: Record<keyof typeof SCALE_STEPS, number> = {
   5: 0.09,
@@ -165,6 +169,7 @@ const CHROMA_FACTOR: Record<keyof typeof SCALE_STEPS, number> = {
   30: 0.62,
   50: 1.06,
   70: 1,
+  80: 1.3,
   100: 0.79,
 }
 
@@ -182,14 +187,25 @@ export const NEUTRAL_STEPS = {
 /**
  * Taket på metningen i en generert skala, målt i OKLCH.
  *
- * Merkefarger ligger sjelden over dette, og de som gjør det er som regel
- * neon: `#39ff14` ligger på 0,286 og mister 44 prosent mot taket, `#ff2d6f`
- * på 0,240 og mister 33. Mesteparten av paletten er upåvirket: `#1362ae`,
- * `#2b6940` og `#8a5a00` ligger alle under.
+ * Taket demper, det verner ikke. Kontrastgarantien er den samme uansett hvor
+ * det står, siden den kommer av de faste lyshetene og av passet i `theme.ts`
+ * som måler hvert par etterpå. Et neontema gjennom hele parlista holder kravet
+ * ved 0,16, 0,24 og 0,3225, og det svakeste paret ligger på 4,62 til 4,64 i
+ * alle tre.
+ *
+ * Verdien er et skjønn, ikke en utregning. Ved 0,16 mistet et sterkt merke mye
+ * der det synes: trinn 30, som er lenkefargen i mørkt tema, lå på 0,099 mot
+ * 0,148 nå. Over 0,24 er gevinsten liten for de fleste kulører, og den ligger i
+ * de lyseste trinnene, som `CHROMA_FACTOR` uansett holder nede.
+ *
+ * Taket binder bare for farger over seg, så de fleste merkefarger merker
+ * ingenting: `#1362ae`, `#8a5a00`, `#ffd600` på 0,182 og `#00e676` på 0,214
+ * ligger alle under. Det som fortsatt kappes er ekte neon, som `#39ff14` på
+ * 0,286, som mister 16 prosent.
  *
  * Det høyeste sRGB i det hele tatt kan vise er 0,3225, som er magenta.
  */
-export const MAX_CHROMA = 0.16
+export const MAX_CHROMA = 0.24
 
 /**
  * Grensene et metningstak må ligge innenfor.
@@ -216,20 +232,24 @@ export const CHROMA_CEILING = 0.33
  * par etterpå og flytter lysheten til det holder. Mer metning gir flere slike
  * justeringer, ikke en svakere garanti.
  *
- * Et hevet tak slår ikke inn like sterkt over hele skalaen. Målt på `#39ff14`
- * med taket hevet fra 0,16 til 0,32:
+ * Et hevet tak slår ikke inn like sterkt over hele skalaen. Testet på
+ * `#39ff14` med taket hevet fra standarden 0,24 til det sRGB kan vise:
  *
- * | Trinn | 5 | 10 | 30 | 50 | 70 | 100 |
- * | --- | --- | --- | --- | --- | --- | --- |
- * | Før | 0,015 | 0,039 | 0,099 | 0,170 | 0,160 | 0,126 |
- * | Etter | 0,026 | 0,068 | 0,177 | 0,239 | 0,184 | 0,127 |
+ * | Trinn | 5 | 10 | 30 | 50 | 70 | 80 | 100 |
+ * | --- | --- | --- | --- | --- | --- | --- | --- |
+ * | 0,24 | 0,021 | 0,057 | 0,148 | 0,239 | 0,184 | 0,167 | 0,127 |
+ * | 0,3225 | 0,026 | 0,068 | 0,177 | 0,239 | 0,184 | 0,167 | 0,127 |
  *
- * Endene rører seg lite, av to ulike grunner. De lyse trinnene holdes nede av
- * `CHROMA_FACTOR`, som står på 0,09 og 0,24 der, og det er med vilje: lyse
- * trinn ser skitne ut med mye metning. Det mørkeste trinnet holdes nede av
- * sRGB, som ikke kan vise så mye metning ved den lysheten, og klemmes inn i
- * området uansett hva taket sier. Det er trinn 30 til 70 som endrer seg, og
- * det er der knapper og tekst bor.
+ * For denne kuløren rører bare de tre lyseste trinnene seg, og lite. De holdes
+ * nede av `CHROMA_FACTOR`, som står på 0,09 og 0,24 der, og det er med vilje:
+ * lyse trinn ser skitne ut med mye metning. Trinn 50 og nedover ligger alt på
+ * det sRGB kan vise ved den lysheten i grønt, og klemmes inn i området uansett
+ * hva taket sier.
+ *
+ * Hvor mange trinn som beveger seg avhenger av kuløren. sRGB rommer mest
+ * metning rundt magenta, så `#ff00ff` flytter også trinn 50, 70 og 80 når taket
+ * heves. Tallet 0,24 er derfor ikke et punkt der noe mettes, men et valg om
+ * hvor mye et merke skal få lov til å rope.
  */
 export function buildScale(
   hex: string,

@@ -1,8 +1,15 @@
 import { afterEach, describe, expect, it } from "vitest"
 
 import { farge, kontrast, PAR } from "../testing/kontrast"
-import { adjustForContrast, buildScale, parseHex, rgbToOklch } from "./color"
+import {
+  adjustForContrast,
+  buildScale,
+  CHROMA_CEILING,
+  parseHex,
+  rgbToOklch,
+} from "./color"
 import { buildTheme, type ThemeInput } from "./theme"
+import { cssTokens } from "./tokens"
 
 import "./tokens.css"
 
@@ -49,8 +56,8 @@ const MERKER = [
   {
     /*
      * Neon med taket hevet, altså det verste tilfellet for kontrastkravet.
-     * Fargene her ligger godt over standardtaket på 0,16: `#39ff14` på 0,286
-     * og `#ff2d6f` på 0,240. Hele listen av par kjøres mot dette merket som
+     * `#39ff14` ligger på 0,286 og kappes av standardtaket, mens `#ff2d6f` på
+     * 0,2399 så vidt slipper under. Hele listen av par kjøres mot dette merket som
      * mot de tre andre, og det er påstanden om at et hevet tak ikke svekker
      * garantien. Taket styrer metning; kontrasten styres av trinnene og av
      * justeringspasset, som måler hvert par etterpå.
@@ -169,26 +176,32 @@ describe("generatoren", () => {
     expect(flyttet?.after).toBeGreaterThanOrEqual(4.5)
   })
 
-  it("slipper mer metning gjennom når taket heves", () => {
+  it("bruker taket i begge retninger", () => {
     /*
      * Uten denne kunne `maxChroma` blitt lest inn og aldri brukt, og alle de
      * andre testene ville meldt grønt: et tema bygget med standardtaket holder
-     * jo kravene. Neongrønn ligger på 0,286 i OKLCH og kappes til 0,16.
+     * jo kravene.
+     *
+     * Senkingen er den skarpe halvdelen. For grønt ligger trinn 50 og nedover
+     * ved standardtaket alt på det sRGB kan vise ved den lysheten, så et hevet
+     * tak rører dem ikke. En test som bare hevet ville derfor målt et tall som
+     * ikke kan bevege seg for denne kuløren.
      */
     const standard = buildScale("#39ff14")
-    const hevet = buildScale("#39ff14", 0.32)
+    const senket = buildScale("#39ff14", 0.08)
+    const hevet = buildScale("#39ff14", CHROMA_CEILING)
     const metning = (hex: string) => rgbToOklch(parseHex(hex)).c
 
-    expect(metning(hevet[50])).toBeGreaterThan(metning(standard[50]))
-    expect(metning(hevet[70])).toBeGreaterThan(metning(standard[70]))
+    expect(metning(senket[50])).toBeLessThan(metning(standard[50]))
+    expect(metning(senket[70])).toBeLessThan(metning(standard[70]))
 
     /*
-     * Endene rører seg mindre, og det er med vilje. De lyse trinnene holdes
-     * nede av `CHROMA_FACTOR`, fordi lyse trinn ser skitne ut med mye metning,
-     * og det mørkeste av hva sRGB kan vise ved den lysheten. Står ikke dette
-     * her, ser en senere endring av faktorene ut som en forbedring.
+     * Hevingen virker bare på de lyse trinnene, og de holdes samtidig nede av
+     * `CHROMA_FACTOR`, fordi lyse trinn ser skitne ut med mye metning. Står
+     * ikke dette her, ser en senere endring av faktorene ut som en forbedring.
      */
-    expect(metning(hevet[50]) - metning(standard[50])).toBeGreaterThan(
+    expect(metning(hevet[30])).toBeGreaterThan(metning(standard[30]))
+    expect(metning(hevet[30]) - metning(standard[30])).toBeGreaterThan(
       metning(hevet[5]) - metning(standard[5]),
     )
   })
@@ -269,8 +282,9 @@ describe("temaet kan også sette skrift og form", () => {
   })
 
   it("skiller knapp, felt og flate", () => {
-    // Skatteetatens knapper er helt runde, mens feltene deres har nesten
-    // rette hjørner. Ett felles tall ville gjort feltene til kapsler.
+    // Et annet norsk designsystem har helt runde knapper, mens feltene der
+    // har nesten rette hjørner. Ett felles tall ville gjort feltene til
+    // kapsler.
     const tema = buildTheme({
       ...farger,
       shape: {
@@ -419,10 +433,10 @@ describe("temaet kan også sette skrift og form", () => {
 /**
  * Temaet uten farger.
  *
- * Fristils egen palett er Skatteetatens, verdi for verdi. Å kjøre fargene
- * deres gjennom generatoren ville derfor flyttet dem bort fra der de skal
- * være: `#1362ae` kommer ut som `#1e6ab7`, siden skalaene regnes om i OKLCH
- * fra merkefargen. Et tema som bare setter skrift og form er svaret.
+ * Bruker organisasjonen Fristils palett fra før, ville det å kjøre de samme
+ * fargene gjennom generatoren flyttet dem bort fra der de skal være:
+ * `#1362ae` kommer ut som `#1e6ab7`, siden skalaene regnes om i OKLCH fra
+ * merkefargen. Et tema som bare setter skrift og form er svaret.
  */
 describe("et tema kan la fargene stå", () => {
   it("skriver verken palett eller semantiske farger", () => {
@@ -474,5 +488,34 @@ describe("et tema kan la fargene stå", () => {
     // det gjennom. Resultatet ble en generert fil med et tomt lag i.
     expect(() => buildTheme({ shape: {} })).toThrow(/tomt/)
     expect(() => buildTheme({ typography: {}, shape: {} })).toThrow(/tomt/)
+  })
+})
+
+describe("et tema skriver over hele paletten", () => {
+  /*
+   * Skalaene i `tokens.ts` heter det samme som generatorens egne, slik at et
+   * generert tema treffer dem. Før het de `azure`, `burgundy` og så videre,
+   * mens generatoren skrev `interactive` og `danger`. Da ble Fristils egen
+   * palett stående urørt ved siden av den genererte, og Tailwind-klassene
+   * over paletten viste fortsatt Fristils farger i en app med eget tema.
+   *
+   * Testen spør ikke om navnene er like, men om hvert token faktisk blir
+   * skrevet over. Det er den påstanden som betyr noe.
+   */
+  it("lar ingen innebygd palettverdi stå igjen", () => {
+    const tema = buildTheme({
+      interactive: "#7c3aed",
+      danger: "#b3261e",
+      success: "#2b6940",
+      warning: "#8a5a00",
+    })
+
+    const skrevet = new Set(tema.css.match(/--palette-[a-z0-9-]+(?=:)/g) ?? [])
+    const innebygd = Object.keys(cssTokens).filter((navn) =>
+      navn.startsWith("--palette-"),
+    )
+
+    expect(innebygd.length).toBeGreaterThan(0)
+    expect(innebygd.filter((navn) => !skrevet.has(navn))).toEqual([])
   })
 })

@@ -20,30 +20,30 @@
 
 :root {
   /* Paletten, ordrett fra designsystem/src/tokens/tokens.ts */
-  --graphite-0: #ffffff;
-  --graphite-5: #f4f4f4;
-  --graphite-10: #e5e5e5;
-  --graphite-30: #b2b2b2;
-  --graphite-50: #757575;
-  --graphite-70: #4d4d4d;
-  --graphite-100: #1a1a1a;
-  --azure-10: #cde1f9;
-  --azure-30: #9ccff2;
-  --azure-70: #1362ae;
-  --azure-100: #093e61;
-  --denim-10: #e2eaf7;
-  --denim-30: #b5cbee;
-  --denim-70: #5a77a8;
-  --denim-100: #2c436b;
-  --forest-10: #e3f5ea;
-  --forest-30: #b9e1c8;
-  --forest-100: #2b6940;
-  --ochre-10: #f9ede2;
-  --ochre-30: #f0d2b6;
-  --ochre-100: #6b492c;
-  --burgundy-10: #f7e2e8;
-  --burgundy-30: #f3a7b0;
-  --burgundy-100: #6f2c3f;
+  --neutral-0: #ffffff;
+  --neutral-5: #f4f4f4;
+  --neutral-10: #e5e5e5;
+  --neutral-30: #b2b2b2;
+  --neutral-50: #757575;
+  --neutral-70: #4d4d4d;
+  --neutral-100: #1a1a1a;
+  --interactive-10: #cde1f9;
+  --interactive-30: #9ccff2;
+  --interactive-70: #1362ae;
+  --interactive-100: #093e61;
+  --visited-10: #e2eaf7;
+  --visited-30: #b5cbee;
+  --visited-70: #5a77a8;
+  --visited-100: #2c436b;
+  --success-10: #e3f5ea;
+  --success-30: #b9e1c8;
+  --success-100: #2b6940;
+  --warning-10: #f9ede2;
+  --warning-30: #f0d2b6;
+  --warning-100: #6b492c;
+  --danger-10: #f7e2e8;
+  --danger-30: #f3a7b0;
+  --danger-100: #6f2c3f;
 
   --flate: #10161f;
   --flate-kort: #171f2b;
@@ -146,7 +146,7 @@ h2 {
   line-height: 1.2;
   letter-spacing: -0.01em;
   margin-block-end: 1rem;
-  color: var(--azure-30);
+  color: var(--interactive-30);
 }
 
 h3 {
@@ -164,8 +164,8 @@ ul, ol { margin: 0 0 1rem 1.2rem; font-size: clamp(1rem, 1.2vw, 1.08rem); }
 li { margin-block-end: 0.55rem; }
 li:last-child { margin-block-end: 0; }
 
-strong { color: var(--graphite-0); }
-a { color: var(--azure-30); }
+strong { color: var(--neutral-0); }
+a { color: var(--interactive-30); }
 
 .ingress {
   font-size: clamp(1.1rem, 1.6vw, 1.35rem);
@@ -216,7 +216,7 @@ a { color: var(--azure-30); }
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--azure-30);
+  color: var(--interactive-30);
   opacity: 0.72;
 }
 /* Lysbildene i kapittelet, på forsiden. */
@@ -290,10 +290,10 @@ a { color: var(--azure-30); }
   margin-block-end: 0.6rem;
 }
 
-.merke-blaa { background: var(--azure-10); color: var(--azure-100); }
-.merke-gronn { background: var(--forest-10); color: var(--forest-100); }
-.merke-gul { background: var(--ochre-10); color: var(--ochre-100); }
-.merke-roed { background: var(--burgundy-10); color: var(--burgundy-100); }
+.merke-blaa { background: var(--interactive-10); color: var(--interactive-100); }
+.merke-gronn { background: var(--success-10); color: var(--success-100); }
+.merke-gul { background: var(--warning-10); color: var(--warning-100); }
+.merke-roed { background: var(--danger-10); color: var(--danger-100); }
 
 /* ---------- Kode ---------- */
 
@@ -312,14 +312,14 @@ pre {
   background: rgba(9, 62, 97, 0.34);
   border: 1px solid var(--kant);
   border-radius: 0.6rem;
-  color: var(--azure-10);
+  color: var(--interactive-10);
   white-space: pre;
   tab-size: 2;
 }
 
-pre b { color: var(--graphite-0); font-weight: 700; }
+pre b { color: var(--neutral-0); font-weight: 700; }
 pre i { color: var(--tekst-dempet); font-style: normal; }
-code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
+code { font-family: var(--mono); font-size: 0.92em; color: var(--interactive-30); }
 
 .kodetittel {
   font-family: var(--mono);
@@ -364,7 +364,7 @@ tr:last-child td { border-block-end: none; }
   font-size: clamp(1.9rem, 3.4vw, 2.8rem);
   font-weight: 700;
   line-height: 1;
-  color: var(--azure-30);
+  color: var(--interactive-30);
   display: block;
   margin-block-end: 0.3rem;
 }
@@ -398,10 +398,10 @@ tr:last-child td { border-block-end: none; }
 
 .rolle {
   font-weight: 700;
-  color: var(--azure-30);
+  color: var(--interactive-30);
 }
 
-.rolle-forvalter { color: var(--ochre-30); }
+.rolle-forvalter { color: var(--warning-30); }
 
 @media (max-width: 860px) {
   .perspektiv p { grid-template-columns: 1fr; }
@@ -436,8 +436,8 @@ tr:last-child td { border-block-end: none; }
   cursor: pointer;
 }
 
-.styring button:hover { background: var(--azure-70); border-color: var(--azure-70); }
-.styring button:focus-visible { outline: 2px solid var(--azure-30); outline-offset: 2px; }
+.styring button:hover { background: var(--interactive-70); border-color: var(--interactive-70); }
+.styring button:focus-visible { outline: 2px solid var(--interactive-30); outline-offset: 2px; }
 
 .teller {
   font-family: var(--mono);
@@ -770,8 +770,8 @@ defineFsField()
  * avhengighet en strek. Grafen legges i lag fra venstre mot høyre etter lengste
  * vei fra appen, så det alt til slutt hviler på står lengst til høyre.
  *
- * Fargen sier bare én ting: om pakken er designsystemets egen (azure) eller
- * noe designsystemet drar inn (ochre, paletten sin varselfarge, for det er
+ * Fargen sier bare én ting: om pakken er designsystemets egen (interactive) eller
+ * noe designsystemet drar inn (warning, paletten sin varselfarge, for det er
  * dette som koster). Blått mot oransje holder også for fargesvakt syn. Det appen hadde fra før er en hul
  * firkant, og telles ikke.
  *
@@ -781,8 +781,8 @@ defineFsField()
  * grafen sin under, i samme målestokk som de andre, og grafflaten har fast
  * høyde så lysbildet ikke hopper når du bytter.
  */
-/* Ochre-50 står ikke i roten, og er skrevet av fra tokens.ts som de andre. */
-.avh { --ochre-50: #e7b78a; }
+/* Warning-50 står ikke i roten, og er skrevet av fra tokens.ts som de andre. */
+.avh { --warning-50: #e7b78a; }
 .avh h2 { margin-block-end: 0.7rem; }
 .avh-forklaring {
   display: flex;
@@ -811,23 +811,23 @@ defineFsField()
  * til: en egen blokk fikk det til å rulle 15 piksler på 1280x800.
  */
 .avh-maalt {
-  color: var(--graphite-0);
+  color: var(--neutral-0);
   font-weight: 600;
 }
 .avh-bytt {
   margin-inline-start: auto;
   font: inherit;
   font-size: 0.86rem;
-  color: var(--azure-30);
+  color: var(--interactive-30);
   background: none;
   border: 1px solid var(--kant);
   border-radius: 999px;
   padding: 0.25rem 0.8rem;
   cursor: pointer;
 }
-.avh-bytt:hover, .avh-bytt:focus-visible { border-color: var(--azure-30); outline: none; }
+.avh-bytt:hover, .avh-bytt:focus-visible { border-color: var(--interactive-30); outline: none; }
 
-/* Radene: én knapp per system, og den valgte har en kant i azure. */
+/* Radene: én knapp per system, og den valgte har en kant i interactive. */
 .avh-liste { display: grid; margin-block-end: 0.5rem; border-block-start: 1px solid var(--kant); }
 .avh-hode {
   display: flex;
@@ -846,9 +846,9 @@ defineFsField()
   cursor: pointer;
 }
 .avh-hode:hover { background: rgba(205, 225, 249, 0.05); }
-.avh-hode:focus-visible { outline: 2px solid var(--azure-30); outline-offset: -2px; }
-.avh-hode[aria-selected="true"] { border-inline-start-color: var(--azure-30); background: rgba(205, 225, 249, 0.07); }
-.avh-hode strong { font-size: 1.05rem; color: var(--graphite-0); }
+.avh-hode:focus-visible { outline: 2px solid var(--interactive-30); outline-offset: -2px; }
+.avh-hode[aria-selected="true"] { border-inline-start-color: var(--interactive-30); background: rgba(205, 225, 249, 0.07); }
+.avh-hode strong { font-size: 1.05rem; color: var(--neutral-0); }
 .avh-hode code { font-size: 0.82rem; }
 .avh-tall { margin-inline-start: auto; display: flex; gap: 1.1rem; font-size: 0.82rem; color: var(--tekst-dempet); white-space: nowrap; }
 .avh-tall b { font-size: 1.05rem; font-weight: 700; color: var(--tekst); margin-inline-end: 0.25rem; }
@@ -875,20 +875,20 @@ defineFsField()
 .avh-kant[data-peer] { stroke-dasharray: 4 3; }
 .avh-node { cursor: default; outline: none; transition: opacity 0.12s; }
 .avh-node .prikk { stroke: var(--flate-kort); stroke-width: 2; }
-.avh-node[data-type="system"] .prikk { fill: var(--azure-30); }
-.avh-node[data-type="annen"] .prikk { fill: var(--ochre-50); }
-.avh-node[data-type="grunn"] .prikk { fill: var(--flate-kort); stroke: var(--graphite-50); stroke-width: 1.75; }
+.avh-node[data-type="system"] .prikk { fill: var(--interactive-30); }
+.avh-node[data-type="annen"] .prikk { fill: var(--warning-50); }
+.avh-node[data-type="grunn"] .prikk { fill: var(--flate-kort); stroke: var(--neutral-50); stroke-width: 1.75; }
 .avh-node[data-type="app"] .prikk { fill: none; stroke: var(--tekst-dempet); stroke-width: 1.25; }
 /* Glorien i flatens farge holder navnet lesbart der strekene går gjennom det. */
 .avh-node text { fill: var(--tekst-dempet); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--flate-kort); stroke-width: 3px; stroke-linejoin: round; }
 .avh-node[data-type="app"] text { fill: var(--tekst); font-weight: 700; }
 /* Treffflaten er større enn prikken. */
 .avh-node .treff { fill: transparent; }
-.avh-node:focus-visible .prikk, .avh-node:hover .prikk { stroke: var(--graphite-0); }
+.avh-node:focus-visible .prikk, .avh-node:hover .prikk { stroke: var(--neutral-0); }
 
 /* Når én pakke er valgt, trer resten tilbake. */
 .avh-svg[data-aktiv] .avh-kant { opacity: 0.1; }
-.avh-svg[data-aktiv] .avh-kant[data-aktiv] { opacity: 1; stroke: var(--azure-30); stroke-width: 1.75; }
+.avh-svg[data-aktiv] .avh-kant[data-aktiv] { opacity: 1; stroke: var(--interactive-30); stroke-width: 1.75; }
 .avh-svg[data-aktiv] .avh-node { opacity: 0.28; }
 .avh-svg[data-aktiv] .avh-node[data-aktiv] { opacity: 1; }
 .avh-svg[data-aktiv] .avh-node[data-aktiv] text { fill: var(--tekst); }
@@ -907,7 +907,7 @@ defineFsField()
   color: var(--tekst-dempet);
   pointer-events: none;
 }
-.avh-tips strong { display: block; color: var(--graphite-0); font-size: 0.95rem; }
+.avh-tips strong { display: block; color: var(--neutral-0); font-size: 0.95rem; }
 .avh-tips b { color: var(--tekst); font-weight: 700; }
 .avh-tips p { margin: 0; font-size: inherit; }
 
@@ -1299,7 +1299,7 @@ defineFsField()
 .morf-bytt, .morf-knapp {
   font: inherit;
   font-size: 0.84rem;
-  color: var(--azure-30);
+  color: var(--interactive-30);
   background: none;
   border: 1px solid var(--kant);
   border-radius: 999px;
@@ -1307,11 +1307,11 @@ defineFsField()
   cursor: pointer;
 }
 .morf-bytt { margin-inline-start: auto; }
-.morf-bytt:hover, .morf-bytt:focus-visible, .morf-knapp:hover, .morf-knapp:focus-visible { border-color: var(--azure-30); outline: none; }
+.morf-bytt:hover, .morf-bytt:focus-visible, .morf-knapp:hover, .morf-knapp:focus-visible { border-color: var(--interactive-30); outline: none; }
 /* Knappen skrus aldri av med disabled: det kaster fokus til body, og neste Enter
    går til presentasjonen. aria-disabled gir utseendet, og nesteSteg avviser. */
 .morf-knapp[aria-disabled="true"] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
-.morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--azure-30); color: var(--graphite-0); }
+.morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--interactive-30); color: var(--neutral-0); }
 
 .morf-scene > [data-skjult] { display: none; }
 
@@ -1328,7 +1328,7 @@ defineFsField()
 /* r får litt mer plass enn s: etter morfingen har r flest brikker, og de skal stå på to rader. */
 .morf-kolonner { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; margin-block: 0.25rem 0.2rem; }
 .morf-kolonne h3 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tekst-dempet); margin-block-end: 0.2rem; }
-.morf-kolonne h3 code { color: var(--azure-30); text-transform: none; letter-spacing: 0; }
+.morf-kolonne h3 code { color: var(--interactive-30); text-transform: none; letter-spacing: 0; }
 
 /* Det brukeren ser: etikett, felt og feilmelding, på én linje. */
 .morf-felt { display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.2rem; font-size: 0.82rem; }
@@ -1336,10 +1336,10 @@ defineFsField()
 .morf-input {
   min-inline-size: 9rem;
   padding: 0.12rem 0.5rem;
-  border: 1px solid var(--graphite-30);
+  border: 1px solid var(--neutral-30);
   border-radius: 0.3rem;
-  background: var(--graphite-0);
-  color: var(--graphite-100);
+  background: var(--neutral-0);
+  color: var(--neutral-100);
   font-family: var(--mono);
   font-size: 0.78rem;
   transition: border-color 0.2s;
@@ -1358,25 +1358,25 @@ defineFsField()
   padding: 0.16rem 0.36rem;
   border-radius: 0.4rem;
   border: 1px solid var(--kant);
-  color: var(--azure-10);
+  color: var(--interactive-10);
   background: rgba(205, 225, 249, 0.06);
   transition: opacity 0.3s, transform 0.3s, border-color 0.2s, background 0.2s;
 }
-.morf-brikke[data-kilde="komponent"] { border-color: var(--azure-30); background: rgba(156, 207, 242, 0.16); color: var(--graphite-0); }
-.morf-brikke[data-tilstand="sjekkes"] { border-color: var(--graphite-0); background: rgba(205, 225, 249, 0.18); }
+.morf-brikke[data-kilde="komponent"] { border-color: var(--interactive-30); background: rgba(156, 207, 242, 0.16); color: var(--neutral-0); }
+.morf-brikke[data-tilstand="sjekkes"] { border-color: var(--neutral-0); background: rgba(205, 225, 249, 0.18); }
 .morf-brikke[data-tilstand="fjernes"] { border-color: #e7b78a; color: #e7b78a; background: rgba(231, 183, 138, 0.14); text-decoration: line-through; }
 .morf-brikke[data-tilstand="borte"] { opacity: 0; transform: translateY(0.4rem); }
 .morf-brikke[data-tilstand="ny"], .morf-linje[data-tilstand="ny"] { animation: morf-inn 0.3s ease-out; }
 @keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
 
 /* Trafikken: det som går til serveren, og det som kommer tilbake. */
-.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.25; min-block-size: 3.75rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
+.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.25; min-block-size: 3.75rem; color: var(--interactive-10); white-space: pre-wrap; overflow-wrap: anywhere; }
 .morf-linje { display: block; }
 .morf-linje i { color: var(--tekst-dempet); font-style: normal; }
 .morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
 .morf-tekst { margin: 0; font-size: 0.86rem; color: var(--tekst); min-block-size: 1.3em; }
 .morf-tekst[data-tone="varsel"] { color: #e7b78a; }
-.morf-tekst[data-tone="ok"] { color: var(--forest-30); }
+.morf-tekst[data-tone="ok"] { color: var(--success-30); }
 @media (max-width: 860px) {
   /* På smal skjerm står koden, som før. */
   .morf-bytt { display: none; }
