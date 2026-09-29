@@ -21,8 +21,8 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
  * seg likegyldig til nettopp det vi vil kontrollere.
  */
 export function monter(html: string): HTMLElement {
-  document.body.style.background = "var(--semantic-page-background)"
-  document.body.style.color = "var(--semantic-page-foreground)"
+  document.body.style.background = "var(--fs-color-neutral-canvas)"
+  document.body.style.color = "var(--fs-color-neutral-text-strong)"
   document.body.innerHTML = `<div id="fs-testflate">${html}</div>`
 
   const flate = document.getElementById("fs-testflate")
@@ -30,9 +30,9 @@ export function monter(html: string): HTMLElement {
     throw new Error("Klarte ikke å montere testflaten")
   }
 
-  flate.style.background = "var(--semantic-page-background)"
-  flate.style.color = "var(--semantic-page-foreground)"
-  flate.style.padding = "var(--size-4)"
+  flate.style.background = "var(--fs-color-neutral-canvas)"
+  flate.style.color = "var(--fs-color-neutral-text-strong)"
+  flate.style.padding = "var(--fs-spacing-4)"
 
   return flate
 }

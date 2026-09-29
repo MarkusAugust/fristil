@@ -12,7 +12,11 @@
  */
 
 import { readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { compile } from "tailwindcss"
+import { ROLES } from "../../designsystem/src/tokens/contract.ts"
+import { FAMILIES, roleToCss } from "../../designsystem/src/tokens/matrix.ts"
 
 const ROT = fileURLToPath(new URL("../../", import.meta.url))
 const KOMPONENTER = `${ROT}designsystem/src/components/`
@@ -64,8 +68,39 @@ function klasser(css: string): string[] {
 }
 
 /** Komponentvariablene et stilark leser. */
+/**
+ * Komponentvariablene, altså det konsumenten kan sette på én komponent.
+ *
+ * Tokens heter også `--fs-*` nå, og de hører på tokensiden framfor på hver
+ * komponentside. Slaget i navnet skiller dem: `--fs-color-danger-fill` er et
+ * token, `--fs-button-padding` er en komponentvariabel.
+ *
+ * Slagene leses ut av `tokens.css` framfor å stå skrevet her. Sto de skrevet,
+ * ville et nytt slag gjort hvert navn i det til en komponentvariabel, og
+ * tokensiden hadde sluttet å kreve dem uten at noe sa fra.
+ *
+ * Slaget er første ledd etter `--fs-`, så `--fs-line-height-default` gir
+ * `line`. Det er grovere enn navnet, og med vilje: en komponentvariabel som
+ * heter `--fs-line-noe` ville da bli krevd i `tokens.css`, og det er riktig,
+ * for navnet ville lest som et token.
+ */
+const TOKENSLAG = [
+  ...new Set(
+    [
+      ...les(`${ROT}designsystem/src/tokens/tokens.css`).matchAll(
+        /^\s*--fs-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm,
+      ),
+    ].map((treff) => treff[1]),
+  ),
+]
+
 function variabler(css: string): string[] {
-  return [...new Set(css.match(/--fs-[\w-]+/g) ?? [])]
+  return [...new Set(css.match(/--fs-[\w-]+/g) ?? [])].filter(
+    (navn) =>
+      !TOKENSLAG.some(
+        (slag) => navn === `--fs-${slag}` || navn.startsWith(`--fs-${slag}-`),
+      ),
+  )
 }
 
 /** Delnavnene en shadow DOM-komponent eksponerer. */
@@ -92,6 +127,30 @@ function deler(ts: string): string[] {
  * den og systemet. Trenger visningen en tilpasning, hører den i `visningsCss`
  * på `<Eksempel>`, som ikke vises i kodefanen.
  */
+/*
+ * Klassenavnene fra vårt eget navnerom, samlet fra all MDX.
+ *
+ * Kandidaten er alt som ser ut som en utility-klasse med `-fs-` i, uten
+ * prefiksliste. En liste over lovlige prefikser sto her først, og den var
+ * feil i begge retninger: `shadow-fs-accent-fill` finnes i Tailwind 4, siden
+ * `--color-*` også mater `shadow-<farge>`, og ville blitt meldt som ukjent,
+ * mens et utdatert `w-fs-aside` eller `p-fs-4` aldri ville blitt sett.
+ */
+const KANDIDAT = /(?<![\w-])[a-z][a-z-]*-fs-[a-z0-9][a-z0-9-]*/g
+
+const kandidater = new Map<string, Set<string>>()
+
+/*
+ * Forekomster av `-fs-` som ikke ble en kandidat.
+ *
+ * Dette er den uavhengige tellingen. `kandidater.size` er utledet av selve
+ * regexen, så en regex som snevrer seg fra nitten treff til tre gir et tall
+ * som er større enn null og en sjekk som melder grønt. Her spørres det
+ * motsatte: står det en `-fs-` igjen i teksten etter at hvert kandidattreff er
+ * fjernet? Da er det noe regexen ikke klassifiserte, og det skal sies.
+ */
+const uklassifisert = new Map<string, number>()
+
 for (const fil of new Bun.Glob("**/*.mdx").scanSync(
   `${ROT}documentation/src/content/docs`,
 )) {
@@ -107,6 +166,107 @@ for (const fil of new Bun.Glob("**/*.mdx").scanSync(
       hva: "har et style-attributt i et eksempel. Bruk visningsCss, eller en klasse fra systemet.",
     })
   }
+
+  for (const treff of tekst.matchAll(KANDIDAT)) {
+    kandidater.set(treff[0], (kandidater.get(treff[0]) ?? new Set()).add(fil))
+  }
+
+  /*
+   * `--fs-…` er et tokennavn og ikke en klasse, og `fs-button` og
+   * `fs-tabs__list` er våre egne klasser. Begge fjernes før det som er igjen
+   * telles.
+   */
+  const rest = tekst
+    .replace(KANDIDAT, " ")
+    .replace(/--fs-[a-z0-9-]*/g, " ")
+    .replace(/(?<![\w-])fs-[a-z0-9_-]+/g, " ")
+    /*
+     * Et kodeord med en plassholder i er et navnemønster og ikke et navn:
+     * `<verktøy>-fs-<familie>-<rolle>` sier hvordan klassene heter. Hele
+     * kodeordet strykes, ellers står `-fs-` igjen mellom plassholderne.
+     */
+    .replace(/`[^`\n]*<[^`\n]+`/g, " ")
+
+  const igjen = rest.match(/-fs-/g)?.length ?? 0
+  if (igjen > 0) uklassifisert.set(fil, igjen)
+}
+
+/*
+ * Hver kandidat prøves mot en ekte Tailwind.
+ *
+ * Tailwind sier ingenting om en klasse den ikke kjenner: den lager bare ingen
+ * regel. Fargene byttet navn i 0.22.0, og tolv klassenavn fra tiden før sto
+ * igjen i brødtekst og tabeller på to sider. Jeg rettet den ene siden, og fem
+ * av navnene sto fortsatt på den andre. En vakt på eksempelmarkupen alene
+ * fanger ikke det, siden en tabellrad ikke er markup.
+ *
+ * Kompilatoren spørres framfor at navnerommene tolkes her. `build()` er
+ * kumulativ, så en kandidat som ikke gir noe lar lengden stå.
+ */
+const kompilator = await compile(
+  [
+    '@import "tailwindcss/theme.css" layer(theme);',
+    '@import "tailwindcss/utilities.css" layer(utilities);',
+    '@import "@fristil/designsystem/tailwind.css";',
+  ].join("\n"),
+  {
+    base: `${ROT}documentation`,
+    loadStylesheet: async (id: string, basedir: string) => {
+      const sti = id.startsWith(".")
+        ? join(basedir, id)
+        : Bun.resolveSync(id, basedir)
+      return { path: sti, base: dirname(sti), content: les(sti) }
+    },
+  },
+)
+
+let lengde = kompilator.build([]).length
+let provdeKlasser = 0
+
+for (const [klasse, filer] of kandidater) {
+  const ny = kompilator.build([klasse]).length
+  provdeKlasser += 1
+
+  if (ny <= lengde) {
+    for (const fil of filer) {
+      avvik.push({
+        hvor: fil,
+        hva: `nevner Tailwind-klassen \`${klasse}\`, som ikke finnes i temaet`,
+      })
+    }
+  }
+  lengde = Math.max(lengde, ny)
+}
+
+/*
+ * Tre ledd som skal felle en sjekk som ikke har sett på noe.
+ *
+ * Det første er den uavhengige tellingen over: en `-fs-` som ikke ble en
+ * kandidat. Det andre er at det i det hele tatt fantes kandidater. Det tredje
+ * er en negativ kontroll: uten den ville sjekken vært permanent grønn den
+ * dagen `build()` sluttet å være selektiv, siden hver ekte kandidat er gyldig
+ * og avvisningsveien derfor aldri utøves av dem.
+ */
+for (const [fil, antall] of uklassifisert) {
+  avvik.push({
+    hvor: fil,
+    hva: `har ${antall} forekomster av «-fs-» som ikke ble lest som en klasse. Regexen treffer ikke alt den skal.`,
+  })
+}
+
+if (provdeKlasser === 0) {
+  avvik.push({
+    hvor: "sjekk-dokumentasjon.ts",
+    hva: "fant ingen Tailwind-klasser å prøve. Regexen treffer ikke lenger.",
+  })
+}
+
+const foerKontroll = lengde
+if (kompilator.build(["bg-fs-finnes-ikke-i-temaet"]).length > foerKontroll) {
+  avvik.push({
+    hvor: "sjekk-dokumentasjon.ts",
+    hva: "Tailwind lagde en regel for en klasse som ikke finnes. Sjekken over kan ikke avvise noe.",
+  })
 }
 
 const tilpasning = les(TILPASNING)
@@ -114,16 +274,80 @@ const alleVariabler = new Set<string>()
 
 // Tokenene skal stå på tokensiden. Ellers finnes de bare i kildekoden, og en
 // konsument som skal bygge sitt eget tema vet ikke at de er der.
-const tokenkilde = les(`${ROT}designsystem/src/tokens/tokens.ts`)
 const tokenside = les(`${ROT}documentation/src/content/docs/design-tokens.mdx`)
 
-const tokens = new Set(
-  [...tokenkilde.matchAll(/"(--(?:semantic|size|font-size)[\w-]*)":/g)].map(
-    (treff) => treff[1],
-  ),
+/*
+ * Fargene dokumenteres som matrise, ikke som 86 navn.
+ *
+ * `--fs-color-<familie>-<rolle>` er systematisk, så siden er dekkende når hver
+ * familie og hver rolle står der. Å kreve hver celle ville gitt en side som er
+ * en liste framfor en forklaring, og den ville måttet skrives om hver gang en
+ * familie kom til.
+ *
+ * Alt som ikke er en celle kreves fortsatt navngitt.
+ */
+const tokenCss = les(`${ROT}designsystem/src/tokens/tokens.css`)
+const alleTokens = [...tokenCss.matchAll(/^\s*(--(?:fs|font)-[\w-]+):/gm)].map(
+  (treff) => treff[1],
 )
 
-for (const token of tokens) {
+/*
+ * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
+ *
+ * Å utlede dem fra navnene ga `disabled` som en tiende familie, fordi
+ * `--fs-color-disabled-text` ser ut som en celle. Den har bare to av de ni
+ * rollene og er nettopp ikke en familie. Alt som ikke er en ekte celle må ha
+ * sitt fulle tokennavn på siden, som før.
+ */
+const familier = new Set<string>(FAMILIES)
+const roller = new Set<string>(
+  Object.keys(ROLES).map((rolle) => roleToCss(rolle as keyof typeof ROLES)),
+)
+const andre = new Set<string>()
+
+for (const token of alleTokens) {
+  const celle = token.match(/^--fs-color-([a-z0-9]+)-(.+)$/)
+  if (celle && familier.has(celle[1]) && roller.has(celle[2])) continue
+  andre.add(token)
+}
+
+/*
+ * Navnet må stå først i en tabellrad, ikke bare et sted på siden.
+ *
+ * `tokenside.includes(navn)` på bare ordet var mye svakere enn navnesjekken
+ * den erstattet: `border` er en delstreng av `border-subtle`, så den kunne
+ * aldri feile for seg, og `danger`, `success` og `accent` traff også i prosa
+ * og i stier. Backticker alene holdt heller ikke: raden for `border` kunne
+ * fjernes, siden løftet i raden under nevner den. Kravet er at navnet står
+ * som første celle i en rad, altså at det er forklart og ikke bare nevnt.
+ */
+const forsteCeller = tokenside
+  .split("\n")
+  .filter((linje) => linje.startsWith("|"))
+  .map((linje) => linje.split("|")[1] ?? "")
+
+const oppfort = (navn: string) =>
+  forsteCeller.some((celle) => celle.includes(`\`${navn}\``))
+
+for (const familie of familier) {
+  if (!oppfort(familie)) {
+    avvik.push({
+      hvor: "design-tokens.mdx",
+      hva: `familien \`${familie}\` er ikke dokumentert`,
+    })
+  }
+}
+
+for (const rolle of roller) {
+  if (!oppfort(rolle)) {
+    avvik.push({
+      hvor: "design-tokens.mdx",
+      hva: `rollen \`${rolle}\` er ikke dokumentert`,
+    })
+  }
+}
+
+for (const token of andre) {
   if (!tokenside.includes(token.replace("--", ""))) {
     avvik.push({
       hvor: "design-tokens.mdx",
@@ -378,4 +602,6 @@ if (avvik.length > 0) {
   process.exit(1)
 }
 
-console.log("Dokumentasjonen følger koden.")
+console.log(
+  `Dokumentasjonen følger koden. ${provdeKlasser} Tailwind-klasser prøvd mot temaet.`,
+)

@@ -6,8 +6,8 @@
     gap: 0;
     margin: 0;
     padding: 0;
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--fs-toggle-group-radius, var(--size-1));
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-toggle-group-radius, var(--fs-spacing-1));
     overflow: hidden;
     min-inline-size: 0;
   }
@@ -17,18 +17,18 @@
     align-items: center;
     justify-content: center;
     /* 40 piksler høy, som knappene, så en rad av dem står i linje. */
-    min-block-size: var(--fs-toggle-group-height, var(--size-10));
-    padding: var(--fs-toggle-group-padding, 0 var(--size-4));
+    min-block-size: var(--fs-toggle-group-height, var(--fs-spacing-10));
+    padding: var(--fs-toggle-group-padding, 0 var(--fs-spacing-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-interactive-main);
-    background: var(--semantic-page-background);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-accent-text);
+    background: var(--fs-color-neutral-canvas);
     cursor: pointer;
   }
 
   .fs-toggle-group__option + .fs-toggle-group__option {
-    border-inline-start: 1px solid var(--semantic-field-border);
+    border-inline-start: 1px solid var(--fs-color-neutral-border);
   }
 
   /* Radioknappen ligger inni ledeteksten og er krympet bort visuelt. Den blir
@@ -47,23 +47,23 @@
   }
 
   .fs-toggle-group__option:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   .fs-toggle-group__option:has(input:focus-visible) {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: -2px;
   }
 
   .fs-toggle-group__option:has(input:checked) {
-    color: var(--semantic-interactive-contrast);
-    background: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-content);
+    background: var(--fs-color-accent-fill);
     font-weight: var(--font-weight-semibold);
   }
 
   .fs-toggle-group__option:has(input:disabled) {
-    color: var(--semantic-disabled-foreground);
-    background: var(--semantic-disabled-background);
+    color: var(--fs-color-disabled-text);
+    background: var(--fs-color-disabled-surface);
     cursor: not-allowed;
   }
 

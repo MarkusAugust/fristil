@@ -97,9 +97,8 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
    \`fs-datepicker\` og \`data-variant="outline"\` finnes i andre
    designsystemer, ikke i Fristil. Er du usikker på om noe finnes, står det her
    eller så gjør det ikke det.
-3. **Ingen hardkodede farger eller piksler.** \`var(--semantic-…)\` og
-   \`var(--size-…)\`. Paletten (\`--palette-…\`) er råverdier og brukes ikke
-   direkte.
+3. **Ingen hardkodede farger eller piksler.** \`var(--fs-color-…)\` og
+   \`var(--fs-spacing-…)\`.
 4. ${oppskrift.punktFire}
 5. ${
   oppskrift.punktFem ??
@@ -122,10 +121,14 @@ ${cssTabell(oppskrift.stilarkAdresse)}`
 
 const TOKENS = `## 3. Tokens
 
-To lag. \`--palette-…\` er råfarger og brukes ikke direkte. \`--semantic-…\`
-sier hva fargen betyr, peker på en palettfarge, og er det du skal bruke. Da
-følger markupen med når paletten justeres eller konsumenten lager sitt eget
-tema.
+Ett lag. En farge er en celle i en matrise av **familie**, altså hva den
+betyr, og **rolle**, altså hva den gjør, og navnet er
+\`--fs-color-<familie>-<rolle>\`. Hver familie har hver rolle, så
+\`--fs-color-danger-border\` og \`--fs-color-success-border\` finnes begge.
+Rollene er de samme uansett familie: \`surface\` er en tonet flate,
+\`fill\` en fylt, \`content\` teksten oppå \`fill\`, \`border\` en
+ramme, og \`text\` familiens farge som tekst. Kant og tekst har et svakere og
+et sterkere trinn ved siden av.
 
 \`\`\`
 ${tokenListe()}

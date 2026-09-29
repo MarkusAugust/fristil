@@ -7,35 +7,35 @@
 
     display: block;
     width: 100%;
-    padding: var(--fs-input-padding, var(--size-2) var(--size-3));
+    padding: var(--fs-input-padding, var(--fs-spacing-2) var(--fs-spacing-3));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--fs-input-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-input-radius, var(--fs-spacing-1));
   }
 
   .fs-input::placeholder {
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .fs-input:hover {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-input:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
-    border-color: var(--semantic-interactive-main);
+    border-color: var(--fs-color-accent-border);
   }
 
   .fs-input:disabled,
   .fs-input[aria-disabled="true"] {
-    background: var(--semantic-disabled-background);
-    color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-background);
+    background: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -50,33 +50,33 @@
   }
 
   .fs-input[data-state="invalid"] {
-    border-color: var(--semantic-danger-foreground);
-    background: var(--semantic-danger-background);
+    border-color: var(--fs-color-danger-text);
+    background: var(--fs-color-danger-surface);
   }
 
   .fs-input[data-state="invalid"]:focus-visible {
-    outline-color: var(--semantic-danger-foreground);
+    outline-color: var(--fs-color-danger-text);
   }
 
   .fs-input[data-state="success"] {
-    border-color: var(--semantic-success-foreground);
-    background: var(--semantic-success-background);
+    border-color: var(--fs-color-success-text);
+    background: var(--fs-color-success-surface);
   }
 
   .fs-input[data-state="success"]:focus-visible {
-    outline-color: var(--semantic-success-foreground);
+    outline-color: var(--fs-color-success-text);
   }
 
   .fs-input[data-variant="date"],
   .fs-input[data-variant="time"],
   .fs-input[data-variant="datetime-local"] {
     position: relative;
-    min-height: calc(var(--size-4) * 2.5);
+    min-height: calc(var(--fs-spacing-4) * 2.5);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
-    padding-inline-end: calc(var(--size-6) + var(--size-2));
+    padding-inline-end: calc(var(--fs-spacing-6) + var(--fs-spacing-2));
     background-repeat: no-repeat;
-    background-position: right var(--size-2) center;
+    background-position: right var(--fs-spacing-2) center;
     background-size: 0.95rem 0.95rem;
   }
 
@@ -85,30 +85,30 @@
   .fs-input[data-variant="date"]:dir(rtl),
   .fs-input[data-variant="time"]:dir(rtl),
   .fs-input[data-variant="datetime-local"]:dir(rtl) {
-    background-position: left var(--size-2) center;
+    background-position: left var(--fs-spacing-2) center;
   }
 
   .fs-input[data-variant="date"],
   .fs-input[data-variant="datetime-local"] {
-    background-image: var(--semantic-icon-calendar);
+    background-image: var(--fs-icon-calendar);
   }
 
   .fs-input[data-variant="time"] {
-    background-image: var(--semantic-icon-clock);
+    background-image: var(--fs-icon-clock);
   }
 
   .fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
   .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
   .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
     position: absolute;
-    inset-inline-end: var(--size-2);
+    inset-inline-end: var(--fs-spacing-2);
     top: 50%;
     transform: translateY(-50%);
     opacity: 0;
-    width: var(--size-6);
-    height: var(--size-6);
-    min-width: var(--size-6);
-    min-height: var(--size-6);
+    width: var(--fs-spacing-6);
+    height: var(--fs-spacing-6);
+    min-width: var(--fs-spacing-6);
+    min-height: var(--fs-spacing-6);
     cursor: pointer;
   }
 

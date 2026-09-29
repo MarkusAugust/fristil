@@ -11,27 +11,27 @@
 
   .fs-session-timeout__dialog {
     max-inline-size: var(--fs-session-timeout-width, 26rem);
-    padding: var(--fs-session-timeout-padding, var(--size-5));
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px solid var(--semantic-divider-30);
-    border-radius: var(--fs-session-timeout-radius, var(--size-1));
-    box-shadow: var(--semantic-shadow-overlay);
+    padding: var(--fs-session-timeout-padding, var(--fs-spacing-5));
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border-subtle);
+    border-radius: var(--fs-session-timeout-radius, var(--fs-spacing-1));
+    box-shadow: var(--fs-shadow-overlay);
   }
 
   .fs-session-timeout__dialog::backdrop {
-    background: var(--semantic-overlay-backdrop);
+    background: var(--fs-color-overlay);
   }
 
   .fs-session-timeout__title {
-    margin: 0 0 var(--size-2);
+    margin: 0 0 var(--fs-spacing-2);
     font-size: var(--font-size-l);
     line-height: 1.3;
   }
 
   .fs-session-timeout__text {
-    margin: 0 0 var(--size-4);
-    line-height: var(--semantic-line-height-default);
+    margin: 0 0 var(--fs-spacing-4);
+    line-height: var(--fs-line-height-default);
   }
 
   .fs-session-timeout__count {
@@ -42,6 +42,6 @@
   .fs-session-timeout__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--size-2);
+    gap: var(--fs-spacing-2);
   }
 }

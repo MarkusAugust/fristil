@@ -3,7 +3,7 @@ title: Eget tema
 description: Lag et fargetema av merkefargene dine, med kontrasten kontrollert i begge temaer.
 ---
 
-Fristil har én innebygd palett. Har organisasjonen din egne farger, kan du overstyre tokenene for hånd, men da eier du kontrasten selv: hver farge inngår i flere par, og hvert par må holde 4,5:1 i både lyst og mørkt tema. Det er mange par, og det er lett å gå glipp av ett.
+Fristil har sine egne kulører. Har organisasjonen din andre, kan du skrive cellene for hånd, men da eier du kontrastløftene selv: hver farge inngår i flere par, og hvert par må holde kravet i både lyst og mørkt tema. `fristil sjekk-tema` sier fra hvis ett ryker.
 
 Generatoren tar merkefargene dine og bygger resten.
 
@@ -11,7 +11,7 @@ Generatoren tar merkefargene dine og bygger resten.
 
 ```bash
 npx @fristil/designsystem tema \
-  --interaktiv=#7c3aed \
+  --aksent=#7c3aed \
   --fare=#b3261e \
   --suksess=#2b6940 \
   --advarsel=#8a5a00 \
@@ -23,7 +23,7 @@ Eller med en fil, som kan ligge i repoet. Kall den `fristil.tema.json`:
 
 ```json
 {
-  "interaktiv": "#7c3aed",
+  "aksent": "#7c3aed",
   "fare": "#b3261e",
   "suksess": "#2b6940",
   "advarsel": "#8a5a00",
@@ -35,15 +35,17 @@ Eller med en fil, som kan ligge i repoet. Kall den `fristil.tema.json`:
 npx @fristil/designsystem tema fristil.tema.json --ut=tema.css
 ```
 
-| Farge | Brukes til |
+Alle er valgfrie. En familie du utelater arver Fristils egen kulør.
+
+| Familie | Brukes til |
 | --- | --- |
-| `--interaktiv` | Lenker, knapper og fokusmarkering |
+| `--aksent` | Lenker, knapper og fokusmarkering |
 | `--fare` | Feil, sletting og avslag |
 | `--suksess` | Fullført og godkjent |
 | `--advarsel` | Noe som krever oppmerksomhet |
-| `--noytral` | Flater, tekst og skillelinjer. Valgfri, nesten uten kulør. |
-| `--besokt` | Besøkte lenker. Valgfri, utledes fra `--interaktiv`. |
-| `--maks-metning` | Taket på metningen i skalaene, målt i OKLCH. Valgfri, 0.01 til 0.33, standard 0.16. |
+| `--noytral` | Siden, brødteksten og kantene. Nesten uten kulør |
+| `--besokt` | Besøkte lenker |
+| `--merke1`, `--merke2`, `--merke3` | Flater, seksjoner og kategorier. De betyr ikke noe i seg selv |
 
 ## Ta det i bruk
 
@@ -60,32 +62,15 @@ Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt 
 
 ## Hva generatoren gjør
 
-**Skalaene bygges i OKLCH.** I HSL betyr lyshet noe ulikt for hver kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort, med samme tall. En skala bygget på HSL blir derfor ujevn, og kontrasten varierer med hvilken farge du valgte. I OKLCH er lysheten den samme opplevde lysheten uansett kulør.
+**Den fyller matrisen.** Hver familie du oppgir får de ni rollene, og hver rolle får sin faste lyshet. Gir du bare noen av familiene, arver resten Fristils egne kulører.
 
-**Kuløren og metningen er dine, lysheten er skalaens.** Gir du en lys lilla eller en mørk lilla, får du den samme lilla skalaen: trinnene har faste lysheter, og det er det som gjør at kontrasten kan garanteres. Metningen følger derimot med, så en dus merkefarge gir en dus skala.
+**Kuløren og metningen er dine, lysheten er rollens.** Gir du en lys lilla eller en mørk lilla, får du den samme lilla familien: rollen bestemmer hvor lys hver celle er, og det er det som gjør at kontrasten kan garanteres. Metningen følger med, så en dus merkefarge gir en dus familie.
 
-**Metningen har et tak på 0,16.** De fleste merkefarger ligger under det, og merker ingenting. Neon gjør ikke: `#39ff14` ligger på 0,286 og mister 44 prosent mot taket, `#ff2d6f` på 0,240 og mister 33. Skal merkevaren beholde den, hever du taket:
+Regningen skjer i OKLCH og ikke i HSL. I HSL betyr lyshet noe ulikt for hver kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort, med samme tall. I OKLCH er lysheten den samme opplevde lysheten uansett kulør, så én lyshet per rolle kan gjelde for alle farger.
 
-```bash
-npx @fristil/designsystem tema --interaktiv=#39ff14 --fare=#ff2d6f \
-  --suksess=#00e676 --advarsel=#ffd600 --maks-metning=0.32
-```
+**Kontrasten er garantert, ikke justert.** Lyshetene er regnet fram mot et sveip rundt hele fargesirkelen, på den høyeste metningen sRGB kan vise for hver kulør. Derfor holder løftene uansett hvilken merkefarge du gir, og generatoren trenger ikke flytte fargen din i etterkant. Den gjorde det før, hver eneste gang, fordi ett trinn var valgt for lyst.
 
-I en oppskriftsfil heter den `maksMetning`, eller `maxChroma` om du heller vil skrive engelsk.
-
-Lovlige verdier er 0,01 til 0,33, og noe utenfor stopper kjøringen. Grensene er der for å fange en verdi som var ment som noe annet: 16 er nesten alltid 0,16 uten komma, og et tak under 0,01 gir et helt grått tema av kulørte merkefarger. Det høyeste sRGB kan vise er uansett 0,3225, som er magenta.
-
-Kontrastkravet holder uansett hvor taket står. Taket styrer metningen, mens kontrasten kommer av de faste lyshetene og av passet som måler hvert par etterpå. Mer metning betyr bare at generatoren flytter lysheten flere steder, og hver flytting skrives ut som under.
-
-Endene i skalaen rører seg mindre enn midten. De lyseste trinnene dempes med vilje, fordi en lys flate ser skitten ut med mye metning, og det mørkeste trinnet begrenses av hva sRGB kan vise ved den lysheten. Det er trinnene i midten, der knapper og tekst bor, som endrer seg.
-
-**Kontrasten kontrolleres, og rettes.** Hver farge måles mot alle flatene den havner på. Lenkefargen er for eksempel både tekst på sideflaten, flate under teksten på en primærknapp, og farge på et interaktivt merke. Holder en av dem ikke, mørknes eller lysnes fargen til den gjør det, og kjøringen sier fra:
-
-```
-  justert --semantic-interactive-main i light tema: 4.19:1 ble 4.57:1
-```
-
-Er kravet umulig å oppfylle, avsluttes kjøringen med feil framfor å levere et tema som ser riktig ut.
+Gir du likevel en farge som ikke kan bære rollene sine, for eksempel en nesten hvit merkefarge, avsluttes kjøringen med feil framfor å levere et tema som ser riktig ut.
 
 ## Det generatoren ikke gjør
 
@@ -95,11 +80,11 @@ Den rører heller ikke ikonene i `tokens.css`. De er tegnet i nøytrale farger o
 
 ## Skrift og form
 
-Fargene er det vanskeligste å få riktig, og det er derfor generatoren begynte der. Men to systemer med den samme paletten ser fortsatt ulike ut hvis skriften og hjørnene er ulike. Derfor kan oppskriften også si hvordan det skal se ut:
+Fargene er det vanskeligste å få riktig, og det er derfor generatoren begynte der. Men to systemer med de samme kulørene ser fortsatt ulike ut hvis skriften og hjørnene er ulike. Derfor kan oppskriften også si hvordan det skal se ut:
 
 ```json
 {
-  "interaktiv": "#1362ae",
+  "aksent": "#1362ae",
   "fare": "#a82e39",
   "suksess": "#316f2a",
   "advarsel": "#9f7509",
@@ -142,7 +127,7 @@ Alt her er valgfritt. Utelater du begge blokkene, er temaet nøyaktig det det va
 
 ### Uten farger
 
-Bruker organisasjonen din allerede Fristils palett, er det skriften og hjørnene som skiller. Da utelater du merkefargene helt, og får et tema som lar fargene stå:
+Bruker organisasjonen din allerede Fristils kulører, er det skriften og hjørnene som skiller. Da utelater du merkefargene helt, og får et tema som lar fargene stå:
 
 ```bash
 npx @fristil/designsystem tema \
@@ -151,11 +136,11 @@ npx @fristil/designsystem tema \
   --ut=tema.css
 ```
 
-Enten oppgir du alle fire merkefargene, eller ingen. To farger kaster: resten av temaet ville da blitt bygget av standardfarger uten at noen ba om det.
+Et tema helt uten innhold kaster. Oppgi enten en farge, en skrift eller en form.
 
 ### Hvorfor tre slags hjørner
 
-Ett felles tall ville vært enklere og feil. Skatteetatens knapper er helt runde, mens feltene deres har nesten rette hjørner, og med ett tall blir feltene kapsler.
+Ett felles tall ville vært enklere og feil. Et annet norsk designsystem har helt runde knapper og felt med nesten rette hjørner, og med ett tall blir feltene kapsler.
 
 Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet står utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp, og et merke som blir firkantet, ser ut som en knapp.
 
@@ -189,20 +174,24 @@ Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et bygges
 import { buildTheme } from "@fristil/designsystem/tema"
 
 const tema = buildTheme({
-  interactive: "#7c3aed",
+  accent: "#7c3aed",
   danger: "#b3261e",
   success: "#2b6940",
   warning: "#8a5a00",
 })
 
-tema.css          // ferdig CSS
-tema.light        // tokenene som objekt
-tema.adjustments  // hva som ble flyttet, og hvor mye
-tema.problems     // tomt når temaet holder
+tema.css        // ferdig CSS
+tema.light      // cellene i lyst tema, som objekt
+tema.dark       // cellene i mørkt tema
+tema.violations // løfter som ikke holder. Tom når temaet er i orden
 ```
 
-Fargeregningen er også tilgjengelig i `@fristil/designsystem/farge`, med `contrastRatio`, `buildScale` og `adjustForContrast`, hvis du vil regne selv.
+Nøklene er familienavnene på engelsk: `accent`, `visited`, `brand1` til `brand3`, `neutral`, `danger`, `warning` og `success`. På kommandolinjen heter de det samme på norsk.
+
+Vil du regne selv, har `@fristil/designsystem/farge` regnestykkene bak: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Kontrakten, altså hvilken lyshet hver rolle har og hvilke par som måles, ligger i `@fristil/designsystem/kontrakt`.
 
 ## Kontrollen
 
-Fire genererte temaer kjøres gjennom nøyaktig den samme lista med kontrastpar som Fristils egne farger måles mot, i begge temaer, i nettleseren. Regner generatoren feil, eller glemmer den et par systemet faktisk bruker, blir testen rød. Se [Tilgjengelighet](../tilgjengelighet/).
+Løftene kjøres mot tolv merkefarger spredt rundt hele fargesirkelen, fra knallrød til nesten sort, i begge temaer. Er én celle for lys, feiler testen med hvilket par som røk og hvor langt unna det var.
+
+Skriver du cellene for hånd framfor å generere dem, er `fristil sjekk-tema tema.css` den samme kontrollen på din egen fil.

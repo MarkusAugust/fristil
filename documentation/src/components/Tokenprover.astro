@@ -2,32 +2,46 @@
 import Preview from "./Preview.astro"
 
 interface Props {
-  /** Semantiske tokennavn, uten `--`-prefiks. */
+  /** Tokennavn uten `--`-prefiks, vist som én prøve hver. */
   semantiske?: string[]
-  /** Palettskalaer: navn → trinn. */
-  palett?: Record<string, (number | string)[]>
+  /** Familier vist som en rad med én rute per rolle. */
+  matrise?: string[]
 }
 
-const { semantiske = [], palett = {} } = Astro.props
+/** Rollene, i samme rekkefølge som kontrakten lister dem. */
+const ROLLER = [
+  "surface",
+  "border-subtle",
+  "border",
+  "border-strong",
+  "fill",
+  "content",
+  "text-subtle",
+  "text",
+  "text-strong",
+]
+
+const { semantiske = [], matrise = [] } = Astro.props
 ---
 
 <Preview layout="stabel" maxWidth="34rem">
-	<div style="display: grid; gap: var(--size-2);">
+	<div style="display: grid; gap: var(--fs-spacing-2);">
 		{semantiske.map((navn) => (
-			<div style="display: flex; align-items: center; gap: var(--size-3);">
+			<div style="display: flex; align-items: center; gap: var(--fs-spacing-3);">
 				<span
-					style={`width: var(--size-10); height: var(--size-6); border-radius: var(--size-1); border: 1px solid var(--semantic-divider-30); background: var(--${navn})`}
+					style={`width: var(--fs-spacing-10); height: var(--fs-spacing-6); border-radius: var(--fs-spacing-1); border: 1px solid var(--fs-color-neutral-border-subtle); background: var(--${navn})`}
 				/>
 				<code style="font-size: var(--font-size-s);">--{navn}</code>
 			</div>
 		))}
 
-		{Object.entries(palett).map(([farge, trinn]) => (
-			<div style="display: flex; gap: var(--size-1); align-items: center;">
-				<code style="font-size: var(--font-size-xs); width: 5.5rem;">{farge}</code>
-				{trinn.map((t) => (
+		{matrise.map((familie) => (
+			<div style="display: flex; gap: var(--fs-spacing-1); align-items: center;">
+				<code style="font-size: var(--font-size-xs); width: 5.5rem;">{familie}</code>
+				{ROLLER.map((rolle) => (
 					<span
-						style={`flex: 1; height: var(--size-6); border: 1px solid var(--semantic-divider-30); background: var(--palette-${farge}-${t})`}
+						title={`--fs-color-${familie}-${rolle}`}
+						style={`flex: 1; height: var(--fs-spacing-6); border: 1px solid var(--fs-color-neutral-border-subtle); background: var(--fs-color-${familie}-${rolle})`}
 					/>
 				))}
 			</div>

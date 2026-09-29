@@ -6,49 +6,49 @@
   .fs-tabs__list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--fs-tabs-gap, var(--size-1));
-    border-block-end: 1px solid var(--semantic-divider-30);
+    gap: var(--fs-tabs-gap, var(--fs-spacing-1));
+    border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
   }
 
   .fs-tabs__list button {
     box-sizing: border-box;
-    padding: var(--fs-tabs-padding, var(--size-2) var(--size-4));
-    min-block-size: var(--size-10);
+    padding: var(--fs-tabs-padding, var(--fs-spacing-2) var(--fs-spacing-4));
+    min-block-size: var(--fs-spacing-10);
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-interactive-main);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-accent-text);
     background: transparent;
     border: 0;
     /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
        ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
-    border-block-end: var(--size-0-5) solid transparent;
+    border-block-end: var(--fs-spacing-0-5) solid transparent;
     margin-block-end: -1px;
     cursor: pointer;
   }
 
   .fs-tabs__list button:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   .fs-tabs__list button:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: -2px;
   }
 
   .fs-tabs__list button[aria-selected="true"] {
-    color: var(--semantic-page-foreground);
+    color: var(--fs-color-neutral-text-strong);
     font-weight: var(--font-weight-semibold);
-    border-block-end-color: var(--semantic-interactive-main);
+    border-block-end-color: var(--fs-color-accent-border);
   }
 
   .fs-tabs__list button:disabled {
-    color: var(--semantic-disabled-foreground);
+    color: var(--fs-color-disabled-text);
     cursor: not-allowed;
   }
 
   .fs-tabs__panel {
-    padding-block-start: var(--fs-tabs-panel-space, var(--size-4));
+    padding-block-start: var(--fs-tabs-panel-space, var(--fs-spacing-4));
   }
 
   /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
@@ -62,7 +62,7 @@
   }
 
   .fs-tabs__panel:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 

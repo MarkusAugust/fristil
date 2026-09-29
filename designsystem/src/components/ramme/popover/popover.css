@@ -20,17 +20,17 @@
     inline-size: max-content;
     max-inline-size: var(
       --fs-popover-width,
-      min(20rem, calc(100vw - var(--size-8)))
+      min(20rem, calc(100vw - var(--fs-spacing-8)))
     );
-    padding: var(--fs-popover-padding, var(--size-3));
+    padding: var(--fs-popover-padding, var(--fs-spacing-3));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px solid var(--semantic-divider-30);
-    border-radius: var(--fs-popover-radius, var(--size-1));
-    box-shadow: var(--semantic-shadow-overlay);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border-subtle);
+    border-radius: var(--fs-popover-radius, var(--fs-spacing-1));
+    box-shadow: var(--fs-shadow-overlay);
   }
 
   /* Posisjonen er fysisk: `--fs-popover-left` er avstanden fra venstre

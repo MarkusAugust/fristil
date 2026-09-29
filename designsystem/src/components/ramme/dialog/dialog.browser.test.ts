@@ -1042,7 +1042,7 @@ describe("dialogen med farget topp", () => {
     const fot = d.querySelector(".fs-dialog__footer") as HTMLElement
     // En referanse med tokenet rett på, så fargen sammenlignes ferdig regnet.
     const referanse = document.createElement("div")
-    referanse.style.background = "var(--semantic-success-background)"
+    referanse.style.background = "var(--fs-color-success-surface)"
     document.body.append(referanse)
 
     expect(getComputedStyle(d).paddingTop).toBe("0px")
@@ -1071,7 +1071,7 @@ describe("dialogen med farget topp", () => {
     const topp = document.querySelector(".fs-dialog__header") as HTMLElement
     const kropp = document.querySelector(".fs-dialog__body") as HTMLElement
     const referanse = document.createElement("div")
-    referanse.style.paddingTop = "var(--size-2)"
+    referanse.style.paddingTop = "var(--fs-spacing-2)"
     document.body.append(referanse)
 
     // Toppens bunnluft er overskriftens vanlige marg, og kroppen legger

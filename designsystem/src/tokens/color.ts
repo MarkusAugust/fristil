@@ -1,15 +1,14 @@
 /**
- * Fargeregning for temageneratoren.
+ * Fargeregning: sRGB, OKLCH og kontrast.
  *
- * Skalaene lages i OKLCH og ikke i HSL. I HSL betyr lyshet noe annet for hver
+ * Regningen skjer i OKLCH og ikke i HSL. I HSL betyr lyshet noe annet for hver
  * kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort,
- * med samme tall. En skala bygget på HSL blir derfor ujevn, og kontrasten
- * varierer med kuløren brukeren valgte. I OKLCH er lysheten den samme
- * opplevde lysheten uansett kulør, så trinnene kan settes én gang og gjelde
- * for alle farger.
+ * med samme tall. I OKLCH er lysheten den samme opplevde lysheten uansett
+ * kulør, så kontrakten kan sette én lyshet per rolle og la den gjelde for alle
+ * farger.
  *
  * Kontrasten regnes med WCAG 2.1 sin formel, altså den samme som testene
- * bruker, slik at generatoren og kontrollen er enige.
+ * bruker, slik at kontrakten og kontrollen er enige.
  */
 
 export type Rgb = { r: number; g: number; b: number }
@@ -140,177 +139,4 @@ export function contrastRatio(a: Rgb, b: Rgb): number {
   const la = luminans(a)
   const lb = luminans(b)
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
-}
-
-/** Trinnene i en Fristil-skala, og lysheten hvert av dem sikter mot. */
-export const SCALE_STEPS = {
-  5: 0.97,
-  10: 0.93,
-  30: 0.83,
-  50: 0.72,
-  70: 0.55,
-  100: 0.38,
-} as const
-
-/**
- * Hvor mye av kulørens metning hvert trinn beholder.
- *
- * Lyse trinn tåler lite metning før de ser skitne ut, og mørke trinn mister
- * den likevel i sRGB. Forholdstallene er lest av Fristils egen palett, så en
- * generert skala får samme rytme som den håndlagde.
- */
-const CHROMA_FACTOR: Record<keyof typeof SCALE_STEPS, number> = {
-  5: 0.09,
-  10: 0.24,
-  30: 0.62,
-  50: 1.06,
-  70: 1,
-  100: 0.79,
-}
-
-/** Lysheten i den nøytrale skalaen, som går lenger i begge ender. */
-export const NEUTRAL_STEPS = {
-  0: 1,
-  5: 0.97,
-  10: 0.92,
-  30: 0.76,
-  50: 0.56,
-  70: 0.42,
-  100: 0.22,
-} as const
-
-/**
- * Taket på metningen i en generert skala, målt i OKLCH.
- *
- * Merkefarger ligger sjelden over dette, og de som gjør det er som regel
- * neon: `#39ff14` ligger på 0,286 og mister 44 prosent mot taket, `#ff2d6f`
- * på 0,240 og mister 33. Mesteparten av paletten er upåvirket: `#1362ae`,
- * `#2b6940` og `#8a5a00` ligger alle under.
- *
- * Det høyeste sRGB i det hele tatt kan vise er 0,3225, som er magenta.
- */
-export const MAX_CHROMA = 0.16
-
-/**
- * Grensene et metningstak må ligge innenfor.
- *
- * Det øvre er det høyeste sRGB kan vise, målt over hele rommet: 0,3225, som er
- * magenta. Over det skjer ingenting, siden fargen klemmes inn i området
- * uansett, og et tall som 16 er nesten alltid 0,16 uten komma.
- *
- * Det nedre er der et tema slutter å ha farger. 0,001 gir en helt grå palett
- * av knallgrønne merkefarger, uten at noe sier fra, og det er aldri det noen
- * ba om.
- */
-export const CHROMA_FLOOR = 0.01
-export const CHROMA_CEILING = 0.33
-
-/**
- * Bygger en skala fra én farge.
- *
- * Kuløren beholdes, mens lysheten settes av trinnet. Metningen tas fra fargen
- * som ble oppgitt, og dempes i endene.
- *
- * `maxChroma` hever eller senker taket. Kontrastgarantien berøres ikke av det:
- * kontrasten kommer av `SCALE_STEPS` og av passet i `theme.ts` som måler hvert
- * par etterpå og flytter lysheten til det holder. Mer metning gir flere slike
- * justeringer, ikke en svakere garanti.
- *
- * Et hevet tak slår ikke inn like sterkt over hele skalaen. Målt på `#39ff14`
- * med taket hevet fra 0,16 til 0,32:
- *
- * | Trinn | 5 | 10 | 30 | 50 | 70 | 100 |
- * | --- | --- | --- | --- | --- | --- | --- |
- * | Før | 0,015 | 0,039 | 0,099 | 0,170 | 0,160 | 0,126 |
- * | Etter | 0,026 | 0,068 | 0,177 | 0,239 | 0,184 | 0,127 |
- *
- * Endene rører seg lite, av to ulike grunner. De lyse trinnene holdes nede av
- * `CHROMA_FACTOR`, som står på 0,09 og 0,24 der, og det er med vilje: lyse
- * trinn ser skitne ut med mye metning. Det mørkeste trinnet holdes nede av
- * sRGB, som ikke kan vise så mye metning ved den lysheten, og klemmes inn i
- * området uansett hva taket sier. Det er trinn 30 til 70 som endrer seg, og
- * det er der knapper og tekst bor.
- */
-export function buildScale(
-  hex: string,
-  maxChroma: number = MAX_CHROMA,
-): Record<number, string> {
-  const { c, h } = rgbToOklch(parseHex(hex))
-  const referanse = Math.min(c, maxChroma)
-
-  const skala: Record<number, string> = {}
-  for (const [trinn, lyshet] of Object.entries(SCALE_STEPS)) {
-    const nummer = Number(trinn) as keyof typeof SCALE_STEPS
-    skala[nummer] = toHex(
-      oklchToRgb({ l: lyshet, c: referanse * CHROMA_FACTOR[nummer], h }),
-    )
-  }
-  return skala
-}
-
-/** Bygger den nøytrale skalaen, som også har et rent hvitt trinn. */
-export function buildNeutralScale(hex: string): Record<number, string> {
-  const { c, h } = rgbToOklch(parseHex(hex))
-  // Nøytrale farger tåler bare en antydning til kulør før de ser malt ut.
-  const metning = Math.min(c, 0.02)
-
-  const skala: Record<number, string> = {}
-  for (const [trinn, lyshet] of Object.entries(NEUTRAL_STEPS)) {
-    skala[Number(trinn)] =
-      Number(trinn) === 0
-        ? "#ffffff"
-        : toHex(oklchToRgb({ l: lyshet, c: metning, h }))
-  }
-  return skala
-}
-
-export type AdjustResult = {
-  /** Fargen som holder kravet. */
-  hex: string
-  /** Hvor mye lysheten måtte flyttes, i OKLCH-enheter. */
-  moved: number
-  /** Kontrasten den endte på. */
-  ratio: number
-}
-
-/**
- * Flytter lysheten til fargen holder kravet mot bakgrunnen.
- *
- * Kuløren og metningen står stille, så fargen er den samme fargen, bare lys
- * nok eller mørk nok. Retningen velges etter bakgrunnen: mot sort på en lys
- * flate, mot hvit på en mørk.
- *
- * Kravet kan være umulig, for eksempel 4,5:1 mot en flate midt på skalaen.
- * Da returneres det beste forsøket, og kalleren sier fra.
- */
-export function adjustForContrast(
-  hex: string,
-  backgroundHex: string,
-  target: number,
-): AdjustResult {
-  const bakgrunn = parseHex(backgroundHex)
-  const start = rgbToOklch(parseHex(hex))
-  const mork = luminans(bakgrunn) > 0.18 ? -1 : 1
-
-  let beste = {
-    hex: toHex(oklchToRgb(start)),
-    moved: 0,
-    ratio: contrastRatio(oklchToRgb(start), bakgrunn),
-  }
-
-  for (let steg = 0; steg <= 100; steg += 1) {
-    const lyshet = Math.min(1, Math.max(0, start.l + mork * steg * 0.01))
-    const farge = oklchToRgb({ ...start, l: lyshet })
-    const forhold = contrastRatio(farge, bakgrunn)
-
-    if (forhold > beste.ratio) {
-      beste = { hex: toHex(farge), moved: steg * 0.01, ratio: forhold }
-    }
-
-    if (forhold >= target) {
-      return { hex: toHex(farge), moved: steg * 0.01, ratio: forhold }
-    }
-  }
-
-  return beste
 }

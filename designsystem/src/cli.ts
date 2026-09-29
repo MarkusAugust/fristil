@@ -10,7 +10,7 @@
  * `fristil tema` lager et fargetema av merkefargene dine.
  *
  * ```bash
- * npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
+ * npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
  *   --suksess=#2b6940 --advarsel=#8a5a00 --noytral=#1a1a1a --ut=tema.css
  * ```
  *
@@ -39,51 +39,36 @@ import {
   planTakeover,
   type SourceFile,
 } from "./takeover.js"
-import { CHROMA_CEILING, CHROMA_FLOOR, MAX_CHROMA } from "./tokens/color.js"
+import type { Family } from "./tokens/matrix.js"
 import {
   buildTheme,
   type ThemeInput,
   type ThemeShape,
   type ThemeTypography,
 } from "./tokens/theme.js"
+import { inspectTheme } from "./tokens/theme-check.js"
 
 /**
  * Temaet slik det bygges opp, før det er kontrollert.
  *
- * `Partial<ThemeInput>` gikk ikke: typen er en union som sier «enten alle fire
- * fargene, eller ingen», og et halvferdig tema er nettopp det som ikke er noen
- * av delene ennå. `Extract` plukker den grenen som har fargene, og `Partial`
- * gjør hver nøkkel valgfri. Kontrollen nederst avgjør hvilken av de to det ble.
- *
- * Utledet framfor skrevet av, slik at den fortsatt henger sammen med
- * `ThemeInput`: kommer det en ny valgfri verdi i temaet, er den med her, og
- * døpes en nøkkel om, slutter `NØKLER` å kompilere.
+ * Utledet framfor skrevet av: kommer det en ny familie i matrisen, er den med
+ * her, og døpes en om, slutter `NØKLER` under å kompilere.
  */
-type ThemeDraft = Partial<Extract<ThemeInput, { interactive: string }>>
+type ThemeDraft = ThemeInput
 
-/**
- * Nøklene som tar en farge, altså en streng.
- *
- * Lista sto som `keyof ThemeInput`, og det holdt så lenge hver verdi i temaet
- * var en streng eller et objekt. `maxChroma` er et tall, og da har nøklene
- * ikke lenger noen felles verditype: en skriving gjennom en union av nøkler
- * krever en verdi som passer dem alle, og `string & number` finnes ikke.
- *
- * `Extract` binder lista til typen: forsvinner en av dem fra `ThemeInput`,
- * faller den ut her, og `NØKLER` under stopper bygget.
- */
-type ColorKey = Extract<
-  keyof ThemeDraft,
-  "interactive" | "danger" | "success" | "warning" | "neutral" | "visited"
->
+/** Nøklene som tar en farge. */
+type ColorKey = Family
 
 const NØKLER: Record<string, ColorKey> = {
-  interaktiv: "interactive",
+  aksent: "accent",
   fare: "danger",
   suksess: "success",
   advarsel: "warning",
   noytral: "neutral",
   besokt: "visited",
+  merke1: "brand1",
+  merke2: "brand2",
+  merke3: "brand3",
 }
 
 /**
@@ -496,6 +481,10 @@ const HJELP = `fristil <kommando>
   sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
                        Uten filer leses standard inn. Ett funn gir feilkode
 
+  sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
+                       Leser --fs-color-*-verdiene i hver blokk og sier
+                       hvilken celle som ryker. Ett brudd gir feilkode
+
   agent                Skriver regelboka for kodeagenter til utdata. Ingen
     --rammeverk=<navn> fil skrives noe sted. Uten flagget leses miljøet av
                        package.json. Navn: html, maler, bundles, react, astro,
@@ -506,15 +495,15 @@ const HJELP = `fristil <kommando>
     --overskriv=ja     Skriv over en kopi som finnes fra før
 
   tema                 Lager et tema av merkefargene, skriften og formen din
-    --interaktiv=<farge>  Lenker, knapper og fokus (påkrevd med farger)
-    --fare=<farge>        Feil og sletting (påkrevd)
-    --suksess=<farge>     Bekreftelser (påkrevd)
-    --advarsel=<farge>    Advarsler (påkrevd)
+    --aksent=<farge>      Lenker, knapper og fokus
+    --fare=<farge>        Feil og sletting
+    --suksess=<farge>     Bekreftelser
+    --advarsel=<farge>    Advarsler
     --noytral=<farge>     Tekst og flater
     --besokt=<farge>      Besøkte lenker
-    --maks-metning=<tall> Taket på metningen i skalaene, målt i OKLCH.
-                          ${CHROMA_FLOOR} til ${CHROMA_CEILING}, standard ${MAX_CHROMA}.
-                          Hev det for å beholde en neonfarge
+    --merke1=<farge>      Merkefarge for flater og kategorier
+    --merke2=<farge>      Merkefarge nummer to
+    --merke3=<farge>      Merkefarge nummer tre
     --skrift=<stakk>      Skriftstakken temaet skal bruke
     --knapp-hjorner=<mål> Hjørner på knapp, paginering og hopplenke
     --felt-hjorner=<mål>  Hjørner på felt, tekstområde og nedtrekksliste
@@ -532,12 +521,116 @@ Eksempler:
   npx @fristil/designsystem sjekk maler/*.html
   npx @fristil/designsystem agent
   npx @fristil/designsystem overta button --ut=src/ui
-  npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
+  npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 
+/**
+ * `fristil sjekk-tema <fil…>` kontrollerer et tema noen har skrevet selv.
+ *
+ * Generatoren holder løftene av konstruksjon, men et tema skrevet for hånd er
+ * konsumentens ansvar. Uten denne kommandoen er «du kan overstyre hvilken som
+ * helst celle» en felle: du får vite at fargen er feil først når noen ikke kan
+ * lese siden.
+ *
+ * Tellingen står sist og krever at tallet er større enn null. En kjøring som
+ * ikke fant en eneste fil skal ikke kunne se ut som en kjøring uten funn.
+ */
+async function checkThemeFiles(args: string[]): Promise<void> {
+  /*
+   * Et ukjent flagg skal stoppe kjøringen, ikke forsvinne.
+   * `fristil tema` gjør det samme, og grunnen er den samme: en skrivefeil i et
+   * flagg ser ut som om kommandoen gjorde det du ba om.
+   */
+  const unknownFlags = args.filter((arg) => arg.startsWith("-"))
+  if (unknownFlags.length > 0) {
+    console.error(
+      `Ukjent flagg: ${unknownFlags.join(", ")}.\n\n` +
+        "`fristil sjekk-tema` tar bare filnavn.\n",
+    )
+    process.exit(1)
+  }
+
+  const paths = args
+  if (paths.length === 0) {
+    console.error(
+      "Oppgi minst én CSS-fil: `fristil sjekk-tema tema.css`.\n\n" +
+        "Kommandoen leser --fs-color-*-verdiene i fila og kontrollerer at " +
+        "hvert kontrastløfte holder, i hver blokk.\n",
+    )
+    process.exit(1)
+  }
+
+  // Filer som ikke lot seg lese samles og meldes samlet, som i `fristil sjekk`.
+  const sources: { path: string; css: string }[] = []
+  const unreadable: string[] = []
+
+  for (const path of paths) {
+    try {
+      sources.push({ path, css: await readFile(path, "utf8") })
+    } catch (error) {
+      const code = (error as { code?: string }).code
+      unreadable.push(
+        code === "EISDIR"
+          ? `${path} (er en mappe)`
+          : code === "ENOENT"
+            ? `${path} (finnes ikke)`
+            : `${path} (${code ?? "kunne ikke leses"})`,
+      )
+    }
+  }
+
+  if (unreadable.length > 0) {
+    console.error(`Klarte ikke lese: ${unreadable.join(", ")}.`)
+    process.exit(1)
+  }
+
+  let problems = 0
+  let blocks = 0
+  let declarations = 0
+  let promises = 0
+
+  for (const { path, css } of sources) {
+    const report = inspectTheme(css)
+    for (const problem of report.problems) {
+      console.error(`${path}  ${problem.selector}\n  ${problem.message}`)
+      problems++
+    }
+    blocks += report.blocks
+    declarations += report.declarations
+    promises += report.promises
+  }
+
+  /*
+   * Tellingen står sist, og teller konsumentens egne verdier.
+   *
+   * «Tre filer kontrollert» er sant også om alle tre var tomme. Løftetallet
+   * alene duger heller ikke: standardverdiene fyller hullene, så én linje gir
+   * like mange løfter som et helt tema. Tallet som betyr noe er hvor mange av
+   * fargene i fila som faktisk ble lest og forstått.
+   */
+  const files = `${sources.length} ${sources.length === 1 ? "fil" : "filer"}`
+  const summary = `${declarations} ${declarations === 1 ? "verdi" : "verdier"} i ${blocks} ${blocks === 1 ? "blokk" : "blokker"}, mot ${promises} ${promises === 1 ? "løfte" : "løfter"}, i ${files}`
+
+  if (declarations === 0 && problems === 0) {
+    console.error(
+      `Fant ingen --fs-color-*-verdier i ${files}. Sjekken har ikke sett på noe.`,
+    )
+    process.exit(1)
+  }
+
+  if (problems > 0) {
+    console.error(
+      `\n${problems} ${problems === 1 ? "problem" : "problemer"}. Kontrollerte ${summary}.`,
+    )
+    process.exit(1)
+  }
+
+  console.log(`Temaet holder hvert løfte. Kontrollerte ${summary}.`)
+}
+
 const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
-const KOMMANDOER = new Set(["agent", "sjekk", "overta", "tema"])
+const KOMMANDOER = new Set(["agent", "sjekk", "sjekk-tema", "overta", "tema"])
 
 const argumenter = process.argv.slice(2)
 
@@ -567,6 +660,11 @@ if (argumenter[0] === "overta") {
 
 if (argumenter[0] === "sjekk") {
   await check(argumenter.slice(1))
+  process.exit(0)
+}
+
+if (argumenter[0] === "sjekk-tema") {
+  await checkThemeFiles(argumenter.slice(1))
   process.exit(0)
 }
 
@@ -606,7 +704,7 @@ async function lesTemafil(path: string): Promise<Record<string, unknown>> {
       console.error(
         `«${path}» er gyldig JSON, men ikke en oppskrift.\n\n` +
           "Fila skal være et objekt med fargene i seg, for eksempel:\n" +
-          '  {"interaktiv": "#7c3aed", "fare": "#b3261e"}\n',
+          '  {"aksent": "#7c3aed", "fare": "#b3261e"}\n',
       )
       process.exit(1)
     }
@@ -650,57 +748,6 @@ if (Object.keys(typografi).length > 0) input.typography = typografi
 if (Object.keys(form).length > 0) input.shape = form
 
 /*
- * Taket på metningen er et tall, ikke en farge, og leses derfor for seg.
- *
- * Flagget heter `--maks-metning`, og i fila går både `maksMetning` og
- * `maxChroma`, som for de andre verdiene.
- */
-const CHROMA_FLAG = "maks-metning"
-const CHROMA_FILE_KEYS = ["maksMetning", "maxChroma"]
-
-const rawChroma =
-  flagg[CHROMA_FLAG] ??
-  CHROMA_FILE_KEYS.map((key) => fromFile[key]).find(
-    (value) => value !== undefined,
-  )
-
-if (rawChroma !== undefined) {
-  const chroma = typeof rawChroma === "number" ? rawChroma : Number(rawChroma)
-
-  /*
-   * Grensene er de samme som `buildTheme` krever, og kommer fra samme sted.
-   * Kontrollen står likevel her, slik at meldinga kan nevne flagget og
-   * desimalskilletegnet framfor navnet på en funksjon konsumenten ikke kalte.
-   */
-  if (
-    !Number.isFinite(chroma) ||
-    chroma < CHROMA_FLOOR ||
-    chroma > CHROMA_CEILING
-  ) {
-    /*
-     * Forklaringen om grensene står bare når verdien faktisk er et tall som
-     * ligger utenfor dem. Sto den alltid, fikk `abc` beskjed om at 16 er 0.16
-     * uten komma, og meldinga pekte bort fra den ekte feilen.
-     */
-    const outOfRange = Number.isFinite(chroma)
-
-    console.error(
-      `«${rawChroma}» er ikke et metningstak.\n\n` +
-        `Oppgi et tall mellom ${CHROMA_FLOOR} og ${CHROMA_CEILING}, med punktum\n` +
-        `som desimalskilletegn. Standard er ${MAX_CHROMA}.\n` +
-        (outOfRange
-          ? "\nGrensene er der for å fange en verdi som var ment som noe annet:\n" +
-            "16 er nesten alltid 0.16 uten komma, og et tak under 0.01 gir et\n" +
-            "helt grått tema av kulørte merkefarger.\n"
-          : ""),
-    )
-    process.exit(1)
-  }
-
-  input.maxChroma = chroma
-}
-
-/*
  * Et flagg som ikke finnes skal si fra.
  *
  * `--knapp-hjørner` med ø er den naturlige norske stavemåten, mens flagget
@@ -712,7 +759,6 @@ const KJENTE_FLAGG = new Set([
   ...Object.keys(NØKLER),
   ...Object.keys(SKRIFTFLAGG),
   ...Object.keys(FORMFLAGG),
-  CHROMA_FLAG,
   "ut",
 ])
 
@@ -757,7 +803,6 @@ function ukjenteNøkler(
  */
 const TOP_LEVEL_KEYS = new Set([
   ...Object.entries(NØKLER).flat(),
-  ...CHROMA_FILE_KEYS,
   "typografi",
   "typography",
   "form",
@@ -793,37 +838,6 @@ if (ukjente.length > 0) {
   process.exit(1)
 }
 
-const påkrevd: ColorKey[] = ["interactive", "danger", "success", "warning"]
-const mangler = påkrevd.filter((navn) => !input[navn])
-
-/*
- * Fargene er påkrevd, med ett unntak: et tema som bare setter skrift og form.
- *
- * Det er ikke en kuriositet. Bruker organisasjonen allerede Fristils palett,
- * er det nettopp skriften og hjørnene som skiller, og å kjøre fargene gjennom
- * generatoren ville da flyttet dem bort fra der de skal være.
- */
-const bareSkriftOgForm =
-  mangler.length === påkrevd.length && (input.typography || input.shape)
-
-if (mangler.length > 0 && !bareSkriftOgForm) {
-  const norske = mangler.map(
-    (navn) =>
-      Object.entries(NØKLER).find(([, engelsk]) => engelsk === navn)?.[0] ??
-      navn,
-  )
-  console.error(
-    `Mangler farger: ${norske.join(", ")}\n\n` +
-      "Eksempel:\n  npx @fristil/designsystem tema --interaktiv=#7c3aed" +
-      " --fare=#b3261e --suksess=#2b6940 --advarsel=#8a5a00\n\n" +
-      "Vil du bare sette skrift og form, og la fargene stå: utelat alle " +
-      "fire, og oppgi minst én av --skrift, --knapp-hjorner, --felt-hjorner, " +
-      "--flate-hjorner, --knapp-ramme eller --knapp-vekt.\n\n" +
-      "Hele oversikten: fristil --hjelp\n",
-  )
-  process.exit(1)
-}
-
 let tema: ReturnType<typeof buildTheme>
 
 try {
@@ -848,19 +862,15 @@ try {
   process.exit(1)
 }
 
-for (const justering of tema.adjustments) {
-  console.error(
-    `  justert ${justering.token} i ${justering.theme} tema: ` +
-      `${justering.before.toFixed(2)}:1 ble ${justering.after.toFixed(2)}:1`,
-  )
-}
+if (tema.violations.length > 0) {
+  const brudd = tema.violations
+    .map(
+      (b) =>
+        `  ${b.family}: ${b.promise} er ${b.ratio.toFixed(2)}:1, kravet er ${b.required}:1`,
+    )
+    .join("\n")
 
-if (tema.problems.length > 0) {
-  console.error(
-    `\nTemaet holder ikke kontrastkravet:\n\n${tema.problems
-      .map((linje) => `  ${linje}`)
-      .join("\n")}\n\nVelg en mørkere eller lysere merkefarge.\n`,
-  )
+  console.error(`\nTemaet holder ikke kontrastkravet:\n\n${brudd}\n`)
   process.exit(1)
 }
 
@@ -869,7 +879,7 @@ const ut = flagg.ut
 if (ut) {
   await writeFile(ut, tema.css)
   console.error(
-    `\nSkrev ${ut}. ${tema.adjustments.length} verdier ble justert for å holde kontrastkravet.`,
+    `\nSkrev ${ut}. ${Object.keys(tema.light).length} farger i hvert tema, alle løfter holder.`,
   )
 } else {
   console.log(tema.css)

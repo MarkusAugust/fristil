@@ -16,6 +16,7 @@ import { readFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { compile } from "tailwindcss"
+import { colorTokens } from "../src/tokens/tokens.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 
@@ -40,18 +41,37 @@ ${tema}
 
 const compiler = await compile(input, { base: pakke, loadStylesheet })
 
+/*
+ * Hver farge, ikke et utvalg.
+ *
+ * Lista sto her med sju håndplukkede celler og en kommentar som sa «én celle
+ * per rolle, og én per familie». Talt opp var det sju av 86 farger, altså
+ * verken hver rolle eller hver familie, og en generator som hoppet over raden
+ * `warning` eller kolonnen `content` gikk fri. Nå bygges lista av
+ * `colorTokens`, altså av den samme kilden generatoren leser, og da er
+ * dekningen komplett per definisjon.
+ *
+ * Det er ingen sirkel: det som kontrolleres er ikke at navnene stemmer, men
+ * at en ekte Tailwind lager en klasse av hver av dem, med tokenet i seg.
+ */
+const fargeklasser: [klasse: string, inneholder: string][] = Object.keys(
+  colorTokens,
+)
+  .filter((navn) => navn.startsWith("--fs-color-"))
+  .map((navn) => [`bg-fs-${navn.slice("--fs-color-".length)}`, `var(${navn})`])
+
 /** Klassen, og det den må inneholde for at koblingen skal være ekte. */
 const forventet: [klasse: string, inneholder: string][] = [
-  ["p-4", "calc(var(--size-1) * 4)"],
-  ["gap-2", "calc(var(--size-1) * 2)"],
-  ["text-fs-interactive", "var(--semantic-interactive-main)"],
-  ["bg-fs-danger-bg", "var(--semantic-danger-background)"],
-  ["text-fs-muted", "var(--semantic-muted-foreground)"],
-  ["border-fs-field-border", "var(--semantic-field-border)"],
+  ["p-4", "calc(var(--fs-spacing-1) * 4)"],
+  ["gap-2", "calc(var(--fs-spacing-1) * 2)"],
+  ...fargeklasser,
+  // Én farge også som tekst, så navnerommet ikke bare virker for bakgrunn.
+  ["text-fs-accent-text", "var(--fs-color-accent-text)"],
+  ["border-fs-neutral-border", "var(--fs-color-neutral-border)"],
+  ["text-fs-xxs", "var(--font-size-xxs)"],
   ["text-fs-mega", "var(--font-size-mega)"],
   ["max-w-fs-aside", "384px"],
-  ["shadow-fs-overlay", "var(--semantic-shadow-overlay)"],
-  ["bg-fs-azure-70", "var(--palette-azure-70)"],
+  ["shadow-fs-overlay", "var(--fs-shadow-overlay)"],
 ]
 
 const css = compiler.build(forventet.map(([klasse]) => klasse))
@@ -71,7 +91,7 @@ for (const [klasse, inneholder] of forventet) {
 
 /** Klasser som ville betydd at vi har tatt over noe som er Tailwinds eget. */
 const skalIkkeRøres: [klasse: string, ikke: string][] = [
-  ["bg-neutral-100", "--semantic"],
+  ["bg-neutral-100", "--fs-color"],
   ["max-w-md", "--container-fs"],
 ]
 
@@ -97,5 +117,5 @@ if (feil.length > 0) {
 }
 
 console.log(
-  `Tailwind-temaet gir ${forventet.length} kontrollerte klasser Fristils verdier, og lar Tailwinds egne være i fred.`,
+  `Tailwind-temaet gir ${forventet.length} kontrollerte klasser Fristils verdier, ${fargeklasser.length} av dem hver sin farge, og lar Tailwinds egne være i fred.`,
 )

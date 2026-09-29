@@ -5,8 +5,8 @@
     border-collapse: collapse;
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
     /* Tall som står under hverandre skal ha samme bredde per siffer, ellers
        kan ikke kolonnen leses nedover. */
     font-variant-numeric: tabular-nums;
@@ -15,20 +15,23 @@
   .fs-table caption {
     text-align: start;
     font-weight: var(--font-weight-semibold);
-    padding-block-end: var(--size-2);
+    padding-block-end: var(--fs-spacing-2);
   }
 
   .fs-table th,
   .fs-table td {
-    padding: var(--fs-table-cell-padding, var(--size-2) var(--size-3));
+    padding: var(
+      --fs-table-cell-padding,
+      var(--fs-spacing-2) var(--fs-spacing-3)
+    );
     text-align: start;
     vertical-align: top;
-    border-block-end: 1px solid var(--semantic-divider-30);
+    border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
   }
 
   .fs-table thead th {
     font-weight: var(--font-weight-semibold);
-    border-block-end: 2px solid var(--semantic-divider-100);
+    border-block-end: 2px solid var(--fs-color-neutral-border-strong);
   }
 
   .fs-table tbody tr:last-child th,
@@ -37,11 +40,11 @@
   }
 
   .fs-table[data-variant="striped"] tbody tr:nth-child(even) {
-    background: var(--semantic-neutral-background);
+    background: var(--fs-color-neutral-surface);
   }
 
   .fs-table[data-hoverable] tbody tr:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   .fs-table td[data-align="end"],
@@ -57,7 +60,7 @@
   }
 
   .fs-table-scroll:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 }

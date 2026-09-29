@@ -21,7 +21,7 @@ Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen un
   visningsCss={`
     /* Boblen ligger over utløseren, og trenger litt luft i denne boksen for
        å ikke bli klippet. I en ekte side er det plassen på siden som avgjør. */
-    .fs-tooltip { margin-block-start: var(--size-8); }
+    .fs-tooltip { margin-block-start: var(--fs-spacing-8); }
   `}
   kode={`
 <span class="fs-tooltip">
@@ -102,15 +102,15 @@ En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskje
 | Variabel | Standard |
 | --- | --- |
 | `--fs-tooltip-width` | `16rem` |
-| `--fs-tooltip-padding` | `var(--size-1) var(--size-2)` |
-| `--fs-tooltip-radius` | `var(--size-1)` |
+| `--fs-tooltip-padding` | `var(--fs-spacing-1) var(--fs-spacing-2)` |
+| `--fs-tooltip-radius` | `var(--fs-spacing-1)` |
 
 Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du flytte den ned selv:
 
 ```css
 .fs-tooltip__bubble {
 	inset-block-end: auto;
-	inset-block-start: calc(100% + var(--size-2));
+	inset-block-start: calc(100% + var(--fs-spacing-2));
 }
 ```
 

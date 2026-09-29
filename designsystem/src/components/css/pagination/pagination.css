@@ -4,7 +4,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--fs-pagination-gap, var(--size-1));
+    gap: var(--fs-pagination-gap, var(--fs-spacing-1));
     margin: 0;
     padding: 0;
     list-style: none;
@@ -20,41 +20,51 @@
     justify-content: center;
     /* 40 piksler i begge retninger. WCAG 2.2 krever 24, og et nummer i en
        lang rekke er lett å bomme på med finger. */
-    min-inline-size: var(--fs-pagination-size, var(--size-10));
-    min-block-size: var(--fs-pagination-size, var(--size-10));
-    padding-inline: var(--size-2);
+    min-inline-size: var(--fs-pagination-size, var(--fs-spacing-10));
+    min-block-size: var(--fs-pagination-size, var(--fs-spacing-10));
+    padding-inline: var(--fs-spacing-2);
     font-family: inherit;
     font-size: inherit;
     line-height: 1;
-    color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-text);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: var(--fs-pagination-radius, var(--size-1));
+    border-radius: var(--fs-pagination-radius, var(--fs-spacing-1));
     text-decoration: none;
     cursor: pointer;
   }
 
-  .fs-pagination a:hover,
-  .fs-pagination button:hover:not(:disabled) {
-    background: var(--semantic-interactive-background);
+  /* Gjeldende side er unntatt, og har sin egen hover under. Uten `:not()`
+     vant denne regelen på spesifisitet, og sidetallet brukeren står på ble
+     stående i `accent-content` på `accent-surface`, altså 1,09:1. */
+  .fs-pagination a:not([aria-current="page"]):hover,
+  .fs-pagination button:hover:not(:disabled):not([aria-current="page"]) {
+    background: var(--fs-color-accent-surface);
   }
 
   .fs-pagination a:focus-visible,
   .fs-pagination button:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
   .fs-pagination [aria-current="page"] {
-    color: var(--semantic-interactive-contrast);
-    background: var(--semantic-interactive-main);
-    border-color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-content);
+    background: var(--fs-color-accent-fill);
+    border-color: var(--fs-color-accent-fill);
     font-weight: var(--font-weight-semibold);
+  }
+
+  /* Som knappen: bort fra `content`, altså mørkere i lyst tema og lysere i
+     mørkt, så teksten oppå blir stående. */
+  .fs-pagination [aria-current="page"]:hover {
+    background: var(--fs-color-accent-text);
+    border-color: var(--fs-color-accent-text);
   }
 
   .fs-pagination button:disabled,
   .fs-pagination [aria-disabled="true"] {
-    color: var(--semantic-disabled-foreground);
+    color: var(--fs-color-disabled-text);
     cursor: not-allowed;
   }
 
@@ -63,8 +73,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: var(--fs-pagination-size, var(--size-10));
-    color: var(--semantic-muted-foreground);
+    min-inline-size: var(--fs-pagination-size, var(--fs-spacing-10));
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   /* Høykontrast: gjeldende side skilles bare med farge. */

@@ -7,24 +7,20 @@
 
     display: inline-flex;
     align-items: center;
-    gap: var(--size-2);
-    padding: var(--fs-button-padding, var(--size-2) var(--size-4));
+    gap: var(--fs-spacing-2);
+    padding: var(--fs-button-padding, var(--fs-spacing-2) var(--fs-spacing-4));
     font-family: inherit;
     font-size: var(--font-size-m);
     /* Vekt, linjeavstand og rammetykkelse er form, og form leses fra en
        komponentvariabel med tokenverdien som reserve. Et tema som vil ha
-       fete knapper med tykk ramme, slik Skatteetatens egne har, setter dem
+       fete knapper med tykk ramme, slik noen designsystemer har, setter dem
        uten å skrive en eneste selektor av. */
     font-weight: var(--fs-button-font-weight, var(--font-weight-medium));
-    line-height: var(
-      --fs-button-line-height,
-      var(--semantic-line-height-default)
-    );
-    border: var(--fs-button-border-width, 1px) solid
-      var(--semantic-interactive-main);
-    border-radius: var(--fs-button-radius, var(--size-1));
-    background: var(--semantic-interactive-main);
-    color: var(--semantic-interactive-contrast);
+    line-height: var(--fs-button-line-height, var(--fs-line-height-default));
+    border: var(--fs-button-border-width, 1px) solid var(--fs-color-accent-fill);
+    border-radius: var(--fs-button-radius, var(--fs-spacing-1));
+    background: var(--fs-color-accent-fill);
+    color: var(--fs-color-accent-content);
     cursor: pointer;
     text-decoration: none;
     user-select: none;
@@ -44,21 +40,25 @@
     text-wrap: balance;
   }
 
+  /* Hover går bort fra `content`: mørkere i lyst tema, lysere i mørkt. `text`
+     er rollen som ligger der, og siden lysheten er rollens og ikke
+     merkefargens, holder teksten oppå knappen kontrasten sin uansett kulør.
+     `content oppå text` er et løfte i kontrakten. */
   .fs-button:hover {
-    background: var(--semantic-interactive-foreground);
-    border-color: var(--semantic-interactive-foreground);
+    background: var(--fs-color-accent-text);
+    border-color: var(--fs-color-accent-text);
   }
 
   .fs-button:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
   .fs-button:disabled,
   .fs-button[aria-disabled="true"] {
-    background: var(--semantic-disabled-background);
-    color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-background);
+    background: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -75,35 +75,35 @@
   /* Sekundær: omriss, gjennomsiktig bakgrunn */
   .fs-button[data-variant="secondary"] {
     background: transparent;
-    color: var(--semantic-interactive-main);
-    border-color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-text);
+    border-color: var(--fs-color-accent-border);
   }
 
   .fs-button[data-variant="secondary"]:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   /* Ghost: ingen kant, ingen bakgrunn */
   .fs-button[data-variant="ghost"] {
     background: transparent;
-    color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-text);
     border-color: transparent;
   }
 
   .fs-button[data-variant="ghost"]:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   /* Danger */
   .fs-button[data-variant="danger"] {
-    background: var(--semantic-danger-background);
-    color: var(--semantic-danger-foreground);
-    border-color: var(--semantic-danger-foreground);
+    background: var(--fs-color-danger-surface);
+    color: var(--fs-color-danger-text);
+    border-color: var(--fs-color-danger-text);
   }
 
   .fs-button[data-variant="danger"]:hover {
-    background: var(--semantic-danger-main);
-    border-color: var(--semantic-danger-main);
-    color: var(--semantic-danger-contrast);
+    background: var(--fs-color-danger-fill);
+    border-color: var(--fs-color-danger-fill);
+    color: var(--fs-color-danger-content);
   }
 }

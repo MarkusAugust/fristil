@@ -7,37 +7,40 @@
 
     display: block;
     width: 100%;
-    min-height: var(--fs-textarea-min-height, calc(var(--size-4) * 5));
-    padding: var(--fs-textarea-padding, var(--size-2) var(--size-3));
+    min-height: var(--fs-textarea-min-height, calc(var(--fs-spacing-4) * 5));
+    padding: var(
+      --fs-textarea-padding,
+      var(--fs-spacing-2) var(--fs-spacing-3)
+    );
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--fs-textarea-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-textarea-radius, var(--fs-spacing-1));
     resize: vertical;
   }
 
   .fs-textarea::placeholder {
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .fs-textarea:hover {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-textarea:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
-    border-color: var(--semantic-interactive-main);
+    border-color: var(--fs-color-accent-border);
   }
 
   .fs-textarea:disabled,
   .fs-textarea[aria-disabled="true"] {
-    background: var(--semantic-disabled-background);
-    color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-background);
+    background: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -52,20 +55,20 @@
   }
 
   .fs-textarea[data-state="invalid"] {
-    border-color: var(--semantic-danger-foreground);
-    background: var(--semantic-danger-background);
+    border-color: var(--fs-color-danger-text);
+    background: var(--fs-color-danger-surface);
   }
 
   .fs-textarea[data-state="invalid"]:focus-visible {
-    outline-color: var(--semantic-danger-foreground);
+    outline-color: var(--fs-color-danger-text);
   }
 
   .fs-textarea[data-state="success"] {
-    border-color: var(--semantic-success-foreground);
-    background: var(--semantic-success-background);
+    border-color: var(--fs-color-success-text);
+    background: var(--fs-color-success-surface);
   }
 
   .fs-textarea[data-state="success"]:focus-visible {
-    outline-color: var(--semantic-success-foreground);
+    outline-color: var(--fs-color-success-text);
   }
 }

@@ -22,9 +22,8 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    `fs-datepicker` og `data-variant="outline"` finnes i andre designsystemer,
    ikke i Fristil. Er du usikker på om noe finnes, står det her eller så gjør
    det ikke det.
-3. **Ingen hardkodede farger eller piksler.** `var(--semantic-…)` og
-   `var(--size-…)`. Paletten (`--palette-…`) er råverdier og brukes ikke
-   direkte.
+3. **Ingen hardkodede farger eller piksler.** `var(--fs-color-…)` og
+   `var(--fs-spacing-…)`.
 4. **`defineFs*()` kjøres øverst i `main.ts`,** ikke i en livsløpskrok, og et
    boolsk attributt er sant så lenge det står der. Sjekk at det som havner i
    DOM-en ikke er `invalid="false"`: attributtet må fjernes, ikke settes til
@@ -103,42 +102,35 @@ Standardvarianten har ingen attributt.
 
 ## 3. Tokens
 
-To lag. `--palette-…` er råfarger og brukes ikke direkte. `--semantic-…` sier
-hva fargen betyr, peker på en palettfarge, og er det du skal bruke. Da følger
-markupen med når paletten justeres eller konsumenten lager sitt eget tema.
+Ett lag. En farge er en celle i en matrise av **familie**, altså hva den
+betyr, og **rolle**, altså hva den gjør, og navnet er
+`--fs-color-<familie>-<rolle>`. Hver familie har hver rolle, så
+`--fs-color-danger-border` og `--fs-color-success-border` finnes begge.
+Rollene er de samme uansett familie: `surface` er en tonet flate, `fill` en
+fylt, `content` teksten oppå `fill`, `border` en ramme, og `text` familiens
+farge som tekst. Kant og tekst har et svakere og et sterkere trinn ved siden
+av.
 
 ```
---semantic-danger-background      --semantic-danger-contrast
---semantic-danger-foreground      --semantic-danger-main
---semantic-disabled-background    --semantic-disabled-foreground
---semantic-divider-100            --semantic-divider-30
---semantic-field-border           --semantic-field-border-hover
---semantic-focus-ring             --semantic-icon-calendar
---semantic-icon-check             --semantic-icon-clock
---semantic-icon-dash              --semantic-icon-search
---semantic-interactive-background --semantic-interactive-contrast
---semantic-interactive-foreground --semantic-interactive-main
---semantic-interactive-visited    --semantic-muted-foreground
---semantic-neutral-background     --semantic-neutral-foreground
---semantic-overlay-backdrop       --semantic-page-background
---semantic-page-foreground        --semantic-shadow-overlay
---semantic-size-default           --semantic-spacing-default
---semantic-success-background     --semantic-success-foreground
---semantic-warning-background     --semantic-warning-foreground
+Familier: `accent`, `visited`, `brand1`, `brand2`, `brand3`, `neutral`, `danger`, `warning`, `success`.
+
+Roller: `surface`, `border-subtle`, `border`, `border-strong`, `fill`, `text`, `text-strong`, `text-subtle`, `content`.
+
+Utenfor matrisen: `--fs-color-disabled-surface`, `--fs-color-disabled-text`, `--fs-color-neutral-canvas`, `--fs-color-neutral-raised`, `--fs-color-overlay`, `--fs-focus-ring`, `--fs-icon-calendar`, `--fs-icon-check`, `--fs-icon-clock`, `--fs-icon-dash`, `--fs-icon-search`, `--fs-shadow-overlay`.
 ```
 
-Mål: `--size-0-5`, `--size-1`, `--size-10`, `--size-12`, `--size-16`,
-`--size-2`, `--size-3`, `--size-4`, `--size-5`, `--size-6`, `--size-7`,
-`--size-8`, `--size-px`.
+Mål: `--fs-spacing-0-5`, `--fs-spacing-1`, `--fs-spacing-10`,
+`--fs-spacing-12`, `--fs-spacing-16`, `--fs-spacing-2`, `--fs-spacing-3`,
+`--fs-spacing-4`, `--fs-spacing-5`, `--fs-spacing-6`, `--fs-spacing-7`,
+`--fs-spacing-8`, `--fs-spacing-px`.
 
 Skrift: `--font-size-l`, `--font-size-m`, `--font-size-mega`,
 `--font-size-reference`, `--font-size-s`, `--font-size-xl`, `--font-size-xs`,
 `--font-size-xxl`, `--font-size-xxs`, `--font-weight-bold`,
 `--font-weight-medium`, `--font-weight-regular`, `--font-weight-semibold`.
 
-Linjehøyde: `--semantic-line-height-article`,
-`--semantic-line-height-compact`, `--semantic-line-height-default`,
-`--semantic-line-height-heading`.
+Linjehøyde: `--fs-line-height-article`, `--fs-line-height-compact`,
+`--fs-line-height-default`, `--fs-line-height-heading`.
 
 `disabled` og `neutral` er ikke det samme. `disabled` er for kontroller som er
 slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet

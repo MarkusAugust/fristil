@@ -4,21 +4,21 @@
     appearance: none;
     flex: none;
     display: inline-block;
-    inline-size: var(--fs-switch-width, var(--size-10));
-    block-size: var(--fs-switch-height, var(--size-6));
+    inline-size: var(--fs-switch-width, var(--fs-spacing-10));
+    block-size: var(--fs-switch-height, var(--fs-spacing-6));
     margin: 0;
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--size-4);
-    background-color: var(--semantic-neutral-background);
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-spacing-4);
+    background-color: var(--fs-color-neutral-surface);
     /* Knappen er en gradient, ikke et pseudoelement: Firefox rendrer ikke
        ::before og ::after på et <input>. */
     background-image: radial-gradient(
       circle at center,
-      var(--semantic-page-foreground) 0 34%,
+      var(--fs-color-neutral-text-strong) 0 34%,
       transparent 36%
     );
     background-repeat: no-repeat;
-    background-size: var(--fs-switch-height, var(--size-6)) 100%;
+    background-size: var(--fs-switch-height, var(--fs-spacing-6)) 100%;
     /* background-position har ingen logisk variant, så begge retningene
        skrives for hånd. Av er på starten, på er på slutten. */
     background-position: left center;
@@ -29,11 +29,11 @@
   }
 
   .fs-switch:hover:not(:disabled) {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-switch:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
@@ -42,12 +42,12 @@
   }
 
   .fs-switch:checked {
-    background-color: var(--semantic-interactive-main);
-    border-color: var(--semantic-interactive-main);
+    background-color: var(--fs-color-accent-fill);
+    border-color: var(--fs-color-accent-fill);
     background-position: right center;
     background-image: radial-gradient(
       circle at center,
-      var(--semantic-interactive-contrast) 0 34%,
+      var(--fs-color-accent-content) 0 34%,
       transparent 36%
     );
   }
@@ -57,11 +57,11 @@
   }
 
   .fs-switch:disabled {
-    background-color: var(--semantic-disabled-background);
-    border-color: var(--semantic-disabled-background);
+    background-color: var(--fs-color-disabled-surface);
+    border-color: var(--fs-color-disabled-surface);
     background-image: radial-gradient(
       circle at center,
-      var(--semantic-disabled-foreground) 0 34%,
+      var(--fs-color-disabled-text) 0 34%,
       transparent 36%
     );
     cursor: not-allowed;
@@ -78,8 +78,8 @@
   .fs-switch-row {
     display: flex;
     align-items: center;
-    gap: var(--size-2);
-    line-height: var(--semantic-line-height-default);
+    gap: var(--fs-spacing-2);
+    line-height: var(--fs-line-height-default);
   }
 
   /*

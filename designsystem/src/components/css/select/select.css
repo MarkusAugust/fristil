@@ -7,25 +7,26 @@
 
     display: block;
     width: 100%;
-    padding-block: var(--size-2);
-    padding-inline: var(--size-3) calc(var(--size-4) + var(--size-2));
+    padding-block: var(--fs-spacing-2);
+    padding-inline: var(--fs-spacing-3)
+      calc(var(--fs-spacing-4) + var(--fs-spacing-2));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background-color: var(--semantic-page-background);
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--fs-select-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background-color: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-select-radius, var(--fs-spacing-1));
     appearance: none;
     background-image:
       linear-gradient(
         45deg,
         transparent 50%,
-        var(--semantic-muted-foreground) 50%
+        var(--fs-color-neutral-text-subtle) 50%
       ),
       linear-gradient(
         135deg,
-        var(--semantic-muted-foreground) 50%,
+        var(--fs-color-neutral-text-subtle) 50%,
         transparent 50%
       );
     background-position:
@@ -47,20 +48,20 @@
   }
 
   .fs-select:hover {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-select:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
-    border-color: var(--semantic-interactive-main);
+    border-color: var(--fs-color-accent-border);
   }
 
   .fs-select:disabled,
   .fs-select[aria-disabled="true"] {
-    background-color: var(--semantic-disabled-background);
-    color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-background);
+    background-color: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -75,21 +76,21 @@
   }
 
   .fs-select[data-state="invalid"] {
-    border-color: var(--semantic-danger-foreground);
-    background-color: var(--semantic-danger-background);
+    border-color: var(--fs-color-danger-text);
+    background-color: var(--fs-color-danger-surface);
   }
 
   .fs-select[data-state="invalid"]:focus-visible {
-    outline-color: var(--semantic-danger-foreground);
+    outline-color: var(--fs-color-danger-text);
   }
 
   .fs-select[data-state="success"] {
-    border-color: var(--semantic-success-foreground);
-    background-color: var(--semantic-success-background);
+    border-color: var(--fs-color-success-text);
+    background-color: var(--fs-color-success-surface);
   }
 
   .fs-select[data-state="success"]:focus-visible {
-    outline-color: var(--semantic-success-foreground);
+    outline-color: var(--fs-color-success-text);
   }
 
   /*
@@ -115,9 +116,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--size-2);
+      gap: var(--fs-spacing-2);
       background-image: none;
-      padding-inline: var(--size-3);
+      padding-inline: var(--fs-spacing-3);
     }
 
     /* Teksten i knappen er valget som står nå. Lange valg skal klippes, ikke
@@ -134,7 +135,7 @@
     }
 
     .fs-select[data-picker="styled"]::picker-icon {
-      color: var(--semantic-muted-foreground);
+      color: var(--fs-color-neutral-text-subtle);
       transition: rotate 120ms ease;
     }
 
@@ -149,13 +150,13 @@
          vinduet, ikke strekke seg utenfor den. `stretch` er nettopp den
          plassen, og margen trekkes fra. */
       max-block-size: stretch;
-      margin-block: var(--fs-select-viewport-margin, var(--size-2));
+      margin-block: var(--fs-select-viewport-margin, var(--fs-spacing-2));
       padding: 0;
       overflow-y: auto;
-      background: var(--semantic-page-background);
-      border: 1px solid var(--semantic-field-border);
-      border-radius: var(--fs-select-radius, var(--size-1));
-      box-shadow: var(--semantic-shadow-overlay);
+      background: var(--fs-color-neutral-canvas);
+      border: 1px solid var(--fs-color-neutral-border);
+      border-radius: var(--fs-select-radius, var(--fs-spacing-1));
+      box-shadow: var(--fs-shadow-overlay);
       /* Er det ikke plass under feltet, legges lista over det. */
       position-try-fallbacks: flip-block;
       opacity: 0;
@@ -205,23 +206,26 @@
        gir den samme venstrekant som teksten i et valg. Valgene setter de tre
        tilbake til sine egne verdier. */
     .fs-select[data-picker="styled"] optgroup {
-      padding-block: var(--size-2) var(--size-1);
+      padding-block: var(--fs-spacing-2) var(--fs-spacing-1);
       font-size: var(--font-size-s);
-      color: var(--semantic-muted-foreground);
-      text-indent: var(--size-3);
+      color: var(--fs-color-neutral-text-subtle);
+      text-indent: var(--fs-spacing-3);
     }
 
     .fs-select[data-picker="styled"] option {
       text-indent: 0;
       display: flex;
       align-items: center;
-      gap: var(--size-2);
-      padding: var(--fs-select-option-padding, var(--size-2) var(--size-3));
+      gap: var(--fs-spacing-2);
+      padding: var(
+        --fs-select-option-padding,
+        var(--fs-spacing-2) var(--fs-spacing-3)
+      );
       font-family: inherit;
       font-size: var(--font-size-m);
-      line-height: var(--semantic-line-height-default);
-      color: var(--semantic-page-foreground);
-      background: var(--semantic-page-background);
+      line-height: var(--fs-line-height-default);
+      color: var(--fs-color-neutral-text-strong);
+      background: var(--fs-color-neutral-canvas);
       cursor: pointer;
     }
 
@@ -233,29 +237,29 @@
     }
 
     .fs-select[data-picker="styled"] option:hover {
-      background: var(--semantic-interactive-background);
+      background: var(--fs-color-accent-surface);
     }
 
     .fs-select[data-picker="styled"] option:checked {
-      background: var(--semantic-interactive-main);
-      color: var(--semantic-interactive-contrast);
+      background: var(--fs-color-accent-fill);
+      color: var(--fs-color-accent-content);
     }
 
     /* Fokus vises med en ramme, ikke med en flate. Piltastene flytter fokus
        mellom valgene, og det valgte har allerede sin egen flate. En annen
        bakgrunnsfarge ville derfor forsvunnet nettopp der brukeren står. */
     .fs-select[data-picker="styled"] option:focus {
-      outline: var(--semantic-focus-ring);
+      outline: var(--fs-focus-ring);
       outline-offset: -2px;
     }
 
     .fs-select[data-picker="styled"] option:checked:focus {
-      outline-color: var(--semantic-interactive-contrast);
+      outline-color: var(--fs-color-accent-content);
     }
 
     .fs-select[data-picker="styled"] option:disabled {
-      color: var(--semantic-disabled-foreground);
-      background: var(--semantic-disabled-background);
+      color: var(--fs-color-disabled-text);
+      background: var(--fs-color-disabled-surface);
       cursor: not-allowed;
     }
 
@@ -277,7 +281,7 @@
       display: block;
       appearance: auto;
       background-image: none;
-      padding-inline: var(--size-3);
+      padding-inline: var(--fs-spacing-3);
     }
   }
 }

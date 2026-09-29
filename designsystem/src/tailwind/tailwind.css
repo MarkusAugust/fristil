@@ -1,3 +1,5 @@
+/* Generert. Rediger tokens.ts eller generate-tailwind.ts, ikke denne fila. */
+
 /*
  * Fristils verdier som Tailwind-tema.
  *
@@ -29,79 +31,108 @@
 @theme inline {
   /*
    * Avstandsenheten. Tailwind regner `p-4` som `calc(var(--spacing) * 4)`,
-   * så med `--size-1` som enhet er `p-4` nøyaktig `--size-4`. Endrer du
-   * skalaen, følger Tailwind-klassene med.
+   * så med `--fs-spacing-1` som enhet er `p-4` nøyaktig `--fs-spacing-4`.
+   * Endrer du skalaen, følger Tailwind-klassene med.
    */
-  --spacing: var(--size-1);
+  --spacing: var(--fs-spacing-1);
 
-  /* Side */
-  --color-fs-page: var(--semantic-page-background);
-  --color-fs-page-fg: var(--semantic-page-foreground);
+  /* Fargene, én klasse per celle i matrisen */
+  --color-fs-accent-border: var(--fs-color-accent-border);
+  --color-fs-accent-border-strong: var(--fs-color-accent-border-strong);
+  --color-fs-accent-border-subtle: var(--fs-color-accent-border-subtle);
+  --color-fs-accent-content: var(--fs-color-accent-content);
+  --color-fs-accent-fill: var(--fs-color-accent-fill);
+  --color-fs-accent-surface: var(--fs-color-accent-surface);
+  --color-fs-accent-text: var(--fs-color-accent-text);
+  --color-fs-accent-text-strong: var(--fs-color-accent-text-strong);
+  --color-fs-accent-text-subtle: var(--fs-color-accent-text-subtle);
 
-  /* Interaktiv */
-  --color-fs-interactive: var(--semantic-interactive-main);
-  --color-fs-interactive-bg: var(--semantic-interactive-background);
-  --color-fs-interactive-fg: var(--semantic-interactive-foreground);
-  --color-fs-interactive-contrast: var(--semantic-interactive-contrast);
-  --color-fs-visited: var(--semantic-interactive-visited);
+  --color-fs-brand1-border: var(--fs-color-brand1-border);
+  --color-fs-brand1-border-strong: var(--fs-color-brand1-border-strong);
+  --color-fs-brand1-border-subtle: var(--fs-color-brand1-border-subtle);
+  --color-fs-brand1-content: var(--fs-color-brand1-content);
+  --color-fs-brand1-fill: var(--fs-color-brand1-fill);
+  --color-fs-brand1-surface: var(--fs-color-brand1-surface);
+  --color-fs-brand1-text: var(--fs-color-brand1-text);
+  --color-fs-brand1-text-strong: var(--fs-color-brand1-text-strong);
+  --color-fs-brand1-text-subtle: var(--fs-color-brand1-text-subtle);
 
-  /* Status */
-  --color-fs-success: var(--semantic-success-foreground);
-  --color-fs-success-bg: var(--semantic-success-background);
-  --color-fs-warning: var(--semantic-warning-foreground);
-  --color-fs-warning-bg: var(--semantic-warning-background);
-  --color-fs-danger: var(--semantic-danger-foreground);
-  --color-fs-danger-bg: var(--semantic-danger-background);
-  --color-fs-danger-main: var(--semantic-danger-main);
-  --color-fs-danger-contrast: var(--semantic-danger-contrast);
-  --color-fs-neutral: var(--semantic-neutral-foreground);
-  --color-fs-neutral-bg: var(--semantic-neutral-background);
-  --color-fs-disabled: var(--semantic-disabled-foreground);
-  --color-fs-disabled-bg: var(--semantic-disabled-background);
+  --color-fs-brand2-border: var(--fs-color-brand2-border);
+  --color-fs-brand2-border-strong: var(--fs-color-brand2-border-strong);
+  --color-fs-brand2-border-subtle: var(--fs-color-brand2-border-subtle);
+  --color-fs-brand2-content: var(--fs-color-brand2-content);
+  --color-fs-brand2-fill: var(--fs-color-brand2-fill);
+  --color-fs-brand2-surface: var(--fs-color-brand2-surface);
+  --color-fs-brand2-text: var(--fs-color-brand2-text);
+  --color-fs-brand2-text-strong: var(--fs-color-brand2-text-strong);
+  --color-fs-brand2-text-subtle: var(--fs-color-brand2-text-subtle);
 
-  /* Tekst og kanter */
-  --color-fs-muted: var(--semantic-muted-foreground);
-  --color-fs-field-border: var(--semantic-field-border);
-  --color-fs-field-border-hover: var(--semantic-field-border-hover);
-  --color-fs-divider: var(--semantic-divider-30);
-  --color-fs-divider-strong: var(--semantic-divider-100);
+  --color-fs-brand3-border: var(--fs-color-brand3-border);
+  --color-fs-brand3-border-strong: var(--fs-color-brand3-border-strong);
+  --color-fs-brand3-border-subtle: var(--fs-color-brand3-border-subtle);
+  --color-fs-brand3-content: var(--fs-color-brand3-content);
+  --color-fs-brand3-fill: var(--fs-color-brand3-fill);
+  --color-fs-brand3-surface: var(--fs-color-brand3-surface);
+  --color-fs-brand3-text: var(--fs-color-brand3-text);
+  --color-fs-brand3-text-strong: var(--fs-color-brand3-text-strong);
+  --color-fs-brand3-text-subtle: var(--fs-color-brand3-text-subtle);
 
-  /* Palett, for det som ikke har en semantisk betydning ennå */
-  --color-fs-burgundy-5: var(--palette-burgundy-5);
-  --color-fs-burgundy-10: var(--palette-burgundy-10);
-  --color-fs-burgundy-30: var(--palette-burgundy-30);
-  --color-fs-burgundy-50: var(--palette-burgundy-50);
-  --color-fs-burgundy-70: var(--palette-burgundy-70);
-  --color-fs-burgundy-100: var(--palette-burgundy-100);
-  --color-fs-forest-5: var(--palette-forest-5);
-  --color-fs-forest-10: var(--palette-forest-10);
-  --color-fs-forest-30: var(--palette-forest-30);
-  --color-fs-forest-50: var(--palette-forest-50);
-  --color-fs-forest-70: var(--palette-forest-70);
-  --color-fs-forest-100: var(--palette-forest-100);
-  --color-fs-ochre-5: var(--palette-ochre-5);
-  --color-fs-ochre-10: var(--palette-ochre-10);
-  --color-fs-ochre-30: var(--palette-ochre-30);
-  --color-fs-ochre-50: var(--palette-ochre-50);
-  --color-fs-ochre-70: var(--palette-ochre-70);
-  --color-fs-ochre-100: var(--palette-ochre-100);
-  --color-fs-denim-5: var(--palette-denim-5);
-  --color-fs-denim-10: var(--palette-denim-10);
-  --color-fs-denim-30: var(--palette-denim-30);
-  --color-fs-denim-50: var(--palette-denim-50);
-  --color-fs-denim-70: var(--palette-denim-70);
-  --color-fs-denim-100: var(--palette-denim-100);
-  --color-fs-azure-10: var(--palette-azure-10);
-  --color-fs-azure-30: var(--palette-azure-30);
-  --color-fs-azure-70: var(--palette-azure-70);
-  --color-fs-azure-100: var(--palette-azure-100);
-  --color-fs-graphite-0: var(--palette-graphite-0);
-  --color-fs-graphite-5: var(--palette-graphite-5);
-  --color-fs-graphite-10: var(--palette-graphite-10);
-  --color-fs-graphite-30: var(--palette-graphite-30);
-  --color-fs-graphite-50: var(--palette-graphite-50);
-  --color-fs-graphite-70: var(--palette-graphite-70);
-  --color-fs-graphite-100: var(--palette-graphite-100);
+  --color-fs-danger-border: var(--fs-color-danger-border);
+  --color-fs-danger-border-strong: var(--fs-color-danger-border-strong);
+  --color-fs-danger-border-subtle: var(--fs-color-danger-border-subtle);
+  --color-fs-danger-content: var(--fs-color-danger-content);
+  --color-fs-danger-fill: var(--fs-color-danger-fill);
+  --color-fs-danger-surface: var(--fs-color-danger-surface);
+  --color-fs-danger-text: var(--fs-color-danger-text);
+  --color-fs-danger-text-strong: var(--fs-color-danger-text-strong);
+  --color-fs-danger-text-subtle: var(--fs-color-danger-text-subtle);
+
+  --color-fs-disabled-surface: var(--fs-color-disabled-surface);
+  --color-fs-disabled-text: var(--fs-color-disabled-text);
+
+  --color-fs-neutral-border: var(--fs-color-neutral-border);
+  --color-fs-neutral-border-strong: var(--fs-color-neutral-border-strong);
+  --color-fs-neutral-border-subtle: var(--fs-color-neutral-border-subtle);
+  --color-fs-neutral-canvas: var(--fs-color-neutral-canvas);
+  --color-fs-neutral-content: var(--fs-color-neutral-content);
+  --color-fs-neutral-fill: var(--fs-color-neutral-fill);
+  --color-fs-neutral-raised: var(--fs-color-neutral-raised);
+  --color-fs-neutral-surface: var(--fs-color-neutral-surface);
+  --color-fs-neutral-text: var(--fs-color-neutral-text);
+  --color-fs-neutral-text-strong: var(--fs-color-neutral-text-strong);
+  --color-fs-neutral-text-subtle: var(--fs-color-neutral-text-subtle);
+
+  --color-fs-overlay: var(--fs-color-overlay);
+
+  --color-fs-success-border: var(--fs-color-success-border);
+  --color-fs-success-border-strong: var(--fs-color-success-border-strong);
+  --color-fs-success-border-subtle: var(--fs-color-success-border-subtle);
+  --color-fs-success-content: var(--fs-color-success-content);
+  --color-fs-success-fill: var(--fs-color-success-fill);
+  --color-fs-success-surface: var(--fs-color-success-surface);
+  --color-fs-success-text: var(--fs-color-success-text);
+  --color-fs-success-text-strong: var(--fs-color-success-text-strong);
+  --color-fs-success-text-subtle: var(--fs-color-success-text-subtle);
+
+  --color-fs-visited-border: var(--fs-color-visited-border);
+  --color-fs-visited-border-strong: var(--fs-color-visited-border-strong);
+  --color-fs-visited-border-subtle: var(--fs-color-visited-border-subtle);
+  --color-fs-visited-content: var(--fs-color-visited-content);
+  --color-fs-visited-fill: var(--fs-color-visited-fill);
+  --color-fs-visited-surface: var(--fs-color-visited-surface);
+  --color-fs-visited-text: var(--fs-color-visited-text);
+  --color-fs-visited-text-strong: var(--fs-color-visited-text-strong);
+  --color-fs-visited-text-subtle: var(--fs-color-visited-text-subtle);
+
+  --color-fs-warning-border: var(--fs-color-warning-border);
+  --color-fs-warning-border-strong: var(--fs-color-warning-border-strong);
+  --color-fs-warning-border-subtle: var(--fs-color-warning-border-subtle);
+  --color-fs-warning-content: var(--fs-color-warning-content);
+  --color-fs-warning-fill: var(--fs-color-warning-fill);
+  --color-fs-warning-surface: var(--fs-color-warning-surface);
+  --color-fs-warning-text: var(--fs-color-warning-text);
+  --color-fs-warning-text-strong: var(--fs-color-warning-text-strong);
+  --color-fs-warning-text-subtle: var(--fs-color-warning-text-subtle);
 
   /* Tekststørrelser */
   --text-fs-xxs: var(--font-size-xxs);
@@ -123,12 +154,6 @@
   --container-fs-aside-narrow: 288px;
   --container-fs-wide-content: 768px;
 
-  /* Skygge under flater som ligger over siden */
-  --shadow-fs-overlay: var(--semantic-shadow-overlay);
+  /* Skyggen under flater som ligger over siden */
+  --shadow-fs-overlay: var(--fs-shadow-overlay);
 }
-
-/*
- * Brekkpunktene er med vilje utelatt. Fristils `sm`, `md`, `lg`, `xl` og
- * `2xl` har nøyaktig de samme verdiene som Tailwind allerede bruker, så
- * `md:` virker som før uten at vi overstyrer noe.
- */

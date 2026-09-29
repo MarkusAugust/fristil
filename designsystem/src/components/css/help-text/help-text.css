@@ -3,22 +3,22 @@
     display: block;
     /* Hele margin settes, ikke bare toppen: uten dette arver <p>
        nettleserens 1em i bunn hos konsumenter uten reset. */
-    margin: var(--size-1) 0 0;
+    margin: var(--fs-spacing-1) 0 0;
     font-family: inherit;
     font-size: var(--font-size-xs);
-    line-height: var(--semantic-line-height-compact);
-    color: var(--semantic-muted-foreground);
+    line-height: var(--fs-line-height-compact);
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .fs-help-text[data-variant="default"] {
-    color: var(--semantic-page-foreground);
+    color: var(--fs-color-neutral-text-strong);
   }
 
   .fs-help-text[data-variant="success"] {
-    color: var(--semantic-success-foreground);
+    color: var(--fs-color-success-text);
   }
 
   .fs-help-text[data-variant="warning"] {
-    color: var(--semantic-warning-foreground);
+    color: var(--fs-color-warning-text);
   }
 }

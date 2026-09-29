@@ -18,8 +18,15 @@ import { fileURLToPath } from "node:url"
 import { classes } from "../src/diagnostics/classes.js"
 import { elements } from "../src/diagnostics/elements.js"
 import { fs } from "../src/index.js"
+import { ROLES } from "../src/tokens/contract.js"
+import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
+
+/** Rollenavnene slik de står i CSS, i rekkefølgen kontrakten gir dem. */
+const ROLE_NAMES = Object.keys(ROLES).map((rolle) =>
+  roleToCss(rolle as keyof typeof ROLES),
+)
 
 type Pakke = {
   version: string
@@ -194,25 +201,40 @@ function tokennavn(mønster: RegExp): string[] {
 }
 
 /**
- * De semantiske tokenene, i to kolonner.
+ * Fargematrisen, som to akser framfor 93 navn.
  *
- * Alle navnene skrives ut. En liste som slutter med «og så videre» er en
- * invitasjon til å finne opp det siste, og oppfunne navn er nettopp det denne
- * regelboka finnes for å hindre.
+ * Aksene skrives ut fullt ut, og navnet er `--fs-color-<familie>-<rolle>`, så
+ * hver celle kan utledes uten å gjettes. En liste som slutter med «og så
+ * videre» er en invitasjon til å finne opp det siste, og oppfunne navn er
+ * nettopp det denne regelboka finnes for å hindre. To akser er ikke en slik
+ * liste: de er komplette, og cellene følger av dem.
+ *
+ * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
+ * Å utlede dem fra navnene gikk galt: `--fs-color-disabled-text` ga
+ * `disabled` som en tiende familie, og den har bare to av de ni rollene.
+ * Alt i det genererte stilarket som ikke er en celle, listes for seg.
  */
 export function tokenListe(): string {
-  const navn = tokennavn(/--semantic-[a-z0-9-]+/g).filter(
-    // Linjehøyde og mål hører under skriftdelen, og gjentas ikke her.
-    (token) => !token.startsWith("--semantic-line-height"),
+  const celler = new Set(
+    FAMILIES.flatMap((familie) =>
+      ROLE_NAMES.map((rolle) => `--fs-color-${familie}-${rolle}`),
+    ),
   )
 
-  const linjer: string[] = []
-  for (let i = 0; i < navn.length; i += 2) {
-    const venstre = navn[i].padEnd(34)
-    linjer.push((venstre + (navn[i + 1] ?? "")).trimEnd())
-  }
+  const utenfor = tokennavn(/--fs-(?:color|shadow|focus|icon)-[a-z0-9-]+/g)
+    .filter((navn) => !celler.has(navn))
+    .sort()
 
-  return linjer.join("\n")
+  const liste = (navn: readonly string[]) =>
+    navn.map((n) => `\`${n}\``).join(", ")
+
+  return [
+    `Familier: ${liste(FAMILIES)}.`,
+    "",
+    `Roller: ${liste(ROLE_NAMES)}.`,
+    "",
+    `Utenfor matrisen: ${liste(utenfor)}.`,
+  ].join("\n")
 }
 
 /** Mål, skrift og linjehøyde, som én setning framfor en liste. */
@@ -221,11 +243,11 @@ export function malOgSkrift(): string {
     navn.map((token) => `\`${token}\``).join(", ")
 
   return [
-    `Mål: ${liste(tokennavn(/--size-[a-z0-9-]+/g))}.`,
+    `Mål: ${liste(tokennavn(/--fs-spacing-[a-z0-9-]+/g))}.`,
     "",
     `Skrift: ${liste(tokennavn(/--font-[a-z0-9-]+/g))}.`,
     "",
-    `Linjehøyde: ${liste(tokennavn(/--semantic-line-height-[a-z0-9-]+/g))}.`,
+    `Linjehøyde: ${liste(tokennavn(/--fs-line-height-[a-z0-9-]+/g))}.`,
   ].join("\n")
 }
 

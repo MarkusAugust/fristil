@@ -12,19 +12,22 @@
     inset-block-start: 0;
     inset-inline: 0;
     z-index: var(--fs-connection-status-layer, 1000);
-    padding: var(--fs-connection-status-padding, var(--size-2) var(--size-4));
+    padding: var(
+      --fs-connection-status-padding,
+      var(--fs-spacing-2) var(--fs-spacing-4)
+    );
     font-size: var(--font-size-s);
-    line-height: var(--semantic-line-height-compact);
+    line-height: var(--fs-line-height-compact);
     text-align: center;
-    color: var(--semantic-danger-foreground);
-    background: var(--semantic-danger-background);
-    border-block-end: 1px solid var(--semantic-danger-foreground);
+    color: var(--fs-color-danger-text);
+    background: var(--fs-color-danger-surface);
+    border-block-end: 1px solid var(--fs-color-danger-text);
   }
 
   .fs-connection-status__bar[data-state="online"] {
-    color: var(--semantic-success-foreground);
-    background: var(--semantic-success-background);
-    border-block-end-color: var(--semantic-success-foreground);
+    color: var(--fs-color-success-text);
+    background: var(--fs-color-success-surface);
+    border-block-end-color: var(--fs-color-success-text);
   }
 
   /* Høykontrastmodus fjerner egne farger og bakgrunner. Uten en ramme ville

@@ -7,36 +7,36 @@
 
     display: inline-flex;
     align-items: center;
-    gap: var(--size-1);
-    padding: var(--fs-badge-padding, var(--size-0-5) var(--size-2));
+    gap: var(--fs-spacing-1);
+    padding: var(--fs-badge-padding, var(--fs-spacing-0-5) var(--fs-spacing-2));
     font-family: inherit;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    line-height: var(--semantic-line-height-default);
-    border-radius: var(--fs-badge-radius, var(--size-4));
+    line-height: var(--fs-line-height-default);
+    border-radius: var(--fs-badge-radius, var(--fs-spacing-4));
     white-space: nowrap;
     user-select: none;
-    background: var(--semantic-interactive-background);
-    color: var(--semantic-interactive-main);
+    background: var(--fs-color-accent-surface);
+    color: var(--fs-color-accent-text);
   }
 
   .fs-badge[data-color="success"] {
-    background: var(--semantic-success-background);
-    color: var(--semantic-success-foreground);
+    background: var(--fs-color-success-surface);
+    color: var(--fs-color-success-text);
   }
 
   .fs-badge[data-color="warning"] {
-    background: var(--semantic-warning-background);
-    color: var(--semantic-warning-foreground);
+    background: var(--fs-color-warning-surface);
+    color: var(--fs-color-warning-text);
   }
 
   .fs-badge[data-color="danger"] {
-    background: var(--semantic-danger-background);
-    color: var(--semantic-danger-foreground);
+    background: var(--fs-color-danger-surface);
+    color: var(--fs-color-danger-text);
   }
 
   .fs-badge[data-color="neutral"] {
-    background: var(--semantic-neutral-background);
-    color: var(--semantic-neutral-foreground);
+    background: var(--fs-color-neutral-surface);
+    color: var(--fs-color-neutral-text);
   }
 }

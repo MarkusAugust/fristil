@@ -6,6 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
 import inputCss from "./input.css?inline"
 
@@ -38,16 +39,16 @@ describe("fs-input", () => {
   it("applies default styles", () => {
     const input = css("default")
 
-    expect(input.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(input.borderTopColor).toBe("rgb(117, 117, 117)")
-    expect(input.color).toBe("rgb(26, 26, 26)")
+    expect(input.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
+    expect(input.borderTopColor).toBe(farge("--fs-color-disabled-text"))
+    expect(input.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const input = css("invalid")
 
-    expect(input.backgroundColor).toBe("rgb(247, 226, 232)")
-    expect(input.borderTopColor).toBe("rgb(168, 46, 57)")
+    expect(input.backgroundColor).toBe(farge("--fs-color-danger-surface"))
+    expect(input.borderTopColor).toBe(farge("--fs-color-danger-text"))
   })
 
   it("applies date variant styles", () => {
@@ -72,16 +73,16 @@ describe("fs-input", () => {
   it("applies success styles", () => {
     const input = css("success")
 
-    expect(input.backgroundColor).toBe("rgb(227, 245, 234)")
-    expect(input.borderTopColor).toBe("rgb(49, 111, 42)")
+    expect(input.backgroundColor).toBe(farge("--fs-color-success-surface"))
+    expect(input.borderTopColor).toBe(farge("--fs-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const input = css("disabled")
 
-    expect(input.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(input.borderTopColor).toBe("rgb(229, 229, 229)")
-    expect(input.color).toBe("rgb(117, 117, 117)")
+    expect(input.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(input.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(input.color).toBe(farge("--fs-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(input.pointerEvents).toBe("auto")
   })

@@ -44,9 +44,9 @@ const KILDER = [
  * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
 const KJENT_GJELD = new Map<string, number>([
-  ["designsystem/src/cli.ts", 123],
-  ["designsystem/src/tokens/color.ts", 14],
-  ["designsystem/src/tokens/theme.ts", 232],
+  ["designsystem/src/cli.ts", 112],
+  ["designsystem/src/tokens/color.ts", 5],
+  ["designsystem/src/tokens/theme.ts", 81],
 ])
 
 const NORSKE_ORD = new Set([
