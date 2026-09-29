@@ -11,6 +11,7 @@ import "../styles/custom-pages-tailwind.css"
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <title>Fristil designsystem</title>
   <meta
     name="description"
@@ -37,20 +38,20 @@ import "../styles/custom-pages-tailwind.css"
   <main class="flex-1">
   <section class="relative overflow-hidden pb-20 pt-16 sm:pb-28 sm:pt-24">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(96,165,250,0.18),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(167,139,250,0.16),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(129,140,248,0.12),transparent_42%)]"></div>
-    <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-center">
+    <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-start">
       <div class="max-w-3xl">
-        <div class="mb-8 inline-flex rounded-full border border-zinc-800 bg-zinc-900/80 px-4 py-2 text-sm font-medium text-zinc-300 shadow-[0_16px_40px_-30px_rgba(0,0,0,0.8)]">
-          CSS-klasser og web components, ingen rammeverk påkrevd
-        </div>
         <FristilLogo size="lg" className="mb-8" subtitle={false} />
         <!-- Ett tekstelement, ikke to spenn. To spenn ble lest opp som
              «Rammeverksuavhengigdesignsystem» i ett ord. Orddeling lar det
              lange ordet brekke der det faktisk kan brekke. -->
-        <h1 class="mb-8 bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 bg-clip-text text-3xl font-black tracking-tight text-balance text-transparent hyphens-auto sm:text-5xl">
+        <h1 class="mb-4 bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 bg-clip-text text-3xl font-black tracking-tight text-balance text-transparent hyphens-auto sm:text-5xl">
           Rammeverksuavhengig designsystem
         </h1>
+        <p class="mb-8 max-w-2xl text-lg font-medium text-balance text-zinc-400 sm:text-2xl">
+          CSS-klasser og web components.
+        </p>
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+          Komponentene er ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
         </p>
         <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
           <a href="/kom-i-gang/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(96,165,250,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(96,165,250,0.55)] sm:w-auto">
@@ -67,7 +68,7 @@ import "../styles/custom-pages-tailwind.css"
         <div class="space-y-4">
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
             <h2 class="mb-2 text-lg font-bold text-white">En knapp koster én klasse</h2>
-            <p class="text-sm leading-7 text-zinc-300">En knapp er én CSS-klasse og null JavaScript. Et datofelt er en web component, fordi tekstfelt og kalender må vise det samme. Du laster bare det komponenten faktisk trenger.</p>
+            <p class="text-sm leading-7 text-zinc-300">En knapp er én CSS-klasse og null JavaScript. En forslagsliste er en web component, fordi tastatur og opplesning må følge hva lista viser. Du laster bare det komponenten faktisk trenger.</p>
           </div>
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
             <h2 class="mb-2 text-lg font-bold text-white">Koblingen gjøres ett sted</h2>
@@ -130,7 +131,11 @@ import "../styles/custom-pages-tailwind.css"
           <p class="mb-5 text-sm leading-7 text-zinc-300">
             Skriver du <code class="text-zinc-200">data-variant="secundary"</code> for hånd, skjer det ingenting: knappen blir stående med standardstilen, og ingen sier fra. Skriver du det gjennom funksjonen, får du en feil i editoren før du rekker å lagre.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>&lt;button &#123;...fs.button(&#123; variant: "secondary" &#125;)&#125;&gt;
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>&lt;button
+  &#123;...fs.button(&#123;
+    variant: "secondary",
+  &#125;)&#125;
+&gt;
   Lagre utkast
 &lt;/button&gt;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
@@ -146,21 +151,30 @@ import "../styles/custom-pages-tailwind.css"
           <p class="mb-5 text-sm leading-7 text-zinc-300">
             All CSS-en vår ligger i et eget cascade layer. Da vinner en helt vanlig regel i din egen CSS over vår, uansett hvor spesifikk vår er, og uten <code class="text-zinc-200">!important</code>. Skal du bare endre form eller størrelse, finnes det en variabel per komponent.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-6 text-zinc-300"><code>:root &#123;
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>:root &#123;
   --fs-button-radius: 9999px;
 &#125;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Testene åpner en nettleser og kontrollerer at regelen din faktisk vinner, at variabelen slår gjennom, og at <code class="text-zinc-200">::part()</code> når inn i kalenderen.
+            Testene åpner en nettleser og kontrollerer at regelen din faktisk vinner, at variabelen slår gjennom, og at en Tailwind-utility slår komponentens egen verdi.
           </p>
         </article>
 
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
           <h3 class="mb-3 text-xl font-bold">Fargene holder kontrastkravet</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Å koble en ledetekst, et felt, en hjelpetekst og en feilmelding riktig er fem ting å gjøre feil per felt. Regnestykket er skrevet én gang, og brukes av både <code class="text-zinc-200">&lt;fs-field&gt;</code> og <code class="text-zinc-200">fs.field()</code>.
+            Hvert fargepar i systemet er regnet ut og kontrollert mot kravet i WCAG, i både lyst og mørkt tema. Oppgir du dine egne merkefarger, regnes familiene deres ut på nytt med <code class="text-zinc-200">buildTheme</code> fra <code class="text-zinc-200">@fristil/designsystem/tema</code>.
           </p>
-          <p class="text-sm leading-7 text-zinc-300">
-            Hvert fargepar i systemet er regnet ut og kontrollert mot kravet i WCAG, i både lyst og mørkt tema. Komponentene kjøres gjennom axe i Chromium, Firefox og WebKit, og det samme gjøres mot hver side i denne dokumentasjonen.
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>const tema = buildTheme(&#123;
+  accent: "#0062ba",
+&#125;)
+
+// tema.violations er tom
+// når kontrasten holder</code></pre>
+          <p class="mt-5 text-sm leading-7 text-zinc-300">
+            Fargene regnes i OKLCH, fordi lyshet i HSL betyr noe ulikt for hver kulør. Merkefargen gir kuløren, mens rollen setter lysheten og hvor mye av metningen som blir med.
+          </p>
+          <p class="mt-5 text-sm leading-7 text-zinc-300">
+            Komponentene kjøres gjennom axe i Chromium, Firefox og WebKit. Hver side i denne dokumentasjonen kjøres gjennom axe i begge temaer.
           </p>
         </article>
       </div>
