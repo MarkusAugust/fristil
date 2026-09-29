@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.22.0 (2026-09-29)
+
 ### Brytende
 
 - **Fargene er en matrise, ikke to lag.** En farge er et punkt i en matrise av
