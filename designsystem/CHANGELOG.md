@@ -23,6 +23,22 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **Tre steder i dokumentasjonen sto ordet «bygger» erstattet med
+  «byggefunksjon»,** midt i en setning der det var et verb: «generatoren
+  byggefunksjon skalaene», og «innholdsfortegnelsen skjermleseren
+  byggefunksjon feil» på to sider. Setningene ga ingen mening.
+
+- **«Tilpasning» sa «fire veier» over en tabell med tre rader,** og ledet med
+  generatoren framfor med hva du faktisk skal gjøre. Seksjonen om egne farger
+  sier nå at det er én vei inn, din egen CSS, og hva du skriver alt etter hvor
+  grovt du tar i: ett semantisk token, en hel palettskala, eller ingenting
+  fordi generatoren skriver fila.
+
+- **«Eget tema» sa at skriften settes i `@layer fristil`.** Den står i
+  `fristil-tema`, som resten av det genererte temaet.
+
 ### Brytende
 
 - **Palettskalaene heter rollene sine.** `burgundy` → `danger`, `ochre` →
