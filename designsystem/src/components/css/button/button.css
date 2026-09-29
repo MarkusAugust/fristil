@@ -13,8 +13,8 @@
     font-size: var(--font-size-m);
     /* Vekt, linjeavstand og rammetykkelse er form, og form leses fra en
        komponentvariabel med tokenverdien som reserve. Et tema som vil ha
-       fete knapper med tykk ramme, slik Skatteetatens egne har, setter dem
-       uten å skrive en eneste selektor av. */
+       fete knapper med tykk ramme, slik et annet norsk designsystem har,
+       setter dem uten å skrive en eneste selektor av. */
     font-weight: var(--fs-button-font-weight, var(--font-weight-medium));
     line-height: var(
       --fs-button-line-height,

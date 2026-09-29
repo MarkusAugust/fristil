@@ -58,8 +58,9 @@ export type ThemeTypography = {
  * Formen i temaet: hjørner og rammer.
  *
  * Knappen står for seg, feltet for seg, og flatene for seg. Skillet er verdt
- * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
- * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
+ * å holde: et annet norsk designsystem har helt runde knapper, mens feltene
+ * der har nesten rette hjørner, og ett felles tall ville gjort feltene til
+ * kapsler.
  *
  * Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
  * står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
@@ -90,11 +91,11 @@ export type ThemeShape = {
  * lages det et tema som bare setter skrift og form, og fargene blir stående
  * som de er i `tokens.css`.
  *
- * Det siste er ikke en kuriositet. Fristils egen palett er Skatteetatens, med
- * de samme verdiene, og da ville det å kjøre fargene gjennom generatoren
- * gjort spillet mindre likt deres og ikke mer: `#1362ae` kommer ut som
- * `#1e6ab7`, fordi skalaene regnes om i OKLCH fra merkefargen. Et tema som
- * bare setter skrift og form er da det riktige svaret.
+ * Det siste er ikke en kuriositet. Bruker organisasjonen Fristils palett fra
+ * før, ville det å kjøre de samme fargene gjennom generatoren flyttet dem bort
+ * fra der de skal være: `#1362ae` kommer ut som `#1e6ab7`, fordi skalaene
+ * regnes om i OKLCH fra merkefargen. Et tema som bare setter skrift og form er
+ * da det riktige svaret.
  */
 type ThemeCommon = {
   /** Flater, tekst og skillelinjer. Nesten uten kulør. */

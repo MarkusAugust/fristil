@@ -38,8 +38,8 @@ begrunnelsen for kontrakten, og de sier mer enn et avsnitt om dem. Der et
 panel bare ville vist at det finnes kode, er det ikke med.
 
 Ingen webfont. Skriften er `Helvetica, Arial, sans-serif`, som er den stakken
-Skatteetaten selv oppgir for skjerm, og en presentasjon skal ikke kunne feile
-på grunn av nettet i et møterom.
+systemet på sammenligningslysbildet selv oppgir for skjerm, og en presentasjon
+skal ikke kunne feile på grunn av nettet i et møterom.
 
 Paletten er Fristils egne tokens, skrevet av med de samme verdiene. Flaten,
 teksten og kanten er valgt for et mørkt lysbilde og hører bare til

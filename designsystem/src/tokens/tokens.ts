@@ -36,9 +36,10 @@ export const cssTokens = {
    * Skriftvekter og linjeavstander.
    *
    * De står her, og ikke i hver komponent, fordi en organisasjon som tar
-   * systemet i bruk gjerne har sin egen typografi. Skatteetatens knapper er
-   * fete med linjeavstand 1,666, våre er halvfete med 1,5, og forskjellen
-   * skal kunne settes ett sted framfor i tjue stilark.
+   * systemet i bruk gjerne har sin egen typografi. Et annet norsk
+   * designsystem har fete knapper med linjeavstand 1,666, våre er halvfete
+   * med 1,5, og forskjellen skal kunne settes ett sted framfor i tjue
+   * stilark.
    *
    * Komponentene leser dem gjennom sin egen `--fs-*`-variabel, slik at et
    * tema kan endre alle knapper uten å endre all tekst.
@@ -80,67 +81,64 @@ export const cssTokens = {
   "--semantic-size-default": "var(--size-4)",
   "--semantic-spacing-default": "var(--size-4)",
 
-  // Palette: Burgundy
-  "--palette-burgundy-5": "#faf0f3",
-  "--palette-burgundy-10": "#f7e2e8",
-  "--palette-burgundy-30": "#f3a7b0",
-  "--palette-burgundy-50": "#f06674",
-  "--palette-burgundy-70": "#b04c5c",
-  "--palette-burgundy-100": "#6f2c3f",
+  // Palette: interactive
+  "--palette-interactive-10": "#cde1f9",
+  "--palette-interactive-30": "#9ccff2",
+  "--palette-interactive-70": "#1362ae",
+  "--palette-interactive-100": "#093e61",
 
-  // Palette: Forest
-  "--palette-forest-5": "#f4faf5",
-  "--palette-forest-10": "#e3f5ea",
-  "--palette-forest-30": "#b9e1c8",
-  "--palette-forest-50": "#91d6ac",
-  "--palette-forest-70": "#5d9b73",
-  "--palette-forest-100": "#2b6940",
+  // Palette: danger
+  "--palette-danger-5": "#faf0f3",
+  "--palette-danger-10": "#f7e2e8",
+  "--palette-danger-30": "#f3a7b0",
+  "--palette-danger-50": "#f06674",
+  "--palette-danger-70": "#a82e39",
+  "--palette-danger-100": "#6f2c3f",
 
-  // Palette: Ochre
-  "--palette-ochre-5": "#f9f4f0",
-  "--palette-ochre-10": "#f9ede2",
-  "--palette-ochre-30": "#f0d2b6",
-  "--palette-ochre-50": "#e7b78a",
-  "--palette-ochre-70": "#a9805b",
-  "--palette-ochre-100": "#6b492c",
+  // Palette: warning
+  "--palette-warning-5": "#f9f4f0",
+  "--palette-warning-10": "#f9ede2",
+  "--palette-warning-30": "#f0d2b6",
+  "--palette-warning-50": "#e7b78a",
+  "--palette-warning-70": "#896508",
+  "--palette-warning-100": "#6b492c",
 
-  // Palette: Denim
-  "--palette-denim-5": "#eff3f9",
-  "--palette-denim-10": "#e2eaf7",
-  "--palette-denim-30": "#b5cbee",
-  "--palette-denim-50": "#89abe5",
-  "--palette-denim-70": "#5a77a8",
-  "--palette-denim-100": "#2c436b",
+  // Palette: success
+  "--palette-success-5": "#f4faf5",
+  "--palette-success-10": "#e3f5ea",
+  "--palette-success-30": "#b9e1c8",
+  "--palette-success-50": "#91d6ac",
+  "--palette-success-70": "#316f2a",
+  "--palette-success-100": "#2b6940",
 
-  // Palette: Azure
-  "--palette-azure-10": "#cde1f9",
-  "--palette-azure-30": "#9ccff2",
-  "--palette-azure-70": "#1362ae",
-  "--palette-azure-100": "#093e61",
+  // Palette: visited
+  "--palette-visited-5": "#eff3f9",
+  "--palette-visited-10": "#e2eaf7",
+  "--palette-visited-30": "#b5cbee",
+  "--palette-visited-50": "#89abe5",
+  "--palette-visited-70": "#5a77a8",
+  "--palette-visited-100": "#2c436b",
 
-  // Palette: Graphite
-  "--palette-graphite-0": "#ffffff",
-  "--palette-graphite-5": "#f4f4f4",
-  "--palette-graphite-10": "#e5e5e5",
-  "--palette-graphite-30": "#b2b2b2",
-  "--palette-graphite-50": "#757575",
-  "--palette-graphite-70": "#4d4d4d",
-  "--palette-graphite-100": "#1a1a1a",
-
-  // Palette: Alpha
-  "--palette-dark-alpha-50": "#1a1a1a80",
+  // Palette: neutral
+  "--palette-neutral-0": "#ffffff",
+  "--palette-neutral-5": "#f4f4f4",
+  "--palette-neutral-10": "#e5e5e5",
+  "--palette-neutral-30": "#b2b2b2",
+  "--palette-neutral-50": "#757575",
+  "--palette-neutral-70": "#4d4d4d",
+  "--palette-neutral-100": "#1a1a1a",
 
   // Semantic: side
-  "--semantic-page-background": "var(--palette-graphite-0)",
-  "--semantic-page-foreground": "var(--palette-graphite-100)",
+  "--semantic-page-background": "var(--palette-neutral-0)",
+  "--semantic-page-foreground": "var(--palette-neutral-100)",
 
   // Semantic: status
-  "--semantic-danger-background": "var(--palette-burgundy-10)",
-  "--semantic-danger-foreground": "#a82e39",
-  "--semantic-warning-background": "var(--palette-ochre-10)",
-  "--semantic-warning-foreground": "#896508",
-  "--semantic-success-background": "var(--palette-forest-10)",
-  "--semantic-success-foreground": "#316f2a",
+  "--semantic-danger-background": "var(--palette-danger-10)",
+  "--semantic-danger-foreground": "var(--palette-danger-70)",
+  "--semantic-warning-background": "var(--palette-warning-10)",
+  "--semantic-warning-foreground": "var(--palette-warning-70)",
+  "--semantic-success-background": "var(--palette-success-10)",
+  "--semantic-success-foreground": "var(--palette-success-70)",
 
   /**
    * Deaktiverte kontroller. WCAG 1.4.3 unntar inaktive komponenter fra
@@ -148,39 +146,39 @@ export const cssTokens = {
    * felt ofte viser innhold brukeren trenger. Bruk den bare på noe som faktisk er
    * slått av; dempet tekst som skal leses bruker `muted-foreground`.
    */
-  "--semantic-disabled-background": "var(--palette-graphite-10)",
-  "--semantic-disabled-foreground": "var(--palette-graphite-50)",
+  "--semantic-disabled-background": "var(--palette-neutral-10)",
+  "--semantic-disabled-foreground": "var(--palette-neutral-50)",
 
   /**
    * Dempet tekst som likevel skal leses: hjelpetekst, plassholdere,
    * «(valgfri)»-markeringen, ukedagene i kalenderen. Holder 4,5:1 mot
    * sideflaten i begge temaer.
    */
-  "--semantic-muted-foreground": "var(--palette-graphite-50)",
+  "--semantic-muted-foreground": "var(--palette-neutral-50)",
 
   // Nøytral status: informasjon brukeren skal lese, ikke en avslått
   // kontroll. Derfor mørkere enn disabled: 6,71:1 mot egen bakgrunn.
-  "--semantic-neutral-background": "var(--palette-graphite-10)",
-  "--semantic-neutral-foreground": "var(--palette-graphite-70)",
+  "--semantic-neutral-background": "var(--palette-neutral-10)",
+  "--semantic-neutral-foreground": "var(--palette-neutral-70)",
 
   // Semantic: interaktiv
-  "--semantic-interactive-background": "var(--palette-azure-10)",
-  "--semantic-interactive-main": "var(--palette-azure-70)",
-  "--semantic-interactive-foreground": "var(--palette-azure-100)",
+  "--semantic-interactive-background": "var(--palette-interactive-10)",
+  "--semantic-interactive-main": "var(--palette-interactive-70)",
+  "--semantic-interactive-foreground": "var(--palette-interactive-100)",
   /** Tekst oppå `interactive-main`. Snur med temaet. */
-  "--semantic-interactive-contrast": "var(--palette-graphite-0)",
-  "--semantic-interactive-visited": "var(--palette-denim-70)",
+  "--semantic-interactive-contrast": "var(--palette-neutral-0)",
+  "--semantic-interactive-visited": "var(--palette-visited-70)",
 
   // Semantic: skjemafelt
   /**
    * Rammen rundt input, textarea, select og kalenderpanelet.
    *
-   * graphite-50, ikke graphite-30. WCAG 1.4.11 krever 3:1 for grafiske
-   * avgrensninger, og graphite-30 gir bare 2,12:1 mot hvit flate. Feltet var
+   * neutral-50, ikke neutral-30. WCAG 1.4.11 krever 3:1 for grafiske
+   * avgrensninger, og neutral-30 gir bare 2,12:1 mot hvit flate. Feltet var
    * så vidt synlig for den som ser dårlig.
    */
-  "--semantic-field-border": "var(--palette-graphite-50)",
-  "--semantic-field-border-hover": "var(--palette-graphite-70)",
+  "--semantic-field-border": "var(--palette-neutral-50)",
+  "--semantic-field-border-hover": "var(--palette-neutral-70)",
 
   // Semantic: farefylte handlinger
   /**
@@ -188,12 +186,12 @@ export const cssTokens = {
    * som tekst. Før mørknet bakgrunnen mens teksten ble stående, og hover
    * havnet på 3,52:1, altså svakere enn hviletilstanden.
    */
-  "--semantic-danger-main": "#a82e39",
-  "--semantic-danger-contrast": "var(--palette-graphite-0)",
+  "--semantic-danger-main": "var(--palette-danger-70)",
+  "--semantic-danger-contrast": "var(--palette-neutral-0)",
 
   // Semantic: skillelinjer
-  "--semantic-divider-30": "var(--palette-graphite-30)",
-  "--semantic-divider-100": "var(--palette-graphite-100)",
+  "--semantic-divider-30": "var(--palette-neutral-30)",
+  "--semantic-divider-100": "var(--palette-neutral-100)",
 
   /** Forstørrelsesglasset i søkefeltet. */
   "--semantic-icon-search":
@@ -216,7 +214,7 @@ export const cssTokens = {
    * De hører hjemme her og ikke i komponenten, fordi en data-URL ikke kan
    * lese en CSS-variabel: streken er malt inn i selve bildet. Med ikonet som
    * token snur det med temaet, som alt annet. Før var streken fast
-   * graphite-70, altså 2,03:1 mot den mørke flaten, og så vidt synlig.
+   * neutral-70, altså 2,03:1 mot den mørke flaten, og så vidt synlig.
    */
   "--semantic-icon-calendar":
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E\")",
@@ -230,7 +228,7 @@ export const cssTokens = {
    * temaer. I mørkt tema er en sort flate nesten usynlig mot bakgrunnen, så
    * den er kraftigere der.
    */
-  "--semantic-overlay-backdrop": "var(--palette-dark-alpha-50)",
+  "--semantic-overlay-backdrop": "rgba(26, 26, 26, 0.5)",
 
   /**
    * Skyggen under flater som ligger over siden, som kalenderpanelet.
@@ -270,47 +268,47 @@ export type CssToken = keyof typeof cssTokens
  */
 export const darkTokens = {
   // Side: nær sort flate, dempet hvit tekst
-  "--semantic-page-background": "var(--palette-graphite-100)",
-  "--semantic-page-foreground": "var(--palette-graphite-5)",
+  "--semantic-page-background": "var(--palette-neutral-100)",
+  "--semantic-page-foreground": "var(--palette-neutral-5)",
 
   // Status: mørk flate, lys tekst. Speilvendt av lyst tema.
-  "--semantic-danger-background": "var(--palette-burgundy-100)",
-  "--semantic-danger-foreground": "var(--palette-burgundy-30)",
-  "--semantic-warning-background": "var(--palette-ochre-100)",
-  "--semantic-warning-foreground": "var(--palette-ochre-30)",
-  "--semantic-success-background": "var(--palette-forest-100)",
-  "--semantic-success-foreground": "var(--palette-forest-30)",
+  "--semantic-danger-background": "var(--palette-danger-100)",
+  "--semantic-danger-foreground": "var(--palette-danger-30)",
+  "--semantic-warning-background": "var(--palette-warning-100)",
+  "--semantic-warning-foreground": "var(--palette-warning-30)",
+  "--semantic-success-background": "var(--palette-success-100)",
+  "--semantic-success-foreground": "var(--palette-success-30)",
 
-  // Deaktivert: graphite-50 på graphite-70 ga 1,83:1 og var uleselig.
-  // graphite-30 gir 3,99:1: fortsatt tydelig av, men mulig å lese.
-  "--semantic-disabled-background": "var(--palette-graphite-70)",
-  "--semantic-disabled-foreground": "var(--palette-graphite-30)",
+  // Deaktivert: neutral-50 på neutral-70 ga 1,83:1 og var uleselig.
+  // neutral-30 gir 3,99:1: fortsatt tydelig av, men mulig å lese.
+  "--semantic-disabled-background": "var(--palette-neutral-70)",
+  "--semantic-disabled-foreground": "var(--palette-neutral-30)",
 
   // Dempet, lesbar tekst som holder 8,21:1 mot den mørke flaten
-  "--semantic-muted-foreground": "var(--palette-graphite-30)",
+  "--semantic-muted-foreground": "var(--palette-neutral-30)",
 
   // Nøytral status som fortsatt skal leses, og holder 6,71:1
-  "--semantic-neutral-background": "var(--palette-graphite-70)",
-  "--semantic-neutral-foreground": "var(--palette-graphite-10)",
+  "--semantic-neutral-background": "var(--palette-neutral-70)",
+  "--semantic-neutral-foreground": "var(--palette-neutral-10)",
 
   // Interaktiv: lys blå på mørk flate, med mørk tekst oppå
-  "--semantic-interactive-background": "var(--palette-azure-100)",
-  "--semantic-interactive-main": "var(--palette-azure-30)",
-  "--semantic-interactive-foreground": "var(--palette-azure-10)",
-  "--semantic-interactive-contrast": "var(--palette-graphite-100)",
-  "--semantic-interactive-visited": "var(--palette-denim-30)",
+  "--semantic-interactive-background": "var(--palette-interactive-100)",
+  "--semantic-interactive-main": "var(--palette-interactive-30)",
+  "--semantic-interactive-foreground": "var(--palette-interactive-10)",
+  "--semantic-interactive-contrast": "var(--palette-neutral-100)",
+  "--semantic-interactive-visited": "var(--palette-visited-30)",
 
   // Skjemafelt: rammen må være lysere enn flaten, ikke mørkere
-  "--semantic-field-border": "var(--palette-graphite-50)",
-  "--semantic-field-border-hover": "var(--palette-graphite-30)",
+  "--semantic-field-border": "var(--palette-neutral-50)",
+  "--semantic-field-border-hover": "var(--palette-neutral-30)",
 
   // Farefylte handlinger
-  "--semantic-danger-main": "var(--palette-burgundy-30)",
-  "--semantic-danger-contrast": "var(--palette-graphite-100)",
+  "--semantic-danger-main": "var(--palette-danger-30)",
+  "--semantic-danger-contrast": "var(--palette-neutral-100)",
 
   // Skillelinjer
-  "--semantic-divider-30": "var(--palette-graphite-70)",
-  "--semantic-divider-100": "var(--palette-graphite-30)",
+  "--semantic-divider-30": "var(--palette-neutral-70)",
+  "--semantic-divider-100": "var(--palette-neutral-30)",
 
   "--semantic-icon-search":
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E\")",

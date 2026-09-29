@@ -23,6 +23,36 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Palettskalaene heter rollene sine.** `burgundy` → `danger`, `ochre` →
+  `warning`, `forest` → `success`, `azure` → `interactive`, `denim` →
+  `visited`, `graphite` → `neutral`. Det gjelder både `--palette-*`-tokenene og
+  Tailwind-klassene over dem, altså `bg-fs-azure-70` → `bg-fs-interactive-70`.
+
+  Grunnen er at temageneratoren alltid har skrevet rollenavnene, mens
+  `tokens.css` skrev fargenavnene. De to settene var koblingsvis identiske:
+  burgundy ble bare brukt av danger, ochre bare av warning, og så videre. Med
+  to navn på samme skala traff aldri et generert tema Fristils egne
+  palettoken, så `bg-fs-azure-70` ga fortsatt Fristils blå i en app med eget
+  tema. En ny test i `theme.browser.test.ts` krever at et generert tema
+  skriver over hvert eneste innebygde palettoken.
+
+- **`--palette-dark-alpha-50` er borte.** Verdien står nå rett i
+  `--semantic-overlay-backdrop`, som den alltid har gjort i mørkt tema. Den var
+  det eneste palettokenet som ikke var et trinn i en skala, og den var ikke med
+  i Tailwind-temaet.
+
+- **Trinn `70` i `danger`, `warning` og `success` har nye verdier:** `#b04c5c`
+  → `#a82e39`, `#a9805b` → `#896508` og `#5d9b73` → `#316f2a`. Ingen komponent
+  ser forskjell, for ingen semantisk verdi pekte på de tre trinnene. De tre nye
+  verdiene sto derimot skrevet rett inn i `--semantic-danger-foreground`,
+  `--semantic-warning-foreground`, `--semantic-success-foreground` og
+  `--semantic-danger-main`, som de eneste semantiske fargene som ikke kom fra
+  paletten. Nå gjør alle det, og «bytt en skala, så følger alt som bruker den
+  med» er sant uten unntak. Bruker du `bg-fs-burgundy-70` eller de to andre
+  direkte, endrer fargen seg.
+
 ## 0.21.0 (2026-09-28)
 
 ### Lagt til
@@ -582,8 +612,8 @@ egen overskrift «Brytende».
   blokkene, er temaet nøyaktig det det var før.
 
   Hjørnene er delt i tre framfor ett felles tall, fordi ett tall er feil:
-  Skatteetatens knapper er helt runde mens feltene deres har nesten rette
-  hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
+  et annet norsk designsystem har helt runde knapper mens feltene der har
+  nesten rette hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
   paginering og hopplenke, `fieldRadius` felt, tekstområde og nedtrekksliste,
   og `surfaceRadius` de elleve flatene, meldingen og hjelpeboblen medregnet.
   Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
