@@ -92,7 +92,8 @@ export const cssTokens = {
   "--palette-danger-10": "#f7e2e8",
   "--palette-danger-30": "#f3a7b0",
   "--palette-danger-50": "#f06674",
-  "--palette-danger-70": "#a82e39",
+  "--palette-danger-70": "#b04c5c",
+  "--palette-danger-80": "#a82e39",
   "--palette-danger-100": "#6f2c3f",
 
   // Palette: warning
@@ -100,7 +101,8 @@ export const cssTokens = {
   "--palette-warning-10": "#f9ede2",
   "--palette-warning-30": "#f0d2b6",
   "--palette-warning-50": "#e7b78a",
-  "--palette-warning-70": "#896508",
+  "--palette-warning-70": "#a9805b",
+  "--palette-warning-80": "#896508",
   "--palette-warning-100": "#6b492c",
 
   // Palette: success
@@ -108,8 +110,9 @@ export const cssTokens = {
   "--palette-success-10": "#e3f5ea",
   "--palette-success-30": "#b9e1c8",
   "--palette-success-50": "#91d6ac",
-  "--palette-success-70": "#316f2a",
-  "--palette-success-100": "#2b6940",
+  "--palette-success-70": "#5d9b73",
+  "--palette-success-80": "#316f2a",
+  "--palette-success-100": "#12542c",
 
   // Palette: visited
   "--palette-visited-5": "#eff3f9",
@@ -134,11 +137,11 @@ export const cssTokens = {
 
   // Semantic: status
   "--semantic-danger-background": "var(--palette-danger-10)",
-  "--semantic-danger-foreground": "var(--palette-danger-70)",
+  "--semantic-danger-foreground": "var(--palette-danger-80)",
   "--semantic-warning-background": "var(--palette-warning-10)",
-  "--semantic-warning-foreground": "var(--palette-warning-70)",
+  "--semantic-warning-foreground": "var(--palette-warning-80)",
   "--semantic-success-background": "var(--palette-success-10)",
-  "--semantic-success-foreground": "var(--palette-success-70)",
+  "--semantic-success-foreground": "var(--palette-success-80)",
 
   /**
    * Deaktiverte kontroller. WCAG 1.4.3 unntar inaktive komponenter fra
@@ -186,7 +189,7 @@ export const cssTokens = {
    * som tekst. Før mørknet bakgrunnen mens teksten ble stående, og hover
    * havnet på 3,52:1, altså svakere enn hviletilstanden.
    */
-  "--semantic-danger-main": "var(--palette-danger-70)",
+  "--semantic-danger-main": "var(--palette-danger-80)",
   "--semantic-danger-contrast": "var(--palette-neutral-0)",
 
   // Semantic: skillelinjer
@@ -228,7 +231,7 @@ export const cssTokens = {
    * temaer. I mørkt tema er en sort flate nesten usynlig mot bakgrunnen, så
    * den er kraftigere der.
    */
-  "--semantic-overlay-backdrop": "rgba(26, 26, 26, 0.5)",
+  "--semantic-overlay-backdrop": "#1a1a1a80",
 
   /**
    * Skyggen under flater som ligger over siden, som kalenderpanelet.

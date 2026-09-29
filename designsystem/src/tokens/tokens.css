@@ -57,7 +57,8 @@
     --palette-danger-10: #f7e2e8;
     --palette-danger-30: #f3a7b0;
     --palette-danger-50: #f06674;
-    --palette-danger-70: #a82e39;
+    --palette-danger-70: #b04c5c;
+    --palette-danger-80: #a82e39;
     --palette-danger-100: #6f2c3f;
 
     /* palette-warning */
@@ -65,7 +66,8 @@
     --palette-warning-10: #f9ede2;
     --palette-warning-30: #f0d2b6;
     --palette-warning-50: #e7b78a;
-    --palette-warning-70: #896508;
+    --palette-warning-70: #a9805b;
+    --palette-warning-80: #896508;
     --palette-warning-100: #6b492c;
 
     /* palette-success */
@@ -73,8 +75,9 @@
     --palette-success-10: #e3f5ea;
     --palette-success-30: #b9e1c8;
     --palette-success-50: #91d6ac;
-    --palette-success-70: #316f2a;
-    --palette-success-100: #2b6940;
+    --palette-success-70: #5d9b73;
+    --palette-success-80: #316f2a;
+    --palette-success-100: #12542c;
 
     /* palette-visited */
     --palette-visited-5: #eff3f9;
@@ -99,17 +102,17 @@
 
     /* semantic-danger */
     --semantic-danger-background: var(--palette-danger-10);
-    --semantic-danger-foreground: var(--palette-danger-70);
-    --semantic-danger-main: var(--palette-danger-70);
+    --semantic-danger-foreground: var(--palette-danger-80);
+    --semantic-danger-main: var(--palette-danger-80);
     --semantic-danger-contrast: var(--palette-neutral-0);
 
     /* semantic-warning */
     --semantic-warning-background: var(--palette-warning-10);
-    --semantic-warning-foreground: var(--palette-warning-70);
+    --semantic-warning-foreground: var(--palette-warning-80);
 
     /* semantic-success */
     --semantic-success-background: var(--palette-success-10);
-    --semantic-success-foreground: var(--palette-success-70);
+    --semantic-success-foreground: var(--palette-success-80);
 
     /* semantic-disabled */
     --semantic-disabled-background: var(--palette-neutral-10);
@@ -145,7 +148,7 @@
     --semantic-icon-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E");
 
     /* semantic-overlay */
-    --semantic-overlay-backdrop: rgba(26, 26, 26, 0.5);
+    --semantic-overlay-backdrop: #1a1a1a80;
 
     /* semantic-shadow */
     --semantic-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12);

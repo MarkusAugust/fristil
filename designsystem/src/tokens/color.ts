@@ -149,6 +149,7 @@ export const SCALE_STEPS = {
   30: 0.83,
   50: 0.72,
   70: 0.55,
+  80: 0.5,
   100: 0.38,
 } as const
 
@@ -158,6 +159,10 @@ export const SCALE_STEPS = {
  * Lyse trinn tåler lite metning før de ser skitne ut, og mørke trinn mister
  * den likevel i sRGB. Forholdstallene er lest av Fristils egen palett, så en
  * generert skala får samme rytme som den håndlagde.
+ *
+ * Trinn 80 er statusfargen som tekst på lys flate. Det er det eneste trinnet
+ * som finnes fordi en rolle trenger det, og ikke fordi skalaen trenger en
+ * lyshet til.
  */
 const CHROMA_FACTOR: Record<keyof typeof SCALE_STEPS, number> = {
   5: 0.09,
@@ -165,6 +170,7 @@ const CHROMA_FACTOR: Record<keyof typeof SCALE_STEPS, number> = {
   30: 0.62,
   50: 1.06,
   70: 1,
+  80: 0.9,
   100: 0.79,
 }
 

@@ -426,35 +426,6 @@ describe("temaet kan også sette skrift og form", () => {
  * `#1362ae` kommer ut som `#1e6ab7`, siden skalaene regnes om i OKLCH fra
  * merkefargen. Et tema som bare setter skrift og form er svaret.
  */
-describe("et tema skriver over hele paletten", () => {
-  /*
-   * Skalaene i `tokens.ts` heter det samme som generatorens egne, slik at et
-   * generert tema treffer dem. Før het de `azure`, `burgundy` og så videre,
-   * mens generatoren skrev `interactive` og `danger`. Da ble Fristils egen
-   * palett stående urørt ved siden av den genererte, og Tailwind-klassene
-   * over paletten viste fortsatt Fristils farger i en app med eget tema.
-   *
-   * Testen spør ikke om navnene er like, men om hvert token faktisk blir
-   * skrevet over. Det er den påstanden som betyr noe.
-   */
-  it("lar ingen innebygd palettverdi stå igjen", () => {
-    const tema = buildTheme({
-      interactive: "#7c3aed",
-      danger: "#b3261e",
-      success: "#2b6940",
-      warning: "#8a5a00",
-    })
-
-    const skrevet = new Set(tema.css.match(/--palette-[a-z0-9-]+(?=:)/g) ?? [])
-    const innebygd = Object.keys(cssTokens).filter((navn) =>
-      navn.startsWith("--palette-"),
-    )
-
-    expect(innebygd.length).toBeGreaterThan(0)
-    expect(innebygd.filter((navn) => !skrevet.has(navn))).toEqual([])
-  })
-})
-
 describe("et tema kan la fargene stå", () => {
   it("skriver verken palett eller semantiske farger", () => {
     const tema = buildTheme({
@@ -505,5 +476,34 @@ describe("et tema kan la fargene stå", () => {
     // det gjennom. Resultatet ble en generert fil med et tomt lag i.
     expect(() => buildTheme({ shape: {} })).toThrow(/tomt/)
     expect(() => buildTheme({ typography: {}, shape: {} })).toThrow(/tomt/)
+  })
+})
+
+describe("et tema skriver over hele paletten", () => {
+  /*
+   * Skalaene i `tokens.ts` heter det samme som generatorens egne, slik at et
+   * generert tema treffer dem. Før het de `azure`, `burgundy` og så videre,
+   * mens generatoren skrev `interactive` og `danger`. Da ble Fristils egen
+   * palett stående urørt ved siden av den genererte, og Tailwind-klassene
+   * over paletten viste fortsatt Fristils farger i en app med eget tema.
+   *
+   * Testen spør ikke om navnene er like, men om hvert token faktisk blir
+   * skrevet over. Det er den påstanden som betyr noe.
+   */
+  it("lar ingen innebygd palettverdi stå igjen", () => {
+    const tema = buildTheme({
+      interactive: "#7c3aed",
+      danger: "#b3261e",
+      success: "#2b6940",
+      warning: "#8a5a00",
+    })
+
+    const skrevet = new Set(tema.css.match(/--palette-[a-z0-9-]+(?=:)/g) ?? [])
+    const innebygd = Object.keys(cssTokens).filter((navn) =>
+      navn.startsWith("--palette-"),
+    )
+
+    expect(innebygd.length).toBeGreaterThan(0)
+    expect(innebygd.filter((navn) => !skrevet.has(navn))).toEqual([])
   })
 })

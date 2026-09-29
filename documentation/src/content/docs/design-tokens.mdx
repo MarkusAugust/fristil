@@ -24,7 +24,7 @@ import "@fristil/designsystem/tokens.css"
 
 **Palett** (`--palette-{rolle}-{trinn}`) er råverdiene: seks skalaer, navngitt etter rollen de fyller. **Semantisk** (`--semantic-{sammenheng}-{rolle}`) velger ett trinn og sier hva det betyr.
 
-Hver eneste semantiske farge peker på et palettrinn. Bytter du en hel skala, følger alt som bruker den med, i begge temaer. De to gjennomsiktige flateffektene står utenfor, siden de ikke er farger fra skalaen: `--semantic-overlay-backdrop` og `--semantic-shadow-overlay`.
+Hver semantisk farge peker på et palettrinn, så bytter du en hel skala, følger alt som bruker den med, i begge temaer. Sju verdier står utenfor, og alle av samme grunn: de er ikke farger fra en skala. `--semantic-overlay-backdrop` og `--semantic-shadow-overlay` er gjennomsiktig sort, og de fem `--semantic-icon-*` er bilder med streken malt inn. De snur med temaet, men de følger ikke paletten.
 
 Bruk det semantiske laget i din egen CSS. Da følger komponenten din med når paletten justeres.
 
@@ -68,15 +68,17 @@ Er elementet slått av, bruk `disabled`. Kan brukeren lese eller trykke på det,
 
 ### Palett
 
-Seks skalaer: `interactive`, `danger`, `warning`, `success`, `visited` og `neutral`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse. `interactive` mangler trinn `5` og `50`, og `neutral` har i tillegg `0`, som er ren hvit.
+Seks skalaer: `interactive`, `danger`, `warning`, `success`, `visited` og `neutral`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse.
+
+Tre skalaer har i tillegg `80`. Det er det eneste trinnet som finnes fordi en rolle trenger det framfor fordi skalaen trenger en lyshet til: statusfargen som tekst på lys flate må være mørkere enn `70` for å holde 4,5:1, og `100` er for mørk til å være Fristils røde. `interactive` mangler `5` og `50`, og `neutral` har i tillegg `0`, som er ren hvit.
 
 Skalaene heter det samme som rollene sine med vilje. Temageneratoren skriver de samme navnene, så et generert tema skriver over hvert eneste token som står her. Ingenting blir stående igjen i Fristils farger.
 
 <Tokenprover palett={{
   interactive: [10, 30, 70, 100],
-  danger: [5, 10, 30, 50, 70, 100],
-  warning: [5, 10, 30, 50, 70, 100],
-  success: [5, 10, 30, 50, 70, 100],
+  danger: [5, 10, 30, 50, 70, 80, 100],
+  warning: [5, 10, 30, 50, 70, 80, 100],
+  success: [5, 10, 30, 50, 70, 80, 100],
   visited: [5, 10, 30, 50, 70, 100],
   neutral: [0, 5, 10, 30, 50, 70, 100],
 }} />
