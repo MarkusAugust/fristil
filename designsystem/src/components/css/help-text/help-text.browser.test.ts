@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./help-text.css"
@@ -35,25 +35,25 @@ describe("fs-help-text", () => {
   it("applies muted defaults", () => {
     const help = css("muted")
 
-    expect(help.color).toBe("rgb(117, 117, 117)")
+    expect(help.color).toBe(farge("--fs-color-neutral-text-subtle"))
   })
 
   it("applies default variant", () => {
     const help = css("default")
 
-    expect(help.color).toBe("rgb(26, 26, 26)")
+    expect(help.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
 
   it("applies success variant", () => {
     const help = css("success")
 
-    expect(help.color).toBe("rgb(49, 111, 42)")
+    expect(help.color).toBe(farge("--fs-color-success-text"))
   })
 
   it("applies warning variant", () => {
     const help = css("warning")
 
-    expect(help.color).toBe("rgb(137, 101, 8)")
+    expect(help.color).toBe(farge("--fs-color-warning-text"))
   })
 })
 

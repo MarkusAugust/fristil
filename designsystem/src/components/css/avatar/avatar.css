@@ -4,19 +4,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--fs-avatar-size, var(--size-10));
-    block-size: var(--fs-avatar-size, var(--size-10));
+    inline-size: var(--fs-avatar-size, var(--fs-spacing-10));
+    block-size: var(--fs-avatar-size, var(--fs-spacing-10));
     overflow: hidden;
     font-family: inherit;
     font-size: var(--font-size-s);
     font-weight: var(--font-weight-semibold);
     line-height: 1;
-    color: var(--semantic-interactive-foreground);
-    background: var(--semantic-interactive-background);
+    color: var(--fs-color-accent-text);
+    background: var(--fs-color-accent-surface);
     border-radius: 50%;
     /* Bildet kan være hva som helst. Ringen holder formen tydelig også mot en
        lys flate i bildet. */
-    box-shadow: inset 0 0 0 1px var(--semantic-divider-30);
+    box-shadow: inset 0 0 0 1px var(--fs-color-neutral-border-subtle);
   }
 
   .fs-avatar img {
@@ -26,19 +26,19 @@
   }
 
   .fs-avatar[data-size="small"] {
-    inline-size: var(--size-6);
-    block-size: var(--size-6);
+    inline-size: var(--fs-spacing-6);
+    block-size: var(--fs-spacing-6);
     font-size: var(--font-size-xs);
   }
 
   .fs-avatar[data-size="large"] {
-    inline-size: var(--size-16);
-    block-size: var(--size-16);
+    inline-size: var(--fs-spacing-16);
+    block-size: var(--fs-spacing-16);
     font-size: var(--font-size-l);
   }
 
   .fs-avatar[data-variant="square"] {
-    border-radius: var(--fs-avatar-radius, var(--size-1));
+    border-radius: var(--fs-avatar-radius, var(--fs-spacing-1));
   }
 
   /* Flere profilbilder som overlapper. Rekkefølgen snus i CSS, så det
@@ -53,12 +53,15 @@
   }
 
   .fs-avatar-stack > * + * {
-    margin-inline-end: var(--fs-avatar-stack-overlap, calc(var(--size-2) * -1));
+    margin-inline-end: var(
+      --fs-avatar-stack-overlap,
+      calc(var(--fs-spacing-2) * -1)
+    );
   }
 
   .fs-avatar-stack .fs-avatar {
     box-shadow:
-      inset 0 0 0 1px var(--semantic-divider-30),
-      0 0 0 2px var(--semantic-page-background);
+      inset 0 0 0 1px var(--fs-color-neutral-border-subtle),
+      0 0 0 2px var(--fs-color-neutral-canvas);
   }
 }

@@ -183,7 +183,7 @@
   }
 
   .sl-markdown-content .tabell-rull:focus-visible {
-    outline: 2px solid var(--semantic-interactive-main);
+    outline: 2px solid var(--fs-color-accent-fill);
     outline-offset: 2px;
   }
 

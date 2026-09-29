@@ -56,8 +56,8 @@ const REGLENE = `Fire feil står for nesten alt som går galt. De gjelder i alle
 2. Bare klassene og elementene som finnes, finnes. \`fs-modal\`,
    \`fs-datepicker\` og \`data-variant="outline"\` hører til andre
    designsystemer. Hele lista står i hver regelbok.
-3. Ingen hardkodede farger eller piksler. \`var(--semantic-…)\` og
-   \`var(--size-…)\`.
+3. Ingen hardkodede farger eller piksler. \`var(--fs-color-…)\` og
+   \`var(--fs-spacing-…)\`.
 4. Web components registreres én gang med \`defineFs*()\`, og et boolsk
    attributt er sant så lenge det står der: \`invalid="false"\` gjør feltet
    ugyldig. Attributtet må fjernes, ikke settes til \`false\`.

@@ -23,21 +23,87 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Fargene er en matrise, ikke to lag.** En farge er et punkt i en matrise av
+  **familie** (`accent`, `visited`, `brand1-3`, `neutral`, `danger`, `warning`,
+  `success`) og **rolle** (`surface`, `border-subtle`, `border`,
+  `border-strong`, `fill`, `content`, `text-subtle`, `text`, `text-strong`).
+  Navnet er `--fs-color-<familie>-<rolle>`.
+
+  `--palette-*` og `--semantic-*` er borte. Det samme er `--size-*`, som nå
+  heter `--fs-spacing-*`. Hvert fargenavn, hver avstand, hver linjeavstand,
+  hvert ikon, skyggen og fokusringen heter nå `--fs-<slag>-<navn>`, som hos
+  Tailwind, daisyUI og Digdir, og slaget i navnet er det som lar Tailwind-temaet
+  bli generert framfor skrevet av for hånd. De tretten `--font-size-*` og
+  `--font-weight-*` beholder navnene sine, siden de alt følger CSS-egenskapen
+  de setter.
+
+- **Kontrasten er garantert av konstruksjonen.** Kuløren er konsumentens,
+  lysheten er rollens. Lyshetene er regnet fram mot et sveip rundt hele
+  fargesirkelen på den høyeste metningen sRGB kan vise, så løftene holder
+  uansett merkefarge. Justeringspasset som flyttet fargen din etterpå er borte,
+  og det samme er metningstaket `maxChroma`: uten et pass å mate finnes det
+  ingenting å dempe for.
+
+- **Generatoren er 352 linjer mot 744.** `buildScale`, `buildNeutralScale`,
+  `adjustForContrast`, `SCALE_STEPS`, `NEUTRAL_STEPS`, `MAX_CHROMA`,
+  `CHROMA_FLOOR`, `CHROMA_CEILING` og typen `AdjustResult` er fjernet fra
+  `@fristil/designsystem/farge`, som nå bare har fargeregningen. Fra
+  `@fristil/designsystem/tema` er typen `ThemeAdjustment` og feltet
+  `Theme.adjustments` borte.
+  En familie du utelater arver Fristils egen framfor å felle kjøringen, så
+  `fristil tema --aksent=#7c3aed` er nok. Flagget het `--interaktiv`, og heter
+  nå `--aksent`, som familien. To navn på den samme fargen var nettopp det
+  matrisen skulle bli kvitt.
+
+- **To nye roller og ett nytt lag kom av migreringen.** `border-strong`, fordi koden brukte
+  tre kantnivåer og matrisen hadde to: en feltramme som endrer seg ved hover,
+  og en tabellstrek som er tydeligere enn en radskiller. `text-strong`, fordi
+  brødtekst satt til `text` ble `#4a4d51` der den før var `#1a1a1a`, altså
+  8,5:1 mot hvitt der den hadde 17,4:1. Kravet holdt, lesbarheten ikke.
+  Brødteksten står nå på `text-strong`, `#27292b`, som er 14,6:1. Og `raised`,
+  som er et lag den nøytrale familien har ved siden av rollene, siden tekst må
+  holde mot et kort som ligger over et kort.
+
+### Lagt til
+
+- **`fristil sjekk-tema <fil…>`** kontrollerer et tema noen har skrevet selv,
+  og sier hvilken celle som ryker og hvorfor. Den teller verdiene konsumenten
+  selv skrev: både filtallet og løftetallet er de samme for én linje som for et
+  helt tema, siden standardverdiene fyller hullene.
+
+- **Tre nye inngangspunkter:** `./kontrakt` med rollene og løftene, `./matrise`
+  som bygger et tokensett av merkefarger, og `./tema-sjekk`.
+
 ### Rettet
 
-- **Tre steder i dokumentasjonen sto ordet «bygger» erstattet med
-  «byggefunksjon»,** midt i en setning der det var et verb: «generatoren
-  byggefunksjon skalaene», og «innholdsfortegnelsen skjermleseren
-  byggefunksjon feil» på to sider. Setningene ga ingen mening.
+- **Gjeldende side i pagineringen forsvant under musa.**
+  `.fs-pagination a:hover` slo `[aria-current="page"]` på spesifisitet, så
+  sidetallet brukeren sto på fikk en lys flate mens teksten ble stående i
+  `accent-content`: 1,09:1 i lyst tema og 1,25:1 i mørkt. Gjeldende side er nå
+  unntatt fra regelen og har sin egen hover. Feilen har vært der siden
+  pagineringen kom, og ingen test så den, fordi `:hover` ikke kan leses av
+  `getComputedStyle`.
 
-- **«Tilpasning» sa «fire veier» over en tabell med tre rader,** og ledet med
-  generatoren framfor med hva du faktisk skal gjøre. Seksjonen om egne farger
-  sier nå at det er én vei inn, din egen CSS, og hva du skriver alt etter hvor
-  grovt du tar i: ett semantisk token, en hel palettskala, eller ingenting
-  fordi generatoren skriver fila.
+  `hover.browser.test.ts` fører nå musa over tolv av de fjorten hover-reglene
+  som bytter bakgrunn, i begge temaer, og krever 4,5:1. De to siste ligger bak
+  et pseudoelement og bak en `@supports` Firefox ikke har, og kontrolleres på
+  tokenparet. Lista er bundet til stilarkene, så en ny slik regel uten et
+  tilfelle feller testen, og hvert tilfelle påstår at flaten under musa er en
+  annen enn flaten uten.
+
+- **Siste steg i brødsmulestien ble blått under musa.** Samme årsak:
+  `:hover` slo `[aria-current="page"]`. Gjeldende steg er ikke et sted å gå,
+  og står nå urørt.
+
+- **Tre steder i dokumentasjonen sto «byggefunksjon» der ordet var et verb,**
+  som «generatoren byggefunksjon skalaene». Setningene ga ingen mening.
+
+- **«Tilpasning» sa «fire veier» over en tabell med tre rader.**
 
 - **«Eget tema» sa at skriften settes i `@layer fristil`.** Den står i
-  `fristil-tema`, som resten av det genererte temaet.
+  `fristil-tema`.
 
 ## 0.21.0 (2026-09-28)
 
@@ -598,8 +664,8 @@ egen overskrift «Brytende».
   blokkene, er temaet nøyaktig det det var før.
 
   Hjørnene er delt i tre framfor ett felles tall, fordi ett tall er feil:
-  Skatteetatens knapper er helt runde mens feltene deres har nesten rette
-  hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
+  et annet norsk designsystem har helt runde knapper mens feltene har nesten
+  rette hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
   paginering og hopplenke, `fieldRadius` felt, tekstområde og nedtrekksliste,
   og `surfaceRadius` de elleve flatene, meldingen og hjelpeboblen medregnet.
   Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet

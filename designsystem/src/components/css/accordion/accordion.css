@@ -1,25 +1,28 @@
 @layer fristil {
   .fs-accordion {
     box-sizing: border-box;
-    border: 1px solid var(--semantic-divider-30);
-    border-radius: var(--fs-accordion-radius, var(--size-1));
+    border: 1px solid var(--fs-color-neutral-border-subtle);
+    border-radius: var(--fs-accordion-radius, var(--fs-spacing-1));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
   }
 
   .fs-accordion + .fs-accordion {
-    margin-block-start: var(--size-2);
+    margin-block-start: var(--fs-spacing-2);
   }
 
   .fs-accordion summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--size-2);
-    padding: var(--fs-accordion-padding, var(--size-3) var(--size-4));
+    gap: var(--fs-spacing-2);
+    padding: var(
+      --fs-accordion-padding,
+      var(--fs-spacing-3) var(--fs-spacing-4)
+    );
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     /* Trekanten fra nettleseren er ulik i hver av dem. Den byttes ut med en
@@ -33,11 +36,11 @@
 
   .fs-accordion summary::after {
     content: "";
-    inline-size: var(--size-2);
-    block-size: var(--size-2);
+    inline-size: var(--fs-spacing-2);
+    block-size: var(--fs-spacing-2);
     flex: none;
-    border-inline-end: 2px solid var(--semantic-interactive-main);
-    border-block-end: 2px solid var(--semantic-interactive-main);
+    border-inline-end: 2px solid var(--fs-color-accent-text);
+    border-block-end: 2px solid var(--fs-color-accent-text);
     transform: rotate(45deg) translate(-2px, -2px);
   }
 
@@ -46,16 +49,16 @@
   }
 
   .fs-accordion summary:hover {
-    background: var(--semantic-neutral-background);
+    background: var(--fs-color-neutral-surface);
   }
 
   .fs-accordion summary:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: -2px;
   }
 
   .fs-accordion__content {
-    padding: 0 var(--size-4) var(--size-4);
+    padding: 0 var(--fs-spacing-4) var(--fs-spacing-4);
   }
 
   .fs-accordion__content > :first-child {

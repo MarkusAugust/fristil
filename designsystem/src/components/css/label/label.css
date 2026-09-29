@@ -4,31 +4,31 @@
     font-family: inherit;
     font-size: var(--font-size-s);
     font-weight: var(--font-weight-semibold);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
   }
 
   .fs-label[data-required]::after {
     content: " *";
-    color: var(--semantic-danger-foreground);
+    color: var(--fs-color-danger-text);
     font-weight: var(--font-weight-bold);
   }
 
   .fs-label[data-required="text"]::after {
     content: " (påkrevd)";
-    color: var(--semantic-danger-foreground);
+    color: var(--fs-color-danger-text);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }
 
   .fs-label[data-optional]::after {
     content: " (valgfri)";
-    color: var(--semantic-disabled-foreground);
+    color: var(--fs-color-disabled-text);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }
 
   .fs-label[aria-disabled="true"] {
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
   }
 }

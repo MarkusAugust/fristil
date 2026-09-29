@@ -1,19 +1,30 @@
-import { cssTokens, darkTokens } from "../src/tokens/tokens"
+import {
+  colorTokens,
+  cssTokens,
+  darkColorTokens,
+  darkTokens,
+} from "../src/tokens/tokens"
 
 const sections: Record<string, string[]> = {}
 
-for (const key of Object.keys(cssTokens) as (keyof typeof cssTokens)[]) {
-  const section = key
-    .replace(/^--/, "")
-    .split("-")
-    .slice(
-      0,
-      key.startsWith("--semantic") ? 2 : key.startsWith("--palette") ? 2 : 1,
-    )
+/*
+ * Fargene kommer fra matrisen, resten fra `tokens.ts`.
+ *
+ * Systemets egne farger er kontrakten anvendt på systemets egne kulører, så
+ * det finnes ingen håndskrevet utgave som kan komme ut av takt med løftene.
+ */
+const alle: Record<string, string> = { ...cssTokens, ...colorTokens }
+
+for (const key of Object.keys(alle)) {
+  // Fargene grupperes på familie, resten på slag: `--fs-color-danger-*` blir
+  // «fs-color-danger», `--fs-spacing-4` blir «fs-spacing».
+  const deler = key.replace(/^--/, "").split("-")
+  const section = deler
+    .slice(0, key.startsWith("--fs-color-") ? 3 : 2)
     .join("-")
 
   if (!sections[section]) sections[section] = []
-  sections[section].push(`  ${key}: ${cssTokens[key]};`)
+  sections[section].push(`  ${key}: ${alle[key]};`)
 }
 
 /*
@@ -53,7 +64,7 @@ for (const [index, [section, props]] of Object.entries(sections).entries()) {
 }
 lines.push("  }")
 
-const darkLines = Object.entries(darkTokens).map(
+const darkLines = Object.entries({ ...darkTokens, ...darkColorTokens }).map(
   ([name, value]) => `      ${name}: ${value};`,
 )
 
@@ -94,5 +105,5 @@ await Bun.write(
 )
 
 console.log(
-  `✓ tokens.css generert: ${Object.keys(cssTokens).length} verdier, ${Object.keys(darkTokens).length} overstyrt i mørkt tema`,
+  `✓ tokens.css generert: ${Object.keys(alle).length} verdier, ${darkLines.length} overstyrt i mørkt tema`,
 )

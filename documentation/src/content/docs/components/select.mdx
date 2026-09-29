@@ -120,11 +120,11 @@ fs.select({ picker: "styled" })
 
 | Variabel | Standard | Gjelder |
 | --- | --- | --- |
-| `--fs-select-radius` | `var(--size-1)` | Feltet, og listen som tegnes i siden |
-| `--fs-select-option-padding` | `var(--size-2) var(--size-3)` | Ett valg i listen som tegnes i siden |
-| `--fs-select-viewport-margin` | `var(--size-2)` | Luft mellom listen og kanten av vinduet |
+| `--fs-select-radius` | `var(--fs-spacing-1)` | Feltet, og listen som tegnes i siden |
+| `--fs-select-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` | Ett valg i listen som tegnes i siden |
+| `--fs-select-viewport-margin` | `var(--fs-spacing-2)` | Luft mellom listen og kanten av vinduet |
 
-Pilen er to gradienter i bakgrunnen, tegnet i `--semantic-muted-foreground`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
+Pilen er to gradienter i bakgrunnen, tegnet i `--fs-color-neutral-text-subtle`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 

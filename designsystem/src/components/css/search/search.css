@@ -10,15 +10,15 @@
    * til ikonet. Med begge klassene vinner regelen uansett rekkefølge.
    */
   .fs-input.fs-search {
-    padding-inline-start: var(--fs-search-icon-space, var(--size-10));
-    background-image: var(--semantic-icon-search);
+    padding-inline-start: var(--fs-search-icon-space, var(--fs-spacing-10));
+    background-image: var(--fs-icon-search);
     background-repeat: no-repeat;
-    background-position: left var(--size-3) center;
-    background-size: var(--fs-search-icon-size, var(--size-5));
+    background-position: left var(--fs-spacing-3) center;
+    background-size: var(--fs-search-icon-size, var(--fs-spacing-5));
   }
 
   .fs-search:dir(rtl) {
-    background-position: right var(--size-3) center;
+    background-position: right var(--fs-spacing-3) center;
   }
 
   /* Nettleserens eget kryss i et type="search"-felt. Safari og Chrome tegner
@@ -30,7 +30,7 @@
   .fs-search-row {
     display: flex;
     align-items: stretch;
-    gap: var(--size-2);
+    gap: var(--fs-spacing-2);
   }
 
   .fs-search-row .fs-search {
@@ -43,7 +43,7 @@
   @media (forced-colors: active) {
     .fs-input.fs-search {
       background-image: none;
-      padding-inline-start: var(--size-3);
+      padding-inline-start: var(--fs-spacing-3);
     }
   }
 }

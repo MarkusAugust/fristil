@@ -648,7 +648,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
        *
        * Den definerer ingen `fs-`-klasser, bare variablene alt annet leser.
        * En klassedrevet regel kan derfor strukturelt aldri be om den, og uten
-       * den står hver `var(--size-…)` uoppløst: padding, skriftstørrelse og
+       * den står hver `var(--fs-spacing-…)` uoppløst: padding, skriftstørrelse og
        * vekt faller bort.
        */
       if (!har.has("tokens.css"))

@@ -50,6 +50,38 @@ const compiler = await compile(
   { base: process.cwd(), loadStylesheet: lastStilark },
 )
 
+/*
+ * En klasse fra Fristils navnerom som ikke finnes, skal felle bygget.
+ *
+ * Tailwind sier ingenting om en klasse den ikke kjenner: den lager bare ingen
+ * regel, og eksempelet ser ut som det virker. Siden sto med tolv navn fra
+ * fargesystemet slik det het før matrisen, og ingenting sa fra. Bare
+ * `-fs-`-klassene kontrolleres, siden de er våre; `p-4` og `rounded-xl` er
+ * Tailwinds egne.
+ *
+ * Målet er om `build()` ga noe nytt, ikke om en selektor står i utdata.
+ * Selektoren måtte i så fall bygges av klassenavnet, og Tailwind escaper `/`,
+ * `[`, `!` og et halvt dusin tegn til, så `hover:bg-fs-accent-fill/50` ville
+ * blitt meldt som ukjent selv om den finnes. `build()` er dessuten
+ * kumulativ, så et navn som er et prefiks av et annet, som `text-fs-accent`
+ * mot `text-fs-accent-text`, ikke slipper gjennom på et delstrengtreff.
+ */
+const ukjente: string[] = []
+let lengde = compiler.build([]).length
+
+for (const klasse of new Set(klasser)) {
+  if (!klasse.includes("-fs-")) continue
+  const ny = compiler.build([klasse]).length
+  if (ny <= lengde) ukjente.push(klasse)
+  lengde = Math.max(lengde, ny)
+}
+
+if (ukjente.length > 0) {
+  throw new Error(
+    `Tailwind-eksempelet bruker klasser som ikke finnes i temaet: ${ukjente.join(", ")}`,
+  )
+}
+
 const tailwindCss = compiler.build(klasser)
 ---
 

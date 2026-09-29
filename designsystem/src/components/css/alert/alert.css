@@ -3,25 +3,25 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--size-1);
-    padding: var(--fs-alert-padding, var(--size-3) var(--size-4));
+    gap: var(--fs-spacing-1);
+    padding: var(--fs-alert-padding, var(--fs-spacing-3) var(--fs-spacing-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-neutral-background);
-    border-radius: var(--fs-alert-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-surface);
+    border-radius: var(--fs-alert-radius, var(--fs-spacing-1));
     /* Fargen ligger i en strek på kanten framfor i hele flaten, så teksten
        beholder kontrasten mot sideflaten i begge temaer. */
-    border-inline-start: var(--fs-alert-accent, var(--size-1)) solid
-      var(--semantic-neutral-foreground);
+    border-inline-start: var(--fs-alert-accent, var(--fs-spacing-1)) solid
+      var(--fs-color-neutral-text);
   }
 
   .fs-alert__title {
     margin: 0;
     font-size: var(--font-size-m);
     font-weight: var(--font-weight-semibold);
-    line-height: var(--semantic-line-height-default);
+    line-height: var(--fs-line-height-default);
   }
 
   .fs-alert p {
@@ -29,22 +29,22 @@
   }
 
   .fs-alert[data-color="success"] {
-    background: var(--semantic-success-background);
-    border-inline-start-color: var(--semantic-success-foreground);
+    background: var(--fs-color-success-surface);
+    border-inline-start-color: var(--fs-color-success-text);
   }
 
   .fs-alert[data-color="warning"] {
-    background: var(--semantic-warning-background);
-    border-inline-start-color: var(--semantic-warning-foreground);
+    background: var(--fs-color-warning-surface);
+    border-inline-start-color: var(--fs-color-warning-text);
   }
 
   .fs-alert[data-color="danger"] {
-    background: var(--semantic-danger-background);
-    border-inline-start-color: var(--semantic-danger-foreground);
+    background: var(--fs-color-danger-surface);
+    border-inline-start-color: var(--fs-color-danger-text);
   }
 
   .fs-alert[data-color="info"] {
-    background: var(--semantic-interactive-background);
-    border-inline-start-color: var(--semantic-interactive-main);
+    background: var(--fs-color-accent-surface);
+    border-inline-start-color: var(--fs-color-accent-border);
   }
 }

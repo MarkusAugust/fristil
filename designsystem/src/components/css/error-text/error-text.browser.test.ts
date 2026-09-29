@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./error-text.css"
@@ -33,14 +33,14 @@ describe("fs-error-text", () => {
   it("applies error defaults", () => {
     const text = css("error")
 
-    expect(text.color).toBe("rgb(168, 46, 57)")
+    expect(text.color).toBe(farge("--fs-color-danger-text"))
     expect(text.fontWeight).toBe("500")
   })
 
   it("applies warning variant", () => {
     const text = css("warning")
 
-    expect(text.color).toBe("rgb(137, 101, 8)")
+    expect(text.color).toBe(farge("--fs-color-warning-text"))
   })
 })
 

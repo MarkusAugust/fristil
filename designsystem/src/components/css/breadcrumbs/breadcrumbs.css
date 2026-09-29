@@ -4,46 +4,49 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--fs-breadcrumbs-gap, var(--size-2));
+    gap: var(--fs-breadcrumbs-gap, var(--fs-spacing-2));
     margin: 0;
     padding: 0;
     list-style: none;
     font-family: inherit;
     font-size: var(--font-size-s);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-muted-foreground);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .fs-breadcrumbs li {
     display: flex;
     align-items: center;
-    gap: var(--fs-breadcrumbs-gap, var(--size-2));
+    gap: var(--fs-breadcrumbs-gap, var(--fs-spacing-2));
   }
 
   /* Skilletegnet er dekorasjon, og legges derfor inn med CSS. Sto det i
      markupen, ville skjermlesere lest «skråstrek» mellom hvert steg. */
   .fs-breadcrumbs li + li::before {
     content: "/";
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .fs-breadcrumbs a {
-    color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-text);
     text-decoration: underline;
     text-underline-offset: 0.14em;
   }
 
-  .fs-breadcrumbs a:hover {
-    color: var(--semantic-interactive-foreground);
+  /* Gjeldende steg er unntatt. Uten `:not()` vant denne regelen på
+     spesifisitet over `[aria-current="page"]`, og siste steg ble blått under
+     musa selv om det ikke er et sted å gå. */
+  .fs-breadcrumbs a:not([aria-current="page"]):hover {
+    color: var(--fs-color-accent-text-strong);
   }
 
   .fs-breadcrumbs a:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
   .fs-breadcrumbs [aria-current="page"] {
-    color: var(--semantic-page-foreground);
+    color: var(--fs-color-neutral-text-strong);
     font-weight: var(--font-weight-semibold);
     text-decoration: none;
   }

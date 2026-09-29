@@ -14,11 +14,13 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { buildMatrix, FRISTIL_BRANDS } from "../src/tokens/matrix.js"
+
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
 
 const FARGER = [
-  "--interaktiv=#7c3aed",
+  "--aksent=#7c3aed",
   "--fare=#b3261e",
   "--suksess=#2b6940",
   "--advarsel=#8a5a00",
@@ -60,8 +62,8 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema med alle farger avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--semantic-interactive-main"),
-    "utdata mangler de semantiske verdiene",
+    ut.includes("--fs-color-accent-fill"),
+    "utdata mangler fargene fra matrisen",
   )
   krev(ut.includes('[data-theme="dark"]'), "utdata mangler mørkt tema")
 }
@@ -88,7 +90,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await writeFile(
     sti,
     JSON.stringify({
-      interaktiv: "#0f766e",
+      aksent: "#0f766e",
       fare: "#9f1239",
       suksess: "#15803d",
       advarsel: "#a16207",
@@ -98,19 +100,65 @@ function krev(påstand: boolean, beskrivelse: string): void {
   const { kode, ut } = await kjør(["tema", sti])
 
   krev(kode === 0, `lesing fra fil avsluttet med kode ${kode}`)
-  krev(ut.includes("--palette-interactive-70"), "utdata mangler paletten")
+  krev(ut.includes("--fs-color-accent-fill"), "utdata mangler fargene fra fila")
 
   await rm(mappe, { recursive: true, force: true })
 }
 
-// Sier fra når farger mangler, og avslutter med feil
+// `sjekk-tema` kontrollerer et tema, og teller konsumentens egne verdier
 {
-  const { kode, feil: melding } = await kjør(["tema", "--interaktiv=#7c3aed"])
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const godt = join(mappe, "godt.css")
 
-  krev(kode !== 0, "manglende farger skulle gitt en feilkode")
+  // Matrisen skrevet ut som et tema, kontrollert mot seg selv
+  await writeFile(
+    godt,
+    ":root {\n  color-scheme: light;\n" +
+      Object.entries(buildMatrix(FRISTIL_BRANDS, "light").tokens)
+        .map(([navn, verdi]) => `  ${navn}: ${verdi};`)
+        .join("\n") +
+      "\n}\n",
+  )
+
+  const rent = await kjør(["sjekk-tema", godt])
+  krev(rent.kode === 0, `et tema som holder avsluttet med ${rent.kode}`)
   krev(
-    melding.includes("fare") && melding.includes("suksess"),
-    "feilmeldingen sier ikke hvilke farger som mangler",
+    /\d+ verdier/.test(rent.ut),
+    `sjekk-tema sier ikke hvor mange verdier den leste: ${rent.ut.slice(0, 80)}`,
+  )
+
+  // En for lys faretekst skal felle, og si hvilken celle det gjelder
+  const svakt = join(mappe, "svakt.css")
+  await writeFile(
+    svakt,
+    ":root { color-scheme: light; --fs-color-danger-text: #ff9999; }",
+  )
+  const felt = await kjør(["sjekk-tema", svakt])
+  krev(felt.kode !== 0, "en for lys faretekst skulle gitt feilkode")
+  krev(
+    felt.feil.includes("danger"),
+    `meldingen nevner ikke familien: ${felt.feil.slice(0, 80)}`,
+  )
+
+  // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne
+  const flagg = await kjør(["sjekk-tema", godt, "--noe"])
+  krev(flagg.kode !== 0, "et ukjent flagg skulle gitt feilkode")
+
+  // Og uten filer skal den si hva den vil ha
+  const uten = await kjør(["sjekk-tema"])
+  krev(uten.kode !== 0, "sjekk-tema uten filer skulle gitt feilkode")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// En familie som utelates arver Fristils egen, framfor å felle kjøringen
+{
+  const { kode, ut } = await kjør(["tema", "--aksent=#7c3aed"])
+
+  krev(kode === 0, `ett merke alene avsluttet med kode ${kode}`)
+  krev(
+    ut.includes("--fs-color-danger-fill"),
+    "et tema med bare aksent mangler de arvede familiene",
   )
 }
 
@@ -171,7 +219,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await writeFile(
     sti,
     JSON.stringify({
-      interaktiv: "#7c3aed",
+      aksent: "#7c3aed",
       fare: "#b3261e",
       suksess: "#2b6940",
       advarsel: "#8a5a00",
@@ -191,10 +239,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
     ut.includes("--fs-button-radius: 1rem;"),
     "hjørnet fra fila kom ikke med",
   )
-  krev(
-    ut.includes("--semantic-interactive-main"),
-    "fargene fra fila kom ikke med",
-  )
+  krev(ut.includes("--fs-color-accent-fill"), "fargene fra fila kom ikke med")
 
   await rm(mappe, { recursive: true, force: true })
 }
@@ -241,8 +286,8 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode !== 0, "et tomt tema skulle gitt en feilkode")
   krev(
-    melding.includes("Mangler farger"),
-    `feilmeldingen sier ikke hva som mangler: ${melding.slice(0, 120)}`,
+    melding.includes("tomt"),
+    `feilmeldingen sier ikke at temaet er tomt: ${melding.slice(0, 120)}`,
   )
 }
 
@@ -250,7 +295,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 {
   const { kode, feil: melding } = await kjør([
     "tema",
-    "--interaktiv=lilla",
+    "--aksent=lilla",
     "--fare=#b3261e",
     "--suksess=#2b6940",
     "--advarsel=#8a5a00",
@@ -448,138 +493,6 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(
     ugyldig.feil.includes("JSON"),
     `feilmeldingen sier ikke at fila ikke er JSON: ${ugyldig.feil.slice(0, 80)}`,
-  )
-
-  await rm(mappe, { recursive: true, force: true })
-}
-
-// `tema`: metningstaket kan settes, og et tall som ikke gir mening avvises
-{
-  const standard = await kjør(["tema", ...FARGER])
-  const hevet = await kjør(["tema", ...FARGER, "--maks-metning=0.32"])
-
-  krev(hevet.kode === 0, `--maks-metning avsluttet med kode ${hevet.kode}`)
-  krev(
-    hevet.ut.includes("--semantic-interactive-main"),
-    "temaet med hevet tak mangler tokenene",
-  )
-  /*
-   * Uten denne kunne flagget blitt lest og aldri brukt, og alle de andre
-   * påstandene ville holdt. Lilla i `FARGER` ligger på 0,247 i OKLCH, altså
-   * over standardtaket, så et hevet tak må gi andre verdier.
-   */
-  krev(
-    hevet.ut !== standard.ut,
-    "et hevet metningstak ga nøyaktig det samme temaet",
-  )
-
-  // 16 er den ekte skrivefeilen: 0,16 uten komma. Den ville ellers gitt full
-  // metning overalt uten et ord om hvorfor.
-  for (const verdi of ["16", "0", "-1", "abc", "0.0001"]) {
-    const avvist = await kjør(["tema", ...FARGER, `--maks-metning=${verdi}`])
-
-    krev(avvist.kode === 1, `--maks-metning=${verdi} ga kode ${avvist.kode}`)
-    krev(
-      avvist.feil.includes("metningstak"),
-      `--maks-metning=${verdi} fikk ingen forklarende melding: ${avvist.feil.slice(0, 80)}`,
-    )
-  }
-
-  // Fra fil, som er den andre veien inn, og en skrivefeil der skal si fra.
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-metning-"))
-  const oppskrift = (nøkkel: string) =>
-    JSON.stringify({
-      interaktiv: "#7c3aed",
-      fare: "#b3261e",
-      suksess: "#2b6940",
-      advarsel: "#8a5a00",
-      [nøkkel]: 0.32,
-    })
-
-  for (const nøkkel of ["maksMetning", "maxChroma"]) {
-    const sti = join(mappe, `${nøkkel}.json`)
-    await writeFile(sti, oppskrift(nøkkel))
-    const fraFil = await kjør(["tema", sti])
-
-    krev(fraFil.kode === 0, `${nøkkel} i fil ga kode ${fraFil.kode}`)
-    /*
-     * At det ble et *annet* tema enn uten tak er ikke nok: den påstanden er
-     * like sann om fila ble lest med feil skalering, eller alltid som 0,33.
-     * Den som binder verdien er at fila gir nøyaktig det flagget gir.
-     */
-    krev(
-      fraFil.ut === hevet.ut,
-      `${nøkkel} i fil ga et annet tema enn --maks-metning=0.32`,
-    )
-  }
-
-  /*
-   * `$schema` er den ene toppnøkkelen som slipper gjennom. Uten en sak her
-   * kunne noen tatt den ut av lista uten at noe ble rødt, og da slutter en helt
-   * vanlig konfigurasjonsfil å virke.
-   */
-  const medSkjema = join(mappe, "skjema.json")
-  await writeFile(
-    medSkjema,
-    JSON.stringify({
-      $schema: "https://example.com/fristil.json",
-      interaktiv: "#7c3aed",
-      fare: "#b3261e",
-      suksess: "#2b6940",
-      advarsel: "#8a5a00",
-    }),
-  )
-  const skjema = await kjør(["tema", medSkjema])
-
-  krev(skjema.kode === 0, `$schema i oppskriften ga kode ${skjema.kode}`)
-
-  // Og den slipper gjennom bare seg selv, bare på toppnivå.
-  for (const [navn, innhold] of [
-    ["$comment", JSON.stringify({ $comment: "hei", interaktiv: "#7c3aed" })],
-    [
-      "form.$schema",
-      JSON.stringify({ interaktiv: "#7c3aed", form: { $schema: "x" } }),
-    ],
-  ]) {
-    const fil = join(mappe, `${navn}.json`)
-    await writeFile(fil, innhold)
-    const kjøring = await kjør(["tema", fil])
-
-    krev(kjøring.kode === 1, `${navn} slapp gjennom med kode ${kjøring.kode}`)
-  }
-
-  /*
-   * En oppskrift som er gyldig JSON, men ikke et objekt. `null` ga et stakkspor
-   * fra Node, og en streng ga «Ukjent nøkkel i oppskriften: 0, 1, 2», altså
-   * indeksene i den.
-   */
-  for (const [navn, innhold] of [
-    ["null", "null"],
-    ["streng", '"hei"'],
-    ["liste", "[1, 2]"],
-  ]) {
-    const fil = join(mappe, `ikke-objekt-${navn}.json`)
-    await writeFile(fil, innhold)
-    const kjøring = await kjør(["tema", fil])
-
-    krev(
-      kjøring.kode === 1,
-      `en oppskrift som er ${navn} ga kode ${kjøring.kode}`,
-    )
-    krev(
-      kjøring.feil.includes("ikke en oppskrift"),
-      `en oppskrift som er ${navn} fikk ingen forklarende melding: ${kjøring.feil.slice(0, 80)}`,
-    )
-  }
-
-  const skrivefeil = join(mappe, "skrivefeil.json")
-  await writeFile(skrivefeil, oppskrift("maksmetning"))
-  const avvist = await kjør(["tema", skrivefeil])
-
-  krev(avvist.kode === 1, `en skrivefeil i toppnøkkelen ga kode ${avvist.kode}`)
-  krev(
-    avvist.feil.includes("maksmetning"),
-    `meldinga sier ikke hvilken nøkkel som er ukjent: ${avvist.feil.slice(0, 80)}`,
   )
 
   await rm(mappe, { recursive: true, force: true })

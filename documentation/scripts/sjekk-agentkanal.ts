@@ -89,7 +89,7 @@ if (llms.trim() === "") {
       avvik.push(`llms.txt lenker ikke til /agent/${fil}`)
   }
 
-  for (const del of ["fs-modal", "var(--semantic-", "defineFs", "sjekk"]) {
+  for (const del of ["fs-modal", "var(--fs-color-", "defineFs", "sjekk"]) {
     if (!llms.includes(del)) avvik.push(`llms.txt nevner ikke ${del}`)
   }
 }
