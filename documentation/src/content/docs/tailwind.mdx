@@ -45,12 +45,12 @@ Knappen beholder farger, fokusmarkering og deaktivert tilstand. Du endrer bare d
 Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da vet du alltid hvilke verdier som er Fristils, og Tailwinds egne er urørt: `bg-neutral-100` betyr fortsatt det samme.
 
 <TailwindEksempel stiler={["badge", "link"]} layout="stabel" maxWidth="30rem" kode={`
-<article class="rounded-xl border border-fs-divider bg-fs-page p-4 shadow-fs-overlay">
+<article class="rounded-xl border border-fs-neutral-border-subtle bg-fs-neutral-canvas p-4 shadow-fs-overlay">
   <div class="mb-2 flex items-center justify-between gap-2">
-    <h3 class="text-fs-l font-semibold text-fs-page-fg">Søknad om bostøtte</h3>
+    <h3 class="text-fs-l font-semibold text-fs-neutral-text-strong">Søknad om bostøtte</h3>
     <span class="fs-badge" data-color="success">Innvilget</span>
   </div>
-  <p class="text-fs-muted">Sendt 4. mars. Saksnummer 2026-0481.</p>
+  <p class="text-fs-neutral-text-subtle">Sendt 4. mars. Saksnummer 2026-0481.</p>
   <a class="fs-link mt-3 inline-block" href="#">Se vedtaket</a>
 </article>
 `} />
@@ -59,27 +59,30 @@ Eksempelet over er ikke tegnet av. Det kompileres av en ekte Tailwind når dokum
 
 ## Hva temaet gir deg
 
+Fargene følger matrisen: hver celle blir en klasse, og navnet er
+`<verktøy>-fs-<familie>-<rolle>`.
+
 | Klasser | Verdi |
 | --- | --- |
-| `text-fs-page-fg`, `bg-fs-page` | Sideflate og tekst |
-| `text-fs-interactive`, `bg-fs-interactive-bg`, `text-fs-interactive-contrast` | Lenker og knapper |
-| `text-fs-success`, `bg-fs-success-bg`, og det samme for `warning`, `danger`, `neutral`, `disabled` | Status |
-| `text-fs-muted` | Dempet, men lesbar tekst |
-| `border-fs-field-border`, `border-fs-divider`, `border-fs-divider-strong` | Kanter og streker |
-| `bg-fs-azure-70` og resten av paletten | Råfarger, når betydningen ikke finnes ennå |
+| `bg-fs-accent-fill`, `text-fs-accent-content` | Fylt flate, og teksten oppå den |
+| `text-fs-accent-text`, `bg-fs-accent-surface` | Lenker, og en tonet aksentflate |
+| `border-fs-neutral-border`, `border-fs-neutral-border-subtle` | Kanter og streker |
+| `bg-fs-neutral-canvas`, `text-fs-neutral-text-strong`, `text-fs-neutral-text-subtle` | Siden, brødteksten og dempet tekst |
+| `bg-fs-success-surface`, `text-fs-success-text` | Status. Det samme for `warning`, `danger` og `visited` |
+| `bg-fs-brand1-surface` | Merkefargene, når betydningen ikke finnes ennå |
 | `text-fs-xxs` til `text-fs-mega` | Tekststørrelser |
 | `max-w-fs-aside`, `max-w-fs-wide-content` | Bredder for sideoppsett |
 | `shadow-fs-overlay` | Skyggen under flater som ligger over siden |
 
-Alle peker på tokens, så de snur med temaet. `bg-fs-page` er hvit i lyst tema og nesten sort i mørkt, uten at du skriver `dark:`.
+Alle peker på tokens, så de snur med temaet. `bg-fs-neutral-canvas` er hvit i lyst tema og nesten sort i mørkt, uten at du skriver `dark:`.
 
 ### Avstandene er de samme
 
-Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--size-1`. `p-4` er dermed nøyaktig `--size-4`, den samme verdien komponentene bruker. Endrer du skalaen, følger både komponentene og Tailwind-klassene med:
+Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--fs-spacing-1`. `p-4` er dermed nøyaktig `--fs-spacing-4`, den samme verdien komponentene bruker. Endrer du skalaen, følger både komponentene og Tailwind-klassene med:
 
 ```css
 :root {
-	--size-1: 0.3rem;
+	--fs-spacing-1: 0.3rem;
 }
 ```
 
@@ -101,10 +104,10 @@ Begge feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger dem i 
 
 **Ingen komponent bruker shadow DOM.** Alt står i vanlig DOM, så utility-klasser og din egen CSS når fram overalt.
 
-**`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--semantic-…)` direkte.
+**`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--fs-color-…)` direkte.
 
 **Preflight er Tailwinds valg, ikke vårt.** Fristils komponenter nullstiller det de trenger selv, blant annet `box-sizing`, så de virker like godt uten Preflight som med.
 
 ## Uten Tailwind
 
-Ingenting av dette er påkrevd. `var(--semantic-interactive-main)` og `class="fs-button"` virker like godt i ren CSS, og i alle andre verktøy som skriver CSS. Se [Tilpasning](../tilpasning/).
+Ingenting av dette er påkrevd. `var(--fs-color-accent-fill)` og `class="fs-button"` virker like godt i ren CSS, og i alle andre verktøy som skriver CSS. Se [Tilpasning](../tilpasning/).

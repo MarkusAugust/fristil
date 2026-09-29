@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import { contrastRatio, parseHex, rgbToOklch } from "./color"
-import { buildFamily, checkPromises, REQUIREMENT, ROLES } from "./contract"
+import {
+  buildFamily,
+  checkPromises,
+  promisesFor,
+  REQUIREMENT,
+  ROLES,
+} from "./contract"
 import { buildMatrix, FAMILIES, FRISTIL_BRANDS, roleToCss } from "./matrix"
 import { checkTheme, inspectTheme, parseBlocks } from "./theme-check"
 
@@ -355,7 +361,15 @@ describe("sjekken teller hva den gjorde", () => {
     const rapport = inspectTheme(css)
 
     expect(rapport.blocks).toBe(1)
-    expect(rapport.promises).toBe(FAMILIES.length * 13)
+    // Antallet løfter per familie leses av kontrakten, ikke skrevet av.
+    expect(rapport.promises).toBe(
+      FAMILIES.length *
+        promisesFor(buildFamily(FRISTIL_BRANDS.danger, "light"), {
+          canvas: "#ffffff",
+          surface: "#f1f2f3",
+          raised: "#e4e4e5",
+        }).length,
+    )
     expect(rapport.problems).toEqual([])
   })
 
@@ -467,6 +481,8 @@ describe("sjekken sier fra om det den ikke kunne lese", () => {
 
     expect(enLinje.promises).toBe(helt.promises)
     expect(enLinje.declarations).toBe(1)
-    expect(helt.declarations).toBe(58)
+    expect(helt.declarations).toBe(
+      FAMILIES.length * Object.keys(ROLES).length + 2,
+    )
   })
 })

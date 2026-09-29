@@ -9,28 +9,17 @@ import {
 /**
  * Fargekontrakten: hva hver rolle er, og hva den lover.
  *
- * Systemet har ett fargelag, ikke to. En farge er et punkt i en matrise av
- * **familie** (hva den betyr) og **rolle** (hva den gjør). Hver familie har de
- * samme rollene, og det er derfor et fareområde og et merkevareområde ser ut
- * som søsken: de er bygd av de samme rollene på de samme lyshetene.
+ * Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie** (hva
+ * den betyr) og **rolle** (hva den gjør), og hver familie har de samme
+ * rollene. Det er strukturen som gjør at familiene matcher.
  *
- * Kuløren er konsumentens, lysheten er rollens. Det er den ene regelen som gjør
- * at kontrasten er garantert av konstruksjonen framfor av en sjekk i etterkant.
- * Gir du en lys lilla eller en mørk lilla, får du den samme lilla matrisen.
+ * Kuløren er konsumentens, lysheten er rollens. Da er kontrasten garantert av
+ * konstruksjonen framfor av en sjekk i etterkant.
  *
- * Tallene her er ikke valgt, de er regnet fram: lysheten til hver rolle er den
- * som holder løftet for den vanskeligste kuløren. «Vanskeligste» er ikke
- * systemets egne åtte farger, men et sveip rundt hele fargesirkelen på den
- * høyeste metningen sRGB kan vise for hver kulør. Stiller man tallene inn
- * etter systemets egne farger alene, ryker de for en konsument med en annen
- * kulør, og det gjorde de. Endrer du ett av tallene, er `checkPromises` det
- * som sier fra.
- *
- * To av dem er verdt å kjenne. `fill` styres av at `content` skal kunne leses
- * oppå den, ikke av avstanden til siden: det er det strengeste kravet, og en
- * `fill` valgt etter siden alene blir for lys til å bære tekst. Og `text` er
- * med vilje mørkere enn det løftet krever, siden brødtekst skal ha tyngde,
- * mens `textSubtle` ligger nærmere grensa. Det er hele forskjellen på dem.
+ * Lyshetene er regnet fram mot et sveip rundt hele fargesirkelen, på høyeste
+ * metning sRGB kan vise for hver kulør. Tallene kan ikke leses ut av koden, så
+ * de tre som er verdt å kjenne står ved `ROLES`. Endrer du et av dem, er
+ * `checkPromises` det som sier fra.
  */
 
 /** En rolle er en jobb en farge gjør, og den er lik i hver familie. */
@@ -40,19 +29,29 @@ export type Role =
   | "fill"
   | "content"
   | "text"
+  | "textStrong"
   | "textSubtle"
   | "borderSubtle"
+  | "borderStrong"
 
 /** Lyst eller mørkt. Et tema er det ene eller det andre, aldri begge. */
 export type Appearance = "light" | "dark"
 
 /**
- * Hvor mye av kulørens metning hver rolle beholder, og hvilken lyshet den
- * sikter mot i hvert utseende.
+ * Lyshet og metningsandel per rolle, i hvert utseende.
  *
- * Metningen er en andel og ikke en verdi, slik at en dus merkefarge gir en dus
- * matrise og en sterk gir en sterk. Flatene tåler minst: en lys flate med mye
- * metning ser skitten ut.
+ * Metningen er en andel, så en dus merkefarge gir en dus matrise. Flatene
+ * tåler minst: en lys flate med mye metning ser skitten ut.
+ *
+ * Tre valg som ikke er åpenbare:
+ *
+ * - `fill` styres av at `content` skal kunne leses oppå den, ikke av avstanden
+ *   til siden. Velges den etter siden alene, blir den for lys til å bære tekst.
+ * - Tekst og kant har tre trinn hver. Brødtekst skal ikke ligge på
+ *   minstekravet: satt til `text` ble den `#4a4d51` framfor `#1a1a1a`, og det
+ *   er et ekte tap i lesbarhet selv om kravet holdt.
+ * - `textStrong` har lav metning, siden en sterk tekstfarge nesten er sort
+ *   eller hvit uansett kulør.
  */
 export const ROLES: Record<
   Role,
@@ -61,18 +60,19 @@ export const ROLES: Record<
   surface: { lightness: { light: 0.96, dark: 0.26 }, chroma: 0.22 },
   borderSubtle: { lightness: { light: 0.88, dark: 0.34 }, chroma: 0.35 },
   border: { lightness: { light: 0.575, dark: 0.625 }, chroma: 0.55 },
+  borderStrong: { lightness: { light: 0.48, dark: 0.74 }, chroma: 0.6 },
   fill: { lightness: { light: 0.53, dark: 0.65 }, chroma: 1 },
   text: { lightness: { light: 0.42, dark: 0.82 }, chroma: 0.85 },
+  textStrong: { lightness: { light: 0.28, dark: 0.93 }, chroma: 0.5 },
   textSubtle: { lightness: { light: 0.485, dark: 0.73 }, chroma: 0.7 },
   content: { lightness: { light: 0.99, dark: 0.16 }, chroma: 0.04 },
 }
 
 /**
- * Sideflaten og den hevede flaten, som bare den nøytrale familien har.
+ * Siden, kortet og den hevede flaten, som bare den nøytrale familien har.
  *
- * `canvas` er siden selv, `surface` er et kort på den, og `raised` ligger over
- * igjen. Tekst må holde mot alle tre, ikke bare mot siden, ellers blir et kort
- * på et kort uleselig uten at noe sier fra.
+ * Tekst og kant må holde mot alle tre, ikke bare mot siden. `raised` er det
+ * vanskeligste laget, mørkest i lyst tema og lysest i mørkt.
  */
 export const NEUTRAL_LAYERS: Record<
   "canvas" | "raised",
@@ -116,10 +116,9 @@ export type Violation = {
  * Lista er selve kontrakten. Legger du til en rolle som skal stå inne for noe,
  * hører løftet hjemme her.
  *
- * `borderSubtle` står med vilje uten løfte. Den er en dekorativ strek, en
- * skillelinje mellom to rader, og WCAG 1.4.11 gjelder ikke det som ikke er
- * nødvendig for å forstå siden. Trenger kanten å bety noe, er `border` den
- * riktige, og den holder 3,1:1 mot alle tre lagene.
+ * `borderSubtle` står uten løfte med vilje: en dekorativ skillelinje er ikke
+ * nødvendig for å forstå siden, og WCAG 1.4.11 gjelder den ikke. Trenger
+ * kanten å bety noe, er `border` den riktige.
  */
 export function promisesFor(
   f: Record<Role, string>,
@@ -134,6 +133,25 @@ export function promisesFor(
     ["text mot surface", ratio(f.text, layers.surface), REQUIREMENT.text],
     ["text mot raised", ratio(f.text, layers.raised), REQUIREMENT.text],
     ["text mot egen surface", ratio(f.text, f.surface), REQUIREMENT.text],
+    // `textStrong` er brødteksten og lenka ved hover, så den har de samme
+    // tre løftene som `text`. Den ligger lenger fra flaten enn `text` gjør,
+    // så løftene følger av dem over, men de skal stå skrevet: en endring i
+    // lysheten skal felle sjekken og ikke bare bestå i stillhet.
+    [
+      "textStrong mot canvas",
+      ratio(f.textStrong, layers.canvas),
+      REQUIREMENT.text,
+    ],
+    [
+      "textStrong mot surface",
+      ratio(f.textStrong, layers.surface),
+      REQUIREMENT.text,
+    ],
+    [
+      "textStrong mot raised",
+      ratio(f.textStrong, layers.raised),
+      REQUIREMENT.text,
+    ],
     [
       "textSubtle mot canvas",
       ratio(f.textSubtle, layers.canvas),
@@ -161,6 +179,14 @@ export function promisesFor(
     ["fill mot raised", ratio(f.fill, layers.raised), REQUIREMENT.graphic],
     // Og teksten oppå den fylte flaten er det strengeste kravet av alle.
     ["content oppå fill", ratio(f.content, f.fill), REQUIREMENT.text],
+    /*
+     * Knappen og gjeldende side i pagineringen bytter flate til `text` under
+     * musa, og `content` blir stående. Det følger av lyshetene, siden `text`
+     * ligger lenger fra `content` enn `fill` gjør i begge utseender, men det
+     * skal stå som et løfte: uten det var hover den eneste fylte flaten i
+     * systemet kontrakten ikke sa noe om.
+     */
+    ["content oppå text", ratio(f.content, f.text), REQUIREMENT.text],
   ]
 }
 

@@ -4,18 +4,21 @@
      og hele poenget forsvinner. */
   .fs-skip-link {
     position: absolute;
-    inset-inline-start: var(--size-2);
-    inset-block-start: var(--size-2);
+    inset-inline-start: var(--fs-spacing-2);
+    inset-block-start: var(--fs-spacing-2);
     z-index: 100;
-    transform: translateY(calc(-100% - var(--size-4)));
+    transform: translateY(calc(-100% - var(--fs-spacing-4)));
     display: inline-block;
-    padding: var(--fs-skip-link-padding, var(--size-2) var(--size-4));
+    padding: var(
+      --fs-skip-link-padding,
+      var(--fs-spacing-2) var(--fs-spacing-4)
+    );
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-interactive-contrast);
-    background: var(--semantic-interactive-main);
-    border-radius: var(--fs-skip-link-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-accent-content);
+    background: var(--fs-color-accent-fill);
+    border-radius: var(--fs-skip-link-radius, var(--fs-spacing-1));
     text-decoration: underline;
   }
 
@@ -24,8 +27,8 @@
      den som hopper dit fra et skript. */
   .fs-skip-link:focus {
     transform: translateY(0);
-    outline: var(--semantic-focus-ring);
-    outline-color: var(--semantic-page-foreground);
+    outline: var(--fs-focus-ring);
+    outline-color: var(--fs-color-neutral-text-strong);
     outline-offset: 2px;
   }
 

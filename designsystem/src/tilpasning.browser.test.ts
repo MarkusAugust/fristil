@@ -50,10 +50,10 @@ describe("en konsument kan tilpasse systemet", () => {
   })
 
   it("faller tilbake til tokenverdien når variabelen ikke er satt", () => {
-    // Standardverdien skal følge --size-skalaen, ikke være bakt inn.
+    // Standardverdien skal følge --fs-spacing-skalaen, ikke være bakt inn.
     // Det er grunnen til at @property ikke brukes her: en registrert
     // initial-value gjør var()-fallbacken uoppnåelig.
-    apply(":root { --size-1: 20px; }")
+    apply(":root { --fs-spacing-1: 20px; }")
 
     const button = document.querySelector(".fs-button") as HTMLElement
     expect(getComputedStyle(button).borderRadius).toBe("20px")
@@ -72,7 +72,7 @@ describe("en konsument kan tilpasse systemet", () => {
   })
 
   it("kan overstyre en token, også i mørkt tema via systemvalget", () => {
-    apply(":root { --semantic-interactive-main: rgb(124, 58, 237); }")
+    apply(":root { --fs-color-accent-fill: rgb(124, 58, 237); }")
     document.documentElement.setAttribute("data-theme", "dark")
 
     const button = document.querySelector(".fs-button") as HTMLElement

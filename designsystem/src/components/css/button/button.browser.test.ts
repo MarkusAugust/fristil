@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./button.css"
@@ -34,17 +34,17 @@ describe("fs-button variants", () => {
   it("applies primary defaults", () => {
     const primary = css("primary")
 
-    expect(primary.backgroundColor).toBe("rgb(19, 98, 174)")
-    expect(primary.borderTopColor).toBe("rgb(19, 98, 174)")
-    expect(primary.color).toBe("rgb(255, 255, 255)")
+    expect(primary.backgroundColor).toBe(farge("--fs-color-accent-fill"))
+    expect(primary.borderTopColor).toBe(farge("--fs-color-accent-fill"))
+    expect(primary.color).toBe(farge("--fs-color-accent-content"))
   })
 
   it("applies secondary variant styles", () => {
     const secondary = css("secondary")
 
     expect(secondary.backgroundColor).toBe("rgba(0, 0, 0, 0)")
-    expect(secondary.borderTopColor).toBe("rgb(19, 98, 174)")
-    expect(secondary.color).toBe("rgb(19, 98, 174)")
+    expect(secondary.borderTopColor).toBe(farge("--fs-color-accent-border"))
+    expect(secondary.color).toBe(farge("--fs-color-accent-text"))
   })
 
   it("applies ghost variant styles", () => {
@@ -52,23 +52,23 @@ describe("fs-button variants", () => {
 
     expect(ghost.backgroundColor).toBe("rgba(0, 0, 0, 0)")
     expect(ghost.borderTopColor).toBe("rgba(0, 0, 0, 0)")
-    expect(ghost.color).toBe("rgb(19, 98, 174)")
+    expect(ghost.color).toBe(farge("--fs-color-accent-text"))
   })
 
   it("applies danger variant styles", () => {
     const danger = css("danger")
 
-    expect(danger.backgroundColor).toBe("rgb(247, 226, 232)")
-    expect(danger.borderTopColor).toBe("rgb(168, 46, 57)")
-    expect(danger.color).toBe("rgb(168, 46, 57)")
+    expect(danger.backgroundColor).toBe(farge("--fs-color-danger-surface"))
+    expect(danger.borderTopColor).toBe(farge("--fs-color-danger-text"))
+    expect(danger.color).toBe(farge("--fs-color-danger-text"))
   })
 
   it("applies disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(disabled.borderTopColor).toBe("rgb(229, 229, 229)")
-    expect(disabled.color).toBe("rgb(117, 117, 117)")
+    expect(disabled.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(disabled.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(disabled.color).toBe(farge("--fs-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(disabled.pointerEvents).toBe("auto")
   })

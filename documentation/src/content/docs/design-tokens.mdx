@@ -14,88 +14,108 @@ import "@fristil/designsystem/tokens.css"
 
 ```css
 .min-komponent {
-	color: var(--semantic-interactive-main);
-	padding: var(--size-4);
+	color: var(--fs-color-accent-fill);
+	padding: var(--fs-spacing-4);
 	font-size: var(--font-size-m);
 }
 ```
 
-## To lag med farger
+## Fargene er en matrise
 
-**Palett** (`--palette-{farge}-{trinn}`) er råverdiene. **Semantisk** (`--semantic-{sammenheng}-{rolle}`) peker på en palettfarge og sier hva den betyr.
+Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie**, altså hva den betyr, og **rolle**, altså hva den gjør. Navnet er `--fs-color-<familie>-<rolle>`.
 
-Bruk det semantiske laget. Da følger komponenten din med når paletten justeres. Skal du endre fargene, står måtene på [Tilpasning](../tilpasning/#egne-farger).
+Hver familie har de samme rollene. Det er strukturen som gjør at de matcher: et fareområde og et merkevareområde ser ut som søsken fordi de er bygd av de samme rollene på de samme lyshetene.
 
-### Semantiske farger
+### Familiene
 
-<Tokenprover semantiske={[
-  "semantic-interactive-main",
-  "semantic-interactive-background",
-  "semantic-success-foreground",
-  "semantic-warning-foreground",
-  "semantic-danger-foreground",
-  "semantic-disabled-foreground",
-  "semantic-neutral-foreground",
+| Familie | Til |
+| --- | --- |
+| `accent` | Lenker, primærknapp, fokus, valgt tilstand |
+| `visited` | Besøkte lenker |
+| `brand1`, `brand2`, `brand3` | Flater, seksjoner og kategorier. De betyr ikke noe i seg selv |
+| `neutral` | Siden, brødteksten, kantene |
+| `danger` | Feil, sletting, avslag |
+| `warning` | Krever oppmerksomhet |
+| `success` | Fullført, godkjent |
+
+### Rollene
+
+Ni roller, like for hver familie. Tekst og kant har tre trinn hver, som speiler hverandre.
+
+| Rolle | Til | Løfte |
+| --- | --- | --- |
+| `surface` | Tonet flate: et merke, et varsel, en seksjon | ingen |
+| `border-subtle` | Dekorativ strek, som mellom to rader | ingen |
+| `border` | Rammen rundt et felt eller en flate | 3,1:1 mot siden, mot `raised` og mot egen `surface` |
+| `border-strong` | Feltrammen når musa er over, og en tabellstrek | følger av `border`, som den ligger utenfor |
+| `fill` | Fylt flate: en knapp, en avkryssingsboks som er huket av | 3,1:1 mot siden og mot `raised` |
+| `content` | Teksten oppå `fill` | 4,6:1 mot `fill` |
+| `text-subtle` | Dempet tekst: hjelpetekst, plassholdere | 4,6:1 mot siden, mot et kort og mot `raised` |
+| `text` | Familiens farge som tekst, og knappen ved hover | de samme tre, og mot egen `surface` |
+| `text-strong` | Brødtekst, overskrifter og lenka ved hover | de samme tre |
+
+Den nøytrale familien har to roller i tillegg, fordi den bærer siden selv:
+
+| Token | Til | Løfte |
+| --- | --- | --- |
+| `--fs-color-neutral-canvas` | Siden | hver tekstrolle i hver familie holder mot den |
+| `--fs-color-neutral-raised` | En flate som ligger over et kort | det samme |
+
+Tekst må holde mot alle tre lagene, altså siden, `neutral-surface` og `neutral-raised`. Ellers blir et kort på et kort uleselig uten at noe sier fra.
+
+Hver rad er en familie, hver rute en rolle, i rekkefølgen over:
+
+<Tokenprover matrise={[
+  "accent",
+  "visited",
+  "brand1",
+  "brand2",
+  "brand3",
+  "neutral",
+  "danger",
+  "warning",
+  "success",
 ]} />
 
-| Gruppe | Variabler | Brukes til |
-| --- | --- | --- |
-| Side | `--semantic-page-background`, `--semantic-page-foreground` | Bakgrunn og tekst på en vanlig flate |
-| Interaktiv | `--semantic-interactive-main`, `--semantic-interactive-background`, `--semantic-interactive-foreground`, `--semantic-interactive-contrast`, `--semantic-interactive-visited` | Lenker, knapper, fokusmarkering. `--semantic-interactive-contrast` er teksten oppå `main`. |
-| Suksess | `--semantic-success-background`, `--semantic-success-foreground` | Fullført, godkjent |
-| Advarsel | `--semantic-warning-background`, `--semantic-warning-foreground` | Krever oppmerksomhet |
-| Fare | `--semantic-danger-background`, `--semantic-danger-foreground` | Feil, sletting, avslag |
-| Deaktivert | `--semantic-disabled-background`, `--semantic-disabled-foreground` | Kontroller som er slått av |
-| Nøytral | `--semantic-neutral-background`, `--semantic-neutral-foreground` | Dempet, men lesbar informasjon |
-| Skillelinjer | `--semantic-divider-30`, `--semantic-divider-100` | Rammer og streker, svak og sterk |
-| Dempet tekst | `--semantic-muted-foreground` | Hjelpetekst, plassholdere, ukedager i kalenderen |
-| Skjemafelt | `--semantic-field-border`, `--semantic-field-border-hover` | Rammen rundt felt. Holder 3:1 mot flaten, som WCAG 1.4.11 krever. |
-| Farefylt handling | `--semantic-danger-main`, `--semantic-danger-contrast` | Fylt flate på en sletteknapp, og teksten oppå |
-| Over siden | `--semantic-shadow-overlay`, `--semantic-overlay-backdrop` | Skyggen under et panel, og flaten bak en dialog |
-| Tastaturfokus | `--semantic-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Endrer du den, endrer du fokusringen i hele systemet. |
-| Ikoner | `--semantic-icon-calendar`, `--semantic-icon-clock`, `--semantic-icon-search`, `--semantic-icon-check`, `--semantic-icon-dash` | Ikoner tegnet inn i en bakgrunn |
-| Standardverdier | `--semantic-size-default`, `--semantic-spacing-default` | Fallhøyde for størrelse og avstand |
+### Kontrasten er garantert av konstruksjonen
 
-Bruk `background` og `foreground` som par. Da er kontrasten kontrollert mot WCAG AA av testene i designsystemet.
+Kuløren er din, lysheten er rollens. Lyshetene er ikke valgt, de er regnet fram mot et sveip rundt hele fargesirkelen på den høyeste metningen sRGB kan vise. Derfor holder løftene uansett hvilken merkefarge du gir, og det finnes ikke noe justeringspass som flytter fargen din etterpå.
 
-**Ikoner som tokens.** Et ikon som er tegnet inn i en bakgrunn kan ikke lese en CSS-variabel: streken er malt inn i selve bildet. Derfor ligger de fem ikonene i det semantiske laget, slik at de snur med temaet på samme måte som fargene. Bruker du dem selv, sett dem som `background-image`.
+Skriver du dine egne verdier, er løftene dine å holde. `fristil sjekk-tema tema.css` sier hvilken celle som ryker og hvorfor.
 
-**`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3, og derfor bevisst dempet. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder 6,7:1.
+### Det som ikke er en celle
 
-Er elementet slått av, bruk `disabled`. Kan brukeren lese eller trykke på det, bruk `neutral`.
+| Token | Til |
+| --- | --- |
+| `--fs-color-disabled-surface`, `--fs-color-disabled-text` | Kontroller som er slått av. Unntatt kontrastkravet i WCAG 1.4.3, og med vilje dempet: en kontroll som er av skal se av |
+| `--fs-color-overlay` | Flaten bak en modal |
+| `--fs-shadow-overlay` | Skyggen under et panel som ligger over siden |
+| `--fs-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Endrer du den, endrer du fokusringen i hele systemet |
+| `--fs-icon-search`, `--fs-icon-check`, `--fs-icon-dash`, `--fs-icon-calendar`, `--fs-icon-clock` | Ikoner tegnet inn i en bakgrunn |
 
-### Palett
+**Ikonene følger ikke matrisen.** Et ikon som er tegnet inn i en bakgrunn kan ikke lese en CSS-variabel: streken er malt inn i selve bildet. De har derfor en mørk og en lys utgave, og snur med temaet. Bruker du dem selv, sett dem som `background-image`.
 
-Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse. `azure` mangler trinn `5` og `50`, og `graphite` har i tillegg `0`, som er ren hvit.
-
-<Tokenprover palett={{
-  burgundy: [5, 10, 30, 50, 70, 100],
-  forest: [5, 10, 30, 50, 70, 100],
-  ochre: [5, 10, 30, 50, 70, 100],
-  denim: [5, 10, 30, 50, 70, 100],
-  azure: [10, 30, 70, 100],
-  graphite: [0, 5, 10, 30, 50, 70, 100],
-}} />
+**`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder løftet sitt. Er elementet slått av, bruk `disabled`.
 
 ## Størrelsesskalaen
 
-Én skala, `--size-*`, til alt spatialt: `padding`, `margin`, `gap`, `width`, `height`. Ingen egen `--spacing-*`. Fire piksler som grunnenhet, som Tailwind, så `--size-4` tilsvarer `p-4`.
+Én skala, `--fs-spacing-*`, til alt spatialt: `padding`, `margin`, `gap`, `width`, `height`. Fire piksler som grunnenhet, som Tailwind, så `--fs-spacing-4` tilsvarer `p-4`.
 
 | Variabel | Verdi | Tailwind |
 | --- | --- | --- |
-| `--size-px` | 1px | ingen |
-| `--size-0-5` | 0.125rem | `0.5` |
-| `--size-1` | 0.25rem | `1` |
-| `--size-2` | 0.5rem | `2` |
-| `--size-3` | 0.75rem | `3` |
-| `--size-4` | 1rem | `4` |
-| `--size-5` | 1.25rem | `5` |
-| `--size-6` | 1.5rem | `6` |
-| `--size-7` | 1.75rem | `7` |
-| `--size-8` | 2rem | `8` |
-| `--size-10` | 2.5rem | `10` |
-| `--size-12` | 3rem | `12` |
-| `--size-16` | 4rem | `16` |
+| `--fs-spacing-px` | 1px | ingen |
+| `--fs-spacing-0-5` | 0.125rem | `0.5` |
+| `--fs-spacing-1` | 0.25rem | `1` |
+| `--fs-spacing-2` | 0.5rem | `2` |
+| `--fs-spacing-3` | 0.75rem | `3` |
+| `--fs-spacing-4` | 1rem | `4` |
+| `--fs-spacing-5` | 1.25rem | `5` |
+| `--fs-spacing-6` | 1.5rem | `6` |
+| `--fs-spacing-7` | 1.75rem | `7` |
+| `--fs-spacing-8` | 2rem | `8` |
+| `--fs-spacing-10` | 2.5rem | `10` |
+| `--fs-spacing-12` | 3rem | `12` |
+| `--fs-spacing-16` | 4rem | `16` |
 
 ## Typografi
 
@@ -138,10 +158,10 @@ Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en or
 | `--font-weight-medium` | 500 | knapp, feilmelding |
 | `--font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsvarsel, tabell, faner, valggruppe |
 | `--font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
-| `--semantic-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
-| `--semantic-line-height-heading` | 1.2 | overskrift |
-| `--semantic-line-height-article` | 1.6 | brødtekst, liste, korttekst |
-| `--semantic-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
+| `--fs-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
+| `--fs-line-height-heading` | 1.2 | overskrift |
+| `--fs-line-height-article` | 1.6 | brødtekst, liste, korttekst |
+| `--fs-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
 
 Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
 
@@ -152,16 +172,22 @@ Tre linjeavstander står fortsatt som tall i stilarkene. `1` i paginering, avata
 Alle variabelnavn finnes som en typet oppslagstabell:
 
 ```ts
-import { cssTokens, type CssToken } from "@fristil/designsystem/tokens"
+import {
+  colorTokens,
+  cssTokens,
+  type CssToken,
+} from "@fristil/designsystem/tokens"
 
-const token: CssToken = "--semantic-interactive-main"
+const token: CssToken = "--fs-color-accent-fill"
 element.style.setProperty(token, "red")
 
-cssTokens["--palette-azure-70"]
-// "#1362ae"
+colorTokens["--fs-color-accent-fill"] // "#226dba"
+cssTokens["--font-size-mega"]         // "2.625rem"
 ```
 
-Skriver du `--semantic-interactiv-main`, får du feil i editoren i stedet for en `var()` som stille faller tilbake til ingenting.
+Skriver du `--fs-color-accent-fil`, får du feil i editoren i stedet for en `var()` som stille faller tilbake til ingenting. Det samme gjelder en rolle som ikke finnes: `--fs-color-accent-fill-hover` er en typefeil, ikke en tom verdi.
+
+Fargene ligger i `colorTokens` og `darkColorTokens`, resten i `cssTokens`. Skillet er at fargene regnes av kontrakten og derfor ikke står skrevet i kilden. `CssToken` dekker begge, siden fargenavnene utledes av de to aksene.
 
 ## Brekkpunkter og containere
 
@@ -193,22 +219,24 @@ Den første linja er det viktigste. Se [Tilpasning](../tilpasning/#tailwind-og-l
 
 Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da er `bg-neutral-100` fortsatt Tailwinds egen farge:
 
+Hver celle i matrisen blir en klasse, med samme navn: `bg-fs-accent-fill` leser `--fs-color-accent-fill`.
+
 | Klasse | Verdi |
 | --- | --- |
-| `text-fs-interactive` | `--semantic-interactive-main` |
-| `bg-fs-danger-bg` | `--semantic-danger-background` |
-| `text-fs-muted` | `--semantic-muted-foreground` |
-| `border-fs-field-border` | `--semantic-field-border` |
+| `bg-fs-accent-fill` | `--fs-color-accent-fill` |
+| `text-fs-accent-text` | `--fs-color-accent-text` |
+| `bg-fs-danger-surface` | `--fs-color-danger-surface` |
+| `text-fs-neutral-text-subtle` | `--fs-color-neutral-text-subtle` |
+| `border-fs-neutral-border` | `--fs-color-neutral-border` |
 | `text-fs-mega` | `--font-size-mega` |
 | `max-w-fs-aside` | 384px |
-| `shadow-fs-overlay` | `--semantic-shadow-overlay` |
-| `bg-fs-azure-70` | `--palette-azure-70` |
+| `shadow-fs-overlay` | `--fs-shadow-overlay` |
 
-Avstandene er koblet til skalaen: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--size-1`. `p-4` er dermed nøyaktig `--size-4`, og endrer du skalaen, følger alle Tailwind-klassene med.
+Avstandene er koblet til skalaen: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--fs-spacing-1`. `p-4` er dermed nøyaktig `--fs-spacing-4`, og endrer du skalaen, følger alle Tailwind-klassene med.
 
 Brekkpunktene er utelatt med vilje. Fristils `sm` til `2xl` har de samme verdiene som Tailwind allerede bruker, så `md:` virker som før.
 
-Klassene i tabellen er ikke skrevet av hukommelsen: hver utgivelse av Fristil kompilerer temaet med Tailwind og kontrollerer at de kommer ut med tokenene over i seg.
+Klassene er ikke skrevet av hukommelsen: hver utgivelse kompilerer temaet med en ekte Tailwind og kontrollerer at hver farge i matrisen kommer ut som en klasse med tokenet sitt i seg.
 
 Hele oppsettet, med eksempler som blandes fritt med komponentene, står på [Tailwind](../tailwind/).
 

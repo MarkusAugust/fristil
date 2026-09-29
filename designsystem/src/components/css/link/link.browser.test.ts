@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./link.css"
@@ -31,14 +31,14 @@ describe("fs-link variants", () => {
   it("applies default link styles", () => {
     const defaultLink = css("default")
 
-    expect(defaultLink.color).toBe("rgb(19, 98, 174)")
+    expect(defaultLink.color).toBe(farge("--fs-color-accent-text"))
     expect(defaultLink.textDecorationLine).toBe("underline")
   })
 
   it("applies aria-disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.color).toBe("rgb(117, 117, 117)")
+    expect(disabled.color).toBe(farge("--fs-color-neutral-text-subtle"))
     expect(disabled.textDecorationLine).toBe("none")
     expect(disabled.pointerEvents).toBe("none")
   })

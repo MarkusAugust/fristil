@@ -324,7 +324,7 @@
     "access": "public"
   },
   "scripts": {
-    "generate": "bun scripts/generate-tokens.ts && bun scripts/generate-agent.ts",
+    "generate": "bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-agent.ts",
     "bygg:css": "bun scripts/bygg-css.ts",
     "build": "bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:identifikatorer && bun run sjekk:agent && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",

@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-
 import { monter, ventPaTegning } from "./testing/a11y"
+import { buildMatrix, FRISTIL_BRANDS } from "./tokens/matrix"
 
 import "./tokens/tokens.css"
 import "./components/css/accordion/accordion.css"
@@ -29,7 +29,7 @@ import "./components/css/toggle-group/toggle-group.css"
  *
  * WCAG 2.4.7 krever en synlig markering av hvor fokuset står, og 1.4.11 at
  * markeringen holder 3:1 mot flaten rundt. Systemet løser det med én ring,
- * `--semantic-focus-ring`, brukt i tjue regler fordelt på atten stilark.
+ * `--fs-focus-ring`, brukt i tjue regler fordelt på atten stilark.
  *
  * Fram til nå fantes det ikke én eneste påstand om `outline` i hele
  * testrekka. Ringen kunne altså forsvinne fra en komponent uten at noe sa
@@ -179,11 +179,21 @@ describe("tastaturfokus er synlig", () => {
     await ventPaTegning()
 
     const ring = getComputedStyle(document.documentElement)
-      .getPropertyValue("--semantic-focus-ring")
+      .getPropertyValue("--fs-focus-ring")
       .trim()
 
-    // Verdien er regnet ut her, så `var()` er alt løst opp.
+    /*
+     * Verdien er regnet ut her, så `var()` er alt løst opp.
+     *
+     * Fargen leses av matrisen framfor å skrives av: ringen skal følge
+     * `accent-border-strong`, og en test som gjentar heksverdien ville måttet
+     * rettes hver gang kontrakten flytter en lyshet.
+     */
+    const forventet = buildMatrix(FRISTIL_BRANDS, "light").tokens[
+      "--fs-color-accent-border-strong"
+    ]
+
     expect(ring).toMatch(/^2px solid /)
-    expect(ring).toMatch(/#1362ae|rgb\(19, 98, 174\)/)
+    expect(ring.toLowerCase()).toContain(forventet.toLowerCase())
   })
 })

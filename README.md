@@ -94,23 +94,23 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 ### To ting som er lette å gjøre feil
 
-**Bruk alltid tokens i CSS:** `var(--semantic-…)`, `var(--size-…)`. Hardkodede farger og pikselverdier hører ikke hjemme i en komponent.
+**Bruk alltid tokens i CSS:** `var(--fs-color-…)`, `var(--fs-spacing-…)`. Hardkodede farger og pikselverdier hører ikke hjemme i en komponent.
 
 **Registrer web components i en eksportert `defineFs*`-funksjon**, som går gjennom `defineElement`. Da bestemmer konsumenten når elementet registreres, pakken får ingen bivirkninger ved import, og modulen kan lastes på en server uten DOM.
 
 ## Tokens
 
-`designsystem/src/tokens/tokens.ts` er den eneste fila som redigeres. `tokens.css` genereres derfra, og endringer gjort direkte i den blir overskrevet:
+`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene står i `FRISTIL_BRANDS` i `src/tokens/matrix.ts`, og lyshetene i `ROLES` i `src/tokens/contract.ts`. Skal du flytte en farge, er det en av de to du redigerer:
 
 ```bash
 bun --filter @fristil/designsystem generate
 ```
 
-Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier, og de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter bruker det semantiske laget, så de følger med når paletten justeres.
+Fargene er en matrise av **familie**, altså hva fargen betyr, og **rolle**, altså hva den gjør. Navnet er `--fs-color-<familie>-<rolle>`, som `--fs-color-danger-fill`. Hver familie har hver rolle, og rollen bestemmer lysheten, så kontrasten kan garanteres uansett merkefarge.
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Kontrastkravene den må holde, står i `src/testing/kontrast.ts`, og den samme lista sjekker Fristils egne farger.
+Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Løftene den må holde, står i `src/tokens/contract.ts`, og de samme løftene sjekker Fristils egne farger.
 
 ## Tester
 

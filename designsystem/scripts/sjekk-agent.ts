@@ -27,6 +27,8 @@ import { classes } from "../src/diagnostics/classes.js"
 import { elements } from "../src/diagnostics/elements.js"
 import { diagnoseMarkup } from "../src/diagnostics/index.js"
 import { fs } from "../src/index.js"
+import { ROLES } from "../src/tokens/contract.js"
+import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
 import { PAKKE, pakke } from "./agent-deler.js"
 import { filer, NAVN } from "./generate-agent.js"
 
@@ -43,6 +45,24 @@ let sjekkedeFiler = 0
 let sjekkedeKlasser = 0
 let sjekkedeElementer = 0
 let sjekkedeTokens = 0
+let sjekkedeAkser = 0
+
+/*
+ * Tokennavnene telles per slag, ikke bare i sum.
+ *
+ * Én sum skjulte at et helt slag kunne mangle: da fargene ble en matrise,
+ * sluttet generatoren å skrive et eneste fargenavn, og summen var likevel stor
+ * fordi «Skrift:»-linja fortsatt listet tretten `--font-*`-navn.
+ *
+ * Denne vakten fanger ikke akkurat det tilfellet i dag, og det skal stå her
+ * framfor å bli trodd: malen i `generate-agent.ts` har to fargenavn skrevet
+ * inn i prosaen, så `--fs-color-` blir lest i hver bok selv om `tokenListe()`
+ * ga tom streng. Det er aksesjekken under som feller et tomt kodegjerde. Denne
+ * feller et slag som forsvinner helt, som `--fs-spacing-` eller
+ * `--fs-line-height-`.
+ */
+const SLAG = ["--fs-color-", "--fs-spacing-", "--fs-line-height-", "--font-"]
+const lesteSlag = new Map<string, Set<string>>()
 let sjekkedeBlokker = 0
 const blokkerPerFil = new Map<string, number>()
 
@@ -174,20 +194,59 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     krev(treff[1] in fs, `${sti} bruker fs.${treff[1]}(), som ikke finnes i fs`)
   }
 
+  /*
+   * 8. Begge aksene i fargematrisen står i kodegjerdet.
+   *
+   * Tokensjekken over teller navn, og aksene er ikke navn: en familie heter
+   * `accent`, ikke `--fs-color-accent`. Da fargene ble en matrise, sluttet
+   * generatoren å skrive et eneste fargenavn, kodegjerdet sto tomt, og
+   * navnetellingen var likevel stor nok til å melde grønt.
+   *
+   * Sjekken leser bare kodegjerdene, ikke prosaen rundt. Prosaen i malen
+   * nevner `surface`, `fill`, `content`, `border`, `text` og `neutral` for å
+   * forklare hva en rolle er, så en sjekk på hele fila ville vært oppfylt av
+   * malen alene for seks av de atten påstandene. Da kunne en akse falt ut uten
+   * at noe sa fra.
+   */
+  const gjerder = [...innhold.matchAll(/```[\s\S]*?```/g)]
+    .map((treff) => treff[0])
+    .join("\n")
+
+  for (const familie of FAMILIES) {
+    krev(
+      gjerder.includes(`\`${familie}\``),
+      `${sti} nevner ikke familien ${familie} i et kodegjerde`,
+    )
+    sjekkedeAkser += 1
+  }
+
+  for (const rolle of Object.keys(ROLES)) {
+    const navn = roleToCss(rolle as keyof typeof ROLES)
+    krev(
+      gjerder.includes(`\`${navn}\``),
+      `${sti} nevner ikke rollen ${navn} i et kodegjerde`,
+    )
+    sjekkedeAkser += 1
+  }
+
   // 7. Hvert tokennavn finnes. Ellipsen er med i prosaen som mønster, og
   // hopper derfor over.
   const tokens = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
 
+  /*
+   * Mønsteret må slutte på et bokstav- eller talltegn, og ikke ha et til etter
+   * seg. Uten det første traff `var(--fs-color-…)` i prosaen som
+   * `--fs-color-`, siden slaget nå står i navnet og bindestreken er med i
+   * tegnklassen. Det gikk fri før bare fordi `--semantic-` ikke hadde noe slag
+   * å klippe i.
+   */
   for (const treff of innhold.matchAll(
-    /--(?:semantic|size|font|palette)-[a-zA-Z0-9-]+/g,
+    /--(?:fs|font)-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
   )) {
     /*
      * Navnet må stå helt ut i `tokens.css`, ikke bare som en begynnelse:
-     * `--semantic-danger` finnes ikke, men passerte på `--semantic-danger-main`.
-     *
-     * Mønsteret over kan ikke treffe `var(--semantic-…)`, siden tegnklassen
-     * ikke rommer ellipsen, så prosaens mønsternavn kommer aldri hit. En vakt
-     * mot dem sto her og var død kode.
+     * `--fs-color-danger` finnes ikke, men ville passert på
+     * `--fs-color-danger-fill`.
      */
     const heleNavnet = new RegExp(`${treff[0]}(?![a-zA-Z0-9-])`)
 
@@ -196,6 +255,9 @@ for (const [sti, innhold] of Object.entries(forventet)) {
       `${sti} nevner ${treff[0]}, som ikke finnes i tokens.css`,
     )
     sjekkedeTokens += 1
+    for (const slag of SLAG)
+      if (treff[0].startsWith(slag))
+        lesteSlag.set(slag, (lesteSlag.get(slag) ?? new Set()).add(sti))
   }
 
   // 8. Ingen krysskontaminering. Å advare mot `className` er nyttig i de andre
@@ -294,6 +356,18 @@ if (sjekkedeElementer !== ventet.elementer || sjekkedeElementer === 0)
     `${sjekkedeElementer} elementer, ventet ${ventet.elementer}`,
   )
 if (sjekkedeTokens === 0) utilstrekkelig.push("ingen tokennavn")
+
+const ventedeAkser = NAVN.length * (FAMILIES.length + Object.keys(ROLES).length)
+if (sjekkedeAkser !== ventedeAkser || sjekkedeAkser === 0)
+  utilstrekkelig.push(`${sjekkedeAkser} akser, ventet ${ventedeAkser}`)
+
+for (const slag of SLAG) {
+  const filer = lesteSlag.get(slag)?.size ?? 0
+  if (filer !== NAVN.length)
+    utilstrekkelig.push(
+      `${slag} lest i ${filer} regelbøker, ventet ${NAVN.length}`,
+    )
+}
 if (sjekkedeBlokker === 0) utilstrekkelig.push("ingen markupblokker")
 
 /*
@@ -324,5 +398,5 @@ if (utilstrekkelig.length > 0) {
 }
 
 console.log(
-  `Regelbøkene stemmer: ${sjekkedeFiler} filer, ${sjekkedeKlasser} klassepåstander, ${sjekkedeElementer} elementpåstander, ${sjekkedeTokens} tokennavn og ${sjekkedeBlokker} markupblokker.`,
+  `Regelbøkene stemmer: ${sjekkedeFiler} filer, ${sjekkedeKlasser} klassepåstander, ${sjekkedeElementer} elementpåstander, ${sjekkedeTokens} tokennavn, ${sjekkedeAkser} akser og ${sjekkedeBlokker} markupblokker.`,
 )

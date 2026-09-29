@@ -3,14 +3,14 @@
     box-sizing: border-box;
     display: block;
     inline-size: 100%;
-    padding: var(--fs-file-upload-padding, var(--size-2));
+    padding: var(--fs-file-upload-padding, var(--fs-spacing-2));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px dashed var(--semantic-field-border);
-    border-radius: var(--fs-file-upload-radius, var(--size-1));
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px dashed var(--fs-color-neutral-border);
+    border-radius: var(--fs-file-upload-radius, var(--fs-spacing-1));
     cursor: pointer;
   }
 
@@ -18,45 +18,45 @@
      denne pseudoklassen. Teksten på den kommer fra nettleseren og språket i
      operativsystemet, så den kan ikke oversettes herfra. */
   .fs-file-upload::file-selector-button {
-    margin-inline-end: var(--size-3);
-    padding: var(--size-2) var(--size-4);
+    margin-inline-end: var(--fs-spacing-3);
+    padding: var(--fs-spacing-2) var(--fs-spacing-4);
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-interactive-main);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-accent-text);
     background: transparent;
-    border: 1px solid var(--semantic-interactive-main);
-    border-radius: var(--fs-file-upload-radius, var(--size-1));
+    border: 1px solid var(--fs-color-accent-border);
+    border-radius: var(--fs-file-upload-radius, var(--fs-spacing-1));
     cursor: pointer;
   }
 
   .fs-file-upload::file-selector-button:hover {
-    background: var(--semantic-interactive-background);
+    background: var(--fs-color-accent-surface);
   }
 
   .fs-file-upload:hover {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-file-upload:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
   .fs-file-upload:disabled {
-    background: var(--semantic-disabled-background);
-    color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-background);
+    background: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
     cursor: not-allowed;
   }
 
   .fs-file-upload[data-state="invalid"] {
-    border-color: var(--semantic-danger-foreground);
-    background: var(--semantic-danger-background);
+    border-color: var(--fs-color-danger-text);
+    background: var(--fs-color-danger-surface);
   }
 
   .fs-file-upload[data-state="success"] {
-    border-color: var(--semantic-success-foreground);
+    border-color: var(--fs-color-success-text);
   }
 
   /* Lista over filene som er valgt. Den skriver du selv, siden bare du vet
@@ -64,8 +64,8 @@
   .fs-file-upload-list {
     display: flex;
     flex-direction: column;
-    gap: var(--size-2);
-    margin: var(--size-2) 0 0;
+    gap: var(--fs-spacing-2);
+    margin: var(--fs-spacing-2) 0 0;
     padding: 0;
     list-style: none;
   }
@@ -75,10 +75,10 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--size-2);
-    padding: var(--size-2) var(--size-3);
-    background: var(--semantic-neutral-background);
-    border-radius: var(--fs-file-upload-radius, var(--size-1));
+    gap: var(--fs-spacing-2);
+    padding: var(--fs-spacing-2) var(--fs-spacing-3);
+    background: var(--fs-color-neutral-surface);
+    border-radius: var(--fs-file-upload-radius, var(--fs-spacing-1));
     /* Filnavn har sjelden mellomrom å brekke i, og knappeteksten gjentar
        navnet. Uten dette presser raden seg bredere enn skjermen på mobil. */
     overflow-wrap: anywhere;

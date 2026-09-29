@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./badge.css"
@@ -33,32 +33,32 @@ describe("fs-badge", () => {
 
   it("applies default (interactive) colors", () => {
     const badge = css("default")
-    expect(badge.backgroundColor).toBe("rgb(205, 225, 249)")
-    expect(badge.color).toBe("rgb(19, 98, 174)")
+    expect(badge.backgroundColor).toBe(farge("--fs-color-accent-surface"))
+    expect(badge.color).toBe(farge("--fs-color-accent-text"))
   })
 
   it("applies success colors", () => {
     const badge = css("success")
-    expect(badge.backgroundColor).toBe("rgb(227, 245, 234)")
-    expect(badge.color).toBe("rgb(49, 111, 42)")
+    expect(badge.backgroundColor).toBe(farge("--fs-color-success-surface"))
+    expect(badge.color).toBe(farge("--fs-color-success-text"))
   })
 
   it("applies warning colors", () => {
     const badge = css("warning")
-    expect(badge.backgroundColor).toBe("rgb(249, 237, 226)")
-    expect(badge.color).toBe("rgb(137, 101, 8)")
+    expect(badge.backgroundColor).toBe(farge("--fs-color-warning-surface"))
+    expect(badge.color).toBe(farge("--fs-color-warning-text"))
   })
 
   it("applies danger colors", () => {
     const badge = css("danger")
-    expect(badge.backgroundColor).toBe("rgb(247, 226, 232)")
-    expect(badge.color).toBe("rgb(168, 46, 57)")
+    expect(badge.backgroundColor).toBe(farge("--fs-color-danger-surface"))
+    expect(badge.color).toBe(farge("--fs-color-danger-text"))
   })
 
   it("applies neutral colors", () => {
     const badge = css("neutral")
-    expect(badge.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(badge.color).toBe("rgb(77, 77, 77)")
+    expect(badge.backgroundColor).toBe(farge("--fs-color-neutral-surface"))
+    expect(badge.color).toBe(farge("--fs-color-neutral-text"))
   })
 })
 

@@ -7,8 +7,9 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
-import { kontrast } from "../../../testing/kontrast"
+import { contrastRatio, parseHex } from "../../../tokens/color"
 import selectCss from "./select.css?inline"
 
 import "../../../tokens/tokens.css"
@@ -37,31 +38,31 @@ describe("fs-select", () => {
   it("applies default styles", () => {
     const select = css("default")
 
-    expect(select.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(select.borderTopColor).toBe("rgb(117, 117, 117)")
-    expect(select.color).toBe("rgb(26, 26, 26)")
+    expect(select.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
+    expect(select.borderTopColor).toBe(farge("--fs-color-disabled-text"))
+    expect(select.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const select = css("invalid")
 
-    expect(select.backgroundColor).toBe("rgb(247, 226, 232)")
-    expect(select.borderTopColor).toBe("rgb(168, 46, 57)")
+    expect(select.backgroundColor).toBe(farge("--fs-color-danger-surface"))
+    expect(select.borderTopColor).toBe(farge("--fs-color-danger-text"))
   })
 
   it("applies success styles", () => {
     const select = css("success")
 
-    expect(select.backgroundColor).toBe("rgb(227, 245, 234)")
-    expect(select.borderTopColor).toBe("rgb(49, 111, 42)")
+    expect(select.backgroundColor).toBe(farge("--fs-color-success-surface"))
+    expect(select.borderTopColor).toBe(farge("--fs-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const select = css("disabled")
 
-    expect(select.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(select.borderTopColor).toBe("rgb(229, 229, 229)")
-    expect(select.color).toBe("rgb(117, 117, 117)")
+    expect(select.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(select.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(select.color).toBe(farge("--fs-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(select.pointerEvents).toBe("auto")
   })
@@ -192,9 +193,9 @@ describe('fs-select med data-picker="styled"', () => {
   it("beholder farger og tilstand fra resten av komponenten", () => {
     const stylet = css("stylet")
 
-    expect(stylet.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(stylet.borderTopColor).toBe("rgb(117, 117, 117)")
-    expect(stylet.color).toBe("rgb(26, 26, 26)")
+    expect(stylet.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
+    expect(stylet.borderTopColor).toBe(farge("--fs-color-disabled-text"))
+    expect(stylet.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
 
   it("åpner lista inne i siden, med vår egen flate", async () => {
@@ -209,8 +210,8 @@ describe('fs-select med data-picker="styled"', () => {
     const liste = getComputedStyle(element, "::picker(select)")
 
     expect(element.matches(":open")).toBe(true)
-    expect(liste.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(liste.borderTopColor).toBe("rgb(117, 117, 117)")
+    expect(liste.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
+    expect(liste.borderTopColor).toBe(farge("--fs-color-disabled-text"))
     expect(liste.overflowY).toBe("auto")
 
     // Høyden animeres fra null i Chromium. Går noe galt med overgangen, står
@@ -235,9 +236,15 @@ describe('fs-select med data-picker="styled"', () => {
       throw new Error("Fant ikke alternativene")
     }
 
-    expect(getComputedStyle(valgt).backgroundColor).toBe("rgb(19, 98, 174)")
-    expect(getComputedStyle(valgt).color).toBe("rgb(255, 255, 255)")
-    expect(getComputedStyle(annet).backgroundColor).toBe("rgb(255, 255, 255)")
+    expect(getComputedStyle(valgt).backgroundColor).toBe(
+      farge("--fs-color-accent-fill"),
+    )
+    expect(getComputedStyle(valgt).color).toBe(
+      farge("--fs-color-accent-content"),
+    )
+    expect(getComputedStyle(annet).backgroundColor).toBe(
+      farge("--fs-color-neutral-canvas"),
+    )
     expect(getComputedStyle(annet).padding).toBe("8px 12px")
 
     await lukk(element)
@@ -274,13 +281,17 @@ describe('fs-select med data-picker="styled"', () => {
     // Overskriften kommer fra `label=`, og er ikke et element vi kan treffe.
     // Den arver fra gruppa, så det er gruppa som må ha verdiene.
     expect(getComputedStyle(gruppe).fontSize).toBe("14px")
-    expect(getComputedStyle(gruppe).color).toBe("rgb(117, 117, 117)")
+    expect(getComputedStyle(gruppe).color).toBe(
+      farge("--fs-color-neutral-text-subtle"),
+    )
     expect(getComputedStyle(gruppe).textIndent).toBe("12px")
 
     // Og valgene inni må stå igjen som valgene utenfor. `oslo` er det valgte,
     // så `bergen` viser den vanlige teksten.
     expect(getComputedStyle(iGruppe).fontSize).toBe("16px")
-    expect(getComputedStyle(iGruppe).color).toBe("rgb(26, 26, 26)")
+    expect(getComputedStyle(iGruppe).color).toBe(
+      farge("--fs-color-neutral-text-strong"),
+    )
     expect(getComputedStyle(iGruppe).textIndent).toBe("0px")
     expect(iGruppe.getBoundingClientRect().width).toBe(
       utenfor.getBoundingClientRect().width,
@@ -347,7 +358,7 @@ describe("fs-select med lista i siden, tilgjengelighet", () => {
       const bakgrunn = bak.includes("rgba(0, 0, 0, 0)") ? flate : rgb(bak)
 
       expect(
-        kontrast(rgb(getComputedStyle(del).color), bakgrunn),
+        kontrastForhold(rgb(getComputedStyle(del).color), bakgrunn),
         navn,
       ).toBeGreaterThanOrEqual(4.5)
     }
@@ -355,3 +366,13 @@ describe("fs-select med lista i siden, tilgjengelighet", () => {
     await lukk(element)
   })
 })
+
+/** Kontrasten mellom to utregnede farger, som `rgb(r, g, b)`. */
+function kontrastForhold(
+  a: [number, number, number],
+  b: [number, number, number],
+): number {
+  const hex = (f: [number, number, number]) =>
+    `#${f.map((v) => v.toString(16).padStart(2, "0")).join("")}`
+  return contrastRatio(parseHex(hex(a)), parseHex(hex(b)))
+}

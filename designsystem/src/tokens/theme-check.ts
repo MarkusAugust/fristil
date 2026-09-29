@@ -10,15 +10,13 @@ import { buildMatrix, FRISTIL_BRANDS, roleToCss, tokenName } from "./matrix.js"
 /**
  * Kontrollerer et tema en konsument har skrevet selv.
  *
- * Generatoren holder løftene av konstruksjon. Skriver noen inn sine egne
- * verdier, er løftene deres å holde, og da skylder vi dem et svar på hvilken
- * celle som ryker og hvorfor. Uten dette er «du kan overstyre hva som helst»
- * en felle.
+ * Generatoren holder løftene av konstruksjon. Skriver noen inn egne verdier,
+ * er løftene deres å holde, og da skylder vi dem et svar på hvilken celle som
+ * ryker. Uten dette er «du kan overstyre hva som helst» en felle.
  *
- * Fila leses som tekst og ikke som CSS. Det holder, fordi det eneste som betyr
- * noe er hvilke `--fs-color-*` som står i hvilken blokk, og en verdi som ikke
- * er en heksfarge kan vi uansett ikke regne på. En verdi vi ikke forstår
- * meldes som nettopp det, framfor å bli hoppet over i stillhet.
+ * Fila leses som tekst. Det eneste som betyr noe er hvilke `--fs-color-*` som
+ * står i hvilken blokk, og en verdi vi ikke kan regne på meldes som nettopp
+ * det framfor å hoppes over.
  */
 
 export type ParsedBlock = {
@@ -30,34 +28,20 @@ export type ParsedBlock = {
   declarations: Record<string, string>
 }
 
-/*
- * Bare det `parseHex` faktisk kan lese.
- *
- * Porten godtok en gang `#rrggbbaa` også, og da kastet `parseHex` lenger inne
- * og hele kommandoen døde med stakkspor. En verdi vi ikke kan regne på skal
- * meldes, ikke slippes videre.
- */
+// Bare det `parseHex` kan lese. Slipper porten gjennom `#rrggbbaa`, kaster
+// den lenger inne og hele kommandoen dør med stakkspor.
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
 
 /**
- * Deler CSS-teksten i blokker, med klammedybde.
+ * Deler CSS-teksten i blokker, med en ramme per nivå.
  *
- * `@media`-regler nøster, så en teller er nødvendig: uten den ville
- * deklarasjonene i en mørk blokk inne i en `@media` blitt lest som om de sto i
- * `:root`, og temaet ville blitt kontrollert mot feil utseende.
+ * Hver ramme holder sin egen tekst, ikke bare selektoren. Uten det ble alt som
+ * sto før en nøstet regel lest som en del av selektoren, og deklarasjonen
+ * forsvant uten et ord.
  */
 export function parseBlocks(css: string): ParsedBlock[] {
   const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "")
   const blocks: ParsedBlock[] = []
-  /*
-   * Hver ramme holder sin egen tekst, ikke bare selektoren.
-   *
-   * Første utgave nullstilte bufferet ved `{`, så alt som sto før en nøstet
-   * regel ble lest som en del av selektoren. `:root { --fs-color-danger-text:
-   * #ff9999; &:hover { … } }` ga da null problemer: overstyringen forsvant, og
-   * kommandoen skrev «Temaet holder hvert løfte». Nesting og en `@media` inni
-   * `:root` er begge vanlige måter å skrive dette på.
-   */
   const stack: { selector: string; text: string }[] = []
   let buffer = ""
 
@@ -108,21 +92,9 @@ function readDeclarations(text: string): Record<string, string> {
   return out
 }
 
-/**
- * Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
- *
- * `color-scheme` er det temaet selv sier, og det er det riktigste svaret.
- * Uten den er `prefers-color-scheme: dark` og en selektor som nevner `dark`
- * de to formene i bruk, og begge er utvetydige nok til å leses.
- */
+/** Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers. */
 function readAppearance(selector: string, body: string): Appearance {
-  /*
-   * Siste deklarasjon vinner, som i kaskaden.
-   *
-   * `match` ga den første, og da leste vi `light` av
-   * `color-scheme: light; color-scheme: dark`, altså det motsatte av hva
-   * nettleseren gjør.
-   */
+  // Siste deklarasjon vinner, som i kaskaden.
   const found = [...body.matchAll(/(?:^|[\s;{])color-scheme\s*:([^;}]*)/gi)]
   const declared = found[found.length - 1]
   if (declared) {
@@ -165,19 +137,9 @@ const LAYER_NAMES = ["canvas", "raised"]
 /**
  * Deler `--fs-color-min-merkevare-text` i familie og rolle.
  *
- * Rollen leses som **endelsen**, ikke familien som begynnelsen. Med det
- * motsatte falt et familienavn med bindestrek utenfor uten et ord: sju
- * gyldige roller på `--fs-color-min-merkevare-*` ga null problemer og
- * «Temaet holder hvert løfte».
- *
- * Lista er sortert med lengste navn først. Det avgjør ingenting i dag, siden
- * ingen rollenavn er endelse av et annet, men det bestemmer rekkefølgen
- * rollene listes i feilmeldingen, og det holder oppslaget riktig hvis en rolle
- * en gang skulle ende på navnet til en annen.
- *
- * `null` som rolle betyr et kjent lag, altså `canvas` eller `raised`. De
- * hører bare til den nøytrale familien, så `--fs-color-danger-canvas` er
- * ukjent og skal meldes.
+ * Rollen leses som **endelsen**. Med familien som begynnelsen falt et
+ * familienavn med bindestrek utenfor uten et ord. `null` som rolle betyr et
+ * kjent lag, og de hører bare til den nøytrale familien.
  */
 function splitToken(
   token: string,
@@ -238,13 +200,8 @@ export function inspectTheme(css: string): ThemeReport {
   let checkedPromises = 0
   let understood = 0
 
-  /*
-   * En blokk som ikke er lukket forsvinner uten et ord.
-   *
-   * En avkuttet fil, eller et `{` som har forskjøvet dybden, gjorde at hele
-   * den mørke blokka falt ut og fila ble meldt grønn. Klammene telles derfor
-   * for seg, framfor å stole på at parsingen sier fra.
-   */
+  // Klammene telles for seg: en ulukket blokk blir ikke lest, og uten dette
+  // forsvant hele blokka uten et ord.
   const withoutCss = css.replace(/\/\*[\s\S]*?\*\//g, "")
   const opened = (withoutCss.match(/{/g) ?? []).length
   const closed = (withoutCss.match(/}/g) ?? []).length
@@ -255,15 +212,8 @@ export function inspectTheme(css: string): ThemeReport {
     })
 
   if (blocks.length === 0) {
-    /*
-     * Klammemeldingen skal med her også.
-     *
-     * En fil som bare er avkuttet, `:root {` uten `}`, gir null blokker. Bygde
-     * vi da en ny liste, forsvant meldingen om at en blokk ikke er lukket, og
-     * konsumenten satt igjen med «er dette et Fristil-tema?» alene. Den står
-     * fortsatt, og den er riktig nok, men den sier ikke hvorfor fila ikke ble
-     * lest.
-     */
+    // Klammemeldingen skal med her også, ellers står konsumenten igjen med
+    // «er dette et Fristil-tema?» om en fil som bare er avkuttet.
     problems.push({
       selector: "(hele fila)",
       message:
@@ -307,12 +257,8 @@ export function inspectTheme(css: string): ThemeReport {
       families[split.family][split.role] = values[name]
     }
 
-    /*
-     * En familie konsumenten har funnet på selv fylles ikke av standarden, og
-     * kan derfor ha hull. Den meldes som ufullstendig framfor å bli kontrollert
-     * med tomme celler: uten dette kastet sjekken på `undefined`, og
-     * konsumenten fikk en stakksporing i stedet for et svar.
-     */
+    // En familie konsumenten fant på selv fylles ikke av standarden og kan ha
+    // hull. Den meldes som ufullstendig framfor å kastes på `undefined`.
     const allRoles = Object.keys(ROLES) as Role[]
     for (const [name, family] of Object.entries(families)) {
       const missing = allRoles.filter((r) => !family[r])

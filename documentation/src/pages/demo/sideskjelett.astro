@@ -139,8 +139,8 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			 */
 			body {
 				margin: 0;
-				background: var(--semantic-page-background);
-				color: var(--semantic-page-foreground);
+				background: var(--fs-color-neutral-canvas);
+				color: var(--fs-color-neutral-text-strong);
 				font-family:
 					system-ui,
 					-apple-system,
@@ -153,7 +153,7 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 				/* Fristil har ingen CSS-token for spaltebredde. Den er appens valg. */
 				max-inline-size: 60rem;
 				margin-inline: auto;
-				padding-inline: var(--size-4);
+				padding-inline: var(--fs-spacing-4);
 			}
 
 			/*
@@ -162,8 +162,8 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			 * @layer fristil: reglene her vinner uten !important.
 			 */
 			.skjelett-topp {
-				background: var(--semantic-interactive-main);
-				color: var(--semantic-interactive-contrast);
+				background: var(--fs-color-accent-fill);
+				color: var(--fs-color-accent-content);
 			}
 
 			.skjelett-toppinnhold {
@@ -171,15 +171,15 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 				flex-wrap: wrap;
 				align-items: center;
 				justify-content: space-between;
-				gap: var(--size-4);
-				padding-block: var(--size-4);
+				gap: var(--fs-spacing-4);
+				padding-block: var(--fs-spacing-4);
 			}
 
 			/* Fargen settes, ikke arves: menyen står i en `.fs-list`, som selv
 			   setter tekstfargen, og `inherit` hadde hentet den derfra og gitt
 			   mørk tekst på den blå flaten. */
 			.skjelett-topp a {
-				color: var(--semantic-interactive-contrast);
+				color: var(--fs-color-accent-content);
 				text-decoration: none;
 			}
 
@@ -188,7 +188,7 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			}
 
 			.skjelett-topp a:focus-visible {
-				outline: 2px solid var(--semantic-interactive-contrast);
+				outline: 2px solid var(--fs-color-accent-content);
 				outline-offset: 3px;
 			}
 
@@ -201,7 +201,7 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			.skjelett-meny {
 				display: flex;
 				flex-wrap: wrap;
-				gap: var(--size-5);
+				gap: var(--fs-spacing-5);
 			}
 
 			.skjelett-meny li + li {
@@ -216,31 +216,31 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			}
 
 			.skjelett-sti {
-				padding-block: var(--size-4) 0;
+				padding-block: var(--fs-spacing-4) 0;
 			}
 
 			.skjelett-hoved {
 				display: flex;
 				flex-direction: column;
-				gap: var(--size-5);
-				padding-block: var(--size-5) var(--size-7);
+				gap: var(--fs-spacing-5);
+				padding-block: var(--fs-spacing-5) var(--fs-spacing-7);
 			}
 
 			/* Overskriften og ingressen hører sammen, og skal stå tettere på
 			   hverandre enn på seksjonene under. */
 			.skjelett-hoved > h1 {
-				margin-block-end: calc(var(--size-5) * -1 + var(--size-2));
+				margin-block-end: calc(var(--fs-spacing-5) * -1 + var(--fs-spacing-2));
 			}
 
 			.skjelett-hoved section {
 				display: flex;
 				flex-direction: column;
-				gap: var(--size-3);
+				gap: var(--fs-spacing-3);
 			}
 
 			.skjelett-saker {
 				display: grid;
-				gap: var(--size-3);
+				gap: var(--fs-spacing-3);
 			}
 
 			.skjelett-saker li + li {
@@ -248,10 +248,10 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			}
 
 			.skjelett-bunn {
-				margin-block-start: var(--size-6);
-				padding-block: var(--size-5);
-				background: var(--semantic-neutral-background);
-				border-block-start: 1px solid var(--semantic-divider-30);
+				margin-block-start: var(--fs-spacing-6);
+				padding-block: var(--fs-spacing-5);
+				background: var(--fs-color-neutral-surface);
+				border-block-start: 1px solid var(--fs-color-neutral-border-subtle);
 			}
 
 			/* Fokusmarkeringen på hovedinnholdet er til for hopplenken, og skal
@@ -261,7 +261,7 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			}
 
 			main:focus-visible {
-				outline: 2px solid var(--semantic-interactive-main);
+				outline: 2px solid var(--fs-color-accent-fill);
 				outline-offset: 4px;
 			}
 		</style>

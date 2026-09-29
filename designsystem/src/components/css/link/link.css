@@ -1,9 +1,9 @@
 @layer fristil {
   .fs-link {
-    color: var(--semantic-interactive-main);
+    color: var(--fs-color-accent-text);
     font-family: inherit;
     font-size: inherit;
-    line-height: var(--semantic-line-height-default);
+    line-height: var(--fs-line-height-default);
     text-decoration-line: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.14em;
@@ -14,21 +14,21 @@
   }
 
   .fs-link:hover {
-    color: var(--semantic-interactive-foreground);
+    color: var(--fs-color-accent-text-strong);
   }
 
   .fs-link:visited {
-    color: var(--semantic-interactive-visited);
+    color: var(--fs-color-visited-text);
   }
 
   .fs-link:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
-    border-radius: var(--size-0-5);
+    border-radius: var(--fs-spacing-0-5);
   }
 
   .fs-link[aria-disabled="true"] {
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
     text-decoration: none;
     cursor: not-allowed;
     pointer-events: none;

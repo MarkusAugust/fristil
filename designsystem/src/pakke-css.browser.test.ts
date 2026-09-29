@@ -46,7 +46,7 @@ function isBundle(source: string): boolean {
 /**
  * Teller verdiene i en kortform, uten å telle inni `var()` og `calc()`.
  *
- * `padding: var(--size-2) calc(var(--size-4) + var(--size-2))` er to verdier,
+ * `padding: var(--fs-spacing-2) calc(var(--fs-spacing-4) + var(--fs-spacing-2))` er to verdier,
  * ikke fem.
  */
 function antallVerdier(verdi: string): number {
@@ -134,7 +134,7 @@ describe("stilarkene pakken sender ut", () => {
   /*
    * Fire verdier i `padding`, `margin` eller `inset` er over, høyre, under,
    * venstre. To av dem er fysiske sider, og de snur ikke med språket.
-   * `.fs-select` hadde `padding: … calc(…) … var(--size-3)` for å holde av
+   * `.fs-select` hadde `padding: … calc(…) … var(--fs-spacing-3)` for å holde av
    * plass til pila si, og i RTL ble plassen liggende på feil side mens
    * teksten la seg oppå pila. Tre verdier er trygt: da er den midterste
    * begge de fysiske sidene, og lik på begge.
@@ -152,7 +152,7 @@ describe("stilarkene pakken sender ut", () => {
   })
 
   /*
-   * Fokusringen skal komme fra `--semantic-focus-ring`, ikke skrives ut.
+   * Fokusringen skal komme fra `--fs-focus-ring`, ikke skrives ut.
    *
    * Den sto med bredde og farge i tjue regler fordelt på atten stilark.
    * Selektorene er forskjellige i hver komponent, så det lot seg ikke samle
@@ -179,15 +179,23 @@ describe("stilarkene pakken sender ut", () => {
   })
 })
 
+/**
+ * `tokens.css` som tekst, kilden både tokennavnene og slagene leses av.
+ *
+ * Finner globben den ikke, kastes det her. Et `?? ""` sto her, og da ble
+ * `TOKENSLAG` tom, `erToken()` alltid usann, og hvert `--fs-*`-navn regnet som
+ * en komponentvariabel. Sjekken var da tilbake i nøyaktig tilstanden den ble
+ * skrevet for å komme ut av, uten et ord.
+ */
+const tokenkilde = Object.entries(stilark).find(([navn]) =>
+  navn.endsWith("/tokens/tokens.css"),
+)?.[1]
+
+if (!tokenkilde) throw new Error("Fant ikke tokens.css blant stilarkene")
+
 /** Alt som faktisk er definert i `tokens.css`, begge temaer. */
 const definerteTokens = new Set(
-  [
-    ...(
-      Object.entries(stilark).find(([navn]) =>
-        navn.endsWith("/tokens/tokens.css"),
-      )?.[1] ?? ""
-    ).matchAll(/^\s*(--[\w-]+)\s*:/gm),
-  ].map((treff) => treff[1]),
+  [...tokenkilde.matchAll(/^\s*(--[\w-]+)\s*:/gm)].map((treff) => treff[1]),
 )
 
 describe("variablene komponentene leser", () => {
@@ -219,10 +227,19 @@ describe("variablene komponentene leser", () => {
      * pekte på komponenten framfor på lista. Med tokenfila som fasit kan et
      * nytt token tas i bruk uten at en test må endres, og et navn som ikke
      * finnes blir fortsatt fanget.
+     *
+     * Unntaket er komponentvariabler, som er konsumentens å sette og med
+     * vilje står utenfor `tokens.css`. Unntaket sto en gang på hele
+     * `--fs-`-prefikset, og den dagen tokenene byttet navn fra `--semantic-*`
+     * til `--fs-color-*` sluttet testen i stillhet å se på tokens i det hele
+     * tatt. `--fs-color-accent-fill-hover`, som ikke finnes, sto da i
+     * `button.css` og gjorde primærknappen usynlig ved hover uten at noen av
+     * vaktpostene sa fra. Unntaket er derfor `erToken`, ikke prefikset.
      */
-    const ukjente = lest.filter(
-      (name) => !name.startsWith("--fs-") && !definerteTokens.has(name),
-    )
+    const ukjente = lest.filter((navn) => {
+      if (navn.startsWith("--fs-") && !erToken(navn)) return false
+      return !definerteTokens.has(navn)
+    })
     expect([...new Set(ukjente)]).toEqual([])
   })
 })
@@ -242,15 +259,50 @@ describe("reservene komponentene har", () => {
      * Testen over sier at hvert navn finnes. Denne sier at det står noe bak
      * kommaet. De to sto en gang som samme sjekk skrevet to ganger.
      */
+    /*
+     * Tokens trenger ingen reserve, komponentvariabler gjør.
+     *
+     * Et token er alltid satt av `tokens.css`, mens `--fs-button-padding` er
+     * konsumentens å sette og står tom til de gjør det. Slaget i navnet
+     * skiller dem: `--fs-color-*` er et token, `--fs-<komponent>-*` er ikke.
+     */
     const uten = [
       ...onlyRules(source).matchAll(/var\(\s*(--fs-[\w-]+)\s*([,)])/g),
     ]
       .filter((treff) => treff[2] === ")")
       .map((treff) => treff[1])
+      .filter((navn) => !erToken(navn))
 
     expect([...new Set(uten)]).toEqual([])
   })
 })
+
+/**
+ * Slagene et token kan ha. Alt annet er en komponentvariabel.
+ *
+ * Lista leses ut av `tokens.css` framfor å stå skrevet her. Sto den skrevet,
+ * ville et nytt slag sluppet gjennom som komponentvariabler, og et navn som
+ * ikke finnes ville aldri blitt fanget: det er nøyaktig slik
+ * `--fs-color-accent-fill-hover` kom inn.
+ *
+ * Slaget er første ledd etter `--fs-`, så `--fs-line-height-default` gir
+ * `line`. Grovere enn navnet, og med vilje: en komponentvariabel som het
+ * `--fs-line-noe` ville da bli krevd i `tokens.css`, og det er riktig, for
+ * navnet ville lest som et token.
+ */
+const TOKENSLAG = [
+  ...new Set(
+    [...tokenkilde.matchAll(/^\s*--fs-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm)].map(
+      (treff) => treff[1],
+    ),
+  ),
+]
+
+function erToken(navn: string): boolean {
+  return TOKENSLAG.some(
+    (slag) => navn === `--fs-${slag}` || navn.startsWith(`--fs-${slag}-`),
+  )
+}
 
 describe("Tailwind-temaet", () => {
   const tema = Object.entries(stilark).find(([navn]) =>
@@ -267,7 +319,7 @@ describe("Tailwind-temaet", () => {
     ].map((treff) => treff[1])
 
     // `--spacing` er unntaket, og med vilje: det er Tailwinds avstandsenhet,
-    // og hele poenget er at `p-4` skal bli `--size-4`.
+    // og hele poenget er at `p-4` skal bli `--fs-spacing-4`.
     const utenfor = definert.filter(
       (navn) =>
         navn !== "--spacing" &&
@@ -285,11 +337,7 @@ describe("Tailwind-temaet", () => {
     )
 
     const fremmede = lest.filter(
-      (navn) =>
-        !navn.startsWith("--semantic-") &&
-        !navn.startsWith("--palette-") &&
-        !navn.startsWith("--size") &&
-        !navn.startsWith("--font-size"),
+      (navn) => !erToken(navn) && !navn.startsWith("--font-"),
     )
 
     expect([...new Set(fremmede)]).toEqual([])

@@ -6,74 +6,74 @@
     appearance: none;
     flex: none;
     display: inline-block;
-    inline-size: var(--fs-checkbox-size, var(--size-5));
-    block-size: var(--fs-checkbox-size, var(--size-5));
+    inline-size: var(--fs-checkbox-size, var(--fs-spacing-5));
+    block-size: var(--fs-checkbox-size, var(--fs-spacing-5));
     margin: 0;
-    background-color: var(--semantic-page-background);
+    background-color: var(--fs-color-neutral-canvas);
     background-position: center;
     background-repeat: no-repeat;
     background-size: 80%;
-    border: 1px solid var(--semantic-field-border);
-    border-radius: var(--fs-checkbox-radius, var(--size-1));
+    border: 1px solid var(--fs-color-neutral-border);
+    border-radius: var(--fs-checkbox-radius, var(--fs-spacing-1));
     cursor: pointer;
   }
 
   .fs-checkbox:hover:not(:disabled) {
-    border-color: var(--semantic-field-border-hover);
+    border-color: var(--fs-color-neutral-border-strong);
   }
 
   .fs-checkbox:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 
   .fs-checkbox:checked,
   .fs-checkbox:indeterminate {
-    background-color: var(--semantic-interactive-main);
-    border-color: var(--semantic-interactive-main);
+    background-color: var(--fs-color-accent-fill);
+    border-color: var(--fs-color-accent-fill);
   }
 
   /* Haken er et token og ikke et bilde i denne fila, fordi en data-URL ikke
      kan lese en CSS-variabel. Streken er malt inn i bildet, og må derfor snu
      med temaet der de andre fargene snur. */
   .fs-checkbox:checked {
-    background-image: var(--semantic-icon-check);
+    background-image: var(--fs-icon-check);
   }
 
   .fs-checkbox:indeterminate {
-    background-image: var(--semantic-icon-dash);
+    background-image: var(--fs-icon-dash);
   }
 
   .fs-checkbox:disabled {
-    background-color: var(--semantic-disabled-background);
-    border-color: var(--semantic-disabled-background);
+    background-color: var(--fs-color-disabled-surface);
+    border-color: var(--fs-color-disabled-surface);
     cursor: not-allowed;
   }
 
   .fs-checkbox:disabled:checked,
   .fs-checkbox:disabled:indeterminate {
-    background-color: var(--semantic-disabled-foreground);
-    border-color: var(--semantic-disabled-foreground);
+    background-color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-text);
   }
 
   .fs-checkbox[data-state="invalid"] {
-    border-color: var(--semantic-danger-foreground);
+    border-color: var(--fs-color-danger-text);
   }
 
   .fs-checkbox[data-state="invalid"]:focus-visible {
-    outline-color: var(--semantic-danger-foreground);
+    outline-color: var(--fs-color-danger-text);
   }
 
   .fs-checkbox[data-state="success"] {
-    border-color: var(--semantic-success-foreground);
+    border-color: var(--fs-color-success-text);
   }
 
   /* Boksen og teksten på én linje, med teksten på plass ved flere linjer. */
   .fs-checkbox-row {
     display: flex;
     align-items: flex-start;
-    gap: var(--size-2);
-    line-height: var(--semantic-line-height-default);
+    gap: var(--fs-spacing-2);
+    line-height: var(--fs-line-height-default);
   }
 
   /*

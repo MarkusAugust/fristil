@@ -3,11 +3,8 @@
     margin: 0;
     font-family: inherit;
     font-weight: var(--fs-heading-font-weight, var(--font-weight-bold));
-    line-height: var(
-      --fs-heading-line-height,
-      var(--semantic-line-height-heading)
-    );
-    color: var(--semantic-page-foreground);
+    line-height: var(--fs-heading-line-height, var(--fs-line-height-heading));
+    color: var(--fs-color-neutral-text-strong);
     text-wrap: balance;
     font-size: var(--font-size-xl);
   }

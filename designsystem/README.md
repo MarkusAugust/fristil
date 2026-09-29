@@ -87,7 +87,7 @@ Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fri
 Kommandolinja lager et fullt tema av merkefargene dine, med kontrastkravene regnet ut i OKLCH:
 
 ```bash
-npx @fristil/designsystem tema --interaktiv=#7c3aed --fare=#b3261e \
+npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
   --suksess=#2b6940 --advarsel=#8a5a00 --noytral=#1a1a1a --ut=tema.css
 ```
 
@@ -105,7 +105,7 @@ All CSS ligger i `@layer fristil`, så dine egne regler vinner uten `!important`
 
 ```css
 .fs-button {
-  --fs-button-padding: var(--size-3) var(--size-6);
+  --fs-button-padding: var(--fs-spacing-3) var(--fs-spacing-6);
 }
 ```
 

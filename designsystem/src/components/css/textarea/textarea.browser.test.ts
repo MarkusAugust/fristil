@@ -6,6 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
 import textareaCss from "./textarea.css?inline"
 
@@ -35,31 +36,31 @@ describe("fs-textarea", () => {
   it("applies default styles", () => {
     const textarea = css("default")
 
-    expect(textarea.backgroundColor).toBe("rgb(255, 255, 255)")
-    expect(textarea.borderTopColor).toBe("rgb(117, 117, 117)")
-    expect(textarea.color).toBe("rgb(26, 26, 26)")
+    expect(textarea.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
+    expect(textarea.borderTopColor).toBe(farge("--fs-color-neutral-border"))
+    expect(textarea.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const textarea = css("invalid")
 
-    expect(textarea.backgroundColor).toBe("rgb(247, 226, 232)")
-    expect(textarea.borderTopColor).toBe("rgb(168, 46, 57)")
+    expect(textarea.backgroundColor).toBe(farge("--fs-color-danger-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--fs-color-danger-text"))
   })
 
   it("applies success styles", () => {
     const textarea = css("success")
 
-    expect(textarea.backgroundColor).toBe("rgb(227, 245, 234)")
-    expect(textarea.borderTopColor).toBe("rgb(49, 111, 42)")
+    expect(textarea.backgroundColor).toBe(farge("--fs-color-success-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--fs-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const textarea = css("disabled")
 
-    expect(textarea.backgroundColor).toBe("rgb(229, 229, 229)")
-    expect(textarea.borderTopColor).toBe("rgb(229, 229, 229)")
-    expect(textarea.color).toBe("rgb(117, 117, 117)")
+    expect(textarea.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
+    expect(textarea.color).toBe(farge("--fs-color-neutral-border"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(textarea.pointerEvents).toBe("auto")
   })

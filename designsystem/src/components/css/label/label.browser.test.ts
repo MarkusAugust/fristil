@@ -1,12 +1,12 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { farge } from "../../../testing/farge"
 
 import "../../../tokens/tokens.css"
 import "./label.css"
@@ -34,30 +34,30 @@ describe("fs-label", () => {
 
   it("default: correct color and weight", () => {
     const label = css("default")
-    expect(label.color).toBe("rgb(26, 26, 26)")
+    expect(label.color).toBe(farge("--fs-color-neutral-text-strong"))
     expect(label.fontWeight).toBe("600")
   })
 
   it("disabled: muted color", () => {
     const label = css("disabled")
-    expect(label.color).toBe("rgb(117, 117, 117)")
+    expect(label.color).toBe(farge("--fs-color-neutral-text-subtle"))
   })
 
   it("required symbol: ::after has danger color", () => {
     const after = css("required-symbol", "::after")
-    expect(after.color).toBe("rgb(168, 46, 57)")
+    expect(after.color).toBe(farge("--fs-color-danger-text"))
     expect(after.content).toBe('" *"')
   })
 
   it("required text: ::after shows (påkrevd) in danger color", () => {
     const after = css("required-text", "::after")
-    expect(after.color).toBe("rgb(168, 46, 57)")
+    expect(after.color).toBe(farge("--fs-color-danger-text"))
     expect(after.content).toBe('" (påkrevd)"')
   })
 
   it("optional: ::after has muted color", () => {
     const after = css("optional", "::after")
-    expect(after.color).toBe("rgb(117, 117, 117)")
+    expect(after.color).toBe(farge("--fs-color-disabled-text"))
   })
 })
 

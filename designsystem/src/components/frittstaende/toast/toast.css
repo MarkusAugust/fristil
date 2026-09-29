@@ -3,13 +3,16 @@
     /* Beholderen ligger fast i hjørnet og slipper klikk gjennom, så den ikke
        stenger for knapper under seg når den er tom. */
     position: fixed;
-    inset-block-end: var(--fs-toast-space, var(--size-4));
-    inset-inline-end: var(--fs-toast-space, var(--size-4));
+    inset-block-end: var(--fs-toast-space, var(--fs-spacing-4));
+    inset-inline-end: var(--fs-toast-space, var(--fs-spacing-4));
     z-index: var(--fs-toast-layer, 60);
     display: flex;
     flex-direction: column;
-    gap: var(--size-2);
-    inline-size: var(--fs-toast-width, min(24rem, calc(100vw - var(--size-8))));
+    gap: var(--fs-spacing-2);
+    inline-size: var(
+      --fs-toast-width,
+      min(24rem, calc(100vw - var(--fs-spacing-8)))
+    );
     pointer-events: none;
   }
 
@@ -18,54 +21,54 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--size-3);
-    padding: var(--fs-toast-padding, var(--size-3) var(--size-4));
+    gap: var(--fs-spacing-3);
+    padding: var(--fs-toast-padding, var(--fs-spacing-3) var(--fs-spacing-4));
     font-family: inherit;
     font-size: var(--font-size-m);
-    line-height: var(--semantic-line-height-default);
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-page-background);
-    border: 1px solid var(--semantic-divider-30);
-    border-inline-start: var(--size-1) solid var(--semantic-neutral-foreground);
-    border-radius: var(--fs-toast-radius, var(--size-1));
-    box-shadow: var(--semantic-shadow-overlay);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-canvas);
+    border: 1px solid var(--fs-color-neutral-border-subtle);
+    border-inline-start: var(--fs-spacing-1) solid var(--fs-color-neutral-text);
+    border-radius: var(--fs-toast-radius, var(--fs-spacing-1));
+    box-shadow: var(--fs-shadow-overlay);
     pointer-events: auto;
   }
 
   .fs-toast[data-color="success"] {
-    border-inline-start-color: var(--semantic-success-foreground);
+    border-inline-start-color: var(--fs-color-success-text);
   }
 
   .fs-toast[data-color="warning"] {
-    border-inline-start-color: var(--semantic-warning-foreground);
+    border-inline-start-color: var(--fs-color-warning-text);
   }
 
   .fs-toast[data-color="danger"] {
-    border-inline-start-color: var(--semantic-danger-foreground);
+    border-inline-start-color: var(--fs-color-danger-text);
   }
 
   .fs-toast__close {
     flex: none;
-    min-inline-size: var(--size-6);
-    min-block-size: var(--size-6);
+    min-inline-size: var(--fs-spacing-6);
+    min-block-size: var(--fs-spacing-6);
     padding: 0;
     font-family: inherit;
     font-size: var(--font-size-l);
     line-height: 1;
-    color: var(--semantic-muted-foreground);
+    color: var(--fs-color-neutral-text-subtle);
     background: transparent;
     border: 0;
-    border-radius: var(--size-1);
+    border-radius: var(--fs-spacing-1);
     cursor: pointer;
   }
 
   .fs-toast__close:hover {
-    color: var(--semantic-page-foreground);
-    background: var(--semantic-neutral-background);
+    color: var(--fs-color-neutral-text-strong);
+    background: var(--fs-color-neutral-surface);
   }
 
   .fs-toast__close:focus-visible {
-    outline: var(--semantic-focus-ring);
+    outline: var(--fs-focus-ring);
     outline-offset: 2px;
   }
 }
