@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest"
 
 import { farge, kontrast, PAR } from "../testing/kontrast"
-import { adjustForContrast, buildScale, parseHex, rgbToOklch } from "./color"
+import {
+  adjustForContrast,
+  buildScale,
+  CHROMA_CEILING,
+  parseHex,
+  rgbToOklch,
+} from "./color"
 import { buildTheme, type ThemeInput } from "./theme"
 import { cssTokens } from "./tokens"
 
@@ -50,8 +56,8 @@ const MERKER = [
   {
     /*
      * Neon med taket hevet, altså det verste tilfellet for kontrastkravet.
-     * Fargene her ligger godt over standardtaket på 0,16: `#39ff14` på 0,286
-     * og `#ff2d6f` på 0,240. Hele listen av par kjøres mot dette merket som
+     * `#39ff14` ligger på 0,286 og kappes av standardtaket, mens `#ff2d6f` på
+     * 0,2399 så vidt slipper under. Hele listen av par kjøres mot dette merket som
      * mot de tre andre, og det er påstanden om at et hevet tak ikke svekker
      * garantien. Taket styrer metning; kontrasten styres av trinnene og av
      * justeringspasset, som måler hvert par etterpå.
@@ -170,26 +176,32 @@ describe("generatoren", () => {
     expect(flyttet?.after).toBeGreaterThanOrEqual(4.5)
   })
 
-  it("slipper mer metning gjennom når taket heves", () => {
+  it("bruker taket i begge retninger", () => {
     /*
      * Uten denne kunne `maxChroma` blitt lest inn og aldri brukt, og alle de
      * andre testene ville meldt grønt: et tema bygget med standardtaket holder
-     * jo kravene. Neongrønn ligger på 0,286 i OKLCH og kappes til 0,16.
+     * jo kravene.
+     *
+     * Senkingen er den skarpe halvdelen. For grønt ligger trinn 50 og nedover
+     * ved standardtaket alt på det sRGB kan vise ved den lysheten, så et hevet
+     * tak rører dem ikke. En test som bare hevet ville derfor målt et tall som
+     * ikke kan bevege seg for denne kuløren.
      */
     const standard = buildScale("#39ff14")
-    const hevet = buildScale("#39ff14", 0.32)
+    const senket = buildScale("#39ff14", 0.08)
+    const hevet = buildScale("#39ff14", CHROMA_CEILING)
     const metning = (hex: string) => rgbToOklch(parseHex(hex)).c
 
-    expect(metning(hevet[50])).toBeGreaterThan(metning(standard[50]))
-    expect(metning(hevet[70])).toBeGreaterThan(metning(standard[70]))
+    expect(metning(senket[50])).toBeLessThan(metning(standard[50]))
+    expect(metning(senket[70])).toBeLessThan(metning(standard[70]))
 
     /*
-     * Endene rører seg mindre, og det er med vilje. De lyse trinnene holdes
-     * nede av `CHROMA_FACTOR`, fordi lyse trinn ser skitne ut med mye metning,
-     * og det mørkeste av hva sRGB kan vise ved den lysheten. Står ikke dette
-     * her, ser en senere endring av faktorene ut som en forbedring.
+     * Hevingen virker bare på de lyse trinnene, og de holdes samtidig nede av
+     * `CHROMA_FACTOR`, fordi lyse trinn ser skitne ut med mye metning. Står
+     * ikke dette her, ser en senere endring av faktorene ut som en forbedring.
      */
-    expect(metning(hevet[50]) - metning(standard[50])).toBeGreaterThan(
+    expect(metning(hevet[30])).toBeGreaterThan(metning(standard[30]))
+    expect(metning(hevet[30]) - metning(standard[30])).toBeGreaterThan(
       metning(hevet[5]) - metning(standard[5]),
     )
   })

@@ -321,7 +321,14 @@ export function buildTheme(input: ThemeInput): Theme {
       flate: number
       tekst: number
       statusFlate: number
+      /**
+       * Statusfargen som tekst. Trinn 80 finnes nettopp til dette: 70 er for
+       * lys til å holde 4,5:1 på lys flate, og 100 er mørkere enn en
+       * statusfarge skal være. I mørkt tema er teksten den lyse enden.
+       */
       statusTekst: number
+      /** Fylt flate på danger-knappen når den holdes over. */
+      statusMain: number
       noytralFlate: number
       noytralTekst: number
       interaktiv: number
@@ -427,7 +434,7 @@ export function buildTheme(input: ThemeInput): Theme {
     ])
 
     // Den fylte sletteknappen, med lys tekst oppå.
-    sett("--semantic-danger-main", palett.danger[trinn.interaktiv], [
+    sett("--semantic-danger-main", palett.danger[trinn.statusMain], [
       kontrastfarge,
     ])
 
@@ -441,7 +448,8 @@ export function buildTheme(input: ThemeInput): Theme {
     flate: 0,
     tekst: 100,
     statusFlate: 10,
-    statusTekst: 100,
+    statusTekst: 80,
+    statusMain: 80,
     noytralFlate: 10,
     noytralTekst: 70,
     interaktiv: 70,
@@ -458,6 +466,7 @@ export function buildTheme(input: ThemeInput): Theme {
     tekst: 5,
     statusFlate: 100,
     statusTekst: 30,
+    statusMain: 30,
     noytralFlate: 70,
     noytralTekst: 10,
     interaktiv: 30,

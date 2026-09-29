@@ -51,7 +51,24 @@ egen overskrift «Brytende».
   som `danger-100`. Uten det lå trinn `80` og `100` 1,08:1 fra hverandre, altså
   to grønner ingen kan skille. Flaten på et suksessmerke og en grønn dialogtopp
   blir dermed mørkere i mørkt tema. Kontrasten går samtidig fra 4,59:1 til
-  6,29:1, og det var systemets svakeste par.
+  6,29:1, og det var systemets nest svakeste par. Det svakeste, besøkt lenke på
+  sideflaten i lyst tema, ligger urørt på 4,53:1.
+
+- **Generatoren bruker trinn `80` til statustekst,** slik Fristils egen palett
+  gjør. Den tok den fra trinn `100` og `--semantic-danger-main` fra `70`, så et
+  generert tema fikk mørkere og brunere statusfarger enn systemet det var laget
+  av, og trinn `80` lå ubrukt. Et rødt merke får nå `#bc0005` på 6,69:1 framfor
+  `#7c120d` på 10,77:1. Kontrasten kontrolleres som før, så begge holder
+  kravet; forskjellen er at temaet nå ligner det det er laget av.
+
+- **Standardtaket på metning er hevet fra 0,16 til 0,24.** Taket demper, det
+  verner ikke: et neontema kjørt gjennom hele kontrastlista holder kravet ved
+  0,16, 0,24 og 0,3225, og det svakeste paret ligger på 4,62:1 til 4,64:1 i alle
+  tre. Ved 0,16 mistet et neonmerke mye der det synes: trinn 30 er lenkefargen i
+  mørkt tema, og det lå på 0,099 mot 0,148 nå. Verdien er et skjønn og ikke et
+  punkt der noe mettes, siden hvor mye taket binder avhenger av kuløren.
+  Merkefarger under 0,24 merker ingenting, siden taket bare binder for farger
+  over seg.
 
 - **`--palette-dark-alpha-50` er borte.** Verdien står nå rett i
   `--semantic-overlay-backdrop`, som den alltid har gjort i mørkt tema. Den var
