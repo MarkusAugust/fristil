@@ -51,7 +51,7 @@ const forventet: [klasse: string, inneholder: string][] = [
   ["text-fs-mega", "var(--font-size-mega)"],
   ["max-w-fs-aside", "384px"],
   ["shadow-fs-overlay", "var(--semantic-shadow-overlay)"],
-  ["bg-fs-azure-70", "var(--palette-azure-70)"],
+  ["bg-fs-interactive-70", "var(--palette-interactive-70)"],
 ]
 
 const css = compiler.build(forventet.map(([klasse]) => klasse))

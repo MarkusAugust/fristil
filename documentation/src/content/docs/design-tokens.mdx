@@ -22,9 +22,11 @@ import "@fristil/designsystem/tokens.css"
 
 ## To lag med farger
 
-**Palett** (`--palette-{farge}-{trinn}`) er råverdiene. **Semantisk** (`--semantic-{sammenheng}-{rolle}`) peker på en palettfarge og sier hva den betyr.
+**Palett** (`--palette-{rolle}-{trinn}`) er råverdiene: seks skalaer, navngitt etter rollen de fyller. **Semantisk** (`--semantic-{sammenheng}-{rolle}`) velger ett trinn og sier hva det betyr.
 
-Bruk det semantiske laget. Da følger komponenten din med når paletten justeres.
+Hver semantisk farge peker på et palettrinn, så bytter du en hel skala, følger alt som bruker den med, i begge temaer. Sju verdier står utenfor, og alle av samme grunn: de er ikke farger fra en skala. `--semantic-overlay-backdrop` og `--semantic-shadow-overlay` er gjennomsiktig sort, og de fem `--semantic-icon-*` er bilder med streken malt inn. De snur med temaet, men de følger ikke paletten.
+
+Bruk det semantiske laget i din egen CSS. Da følger komponenten din med når paletten justeres.
 
 ### Semantiske farger
 
@@ -66,15 +68,19 @@ Er elementet slått av, bruk `disabled`. Kan brukeren lese eller trykke på det,
 
 ### Palett
 
-Seks skalaer: `burgundy`, `forest`, `ochre`, `denim`, `azure` og `graphite`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse. `azure` mangler trinn `5` og `50`, og `graphite` har i tillegg `0`, som er ren hvit.
+Seks skalaer: `interactive`, `danger`, `warning`, `success`, `visited` og `neutral`. Trinnene er `5`, `10`, `30`, `50`, `70` og `100`, der lave tall er lyse.
+
+Tre skalaer har i tillegg `80`. Det er det eneste trinnet som finnes fordi en rolle trenger det framfor fordi skalaen trenger en lyshet til: statusfargen som tekst på lys flate må være mørkere enn `70` for å holde 4,5:1, og `100` er for mørk til å være Fristils røde. `interactive` mangler `5` og `50`, og `neutral` har i tillegg `0`, som er ren hvit.
+
+Skalaene heter det samme som rollene sine med vilje. Temageneratoren skriver de samme navnene, så et generert tema skriver over hvert eneste token som står her. Ingenting blir stående igjen i Fristils farger.
 
 <Tokenprover palett={{
-  burgundy: [5, 10, 30, 50, 70, 100],
-  forest: [5, 10, 30, 50, 70, 100],
-  ochre: [5, 10, 30, 50, 70, 100],
-  denim: [5, 10, 30, 50, 70, 100],
-  azure: [10, 30, 70, 100],
-  graphite: [0, 5, 10, 30, 50, 70, 100],
+  interactive: [10, 30, 70, 100],
+  danger: [5, 10, 30, 50, 70, 80, 100],
+  warning: [5, 10, 30, 50, 70, 80, 100],
+  success: [5, 10, 30, 50, 70, 80, 100],
+  visited: [5, 10, 30, 50, 70, 100],
+  neutral: [0, 5, 10, 30, 50, 70, 100],
 }} />
 
 ## Størrelsesskalaen
@@ -157,7 +163,7 @@ import { cssTokens, type CssToken } from "@fristil/designsystem/tokens"
 const token: CssToken = "--semantic-interactive-main"
 element.style.setProperty(token, "red")
 
-cssTokens["--palette-azure-70"]
+cssTokens["--palette-interactive-70"]
 // "#1362ae"
 ```
 
@@ -202,7 +208,7 @@ Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da er `bg-neu
 | `text-fs-mega` | `--font-size-mega` |
 | `max-w-fs-aside` | 384px |
 | `shadow-fs-overlay` | `--semantic-shadow-overlay` |
-| `bg-fs-azure-70` | `--palette-azure-70` |
+| `bg-fs-interactive-70` | `--palette-interactive-70` |
 
 Avstandene er koblet til skalaen: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--size-1`. `p-4` er dermed nøyaktig `--size-4`, og endrer du skalaen, følger alle Tailwind-klassene med.
 
