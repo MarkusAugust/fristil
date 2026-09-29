@@ -14,6 +14,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { buildMatrix, FRISTIL_BRANDS } from "../src/tokens/matrix.js"
+
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
 
@@ -99,6 +101,52 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `lesing fra fil avsluttet med kode ${kode}`)
   krev(ut.includes("--palette-interactive-70"), "utdata mangler paletten")
+
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// `sjekk-tema` kontrollerer et tema, og teller konsumentens egne verdier
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const godt = join(mappe, "godt.css")
+
+  // Matrisen skrevet ut som et tema, kontrollert mot seg selv
+  await writeFile(
+    godt,
+    ":root {\n  color-scheme: light;\n" +
+      Object.entries(buildMatrix(FRISTIL_BRANDS, "light").tokens)
+        .map(([navn, verdi]) => `  ${navn}: ${verdi};`)
+        .join("\n") +
+      "\n}\n",
+  )
+
+  const rent = await kjør(["sjekk-tema", godt])
+  krev(rent.kode === 0, `et tema som holder avsluttet med ${rent.kode}`)
+  krev(
+    /\d+ verdier/.test(rent.ut),
+    `sjekk-tema sier ikke hvor mange verdier den leste: ${rent.ut.slice(0, 80)}`,
+  )
+
+  // En for lys faretekst skal felle, og si hvilken celle det gjelder
+  const svakt = join(mappe, "svakt.css")
+  await writeFile(
+    svakt,
+    ":root { color-scheme: light; --fs-color-danger-text: #ff9999; }",
+  )
+  const felt = await kjør(["sjekk-tema", svakt])
+  krev(felt.kode !== 0, "en for lys faretekst skulle gitt feilkode")
+  krev(
+    felt.feil.includes("danger"),
+    `meldingen nevner ikke familien: ${felt.feil.slice(0, 80)}`,
+  )
+
+  // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne
+  const flagg = await kjør(["sjekk-tema", godt, "--noe"])
+  krev(flagg.kode !== 0, "et ukjent flagg skulle gitt feilkode")
+
+  // Og uten filer skal den si hva den vil ha
+  const uten = await kjør(["sjekk-tema"])
+  krev(uten.kode !== 0, "sjekk-tema uten filer skulle gitt feilkode")
 
   await rm(mappe, { recursive: true, force: true })
 }

@@ -23,6 +23,40 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **Fargekontrakten,** motoren bak det nye fargesystemet. En farge er et punkt
+  i en matrise av **familie** (hva den betyr) og **rolle** (hva den gjør), og
+  hver familie har de samme rollene. Kuløren er konsumentens, lysheten er
+  rollens, og det er den regelen som gjør kontrasten garantert av
+  konstruksjonen framfor av et justeringspass i etterkant.
+
+  Lyshetene er regnet fram mot et sveip rundt hele fargesirkelen, på den
+  høyeste metningen sRGB kan vise for hver kulør. Stiller man dem inn etter
+  systemets egne farger alene, ryker de for en konsument med en annen kulør, og
+  det gjorde de. Testen kjører tolv merkefarger gjennom matrisen i begge
+  temaer, og de er nesten like skarpe som hele sirkelen.
+
+  Hvert løfte kontrolleres mot alle tre nøytrale lagene: siden, et kort og en
+  hevet flate. Det siste er det vanskeligste, mørkest i lyst tema og lysest i
+  mørkt, og en tidligere utgave kontrollerte bare teksten mot det. Da lå
+  kantfargen under 3:1 mot et hevet kort i åtte av åtte familier i mørkt tema
+  uten at noe sa fra.
+
+  Tre nye inngangspunkter: `./kontrakt` med rollene og løftene, `./matrise` som
+  bygger et helt tokensett av merkefarger, og `./tema-sjekk`. Ingen komponent
+  bruker dem ennå; de står på `--semantic-*` som før. Det eneste som tar dem i
+  bruk er kommandoen under.
+
+- **`fristil sjekk-tema <fil…>`** kontrollerer et tema noen har skrevet selv.
+  Generatoren holder løftene av konstruksjon, men et tema skrevet for hånd er
+  konsumentens ansvar, og da skylder vi dem et svar på hvilken celle som ryker
+  og hvorfor. Uten kommandoen er «du kan overstyre hvilken som helst celle» en
+  felle. Kommandoen teller verdiene konsumenten selv skrev, framfor filer eller
+  løfter: «tre filer kontrollert» er sant også om alle tre var tomme, og
+  løftetallet er det samme for én linje som for et helt tema, siden
+  standardverdiene fyller hullene.
+
 ### Rettet
 
 - **Tre steder i dokumentasjonen sto ordet «bygger» erstattet med

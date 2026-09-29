@@ -46,6 +46,7 @@ import {
   type ThemeShape,
   type ThemeTypography,
 } from "./tokens/theme.js"
+import { inspectTheme } from "./tokens/theme-check.js"
 
 /**
  * Temaet slik det bygges opp, før det er kontrollert.
@@ -496,6 +497,10 @@ const HJELP = `fristil <kommando>
   sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
                        Uten filer leses standard inn. Ett funn gir feilkode
 
+  sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
+                       Leser --fs-color-*-verdiene i hver blokk og sier
+                       hvilken celle som ryker. Ett brudd gir feilkode
+
   agent                Skriver regelboka for kodeagenter til utdata. Ingen
     --rammeverk=<navn> fil skrives noe sted. Uten flagget leses miljøet av
                        package.json. Navn: html, maler, bundles, react, astro,
@@ -536,8 +541,112 @@ Eksempler:
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 
+/**
+ * `fristil sjekk-tema <fil…>` kontrollerer et tema noen har skrevet selv.
+ *
+ * Generatoren holder løftene av konstruksjon, men et tema skrevet for hånd er
+ * konsumentens ansvar. Uten denne kommandoen er «du kan overstyre hvilken som
+ * helst celle» en felle: du får vite at fargen er feil først når noen ikke kan
+ * lese siden.
+ *
+ * Tellingen står sist og krever at tallet er større enn null. En kjøring som
+ * ikke fant en eneste fil skal ikke kunne se ut som en kjøring uten funn.
+ */
+async function checkThemeFiles(args: string[]): Promise<void> {
+  /*
+   * Et ukjent flagg skal stoppe kjøringen, ikke forsvinne.
+   * `fristil tema` gjør det samme, og grunnen er den samme: en skrivefeil i et
+   * flagg ser ut som om kommandoen gjorde det du ba om.
+   */
+  const unknownFlags = args.filter((arg) => arg.startsWith("-"))
+  if (unknownFlags.length > 0) {
+    console.error(
+      `Ukjent flagg: ${unknownFlags.join(", ")}.\n\n` +
+        "`fristil sjekk-tema` tar bare filnavn.\n",
+    )
+    process.exit(1)
+  }
+
+  const paths = args
+  if (paths.length === 0) {
+    console.error(
+      "Oppgi minst én CSS-fil: `fristil sjekk-tema tema.css`.\n\n" +
+        "Kommandoen leser --fs-color-*-verdiene i fila og kontrollerer at " +
+        "hvert kontrastløfte holder, i hver blokk.\n",
+    )
+    process.exit(1)
+  }
+
+  // Filer som ikke lot seg lese samles og meldes samlet, som i `fristil sjekk`.
+  const sources: { path: string; css: string }[] = []
+  const unreadable: string[] = []
+
+  for (const path of paths) {
+    try {
+      sources.push({ path, css: await readFile(path, "utf8") })
+    } catch (error) {
+      const code = (error as { code?: string }).code
+      unreadable.push(
+        code === "EISDIR"
+          ? `${path} (er en mappe)`
+          : code === "ENOENT"
+            ? `${path} (finnes ikke)`
+            : `${path} (${code ?? "kunne ikke leses"})`,
+      )
+    }
+  }
+
+  if (unreadable.length > 0) {
+    console.error(`Klarte ikke lese: ${unreadable.join(", ")}.`)
+    process.exit(1)
+  }
+
+  let problems = 0
+  let blocks = 0
+  let declarations = 0
+  let promises = 0
+
+  for (const { path, css } of sources) {
+    const report = inspectTheme(css)
+    for (const problem of report.problems) {
+      console.error(`${path}  ${problem.selector}\n  ${problem.message}`)
+      problems++
+    }
+    blocks += report.blocks
+    declarations += report.declarations
+    promises += report.promises
+  }
+
+  /*
+   * Tellingen står sist, og teller konsumentens egne verdier.
+   *
+   * «Tre filer kontrollert» er sant også om alle tre var tomme. Løftetallet
+   * alene duger heller ikke: standardverdiene fyller hullene, så én linje gir
+   * like mange løfter som et helt tema. Tallet som betyr noe er hvor mange av
+   * fargene i fila som faktisk ble lest og forstått.
+   */
+  const files = `${sources.length} ${sources.length === 1 ? "fil" : "filer"}`
+  const summary = `${declarations} ${declarations === 1 ? "verdi" : "verdier"} i ${blocks} ${blocks === 1 ? "blokk" : "blokker"}, mot ${promises} ${promises === 1 ? "løfte" : "løfter"}, i ${files}`
+
+  if (declarations === 0 && problems === 0) {
+    console.error(
+      `Fant ingen --fs-color-*-verdier i ${files}. Sjekken har ikke sett på noe.`,
+    )
+    process.exit(1)
+  }
+
+  if (problems > 0) {
+    console.error(
+      `\n${problems} ${problems === 1 ? "problem" : "problemer"}. Kontrollerte ${summary}.`,
+    )
+    process.exit(1)
+  }
+
+  console.log(`Temaet holder hvert løfte. Kontrollerte ${summary}.`)
+}
+
 const HJELPEFLAGG = new Set(["--help", "-h", "help", "hjelp", "--hjelp"])
-const KOMMANDOER = new Set(["agent", "sjekk", "overta", "tema"])
+const KOMMANDOER = new Set(["agent", "sjekk", "sjekk-tema", "overta", "tema"])
 
 const argumenter = process.argv.slice(2)
 
@@ -567,6 +676,11 @@ if (argumenter[0] === "overta") {
 
 if (argumenter[0] === "sjekk") {
   await check(argumenter.slice(1))
+  process.exit(0)
+}
+
+if (argumenter[0] === "sjekk-tema") {
+  await checkThemeFiles(argumenter.slice(1))
   process.exit(0)
 }
 

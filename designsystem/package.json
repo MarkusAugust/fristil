@@ -117,6 +117,18 @@
       "types": "./dist/tokens/color.d.ts",
       "import": "./dist/tokens/color.js"
     },
+    "./kontrakt": {
+      "types": "./dist/tokens/contract.d.ts",
+      "import": "./dist/tokens/contract.js"
+    },
+    "./matrise": {
+      "types": "./dist/tokens/matrix.d.ts",
+      "import": "./dist/tokens/matrix.js"
+    },
+    "./tema-sjekk": {
+      "types": "./dist/tokens/theme-check.d.ts",
+      "import": "./dist/tokens/theme-check.js"
+    },
     "./tailwind.css": "./src/tailwind/tailwind.css",
     "./badge": {
       "types": "./dist/components/css/badge/badge.d.ts",
