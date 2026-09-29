@@ -46,99 +46,99 @@
     /* semantic-spacing */
     --semantic-spacing-default: var(--size-4);
 
-    /* palette-interactive */
-    --palette-interactive-10: #cde1f9;
-    --palette-interactive-30: #9ccff2;
-    --palette-interactive-70: #1362ae;
-    --palette-interactive-100: #093e61;
+    /* palette-burgundy */
+    --palette-burgundy-5: #faf0f3;
+    --palette-burgundy-10: #f7e2e8;
+    --palette-burgundy-30: #f3a7b0;
+    --palette-burgundy-50: #f06674;
+    --palette-burgundy-70: #b04c5c;
+    --palette-burgundy-100: #6f2c3f;
 
-    /* palette-danger */
-    --palette-danger-5: #faf0f3;
-    --palette-danger-10: #f7e2e8;
-    --palette-danger-30: #f3a7b0;
-    --palette-danger-50: #f06674;
-    --palette-danger-70: #b04c5c;
-    --palette-danger-80: #a82e39;
-    --palette-danger-100: #6f2c3f;
+    /* palette-forest */
+    --palette-forest-5: #f4faf5;
+    --palette-forest-10: #e3f5ea;
+    --palette-forest-30: #b9e1c8;
+    --palette-forest-50: #91d6ac;
+    --palette-forest-70: #5d9b73;
+    --palette-forest-100: #2b6940;
 
-    /* palette-warning */
-    --palette-warning-5: #f9f4f0;
-    --palette-warning-10: #f9ede2;
-    --palette-warning-30: #f0d2b6;
-    --palette-warning-50: #e7b78a;
-    --palette-warning-70: #a9805b;
-    --palette-warning-80: #896508;
-    --palette-warning-100: #6b492c;
+    /* palette-ochre */
+    --palette-ochre-5: #f9f4f0;
+    --palette-ochre-10: #f9ede2;
+    --palette-ochre-30: #f0d2b6;
+    --palette-ochre-50: #e7b78a;
+    --palette-ochre-70: #a9805b;
+    --palette-ochre-100: #6b492c;
 
-    /* palette-success */
-    --palette-success-5: #f4faf5;
-    --palette-success-10: #e3f5ea;
-    --palette-success-30: #b9e1c8;
-    --palette-success-50: #91d6ac;
-    --palette-success-70: #5d9b73;
-    --palette-success-80: #316f2a;
-    --palette-success-100: #12542c;
+    /* palette-denim */
+    --palette-denim-5: #eff3f9;
+    --palette-denim-10: #e2eaf7;
+    --palette-denim-30: #b5cbee;
+    --palette-denim-50: #89abe5;
+    --palette-denim-70: #5a77a8;
+    --palette-denim-100: #2c436b;
 
-    /* palette-visited */
-    --palette-visited-5: #eff3f9;
-    --palette-visited-10: #e2eaf7;
-    --palette-visited-30: #b5cbee;
-    --palette-visited-50: #89abe5;
-    --palette-visited-70: #5a77a8;
-    --palette-visited-100: #2c436b;
+    /* palette-azure */
+    --palette-azure-10: #cde1f9;
+    --palette-azure-30: #9ccff2;
+    --palette-azure-70: #1362ae;
+    --palette-azure-100: #093e61;
 
-    /* palette-neutral */
-    --palette-neutral-0: #ffffff;
-    --palette-neutral-5: #f4f4f4;
-    --palette-neutral-10: #e5e5e5;
-    --palette-neutral-30: #b2b2b2;
-    --palette-neutral-50: #757575;
-    --palette-neutral-70: #4d4d4d;
-    --palette-neutral-100: #1a1a1a;
+    /* palette-graphite */
+    --palette-graphite-0: #ffffff;
+    --palette-graphite-5: #f4f4f4;
+    --palette-graphite-10: #e5e5e5;
+    --palette-graphite-30: #b2b2b2;
+    --palette-graphite-50: #757575;
+    --palette-graphite-70: #4d4d4d;
+    --palette-graphite-100: #1a1a1a;
+
+    /* palette-dark */
+    --palette-dark-alpha-50: #1a1a1a80;
 
     /* semantic-page */
-    --semantic-page-background: var(--palette-neutral-0);
-    --semantic-page-foreground: var(--palette-neutral-100);
+    --semantic-page-background: var(--palette-graphite-0);
+    --semantic-page-foreground: var(--palette-graphite-100);
 
     /* semantic-danger */
-    --semantic-danger-background: var(--palette-danger-10);
-    --semantic-danger-foreground: var(--palette-danger-80);
-    --semantic-danger-main: var(--palette-danger-80);
-    --semantic-danger-contrast: var(--palette-neutral-0);
+    --semantic-danger-background: var(--palette-burgundy-10);
+    --semantic-danger-foreground: #a82e39;
+    --semantic-danger-main: #a82e39;
+    --semantic-danger-contrast: var(--palette-graphite-0);
 
     /* semantic-warning */
-    --semantic-warning-background: var(--palette-warning-10);
-    --semantic-warning-foreground: var(--palette-warning-80);
+    --semantic-warning-background: var(--palette-ochre-10);
+    --semantic-warning-foreground: #896508;
 
     /* semantic-success */
-    --semantic-success-background: var(--palette-success-10);
-    --semantic-success-foreground: var(--palette-success-80);
+    --semantic-success-background: var(--palette-forest-10);
+    --semantic-success-foreground: #316f2a;
 
     /* semantic-disabled */
-    --semantic-disabled-background: var(--palette-neutral-10);
-    --semantic-disabled-foreground: var(--palette-neutral-50);
+    --semantic-disabled-background: var(--palette-graphite-10);
+    --semantic-disabled-foreground: var(--palette-graphite-50);
 
     /* semantic-muted */
-    --semantic-muted-foreground: var(--palette-neutral-50);
+    --semantic-muted-foreground: var(--palette-graphite-50);
 
     /* semantic-neutral */
-    --semantic-neutral-background: var(--palette-neutral-10);
-    --semantic-neutral-foreground: var(--palette-neutral-70);
+    --semantic-neutral-background: var(--palette-graphite-10);
+    --semantic-neutral-foreground: var(--palette-graphite-70);
 
     /* semantic-interactive */
-    --semantic-interactive-background: var(--palette-interactive-10);
-    --semantic-interactive-main: var(--palette-interactive-70);
-    --semantic-interactive-foreground: var(--palette-interactive-100);
-    --semantic-interactive-contrast: var(--palette-neutral-0);
-    --semantic-interactive-visited: var(--palette-visited-70);
+    --semantic-interactive-background: var(--palette-azure-10);
+    --semantic-interactive-main: var(--palette-azure-70);
+    --semantic-interactive-foreground: var(--palette-azure-100);
+    --semantic-interactive-contrast: var(--palette-graphite-0);
+    --semantic-interactive-visited: var(--palette-denim-70);
 
     /* semantic-field */
-    --semantic-field-border: var(--palette-neutral-50);
-    --semantic-field-border-hover: var(--palette-neutral-70);
+    --semantic-field-border: var(--palette-graphite-50);
+    --semantic-field-border-hover: var(--palette-graphite-70);
 
     /* semantic-divider */
-    --semantic-divider-30: var(--palette-neutral-30);
-    --semantic-divider-100: var(--palette-neutral-100);
+    --semantic-divider-30: var(--palette-graphite-30);
+    --semantic-divider-100: var(--palette-graphite-100);
 
     /* semantic-icon */
     --semantic-icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E");
@@ -148,7 +148,7 @@
     --semantic-icon-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E");
 
     /* semantic-overlay */
-    --semantic-overlay-backdrop: #1a1a1a80;
+    --semantic-overlay-backdrop: var(--palette-dark-alpha-50);
 
     /* semantic-shadow */
     --semantic-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12);
@@ -159,30 +159,30 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --semantic-page-background: var(--palette-neutral-100);
-      --semantic-page-foreground: var(--palette-neutral-5);
-      --semantic-danger-background: var(--palette-danger-100);
-      --semantic-danger-foreground: var(--palette-danger-30);
-      --semantic-warning-background: var(--palette-warning-100);
-      --semantic-warning-foreground: var(--palette-warning-30);
-      --semantic-success-background: var(--palette-success-100);
-      --semantic-success-foreground: var(--palette-success-30);
-      --semantic-disabled-background: var(--palette-neutral-70);
-      --semantic-disabled-foreground: var(--palette-neutral-30);
-      --semantic-muted-foreground: var(--palette-neutral-30);
-      --semantic-neutral-background: var(--palette-neutral-70);
-      --semantic-neutral-foreground: var(--palette-neutral-10);
-      --semantic-interactive-background: var(--palette-interactive-100);
-      --semantic-interactive-main: var(--palette-interactive-30);
-      --semantic-interactive-foreground: var(--palette-interactive-10);
-      --semantic-interactive-contrast: var(--palette-neutral-100);
-      --semantic-interactive-visited: var(--palette-visited-30);
-      --semantic-field-border: var(--palette-neutral-50);
-      --semantic-field-border-hover: var(--palette-neutral-30);
-      --semantic-danger-main: var(--palette-danger-30);
-      --semantic-danger-contrast: var(--palette-neutral-100);
-      --semantic-divider-30: var(--palette-neutral-70);
-      --semantic-divider-100: var(--palette-neutral-30);
+      --semantic-page-background: var(--palette-graphite-100);
+      --semantic-page-foreground: var(--palette-graphite-5);
+      --semantic-danger-background: var(--palette-burgundy-100);
+      --semantic-danger-foreground: var(--palette-burgundy-30);
+      --semantic-warning-background: var(--palette-ochre-100);
+      --semantic-warning-foreground: var(--palette-ochre-30);
+      --semantic-success-background: var(--palette-forest-100);
+      --semantic-success-foreground: var(--palette-forest-30);
+      --semantic-disabled-background: var(--palette-graphite-70);
+      --semantic-disabled-foreground: var(--palette-graphite-30);
+      --semantic-muted-foreground: var(--palette-graphite-30);
+      --semantic-neutral-background: var(--palette-graphite-70);
+      --semantic-neutral-foreground: var(--palette-graphite-10);
+      --semantic-interactive-background: var(--palette-azure-100);
+      --semantic-interactive-main: var(--palette-azure-30);
+      --semantic-interactive-foreground: var(--palette-azure-10);
+      --semantic-interactive-contrast: var(--palette-graphite-100);
+      --semantic-interactive-visited: var(--palette-denim-30);
+      --semantic-field-border: var(--palette-graphite-50);
+      --semantic-field-border-hover: var(--palette-graphite-30);
+      --semantic-danger-main: var(--palette-burgundy-30);
+      --semantic-danger-contrast: var(--palette-graphite-100);
+      --semantic-divider-30: var(--palette-graphite-70);
+      --semantic-divider-100: var(--palette-graphite-30);
       --semantic-icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E");
       --semantic-icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
       --semantic-icon-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E");
@@ -200,30 +200,30 @@
   [data-theme="dark"] {
     color-scheme: dark;
 
-    --semantic-page-background: var(--palette-neutral-100);
-    --semantic-page-foreground: var(--palette-neutral-5);
-    --semantic-danger-background: var(--palette-danger-100);
-    --semantic-danger-foreground: var(--palette-danger-30);
-    --semantic-warning-background: var(--palette-warning-100);
-    --semantic-warning-foreground: var(--palette-warning-30);
-    --semantic-success-background: var(--palette-success-100);
-    --semantic-success-foreground: var(--palette-success-30);
-    --semantic-disabled-background: var(--palette-neutral-70);
-    --semantic-disabled-foreground: var(--palette-neutral-30);
-    --semantic-muted-foreground: var(--palette-neutral-30);
-    --semantic-neutral-background: var(--palette-neutral-70);
-    --semantic-neutral-foreground: var(--palette-neutral-10);
-    --semantic-interactive-background: var(--palette-interactive-100);
-    --semantic-interactive-main: var(--palette-interactive-30);
-    --semantic-interactive-foreground: var(--palette-interactive-10);
-    --semantic-interactive-contrast: var(--palette-neutral-100);
-    --semantic-interactive-visited: var(--palette-visited-30);
-    --semantic-field-border: var(--palette-neutral-50);
-    --semantic-field-border-hover: var(--palette-neutral-30);
-    --semantic-danger-main: var(--palette-danger-30);
-    --semantic-danger-contrast: var(--palette-neutral-100);
-    --semantic-divider-30: var(--palette-neutral-70);
-    --semantic-divider-100: var(--palette-neutral-30);
+    --semantic-page-background: var(--palette-graphite-100);
+    --semantic-page-foreground: var(--palette-graphite-5);
+    --semantic-danger-background: var(--palette-burgundy-100);
+    --semantic-danger-foreground: var(--palette-burgundy-30);
+    --semantic-warning-background: var(--palette-ochre-100);
+    --semantic-warning-foreground: var(--palette-ochre-30);
+    --semantic-success-background: var(--palette-forest-100);
+    --semantic-success-foreground: var(--palette-forest-30);
+    --semantic-disabled-background: var(--palette-graphite-70);
+    --semantic-disabled-foreground: var(--palette-graphite-30);
+    --semantic-muted-foreground: var(--palette-graphite-30);
+    --semantic-neutral-background: var(--palette-graphite-70);
+    --semantic-neutral-foreground: var(--palette-graphite-10);
+    --semantic-interactive-background: var(--palette-azure-100);
+    --semantic-interactive-main: var(--palette-azure-30);
+    --semantic-interactive-foreground: var(--palette-azure-10);
+    --semantic-interactive-contrast: var(--palette-graphite-100);
+    --semantic-interactive-visited: var(--palette-denim-30);
+    --semantic-field-border: var(--palette-graphite-50);
+    --semantic-field-border-hover: var(--palette-graphite-30);
+    --semantic-danger-main: var(--palette-burgundy-30);
+    --semantic-danger-contrast: var(--palette-graphite-100);
+    --semantic-divider-30: var(--palette-graphite-70);
+    --semantic-divider-100: var(--palette-graphite-30);
     --semantic-icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E");
     --semantic-icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
     --semantic-icon-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a1a1a' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E");

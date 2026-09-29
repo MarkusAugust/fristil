@@ -39,58 +39,6 @@ egen overskrift «Brytende».
 - **«Eget tema» sa at skriften settes i `@layer fristil`.** Den står i
   `fristil-tema`, som resten av det genererte temaet.
 
-### Brytende
-
-- **Palettskalaene heter rollene sine.** `burgundy` → `danger`, `ochre` →
-  `warning`, `forest` → `success`, `azure` → `interactive`, `denim` →
-  `visited`, `graphite` → `neutral`. Det gjelder både `--palette-*`-tokenene og
-  Tailwind-klassene over dem, altså `bg-fs-azure-70` → `bg-fs-interactive-70`.
-
-  Grunnen er at temageneratoren alltid har skrevet rollenavnene, mens
-  `tokens.css` skrev fargenavnene, og de to settene pekte på hver sin utgave av
-  den samme skalaen. Et generert tema traff derfor aldri Fristils egne
-  palettoken, så `bg-fs-azure-70` ga fortsatt Fristils blå i en app med eget
-  tema. En ny test i `theme.browser.test.ts` krever at et generert tema skriver
-  over hvert eneste innebygde palettoken.
-
-- **Nytt trinn `80` i `danger`, `warning` og `success`,** og i skalaene
-  generatoren bygger. Det er statusfargen som tekst på lys flate: `70` er for
-  lys til å holde 4,5:1, og `100` er mørkere enn systemets røde skal være.
-  Verdiene sto fra før skrevet rett inn i `--semantic-danger-foreground`,
-  `--semantic-warning-foreground`, `--semantic-success-foreground` og
-  `--semantic-danger-main`, som de eneste semantiske **fargene** som ikke kom
-  fra et palettrinn. Nå gjør alle det, og «bytt en skala, så følger alt som
-  bruker den med» er sant for hver farge i begge temaer. De gjennomsiktige
-  flateffektene og de fem ikonene er ikke farger fra en skala, og står som før.
-
-- **`--palette-success-100` er mørkere:** `#2b6940` → `#12542c`, samme lyshet
-  som `danger-100`. Uten det lå trinn `80` og `100` 1,08:1 fra hverandre, altså
-  to grønner ingen kan skille. Flaten på et suksessmerke og en grønn dialogtopp
-  blir dermed mørkere i mørkt tema. Kontrasten går samtidig fra 4,59:1 til
-  6,29:1, og det var systemets nest svakeste par. Det svakeste, besøkt lenke på
-  sideflaten i lyst tema, ligger urørt på 4,53:1.
-
-- **Generatoren bruker trinn `80` til statustekst,** slik Fristils egen palett
-  gjør. Den tok den fra trinn `100` og `--semantic-danger-main` fra `70`, så et
-  generert tema fikk mørkere og brunere statusfarger enn systemet det var laget
-  av, og trinn `80` lå ubrukt. Et rødt merke får nå `#bc0005` på 6,69:1 framfor
-  `#7c120d` på 10,77:1. Kontrasten kontrolleres som før, så begge holder
-  kravet; forskjellen er at temaet nå ligner det det er laget av.
-
-- **Standardtaket på metning er hevet fra 0,16 til 0,24.** Taket demper, det
-  verner ikke: et neontema kjørt gjennom hele kontrastlista holder kravet ved
-  0,16, 0,24 og 0,3225, og det svakeste paret ligger på 4,62:1 til 4,64:1 i alle
-  tre. Ved 0,16 mistet et neonmerke mye der det synes: trinn 30 er lenkefargen i
-  mørkt tema, og det lå på 0,099 mot 0,148 nå. Verdien er et skjønn og ikke et
-  punkt der noe mettes, siden hvor mye taket binder avhenger av kuløren.
-  Merkefarger under 0,24 merker ingenting, siden taket bare binder for farger
-  over seg.
-
-- **`--palette-dark-alpha-50` er borte.** Verdien står nå rett i
-  `--semantic-overlay-backdrop`, som den alltid har gjort i mørkt tema. Den var
-  det eneste palettokenet som ikke var et trinn i en skala, og den var ikke med
-  i Tailwind-temaet.
-
 ## 0.21.0 (2026-09-28)
 
 ### Lagt til
@@ -650,8 +598,8 @@ egen overskrift «Brytende».
   blokkene, er temaet nøyaktig det det var før.
 
   Hjørnene er delt i tre framfor ett felles tall, fordi ett tall er feil:
-  et annet norsk designsystem har helt runde knapper mens feltene der har
-  nesten rette hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
+  Skatteetatens knapper er helt runde mens feltene deres har nesten rette
+  hjørner, og med én verdi blir feltene kapsler. `buttonRadius` treffer knapp,
   paginering og hopplenke, `fieldRadius` felt, tekstområde og nedtrekksliste,
   og `surfaceRadius` de elleve flatene, meldingen og hjelpeboblen medregnet.
   Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet

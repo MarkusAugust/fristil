@@ -64,7 +64,7 @@ Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt 
 
 **Kuløren og metningen er dine, lysheten er skalaens.** Gir du en lys lilla eller en mørk lilla, får du den samme lilla skalaen: trinnene har faste lysheter, og det er det som gjør at kontrasten kan garanteres. Metningen følger derimot med, så en dus merkefarge gir en dus skala.
 
-**Metningen har et tak på 0,24.** De fleste merkefarger ligger under det og merker ingenting, `#ffd600` på 0,182 og `#00e676` på 0,214 medregnet. Ekte neon kappes fortsatt: `#39ff14` ligger på 0,286 og mister 16 prosent. Skal merkevaren beholde alt, hever du taket:
+**Metningen har et tak på 0,16.** De fleste merkefarger ligger under det, og merker ingenting. Neon gjør ikke: `#39ff14` ligger på 0,286 og mister 44 prosent mot taket, `#ff2d6f` på 0,240 og mister 33. Skal merkevaren beholde den, hever du taket:
 
 ```bash
 npx @fristil/designsystem tema --interaktiv=#39ff14 --fare=#ff2d6f \
@@ -77,7 +77,7 @@ Lovlige verdier er 0,01 til 0,33, og noe utenfor stopper kjøringen. Grensene er
 
 Kontrastkravet holder uansett hvor taket står. Taket styrer metningen, mens kontrasten kommer av de faste lyshetene og av passet som måler hvert par etterpå. Mer metning betyr bare at generatoren flytter lysheten flere steder, og hver flytting skrives ut som under.
 
-Hvor mye et hevet tak gjør, avhenger av kuløren. De lyseste trinnene dempes uansett med vilje, fordi en lys flate ser skitten ut med mye metning, og de mørkeste begrenses av hva sRGB kan vise ved den lysheten. For et grønt merke er det bare de tre lyseste trinnene som endrer seg over standardtaket; for magenta, der sRGB rommer mest metning, flytter også de mørke seg.
+Endene i skalaen rører seg mindre enn midten. De lyseste trinnene dempes med vilje, fordi en lys flate ser skitten ut med mye metning, og det mørkeste trinnet begrenses av hva sRGB kan vise ved den lysheten. Det er trinnene i midten, der knapper og tekst bor, som endrer seg.
 
 **Kontrasten kontrolleres, og rettes.** Hver farge måles mot alle flatene den havner på. Lenkefargen er for eksempel både tekst på sideflaten, flate under teksten på en primærknapp, og farge på et interaktivt merke. Holder en av dem ikke, mørknes eller lysnes fargen til den gjør det, og kjøringen sier fra:
 
@@ -155,7 +155,7 @@ Enten oppgir du alle fire merkefargene, eller ingen. To farger kaster: resten av
 
 ### Hvorfor tre slags hjørner
 
-Ett felles tall ville vært enklere og feil. Et annet norsk designsystem har helt runde knapper, mens feltene der har nesten rette hjørner, og med ett tall blir feltene kapsler.
+Ett felles tall ville vært enklere og feil. Skatteetatens knapper er helt runde, mens feltene deres har nesten rette hjørner, og med ett tall blir feltene kapsler.
 
 Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet står utenfor. Der er hjørnet ikke et stilvalg, men selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp, og et merke som blir firkantet, ser ut som en knapp.
 
