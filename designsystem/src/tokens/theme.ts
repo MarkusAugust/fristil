@@ -58,9 +58,8 @@ export type ThemeTypography = {
  * Formen i temaet: hjørner og rammer.
  *
  * Knappen står for seg, feltet for seg, og flatene for seg. Skillet er verdt
- * å holde: et annet norsk designsystem har helt runde knapper, mens feltene
- * der har nesten rette hjørner, og ett felles tall ville gjort feltene til
- * kapsler.
+ * å holde: Skatteetatens knapper er helt runde, mens feltene deres har nesten
+ * rette hjørner, og ett felles tall ville gjort feltene til kapsler.
  *
  * Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
  * står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
@@ -91,11 +90,11 @@ export type ThemeShape = {
  * lages det et tema som bare setter skrift og form, og fargene blir stående
  * som de er i `tokens.css`.
  *
- * Det siste er ikke en kuriositet. Bruker organisasjonen Fristils palett fra
- * før, ville det å kjøre de samme fargene gjennom generatoren flyttet dem bort
- * fra der de skal være: `#1362ae` kommer ut som `#1e6ab7`, fordi skalaene
- * regnes om i OKLCH fra merkefargen. Et tema som bare setter skrift og form er
- * da det riktige svaret.
+ * Det siste er ikke en kuriositet. Fristils egen palett er Skatteetatens, med
+ * de samme verdiene, og da ville det å kjøre fargene gjennom generatoren
+ * gjort spillet mindre likt deres og ikke mer: `#1362ae` kommer ut som
+ * `#1e6ab7`, fordi skalaene regnes om i OKLCH fra merkefargen. Et tema som
+ * bare setter skrift og form er da det riktige svaret.
  */
 type ThemeCommon = {
   /** Flater, tekst og skillelinjer. Nesten uten kulør. */
@@ -321,14 +320,7 @@ export function buildTheme(input: ThemeInput): Theme {
       flate: number
       tekst: number
       statusFlate: number
-      /**
-       * Statusfargen som tekst. Trinn 80 finnes nettopp til dette: 70 er for
-       * lys til å holde 4,5:1 på lys flate, og 100 er mørkere enn en
-       * statusfarge skal være. I mørkt tema er teksten den lyse enden.
-       */
       statusTekst: number
-      /** Fylt flate på danger-knappen når den holdes over. */
-      statusMain: number
       noytralFlate: number
       noytralTekst: number
       interaktiv: number
@@ -434,7 +426,7 @@ export function buildTheme(input: ThemeInput): Theme {
     ])
 
     // Den fylte sletteknappen, med lys tekst oppå.
-    sett("--semantic-danger-main", palett.danger[trinn.statusMain], [
+    sett("--semantic-danger-main", palett.danger[trinn.interaktiv], [
       kontrastfarge,
     ])
 
@@ -448,8 +440,7 @@ export function buildTheme(input: ThemeInput): Theme {
     flate: 0,
     tekst: 100,
     statusFlate: 10,
-    statusTekst: 80,
-    statusMain: 80,
+    statusTekst: 100,
     noytralFlate: 10,
     noytralTekst: 70,
     interaktiv: 70,
@@ -466,7 +457,6 @@ export function buildTheme(input: ThemeInput): Theme {
     tekst: 5,
     statusFlate: 100,
     statusTekst: 30,
-    statusMain: 30,
     noytralFlate: 70,
     noytralTekst: 10,
     interaktiv: 30,

@@ -66,7 +66,22 @@ const MEDIETYPER: Record<string, string> = {
   woff2: "font/woff2",
 }
 
+/*
+ * Tjeneren binder 127.0.0.1, og sjekken kobler til den samme adressen.
+ *
+ * `Bun.serve` uten vertsnavn binder IPv4-jokeren, og en fremmed prosess på
+ * IPv6-loopback tar da porten uten at noe kaster: to tjenere, samme
+ * portnummer, ingen feilmelding. `localhost` slår opp IPv6 først på macOS, så
+ * sjekken snakket med den andre prosessen. Det skjedde: en helt annen nettside
+ * lå på 4173, og sjekken leste tilgjengelighetsbrudd på den. Den kunne like
+ * gjerne meldt grønt uten å ha sett en eneste av våre sider.
+ *
+ * Med vertsnavnet satt kaster en andre binding på samme adresse, og det er
+ * det vi vil: en port som er opptatt skal stoppe kjøringen, ikke stilltiende
+ * sende den et annet sted. Bytt derfor aldri dette tilbake til `localhost`.
+ */
 const tjener = Bun.serve({
+  hostname: "127.0.0.1",
   port: PORT,
   fetch(request) {
     const sti = decodeURIComponent(new URL(request.url).pathname)
@@ -206,7 +221,7 @@ async function sjekkSider(
      * mobilsjekken finner ikke noe som stikker utenfor. Vakten nederst ville
      * heller ikke fanget det, siden siden faktisk var innom køen.
      */
-    const svar = await side.goto(`http://localhost:${PORT}${url}`, {
+    const svar = await side.goto(`http://127.0.0.1:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
     if (!svar?.ok()) {

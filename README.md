@@ -106,7 +106,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 bun --filter @fristil/designsystem generate
 ```
 
-Fargene ligger i to lag. Palettfargene (`--palette-interactive-70`) er råverdier, og de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter bruker det semantiske laget, så de følger med når paletten justeres.
+Fargene ligger i to lag. Palettfargene (`--palette-azure-70`) er råverdier, og de semantiske (`--semantic-interactive-main`) sier hva fargen betyr og peker på en palettfarge. Komponenter bruker det semantiske laget, så de følger med når paletten justeres.
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
