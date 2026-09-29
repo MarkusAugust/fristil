@@ -5,7 +5,7 @@ description: Endre farger, form og størrelse i Fristil uten at endringene forsv
 
 Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
 
-Fire veier, i den rekkefølgen du bør prøve dem:
+Tre veier, i den rekkefølgen du bør prøve dem:
 
 | Vei | Til hva |
 | --- | --- |
@@ -15,9 +15,19 @@ Fire veier, i den rekkefølgen du bør prøve dem:
 
 ## Egne farger
 
-Skal hele systemet ha organisasjonens farger, er [Eget tema](../eget-tema/) raskere: du oppgir merkefargene, og generatoren byggefunksjon skalaene og kontrollerer kontrasten i begge temaer.
+Det er én vei inn: **din egen CSS, lastet etter `tokens.css`.** Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`), og CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
 
-Skal du bare endre en farge eller to, overstyrer du variablene i din egen CSS. Last den etter `tokens.css`:
+Standarden er å la være: Fristils egne farger er kontrollert mot WCAG AA i begge temaer, og du trenger ikke skrive noe. Skal du endre dem, velger du hvor grovt du tar i.
+
+| Du vil | Skriv |
+| --- | --- |
+| Endre hva én farge betyr | Det semantiske tokenet, `--semantic-interactive-main` |
+| Bytte en hel skala | Palettrinnene, `--palette-danger-5` til `-100`. Alt som peker på dem, følger med |
+| Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../eget-tema/), så skrives fila for deg |
+
+Generatoren er ikke en egen mekanisme. Den setter de samme variablene, både palett og semantiske, for begge temaer, og kontrollerer kontrasten i hvert par mens den gjør det. Fila den skriver legger seg i sitt eget lag, `fristil-tema`, slik at din egen CSS fortsatt vinner over temaet.
+
+### Variablene
 
 ```css
 :root {
@@ -26,10 +36,8 @@ Skal du bare endre en farge eller to, overstyrer du variablene i din egen CSS. L
 }
 ```
 
-Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`). CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
-
 :::caution[Overstyrer du, eier du kontrasten]
-Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må måles på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
+Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--semantic-interactive-main` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--semantic-interactive-contrast`.
 :::
 
 ### Per tema
@@ -53,10 +61,6 @@ Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du din
 ```
 
 De to siste blokkene må begge være med, siden Fristil støtter både systemvalget og et eksplisitt `data-theme`.
-
-### Hvilket lag?
-
-Overstyr **semantiske** verdier når du vil endre hva en farge betyr. Overstyr **palett**-verdier når du vil bytte hele skalaen; da følger alle semantiske verdier som peker på den, med.
 
 ## Form og størrelse
 
