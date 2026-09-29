@@ -57,8 +57,8 @@ const MERKER = [
     /*
      * Neon med taket hevet, altså det verste tilfellet for kontrastkravet.
      * `#39ff14` ligger på 0,286 og kappes av standardtaket, mens `#ff2d6f` på
-     * 0,2399 så vidt slipper under. Hele listen av par kjøres mot dette merket som
-     * mot de tre andre, og det er påstanden om at et hevet tak ikke svekker
+     * 0,2399 så vidt slipper under. Hele listen av par kjøres mot dette merket
+     * som mot de tre andre, og det er påstanden om at et hevet tak ikke svekker
      * garantien. Taket styrer metning; kontrasten styres av trinnene og av
      * justeringspasset, som måler hvert par etterpå.
      */
