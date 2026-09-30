@@ -158,7 +158,7 @@ Tre regler gjelder alle sammen:
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 `querySelector`, `FormData` og vanlig CSS virker rett inn i det.
 
-## 5. Byggerne i malen
+## 5. Byggefunksjonene i malen
 
 ```astro
 ---

@@ -523,7 +523,7 @@ fs.button({ variant: "secondary" })
 // { class: "fs-button", "data-variant": "secondary" }
 \`\`\`
 
-Byggerne gir et objekt med HTML-attributtnavn, som spres inn der malspråket
+Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der malspråket
 støtter spredning, eller leses ut felt for felt. De ${antallByggefunksjoner()}
 byggefunksjonene:
 
@@ -725,7 +725,7 @@ import "@fristil/designsystem/badge.css"
 
 Navnet på hvert stilark står i tabellene under. Har du et layoutkomponent, hører
 \`tokens.css\` der, én gang for hele siden.`,
-    markup: `## 5. Byggerne i malen
+    markup: `## 5. Byggefunksjonene i malen
 
 \`\`\`astro
 ---

@@ -78,7 +78,7 @@ export type Matrix = {
 }
 
 /**
- * Byggefunksjon hele matrisen for ett utseende.
+ * Bygger hele matrisen for ett utseende.
  *
  * `neutral` får `canvas` og `raised` i tillegg til rollene sine. De hører bare
  * dit: en rød side er ikke en tilstand systemet har.

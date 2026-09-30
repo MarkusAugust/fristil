@@ -261,9 +261,9 @@ export class FsDialog extends HostElement {
     const dialog = this.dialog
 
     // `showModal()` kaster «The element is not in a Document» hvis dialogen
-    // ikke står i siden. Det er ikke teoretisk: en morfer byggefunksjon serverens
-    // utgave i et løsrevet tre før den sammenlignes, og et egendefinert
-    // element tas i bruk der også. Uten denne linja kastet komponenten ved
+    // ikke står i siden. Det er ikke teoretisk: en morfer bygger serverens
+    // utgave i et løsrevet tre før den sammenlignes, og en web
+    // component tas i bruk der også. Uten denne linja kastet komponenten ved
     // hver eneste patch som rørte dialogen. Står den løsrevet nå, kjøres
     // `sync()` uansett på nytt når den kobles til.
     if (!dialog?.isConnected) {

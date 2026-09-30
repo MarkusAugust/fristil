@@ -141,12 +141,12 @@ describe("fs fra /react", () => {
     return svar
   }
 
-  /** `setAttributes` tar et element og skriver på det, og byggefunksjon ingenting. */
-  const IKKE_BYGGERE = ["setAttributes"]
+  /** `setAttributes` tar et element og skriver på det, og bygger ingenting. */
+  const IKKE_BYGGEFUNKSJONER = ["setAttributes"]
 
   const byggefunksjoner = Object.entries(fsReact).filter(
     ([navn, verdi]) =>
-      typeof verdi === "function" && !IKKE_BYGGERE.includes(navn),
+      typeof verdi === "function" && !IKKE_BYGGEFUNKSJONER.includes(navn),
   ) as [string, (valg?: Record<string, unknown>) => unknown][]
 
   it("dekker hver byggefunksjon i /react", () => {

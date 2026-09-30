@@ -210,8 +210,9 @@ fs.button({ variant: "secondary" })
 // { class: "fs-button", "data-variant": "secondary" }
 ```
 
-Byggerne gir et objekt med HTML-attributtnavn, som spres inn der malspråket
-støtter spredning, eller leses ut felt for felt. De 43 byggefunksjonene:
+Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der
+malspråket støtter spredning, eller leses ut felt for felt. De 43
+byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,

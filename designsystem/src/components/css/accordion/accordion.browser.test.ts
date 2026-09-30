@@ -60,7 +60,7 @@ describe("fs-accordion", () => {
   })
 
   it("lar teksten i et lukket panel bli funnet av søk i siden", () => {
-    // <details> holder innholdet i DOM-en. Byggefunksjon du det samme av knapper og
+    // <details> holder innholdet i DOM-en. Bygger du det samme av knapper og
     // aria-expanded, forsvinner teksten, og nettleserens søk finner den ikke.
     const skjult = document.querySelector("#forste p") as HTMLElement
 

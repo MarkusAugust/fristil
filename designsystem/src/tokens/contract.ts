@@ -85,7 +85,7 @@ export const NEUTRAL_LAYERS: Record<
 /** Kontrastkravene, med margin over WCAG. Tekst er 4,5 og grafikk er 3. */
 export const REQUIREMENT = { text: 4.6, graphic: 3.1 } as const
 
-/** Byggefunksjon én familie fra én merkefarge. */
+/** Bygger én familie fra én merkefarge. */
 export function buildFamily(
   brand: string,
   appearance: Appearance,
