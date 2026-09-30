@@ -38,43 +38,78 @@ for (const key of Object.keys(alle)) {
  * uansett spesifisitet, så nå holder en enkel :root.
  */
 /*
- * `color-scheme` er ikke et token, men hører likevel hjemme her.
+ * `color-scheme` settes bare der noen har valgt et tema, aldri på bar `:root`.
  *
- * Uten den tegner nettleseren sine egne flater lyst uansett hva tokenene
- * sier: nedtrekkslista til en `<select>`, rullefelt, kalenderpanelet i et
- * datofelt og standardfargen på en side uten egen bakgrunn. En side i mørkt
- * tema fikk da en hvit liste midt i seg. Verdien `light dark` sier at begge
- * deler finnes, og at systemvalget avgjør.
+ * Egenskapen styrer nettleserens egne flater: nedtrekkslista til en
+ * `<select>`, rullefelt, kalenderpanelet i et datofelt og standardfargen på
+ * en side uten egen bakgrunn. Den er derfor nødvendig, men den arves nedover
+ * fra `<html>`. Et barn kan melde seg ut med `color-scheme: normal`, men
+ * det er en motregel verten aldri ba om å måtte skrive.
+ *
+ * Sto den på `:root`, tok Fristil over fargeskjemaet til et dokument det
+ * ikke eier. En widget som laster `fristil.css` inn i en vertsside ga hele
+ * verten mørke rullefelt og skjemakontroller i mørk modus, også utenfor
+ * widgeten, og verten hadde aldri bedt om det.
+ *
+ * En side som vil at nettleserens flater skal følge systemet, skriver derfor
+ * `color-scheme: light dark` på `<html>` selv. Det er den samme avtalen som
+ * for lagrekkefølgen: to linjer konsumenten eier.
  */
 const lines = [
   "/* Generert. Rediger tokens.ts, ikke denne fila. */",
   "",
   "@layer fristil {",
   "  :root {",
-  "    color-scheme: light dark;",
-  "",
 ]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
-  // Tom linje mellom gruppene. Den første står allerede etter
-  // `color-scheme`, og to på rad ville biome flagget hver gang fila
-  // genereres på nytt.
+  // Tom linje mellom gruppene, men ikke før den første: to på rad ville
+  // biome flagget hver gang fila genereres på nytt.
   if (index > 0) lines.push("")
   lines.push(`    /* ${section} */`)
   lines.push(...props.map((line) => `  ${line}`))
 }
 lines.push("  }")
 
-const darkLines = Object.entries({ ...darkTokens, ...darkColorTokens }).map(
-  ([name, value]) => `      ${name}: ${value};`,
+const morkeNavn = Object.keys({ ...darkTokens, ...darkColorTokens })
+
+const darkLines = morkeNavn.map(
+  (name) => `      ${name}: ${{ ...darkTokens, ...darkColorTokens }[name]};`,
 )
+
+/*
+ * De lyse verdiene for nøyaktig de tokenene mørkt tema overstyrer.
+ *
+ * Uten denne lista sto `[data-theme="light"]` med bare `color-scheme`, mens
+ * `[data-theme="dark"]` hadde alle 90. De to var altså ikke samme slags
+ * regel: mørkt tema virket på et hvilket som helst element, lyst tema bare
+ * på `<html>`, fordi et barn ikke kan overstyre en variabel det arver uten
+ * å deklarere den på nytt. En widget med `data-theme="light"` på sin egen
+ * `<div>` fikk derfor mørke farger på en lys vertsside.
+ *
+ * Lista bygges av de samme nøklene, ikke av en egen håndskrevet utgave, så
+ * de to blokkene ikke kan komme ut av takt. Et token uten lys verdi ville
+ * vært en feil i `tokens.ts`, og stopper genereringen her.
+ */
+const lightLines = morkeNavn.map((name) => {
+  const verdi = alle[name]
+  if (verdi === undefined)
+    throw new Error(
+      `${name} er overstyrt i mørkt tema, men har ingen lys verdi i tokens.ts.`,
+    )
+  return `      ${name}: ${verdi};`
+})
 
 /*
  * Mørkt tema skrives to ganger, og det er med vilje.
  *
  * Mediespørringen gjør at systemvalget gjelder uten at konsumenten skriver
- * noe. `:not([data-theme="light"])` lar en app likevel tvinge lyst tema på en
- * maskin som står i mørkt. Attributtregelen under gjør det motsatte, og står
- * sist så den vinner.
+ * noe. `:not([data-theme="light"])` lar en app tvinge lyst tema på hele
+ * dokumentet fra en maskin som står i mørkt.
+ *
+ * Attributtreglene under er noe annet: de er temagrenser, og virker på et
+ * hvilket som helst element. Begge deklarerer alle de 90 tokenene, slik at
+ * et tema kan ligge inne i et annet, begge veier, og slik at en widget kan
+ * låse sitt eget tre uten å røre verten.
  */
 lines.push(
   "",
@@ -89,6 +124,8 @@ lines.push(
   // nedtrekksliste under et hvitt felt.
   '  [data-theme="light"] {',
   "    color-scheme: light;",
+  "",
+  ...lightLines.map((l) => l.slice(2)),
   "  }",
   "",
   '  [data-theme="dark"] {',

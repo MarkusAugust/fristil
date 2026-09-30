@@ -256,7 +256,7 @@ function formVerdier(f: ThemeShape): Record<string, string> {
   return verdier
 }
 
-function linjer(verdier: Record<string, string>, innrykk: string): string {
+function lines(verdier: Record<string, string>, innrykk: string): string {
   return Object.entries(verdier)
     .map(([navn, verdi]) => `${innrykk}${navn}: ${verdi};`)
     .join("\n")
@@ -282,7 +282,7 @@ function tilCss(
 
   const deler: string[] = []
   if (Object.keys(rot).length > 0)
-    deler.push(`  :root {\n${linjer(rot, "    ")}\n  }`)
+    deler.push(`  :root {\n${lines(rot, "    ")}\n  }`)
 
   /*
    * Skriften settes som en ekte regel, ikke bare som et token.
@@ -293,10 +293,23 @@ function tilCss(
   if (typografi?.fontFamily)
     deler.push("  :root {\n    font-family: var(--font-family-base);\n  }")
 
+  /*
+   * Begge attributtene skrives, ikke bare det mørke.
+   *
+   * `data-theme` er en temagrense og virker på et hvilket som helst element.
+   * En deklarasjon på elementet selv vinner over en verdi det arver, uansett
+   * hvilket lag arven kom fra, så uten den lyse blokken sto Fristils egen
+   * farge inne i en lys grense mens temaets farge gjaldt ellers på siden.
+   * Det rammet nettopp mønsteret en innebygd komponent skal bruke.
+   *
+   * Bare fargene er med. Typografi og form er ikke temaavhengige, så de hører
+   * i `:root` alene og ville bare vært en kopi her.
+   */
   if (Object.keys(dark).length > 0)
     deler.push(
-      `  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme="light"]) {\n${linjer(dark, "      ")}\n    }\n  }`,
-      `  [data-theme="dark"] {\n${linjer(dark, "    ")}\n  }`,
+      `  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme="light"]) {\n${lines(dark, "      ")}\n    }\n  }`,
+      `  [data-theme="light"] {\n${lines(light, "    ")}\n  }`,
+      `  [data-theme="dark"] {\n${lines(dark, "    ")}\n  }`,
     )
 
   return [

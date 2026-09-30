@@ -23,6 +23,41 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.23.0 (2026-10-01)
+
+### Brytende
+
+- **`data-theme="light"` deklarerer nå alle de lyse tokenene, ikke bare
+  `color-scheme`.** Før sto blokken med én linje mens `[data-theme="dark"]`
+  hadde alle 90, så lyst tema virket bare på `<html>`: et barn kan ikke
+  overstyre en variabel det arver uten å deklarere den på nytt. Nå er
+  attributtet en temagrense begge veier, på et hvilket som helst element, og
+  et tema kan ligge inne i et annet.
+
+  **Overstyrer du en farge per tema, må du legge til en `[data-theme="light"]`-
+  blokk.** En deklarasjon på elementet selv vinner over en verdi det arver,
+  uansett hvilket lag arven kom fra, så uten blokken står Fristils egen farge
+  inne i en lys temagrense mens din gjelder ellers på siden. Oppskriften i
+  «Tilpasning» viser alle fire blokkene.
+
+- **Temageneratoren skriver nå også `[data-theme="light"]`.** `buildTheme()`
+  skrev `:root`, mediespørringen og `[data-theme="dark"]`, men ikke den lyse
+  blokken, så et generert tema hadde nøyaktig den samme asymmetrien: inne i en
+  lys temagrense sto Fristils egen farge, mens temaets farge gjaldt ellers på
+  siden. Har du et generert tema, må fila skrives om igjen med
+  `fristil tema` for å få blokken.
+
+- **`color-scheme` settes ikke lenger på `:root`.** Den står bare på
+  `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et
+  tema. Egenskapen arves nedover, så en verdi på roten gjaldt hele dokumentet,
+  også der pakken bare er en gjest: en
+  widget som lastet `fristil.css` inn i en vertsside ga hele verten mørke
+  rullefelt og skjemakontroller i mørk modus, også utenfor widgeten.
+
+  **Vil du at nettleserens flater skal følge systemet på hele siden, skriver
+  du `color-scheme: light dark` på `<html>` selv.** Det er den samme avtalen
+  som for lagrekkefølgen.
+
 ### Rettet
 
 - **Regelbøkene for kodeagenter og dokumentasjonen sa ulike ord om det samme.**

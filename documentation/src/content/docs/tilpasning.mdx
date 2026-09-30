@@ -42,9 +42,57 @@ Skriver du celler selv, er kontrastløftene dine å holde. `fristil sjekk-tema t
 Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--fs-color-accent-fill` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--fs-color-accent-content`.
 :::
 
+## Lyst og mørkt
+
+Uten videre følger fargene maskinens innstilling. En side som vil bestemme selv setter `data-theme` på `<html>`:
+
+```html
+<html data-theme="light">
+```
+
+### Attributtet er en temagrense
+
+`data-theme` virker på et hvilket som helst element, ikke bare på roten. Elementet og alt under det får temaet, og resten av siden står urørt:
+
+```html
+<div data-theme="dark">
+	<button class="fs-button">Denne er mørk</button>
+</div>
+```
+
+Et tema kan ligge inne i et annet, begge veier. En lys boks i en mørk seksjon er like gyldig som det motsatte.
+
+### En innebygd komponent låser sitt eget tema
+
+Legger du Fristil inn i en side du ikke eier, er dette måten å gjøre det på. Sett attributtet på komponentens eget rotelement, så er den lys uansett hva maskinen står på, og verten røres ikke:
+
+```html
+<div data-theme="light">
+	<table class="fs-table">
+		<caption class="fs-sr-only">Motregninger</caption>
+	</table>
+</div>
+```
+
+Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attributt som tilhører siden, ikke deg.
+
+### Fargeskjemaet er ditt å velge
+
+`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. Fristil setter den på `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et tema, men **aldri på `:root`**.
+
+Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele dokumentet, også en vertsside som aldri ba om det. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten ikke skal måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
+
+```css
+:root {
+	color-scheme: light dark;
+}
+```
+
+Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): to linjer du eier.
+
 ### Per tema
 
-Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
+Overstyringen under «Egne farger» gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
 
 ```css
 :root {
@@ -57,12 +105,16 @@ Overstyringen over gjelder begge temaer. Vil du ha ulike verdier, skriver du din
 	}
 }
 
+[data-theme="light"] {
+	--fs-color-accent-fill: #7c3aed;
+}
+
 [data-theme="dark"] {
 	--fs-color-accent-fill: #c4b5fd;
 }
 ```
 
-De to siste blokkene må begge være med, siden Fristil støtter både systemvalget og et eksplisitt `data-theme`.
+Alle fire blokkene må være med. De to `data-theme`-blokkene deklarerer hver sin verdi rett på elementet som bærer attributtet, og en deklarasjon på elementet selv vinner over en verdi det arver, uansett hvilket lag arven kom fra. Utelater du `[data-theme="light"]`, står Fristils egen farge inne i en lys temagrense mens din gjelder ellers på siden.
 
 ## Form og størrelse
 

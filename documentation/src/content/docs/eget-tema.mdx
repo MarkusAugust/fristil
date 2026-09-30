@@ -58,7 +58,15 @@ Legg fila etter `tokens.css`. Den overstyrer det oppskriften nevner, og resten k
 
 Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt `data-theme`.
 
-`tokens.css` setter også `color-scheme`. Det er den som avgjør hvordan nettleseren tegner sine egne flater: nedtrekkslista til en `<select>`, rullefelt og kalenderpanelet i et datofelt. Uten den blir de lyse i en mørk side. Standarden er `light dark`, altså at systemvalget avgjør, og setter du `data-theme` følger nettleserens flater med.
+`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: nedtrekkslista til en `<select>`, rullefelt og kalenderpanelet i et datofelt. Uten den blir de lyse i en mørk side.
+
+Fristil setter den bare på `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et tema. Den står ikke på `:root`, for egenskapen arves nedover, så en verdi der gjelder hele dokumentet. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten aldri ba om å måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
+
+```css
+:root {
+	color-scheme: light dark;
+}
+```
 
 ## Hva generatoren gjør
 
