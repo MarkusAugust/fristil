@@ -83,7 +83,7 @@ Regelen bak tabellen: **byggefunksjonen gir markup, komponenten gir oppførsel, 
 
 ## Problemet det løser
 
-Et egendefinert element som lager sitt eget innhold i vanlig DOM havner i strid med rammeverket rundt. Rammeverket mener at HTML-en fra serveren er fasiten, og alt komponenten har lagt til er noe det ikke vet om.
+En web component som lager sitt eget innhold i vanlig DOM havner i strid med rammeverket rundt. Rammeverket mener at HTML-en fra serveren er fasiten, og alt komponenten har lagt til er noe det ikke vet om.
 
 Dette er ikke teoretisk. Vi har testet det, med ekte Datastar og en tidligere utgave av `<fs-field>` som satte koblingen selv. Serveren sendte det samme feltet på nytt én gang:
 
@@ -102,7 +102,7 @@ for (let {name: l} of Array.from(r.attributes))
   !s.hasAttribute(l) && !o.includes(l) && r.removeAttribute(l)
 ```
 
-Et attributt som ikke står i serverens HTML blir fjernet. React har det samme problemet i en annen form: en strukturell rendring av foreldrekomponenten kan kaste bort noder et egendefinert element har lagt inn.
+Et attributt som ikke står i serverens HTML blir fjernet. React har det samme problemet i en annen form: en strukturell rendring av foreldrekomponenten kan kaste bort noder en web component har lagt inn.
 
 ## De to lagene
 

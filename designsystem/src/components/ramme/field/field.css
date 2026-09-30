@@ -6,7 +6,7 @@
 @import "../../css/error-text/error-text.css";
 
 @layer fristil {
-  /* Et egendefinert element er `display: inline` til noen sier noe annet, og
+  /* En web component er `display: inline` til noen sier noe annet, og
      `<fs-field>` var det eneste som pakker inn andre elementer uten å si
      det. Barna er blokker, så det så riktig ut helt til noen ga elementet en
      avstand eller la det i et rutenett. `<fs-suggestion>` har alltid sagt

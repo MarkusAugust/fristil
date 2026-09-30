@@ -109,11 +109,11 @@ describe("fs fra /react", () => {
    * uten en håndskrevet liste.
    */
   function kall(
-    bygger: (valg?: Record<string, unknown>) => unknown,
+    byggefunksjon: (valg?: Record<string, unknown>) => unknown,
   ): unknown[] {
     /*
-     * Det minste kallet er med fordi de fleste byggerne skal virke uten
-     * argumenter. `id` sendes likevel, siden byggerne som tar en id krever
+     * Det minste kallet er med fordi de fleste byggefunksjonene skal virke uten
+     * argumenter. `id` sendes likevel, siden byggefunksjonene som tar en id krever
      * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
      * advarsel i konsollen i tillegg.
      */
@@ -121,7 +121,7 @@ describe("fs fra /react", () => {
       { id: "sak" },
       { id: "sak", count: 2, help: true, error: true, invalid: true },
     ]
-    const holder = bygger as unknown as Record<string, unknown>
+    const holder = byggefunksjon as unknown as Record<string, unknown>
     for (const [navn, verdier] of Object.entries(holder)) {
       if (!navn.endsWith("s") || !Array.isArray(verdier)) continue
       const opsjon =
@@ -133,7 +133,7 @@ describe("fs fra /react", () => {
     const svar: unknown[] = []
     for (const valg of ekstra) {
       try {
-        svar.push(bygger(valg))
+        svar.push(byggefunksjon(valg))
       } catch {
         // En byggefunksjon som avviser kombinasjonen sier ikke noe om navn.
       }
@@ -141,25 +141,28 @@ describe("fs fra /react", () => {
     return svar
   }
 
-  /** `setAttributes` tar et element og skriver på det, og bygger ingenting. */
+  /** `setAttributes` tar et element og skriver på det, og byggefunksjon ingenting. */
   const IKKE_BYGGERE = ["setAttributes"]
 
-  const byggere = Object.entries(fsReact).filter(
+  const byggefunksjoner = Object.entries(fsReact).filter(
     ([navn, verdi]) =>
       typeof verdi === "function" && !IKKE_BYGGERE.includes(navn),
   ) as [string, (valg?: Record<string, unknown>) => unknown][]
 
   it("dekker hver byggefunksjon i /react", () => {
     // Uten denne kan vaktposten under bli tom uten at noe sier fra.
-    expect(byggere.length).toBeGreaterThan(30)
-    for (const [navn, bygger] of byggere) {
-      expect(kall(bygger).length, `${navn}() svarte aldri`).toBeGreaterThan(0)
+    expect(byggefunksjoner.length).toBeGreaterThan(30)
+    for (const [navn, byggefunksjon] of byggefunksjoner) {
+      expect(
+        kall(byggefunksjon).length,
+        `${navn}() svarte aldri`,
+      ).toBeGreaterThan(0)
     }
   })
 
   it("har ingen nøkler React ville klaget på", () => {
-    for (const [navn, bygger] of byggere) {
-      for (const svar of kall(bygger)) {
+    for (const [navn, byggefunksjon] of byggefunksjoner) {
+      for (const svar of kall(byggefunksjon)) {
         for (const nokkel of alleNokler(svar)) {
           expect(STAVES_ANNERLEDES, `${navn}() gir «${nokkel}»`).not.toContain(
             nokkel,

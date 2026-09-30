@@ -57,9 +57,9 @@ bruker.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 egendefinerte elementer, og dette er hele lista.
-Klassene er `fs-` + kebab-case. Varianter er alltid `data-*`-attributter,
-aldri egne klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+`fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
+klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)
@@ -198,7 +198,7 @@ Markupen er vanlig HTML, i malen rammeverket ditt bruker:
 `class` og `for`, ikke `className` og `htmlFor`. Det er React som skriver om
 attributtnavnene, og det gjelder ikke her.
 
-## 6. Typede byggere
+## 6. Typede byggefunksjoner
 
 Har prosjektet TypeScript, kan klassene komme fra `fs` i stedet for å skrives
 som strenger. Da blir en variant som ikke finnes en kompileringsfeil:
@@ -211,7 +211,7 @@ fs.button({ variant: "secondary" })
 ```
 
 Byggerne gir et objekt med HTML-attributtnavn, som spres inn der malspråket
-støtter spredning, eller leses ut felt for felt. De 43 byggerne:
+støtter spredning, eller leses ut felt for felt. De 43 byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,

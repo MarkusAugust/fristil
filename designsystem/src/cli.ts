@@ -23,7 +23,7 @@
  * Dette er den eneste fila i pakken som kjører utenfor nettleseren, og derfor
  * den eneste som viser til Node-typene.
  *
- * Generatoren bygger skalaene, setter de semantiske verdiene og flytter
+ * Generatoren byggefunksjon skalaene, setter de semantiske verdiene og flytter
  * lysheten på dem som ikke holder kontrastkravet. Hver justering skrives ut,
  * så du ser hva som ble endret. Holder et par likevel ikke, avsluttes
  * kjøringen med feil framfor å levere et tema som ser riktig ut.

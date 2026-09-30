@@ -2,7 +2,7 @@ import type { Appearance, Violation } from "./contract.js"
 import { buildMatrix, FAMILIES, type Family, FRISTIL_BRANDS } from "./matrix.js"
 
 /**
- * Bygger et helt fargetema av noen få merkefarger.
+ * Byggefunksjon et helt fargetema av noen få merkefarger.
  *
  * Temaet er kontrakten anvendt på konsumentens kulører. Kuløren er deres,
  * lysheten er rollens, og løftene holder av konstruksjon. Derfor finnes det
@@ -311,7 +311,7 @@ function tilCss(
   ].join("\n")
 }
 
-/** Bygger temaet, og kontrollerer hvert løfte mens det bygges. */
+/** Byggefunksjon temaet, og kontrollerer hvert løfte mens det bygges. */
 export function buildTheme(input: ThemeInput): Theme {
   const oppgitte = FAMILIES.filter((navn) => input[navn])
 

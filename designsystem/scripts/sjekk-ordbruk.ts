@@ -46,6 +46,30 @@ const FORBUDT: { mønster: RegExp; i_stedet: string; unntatt?: RegExp }[] = [
   },
   {
     /*
+     * Det heter byggefunksjon. Ordet sto 20 steder i dokumentasjonen og null i
+     * regelbøkene for kodeagenter, som i stedet skrev «byggerne» seks steder.
+     * En agent som får regelboka og så leser en dokumentasjonsside møtte to
+     * navn på samme ting.
+     *
+     * Bare de bøyde formene står i mønsteret. Verbet å bygge får aldri dem,
+     * så «stilarkene bygger på den» og «bygger `aria-describedby`» går fri
+     * uten en eneste unntaksrad. De sto for sju av de tretten treffene.
+     */
+    mønster: /bygger(?:e|en|ne)\b/gu,
+    i_stedet: "byggefunksjon",
+  },
+  {
+    /*
+     * Det heter web component. Regelbøkene skrev «egendefinert element» ni
+     * steder og «web component» null, mens dokumentasjonen brukte begge.
+     * Ordet er engelsk, men det er navnet på standarden, som «Shadow DOM»,
+     * og leseren finner det igjen på MDN.
+     */
+    mønster: /egendefiner\p{L}* element\p{L}*/giu,
+    i_stedet: "web component",
+  },
+  {
+    /*
      * Tankestrek er et engelsk skrivemønster, og lite vanlig i norsk sakprosa.
      * Den kom inn over hundre steder på én dag, fordi den er lett å skrive og
      * aldri ser feil ut i en enkelt setning. Del setningen i to, eller bruk
@@ -86,6 +110,10 @@ const HOPP_OVER = [
   ".astro/",
   // Fila du leser nå, som må kunne skrive ordene for å lete etter dem.
   "scripts/sjekk-ordbruk.ts",
+  // Ordlista over norske ord, av samme grunn: den må stave dem for å kjenne dem.
+  "scripts/sjekk-identifikatorer.ts",
+  // Gitignorert arbeidsnotat, ikke tekst vi sender ut.
+  "PLAN.md",
   // Generert av generate-agent.ts; kilden er oppskriftene der.
   "designsystem/agent/",
   // Generert fra tokens.ts.

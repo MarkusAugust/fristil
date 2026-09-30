@@ -437,7 +437,7 @@ await pa(
 
 /*
  * Nedtrekkslista er en CSS-komponent, og har verken skyggerot eller
- * egendefinert element å slå opp. Den har likevel noe som kan slutte å
+ * web component å slå opp. Den har likevel noe som kan slutte å
  * virke: `data-picker="styled"` ber nettleseren tegne lista inne i siden, og
  * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne testen
  * ville en demo som åpner seg uten farger meldt grønt.

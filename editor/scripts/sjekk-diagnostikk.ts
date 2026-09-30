@@ -92,7 +92,7 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "et egendefinert element som begynner på select er ingen kontroll",
+    name: "en web component som begynner på select er ingen kontroll",
     html: `<fs-field><label-x>N</label-x><select-all></select-all></fs-field>`,
     count: 1,
     mentions: ["fant ingen kontroll"],

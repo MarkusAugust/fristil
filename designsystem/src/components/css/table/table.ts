@@ -27,7 +27,7 @@ export type TableAttributes = {
  *
  * Klassen hører på et ekte `<table>` med `<thead>` og `<th>`. Det er
  * overskriftscellene som gjør at skjermlesere kan si «Beløp, 1 240 kroner»
- * når brukeren står i en celle. Bygger du tabellen av `<div>`-er, finnes ikke
+ * når brukeren står i en celle. Byggefunksjon du tabellen av `<div>`-er, finnes ikke
  * den koblingen.
  *
  * ```ts

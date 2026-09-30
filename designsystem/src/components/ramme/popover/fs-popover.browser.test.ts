@@ -16,7 +16,7 @@ import "./popover.css"
 import "../../css/button/button.css"
 import "../../css/list/list.css"
 
-/** Markupen serveren sender, bygget med byggeren og ikke for hånd. */
+/** Markupen serveren sender, bygget med byggefunksjonen og ikke for hånd. */
 const BOKS = popover({ id: "panel" })
 
 async function tegn() {

@@ -51,7 +51,7 @@ function isSeconds(raw: string | null): boolean {
 /**
  * Varsler før en innlogget økt går ut.
  *
- * Dette er tingen hver store organisasjon bygger selv og gjør feil. Enten
+ * Dette er tingen hver store organisasjon byggefunksjon selv og gjør feil. Enten
  * kommer det ingen advarsel, og brukeren mister et halvutfylt søknadsskjema,
  * eller så stjeler dialogen fokus midt i en setning, eller så leser
  * skjermleseren nedtellingen hvert sekund.

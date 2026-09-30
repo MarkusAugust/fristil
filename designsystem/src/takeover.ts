@@ -68,7 +68,7 @@ export type TakeoverPlan = {
 }
 
 /**
- * Bygger oppslaget fra en fil i pakken til inngangspunktet som peker på den.
+ * Byggefunksjon oppslaget fra en fil i pakken til inngangspunktet som peker på den.
  *
  * `exports` peker på `dist` for JavaScript og på `src` for komponentenes
  * CSS. Begge føres tilbake til kilden, siden det er kilden som kopieres.

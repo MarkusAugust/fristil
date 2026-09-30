@@ -1,7 +1,7 @@
 import type { HTMLAttributes, RefAttributes } from "react"
 
 /**
- * Typer for Fristils egendefinerte elementer i JSX.
+ * Typer for Fristils web components i JSX.
  *
  * Uten disse kjenner ikke TypeScript `<fs-field>` i det hele tatt, men sier
  * «Property 'fs-field' does not exist on type JSX.IntrinsicElements». Og
@@ -22,10 +22,10 @@ import type { HTMLAttributes, RefAttributes } from "react"
  */
 
 /**
- * Boolske attributter på egendefinerte elementer.
+ * Boolske attributter på web components.
  *
  * Typen er `true | undefined`, ikke `boolean` og ikke `""`, og det er med
- * vilje. React behandler egendefinerte elementer ulikt mellom versjoner, og
+ * vilje. React behandler web components ulikt mellom versjoner, og
  * bare ett mønster er riktig i begge:
  *
  *     React 18 setter attributter       React 19 setter egenskaper
@@ -61,7 +61,7 @@ type ServerControlled = {
 }
 
 /**
- * Grunnformen for et egendefinert element i JSX.
+ * Grunnformen for en web component i JSX.
  *
  * `HTMLAttributes` alene har ikke `ref`. Den ligger i `RefAttributes`, og
  * uten den var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret

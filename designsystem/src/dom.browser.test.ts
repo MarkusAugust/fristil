@@ -33,7 +33,7 @@ describe("fs.setAttributes", () => {
     fs.setAttributes(element, fs.input({ type: "email", state: "invalid" }))
     fs.setAttributes(element, fs.input({ type: "email" }))
 
-    // Byggeren utelater data-state i normaltilstand. Uten oppryddingen
+    // Byggefunksjonen utelater data-state i normaltilstand. Uten oppryddingen
     // ville feltet blitt stående rødt etter at feilen var rettet.
     expect(element.hasAttribute("data-state")).toBe(false)
     expect(element.hasAttribute("aria-invalid")).toBe(false)
@@ -154,24 +154,24 @@ describe("setAttributes rydder i alt byggefunksjonene kan sette", () => {
   function valgfrieNavn(): string[] {
     const valgfrie = new Set<string>()
 
-    for (const bygger of Object.values(fs)) {
-      if (typeof bygger !== "function") continue
+    for (const byggefunksjon of Object.values(fs)) {
+      if (typeof byggefunksjon !== "function") continue
 
       let alltid: Set<string>
       try {
-        alltid = attributtnavn((bygger as (valg?: unknown) => unknown)())
+        alltid = attributtnavn((byggefunksjon as (valg?: unknown) => unknown)())
       } catch {
         // Vakter og hjelpefunksjoner sender ikke ut attributter.
         continue
       }
 
-      for (const [liste, verdier] of Object.entries(bygger)) {
+      for (const [liste, verdier] of Object.entries(byggefunksjon)) {
         if (!Array.isArray(verdier)) continue
         const nokkel = NOKKEL[liste] ?? liste.replace(/s$/, "")
 
         for (const verdi of verdier as string[]) {
           const ut = attributtnavn(
-            (bygger as (valg?: unknown) => unknown)({ [nokkel]: verdi }),
+            (byggefunksjon as (valg?: unknown) => unknown)({ [nokkel]: verdi }),
           )
           for (const navn of ut) if (!alltid.has(navn)) valgfrie.add(navn)
         }
@@ -197,7 +197,7 @@ describe("setAttributes rydder i alt byggefunksjonene kan sette", () => {
 })
 
 /**
- * `open` kommer fra `fs.dialog()`, men sveipen over byggerne hopper over
+ * `open` kommer fra `fs.dialog()`, men sveipen over byggefunksjonene hopper over
  * den, siden den krever et valgobjekt. Uten `open` i `SYSTEM_ATTRIBUTES`
  * kunne `setAttributes` åpne en dialog, men aldri lukke den igjen, og det er
  * nøyaktig feilen `data-size` hadde.

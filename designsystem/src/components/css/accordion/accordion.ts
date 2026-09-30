@@ -24,7 +24,7 @@ export type AccordionAttributes = {
  *
  * Klassen hører på et `<details>` med et `<summary>` først. Nettleseren tar
  * seg av åpning, lukking, tastatur og at skjermlesere melder «utvidet» eller
- * «sammenfoldet». Bygger du det samme av knapper og `aria-expanded`, må alt
+ * «sammenfoldet». Byggefunksjon du det samme av knapper og `aria-expanded`, må alt
  * det skrives på nytt, og nettleserens søk i siden finner ikke lenger tekst
  * inne i et lukket panel.
  *

@@ -85,7 +85,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 | Ting | Form | Eksempel |
 | --- | --- | --- |
 | CSS-klasse | `fs-` + kebab-case | `fs-session-timeout` |
-| Egendefinert element | `fs-` + kebab-case | `<fs-session-timeout>` |
+| Web component | `fs-` + kebab-case | `<fs-session-timeout>` |
 | Klasse | `Fs` + PascalCase | `FsSessionTimeout` |
 | Registreringsfunksjon | `defineFs` + PascalCase | `defineFsSessionTimeout()` |
 | Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_SESSION_TIMEOUT_TAG` |

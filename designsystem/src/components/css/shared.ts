@@ -70,9 +70,9 @@ export function createFieldId(): string {
 }
 
 /**
- * Id-en byggeren fikk, eller en reserve med en beskjed.
+ * Id-en byggefunksjonen fikk, eller en reserve med en beskjed.
  *
- * Hver bygger som tar en id krever den i typen. Det holder ikke alene: en
+ * Hver byggefunksjon som tar en id krever den i typen. Det holder ikke alene: en
  * konsument uten TypeScript ser ingen type, og ren HTML med
  * `<script type="module">` er en førsteklasses måte å bruke Fristil på. Uten
  * reserven ble id-ene til strenger som `undefined-list`, `aria-controls` pekte
@@ -81,7 +81,7 @@ export function createFieldId(): string {
  * Den tomme strengen teller som ingen id. `fs.field({ id: "" })` ga `for=""`
  * og `help.id="-help"`, altså det samme problemet uten at noe sa fra.
  *
- * Navnet på byggeren står i meldingen. Uten det sa forslagsfeltet «fs.field()»
+ * Navnet på byggefunksjonen står i meldingen. Uten det sa forslagsfeltet «fs.field()»
  * og sendte utvikleren til feil sted.
  */
 export function idOrFallback(builder: string, id: string | undefined): string {

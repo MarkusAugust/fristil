@@ -4,9 +4,9 @@ Regelboka for Fristil i en React-app.
 
 React skiller seg fra alle de andre miljøene på én ting, og den er viktig nok
 til å ha sin egen fil: React skriver om attributtnavnene. `class` heter
-`className` og `for` heter `htmlFor`, og bruker du byggerne fra hovedinngangen
-skriver React «Invalid DOM property» i konsollen for hvert element. Derfor har
-pakken en egen React-inngang.
+`className` og `for` heter `htmlFor`, og bruker du byggefunksjonene fra
+hovedinngangen skriver React «Invalid DOM property» i konsollen for hvert
+element. Derfor har pakken en egen React-inngang.
 
 Dette er @fristil/designsystem 0.22.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
@@ -46,9 +46,9 @@ Navnet på hvert stilark står i tabellene under.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 egendefinerte elementer, og dette er hele lista.
-Klassene er `fs-` + kebab-case. Varianter er alltid `data-*`-attributter,
-aldri egne klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+`fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
+klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)
@@ -212,7 +212,7 @@ export function Kontaktskjema() {
 
 `fs` importeres fra `@fristil/designsystem/react`, aldri fra hovedinngangen:
 React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
-`for`. De 43 byggerne finnes i begge:
+`for`. De 43 byggefunksjonene finnes i begge:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,
@@ -227,8 +227,8 @@ React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
 
 ## 6. Bare `invalid={ugyldig || undefined}` virker
 
-React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette
-mønsteret er riktig i begge:
+React behandler web components ulikt mellom versjoner, og bare dette mønsteret
+er riktig i begge:
 
 | Skrivemåte | React 18 (setter attributt) | React 19 (setter egenskap) |
 | --- | --- | --- |
