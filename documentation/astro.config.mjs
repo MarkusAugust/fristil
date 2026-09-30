@@ -32,51 +32,44 @@ export default defineConfig({
         SiteTitle: "./src/components/SiteTitle.astro",
         MarkdownContent: "./src/components/MarkdownContent.astro",
       },
+      /*
+       * Expressive Code skriver stilarket sitt som en `<link>` inne i
+       * `<body>`, ved den første kodeblokken på siden. På komponentsidene ser
+       * nettleseren den først rundt 36 000 tegn inn i dokumentet, og må stoppe
+       * tegningen på den: 59 av 61 sider hadde et tegneblokkerende stilark
+       * midt i innholdet. Med `emitExternalStylesheet: false` legges stilen
+       * inline i stedet, og ingen side har det lenger. Prisen er omtrent
+       * 4 kB gzip mer HTML per side, altså ingen ekstra rundtur mot en litt
+       * større førstelevering.
+       */
+      expressiveCode: { emitExternalStylesheet: false },
+      /*
+       * Tre stilark, og det er ikke en innstramming for innstrammingens skyld:
+       * de 42 komponentstilarkene som sto her ble lastet på hver av de 62
+       * sidene, og ingen av dem ble brukt av vanlig DOM noe sted.
+       *
+       * Grunnen er `Preview.astro`. Hvert levende eksempel ligger i en shadow
+       * root, og forhåndsvisningen legger selv inn nøyaktig de stilarkene
+       * `stiler`-lista oppgir, med `?inline`. Et stilark i `customCss` nådde
+       * altså aldri eksemplene det var ment for: de har sine egne kopier.
+       * Utenfor forhåndsvisningene er det bare `.fs-preview` selv som står i
+       * vanlig DOM, og den er dokumentasjonens egen klasse fra `global.css`.
+       *
+       * `tokens.css` må være global. Variablene settes på `:root` og arves inn
+       * gjennom shadow-grensen, så det er den som gir forhåndsvisningene farger
+       * og avstander.
+       *
+       * `button.css` står igjen, og grunnen er Vite framfor smak. Tas det ut
+       * herfra, slutter Vite å skrive stilarket i det hele tatt:
+       * `src/pages/demo/sideskjelett.astro` importerer det selv, men med så få
+       * importører havnet det ikke i noen chunk, og demosiden kom ut med
+       * uformede knapper. `scripts/sjekk-stilark.ts` fant det, og er grunnen
+       * til at den finnes.
+       */
       customCss: [
         "./src/styles/global.css",
         "@fristil/designsystem/tokens.css",
-        "@fristil/designsystem/file-upload.css",
-        "@fristil/designsystem/popover.css",
-        "@fristil/designsystem/toast.css",
-        "@fristil/designsystem/suggestion.css",
-        "@fristil/designsystem/tabs.css",
-        "@fristil/designsystem/error-summary.css",
-        "@fristil/designsystem/paragraph.css",
-        "@fristil/designsystem/heading.css",
-        "@fristil/designsystem/tooltip.css",
-        "@fristil/designsystem/toggle-group.css",
-        "@fristil/designsystem/search.css",
-        "@fristil/designsystem/dialog.css",
-        "@fristil/designsystem/accordion.css",
-        "@fristil/designsystem/skip-link.css",
-        "@fristil/designsystem/pagination.css",
-        "@fristil/designsystem/breadcrumbs.css",
-        "@fristil/designsystem/skeleton.css",
-        "@fristil/designsystem/avatar.css",
-        "@fristil/designsystem/tag.css",
-        "@fristil/designsystem/list.css",
-        "@fristil/designsystem/table.css",
         "@fristil/designsystem/button.css",
-        "@fristil/designsystem/link.css",
-        "@fristil/designsystem/badge.css",
-        "@fristil/designsystem/label.css",
-        "@fristil/designsystem/input.css",
-        "@fristil/designsystem/textarea.css",
-        "@fristil/designsystem/select.css",
-        "@fristil/designsystem/help-text.css",
-        "@fristil/designsystem/error-text.css",
-        "@fristil/designsystem/sr-only.css",
-        "@fristil/designsystem/checkbox.css",
-        "@fristil/designsystem/radio.css",
-        "@fristil/designsystem/switch.css",
-        "@fristil/designsystem/fieldset.css",
-        "@fristil/designsystem/alert.css",
-        "@fristil/designsystem/card.css",
-        "@fristil/designsystem/divider.css",
-        "@fristil/designsystem/spinner.css",
-        "@fristil/designsystem/field.css",
-        "@fristil/designsystem/session-timeout.css",
-        "@fristil/designsystem/connection-status.css",
       ],
       sidebar: [
         {
