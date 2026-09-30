@@ -91,8 +91,8 @@ export class FsErrorSummary extends HostElement {
    *
    * Attributtet heter `data-autofocus` og ikke `autofocus`, selv om det
    * siste leser bedre. `autofocus` er en boolsk egenskap på `HTMLElement`,
-   * og React 19 setter egenskaper framfor attributter på egendefinerte
-   * elementer. `autofocus="false"` ble da til `el.autofocus = "false"`, som
+   * og React 19 setter egenskaper framfor attributter på web
+   * components. `autofocus="false"` ble da til `el.autofocus = "false"`, som
    * er sant, mens attributtet aldri kom i markupen, og avslaget virket ikke.
    * `data-*` sendes videre som attributt i alle React-versjoner.
    */

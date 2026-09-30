@@ -19,7 +19,7 @@ export const HostElement =
     : HTMLElement
 
 /**
- * Registrerer et egendefinert element, én gang, og bare i nettleseren.
+ * Registrerer en web component, én gang, og bare i nettleseren.
  *
  * Kalles `defineFs*` fra en modul som også kjøres på serveren, som i
  * TanStack Start eller en React-app med server-rendring, skal det ikke skje

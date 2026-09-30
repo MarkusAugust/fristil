@@ -57,9 +57,9 @@ ustilt ut. For en mal er én fil nesten alltid riktig valg.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 egendefinerte elementer, og dette er hele lista.
-Klassene er `fs-` + kebab-case. Varianter er alltid `data-*`-attributter,
-aldri egne klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+`fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
+klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)

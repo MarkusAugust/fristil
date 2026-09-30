@@ -46,6 +46,37 @@ const FORBUDT: { mønster: RegExp; i_stedet: string; unntatt?: RegExp }[] = [
   },
   {
     /*
+     * Det heter byggefunksjon. Regelbøkene for kodeagenter og
+     * dokumentasjonssidene sier det samme om det samme systemet, og en agent
+     * som får begge i konteksten skal ikke møte to navn på én ting.
+     *
+     * Bare de bøyde formene står i mønsteret. Verbet å bygge får aldri dem,
+     * så «stilarkene bygger på den» og «generatoren bygger skalaene» går fri
+     * uten en eneste unntaksrad. Et mønster på stammen ville felt dem, og
+     * 0.22.0 loggførte nettopp den feilen: «generatoren byggefunksjon
+     * skalaene». Formen «en bygger» i entall ubestemt kan derfor ikke voktes,
+     * siden den er skrevet likt som verbet.
+     *
+     * `i`-flagget er ikke pynt: «Byggerne» med stor forbokstav sto i to
+     * overskrifter i regelbøkene og slapp gjennom uten det.
+     */
+    mønster: /bygger(?:e|en|ne)\b/giu,
+    i_stedet: "byggefunksjon",
+  },
+  {
+    /*
+     * Det heter web component. Ordet er engelsk, men det er navnet på
+     * standarden, som «Shadow DOM», og leseren finner det igjen på MDN.
+     *
+     * Mellomrommet tåler linjeskift og kommentartegn, fordi kommentarene her
+     * brekkes på 80 og uttrykket er på to ord. Tre forekomster sto delt over
+     * to linjer og var usynlige for et mønster med bare mellomrom i.
+     */
+    mønster: /egendefiner\p{L}*[\s*/]{1,16}element\p{L}*/giu,
+    i_stedet: "web component",
+  },
+  {
+    /*
      * Tankestrek er et engelsk skrivemønster, og lite vanlig i norsk sakprosa.
      * Den kom inn over hundre steder på én dag, fordi den er lett å skrive og
      * aldri ser feil ut i en enkelt setning. Del setningen i to, eller bruk
@@ -77,6 +108,10 @@ const MØNSTRE = [
   "presentasjon/**/*.html",
   "presentasjon/**/*.md",
   "*.md",
+  // npm-forsiden. Den står ikke i rota, og var derfor den ene utsendte teksten
+  // ingen leste. Versjonsloggen ved siden av er med vilje ute: den beskriver
+  // hva som skjedde i en utgivelse, og skal ikke skrives om i ettertid.
+  "designsystem/README.md",
 ]
 
 const HOPP_OVER = [
@@ -86,6 +121,10 @@ const HOPP_OVER = [
   ".astro/",
   // Fila du leser nå, som må kunne skrive ordene for å lete etter dem.
   "scripts/sjekk-ordbruk.ts",
+  // Ordlista over norske ord, av samme grunn: den må stave dem for å kjenne dem.
+  "scripts/sjekk-identifikatorer.ts",
+  // Gitignorert arbeidsnotat, ikke tekst vi sender ut.
+  "PLAN.md",
   // Generert av generate-agent.ts; kilden er oppskriftene der.
   "designsystem/agent/",
   // Generert fra tokens.ts.

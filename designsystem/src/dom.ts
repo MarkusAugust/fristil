@@ -3,12 +3,12 @@
  *
  * I JSX sprer du objektet rett inn i elementet. Uten JSX måtte du løkke
  * gjennom det selv, og passe på å fjerne attributter fra forrige tilstand.
- * Går et felt fra ugyldig til gyldig, utelater byggeren `data-state`, og et
+ * Går et felt fra ugyldig til gyldig, utelater byggefunksjonen `data-state`, og et
  * `setAttribute` alene ville latt den gamle verdien bli stående.
  */
 
 /**
- * Attributtene byggerne kan sende ut.
+ * Attributtene byggefunksjonene kan sende ut.
  *
  * Lista er lukket, og `setAttributes` rydder bare i disse. Konsumentens egne
  * attributter, som `data-testid` og hva det måtte være, røres ikke.

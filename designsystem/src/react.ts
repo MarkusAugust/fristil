@@ -205,7 +205,7 @@ export const fs = {
   },
 
   /**
-   * De sammensatte byggerne gir ett attributtsett per element, og hvert sett
+   * De sammensatte byggefunksjonene gir ett attributtsett per element, og hvert sett
    * må døpes om for seg. `host` har `tabindex`, og panelene i `fs.tabs()`
    * har både `tabindex` og `class`.
    */

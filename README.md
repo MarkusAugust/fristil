@@ -74,7 +74,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 | Sjekk | Hva den krever |
 | --- | --- |
 | `pakke-css.browser.test.ts` | Alt ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
-| `fs.browser.test.ts` | Hver bygger i `fs` gir en klasse og ingen `undefined`-attributter |
+| `fs.browser.test.ts` | Hver byggefunksjon i `fs` gir en klasse og ingen `undefined`-attributter |
 | `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
 | `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har |
 | `react.browser.test.ts` | Hver byggefunksjon finnes i `/react`, og ingen sender ut et attributt React staver annerledes |
@@ -85,7 +85,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 | Ting | Form | Eksempel |
 | --- | --- | --- |
 | CSS-klasse | `fs-` + kebab-case | `fs-session-timeout` |
-| Egendefinert element | `fs-` + kebab-case | `<fs-session-timeout>` |
+| Web component | `fs-` + kebab-case | `<fs-session-timeout>` |
 | Klasse | `Fs` + PascalCase | `FsSessionTimeout` |
 | Registreringsfunksjon | `defineFs` + PascalCase | `defineFsSessionTimeout()` |
 | Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_SESSION_TIMEOUT_TAG` |

@@ -461,7 +461,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
   /*
    * Fanene bærer valget i `aria-selected` og `tabindex` på knappene, og i
    * `hidden` på panelene. Ingen av delene finnes i serverens utgave, for
-   * valget er noe brukeren har gjort, og ingen av dem er fredet: byggeren
+   * valget er noe brukeren har gjort, og ingen av dem er fredet: byggefunksjonen
    * skriver ingen `data-preserve-attr`. Morfingen river dem altså bort, og
    * komponenten setter dem tilbake.
    */

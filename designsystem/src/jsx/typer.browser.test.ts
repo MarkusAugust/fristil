@@ -6,7 +6,7 @@ import { fs } from "../react"
 import "./react"
 
 /**
- * At det byggerne sender ut, passer i pakkens egne JSX-deklarasjoner.
+ * At det byggefunksjonene sender ut, passer i pakkens egne JSX-deklarasjoner.
  *
  * De to er begge offentlig API, og de kan gå fra hverandre uten at noe sier
  * fra. `fs.popover().host` ga `open: ""`, mens deklarasjonen sa
@@ -17,7 +17,7 @@ import "./react"
  * Tilordningene under er testen, og det er `typecheck:tests` som kjører den.
  * Det som kjøres i nettleseren er bare at verdiene faktisk er der.
  */
-describe("byggerne passer i JSX-deklarasjonene", () => {
+describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
   it("sprettoppvinduets vert", () => {
     const host: JSX.IntrinsicElements["fs-popover"] = fs.popover({
       id: "h",

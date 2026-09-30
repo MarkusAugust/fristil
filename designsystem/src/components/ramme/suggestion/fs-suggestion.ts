@@ -321,7 +321,7 @@ export class FsSuggestion extends HostElement {
   set prefiltered(on: boolean) {
     /*
      * Setteren er ikke pynt. React 19 skriver egenskapen framfor attributtet
-     * når et egendefinert element har en med det navnet, og en getter alene
+     * når en web component har en med det navnet, og en getter alene
      * kaster «Cannot set property prefiltered». Attributtet landet aldri, og
      * komponenten skjulte det React nettopp hadde rendret. Bindestreken i det
      * gamle navnet skjulte problemet: `server-filtered` kan ikke være et
@@ -597,7 +597,7 @@ export class FsSuggestion extends HostElement {
    *
    * Uten dette får den som ikke ser skjermen ingen beskjed om at lista
    * snevret seg inn mens hun skrev. Teksten er klientgenerert, så elementet
-   * har `data-ignore-morph` fra byggeren. Mangler elementet, har `bind()`
+   * har `data-ignore-morph` fra byggefunksjonen. Mangler elementet, har `bind()`
    * alt sagt fra.
    */
   private announce(hits: number): void {
