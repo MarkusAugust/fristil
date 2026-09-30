@@ -40,6 +40,34 @@ bun --filter @fristil/designsystem nettlesere
 
 Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon enn den vitest bruker, og heller ikke `bun --filter <pakke> run <skript>`, som gir «No packages matched the filter». Skriptnavnet skal stå uten `run`.
 
+## Genererte filer
+
+Tretten filer skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. De kommer fra to kommandoer.
+
+`bun --filter @fristil/designsystem generate` skriver åtte:
+
+| Fil | Kilde |
+| --- | --- |
+| `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` og fargematrisen |
+| `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
+| `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
+
+`bun --filter fristil-vscode generate` skriver fem, og tre av dem lander i pakken:
+
+| Fil | Hva den er |
+| --- | --- |
+| `editor/fristil.html-data.json` | VS Codes format for tagger og attributter |
+| `editor/snippets.json` | én snippet per element |
+| `designsystem/src/diagnostics/elements.ts` | det diagnostikken trenger, tagg for tagg |
+| `designsystem/src/diagnostics/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
+| `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
+
+Alle fem kommer fra `editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
+
+I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
+
+Glemmer du å regenerere, sier CI fra. Steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
+
 ## Versjonslogg og utgivelser
 
 `designsystem/CHANGELOG.md` skrives underveis, ikke ved utgivelse. Endrer du noe en konsument merker, legg linjen under «Ikke utgitt» i samme pull request som endringen. `bun run build` stopper hvis versjonen i `package.json` mangler en overskrift i loggen.

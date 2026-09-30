@@ -373,8 +373,13 @@ if (sjekkedeBlokker === 0) utilstrekkelig.push("ingen markupblokker")
 /*
  * Hver regelbok skal ha minst én markupblokk som ble lest, med ett unntak som
  * står skrevet her framfor å være stille: react-regelboka har ingen. Markupen
- * der er JSX, og den leses ikke av diagnostikken. Den er dekket av
- * klasse-, element-, sti- og tokensjekkene som de andre, men ikke av denne.
+ * der er JSX, og den leses ikke av diagnostikken. Den er dekket av klasse-,
+ * element-, sti- og tokensjekkene som de andre, men ikke av denne.
+ *
+ * Vakten har bevist at den virker begge veier. Da temaseksjonen kom med en
+ * delt HTML-blokk, fikk react.md markup den ikke skulle hatt, og vakten sa
+ * fra at fila ikke lenger hørte her. Eksempelet skrives nå i hvert miljøs
+ * eget språk, og React fikk sin tsx tilbake.
  */
 const UTEN_MARKUPSJEKK = new Set(["react"])
 

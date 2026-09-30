@@ -7,7 +7,7 @@ byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX.
 Det særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og `fs` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.
 
-Dette er @fristil/designsystem 0.22.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.23.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
@@ -127,6 +127,33 @@ Linjehøyde: `--fs-line-height-article`, `--fs-line-height-compact`,
 slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet
 informasjon brukeren faktisk skal lese eller trykke på, og holder 4,5:1. Bruk
 aldri `disabled`-fargene for å dempe noe som skal leses.
+
+### Lyst og mørkt
+
+Uten videre følger fargene maskinens innstilling. En side som vil bestemme
+selv setter `data-theme="light"` eller `data-theme="dark"` på `<html>`.
+
+Attributtet er en **temagrense** og virker på et hvilket som helst element,
+ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
+
+Det er dette en innebygd widget skal bruke. Legger du Fristil inn i en side du
+ikke eier, setter du attributtet på widgetens eget rotelement:
+
+```html
+<div data-theme="light">
+  <button class="fs-button">Lagre</button>
+</div>
+```
+
+Da er widgeten lys uansett hva maskinen står på, og verten røres ikke.
+
+Fristil setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
+nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
+og den arves nedover. Et barn kan melde seg ut med `color-scheme: normal`, men
+det er en motregel verten aldri ba om å måtte skrive: sto verdien på roten,
+gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele siden
+følge systemet, skriver du `color-scheme: light dark` på `<html>` selv, på
+samme måte som du selv setter lagrekkefølgen.
 
 ## 4. Web components
 

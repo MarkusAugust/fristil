@@ -46,7 +46,7 @@ const KILDER = [
 const KJENT_GJELD = new Map<string, number>([
   ["designsystem/src/cli.ts", 112],
   ["designsystem/src/tokens/color.ts", 5],
-  ["designsystem/src/tokens/theme.ts", 81],
+  ["designsystem/src/tokens/theme.ts", 77],
 ])
 
 const NORSKE_ORD = new Set([

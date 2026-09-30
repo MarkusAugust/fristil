@@ -145,6 +145,12 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			body {
 				margin: 0;
 				background: var(--fs-color-neutral-canvas);
+
+				/* Sida følger systemet gjennom tokenene, så rullefelt og
+				   skjemakontroller må følge med. Fristil setter ikke denne på
+				   `:root`, fordi en verdi der ville gjeldt hele dokumentet også
+				   der pakken bare er en gjest. */
+				color-scheme: light dark;
 				color: var(--fs-color-neutral-text-strong);
 				font-family:
 					system-ui,

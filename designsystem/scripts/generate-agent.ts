@@ -141,6 +141,48 @@ som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. \`neutral\` er for
 dempet informasjon brukeren faktisk skal lese eller trykke på, og holder 4,5:1.
 Bruk aldri \`disabled\`-fargene for å dempe noe som skal leses.`
 
+/*
+ * Eksempelet skrives i regelbokas eget språk.
+ *
+ * Én delt HTML-blokk ville lært React-agenten å skrive `class=`, og det er
+ * nettopp den feilen `/react` finnes for å hindre.
+ */
+const temaEksempel = (oppskrift: Oppskrift) =>
+  oppskrift.navn === "react"
+    ? `\`\`\`tsx
+<div data-theme="light">
+  <button {...fs.button()}>Lagre</button>
+</div>
+\`\`\``
+    : `\`\`\`html
+<div data-theme="light">
+  <button class="fs-button">Lagre</button>
+</div>
+\`\`\``
+
+const TEMA = (oppskrift: Oppskrift) => `### Lyst og mørkt
+
+Uten videre følger fargene maskinens innstilling. En side som vil bestemme
+selv setter \`data-theme="light"\` eller \`data-theme="dark"\` på \`<html>\`.
+
+Attributtet er en **temagrense** og virker på et hvilket som helst element,
+ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
+
+Det er dette en innebygd widget skal bruke. Legger du Fristil inn i en side du
+ikke eier, setter du attributtet på widgetens eget rotelement:
+
+${temaEksempel(oppskrift)}
+
+Da er widgeten lys uansett hva maskinen står på, og verten røres ikke.
+
+Fristil setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
+nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
+og den arves nedover. Et barn kan melde seg ut med \`color-scheme: normal\`,
+men det er en motregel verten aldri ba om å måtte skrive: sto verdien på
+roten, gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele
+siden følge systemet, skriver du \`color-scheme: light dark\` på \`<html>\`
+selv, på samme måte som du selv setter lagrekkefølgen.`
+
 const webComponents = (oppskrift: Oppskrift) => `## 4. Web components
 
 Tre regler gjelder alle sammen:
@@ -953,6 +995,7 @@ function sammensett(oppskrift: Oppskrift): string {
       oppskrift.stilark,
       hvaSomFinnes(oppskrift),
       TOKENS,
+      TEMA(oppskrift),
       webComponents(oppskrift),
       oppskrift.markup,
       ...(oppskrift.ekstra ? [oppskrift.ekstra] : []),

@@ -1,7 +1,8 @@
 /**
  * Skriver editorfilene fra `metadata.ts` og komponentsidene.
  *
- * Tre filer kommer ut, og ingen av dem skrives for hånd:
+ * Fem filer kommer ut, og ingen av dem skrives for hånd. To av dem ligger i
+ * utvidelsen, tre i pakken:
  *
  *   - `editor/fristil.html-data.json`: VS Codes eget format for tagger og
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
