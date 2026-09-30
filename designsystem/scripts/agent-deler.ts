@@ -1,13 +1,13 @@
 /**
  * Delene av regelbøkene som leses av koden, ikke skrives for hånd.
  *
- * Komponentlista, attributtverdiene, tokennavnene og byggerne er data. Skrevet
+ * Komponentlista, attributtverdiene, tokennavnene og byggefunksjonene er data. Skrevet
  * av for hånd ville de glidd fra koden i stillhet, og en agent-instruksjon som
  * nevner en variant som ikke finnes er verre enn ingen instruksjon: den ser
  * autoritativ ut, og agenten skriver den inn i konsumentens app.
  *
  * Kildene er de samme som editorfilene bruker: `classes.ts` og `elements.ts`
- * genereres fra komponentene, og `fs` leses ved å kalle byggerne, ikke ved å
+ * genereres fra komponentene, og `fs` leses ved å kalle byggefunksjonene, ikke ved å
  * lese kildekoden. Tokennavnene leses ut av `tokens.css`, som selv er generert
  * fra `tokens.ts`.
  */
@@ -253,7 +253,7 @@ export function malOgSkrift(): string {
 
 /*
  * Nøklene i `fs` som ikke bygger attributter. De hører til typesikkerheten, og
- * ville ellers stått i lista som byggere som ikke finnes.
+ * ville ellers stått i lista som byggefunksjoner som ikke finnes.
  */
 const HJELPERE = new Set([
   "isMarker",
@@ -264,15 +264,15 @@ const HJELPERE = new Set([
 ])
 
 /** Byggefunksjonene i `fs`, som er dem et prosjekt med typer kan bruke. */
-export function byggere(): string {
+export function byggefunksjoner(): string {
   const navn = Object.keys(fs)
     .filter((nøkkel) => !HJELPERE.has(nøkkel))
     .sort()
 
-  return navn.map((bygger) => `\`fs.${bygger}()\``).join(", ")
+  return navn.map((byggefunksjon) => `\`fs.${byggefunksjon}()\``).join(", ")
 }
 
-export function antallByggere(): number {
+export function antallByggefunksjoner(): number {
   return Object.keys(fs).filter((nøkkel) => !HJELPERE.has(nøkkel)).length
 }
 

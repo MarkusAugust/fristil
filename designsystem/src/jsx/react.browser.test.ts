@@ -154,8 +154,8 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
     for (const [navn, verdi] of Object.entries(fs)) {
       if (typeof verdi !== "function") continue
       try {
-        const bygger = verdi as (valg?: unknown) => unknown
-        samle(bygger(medArgumenter[navn]))
+        const byggefunksjon = verdi as (valg?: unknown) => unknown
+        samle(byggefunksjon(medArgumenter[navn]))
       } catch {
         // Vakter og hjelpefunksjoner tåler ikke å bli kalt slik. De sender
         // ikke ut attributter, så de er uinteressante her.

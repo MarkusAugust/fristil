@@ -429,7 +429,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
   })
 
   /**
-   * Lista på byggeren, opsjonen som velger verdien, og attributtet den
+   * Lista på byggefunksjonen, opsjonen som velger verdien, og attributtet den
    * havner i.
    *
    * Alle tre står skrevet ut. Utledet vi opsjonsnavnet av flertalls-s-en,
@@ -448,13 +448,15 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     ["types", "type", "data-variant"],
   ]
 
-  type Bygger = ((valg?: Record<string, unknown>) => Record<string, unknown>) &
+  type Byggefunksjon = ((
+    valg?: Record<string, unknown>,
+  ) => Record<string, unknown>) &
     Record<string, unknown>
 
   /**
-   * En fast id til byggerne som krever en. Uten den lager `idOrFallback` en
+   * En fast id til byggefunksjonene som krever en. Uten den lager `idOrFallback` en
    * tilfeldig id per kall, og to kall gir aldri det samme svaret, så
-   * standardverdien lot seg ikke kjenne igjen. De flate byggerne ignorerer
+   * standardverdien lot seg ikke kjenne igjen. De flate byggefunksjonene ignorerer
    * nøklene.
    */
   const STABIL_ID = { id: "vakt", titleId: "vakt" }
@@ -474,7 +476,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     return undefined
   }
 
-  /** Ett tilfelle: en bygger, en verdi, og elementet den skal treffe. */
+  /** Ett tilfelle: en byggefunksjon, en verdi, og elementet den skal treffe. */
   type Tilfelle = {
     navn: string
     liste: string
@@ -488,17 +490,20 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
   for (const [navn, verdi] of Object.entries(fs)) {
     if (typeof verdi !== "function") continue
-    const bygger = verdi as unknown as Bygger
+    const byggefunksjon = verdi as unknown as Byggefunksjon
 
     for (const [liste, opsjon, attributt] of LISTER) {
-      const verdier = bygger[liste]
+      const verdier = byggefunksjon[liste]
       if (!Array.isArray(verdier)) continue
 
       for (const v of verdier) {
-        // De sammensatte byggerne gir ett attributtsett per del, som
+        // De sammensatte byggefunksjonene gir ett attributtsett per del, som
         // `fs.dialog()` med `host`, `dialog` og `header`. Attributtet ligger
         // da på den delen som bærer det, og det er den som rendres.
-        const ut = delMed(bygger({ ...STABIL_ID, [opsjon]: v }), attributt)
+        const ut = delMed(
+          byggefunksjon({ ...STABIL_ID, [opsjon]: v }),
+          attributt,
+        )
 
         // Verdier som ikke gir noe attributt har ingen regel å kontrollere.
         // Det er to slag: standardverdien, som CSS-en alt har, og verdier
@@ -539,16 +544,17 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
      */
     for (const [navn, verdi] of Object.entries(fs)) {
       if (typeof verdi !== "function") continue
-      const bygger = verdi as unknown as Bygger
+      const byggefunksjon = verdi as unknown as Byggefunksjon
 
       for (const [liste, opsjon] of LISTER) {
-        const verdier = bygger[liste]
+        const verdier = byggefunksjon[liste]
         if (!Array.isArray(verdier)) continue
 
-        const standard = JSON.stringify(bygger(STABIL_ID))
+        const standard = JSON.stringify(byggefunksjon(STABIL_ID))
         const like = verdier.filter(
           (v) =>
-            JSON.stringify(bygger({ ...STABIL_ID, [opsjon]: v })) === standard,
+            JSON.stringify(byggefunksjon({ ...STABIL_ID, [opsjon]: v })) ===
+            standard,
         )
         expect(
           like,
@@ -570,8 +576,8 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
     for (const [navn, verdi] of Object.entries(fs)) {
       if (typeof verdi !== "function") continue
-      const bygger = verdi as unknown as Bygger
-      for (const [liste, verdier] of Object.entries(bygger)) {
+      const byggefunksjon = verdi as unknown as Byggefunksjon
+      for (const [liste, verdier] of Object.entries(byggefunksjon)) {
         // `Object.assign` henger både lovlige verdier og vakter på
         // funksjonen. Det er listene vi er ute etter.
         if (!Array.isArray(verdier)) continue
@@ -586,9 +592,9 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     const lister = new Set<string>()
     for (const [navn, verdi] of Object.entries(fs)) {
       if (typeof verdi !== "function") continue
-      const bygger = verdi as unknown as Bygger
+      const byggefunksjon = verdi as unknown as Byggefunksjon
       for (const [liste] of LISTER) {
-        if (Array.isArray(bygger[liste])) lister.add(`${navn}.${liste}`)
+        if (Array.isArray(byggefunksjon[liste])) lister.add(`${navn}.${liste}`)
       }
     }
 

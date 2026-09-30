@@ -68,7 +68,7 @@ defineFsSessionTimeout()
 
 Fristil er bygget for apper der HTML-en kommer fra serveren, enten det er TanStack Start, React Server Components eller Datastar. Ingen komponent rendrer sitt eget innhold i DOM serveren eier, fordi rammeverket rundt da river det bort igjen ved neste oppdatering.
 
-Byggerne i `fs` gir markupen, komponentene gir oppførselen, og de to overlapper ikke:
+Byggefunksjonene i `fs` gir markupen, komponentene gir oppførselen, og de to overlapper ikke:
 
 ```js
 import { fs } from "@fristil/designsystem"

@@ -74,7 +74,7 @@ export class FsToast extends HostElement {
 
   connectedCallback(): void {
     // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
-    // settes det bare når det mangler, så en ren HTML-side uten bygger også
+    // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
     // får en region skjermleseren forstår.
     if (!this.hasAttribute("role")) this.setAttribute("role", "status")
     if (!this.hasAttribute("aria-live")) {

@@ -3,8 +3,8 @@
 Regelboka for Fristil i et Astro-prosjekt.
 
 En `.astro`-fil er HTML med frontmatter over. Stilarkene importeres der, og
-byggerne brukes rett i malen, siden Astro støtter spredning som JSX. Det
-særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og `fs` er
+byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX.
+Det særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og `fs` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.
 
 Dette er @fristil/designsystem 0.22.0. Fila er generert av pakken og følger
@@ -48,9 +48,9 @@ hører `tokens.css` der, én gang for hele siden.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 egendefinerte elementer, og dette er hele lista.
-Klassene er `fs-` + kebab-case. Varianter er alltid `data-*`-attributter,
-aldri egne klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+`fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
+klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)
@@ -158,7 +158,7 @@ Tre regler gjelder alle sammen:
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 `querySelector`, `FormData` og vanlig CSS virker rett inn i det.
 
-## 5. Byggerne i malen
+## 5. Byggefunksjonene i malen
 
 ```astro
 ---
@@ -179,7 +179,8 @@ Kjøres ved bygging. Ut kommer ren HTML:
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 43 byggerne:
+`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 43
+byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,
@@ -239,8 +240,8 @@ import "@fristil/designsystem/field.css"
 
 `customElements` finnes bare i nettleseren, så registreringen kan ikke stå i
 frontmatteret. En `<script>` i malen er alt som skal til: komponentene er
-vanlige egendefinerte elementer, og trenger verken en Astro-integrasjon eller
-et `client:`-direktiv.
+vanlige web components, og trenger verken en Astro-integrasjon eller et
+`client:`-direktiv.
 
 ## Kjente fallgruver
 

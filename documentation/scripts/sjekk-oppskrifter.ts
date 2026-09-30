@@ -59,7 +59,7 @@ lesStilark(join(ROT, "designsystem/src"))
 
 /** Byggefunksjonene som finnes, lest fra pakken selv. */
 const { fs } = await import(join(ROT, "designsystem/dist/fs.js"))
-const byggere = new Set(Object.keys(fs))
+const byggefunksjoner = new Set(Object.keys(fs))
 
 /** `defineFsX`-navnene hver modul eksporterer. */
 const definerere = new Map<string, Set<string>>()
@@ -459,7 +459,7 @@ for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
     }
 
     for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\s*\(/g)) {
-      if (!byggere.has(m[1]))
+      if (!byggefunksjoner.has(m[1]))
         si(side, `${hvor} kaller fs.${m[1]}(), som ikke finnes i fs`)
     }
 

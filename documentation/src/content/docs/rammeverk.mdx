@@ -97,7 +97,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     Står dette i `main.tsx` før `createRoot`, er elementene registrert før React rekker å tegne noe.
   </TabItem>
   <TabItem label="TypeScript-typer">
-    Importer typene for de egendefinerte elementene én gang. Legg importen i en `.d.ts`-fil, så havner den aldri i bygget:
+    Importer typene for web components én gang. Legg importen i en `.d.ts`-fil, så havner den aldri i bygget:
 
     ```ts
     // src/fristil.d.ts
@@ -168,7 +168,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     ```
 
     :::caution[Bare `invalid={ugyldig || undefined}` virker]
-    React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
+    React behandler web components ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
 
     | | React 18 (setter attributt) | React 19 (setter egenskap) |
     | --- | --- | --- |
@@ -251,7 +251,7 @@ import "@fristil/designsystem/field.css"
 </script>
 ```
 
-`customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret. Et `<script>` i malen er alt som skal til: komponentene er vanlige egendefinerte elementer, og trenger verken en Astro-integrasjon eller et `client:`-direktiv.
+`customElements` finnes bare i nettleseren, så registreringen kan ikke stå i frontmatteret. Et `<script>` i malen er alt som skal til: komponentene er vanlige web components, og trenger verken en Astro-integrasjon eller et `client:`-direktiv.
 
 ### Astro og Datastar
 
@@ -305,7 +305,7 @@ Tre attributter gjør hele jobben:
 `data-attr:invalid` knytter Datastar til komponenten: den **setter attributtet når uttrykket er sant og fjerner det når det er usant**, nøyaktig slik `<fs-field>` forventer.
 
 :::note[Ingen av React-fellene her]
-React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer egendefinerte elementer ulikt. Datastar jobber direkte på attributtene.
+React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer web components ulikt. Datastar jobber direkte på attributtene.
 :::
 
 `fs` brukes eventuelt på serveren eller i byggesteget. Datastar trenger den ikke i nettleseren.
@@ -314,7 +314,7 @@ React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer egende
 
 Datastar kan la serveren sende HTML underveis, over Server-Sent Events. Se [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript).
 
-Et egendefinert element oppgraderer seg selv når det settes inn i dokumentet, så lenge `defineFsField()` har kjørt én gang. Serveren kan derfor sende dette som ren HTML:
+En web component oppgraderer seg selv når den settes inn i dokumentet, så lenge `defineFsField()` har kjørt én gang. Serveren kan derfor sende dette som ren HTML:
 
 ```html
 <fs-field required-marker="text" invalid>

@@ -191,8 +191,8 @@ describe("fs-suggestion", () => {
 
   it("kan settes som egenskap, slik React 19 gjør det", async () => {
     /*
-     * React skriver egenskapen framfor attributtet når et egendefinert
-     * element har en med det navnet. Med bare en getter kastet skrivingen
+     * React skriver egenskapen framfor attributtet når en web
+     * component har en med det navnet. Med bare en getter kastet skrivingen
      * «Cannot set property», attributtet landet aldri, og komponenten skjulte
      * det React nettopp hadde rendret.
      */

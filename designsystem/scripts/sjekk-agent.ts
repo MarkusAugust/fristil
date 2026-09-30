@@ -189,7 +189,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     krev(tagg in elements, `${sti} kaller ${treff[0]}, men ${tagg} finnes ikke`)
   }
 
-  // 6. Hver bygger finnes i `fs`.
+  // 6. Hver byggefunksjon finnes i `fs`.
   for (const treff of innhold.matchAll(/\bfs\.([a-zA-Z]+)\(/g)) {
     krev(treff[1] in fs, `${sti} bruker fs.${treff[1]}(), som ikke finnes i fs`)
   }

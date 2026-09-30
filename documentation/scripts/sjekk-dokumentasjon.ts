@@ -472,7 +472,7 @@ for (const variabel of [...alleVariabler].sort()) {
  * eksemplene allerede riktig, men det var tilfeldig og ikke voktet.
  */
 /**
- * Et kall på en bygger som tar en id, og argumentet det fikk.
+ * Et kall på en byggefunksjon som tar en id, og argumentet det fikk.
  *
  * Objektet fanges med ett nivå nesting, så `${x}` og et nøstet objekt inni
  * ikke avslutter treffet for tidlig. Er argumentet en variabel framfor et

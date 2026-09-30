@@ -248,8 +248,8 @@ describe("fs-dialog", () => {
     // Elementet tas i bruk også der, og `showModal()` kaster på en dialog
     // som ikke står i dokumentet.
     //
-    // Feilen kommer ikke ut av `innerHTML`: et unntak i en reaksjon på et
-    // egendefinert element rapporteres til vinduet i stedet. Derfor lyttes
+    // Feilen kommer ikke ut av `innerHTML`: et unntak i en reaksjon på en
+    // web component rapporteres til vinduet i stedet. Derfor lyttes
     // det på `error` framfor å pakke inn kallet.
     const feil: string[] = []
     const lytter = (event: ErrorEvent) => feil.push(event.message)

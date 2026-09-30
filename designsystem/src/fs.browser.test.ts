@@ -166,13 +166,13 @@ describe("fs.field", () => {
      * `undefined-list`, og `for`, `aria-controls` og `aria-describedby` pekte
      * dit. Koblingen var brutt, og den så gyldig ut.
      *
-     * Hver bygger som tar en id er med. Første utgave hadde reserven bare i
+     * Hver byggefunksjon som tar en id er med. Første utgave hadde reserven bare i
      * `fs.field()`, og da sa forslagsfeltet «fs.field()» i meldingen og sendte
      * utvikleren til feil sted, mens halve id-ene fortsatt ble `undefined-…`.
      */
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const utenId = <T>(bygger: (o: unknown) => T, valg: unknown): T =>
-      bygger(valg)
+    const utenId = <T>(byggefunksjon: (o: unknown) => T, valg: unknown): T =>
+      byggefunksjon(valg)
 
     const felt = utenId(
       fs.field as (o: unknown) => ReturnType<typeof fs.field>,
@@ -279,11 +279,11 @@ describe("fs.field sammen med feltfunksjonene", () => {
  * Tallet står skrevet her framfor å bli lest ut av lista det skal kontrollere.
  * Ellers sammenligner vakten køen med seg selv, og halve settet kan forsvinne
  * uten at noe sier fra. Legg til en byggefunksjon, og tallet skal opp i samme
- * endring. Merk at summen alene ikke fanger et bytte: legger du til en bygger
+ * endring. Merk at summen alene ikke fanger et bytte: legger du til en byggefunksjon
  * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
  * ikke i det hele tatt.
  */
-const ANTALL_BYGGERE = 43
+const ANTALL_BYGGEFUNKSJONER = 43
 
 /** De sju som gir attributter per del framfor ett flatt sett. */
 const SAMMENSATTE_NAVN = [
@@ -298,25 +298,27 @@ const SAMMENSATTE_NAVN = [
 
 describe("formen på navnerommet", () => {
   /** Byggefunksjonene, altså alt i `fs` som kan kalles uten argumenter. */
-  const byggere = Object.entries(fs).filter(
+  const byggefunksjoner = Object.entries(fs).filter(
     ([navn, verdi]) =>
       typeof verdi === "function" &&
       navn !== "setAttributes" &&
       navn !== "isState" &&
       navn !== "isMarker" &&
-      // De sammensatte byggerne gir ett attributtsett per element i stedet
+      // De sammensatte byggefunksjonene gir ett attributtsett per element i stedet
       // for ett flatt sett, og krever en id for å kunne koble dem sammen.
       !SAMMENSATTE_NAVN.includes(navn),
   ) as [string, () => Record<string, unknown>][]
 
-  it("har byggere å kontrollere", () => {
-    expect(byggere.length).toBe(ANTALL_BYGGERE - SAMMENSATTE_NAVN.length)
+  it("har byggefunksjoner å kontrollere", () => {
+    expect(byggefunksjoner.length).toBe(
+      ANTALL_BYGGEFUNKSJONER - SAMMENSATTE_NAVN.length,
+    )
   })
 
   it.each(
-    byggere,
-  )("fs.%s() gir en fs-prefikset klasse uten argumenter", (_navn, bygger) => {
-    const attributter = bygger()
+    byggefunksjoner,
+  )("fs.%s() gir en fs-prefikset klasse uten argumenter", (_navn, byggefunksjon) => {
+    const attributter = byggefunksjon()
 
     expect(typeof attributter.class).toBe("string")
     for (const klasse of String(attributter.class).split(" ")) {
@@ -325,9 +327,9 @@ describe("formen på navnerommet", () => {
   })
 
   it.each(
-    byggere,
-  )("fs.%s() setter ingen tomme attributter", (_navn, bygger) => {
-    const tomme = Object.entries(bygger())
+    byggefunksjoner,
+  )("fs.%s() setter ingen tomme attributter", (_navn, byggefunksjon) => {
+    const tomme = Object.entries(byggefunksjon())
       .filter(([, verdi]) => verdi === undefined)
       .map(([navn]) => navn)
 
@@ -358,7 +360,7 @@ describe("attributter bare morferen leser", () => {
   const HJELPERE = ["setAttributes", "isState", "isMarker"]
 
   /**
-   * Ett gyldig kall per bygger som gir attributter per del framfor ett flatt
+   * Ett gyldig kall per byggefunksjon som gir attributter per del framfor ett flatt
    * sett. De fleste av dem krever argumenter. `toast` gjør ikke det, og står
    * her for at lista skal være hele settet.
    */
@@ -375,12 +377,12 @@ describe("attributter bare morferen leser", () => {
     },
   )
 
-  const byggere = Object.entries(fs).filter(
+  const byggefunksjoner = Object.entries(fs).filter(
     ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
   ) as [string, () => unknown][]
 
-  const kall = ([navn, bygger]: [string, () => unknown]) =>
-    (SAMMENSATTE[navn] ?? bygger)()
+  const kall = ([navn, byggefunksjon]: [string, () => unknown]) =>
+    (SAMMENSATTE[navn] ?? byggefunksjon)()
 
   /** Hvert attributtnavn i svaret, uansett hvor dypt det ligger. */
   function attributtnavn(verdi: unknown, ut: string[] = []): string[] {
@@ -398,30 +400,30 @@ describe("attributter bare morferen leser", () => {
   }
 
   it("har hver byggefunksjon i fs, og bare byggefunksjoner", () => {
-    // Uten dette kunne tabellen under vært tom, eller mistet en bygger som
+    // Uten dette kunne tabellen under vært tom, eller mistet en byggefunksjon som
     // fikk nytt navn, og folketellingen ville stemt likevel. Og en ny vakt i
-    // `fs`, som `isColor`, ville blitt kalt som en bygger og gitt `false`,
+    // `fs`, som `isColor`, ville blitt kalt som en byggefunksjon og gitt `false`,
     // altså ingen attributter å telle.
-    expect(byggere.length).toBe(ANTALL_BYGGERE)
+    expect(byggefunksjoner.length).toBe(ANTALL_BYGGEFUNKSJONER)
     expect(Object.keys(SAMMENSATTE).sort()).toEqual(
       [...SAMMENSATTE_NAVN].sort(),
     )
 
     for (const navn of SAMMENSATTE_NAVN) {
       expect(
-        byggere.map(([n]) => n),
+        byggefunksjoner.map(([n]) => n),
         `fs.${navn} finnes ikke`,
       ).toContain(navn)
     }
 
-    for (const bygger of byggere) {
+    for (const byggefunksjon of byggefunksjoner) {
       // At svaret er et objekt er for lite: `typeof null` er også «object»,
       // og et tomt objekt ville passert. Påstanden må være at traverseringen
       // finner noe, for det er den folketellingen under hviler på: «ingen
       // morferattributter» skal betyde at de ikke er der, ikke at ingen så.
       expect(
-        attributtnavn(kall(bygger)).length,
-        `fs.${bygger[0]}() ga ingen attributter`,
+        attributtnavn(kall(byggefunksjon)).length,
+        `fs.${byggefunksjon[0]}() ga ingen attributter`,
       ).toBeGreaterThan(0)
     }
   })
@@ -430,18 +432,18 @@ describe("attributter bare morferen leser", () => {
     const funn: Record<string, string[]> = {}
     let kalt = 0
 
-    for (const bygger of byggere) {
-      const svar = kall(bygger)
+    for (const byggefunksjon of byggefunksjoner) {
+      const svar = kall(byggefunksjon)
       const treff = [
         ...new Set(
           attributtnavn(svar).filter((n) => MORFERATTRIBUTTER.includes(n)),
         ),
       ].sort()
-      if (treff.length > 0) funn[bygger[0]] = treff
+      if (treff.length > 0) funn[byggefunksjon[0]] = treff
       kalt += 1
     }
 
-    expect(kalt).toBe(ANTALL_BYGGERE)
+    expect(kalt).toBe(ANTALL_BYGGEFUNKSJONER)
     expect(funn).toEqual({
       connectionStatus: ["data-ignore-morph"],
       sessionTimeout: ["data-ignore-morph"],

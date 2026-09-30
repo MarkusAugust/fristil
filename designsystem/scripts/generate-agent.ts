@@ -20,10 +20,10 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import {
-  antallByggere,
+  antallByggefunksjoner,
   antallCssKomponenter,
   antallElementer,
-  byggere,
+  byggefunksjoner,
   CDN,
   cdnTil,
   cssTabell,
@@ -110,7 +110,7 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
 
 const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. Hva som finnes
 
-${antallCssKomponenter()} CSS-komponenter og ${antallElementer()} egendefinerte elementer, og dette er
+${antallCssKomponenter()} CSS-komponenter og ${antallElementer()} web components, og dette er
 hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
 \`data-*\`-attributter, aldri egne klasser: \`data-variant="secondary"\`, ikke
 \`fs-button--secondary\`. Standardvarianten har ingen attributt.
@@ -511,7 +511,7 @@ Markupen er vanlig HTML, i malen rammeverket ditt bruker:
 
 \`class\` og \`for\`, ikke \`className\` og \`htmlFor\`. Det er React som skriver
 om attributtnavnene, og det gjelder ikke her.`,
-    ekstra: `## 6. Typede byggere
+    ekstra: `## 6. Typede byggefunksjoner
 
 Har prosjektet TypeScript, kan klassene komme fra \`fs\` i stedet for å skrives
 som strenger. Da blir en variant som ikke finnes en kompileringsfeil:
@@ -523,11 +523,11 @@ fs.button({ variant: "secondary" })
 // { class: "fs-button", "data-variant": "secondary" }
 \`\`\`
 
-Byggerne gir et objekt med HTML-attributtnavn, som spres inn der malspråket
-støtter spredning, eller leses ut felt for felt. De ${antallByggere()}
-byggerne:
+Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der malspråket
+støtter spredning, eller leses ut felt for felt. De ${antallByggefunksjoner()}
+byggefunksjonene:
 
-${byggere()}
+${byggefunksjoner()}
 
 ## 7. Sjekk markupen
 
@@ -552,7 +552,7 @@ ${SJEKK_I_TESTER}`,
 
 React skiller seg fra alle de andre miljøene på én ting, og den er viktig nok
 til å ha sin egen fil: React skriver om attributtnavnene. \`class\` heter
-\`className\` og \`for\` heter \`htmlFor\`, og bruker du byggerne fra
+\`className\` og \`for\` heter \`htmlFor\`, og bruker du byggefunksjonene fra
 hovedinngangen skriver React «Invalid DOM property» i konsollen for hvert
 element. Derfor har pakken en egen React-inngang.`,
     stilarkRegel: `**Importer stilarkene i \`main.tsx\`**, \`tokens.css\`
@@ -638,12 +638,12 @@ export function Kontaktskjema() {
 
 \`fs\` importeres fra \`@fristil/designsystem/react\`, aldri fra hovedinngangen:
 React-inngangen gir \`className\` og \`htmlFor\`, hovedinngangen gir \`class\`
-og \`for\`. De ${antallByggere()} byggerne finnes i begge:
+og \`for\`. De ${antallByggefunksjoner()} byggefunksjonene finnes i begge:
 
-${byggere()}`,
+${byggefunksjoner()}`,
     ekstra: `## 6. Bare \`invalid={ugyldig || undefined}\` virker
 
-React behandler egendefinerte elementer ulikt mellom versjoner, og bare dette
+React behandler web components ulikt mellom versjoner, og bare dette
 mønsteret er riktig i begge:
 
 | Skrivemåte | React 18 (setter attributt) | React 19 (setter egenskap) |
@@ -697,7 +697,7 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
     innledning: `Regelboka for Fristil i et Astro-prosjekt.
 
 En \`.astro\`-fil er HTML med frontmatter over. Stilarkene importeres der, og
-byggerne brukes rett i malen, siden Astro støtter spredning som JSX. Det
+byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX. Det
 særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og \`fs\` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.`,
     stilarkRegel: `**Importer stilarkene i frontmatteret**, \`tokens.css\`
@@ -725,7 +725,7 @@ import "@fristil/designsystem/badge.css"
 
 Navnet på hvert stilark står i tabellene under. Har du et layoutkomponent, hører
 \`tokens.css\` der, én gang for hele siden.`,
-    markup: `## 5. Byggerne i malen
+    markup: `## 5. Byggefunksjonene i malen
 
 \`\`\`astro
 ---
@@ -747,9 +747,9 @@ Kjøres ved bygging. Ut kommer ren HTML:
 \`\`\`
 
 \`fs\` importeres fra hovedinngangen, som gir \`class\` og \`for\`. De
-${antallByggere()} byggerne:
+${antallByggefunksjoner()} byggefunksjonene:
 
-${byggere()}`,
+${byggefunksjoner()}`,
     ekstra: `## 6. Felt uten JavaScript
 
 \`fs.field()\` regner ut koblingen mellom ledetekst, kontroll, hjelpetekst og
@@ -797,7 +797,7 @@ import "@fristil/designsystem/field.css"
 
 \`customElements\` finnes bare i nettleseren, så registreringen kan ikke stå i
 frontmatteret. En \`<script>\` i malen er alt som skal til: komponentene er
-vanlige egendefinerte elementer, og trenger verken en Astro-integrasjon eller et
+vanlige web components, og trenger verken en Astro-integrasjon eller et
 \`client:\`-direktiv.`,
     fallgruver: [
       STILER_MANGLER,
@@ -882,8 +882,8 @@ forventer. Ingen av React-fellene finnes her. Datastar jobber direkte på
 attributtene.`,
     ekstra: `## 6. HTML fra serveren
 
-Datastar kan la serveren sende HTML underveis, over Server-Sent Events. Et
-egendefinert element oppgraderer seg selv når det settes inn i dokumentet, så
+Datastar kan la serveren sende HTML underveis, over Server-Sent Events. En web
+component oppgraderer seg selv når den settes inn i dokumentet, så
 lenge \`defineFsField()\` har kjørt én gang. Serveren kan derfor sende dette som
 ren HTML:
 
@@ -971,6 +971,6 @@ if (import.meta.main) {
     writeFileSync(join(PAKKE, sti), innhold)
   }
   console.log(
-    `✓ ${Object.keys(skrevet).length} regelbøker: ${NAVN.join(", ")} (${antallCssKomponenter()} CSS-komponenter, ${antallElementer()} elementer, ${byggere().split(", ").length} byggere)`,
+    `✓ ${Object.keys(skrevet).length} regelbøker: ${NAVN.join(", ")} (${antallCssKomponenter()} CSS-komponenter, ${antallElementer()} elementer, ${byggefunksjoner().split(", ").length} byggefunksjoner)`,
   )
 }
