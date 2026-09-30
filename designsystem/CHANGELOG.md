@@ -23,6 +23,14 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **Regelbøkene for kodeagenter og dokumentasjonen sa ulike ord om det samme.**
+  Regelbøkene under `agent/` skrev «byggerne» og «egendefinert element» der
+  dokumentasjonen skrev «byggefunksjon» og «web component». En agent som får
+  begge i konteksten møtte to navn på én ting. `sjekk-ordbruk.ts` vokter nå
+  begge ordene, og leser også `README.md` i pakken, som den ikke gjorde før.
+
 ## 0.22.0 (2026-09-29)
 
 ### Brytende
