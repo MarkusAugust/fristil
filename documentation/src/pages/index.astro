@@ -7,11 +7,20 @@ import "../styles/custom-pages-tailwind.css"
 ---
 
 <!DOCTYPE html>
-<html lang="nb" class="dark">
+<!-- Sida er alltid mørk. `data-theme` gir både Fristils mørke tokens og
+     `color-scheme: dark`, som er det rullefeltet og nettleserens egne flater
+     leser. `class="dark"` er Tailwinds egen bryter og gjør noe annet. -->
+<html lang="nb" class="dark" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
+  />
   <title>Fristil designsystem</title>
   <meta
     name="description"
@@ -38,8 +47,8 @@ import "../styles/custom-pages-tailwind.css"
   <main class="flex-1">
   <section class="relative overflow-hidden pb-20 pt-16 sm:pb-28 sm:pt-24">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(96,165,250,0.18),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(167,139,250,0.16),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(129,140,248,0.12),transparent_42%)]"></div>
-    <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-start">
-      <div class="max-w-3xl">
+    <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-stretch">
+      <div class="flex max-w-3xl flex-col">
         <FristilLogo size="lg" className="mb-8" subtitle={false} />
         <!-- Ett tekstelement, ikke to spenn. To spenn ble lest opp som
              «Rammeverksuavhengigdesignsystem» i ett ord. Orddeling lar det
@@ -60,6 +69,30 @@ import "../styles/custom-pages-tailwind.css"
           <a href="/components/button/" class="inline-flex w-full items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/90 px-8 py-3.5 text-base font-semibold text-zinc-100 transition hover:border-blue-400 hover:bg-zinc-900 sm:w-auto">
           Se komponenter
         </a>
+        </div>
+        <!-- Sitatet er ikke tillagt noen, så det er et avsnitt og ikke en
+             blockquote: en blockquote uten kilde lover en avsender som ikke
+             finnes.
+
+             Anførselstegnet er sitt eget element, ikke et `::before` på
+             avsnittet. `bg-clip-text` maler teksten med elementets egen
+             bakgrunn, så et tegn som stikker utenfor boksen blir usynlig.
+             Her har det sin egen dempede farge og er ren dekor.
+
+             Tegnet er “ og ikke «. Som stor dekor er « to tynne vinkler som
+             ligger i bunnen av sin egen boks, så det havner ved linje to
+             uansett hva margen sier. “ er fylt og sitter øverst av seg selv.
+             Løpende tekst i dokumentasjonen bruker fortsatt «». -->
+        <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto">
+          <span
+            aria-hidden="true"
+            class="font-sitat -mt-1 shrink-0 text-5xl leading-none text-logo-lilla/70 sm:text-7xl"
+          >
+            &ldquo;
+          </span>
+          <p class="bg-linear-to-br from-logo-lilla via-pink-400 to-rose-400 bg-clip-text font-sitat text-lg italic leading-snug text-balance text-transparent sm:text-xl">
+            En kompromissløs og minimalistisk sportsbil bygget rett på nettleserens egne API-er. Fristil kaster all tung bagasje og gir deg en ekte, ufiltrert følelse med veien: selve DOM-en.
+          </p>
         </div>
       </div>
 

@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+/*
+ * Sitatfonten på forsiden. Den står her framfor i et `style=`-attributt, slik
+ * at markupen bare har klasser.
+ *
+ * Reserven er plattformens egen serif. Kommer ikke Instrument Serif fram,
+ * står sitatet i kursiv serif i stedet for å falle til grotesk, og
+ * linjelengden endrer seg lite.
+ */
+@theme {
+  --font-sitat: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+
+  /*
+   * Lillaenden av logoens egen gradient, slik den står i `FristilLogo.astro`.
+   * Den er navngitt her framfor å stå som en hex-verdi i markupen, slik at
+   * sitatet og logoen ikke kan gli fra hverandre uten at noen ser det.
+   *
+   * Kontrast mot bakgrunnen på forsiden: 5,27 mot den mørkeste enden og 4,79
+   * mot den lyseste, altså over kravet i begge.
+   */
+  --color-logo-lilla: #b15cff;
+}

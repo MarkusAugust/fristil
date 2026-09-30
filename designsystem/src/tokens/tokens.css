@@ -2,8 +2,6 @@
 
 @layer fristil {
   :root {
-    color-scheme: light dark;
-
     /* font-size */
     --font-size-reference: 16px;
     --font-size-xxs: 0.625rem;
@@ -261,6 +259,97 @@
 
   [data-theme="light"] {
     color-scheme: light;
+
+    --fs-icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E");
+    --fs-icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    --fs-icon-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E");
+    --fs-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+    --fs-icon-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpolyline points='12 7 12 12 15 15'/%3E%3C/svg%3E");
+    --fs-color-accent-surface: #e9f3ff;
+    --fs-color-accent-border-subtle: #c1daf8;
+    --fs-color-accent-border: #577ca6;
+    --fs-color-accent-border-strong: #39608c;
+    --fs-color-accent-fill: #226dba;
+    --fs-color-accent-text: #0d4e8c;
+    --fs-color-accent-text-strong: #0b2a4a;
+    --fs-color-accent-text-subtle: #336195;
+    --fs-color-accent-content: #f9fcff;
+    --fs-color-visited-surface: #ebf2ff;
+    --fs-color-visited-border-subtle: #cdd8eb;
+    --fs-color-visited-border: #697a95;
+    --fs-color-visited-border-strong: #4d5e7a;
+    --fs-color-visited-fill: #4f6c9c;
+    --fs-color-visited-text: #364d74;
+    --fs-color-visited-text-strong: #1d293e;
+    --fs-color-visited-text-subtle: #4c6080;
+    --fs-color-visited-content: #fafcfe;
+    --fs-color-brand1-surface: #e4f7ef;
+    --fs-color-brand1-border-subtle: #c2dfd4;
+    --fs-color-brand1-border: #578474;
+    --fs-color-brand1-border-strong: #386958;
+    --fs-color-brand1-fill: #157e63;
+    --fs-color-brand1-text: #005b46;
+    --fs-color-brand1-text-strong: #073125;
+    --fs-color-brand1-text-subtle: #316c59;
+    --fs-color-brand1-content: #f9fdfb;
+    --fs-color-brand2-surface: #f2efff;
+    --fs-color-brand2-border-subtle: #d8d2f8;
+    --fs-color-brand2-border: #7a70a6;
+    --fs-color-brand2-border-strong: #5f538c;
+    --fs-color-brand2-fill: #7156ba;
+    --fs-color-brand2-text: #513b8b;
+    --fs-color-brand2-text-strong: #2b204a;
+    --fs-color-brand2-text-subtle: #625295;
+    --fs-color-brand2-content: #fcfbff;
+    --fs-color-brand3-surface: #ffecee;
+    --fs-color-brand3-border-subtle: #f4cccf;
+    --fs-color-brand3-border: #9f676d;
+    --fs-color-brand3-border-strong: #844a51;
+    --fs-color-brand3-fill: #a94656;
+    --fs-color-brand3-text: #7e2e3c;
+    --fs-color-brand3-text-strong: #431920;
+    --fs-color-brand3-text-subtle: #8b4750;
+    --fs-color-brand3-content: #fffafb;
+    --fs-color-neutral-surface: #f1f2f3;
+    --fs-color-neutral-border-subtle: #d6d7d9;
+    --fs-color-neutral-border: #77797c;
+    --fs-color-neutral-border-strong: #5c5e60;
+    --fs-color-neutral-fill: #696c71;
+    --fs-color-neutral-text: #4a4d51;
+    --fs-color-neutral-text-strong: #27292b;
+    --fs-color-neutral-text-subtle: #5d5f62;
+    --fs-color-neutral-content: #fbfcfc;
+    --fs-color-danger-surface: #ffedec;
+    --fs-color-danger-border-subtle: #facac8;
+    --fs-color-danger-border: #a66363;
+    --fs-color-danger-border-strong: #8b4647;
+    --fs-color-danger-fill: #b53b43;
+    --fs-color-danger-text: #87232c;
+    --fs-color-danger-text-strong: #481518;
+    --fs-color-danger-text-subtle: #934244;
+    --fs-color-danger-content: #fffafa;
+    --fs-color-warning-surface: #f9f1e1;
+    --fs-color-warning-border-subtle: #e3d6bc;
+    --fs-color-warning-border: #8a7650;
+    --fs-color-warning-border-strong: #6f5a31;
+    --fs-color-warning-fill: #896508;
+    --fs-color-warning-text: #644800;
+    --fs-color-warning-text-strong: #352604;
+    --fs-color-warning-text-subtle: #735b29;
+    --fs-color-warning-content: #fdfcf9;
+    --fs-color-success-surface: #e8f7e6;
+    --fs-color-success-border-subtle: #c9dfc5;
+    --fs-color-success-border: #63835e;
+    --fs-color-success-border-strong: #466841;
+    --fs-color-success-fill: #3f7d37;
+    --fs-color-success-text: #285a22;
+    --fs-color-success-text-strong: #163013;
+    --fs-color-success-text-subtle: #426b3d;
+    --fs-color-success-content: #fafdfa;
+    --fs-color-neutral-canvas: #ffffff;
+    --fs-color-neutral-raised: #e4e4e5;
+    --fs-color-overlay: #1a1a1a80;
+    --fs-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12);
   }
 
   [data-theme="dark"] {
