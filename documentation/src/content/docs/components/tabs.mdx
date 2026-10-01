@@ -172,6 +172,14 @@ faner.selected = 2 // det samme som select(2)
 
 Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Markup uten `aria-controls` kobles etter rekkefølgen, og komponenten skriver da koblingen inn, med id-er den lager selv og husker: en patch som river dem bort får de samme tilbake.
 
+## Før komponenten er registrert
+
+Panelene er serverens markup og står i siden med en gang. Hadde ingenting skjedd, ville alle vist seg under hverandre til `defineFsTabs()` kjørte.
+
+Stilarket hindrer det: `fs-tabs:not(:defined)` viser bare det første synlige panelet. Skrev serveren `hidden` på de andre, er det første synlige det serveren valgte. Du trenger ikke gjøre noe, regelen følger med `tabs.css`.
+
+Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |
