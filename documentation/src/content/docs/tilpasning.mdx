@@ -44,7 +44,7 @@ Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av de
 
 ## Lyst og mørkt
 
-Uten videre følger fargene maskinens innstilling. En side som vil bestemme selv setter `data-theme` på `<html>`:
+Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil bestemme selv setter `data-theme` på `<html>`:
 
 ```html
 <html data-theme="light">
@@ -69,7 +69,7 @@ Legger du Fristil inn i en side du ikke eier, er dette måten å gjøre det på.
 ```html
 <div data-theme="light">
 	<table class="fs-table">
-		<caption class="fs-sr-only">Motregninger</caption>
+		<caption class="fs-sr-only">Fakturaer</caption>
 	</table>
 </div>
 ```
@@ -88,7 +88,7 @@ Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele doku
 }
 ```
 
-Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): to linjer du eier.
+Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): én linje hver, og begge er dine.
 
 ### Per tema
 

@@ -101,6 +101,22 @@ En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det område
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
+### En tettere tabell
+
+Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er én variabel, og den finnes ingen `data-size` for:
+
+```css
+.kompakt {
+	--fs-table-cell-padding: var(--fs-spacing-1) var(--fs-spacing-2);
+}
+```
+
+```html
+<table class="fs-table kompakt">…</table>
+```
+
+Skriften skal du la være. `--font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
+
 ## Tilgjengelighet
 
 - Hver kolonneoverskrift skal være `<th scope="col">`, og raden sin egen nøkkel `<th scope="row">`. Da vet skjermleseren hvilken kolonne og rad en celle hører til.

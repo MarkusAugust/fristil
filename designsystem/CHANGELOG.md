@@ -23,6 +23,15 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.25.0 (2026-10-01)
+
+### Rettet
+
+- **Språkvask i regelbøkene og dokumentasjonen.** Et «de» som skulle vært
+  «dem», og en forklaring og et eksempel som var lånt fra en konkret
+  feilrapport framfor å stå på egne bein. Teksten beskriver nå mekanismen:
+  en innebygd komponent i en vertsside.
+
 ## 0.24.0 (2026-10-01)
 
 ### Lagt til
@@ -65,9 +74,9 @@ egen overskrift «Brytende».
 - **`color-scheme` settes ikke lenger på `:root`.** Den står bare på
   `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et
   tema. Egenskapen arves nedover, så en verdi på roten gjaldt hele dokumentet,
-  også der pakken bare er en gjest: en
-  widget som lastet `fristil.css` inn i en vertsside ga hele verten mørke
-  rullefelt og skjemakontroller i mørk modus, også utenfor widgeten.
+  også der pakken bare er en gjest: en komponent som lastet `fristil.css` inn
+  i en vertsside ga hele verten mørke rullefelt og skjemakontroller i mørk
+  modus, langt utenfor komponenten selv.
 
   **Vil du at nettleserens flater skal følge systemet på hele siden, skriver
   du `color-scheme: light dark` på `<html>` selv.** Det er den samme avtalen
