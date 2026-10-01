@@ -23,6 +23,21 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.24.0 (2026-10-01)
+
+### Lagt til
+
+- **JetBrains-IDE-ene foreslår nå `fs-`-klassene.** `web-types.json` hadde
+  bare de ni web-komponentene, så du fikk forslag på `<fs-field>` men
+  ingenting på `fs-button`, enda klassene er den eneste delen en
+  CSS-komponent har. Nå står alle 72 under `contributions.css.classes`, med
+  komponentnavn og lenke til dokumentasjonssiden.
+
+  VS Code-utvidelsen har hatt dette hele tiden, i kode framfor i data, så
+  dette retter en skjevhet mellom de to editorene. Lista bygges av
+  `classesData()`, den samme funksjonen som skriver `classes.ts`, så editoren
+  kan ikke foreslå en klasse diagnostikken avviser.
+
 ## 0.23.0 (2026-10-01)
 
 ### Brytende
