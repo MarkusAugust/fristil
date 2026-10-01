@@ -256,9 +256,7 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 
 ## Før komponenten er registrert
 
-Lista er serverens markup, så hadde ingenting skjedd, ville den stått åpen under et felt ingen har rørt, fram til `defineFsSuggestion()` kjørte.
-
-Stilarket skjuler den: `fs-suggestion:not(:defined) .fs-suggestion__list` er `display: none`, og komponenten åpner den først når den selv bestemmer det. Regelen følger med `suggestion.css`.
+`fs.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `fs-suggestion:not(:defined) .fs-suggestion__list` i `suggestion.css` den skjult til `defineFsSuggestion()` har kjørt.
 
 Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
 

@@ -359,30 +359,24 @@ Meldingen kommer én gang per element, ikke én gang per oppdatering, og bare n�
 
 ## Før komponenten er registrert
 
-Markupen er serverens, så den står der og er lesbar lenge før `defineFs*()` har kjørt. For de fleste komponentene er det hele saken: en knapp med `fs-button` ser riktig ut uten at noe skript har vært innom, og `<fs-field>` kobler bare sammen felt som allerede er der.
+Markupen er serverens, så den står der og er lesbar lenge før `defineFs*()` har kjørt. Bruker du byggefunksjonene, er det hele saken: `fs.tabs()` skriver `hidden` på hvert panel som ikke er valgt, og `fs.suggestion()` på en lukket liste, så markupen er riktig fra første tegning.
 
-To av dem viser mer enn de skal i det korte vinduet, og det løses i CSS framfor ved å la serveren skrive `hidden`.
-
-**Fanene** ville vist alle panelene under hverandre, siden ingen av dem er skjult ennå. Regelen viser bare det første:
+Skriver du den bar, altså uten `hidden`, ville fanene vist alle panelene under hverandre og forslagslista stått åpen under et felt ingen har rørt. To regler i stilarkene tar det:
 
 ```css
 fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
   ~ .fs-tabs__panel:not([hidden]) {
   display: none;
 }
-```
 
-Skrev serveren `hidden` selv, er det første synlige det serveren valgte, så regelen overstyrer ikke et valg du har tatt.
-
-**Forslagslista** ville stått åpen under et felt ingen har rørt. Den er skjult til komponenten tar over:
-
-```css
 fs-suggestion:not(:defined) .fs-suggestion__list {
   display: none;
 }
 ```
 
-Begge reglene ligger i komponentens eget stilark, så du trenger ikke gjøre noe. De er nevnt her fordi `:not(:defined)` er lett å ta for en feil når du leser CSS-en.
+Fanereglen viser det første panelet som ikke er skjult, så den overstyrer ikke et `hidden` serveren har skrevet. Den rekker bare panelene som står inne i `<fs-tabs>`: ligger et panel utenfor, må serveren skrive `hidden` på det selv.
+
+Reglene er nevnt her fordi `:not(:defined)` er lett å ta for en feil når du leser CSS-en.
 
 ## Komponenter som eier sitt eget innhold
 
