@@ -254,6 +254,12 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 
 `prefiltered` handler om hva som vises. Skal serveren i tillegg eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
 
+## Før komponenten er registrert
+
+`fs.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `fs-suggestion:not(:defined) .fs-suggestion__list` i `suggestion.css` den skjult til `defineFsSuggestion()` har kjørt.
+
+Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |
