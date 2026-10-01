@@ -168,12 +168,12 @@ selv setter \`data-theme="light"\` eller \`data-theme="dark"\` på \`<html>\`.
 Attributtet er en **temagrense** og virker på et hvilket som helst element,
 ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
 
-Det er dette en innebygd widget skal bruke. Legger du Fristil inn i en side du
-ikke eier, setter du attributtet på widgetens eget rotelement:
+Det er dette en innebygd komponent skal bruke. Legger du Fristil inn i en side
+du ikke eier, setter du attributtet på komponentens eget rotelement:
 
 ${temaEksempel(oppskrift)}
 
-Da er widgeten lys uansett hva maskinen står på, og verten røres ikke.
+Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
 
 Fristil setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,

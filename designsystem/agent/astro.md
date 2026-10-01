@@ -7,7 +7,7 @@ byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX.
 Det særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og `fs` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.
 
-Dette er @fristil/designsystem 0.24.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.25.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
@@ -136,8 +136,8 @@ selv setter `data-theme="light"` eller `data-theme="dark"` på `<html>`.
 Attributtet er en **temagrense** og virker på et hvilket som helst element,
 ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
 
-Det er dette en innebygd widget skal bruke. Legger du Fristil inn i en side du
-ikke eier, setter du attributtet på widgetens eget rotelement:
+Det er dette en innebygd komponent skal bruke. Legger du Fristil inn i en side
+du ikke eier, setter du attributtet på komponentens eget rotelement:
 
 ```html
 <div data-theme="light">
@@ -145,7 +145,7 @@ ikke eier, setter du attributtet på widgetens eget rotelement:
 </div>
 ```
 
-Da er widgeten lys uansett hva maskinen står på, og verten røres ikke.
+Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
 
 Fristil setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
