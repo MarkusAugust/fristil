@@ -121,6 +121,24 @@ export function webTypes(version: string) {
           ),
         })),
       },
+      /*
+       * Klassene, slik at `class="fs-…"` får fullføring i JetBrains-IDE-ene.
+       *
+       * Før sto bare de ni elementene her, så en utvikler fikk forslag på
+       * `<fs-field>` men ingenting på `fs-button`, enda klassene er den
+       * største delen av systemet og den eneste delen en CSS-komponent har.
+       *
+       * Lista er den samme `classesData()` som skriver `classes.ts`, altså
+       * den diagnostikken feller på. Da kan ikke editoren foreslå en klasse
+       * sjekken avviser, eller avvise en den foreslår.
+       */
+      css: {
+        classes: Object.entries(classesData()).map(([name, info]) => ({
+          name,
+          description: `**${info.title}**\n\n${info.description}`,
+          "doc-url": info.link,
+        })),
+      },
     },
   }
 }
