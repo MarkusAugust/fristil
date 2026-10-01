@@ -130,8 +130,9 @@ aldri `disabled`-fargene for å dempe noe som skal leses.
 
 ### Lyst og mørkt
 
-Uten videre følger fargene maskinens innstilling. En side som vil bestemme
-selv setter `data-theme="light"` eller `data-theme="dark"` på `<html>`.
+Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil
+bestemme selv setter `data-theme="light"` eller `data-theme="dark"` på
+`<html>`.
 
 Attributtet er en **temagrense** og virker på et hvilket som helst element,
 ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
