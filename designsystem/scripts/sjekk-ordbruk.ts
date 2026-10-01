@@ -105,6 +105,8 @@ const MØNSTRE = [
   "documentation/**/*.astro",
   "documentation/**/*.css",
   "editor/**/*.ts",
+  "editor-intellij/**/*.kt",
+  "editor-intellij/*.md",
   "presentasjon/**/*.html",
   "presentasjon/**/*.md",
   "*.md",

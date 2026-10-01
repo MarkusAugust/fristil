@@ -359,6 +359,37 @@ export function classesData(): Classes {
 }
 
 /** Hver fil generatoren skriver, med stien fra rota. */
+/**
+ * Klasselista som en Kotlin-fil, til IntelliJ-pluginen.
+ *
+ * Den er Kotlin og ikke JSON av samme grunn som `classes.ts` er TypeScript:
+ * da trengs ingen parser, ingen avhengighet, og kompilatoren leser dataene.
+ * Kilden er `classesData()`, den samme som skriver `classes.ts` og
+ * `web-types.json`, så de tre kan ikke komme ut av takt.
+ */
+function kotlinKlasser(): string {
+  const sitat = (s: string) =>
+    `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\$/g, "\\$")}"`
+
+  const rader = Object.entries(classesData())
+    .map(
+      ([navn, info]) =>
+        `    Klasse(${sitat(navn)}, ${sitat(info.title)}, ` +
+        `${sitat(info.description)}, ${sitat(info.link)}),`,
+    )
+    .join("\n")
+
+  return `// Generert av editor/scripts/generate.ts. Ikke rediger.
+package no.fristil.intellij
+
+/** Klassene Fristil sender ut, lest fra pakken da fila ble generert. */
+internal val KLASSER: List<Klasse> =
+  listOf(
+${rader}
+  )
+`
+}
+
 export function files(): Record<string, string> {
   const version: string = JSON.parse(
     readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
@@ -375,6 +406,8 @@ export function files(): Record<string, string> {
     `import type { ${type} } from "./diagnostics.js"\n\n` +
     `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
+    "editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt":
+      kotlinKlasser(),
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
     "designsystem/src/diagnostics/elements.ts": module(

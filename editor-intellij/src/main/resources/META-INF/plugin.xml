@@ -1,0 +1,40 @@
+<idea-plugin>
+    <id>no.fristil.intellij</id>
+    <name>Fristil</name>
+    <vendor url="https://github.com/MarkusAugust/fristil">MarkusAugust</vendor>
+
+    <description><![CDATA[
+        Fullføring på Fristils CSS-klasser i HTML, også i HTML som er injisert
+        i en streng.
+        <br><br>
+        <code>web-types.json</code> gir fullføring i vanlige HTML-filer uten
+        denne pluginen. Den leses bare ikke inn i injiserte fragmenter, altså
+        markup som bor i en Kotlin- eller TypeScript-streng. Pluginen lukker
+        det hullet, og henter klassene fra den samme fila, så editoren og
+        diagnostikken ikke kan si ulike ting.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.xml</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!--
+            Registrert på HTML-språket, ikke på Kotlin.
+
+            Injiserer IntelliJ HTML i en streng, blir fragmentet et ekte
+            PsiFile med HTML-språk, og denne kalles for det. Den samme
+            registreringen dekker derfor vanlige .html-filer, Kotlin-strenger
+            og TypeScript-strenger, uten en linje per vertsspråk.
+        -->
+        <completion.contributor
+            language="HTML"
+            order="first"
+            implementationClass="no.fristil.intellij.FristilCompletionContributor" />
+
+        <lang.documentationProvider
+            language="HTML"
+            order="first"
+            implementationClass="no.fristil.intellij.FristilDocumentationProvider" />
+    </extensions>
+</idea-plugin>
