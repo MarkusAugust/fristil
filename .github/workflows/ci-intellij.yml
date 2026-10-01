@@ -1,0 +1,75 @@
+#
+# IntelliJ-pluginen bygges for seg, ikke i hovedrekka.
+#
+# `bun run sjekk` tar tre minutter og kjøres før hver push. Et Gradle-bygg
+# laster ned en hel IDE å kompilere mot, rundt en gigabyte, og ville gjort
+# det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
+# kjører når pluginen eller dataene den leser faktisk er endret.
+#
+# `Klasser.kt` står i `paths` fordi den genereres av
+# `editor/scripts/generate.ts`: endrer noen klasselista, skal pluginen bygges
+# på nytt selv om ingen rørte Kotlin-koden.
+#
+name: IntelliJ-plugin
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "editor-intellij/**"
+      - ".github/workflows/ci-intellij.yml"
+  pull_request:
+    paths:
+      - "editor-intellij/**"
+      - ".github/workflows/ci-intellij.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  plugin:
+    name: Bygg og test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
+      # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,
+      # ikke hele `gradle.properties`: `pluginVersion` står i den samme fila,
+      # og en versjonsbump ville ellers kastet cachen og lastet ned IDE-en på
+      # nytt uten grunn.
+      - name: Les plattformversjonen
+        id: plattform
+        working-directory: editor-intellij
+        run: |
+          versjon=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
+          if [ -z "$versjon" ]; then
+            echo "Fant ingen platformVersion i gradle.properties"
+            exit 1
+          fi
+          echo "versjon=$versjon" >> "$GITHUB_OUTPUT"
+
+      - name: Hent IntelliJ-plattformen fra cache
+        uses: actions/cache@v4
+        with:
+          path: editor-intellij/.intellijPlatform
+          key: intellij-${{ steps.plattform.outputs.versjon }}
+
+      - name: Bygg og test
+        working-directory: editor-intellij
+        run: ./gradlew build
+
+      - name: Last opp pluginen
+        uses: actions/upload-artifact@v4
+        with:
+          name: fristil-intellij
+          path: editor-intellij/build/distributions/*.zip
