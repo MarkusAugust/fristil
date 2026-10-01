@@ -19,17 +19,11 @@ dependencies {
         intellijIdea(providers.gradleProperty("platformVersion"))
         testFramework(TestFrameworkType.Platform)
     }
-    testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
 }
 
 kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
 }
 
 /*
@@ -44,13 +38,9 @@ java {
 
 intellijPlatform {
     pluginConfiguration {
-        id = "no.fristil.intellij"
-        name = "Fristil"
+        // `id`, `name` og `vendor` står i `plugin.xml`. Versjonen og
+        // byggrammen settes her, siden de kommer fra `gradle.properties`.
         version = providers.gradleProperty("pluginVersion")
-        vendor {
-            name = "MarkusAugust"
-            url = "https://github.com/MarkusAugust/fristil"
-        }
         ideaVersion {
             sinceBuild = providers.gradleProperty("sinceBuild")
             untilBuild = provider { null }

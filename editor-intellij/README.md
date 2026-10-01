@@ -7,13 +7,22 @@ streng.
 
 `web-types.json` følger npm-pakken og gir fullføring på både elementene og de
 72 klassene i JetBrains-IDE-ene, uten at noen installerer noe. Men den leses
-bare for filer. Skriver du markup i en Kotlin-streng, som i en Ktor- eller
-Spring-app, blir HTML-en et injisert fragment, og fragmentet er ikke en fil.
+bare for **filer**, og et injisert fragment er ikke en fil.
 
 Det er etterprøvd: med `web-types.json` på plass gir `class="fs-` forslag i en
 `.html`-fil, men ingenting i den samme markupen inne i en multiline-streng.
 
 Pluginen lukker det hullet, og bare det.
+
+## Strengen må være merket
+
+IntelliJ injiserer ikke HTML i en streng av seg selv. Den gjør det når du sier
+fra, med `@Language("HTML")` på funksjonen eller en `// language=HTML`-kommentar
+over verdien. Begge deler er innebygd i IntelliJ og krever ingen avhengighet.
+
+Uten et slikt merke er strengen bare tekst for IDE-en, og da har pluginen
+ingenting å feste seg i. Den dekker altså merkede strenger, ikke enhver streng
+som tilfeldigvis inneholder markup.
 
 ## Hvordan
 
@@ -25,8 +34,11 @@ Pluginen lukker det hullet, og bare det.
 
 Registrert på HTML-språket, ikke på Kotlin. Injiserer IntelliJ HTML i en
 streng, blir fragmentet et ekte `PsiFile` med HTML-språk, og bidragsyteren
-kalles for det. Den samme linja dekker derfor `.html`-filer, Kotlin-strenger
-og TypeScript-strenger, uten en registrering per vertsspråk.
+kalles for det. Den samme linja dekker derfor `.html`-filer og merkede
+strenger, uten en registrering per vertsspråk.
+
+Testene dekker `.html` og Kotlin. En merket TypeScript-streng skal virke av
+den samme grunnen, men det er ikke etterprøvd.
 
 ## Dataene
 
@@ -63,4 +75,5 @@ Pluginen havner i `build/distributions/` som en zip du kan installere med
 
 Hovedrekka tar tre minutter og kjøres før hver push. Et Gradle-bygg som
 laster ned en IDE hører ikke hjemme der. `.github/workflows/ci-intellij.yml`
-kjører derfor for seg, og bare når `editor-intellij/**` er endret.
+kjører derfor for seg, og bare når `editor-intellij/**` eller arbeidsflyten
+selv er endret, eller du starter den for hånd.

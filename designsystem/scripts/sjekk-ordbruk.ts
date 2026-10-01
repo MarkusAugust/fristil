@@ -129,6 +129,9 @@ const HOPP_OVER = [
   "PLAN.md",
   // Generert av generate-agent.ts; kilden er oppskriftene der.
   "designsystem/agent/",
+  // Generert av editor/scripts/generate.ts, som classes.ts under. Leses den,
+  // meldes et galt ord i metadata.ts to ganger for den samme feilen.
+  "editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt",
   // Generert fra tokens.ts.
   "designsystem/src/tokens/tokens.css",
   // Generert av editor/scripts/generate.ts fra metadata.ts, som leses.

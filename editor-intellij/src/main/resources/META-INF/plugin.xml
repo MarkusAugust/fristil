@@ -31,10 +31,5 @@
             language="HTML"
             order="first"
             implementationClass="no.fristil.intellij.FristilCompletionContributor" />
-
-        <lang.documentationProvider
-            language="HTML"
-            order="first"
-            implementationClass="no.fristil.intellij.FristilDocumentationProvider" />
     </extensions>
 </idea-plugin>

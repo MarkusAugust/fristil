@@ -27,17 +27,24 @@ class FullforingTest : BasePlatformTestCase() {
         val elementer = myFixture.completeBasic()
 
         myFixture.lookupElementStrings?.let { return it }
+        if (elementer != null) return elementer.map { it.lookupString }
 
-        // `completeBasic` gir null når den satte inn ett treff selv.
-        if (elementer == null || elementer.isEmpty()) {
-            val tekst = myFixture.editor.document.text
-            val slutt = myFixture.editor.caretModel.offset
-            val start = tekst.lastIndexOfAny(charArrayOf(' ', '"', '\'', '\n'), slutt - 1) + 1
-            val satt = tekst.substring(start, slutt)
-            return if (satt.startsWith("fs-")) listOf(satt) else emptyList()
-        }
+        /*
+         * `completeBasic` gir null når den satte inn det ene treffet selv.
+         *
+         * Da er lista lukket, og det som ble satt inn må leses ut av
+         * dokumentet. Teksten foran markøren sammenlignes med det som sto der
+         * før: er den uendret, skjedde ingenting, og det er ikke det samme
+         * som et forslag. Uten den sammenligningen rapporterte hjelperen
+         * brukerens egen tekst som om pluginen hadde levert den.
+         */
+        val før = innhold.substringBefore("<caret>").takeLastWhile { !it.isWhitespace() && it != '"' && it != '\'' }
+        val tekst = myFixture.editor.document.text
+        val slutt = myFixture.editor.caretModel.offset
+        val start = tekst.lastIndexOfAny(charArrayOf(' ', '"', '\'', '\n', '='), slutt - 1) + 1
+        val etter = tekst.substring(start, slutt)
 
-        return elementer.map { it.lookupString }
+        return if (etter != før && etter.startsWith("fs-")) listOf(etter) else emptyList()
     }
 
     fun `test foreslår klasser i en vanlig HTML-fil`() {
@@ -78,9 +85,36 @@ class FullforingTest : BasePlatformTestCase() {
         assertFalse("skal ikke foreslå i id, fikk $ut", ut.contains("fs-button"))
     }
 
+    fun `test virker på en verdi uten anførselstegn`() {
+        // Bar verdi er gyldig HTML. Da bare anførselstegn talte, ga
+        // `class=fs-` ingenting.
+        val ut = forslag("test.html", """<div class=fs-tab<caret>""")
+        assertTrue("fs-table skal være med, fikk $ut", ut.contains("fs-table"))
+    }
+
+    fun `test lar seg ikke lure av et class-likhetstegn i en annen verdi`() {
+        // Løkka bryter på det lukkende anførselstegnet, og uten kravet om at
+        // `=` står rett foran navnet sto `=` fra verdiens innhold igjen.
+        val ut = forslag("test.html", """<div title="class=" fs-<caret>""")
+        assertFalse("skal ikke foreslå her, fikk $ut", ut.contains("fs-button"))
+    }
+
     fun `test tier i vanlig tekst`() {
         val ut = forslag("test.html", """<p>fs-<caret></p>""")
         assertFalse("skal ikke foreslå i brødtekst, fikk $ut", ut.contains("fs-button"))
+    }
+
+    fun `test tier i tekst rett etter en lukket tagg`() {
+        /*
+         * Taggen er lukket, så markøren står i innhold og ikke i et attributt.
+         *
+         * Uten sjekken på at taggen er åpen finner koden `class=` lenger bak
+         * i den samme taggen, og ser ingen mellomrom mellom det og markøren.
+         * Testen over fanger ikke dette: der finnes det ikke noe `=` i det
+         * hele tatt, så den stopper av en annen grunn.
+         */
+        val ut = forslag("test.html", """<div class="a">fs-<caret>""")
+        assertFalse("skal ikke foreslå etter en lukket tagg, fikk $ut", ut.contains("fs-button"))
     }
 
     fun `test foreslår i HTML injisert i en Kotlin-streng`() {

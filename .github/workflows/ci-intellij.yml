@@ -42,17 +42,31 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Plattformen er stor og endrer seg bare når `platformVersion` gjør
-      # det, så den caches på den verdien framfor på lockfila.
+      # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
+      # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,
+      # ikke hele `gradle.properties`: `pluginVersion` står i den samme fila,
+      # og en versjonsbump ville ellers kastet cachen og lastet ned IDE-en på
+      # nytt uten grunn.
+      - name: Les plattformversjonen
+        id: plattform
+        working-directory: editor-intellij
+        run: |
+          versjon=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
+          if [ -z "$versjon" ]; then
+            echo "Fant ingen platformVersion i gradle.properties"
+            exit 1
+          fi
+          echo "versjon=$versjon" >> "$GITHUB_OUTPUT"
+
       - name: Hent IntelliJ-plattformen fra cache
         uses: actions/cache@v4
         with:
           path: editor-intellij/.intellijPlatform
-          key: intellij-${{ hashFiles('editor-intellij/gradle.properties') }}
+          key: intellij-${{ steps.plattform.outputs.versjon }}
 
       - name: Bygg og test
         working-directory: editor-intellij
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build
 
       - name: Last opp pluginen
         uses: actions/upload-artifact@v4
