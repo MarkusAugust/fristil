@@ -114,8 +114,24 @@ class FristilCompletionContributor : CompletionContributor() {
                     fra.substring(0, likhet)
                 }
 
-            val navn = før.trimEnd().takeLastWhile { it.isLetterOrDigit() || it == '-' }
-            return navn.equals("class", ignoreCase = true)
+            /*
+             * Attributtet må hete `class` og ingenting annet.
+             *
+             * `takeLastWhile` alene gjorde `:class` og `x-bind:class` til
+             * `class`, fordi kolon ikke er med i settet. Der tar Vue og
+             * Alpine et JavaScript-uttrykk, så et bart `fs-button` blir en
+             * variabelreferanse og ikke en klasse. `data-class` gikk fri alt,
+             * siden bindestrek er med.
+             *
+             * Derfor kreves en ekte attributtgrense foran: mellomrom, eller
+             * at attributtet er det første etter tagnavnet.
+             */
+            val foran = før.trimEnd()
+            val navn = foran.takeLastWhile { it.isLetterOrDigit() || it == '-' }
+            if (!navn.equals("class", ignoreCase = true)) return false
+
+            val tegnForan = foran.dropLast(navn.length).lastOrNull() ?: return false
+            return tegnForan.isWhitespace()
         }
     }
 }

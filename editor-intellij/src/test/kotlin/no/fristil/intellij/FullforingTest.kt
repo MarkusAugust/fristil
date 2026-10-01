@@ -92,6 +92,18 @@ class FullforingTest : BasePlatformTestCase() {
         assertTrue("fs-table skal være med, fikk $ut", ut.contains("fs-table"))
     }
 
+    fun `test tier i et bundet class-attributt`() {
+        /*
+         * Vue og Alpine tar et JavaScript-uttrykk i `:class` og
+         * `x-bind:class`. Et bart `fs-button` der blir en variabelreferanse,
+         * ikke en klasse, så forslaget ville gitt kode som ikke virker.
+         */
+        for (attributt in listOf(":class", "x-bind:class", "v-bind:class")) {
+            val ut = forslag("test.html", """<div $attributt="fs-<caret>">""")
+            assertFalse("skal tie i $attributt, fikk $ut", ut.contains("fs-button"))
+        }
+    }
+
     fun `test lar seg ikke lure av et class-likhetstegn i en annen verdi`() {
         // Løkka bryter på det lukkende anførselstegnet, og uten kravet om at
         // `=` står rett foran navnet sto `=` fra verdiens innhold igjen.
