@@ -47,9 +47,9 @@ for (const key of Object.keys(alle)) {
  * det er en motregel verten aldri ba om å måtte skrive.
  *
  * Sto den på `:root`, tok Fristil over fargeskjemaet til et dokument det
- * ikke eier. En widget som laster `fristil.css` inn i en vertsside ga hele
- * verten mørke rullefelt og skjemakontroller i mørk modus, også utenfor
- * widgeten, og verten hadde aldri bedt om det.
+ * ikke eier. En komponent som laster `fristil.css` inn i en vertsside ga hele
+ * verten mørke rullefelt og skjemakontroller i mørk modus, langt utenfor
+ * komponenten selv, og verten hadde aldri bedt om det.
  *
  * En side som vil at nettleserens flater skal følge systemet, skriver derfor
  * `color-scheme: light dark` på `<html>` selv. Det er den samme avtalen som
@@ -83,7 +83,7 @@ const darkLines = morkeNavn.map(
  * `[data-theme="dark"]` hadde alle 90. De to var altså ikke samme slags
  * regel: mørkt tema virket på et hvilket som helst element, lyst tema bare
  * på `<html>`, fordi et barn ikke kan overstyre en variabel det arver uten
- * å deklarere den på nytt. En widget med `data-theme="light"` på sin egen
+ * å deklarere den på nytt. En komponent med `data-theme="light"` på sin egen
  * `<div>` fikk derfor mørke farger på en lys vertsside.
  *
  * Lista bygges av de samme nøklene, ikke av en egen håndskrevet utgave, så
@@ -108,7 +108,8 @@ const lightLines = morkeNavn.map((name) => {
  *
  * Attributtreglene under er noe annet: de er temagrenser, og virker på et
  * hvilket som helst element. Begge deklarerer alle de 90 tokenene, slik at
- * et tema kan ligge inne i et annet, begge veier, og slik at en widget kan
+ * et tema kan ligge inne i et annet, begge veier, og slik at en innebygd
+ * komponent kan
  * låse sitt eget tre uten å røre verten.
  */
 lines.push(

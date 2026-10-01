@@ -13,9 +13,9 @@ import "./tokens/tokens.css"
 /**
  * At `data-theme` er en temagrense, og at Fristil ikke rører verten.
  *
- * Begge deler kom fra en widget som legges inn i en vertsside den ikke eier.
- * Den setter `data-theme="light"` på sitt eget rotelement og forventer lyse
- * farger uansett hva maskinen står på.
+ * Begge deler kom fra en komponent som legges inn i en vertsside den ikke
+ * eier. Den setter `data-theme="light"` på sitt eget rotelement og forventer
+ * lyse farger uansett hva maskinen står på.
  *
  * To ting sviktet. `[data-theme="light"]` deklarerte bare `color-scheme`,
  * mens `[data-theme="dark"]` deklarerte alle 90 tokenene, så lyst tema virket
@@ -186,8 +186,8 @@ describe.skipIf(server.browser !== "chromium")(
       expect(token(hent("ute"))).toBe(MORK)
     })
 
-    it("holder en lys widget lys på en mørk maskin", async () => {
-      // Dette er feilen widgeten meldte: før rettelsen arvet div-en den mørke
+    it("holder en lys komponent lys på en mørk maskin", async () => {
+      // Dette var feilen: før rettelsen arvet div-en den mørke
       // verdien fra `:root`, fordi blokken ikke deklarerte tokenene på nytt.
       document.body.innerHTML = `
         <p id="ute">ute</p>
