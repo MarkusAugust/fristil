@@ -361,7 +361,7 @@ Meldingen kommer én gang per element, ikke én gang per oppdatering, og bare n�
 
 Markupen er serverens, så den står der og er lesbar lenge før `defineFs*()` har kjørt. Bruker du byggefunksjonene, er det hele saken: `fs.tabs()` skriver `hidden` på hvert panel som ikke er valgt, og `fs.suggestion()` på en lukket liste, så markupen er riktig fra første tegning.
 
-Skriver du den bar, altså uten `hidden`, ville fanene vist alle panelene under hverandre og forslagslista stått åpen under et felt ingen har rørt. To regler i stilarkene tar det:
+Skriver du den bar, altså uten `hidden`, viser fanene alle panelene under hverandre, og forslagslista står åpen under et felt ingen har rørt. To regler i stilarkene tar det:
 
 ```css
 fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
