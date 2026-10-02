@@ -3,6 +3,8 @@ title: Tilpasning
 description: Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.
 ---
 
+import Eksempel from "../../components/Eksempel.astro"
+
 Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
 
 Tre veier, i den rekkefølgen du bør prøve dem:
@@ -157,6 +159,44 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 	--fs-input-radius: 0;
 }
 ```
+
+### Hvor du setter den avgjør hvor langt den rekker
+
+Variablene arves, som alle CSS-variabler. Stedet du skriver deklarasjonen er derfor det eneste som bestemmer rekkevidden, og du trenger ingen egen mekanisme for å begrense den.
+
+På `:root` gjelder den hele appen, som i eksempelet over. Skriver du den på din egen klasse i stedet, gjelder den det elementet og alt som ligger inni:
+
+<Eksempel stiler={["card", "button", "heading", "paragraph"]} layout="rad" egenCss={`
+.tett-panel {
+	--fs-card-padding: var(--fs-spacing-2);
+	--fs-card-radius: 0;
+	--fs-button-padding: var(--fs-spacing-1) var(--fs-spacing-3);
+}
+`} kode={`
+<div class="fs-card">
+  <h3 class="fs-heading" data-size="s">Standard</h3>
+  <p class="fs-paragraph">Verdiene som følger med pakken.</p>
+  <button class="fs-button">Åpne saken</button>
+</div>
+
+<div class="fs-card tett-panel">
+  <h3 class="fs-heading" data-size="s">Tett panel</h3>
+  <p class="fs-paragraph">Samme markup, én klasse mer.</p>
+  <button class="fs-button">Åpne saken</button>
+</div>
+`} />
+
+Markupen er den samme i begge. Den eneste forskjellen er klassen `tett-panel`, og den er din, ikke vår. Knappen inni blir smalere uten at du rører knappen: den arver variabelen fra kortet.
+
+Det gir deg tre rekkevidder med den samme mekanismen:
+
+| Hvor du skriver den | Hvor langt den rekker |
+| --- | --- |
+| `:root` | Hele appen |
+| Din egen klasse på en beholder | Alt inni den beholderen |
+| Din egen klasse på komponenten | Bare den ene |
+
+Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte gjør, og et eksempel som viser det, står på komponentens egen side.
 
 | Variabel | Standard |
 | --- | --- |

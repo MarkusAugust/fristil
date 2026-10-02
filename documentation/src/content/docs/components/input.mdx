@@ -111,6 +111,25 @@ Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene f
 | `--fs-input-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-input-radius` | `var(--fs-spacing-1)` |
 
+Et eksempel. Et skjema som skal fylles ut på mobil tåler større treffflater, og huset ditt vil kanskje ha rette hjørner:
+
+<Eksempel stiler={["input", "label"]} layout="stabel" maxWidth="26rem" egenCss={`
+.romslig-skjema {
+	--fs-input-padding: var(--fs-spacing-3) var(--fs-spacing-4);
+	--fs-input-radius: 0;
+}
+`} kode={`
+<label class="fs-label" for="standard">Fødselsnummer</label>
+<input class="fs-input" id="standard" type="text" />
+
+<div class="romslig-skjema">
+  <label class="fs-label" for="romslig">Fødselsnummer</label>
+  <input class="fs-input" id="romslig" type="text" />
+</div>
+`} />
+
+Variabelen står på beholderen, ikke på feltet, så den gjelder hvert felt i skjemaet uten at du rører noen av dem.
+
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
