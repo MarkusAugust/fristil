@@ -32,10 +32,12 @@ Det rammer kontrollene som viser tilstanden sin med farge eller en gradient. Ute
 | Komponent | Hva systemet gjør |
 | --- | --- |
 | [Checkbox](../components/checkbox/), [Radio](../components/radio/), [Switch](../components/switch/), [Select](../components/select/) | Faller tilbake til nettleserens egen tegning, som er riktig i alle temaer brukeren kan velge |
-| [Toggle Group](../components/toggle-group/), [Tag](../components/tag/), [Pagination](../components/pagination/), [Tabs](../components/tabs/) | Viser det valgte med `Highlight` og `HighlightText` |
+| [Toggle Group](../components/toggle-group/), [Tag](../components/tag/), [Pagination](../components/pagination/), [Suggestion](../components/suggestion/) | Viser det valgte med `Highlight` og `HighlightText` |
+| [Tabs](../components/tabs/) | Markerer den valgte fanen med `Highlight` på kanten og teksten |
 | [Tooltip](../components/tooltip/) | Får en kant, så boblen ikke flyter oppå innholdet |
 | [Spinner](../components/spinner/) | Merker én kant med `Highlight`, så ringen fortsatt har et punkt |
-| [Input](../components/input/) med dato, [Search](../components/search/) | Tar bort ikonet, som har fargen malt inn i bildet, og gir plassen tilbake |
+| [Search](../components/search/) | Tar bort ikonet, som har fargen malt inn i bildet, og gir plassen tilbake |
+| [Input](../components/input/) med dato | Tar bort ikonet og viser nettleserens egen kalenderknapp i stedet |
 
 Bryteren mister formen sin i modusen og blir en vanlig avkryssingsboks. `role="switch"` står fortsatt, så den leses opp som på og av.
 
@@ -85,7 +87,7 @@ Komponentene bruker logiske egenskaper, altså `padding-inline-start` og `inset-
 <html lang="ar" dir="rtl">
 ```
 
-`background-position` har ingen logisk variant. De tre stedene som tegner et ikon i bakgrunnen, altså datofeltet, søkefeltet og knappen i bryteren, snus derfor for hånd med `:dir(rtl)`. Det er testet i alle tre nettleserne at bryterknappen peker samme vei i begge retninger.
+`background-position` har ingen logisk variant. De fire stedene som tegner noe i bakgrunnen, altså datofeltet, søkefeltet, nedtrekkslistas pil og knappen i bryteren, snus derfor for hånd med `:dir(rtl)`. Det er testet i alle tre nettleserne at bryterknappen bytter side og dermed betyr det samme i begge retninger.
 
 Tekstinnholdet er ditt. Systemet snur oppsettet, ikke språket.
 

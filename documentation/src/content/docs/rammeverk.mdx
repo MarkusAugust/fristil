@@ -7,7 +7,7 @@ import { TabItem, Tabs } from "@astrojs/starlight/components"
 
 CSS-komponentene er klasser og krever ingenting av rammeverket. Web-komponentene trenger av og til oppsett, og denne siden samler det.
 
-Alle web-komponentene registreres på samme måte, og hver av dem har sin egen side med et eksempel i alle fire miljøene: [Field](../components/field/), [Tabs](../components/tabs/), [Error Summary](../components/error-summary/), [Popover](../components/popover/), [Suggestion](../components/suggestion/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) og [Connection Status](../components/connection-status/).
+Alle web-komponentene registreres på samme måte, og hver av dem har sin egen side med eksempler per miljø: [Field](../components/field/), [Tabs](../components/tabs/), [Dialog](../components/dialog/), [Error Summary](../components/error-summary/), [Popover](../components/popover/), [Suggestion](../components/suggestion/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) og [Connection Status](../components/connection-status/).
 
 Tre ting gjelder overalt:
 
@@ -57,8 +57,8 @@ Ingen byggverktøy, ingen pakkebehandler i nettleseren.
 CSS-komponentene krever ikke engang skriptet:
 
 ```html
-<link rel="stylesheet" href="@fristil/designsystem/tokens.css" />
-<link rel="stylesheet" href="@fristil/designsystem/button.css" />
+<link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
+<link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
 
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
@@ -333,9 +333,8 @@ Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen,
 
 | Symptom | Årsak |
 | --- | --- |
-| Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
-| `customElements is not defined` | Registreringen kjøres under serverrendering |
+| En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting | `define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv, så uten registrering er elementet tomt. En `ramme`-komponents markup er serverens og står der uansett |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
-| Stilene mangler | `tokens.css` er ikke importert, eller importeres etter komponentens eget stilark |
+| Stilene mangler | `tokens.css` er ikke importert |
 | React: «Invalid DOM property `class`» | Importer `fs` fra `@fristil/designsystem/react` |

@@ -16,12 +16,22 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
 
 ## CSS-komponenter
 
-En klasse og noen `data-*`-attributter, ingen JavaScript. `tokens.css` definerer variablene alt annet bygger på, så den lastes først. Importer bare stilarkene du bruker; det finnes ingen samlet CSS-fil.
+En klasse og noen `data-*`-attributter, ingen JavaScript. `tokens.css` definerer variablene alt annet bygger på, så den lastes først.
+
+Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper ikke laster CSS for en dialog:
 
 ```js
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/button.css"
 ```
+
+Uten et byggesteg lenker du den samlede fila, som har alt i seg:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem/dist/fristil.css" />
+```
+
+Markupen er den samme uansett hvilken av de to du valgte:
 
 ```html
 <button class="fs-button">Send søknad</button>

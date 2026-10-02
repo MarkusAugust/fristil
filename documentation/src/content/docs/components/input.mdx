@@ -86,7 +86,7 @@ Verdier utenfra: `fs.input.isType(x)` og `fs.input.isState(x)`. Se [Typesikker b
 `} />
 
 :::caution[`data-variant` og `type` må være like]
-Ikonet styres av `data-variant`, velgeren av `type`. Setter du bare den ene, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
+Ikonet styres av `data-variant`, velgeren av `type`. Setter du bare `data-variant`, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet. Setter du bare `type`, står nettleserens egen knapp igjen, og den virker.
 
 `fs.input({ type: "date" })` setter begge, og fjerner feilen helt.
 :::

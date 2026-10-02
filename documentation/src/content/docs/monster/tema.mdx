@@ -1,6 +1,6 @@
 ---
 title: La brukeren velge tema
-description: Temavelger i ren CSS, og de tre måtene å få valget til å vare.
+description: Temavelger i ren CSS, og de to måtene å få valget til å vare.
 ---
 
 import Rammeside from "../../../components/Rammeside.astro"
@@ -35,7 +35,7 @@ Tre verdier betyr noe: `auto`, `light` og `dark`. «Følg systemet» har ingen t
 
 `light` og `dark` vinner over `data-theme` på `<html>`. Serveren kan altså sende det valget den har lagret, mens et klikk likevel slår igjennom før svaret er tilbake.
 
-`auto` gjør det ikke, og det følger av at den ikke har noen temablokk: står det en `data-theme` på `<html>`, er det den som gjelder. Skal «Følg systemet» virke med én gang, må det som lagrer valget også fjerne attributtet. Begge oppskriftene under gjør det.
+`auto` gjør det ikke: regelen for den melder seg eksplisitt ut når `<html>` bærer et tema, slik at serverens verdi står. Uten det ville `:has()` slått attributtet på spesifisitet. Skal «Følg systemet» virke med én gang, må det som lagrer valget også fjerne attributtet. Begge oppskriftene under gjør det.
 
 ## Hva hvert valg gjør
 

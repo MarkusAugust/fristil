@@ -23,7 +23,7 @@ const felt = fs.field({ id: "epost", help: true, invalid })
 <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
 ```
 
-Byggefunksjonene er rene funksjoner. De bryr seg ikke om hvor de kjører.
+Byggefunksjonene er rene funksjoner så lenge du gir dem id-ene de ber om. Da bryr de seg ikke om hvor de kjører.
 
 Det eneste som endrer seg mellom rendringsmodellene er hvor ofte markupen kan bli erstattet, og det er derfor komponentene ikke får lage den:
 
@@ -111,9 +111,9 @@ Et attributt som ikke står i serverens HTML blir fjernet. React har det samme p
 | `fs`-byggefunksjonene | Klasser, `data-*`, tilgjengelighetskoblingen | Der du lager markupen, på server eller i nettleseren |
 | Web-komponentene | Tastatur, fokus, posisjonering | I nettleseren, etter at HTML-en står der |
 
-De overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.
+De overlapper ikke. En byggefunksjon setter aldri en hendelseslytter, og en komponent overskriver aldri et attributt serveren har skrevet. Mangler koblingen, fyller den den inn.
 
-En byggefunksjon er en ren funksjon. Du gir den et valgobjekt og får attributter tilbake:
+En byggefunksjon gir attributter tilbake fra et valgobjekt, uten å røre DOM-en:
 
 ```ts
 import { fs } from "@fristil/designsystem"

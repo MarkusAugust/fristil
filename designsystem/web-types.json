@@ -298,12 +298,12 @@
         },
         {
           "name": "fs-avatar",
-          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/avatar/"
         },
         {
           "name": "fs-avatar-stack",
-          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/avatar/"
         },
         {
@@ -333,12 +333,12 @@
         },
         {
           "name": "fs-checkbox",
-          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/checkbox/"
         },
         {
           "name": "fs-checkbox-row",
-          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/checkbox/"
         },
         {
@@ -418,12 +418,12 @@
         },
         {
           "name": "fs-radio",
-          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/radio/"
         },
         {
           "name": "fs-radio-row",
-          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/radio/"
         },
         {
@@ -463,12 +463,12 @@
         },
         {
           "name": "fs-switch",
-          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/switch/"
         },
         {
           "name": "fs-switch-row",
-          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/switch/"
         },
         {

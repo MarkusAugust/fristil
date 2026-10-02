@@ -16,7 +16,7 @@ Prøv å søke etter noe som ikke finnes, og trykk «Last listen på nytt» noen
 | Tilstand | Hva brukeren skal se |
 | --- | --- |
 | Laster | Plassholdere i formen innholdet får, og en beskjed i et `role="status"`-felt |
-| Treff | Resultatet, og hvor mange det er |
+| Treff | Resultatet. Antallet leses opp, og trenger ikke stå synlig |
 | Tomt | Hvorfor det er tomt, og en vei videre |
 | Feilet | Hva som gikk galt, og en måte å prøve igjen |
 
@@ -63,7 +63,7 @@ Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i 
 
 ## Feilet, ikke tomt
 
-De to er forskjellige, og skal se forskjellige ut. En tom liste er et svar. En feilet liste er ingen svar, og trenger `role="alert"` og en knapp:
+De to er forskjellige, og skal se forskjellige ut. En tom liste er et svar. En feilet liste er ingen svar, og trenger `role="alert"`. Veien videre, altså knappen som prøver på nytt, hører utenfor resultatområdet, slik at den står der uansett tilstand:
 
 ```html
 <div class="fs-alert" data-color="danger" role="alert">

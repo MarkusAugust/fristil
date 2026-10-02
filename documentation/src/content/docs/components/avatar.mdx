@@ -1,6 +1,6 @@
 ---
 title: Avatar
-description: Profilbilde eller initialer. CSS-komponent med én klasse og ingen JavaScript.
+description: Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
 import Eksempel from "../../../components/Eksempel.astro"
@@ -72,7 +72,9 @@ Bildet og navnet er to elementer ved siden av hverandre. Hvordan de stilles opp 
 Står bildet alene, må det si hvem det er:
 
 ```html
-<img class="fs-avatar" src="/bilder/ola.jpg" alt="Ola Nordmann" />
+<span class="fs-avatar">
+  <img src="/bilder/ola.jpg" alt="Ola Nordmann" />
+</span>
 ```
 
 ## Flere bilder som overlapper

@@ -23,6 +23,13 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **Beskrivelsene i klassekatalogen stemmer med komponentsidene.** `classes.ts`
+  og `web-types.json` leser frontmatteren fra hver komponentside, og fire av dem
+  sa «én klasse» om en komponent med to. Hoverboksen i VS Code og
+  JetBrains-IDE-ene siterte tallet videre.
+
 ## 0.26.0 (2026-10-02)
 
 ### Lagt til
