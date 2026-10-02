@@ -7,7 +7,7 @@ byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX.
 Det særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og `fs` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.
 
-Dette er @fristil/designsystem 0.26.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.26.1. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon

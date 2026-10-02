@@ -12,7 +12,7 @@
     },
     "designsystem": {
       "name": "@fristil/designsystem",
-      "version": "0.26.0",
+      "version": "0.26.1",
       "bin": {
         "fristil": "dist/cli.js",
       },
@@ -47,7 +47,7 @@
     },
     "editor": {
       "name": "fristil-vscode",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "devDependencies": {
         "@fristil/designsystem": "workspace:*",
         "@types/node": "24.12.4",

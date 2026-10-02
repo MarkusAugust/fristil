@@ -3,6 +3,11 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.5.1
+
+- Hover-teksten for fire klasser sa «én klasse» om en komponent med to.
+  Beskrivelsene leses fra komponentsidenes frontmatter, og de fire var gale der.
+
 ## 0.5.0
 
 - `fs-theme-control` finnes. Klassen kom i pakkens 0.26.0 og lar brukeren velge
