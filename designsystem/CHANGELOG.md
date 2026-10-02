@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.26.1 (2026-10-02)
+
 ### Rettet
 
 - **Beskrivelsene i klassekatalogen stemmer med komponentsidene.** `classes.ts`
