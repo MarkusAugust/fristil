@@ -13,6 +13,12 @@ Dette er kun en proof of concept.
 - Kan bli lagt på is eller aldri bli ferdigstilt.
 - Bidrag fra andre skjer kun etter avtale med eier.
 
+### Planlagt
+
+- **Stegindikator.** En flerstegs søknad trenger å vise hvor brukeren er. Det
+  er `aria-current="step"` og ren CSS, og det hører sammen med
+  framdriftsstolpen.
+
 ## Repoet
 
 Bun-monorepo med tre workspaces, og ett Gradle-prosjekt ved siden av:

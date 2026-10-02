@@ -364,6 +364,21 @@ export const classes: Classes = {
       }
     }
   },
+  "fs-progress": {
+    "component": "progress",
+    "title": "Progress",
+    "description": "Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
+    "link": "https://fristil.netlify.app/components/progress/",
+    "attributes": {
+      "data-color": {
+        "values": [
+          "success",
+          "warning",
+          "danger"
+        ]
+      }
+    }
+  },
   "fs-radio": {
     "component": "radio",
     "title": "Radio",

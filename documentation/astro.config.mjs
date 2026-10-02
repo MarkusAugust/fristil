@@ -131,6 +131,7 @@ export default defineConfig({
                 { label: "Select", slug: "components/select" },
                 { label: "Skeleton", slug: "components/skeleton" },
                 { label: "Skip Link", slug: "components/skip-link" },
+                { label: "Progress", slug: "components/progress" },
                 { label: "Spinner", slug: "components/spinner" },
                 { label: "Sr Only", slug: "components/sr-only" },
                 { label: "Switch", slug: "components/switch" },

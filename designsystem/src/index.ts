@@ -107,6 +107,12 @@ export type {
 } from "./components/css/paragraph/paragraph.js"
 export { paragraph } from "./components/css/paragraph/paragraph.js"
 export type {
+  ProgressAttributes,
+  ProgressColor,
+  ProgressOptions,
+} from "./components/css/progress/progress.js"
+export { progress } from "./components/css/progress/progress.js"
+export type {
   RadioAttributes,
   RadioOptions,
 } from "./components/css/radio/radio.js"

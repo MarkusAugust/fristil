@@ -417,6 +417,11 @@
           "doc-url": "https://fristil.netlify.app/components/paragraph/"
         },
         {
+          "name": "fs-progress",
+          "description": "**Progress**\n\nFramdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
+          "doc-url": "https://fristil.netlify.app/components/progress/"
+        },
+        {
           "name": "fs-radio",
           "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.netlify.app/components/radio/"

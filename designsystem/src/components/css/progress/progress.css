@@ -1,0 +1,111 @@
+@layer fristil {
+  /*
+   * Fyllfargen settes som en variabel på verten, ikke rett i pseudoelementene.
+   *
+   * Grunnen er at hver motor har sitt eget pseudoelement for den fylte delen,
+   * og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke
+   * kjenner gjør hele regelen ugyldig. Variabelen er det ene stedet fargen
+   * bestemmes, og de tre reglene under leser den. Det gir konsumenten ett
+   * punkt å overstyre fra, og `data-color` trenger bare å endre variabelen.
+   */
+  .fs-progress {
+    box-sizing: border-box;
+    appearance: none;
+    display: block;
+    inline-size: 100%;
+    block-size: var(--fs-progress-height, var(--fs-spacing-2));
+    border: 0;
+    border-radius: var(--fs-progress-radius, var(--fs-spacing-1));
+    overflow: hidden;
+    background: var(--fs-progress-track, var(--fs-color-neutral-surface));
+    color: var(--fs-progress-fill, var(--fs-color-accent-fill));
+  }
+
+  .fs-progress[data-color="success"] {
+    --fs-progress-fill: var(--fs-color-success-fill);
+  }
+
+  .fs-progress[data-color="warning"] {
+    --fs-progress-fill: var(--fs-color-warning-fill);
+  }
+
+  .fs-progress[data-color="danger"] {
+    --fs-progress-fill: var(--fs-color-danger-fill);
+  }
+
+  /* Sporet bak, i Chromium og WebKit. */
+  .fs-progress::-webkit-progress-bar {
+    background: var(--fs-progress-track, var(--fs-color-neutral-surface));
+  }
+
+  /* Den fylte delen. Hver motor sin regel, av grunnen øverst. */
+  .fs-progress::-webkit-progress-value {
+    background: var(--fs-progress-fill, var(--fs-color-accent-fill));
+    transition: inline-size 200ms ease-out;
+  }
+
+  .fs-progress::-moz-progress-bar {
+    background: var(--fs-progress-fill, var(--fs-color-accent-fill));
+  }
+
+  /*
+   * Ubestemt: en stolpe uten `value`. Da vet vi ikke hvor langt det er kommet,
+   * og en stripe som går fram og tilbake sier «det pågår» uten å love et tall.
+   */
+  .fs-progress:indeterminate {
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--fs-progress-fill, var(--fs-color-accent-fill)) 50%,
+        transparent 100%
+      )
+      no-repeat,
+      var(--fs-progress-track, var(--fs-color-neutral-surface));
+    background-size: 40% 100%;
+    animation: fs-progress-slide 1400ms ease-in-out infinite;
+  }
+
+  /* Uten denne tegner Chromium og WebKit sitt eget spor oppå gradienten. */
+  .fs-progress:indeterminate::-webkit-progress-bar {
+    background: transparent;
+  }
+
+  .fs-progress:indeterminate::-moz-progress-bar {
+    background: transparent;
+  }
+
+  @keyframes fs-progress-slide {
+    from {
+      background-position: -40% 0;
+    }
+    to {
+      background-position: 140% 0;
+    }
+  }
+
+  /* Som i spinneren: saktere framfor stillestående. En indikator som står
+     stille sier ikke lenger at noe pågår. */
+  @media (prefers-reduced-motion: reduce) {
+    .fs-progress:indeterminate {
+      animation-duration: 4200ms;
+    }
+
+    .fs-progress::-webkit-progress-value {
+      transition: none;
+    }
+  }
+
+  /*
+   * Høykontrast: egne farger overstyres, så den fylte delen må hentes fra
+   * systemfargene. `Highlight` er den samme som det valgte ellers i systemet,
+   * og kanten gir tilbake formen når bakgrunnen blir `Canvas`.
+   */
+  @media (forced-colors: active) {
+    .fs-progress {
+      --fs-progress-fill: Highlight;
+
+      border: 1px solid CanvasText;
+    }
+  }
+}

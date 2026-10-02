@@ -48,7 +48,7 @@ hører `tokens.css` der, én gang for hele siden.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+34 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
 `fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
 klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
@@ -77,6 +77,7 @@ Standardvarianten har ingen attributt.
 | `fs-list` | `@fristil/designsystem/list.css` | `data-variant`: plain, divided |
 | `fs-pagination`<br>`fs-pagination__gap` | `@fristil/designsystem/pagination.css` | ingen |
 | `fs-paragraph` | `@fristil/designsystem/paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
+| `fs-progress` | `@fristil/designsystem/progress.css` | `data-color`: success, warning, danger |
 | `fs-radio`<br>`fs-radio-row` | `@fristil/designsystem/radio.css` | `data-state`: invalid, success |
 | `fs-search`<br>`fs-search-row` | `@fristil/designsystem/search.css` | `data-state`: invalid, success |
 | `fs-select` | `@fristil/designsystem/select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
@@ -254,7 +255,7 @@ Kjøres ved bygging. Ut kommer ren HTML:
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 43
+`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 44
 byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
@@ -263,10 +264,10 @@ byggefunksjonene:
 `fs.errorText()`, `fs.field()`, `fs.fieldset()`, `fs.fileUpload()`,
 `fs.heading()`, `fs.helpText()`, `fs.input()`, `fs.label()`, `fs.legend()`,
 `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
-`fs.radio()`, `fs.search()`, `fs.select()`, `fs.sessionTimeout()`,
-`fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`, `fs.srOnly()`,
-`fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`, `fs.tag()`,
-`fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+`fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
+`fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
+`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
+`fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
 
 ## 6. Felt uten JavaScript
 
