@@ -80,13 +80,16 @@ Serveren leser headeren og skriver attributtet. I Astro:
 
 ```astro
 ---
-const tema = Astro.cookies.get("tema")?.value
+const lagret = Astro.cookies.get("tema")?.value
+const tema = lagret === "light" || lagret === "dark" ? lagret : undefined
 ---
 
-<html lang="nb" data-theme={tema === "auto" ? undefined : tema}>
+<html lang="nb" data-theme={tema}>
 ```
 
-`auto` skal gi **ingen** `data-theme`. Skriver du `data-theme="auto"`, treffer ingen blokk, og du har en verdi i markupen som ikke betyr noe.
+Hvitelist de to verdiene. En cookie kommer fra klienten, så den kan inneholde hva som helst: en gammel verdi, eller en noen har skrevet selv. Kopierer du den rett inn, får `<html>` en `data-theme` uten blokk, og siden faller til systemtemaet uten at noen av knappene er markert.
+
+`auto` skal derfor gi **ingen** `data-theme`. Skriver du `data-theme="auto"`, treffer ingen temablokk, og du har en verdi i markupen som ikke betyr noe.
 
 Sett samtidig `checked` på den knappen som svarer til cookien, slik at gruppa viser det lagrede valget.
 

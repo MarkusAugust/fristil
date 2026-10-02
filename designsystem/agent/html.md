@@ -164,7 +164,8 @@ og den arves nedover. Et barn kan melde seg ut med `color-scheme: normal`, men
 det er en motregel verten aldri ba om å måtte skrive: sto verdien på roten,
 gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele siden
 følge systemet, skriver du `color-scheme: light dark` på `<html>` selv, på
-samme måte som du selv setter lagrekkefølgen.
+samme måte som du selv setter lagrekkefølgen. Unntaket er temavelgeren under:
+bruker du den, setter hvert valg `color-scheme` selv.
 
 ### La brukeren velge tema
 

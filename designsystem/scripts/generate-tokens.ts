@@ -54,6 +54,10 @@ for (const key of Object.keys(alle)) {
  * En side som vil at nettleserens flater skal følge systemet, skriver derfor
  * `color-scheme: light dark` på `<html>` selv. Det er den samme avtalen som
  * for lagrekkefølgen: to linjer konsumenten eier.
+ *
+ * Unntaket er temavelgeren nedenfor. Hvert av de tre valgene setter
+ * `color-scheme` selv, og da skal konsumenten ikke skrive den: en regel
+ * utenfor et lag slår `@layer fristil`.
  */
 const lines = [
   "/* Generert. Rediger tokens.ts, ikke denne fila. */",
