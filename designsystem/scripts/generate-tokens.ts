@@ -166,9 +166,18 @@ lines.push(
   ...darkLines.map((l) => l.slice(2)),
   "  }",
   "",
-  // Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
-  // Bare nettleserens egne flater trenger å få vite at begge er i orden.
-  `  ${control("auto")} {`,
+  /*
+   * Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
+   * Bare nettleserens egne flater trenger å få vite at begge er i orden.
+   *
+   * `:not([data-theme])` er ikke pynt. `auto` betyr «ingen overstyring fra
+   * meg», så har serveren skrevet `data-theme`, er det serverens verdi som
+   * står, både for tokenene og for flatene. Uten vilkåret vant `auto` på
+   * `color-scheme` fordi `:has()` er mer spesifikk enn attributtet, mens
+   * tokenene kom fra attributtblokka: mørke farger med lyse rullefelt, altså
+   * nøyaktig spriket blokkene over finnes for å hindre.
+   */
+  `  :root:not([data-theme]):has(.fs-theme-control[value="auto"]:checked) {`,
   "    color-scheme: light dark;",
   "  }",
   "}",

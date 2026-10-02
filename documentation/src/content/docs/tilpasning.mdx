@@ -87,11 +87,11 @@ Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attribut
 </label>
 ```
 
-Tre verdier betyr noe: `auto`, `light` og `dark`. Kontrollen vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. Den lagrer ingenting selv. Se [La brukeren velge tema](../monster/tema/) for hele mønsteret.
+Tre verdier betyr noe: `auto`, `light` og `dark`. `light` og `dark` vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. `auto` har ingen temablokk, så der står serverens `data-theme` igjen. Kontrollen lagrer ingenting selv. Se [La brukeren velge tema](../monster/tema/) for hele mønsteret.
 
 ### Fargeskjemaet er ditt å velge
 
-`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. Fristil setter den på `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et tema, men **aldri på `:root`**.
+`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. Fristil setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](#brukeren-kan-få-velge). **Bar `:root` får den aldri.**
 
 Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele dokumentet, også en vertsside som aldri ba om det. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten ikke skal måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
 

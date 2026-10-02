@@ -638,7 +638,7 @@
         },
         {
           "name": "fs-theme-control",
-          "description": "**Tilpasning**\n\nTemaer, lag og variablene en konsument kan sette.",
+          "description": "**Tilpasning**\n\nEndre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
           "doc-url": "https://fristil.netlify.app/tilpasning/"
         }
       ]

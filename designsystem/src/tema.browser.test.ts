@@ -283,6 +283,30 @@ describe("temavelgeren virker uten JavaScript", () => {
     velg("dark")
     expect(skjema()).toBe("dark")
   })
+
+  it("lar «følg systemet» stå tilbake for serverens data-theme", () => {
+    /*
+     * Tokenene og `color-scheme` må si det samme, alltid.
+     *
+     * `auto` har ingen tokenblokk, så serverens `data-theme="dark"` blir
+     * stående. Uten `:not([data-theme])` på `auto`-regelen vant `auto`
+     * likevel på `color-scheme`, siden `:has()` er mer spesifikk enn
+     * attributtet. Resultatet var mørke farger med lyse rullefelt, altså
+     * nøyaktig spriket temablokkene finnes for å hindre.
+     */
+    document.documentElement.setAttribute("data-theme", "dark")
+    velg("auto")
+
+    expect(token(hent("ute"))).toBe(MORK)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe("dark")
+
+    // Og lyst, for å vise at det ikke bare er mørkt som tilfeldigvis stemmer.
+    document.documentElement.setAttribute("data-theme", "light")
+    velg("auto")
+
+    expect(token(hent("ute"))).toBe(LYS)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe("light")
+  })
 })
 
 /*

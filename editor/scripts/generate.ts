@@ -246,12 +246,6 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
  * verken VS Code, IntelliJ eller `fristil sjekk` foreslo den.
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
-const TOKEN_PAGE = {
-  component: "tilpasning",
-  title: "Tilpasning",
-  description: "Temaer, lag og variablene en konsument kan sette.",
-  link: "https://fristil.netlify.app/tilpasning/",
-}
 
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
@@ -267,6 +261,16 @@ const OPTION_LISTS: Record<string, string> = {
 const frontmatter = (slug: string, key: string) => {
   const page = readFileSync(join(PAGES, `${slug}.mdx`), "utf8")
   return page.match(new RegExp(`^${key}: (.*)$`, "m"))?.[1]?.trim() ?? ""
+}
+
+const TOKEN_PAGE = {
+  component: "tilpasning",
+  // Leses fra siden, som for komponentene. Skrevet av for hånd drev den fra
+  // frontmatteren uten at noe sa fra, og hoverboksen i VS Code og JetBrains
+  // siterte en beskrivelse som ikke sto noe sted i dokumentasjonen.
+  title: frontmatter("../tilpasning", "title"),
+  description: frontmatter("../tilpasning", "description"),
+  link: "https://fristil.netlify.app/tilpasning/",
 }
 
 function classesInCss(css: string): string[] {

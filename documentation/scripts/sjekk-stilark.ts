@@ -119,6 +119,13 @@ function definerer(css: string, navn: string): boolean {
  * rett i en `<style>` noen linjer over. Det er en blindsone som gir falskt
  * utslag, og det flyttet seg med hvor store bundlene ble, altså uten at noen
  * hadde rørt siden.
+ *
+ * Den må lese `vanligDom(html)` og ikke rå HTML. `Preview.astro` legger hvert
+ * eksempels stilark i en `<style>` inne i `<template shadowrootmode="open">`,
+ * og de hører til skyggerota og ikke til siden. Leste vi dem med, ville en
+ * `.fs-button` skrevet rett i brødteksten på knappesiden passert, fordi
+ * forhåndsvisningen på samme side har hele `button.css` i skyggestilen sin.
+ * Det er den ene av de to feilene denne fila finnes for.
  */
 function stilarkFor(html: string, side: string): string {
   const stier = [...html.matchAll(/<link[^>]*href="([^"]+\.css)"[^>]*>/g)]
@@ -193,7 +200,7 @@ for (const rel of new Glob("**/*.html").scanSync(DIST)) {
   }
 
   if (klasser.size > 0 || elementer.size > 0) {
-    const css = stilarkFor(html, rel)
+    const css = stilarkFor(dom, rel)
 
     for (const klasse of klasser) {
       sjekketNavn++

@@ -30,17 +30,21 @@ egen overskrift «Brytende».
   eller `dark`. Selektoren er en ekstra linje på de to temablokkene i
   `tokens.css`, og den samme linja i temaer `buildTheme()` skriver. «Følg
   systemet» har ingen temablokk, siden en verdi uten blokk nettopp skal falle
-  tilbake på mediespørringen. Kontrollen vinner over `data-theme` på `<html>`,
-  slik at serveren kan sende et lagret valg mens et klikk slår igjennom før
-  svaret er tilbake.
+  tilbake på mediespørringen. `light` og `dark` vinner over `data-theme` på
+  `<html>`, slik at serveren kan sende et lagret valg mens et klikk slår
+  igjennom før svaret er tilbake. `auto` gjør det ikke: har serveren skrevet
+  `data-theme`, står serverens verdi, og det som lagrer valget må også fjerne
+  attributtet.
 - **Hvert av de tre valgene setter `color-scheme` selv.** `light` gir `light`,
-  `dark` gir `dark`, og `auto` gir `light dark`. Det siste er ikke et tema, men
-  beskjeden til nettleseren om at siden fungerer i begge, så den kan tegne sine
-  egne flater etter systemet. Bruker du velgeren,
-  skal du ikke skrive den linja på `<html>`: en regel utenfor et lag slår
-  `@layer fristil`, og nettleserens egne flater blir låst til systemet mens
-  brukeren har valgt noe annet. For den som ikke bruker velgeren er ingenting
-  endret, og bar `:root` har fortsatt ingen `color-scheme`.
+  `dark` gir `dark`, og `auto` gir `light dark` når ingen `data-theme` står på
+  `<html>`. Det siste er ikke et tema, men beskjeden til nettleseren om at siden
+  fungerer i begge, så den kan tegne sine egne flater etter systemet.
+
+  Bruker du velgeren, skal du ikke skrive `color-scheme` på `<html>` selv: en
+  regel utenfor et lag slår `@layer fristil`, og nettleserens egne flater blir
+  låst til systemet mens brukeren har valgt noe annet. For den som ikke bruker
+  velgeren, er ingenting endret, og bar `:root` har fortsatt ingen
+  `color-scheme`.
 
   Overstyrer du et token per tema, må dine egne `[data-theme]`-blokker ha
   velgerens selektor ved siden av. CSS kan ikke skrive et attributt, så

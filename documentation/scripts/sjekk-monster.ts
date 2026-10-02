@@ -289,7 +289,7 @@ function lesSkjema() {
    *
    * I en toggle-gruppe ligger radioknappen skjult under ledeteksten, så et
    * klikk rett på den avvises av at ledeteksten tar pekeren. Første utgave av
-   * denne sjekken ventet trettti sekunder og timet ut av nettopp det.
+   * denne sjekken ventet tretti sekunder og brøt av på tid av nettopp det.
    */
   const velg = async (verdi: string) => {
     await side.click(`label:has(input[value="${verdi}"])`)
@@ -331,9 +331,12 @@ function lesSkjema() {
     auto.skjema === "light dark",
     `følg systemet ga color-scheme ${auto.skjema}`,
   )
+  // Siden har ingen `data-theme`, så «følg systemet» skal gi maskinens eget
+  // svar. Playwright kjører lyst som standard, og det er den vi påstår; en
+  // `|| mork` her gjorde leddet umulig å felle.
   krev(
-    auto.tekst === mork.tekst || auto.tekst === lys.tekst,
-    "følg systemet ga en tredje farge",
+    auto.tekst === lys.tekst,
+    `følg systemet ga ${auto.tekst}, ventet maskinens lyse ${lys.tekst}`,
   )
 }
 

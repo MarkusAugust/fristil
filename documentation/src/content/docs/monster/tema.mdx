@@ -33,7 +33,9 @@ Gruppa er et vanlig `<fieldset>` med radioknapper, altså [toggle-gruppa](../../
 
 Tre verdier betyr noe: `auto`, `light` og `dark`. «Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten blokk treffer ingenting, så maskinens innstilling gjelder igjen.
 
-Kontrollen vinner over `data-theme` på `<html>`. Serveren kan altså sende det valget den har lagret, mens et klikk likevel slår igjennom før svaret er tilbake.
+`light` og `dark` vinner over `data-theme` på `<html>`. Serveren kan altså sende det valget den har lagret, mens et klikk likevel slår igjennom før svaret er tilbake.
+
+`auto` gjør det ikke, og det følger av at den ikke har noen temablokk: står det en `data-theme` på `<html>`, er det den som gjelder. Skal «Følg systemet» virke med én gang, må det som lagrer valget også fjerne attributtet. Begge oppskriftene under gjør det.
 
 ## Hva hvert valg gjør
 
@@ -41,7 +43,7 @@ Valget styrer to ting, og de er ikke det samme. Fristils farger kommer fra token
 
 | `value` | Fristils farger | `color-scheme` |
 | --- | --- | --- |
-| `auto` | følger systemet | `light dark` |
+| `auto` | ingen overstyring: mediespørringen, eller `data-theme` hvis det står der | `light dark`, eller `data-theme` sitt |
 | `light` | lyse tokens | `light` |
 | `dark` | mørke tokens | `dark` |
 
@@ -93,17 +95,37 @@ Sett samtidig `checked` på den knappen som svarer til cookien, slik at gruppa v
 En helt statisk side har ingen server som kan lese cookien. Da er `localStorage` den eneste som varer, og skriptet må stå **blokkerende i `<head>`**, før siden tegnes:
 
 ```html
+<!-- I <head>, uten defer, før siden tegnes -->
 <script>
-  const tema = localStorage.getItem("tema")
-  if (tema && tema !== "auto") document.documentElement.dataset.theme = tema
+  const lagret = localStorage.getItem("tema")
+  if (lagret && lagret !== "auto") document.documentElement.dataset.theme = lagret
 </script>
 ```
 
 Står skriptet nederst i `<body>`, eller har det `defer`, rekker siden å tegne seg i feil tema først.
 
+Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
+
+```html
+<script type="module">
+  const valgt = localStorage.getItem("tema") ?? "auto"
+
+  for (const knapp of document.querySelectorAll(".fs-theme-control")) {
+    knapp.checked = knapp.value === valgt
+
+    knapp.addEventListener("change", () => {
+      localStorage.setItem("tema", knapp.value)
+      // Attributtet fra skriptet i <head> må bort, ellers står det foran
+      // «Følg systemet», som ikke har noen temablokk å vinne med.
+      delete document.documentElement.dataset.theme
+    })
+  }
+</script>
+```
+
 ## Det systemet ikke gjør
 
 - **Å lagre valget.** Kontrollen bytter tema og husker ingenting. Varigheten er appens, gjennom en cookie eller `localStorage`.
-- **Å virke inne i en shadow rot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en shadow rot temaer ingenting. Den må stå i det samme treet som `<html>`.
-- **Å temae en del av siden.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../tilpasning/#lyst-og-mørkt).
+- **Å virke inne i en skyggerot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en skyggerot setter ikke tema på siden. Den må stå i det samme treet som `<html>`.
+- **Å gi en del av siden sitt eget tema.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../tilpasning/#lyst-og-mørkt).
 - **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer fristil`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.

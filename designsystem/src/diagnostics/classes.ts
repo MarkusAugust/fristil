@@ -743,7 +743,7 @@ export const classes: Classes = {
   "fs-theme-control": {
     "component": "tilpasning",
     "title": "Tilpasning",
-    "description": "Temaer, lag og variablene en konsument kan sette.",
+    "description": "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
     "link": "https://fristil.netlify.app/tilpasning/",
     "attributes": {}
   }
