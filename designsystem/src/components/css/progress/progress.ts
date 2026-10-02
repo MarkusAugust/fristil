@@ -19,8 +19,8 @@ export type ProgressOptions = {
 
 export type ProgressAttributes = {
   class: typeof PROGRESS_CLASS
-  value?: number
-  max: number
+  value?: string
+  max: string
   "data-color"?: ProgressColor
   "aria-label"?: string
 }
@@ -54,8 +54,10 @@ export const progress = Object.assign(
   }: ProgressOptions = {}): ProgressAttributes =>
     attributes({
       class: PROGRESS_CLASS,
-      value,
-      max,
+      // Tallene sendes ut som strenger, som resten av returverdiene: det er
+      // HTML-formen, og den er det `setAttributes` tar imot.
+      value: value === undefined ? undefined : String(value),
+      max: String(max),
       "data-color": color,
       "aria-label": label,
     }),

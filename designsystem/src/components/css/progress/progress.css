@@ -1,12 +1,16 @@
 @layer fristil {
   /*
-   * Fyllfargen settes som en variabel på verten, ikke rett i pseudoelementene.
+   * Fyllfargen bæres av `color` på verten, og den fylte delen leser
+   * `currentColor`.
    *
-   * Grunnen er at hver motor har sitt eget pseudoelement for den fylte delen,
-   * og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke
-   * kjenner gjør hele regelen ugyldig. Variabelen er det ene stedet fargen
-   * bestemmes, og de tre reglene under leser den. Det gir konsumenten ett
-   * punkt å overstyre fra, og `data-color` trenger bare å endre variabelen.
+   * Grunnen er at den fylte delen har to navn, `::-webkit-progress-value` i
+   * Chromium og WebKit og `::-moz-progress-bar` i Gecko, og de kan ikke stå i
+   * samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele
+   * regelen ugyldig. Fargen må derfor bestemmes ett sted og arves inn, og
+   * `currentColor` er den innebygde måten å gjøre det.
+   *
+   * `<progress>` har ingen tekst, så `color` er ledig til oppgaven.
+   * `data-color` endrer `--fs-progress-fill`, som `color` leser.
    */
   .fs-progress {
     box-sizing: border-box;
@@ -40,26 +44,22 @@
 
   /* Den fylte delen. Hver motor sin regel, av grunnen øverst. */
   .fs-progress::-webkit-progress-value {
-    background: var(--fs-progress-fill, var(--fs-color-accent-fill));
+    background: currentColor;
     transition: inline-size 200ms ease-out;
   }
 
   .fs-progress::-moz-progress-bar {
-    background: var(--fs-progress-fill, var(--fs-color-accent-fill));
+    background: currentColor;
+    transition: inline-size 200ms ease-out;
   }
 
   /*
    * Ubestemt: en stolpe uten `value`. Da vet vi ikke hvor langt det er kommet,
-   * og en stripe som går fram og tilbake sier «det pågår» uten å love et tall.
+   * og en stripe som sveiper over den sier «det pågår» uten å love et tall.
    */
   .fs-progress:indeterminate {
     background:
-      linear-gradient(
-        90deg,
-        transparent 0%,
-        var(--fs-progress-fill, var(--fs-color-accent-fill)) 50%,
-        transparent 100%
-      )
+      linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%)
       no-repeat,
       var(--fs-progress-track, var(--fs-color-neutral-surface));
     background-size: 40% 100%;
@@ -94,6 +94,10 @@
     .fs-progress::-webkit-progress-value {
       transition: none;
     }
+
+    .fs-progress::-moz-progress-bar {
+      transition: none;
+    }
   }
 
   /*
@@ -102,7 +106,8 @@
    * og kanten gir tilbake formen når bakgrunnen blir `Canvas`.
    */
   @media (forced-colors: active) {
-    .fs-progress {
+    .fs-progress,
+    .fs-progress[data-color] {
       --fs-progress-fill: Highlight;
 
       border: 1px solid CanvasText;

@@ -35,15 +35,15 @@ import { fs } from "@fristil/designsystem/react"
 
 Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du oppdaterer stolpen mens noe pågår:
+**Oppdaterer du tallet mens noe pågår,** setter du egenskapen på elementet. Det er nettleserens eget API, og det er raskere enn å bygge attributtene på nytt for hvert steg:
 
 ```ts
-import { fs } from "@fristil/designsystem"
-
 const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
 
-fs.setAttributes(stolpe, fs.progress({ value: 64, label: "Laster opp vedlegg" }))
+stolpe.value = 64
 ```
+
+Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Byggefunksjonen er for markupen du lager; `fs.setAttributes()` rydder ikke i `value`, siden den lista er felles for alle komponentene og ville strøket `value` fra ethvert felt.
 
 Se [Typesikker bruk](../../typesikker-bruk/).
 
@@ -62,7 +62,7 @@ Den stolpen er full, ikke 40 prosent, og ingenting sier fra. Skriver du markupen
 
 ## Ubestemt framdrift
 
-Utelater du `value`, blir stolpen ubestemt, og en stripe går fram og tilbake. Det sier «noe pågår» uten å love et tall:
+Utelater du `value`, blir stolpen ubestemt, og en stripe sveiper over den. Det sier «noe pågår» uten å love et tall:
 
 ```html
 <progress class="fs-progress" aria-label="Henter søknadene dine"></progress>
@@ -79,7 +79,7 @@ Det er det samme [Spinner](../spinner/) sier. Velg én av dem på samme sted, el
 <progress class="fs-progress" value="100" max="100" data-color="success"
           aria-label="Opplastingen er ferdig"></progress>
 
-<progress class="fs-progress" value="41" max="100" data-color="warning"
+<progress class="fs-progress" value="88" max="100" data-color="warning"
           aria-label="Lagringsplassen er nesten full"></progress>
 
 <progress class="fs-progress" value="18" max="100" data-color="danger"
@@ -93,7 +93,7 @@ Det er det samme [Spinner](../spinner/) sier. Velg én av dem på samme sted, el
 | `warning` | Det nærmer seg en grense |
 | `danger` | Det stoppet, eller gikk galt |
 
-Fargen er ikke beskjeden. Den som ikke ser forskjell på grønt og rødt trenger teksten ved siden av, og den som hører siden får bare `aria-label`. Skriv derfor hva som skjedde, og la fargen være det som bekrefter det.
+Fargen alene sier ingenting. Den som ikke ser forskjell på grønt og rødt trenger teksten ved siden av, og den som hører siden får bare `aria-label`. Skriv derfor hva som skjedde, og la fargen være det som bekrefter det.
 
 ## Klasser du kan style
 
@@ -108,9 +108,9 @@ Fargen er ikke beskjeden. Den som ikke ser forskjell på grønt og rødt trenger
 | `--fs-progress-height` | `var(--fs-spacing-2)` |
 | `--fs-progress-radius` | `var(--fs-spacing-1)` |
 
-Fyllfargen settes som en variabel på selve stolpen, ikke rett i den fylte delen. Grunnen er at hver nettlesermotor har sitt eget pseudoelement for den, og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele regelen ugyldig. `--fs-progress-fill` er derfor det ene stedet fargen bestemmes, og det eneste du trenger å sette for å endre den.
+Fyllfargen bæres av `color` på selve stolpen, og den fylte delen leser `currentColor`. Grunnen er at den fylte delen har to navn, `::-webkit-progress-value` i Chromium og WebKit og `::-moz-progress-bar` i Gecko, og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele regelen ugyldig. Fargen må derfor bestemmes ett sted og arves inn. `<progress>` har ingen tekst, så `color` er ledig til oppgaven, og `--fs-progress-fill` er det eneste du trenger å sette for å endre den.
 
-Har brukeren bedt om mindre bevegelse, går den ubestemte stripa saktere, og den fylte delen hopper til tallet sitt framfor å gli dit. Stripa stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
+Har brukeren bedt om mindre bevegelse, går den ubestemte stripa saktere, og den fylte delen hopper til det nye tallet framfor å gli dit. Stripa stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
