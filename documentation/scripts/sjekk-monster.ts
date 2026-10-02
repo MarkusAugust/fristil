@@ -280,6 +280,63 @@ function lesSkjema() {
   )
 }
 
+// Temavelgeren: bytter tema uten JavaScript, og setter color-scheme
+{
+  await apne("/demo/tema/")
+
+  /*
+   * Klikket må gå på ledeteksten og ikke på inputen.
+   *
+   * I en toggle-gruppe ligger radioknappen skjult under ledeteksten, så et
+   * klikk rett på den avvises av at ledeteksten tar pekeren. Første utgave av
+   * denne sjekken ventet trettti sekunder og timet ut av nettopp det.
+   */
+  const velg = async (verdi: string) => {
+    await side.click(`label:has(input[value="${verdi}"])`)
+    return side.evaluate(() => {
+      const rot = document.documentElement
+      return {
+        tekst: getComputedStyle(rot)
+          .getPropertyValue("--fs-color-neutral-text-strong")
+          .trim(),
+        skjema: getComputedStyle(rot).colorScheme,
+      }
+    })
+  }
+
+  const antallKontroller = await side.evaluate(
+    () => document.querySelectorAll("input.fs-theme-control").length,
+  )
+  krev(
+    antallKontroller === 3,
+    `fant ${antallKontroller} temakontroller, ventet 3`,
+  )
+
+  const lys = await velg("light")
+  const mork = await velg("dark")
+  const auto = await velg("auto")
+
+  // Tom verdi ville ellers vært «lik» for to valg uten at noe byttet.
+  krev(lys.tekst !== "", "fant ingen tokenverdi, laster tokens.css?")
+  krev(
+    lys.tekst !== mork.tekst,
+    `lyst og mørkt ga samme tekstfarge: ${lys.tekst}`,
+  )
+
+  // Nettleserens egne flater skal følge valget, og «følg systemet» skal be
+  // om begge. Uten dette sto rullefelt og nedtrekkslister igjen i feil tema.
+  krev(lys.skjema === "light", `lyst ga color-scheme ${lys.skjema}`)
+  krev(mork.skjema === "dark", `mørkt ga color-scheme ${mork.skjema}`)
+  krev(
+    auto.skjema === "light dark",
+    `følg systemet ga color-scheme ${auto.skjema}`,
+  )
+  krev(
+    auto.tekst === mork.tekst || auto.tekst === lys.tekst,
+    "følg systemet ga en tredje farge",
+  )
+}
+
 // Sideskjelettet: landemerkene og hopplenken
 {
   await apne("/demo/sideskjelett/")

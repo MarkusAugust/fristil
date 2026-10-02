@@ -154,7 +154,52 @@ og den arves nedover. Et barn kan melde seg ut med `color-scheme: normal`, men
 det er en motregel verten aldri ba om å måtte skrive: sto verdien på roten,
 gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele siden
 følge systemet, skriver du `color-scheme: light dark` på `<html>` selv, på
-samme måte som du selv setter lagrekkefølgen.
+samme måte som du selv setter lagrekkefølgen. Skriv den i et lag foran
+`fristil`. Et usortert lag slår alle lag, så en regel utenfor lagene hindrer
+temavelgeren under i å sette `color-scheme`.
+
+### La brukeren velge tema
+
+`fs-theme-control` på en radioknapp gjør `value` til et temavalg. Det er ren
+CSS, uten en linje JavaScript:
+
+```html
+<fieldset class="fs-toggle-group">
+  <legend class="fs-sr-only">Tema</legend>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="auto" checked /> Følg systemet
+  </label>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="light" /> Lyst
+  </label>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="dark" /> Mørkt
+  </label>
+</fieldset>
+```
+
+Valget styrer to ting. Fristils farger kommer fra tokenene, og nettleserens
+**egne** flater fra `color-scheme`: `light` gir `light`, `dark` gir `dark`, og
+`auto` gir `light dark`. `light dark` er ikke et tema, men beskjeden om at
+siden fungerer i begge, så nettleseren kan velge etter systemet.
+
+«Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten blokk
+treffer ingenting, og da gjelder mediespørringen igjen.
+
+Du skal ikke skrive `color-scheme` selv når velgeren er i bruk. En slik regel
+utenfor et lag slår `@layer fristil` og låser nettleserens flater til systemet
+mens brukeren har valgt noe annet.
+
+Kontrollen vinner over `data-theme` på `<html>`, slik at serveren kan sende
+det lagrede valget mens et klikk likevel slår igjennom før svaret er tilbake.
+
+To ting den ikke gjør. Den **lagrer ingenting**: send gruppa i et skjema og
+lagre valget i en cookie serveren leser, eller i `localStorage`. Og den må stå
+i det **samme treet som `<html>`**, siden `:has()` ikke ser ut av sitt eget
+tre; en kontroll inne i en shadow rot temaer ingenting.
 
 ## 4. Web components
 

@@ -1,0 +1,109 @@
+---
+title: La brukeren velge tema
+description: Temavelger i ren CSS, og de tre måtene å få valget til å vare.
+---
+
+import Rammeside from "../../../components/Rammeside.astro"
+
+Fargene følger maskinens innstilling uten at du gjør noe. Vil brukeren overstyre den, er selve byttet ren CSS: `fs-theme-control` på en radioknapp gjør `value` til et temavalg. Å få valget til å **vare** er noe annet, og det er appens oppgave.
+
+<Rammeside src="/demo/tema/" tittel="Temavelgeren" hoyde="34rem" />
+
+## Markupen
+
+Gruppa er et vanlig `<fieldset>` med radioknapper, altså [toggle-gruppa](../../components/toggle-group/). Klassen står på hver knapp, ikke på gruppa.
+
+```html
+<fieldset class="fs-toggle-group">
+  <legend class="fs-sr-only">Tema</legend>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="auto" checked /> Følg systemet
+  </label>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="light" /> Lyst
+  </label>
+  <label class="fs-toggle-group__option">
+    <input class="fs-theme-control" type="radio" name="tema"
+           value="dark" /> Mørkt
+  </label>
+</fieldset>
+```
+
+Tre verdier betyr noe: `auto`, `light` og `dark`. «Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten blokk treffer ingenting, så maskinens innstilling gjelder igjen.
+
+Kontrollen vinner over `data-theme` på `<html>`. Serveren kan altså sende det valget den har lagret, mens et klikk likevel slår igjennom før svaret er tilbake.
+
+## Hva hvert valg gjør
+
+Valget styrer to ting, og de er ikke det samme. Fristils farger kommer fra tokenene. Nettleserens **egne** flater, altså rullefelt, nedtrekkslista i en `<select>` og kalenderpanelet i et datofelt, styres av CSS-egenskapen `color-scheme`.
+
+| `value` | Fristils farger | `color-scheme` |
+| --- | --- | --- |
+| `auto` | følger systemet | `light dark` |
+| `light` | lyse tokens | `light` |
+| `dark` | mørke tokens | `dark` |
+
+`light dark` er ikke et tema. Det er en beskjed til nettleseren om at siden fungerer i begge, så den kan tegne sine egne flater etter systeminnstillingen. `light` og `dark` låser den til ett.
+
+Du skal ikke sette `color-scheme` selv når du bruker velgeren. Se siste punkt nederst.
+
+## Varigheten
+
+CSS kan bytte tema, men ikke huske det. Tre veier, med ulike krav:
+
+| Vei | Krever | Varer over sidelasting |
+| --- | --- | --- |
+| Bare kontrollen | ingenting | nei |
+| Cookie, lest på serveren | en server som rendrer HTML | ja |
+| `localStorage` | JavaScript | ja |
+
+Ingen av dem krever et rammeverk.
+
+### Cookie lest på serveren
+
+Dette er veien for en app som rendrer HTML på en server, uansett hvilket språk serveren er skrevet i. Gruppa står i et vanlig skjema, og hele rundturen er tre steg uten en linje JavaScript:
+
+```http
+POST /tema          tema=dark
+→ Set-Cookie: tema=dark; Path=/; Max-Age=31536000; SameSite=Lax
+→ 303 See Other
+
+GET /soknad         Cookie: tema=dark
+→ <html data-theme="dark">
+```
+
+Serveren leser headeren og skriver attributtet. I Astro:
+
+```astro
+---
+const tema = Astro.cookies.get("tema")?.value
+---
+
+<html lang="nb" data-theme={tema === "auto" ? undefined : tema}>
+```
+
+`auto` skal gi **ingen** `data-theme`. Skriver du `data-theme="auto"`, treffer ingen blokk, og du har en verdi i markupen som ikke betyr noe.
+
+Sett samtidig `checked` på den knappen som svarer til cookien, slik at gruppa viser det lagrede valget.
+
+### localStorage på en statisk side
+
+En helt statisk side har ingen server som kan lese cookien. Da er `localStorage` den eneste som varer, og skriptet må stå **blokkerende i `<head>`**, før siden tegnes:
+
+```html
+<script>
+  const tema = localStorage.getItem("tema")
+  if (tema && tema !== "auto") document.documentElement.dataset.theme = tema
+</script>
+```
+
+Står skriptet nederst i `<body>`, eller har det `defer`, rekker siden å tegne seg i feil tema først.
+
+## Det systemet ikke gjør
+
+- **Å lagre valget.** Kontrollen bytter tema og husker ingenting. Varigheten er appens, gjennom en cookie eller `localStorage`.
+- **Å virke inne i en shadow rot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en shadow rot temaer ingenting. Den må stå i det samme treet som `<html>`.
+- **Å temae en del av siden.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../tilpasning/#lyst-og-mørkt).
+- **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer fristil`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.

@@ -76,4 +76,5 @@ internal val KLASSER: List<Klasse> =
     Klasse("fs-session-timeout__actions", "Session Timeout", "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.", "https://fristil.netlify.app/components/session-timeout/"),
     Klasse("fs-toast", "Toast", "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.", "https://fristil.netlify.app/components/toast/"),
     Klasse("fs-toast__close", "Toast", "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.", "https://fristil.netlify.app/components/toast/"),
+    Klasse("fs-theme-control", "Tilpasning", "Temaer, lag og variablene en konsument kan sette.", "https://fristil.netlify.app/tilpasning/"),
   )

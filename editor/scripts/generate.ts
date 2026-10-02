@@ -237,6 +237,22 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
   join(ROOT, "designsystem/src/components", d),
 )
 
+/*
+ * `tokens.css` har klasser som ikke hører til en komponent.
+ *
+ * `.fs-theme-control` er den første: den bytter tema, så selektoren bor der
+ * tokenverdiene bor framfor i en komponentmappe. Uten denne kilden meldte
+ * `diagnoseMarkup` «Klassen finnes ikke i Fristil» på riktig markup, og
+ * verken VS Code, IntelliJ eller `fristil sjekk` foreslo den.
+ */
+const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
+const TOKEN_PAGE = {
+  component: "tilpasning",
+  title: "Tilpasning",
+  description: "Temaer, lag og variablene en konsument kan sette.",
+  link: "https://fristil.netlify.app/tilpasning/",
+}
+
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
   sizes: "size",
@@ -298,6 +314,9 @@ export function classesData(): Classes {
       }
     }
   }
+
+  for (const name of classesInCss(readFileSync(TOKEN_CSS, "utf8")))
+    out[name] ??= { ...TOKEN_PAGE, attributes: {} }
 
   for (const builder of Object.values(fs as Record<string, unknown>)) {
     if (typeof builder !== "function") continue

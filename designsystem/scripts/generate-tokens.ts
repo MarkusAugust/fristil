@@ -112,6 +112,35 @@ const lightLines = morkeNavn.map((name) => {
  * komponent kan
  * låse sitt eget tre uten å røre verten.
  */
+/*
+ * `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ *
+ * Klassen står på en radioknapp, og `value` sier hvilket tema den velger.
+ * Selektoren blir en ekstra linje på temablokkene framfor en kopi av dem, så
+ * de 90 tokenene står ett sted.
+ *
+ * «Følg systemet» trenger ingen temablokk: en verdi uten blokk treffer
+ * ingenting, og da gjelder `:root` og mediespørringen igjen.
+ *
+ * Den trenger likevel `color-scheme`, og det er funnet underveis. Fristil
+ * setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den
+ * ikke eier, så rådet har vært at konsumenten skriver `color-scheme: light
+ * dark` på `<html>` selv. Gjør den det utenfor et lag, slår regelen
+ * `@layer fristil`, og et valgt mørkt tema fikk lyse rullefelt og
+ * skjemakontroller. Å svare med «legg den i et lag foran fristil» er en felle:
+ * lagrekkefølgen er alt etablert av tokens.css, som lastes først, så en senere
+ * `@layer`-setning legger laget bak. Kontrollen tar derfor ansvaret selv, og
+ * den som bruker den trenger ikke skrive `color-scheme` i det hele tatt.
+ *
+ * Kontrollen vinner over `data-theme` på det samme elementet, siden `:has()`
+ * tar spesifisiteten til argumentet sitt. Det er med vilje: serveren sender
+ * valget den har lagret, og klikket skal slå igjennom før svaret er tilbake.
+ * Rekkefølgen er etterprøvd i alle tre motorene i `tema.browser.test.ts`,
+ * ikke regnet ut her.
+ */
+const control = (tema: string) =>
+  `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+
 lines.push(
   "",
   "  @media (prefers-color-scheme: dark) {",
@@ -123,16 +152,24 @@ lines.push(
   // Tvinger appen fram et tema, må nettleserens egne flater følge med.
   // Ellers får en app som står på lyst tema på en mørk maskin en svart
   // nedtrekksliste under et hvitt felt.
-  '  [data-theme="light"] {',
+  '  [data-theme="light"],',
+  `  ${control("light")} {`,
   "    color-scheme: light;",
   "",
   ...lightLines.map((l) => l.slice(2)),
   "  }",
   "",
-  '  [data-theme="dark"] {',
+  '  [data-theme="dark"],',
+  `  ${control("dark")} {`,
   "    color-scheme: dark;",
   "",
   ...darkLines.map((l) => l.slice(2)),
+  "  }",
+  "",
+  // Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
+  // Bare nettleserens egne flater trenger å få vite at begge er i orden.
+  `  ${control("auto")} {`,
+  "    color-scheme: light dark;",
   "  }",
   "}",
 )

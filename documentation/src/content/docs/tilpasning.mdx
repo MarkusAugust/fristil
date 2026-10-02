@@ -76,6 +76,19 @@ Legger du Fristil inn i en side du ikke eier, er dette måten å gjøre det på.
 
 Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attributt som tilhører siden, ikke deg.
 
+### Brukeren kan få velge
+
+`fs-theme-control` på en radioknapp gjør `value` til et temavalg, i ren CSS:
+
+```html
+<label class="fs-toggle-group__option">
+  <input class="fs-theme-control" type="radio" name="tema"
+         value="dark" /> Mørkt
+</label>
+```
+
+Tre verdier betyr noe: `auto`, `light` og `dark`. Kontrollen vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. Den lagrer ingenting selv. Se [La brukeren velge tema](../monster/tema/) for hele mønsteret.
+
 ### Fargeskjemaet er ditt å velge
 
 `color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. Fristil setter den på `[data-theme="light"]` og `[data-theme="dark"]`, altså der noen har valgt et tema, men **aldri på `:root`**.
@@ -89,6 +102,8 @@ Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele doku
 ```
 
 Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): én linje hver, og begge er dine.
+
+**Bruker du [temavelgeren](#brukeren-kan-få-velge), skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv: `light` gir `light`, `dark` gir `dark`, og «Følg systemet» gir `light dark`, altså beskjeden om at siden fungerer i begge og at nettleseren kan velge etter systemet. Skriver du den likevel, utenfor et lag, slår regelen `@layer fristil`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet. Å legge den i et lag foran `fristil` hjelper ikke: rekkefølgen er alt etablert av `tokens.css`, som lastes først, så en senere `@layer`-setning legger laget bak.
 
 ### Per tema
 
@@ -113,6 +128,22 @@ Overstyringen under «Egne farger» gjelder begge temaer. Vil du ha ulike verdie
 	--fs-color-accent-fill: #c4b5fd;
 }
 ```
+
+Bruker du [temavelgeren](#brukeren-kan-få-velge), må de to siste blokkene ha dens selektor ved siden av, slik Fristils egne har:
+
+```css
+[data-theme="light"],
+:root:has(.fs-theme-control[value="light"]:checked) {
+	--fs-color-accent-fill: #7c3aed;
+}
+
+[data-theme="dark"],
+:root:has(.fs-theme-control[value="dark"]:checked) {
+	--fs-color-accent-fill: #c4b5fd;
+}
+```
+
+Velgeren setter ikke `data-theme`, for CSS kan ikke skrive et attributt. Uten selektoren traff ingen av blokkene dine når brukeren valgte et tema, og Fristils egen farge sto igjen.
 
 Alle fire blokkene må være med. De to `data-theme`-blokkene deklarerer hver sin verdi rett på elementet som bærer attributtet, og en deklarasjon på elementet selv vinner over en verdi det arver, uansett hvilket lag arven kom fra. Utelater du `[data-theme="light"]`, står Fristils egen farge inne i en lys temagrense mens din gjelder ellers på siden.
 
