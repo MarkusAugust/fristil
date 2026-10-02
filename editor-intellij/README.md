@@ -5,8 +5,8 @@ streng.
 
 ## Hvorfor den finnes
 
-`web-types.json` følger npm-pakken og gir fullføring på både elementene og de
-72 klassene i JetBrains-IDE-ene, uten at noen installerer noe. Men den leses
+`web-types.json` følger npm-pakken og gir fullføring på både elementene og
+klassene i JetBrains-IDE-ene, uten at noen installerer noe. Men den leses
 bare for **filer**, og et injisert fragment er ikke en fil.
 
 Det er etterprøvd: med `web-types.json` på plass gir `class="fs-` forslag i en

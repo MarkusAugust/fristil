@@ -42,7 +42,7 @@ Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon 
 
 ## Genererte filer
 
-Tretten filer skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. De kommer fra to kommandoer.
+Fjorten filer skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. De kommer fra to kommandoer.
 
 `bun --filter @fristil/designsystem generate` skriver åtte:
 
@@ -52,7 +52,7 @@ Tretten filer skrives av et skript, og en endring rett i dem blir overskrevet ve
 | `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
 | `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
 
-`bun --filter fristil-vscode generate` skriver fem, og tre av dem lander i pakken:
+`bun --filter fristil-vscode generate` skriver seks, og tre av dem lander i pakken:
 
 | Fil | Hva den er |
 | --- | --- |
@@ -61,8 +61,9 @@ Tretten filer skrives av et skript, og en endring rett i dem blir overskrevet ve
 | `designsystem/src/diagnostics/elements.ts` | det diagnostikken trenger, tagg for tagg |
 | `designsystem/src/diagnostics/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
+| `editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt` | katalogen IntelliJ-pluginen slår opp i |
 
-Alle fem kommer fra `editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
+Alle seks kommer fra `editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
 
 I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
 

@@ -44,7 +44,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
 ```
 
-Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
+Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
 
 ## Standardverdier
 

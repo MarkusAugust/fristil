@@ -242,11 +242,11 @@ const treff = kommuner.filter((k) => utenTegn(k).includes(utenTegn(sok)))
 </fs-suggestion>
 ```
 
-Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista: `count` avgjør om «Ingen treff» starter skjult.
+Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista: `count` og `open` avgjør sammen om «Ingen treff» starter synlig: den vises bare når lista er åpen og `count` er 0.
 
 ### Hvem viser «Ingen treff»
 
-Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count })` skriver `hidden` på den når du har treff, så rendrer du feltet på nytt for hvert søk, er det gjort. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count, open })` skriver `hidden` på den så lenge lista er lukket eller du har treff, så rendrer du feltet på nytt for hvert søk, er det gjort. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
 
 **Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer når lista faktisk har endret seg, ikke ved tastetrykket. Med `prefiltered` betyr det: når du har rendret på nytt. Det første antallet leses ikke opp, siden det er utgangspunktet og ikke en endring.
 

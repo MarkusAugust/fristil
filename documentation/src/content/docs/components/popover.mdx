@@ -218,7 +218,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
 | Attributt | Type | Effekt |
 | --- | --- | --- |
 | `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
-| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass på den siden av knappen, legges panelet på den andre. `fs.popover({ id, placement })` skriver det på verten, `fs.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
+| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass langs kanten, skyves panelet inn i vinduet framfor å bytte andre. `fs.popover({ id, placement })` skriver det på verten, `fs.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
 | `server-controlled` | boolsk | Serveren eier tilstanden. Komponenten setter ikke `open` tilbake etter en oppdatering. |
 
 ## Hendelser og metoder

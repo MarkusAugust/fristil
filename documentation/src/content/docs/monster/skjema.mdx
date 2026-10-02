@@ -48,7 +48,7 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/), 
 
 ## Oppsummeringen
 
-[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `fs.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, og sender fokus til riktig felt når en lenke følges.
+[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `fs.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, med mindre du slår det av med `data-autofocus="false"`, og sender fokus til riktig felt når en lenke følges.
 
 ```html
 <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="skjemafeil">

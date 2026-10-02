@@ -90,6 +90,8 @@ Oppsettet er appens. Fristil gir komponentene og tokenene, mens spaltebredde, lu
 
 Bruk tokens til verdiene, så følger siden temaet uten at du skriver `dark:` noe sted.
 
+Én linje mer er din: `color-scheme: light dark` på `<html>`. Fristil setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den ikke eier, og uten den tegner nettleseren rullefelt og nedtrekkslister lyse på en mørk side. Demoen over skriver den selv. Bruker du [temavelgeren](../tema/), setter hvert valg den i stedet.
+
 ## Når siden bytter innhold
 
 I en app som ikke laster siden på nytt, må to ting skje ved hvert bytte:

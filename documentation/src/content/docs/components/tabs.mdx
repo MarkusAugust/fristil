@@ -212,5 +212,5 @@ Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` p
 
 En fane med `disabled` hoppes over, og i en side med `dir="rtl"` bytter venstre og høyre pil retning, slik at neste fane alltid er den som står ved siden av i leseretningen.
 
-Bare den valgte fanen har `tabindex="0"`. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
+Én fane har `tabindex="0"`, normalt den valgte. Er den valgte deaktivert, flyttes tabbestoppet til den neste aktive. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
 

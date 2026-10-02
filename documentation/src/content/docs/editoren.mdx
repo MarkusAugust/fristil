@@ -16,7 +16,7 @@ code --install-extension Fristil.fristil-vscode
 Det du får, i HTML-filer og i malspråkene:
 
 - **Fullføring** av `<fs-field>`, `<fs-popover>` og de andre elementene, med attributtene og de lovlige verdiene. Inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en klasse tar, som `data-variant` på `fs-button`, verdiene byggefunksjonen kjenner.
-- **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer også over et element eller et attributt, med lenke til komponentsiden.
+- **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer også over et element, med lenke til komponentsiden, eller over et attributt.
 - **Feilmeldinger**, som røde og gule streker: et element som ikke finnes, et attributt elementet ikke har, en verdi utenfor lista, en klasse som `fs-buton`, og `data-variant="secundary"` på en knapp. `<fs-field>` uten kontroll eller uten ledetekst får samme beskjed som komponenten gir i nettleseren.
 - **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter `fs-buton` til `fs-button`, tar bort `invalid="false"`, og setter inn en ledetekst.
 - **Snippets**: skriv `fs-popover` og velg snippeten, og markupen fra komponentsiden står der.
@@ -27,13 +27,13 @@ Fullføringen og listene den sjekker mot genereres fra komponentene i repoet. Ut
 
 ## JetBrains
 
-IntelliJ IDEA Ultimate og WebStorm trenger ingen utvidelse. Fra `@fristil/designsystem` 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt eget format, og IDE-en tar den i bruk så snart pakken står i `package.json` i prosjektet. Du får fullføring av elementene, attributtene og verdiene, og forklaring med lenke til komponentsiden. Etterprøvd i IntelliJ IDEA Ultimate 2026.2.
+IntelliJ IDEA Ultimate og WebStorm trenger ingen utvidelse. Fra `@fristil/designsystem` 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt eget format, og IDE-en tar den i bruk så snart pakken står i `package.json` i prosjektet. Du får fullføring av elementene, attributtene, verdiene og `fs-`-klassene, og forklaring med lenke til komponentsiden. Etterprøvd i IntelliJ IDEA Ultimate 2026.2.
 
 Feilmeldingene og hurtigrettelsene finnes bare i VS Code. IntelliJ IDEA Community har ikke JavaScript-støtten dette bygger på.
 
 ## Kommandolinjen og testene
 
-Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, eller standard inn, og skriver hvert funn som `fil:linje:kolonne: melding`. Ett funn gir feilkode, så den kan stå i CI:
+Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, eller standard inn, og skriver hvert funn som `fil:linje:kolonne: feil: melding`, eller `advarsel:` der det er en advarsel. Ett funn gir feilkode, så den kan stå i CI:
 
 ```bash
 npx @fristil/designsystem sjekk maler/*.html

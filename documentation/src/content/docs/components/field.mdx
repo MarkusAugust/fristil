@@ -323,7 +323,7 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 
 1. Gir kontrollen en `id` hvis den mangler, og setter `label[for]` til den.
 2. Gir hjelpetekst og feilmelding `id` ved behov.
-3. Setter `aria-describedby` på kontrollen, med begge tekstene når begge finnes.
+3. Setter `aria-describedby` på kontrollen: hjelpeteksten alltid, og feilmeldingen i tillegg når feltet er ugyldig. En skjult feilmelding skal ikke leses opp.
 4. Setter `aria-invalid="true"` på kontrollen når `invalid` er satt.
 5. Setter `data-required` eller `data-optional` på ledeteksten ut fra attributtene på `<fs-field>`.
 6. Viser eller skjuler `fs-error-text` ut fra `invalid`.
