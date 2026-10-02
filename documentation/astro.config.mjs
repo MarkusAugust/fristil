@@ -103,6 +103,7 @@ export default defineConfig({
         {
           label: "Komponenter",
           items: [
+            { label: "Alle komponenter", slug: "components" },
             {
               label: "CSS-komponenter",
               items: [

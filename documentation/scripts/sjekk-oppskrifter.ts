@@ -340,7 +340,16 @@ function kreves(bygger: string): string[] {
   return Object.keys(sett).filter((k) => k !== "class")
 }
 
-for (const fil of readdirSync(SIDER).filter((f) => f.endsWith(".mdx"))) {
+/*
+ * `index.mdx` er oversikten over komponentene, ikke en komponentside.
+ *
+ * Unntaket er navngitt og ikke et vilkår: alt annet enn nøyaktig den fila
+ * kontrolleres som før. En regel som slo av sjekken for en hel klasse sider
+ * ville vært farligere enn ingen regel.
+ */
+for (const fil of readdirSync(SIDER).filter(
+  (f) => f.endsWith(".mdx") && f !== "index.mdx",
+)) {
   const side = fil.replace(/\.mdx$/, "")
   const tekst = readFileSync(join(SIDER, fil), "utf8")
 

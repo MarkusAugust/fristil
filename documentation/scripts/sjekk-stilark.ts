@@ -167,7 +167,13 @@ for (const rel of new Glob(
   const slug = rel
     .replace("documentation/src/content/docs/", "")
     .replace(/\.mdx?$/, "")
-  ventet.add(`${slug}/index.html`)
+  // `komponenter/index.mdx` bygges til `komponenter/index.html`, ikke til
+  // `komponenter/index/index.html`: fila er mappas egen indeks.
+  ventet.add(
+    slug.endsWith("/index") || slug === "index"
+      ? `${slug}.html`
+      : `${slug}/index.html`,
+  )
 }
 for (const rel of new Glob("documentation/src/pages/**/*.astro").scanSync(
   ROT,

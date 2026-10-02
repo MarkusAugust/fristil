@@ -1,0 +1,138 @@
+---
+/**
+ * Oversikten over alle komponentene, lest av det som finnes.
+ *
+ * Ingenting her er skrevet for hånd. Tittelen og beskrivelsen kommer fra
+ * frontmatteren på hver komponentside, og kategorien fra mappa komponenten
+ * ligger i under `designsystem/src/components/`. Da kan lista verken gå tom
+ * eller gli fra sidene: en ny komponent dukker opp av seg selv, og en
+ * beskrivelse som endres her er den samme som på siden.
+ *
+ * Kildene hentes med `import.meta.glob`, som Vite løser ved bygging. En sti
+ * regnet ut av `import.meta.url` ville pekt på chunken etter bundling, ikke på
+ * kilden, slik `llms.txt.ts` forklarer på samme sted.
+ */
+
+import { getCollection } from "astro:content"
+
+/*
+ * Mappenavnet til hver komponent, med kategorien den ligger under.
+ *
+ * Uten `eager`: vi trenger bare stiene, ikke modulene. Kjørte vi dem, ville
+ * hver web component blitt evaluert under byggingen av en side som ikke bruker
+ * dem.
+ */
+const KILDER = import.meta.glob("../../../designsystem/src/components/*/*/*.ts")
+
+type Kategori = "css" | "ramme" | "frittstaende"
+
+const kategoriFor = new Map<string, Kategori>()
+for (const sti of Object.keys(KILDER)) {
+  const deler = sti.split("/")
+  const mappe = deler.at(-2)
+  const kategori = deler.at(-3) as Kategori
+  if (mappe && kategori) kategoriFor.set(mappe, kategori)
+}
+
+const GRUPPER: { kategori: Kategori; tittel: string; forklaring: string }[] = [
+  {
+    kategori: "css",
+    tittel: "CSS-komponenter",
+    forklaring:
+      "En klasse og noen dataattributter på et vanlig HTML-element. Ingen JavaScript lastes.",
+  },
+  {
+    kategori: "ramme",
+    tittel: "Rammekomponenter",
+    forklaring:
+      "Du skriver markupen, og web-komponenten fester tastatur, fokus og koblingen oppå. Elementene blir liggende i vanlig DOM.",
+  },
+  {
+    kategori: "frittstaende",
+    tittel: "Frittstående komponenter",
+    forklaring:
+      "Komponenten lager innholdet sitt selv, fordi det ikke finnes noe for serveren å sende. Du kaller en metode.",
+  },
+]
+
+const sider = (await getCollection("docs"))
+  .filter((side) => side.id.startsWith("components/"))
+  .map((side) => ({
+    navn: side.id.slice("components/".length),
+    tittel: side.data.title,
+    beskrivelse: side.data.description ?? "",
+    adresse: `/${side.id}/`,
+  }))
+  .filter((side) => side.navn !== "" && !side.navn.includes("/"))
+
+const grupper = GRUPPER.map((gruppe) => ({
+  ...gruppe,
+  sider: sider
+    .filter((side) => kategoriFor.get(side.navn) === gruppe.kategori)
+    .sort((a, b) => a.tittel.localeCompare(b.tittel, "nb")),
+})).filter((gruppe) => gruppe.sider.length > 0)
+
+/*
+ * En oversikt som har mistet halve lista ser ut som en kort oversikt. Derfor
+ * telles det som faktisk ble satt inn, og bygget stopper hvis en side falt ut
+ * av kategoriseringen.
+ */
+const plassert = grupper.reduce((sum, g) => sum + g.sider.length, 0)
+if (plassert !== sider.length) {
+  const borte = sider.filter((s) => !kategoriFor.has(s.navn)).map((s) => s.navn)
+  throw new Error(
+    `Komponentoversikt: ${plassert} av ${sider.length} sider havnet i en gruppe. Uten mappe under designsystem/src/components: ${borte.join(", ")}`,
+  )
+}
+---
+
+{
+  grupper.map((gruppe) => (
+    <section class="oversikt">
+      <h2 id={gruppe.kategori}>{gruppe.tittel}</h2>
+      <p>{gruppe.forklaring}</p>
+      <ul class="oversikt__liste">
+        {gruppe.sider.map((side) => (
+          <li class="oversikt__kort">
+            <a href={side.adresse}>{side.tittel}</a>
+            <span>{side.beskrivelse}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))
+}
+
+<style>
+  .oversikt__liste {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--fs-spacing-3);
+    margin-block: var(--fs-spacing-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .oversikt__kort {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fs-spacing-1);
+    padding: var(--fs-spacing-3);
+    border: 1px solid var(--fs-color-neutral-border-subtle);
+    border-radius: var(--fs-spacing-2);
+    background: var(--fs-color-neutral-surface);
+  }
+
+  .oversikt__kort a {
+    font-weight: 600;
+  }
+
+  .oversikt__kort span {
+    font-size: var(--font-size-s);
+    line-height: var(--fs-line-height-default);
+    color: var(--fs-color-neutral-text-subtle);
+    /* Beskrivelsene er hele setninger, og et langt ord skal ikke sprenge
+       kortet på en smal skjerm. */
+    overflow-wrap: anywhere;
+  }
+</style>
