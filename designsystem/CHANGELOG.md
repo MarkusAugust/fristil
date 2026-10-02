@@ -23,6 +23,33 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`.fs-theme-control` lar brukeren velge tema uten JavaScript.** Klassen står
+  på en radioknapp, og `value` sier hvilket tema den velger: `auto`, `light`
+  eller `dark`. Selektoren er en ekstra linje på de to temablokkene i
+  `tokens.css`, og den samme linja i temaer `buildTheme()` skriver. «Følg
+  systemet» har ingen temablokk, siden en verdi uten blokk nettopp skal falle
+  tilbake på mediespørringen. `light` og `dark` vinner over `data-theme` på
+  `<html>`, slik at serveren kan sende et lagret valg mens et klikk slår
+  igjennom før svaret er tilbake. `auto` gjør det ikke: har serveren skrevet
+  `data-theme`, står serverens verdi, og det som lagrer valget må også fjerne
+  attributtet.
+- **Hvert av de tre valgene setter `color-scheme` selv.** `light` gir `light`,
+  `dark` gir `dark`, og `auto` gir `light dark` så lenge `<html>` ikke bærer
+  `data-theme="light"` eller `data-theme="dark"`. Det siste er ikke et tema, men beskjeden til nettleseren om at siden
+  fungerer i begge, så den kan tegne sine egne flater etter systemet.
+
+  Bruker du velgeren, skal du ikke skrive `color-scheme` på `<html>` selv: en
+  regel utenfor et lag slår `@layer fristil`, og nettleserens egne flater blir
+  låst til systemet mens brukeren har valgt noe annet. For den som ikke bruker
+  velgeren, er ingenting endret, og bar `:root` har fortsatt ingen
+  `color-scheme`.
+
+  Overstyrer du et token per tema, må dine egne `[data-theme]`-blokker ha
+  velgerens selektor ved siden av. CSS kan ikke skrive et attributt, så
+  velgeren setter ingen `data-theme`.
+
 ## 0.25.0 (2026-10-01)
 
 ### Rettet

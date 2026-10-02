@@ -97,6 +97,7 @@ export default defineConfig({
             { label: "Sideskjelett", slug: "monster/sideskjelett" },
             { label: "Bekreft en handling", slug: "monster/bekreftelse" },
             { label: "Dato i et skjema", slug: "monster/dato" },
+            { label: "La brukeren velge tema", slug: "monster/tema" },
           ],
         },
         {

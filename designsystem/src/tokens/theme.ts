@@ -262,6 +262,17 @@ function lines(verdier: Record<string, string>, innrykk: string): string {
     .join("\n")
 }
 
+/*
+ * Temavelgeren må stå i konsumentens tema også.
+ *
+ * Uten denne linja byttet `.fs-theme-control` til Fristils egne farger inne i
+ * et tema, siden bare attributtblokkene hadde temaets verdier. Det er den
+ * samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0: en temagrense
+ * finnes to steder, og begge må kjenne den.
+ */
+const control = (name: string) =>
+  `:root:has(.fs-theme-control[value="${name}"]:checked)`
+
 /**
  * Setter temaet sammen.
  *
@@ -308,8 +319,8 @@ function tilCss(
   if (Object.keys(dark).length > 0)
     deler.push(
       `  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme="light"]) {\n${lines(dark, "      ")}\n    }\n  }`,
-      `  [data-theme="light"] {\n${lines(light, "    ")}\n  }`,
-      `  [data-theme="dark"] {\n${lines(dark, "    ")}\n  }`,
+      `  [data-theme="light"],\n  ${control("light")} {\n${lines(light, "    ")}\n  }`,
+      `  [data-theme="dark"],\n  ${control("dark")} {\n${lines(dark, "    ")}\n  }`,
     )
 
   return [

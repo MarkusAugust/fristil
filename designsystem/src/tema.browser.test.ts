@@ -6,6 +6,7 @@
 import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server } from "vitest/browser"
 import { ventPaTegning } from "./testing/a11y"
+import { buildTheme } from "./tokens/theme"
 import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
@@ -106,12 +107,18 @@ describe("data-theme er en temagrense i alle motorer", () => {
  * ha lest en eneste linje.
  */
 function blokk(velger: string): Map<string, string> {
-  const start = tokenKilde.indexOf(`${velger} {`)
-  if (start < 0) throw new Error(`fant ikke ${velger} i tokens.css`)
-  const slutt = tokenKilde.indexOf("\n  }", start)
+  // Selektoren står alene («… {») eller først i en liste («…,»), siden
+  // temablokkene fikk `.fs-theme-control` som en ekstra linje.
+  const start = [`${velger} {`, `${velger},`]
+    .map((m) => tokenKilde.indexOf(m))
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b)[0]
+  if (start === undefined) throw new Error(`fant ikke ${velger} i tokens.css`)
+  const apnet = tokenKilde.indexOf("{", start)
+  const slutt = tokenKilde.indexOf("\n  }", apnet)
   if (slutt < 0) throw new Error(`fant ingen slutt på ${velger}`)
   return new Map(
-    [...tokenKilde.slice(start, slutt).matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(
+    [...tokenKilde.slice(apnet, slutt).matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(
       (m) => [m[1], m[2].trim()],
     ),
   )
@@ -156,6 +163,171 @@ describe("de to temablokkene er symmetriske", () => {
   })
 })
 
+/**
+ * Skriver en temavelger i body og slår på det ene valget.
+ *
+ * `:root:has()` ser hele dokumentet, så kontrollen kan stå hvor som helst.
+ * `checked` settes som egenskap og ikke som attributt, for det er egenskapen
+ * `:checked` leser, og det er den brukerens klikk endrer.
+ */
+function velg(tema: "auto" | "light" | "dark" | "ingen"): void {
+  document.body.innerHTML = `
+    <fieldset class="fs-toggle-group">
+      <legend class="fs-sr-only">Tema</legend>
+      ${["auto", "light", "dark"]
+        .map(
+          (v) => `<label class="fs-toggle-group__option">
+            <input class="fs-theme-control" type="radio" name="tema"
+                   value="${v}" id="valg-${v}"> ${v}
+          </label>`,
+        )
+        .join("")}
+    </fieldset>
+    <p id="ute">ute</p>
+  `
+  if (tema !== "ingen")
+    (hent(`valg-${tema}`) as HTMLInputElement).checked = true
+}
+
+/**
+ * At `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ *
+ * Kontrollen må vinne over `data-theme` på `<html>`, for serveren sender det
+ * valget den har lagret, og klikket skal slå igjennom med én gang framfor å
+ * vente på at en POST kommer tilbake. Rekkefølgen er en spesifisitetsregning,
+ * og den etterprøves her framfor å stå som et resonnement i generatoren.
+ *
+ * Hver test setter `data-theme` på `<html>` til det motsatte av det den
+ * forventer. Uten det ville en test passert bare fordi maskinen tilfeldigvis
+ * sto på det samme, og da hadde den ikke påstått noe.
+ */
+describe("temavelgeren virker uten JavaScript", () => {
+  afterEach(rydd)
+
+  it("slår serverens lyse valg når brukeren velger mørkt", () => {
+    document.documentElement.setAttribute("data-theme", "light")
+    velg("dark")
+    expect(token(hent("ute"))).toBe(MORK)
+  })
+
+  it("slår serverens mørke valg når brukeren velger lyst", () => {
+    document.documentElement.setAttribute("data-theme", "dark")
+    velg("light")
+    expect(token(hent("ute"))).toBe(LYS)
+  })
+
+  it("lar serveren bestemme når brukeren velger å følge systemet", () => {
+    // «Følg systemet» har ingen regel, og det er hele poenget: tre tilstander
+    // ut av to selektorer. Treffer `auto` noe, er den en regel for mye.
+    document.documentElement.setAttribute("data-theme", "dark")
+    velg("auto")
+    expect(token(hent("ute"))).toBe(MORK)
+  })
+
+  it("gjør ingenting før noen har valgt", () => {
+    // Uten `:checked` i selektoren ville en urørt gruppe satt tema med én gang.
+    document.documentElement.setAttribute("data-theme", "dark")
+    velg("ingen")
+    expect(token(hent("ute"))).toBe(MORK)
+  })
+
+  it("lar en temagrense inne i siden stå urørt", () => {
+    // Kontrollen står på `:root`, og en grense lenger ned er nærmere arvingen.
+    // Uten det ville et forhåndsvisningspanel fulgt velgeren mot sin vilje.
+    velg("dark")
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `<div data-theme="light"><p id="inne">inne</p></div>`,
+    )
+    expect(token(hent("ute"))).toBe(MORK)
+    expect(token(hent("inne"))).toBe(LYS)
+  })
+
+  it("står på begge temablokkene i tokens.css", () => {
+    // Sto den bare på den mørke, kom brukeren seg aldri tilbake til lyst.
+    for (const tema of ["light", "dark"]) {
+      const velger = `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+      expect(tokenKilde).toContain(velger)
+      expect(blokk(`  [data-theme="${tema}"]`).size).toBeGreaterThan(0)
+    }
+  })
+
+  it("står i et konsumenttema også", () => {
+    /*
+     * Den samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0.
+     * Uten denne linja byttet velgeren til Fristils egne farger inne i et
+     * konsumenttema, siden bare attributtblokkene hadde temaets verdier.
+     */
+    const { css } = buildTheme({ accent: "#7c3aed" })
+    expect(css).toContain(':root:has(.fs-theme-control[value="light"]:checked)')
+    expect(css).toContain(':root:has(.fs-theme-control[value="dark"]:checked)')
+  })
+
+  it("lar hvert valg bestemme color-scheme, også «følg systemet»", () => {
+    /*
+     * Dette er den ene regelen `auto` har, og den kom av en felle.
+     *
+     * Rådet var at konsumenten skriver `color-scheme: light dark` på `<html>`
+     * selv. Gjør den det utenfor et lag, slår regelen `@layer fristil`, og et
+     * valgt mørkt tema fikk lyse rullefelt. Kontrollen tar det selv i stedet,
+     * så den som bruker den ikke skal skrive `color-scheme` i det hele tatt.
+     */
+    const skjema = () => getComputedStyle(document.documentElement).colorScheme
+
+    velg("auto")
+    expect(skjema()).toBe("light dark")
+
+    velg("light")
+    expect(skjema()).toBe("light")
+
+    velg("dark")
+    expect(skjema()).toBe("dark")
+  })
+
+  it("lar «følg systemet» stå tilbake for serverens data-theme", () => {
+    /*
+     * Tokenene og `color-scheme` må si det samme, alltid.
+     *
+     * `auto` har ingen tokenblokk, så serverens `data-theme="dark"` blir
+     * stående. Uten `:not([data-theme])` på `auto`-regelen vant `auto`
+     * likevel på `color-scheme`, siden `:has()` er mer spesifikk enn
+     * attributtet. Resultatet var mørke farger med lyse rullefelt, altså
+     * nøyaktig spriket temablokkene finnes for å hindre.
+     */
+    document.documentElement.setAttribute("data-theme", "dark")
+    velg("auto")
+
+    expect(token(hent("ute"))).toBe(MORK)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe("dark")
+
+    // Og lyst, for å vise at det ikke bare er mørkt som tilfeldigvis stemmer.
+    document.documentElement.setAttribute("data-theme", "light")
+    velg("auto")
+
+    expect(token(hent("ute"))).toBe(LYS)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe("light")
+  })
+
+  it("lar et data-theme uten blokk oppføre seg som ingen data-theme", () => {
+    /*
+     * Vilkåret på `auto`-regelen spør på verdi, ikke på om attributtet finnes.
+     *
+     * Spurte den `:not([data-theme])`, blokkerte en verdi uten blokk, som
+     * `auto` eller en skrivefeil, hele regelen. Tokenene falt til `:root` og
+     * mediespørringen, mens `color-scheme` sto usatt: samme sprik som over,
+     * utløst av den andre enden.
+     */
+    velg("auto")
+    const uten = token(hent("ute"))
+
+    document.documentElement.setAttribute("data-theme", "noe-som-ikke-finnes")
+    expect(token(hent("ute"))).toBe(uten)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe(
+      "light dark",
+    )
+  })
+})
+
 /*
  * Emuleringen går over CDP og finnes bare i Chromium. Reglene er ren CSS uten
  * skript, så de to andre motorene dekkes av blokken over.
@@ -195,6 +367,24 @@ describe.skipIf(server.browser !== "chromium")(
       `
       await settSystemtema("dark")
       expect(token(hent("inne"))).toBe(LYS)
+      expect(token(hent("ute"))).toBe(MORK)
+    })
+
+    it("lar brukeren velge lyst på en mørk maskin", async () => {
+      /*
+       * Den eneste av velgerens regler som trenger emulering.
+       *
+       * Her er motstanderen mediespørringen og ikke et attributt, og den har
+       * en annen spesifisitet. Uten emulering ville testen passert av seg selv
+       * på en lys maskin, altså uten å ha sett det den heter.
+       */
+      velg("light")
+      await settSystemtema("dark")
+      expect(token(hent("ute"))).toBe(LYS)
+
+      // Og tilbake: «følg systemet» gir den mørke maskinen sitt eget svar.
+      ;(hent("valg-auto") as HTMLInputElement).checked = true
+      await ventPaTegning()
       expect(token(hent("ute"))).toBe(MORK)
     })
 

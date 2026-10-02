@@ -111,13 +111,30 @@ function definerer(css: string, navn: string): boolean {
   return new RegExp(`${escaped}(?![a-zA-Z0-9_-])`).test(css)
 }
 
-/** Stilarkene siden lenker til, lest fra `dist`. */
+/**
+ * All CSS siden faktisk har: både det den lenker til og det som står inline.
+ *
+ * Astro inliner et stilark som er lite nok, framfor å lenke det. Leste vi bare
+ * `<link>`, meldte sjekken at `.fs-sr-only` manglet på en side der regelen sto
+ * rett i en `<style>` noen linjer over. Det er en blindsone som gir falskt
+ * utslag, og det flyttet seg med hvor store bundlene ble, altså uten at noen
+ * hadde rørt siden.
+ *
+ * Den må lese `vanligDom(html)` og ikke rå HTML. `Preview.astro` legger hvert
+ * eksempels stilark i en `<style>` inne i `<template shadowrootmode="open">`,
+ * og de hører til skyggerota og ikke til siden. Leste vi dem med, ville en
+ * `.fs-button` skrevet rett i brødteksten på knappesiden passert, fordi
+ * forhåndsvisningen på samme side har hele `button.css` i skyggestilen sin.
+ * Det er den ene av de to feilene denne fila finnes for.
+ */
 function stilarkFor(html: string, side: string): string {
   const stier = [...html.matchAll(/<link[^>]*href="([^"]+\.css)"[^>]*>/g)]
     .filter((treff) => treff[0].includes('rel="stylesheet"'))
     .map((treff) => treff[1])
 
-  let samlet = ""
+  let samlet = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    .map((treff) => treff[1])
+    .join("\n")
   for (const sti of stier) {
     try {
       samlet += readFileSync(DIST + sti.replace(/^\//, ""), "utf8")
@@ -183,7 +200,7 @@ for (const rel of new Glob("**/*.html").scanSync(DIST)) {
   }
 
   if (klasser.size > 0 || elementer.size > 0) {
-    const css = stilarkFor(html, rel)
+    const css = stilarkFor(dom, rel)
 
     for (const klasse of klasser) {
       sjekketNavn++

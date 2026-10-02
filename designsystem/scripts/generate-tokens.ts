@@ -54,6 +54,10 @@ for (const key of Object.keys(alle)) {
  * En side som vil at nettleserens flater skal følge systemet, skriver derfor
  * `color-scheme: light dark` på `<html>` selv. Det er den samme avtalen som
  * for lagrekkefølgen: to linjer konsumenten eier.
+ *
+ * Unntaket er temavelgeren nedenfor. Hvert av de tre valgene setter
+ * `color-scheme` selv, og da skal konsumenten ikke skrive den: en regel
+ * utenfor et lag slår `@layer fristil`.
  */
 const lines = [
   "/* Generert. Rediger tokens.ts, ikke denne fila. */",
@@ -112,6 +116,35 @@ const lightLines = morkeNavn.map((name) => {
  * komponent kan
  * låse sitt eget tre uten å røre verten.
  */
+/*
+ * `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ *
+ * Klassen står på en radioknapp, og `value` sier hvilket tema den velger.
+ * Selektoren blir en ekstra linje på temablokkene framfor en kopi av dem, så
+ * de 90 tokenene står ett sted.
+ *
+ * «Følg systemet» trenger ingen temablokk: en verdi uten blokk treffer
+ * ingenting, og da gjelder `:root` og mediespørringen igjen.
+ *
+ * Den trenger likevel `color-scheme`, og det er funnet underveis. Fristil
+ * setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den
+ * ikke eier, så rådet har vært at konsumenten skriver `color-scheme: light
+ * dark` på `<html>` selv. Gjør den det utenfor et lag, slår regelen
+ * `@layer fristil`, og et valgt mørkt tema fikk lyse rullefelt og
+ * skjemakontroller. Å svare med «legg den i et lag foran fristil» er en felle:
+ * lagrekkefølgen er alt etablert av tokens.css, som lastes først, så en senere
+ * `@layer`-setning legger laget bak. Kontrollen tar derfor ansvaret selv, og
+ * den som bruker den trenger ikke skrive `color-scheme` i det hele tatt.
+ *
+ * Kontrollen vinner over `data-theme` på det samme elementet, siden `:has()`
+ * tar spesifisiteten til argumentet sitt. Det er med vilje: serveren sender
+ * valget den har lagret, og klikket skal slå igjennom før svaret er tilbake.
+ * Rekkefølgen er etterprøvd i alle tre motorene i `tema.browser.test.ts`,
+ * ikke regnet ut her.
+ */
+const control = (tema: string) =>
+  `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+
 lines.push(
   "",
   "  @media (prefers-color-scheme: dark) {",
@@ -123,16 +156,43 @@ lines.push(
   // Tvinger appen fram et tema, må nettleserens egne flater følge med.
   // Ellers får en app som står på lyst tema på en mørk maskin en svart
   // nedtrekksliste under et hvitt felt.
-  '  [data-theme="light"] {',
+  '  [data-theme="light"],',
+  `  ${control("light")} {`,
   "    color-scheme: light;",
   "",
   ...lightLines.map((l) => l.slice(2)),
   "  }",
   "",
-  '  [data-theme="dark"] {',
+  '  [data-theme="dark"],',
+  `  ${control("dark")} {`,
   "    color-scheme: dark;",
   "",
   ...darkLines.map((l) => l.slice(2)),
+  "  }",
+  "",
+  /*
+   * Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
+   * Bare nettleserens egne flater trenger å få vite at begge er i orden.
+   *
+   * Vilkåret er ikke pynt. `auto` betyr «ingen overstyring fra meg», så har
+   * serveren skrevet et tema, er det serverens verdi som står, både for
+   * tokenene og for flatene. Uten vilkåret vant `auto` på `color-scheme` fordi
+   * `:has()` er mer spesifikk enn attributtet, mens tokenene kom fra
+   * attributtblokka: mørke farger med lyse rullefelt, altså nøyaktig spriket
+   * blokkene over finnes for å hindre.
+   *
+   * Det spør på **verdi** og ikke på om attributtet finnes. Et `data-theme`
+   * uten blokk, som `auto` eller en skrivefeil, lar tokenene falle til `:root`
+   * og mediespørringen. Spurte vi bare `:not([data-theme])`, ble `auto`-regelen
+   * blokkert av en slik verdi, og `color-scheme` sto usatt mens tokenene fulgte
+   * systemet: det samme spriket, utløst av den andre enden.
+   */
+  // Brytningen står inne i `:has(…)`. Et linjeskift mellom leddene utenfor
+  // parentesen ville blitt en etterkommerselektor. Formen er Biomes.
+  '  :root:not([data-theme="light"]):not([data-theme="dark"]):has(',
+  '    .fs-theme-control[value="auto"]:checked',
+  "  ) {",
+  "    color-scheme: light dark;",
   "  }",
   "}",
 )

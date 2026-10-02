@@ -635,6 +635,11 @@
           "name": "fs-toast__close",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
           "doc-url": "https://fristil.netlify.app/components/toast/"
+        },
+        {
+          "name": "fs-theme-control",
+          "description": "**Tilpasning**\n\nEndre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
+          "doc-url": "https://fristil.netlify.app/tilpasning/"
         }
       ]
     }

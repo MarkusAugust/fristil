@@ -1,0 +1,146 @@
+---
+/**
+ * Temavelgeren som en ekte side, uten en linje JavaScript.
+ *
+ * Den må være en egen adresse og ikke en forhåndsvisning, for `:root:has()`
+ * ser bare sitt eget tre. Alle forhåndsvisningene våre ligger i en skyggerot,
+ * og en kontroll der inne setter ikke tema på siden. Det er etterprøvd i alle
+ * tre motorene, og står som en begrensning på mønstersiden.
+ *
+ * Siden har med vilje ingen `data-theme` på `<html>`: da er «Følg systemet»
+ * maskinens eget valg, som er det en konsument uten lagret valg ville fått.
+ * Og den har med vilje ingen `<script>`: hele poenget er at den virker uten.
+ */
+
+import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/toggle-group.css"
+import "@fristil/designsystem/sr-only.css"
+import "@fristil/designsystem/button.css"
+import "@fristil/designsystem/input.css"
+import "@fristil/designsystem/label.css"
+import "@fristil/designsystem/help-text.css"
+import "@fristil/designsystem/heading.css"
+import "@fristil/designsystem/paragraph.css"
+import "@fristil/designsystem/card.css"
+import "@fristil/designsystem/badge.css"
+
+const VALG = [
+  { verdi: "auto", tekst: "Følg systemet" },
+  { verdi: "light", tekst: "Lyst" },
+  { verdi: "dark", tekst: "Mørkt" },
+]
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Temavelger</title>
+  </head>
+  <body>
+    <main class="demo__innhold">
+      <h1 class="fs-heading" data-size="xl">Utseende</h1>
+      <p class="fs-paragraph">
+        Valget slår inn med en gang. Ingenting på denne siden kjører
+        JavaScript.
+      </p>
+
+      <div class="demo__skjema">
+        <fieldset class="fs-toggle-group">
+          <legend class="fs-sr-only">Tema</legend>
+          {
+            VALG.map(({ verdi, tekst }) => (
+              <label class="fs-toggle-group__option">
+                <input
+                  class="fs-theme-control"
+                  type="radio"
+                  name="tema"
+                  value={verdi}
+                  checked={verdi === "auto"}
+                />
+                {tekst}
+              </label>
+            ))
+          }
+        </fieldset>
+        <p class="fs-help-text">
+          Byttet er ren CSS. Å få valget til å vare er en annen oppgave, og den
+          er appens: her er det ingen server og ingen lagring, så valget står
+          til du laster siden på nytt.
+        </p>
+      </div>
+
+      <section class="fs-card demo__kort">
+        <h2 class="fs-heading" data-size="m">
+          Søknad om tilskudd
+          <span class="fs-badge" data-color="warning">Til behandling</span>
+        </h2>
+        <p class="fs-paragraph">
+          Flatene, kantene og teksten leser alle fargene sine fra de samme
+          tokenene, så de følger valget uten at noen av dem vet om det.
+        </p>
+        <label class="fs-label" for="demo-tema-sum">Omsøkt beløp</label>
+        <input
+          class="fs-input"
+          id="demo-tema-sum"
+          type="text"
+          value="48 000"
+          aria-describedby="demo-tema-hjelp"
+        />
+        <p class="fs-help-text" id="demo-tema-hjelp">
+          Nettleserens egne flater følger med, fordi blokkene setter
+          <code>color-scheme</code>.
+        </p>
+      </section>
+    </main>
+
+    <style>
+      /*
+       * Siden setter med vilje ikke `color-scheme` selv.
+       *
+       * Velgeren gjør det: «Følg systemet» setter `light dark`, og et valgt
+       * tema setter sitt eget. Skrev siden den her, utenfor et lag, ville den
+       * slått `@layer fristil` og låst nettleserens flater til systemet mens
+       * brukeren hadde valgt noe annet.
+       */
+      body {
+        margin: 0;
+        background: var(--fs-color-neutral-canvas);
+        color: var(--fs-color-neutral-text-strong);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      .demo__innhold {
+        display: flex;
+        flex-direction: column;
+        gap: var(--fs-spacing-5);
+        padding: var(--fs-spacing-6);
+        max-inline-size: 42rem;
+        margin-inline: auto;
+      }
+
+      .demo__skjema {
+        display: flex;
+        flex-direction: column;
+        gap: var(--fs-spacing-3);
+        align-items: start;
+      }
+
+      /*
+       * Kortet skal fylle bredden, ellers krymper det til innholdet sitt.
+       *
+       * Og bare det: Astro skriver denne blokka uten lag, og et usortert lag
+       * slår `@layer fristil`. Satte vi `gap` her, overstyrte demoen kortets
+       * egen avstand, altså nøyaktig det tilpasningssiden advarer mot.
+       */
+      .demo__kort {
+        align-self: stretch;
+      }
+    </style>
+  </body>
+</html>
