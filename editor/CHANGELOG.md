@@ -3,6 +3,10 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.6.0
+
+- `fs-progress` finnes. Framdriftsstolpen kom i pakkens 0.27.0.
+
 ## 0.5.1
 
 - Hover-teksten for fire klasser sa «én klasse» om en komponent med to.
