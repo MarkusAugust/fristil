@@ -106,15 +106,31 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er én variabel, og den finnes ingen `data-size` for:
 
-```css
+<Eksempel stiler={["table"]} layout="stabel" maxWidth="30rem" egenCss={`
 .kompakt {
 	--fs-table-cell-padding: var(--fs-spacing-1) var(--fs-spacing-2);
 }
-```
-
-```html
-<table class="fs-table kompakt">…</table>
-```
+`} kode={`
+<table class="fs-table kompakt">
+  <caption>Fakturaer i 2026</caption>
+  <thead>
+    <tr>
+      <th scope="col">Faktura</th>
+      <th scope="col" data-align="end">Beløp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">2026-0481</th>
+      <td data-align="end">1 240 kr</td>
+    </tr>
+    <tr>
+      <th scope="row">2026-0482</th>
+      <td data-align="end">980 kr</td>
+    </tr>
+  </tbody>
+</table>
+`} />
 
 Skriften skal du la være. `--font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
 

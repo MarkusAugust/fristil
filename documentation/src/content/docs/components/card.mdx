@@ -86,6 +86,24 @@ Har kortet flere handlinger, skal ikke hele kortet være en lenke. Da havner kna
 | `--fs-card-padding` | `var(--fs-spacing-4)` |
 | `--fs-card-radius` | `var(--fs-spacing-2)` |
 
+Et eksempel. Et kort som bærer en hel seksjon tåler mer luft enn et som står i en liste:
+
+<Eksempel stiler={["card", "heading", "paragraph"]} layout="rad" egenCss={`
+.luftig-kort {
+	--fs-card-padding: var(--fs-spacing-6);
+}
+`} kode={`
+<div class="fs-card">
+  <h3 class="fs-heading" data-size="s">Standard</h3>
+  <p class="fs-paragraph">Luften som følger med pakken.</p>
+</div>
+
+<div class="fs-card luftig-kort">
+  <h3 class="fs-heading" data-size="s">Luftig</h3>
+  <p class="fs-paragraph">Samme markup, én klasse mer.</p>
+</div>
+`} />
+
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet

@@ -112,6 +112,21 @@ Fyllfargen bæres av `color` på selve stolpen, og den fylte delen leser `curren
 
 Har brukeren bedt om mindre bevegelse, går den ubestemte stripa saktere, og den fylte delen hopper til det nye tallet framfor å gli dit. Stripa stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
 
+Et eksempel. En stolpe som står under et felt skal ofte være tynnere og uten hjørner:
+
+<Eksempel stiler={["progress"]} layout="stabel" maxWidth="26rem" egenCss={`
+.tynn-stolpe {
+	--fs-progress-height: var(--fs-spacing-1);
+	--fs-progress-radius: 0;
+}
+`} kode={`
+<progress class="fs-progress" value="60" max="100"
+          aria-label="Standard"></progress>
+
+<progress class="fs-progress tynn-stolpe" value="60" max="100"
+          aria-label="Laster opp vedlegg"></progress>
+`} />
+
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet

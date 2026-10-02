@@ -136,6 +136,20 @@ Trenger du en knapp i full bredde, er det appens oppsett:
 }
 ```
 
+Et eksempel. En knapp som skal stå i en tabellrad trenger mindre luft enn en som står alene:
+
+<Eksempel stiler={["button"]} layout="rad" egenCss={`
+.rad-knapp {
+	--fs-button-padding: var(--fs-spacing-1) var(--fs-spacing-3);
+	--fs-button-radius: var(--fs-spacing-4);
+}
+`} kode={`
+<button class="fs-button">Åpne saken</button>
+<button class="fs-button rad-knapp" data-variant="secondary">Åpne</button>
+`} />
+
+Klassen `rad-knapp` er din. Systemet kjenner den ikke, og den virker fordi variabelen arves ned i knappen.
+
 Standardverdien følger `--fs-spacing-*`-skalaen, så knappen holder seg i takt med resten om du endrer skalaen. Se [Tilpasning](../../tilpasning/).
 
 ## Tilgjengelighet
