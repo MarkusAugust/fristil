@@ -48,7 +48,7 @@ først.
 
 ## 2. Hva som finnes
 
-33 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+34 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
 `fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
 klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
@@ -77,6 +77,7 @@ Standardvarianten har ingen attributt.
 | `fs-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/list/list.css` | `data-variant`: plain, divided |
 | `fs-pagination`<br>`fs-pagination__gap` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/pagination/pagination.css` | ingen |
 | `fs-paragraph` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/paragraph/paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
+| `fs-progress` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/progress/progress.css` | `data-color`: success, warning, danger |
 | `fs-radio`<br>`fs-radio-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/radio/radio.css` | `data-state`: invalid, success |
 | `fs-search`<br>`fs-search-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/search/search.css` | `data-state`: invalid, success |
 | `fs-select` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.26.1/src/components/css/select/select.css` | `data-state`: invalid, success<br>`data-picker`: styled |

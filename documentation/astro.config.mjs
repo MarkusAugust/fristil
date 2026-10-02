@@ -126,6 +126,7 @@ export default defineConfig({
                 { label: "List", slug: "components/list" },
                 { label: "Pagination", slug: "components/pagination" },
                 { label: "Paragraph", slug: "components/paragraph" },
+                { label: "Progress", slug: "components/progress" },
                 { label: "Radio", slug: "components/radio" },
                 { label: "Search", slug: "components/search" },
                 { label: "Select", slug: "components/select" },

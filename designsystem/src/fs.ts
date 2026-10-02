@@ -18,6 +18,7 @@ import { link } from "./components/css/link/link.js"
 import { list } from "./components/css/list/list.js"
 import { pagination } from "./components/css/pagination/pagination.js"
 import { paragraph } from "./components/css/paragraph/paragraph.js"
+import { progress } from "./components/css/progress/progress.js"
 import { radio } from "./components/css/radio/radio.js"
 import { search } from "./components/css/search/search.js"
 import { select } from "./components/css/select/select.js"
@@ -134,6 +135,7 @@ export const fs = {
   sessionTimeout,
   skeleton,
   skipLink,
+  progress,
   spinner,
   /** Tekst bare skjermlesere skal få. Krever `sr-only.css`. */
   srOnly,

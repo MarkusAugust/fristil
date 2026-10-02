@@ -1,0 +1,122 @@
+---
+title: Progress
+description: Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen settes på et ekte `<progress>`. Elementet har semantikken innebygd: nettleseren melder det som `role="progressbar"` og leser opp hvor langt det er kommet, så du skriver verken rolle, `aria-valuenow` eller `aria-valuemax`. Bygger du stolpen av `<div>`-er, må du skrive alt det selv, og holde det i takt med tallet.
+
+Vet du ikke hvor langt det er kommet, er [Spinner](../spinner/) riktigere.
+
+## Slik tar du den i bruk
+
+<Eksempel importer={["tokens.css", "progress.css"]}
+  stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
+<progress class="fs-progress" value="3" max="7"
+          aria-label="Steg 3 av 7"></progress>
+
+<progress class="fs-progress" value="100" max="100" data-color="success"
+          aria-label="Opplastingen er ferdig"></progress>
+
+<progress class="fs-progress" aria-label="Henter søknadene dine"></progress>
+`}>
+<Fragment slot="ts">
+
+`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+
+**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<progress {...fs.progress({ value: 3, max: 7, label: "Steg 3 av 7" })} />
+```
+
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+
+**Oppdaterer du tallet mens noe pågår,** setter du egenskapen på elementet. Det er nettleserens eget API, og det er raskere enn å bygge attributtene på nytt for hvert steg:
+
+```ts
+const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
+
+stolpe.value = 64
+```
+
+Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Byggefunksjonen er for markupen du lager; `fs.setAttributes()` rydder ikke i `value`, siden den lista er felles for alle komponentene og ville strøket `value` fra ethvert felt.
+
+Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
+
+## `max` har standardverdien 100
+
+Byggefunksjonen skriver alltid ut `max`, i strid med regelen om at en standardverdi ikke gir noe attributt. Den regelen gjelder utseende, der CSS-en alt har svaret. `max` er semantikk, og HTMLs egen standard er `1`:
+
+```html
+<progress value="40"></progress>
+```
+
+Den stolpen er full, ikke 40 prosent, og ingenting sier fra. Skriver du markupen for hånd, oppgi begge.
+
+## Ubestemt framdrift
+
+Utelater du `value`, blir stolpen ubestemt, og en stripe sveiper over den. Det sier «noe pågår» uten å love et tall:
+
+```html
+<progress class="fs-progress" aria-label="Henter søknadene dine"></progress>
+```
+
+Det er det samme [Spinner](../spinner/) sier. Velg én av dem på samme sted, ellers melder siden den samme ventingen to ganger.
+
+## Fargene betyr noe
+
+<Eksempel stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
+<progress class="fs-progress" value="72" max="100"
+          aria-label="Laster opp vedlegg"></progress>
+
+<progress class="fs-progress" value="100" max="100" data-color="success"
+          aria-label="Opplastingen er ferdig"></progress>
+
+<progress class="fs-progress" value="88" max="100" data-color="warning"
+          aria-label="Lagringsplassen er nesten full"></progress>
+
+<progress class="fs-progress" value="18" max="100" data-color="danger"
+          aria-label="Opplastingen stoppet"></progress>
+`} />
+
+| `data-color` | Brukes til |
+| --- | --- |
+| *(utelatt)* | Noe pågår, og det går som det skal |
+| `success` | Det er ferdig |
+| `warning` | Det nærmer seg en grense |
+| `danger` | Det stoppet, eller gikk galt |
+
+Fargen alene sier ingenting. Den som ikke ser forskjell på grønt og rødt trenger teksten ved siden av, og den som hører siden får bare `aria-label`. Skriv derfor hva som skjedde, og la fargen være det som bekrefter det.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-progress` | Stolpen. Fargen kommer fra `data-color`. |
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-progress-fill` | `var(--fs-color-accent-fill)`, og `data-color` endrer den |
+| `--fs-progress-track` | `var(--fs-color-neutral-surface)` |
+| `--fs-progress-height` | `var(--fs-spacing-2)` |
+| `--fs-progress-radius` | `var(--fs-spacing-1)` |
+
+Fyllfargen bæres av `color` på selve stolpen, og den fylte delen leser `currentColor`. Grunnen er at den fylte delen har to navn, `::-webkit-progress-value` i Chromium og WebKit og `::-moz-progress-bar` i Gecko, og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele regelen ugyldig. Fargen må derfor bestemmes ett sted og arves inn. `<progress>` har ingen tekst, så `color` er ledig til oppgaven, og `--fs-progress-fill` er det eneste du trenger å sette for å endre den.
+
+Har brukeren bedt om mindre bevegelse, går den ubestemte stripa saktere, og den fylte delen hopper til det nye tallet framfor å gli dit. Stripa stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
+
+Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+
+## Tilgjengelighet
+
+- Gi stolpen et navn med `aria-label`, eller knytt den til en synlig tekst med `aria-labelledby`. Uten navn melder skjermleseren et tall uten å si hva det gjelder.
+- Oppgi alltid `max` sammen med `value`. HTMLs standard er `1`, så en stolpe uten `max` er full ved alt over 1.
+- Ikke oppdater tallet oftere enn brukeren trenger. Hver endring kan bli en opplesning, og en stolpe som teller fra 0 til 100 i steg på én blir hundre meldinger.
+- Er framdriften over, si fra med noe mer enn fargen. Flytt fokus dit resultatet kom, eller meld det i et `role="status"`-felt.

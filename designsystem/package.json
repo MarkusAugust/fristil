@@ -54,6 +54,7 @@
     "./alert.css": "./src/components/css/alert/alert.css",
     "./card.css": "./src/components/css/card/card.css",
     "./divider.css": "./src/components/css/divider/divider.css",
+    "./progress.css": "./src/components/css/progress/progress.css",
     "./spinner.css": "./src/components/css/spinner/spinner.css",
     "./badge.css": "./src/components/css/badge/badge.css",
     "./label.css": "./src/components/css/label/label.css",
@@ -185,6 +186,10 @@
     "./divider": {
       "types": "./dist/components/css/divider/divider.d.ts",
       "import": "./dist/components/css/divider/divider.js"
+    },
+    "./progress": {
+      "types": "./dist/components/css/progress/progress.d.ts",
+      "import": "./dist/components/css/progress/progress.js"
     },
     "./spinner": {
       "types": "./dist/components/css/spinner/spinner.d.ts",

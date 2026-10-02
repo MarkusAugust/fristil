@@ -283,7 +283,7 @@ describe("fs.field sammen med feltfunksjonene", () => {
  * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
  * ikke i det hele tatt.
  */
-const ANTALL_BYGGEFUNKSJONER = 43
+const ANTALL_BYGGEFUNKSJONER = 44
 
 /** De sju som gir attributter per del framfor ett flatt sett. */
 const SAMMENSATTE_NAVN = [

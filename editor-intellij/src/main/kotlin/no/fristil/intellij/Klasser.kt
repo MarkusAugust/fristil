@@ -32,6 +32,7 @@ internal val KLASSER: List<Klasse> =
     Klasse("fs-pagination", "Pagination", "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.netlify.app/components/pagination/"),
     Klasse("fs-pagination__gap", "Pagination", "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.netlify.app/components/pagination/"),
     Klasse("fs-paragraph", "Paragraph", "Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.", "https://fristil.netlify.app/components/paragraph/"),
+    Klasse("fs-progress", "Progress", "Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.", "https://fristil.netlify.app/components/progress/"),
     Klasse("fs-radio", "Radio", "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.netlify.app/components/radio/"),
     Klasse("fs-radio-row", "Radio", "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.netlify.app/components/radio/"),
     Klasse("fs-search", "Search", "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.netlify.app/components/search/"),

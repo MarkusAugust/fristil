@@ -23,6 +23,15 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`fs.progress()` og `progress.css`.** En framdriftsstolpe på et ekte
+  `<progress>`, så rollen og opplesningen av tallet kommer fra nettleseren.
+  `data-color` gir `success`, `warning` og `danger`, og uten `value` blir
+  stolpen ubestemt. `max` har standardverdien 100 og skrives alltid ut: HTMLs
+  egen standard er `1`, og en `<progress value="40">` uten `max` viser en full
+  stolpe uten at noe sier fra.
+
 ## 0.26.1 (2026-10-02)
 
 ### Rettet
