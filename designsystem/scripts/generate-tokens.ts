@@ -170,14 +170,24 @@ lines.push(
    * Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
    * Bare nettleserens egne flater trenger å få vite at begge er i orden.
    *
-   * `:not([data-theme])` er ikke pynt. `auto` betyr «ingen overstyring fra
-   * meg», så har serveren skrevet `data-theme`, er det serverens verdi som
-   * står, både for tokenene og for flatene. Uten vilkåret vant `auto` på
-   * `color-scheme` fordi `:has()` er mer spesifikk enn attributtet, mens
-   * tokenene kom fra attributtblokka: mørke farger med lyse rullefelt, altså
-   * nøyaktig spriket blokkene over finnes for å hindre.
+   * Vilkåret er ikke pynt. `auto` betyr «ingen overstyring fra meg», så har
+   * serveren skrevet et tema, er det serverens verdi som står, både for
+   * tokenene og for flatene. Uten vilkåret vant `auto` på `color-scheme` fordi
+   * `:has()` er mer spesifikk enn attributtet, mens tokenene kom fra
+   * attributtblokka: mørke farger med lyse rullefelt, altså nøyaktig spriket
+   * blokkene over finnes for å hindre.
+   *
+   * Det spør på **verdi** og ikke på om attributtet finnes. Et `data-theme`
+   * uten blokk, som `auto` eller en skrivefeil, lar tokenene falle til `:root`
+   * og mediespørringen. Spurte vi bare `:not([data-theme])`, ble `auto`-regelen
+   * blokkert av en slik verdi, og `color-scheme` sto usatt mens tokenene fulgte
+   * systemet: det samme spriket, utløst av den andre enden.
    */
-  `  :root:not([data-theme]):has(.fs-theme-control[value="auto"]:checked) {`,
+  // Brytningen står inne i `:has(…)`. Et linjeskift mellom leddene utenfor
+  // parentesen ville blitt en etterkommerselektor. Formen er Biomes.
+  '  :root:not([data-theme="light"]):not([data-theme="dark"]):has(',
+  '    .fs-theme-control[value="auto"]:checked',
+  "  ) {",
   "    color-scheme: light dark;",
   "  }",
   "}",

@@ -449,7 +449,9 @@
     --fs-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.6);
   }
 
-  :root:not([data-theme]):has(.fs-theme-control[value="auto"]:checked) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]):has(
+    .fs-theme-control[value="auto"]:checked
+  ) {
     color-scheme: light dark;
   }
 }

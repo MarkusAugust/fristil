@@ -307,6 +307,25 @@ describe("temavelgeren virker uten JavaScript", () => {
     expect(token(hent("ute"))).toBe(LYS)
     expect(getComputedStyle(document.documentElement).colorScheme).toBe("light")
   })
+
+  it("lar et data-theme uten blokk oppføre seg som ingen data-theme", () => {
+    /*
+     * Vilkåret på `auto`-regelen spør på verdi, ikke på om attributtet finnes.
+     *
+     * Spurte den `:not([data-theme])`, blokkerte en verdi uten blokk, som
+     * `auto` eller en skrivefeil, hele regelen. Tokenene falt til `:root` og
+     * mediespørringen, mens `color-scheme` sto usatt: samme sprik som over,
+     * utløst av den andre enden.
+     */
+    velg("auto")
+    const uten = token(hent("ute"))
+
+    document.documentElement.setAttribute("data-theme", "noe-som-ikke-finnes")
+    expect(token(hent("ute"))).toBe(uten)
+    expect(getComputedStyle(document.documentElement).colorScheme).toBe(
+      "light dark",
+    )
+  })
 })
 
 /*

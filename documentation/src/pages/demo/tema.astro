@@ -40,13 +40,13 @@ const VALG = [
   </head>
   <body>
     <main class="demo__innhold">
-      <h1 class="fs-heading" data-level="2">Utseende</h1>
+      <h1 class="fs-heading" data-size="xl">Utseende</h1>
       <p class="fs-paragraph">
         Valget slår inn med en gang. Ingenting på denne siden kjører
         JavaScript.
       </p>
 
-      <form method="post" action="#" class="demo__skjema">
+      <div class="demo__skjema">
         <fieldset class="fs-toggle-group">
           <legend class="fs-sr-only">Tema</legend>
           {
@@ -64,17 +64,15 @@ const VALG = [
             ))
           }
         </fieldset>
-        <button class="fs-button" type="submit" data-variant="secondary">
-          Lagre valget
-        </button>
         <p class="fs-help-text">
-          Lagringen er serverens oppgave. Denne demoen har ingen server, så
-          valget varer til du laster siden på nytt.
+          Byttet er ren CSS. Å få valget til å vare er en annen oppgave, og den
+          er appens: her er det ingen server og ingen lagring, så valget står
+          til du laster siden på nytt.
         </p>
-      </form>
+      </div>
 
       <section class="fs-card demo__kort">
-        <h2 class="fs-heading" data-level="3">
+        <h2 class="fs-heading" data-size="m">
           Søknad om tilskudd
           <span class="fs-badge" data-color="warning">Til behandling</span>
         </h2>
@@ -83,7 +81,13 @@ const VALG = [
           tokenene, så de følger valget uten at noen av dem vet om det.
         </p>
         <label class="fs-label" for="demo-tema-sum">Omsøkt beløp</label>
-        <input class="fs-input" id="demo-tema-sum" type="text" value="48 000" />
+        <input
+          class="fs-input"
+          id="demo-tema-sum"
+          type="text"
+          value="48 000"
+          aria-describedby="demo-tema-hjelp"
+        />
         <p class="fs-help-text" id="demo-tema-hjelp">
           Nettleserens egne flater følger med, fordi blokkene setter
           <code>color-scheme</code>.
@@ -120,15 +124,20 @@ const VALG = [
         margin-inline: auto;
       }
 
-      .demo__skjema,
-      .demo__kort {
+      .demo__skjema {
         display: flex;
         flex-direction: column;
         gap: var(--fs-spacing-3);
         align-items: start;
       }
 
-      /* Kortet skal fylle bredden, ellers krymper det til innholdet sitt. */
+      /*
+       * Kortet skal fylle bredden, ellers krymper det til innholdet sitt.
+       *
+       * Og bare det: Astro skriver denne blokka uten lag, og et usortert lag
+       * slår `@layer fristil`. Satte vi `gap` her, overstyrte demoen kortets
+       * egen avstand, altså nøyaktig det tilpasningssiden advarer mot.
+       */
       .demo__kort {
         align-self: stretch;
       }

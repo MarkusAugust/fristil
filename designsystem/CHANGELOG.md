@@ -36,8 +36,8 @@ egen overskrift «Brytende».
   `data-theme`, står serverens verdi, og det som lagrer valget må også fjerne
   attributtet.
 - **Hvert av de tre valgene setter `color-scheme` selv.** `light` gir `light`,
-  `dark` gir `dark`, og `auto` gir `light dark` når ingen `data-theme` står på
-  `<html>`. Det siste er ikke et tema, men beskjeden til nettleseren om at siden
+  `dark` gir `dark`, og `auto` gir `light dark` så lenge `<html>` ikke bærer
+  `data-theme="light"` eller `data-theme="dark"`. Det siste er ikke et tema, men beskjeden til nettleseren om at siden
   fungerer i begge, så den kan tegne sine egne flater etter systemet.
 
   Bruker du velgeren, skal du ikke skrive `color-scheme` på `<html>` selv: en

@@ -98,9 +98,13 @@ En helt statisk side har ingen server som kan lese cookien. Da er `localStorage`
 <!-- I <head>, uten defer, før siden tegnes -->
 <script>
   const lagret = localStorage.getItem("tema")
-  if (lagret && lagret !== "auto") document.documentElement.dataset.theme = lagret
+  if (lagret === "light" || lagret === "dark") {
+    document.documentElement.dataset.theme = lagret
+  }
 </script>
 ```
+
+Sjekk mot de to verdiene framfor mot «ikke `auto`». `localStorage` deles mellom alt på samme opphav, så nøkkelen kan inneholde noe annet enn det du skrev: en gammel verdi, eller en annen app sin. Skriver du den rett inn, får `<html>` en `data-theme` uten blokk, og siden faller til systemtemaet uten at noen av knappene er markert.
 
 Står skriptet nederst i `<body>`, eller har det `defer`, rekker siden å tegne seg i feil tema først.
 
@@ -108,7 +112,8 @@ Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
 
 ```html
 <script type="module">
-  const valgt = localStorage.getItem("tema") ?? "auto"
+  const lagret = localStorage.getItem("tema")
+  const valgt = lagret === "light" || lagret === "dark" ? lagret : "auto"
 
   for (const knapp of document.querySelectorAll(".fs-theme-control")) {
     knapp.checked = knapp.value === valgt
@@ -127,5 +132,6 @@ Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
 
 - **Å lagre valget.** Kontrollen bytter tema og husker ingenting. Varigheten er appens, gjennom en cookie eller `localStorage`.
 - **Å virke inne i en skyggerot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en skyggerot setter ikke tema på siden. Den må stå i det samme treet som `<html>`.
+- **Å avgjøre mellom to velgere.** Står det to grupper på siden, altså to ulike `name` eller to skjemaer, er én knapp avkrysset i hver. Sier de ulike ting, kan ikke CSS vite hvilken som gjelder, og tokenene og `color-scheme` kan ende på hver sin. Bruk én gruppe per side.
 - **Å gi en del av siden sitt eget tema.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../tilpasning/#lyst-og-mørkt).
 - **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer fristil`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.
