@@ -237,6 +237,16 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
   join(ROOT, "designsystem/src/components", d),
 )
 
+/*
+ * `tokens.css` har klasser som ikke hører til en komponent.
+ *
+ * `.fs-theme-control` er den første: den bytter tema, så selektoren bor der
+ * tokenverdiene bor framfor i en komponentmappe. Uten denne kilden meldte
+ * `diagnoseMarkup` «Klassen finnes ikke i Fristil» på riktig markup, og
+ * verken VS Code, IntelliJ eller `fristil sjekk` foreslo den.
+ */
+const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
+
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
   sizes: "size",
@@ -251,6 +261,16 @@ const OPTION_LISTS: Record<string, string> = {
 const frontmatter = (slug: string, key: string) => {
   const page = readFileSync(join(PAGES, `${slug}.mdx`), "utf8")
   return page.match(new RegExp(`^${key}: (.*)$`, "m"))?.[1]?.trim() ?? ""
+}
+
+const TOKEN_PAGE = {
+  component: "tilpasning",
+  // Leses fra siden, som for komponentene. Skrevet av for hånd drev den fra
+  // frontmatteren uten at noe sa fra, og hoverboksen i VS Code og JetBrains
+  // siterte en beskrivelse som ikke sto noe sted i dokumentasjonen.
+  title: frontmatter("../tilpasning", "title"),
+  description: frontmatter("../tilpasning", "description"),
+  link: "https://fristil.netlify.app/tilpasning/",
 }
 
 function classesInCss(css: string): string[] {
@@ -298,6 +318,9 @@ export function classesData(): Classes {
       }
     }
   }
+
+  for (const name of classesInCss(readFileSync(TOKEN_CSS, "utf8")))
+    out[name] ??= { ...TOKEN_PAGE, attributes: {} }
 
   for (const builder of Object.values(fs as Record<string, unknown>)) {
     if (typeof builder !== "function") continue

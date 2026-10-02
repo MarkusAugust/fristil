@@ -739,5 +739,12 @@ export const classes: Classes = {
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
     "link": "https://fristil.netlify.app/components/toast/",
     "attributes": {}
+  },
+  "fs-theme-control": {
+    "component": "tilpasning",
+    "title": "Tilpasning",
+    "description": "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
+    "link": "https://fristil.netlify.app/tilpasning/",
+    "attributes": {}
   }
 }

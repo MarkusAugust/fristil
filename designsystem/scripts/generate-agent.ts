@@ -160,6 +160,31 @@ const temaEksempel = (oppskrift: Oppskrift) =>
 </div>
 \`\`\``
 
+/*
+ * Velgeren skrives i regelbokas eget språk, av samme grunn som temaEksempel.
+ *
+ * Klassen står på hver radioknapp og ikke på gruppa: `:has()` ser etter den
+ * som er avkrysset, og det er knappen som er avkrysset.
+ */
+const velgerEksempel = (oppskrift: Oppskrift) => {
+  const react = oppskrift.navn === "react"
+  const attr = react ? "className" : "class"
+  const linje = (verdi: string, tekst: string, valgt = false) =>
+    `  <label ${attr}="fs-toggle-group__option">
+    <input ${attr}="fs-theme-control" type="radio" name="tema"
+           value="${verdi}"${valgt ? (react ? " defaultChecked" : " checked") : ""} /> ${tekst}
+  </label>`
+
+  return `\`\`\`${react ? "tsx" : "html"}
+<fieldset ${attr}="fs-toggle-group">
+  <legend ${attr}="fs-sr-only">Tema</legend>
+${linje("auto", "Følg systemet", true)}
+${linje("light", "Lyst")}
+${linje("dark", "Mørkt")}
+</fieldset>
+\`\`\``
+}
+
 const TEMA = (oppskrift: Oppskrift) => `### Lyst og mørkt
 
 Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil
@@ -182,7 +207,39 @@ og den arves nedover. Et barn kan melde seg ut med \`color-scheme: normal\`,
 men det er en motregel verten aldri ba om å måtte skrive: sto verdien på
 roten, gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele
 siden følge systemet, skriver du \`color-scheme: light dark\` på \`<html>\`
-selv, på samme måte som du selv setter lagrekkefølgen.`
+selv, på samme måte som du selv setter lagrekkefølgen. Unntaket er
+temavelgeren under: bruker du den, setter hvert valg \`color-scheme\` selv.
+
+### La brukeren velge tema
+
+\`fs-theme-control\` på en radioknapp gjør \`value\` til et temavalg. Det er
+ren CSS, uten en linje JavaScript:
+
+${velgerEksempel(oppskrift)}
+
+Valget styrer to ting. Fristils farger kommer fra tokenene, og nettleserens
+**egne** flater fra \`color-scheme\`: \`light\` gir \`light\`, \`dark\` gir \`dark\`, og
+\`auto\` gir \`light dark\`. \`light dark\` er ikke et tema, men beskjeden om at
+siden fungerer i begge, så nettleseren kan velge etter systemet.
+
+«Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten
+blokk treffer ingenting, og da gjelder mediespørringen igjen.
+
+Du skal ikke skrive \`color-scheme\` selv når velgeren er i bruk. En slik
+regel utenfor et lag slår \`@layer fristil\` og låser nettleserens flater til
+systemet mens brukeren har valgt noe annet.
+
+\`light\` og \`dark\` vinner over \`data-theme\` på \`<html>\`, slik at serveren kan
+sende det lagrede valget mens et klikk likevel slår igjennom før svaret er
+tilbake. \`auto\` gjør det ikke: den betyr «ingen overstyring fra meg», så har
+serveren skrevet \`data-theme\`, er det serverens verdi som står. Skal
+«følg systemet» virke med én gang, må det som lagrer valget også fjerne
+attributtet.
+
+To ting den ikke gjør. Den **lagrer ingenting**: send gruppa i et skjema og
+lagre valget i en cookie serveren leser, eller i \`localStorage\`. Og den må
+stå i det **samme treet som \`<html>\`**, siden \`:has()\` ikke ser ut av sitt
+eget tre; en kontroll inne i en skyggerot setter ikke tema på siden.`
 
 const webComponents = (oppskrift: Oppskrift) => `## 4. Web components
 
