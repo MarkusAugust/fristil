@@ -48,7 +48,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
   </TabItem>
 </Tabs>
 
-Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper laster ikke CSS for en dialog. Uten er `fristil.css` det enkleste: én fil, rundt 75 kB, under 10 kB komprimert.
+Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper laster ikke CSS for en dialog. Uten er `fristil.css` det enkleste: én fil på 85 kB, og 11 kB over nettet med gzip.
 
 ## Første komponent
 
@@ -93,7 +93,7 @@ Uten byggverktøy peker du på den bygde fila:
 </script>
 ```
 
-Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et kall på `show()` eller `reportFailure()` i det gapet feiler. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
+Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et metodekall på det i det gapet feiler. Hjelperne `showToast`, `reportFailure`, `reportSuccess`, `extendSession` og `resetSession` venter i stedet på registreringen og utfører kallet når den kommer. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
 
 Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
 
@@ -119,7 +119,7 @@ Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designs
 | `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
 | `@fristil/designsystem/tailwind.css` | Fristils verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
 
-Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `error-summary.css`, `search.css` og `suggestion.css`.
+Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `error-summary.css`, `fieldset.css`, `search.css`, `session-timeout.css` og `suggestion.css`.
 
 Alle web-komponentene trenger et stilark. Ingen av dem bruker shadow DOM, så elementene er alminnelige elementer med systemets klasser, og klassene må lastes på siden.
 

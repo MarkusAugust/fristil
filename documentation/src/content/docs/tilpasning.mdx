@@ -22,7 +22,7 @@ Standarden er å la være: Fristils egne farger er kontrollert mot WCAG AA i beg
 | Du vil | Skriv |
 | --- | --- |
 | Endre én farge | Cella, `--fs-color-accent-fill` |
-| Endre en hel familie | De ni rollene, `--fs-color-accent-surface` til `--fs-color-accent-text-strong` |
+| Endre en hel familie | De ni rollene, `--fs-color-accent-surface` til `--fs-color-accent-content` |
 | Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../eget-tema/), så skrives fila for deg |
 
 Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `fristil-tema`, slik at din egen CSS fortsatt vinner over temaet.
@@ -39,7 +39,7 @@ Skriver du celler selv, er kontrastløftene dine å holde. `fristil sjekk-tema t
 ```
 
 :::caution[Overstyrer du, eier du kontrasten]
-Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--fs-color-accent-fill` brukes for eksempel både som lenkefarge på sideflaten og som knappebakgrunn under `--fs-color-accent-content`.
+Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--fs-color-accent-fill` er for eksempel både knappebakgrunn under `--fs-color-accent-content` og rammefarge på en avkryssingsboks som er huket av.
 :::
 
 ## Lyst og mørkt
@@ -179,12 +179,12 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 | `--fs-spinner-size` | `var(--fs-spacing-6)` |
 | `--fs-spinner-thickness` | `2px` |
 | `--fs-table-cell-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-list-gap` | `var(--fs-spacing-1)` |
+| `--fs-list-gap` | `var(--fs-spacing-1)`, men `var(--fs-spacing-2)` i `divided` |
 | `--fs-tag-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
 | `--fs-tag-radius` | `var(--fs-spacing-1)` |
 | `--fs-avatar-size` | `var(--fs-spacing-10)` |
 | `--fs-avatar-radius` | `var(--fs-spacing-1)` |
-| `--fs-skeleton-height` | `var(--fs-spacing-4)` |
+| `--fs-skeleton-height` | `var(--fs-spacing-4)`, men `var(--fs-spacing-10)` i `circle` |
 | `--fs-skeleton-radius` | `var(--fs-spacing-1)` |
 | `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
 | `--fs-pagination-gap` | `var(--fs-spacing-1)` |
@@ -300,7 +300,7 @@ Uten den linja får du ett av to problemer, avhengig av hvilken import som komme
 | `fristil` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.fs-button` gjør ingenting. |
 | `base`, `fristil`, `utilities` | Begge deler virker |
 
-Dette er testet, ikke antatt: `tilpasning.browser.test.ts` bygger begge tilfellene i hvert sitt dokument og kontrollerer hva knappen faktisk får.
+Det første er testet, ikke antatt: `tilpasning.browser.test.ts` bygger det i sitt eget dokument og kontrollerer hva knappen faktisk får.
 
 Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 

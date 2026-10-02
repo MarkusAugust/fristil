@@ -15,14 +15,16 @@ Dette er kun en proof of concept.
 
 ## Repoet
 
-Bun-monorepo med to workspaces:
+Bun-monorepo med tre workspaces, og ett Gradle-prosjekt ved siden av:
 
 | Workspace | Pakke | Innhold |
 | --- | --- | --- |
 | `designsystem/` | `@fristil/designsystem` | tokens, CSS-komponenter, web components, temageneratoren |
 | `documentation/` | `@fristil/documentation` | Astro 6 + Starlight, demoene og sjekkene av dem |
+| `editor/` | `fristil-vscode` | VS Code-utvidelsen: fullføring, snippets og diagnostikk |
+| `editor-intellij/` | ikke en bun-workspace | IntelliJ-pluginen, bygget med Gradle |
 
-Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som skriver markupen:
+Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som eier DOM-en mens siden lever:
 
 - `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
 - `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.

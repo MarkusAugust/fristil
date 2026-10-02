@@ -77,7 +77,7 @@ fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
 | `data-optional=""` | ` (valgfri)` i dempet farge |
 | `aria-disabled="true"` | Dempet tekstfarge |
 
-Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjemaet. Markerer du begge, må brukeren lese begge for å vite hva som gjelder.
+Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjemaet. Setter du begge, viser systemet bare den ene: det er det samme `::after`, og byggefunksjonen dropper `data-optional` når feltet er påkrevd.
 
 ## Sammen med et felt
 
