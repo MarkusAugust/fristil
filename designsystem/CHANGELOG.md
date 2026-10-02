@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.27.0 (2026-10-02)
+
 ### Lagt til
 
 - **`fs.progress()` og `progress.css`.** En framdriftsstolpe på et ekte
