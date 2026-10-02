@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.26.0 (2026-10-02)
+
 ### Lagt til
 
 - **`.fs-theme-control` lar brukeren velge tema uten JavaScript.** Klassen står
