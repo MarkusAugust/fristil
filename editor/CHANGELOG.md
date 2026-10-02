@@ -3,6 +3,13 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.5.0
+
+- `fs-theme-control` finnes. Klassen kom i pakkens 0.26.0 og lar brukeren velge
+  tema uten JavaScript. Den bor i `tokens.css` og ikke i en komponentmappe, og
+  klasselista leste bare komponentmappene: en gul strek sa at klassen ikke
+  fantes, på markup som var riktig.
+
 ## 0.4.0
 
 Klassene og forklaringene er i takt med pakken igjen.
