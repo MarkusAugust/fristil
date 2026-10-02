@@ -242,7 +242,7 @@ const treff = kommuner.filter((k) => utenTegn(k).includes(utenTegn(sok)))
 </fs-suggestion>
 ```
 
-Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista: `count` og `open` avgjør sammen om «Ingen treff» starter synlig: den vises bare når lista er åpen og `count` er 0.
+Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista. `count` og `open` avgjør sammen om «Ingen treff» starter synlig, og den vises bare når lista er åpen og `count` er 0.
 
 ### Hvem viser «Ingen treff»
 
