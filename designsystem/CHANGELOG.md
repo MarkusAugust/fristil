@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.27.1 (2026-10-03)
+
 ### Rettet
 
 - **Størrelsen på `fristil.css` i regelbøkene.** Tre av dem sa «rundt 75 kB,
