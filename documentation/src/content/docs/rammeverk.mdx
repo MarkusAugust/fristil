@@ -27,6 +27,7 @@ Ingen byggverktøy, ingen pakkebehandler i nettleseren.
   <head>
     <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
     <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/ramme/field/field.css" />
+    <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
   </head>
   <body>
     <form id="skjema">
@@ -264,8 +265,16 @@ Astro bygger HTML-en, Datastar gir den oppførsel, og ingen av delene krever en 
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.3/bundles/datastar.js"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 ></script>
+```
+
+Stilarkene lenkes, siden en nettleser ikke slår opp et pakkenavn:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/field/field.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
 ```
 
 ```html

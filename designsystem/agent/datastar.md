@@ -37,7 +37,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.27.0/dist/fristil.css">
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.3/bundles/datastar.js"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 ></script>
 ```
 

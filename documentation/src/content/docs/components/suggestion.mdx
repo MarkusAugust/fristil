@@ -138,6 +138,10 @@ defineFsSuggestion()
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <script type="module"
+            src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
+
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">

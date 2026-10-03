@@ -44,7 +44,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
     </head>
     ```
 
-    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Serverer du filene fra en CDN som støtter npm-pakker, bruker du stien `@fristil/designsystem/tokens.css` direkte.
+    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Fra en CDN skriver du den virkelige stien i pakken, altså `@fristil/designsystem@VERSJON/src/tokens/tokens.css`. Korte navn som `@fristil/designsystem/tokens.css` er oppføringer i `exports`, og dem er det bare et byggesteg som leser.
   </TabItem>
 </Tabs>
 
