@@ -4,6 +4,7 @@ import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/sr-only.css"
 import FristilLogo from "../components/FristilLogo.astro"
 import "../styles/custom-pages-tailwind.css"
+import sobernetics from "../assets/sobernetics.svg?raw"
 ---
 
 <!DOCTYPE html>
@@ -217,9 +218,39 @@ import "../styles/custom-pages-tailwind.css"
 
   <footer class="border-t border-zinc-800 bg-zinc-900/90 py-10 text-center text-sm text-zinc-300">
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
-      <p>&copy; 2026 Fristil, rammeverksuavhengig designsystem.</p>
+      <p>&copy; 2026 August Søberg-Klyver. Fristil er et rammeverksuavhengig designsystem, utgitt under MIT-lisens.</p>
+      <a class="sobernetics" href="https://sobernetics.no"><Fragment set:html={sobernetics} /></a>
     </div>
   </footer>
   </div>
+<style is:global>
+  /* The Søbernetics mark. Small on purpose, and small is the whole of how it stays quiet: the
+     opacity this first had took it to 3.5:1 against the ground, which is below the contrast
+     required of a link, and on one page left it all but invisible. Subtlety is size, not a
+     washed-out colour.
+
+     The red is Søbernetics' own, set here per theme rather than taken from the host's accent
+     token. Streamlord's accent is a blue, so the mark arrived there wearing Streamlord's colour,
+     and a mark that changes hue per project is not a mark. */
+  .sobernetics {
+    /* The page is always dark, so the mark takes the dark value outright. */
+    --sobernetics-accent: #f44851;
+    display: inline-block;
+    margin-top: 1.25rem;
+    color: var(--fs-color-neutral-text-subtle);
+  }
+
+  .sobernetics:hover,
+  .sobernetics:focus-visible {
+    color: var(--fs-color-neutral-text-strong);
+  }
+
+  .sobernetics svg {
+    display: block;
+    height: 18px;
+    width: auto;
+  }
+
+</style>
 </body>
 </html>

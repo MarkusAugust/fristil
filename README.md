@@ -19,6 +19,29 @@ Dette er kun en proof of concept.
   er `aria-current="step"` og ren CSS, og det hører sammen med
   framdriftsstolpen.
 
+- **`fristil sjekk-side`.** Sjekkene i dette repoet svarer på om Fristil er
+  bygget riktig. Ingen av dem svarer på om en app som bruker Fristil, bruker det
+  riktig, og det er det spørsmålet konsumenten faktisk sitter med. En app kan
+  skrive `class="fs-link"` uten å ha lastet `link.css`, og ingenting sier fra:
+  klassen finnes bare ikke, og elementet faller stille tilbake til nettleserens
+  eget utseende. Den kan sette `data-variant` til en verdi komponenten ikke har.
+  Den kan legge inn et `<fs-field>` uten `<label>`. Alle tre er brudd på løfter
+  bare Fristil kjenner, og derfor er det bare Fristil som kan si fra om dem.
+
+  Kommandoen sjekker en side som allerede er rendret, ikke kildekoden. Det er
+  den eneste måten som er uavhengig av rammeverket: i det øyeblikket det er et
+  DOM, ser React, Astro og en Kotlin-mal like ut, beregnede klassenavn er løst
+  opp, og den beregnede CSS-en kan leses. Statisk analyse av kilden må skrives
+  på nytt for hvert rammeverk, og kan uansett ikke avgjøre kontrast, synlighet
+  eller fokusrekkefølge. Nettlesermaskineriet finnes allerede her:
+  komponenttestene kjører i Chromium, Firefox og WebKit.
+
+  Dette erstatter ikke axe. Generelle WCAG-regler er løst av andre, grundigere
+  enn dette repoet kommer til å gjøre det, og sjekken skal ikke gjenta dem. Det
+  som mangler er reglene et designsystem er alene om å kunne uttale. Skulle
+  formatet en dag bli skrevet av andre enn oss, hører motoren hjemme i sitt eget
+  verktøy. Inntil det skjer, er den en sjekk her.
+
 ## Repoet
 
 Bun-monorepo med tre workspaces, og ett Gradle-prosjekt ved siden av:
@@ -153,3 +176,12 @@ Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og
 ### Sjekkene mot dokumentasjonen
 
 Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
+
+---
+
+<a href="https://sobernetics.no">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/sobernetics-dark.svg">
+    <img alt="Søbernetics" src=".github/sobernetics-light.svg" height="18">
+  </picture>
+</a>
