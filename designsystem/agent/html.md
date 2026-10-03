@@ -42,10 +42,10 @@ Eller fra `node_modules`, hvis du serverer mappa:
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
 ```
 
-`fristil.css` er rundt 75 kB, under 10 kB komprimert, og har alle
-komponentene. Velg den. Alternativet er ett stilark per komponent, og da
-gjelder at `tokens.css` definerer alle variablene, og alle de andre stilarkene
-bygger på den. Den lastes derfor først.
+`fristil.css` er 90 kB, 11 kB komprimert, og har alle komponentene. Velg den.
+Alternativet er ett stilark per komponent, og da gjelder at `tokens.css`
+definerer alle variablene, og alle de andre stilarkene bygger på den. Den
+lastes derfor først.
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.27.0/src/tokens/tokens.css">

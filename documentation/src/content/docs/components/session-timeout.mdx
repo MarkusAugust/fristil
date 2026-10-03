@@ -11,6 +11,7 @@ Dette er tingen hver store organisasjon bygger selv, og gjør feil. Enten kommer
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/session-timeout.css"
 
 defineFsSessionTimeout()
@@ -27,6 +28,7 @@ defineFsSessionTimeout()
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/session-timeout/session-timeout.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
     ```
 
     ```html
@@ -101,6 +103,7 @@ defineFsSessionTimeout()
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/session-timeout/session-timeout.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">

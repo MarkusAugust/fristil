@@ -30,6 +30,7 @@ import {
   malOgSkrift,
   ombrekk,
   PAKKE,
+  SAMLET_STØRRELSE,
   tokenListe,
   VERSJON,
   webTabell,
@@ -344,7 +345,7 @@ Eller fra \`node_modules\`, hvis du serverer mappa:
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
 \`\`\`
 
-\`fristil.css\` er rundt 75 kB, under 10 kB komprimert, og har alle
+\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alle
 komponentene. Velg den. Alternativet er ett stilark per komponent, og da gjelder
 at ${TOKENS_FØRST}
 
@@ -447,7 +448,7 @@ leser markupen din.`,
 \`\`\`
 
 Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene dine.
-\`fristil.css\` er rundt 75 kB, under 10 kB komprimert, og har alt flatet ut
+\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alt flatet ut
 uten \`@import\`, og er det raskeste valget når du lenker.
 
 Vil du bare ha stilarkene sidene faktisk bruker, gjelder at ${TOKENS_FØRST}
@@ -940,7 +941,7 @@ nøyaktig det \`ramme\`-komponentene forventer.`,
 ></script>
 \`\`\`
 
-\`fristil.css\` er rundt 75 kB, under 10 kB komprimert, og har alle
+\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alle
 komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
     markup: `## 5. Et skjema med Datastar
 

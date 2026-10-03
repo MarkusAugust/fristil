@@ -20,6 +20,7 @@ import { elements } from "../src/diagnostics/elements.js"
 import { fs } from "../src/index.js"
 import { ROLES } from "../src/tokens/contract.js"
 import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
+import { byggSamletCss, samletStørrelse } from "./css-samlet.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 
@@ -39,6 +40,20 @@ export const pakke = JSON.parse(
 
 export const VERSJON = pakke.version
 export const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${VERSJON}`
+
+/**
+ * Størrelsen på `fristil.css`, slik regelbøkene oppgir den.
+ *
+ * Tallet sto hardkodet som «rundt 75 kB, under 10 kB komprimert» på tre
+ * linjer i `generate-agent.ts` mens fila var 90 kB og 11 kB komprimert. Fila
+ * bygges derfor i minnet her, av `css-samlet.ts`, som leser de samme
+ * `exports`-oppføringene `bygg:css` skriver den av. Den kan ikke leses fra
+ * `dist/fristil.css`, siden `generate` kjører før `bygg:css` i pakkens bygg.
+ */
+const SAMLET = samletStørrelse(byggSamletCss().css)
+
+/** «90 kB, 11 kB komprimert», slik html, maler og datastar oppgir den. */
+export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB komprimert`
 
 /** Mappa hver komponent ligger i, som avgjør hvem som eier DOM-en. */
 function kategorier(): Map<string, string> {

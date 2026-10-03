@@ -15,6 +15,7 @@ Lages markupen med JavaScript, gir `fs.errorSummary()` boksen klassen, `role="al
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/error-summary.css"
 
 defineFsErrorSummary()
@@ -34,6 +35,7 @@ defineFsErrorSummary()
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/label/label.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/input/input.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
     ```
 
     ```html
@@ -142,6 +144,7 @@ defineFsErrorSummary()
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/error-summary/error-summary.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">

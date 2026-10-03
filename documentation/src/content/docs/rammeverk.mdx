@@ -28,6 +28,7 @@ Ingen byggverktøy, ingen pakkebehandler i nettleseren.
     <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
     <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/ramme/field/field.css" />
     <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
+    <!-- Eller alt i én fil: /node_modules/@fristil/designsystem/dist/fristil.css -->
   </head>
   <body>
     <form id="skjema">
@@ -60,6 +61,7 @@ CSS-komponentene krever ikke engang skriptet:
 ```html
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
+<!-- Eller alt i én fil: /node_modules/@fristil/designsystem/dist/fristil.css -->
 
 <button class="fs-button" data-variant="secondary">Lagre utkast</button>
 ```
@@ -127,6 +129,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     ```tsx
     // main.tsx, kjøres én gang når appen starter
     import { defineFsField } from "@fristil/designsystem/field"
+    import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/field.css"
 
     defineFsField()
@@ -275,6 +278,7 @@ Stilarkene lenkes, siden en nettleser ikke slår opp et pakkenavn:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/field/field.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+<!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 ```
 
 ```html
