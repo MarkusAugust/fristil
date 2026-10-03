@@ -75,12 +75,24 @@ const harTypeScript = Astro.slots.has("ts")
  * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
  * hører i TypeScript-fanen, der det finnes et byggesteg.
  */
-const lenker = importer
-  ?.map(
-    (fil) =>
-      `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
-  )
-  .join("\n")
+const lenker =
+  importer &&
+  [
+    ...importer.map(
+      (fil) =>
+        `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
+    ),
+    /*
+     * Og den ene fila som erstatter dem.
+     *
+     * Lista over er presis, og det er grunnen til at den står: den sier hva
+     * komponenten krever. Men «Kom i gang» anbefaler `fristil.css` til den som
+     * lenker uten byggesteg, og uten denne linja anbefalte de to sidene hver
+     * sin ting. Ingen side oppgir `tailwind.css` i `importer`, som er det
+     * eneste stilarket den samlede fila ikke dekker, så linja er sann overalt.
+     */
+    `<!-- Eller alt i én fil: ${CDN}/${STILARK["fristil.css"]} -->`,
+  ].join("\n")
 
 const importlinjer = importer
   ?.map((fil) => `import "@fristil/designsystem/${fil}"`)

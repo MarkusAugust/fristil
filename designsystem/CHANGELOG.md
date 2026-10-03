@@ -23,6 +23,14 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **Størrelsen på `fristil.css` i regelbøkene.** Tre av dem sa «rundt 75 kB,
+  under 10 kB komprimert» om en fil på 90 kB og 11 kB. Tallet var hardkodet i
+  generatoren; det regnes nå ut av de samme `exports`-oppføringene fila
+  bygges av. `bygg:css` skrev også KiB merket som kB, og telte
+  UTF-16-kodeenheter framfor byte.
+
 ## 0.27.0 (2026-10-02)
 
 ### Lagt til

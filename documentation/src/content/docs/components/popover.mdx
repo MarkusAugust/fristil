@@ -19,6 +19,7 @@ Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og pane
 ```ts
 // main.ts, kjøres én gang når appen starter
 import { defineFsPopover } from "@fristil/designsystem/popover"
+import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/popover.css"
 
 defineFsPopover()
@@ -36,6 +37,7 @@ defineFsPopover()
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
     ```
 
     ```html
@@ -158,6 +160,7 @@ defineFsPopover()
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 
     <div data-signals="{apen: false}">
       <fs-popover

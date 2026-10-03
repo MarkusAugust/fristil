@@ -14,17 +14,27 @@ npm install @fristil/designsystem
 
 Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasser, og ingenting registreres ved import alene, så en side som bare bruker CSS-komponentene tar ikke med noe JavaScript fra pakken. Tailwind-temaet er ren CSS, så pakken krever ingenting av Tailwind.
 
-## Importer tokens
+## Importer stilarkene
 
 `tokens.css` definerer alle CSS-variablene. Alle andre stilark bygger på den, så den lastes først.
 
 <Tabs>
   <TabItem label="Med byggverktøy">
+    Ett stilark per komponent, med `tokens.css` først:
+
     ```js
     // main.js eller main.ts, øverst
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/button.css"
     ```
+
+    Eller alt i én import, uten å velge:
+
+    ```js
+    import "@fristil/designsystem/fristil.css"
+    ```
+
+    `fristil.css` har `tokens.css` og alle komponentstilarkene i seg, så den erstatter hele lista. Tailwind-temaet står utenfor, og hører ikke i en JavaScript-import i det hele tatt: `tailwind.css` er en `@theme`-blokk Tailwinds egen kompilator må lese, og settes opp som en `@import` i din egen CSS. Se [Tailwind](../tailwind/).
   </TabItem>
   <TabItem label="Uten byggverktøy">
     Én fil med alt, én rundtur:
@@ -48,7 +58,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
   </TabItem>
 </Tabs>
 
-Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper laster ikke CSS for en dialog. Uten er `fristil.css` det enkleste: én fil på 85 kB, og 11 kB over nettet med gzip.
+**Lenker du uten byggesteg, bruk `fristil.css`.** Én rundtur på 90 kB, 11 kB over nettet med gzip, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `fristil.css` dekker hver av dem.
 
 ## Første komponent
 
@@ -114,6 +124,7 @@ Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designs
 
 | Import | Innhold |
 | --- | --- |
+| `@fristil/designsystem/fristil.css` | Alt i én fil: tokens og hver komponent, uten `@import`. Ikke Tailwind-temaet |
 | `@fristil/designsystem/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
 | `@fristil/designsystem/<komponent>.css` | Én komponent, med samme navn som siden dens |
 | `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
