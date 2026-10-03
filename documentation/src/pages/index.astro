@@ -224,20 +224,25 @@ import sobernetics from "../assets/sobernetics.svg?raw"
   </footer>
   </div>
 <style is:global>
-  /* The Søbernetics mark. Small on purpose: it says who made this, it is not a headline.
-     The letters take the colour around them and the slashed O takes the accent token, so one
-     file serves both themes. */
+  /* The Søbernetics mark. Small on purpose, and small is the whole of how it stays quiet: the
+     opacity this first had took it to 3.5:1 against the ground, which is below the contrast
+     required of a link, and on one page left it all but invisible. Subtlety is size, not a
+     washed-out colour.
+
+     The red is Søbernetics' own, set here per theme rather than taken from the host's accent
+     token. Streamlord's accent is a blue, so the mark arrived there wearing Streamlord's colour,
+     and a mark that changes hue per project is not a mark. */
   .sobernetics {
+    /* The page is always dark, so the mark takes the dark value outright. */
+    --sobernetics-accent: #f44851;
     display: inline-block;
     margin-top: 1.25rem;
-    color: inherit;
-    opacity: 0.55;
-    transition: opacity 120ms ease;
+    color: var(--fs-color-neutral-text-subtle);
   }
 
   .sobernetics:hover,
   .sobernetics:focus-visible {
-    opacity: 1;
+    color: var(--fs-color-neutral-text-strong);
   }
 
   .sobernetics svg {
@@ -246,11 +251,6 @@ import sobernetics from "../assets/sobernetics.svg?raw"
     width: auto;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .sobernetics {
-      transition: none;
-    }
-  }
 </style>
 </body>
 </html>
