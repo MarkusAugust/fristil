@@ -3,7 +3,7 @@
   "version": "0.27.1",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "license": "MIT",
-  "author": "MarkusAugust",
+  "author": "August Søberg-Klyver",
   "homepage": "https://fristil.netlify.app",
   "repository": {
     "type": "git",
