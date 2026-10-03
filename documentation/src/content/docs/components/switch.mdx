@@ -12,7 +12,7 @@ En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» f
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "switch.css", "label.css"]}
+<Eksempel importer={["tokens.css", "switch.css", "label.css", "help-text.css"]}
   stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <div class="fs-switch-row">
   <input class="fs-switch" type="checkbox" role="switch" id="epost" checked />
@@ -163,6 +163,10 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
   </TabItem>
   <TabItem label="Datastar">
     ```html
+    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <script type="module"
+            src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
+
     <div class="fs-switch-row"
          data-signals="{varsler: false, lagrer: false, status: ''}">
       <input class="fs-switch" type="checkbox" role="switch" id="varsler"
