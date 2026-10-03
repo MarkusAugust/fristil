@@ -136,6 +136,23 @@
     @apply border-r border-zinc-200/80 bg-white/72 dark:border-zinc-800/80 dark:bg-zinc-950/50;
   }
 
+  /*
+   * Under 50rem er menyen et overlegg rett oppå artikkelen, ikke en spalte ved
+   * siden av den. Da må den være ugjennomsiktig.
+   *
+   * Uskarpheten reddet den ikke: `backdrop-filter` står på `.sidebar-content`,
+   * som ikke har noen bakgrunn, mens den gjennomsiktige bakgrunnen står på
+   * `.sidebar-pane`, som ikke har noen uskarphet. Teksten under skinte derfor
+   * gjennom 28 prosent i lyst tema og 50 i mørkt.
+   *
+   * 50rem er Starlights eget brekkpunkt for når menyen blir en spalte.
+   */
+  @media (width < 50rem) {
+    .sidebar-pane {
+      @apply bg-white dark:bg-zinc-950;
+    }
+  }
+
   .sidebar-content {
     @apply gap-4 px-3 py-4 backdrop-blur-sm md:px-4 md:py-5;
   }
