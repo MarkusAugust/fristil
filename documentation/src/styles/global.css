@@ -103,6 +103,19 @@
     @apply bg-transparent;
   }
 
+  /*
+   * Starlight gir `.content-panel` 24 piksler padding over og under. På en
+   * telefon er det det desidert største bidraget til luften rundt
+   * overskriften: målt på 390 piksler kom 24 av 44 over og 24 av 52 under
+   * herfra, mens `.main-pane` og `.sl-container` bidro med 12 og 8.
+   *
+   * Første forsøk på å stramme inn rørte bare de to små tallene, og effekten
+   * var knapt synlig. Fra nettbrett og opp står Starlights verdi.
+   */
+  .content-panel {
+    @apply py-2 md:py-6;
+  }
+
   .page {
     @apply min-h-screen;
   }
@@ -166,7 +179,7 @@
   }
 
   .content-panel + .content-panel {
-    @apply mt-5;
+    @apply mt-3 md:mt-5;
   }
 
   /* Innhold merket .not-content, som forhåndsvisningene av komponenter,
