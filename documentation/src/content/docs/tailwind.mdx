@@ -35,12 +35,12 @@ Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det in
 <head>
   <style>@layer theme, base, fristil, components, utilities;</style>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css" />
   <link rel="stylesheet" href="/statisk/tailwind-bygget.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css" />
 </head>
 ```
 
-En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe.
+En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe, og da er det likegyldig hvilket av de to stilarkene som lastes først.
 
 Temaet med `fs-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får du komponentene og tokenene, men ikke `text-fs-l` og `bg-fs-neutral-canvas`.
 
