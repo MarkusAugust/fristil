@@ -176,3 +176,12 @@ Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og
 ### Sjekkene mot dokumentasjonen
 
 Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
+
+---
+
+<a href="https://sobernetics.no">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/sobernetics-dark.svg">
+    <img alt="Søbernetics" src=".github/sobernetics-light.svg" height="18">
+  </picture>
+</a>

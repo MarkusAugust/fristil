@@ -4,6 +4,7 @@ import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/sr-only.css"
 import FristilLogo from "../components/FristilLogo.astro"
 import "../styles/custom-pages-tailwind.css"
+import sobernetics from "../assets/sobernetics.svg?raw"
 ---
 
 <!DOCTYPE html>
@@ -218,8 +219,38 @@ import "../styles/custom-pages-tailwind.css"
   <footer class="border-t border-zinc-800 bg-zinc-900/90 py-10 text-center text-sm text-zinc-300">
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <p>&copy; 2026 August Søberg-Klyver. Fristil er et rammeverksuavhengig designsystem, utgitt under MIT-lisens.</p>
+      <a class="sobernetics" href="https://sobernetics.no"><Fragment set:html={sobernetics} /></a>
     </div>
   </footer>
   </div>
+<style is:global>
+  /* The Søbernetics mark. Small on purpose: it says who made this, it is not a headline.
+     The letters take the colour around them and the slashed O takes the accent token, so one
+     file serves both themes. */
+  .sobernetics {
+    display: inline-block;
+    margin-top: 1.25rem;
+    color: inherit;
+    opacity: 0.55;
+    transition: opacity 120ms ease;
+  }
+
+  .sobernetics:hover,
+  .sobernetics:focus-visible {
+    opacity: 1;
+  }
+
+  .sobernetics svg {
+    display: block;
+    height: 18px;
+    width: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sobernetics {
+      transition: none;
+    }
+  }
+</style>
 </body>
 </html>
