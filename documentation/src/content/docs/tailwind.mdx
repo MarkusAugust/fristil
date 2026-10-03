@@ -29,9 +29,7 @@ Det er alt. Ingen `tailwind.config.ts`, ingen forhåndsinnstilling som skal impo
 
 ### Når Fristil og Tailwind er to stilark
 
-Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det
-ingen felles inngangsfil å sette linja øverst i. Da hører den i et `<style>`
-som står først i `<head>`, før begge:
+Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det ingen felles inngangsfil å sette linja øverst i. Da hører den i et `<style>` som står først i `<head>`, før begge:
 
 ```html
 <head>
@@ -42,16 +40,9 @@ som står først i `<head>`, før begge:
 </head>
 ```
 
-En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke
-dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities`
-på første linje av sin egen CSS, og Fristils `tokens.css`
-åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge
-rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den
-før noen av filene rekker å erklære noe.
+En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe.
 
-Temaet med `fs-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds
-kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får
-du komponentene og tokenene, men ikke `text-fs-l` og `bg-fs-neutral-canvas`.
+Temaet med `fs-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får du komponentene og tokenene, men ikke `text-fs-l` og `bg-fs-neutral-canvas`.
 
 ## Overstyr en komponent med vanlige klasser
 
