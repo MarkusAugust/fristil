@@ -6,8 +6,10 @@ eksempelet som viser at det virker, ikke temaet.
 
 Hele presentasjonen er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
 ingen server. Åpne fila i en nettleser, eller se den på
-[designsystemarkitetktur.netlify.app](https://designsystemarkitetktur.netlify.app/),
-som bygger fra master ved hver push. `netlify.toml` her sier hvordan: fila
+[fristil-arkitektur.sobernetics.no](https://fristil-arkitektur.sobernetics.no/),
+som bygger fra master ved hver push. Netlify-prosjektet bak heter
+`designsystemarkitetktur`, med skrivefeilen, og
+`designsystemarkitetktur.netlify.app` gir den samme siden. `netlify.toml` her sier hvordan: fila
 kopieres til `index.html`, og det er alt.
 
 ```bash
