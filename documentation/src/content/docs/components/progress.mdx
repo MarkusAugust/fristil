@@ -43,7 +43,7 @@ const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
 if (stolpe) stolpe.value = 64
 ```
 
-Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Byggefunksjonen er for markupen du lager; `fs.setAttributes()` rydder ikke i `value`, siden den lista er felles for alle komponentene og ville strøket `value` fra ethvert felt.
+Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Bruker du `fs.setAttributes(stolpe, fs.progress({ … }))` i stedet, sender du alle valgene på nytt: `fs.progress()` forvalter `value`, `max` og `aria-label`, så et kall uten `label` tar navnet bort, og `max` settes til 100 når du ikke oppgir den.
 
 Se [Typesikker bruk](../../typesikker-bruk/).
 

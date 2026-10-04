@@ -138,7 +138,7 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
       "data-state": invalid ? ("invalid" as const) : undefined,
       disabled: disabled ? (true as const) : undefined,
     }),
-    help: { id: helpId },
+    help: attributes({ id: helpId }),
     error: attributes({
       id: errorId,
       hidden: invalid ? undefined : (true as const),

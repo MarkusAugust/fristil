@@ -52,16 +52,28 @@ egen overskrift «Brytende».
   felt som venter på sitt første søk viser dermed ikke «Ingen treff» før
   brukeren har skrevet noe.
 
+- **`fs.setAttributes` rydder bare det byggefunksjonen selv forvalter.**
+  Før hadde den én felles liste, og `fs.setAttributes(knapp, fs.button())`
+  fjernet `disabled`, `hidden`, `open`, `aria-describedby`, `multiple` og
+  `accept` fra elementet, selv om knappefunksjonen aldri har skrevet noen av
+  dem. En deaktivert knapp ble aktiv, og et åpent `<details>` lukket seg. Nå
+  fjernes et attributt bare når settet kommer fra en byggefunksjon som
+  skriver det: `fs.switch()` kan ta bort `disabled`, `fs.button()` rører det
+  ikke. Regelen går begge veier: har byggefunksjonen et valg for et
+  attributt, eier den det. `fs.spinner()` har `label`, så et kall uten
+  `label` fjerner `role` og `aria-label`, også når du skrev dem for hånd.
+  Det gjorde den ikke før. `id` og `for` fjernes aldri. Det du må gjøre:
+  send valgene på nytt i hvert kall, og skal to sett på samme element, send
+  dem hver for seg, `fs.setAttributes(felt, fs.input(), kobling.control)`,
+  ikke spredd sammen i ett objekt. Et spredd objekt settes riktig, men rydder
+  bare `data-*`, og funksjonen sier fra i konsollen første gang.
+
 ### Lagt til
 
 - **`pending` i `fs.suggestion()`.** Holder «Ingen treff» skjult mens svaret
   på et søk er underveis.
 
 ### Rettet
-
-- **`fs.setAttributes` fjernet `type` fra elementet.** `fs.setAttributes(knapp,
-  fs.button())` strøk `type="submit"`. `fs.input()` skriver alltid `type`, så
-  den trengte aldri å ryddes, og den er tatt ut av lista.
 
 - **En dialog styrt av React-tilstand lot seg ikke lukke i React 19.** React
   skriver `el.open = undefined` når en prop går fra `true` til borte, og
