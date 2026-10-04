@@ -12,9 +12,12 @@
  *
  * Lista er lukket, og `setAttributes` rydder bare i disse. Konsumentens egne
  * attributter, som `data-testid` og hva det måtte være, røres ikke.
+ *
+ * `type` står ikke her. `fs.input()` skriver den alltid, så den trenger
+ * aldri å ryddes, og med den i lista strøk `fs.setAttributes(knapp,
+ * fs.button())` `type="submit"` fra knappen.
  */
 const SYSTEM_ATTRIBUTES = [
-  "type",
   "data-variant",
   "data-state",
   "data-color",

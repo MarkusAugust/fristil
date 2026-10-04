@@ -1,5 +1,5 @@
 import { defineElement, HostElement, whenUpgraded } from "../../host-element.js"
-import { TOAST_CLASS, TOAST_CLOSE_CLASS } from "./toast.js"
+import { TOAST_CLASS, TOAST_CLOSE_CLASS, TOAST_MESSAGE_CLASS } from "./toast.js"
 
 export const FS_TOAST_TAG = "fs-toast" as const
 
@@ -76,6 +76,9 @@ export class FsToast extends HostElement {
     // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
     // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
     // får en region skjermleseren forstår.
+    // Klassen bærer plasseringen. Den settes her også, så en region uten
+    // byggefunksjon, eller registrert under et annet navn, havner i hjørnet.
+    this.classList.add(TOAST_CLASS)
     if (!this.hasAttribute("role")) this.setAttribute("role", "status")
     if (!this.hasAttribute("aria-live")) {
       this.setAttribute("aria-live", "polite")
@@ -106,7 +109,7 @@ export class FsToast extends HostElement {
     } = options
 
     const toast = document.createElement("div")
-    toast.className = TOAST_CLASS
+    toast.className = TOAST_MESSAGE_CLASS
     // En ukjent farge gir ingen kant, framfor et `data-color` uten regel.
     if (isToastColor(color) && color !== "neutral") toast.dataset.color = color
 
@@ -183,7 +186,7 @@ export class FsToast extends HostElement {
 
   /** Fjerner alle meldingene. */
   clear(): void {
-    for (const toast of this.querySelectorAll(`.${TOAST_CLASS}`)) {
+    for (const toast of this.querySelectorAll(`.${TOAST_MESSAGE_CLASS}`)) {
       toast.remove()
     }
   }

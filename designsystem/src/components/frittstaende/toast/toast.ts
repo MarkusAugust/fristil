@@ -1,6 +1,14 @@
 import { attributes } from "../../css/shared.js"
 
+/**
+ * Klassen på verten, altså regionen meldingene ligger i.
+ *
+ * Fram til 0.28.0 var dette klassen på hver melding, og regionen ble stylet
+ * med elementnavnet. Registrert under et annet navn, med
+ * `defineFsToast("min-toast")`, mistet den da plasseringen sin.
+ */
 export const TOAST_CLASS = "fs-toast" as const
+export const TOAST_MESSAGE_CLASS = "fs-toast__message" as const
 export const TOAST_CLOSE_CLASS = "fs-toast__close" as const
 
 export type ToastOptions = {
@@ -10,13 +18,14 @@ export type ToastOptions = {
 
 export type ToastAttributes = {
   host: {
+    class: typeof TOAST_CLASS
     role: "status"
     "aria-live": "polite"
     "aria-atomic": "false"
     "aria-label": string
     "data-ignore-morph": ""
   }
-  toast: { class: typeof TOAST_CLASS }
+  message: { class: typeof TOAST_MESSAGE_CLASS }
   close: { class: typeof TOAST_CLOSE_CLASS }
 }
 
@@ -36,6 +45,7 @@ export const toast = ({
   label = "Varsler",
 }: ToastOptions = {}): ToastAttributes => ({
   host: attributes({
+    class: TOAST_CLASS,
     role: "status" as const,
     "aria-live": "polite" as const,
     // `status` er atomisk som standard, og da leses hele stabelen opp på
@@ -44,6 +54,6 @@ export const toast = ({
     "aria-label": label,
     "data-ignore-morph": "" as const,
   }),
-  toast: { class: TOAST_CLASS },
+  message: { class: TOAST_MESSAGE_CLASS },
   close: { class: TOAST_CLOSE_CLASS },
 })

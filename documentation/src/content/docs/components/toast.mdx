@@ -38,7 +38,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     ```
 
     ```html
-    <fs-toast id="meldinger" role="status" aria-live="polite"
+    <fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
               aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
@@ -168,7 +168,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
     <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 
-    <fs-toast id="meldinger" role="status" aria-live="polite"
+    <fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
               aria-atomic="false"
               aria-label="Meldinger" data-ignore-morph></fs-toast>
 
@@ -204,7 +204,7 @@ const varsler = fs.toast({ label: "Meldinger" })
 | Sett | Hvilken del | Hvem skriver den |
 | --- | --- | --- |
 | `varsler.host` | Beholderen, altså `<fs-toast>` | **Du**, én gang i appen |
-| `varsler.toast` | Selve meldingen | Komponenten, når du kaller `show()` |
+| `varsler.message` | Selve meldingen | Komponenten, når du kaller `show()` |
 | `varsler.close` | Lukkeknappen i meldingen | Komponenten |
 
 Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet du skriver:
@@ -213,14 +213,14 @@ Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet
 <fs-toast {...varsler.host} />
 ```
 
-Sprer du hele `varsler`, setter du tre attributter som heter `host`, `toast` og `close`, og ingen av dem er noe nettleseren kjenner. Beholderen står da uten `role="status"` til `defineFsToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
+Sprer du hele `varsler`, setter du tre attributter som heter `host`, `message` og `close`, og ingen av dem er noe nettleseren kjenner. Beholderen står da uten `role="status"` til `defineFsToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
 
-De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
+De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast__message` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
 
 Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Ren HTML» og «Datastar» gjør:
 
 ```html
-<fs-toast id="meldinger" role="status" aria-live="polite"
+<fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
           aria-atomic="false"
           aria-label="Meldinger" data-ignore-morph></fs-toast>
 ```
@@ -262,7 +262,8 @@ Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvitteri
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-toast` | Én melding. Fargen kommer fra `data-color`. |
+| `.fs-toast` | Regionen meldingene ligger i, altså verten. Den bærer plasseringen i hjørnet |
+| `.fs-toast__message` | Én melding. Fargen kommer fra `data-color`. |
 | `.fs-toast__close` | Lukkeknappen |
 
 | Variabel | Standard |

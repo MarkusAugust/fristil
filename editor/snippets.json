@@ -104,7 +104,7 @@
   "fs-toast": {
     "prefix": "fs-toast",
     "body": [
-      "<fs-toast id=\"meldinger\" role=\"status\" aria-live=\"polite\"",
+      "<fs-toast id=\"meldinger\" class=\"fs-toast\" role=\"status\" aria-live=\"polite\"",
       "          aria-atomic=\"false\"",
       "          aria-label=\"Meldinger\" data-ignore-morph></fs-toast>",
       "",

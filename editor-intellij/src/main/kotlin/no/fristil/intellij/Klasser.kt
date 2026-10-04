@@ -76,6 +76,7 @@ internal val KLASSER: List<Klasse> =
     Klasse("fs-session-timeout__count", "Session Timeout", "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.", "https://fristil.sobernetics.no/components/session-timeout/"),
     Klasse("fs-session-timeout__actions", "Session Timeout", "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.", "https://fristil.sobernetics.no/components/session-timeout/"),
     Klasse("fs-toast", "Toast", "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.", "https://fristil.sobernetics.no/components/toast/"),
+    Klasse("fs-toast__message", "Toast", "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.", "https://fristil.sobernetics.no/components/toast/"),
     Klasse("fs-toast__close", "Toast", "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.", "https://fristil.sobernetics.no/components/toast/"),
     Klasse("fs-theme-control", "Tilpasning", "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.", "https://fristil.sobernetics.no/tilpasning/"),
   )

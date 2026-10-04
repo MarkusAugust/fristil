@@ -77,6 +77,19 @@
     color: var(--fs-color-neutral-text-subtle);
   }
 
+  /* Tommeldingen følger lista: er lista lukket, vises den ikke. Regelen står
+     i stilarket og ikke i komponenten, fordi appen eier tommeldingen når den
+     filtrerer selv, og ikke vet om lista er åpen. Den vet bare om søket ga
+     noe. Tommeldingen må stå etter lista, som søsken. */
+  .fs-suggestion__list[hidden] ~ .fs-suggestion__empty {
+    display: none;
+  }
+
+  /* Før registreringen er lista skjult med regelen over, uten `hidden`. */
+  fs-suggestion:not(:defined) .fs-suggestion__empty {
+    display: none;
+  }
+
   /* Høykontrast: markeringen vises bare med bakgrunn og tekstfarge, som
      modusen bytter ut. Systemfargene gir forskjellen tilbake. */
   @media (forced-colors: active) {

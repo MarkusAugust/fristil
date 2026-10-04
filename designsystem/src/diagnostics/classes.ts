@@ -263,7 +263,7 @@ export const classes: Classes = {
     "attributes": {
       "data-variant": {
         "values": [
-          "default",
+          "strong",
           "success",
           "warning"
         ],
@@ -742,6 +742,13 @@ export const classes: Classes = {
     "attributes": {}
   },
   "fs-toast": {
+    "component": "toast",
+    "title": "Toast",
+    "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
+    "link": "https://fristil.sobernetics.no/components/toast/",
+    "attributes": {}
+  },
+  "fs-toast__message": {
     "component": "toast",
     "title": "Toast",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",

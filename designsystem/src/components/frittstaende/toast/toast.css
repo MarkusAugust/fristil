@@ -1,5 +1,9 @@
 @layer fristil {
-  fs-toast {
+  /* Elementnavnet og klassen. Navnet holder plasseringen når en morfing
+     eller et `className` fra React river klassen bort, og klassen bærer den
+     når komponenten er registrert under et annet navn. */
+  fs-toast,
+  .fs-toast {
     /* Beholderen ligger fast i hjørnet og slipper klikk gjennom, så den ikke
        stenger for knapper under seg når den er tom. */
     position: fixed;
@@ -16,7 +20,7 @@
     pointer-events: none;
   }
 
-  .fs-toast {
+  .fs-toast__message {
     box-sizing: border-box;
     display: flex;
     align-items: flex-start;
@@ -35,15 +39,15 @@
     pointer-events: auto;
   }
 
-  .fs-toast[data-color="success"] {
+  .fs-toast__message[data-color="success"] {
     border-inline-start-color: var(--fs-color-success-text);
   }
 
-  .fs-toast[data-color="warning"] {
+  .fs-toast__message[data-color="warning"] {
     border-inline-start-color: var(--fs-color-warning-text);
   }
 
-  .fs-toast[data-color="danger"] {
+  .fs-toast__message[data-color="danger"] {
     border-inline-start-color: var(--fs-color-danger-text);
   }
 

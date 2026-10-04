@@ -26,7 +26,7 @@ describe("fs-help-text", () => {
   beforeEach(() => {
     document.body.innerHTML = `
       <p id="muted" class="fs-help-text">Muted help</p>
-      <p id="default" class="fs-help-text" data-variant="default">Default help</p>
+      <p id="strong" class="fs-help-text" data-variant="strong">Strong help</p>
       <p id="success" class="fs-help-text" data-variant="success">Success help</p>
       <p id="warning" class="fs-help-text" data-variant="warning">Warning help</p>
     `
@@ -38,8 +38,8 @@ describe("fs-help-text", () => {
     expect(help.color).toBe(farge("--fs-color-neutral-text-subtle"))
   })
 
-  it("applies default variant", () => {
-    const help = css("default")
+  it("applies strong variant", () => {
+    const help = css("strong")
 
     expect(help.color).toBe(farge("--fs-color-neutral-text-strong"))
   })
@@ -64,7 +64,7 @@ describe("fs-help-text tilgjengelighet", () => {
       <input class="fs-input" id="a11y-kid" inputmode="numeric" aria-describedby="a11y-kid-hjelp" />
       <p class="fs-help-text" id="a11y-kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
 
-      <p class="fs-help-text" data-variant="default">Endringen gjelder fra neste månedsskifte.</p>
+      <p class="fs-help-text" data-variant="strong">Endringen gjelder fra neste månedsskifte.</p>
       <p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
       <p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
     `)

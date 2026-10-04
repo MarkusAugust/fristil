@@ -342,7 +342,7 @@ await pa("toast", "demo-toast", "fs-toast", async (side, id) => {
     const ko = rot?.querySelector("fs-toast")
     return {
       rolle: ko?.getAttribute("role") ?? "",
-      meldinger: rot?.querySelectorAll(".fs-toast").length ?? 0,
+      meldinger: rot?.querySelectorAll(".fs-toast__message").length ?? 0,
       lukkeknapp: rot?.querySelectorAll(".fs-toast__close").length ?? 0,
     }
   }, id)
@@ -350,7 +350,7 @@ await pa("toast", "demo-toast", "fs-toast", async (side, id) => {
   krev(svar.rolle === "status", "regionen er ikke en status-region")
   krev(svar.meldinger === 1, `et klikk ga ${svar.meldinger} meldinger`)
   krev(svar.lukkeknapp === 1, "meldingen har ingen lukkeknapp")
-  await synligIBoksen(side, id, ".fs-toast")
+  await synligIBoksen(side, id, ".fs-toast__message")
 })
 
 await pa(
