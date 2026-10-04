@@ -6,6 +6,8 @@ Rammeverksuavhengig designsystem for web: tokens, CSS-komponenter og web compone
 
 Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire miljøer, ligger på **[fristil.sobernetics.no](https://fristil.sobernetics.no/)**.
 
+**Kodeagenter** finner reglene på [fristil.sobernetics.no/llms.txt](https://fristil.sobernetics.no/llms.txt), med én regelbok per miljø under [`/agent/`](https://fristil.sobernetics.no/kodeagenter/). De samme regelbøkene ligger i pakken, i `node_modules/@fristil/designsystem/agent/`.
+
 ## Installasjon
 
 ```bash

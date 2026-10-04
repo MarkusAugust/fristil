@@ -4,6 +4,8 @@ Fristil er en proof of concept for et rammeverksuavhengig designsystem for web. 
 
 **Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.sobernetics.no/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
 
+**Kodeagenter** finner reglene på [fristil.sobernetics.no/llms.txt](https://fristil.sobernetics.no/llms.txt), med én regelbok per miljø under [`/agent/`](https://fristil.sobernetics.no/kodeagenter/). De samme regelbøkene ligger i pakken, i `node_modules/@fristil/designsystem/agent/`.
+
 ## Status
 
 Dette er kun en proof of concept.
