@@ -1,4 +1,5 @@
-# Presentasjonen på designsystemarkitetktur.netlify.app.
+# Presentasjonen på fristil-arkitektur.sobernetics.no, som er domenet til
+# Netlify-prosjektet designsystemarkitetktur.
 #
 # Det er et eget Netlify-prosjekt, med denne mappa som basemappe, og det
 # bygger fra master på hver push, som dokumentasjonen. Ingenting kompileres:

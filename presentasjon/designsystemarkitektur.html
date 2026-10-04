@@ -270,6 +270,20 @@ a { color: var(--azure-30); }
 }
 
 .merke-blaa { background: var(--azure-10); color: var(--azure-100); }
+/*
+ * Merket på forsiden er for langt til én linje på en telefon, og brukket over
+ * to linjer ble pillen en stor blå boks. På smal skjerm er det en vanlig
+ * tekstlinje, som kapittelmerket. Teksten står urørt, fordi sjekk-versjon.ts
+ * leser versjonen og datoen derfra.
+ */
+@media (max-width: 860px) {
+  .forside-merke {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    color: var(--azure-30);
+  }
+}
 .merke-gronn { background: var(--forest-10); color: var(--forest-100); }
 .merke-gul { background: var(--ochre-10); color: var(--ochre-100); }
 .merke-roed { background: var(--burgundy-10); color: var(--burgundy-100); }
@@ -515,7 +529,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · Fristil 0.28.0 · 4. oktober 2026</span>
+  <span class="merke merke-blaa forside-merke">Designsystemarkitektur · Fristil 0.28.0 · 4. oktober 2026</span>
   <div class="tittel-topp">
     <h1>Arkitektur for et designsystem uten rammeverk</h1>
   </div>
