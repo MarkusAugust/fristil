@@ -1,12 +1,35 @@
+import { readdirSync } from "node:fs"
+import sitemap from "@astrojs/sitemap"
 import startlight from "@astrojs/starlight"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
+import pakke from "../designsystem/package.json" with { type: "json" }
 import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
 import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
 
+/*
+ * Sitemapen tar bare med HTML-sidene av seg selv. `llms.txt` og
+ * regelbøkene er nettopp det en agent leter etter, så de føres opp her.
+ * Regelbøkene leses av mappa, slik at en ny bok kommer med uten at noen
+ * husker det.
+ */
+const BASE = pakke.homepage.replace(/\/$/, "")
+const AGENTFILER = [
+  `${BASE}/llms.txt`,
+  ...readdirSync(new URL("../designsystem/agent/", import.meta.url))
+    .filter((fil) => fil.endsWith(".md"))
+    .map((fil) => `${BASE}/agent/${fil}`),
+]
+
 // https://astro.build/config
 export default defineConfig({
+  /*
+   * Adressen står i `homepage` i pakken, som `llms.txt` og `robots.txt` også
+   * leser. Med `site` satt lager Starlight sitemapen selv, og den er det
+   * søkemotorer og agenter finner sidene gjennom.
+   */
+  site: pakke.homepage,
   /*
    * `markdown.remarkPlugins` er merket som utfaset til fordel for
    * `markdown.processor`. Den veien virker ikke her: sidene er `.mdx`, og
@@ -22,8 +45,22 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [
+    // Står foran Starlight, som da lar være å legge til sin egen.
+    sitemap({ customPages: AGENTFILER }),
     startlight({
       title: "Fristil - Dokumentasjon",
+      // Pekeren til llms.txt på hver side, for en agent som leser sidehodet.
+      head: [
+        {
+          tag: "link",
+          attrs: {
+            rel: "alternate",
+            type: "text/plain",
+            href: "/llms.txt",
+            title: "llms.txt",
+          },
+        },
+      ],
       defaultLocale: "root",
       locales: {
         root: { label: "Norsk", lang: "nb" },

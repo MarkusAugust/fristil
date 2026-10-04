@@ -52,7 +52,7 @@ import { setAttributes } from "./dom.js"
 /**
  * Hele komponent-API-et på ett sted.
  *
- * Hver komponent er en funksjon som tar et valgobjekt og returnerer
+ * Hver komponent er en funksjon som tar et objekt med valg og returnerer
  * attributtene du sprer inn i elementet:
  *
  * ```ts
