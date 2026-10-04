@@ -1874,7 +1874,7 @@ fs.input({ type: "email", state: "invalid" })
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Skriver du <code>fs.button({ variant: "sekundr" })</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du i stedet sjekke ved kjøring, med <code>fs.button.isVariant("sekundr")</code>.</p>
+  <p style="margin-block-start: 1rem;">Skriver du feil, for eksempel <code>variant: "secondry"</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du sjekke verdien ved kjøring med <code>fs.button.isVariant()</code>.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Får typene uten å installere et rammeverk, og uten at noen har skrevet en komponent for akkurat deres rammeverk.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må holde de lovlige verdiene, typene og CSS-en i takt. En verdi som ikke gjør noe, er verre enn ingen verdi.</span></p>
