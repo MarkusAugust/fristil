@@ -24,7 +24,7 @@ til mappa.
 
 ## Hva den sier
 
-Trettifire lysbilder om hva som kreves og hvorfor, ikke om hvordan vi kom
+Trettifem lysbilder om hva som kreves og hvorfor, ikke om hvordan vi kom
 dit. Et publikum trenger ikke vite hva vi prøvde først, bare hva som gjelder
 og hva det er godt for.
 
@@ -82,7 +82,7 @@ full skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
 Testet i Chromium på 1440×900, 1280×800, 820 og 375 piksler bredt: ingen av de
-trettifire lysbildene kan dras sidelengs, og ingen av dem ruller inne i kortet.
+trettifem lysbildene kan dras sidelengs, og ingen av dem ruller inne i kortet.
 
 Grafen er det strammeste lysbildet og tåler ikke en linje til. En egen blokk
 med datoen for målingen fikk det til å rulle 15 piksler på 1280, og datoen ble

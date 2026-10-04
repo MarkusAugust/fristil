@@ -537,7 +537,7 @@ tr:last-child td { border-block-end: none; }
   <p>Dette er syv krav et designsystem må oppfylle for å slippe det. For hvert av dem: hva det går ut på og hva det koster. Ingen av dem er gratis, og prisen står nederst på lysbildene.</p>
   <p>Alt hviler på denne ene setningen:</p>
   <div class="boks">
-    <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som sender den. Oppførselen eies av komponenten.</strong></p>
+    <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen eies av den som rendrer den. Oppførselen eies av komponenten.</strong></p>
   </div>
   <p class="dempet" style="margin-block-start: 1rem;">Det gjennomgående eksempelet er Fristil, et designsystem bygget etter disse kravene og publisert på <a href="https://fristil.sobernetics.no/" target="_blank" rel="noreferrer">fristil.sobernetics.no</a> og på npm som <code>@fristil/designsystem</code>.</p>
 </section>
@@ -548,8 +548,8 @@ tr:last-child td { border-block-end: none; }
   <p>Rammeverk kommer og går. Et designsystem som er bundet til ett av dem, må skrives om hver gang rammeverket skifter retning. Skal det stå igjen når appene rundt byttes ut, må det bygge på det nettleseren allerede forstår.</p>
   <ol>
     <li><strong>Nettleseren er plattformen.</strong> Komponentene er CSS-klasser og web components, og virker likt i React, i Astro, i ren HTML og med en server skrevet i Kotlin.</li>
-    <li><strong>Serveren eier markupen.</strong> Serveren skriver klasser og koblinger, og komponenten tar seg av tastatur, fokus og posisjonering. De to overlapper ikke.</li>
-    <li><strong>Tilgjengeligheten skrives ett sted.</strong> Den samme funksjonen regner ut koblingene, enten serveren kaller den eller komponenten gjør det i nettleseren.</li>
+    <li><strong>Den som rendrer, eier markupen.</strong> Den som rendrer, med CSR eller SSR, skriver klasser og koblinger, og komponenten tar seg av tastatur, fokus og posisjonering. De to overlapper ikke.</li>
+    <li><strong>Tilgjengeligheten skrives ett sted.</strong> Den samme funksjonen regner ut koblingene, enten den kalles der markupen rendres, eller av komponenten i nettleseren.</li>
     <li><strong>DOM-en er fasiten.</strong> Komponenten leser tilstanden fra markupen, og har ingen egen kopi av den.</li>
     <li><strong>Typene virker uten rammeverk.</strong> Byggefunksjonene er vanlige TypeScript-funksjoner, og editoren kjenner valgene.</li>
     <li><strong>Konsumentens CSS vinner.</strong> En vanlig regel skrevet av teamet slår systemets, uten <code>!important</code>.</li>
@@ -575,7 +575,7 @@ tr:last-child td { border-block-end: none; }
       <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
             stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
       <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
-      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg><div><strong>Serveren eier markupen</strong><span>5 lysbilder</span></div></li>
+      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg><div><strong>Den som rendrer, eier markupen</strong><span>6 lysbilder</span></div></li>
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fokontrakt)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gokontrakt)"/>
       <rect x="26" y="45" width="20" height="14" rx="4" fill="#1362ae" stroke="#9ccff2" stroke-width="2.2"/>
       <path d="M20 17 v10 a6 6 0 0 0 6 6 h4 a6 6 0 0 1 6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
@@ -1230,11 +1230,12 @@ tr:last-child td { border-block-end: none; }
             stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
       <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
       <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg>
-    <h2>Serveren eier markupen, komponenten eier oppførselen</h2>
+    <h2>Den som rendrer, eier markupen</h2>
   </div>
-  <p class="ingress">Den som sender HTML-en, bestemmer hva som står der. Komponenten fester tastaturstyring, fokus og koblinger på den og legger aldri til noder eller attributter serveren eier. Av samme grunn ligger den ikke i en shadow root.</p>
+  <p class="ingress">Med CSR er det rammeverket i nettleseren, med SSR er det serveren, og ofte er det begge. Komponenten fester tastaturstyring, fokus og koblinger på markupen og legger aldri til noder eller attributter i markup andre har rendret. Av samme grunn bruker den ikke shadow DOM.</p>
   <ol class="kapittelliste">
-      <li>Hva serverrendring krever av en komponent</li>
+      <li>Tre måter å rendre på</li>
+      <li>Det strengeste tilfellet: SSR med morfing</li>
       <li>De to lagene</li>
       <li>Tre kategorier, og ett spørsmål</li>
       <li>To veier til den samme kontrakten</li>
@@ -1244,9 +1245,38 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 11 -->
 <section class="lysbilde">
-  <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
-  <h2>Hva serverrendring krever av en komponent</h2>
-  <p>Systemet skal virke i apper som bygger HTML-en på serveren, det som kalles serverrendring (SSR). Når en slik app oppdaterer noe, sender serveren den samme biten HTML på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Nedenfor står de to linjene i Datastar som gjør det, og de er grunnen til at systemet er bygget som det er.</p>
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
+  <h2>Tre måter å rendre på</h2>
+  <p>Et designsystem må virke uansett hvor markupen rendres. Det finnes tre tilfeller, og de fleste team jobber med det første.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="merke merke-blaa">CSR</span>
+      <p>Rammeverket i nettleseren rendrer fra JSON. Endrer dataene seg, rendrer React treffene på nytt, og noder en web component har lagt inn, kan bli kastet.</p>
+      <pre>const svar = await fetch("/api/treff")
+setTreff(await svar.json())</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gronn">SSR</span>
+      <p>Serveren rendrer HTML. Ved en oppdatering sender den HTML-en på nytt, og et bibliotek som Datastar morfer den inn. Attributter som ikke sto i det serveren sendte, blir fjernet.</p>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gul">Begge</span>
+      <p>Serveren rendrer først, React hydrerer, og så rendrer React i nettleseren. Markupen må være lik begge steder, ellers melder React avvik.</p>
+    </div>
+  </div>
+  <div class="boks" style="margin-block-start: 1.1rem;">
+    <p style="margin: 0;"><strong>I alle tre rendrer noen andre enn komponenten DOM-en på nytt.</strong> Komponenten kan derfor ikke eie noe av markupen.</p>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-fristil">I Fristil</span><span><code>&lt;fs-suggestion&gt;</code> leser markeringen fra <code>aria-selected</code> og antall treff fra lista, så den virker også når React rendrer treffene på nytt etter et asynkront søk.</span></p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
+  <h2>Det strengeste tilfellet: SSR med morfing</h2>
+  <p>Med SSR bygges HTML-en på serveren. Når siden oppdateres, sender serveren den biten av HTML-en på nytt, og et bibliotek fletter den inn i siden. Det kalles morfing, på engelsk <i>DOM morphing</i>. Nedenfor står de to linjene i Datastar som gjør det, og de er grunnen til at systemet er bygget som det er.</p>
 <style>
 /*
  * Morfingen, steg for steg.
@@ -1600,22 +1630,22 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;">Nødutgangen er <code>data-preserve-attr</code>, som HTML-malen på serveren må fylle med navnene på alt komponenten har satt. Endres det komponenten setter, må hver mal endres i takt, uten at noen kompilator sier fra. Et designsystem kan derfor ikke bygge på den.</p>
   <p style="margin-block-start: 1rem;">Har en komponent lagt til <code>aria-describedby</code> i nettleseren, er det borte ved neste oppdatering, og skjermleseren mister koblingen uten at noe sier fra. React har det samme i en annen form: rendres foreldrekomponenten på nytt, kan noder en web component har lagt inn, bli kastet bort. Derfor:</p>
   <div class="boks">
-    <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter i den delen av DOM-en som serveren eier.</strong></p>
+    <p style="margin: 0;"><strong>En komponent skal aldri legge til noder eller attributter i markup som noen andre rendrer.</strong></p>
   </div>
-  <p style="margin-block-start: 1rem;">Hver komponent skal virke i en app med serverrendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastar er den strengeste, og det som holder der, holder i de andre. Kravet nevner likevel ikke noe rammeverk: det komponenten har satt, skal overleve at attributter blir fjernet.</p>
+  <p style="margin-block-start: 1rem;">Datastar er det strengeste av de tre, og det som virker der, virker også i TanStack Start og React Server Components. Kravet nevner likevel ikke noe rammeverk: det komponenten har satt, skal overleve at attributter blir fjernet.</p>
 </section>
 
-<!-- 12 -->
+<!-- 13 -->
 <section class="lysbilde">
-  <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
   <h2>De to lagene</h2>
-  <p>Regelen på forrige lysbilde deler systemet i to lag: det serveren skriver, og det nettleseren gjør etterpå. Delingen er nødvendig fordi en oppdatering river bort attributter og noder som ikke sto i det serveren sendte, mens hendelseslyttere blir stående. De to lagene overlapper derfor ikke: en byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
+  <p>Regelen på forrige lysbilde deler systemet i to lag: det som rendres, og det komponenten gjør etterpå. Delingen er nødvendig fordi en ny rendring kan rive bort attributter og noder komponenten har lagt til, mens hendelseslyttere blir stående. De to lagene overlapper derfor ikke: en byggefunksjon setter aldri en hendelseslytter, og en komponent setter aldri et attributt på noe serveren eier.</p>
   <div class="tabellrull">
   <table>
     <thead><tr><th>Lag</th><th>Innhold</th><th>Hvem produserer det</th></tr></thead>
     <tbody>
-      <tr><td>Byggefunksjonene</td><td>Klasser, <code>data-*</code>, tilgjengelighetskoblingen</td><td>Serveren, i hvilket som helst språk</td></tr>
-      <tr><td>Web components</td><td>Tastatur, fokus, posisjonering</td><td>Nettleseren, etter at HTML-en står der</td></tr>
+      <tr><td>Byggefunksjonene</td><td>Klasser, <code>data-*</code>, tilgjengelighetskoblingen</td><td>Den som rendrer: rammeverket i nettleseren eller en server skrevet i hvilket som helst språk</td></tr>
+      <tr><td>Web components</td><td>Tastatur, fokus, posisjonering</td><td>Komponenten i nettleseren, etter at markupen står der</td></tr>
     </tbody>
   </table>
   </div>
@@ -1625,11 +1655,11 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 13 -->
+<!-- 14 -->
 <section class="lysbilde">
-  <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
   <h2>Tre kategorier, og ett spørsmål</h2>
-  <p>I en app med serverrendring skriver serveren all HTML uansett, så hvilken kategori en komponent hører til, handler ikke om det. Den handler om <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
+  <p>Med SSR skriver serveren all HTML, og med CSR gjør rammeverket det. Hvilken kategori en komponent hører til, handler derfor ikke om hvem som skriver HTML-en. Den handler om <strong>hvem som eier DOM-en mens siden lever</strong>.</p>
   <div class="rader tre">
     <div class="boks">
       <span class="merke merke-blaa">Bare CSS</span>
@@ -1639,7 +1669,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     </div>
     <div class="boks">
       <span class="merke merke-gronn">Ramme</span>
-      <p>Serveren eier markupen. Komponenten lytter og rører verken noder eller attributter.</p>
+      <p>Den som rendrer, eier markupen. Komponenten lytter og rører verken noder eller attributter.</p>
       <pre>&lt;fs-field&gt;
   &lt;label&gt;…&lt;/label&gt;
   &lt;input class="fs-input"&gt;
@@ -1653,13 +1683,13 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
   <p style="margin-block-start: 1.1rem;">Én setning avgjør hvor en komponent havner.</p>
   <div class="boks">
-    <p style="margin: 0;"><strong>En komponent som sender en verdi med skjemaet, eller som har innhold serveren må sende, kan ikke eie sin egen markup.</strong> Den er en ramme.</p>
+    <p style="margin: 0;"><strong>En komponent som sender en verdi med skjemaet eller har innhold som må komme fra den som rendrer, kan ikke eie sin egen markup.</strong> Den er en ramme.</p>
   </div>
 </section>
 
-<!-- 14 -->
+<!-- 15 -->
 <section class="lysbilde">
-  <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
   <h2>To veier til den samme kontrakten</h2>
   <p>Det avgjørende er om koden som lager markupen, <strong>kan kalle en funksjon</strong>. Hvor den kjører, spiller ingen rolle.</p>
   <div class="rader to">
@@ -1673,7 +1703,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   &lt;p {...felt.help}&gt;Vi sender aldri spam&lt;/p&gt;
 &lt;/div&gt;
 
-<i>// Koblingen står i markupen serveren sendte.</i>
+<i>// Koblingen står i markupen fra første rendring.</i>
 <i>// Komponenten trengs ikke.</i></pre>
     </div>
     <div>
@@ -1695,14 +1725,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 15 -->
+<!-- 16 -->
 <section class="lysbilde">
-  <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
+  <p class="kapittelmerke">Krav 2 av 7 · Den som rendrer, eier markupen</p>
   <h2>Det komponenten får skrive</h2>
-  <p>Regelen sier at komponenten aldri legger til noe på serverens DOM. Likevel setter <code>&lt;fs-field&gt;</code>, i eksempelet på forrige lysbilde, <code>id</code>, <code>for</code> og <code>aria-describedby</code> på serverens elementer. Det henger sammen fordi alt komponenten skriver, er regnet ut fra det serveren sendte.</p>
+  <p>Regelen sier at komponenten aldri legger til noe i markup andre har rendret. Likevel setter <code>&lt;fs-field&gt;</code> fra forrige lysbilde <code>id</code>, <code>for</code> og <code>aria-describedby</code> på slike elementer. Det henger sammen fordi alt komponenten skriver, er regnet ut fra det som ble rendret.</p>
   <ul>
-    <li><strong>Den leser før den skriver.</strong> Id-en hentes fra feltet eller fra ledetekstens <code>for</code>, og id-er serveren selv har lagt i <code>aria-describedby</code>, blir med i svaret.</li>
-    <li><strong>Den sammenligner før den skriver.</strong> Står den samme verdien der fra før, skriver den ingenting. Har serveren skrevet hele koblingen selv, endrer komponenten ingenting.</li>
+    <li><strong>Den leser før den skriver.</strong> Id-en hentes fra feltet eller fra ledetekstens <code>for</code>, og id-er som ble rendret i <code>aria-describedby</code>, blir med i svaret.</li>
+    <li><strong>Den sammenligner før den skriver.</strong> Står den samme verdien der fra før, skriver komponenten ingenting. Er hele koblingen rendret fra før, endrer komponenten ingenting.</li>
     <li><strong>Den husker hva den selv skrev, og på hvilken node.</strong> Bare det kan den sette tilbake når en oppdatering river det bort. En id den har laget, kommer tilbake som den samme id-en.</li>
   </ul>
   <p class="kodetittel"><span class="fristil-merke">Fristil</span>Hjelperen all skriving går gjennom, forenklet</p>
@@ -1711,12 +1741,12 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 }</pre>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Kan skrive så mye eller så lite av koblingen som de vil.</span></p>
-    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må holde rede på hva komponenten selv har skrevet, node for node. Ellers kan den ikke skille sitt eget fra serverens.</span></p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må bygge komponenten slik at den holder rede på hva den selv har skrevet, node for node. Ellers kan den ikke skille sitt eget fra det som ble rendret.</span></p>
     <p><span class="rolle rolle-fristil">I Fristil</span><span>Minnet er et <code>WeakMap</code> med noden som nøkkel. Fanene, dialogen og de andre er strengere enn feltet: der skriver komponenten bare attributter som mangler.</span></p>
   </div>
 </section>
 
-<!-- 16 -->
+<!-- 17 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 3 av 7</span>
   <div class="kapittel-topp">
@@ -1728,29 +1758,29 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       <circle cx="52" cy="15" r="3.4" fill="#cde1f9"/></svg>
     <h2>Tilgjengeligheten skrives ett sted, og nås fra to</h2>
   </div>
-  <p class="ingress">Reglene for hvordan et skjemafelt kobles sammen for en skjermleser, finnes ett sted i koden, og både serveren og komponenten bruker den samme koden.</p>
+  <p class="ingress">Reglene for hvordan et skjemafelt kobles sammen for en skjermleser, finnes ett sted i koden, og både byggefunksjonen og komponenten bruker den samme koden.</p>
   <ol class="kapittelliste">
       <li>Én funksjon, to innganger</li>
   </ol>
 </section>
 
-<!-- 17 -->
+<!-- 18 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 3 av 7 · Tilgjengeligheten skrives ett sted</p>
   <h2>Én funksjon, to innganger</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
   <p class="kodetittel"><span class="fristil-merke">Fristil</span>ramme/field/field-core.ts</p>
   <pre>computeFieldAttributes(...)
-   ├── fs.field()      <i>← serveren kaller den direkte</i>
+   ├── fs.field()      <i>← kalles der markupen rendres</i>
    └── &lt;fs-field&gt;      <i>← komponenten kaller den på elementer som står i DOM-en</i></pre>
   <p style="margin-block-start: 1rem;">Endres kontrakten, endres den der, ikke i komponenten. Det svarer også på spørsmålet som alltid kommer: <em>Skal ikke hver server skrive dette selv?</em> Den dagen hver server må gjøre det selv, er det et designsystem bare for JavaScript, med en manuell reserve for alle andre, og det er reserven som ryker først.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Får den samme koblingen enten markupen lages i React, i en Go-mal eller for hånd.</span></p>
-    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må skrive kontrakten som en ren funksjon uten DOM, slik at både en server og en komponent kan kalle den.</span></p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må skrive kontrakten som en ren funksjon uten DOM, slik at både koden som rendrer, og en komponent kan kalle den.</span></p>
   </div>
 </section>
 
-<!-- 18 -->
+<!-- 19 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 4 av 7</span>
   <div class="kapittel-topp">
@@ -1761,22 +1791,22 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       <rect x="42" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/></svg>
     <h2>DOM-en er fasiten</h2>
   </div>
-  <p class="ingress">Finnes tilstanden i markupen, leser komponenten den derfra. Den holder aldri en egen kopi av noe serveren også kan skrive, og den setter tilbake det en oppdatering river bort.</p>
+  <p class="ingress">Finnes tilstanden i markupen, leser komponenten den derfra. Den holder aldri en egen kopi av noe som også rendres, og den setter tilbake det en ny rendring river bort.</p>
   <ol class="kapittelliste">
-      <li>Når serveren river bort det komponenten satte</li>
+      <li>Når en ny rendring river bort det komponenten satte</li>
       <li>Komponenten skal aldri regne ut det den kan lese</li>
       <li>Komponenten sier fra når markupen ikke henger sammen</li>
   </ol>
 </section>
 
-<!-- 19 -->
+<!-- 20 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
-  <h2>Når serveren river bort det komponenten satte</h2>
-  <p>En oppdatering fjerner det serveren ikke sendte. Komponenten vet hva den selv har regnet ut og skriver det inn igjen med én gang. Malen trenger derfor ikke vite noe om hva komponenten gjør:</p>
+  <h2>Når en ny rendring river bort det komponenten satte</h2>
+  <p>En ny rendring kan fjerne det komponenten satte: morfingen stryker attributtet, og React kan bytte ut noden. Komponenten vet hva den selv har regnet ut og skriver det inn igjen med én gang. Den som rendrer, trenger derfor ikke vite noe om hva komponenten gjør:</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Malen, i et hvilket som helst språk</p>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen, rendret med CSR eller SSR</p>
       <pre>&lt;fs-field&gt;
   &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
   &lt;input class="fs-input" type="email"&gt;
@@ -1785,26 +1815,26 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
       <p class="dempet" style="margin-block-start: 0.6rem;">Ingen id-er, ingen <code>for</code>, ingen <code>aria-describedby</code> og ingen liste over hva som må bevares. Komponenten setter koblingen og setter den tilbake hver gang den forsvinner.</p>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Vil serveren eie tilstanden selv</p>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Skal den som rendrer, eie tilstanden alene</p>
       <pre>&lt;fs-field server-controlled&gt;</pre>
-      <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, og komponenten reparerer ingenting. Da er det serverens utgave som gjelder, hver gang.</p>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på verten, og komponenten reparerer ingenting. Da gjelder det som ble rendret, hver gang. Navnet sier server, men attributtet gjelder like mye for CSR.</p>
     </div>
   </div>
   <p style="margin-block-start: 1rem;"><strong>Har komponenten regnet ut attributtet, kan den regne det ut på nytt. Har brukeren gjort noe, vet komponenten hva det var, for den var til stede da det skjedde.</strong> Det er det som gjør reparasjonen mulig.</p>
-  <p>Det flimrer ikke, og det er testet. Oppdateringen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren rekker ikke å tegne imellom. Serverens utgave står i DOM-en et øyeblikk uten at noen ser den.</p>
+  <p>Det flimrer ikke, og det er testet. Morfingen fjerner attributtet, observatøren setter det tilbake i samme mikrotask, og nettleseren rekker ikke å tegne imellom. Den rendrede utgaven står i DOM-en et øyeblikk uten at noen ser den.</p>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må sammenligne før hver skriving. Skriver komponenten den samme verdien på nytt, utløser observatøren seg selv, og testkjøringen henger i stedet for å feile.</span></p>
   </div>
 </section>
 
-<!-- 20 -->
+<!-- 21 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
-  <p>Serveren og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe serveren også kan skrive, finnes svaret to steder, og da er det bare et spørsmål om tid før de to blir uenige.</p>
-  <p>At et felt er ugyldig, står som <code>aria-invalid</code> på kontrollen. Leser komponenten det derfra, er den alltid enig med serveren. Leser den i stedet sitt eget attributt på verten, vil den før eller siden fjerne et svar serveren nettopp skrev: i React som en hydreringsfeil, i Datastar som en feilmelding på et gyldig felt.</p>
+  <p>Den som rendrer, og komponenten ser på den samme siden. Holder komponenten sin egen utgave av noe som også rendres, finnes tilstanden to steder, og da er det bare et spørsmål om tid før de to blir uenige.</p>
+  <p>At et felt er ugyldig, står som <code>aria-invalid</code> på kontrollen. Leser komponenten det derfra, er den alltid enig med rendringen. Leser den i stedet sitt eget attributt på verten, vil den før eller siden fjerne noe som nettopp ble rendret. I React viser det seg som en hydreringsfeil, i Datastar som en feilmelding på et gyldig felt.</p>
   <div class="boks">
-    <p style="margin: 0;"><strong>Finnes tilstanden i markupen, skal komponenten lese den derfra.</strong> En komponent skal aldri ha en parallell utgave av noe serveren også kan skrive.</p>
+    <p style="margin: 0;"><strong>Finnes tilstanden i markupen, skal komponenten lese den derfra.</strong> En komponent skal aldri ha en parallell utgave av noe som også rendres.</p>
   </div>
   <p style="margin-block-start: 1rem;">Hvilken fane som er valgt, leses derfor fra <code>aria-selected</code> og ikke fra et eget attributt. Når komponenten både leser og skriver et attributt, må den også vite hvem som satte det.</p>
   <div class="boks">
@@ -1813,7 +1843,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="dempet" style="margin-block-start: 1rem;">Uten det gir den samme markupen to ulike svar, alt etter hvilke tilstander verten har hatt før.</p>
 </section>
 
-<!-- 21 -->
+<!-- 22 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
@@ -1835,7 +1865,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
   <p style="margin-block-start: 1rem;">En advarsel som slår falsk alarm, blir ignorert innen en uke. Tre valg gjør at denne er til å stole på:</p>
   <ul>
-    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i biter, så et øyeblikk uten ledetekst er helt normalt. Komponenten ser etter en gang til og sier bare fra hvis det fortsatt er galt.</li>
+    <li><strong>Den venter til siden har falt til ro.</strong> HTML fra en server kommer i biter, og et rammeverk kan rendre i flere omganger, så et øyeblikk uten ledetekst er helt normalt. Komponenten ser etter en gang til og sier bare fra hvis det fortsatt er galt.</li>
     <li><strong>Samme melding hver gang.</strong> Et tall i meldingen, som i «Fant 3 faner, men 1 panel», gjør den til en ny melding for hvert panel, og den ene advarselen blir til tjue.</li>
     <li><strong>Den peker på den egentlige feilen.</strong> Sprettoppvinduet finner knappen sin ved å slå opp panelets id. Mangler id-en, skal meldingen si det, og ikke at knappen mangler. Ellers leter utvikleren på feil sted.</li>
   </ul>
@@ -1844,7 +1874,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 22 -->
+<!-- 23 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 5 av 7</span>
   <div class="kapittel-topp">
@@ -1863,7 +1893,7 @@ en skjermleser leser det opp uten navn.</pre>
   </ol>
 </section>
 
-<!-- 23 -->
+<!-- 24 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 5 av 7 · Typene virker uten rammeverk</p>
   <h2>Ett objekt inn, attributter ut</h2>
@@ -1895,7 +1925,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 24 -->
+<!-- 25 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 6 av 7</span>
   <div class="kapittel-topp">
@@ -1911,7 +1941,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 25 -->
+<!-- 26 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Laget som gjør det mulig</h2>
@@ -1940,7 +1970,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 26 -->
+<!-- 27 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 7 av 7</span>
   <div class="kapittel-topp">
@@ -1957,7 +1987,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 27 -->
+<!-- 28 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 7 av 7 · Teamet kan ta over koden</p>
   <h2>Når systemet ikke strekker til</h2>
@@ -1975,7 +2005,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 28 -->
+<!-- 29 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-gul">Kapittel 8</span>
   <div class="kapittel-topp">
@@ -1993,7 +2023,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 29 -->
+<!-- 30 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>React 19 og web components</h2>
@@ -2010,7 +2040,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 30 -->
+<!-- 31 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Serveren og hydreringen</h2>
@@ -2031,7 +2061,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 31 -->
+<!-- 32 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Før komponenten er registrert</h2>
@@ -2039,14 +2069,14 @@ fs.input({ type: "email", state: "invalid" })
   <ul>
     <li><strong>Registrer ved import, aldri i en effekt.</strong> En <code>useEffect</code> kjører etter første tegning. Kaller appen en metode på elementet før det, får den «reportSuccess is not a function».</li>
     <li><strong>Et imperativt kall må vente på registreringen.</strong> En hjelpefunksjon som venter på <code>customElements.whenDefined()</code> for elementets eget tagnavn, gjør rekkefølgen likegyldig. Den sier fra i konsollen hvis det tar for lang tid.</li>
-    <li><strong>Flimmeret før registreringen løses i CSS.</strong> <code>:not(:defined)</code> gjelder til komponenten er registrert. Med den kan stilarket vise bare det første panelet, framfor at serveren må skrive <code>hidden</code> på resten.</li>
+    <li><strong>Flimmeret før registreringen løses i CSS.</strong> <code>:not(:defined)</code> gjelder til komponenten er registrert. Med den kan stilarket vise bare det første panelet, så den som rendrer, slipper å skrive <code>hidden</code> på resten.</li>
   </ul>
   <div class="perspektiv">
     <p><span class="rolle rolle-fristil">I Fristil</span><span><code>defineFs()</code> registrerer alle ni, og <code>showToast</code>, <code>reportFailure</code> og de andre imperative kallene venter selv.</span></p>
   </div>
 </section>
 
-<!-- 32 -->
+<!-- 33 -->
 <section class="lysbilde">
   <h2>Et skjemafelt, med og uten JavaScript</h2>
   <p>Slik ser det ut for den som bruker et designsystem bygget etter de syv kravene. Eksempelet er Fristil. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
@@ -2079,11 +2109,11 @@ defineFsField()
   </div>
 </section>
 
-<!-- 33 -->
+<!-- 34 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det virker</h2>
   <p><strong>Førstelinja</strong> er et spill bygget med Fristil, i tre utgaver: Kotlin med Datastar, React med TanStack Start og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som spiller i en annen utgave.</p>
-  <p>Den er også en stresstest. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server oppdaterer siden. Demoen er stedet der komponenten og serveren faktisk møtes.</p>
+  <p>Den er også en stresstest. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server eller React rendrer siden på nytt. TanStack Start-utgaven rendrer i nettleseren fra JSON, slik en vanlig CSR-app gjør, og de to andre rendrer på serveren.</p>
   <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over nettverket, lest ut av trafikken</p>
   <div class="tabellrull">
   <table>
@@ -2102,7 +2132,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 34 -->
+<!-- 35 -->
 <section class="lysbilde">
   <h2>Sjekkliste for ditt eget designsystem</h2>
   <p class="ingress">Ett spørsmål per krav, og ett per felle. Kan du svare ja på alle, har systemet det som skal til.</p>
@@ -2111,8 +2141,8 @@ defineFsField()
       <h3>Kravene</h3>
       <ol>
         <li>Ser en knapp riktig ut før et eneste skript har kjørt?</li>
-        <li>Overlever det komponenten har satt, en morfing fra serveren?</li>
-        <li>Finnes tilgjengelighetskoblingen ett sted, og bruker både serveren og komponenten den?</li>
+        <li>Overlever det komponenten har satt, en ny rendring, både med CSR og med SSR?</li>
+        <li>Finnes tilgjengelighetskoblingen ett sted, og bruker både byggefunksjonen og komponenten den?</li>
         <li>Leser komponenten tilstanden fra markupen, og ikke fra en egen kopi?</li>
         <li>Får en utvikler uten React autofullføring og røde streker for valgene?</li>
         <li>Vinner teamets egen CSS over systemets uten <code>!important</code>?</li>
@@ -2204,7 +2234,7 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-// Adressen rettes etter klemmingen, så #lysbilde-99 blir #lysbilde-34.
+// Adressen rettes etter klemmingen, så #lysbilde-99 blir #lysbilde-35.
 // replaceState utløser ikke hashchange, så det gir ingen sløyfe.
 window.addEventListener("hashchange", () => vis(fraAdressen()))
 
