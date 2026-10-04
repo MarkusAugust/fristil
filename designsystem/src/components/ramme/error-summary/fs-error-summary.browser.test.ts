@@ -432,3 +432,36 @@ describe("fs-error-summary mens brukeren retter", () => {
     expect(document.activeElement, "andre innsending").toBe(boks)
   })
 })
+
+describe("fs-error-summary og en prosentkodet lenke", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  it("finner feltet og sier ikke at lenken er brutt", async () => {
+    const advarsler: string[] = []
+    const ekte = console.warn
+    console.warn = (...deler: unknown[]) => {
+      advarsler.push(String(deler[0]))
+    }
+    try {
+      monter(
+        `<fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+          <ul><li><a href="#f%C3%B8dselsdato">Skriv en dato som finnes</a></li></ul>
+        </fs-error-summary>
+        <label for="fødselsdato">Fødselsdato</label><input id="fødselsdato" />`,
+      )
+      await tegn()
+      await ventPaTegning()
+      await ventPaTegning()
+
+      expect(advarsler.filter((a) => a.includes("lenken peker"))).toEqual([])
+
+      ;(document.querySelector("fs-error-summary a") as HTMLElement).click()
+      expect(document.activeElement?.id).toBe("fødselsdato")
+    } finally {
+      console.warn = ekte
+    }
+  })
+})

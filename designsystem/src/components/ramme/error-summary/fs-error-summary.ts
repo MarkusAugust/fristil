@@ -38,6 +38,15 @@ export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
  * </fs-error-summary>
  * ```
  */
+/** Dekoder et fragment, og gir det tilbake urørt hvis det ikke er gyldig. */
+function decodeFragment(fragment: string): string {
+  try {
+    return decodeURIComponent(fragment)
+  } catch {
+    return fragment
+  }
+}
+
 export class FsErrorSummary extends HostElement {
   static observedAttributes = ["data-autofocus", "hidden"] as const
 
@@ -211,9 +220,16 @@ export class FsErrorSummary extends HostElement {
    * annen komponent, finner `document.getElementById` ingenting, og lenken
    * blir en vanlig ankerlenke uten fokusflytting.
    */
-  private resolveTarget(id: string): HTMLElement | null {
+  private resolveTarget(raw: string): HTMLElement | null {
     const root = this.getRootNode() as Document | ShadowRoot
-    return root.getElementById?.(id) ?? document.getElementById(id)
+    // En lenke til et felt med æ, ø eller å i id-en er gjerne prosentkodet,
+    // `#f%C3%B8dselsdato`. Nettleseren dekoder den når lenken følges, så
+    // oppslaget må gjøre det samme, ellers meldes en lenke som virker.
+    for (const id of new Set([raw, decodeFragment(raw)])) {
+      const target = root.getElementById?.(id) ?? document.getElementById(id)
+      if (target) return target
+    }
+    return null
   }
 
   private handleLinkClick = (event: Event): void => {

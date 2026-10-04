@@ -46,4 +46,14 @@
       background-image: none;
     }
   }
+
+  /* Høykontrast: flaten og skimmeret er bakgrunner, og begge tvinges til
+     sideflatens farge. Uten en kant var plassholderen usynlig. */
+  @media (forced-colors: active) {
+    .fs-skeleton {
+      border: 1px solid GrayText;
+      animation: none;
+      background-image: none;
+    }
+  }
 }

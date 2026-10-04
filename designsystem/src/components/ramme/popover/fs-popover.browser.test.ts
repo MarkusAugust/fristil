@@ -1,6 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -468,5 +469,85 @@ describe("fs-popover når React skriver egenskapen", () => {
     expect(document.getElementById("panel")?.matches(":popover-open")).toBe(
       false,
     )
+  })
+})
+
+describe("fs-popover inne i en modal dialog", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  it("lukker bare vinduet ved Escape, ikke dialogen", async () => {
+    monter(`
+      <dialog id="dialog">
+        <fs-popover ${attr(BOKS.host)}>
+          <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+          <div ${attr(BOKS.panel)}><button type="button">Arkiver</button></div>
+        </fs-popover>
+      </dialog>`)
+    await customElements.whenDefined("fs-popover")
+    const dialog = document.getElementById("dialog") as HTMLDialogElement
+    const vert = document.querySelector("fs-popover") as FsPopover
+    dialog.showModal()
+    vert.show()
+    await ventPaTegning()
+    expect(vert.open).toBe(true)
+
+    // Et ekte tastetrykk: en syntetisk hendelse lukker aldri en dialog, så
+    // bare dette viser at dialogen faktisk overlever.
+    ;(document.querySelector("#panel button") as HTMLElement).focus()
+    await userEvent.keyboard("{Escape}")
+    await ventPaTegning()
+
+    expect(vert.open, "vinduet ble ikke lukket").toBe(false)
+    expect(dialog.open, "Escape lukket dialogen også").toBe(true)
+    dialog.close()
+  })
+
+  it("stopper ikke Escape som kommer fra et annet sted enn vinduet", async () => {
+    // En dialog åpnet oppå et åpent vindu skal lukkes av sitt eget trykk.
+    monter(`
+      <fs-popover ${attr(BOKS.host)}>
+        <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+        <div ${attr(BOKS.panel)}>Innhold</div>
+      </fs-popover>
+      <button type="button" id="annet">Annet</button>`)
+    await customElements.whenDefined("fs-popover")
+    const vert = document.querySelector("fs-popover") as FsPopover
+    vert.show()
+    await ventPaTegning()
+
+    const trykk = new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    })
+    document.getElementById("annet")?.dispatchEvent(trykk)
+
+    expect(trykk.defaultPrevented).toBe(false)
+    expect(vert.open, "vinduet lukkes fortsatt").toBe(false)
+  })
+
+  it("rører ikke Escape når vinduet er lukket", async () => {
+    monter(`
+      <fs-popover ${attr(BOKS.host)}>
+        <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+        <div ${attr(BOKS.panel)}>Innhold</div>
+      </fs-popover>
+      <button type="button" id="annet">Annet</button>`)
+    await customElements.whenDefined("fs-popover")
+    await ventPaTegning()
+    const annet = document.getElementById("annet") as HTMLElement
+    annet.focus()
+
+    const trykk = new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    })
+    annet.dispatchEvent(trykk)
+
+    expect(trykk.defaultPrevented).toBe(false)
+    expect(document.activeElement, "fokus ble flyttet til knappen").toBe(annet)
   })
 })

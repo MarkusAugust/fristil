@@ -59,3 +59,24 @@ describe("fs-pagination", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("fs-pagination med en deaktivert «Neste»", () => {
+  it("gir span-en samme boks som lenkene, og deaktivert farge", () => {
+    monter(`
+      <nav class="fs-pagination" aria-label="Sider">
+        <ul>
+          <li><a href="#" id="lenke">2</a></li>
+          <li><span aria-disabled="true" id="neste">3</span></li>
+        </ul>
+      </nav>
+    `)
+    const boks = (id: string) =>
+      (document.getElementById(id) as HTMLElement).getBoundingClientRect()
+    const farge = (id: string) =>
+      getComputedStyle(document.getElementById(id) as HTMLElement).color
+
+    expect(boks("neste").height).toBe(boks("lenke").height)
+    expect(boks("neste").width).toBeGreaterThanOrEqual(boks("lenke").width)
+    expect(farge("neste")).not.toBe(farge("lenke"))
+  })
+})

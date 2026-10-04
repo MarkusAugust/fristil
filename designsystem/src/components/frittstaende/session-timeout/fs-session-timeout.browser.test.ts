@@ -458,3 +458,39 @@ describe("fs-session-timeout: opplesning og flytting", () => {
     expect(dialog().matches(":modal")).toBe(true)
   })
 })
+
+describe("fs-session-timeout når warn-at heves mens varselet står", () => {
+  beforeAll(() => {
+    defineFsSessionTimeout()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("lar nedtellingen gå videre", async () => {
+    monter(`<fs-session-timeout ${attr(KORT)}></fs-session-timeout>`)
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(4)
+    const tall = () => dialog().textContent?.match(/\d+:\d+/)?.[0]
+    const for_ = tall()
+
+    document.querySelector("fs-session-timeout")?.setAttribute("warn-at", "12")
+    await gaFram(3)
+
+    expect(dialog().open).toBe(true)
+    expect(tall(), "tallet frøs").not.toBe(for_)
+  })
+})

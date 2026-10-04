@@ -65,3 +65,17 @@ describe("fs-card", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("fs-card som knapp", () => {
+  it("har samme skrift som et kort som er en lenke", () => {
+    // En <button> arver ikke skriften, og kortet hadde 13 piksler.
+    monter(`
+      <a class="fs-card" data-interactive href="#"><p id="i-lenke">Tekst</p></a>
+      <button class="fs-card" data-interactive type="button"><p id="i-knapp">Tekst</p></button>
+    `)
+    const skrift = (id: string) =>
+      getComputedStyle(document.getElementById(id) as HTMLElement).fontSize
+
+    expect(skrift("i-knapp")).toBe(skrift("i-lenke"))
+  })
+})

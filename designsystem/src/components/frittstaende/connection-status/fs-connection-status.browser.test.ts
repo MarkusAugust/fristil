@@ -309,3 +309,23 @@ describe("fs-connection-status ute av dokumentet og inn igjen", () => {
     expect(linje()?.dataset.state).toBe("offline")
   })
 })
+
+describe("fs-connection-status når teksten byttes mens linja står", () => {
+  beforeAll(() => {
+    defineFsConnectionStatus()
+  })
+
+  it("viser den nye teksten", async () => {
+    monter("<fs-connection-status></fs-connection-status>")
+    await customElements.whenDefined("fs-connection-status")
+    const status = document.querySelector(
+      "fs-connection-status",
+    ) as FsConnectionStatus
+    status.reportFailure()
+    await ventPaTegning()
+
+    status.setAttribute("offline-text", "Ingen kontakt med serveren.")
+
+    expect(linje()?.textContent).toBe("Ingen kontakt med serveren.")
+  })
+})

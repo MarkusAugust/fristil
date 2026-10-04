@@ -12,8 +12,11 @@
     font-size: var(--font-size-m);
   }
 
+  /* `span[aria-disabled]` er «Neste» på siste side: ikke en lenke, men den
+     skal ha samme boks, ellers hopper rekka når den byttes inn. */
   .fs-pagination a,
-  .fs-pagination button {
+  .fs-pagination button,
+  .fs-pagination span[aria-disabled="true"] {
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
@@ -63,7 +66,8 @@
   }
 
   .fs-pagination button:disabled,
-  .fs-pagination [aria-disabled="true"] {
+  .fs-pagination [aria-disabled="true"],
+  .fs-pagination span[aria-disabled="true"] {
     color: var(--fs-color-disabled-text);
     cursor: not-allowed;
   }

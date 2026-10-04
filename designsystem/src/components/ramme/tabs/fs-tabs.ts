@@ -114,6 +114,16 @@ export class FsTabs extends HostElement {
   private selectedMemory = new WeakMap<Element, Word>()
   private hiddenMemory = new WeakMap<Element, Word>()
   /**
+   * Id-en komponenten selv skrev i `aria-controls` på en fane.
+   *
+   * `aria-controls` og panelets `id` er den samme opplysningen. Byttet en
+   * patch ut panelet med en ny node, sto fanens halvdel igjen og pekte på en
+   * id som ikke fantes: det nye panelet fikk verken id, rolle eller `hidden`.
+   * Er pekeren komponentens egen, hører panelet på samme plass til fanen, og
+   * får den samme id-en tilbake.
+   */
+  private controlsByMe = new WeakMap<Element, string>()
+  /**
    * Fanen brukeren klikket under `server-controlled`, til serveren svarer.
    *
    * Det er ikke brukerens valg i betydningen `chosenTab`: det settes aldri
@@ -315,18 +325,38 @@ export class FsTabs extends HostElement {
    * panel utenfor ligger likevel ikke i det komponenten observerer, så river
    * en patch `hidden` av det, kommer det ikke tilbake av seg selv.
    *
-   * Rekkefølgen er reserve bare for markup **uten** `aria-controls`. Står
+   * Rekkefølgen er reserve for markup **uten** `aria-controls`. Står
    * attributtet der og peker på ingenting, er svaret ingenting, og
    * komponenten sier fra. Falt den tilbake på rekkefølgen også da, kunne to
    * faner få det samme panelet, og de to skrev motsatt `hidden` på det i
    * hver eneste runde: observatøren kalte seg selv, og siden frøs.
+   *
+   * Ett unntak: pekeren er komponentens egen, og panelet på samme plass er
+   * ledig, altså uten at noen annen fane peker på det. Da er panelet byttet
+   * ut med en ny node. Er det fjernet, har de andre panelene rykket fram,
+   * og plassen er en annen fanes: da er svaret fortsatt ingenting.
    */
   private panelFor(tab: HTMLElement, index: number): HTMLElement | null {
     const id = tab.getAttribute("aria-controls")
     if (id === null) return this.ownPanels[index] ?? null
 
     const root = this.getRootNode() as Document | ShadowRoot
-    return root.getElementById?.(id) ?? null
+    const panel = root.getElementById?.(id) ?? null
+    // Peker komponentens egen `aria-controls` på ingenting, er panelet
+    // byttet ut. Da gjelder rekkefølgen, som da koblingen ble laget.
+    if (!panel && this.controlsByMe.get(tab) === id) {
+      const candidate = this.ownPanels[index] ?? null
+      const taken =
+        candidate !== null &&
+        candidate.id !== "" &&
+        this.tabs.some(
+          (other) =>
+            other !== tab &&
+            other.getAttribute("aria-controls") === candidate.id,
+        )
+      return taken ? null : candidate
+    }
+    return panel
   }
 
   /** En fane som ikke kan velges, verken med mus eller tastatur. */
@@ -403,14 +433,27 @@ export class FsTabs extends HostElement {
         setAttr(panel, "role", "tabpanel")
         this.roledByMe.add(panel)
       }
+      const mine = this.controlsByMe.get(tab)
+      const stale =
+        mine !== undefined && tab.getAttribute("aria-controls") === mine
       if (!panel.id) {
+        // Det nye panelet får id-en fanen alt peker på, når pekeren er
+        // komponentens egen. Da skifter den ikke under en skjermleser.
+        // Husket på noden, så en senere morfing som river begge halvdelene
+        // også gir den samme tilbake.
+        if (stale) this.ids.set(panel, mine)
         setAttr(panel, "id", this.rememberedId(panel, "fs-tabs-panel"))
+      } else if (stale && panel.id !== mine) {
+        // Serveren ga det nye panelet en id. Da er det den som gjelder.
+        setAttr(tab, "aria-controls", panel.id)
+        this.controlsByMe.set(tab, panel.id)
       }
       // Panelet får fokus når det ikke har noe å fokusere på selv, ellers
       // hopper Tab rett forbi innholdet som nettopp ble vist.
       if (!panel.hasAttribute("tabindex")) setAttr(panel, "tabindex", "0")
       if (!tab.hasAttribute("aria-controls")) {
         setAttr(tab, "aria-controls", panel.id)
+        this.controlsByMe.set(tab, panel.id)
       }
       if (!panel.hasAttribute("aria-labelledby")) {
         setAttr(panel, "aria-labelledby", tab.id)
@@ -551,6 +594,9 @@ export class FsTabs extends HostElement {
     const tabs = this.tabs
     const current = tabs.indexOf(event.currentTarget as HTMLButtonElement)
     if (current < 0) return
+    // Alt+venstrepil er «tilbake» i nettleseren, og Cmd+pil flytter i
+    // historikken på macOS. Med en modifikator er tasten ikke fanenes.
+    if (event.altKey || event.ctrlKey || event.metaKey) return
 
     // I en side som leses fra høyre står neste fane til venstre. Uten dette
     // flyttet høyrepil fokus visuelt bakover.

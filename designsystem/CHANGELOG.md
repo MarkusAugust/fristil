@@ -126,6 +126,28 @@ egen overskrift «Brytende».
 - **Lenkene til dokumentasjonen peker på `fristil.sobernetics.no`.**
   `homepage` i pakken, regelbøkene, `web-types.json` og lenkene diagnostikken
   skriver ut brukte `fristil.netlify.app`.
+- **Byttet en patch ut et panel i `<fs-tabs>`, sto fanen og pekte på en id
+  som ikke fantes.** Det nye panelet fikk verken id, rolle eller `hidden`.
+  Det får nå den samme id-en fanen alt peker på. `<fs-suggestion>` gjør det
+  samme for feltet og lista: et nytt felt får id-en ledetekstens `for` peker
+  på.
+- **Fanene tok piltaster med Alt, Ctrl og Cmd.** Alt+venstrepil er «tilbake»
+  i nettleseren, og ble stoppet.
+- **Escape i et sprettoppvindu inne i en modal dialog lukket begge.**
+  Tastetrykket stopper nå i vinduet.
+- **Feiloppsummeringen meldte en prosentkodet lenke som brutt.**
+  `href="#f%C3%B8dselsdato"` peker på `id="fødselsdato"`, og oppslaget
+  dekoder nå fragmentet slik nettleseren gjør.
+- **Økttidsvarselet frøs når `warn-at` ble hevet mens dialogen sto.**
+- **Tilkoblingslinja viste den gamle teksten** når `offline-text` eller
+  `online-text` ble byttet mens den sto.
+- **Skillelinja og skjelettet var usynlige i høykontrastmodus.** Begge var
+  bare en bakgrunn. Linja bruker nå en systemfarge, og skjelettet får en
+  kant.
+- **Et kort som er en `<button>` hadde nettleserens knappeskrift,** 13
+  piksler. Kortet arver nå hele skriften.
+- **`<span aria-disabled="true">` i sidenavigeringen hadde ikke boksen til
+  lenkene,** så rekka hoppet når «Neste» ble byttet inn på siste side.
 
 ## 0.27.1 (2026-10-03)
 

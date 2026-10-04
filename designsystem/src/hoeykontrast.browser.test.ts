@@ -10,6 +10,8 @@ import { monter, ventPaTegning } from "./testing/a11y"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
+import "./components/css/divider/divider.css"
+import "./components/css/skeleton/skeleton.css"
 import "./components/css/radio/radio.css"
 import "./components/css/switch/switch.css"
 import "./components/css/select/select.css"
@@ -53,6 +55,22 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // Modusen gjelder hele siden, og ville ellers blitt stående og påvirket
     // testene som kjører etterpå.
     await settHoeykontrast(false)
+  })
+
+  it("holder skillelinja og skjelettet synlige", async () => {
+    // Begge var bare bakgrunn, og bakgrunner tvinges til sideflatens farge.
+    monter(`
+      <hr class="fs-divider" id="linje" />
+      <hr class="fs-divider" data-variant="subtle" id="svak" />
+      <div class="fs-skeleton" id="skjelett"></div>
+    `)
+    await settHoeykontrast(true)
+    const flate = getComputedStyle(document.body).backgroundColor
+
+    expect(stil("linje").backgroundColor).not.toBe(flate)
+    expect(stil("svak").backgroundColor).not.toBe(flate)
+    expect(stil("skjelett").borderTopStyle).toBe("solid")
+    expect(stil("skjelett").borderTopWidth).toBe("1px")
   })
 
   it("lar nettleseren tegne avkryssingsboksen, radioknappen og bryteren", async () => {

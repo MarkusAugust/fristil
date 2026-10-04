@@ -15,4 +15,13 @@
   .fs-divider[data-variant="subtle"] {
     background: var(--fs-color-neutral-surface);
   }
+
+  /* Høykontrast: bakgrunner tvinges til sideflatens farge, og streken var
+     bare en bakgrunn. Den ble usynlig. En systemfarge overlever. */
+  @media (forced-colors: active) {
+    .fs-divider,
+    .fs-divider[data-variant] {
+      background: CanvasText;
+    }
+  }
 }

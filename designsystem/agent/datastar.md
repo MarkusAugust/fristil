@@ -41,7 +41,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 ></script>
 ```
 
-`fristil.css` er 90 kB, 11 kB komprimert, og har alle komponentene. Vil du
+`fristil.css` er 91 kB, 11 kB komprimert, og har alle komponentene. Vil du
 bare ha det du bruker, gjelder at `tokens.css` definerer alle variablene, og
 alle de andre stilarkene bygger på den. Den må lastes, og står først av vane:
 rekkefølgen mellom den og de andre har ikke noe å si.

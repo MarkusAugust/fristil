@@ -282,7 +282,9 @@ export class FsSessionTimeout extends HostElement {
       return
     }
 
-    if (elapsed < this.warnAt) return
+    // Står dialogen alt åpen, går nedtellingen videre selv om `warn-at` er
+    // hevet imens. Ellers frøs tallet, og økten gikk ut uten flere varsler.
+    if (elapsed < this.warnAt && !this.dialog?.open) return
 
     if (!this.dialog?.open) this.openDialog(left)
 
