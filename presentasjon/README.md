@@ -83,5 +83,5 @@ Testet i Chromium på 1440×900, 1280×800, 820 og 375 piksler bredt: ingen av d
 trettifire lysbildene kan dras sidelengs, og ingen av dem ruller inne i kortet.
 
 Grafen er det strammeste lysbildet og tåler ikke en linje til. En egen blokk
-med datoen for installasjonen fikk det til å rulle 15 piksler på 1280, og datoen ble
+med datoen for målingen fikk det til å rulle 15 piksler på 1280, og datoen ble
 derfor stående inne i avsnittet under grafen i stedet for over den.

@@ -515,7 +515,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa">Designsystemarkitektur · 4. oktober 2026</span>
+  <span class="merke merke-blaa">Designsystemarkitektur · Fristil 0.28.0 · 4. oktober 2026</span>
   <div class="tittel-topp">
     <h1>Arkitektur for et designsystem uten rammeverk</h1>
   </div>
@@ -902,7 +902,7 @@ tr:last-child td { border-block-end: none; }
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
-  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Installert 26. september 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 26. september 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
 
 <script>
 (() => {
@@ -1973,7 +1973,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
   <p class="ingress">Kravene er enkle å beskrive. Feilene kommer der systemet møter React, en server uten DOM eller koden som kjører før komponenten er registrert. De fleste ble funnet i ekte apper, ikke i enhetstestene.</p>
   <ol class="kapittelliste">
-      <li>React 19 og egendefinerte elementer</li>
+      <li>React 19 og web components</li>
       <li>Serveren og hydreringen</li>
       <li>Før komponenten er registrert</li>
   </ol>
@@ -1982,8 +1982,8 @@ fs.input({ type: "email", state: "invalid" })
 <!-- 29 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
-  <h2>React 19 og egendefinerte elementer</h2>
-  <p>Har et egendefinert element en egenskap med samme navn som et attributt, setter React 19 egenskapen og ikke attributtet. Det gir tre feil, og de to første gir ingen feilmelding:</p>
+  <h2>React 19 og web components</h2>
+  <p>Har en web component en egenskap med samme navn som et attributt, setter React 19 egenskapen og ikke attributtet. Det gir tre feil, og de to første gir ingen feilmelding:</p>
   <ul>
     <li><strong>Et boolsk attributt kan ikke sendes som tom streng.</strong> <code>el.open = ""</code> er usant, og setteren fjerner attributtet igjen. Send <code>true</code>.</li>
     <li><strong>Et valg kan ikke låne navnet til en vanlig egenskap.</strong> <code>autofocus="false"</code> blir <code>el.autofocus = "false"</code>, og en streng med innhold er sann. Legg valget i <code>data-*</code>, som React alltid sender som attributt.</li>
@@ -2021,7 +2021,7 @@ fs.input({ type: "email", state: "invalid" })
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Før komponenten er registrert</h2>
-  <p>Fram til komponenten er registrert, er hvert egendefinert element et vanlig <code>HTMLElement</code>, uten metoder og uten oppførsel.</p>
+  <p>Fram til komponenten er registrert, er hver web component et vanlig <code>HTMLElement</code>, uten metoder og uten oppførsel.</p>
   <ul>
     <li><strong>Registrer ved import, aldri i en effekt.</strong> En <code>useEffect</code> kjører etter første tegning. Kaller appen en metode på elementet før det, får den «reportSuccess is not a function».</li>
     <li><strong>Et imperativt kall må vente på registreringen.</strong> En hjelpefunksjon som venter på <code>customElements.whenDefined()</code> for elementets eget tagnavn, gjør rekkefølgen likegyldig. Den sier fra i konsollen hvis det tar for lang tid.</li>
