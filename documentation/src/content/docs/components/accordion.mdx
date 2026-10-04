@@ -7,7 +7,7 @@ import Eksempel from "../../../components/Eksempel.astro"
 
 Klassen settes på et `<details>` med et `<summary>` først. Nettleseren tar seg av åpning, lukking, tastatur og at skjermlesere melder «utvidet» eller «sammenfoldet».
 
-Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt. Og teksten i et lukket panel forsvinner fra DOM-en, så nettleserens eget søk i siden finner den ikke lenger.
+Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt. Og teksten i et lukket panel skjules med `hidden`, så nettleserens eget søk i siden finner den ikke lenger.
 
 ## Slik tar du den i bruk
 

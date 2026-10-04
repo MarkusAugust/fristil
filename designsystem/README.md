@@ -4,7 +4,7 @@ Rammeverksuavhengig designsystem for web: tokens, CSS-komponenter og web compone
 
 > **Dette er en proof of concept.** Ikke et ferdig produkt, ikke aktivt vedlikeholdt, og det kan bli lagt på is. Bruk det til å prøve ut ideen, ikke til noe du må stole på.
 
-Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire miljøer, ligger på **[fristil.netlify.app](https://fristil.netlify.app/)**.
+Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire miljøer, ligger på **[fristil.sobernetics.no](https://fristil.sobernetics.no/)**.
 
 ## Installasjon
 
@@ -16,7 +16,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
 
 ## CSS-komponenter
 
-En klasse og noen `data-*`-attributter, ingen JavaScript. `tokens.css` definerer variablene alt annet bygger på, så den lastes først.
+En klasse og noen `data-*`-attributter, ingen JavaScript. `tokens.css` definerer variablene alt annet bygger på, så den må lastes. Den står først av vane; rekkefølgen har ikke noe å si.
 
 Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper ikke laster CSS for en dialog:
 
@@ -90,7 +90,7 @@ fs.errorSummary({ count: 2, id: "feil" })
 
 `id` er påkrevd i `fs.field()`, `fs.suggestion()`, `fs.tabs()` og `fs.popover()`, og `titleId` i `fs.dialog()`. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom delene er brutt til React har rettet den opp. I React kommer den fra `useId()`. I `fs.errorSummary()` er den valgfri, siden den bare navngir boksen slik at noe annet kan peke på den.
 
-Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.netlify.app/markup-og-oppforsel/).
+Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.sobernetics.no/markup-og-oppforsel/).
 
 ## Eget fargetema
 

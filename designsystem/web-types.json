@@ -9,7 +9,7 @@
         {
           "name": "fs-field",
           "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
-          "doc-url": "https://fristil.netlify.app/components/field/",
+          "doc-url": "https://fristil.sobernetics.no/components/field/",
           "attributes": [
             {
               "name": "invalid",
@@ -75,7 +75,7 @@
         {
           "name": "fs-tabs",
           "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
-          "doc-url": "https://fristil.netlify.app/components/tabs/",
+          "doc-url": "https://fristil.sobernetics.no/components/tabs/",
           "attributes": [
             {
               "name": "server-controlled",
@@ -89,7 +89,7 @@
         {
           "name": "fs-error-summary",
           "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
-          "doc-url": "https://fristil.netlify.app/components/error-summary/",
+          "doc-url": "https://fristil.sobernetics.no/components/error-summary/",
           "attributes": [
             {
               "name": "data-autofocus",
@@ -117,7 +117,7 @@
         {
           "name": "fs-popover",
           "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten.",
-          "doc-url": "https://fristil.netlify.app/components/popover/",
+          "doc-url": "https://fristil.sobernetics.no/components/popover/",
           "attributes": [
             {
               "name": "open",
@@ -164,7 +164,7 @@
         {
           "name": "fs-suggestion",
           "description": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
-          "doc-url": "https://fristil.netlify.app/components/suggestion/",
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/",
           "attributes": [
             {
               "name": "prefiltered",
@@ -185,7 +185,7 @@
         {
           "name": "fs-dialog",
           "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler.",
-          "doc-url": "https://fristil.netlify.app/components/dialog/",
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/",
           "attributes": [
             {
               "name": "open",
@@ -206,7 +206,7 @@
         {
           "name": "fs-toast",
           "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
-          "doc-url": "https://fristil.netlify.app/components/toast/",
+          "doc-url": "https://fristil.sobernetics.no/components/toast/",
           "attributes": [
             {
               "name": "duration",
@@ -229,7 +229,7 @@
         {
           "name": "fs-session-timeout",
           "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/",
           "attributes": [
             {
               "name": "warn-at",
@@ -252,7 +252,7 @@
         {
           "name": "fs-connection-status",
           "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
-          "doc-url": "https://fristil.netlify.app/components/connection-status/",
+          "doc-url": "https://fristil.sobernetics.no/components/connection-status/",
           "attributes": [
             {
               "name": "offline-text",
@@ -279,372 +279,372 @@
         {
           "name": "fs-accordion",
           "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/accordion/"
+          "doc-url": "https://fristil.sobernetics.no/components/accordion/"
         },
         {
           "name": "fs-accordion__content",
           "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/accordion/"
+          "doc-url": "https://fristil.sobernetics.no/components/accordion/"
         },
         {
           "name": "fs-alert",
           "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/alert/"
+          "doc-url": "https://fristil.sobernetics.no/components/alert/"
         },
         {
           "name": "fs-alert__title",
           "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/alert/"
+          "doc-url": "https://fristil.sobernetics.no/components/alert/"
         },
         {
           "name": "fs-avatar",
           "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/avatar/"
+          "doc-url": "https://fristil.sobernetics.no/components/avatar/"
         },
         {
           "name": "fs-avatar-stack",
           "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/avatar/"
+          "doc-url": "https://fristil.sobernetics.no/components/avatar/"
         },
         {
           "name": "fs-badge",
           "description": "**Badge**\n\nKompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/badge/"
+          "doc-url": "https://fristil.sobernetics.no/components/badge/"
         },
         {
           "name": "fs-breadcrumbs",
           "description": "**Breadcrumbs**\n\nBrødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/breadcrumbs/"
+          "doc-url": "https://fristil.sobernetics.no/components/breadcrumbs/"
         },
         {
           "name": "fs-button",
           "description": "**Button**\n\nKnapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/button/"
+          "doc-url": "https://fristil.sobernetics.no/components/button/"
         },
         {
           "name": "fs-card",
           "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/card/"
+          "doc-url": "https://fristil.sobernetics.no/components/card/"
         },
         {
           "name": "fs-card__title",
           "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/card/"
+          "doc-url": "https://fristil.sobernetics.no/components/card/"
         },
         {
           "name": "fs-checkbox",
           "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/checkbox/"
+          "doc-url": "https://fristil.sobernetics.no/components/checkbox/"
         },
         {
           "name": "fs-checkbox-row",
           "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/checkbox/"
+          "doc-url": "https://fristil.sobernetics.no/components/checkbox/"
         },
         {
           "name": "fs-divider",
           "description": "**Divider**\n\nSkillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/divider/"
+          "doc-url": "https://fristil.sobernetics.no/components/divider/"
         },
         {
           "name": "fs-error-text",
           "description": "**Error Text**\n\nFeilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/error-text/"
+          "doc-url": "https://fristil.sobernetics.no/components/error-text/"
         },
         {
           "name": "fs-fieldset",
           "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/fieldset/"
+          "doc-url": "https://fristil.sobernetics.no/components/fieldset/"
         },
         {
           "name": "fs-legend",
           "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/fieldset/"
+          "doc-url": "https://fristil.sobernetics.no/components/fieldset/"
         },
         {
           "name": "fs-file-upload",
           "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/file-upload/"
+          "doc-url": "https://fristil.sobernetics.no/components/file-upload/"
         },
         {
           "name": "fs-file-upload-list",
           "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/file-upload/"
+          "doc-url": "https://fristil.sobernetics.no/components/file-upload/"
         },
         {
           "name": "fs-heading",
           "description": "**Heading**\n\nOverskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/heading/"
+          "doc-url": "https://fristil.sobernetics.no/components/heading/"
         },
         {
           "name": "fs-help-text",
           "description": "**Help Text**\n\nForklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/help-text/"
+          "doc-url": "https://fristil.sobernetics.no/components/help-text/"
         },
         {
           "name": "fs-input",
           "description": "**Input**\n\nTekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
-          "doc-url": "https://fristil.netlify.app/components/input/"
+          "doc-url": "https://fristil.sobernetics.no/components/input/"
         },
         {
           "name": "fs-label",
           "description": "**Label**\n\nLedetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
-          "doc-url": "https://fristil.netlify.app/components/label/"
+          "doc-url": "https://fristil.sobernetics.no/components/label/"
         },
         {
           "name": "fs-link",
           "description": "**Link**\n\nLenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/link/"
+          "doc-url": "https://fristil.sobernetics.no/components/link/"
         },
         {
           "name": "fs-list",
           "description": "**List**\n\nPunktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/list/"
+          "doc-url": "https://fristil.sobernetics.no/components/list/"
         },
         {
           "name": "fs-pagination",
           "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/pagination/"
+          "doc-url": "https://fristil.sobernetics.no/components/pagination/"
         },
         {
           "name": "fs-pagination__gap",
           "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/pagination/"
+          "doc-url": "https://fristil.sobernetics.no/components/pagination/"
         },
         {
           "name": "fs-paragraph",
           "description": "**Paragraph**\n\nBrødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/paragraph/"
+          "doc-url": "https://fristil.sobernetics.no/components/paragraph/"
         },
         {
           "name": "fs-progress",
           "description": "**Progress**\n\nFramdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/progress/"
+          "doc-url": "https://fristil.sobernetics.no/components/progress/"
         },
         {
           "name": "fs-radio",
           "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/radio/"
+          "doc-url": "https://fristil.sobernetics.no/components/radio/"
         },
         {
           "name": "fs-radio-row",
           "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/radio/"
+          "doc-url": "https://fristil.sobernetics.no/components/radio/"
         },
         {
           "name": "fs-search",
           "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/search/"
+          "doc-url": "https://fristil.sobernetics.no/components/search/"
         },
         {
           "name": "fs-search-row",
           "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/search/"
+          "doc-url": "https://fristil.sobernetics.no/components/search/"
         },
         {
           "name": "fs-select",
           "description": "**Select**\n\nNedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/select/"
+          "doc-url": "https://fristil.sobernetics.no/components/select/"
         },
         {
           "name": "fs-skeleton",
           "description": "**Skeleton**\n\nPlassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/skeleton/"
+          "doc-url": "https://fristil.sobernetics.no/components/skeleton/"
         },
         {
           "name": "fs-skip-link",
           "description": "**Skip Link**\n\nLenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/skip-link/"
+          "doc-url": "https://fristil.sobernetics.no/components/skip-link/"
         },
         {
           "name": "fs-spinner",
           "description": "**Spinner**\n\nVenteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/spinner/"
+          "doc-url": "https://fristil.sobernetics.no/components/spinner/"
         },
         {
           "name": "fs-sr-only",
           "description": "**Sr Only**\n\nTekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/sr-only/"
+          "doc-url": "https://fristil.sobernetics.no/components/sr-only/"
         },
         {
           "name": "fs-switch",
           "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/switch/"
+          "doc-url": "https://fristil.sobernetics.no/components/switch/"
         },
         {
           "name": "fs-switch-row",
           "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/switch/"
+          "doc-url": "https://fristil.sobernetics.no/components/switch/"
         },
         {
           "name": "fs-table",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/table/"
+          "doc-url": "https://fristil.sobernetics.no/components/table/"
         },
         {
           "name": "fs-table-scroll",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/table/"
+          "doc-url": "https://fristil.sobernetics.no/components/table/"
         },
         {
           "name": "fs-tag",
           "description": "**Tag**\n\nMerkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/tag/"
+          "doc-url": "https://fristil.sobernetics.no/components/tag/"
         },
         {
           "name": "fs-textarea",
           "description": "**Textarea**\n\nFlerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/textarea/"
+          "doc-url": "https://fristil.sobernetics.no/components/textarea/"
         },
         {
           "name": "fs-toggle-group",
           "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/toggle-group/"
+          "doc-url": "https://fristil.sobernetics.no/components/toggle-group/"
         },
         {
           "name": "fs-toggle-group__option",
           "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/toggle-group/"
+          "doc-url": "https://fristil.sobernetics.no/components/toggle-group/"
         },
         {
           "name": "fs-tooltip",
           "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/tooltip/"
+          "doc-url": "https://fristil.sobernetics.no/components/tooltip/"
         },
         {
           "name": "fs-tooltip__bubble",
           "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.netlify.app/components/tooltip/"
+          "doc-url": "https://fristil.sobernetics.no/components/tooltip/"
         },
         {
           "name": "fs-dialog",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-dialog__body",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-dialog__title",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-dialog__footer",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-dialog__header",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-dialog__subtitle",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.netlify.app/components/dialog/"
+          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
         },
         {
           "name": "fs-error-summary",
           "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/error-summary/"
+          "doc-url": "https://fristil.sobernetics.no/components/error-summary/"
         },
         {
           "name": "fs-error-summary__title",
           "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/error-summary/"
+          "doc-url": "https://fristil.sobernetics.no/components/error-summary/"
         },
         {
           "name": "fs-popover",
           "description": "**Popover**\n\nPanel som henger under en knapp og lukker seg selv. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/popover/"
+          "doc-url": "https://fristil.sobernetics.no/components/popover/"
         },
         {
           "name": "fs-suggestion__field",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/suggestion/"
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },
         {
           "name": "fs-suggestion__list",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/suggestion/"
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },
         {
           "name": "fs-suggestion__option",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/suggestion/"
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },
         {
           "name": "fs-suggestion__empty",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/suggestion/"
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },
         {
           "name": "fs-tabs__list",
           "description": "**Tabs**\n\nFanerad koblet til panelene sine. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/tabs/"
+          "doc-url": "https://fristil.sobernetics.no/components/tabs/"
         },
         {
           "name": "fs-tabs__panel",
           "description": "**Tabs**\n\nFanerad koblet til panelene sine. Rammekomponent.",
-          "doc-url": "https://fristil.netlify.app/components/tabs/"
+          "doc-url": "https://fristil.sobernetics.no/components/tabs/"
         },
         {
           "name": "fs-connection-status",
           "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/connection-status/"
+          "doc-url": "https://fristil.sobernetics.no/components/connection-status/"
         },
         {
           "name": "fs-connection-status__bar",
           "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/connection-status/"
+          "doc-url": "https://fristil.sobernetics.no/components/connection-status/"
         },
         {
           "name": "fs-session-timeout",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-session-timeout__dialog",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-session-timeout__title",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-session-timeout__text",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-session-timeout__count",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-session-timeout__actions",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/session-timeout/"
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-toast",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/toast/"
+          "doc-url": "https://fristil.sobernetics.no/components/toast/"
         },
         {
           "name": "fs-toast__close",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-          "doc-url": "https://fristil.netlify.app/components/toast/"
+          "doc-url": "https://fristil.sobernetics.no/components/toast/"
         },
         {
           "name": "fs-theme-control",
           "description": "**Tilpasning**\n\nEndre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
-          "doc-url": "https://fristil.netlify.app/tilpasning/"
+          "doc-url": "https://fristil.sobernetics.no/tilpasning/"
         }
       ]
     }

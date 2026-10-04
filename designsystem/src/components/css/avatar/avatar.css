@@ -41,8 +41,8 @@
     border-radius: var(--fs-avatar-radius, var(--fs-spacing-1));
   }
 
-  /* Flere profilbilder som overlapper. Rekkefølgen snus i CSS, så det
-     første bildet ligger øverst uten at markupen må skrives baklengs. */
+  /* Flere profilbilder som overlapper. Rekkefølgen snus i CSS: det første
+     elementet i markupen står lengst til høyre. */
   .fs-avatar-stack {
     display: inline-flex;
     flex-direction: row-reverse;

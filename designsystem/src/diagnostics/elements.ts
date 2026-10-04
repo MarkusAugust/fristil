@@ -3,7 +3,7 @@ import type { Elements } from "./diagnostics.js"
 
 export const elements: Elements = {
   "fs-field": {
-    "link": "https://fristil.netlify.app/components/field/",
+    "link": "https://fristil.sobernetics.no/components/field/",
     "attributes": {
       "invalid": {
         "type": "flag"
@@ -31,7 +31,7 @@ export const elements: Elements = {
     }
   },
   "fs-tabs": {
-    "link": "https://fristil.netlify.app/components/tabs/",
+    "link": "https://fristil.sobernetics.no/components/tabs/",
     "attributes": {
       "server-controlled": {
         "type": "flag"
@@ -39,7 +39,7 @@ export const elements: Elements = {
     }
   },
   "fs-error-summary": {
-    "link": "https://fristil.netlify.app/components/error-summary/",
+    "link": "https://fristil.sobernetics.no/components/error-summary/",
     "attributes": {
       "data-autofocus": {
         "type": "values",
@@ -53,7 +53,7 @@ export const elements: Elements = {
     }
   },
   "fs-popover": {
-    "link": "https://fristil.netlify.app/components/popover/",
+    "link": "https://fristil.sobernetics.no/components/popover/",
     "attributes": {
       "open": {
         "type": "flag"
@@ -73,7 +73,7 @@ export const elements: Elements = {
     }
   },
   "fs-suggestion": {
-    "link": "https://fristil.netlify.app/components/suggestion/",
+    "link": "https://fristil.sobernetics.no/components/suggestion/",
     "attributes": {
       "prefiltered": {
         "type": "flag"
@@ -84,7 +84,7 @@ export const elements: Elements = {
     }
   },
   "fs-dialog": {
-    "link": "https://fristil.netlify.app/components/dialog/",
+    "link": "https://fristil.sobernetics.no/components/dialog/",
     "attributes": {
       "open": {
         "type": "flag"
@@ -95,7 +95,7 @@ export const elements: Elements = {
     }
   },
   "fs-toast": {
-    "link": "https://fristil.netlify.app/components/toast/",
+    "link": "https://fristil.sobernetics.no/components/toast/",
     "attributes": {
       "duration": {
         "type": "number"
@@ -106,7 +106,7 @@ export const elements: Elements = {
     }
   },
   "fs-session-timeout": {
-    "link": "https://fristil.netlify.app/components/session-timeout/",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
     "attributes": {
       "warn-at": {
         "type": "number"
@@ -117,7 +117,7 @@ export const elements: Elements = {
     }
   },
   "fs-connection-status": {
-    "link": "https://fristil.netlify.app/components/connection-status/",
+    "link": "https://fristil.sobernetics.no/components/connection-status/",
     "attributes": {
       "offline-text": {
         "type": "text"

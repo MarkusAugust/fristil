@@ -23,8 +23,8 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 3. **Ingen hardkodede farger eller piksler.** `var(--fs-color-…)` og
    `var(--fs-spacing-…)`.
 4. **`defineFs*()` kjøres øverst i `main.tsx`,** ikke i en `useEffect`, og et
-   boolsk attributt settes som `invalid={ugyldig || undefined}`. De to andre
-   skrivemåtene er feil i én av React-versjonene hver.
+   boolsk attributt på en web component settes som `open={åpen || undefined}`.
+   De to andre skrivemåtene er feil i én av React-versjonene hver.
 5. **Typene er sjekken din.** Importer `@fristil/designsystem/react-jsx` én
    gang i en `.d.ts`-fil, og en variant som ikke finnes stopper bygget. Kjør
    `tsc`. Har prosjektet også HTML eller maler, sjekkes de med
@@ -33,7 +33,8 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 ## 1. Stilarkene
 
 `tokens.css` definerer alle variablene, og alle de andre stilarkene bygger på
-den. Den lastes derfor først. Deretter ett per komponent du bruker:
+den. Den må lastes, og står først av vane: rekkefølgen mellom den og de andre
+har ikke noe å si. Deretter ett per komponent du bruker:
 
 ```tsx
 // main.tsx, øverst
@@ -238,53 +239,68 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 // main.tsx, kjøres én gang når appen starter
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
-import { defineFsField } from "@fristil/designsystem/field"
+import "@fristil/designsystem/button.css"
+import { defineFs } from "@fristil/designsystem/register"
 
-defineFsField()
+defineFs()
 ```
 
 Kallet står øverst i modulen, ikke i en `useEffect`. En effekt kjører etter
 første tegning, så elementene er vanlige `HTMLElement` i det React tegner dem,
 og et kall på `show()` eller `reportFailure()` før effekten feiler med «is not
 a function». Funksjonen gjør ingenting på en server, så den kan stå i en
-rotmodul som kjøres begge steder. Skal alt registreres, finnes `defineFs()` i
-`@fristil/designsystem/register`.
+rotmodul som kjøres begge steder. Brukes bare én komponent, har den sin egen
+funksjon, som `defineFsTabs()` i `@fristil/designsystem/tabs`.
 
 ```ts
-// src/fristil.d.ts, gir <fs-field> typer i JSX
+// src/fristil.d.ts, gir web-komponentene typer i JSX
 import "@fristil/designsystem/react-jsx"
 ```
+
+Et felt skrives med `fs.field()`. Koblingen står da i markupen React selv
+rendrer, på serveren som i nettleseren. `<fs-field>` skriver koblingen på
+elementene før React hydrerer, og med server-rendring melder React avvik på
+ledeteksten, feltet og feilmeldingen. Uten server virker den, men `fs.field()`
+er veien i begge.
 
 ```tsx
 // Kontaktskjema.tsx
 import { fs } from "@fristil/designsystem/react"
-import { useState } from "react"
+import { useId, useState } from "react"
 
 export function Kontaktskjema() {
   const [navn, setNavn] = useState("")
   const [berørt, setBerørt] = useState(false)
 
   const ugyldig = berørt && navn.trim() === ""
+  const felt = fs.field({
+    id: useId(),
+    required: "symbol",
+    error: true,
+    invalid: ugyldig,
+  })
 
   return (
     <form onSubmit={(e) => e.preventDefault()}>
-      <fs-field required-marker="symbol" invalid={ugyldig || undefined}>
-        <label>Fullt navn</label>
-        <input
-          {...fs.input({ type: "text" })}
-          name="navn"
-          value={navn}
-          onChange={(e) => setNavn(e.target.value)}
-          onBlur={() => setBerørt(true)}
-        />
-        <p {...fs.errorText()}>Fyll inn navnet ditt.</p>
-      </fs-field>
+      <label {...felt.label}>Fullt navn</label>
+      <input
+        {...fs.input({ type: "text" })}
+        {...felt.control}
+        name="navn"
+        required
+        value={navn}
+        onChange={(e) => setNavn(e.target.value)}
+        onBlur={() => setBerørt(true)}
+      />
+      <p {...fs.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
 
       <button {...fs.button()} type="submit">Send</button>
     </form>
   )
 }
 ```
+
+Id-en kommer fra `useId()`, så serveren og nettleseren lager den samme.
 
 `fs` importeres fra `@fristil/designsystem/react`, aldri fra hovedinngangen:
 React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
@@ -301,23 +317,27 @@ React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
 `fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
 `fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
 
-## 6. Bare `invalid={ugyldig || undefined}` virker
+## 6. Bare `open={åpen || undefined}` virker
 
-React behandler web components ulikt mellom versjoner, og bare dette mønsteret
-er riktig i begge:
+Det gjelder hvert boolske attributt på en web component, som `open` på
+`<fs-dialog>` og `<fs-popover>`. React behandler web components ulikt mellom
+versjoner, og bare dette mønsteret er riktig i begge:
 
 | Skrivemåte | React 18 (setter attributt) | React 19 (setter egenskap) |
 | --- | --- | --- |
-| `invalid=""` | virker | aldri ugyldig |
-| `invalid={ugyldig}` | alltid ugyldig | virker |
-| `invalid={ugyldig \|\| undefined}` | virker | virker |
+| `open=""` | virker | aldri åpen |
+| `open={åpen}` | alltid åpen | virker |
+| `open={åpen \|\| undefined}` | virker | virker |
 
-React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet
-finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er
-usann.
+React 18 stringifiserer `false` til attributtet `open="false"`. Attributtet
+finnes da, og er dermed sant. React 19 setter egenskapen til `""`, og
+komponenten leser den tomme strengen som usann.
 
-Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene
+Importerer du `@fristil/designsystem/react-jsx`, blir de to første variantene
 kompileringsfeil.
+
+Byggefunksjonene sender `true` eller ingenting, så
+`{...fs.dialog({ titleId, open: åpen }).host}` er alt riktig.
 
 ## 7. Typene
 
@@ -341,10 +361,10 @@ elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
 
 | Symptom | Årsak |
 | --- | --- |
-| Stilene mangler | `tokens.css` er ikke lastet, eller lastes etter komponentens eget stilark |
-| Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
+| Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
+| En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv og er tomme uten den. Markupen i de andre er din og står der uansett |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
-| `customElements is not defined` | Registreringen kjøres der det ikke finnes noen nettleser |
+| Komponenten gjør ingenting, og ingenting sier fra | Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren |
 | «Invalid DOM property `class`» | `fs` er importert fra hovedinngangen. Bruk `@fristil/designsystem/react` |
 | `Property 'fs-field' does not exist` | `@fristil/designsystem/react-jsx` er ikke importert i en `.d.ts`-fil |
 
@@ -355,4 +375,4 @@ kopierer `npx @fristil/designsystem overta <komponent>` kildekoden til én
 komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
 dine lages med `npx @fristil/designsystem tema`.
 
-Alt dette, med levende eksempler: https://fristil.netlify.app/
+Alt dette, med levende eksempler: https://fristil.sobernetics.no/

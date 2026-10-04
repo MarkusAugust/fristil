@@ -2,7 +2,9 @@
   "fs-field": {
     "prefix": "fs-field",
     "body": [
-      "<form id=\"kontaktskjema\">",
+      "<!-- novalidate: ellers stopper nettleseren et tomt påkrevd felt før",
+      "     submit-hendelsen, og feilmeldingen under blir aldri vist. -->",
+      "<form id=\"kontaktskjema\" novalidate>",
       "  <fs-field id=\"navn-felt\" required-marker=\"symbol\">",
       "    <label>Fullt navn</label>",
       "    <input class=\"fs-input\" type=\"text\" name=\"navn\" required />",

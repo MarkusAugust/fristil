@@ -19,8 +19,8 @@
     background: var(--fs-color-neutral-text-strong);
     border-radius: var(--fs-tooltip-radius, var(--fs-spacing-1));
     /* Boblen er skjult til utløseren får fokus eller musa. `visibility` og
-       ikke `display`, så teksten blir stående i tilgjengelighetstreet og kan
-       pekes på med aria-describedby. */
+       `opacity`, så den kan tones inn. `aria-describedby` leser teksten den
+       peker på også mens boblen er skjult. */
     visibility: hidden;
     opacity: 0;
   }

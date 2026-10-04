@@ -1,7 +1,7 @@
 # Fristil for VS Code
 
 Fullføring, forklaringer, snippets, feilmeldinger og hurtigrettelser for
-[Fristil](https://fristil.netlify.app/): `<fs-*>`-elementene, `fs-`-klassene
+[Fristil](https://fristil.sobernetics.no/): `<fs-*>`-elementene, `fs-`-klassene
 og variantene deres, i HTML og i malspråkene.
 
 Skriver du JSX, trenger du ikke utvidelsen: der kommer det samme fra typene
@@ -31,7 +31,7 @@ der ingen kompilator ser på attributtene.
    ```
 
    Uten byggverktøy hentes de samme filene fra en CDN. Det, og resten, står
-   i [kom i gang](https://fristil.netlify.app/kom-i-gang/).
+   i [kom i gang](https://fristil.sobernetics.no/kom-i-gang/).
 3. **Skriv markupen.** Åpne en HTML-fil, skriv `<fs-` og velg fra lista, eller
    skriv `fs-field` og trykk Tab for markupen fra komponentsiden. Hold musa
    over et element for forklaringen, og se etter røde og gule streker.

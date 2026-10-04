@@ -28,8 +28,8 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 5. **Kjør sjekken på det du har skrevet:**
    `npx @fristil/designsystem sjekk side.html`. Den kjenner hver klasse, hvert
    element, hvert attributt og hver lovlige verdi, skriver
-   `fil:linje:kolonne: melding`, og avslutter med feilkode hvis den finner
-   noe.
+   `fil:linje:kolonne: feil: melding`, eller `advarsel:`, og avslutter med
+   feilkode hvis den finner noe.
 
 ## 1. Stilarket og Datastar
 
@@ -43,7 +43,8 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 `fristil.css` er 90 kB, 11 kB komprimert, og har alle komponentene. Vil du
 bare ha det du bruker, gjelder at `tokens.css` definerer alle variablene, og
-alle de andre stilarkene bygger på den. Den lastes derfor først.
+alle de andre stilarkene bygger på den. Den må lastes, og står først av vane:
+rekkefølgen mellom den og de andre har ikke noe å si.
 
 ## 2. Hva som finnes
 
@@ -320,8 +321,8 @@ nettleseren.
 
 | Symptom | Årsak |
 | --- | --- |
-| Stilene mangler | `tokens.css` er ikke lastet, eller lastes etter komponentens eget stilark |
-| Elementet vises ikke, siden ser tom ut | `define`-funksjonen har ikke kjørt |
+| Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
+| En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv og er tomme uten den. Markupen i de andre er din og står der uansett |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 
@@ -332,4 +333,4 @@ kopierer `npx @fristil/designsystem overta <komponent>` kildekoden til én
 komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
 dine lages med `npx @fristil/designsystem tema`.
 
-Alt dette, med levende eksempler: https://fristil.netlify.app/
+Alt dette, med levende eksempler: https://fristil.sobernetics.no/

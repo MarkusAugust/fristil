@@ -78,7 +78,7 @@ Når en versjon skal ut:
 ```bash
 bun run prepare-version 0.4.0
 bun run sjekk
-git checkout -b slipp-0.4.0 && git commit -am "chore: slipp 0.4.0"
+git checkout -b slipp-0.4.0 && git commit -am "Versjon 0.4.0"
 git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
@@ -168,7 +168,7 @@ eksempelet, og du ser ikke lenger det en konsument får.
 
 ## Commit-meldinger
 
-På norsk, i imperativ, med et prefiks som sier hva slags endring det er: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`. Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
+På norsk, i imperativ, uten prefiks: «Rett fokus i feiloppsummeringen», ikke «fix: …». Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
 
 ## Når CI er rød på master
 

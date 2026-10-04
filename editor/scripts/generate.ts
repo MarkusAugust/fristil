@@ -37,7 +37,7 @@ import type {
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
-const DOCS = "https://fristil.netlify.app/components/"
+const DOCS = "https://fristil.sobernetics.no/components/"
 const PAGES = join(ROOT, "documentation/src/content/docs/components")
 
 const docsUrl = (element: ElementDoc) => `${DOCS}${element.slug}/`
@@ -270,7 +270,7 @@ const TOKEN_PAGE = {
   // siterte en beskrivelse som ikke sto noe sted i dokumentasjonen.
   title: frontmatter("../tilpasning", "title"),
   description: frontmatter("../tilpasning", "description"),
-  link: "https://fristil.netlify.app/tilpasning/",
+  link: "https://fristil.sobernetics.no/tilpasning/",
 }
 
 function classesInCss(css: string): string[] {
