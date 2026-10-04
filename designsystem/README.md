@@ -40,7 +40,7 @@ Markupen er den samme uansett hvilken av de to du valgte:
 
 ## Attributtene som funksjoner
 
-`fs` gir de samme klassene og attributtene med fullføring og typesjekk i editoren. Hver komponent tar ett valgobjekt og gir attributtene ut:
+`fs` gir de samme klassene og attributtene med fullføring og typesjekk i editoren. Hver komponent tar ett objekt med valg og gir attributtene ut:
 
 ```js
 import { fs } from "@fristil/designsystem"

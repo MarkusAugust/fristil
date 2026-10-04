@@ -1,12 +1,13 @@
 # Presentasjon om designsystemarkitektur
 
-Lysbildene som forklarer hvorfor Fristil er satt sammen som det er: hvem som
-eier markupen, hvem som eier oppførselen, og hva det koster.
+Presentasjonen handler om arkitekturen et designsystem uten rammeverk trenger: hvem som
+eier markupen, hvem som eier oppførselen, og hva det koster. Fristil er
+eksempelet som viser at det virker, ikke temaet.
 
-Hele presentasjonen er ett dokument. Ingen avhengigheter, intet byggesteg,
+Hele presentasjonen er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
 ingen server. Åpne fila i en nettleser, eller se den på
 [designsystemarkitetktur.netlify.app](https://designsystemarkitetktur.netlify.app/),
-som bygger fra master på hver push. `netlify.toml` her sier hvordan: fila
+som bygger fra master ved hver push. `netlify.toml` her sier hvordan: fila
 kopieres til `index.html`, og det er alt.
 
 ```bash
@@ -21,37 +22,46 @@ til mappa.
 
 ## Hva den sier
 
-Trettien lysbilder om hva systemet er og hvorfor, ikke om hvordan vi kom dit.
-Et publikum trenger ikke vite hva vi prøvde først, bare hva som gjelder og hva
-det er godt for.
+Trettifire lysbilder om hva som kreves og hvorfor, ikke om hvordan vi kom
+dit. Et publikum trenger ikke vite hva vi prøvde først, bare hva som gjelder
+og hva det er godt for.
 
-De er delt i syv kapitler, ett per arkitektonisk beslutning. Hvert kapittel
-åpner med en forside som sier beslutningen i én setning, og som bærer et ikon
-tegnet i presentasjonens egen palett: en glassflate med lys kant og et
-glanslys på toppen, og et motiv som er plattformnært framfor en
-skrivebordsmetafor, som et nettleservindu, et DOM-tre eller en pakke med vei
-ut. Et eget lysbilde før kapitlene viser alle syv med hvert sitt ikon.
+De er delt inn i syv kapitler, ett per krav, og et åttende om fellene det er
+lett å gå i. Hvert kapittel åpner med en forside som sier kravet i én setning.
+Forsiden har et ikon tegnet med presentasjonens egen fargepalett: en
+glassflate med lys kant og et glanslys på toppen. Motivet er plattformnært og
+ikke en skrivebordsmetafor, for eksempel et nettleservindu, et DOM-tre eller
+en pakke med vei ut. Et eget lysbilde før kapitlene viser alle åtte med hvert sitt ikon. Til
+slutt kommer Fristil i bruk, med et skjemafelt og demospillet, og en
+sjekkliste publikum kan bruke på sitt eget system.
+
+Kravet og Fristils løsning står hver for seg. Nederst på et lysbilde står
+inntil tre linjer: hva kravet betyr for produktteamene, hva det koster
+designsystemteamet, og «I Fristil», som sier hvordan Fristil har løst det.
+Kode som er Fristils eget API, har et grønt Fristil-merke over seg. Kravet
+skal gi mening uten eksempelet, og eksempelet skal være lett å skille fra
+kravet.
 
 Kodepaneler står der koden **er** poenget, og ingen andre steder. De to
-linjene fra Datastar som fjerner et attributt serveren ikke sendte er hele
+linjene fra Datastar som fjerner et attributt serveren ikke sendte, er hele
 begrunnelsen for kontrakten, og de sier mer enn et avsnitt om dem. Der et
 panel bare ville vist at det finnes kode, er det ikke med.
 
 Ingen webfont. Skriften er `Helvetica, Arial, sans-serif`, som er den stakken
-Skatteetaten selv oppgir for skjerm, og en presentasjon skal ikke kunne feile
-på grunn av nettet i et møterom.
+et annet norsk designsystem oppgir for skjerm. En presentasjon skal ikke kunne
+feile på grunn av nettilgangen i møterommet.
 
-Paletten er Fristils egne tokens, skrevet av med de samme verdiene. Flaten,
-teksten og kanten er valgt for et mørkt lysbilde og hører bare til
+Paletten er Fristils egne tokens, skrevet av med de samme verdiene. Fargene på
+flaten, teksten og kantene er valgt for et mørkt lysbilde og hører bare til
 presentasjonen.
 
 ## To lysbilder som viser i stedet for å påstå
 
 Avhengighetsgrafen og morfingen er de to lysbildene med eget skript, og i
-begge er det som vises regnet ut, ikke skrevet inn.
+begge er innholdet regnet ut, ikke skrevet inn.
 Grafen tegnes fra et datasett lest ut av `package-lock.json`, med dato.
 Morfingen kjører Datastars egen løkke på to virkelige elementer, og linja
-med hva skjermleseren sier regnes ut fra det samme elementet. På smal skjerm
+med hva skjermleseren sier, regnes ut fra elementet i siden. På smal skjerm
 viser grafen tabellen sin og morfingen koden, siden ingen av dem sier noe på
 375 piksler.
 
@@ -59,8 +69,8 @@ viser grafen tabellen sin og morfingen koden, siden ingen av dem sier noe på
 
 Piltaster, `PageUp` og `PageDown`, mellomrom eller Enter. `Home` og `End` går
 til første og siste.
-Adressen får `#lysbilde-6`, så en lenke peker på ett bestemt lysbilde. Det
-finnes også to knapper som dukker opp når musa er over.
+Adressen får et anker, for eksempel `#lysbilde-6`, så en lenke peker på ett bestemt lysbilde. Det
+finnes også to knapper som dukker opp når musepekeren er over lysbildet.
 
 ## På liten skjerm
 
@@ -70,10 +80,8 @@ full skriftstørrelse, og siden ruller som en vanlig side. Knappene for å bla
 ligger fast nederst, siden det ikke finnes piltaster på en telefon.
 
 Testet i Chromium på 1440×900, 1280×800, 820 og 375 piksler bredt: ingen av de
-trettien lysbildene kan dras sidelengs, og ingen av dem ruller. Tallet sto
-lenge på at avhengighetsgrafen rullet 73 piksler på 1280; den fikk plass igjen
-da mellomrommene i lysbildet ble strammet, og målingen her er gjort på nytt.
+trettifire lysbildene kan dras sidelengs, og ingen av dem ruller inne i kortet.
 
-Grafen er det strammeste lysbildet, og tåler ikke en linje til. En egen blokk
+Grafen er det strammeste lysbildet og tåler ikke en linje til. En egen blokk
 med datoen for målingen fikk det til å rulle 15 piksler på 1280, og datoen ble
-derfor stående inne i avsnittet under grafen framfor over den.
+derfor stående inne i avsnittet under grafen i stedet for over den.

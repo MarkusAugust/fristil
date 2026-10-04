@@ -1,7 +1,7 @@
 /**
  * Felles byggeklosser for komponent-API-et.
  *
- * Hver komponent eksporterer én funksjon som tar et valgobjekt og returnerer
+ * Hver komponent eksporterer én funksjon som tar et objekt med valg og returnerer
  * attributtene du sprer inn i elementet. Formen er lik for alle, slik at du
  * bare trenger å lære den én gang.
  */
