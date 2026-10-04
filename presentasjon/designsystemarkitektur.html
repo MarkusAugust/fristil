@@ -337,6 +337,10 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
 .to { grid-template-columns: 1fr 1fr; }
 .tre { grid-template-columns: repeat(3, 1fr); }
 .to-skjev { grid-template-columns: 1.15fr 1fr; }
+/* To spalter med tittel over hvert panel, der panelene skal være like
+   høye: tittelen tar sin plass, og panelet under fyller resten. */
+.like-hoyde > div { display: flex; flex-direction: column; }
+.like-hoyde > div > :last-child { flex: 1; }
 
 .boks {
   padding: 1rem 1.1rem;
@@ -1899,7 +1903,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p class="kapittelmerke">Krav 5 av 7 · Typene virker uten rammeverk</p>
   <h2>Ett objekt inn, attributter ut</h2>
   <p>Innvendingen mot å forlate React er som regel utvikleropplevelsen: du mister komponenter som kjenner sine egne valg. Svaret er at en byggefunksjon gir det samme, fordi den er en vanlig TypeScript-funksjon. Den returnerer attributter, og editoren kjenner dem.</p>
-  <div class="rader to" style="margin-block-start: 1.1rem;">
+  <div class="rader to like-hoyde" style="margin-block-start: 1.1rem;">
     <div>
       <p class="kodetittel"><span class="fristil-merke">Fristil</span>Kallet, og det som kommer ut</p>
       <pre>fs.button({ variant: "secondary" })
@@ -1909,14 +1913,16 @@ fs.input({ type: "email", state: "invalid" })
 <i>// { class: "fs-input", type: "email",</i>
 <i>//   "data-state": "invalid", "aria-invalid": "true" }</i></pre>
     </div>
-    <div class="boks">
-      <h3>Formen er fast</h3>
+    <div>
+      <p class="kodetittel">Formen er fast</p>
+      <div class="boks">
       <ul>
         <li>Alltid et objekt, aldri posisjonelle argumenter.</li>
         <li>Standardverdien gir ikke noe attributt. CSS-en har den allerede.</li>
         <li>Lovlige verdier henges på funksjonen, så de dukker opp i editoren.</li>
         <li>Ett begrep, én betydning: <code>variant</code> er visuell vekt, <code>color</code> er hva en status betyr, <code>state</code> er validering.</li>
       </ul>
+      </div>
     </div>
   </div>
   <p style="margin-block-start: 1rem;">Skriver du feil, for eksempel <code>variant: "secondry"</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du sjekke verdien ved kjøring med <code>fs.button.isVariant()</code>.</p>
