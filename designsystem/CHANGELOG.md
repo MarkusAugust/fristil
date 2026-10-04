@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.28.0 (2026-10-04)
+
 ### Brytende
 
 - **`.fs-toast` er nå klassen på regionen, og meldingen heter
@@ -72,6 +74,9 @@ egen overskrift «Brytende».
 
 - **`pending` i `fs.suggestion()`.** Holder «Ingen treff» skjult mens svaret
   på et søk er underveis.
+- **Regelboka for bundlere forklarer `fs.setAttributes()`.** Ingen av
+  regelbøkene nevnte funksjonen, så en kodeagent som skrev markup uten
+  spredning fikk ikke vite om den, eller om at to sett sendes hver for seg.
 
 ### Rettet
 

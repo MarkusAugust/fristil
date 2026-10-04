@@ -10,7 +10,7 @@ importeres i inngangsmodulen, attributtene heter det de heter i HTML, og
 annerledes og `react.md` gjelder i stedet. Skriver du Astro, importeres
 stilarkene i frontmatteret og `astro.md` gjelder.
 
-Dette er @fristil/designsystem 0.27.1. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.28.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
@@ -301,6 +301,27 @@ byggefunksjonene:
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
 `fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
 `fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+
+Der malspråket ikke kan spre et objekt, setter `fs.setAttributes()`
+attributtene på et element i vanlig DOM:
+
+```ts
+const felt = document.querySelector<HTMLInputElement>("#epost")
+const kobling = fs.field({ id: "epost", error: true, invalid: true })
+
+fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+```
+
+Kall den på nytt for å endre tilstand. Tre regler:
+
+- **Har byggefunksjonen et valg for et attributt, eier den det.** Et kall uten
+  valget tar attributtet bort, så valgene sendes på nytt hver gang.
+  `fs.spinner()` uten `label` fjerner `role` og `aria-label`.
+- **Det byggefunksjonen ikke har et valg for, står.** `fs.button()` rører ikke
+  `disabled` eller `type`. `id` og `for` fjernes aldri.
+- **To sett på samme element sendes hver for seg**, som over. Spres de sammen
+  til ett objekt, `{ ...fs.input(), ...kobling.control }`, settes
+  attributtene, men bare `data-*` ryddes ved neste kall.
 
 ## 7. Sjekk markupen
 
