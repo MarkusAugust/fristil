@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.28.0 (2026-10-04)
+
 ### Brytende
 
 - **`.fs-toast` er nå klassen på regionen, og meldingen heter
