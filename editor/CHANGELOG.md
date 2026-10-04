@@ -3,6 +3,20 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.7.0
+
+I takt med pakkens 0.28.0.
+
+- `fs-toast__message` finnes, og `fs-toast` er klassen på regionen. 0.6.0
+  kjente ikke meldingsklassen: en gul strek sa at den ikke fantes, på markup
+  som var riktig.
+- Varianten `strong` på `fs-help-text` finnes, og `default` meldes som
+  ukjent. Den het `default` før, uten å være standardverdien.
+- Snippetene for feltet og feiloppsummeringen følger oppskriftene på
+  komponentsidene: skjemaet har `novalidate`, og feiloppsummeringen viser
+  feilene når skjemaet sendes.
+- Lenkene i hover-teksten peker på `fristil.sobernetics.no`.
+
 ## 0.6.0
 
 - `fs-progress` finnes. Framdriftsstolpen kom i pakkens 0.27.0.
