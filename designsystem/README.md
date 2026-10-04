@@ -2,7 +2,7 @@
 
 Rammeverksuavhengig designsystem for web: tokens, CSS-komponenter og web components. Alt er bygd på ting nettleseren allerede forstår, så de samme komponentene virker i ren HTML, React, Astro og [Datastar](https://data-star.dev).
 
-> **Dette er en proof of concept.** Ikke et ferdig produkt, ikke aktivt vedlikeholdt, og det kan bli lagt på is. Bruk det til å prøve ut ideen, ikke til noe du må stole på.
+> Fristil er før 1.0. Et undertall kan ha brytende endringer, og de står under «Brytende» i [versjonsloggen](https://github.com/MarkusAugust/fristil/blob/master/designsystem/CHANGELOG.md).
 
 Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire miljøer, ligger på **[fristil.sobernetics.no](https://fristil.sobernetics.no/)**.
 

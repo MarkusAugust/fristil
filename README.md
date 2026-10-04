@@ -1,6 +1,6 @@
-# Fristil Designsystem (POC)
+# Fristil Designsystem
 
-Fristil er en proof of concept for et rammeverksuavhengig designsystem for web. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+Fristil er et rammeverksuavhengig designsystem for web. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
 **Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.sobernetics.no/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
 
@@ -8,12 +8,10 @@ Fristil er en proof of concept for et rammeverksuavhengig designsystem for web. 
 
 ## Status
 
-Dette er kun en proof of concept.
+Fristil er før 1.0. Et undertall kan ha brytende endringer, og de står under
+«Brytende» i [versjonsloggen](designsystem/CHANGELOG.md).
 
-- Ikke et ferdig produkt.
-- Ikke vedlikeholdt aktivt.
-- Kan bli lagt på is eller aldri bli ferdigstilt.
-- Bidrag fra andre skjer kun etter avtale med eier.
+Bidrag fra andre skjer kun etter avtale med eier.
 
 ### Planlagt
 
