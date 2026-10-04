@@ -67,7 +67,7 @@ Sjekk markupen når du er ferdig, og rett det den melder:
     npx @fristil/designsystem sjekk <fil>
 
 Den kjenner hver klasse, hvert element, hvert attributt og hver lovlige verdi,
-skriver \`fil:linje:kolonne: melding\`, og avslutter med feilkode ved funn.`
+skriver \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode ved funn.`
 
 type Rad = { tittel: string; beskrivelse: string; adresse: string }
 
@@ -117,7 +117,7 @@ export const GET: APIRoute = async () => {
         adresse: `${BASE}/agent/${navn}.md`,
       })),
     ),
-    `Hver regelbok er komplett for sitt miljø og nevner ingen andre. Er pakken
+    `Hver regelbok er komplett for sitt miljø. Er pakken
 installert, ligger de samme filene i
 \`node_modules/@fristil/designsystem/agent/\`, og \`npx @fristil/designsystem agent\`
 skriver den som passer dette prosjektet.`,

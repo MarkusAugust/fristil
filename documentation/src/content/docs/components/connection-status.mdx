@@ -116,9 +116,28 @@ defineFsConnectionStatus()
     </script>
 
     <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+
+    <script type="module">
+      import { reportFailure, reportSuccess } from
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/connection-status/fs-connection-status.js"
+
+      const linje = document.querySelector("fs-connection-status")
+
+      // Datastar sier fra om hvert kall med hendelsen `datastar-fetch`.
+      document.addEventListener("datastar-fetch", (hendelse) => {
+        const type = hendelse.detail.type
+
+        // `retrying`: forbindelsen røk. `error`: serveren svarte med en feil.
+        if (type === "retrying" || type === "error") reportFailure(linje)
+
+        // En patch kom fram, så strømmen lever. `finished` duger ikke som
+        // tegn: den kommer også etter en feil.
+        if (type.startsWith("datastar-patch")) reportSuccess(linje)
+      })
+    </script>
     ```
 
-    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Det er nettopp da denne linja er forskjellen på en bruker som vet det og en som ikke gjør det.
+    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Nettleseren melder bare fra når maskinen mister nettet, ikke når serveren slutter å svare, så det er skriptet nederst som gjør at linja kommer også da.
   </TabItem>
 </Tabs>
 

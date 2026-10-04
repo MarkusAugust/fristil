@@ -122,12 +122,18 @@ import Preview from "./Preview.astro"
 		if (!resultat) return
 		resultat.innerHTML = `
 			<div>
-				<p class="fs-paragraph"><strong>Ingen saker passer${sokeord ? ` med «${sokeord}»` : ""}.</strong></p>
+				<p class="fs-paragraph"><strong id="demo-tomt"></strong></p>
 				<p class="fs-paragraph" data-size="small">Prøv et annet søkeord, eller fjern filtrene.</p>
 				<button class="fs-button" data-variant="secondary" type="button" id="demo-nullstill">
 					Nullstill søket
 				</button>
 			</div>`
+		// `textContent` og ikke rett i `innerHTML`: søketeksten er skrevet av
+		// brukeren, og `<img onerror=…>` i søkefeltet ville blitt kjørt.
+		const tomt = flate?.getElementById("demo-tomt")
+		if (tomt) {
+			tomt.textContent = `Ingen saker passer${sokeord ? ` med «${sokeord}»` : ""}.`
+		}
 		if (treff) treff.textContent = "Ingen treff"
 
 		flate?.getElementById("demo-nullstill")?.addEventListener("click", () => {

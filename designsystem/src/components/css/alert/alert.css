@@ -11,8 +11,8 @@
     color: var(--fs-color-neutral-text-strong);
     background: var(--fs-color-neutral-surface);
     border-radius: var(--fs-alert-radius, var(--fs-spacing-1));
-    /* Fargen ligger i en strek på kanten framfor i hele flaten, så teksten
-       beholder kontrasten mot sideflaten i begge temaer. */
+    /* Hver farge har en strek på kanten og en svak flate, satt lenger ned.
+       Teksten holder kontrasten mot den flaten i begge temaer. */
     border-inline-start: var(--fs-alert-accent, var(--fs-spacing-1)) solid
       var(--fs-color-neutral-text);
   }

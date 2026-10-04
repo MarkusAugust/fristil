@@ -80,7 +80,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/field/"
+          "url": "https://fristil.sobernetics.no/components/field/"
         }
       ]
     },
@@ -103,7 +103,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/tabs/"
+          "url": "https://fristil.sobernetics.no/components/tabs/"
         }
       ]
     },
@@ -142,7 +142,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/error-summary/"
+          "url": "https://fristil.sobernetics.no/components/error-summary/"
         }
       ]
     },
@@ -210,7 +210,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/popover/"
+          "url": "https://fristil.sobernetics.no/components/popover/"
         }
       ]
     },
@@ -241,7 +241,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/suggestion/"
+          "url": "https://fristil.sobernetics.no/components/suggestion/"
         }
       ]
     },
@@ -272,7 +272,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/dialog/"
+          "url": "https://fristil.sobernetics.no/components/dialog/"
         }
       ]
     },
@@ -301,7 +301,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/toast/"
+          "url": "https://fristil.sobernetics.no/components/toast/"
         }
       ]
     },
@@ -330,7 +330,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/session-timeout/"
+          "url": "https://fristil.sobernetics.no/components/session-timeout/"
         }
       ]
     },
@@ -359,7 +359,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.netlify.app/components/connection-status/"
+          "url": "https://fristil.sobernetics.no/components/connection-status/"
         }
       ]
     }

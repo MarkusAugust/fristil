@@ -74,10 +74,22 @@ defineFsErrorSummary()
         }
         boks.hidden = feilene.length === 0
       }
+
+      const epost = document.getElementById("epost")
+
+      document.querySelector("form").addEventListener("submit", (hendelse) => {
+        hendelse.preventDefault()
+
+        const feilene = epost.value.includes("@")
+          ? []
+          : [{ id: "epost", melding: "Skriv en e-postadresse med krøllalfa" }]
+
+        visFeil(feilene)
+      })
     </script>
     ```
 
-    Komponenten flytter fokus hit i det `hidden` tas bort.
+    Komponenten flytter fokus hit i det `hidden` tas bort. Meldingene her er skrevet i skriptet. Kommer de fra en server eller fra brukeren, sett dem med `textContent`, ikke gjennom `innerHTML`.
   </TabItem>
   <TabItem label="React">
     ```ts

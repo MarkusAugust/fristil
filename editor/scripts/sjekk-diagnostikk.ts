@@ -654,7 +654,7 @@ for (const c of cases) {
     if (covered !== c.covers)
       fail(`funnet dekker «${covered}», ikke «${c.covers}»`)
   }
-  if (!first.link.startsWith("https://fristil.netlify.app/"))
+  if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")

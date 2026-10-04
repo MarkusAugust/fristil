@@ -18,7 +18,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 `<fs-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
 
 :::note[Andre komponenter er ikke enten eller]
-`<fs-field>` er det eneste unntaket i systemet, fordi koblingen er markup og ikke oppførsel. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+`<fs-field>` kan erstattes helt av byggefunksjonen, fordi koblingen er markup og ikke oppførsel. Det samme gjelder [Dialog](../dialog/), når appen selv kaller `showModal()`. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ## Slik tar du den i bruk
@@ -40,7 +40,9 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```
 
     ```html
-    <form id="kontaktskjema">
+    <!-- novalidate: ellers stopper nettleseren et tomt påkrevd felt før
+         submit-hendelsen, og feilmeldingen under blir aldri vist. -->
+    <form id="kontaktskjema" novalidate>
       <fs-field id="navn-felt" required-marker="symbol">
         <label>Fullt navn</label>
         <input class="fs-input" type="text" name="navn" required />
@@ -83,45 +85,45 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     `new FormData(skjema)` plukker opp feltet av seg selv. Det er hele poenget med at komponenten holder seg i vanlig DOM.
   </TabItem>
   <TabItem label="React">
+    I React kaller du `fs.field()`. Da står koblingen i markupen React selv rendrer, på serveren som i nettleseren, og du trenger ikke registrere noe.
+
     ```tsx
     // main.tsx, kjøres én gang når appen starter
-    import { defineFsField } from "@fristil/designsystem/field"
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/field.css"
     import "@fristil/designsystem/button.css"
-
-    defineFsField()
-    ```
-
-    ```ts
-    // src/fristil.d.ts, gir <fs-field> typer i JSX
-    import "@fristil/designsystem/react-jsx"
     ```
 
     ```tsx
     // Kontaktskjema.tsx
     import { fs } from "@fristil/designsystem/react"
-    import { useState } from "react"
+    import { useId, useState } from "react"
 
     export function Kontaktskjema() {
       const [navn, setNavn] = useState("")
       const [berørt, setBerørt] = useState(false)
 
       const ugyldig = berørt && navn.trim() === ""
+      const felt = fs.field({
+        id: useId(),
+        required: "symbol",
+        error: true,
+        invalid: ugyldig,
+      })
 
       return (
         <form onSubmit={(e) => e.preventDefault()}>
-          <fs-field required-marker="symbol" invalid={ugyldig || undefined}>
-            <label>Fullt navn</label>
-            <input
-              {...fs.input({ type: "text" })}
-              name="navn"
-              value={navn}
-              onChange={(e) => setNavn(e.target.value)}
-              onBlur={() => setBerørt(true)}
-            />
-            <p {...fs.errorText()}>Fyll inn navnet ditt.</p>
-          </fs-field>
+          <label {...felt.label}>Fullt navn</label>
+          <input
+            {...fs.input({ type: "text" })}
+            {...felt.control}
+            name="navn"
+            required
+            value={navn}
+            onChange={(e) => setNavn(e.target.value)}
+            onBlur={() => setBerørt(true)}
+          />
+          <p {...fs.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
 
           <button {...fs.button()} type="submit">Send</button>
         </form>
@@ -129,8 +131,16 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     }
     ```
 
-    :::caution[Bare `invalid={ugyldig || undefined}` virker]
-    React behandler web components ulikt mellom versjoner, og bare dette mønsteret er riktig i begge:
+    `required: "symbol"` gir stjernen på ledeteksten. At feltet må fylles ut, sier `required` på selve feltet.
+
+    :::caution[I React kommer id-en fra `useId()`]
+    En id som lages av seg selv blir ikke den samme på serveren og i nettleseren, og React melder da avvik ved hydreringen på ledeteksten, feltet og feilmeldingen. Advarselen sier selv at avviket ikke blir rettet opp. `createFieldId()` duger heller ikke i en komponentkropp: den gir en ny id ved hver rendring.
+    :::
+
+    :::caution[Web componenten gir hydreringsfeil i React med server-rendring]
+    Komponenten skriver `for`, `id`, klassen og `hidden` på elementene i det den registreres, altså før React hydrerer. React finner da attributter den ikke rendret, og utviklingsbygget i React 19 melder «A tree hydrated but some attributes of the server rendered HTML didn't match the client properties». Feltet virker, men feilen står i konsollen på hver side med et felt. Bruk `fs.field()`.
+
+    Rendrer appen bare i nettleseren, uten server, virker `<fs-field>` også i React. Da gjelder én ting for `invalid`, siden React behandler web components ulikt mellom versjoner:
 
     | | React 18 (setter attributt) | React 19 (setter egenskap) |
     | --- | --- | --- |
@@ -138,33 +148,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     | `invalid={ugyldig}` | **alltid ugyldig** | virker |
     | `invalid={ugyldig \|\| undefined}` | virker | virker |
 
-    React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er usann.
-
-    Importerer du `@fristil/designsystem/react-jsx`, blir de to andre variantene kompileringsfeil.
-    :::
-
-    :::caution[I React kommer id-en fra `useId()`]
-    `useId()` er ikke pynt her. En id som lages av seg selv blir ikke den samme på serveren og i nettleseren, og React melder da avvik ved hydreringen på ledeteksten, feltet og hjelpeteksten. Det er sett i en ekte app, og advarselen sier selv at avviket ikke blir rettet opp. `createFieldId()` duger heller ikke i en komponentkropp: den gir en ny id ved hver rendring.
-
-    ```tsx
-    import { fs } from "@fristil/designsystem/react"
-    import { useId } from "react"
-    import "@fristil/designsystem/tokens.css"
-
-    export function Navnefelt() {
-      const felt = fs.field({ id: useId(), help: true })
-
-      return (
-        <>
-          <label {...felt.label}>Fullt navn</label>
-          <input {...fs.input({ type: "text" })} {...felt.control} name="navn" />
-          <p {...fs.helpText()} {...felt.help}>Slik det står i folkeregisteret.</p>
-        </>
-      )
-    }
-    ```
-
-    `<fs-field>` har ikke problemet: der settes id-ene i nettleseren, etter at HTML-en står der, og serveren sender ingen. Merk at det gjelder når komponenten er det eneste som kobler feltet. Bruker du React med server-rendring, skal du bruke `fs.field()`: da står koblingen ferdig i markupen serveren sendte, og React ser det samme før og etter hydreringen.
+    React 18 stringifiserer `false` til attributtet `invalid="false"`. Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til `""`, som er usann. Importerer du `@fristil/designsystem/react-jsx`, blir de to første variantene kompileringsfeil.
     :::
   </TabItem>
   <TabItem label="Astro">

@@ -64,7 +64,10 @@ const felt = fs.field({ id: "epost", required: "symbol" })
 
 fs.setAttributes(ledetekst, felt.label)
 fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+if (input) input.required = true
 ```
+
+`required: "symbol"` gir bare stjernen. At feltet må fylles ut, sier `required` på selve feltet.
 
 </Fragment>
 </Eksempel>
@@ -108,5 +111,5 @@ Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
 ## Tilgjengelighet
 
 - `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
-- Stjernen legges til med `::after` og leses ikke opp. Det er meningen, for `required` formidler det samme, og en opplest «stjerne» ved hvert felt blir støy.
+- Stjernen og «(påkrevd)» legges til med `::after`. Innhold i `::after` regnes med i navnet på feltet, så en skjermleser kan lese det etter ledeteksten. Det er `required` på feltet som sier at det må fylles ut.
 - Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.fs-sr-only` fra `sr-only.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.

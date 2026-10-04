@@ -12,7 +12,7 @@
     "url": "https://github.com/MarkusAugust/fristil.git",
     "directory": "editor"
   },
-  "homepage": "https://fristil.netlify.app/",
+  "homepage": "https://fristil.sobernetics.no/",
   "engines": {
     "vscode": "^1.90.0"
   },

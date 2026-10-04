@@ -110,7 +110,7 @@ export type ClassInfo = {
 /** Innholdet i `classes.ts`: klasse til komponent og attributter. */
 export type Classes = Record<string, ClassInfo>
 
-const DOCS = "https://fristil.netlify.app/components/"
+const DOCS = "https://fristil.sobernetics.no/components/"
 
 /*
  * Attributter ethvert element kan ha, uten at komponenten leser dem: de

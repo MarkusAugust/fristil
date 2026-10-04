@@ -77,6 +77,17 @@ egen overskrift «Brytende».
   tegnsettet, leste det feil. Det står nå som en escape.
 - **Markup med både `data-required` og `data-optional` viste «(valgfri)».**
   Byggefunksjonen velger påkrevd, og stilarket gjør nå det samme.
+- **Regelbøkene for kodeagenter sa tre ting som ikke stemte.** At
+  registrering på en server gir «customElements is not defined» (den gjør
+  ingenting, uten et ord), at siden «ser tom ut» uten registrering (det gjelder
+  bare de tre frittstående), og at `tokens.css` må lastes før komponentens
+  stilark (rekkefølgen betyr ikke noe). React-boka viser nå `fs.field()` med
+  `useId()` for et felt, ikke `<fs-field>`, som gir hydreringsfeil med
+  server-rendring. Formatet fra `fristil sjekk` står med alvoret,
+  `fil:linje:kolonne: feil: melding`.
+- **Lenkene til dokumentasjonen peker på `fristil.sobernetics.no`.**
+  `homepage` i pakken, regelbøkene, `web-types.json` og lenkene diagnostikken
+  skriver ut brukte `fristil.netlify.app`.
 
 ## 0.27.1 (2026-10-03)
 
@@ -386,9 +397,9 @@ egen overskrift «Brytende».
   resultatet.
 
 - **To kodeeksempler i dokumentasjonen importerte et pakkenavn i nettleseren.**
-  Datastar-sporet på [Rammeverk](https://fristil.netlify.app/rammeverk/) og
+  Datastar-sporet på [Rammeverk](https://fristil.sobernetics.no/rammeverk/) og
   dialogen på
-  [Bekreft en handling](https://fristil.netlify.app/monster/bekreftelse/) hadde
+  [Bekreft en handling](https://fristil.sobernetics.no/monster/bekreftelse/) hadde
   `import … from "@fristil/designsystem/field"` i en `<script type="module">`.
   Ingen av sidene har et byggesteg, og en nettleser slår ikke opp et pakkenavn
   uten byggesteg eller importmap, så koden feilet stille for den som limte den

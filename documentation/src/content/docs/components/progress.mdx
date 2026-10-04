@@ -40,7 +40,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 ```ts
 const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
 
-stolpe.value = 64
+if (stolpe) stolpe.value = 64
 ```
 
 Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Byggefunksjonen er for markupen du lager; `fs.setAttributes()` rydder ikke i `value`, siden den lista er felles for alle komponentene og ville strøket `value` fra ethvert felt.

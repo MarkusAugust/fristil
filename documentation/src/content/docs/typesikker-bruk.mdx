@@ -44,7 +44,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
 ```
 
-Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i systemets egne attributter og `fs-`-klasser; `data-testid`, `name` og dine egne klasser står urørt.
+Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i den lista og i `fs-`-klassene; `data-testid`, `name`, `id` og dine egne klasser står urørt. Lista har også `type`, `disabled`, `hidden`, `open` og `aria-describedby`. Har du satt et av dem selv, må det være med i settet du sender inn, ellers fjernes det.
 
 ## Standardverdier
 
@@ -88,12 +88,12 @@ Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
 
 | Valg | Hva det betyr | Hvor |
 | --- | --- | --- |
-| `variant` | Visuell vekt eller betydning | `button`, `helpText`, `errorText` |
-| `color` | Hva en status betyr | `badge` |
-| `state` | Valideringstilstand | `input`, `textarea`, `select` |
+| `variant` | Visuell vekt eller betydning | `button`, `card`, `tag`, `helpText`, `errorText` og flere |
+| `color` | Hva en status betyr | `badge`, `alert`, `dialog`, `progress` |
+| `state` | Valideringstilstand | `input`, `textarea`, `select`, `search`, `checkbox`, `radio`, `fileUpload`, `fieldset` |
 | `type` | HTML-typen på feltet | `input` |
 
-`state` er én type på tvers av de tre feltkomponentene, så en verdi kan sendes mellom dem uten konvertering:
+`state` er én type på tvers av feltkomponentene, så en verdi kan sendes mellom dem uten konvertering:
 
 ```ts
 const tilstand = fs.isState(fraServer) ? fraServer : "default"

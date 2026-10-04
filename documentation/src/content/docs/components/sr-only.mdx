@@ -27,10 +27,12 @@ En rad med «Slett»-knapper gir mening for den som ser tabellen. Den som hører
 import { fs } from "@fristil/designsystem/react"
 
 <button {...fs.button({ variant: "ghost" })} type="button">
-  Slett
+  Slett{" "}
   <span {...fs.srOnly()}>søknad 2024/1187</span>
 </button>
 ```
+
+`{" "}` er mellomrommet mellom de to ordene. JSX stryker et linjeskift mellom tekst og element, og uten det leses knappen som «Slettsøknad».
 
 Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
 

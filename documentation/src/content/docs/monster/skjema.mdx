@@ -48,10 +48,10 @@ Slipper du å holde styr på dette selv, bruk [Field](../../components/field/), 
 
 ## Oppsummeringen
 
-[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `fs.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, og sender fokus til riktig felt når en lenke følges. Fokusflyttingen kan slås av med `data-autofocus="false"`, som demoen over gjør.
+[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `fs.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, og sender fokus til riktig felt når en lenke følges. Fokusflyttingen kan slås av med `data-autofocus="false"`, og i dette mønsteret må den det: oppsummeringen bygges også når et felt forlates, og da ville boksen tatt fokus fra feltet brukeren nettopp tabbet til. Demoen over slår den av, og flytter fokus til boksen selv når innsendingen feiler.
 
 ```html
-<fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="skjemafeil">
+<fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" data-autofocus="false" id="skjemafeil">
   <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
   <ul class="fs-list">
     <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
@@ -99,15 +99,44 @@ skjema.addEventListener("submit", async (hendelse) => {
 
   for (const { felt: navn, melding } of feil) {
     const felt = skjema.elements[navn]
+    const feiltekst = document.getElementById(`${felt.id}-feil`)
+
+    feiltekst.textContent = melding
+    feiltekst.hidden = false
+
     felt.setAttribute("aria-invalid", "true")
     felt.dataset.state = "invalid"
-    document.getElementById(`${felt.id}-feil`).textContent = melding
+
+    // De tre tingene fra avsnittet over: uten id-en her finnes meldingen
+    // bare for den som ser den.
+    const beskrevetAv = new Set(
+      (felt.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean),
+    )
+    beskrevetAv.add(feiltekst.id)
+    felt.setAttribute("aria-describedby", [...beskrevetAv].join(" "))
   }
 
   // Den samme oppsummeringen som over, bygget av feilene serveren sendte.
-  document.querySelector("#skjemafeil ul").innerHTML = feil
-    .map(({ felt, melding }) => `<li><a href="#${felt}">${melding}</a></li>`)
-    .join("")
+  // `textContent` og ikke `innerHTML`: meldingen kommer utenfra.
+  const boks = document.getElementById("skjemafeil")
+
+  boks.querySelector("ul").replaceChildren(
+    ...feil.map(({ felt: navn, melding }) => {
+      const punkt = document.createElement("li")
+      const lenke = document.createElement("a")
+      lenke.href = `#${skjema.elements[navn].id}`
+      lenke.textContent = melding
+      punkt.append(lenke)
+      return punkt
+    }),
+  )
+
+  // Overskriften skrives her, slik serveren ellers ville gjort det.
+  boks.querySelector("h2").textContent =
+    feil.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feil.length} feil`
+
+  boks.hidden = false
+  boks.focus()
 })
 ```
 

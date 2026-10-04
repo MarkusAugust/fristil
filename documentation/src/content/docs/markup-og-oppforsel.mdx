@@ -55,7 +55,7 @@ Koblingen mellom delene er markup: `for` og `id` i et felt, `aria-controls` og `
 | **Ja.** React, Astro, en Node-server, eller en app helt uten server | `fs.field()`, `fs.tabs()`, `fs.popover()`, `fs.suggestion()`, `fs.dialog()`, `fs.errorSummary()`. Attributtene står ferdig i HTML-en |
 | **Nei.** En Go-mal, en PHP-fil, en Razor-visning, en publiseringsløsning eller håndskrevet HTML | Strukturen alene. Komponenten setter rollene, id-ene og koblingen i nettleseren |
 
-Byggefunksjonene er TypeScript. Kan koden som lager HTML-en kalle dem, er det den korteste veien: nettleseren trenger ingen registrert komponent for at semantikken skal stemme. Kan den ikke det, fyller komponenten inn det som mangler, lar det serveren skrev stå, og setter det tilbake om en patch tar det. `<fs-field>` trenger ikke komponenten i det hele tatt når `fs.field()` har skrevet feltet; de andre trenger den uansett, for oppførselen.
+Byggefunksjonene er TypeScript. Kan koden som lager HTML-en kalle dem, er det den korteste veien: nettleseren trenger ingen registrert komponent for at semantikken skal stemme. Kan den ikke det, fyller komponenten inn det som mangler, lar det serveren skrev stå, og setter det tilbake om en patch tar det. `<fs-field>` trenger ikke komponenten i det hele tatt når `fs.field()` har skrevet feltet, og en dialog trenger den ikke når appen selv kaller `showModal()`. De andre trenger den uansett, for oppførselen.
 
 ### Oppførselen: alltid komponenten
 
@@ -388,7 +388,7 @@ Tre komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/in
 
 [`<fs-toast>`](/components/toast/) viser meldinger appen lager mens siden står. Serveren har ingen utgave av dem å sende.
 
-Alle tre setter `data-ignore-morph`, som ber morfingen la innholdet stå. Det gjør også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut, så du trenger ikke huske det.
+Alle tre skal ha `data-ignore-morph`, som ber morfingen la innholdet stå. Det skal også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut. Skriver du markupen for hånd, i en Go- eller Kotlin-mal, må du skrive det selv: komponentene setter det ikke.
 
 Her holder ikke reparasjon. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 

@@ -2,7 +2,7 @@
 
 Fristil er en proof of concept for et rammeverksuavhengig designsystem for web. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
-**Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.netlify.app/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
+**Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.sobernetics.no/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
 
 ## Status
 
@@ -95,10 +95,10 @@ Nettleserne hentes med `bun --filter @fristil/designsystem nettlesere`.
 3. Eksporter fra `designsystem/src/index.ts` hvis den skal med i `fs`.
 4. Legg byggefunksjonen inn i `designsystem/src/react.ts`, med React-navnene på attributtene.
 5. Deklarer elementet og egenskapene i `designsystem/src/jsx/react.ts`.
-6. Legg stilarket inn i `customCss` og i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
+6. Legg stilarket inn i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
 7. Skriv komponentsiden under `documentation/src/content/docs/components/` og legg den i sidebaren i `documentation/astro.config.mjs`.
 
-Steg 4 og 5 er ikke valgfrie: `react.browser.test.ts` krever at hver funksjon i `fs` finnes i `/react`, og en test leser `static properties` fra komponentene og krever at hvert attributt er deklarert for JSX.
+Steg 4 og 5 er ikke valgfrie: `react.browser.test.ts` krever at hver funksjon i `fs` finnes i `/react`, og en test leser `static observedAttributes` fra komponentene og krever at hvert attributt er deklarert for JSX.
 
 Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 

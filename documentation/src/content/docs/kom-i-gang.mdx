@@ -16,7 +16,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
 
 ## Importer stilarkene
 
-`tokens.css` definerer alle CSS-variablene. Alle andre stilark bygger på den, så den lastes først.
+`tokens.css` definerer alle CSS-variablene, og alle andre stilark bygger på den. Den må lastes, og står først i eksemplene av vane: rekkefølgen mellom den og de andre har ikke noe å si.
 
 <Tabs>
   <TabItem label="Med byggverktøy">
@@ -114,7 +114,7 @@ Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert.
 </fs-field>
 ```
 
-Får du en tom side, har `define`-funksjonen nesten alltid ikke kjørt.
+Står ledeteksten og feltet der, men uten kobling og uten stjerne, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett. Det er bare de tre frittstående, `<fs-toast>`, `<fs-session-timeout>` og `<fs-connection-status>`, som er tomme til de er registrert.
 
 ## Inngangspunkter
 
@@ -169,7 +169,7 @@ Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra
 | `@fristil/designsystem/host-element` | `HostElement` og `defineElement`: grunnlaget web-komponentene arver fra |
 | `@fristil/designsystem/tokens` | `cssTokens`, `CssToken`, `Breakpoints`, `Containers` |
 
-Hver komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten.
+Hver CSS-komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten. Unntaket er `/switch`, der funksjonen heter `switchControl`, siden `switch` er et reservert ord. Byggefunksjonene for web-komponentene, som `fs.tabs()` og `fs.dialog()`, har ikke eget inngangspunkt: de ligger i `fs` og i hovedinngangen. `/tabs`, `/dialog` og de andre har klassen og `define`-funksjonen.
 
 `fs` er valgfritt. `class="fs-button" data-variant="secondary"` for hånd gir samme resultat; funksjonene finnes for å fange skrivefeil.
 

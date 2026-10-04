@@ -419,7 +419,7 @@ async function agent(args: string[]): Promise<void> {
  * `fristil sjekk <fil…>`: den samme sjekken som editoren kjører mens du
  * skriver, over ferdige filer. Uten filer leses standard inn, så en test
  * kan sende HTML-en serveren faktisk sender. Hvert funn skrives som
- * `fil:linje:kolonne: melding`, som en kompilator, og ett funn er nok til
+ * `fil:linje:kolonne: feil: melding`, som en kompilator, og ett funn er nok til
  * å avslutte med feil: en advarsel fra editoren er en feil i en mal ingen
  * kompilator ser på.
  */

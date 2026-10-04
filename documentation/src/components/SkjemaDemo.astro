@@ -229,5 +229,9 @@ import Preview from "./Preview.astro"
 		if (status) {
 			status.textContent = antall === 0 ? "Søknaden er sendt." : ""
 		}
+
+		// Boksen har `data-autofocus="false"`, siden den også bygges når et
+		// felt forlates. Da er det innsendingen som må flytte fokus dit.
+		if (antall > 0) oppsummering?.focus()
 	})
 </script>
