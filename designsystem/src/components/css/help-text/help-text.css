@@ -10,7 +10,7 @@
     color: var(--fs-color-neutral-text-subtle);
   }
 
-  .fs-help-text[data-variant="default"] {
+  .fs-help-text[data-variant="strong"] {
     color: var(--fs-color-neutral-text-strong);
   }
 

@@ -23,7 +23,45 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`.fs-toast` er nå klassen på regionen, og meldingen heter
+  `.fs-toast__message`.** Regionen ble stylet med elementnavnet, så en
+  `<fs-toast>` registrert under et annet navn mistet plasseringen i hjørnet.
+  Komponenten setter klassen på seg selv, og `fs.toast().host` skriver den.
+  Elementnavnet `fs-toast` har fortsatt de samme reglene, så en region uten
+  klassen står der den sto.
+  Det du må gjøre: har du egen CSS mot `.fs-toast`, eller en server som
+  skriver meldinger rett inn i regionen, bytt til `.fs-toast__message`.
+  `fs.toast().toast` heter `fs.toast().message`, og `TOAST_MESSAGE_CLASS` er
+  ny ved siden av `TOAST_CLASS`. `--fs-toast-*`-variablene er de samme.
+- **Varianten `default` på hjelpeteksten heter `strong`.** Standardverdien
+  er `muted`, og overalt ellers betyr `default` «gir ikke attributt». Det du
+  må gjøre: bytt `data-variant="default"` med `data-variant="strong"`, og
+  `fs.helpText({ variant: "default" })` med `"strong"`.
+- **`fs.suggestion()` leser ikke lenger `open` for tommeldingen.** Den
+  skriver `hidden` på «Ingen treff» når det finnes treff, eller når `pending`
+  er satt. At lista er lukket, tar stilarket seg av: `.fs-suggestion__empty`
+  vises ikke etter en liste med `hidden`. Før måtte en app som filtrerer selv
+  (`prefiltered`) sende `open`, en tilstand bare komponenten kjenner, så
+  meldingen kunne aldri vises. Det du må gjøre: tommeldingen må stå etter
+  lista, som søsken, og et asynkront søk sender `pending: true` mens svaret
+  er underveis.
+- **Forslagslista åpnes ikke når den er tom og feltet er tomt.** Fokus åpnet
+  en liste uten alternativer, med `aria-expanded="true"` over ingenting. Et
+  felt som venter på sitt første søk viser dermed ikke «Ingen treff» før
+  brukeren har skrevet noe.
+
+### Lagt til
+
+- **`pending` i `fs.suggestion()`.** Holder «Ingen treff» skjult mens svaret
+  på et søk er underveis.
+
 ### Rettet
+
+- **`fs.setAttributes` fjernet `type` fra elementet.** `fs.setAttributes(knapp,
+  fs.button())` strøk `type="submit"`. `fs.input()` skriver alltid `type`, så
+  den trengte aldri å ryddes, og den er tatt ut av lista.
 
 - **En dialog styrt av React-tilstand lot seg ikke lukke i React 19.** React
   skriver `el.open = undefined` når en prop går fra `true` til borte, og

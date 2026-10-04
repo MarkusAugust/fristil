@@ -271,7 +271,7 @@ function lesSkjema() {
 
   const melding = await side.evaluate(() => {
     const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    return rot?.querySelector(".fs-toast")?.textContent ?? ""
+    return rot?.querySelector(".fs-toast__message")?.textContent ?? ""
   })
 
   krev(

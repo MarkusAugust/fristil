@@ -4,7 +4,7 @@ export const HELP_TEXT_CLASS = "fs-help-text" as const
 
 export const helpTextVariants = [
   "muted",
-  "default",
+  "strong",
   "success",
   "warning",
 ] as const

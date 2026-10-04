@@ -287,7 +287,7 @@ describe("fs-suggestion som venter på det første svaret", () => {
         <div ${attr(tomt.field)}>
           <input ${attr(tomt.control)} name="kommune">
           <ul ${attr(tomt.list)}></ul>
-          <p ${attr(tomt.empty)} hidden>Ingen treff</p>
+          <p ${attr(tomt.empty)}>Ingen treff</p>
           <span ${attr(tomt.status)}></span>
         </div>
       </fs-suggestion>
@@ -304,8 +304,16 @@ describe("fs-suggestion som venter på det første svaret", () => {
 
     const status = felt.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("")
+    // Byggefunksjonen skriver ikke `hidden` på en tom liste lenger. Det
+    // som holder meldingen borte er at en tom liste under et tomt felt
+    // ikke åpnes, og at stilarket skjuler meldingen etter en lukket liste.
+    const liste = felt.querySelector("ul") as HTMLElement
     const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
-    expect(tom.hidden, "viste «Ingen treff» før noen hadde søkt").toBe(true)
+    expect(liste.hidden, "en tom liste åpnet seg ved fokus").toBe(true)
+    expect(
+      getComputedStyle(tom).display,
+      "viste «Ingen treff» før noen hadde søkt",
+    ).toBe("none")
   })
 
   it("melder fra når serveren har sendt lista", async () => {
@@ -627,12 +635,13 @@ describe("fs-suggestion lukker og rydder", () => {
 })
 
 describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
-  it("skjuler tommeldingen på et lukket felt uten alternativer", () => {
-    // Det anbefalte oppsettet for asynkront søk: tom liste til svaret
-    // kommer. Meldingen sto synlig alt ved sidelasting.
-    expect(suggestion({ id: "k", count: 0 }).empty.hidden).toBe(true)
-    expect(suggestion({ id: "k", count: 0, open: true }).empty.hidden).toBe(
-      undefined,
+  it("skriver hidden på tommeldingen når det finnes treff eller svaret er underveis", () => {
+    // At lista er lukket, står ikke her lenger: stilarket skjuler meldingen
+    // etter en lukket liste, og «tommeldingen når appen filtrerer selv»
+    // etterprøver at den faktisk ikke vises ved sidelasting.
+    expect(suggestion({ id: "k", count: 0 }).empty.hidden).toBe(undefined)
+    expect(suggestion({ id: "k", count: 0, pending: true }).empty.hidden).toBe(
+      true,
     )
     expect(suggestion({ id: "k", count: 2, open: true }).empty.hidden).toBe(
       true,
@@ -802,5 +811,77 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
     observatør.disconnect()
     omslag.remove()
+  })
+})
+
+describe("tommeldingen når appen filtrerer selv", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  /** Slik en React-app rendrer feltet: bare treffene, og `prefiltered`. */
+  async function felt(valg: { count: number; pending?: boolean }) {
+    const forslag = suggestion({ id: "kommune", ...valg })
+    monter(`
+      <fs-suggestion prefiltered>
+        <label ${attr(forslag.label)}>Kommune</label>
+        <div ${attr(forslag.field)}>
+          <input ${attr(forslag.control)} name="kommune">
+          <ul ${attr(forslag.list)}>${forslag.options
+            .map((valg, i) => `<li ${attr(valg)}>Treff ${i}</li>`)
+            .join("")}</ul>
+          <p ${attr(forslag.empty)}>Ingen treff</p>
+          <span ${attr(forslag.status)}></span>
+        </div>
+      </fs-suggestion>
+    `)
+    const vert = await tegn()
+    return {
+      input: vert.querySelector("input") as HTMLInputElement,
+      liste: vert.querySelector("ul") as HTMLElement,
+      tom: vert.querySelector(".fs-suggestion__empty") as HTMLElement,
+    }
+  }
+
+  const synlig = (element: HTMLElement) =>
+    getComputedStyle(element).display !== "none"
+
+  it("viser ikke meldingen mens lista er lukket, selv uten treff", async () => {
+    // Appen vet ikke om lista er åpen: den tilstanden er komponentens.
+    // Stilarket skjuler meldingen etter en liste med `hidden`.
+    const { liste, tom } = await felt({ count: 0 })
+
+    expect(liste.hidden).toBe(true)
+    expect(tom.hasAttribute("hidden")).toBe(false)
+    expect(synlig(tom)).toBe(false)
+  })
+
+  it("viser meldingen når lista åpnes og søket ga ingenting", async () => {
+    const { input, liste, tom } = await felt({ count: 0 })
+
+    input.focus()
+    input.value = "xyz"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await tegn()
+
+    expect(liste.hidden, "lista åpnet seg ikke").toBe(false)
+    expect(synlig(tom)).toBe(true)
+  })
+
+  it("holder meldingen skjult mens svaret er underveis", async () => {
+    const { input, liste, tom } = await felt({ count: 0, pending: true })
+
+    input.focus()
+    input.value = "xyz"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await tegn()
+
+    expect(liste.hidden).toBe(false)
+    expect(synlig(tom)).toBe(false)
+  })
+
+  it("skjuler meldingen når det finnes treff", async () => {
+    const { tom } = await felt({ count: 2 })
+    expect(tom.hasAttribute("hidden")).toBe(true)
   })
 })

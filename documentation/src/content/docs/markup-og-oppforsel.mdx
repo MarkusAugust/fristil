@@ -374,6 +374,8 @@ fs-suggestion:not(:defined) .fs-suggestion__list {
 }
 ```
 
+Tommeldingen i forslagsfeltet har en tilsvarende regel, og den gjelder også etter registreringen: `.fs-suggestion__empty` vises ikke etter en liste med `hidden`.
+
 Fanereglen viser det første panelet som ikke er skjult, så den overstyrer ikke et `hidden` serveren har skrevet. Den rekker bare panelene som står inne i `<fs-tabs>`: ligger et panel utenfor, må serveren skrive `hidden` på det selv.
 
 Reglene er nevnt her fordi `:not(:defined)` er lett å ta for en feil når du leser CSS-en.

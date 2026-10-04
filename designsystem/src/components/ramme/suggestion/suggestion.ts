@@ -20,6 +20,12 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
   activeIndex?: number
   /** Lista er åpen. Standard: lukket. */
   open?: boolean
+  /**
+   * Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så
+   * et asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket
+   * og svaret.
+   */
+  pending?: boolean
 }
 
 /**
@@ -42,6 +48,7 @@ export const suggestion = ({
   count = 0,
   activeIndex = -1,
   open = false,
+  pending = false,
   ...field
 }: SuggestionOptions) => {
   // Reserven gjelder bare den som ikke har en typesjekk.
@@ -91,14 +98,17 @@ export const suggestion = ({
     /**
      * Teksten som vises når ingenting passer.
      *
-     * Den følger lista: synlig bare når lista er åpen og tom. Sto den synlig
-     * på et lukket felt uten alternativer, viste det anbefalte oppsettet for
-     * asynkront søk «Ingen treff» alt ved sidelasting. Komponenten skjuler
-     * og viser den igjen mens brukeren skriver.
+     * Den følger lista: synlig bare når lista er åpen og tom. At lista er
+     * lukket, tar stilarket seg av, med en regel som skjuler tommeldingen
+     * etter en liste med `hidden`. Byggefunksjonen sier derfor bare om det
+     * finnes treff, og om svaret er kommet (`pending`). Den leste `open`
+     * før, og med `prefiltered` eier appen tommeldingen uten å vite om lista
+     * er åpen: den tilstanden er komponentens, så meldingen kunne aldri
+     * vises.
      */
     empty: attributes({
       class: SUGGESTION_EMPTY_CLASS,
-      hidden: open && count === 0 ? undefined : (true as const),
+      hidden: count === 0 && !pending ? undefined : (true as const),
     }),
     /**
      * Området som melder antall treff til skjermlesere.

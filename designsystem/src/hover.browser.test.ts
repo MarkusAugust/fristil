@@ -101,7 +101,7 @@ const TILFELLER: Tilfelle[] = [
   },
   {
     regel: ".fs-toast__close:hover",
-    markup: `<div class="fs-toast"><p>Lagret</p><button class="fs-toast__close" type="button">Lukk</button></div>`,
+    markup: `<div class="fs-toast__message"><p>Lagret</p><button class="fs-toast__close" type="button">Lukk</button></div>`,
     velger: ".fs-toast__close",
   },
 ]

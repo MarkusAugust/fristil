@@ -469,8 +469,19 @@ export class FsSuggestion extends HostElement {
   }
 
   private setOpen(open: boolean): void {
-    this.wantOpen = open
-    this.applyOpen(open)
+    /*
+     * En liste uten alternativer under et tomt felt har ingenting å vise,
+     * og åpnes ikke. Uten dette åpnet fokus en tom liste, og et felt som
+     * venter på sitt første søk viste «Ingen treff» før brukeren hadde
+     * skrevet et tegn: tommeldingen følger lista, og lista var åpen.
+     */
+    const show = open && this.hasSomethingToShow()
+    this.wantOpen = show
+    this.applyOpen(show)
+  }
+
+  private hasSomethingToShow(): boolean {
+    return this.options.length > 0 || (this.control?.value ?? "").trim() !== ""
   }
 
   /** Skriver tilstanden ut i markupen, uten å endre hva brukeren ville. */

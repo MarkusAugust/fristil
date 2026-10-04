@@ -255,6 +255,17 @@ describe("setAttributes og de boolske valgene", () => {
     expect(sok.getAttribute("role")).toBe("combobox")
   })
 
+  it("lar type stå på en knapp", () => {
+    // `type` sto i lista over det som ryddes, og `fs.button()` skriver den
+    // aldri: knappen mistet `type="submit"` uten at noe sa fra.
+    const knapp = document.createElement("button")
+    knapp.setAttribute("type", "submit")
+
+    fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
+
+    expect(knapp.getAttribute("type")).toBe("submit")
+  })
+
   it("fjerner placement når sprettoppvinduet går tilbake til standard", () => {
     const vert = document.createElement("fs-popover")
     fs.setAttributes(vert, fs.popover({ id: "p", placement: "top-end" }).host)

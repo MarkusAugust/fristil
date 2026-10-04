@@ -44,7 +44,7 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
 ```
 
-Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i den lista og i `fs-`-klassene; `data-testid`, `name`, `id` og dine egne klasser står urørt. Lista har også `type`, `disabled`, `hidden`, `open` og `aria-describedby`. Har du satt et av dem selv, må det være med i settet du sender inn, ellers fjernes det.
+Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i den lista og i `fs-`-klassene; `data-testid`, `name`, `id` og dine egne klasser står urørt. Lista har også `disabled`, `hidden`, `open` og `aria-describedby`, siden bryteren, feilmeldingen, dialogen og feltet skriver dem. Har du satt et av dem selv på elementet, må det være med i settet du sender inn, ellers fjernes det. `type` fjernes aldri.
 
 ## Standardverdier
 

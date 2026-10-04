@@ -637,6 +637,11 @@
           "doc-url": "https://fristil.sobernetics.no/components/toast/"
         },
         {
+          "name": "fs-toast__message",
+          "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
+          "doc-url": "https://fristil.sobernetics.no/components/toast/"
+        },
+        {
           "name": "fs-toast__close",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
           "doc-url": "https://fristil.sobernetics.no/components/toast/"

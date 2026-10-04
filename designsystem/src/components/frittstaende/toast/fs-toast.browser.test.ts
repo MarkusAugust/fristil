@@ -59,7 +59,7 @@ describe("fs-toast", () => {
 
     lukk.click()
 
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
   })
 
   it("lar en melding bli stående når levetiden er null", async () => {
@@ -68,7 +68,7 @@ describe("fs-toast", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(1)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(1)
   })
 
   it("fjerner meldingen når levetiden er ute", async () => {
@@ -77,7 +77,7 @@ describe("fs-toast", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 120))
 
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -107,12 +107,12 @@ describe("fs-toast holder pausen og fokus", () => {
     melding.dispatchEvent(new MouseEvent("mouseleave"))
     await new Promise((r) => setTimeout(r, 120))
     expect(
-      toast.querySelectorAll(".fs-toast"),
+      toast.querySelectorAll(".fs-toast__message"),
       "forsvant med fokus i",
     ).toHaveLength(1)
     ;(document.getElementById("annet") as HTMLElement).focus()
     await new Promise((r) => setTimeout(r, 120))
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
   })
 
   it("flytter fokus til meldingen ved siden av når den som hadde fokus lukkes", async () => {
@@ -126,7 +126,7 @@ describe("fs-toast holder pausen og fokus", () => {
     lukk.focus()
     lukk.click()
 
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(2)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(2)
     // Den under, altså den eldre, ikke den nyeste øverst.
     expect(document.activeElement).toBe(eldste.querySelector("button"))
   })
@@ -136,7 +136,7 @@ describe("fs-toast holder pausen og fokus", () => {
     const toast = await tegn()
     toast.show("Blir stående")
     await new Promise((r) => setTimeout(r, 50))
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(1)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(1)
   })
 
   it("lar et tomt duration bety standardverdien", async () => {
@@ -176,7 +176,7 @@ describe("fs-toast holder pausen og fokus", () => {
     toast.show("En", { duration: 0 })
     toast.show("To", { duration: 0 })
     toast.clear()
-    expect(toast.querySelectorAll(".fs-toast")).toHaveLength(0)
+    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
   })
 })
 
@@ -199,7 +199,7 @@ describe("showToast() venter på registreringen", () => {
     })
     await ventPaTegning()
     expect(ferdig).toBe(false)
-    expect(element.querySelector(".fs-toast")).toBeNull()
+    expect(element.querySelector(".fs-toast__message")).toBeNull()
 
     customElements.define("fs-toast-sen", class extends FsToast {})
 
@@ -207,5 +207,32 @@ describe("showToast() venter på registreringen", () => {
     expect(element.contains(melding)).toBe(true)
     expect(melding.getAttribute("data-color")).toBe("success")
     expect(melding.textContent).toContain("Søknaden er lagret")
+  })
+})
+
+describe("fs-toast under et annet tagnavn", () => {
+  it("ligger fortsatt fast i hjørnet", async () => {
+    /*
+     * Plasseringen sto på elementnavnet, så en region registrert som noe
+     * annet enn `fs-toast` havnet i vanlig flyt. Den står nå på klassen, som
+     * komponenten setter selv. En underklasse, siden en konstruktør bare
+     * kan stå i registeret én gang.
+     */
+    class AnnenToast extends FsToast {}
+    customElements.define("annen-toast", AnnenToast)
+    monter("<annen-toast></annen-toast>")
+    await customElements.whenDefined("annen-toast")
+    const region = document.querySelector("annen-toast") as FsToast
+
+    region.show("Lagret")
+
+    expect(region.classList.contains("fs-toast")).toBe(true)
+    expect(getComputedStyle(region).position).toBe("fixed")
+    expect(region.querySelectorAll(".fs-toast__message")).toHaveLength(1)
+  })
+
+  it("gir verten klassen fra byggefunksjonen", () => {
+    expect(fsToast().host.class).toBe("fs-toast")
+    expect(fsToast().message.class).toBe("fs-toast__message")
   })
 })

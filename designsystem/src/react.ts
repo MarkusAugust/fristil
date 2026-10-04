@@ -282,8 +282,8 @@ export const fs = {
   toast: (options: Parameters<typeof toast>[0] = {}) => {
     const built = toast(options)
     return {
-      host: built.host,
-      toast: toReactAttributes(built.toast),
+      host: toReactAttributes(built.host),
+      message: toReactAttributes(built.message),
       close: toReactAttributes(built.close),
     }
   },
