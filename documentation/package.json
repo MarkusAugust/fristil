@@ -16,6 +16,7 @@
     "@fristil/designsystem": "workspace:*"
   },
   "devDependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@tailwindcss/vite": "^4.3.0",
     "axe-core": "4.13.0",
