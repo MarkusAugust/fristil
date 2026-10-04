@@ -1,17 +1,30 @@
 <idea-plugin>
-    <id>no.fristil.intellij</id>
+    <!-- ID-en kan aldri endres etter første opplasting til Marketplace. -->
+    <id>no.fristil</id>
     <name>Fristil</name>
-    <vendor url="https://github.com/MarkusAugust/fristil">MarkusAugust</vendor>
+    <vendor email="m.a.sobergklyver@gmail.com" url="https://github.com/MarkusAugust/fristil">MarkusAugust</vendor>
 
+    <!--
+        Marketplace krever engelsk som hovedspråk i beskrivelsen. Den norske
+        kommer etter, slik retningslinjene tillater.
+    -->
     <description><![CDATA[
-        Fullføring på Fristils CSS-klasser i HTML, også i HTML som er injisert
-        i en streng.
+        Completion for the CSS classes of the
+        <a href="https://fristil.sobernetics.no">Fristil</a> design system in HTML,
+        including HTML injected into a string.
         <br><br>
-        <code>web-types.json</code> gir fullføring i vanlige HTML-filer uten
-        denne pluginen. Den leses bare ikke inn i injiserte fragmenter, altså
-        markup som bor i en Kotlin- eller TypeScript-streng. Pluginen lukker
-        det hullet, og henter klassene fra den samme fila, så editoren og
-        diagnostikken ikke kan si ulike ting.
+        The <code>web-types.json</code> file shipped with
+        <code>@fristil/designsystem</code> already gives completion in plain HTML
+        files without this plugin. It is not read for injected fragments, though:
+        markup that lives in a Kotlin or TypeScript string marked with
+        <code>@Language("HTML")</code> or <code>// language=HTML</code>. This
+        plugin closes that gap, using the same class list as the package, so the
+        editor and the diagnostics never disagree.
+        <br><br>
+        <a href="https://github.com/MarkusAugust/fristil">Source code</a> (MIT)
+        <br><br>
+        <b>Norsk:</b> Fullføring på Fristils CSS-klasser i HTML, også i HTML som
+        er injisert i en streng merket med <code>@Language("HTML")</code>.
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
