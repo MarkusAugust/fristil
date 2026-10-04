@@ -177,6 +177,19 @@ Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og
 
 Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
 
+## Lisens og navn
+
+Fristil er utgitt under MIT. Det koster ingenting, og hver versjon som er sluppet forblir MIT:
+den tillatelsen kan ikke trekkes tilbake, heller ikke av meg. Du kan bruke det kommersielt,
+endre det og sende det med i et lukket produkt. Det eneste vilkåret er at copyright-notisen
+følger med.
+
+Navnet Fristil og merket er ikke en del av den tillatelsen. Du står fritt til å forke koden, men
+ikke til å kalle resultatet Fristil eller publisere under det navnet.
+
+Bidrag: issues er alltid velkomne. Pull requests tas imot etter en samtale først, og den som
+bidrar signerer [CLA.md](CLA.md). Hele bildet står i [dokumentasjonen](https://fristil.sobernetics.no/lisens/).
+
 ---
 
 <a href="https://sobernetics.no">

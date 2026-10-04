@@ -87,6 +87,7 @@ export default defineConfig({
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
             { label: "Editoren", slug: "editoren" },
             { label: "Kodeagenter", slug: "kodeagenter" },
+            { label: "Lisens og pris", slug: "lisens" },
           ],
         },
         {
