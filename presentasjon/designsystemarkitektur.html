@@ -337,6 +337,10 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
 .to { grid-template-columns: 1fr 1fr; }
 .tre { grid-template-columns: repeat(3, 1fr); }
 .to-skjev { grid-template-columns: 1.15fr 1fr; }
+/* To spalter med tittel over hvert panel, der panelene skal være like
+   høye: tittelen tar sin plass, og panelet under fyller resten. */
+.like-hoyde > div { display: flex; flex-direction: column; }
+.like-hoyde > div > :last-child { flex: 1; }
 
 .boks {
   padding: 1rem 1.1rem;
@@ -592,7 +596,7 @@ tr:last-child td { border-block-end: none; }
             fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
       <path d="M48 17 a8 8 0 0 1 8 8 v6 a5 5 0 0 0 5 5 a5 5 0 0 0 -5 5 v6 a8 8 0 0 1 -8 8"
             fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Typene virker uten rammeverk</strong><span>1 lysbilde</span></div></li>
+      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Typene virker uten rammeverk</strong><span>2 lysbilder</span></div></li>
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="folag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="golag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#folag)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#golag)"/>
       <path d="M36 40 L14 50 L36 60 L58 50 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.5" stroke-linejoin="round"/>
       <path d="M36 28 L14 38 L36 48 L58 38 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.75" stroke-linejoin="round"/>
@@ -1890,6 +1894,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p class="dempet">Det er dette som gjør at rammeverksuavhengighet ikke oppleves som et tilbakeskritt.</p>
   <ol class="kapittelliste">
       <li>Ett objekt inn, attributter ut</li>
+      <li>Kodeagenter får en sjekk i hvert miljø</li>
   </ol>
 </section>
 
@@ -1898,7 +1903,7 @@ en skjermleser leser det opp uten navn.</pre>
   <p class="kapittelmerke">Krav 5 av 7 · Typene virker uten rammeverk</p>
   <h2>Ett objekt inn, attributter ut</h2>
   <p>Innvendingen mot å forlate React er som regel utvikleropplevelsen: du mister komponenter som kjenner sine egne valg. Svaret er at en byggefunksjon gir det samme, fordi den er en vanlig TypeScript-funksjon. Den returnerer attributter, og editoren kjenner dem.</p>
-  <div class="rader to" style="margin-block-start: 1.1rem;">
+  <div class="rader to like-hoyde" style="margin-block-start: 1.1rem;">
     <div>
       <p class="kodetittel"><span class="fristil-merke">Fristil</span>Kallet, og det som kommer ut</p>
       <pre>fs.button({ variant: "secondary" })
@@ -1908,14 +1913,16 @@ fs.input({ type: "email", state: "invalid" })
 <i>// { class: "fs-input", type: "email",</i>
 <i>//   "data-state": "invalid", "aria-invalid": "true" }</i></pre>
     </div>
-    <div class="boks">
-      <h3>Formen er fast</h3>
+    <div>
+      <p class="kodetittel">Formen er fast</p>
+      <div class="boks">
       <ul>
         <li>Alltid et objekt, aldri posisjonelle argumenter.</li>
         <li>Standardverdien gir ikke noe attributt. CSS-en har den allerede.</li>
         <li>Lovlige verdier henges på funksjonen, så de dukker opp i editoren.</li>
         <li>Ett begrep, én betydning: <code>variant</code> er visuell vekt, <code>color</code> er hva en status betyr, <code>state</code> er validering.</li>
       </ul>
+      </div>
     </div>
   </div>
   <p style="margin-block-start: 1rem;">Skriver du feil, for eksempel <code>variant: "secondry"</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du sjekke verdien ved kjøring med <code>fs.button.isVariant()</code>.</p>
@@ -1926,6 +1933,44 @@ fs.input({ type: "email", state: "invalid" })
 </section>
 
 <!-- 25 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Krav 5 av 7 · Typene virker uten rammeverk</p>
+  <h2>Kodeagenter får en sjekk i hvert miljø</h2>
+  <p>En kodeagent fyller hullene med det den har sett i andre designsystemer: <code>fs-modal</code>, <code>data-variant="outline"</code>. Den stopper bare hvis noe sier fra mens den jobber.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Med JavaScript sier TypeScript fra</p>
+      <pre><i>// knapp.ts</i>
+fs.button({ variant: "outline" })
+
+<i>$ tsc</i>
+knapp.ts(2,34): error TS2322: Type '"outline"'
+  is not assignable to type '"danger" | "primary"
+  | "secondary" | "ghost" | undefined'.</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Regelboka ber agenten bruke byggefunksjonene. En klasse skrevet for hånd i en streng ser TypeScript ikke.</p>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Uten JavaScript leverer designsystemet sjekken selv</p>
+      <pre><i>$ npx @fristil/designsystem sjekk side.html</i>
+side.html:1:14: advarsel: Klassen «fs-modal»
+  finnes ikke i Fristil.
+side.html:2:29: advarsel: data-variant kan ikke
+  være «outline» på button. Lovlige verdier:
+  secondary, ghost, danger, og primary uten attributt.
+
+2 funn i 1 fil.
+<i>$ echo $?</i>
+1</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Sjekken leser HTML-en eller malen og avslutter med feilkode, slik <code>tsc</code> gjør. Uten funn svarer den «Markupen stemmer med Fristil i 1 fil.» og avslutter med 0.</p>
+    </div>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må generere regelbøkene fra koden og teste dem i hvert bygg. Nevner en bok en klasse, et element eller et token som ikke finnes, stopper bygget.</span></p>
+    <p><span class="rolle rolle-fristil">I Fristil</span><span>Indeksen over regelbøkene, én per miljø, står på <code>fristil.sobernetics.no/llms.txt</code>.</span></p>
+  </div>
+</section>
+
+<!-- 26 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 6 av 7</span>
   <div class="kapittel-topp">
@@ -1941,7 +1986,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 26 -->
+<!-- 27 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Laget som gjør det mulig</h2>
@@ -1970,7 +2015,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 27 -->
+<!-- 28 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 7 av 7</span>
   <div class="kapittel-topp">
@@ -1987,7 +2032,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 28 -->
+<!-- 29 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 7 av 7 · Teamet kan ta over koden</p>
   <h2>Når systemet ikke strekker til</h2>
@@ -2005,7 +2050,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 29 -->
+<!-- 30 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-gul">Kapittel 8</span>
   <div class="kapittel-topp">
@@ -2023,7 +2068,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 30 -->
+<!-- 31 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>React 19 og web components</h2>
@@ -2040,7 +2085,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 31 -->
+<!-- 32 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Serveren og hydreringen</h2>
@@ -2061,7 +2106,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 32 -->
+<!-- 33 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Før komponenten er registrert</h2>
@@ -2076,7 +2121,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 33 -->
+<!-- 34 -->
 <section class="lysbilde">
   <h2>Et skjemafelt, med og uten JavaScript</h2>
   <p>Slik ser det ut for den som bruker et designsystem bygget etter de syv kravene. Eksempelet er Fristil. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
@@ -2109,7 +2154,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 34 -->
+<!-- 35 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det virker</h2>
   <p><strong>Førstelinja</strong> er et spill bygget med Fristil, i tre utgaver: Kotlin med Datastar, React med TanStack Start og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som spiller i en annen utgave.</p>
@@ -2132,7 +2177,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 35 -->
+<!-- 36 -->
 <section class="lysbilde">
   <h2>Sjekkliste for ditt eget designsystem</h2>
   <p class="ingress">Ett spørsmål per krav, og ett per felle. Kan du svare ja på alle, har systemet det som skal til.</p>
@@ -2144,7 +2189,7 @@ defineFsField()
         <li>Overlever det komponenten har satt, en ny rendring, både med CSR og med SSR?</li>
         <li>Finnes tilgjengelighetskoblingen ett sted, og bruker både byggefunksjonen og komponenten den?</li>
         <li>Leser komponenten tilstanden fra markupen, og ikke fra en egen kopi?</li>
-        <li>Får en utvikler uten React autofullføring og røde streker for valgene?</li>
+        <li>Får en utvikler eller en kodeagent beskjed om en ugyldig verdi, også i markup uten JavaScript?</li>
         <li>Vinner teamets egen CSS over systemets uten <code>!important</code>?</li>
         <li>Kan et team ta over én komponent og fortsatt få nye versjoner av resten?</li>
       </ol>
@@ -2234,7 +2279,7 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-// Adressen rettes etter klemmingen, så #lysbilde-99 blir #lysbilde-35.
+// Adressen rettes etter klemmingen, så #lysbilde-99 blir #lysbilde-36.
 // replaceState utløser ikke hashchange, så det gir ingen sløyfe.
 window.addEventListener("hashchange", () => vis(fraAdressen()))
 
