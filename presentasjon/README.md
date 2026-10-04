@@ -32,8 +32,8 @@ Forsiden har et ikon tegnet med presentasjonens egen fargepalett: en
 glassflate med lys kant og et glanslys på toppen. Motivet er plattformnært og
 ikke en skrivebordsmetafor, for eksempel et nettleservindu, et DOM-tre eller
 en pakke med vei ut. Et eget lysbilde før kapitlene viser alle åtte med hvert sitt ikon. Til
-slutt kommer demospillet og en sjekkliste publikum kan bruke på sitt eget
-system.
+slutt kommer Fristil i bruk, med et skjemafelt og demospillet, og en
+sjekkliste publikum kan bruke på sitt eget system.
 
 Kravet og Fristils løsning står hver for seg. Nederst på et lysbilde står
 inntil tre linjer: hva kravet betyr for produktteamene, hva det koster

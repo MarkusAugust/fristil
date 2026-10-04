@@ -547,41 +547,8 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 3 -->
 <section class="lysbilde">
-  <h2>Et skjemafelt, med og uten JavaScript</h2>
-  <p>Før kravene: slik ser det ut for den som bruker et designsystem bygget på denne måten. Eksempelet er Fristil. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
-  <div class="rader to">
-    <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Bare klasser: ingen JavaScript i det hele tatt</p>
-      <pre>import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
-
-&lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-&lt;input class="fs-input" type="email"&gt;
-&lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;</pre>
-    </div>
-    <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Samme markup, med ett element rundt</p>
-      <pre>import { defineFsField } from "@fristil/designsystem/field"
-defineFsField()
-
-<b>&lt;fs-field invalid&gt;</b>
-  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-  &lt;input class="fs-input" type="email"&gt;
-  &lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;
-<b>&lt;/fs-field&gt;</b></pre>
-    </div>
-  </div>
-  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode. Ledeteksten, feltet og feilmeldingen er vanlige HTML-elementer med klasser fra systemet, og de ser riktige ut med én gang. Til høyre står nøyaktig de samme elementene, med ett element rundt. Det er <code>&lt;fs-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser opp både ledeteksten og feilmeldingen.</p>
-  <div class="perspektiv">
-    <p><span class="rolle">Produktteamene</span><span>Kan begynne med tokens og noen knapper og ta i bruk resten når de trenger det.</span></p>
-    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må bevare denne enkelheten, også når en komponent blir komplisert på innsiden.</span></p>
-  </div>
-</section>
-
-<!-- 4 -->
-<section class="lysbilde">
   <h2>Syv krav</h2>
-  <p>Resten av presentasjonen tar ett krav om gangen. Det første gjør de andre mulige, og det siste gjør at du kan forlate systemet når du vil. Til slutt kommer fellene og et spill som viser at arkitekturen virker.</p>
+  <p>Resten av presentasjonen tar ett krav om gangen. Det første gjør de andre mulige, og det siste gjør at du kan forlate systemet når du vil. Til slutt kommer fellene, og så Fristil i bruk: et skjemafelt og et spill som viser at arkitekturen virker.</p>
   <ol class="beslutninger" role="list">
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goplattform)"/>
       <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
@@ -628,7 +595,7 @@ defineFsField()
   </ol>
 </section>
 
-<!-- 5 -->
+<!-- 4 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 1 av 7</span>
   <div class="kapittel-topp">
@@ -651,7 +618,7 @@ defineFsField()
   </ol>
 </section>
 
-<!-- 6 -->
+<!-- 5 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hvorfor plattformen først, og ikke React først</h2>
@@ -669,7 +636,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 7 -->
+<!-- 6 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hva nettleseren gjør selv</h2>
@@ -697,7 +664,7 @@ defineFsField()
   <p style="margin-block-start: 1.1rem;">Det som gjenstår, er koblingen mellom delene, tastaturstyringen der nettleseren ikke har en ferdig kontroll, og et enhetlig utseende. Det er en langt mindre jobb enn å bygge fokus, lag og skjemaer selv.</p>
 </section>
 
-<!-- 8 -->
+<!-- 7 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 1 av 7 · Nettleseren er plattformen</p>
   <h2>Prisen for å bygge på nettleseren selv</h2>
@@ -726,7 +693,7 @@ defineFsField()
   </div>
 </section>
 
-<!-- 9 -->
+<!-- 8 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 1 av 7 · Nettleseren er plattformen</p>
   <h2>Hva det koster appen din</h2>
@@ -748,7 +715,7 @@ defineFsField()
   <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>ingen avhengigheter</strong>, og ingenting i den gjør noe bare ved å bli importert. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med serverrendring.</p>
 </section>
 
-<!-- 10 · Avhengighetsgrafen -->
+<!-- 9 · Avhengighetsgrafen -->
 <section class="lysbilde avh">
 <style>
 /*
@@ -1240,7 +1207,7 @@ defineFsField()
 </section>
 
 
-<!-- 11 -->
+<!-- 10 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 2 av 7</span>
   <div class="kapittel-topp">
@@ -1261,7 +1228,7 @@ defineFsField()
   </ol>
 </section>
 
-<!-- 12 -->
+<!-- 11 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
   <h2>Hva serverrendring krever av en komponent</h2>
@@ -1624,7 +1591,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p style="margin-block-start: 1rem;">Hver komponent skal virke i en app med serverrendret HTML, i TanStack Start, i Datastar og i React Server Components. Datastar er den strengeste, og det som holder der, holder i de andre. Kravet nevner likevel ikke noe rammeverk: det komponenten har satt, skal overleve at attributter blir fjernet.</p>
 </section>
 
-<!-- 13 -->
+<!-- 12 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
   <h2>De to lagene</h2>
@@ -1644,7 +1611,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 14 -->
+<!-- 13 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
   <h2>Tre kategorier, og ett spørsmål</h2>
@@ -1676,7 +1643,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 15 -->
+<!-- 14 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
   <h2>To veier til den samme kontrakten</h2>
@@ -1714,7 +1681,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 16 -->
+<!-- 15 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Serveren eier markupen</p>
   <h2>Det komponenten får skrive</h2>
@@ -1735,7 +1702,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 17 -->
+<!-- 16 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 3 av 7</span>
   <div class="kapittel-topp">
@@ -1753,7 +1720,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </ol>
 </section>
 
-<!-- 18 -->
+<!-- 17 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 3 av 7 · Tilgjengeligheten skrives ett sted</p>
   <h2>Én funksjon, to innganger</h2>
@@ -1769,7 +1736,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 19 -->
+<!-- 18 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 4 av 7</span>
   <div class="kapittel-topp">
@@ -1788,7 +1755,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </ol>
 </section>
 
-<!-- 20 -->
+<!-- 19 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
   <h2>Når serveren river bort det komponenten satte</h2>
@@ -1816,7 +1783,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 </section>
 
-<!-- 21 -->
+<!-- 20 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten skal aldri regne ut det den kan lese</h2>
@@ -1832,7 +1799,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="dempet" style="margin-block-start: 1rem;">Uten det gir den samme markupen to ulike svar, alt etter hvilke tilstander verten har hatt før.</p>
 </section>
 
-<!-- 22 -->
+<!-- 21 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 4 av 7 · DOM-en er fasiten</p>
   <h2>Komponenten sier fra når markupen ikke henger sammen</h2>
@@ -1863,7 +1830,7 @@ en skjermleser leser det opp uten navn.</pre>
   </div>
 </section>
 
-<!-- 23 -->
+<!-- 22 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 5 av 7</span>
   <div class="kapittel-topp">
@@ -1882,7 +1849,7 @@ en skjermleser leser det opp uten navn.</pre>
   </ol>
 </section>
 
-<!-- 24 -->
+<!-- 23 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 5 av 7 · Typene virker uten rammeverk</p>
   <h2>Ett valgobjekt inn, attributter ut</h2>
@@ -1914,7 +1881,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 25 -->
+<!-- 24 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 6 av 7</span>
   <div class="kapittel-topp">
@@ -1930,7 +1897,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 26 -->
+<!-- 25 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 6 av 7 · Konsumentens CSS vinner</p>
   <h2>Laget som gjør det mulig</h2>
@@ -1959,7 +1926,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 27 -->
+<!-- 26 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-blaa">Krav 7 av 7</span>
   <div class="kapittel-topp">
@@ -1976,7 +1943,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 28 -->
+<!-- 27 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 7 av 7 · Teamet kan ta over koden</p>
   <h2>Når systemet ikke strekker til</h2>
@@ -1994,7 +1961,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 29 -->
+<!-- 28 -->
 <section class="lysbilde kapittel">
   <span class="merke merke-gul">Kapittel 8</span>
   <div class="kapittel-topp">
@@ -2012,7 +1979,7 @@ fs.input({ type: "email", state: "invalid" })
   </ol>
 </section>
 
-<!-- 30 -->
+<!-- 29 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>React 19 og egendefinerte elementer</h2>
@@ -2029,7 +1996,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 31 -->
+<!-- 30 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Serveren og hydreringen</h2>
@@ -2050,7 +2017,7 @@ fs.input({ type: "email", state: "invalid" })
   </div>
 </section>
 
-<!-- 32 -->
+<!-- 31 -->
 <section class="lysbilde">
   <p class="kapittelmerke">Fellene</p>
   <h2>Før komponenten er registrert</h2>
@@ -2062,6 +2029,39 @@ fs.input({ type: "email", state: "invalid" })
   </ul>
   <div class="perspektiv">
     <p><span class="rolle rolle-fristil">I Fristil</span><span><code>defineFs()</code> registrerer alle ni, og <code>showToast</code>, <code>reportFailure</code> og de andre imperative kallene venter selv.</span></p>
+  </div>
+</section>
+
+<!-- 32 -->
+<section class="lysbilde">
+  <h2>Et skjemafelt, med og uten JavaScript</h2>
+  <p>Slik ser det ut for den som bruker et designsystem bygget etter de syv kravene. Eksempelet er Fristil. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Bare klasser: ingen JavaScript i det hele tatt</p>
+      <pre>import "@fristil/designsystem/tokens.css"
+import "@fristil/designsystem/field.css"
+
+&lt;label class="fs-label"&gt;E-post&lt;/label&gt;
+&lt;input class="fs-input" type="email"&gt;
+&lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Samme markup, med ett element rundt</p>
+      <pre>import { defineFsField } from "@fristil/designsystem/field"
+defineFsField()
+
+<b>&lt;fs-field invalid&gt;</b>
+  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="fs-input" type="email"&gt;
+  &lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;
+<b>&lt;/fs-field&gt;</b></pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode. Ledeteksten, feltet og feilmeldingen er vanlige HTML-elementer med klasser fra systemet, og de ser riktige ut med én gang. Til høyre står nøyaktig de samme elementene, med ett element rundt. Det er <code>&lt;fs-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser opp både ledeteksten og feilmeldingen.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Produktteamene</span><span>Kan begynne med tokens og noen knapper og ta i bruk resten når de trenger det.</span></p>
+    <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må bevare denne enkelheten, også når en komponent blir komplisert på innsiden.</span></p>
   </div>
 </section>
 
