@@ -166,7 +166,8 @@ export const fs = {
    * Bruker et attributtsett på et element i vanlig DOM.
    *
    * I JSX sprer du objektet. Uten JSX gjør denne jobben det, og rydder bort
-   * attributter fra forrige tilstand.
+   * det byggefunksjonen forvalter fra forrige tilstand. Flere sett sendes
+   * hver for seg: `fs.setAttributes(felt, fs.input(), kobling.control)`.
    */
   setAttributes,
 

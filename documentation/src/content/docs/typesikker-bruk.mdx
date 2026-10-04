@@ -44,7 +44,27 @@ const felt = document.querySelector<HTMLInputElement>("#epost")
 fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
 ```
 
-Kall den på nytt for å endre tilstand. Attributter fra forrige kall som ikke er med i det nye settet blir fjernet, så lenge navnet står i `SYSTEM_ATTRIBUTES` i `dom.ts`. Ellers ville feltet blitt stående rødt etter at feilen var rettet. Den rydder bare i den lista og i `fs-`-klassene; `data-testid`, `name`, `id` og dine egne klasser står urørt. Lista har også `disabled`, `hidden`, `open` og `aria-describedby`, siden bryteren, feilmeldingen, dialogen og feltet skriver dem. Har du satt et av dem selv på elementet, må det være med i settet du sender inn, ellers fjernes det. `type` fjernes aldri.
+Kall den på nytt for å endre tilstand. Det byggefunksjonen forvalter og som ikke er med i det nye settet, blir fjernet. Ellers ville feltet blitt stående rødt etter at feilen var rettet.
+
+En byggefunksjon forvalter attributtene den har et valg for, og bare dem:
+
+| Kall | På elementet fra før | Etterpå |
+| --- | --- | --- |
+| `fs.button({ variant })` | `disabled`, `type="submit"` | Begge står. Knappefunksjonen har ikke noe valg for dem |
+| `fs.switch()` | `disabled` | Fjernet. Bryteren har valget `disabled`, og du sendte det ikke |
+| `fs.spinner()` | `role`, `aria-label` | Fjernet. Spinneren har valget `label`, som skriver begge |
+
+Regelen er altså: har byggefunksjonen et valg for attributtet, sier du det gjennom valget, hver gang. Skriver du `aria-label` for hånd på en spinner og kaller `fs.spinner({ size: "large" })`, tar funksjonen den bort. `id` og `for` fjernes aldri, og `data-testid`, `name` og dine egne klasser røres ikke.
+
+Skal to sett på samme element, som feltets utseende og koblingen fra `fs.field()`, sender du dem hver for seg:
+
+```ts
+const kobling = fs.field({ id: "epost", error: true, invalid: true })
+
+fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+```
+
+Spre dem ikke sammen til ett objekt. `{ ...fs.input(), ...kobling.control }` er et nytt objekt, og da vet ikke funksjonen hvilke byggefunksjoner det kom fra. Attributtene settes, men bare `data-*` ryddes ved neste kall. Funksjonen sier fra i konsollen første gang den får et slikt sett med en `fs-`-klasse i.
 
 ## Standardverdier
 

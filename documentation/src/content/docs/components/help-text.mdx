@@ -42,8 +42,8 @@ const hjelpetekst = document.querySelector<HTMLElement>("#kid-help")
 const felt = fs.field({ id: "kid", help: true })
 
 fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, { ...fs.input(), ...felt.control })
-fs.setAttributes(hjelpetekst, { ...fs.helpText(), ...felt.help })
+fs.setAttributes(input, fs.input(), felt.control)
+fs.setAttributes(hjelpetekst, fs.helpText(), felt.help)
 ```
 
 [`fs.field`](../field/) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.

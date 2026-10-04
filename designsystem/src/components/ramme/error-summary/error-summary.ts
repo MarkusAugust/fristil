@@ -51,5 +51,5 @@ export const errorSummary = ({
     id,
     hidden: count === 0 ? (true as const) : undefined,
   }),
-  title: { class: ERROR_SUMMARY_TITLE_CLASS },
+  title: attributes({ class: ERROR_SUMMARY_TITLE_CLASS }),
 })

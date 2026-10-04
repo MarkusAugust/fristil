@@ -39,8 +39,8 @@ const feilmelding = document.querySelector<HTMLElement>("#epost-feil")
 function oppdater(erGyldig: boolean) {
   const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
 
-  fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
-  fs.setAttributes(feilmelding, { ...fs.errorText(), ...felt.error })
+  fs.setAttributes(input, fs.input({ type: "email" }), felt.control)
+  fs.setAttributes(feilmelding, fs.errorText(), felt.error)
 }
 ```
 

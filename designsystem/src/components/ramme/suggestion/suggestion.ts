@@ -64,21 +64,24 @@ export const suggestion = ({
 
   return {
     label: computed.label,
-    field: { class: SUGGESTION_FIELD_CLASS },
-    control: attributes({
-      ...computed.control,
-      class: "fs-input" as const,
-      type: "text" as const,
-      role: "combobox" as const,
-      autocomplete: "off" as const,
-      "aria-expanded": (open ? "true" : "false") as "true" | "false",
-      "aria-controls": listId,
-      "aria-describedby": [computed.control["aria-describedby"], statusId]
-        .filter(Boolean)
-        .join(" "),
-      "aria-autocomplete": "list" as const,
-      "aria-activedescendant": marked ? optionId(activeIndex) : undefined,
-    }),
+    field: attributes({ class: SUGGESTION_FIELD_CLASS }),
+    control: attributes(
+      {
+        ...computed.control,
+        class: "fs-input" as const,
+        type: "text" as const,
+        role: "combobox" as const,
+        autocomplete: "off" as const,
+        "aria-expanded": (open ? "true" : "false") as "true" | "false",
+        "aria-controls": listId,
+        "aria-describedby": [computed.control["aria-describedby"], statusId]
+          .filter(Boolean)
+          .join(" "),
+        "aria-autocomplete": "list" as const,
+        "aria-activedescendant": marked ? optionId(activeIndex) : undefined,
+      },
+      computed.control,
+    ),
     list: attributes({
       class: SUGGESTION_LIST_CLASS,
       id: listId,
@@ -118,13 +121,13 @@ export const suggestion = ({
      * den. Elementet må likevel stå i markupen serveren sender, ellers finnes
      * det ikke noe å melde i før skriptet har kjørt.
      */
-    status: {
+    status: attributes({
       class: SUGGESTION_STATUS_CLASS,
       id: statusId,
       role: "status" as const,
       "aria-live": "polite" as const,
       "data-ignore-morph": "" as const,
-    },
+    }),
     help: computed.help,
     error: computed.error,
     state: computed.state,

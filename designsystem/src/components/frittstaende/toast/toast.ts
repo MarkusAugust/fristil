@@ -54,6 +54,6 @@ export const toast = ({
     "aria-label": label,
     "data-ignore-morph": "" as const,
   }),
-  message: { class: TOAST_MESSAGE_CLASS },
-  close: { class: TOAST_CLOSE_CLASS },
+  message: attributes({ class: TOAST_MESSAGE_CLASS }),
+  close: attributes({ class: TOAST_CLOSE_CLASS }),
 })

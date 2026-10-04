@@ -1,3 +1,5 @@
+import { attributes } from "../shared.js"
+
 export const SR_ONLY_CLASS = "fs-sr-only" as const
 
 export type SrOnlyAttributes = {
@@ -15,4 +17,5 @@ export type SrOnlyAttributes = {
  * men ville vært støy for den som ser den. Skal innholdet bort for alle, hører
  * `hidden` hjemme i stedet.
  */
-export const srOnly = (): SrOnlyAttributes => ({ class: SR_ONLY_CLASS })
+export const srOnly = (): SrOnlyAttributes =>
+  attributes({ class: SR_ONLY_CLASS })

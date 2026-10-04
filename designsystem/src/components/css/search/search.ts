@@ -36,12 +36,15 @@ export type SearchAttributes = {
 export const search = Object.assign(
   ({ state = "default" }: SearchOptions = {}): SearchAttributes => {
     const base = input({ type: "search", state })
-    return attributes({
-      ...base,
-      class: `${INPUT_CLASS} ${SEARCH_CLASS}` as const,
-      type: "search" as const,
-      "data-variant": undefined,
-    }) as SearchAttributes
+    return attributes(
+      {
+        ...base,
+        class: `${INPUT_CLASS} ${SEARCH_CLASS}` as const,
+        type: "search" as const,
+        "data-variant": undefined,
+      },
+      base,
+    ) as SearchAttributes
   },
   {
     /** Klassen på raden med feltet og knappen. */

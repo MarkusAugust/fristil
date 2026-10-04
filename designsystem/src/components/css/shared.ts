@@ -6,14 +6,46 @@
  * bare trenger å lære den én gang.
  */
 
-/** Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt. */
-export function attributes<T extends Record<string, unknown>>(values: T): T {
+/**
+ * Attributtene hvert sett forvalter, også dem som er av akkurat nå.
+ *
+ * `attributes()` stryker nøklene uten verdi, og da er det borte hvilke
+ * attributter byggefunksjonen har et ord om. `setAttributes` trenger nettopp
+ * det: `fs.switch()` forvalter `disabled` og skal kunne fjerne det, mens
+ * `fs.button()` aldri har skrevet det og skal la det stå. Lista ligger i et
+ * kart ved siden av objektet, ikke på det, så spredning, JSON og React ser
+ * det samme som før.
+ */
+const managed = new WeakMap<object, readonly string[]>()
+
+/** Navnene settet forvalter, eller `undefined` for et sett vi ikke har laget. */
+export function managedNames(set: object): readonly string[] | undefined {
+  return managed.get(set)
+}
+
+/**
+ * Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt.
+ *
+ * Bygger settet på et annet, som `fs.search()` på `fs.input()`, sendes det
+ * andre inn som `based`. Spredningen har alt mistet nøklene som var av, og
+ * uten dette forvaltet søkefeltet `data-state` bare når den tilfeldigvis var
+ * satt: den kunne settes, men ikke fjernes.
+ */
+export function attributes<T extends Record<string, unknown>>(
+  values: T,
+  ...based: object[]
+): T {
   const result = {} as T
   for (const [name, value] of Object.entries(values)) {
     if (value !== undefined) {
       ;(result as Record<string, unknown>)[name] = value
     }
   }
+  const names = new Set(Object.keys(values))
+  for (const set of based) {
+    for (const name of managed.get(set) ?? []) names.add(name)
+  }
+  managed.set(result, [...names])
   return result
 }
 

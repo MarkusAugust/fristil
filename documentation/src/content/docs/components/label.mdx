@@ -63,7 +63,7 @@ const input = document.querySelector<HTMLInputElement>("#epost")
 const felt = fs.field({ id: "epost", required: "symbol" })
 
 fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, { ...fs.input({ type: "email" }), ...felt.control })
+fs.setAttributes(input, fs.input({ type: "email" }), felt.control)
 if (input) input.required = true
 ```
 

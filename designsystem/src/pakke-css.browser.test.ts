@@ -592,7 +592,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     /*
      * `LISTER` er skrevet for hånd, og en liste som mangler der blir aldri
      * kontrollert uten at noe sier fra. Det er den samme feilklassen som
-     * `SYSTEM_ATTRIBUTES` i `dom.ts` har vært innom: et attributt som ikke
+     * lista `setAttributes` ryddet etter før var innom: et attributt som ikke
      * står i en håndskrevet tabell er usynlig for testen, ikke for brukeren.
      */
     const kjente = new Set(LISTER.map(([liste]) => liste))
