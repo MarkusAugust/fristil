@@ -57,7 +57,7 @@ describe("fs-label", () => {
 
   it("optional: ::after has muted color", () => {
     const after = css("optional", "::after")
-    expect(after.color).toBe(farge("--fs-color-disabled-text"))
+    expect(after.color).toBe(farge("--fs-color-neutral-text-subtle"))
   })
 })
 

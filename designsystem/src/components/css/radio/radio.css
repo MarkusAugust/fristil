@@ -13,7 +13,11 @@
     cursor: pointer;
   }
 
-  .fs-radio:hover:not(:disabled) {
+  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
+     under, så musa tok bort både feilrammen og rammen på en valgt. Reglene
+     for valgt, deaktivert og ugyldig står etter denne og vinner på
+     rekkefølgen. */
+  .fs-radio:hover {
     border-color: var(--fs-color-neutral-border-strong);
   }
 

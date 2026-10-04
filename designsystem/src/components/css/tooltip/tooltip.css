@@ -25,6 +25,12 @@
     opacity: 0;
   }
 
+  /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
+     denne sto boblen en hel boblebredde til venstre for knappen. */
+  .fs-tooltip__bubble:dir(rtl) {
+    transform: translateX(50%);
+  }
+
   .fs-tooltip:hover .fs-tooltip__bubble,
   .fs-tooltip:focus-within .fs-tooltip__bubble {
     visibility: visible;

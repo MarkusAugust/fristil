@@ -54,6 +54,58 @@
     outline-offset: 2px;
   }
 
+  /* Sekundær: omriss, gjennomsiktig bakgrunn */
+  .fs-button[data-variant="secondary"] {
+    background: transparent;
+    color: var(--fs-color-accent-text);
+    border-color: var(--fs-color-accent-border);
+  }
+
+  .fs-button[data-variant="secondary"]:hover:not(
+    :disabled,
+    [aria-disabled="true"]
+  ) {
+    background: var(--fs-color-accent-surface);
+  }
+
+  /* Ghost: ingen kant, ingen bakgrunn */
+  .fs-button[data-variant="ghost"] {
+    background: transparent;
+    color: var(--fs-color-accent-text);
+    border-color: transparent;
+  }
+
+  .fs-button[data-variant="ghost"]:hover:not(
+    :disabled,
+    [aria-disabled="true"]
+  ) {
+    background: var(--fs-color-accent-surface);
+  }
+
+  /* Danger */
+  .fs-button[data-variant="danger"] {
+    background: var(--fs-color-danger-surface);
+    color: var(--fs-color-danger-text);
+    border-color: var(--fs-color-danger-text);
+  }
+
+  .fs-button[data-variant="danger"]:hover:not(
+    :disabled,
+    [aria-disabled="true"]
+  ) {
+    background: var(--fs-color-danger-fill);
+    border-color: var(--fs-color-danger-fill);
+    color: var(--fs-color-danger-content);
+  }
+
+  /*
+   * Deaktivert står sist.
+   *
+   * Sto regelen over variantene, vant de på rekkefølgen: en deaktivert
+   * sekundær-, ghost- eller fareknapp så ut som en aktiv. Variantenes hover
+   * er mer spesifikk enn denne uansett plass, og en deaktivert knapp treffes
+   * fortsatt av `:hover`. Derfor unntar hver av dem den deaktivert selv.
+   */
   .fs-button:disabled,
   .fs-button[aria-disabled="true"] {
     background: var(--fs-color-disabled-surface);
@@ -70,40 +122,5 @@
      Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
   .fs-button[aria-disabled="true"] {
     pointer-events: none;
-  }
-
-  /* Sekundær: omriss, gjennomsiktig bakgrunn */
-  .fs-button[data-variant="secondary"] {
-    background: transparent;
-    color: var(--fs-color-accent-text);
-    border-color: var(--fs-color-accent-border);
-  }
-
-  .fs-button[data-variant="secondary"]:hover {
-    background: var(--fs-color-accent-surface);
-  }
-
-  /* Ghost: ingen kant, ingen bakgrunn */
-  .fs-button[data-variant="ghost"] {
-    background: transparent;
-    color: var(--fs-color-accent-text);
-    border-color: transparent;
-  }
-
-  .fs-button[data-variant="ghost"]:hover {
-    background: var(--fs-color-accent-surface);
-  }
-
-  /* Danger */
-  .fs-button[data-variant="danger"] {
-    background: var(--fs-color-danger-surface);
-    color: var(--fs-color-danger-text);
-    border-color: var(--fs-color-danger-text);
-  }
-
-  .fs-button[data-variant="danger"]:hover {
-    background: var(--fs-color-danger-fill);
-    border-color: var(--fs-color-danger-fill);
-    color: var(--fs-color-danger-content);
   }
 }

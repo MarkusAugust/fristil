@@ -100,6 +100,30 @@ describe("stilarkene pakken sender ut", () => {
     expect(utenImport.trimStart().startsWith("@layer fristil")).toBe(true)
   })
 
+  it("har ingen tegn utenfor ASCII utenom kommentarene", () => {
+    /*
+     * `content: " (påkrevd)"` kom ut som «pÃ¥krevd» på en side uten
+     * `<meta charset>` fra en tjener som ikke sender tegnsettet: et stilark
+     * uten `@charset` arver tegnsettet fra siden som lenker det. Tegnet
+     * skrives som en escape, `\e5`. En test i nettleseren ser ikke
+     * forskjellen, siden den får fila som UTF-8, så regelen leses av kilden.
+     * Kommentarene strykes av `bygg-css.ts` og er uten betydning.
+     */
+    const funn: string[] = []
+    let lest = 0
+    for (const [navn, kilde] of Object.entries(stilark)) {
+      const utenKommentarer = kilde.replace(/\/\*[\s\S]*?\*\//g, "")
+      for (const linje of utenKommentarer.split("\n")) {
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: ASCII er nettopp det som letes etter
+        if (/[^\x00-\x7f]/.test(linje)) funn.push(`${navn}: ${linje.trim()}`)
+      }
+      lest++
+    }
+
+    expect(lest).toBeGreaterThan(30)
+    expect(funn).toEqual([])
+  })
+
   it.each(filer)("%s bruker bare fs-prefikserte klasser", (_navn, source) => {
     const uprefiksert = classNames(source).filter(
       (name) => !name.startsWith("fs-"),

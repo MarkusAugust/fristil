@@ -20,6 +20,9 @@ import { contrastRatio } from "./tokens/color.js"
 import "./tokens/tokens.css"
 import "./components/css/accordion/accordion.css"
 import "./components/css/button/button.css"
+import "./components/css/checkbox/checkbox.css"
+import "./components/css/radio/radio.css"
+import "./components/css/switch/switch.css"
 import "./components/css/pagination/pagination.css"
 import "./components/css/table/table.css"
 import "./components/ramme/tabs/tabs.css"
@@ -48,17 +51,20 @@ const TILFELLER: Tilfelle[] = [
     velger: ".fs-button",
   },
   {
-    regel: '.fs-button[data-variant="secondary"]:hover',
+    regel:
+      '.fs-button[data-variant="secondary"]:hover:not( :disabled, [aria-disabled="true"] )',
     markup: `<button class="fs-button" data-variant="secondary">Avbryt</button>`,
     velger: ".fs-button",
   },
   {
-    regel: '.fs-button[data-variant="ghost"]:hover',
+    regel:
+      '.fs-button[data-variant="ghost"]:hover:not( :disabled, [aria-disabled="true"] )',
     markup: `<button class="fs-button" data-variant="ghost">Lukk</button>`,
     velger: ".fs-button",
   },
   {
-    regel: '.fs-button[data-variant="danger"]:hover',
+    regel:
+      '.fs-button[data-variant="danger"]:hover:not( :disabled, [aria-disabled="true"] )',
     markup: `<button class="fs-button" data-variant="danger">Slett</button>`,
     velger: ".fs-button",
   },
@@ -261,4 +267,100 @@ describe("lista er komplett", () => {
     expect([...medHover].filter((r) => !dekket.has(r)).sort()).toEqual([])
     expect([...dekket].filter((r) => !medHover.has(r)).sort()).toEqual([])
   })
+})
+
+/*
+ * Det motsatte av tilfellene over: en hover som ikke skal slå tilstanden.
+ *
+ * De står i denne fila fordi nettlesersiden har én mus. En egen fil som
+ * hoveret samtidig flyttet musa for testene over, og begge feilet tilfeldig
+ * i Firefox.
+ */
+function ramme(id: string) {
+  const element = document.getElementById(id)
+  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  return getComputedStyle(element).borderTopColor
+}
+
+function flateOgTekst(id: string) {
+  const element = document.getElementById(id)
+  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  const s = getComputedStyle(element)
+  return [s.backgroundColor, s.color, s.borderTopColor].join(" / ")
+}
+
+/**
+ * Avlesningen i ro, med en påstand om at musa faktisk ikke står der.
+ *
+ * Sto musa alt over elementet, ble «før» lest med hover på, «etter» var lik,
+ * og testen besto uansett hva stilarket gjorde.
+ */
+function iRo<T>(id: string, les: (id: string) => T): T {
+  const element = document.getElementById(id) as HTMLElement
+  expect(element.matches(":hover"), "musa står alt over elementet").toBe(false)
+  return les(id)
+}
+
+async function over(id: string) {
+  const element = document.getElementById(id) as HTMLElement
+  await userEvent.hover(element)
+  await new Promise((ferdig) => requestAnimationFrame(ferdig))
+  expect(element.matches(":hover"), "musa står ikke over elementet").toBe(true)
+}
+
+describe("hover slår ikke tilstanden", () => {
+  beforeEach(async () => {
+    document.documentElement.removeAttribute("data-theme")
+    document.body.innerHTML = `
+      <style>.fs-button, .fs-checkbox, .fs-radio, .fs-switch { transition: none; }</style>
+      <div id="parkering" style="inline-size: 3rem; block-size: 3rem"></div>
+      <div style="padding: 2rem; display: flex; gap: 2rem; flex-wrap: wrap">
+        <button class="fs-button" data-variant="secondary" id="secondary-av" disabled>Av</button>
+        <button class="fs-button" data-variant="ghost" id="ghost-av" disabled>Av</button>
+        <button class="fs-button" data-variant="danger" id="danger-av" disabled>Av</button>
+        <input type="checkbox" class="fs-checkbox" id="boks-vanlig" />
+        <input type="checkbox" class="fs-checkbox" id="boks-ugyldig" data-state="invalid" />
+        <input type="checkbox" class="fs-checkbox" id="boks-valgt" checked />
+        <input type="checkbox" class="fs-checkbox" id="boks-av" disabled />
+        <input type="radio" class="fs-radio" id="radio-ugyldig" data-state="invalid" />
+        <input type="radio" class="fs-radio" id="radio-valgt" checked />
+        <input type="checkbox" role="switch" class="fs-switch" id="bryter-valgt" checked />
+      </div>`
+    // Til et eget, tomt element. `unhover(body)` flytter musa til midten av
+    // `body`, altså inn i markupen over, og kunne havne på en av kontrollene.
+    await userEvent.hover(document.getElementById("parkering") as HTMLElement)
+  })
+
+  it("gir fortsatt en vanlig boks mørkere ramme under musa", async () => {
+    // Ellers kunne testene under bestå ved at hover var tatt helt bort.
+    const hvile = iRo("boks-vanlig", ramme)
+    await over("boks-vanlig")
+
+    expect(ramme("boks-vanlig")).not.toBe(hvile)
+  })
+
+  for (const id of ["secondary-av", "ghost-av", "danger-av"]) {
+    it(`gir ikke hoverfarge til ${id}`, async () => {
+      const hvile = iRo(id, flateOgTekst)
+      await over(id)
+
+      expect(flateOgTekst(id)).toBe(hvile)
+    })
+  }
+
+  for (const id of [
+    "boks-ugyldig",
+    "boks-valgt",
+    "boks-av",
+    "radio-ugyldig",
+    "radio-valgt",
+    "bryter-valgt",
+  ]) {
+    it(`lar rammen på ${id} stå under musa`, async () => {
+      const hvile = iRo(id, ramme)
+      await over(id)
+
+      expect(ramme(id)).toBe(hvile)
+    })
+  }
 })
