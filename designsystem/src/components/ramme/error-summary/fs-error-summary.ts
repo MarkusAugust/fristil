@@ -122,9 +122,22 @@ export class FsErrorSummary extends HostElement {
       ...this.querySelectorAll<HTMLAnchorElement>("li a[href^='#']"),
     ]
 
-    if (links.length === 0) {
+    // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
+    // nullstillingen tok boksen fokus bare første gang: mønsteret i en
+    // Datastar-app er at lista står med de samme lenkene hele veien og bare
+    // `hidden` slås av og på, så «har jeg flyttet fokus hit før» er ikke et
+    // svar på om dette er en ny innsending. Den står før returen for en tom
+    // liste: React fjerner punktene før den setter `hidden` på verten, og da
+    // er lista alt tom i den runden boksen skjules.
+    if (this.hidden) {
       this.hasFocused = false
       this.focusAttempted = false
+    }
+
+    if (links.length === 0) {
+      // Flaggene nullstilles ikke av en tom liste, bare av `hidden` over. En
+      // synlig liste som tømmes og fylles mens brukeren retter, rykket
+      // ellers fokus ut av feltet han sto i.
       warnAboutMarkup(
         this,
         'fant ingen lenker til feltene. Hvert punkt trenger en <a href="#id"> ' +
@@ -167,16 +180,7 @@ export class FsErrorSummary extends HostElement {
       this.links.add(link)
     }
 
-    // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
-    // nullstillingen tok boksen fokus bare første gang: mønsteret i en
-    // Datastar-app er at lista står med de samme lenkene hele veien og bare
-    // `hidden` slås av og på, så «har jeg flyttet fokus hit før» er ikke et
-    // svar på om dette er en ny innsending.
-    if (this.hidden) {
-      this.hasFocused = false
-      this.focusAttempted = false
-      return
-    }
+    if (this.hidden) return
 
     // Er boksen synlig nå, og vi ikke har flyttet fokus hit ennå, er det
     // denne innsendingen som feilet. Flagget settes bare når fokus faktisk

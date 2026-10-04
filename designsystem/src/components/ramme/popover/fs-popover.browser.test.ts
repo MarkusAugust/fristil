@@ -443,3 +443,30 @@ describe("fs-popover kobler fra bar struktur", () => {
     omslag.remove()
   })
 })
+
+describe("fs-popover når React skriver egenskapen", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  it("åpner ikke vinduet av at egenskapen settes til undefined", async () => {
+    monter(
+      `<fs-popover ${attr(BOKS.host)}>
+        <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+        <div ${attr(BOKS.panel)}>Innhold</div>
+      </fs-popover>`,
+    )
+    await customElements.whenDefined("fs-popover")
+    await ventPaTegning()
+    const vert = document.querySelector("fs-popover") as FsPopover
+
+    // Slik React 19 skriver en prop som er borte.
+    ;(vert as unknown as { open: undefined }).open = undefined
+    await ventPaTegning()
+
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(document.getElementById("panel")?.matches(":popover-open")).toBe(
+      false,
+    )
+  })
+})

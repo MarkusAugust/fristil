@@ -213,3 +213,55 @@ describe("setAttributes og dialogen", () => {
     expect(vert.hasAttribute("open")).toBe(false)
   })
 })
+
+describe("setAttributes og de boolske valgene", () => {
+  it("fjerner de boolske valgene på kort, tabell og etikett", () => {
+    const kort = document.createElement("a")
+    fs.setAttributes(kort, fs.card({ interactive: true }))
+    fs.setAttributes(kort, fs.card())
+    expect(kort.hasAttribute("data-interactive")).toBe(false)
+
+    const tabell = document.createElement("table")
+    fs.setAttributes(tabell, fs.table({ hoverable: true }))
+    fs.setAttributes(tabell, fs.table())
+    expect(tabell.hasAttribute("data-hoverable")).toBe(false)
+
+    const etikett = document.createElement("span")
+    fs.setAttributes(etikett, fs.tag({ selectable: true }))
+    fs.setAttributes(etikett, fs.tag())
+    expect(etikett.hasAttribute("data-selectable")).toBe(false)
+  })
+
+  it("lar id, name og role stå når to ulike sett brukes etter hverandre", () => {
+    // Ledetekstens `for` peker på id-en. Ryddet det andre kallet den bort,
+    // var koblingen brutt uten at noe sa fra. Det samme gjelder rollen et
+    // forslagsfelt har fått.
+    const kontroll = document.createElement("input")
+    const felt = fs.field({ id: "epost" })
+    fs.setAttributes(kontroll, {
+      ...fs.input(),
+      ...felt.control,
+      name: "epost",
+    })
+
+    fs.setAttributes(kontroll, fs.input({ state: "invalid" }))
+
+    expect(kontroll.id).toBe("epost")
+    expect(kontroll.getAttribute("name")).toBe("epost")
+
+    const sok = document.createElement("input")
+    fs.setAttributes(sok, fs.suggestion({ id: "by", count: 3 }).control)
+    fs.setAttributes(sok, fs.input({ state: "invalid" }))
+    expect(sok.getAttribute("role")).toBe("combobox")
+  })
+
+  it("fjerner placement når sprettoppvinduet går tilbake til standard", () => {
+    const vert = document.createElement("fs-popover")
+    fs.setAttributes(vert, fs.popover({ id: "p", placement: "top-end" }).host)
+    expect(vert.getAttribute("placement")).toBe("top-end")
+
+    fs.setAttributes(vert, fs.popover({ id: "p" }).host)
+
+    expect(vert.hasAttribute("placement")).toBe(false)
+  })
+})

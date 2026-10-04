@@ -917,3 +917,90 @@ describe("fs-field eier bare det den selv skrev", () => {
     expect(felt.requiredMarker).toBe("none")
   })
 })
+
+describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
+  beforeAll(() => {
+    defineFsField()
+  })
+
+  async function felt(vert: string, kontroll = '<input class="fs-input" />') {
+    monter(`<fs-field ${vert}><label>Navn</label>${kontroll}</fs-field>`)
+    await customElements.whenDefined("fs-field")
+    await ventPaTegning()
+    return {
+      vert: document.querySelector("fs-field") as FsField,
+      ledetekst: document.querySelector("label") as HTMLLabelElement,
+      kontroll: document.querySelector("input") as HTMLInputElement,
+    }
+  }
+
+  it("tar bort data-optional når optional fjernes fra verten", async () => {
+    const { vert, ledetekst } = await felt("optional")
+    expect(ledetekst.hasAttribute("data-optional")).toBe(true)
+
+    vert.removeAttribute("optional")
+    await ventPaTegning()
+
+    expect(ledetekst.hasAttribute("data-optional")).toBe(false)
+  })
+
+  it("tar bort data-required når required-marker fjernes fra verten", async () => {
+    const { vert, ledetekst } = await felt('required-marker="symbol"')
+    expect(ledetekst.getAttribute("data-required")).toBe("symbol")
+
+    vert.removeAttribute("required-marker")
+    await ventPaTegning()
+
+    expect(ledetekst.hasAttribute("data-required")).toBe(false)
+  })
+
+  it("lar markeringene serveren skrev på ledeteksten stå", async () => {
+    monter(
+      `<fs-field><label data-required="text">Navn</label><input class="fs-input" /></fs-field>`,
+    )
+    await customElements.whenDefined("fs-field")
+    await ventPaTegning()
+    const ledetekst = document.querySelector("label") as HTMLLabelElement
+    const vert = document.querySelector("fs-field") as FsField
+
+    // En runde til, slik en patch ville utløst.
+    vert.setAttribute("described-by", "annet")
+    await ventPaTegning()
+
+    expect(ledetekst.getAttribute("data-required")).toBe("text")
+  })
+
+  it("fjerner invalid, disabled og optional når egenskapen settes til undefined", async () => {
+    // Slik React 19 skriver en prop som er borte. `toggleAttribute` med
+    // `undefined` veksler, og attributtet kom tilbake.
+    const { vert } = await felt("")
+    const egenskaper = vert as unknown as Record<string, boolean | undefined>
+
+    for (const navn of ["invalid", "disabled", "optional"]) {
+      egenskaper[navn] = undefined
+      expect(vert.hasAttribute(navn), `${navn} på et felt uten`).toBe(false)
+
+      egenskaper[navn] = true
+      egenskaper[navn] = undefined
+      expect(vert.hasAttribute(navn), `${navn} på et felt med`).toBe(false)
+    }
+  })
+
+  it("lar en data-state malen skrev for hånd stå", async () => {
+    const { kontroll } = await felt(
+      "",
+      '<input class="fs-input" data-state="invalid" />',
+    )
+    expect(kontroll.getAttribute("data-state")).toBe("invalid")
+  })
+
+  it("fjerner fortsatt sin egen data-state når feltet blir gyldig", async () => {
+    const { vert, kontroll } = await felt("invalid")
+    expect(kontroll.getAttribute("data-state")).toBe("invalid")
+
+    vert.removeAttribute("invalid")
+    await ventPaTegning()
+
+    expect(kontroll.hasAttribute("data-state")).toBe(false)
+  })
+})

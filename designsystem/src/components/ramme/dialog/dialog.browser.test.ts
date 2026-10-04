@@ -1324,3 +1324,37 @@ describe("fs-dialog kobler fra bar struktur", () => {
     omslag.remove()
   })
 })
+
+describe("fs-dialog når React skriver egenskapen", () => {
+  beforeAll(() => {
+    defineFsDialog()
+  })
+
+  it("fjerner open når egenskapen settes til undefined", async () => {
+    /*
+     * React 19 skriver `el.open = undefined` når en prop går fra `true` til
+     * borte. `toggleAttribute(navn, undefined)` veksler, så en dialog
+     * brukeren hadde lukket fikk `open` tilbake og åpnet seg igjen.
+     */
+    const boks = dialog({ titleId: "tittel" })
+    monter(
+      `<fs-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></fs-dialog>`,
+    )
+    await customElements.whenDefined("fs-dialog")
+    const vert = document.querySelector("fs-dialog") as HTMLElement & {
+      open: boolean | undefined
+    }
+
+    vert.open = undefined
+    expect(vert.hasAttribute("open"), "undefined på en lukket").toBe(false)
+
+    vert.open = true
+    await ventPaTegning()
+    expect(vert.hasAttribute("open")).toBe(true)
+
+    vert.open = undefined
+    await ventPaTegning()
+    expect(vert.hasAttribute("open"), "undefined på en åpen").toBe(false)
+    expect(document.querySelector("dialog")?.matches(":modal")).toBe(false)
+  })
+})

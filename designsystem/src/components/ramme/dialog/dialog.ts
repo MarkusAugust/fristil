@@ -114,7 +114,7 @@ export const dialog = Object.assign(
     color = "neutral",
   }: DialogOptions): DialogAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const titleId = idOrFallback("fs.dialog()", givenId)
+    const titleId = idOrFallback("fs.dialog()", givenId, "titleId")
 
     return {
       host: attributes({

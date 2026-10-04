@@ -373,3 +373,62 @@ describe("fs-error-summary kobler fra bar struktur", () => {
     expect(tittel.classList.contains("fs-error-summary__title")).toBe(true)
   })
 })
+
+describe("fs-error-summary mens brukeren retter", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  it("tar ikke fokus når en synlig liste tømmes og fylles igjen", async () => {
+    monter(
+      `<fs-error-summary ${attr(FEIL.host)}>
+        <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
+        <ul><li><a href="#navn">Navn mangler</a></li></ul>
+      </fs-error-summary>
+      <label for="navn">Navn</label><input id="navn" />
+      <label for="epost">E-post</label><input id="epost" />`,
+    )
+    await tegn()
+    const liste = document.querySelector("fs-error-summary ul") as HTMLElement
+    const navn = document.getElementById("navn") as HTMLInputElement
+
+    navn.focus()
+    liste.innerHTML = ""
+    await ventPaTegning()
+    liste.innerHTML = '<li><a href="#epost">E-post mangler</a></li>'
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(navn)
+  })
+
+  it("tar fokus igjen når lista tømmes før boksen skjules", async () => {
+    /*
+     * Rekkefølgen React gir: punktene fjernes før `hidden` settes på verten.
+     * Nullstillingen ved `hidden` sto etter returen for en tom liste, så
+     * boksen tok fokus ved første feilede innsending og aldri igjen.
+     */
+    monter(
+      `<fs-error-summary ${attr(FEIL.host)}>
+        <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
+        <ul><li><a href="#navn">Navn mangler</a></li></ul>
+      </fs-error-summary>
+      <label for="navn">Navn</label><input id="navn" />`,
+    )
+    await tegn()
+    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const liste = boks.querySelector("ul") as HTMLElement
+    const navn = document.getElementById("navn") as HTMLInputElement
+    expect(document.activeElement, "første innsending").toBe(boks)
+
+    navn.focus()
+    liste.innerHTML = ""
+    boks.hidden = true
+    await ventPaTegning()
+
+    liste.innerHTML = '<li><a href="#navn">Navn mangler</a></li>'
+    boks.hidden = false
+    await ventPaTegning()
+
+    expect(document.activeElement, "andre innsending").toBe(boks)
+  })
+})

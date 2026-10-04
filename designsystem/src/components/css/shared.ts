@@ -84,13 +84,17 @@ export function createFieldId(): string {
  * Navnet på byggefunksjonen står i meldingen. Uten det sa forslagsfeltet «fs.field()»
  * og sendte utvikleren til feil sted.
  */
-export function idOrFallback(builder: string, id: string | undefined): string {
+export function idOrFallback(
+  builder: string,
+  id: string | undefined,
+  option = "id",
+): string {
   if (typeof id === "string" && id.trim() !== "") return id
 
   warnOnce(
-    `${builder}: ingen id oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
+    `${builder}: ingen ${option} oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
       "da to ulike, og rendres markupen både på en server og i nettleseren, " +
-      "peker koblingen på noe som ikke finnes. Oppgi id, i React fra useId().",
+      `peker koblingen på noe som ikke finnes. Oppgi ${option}, i React fra useId().`,
   )
   return createFieldId()
 }

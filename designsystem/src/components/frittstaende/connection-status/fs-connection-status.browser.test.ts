@@ -249,3 +249,63 @@ describe("reportFailure() og reportSuccess() venter på registreringen", () => {
     expect(linje()?.dataset.state).toBe("online")
   })
 })
+
+describe("fs-connection-status ute av dokumentet og inn igjen", () => {
+  beforeAll(() => {
+    defineFsConnectionStatus()
+  })
+
+  async function monterNy() {
+    const flate = monter("<fs-connection-status></fs-connection-status>")
+    await customElements.whenDefined("fs-connection-status")
+    await ventPaTegning()
+    return {
+      flate,
+      status: document.querySelector(
+        "fs-connection-status",
+      ) as FsConnectionStatus,
+    }
+  }
+
+  it("fjerner kvitteringen selv om elementet var ute da tiden gikk", async () => {
+    const { flate, status } = await monterNy()
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    try {
+      window.dispatchEvent(new Event("offline"))
+      window.dispatchEvent(new Event("online"))
+      expect(linje()?.dataset.state).toBe("online")
+
+      status.remove()
+      await vi.advanceTimersByTimeAsync(5000)
+      flate.append(status)
+      await vi.advanceTimersByTimeAsync(4000)
+
+      expect(linje()).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("sier ikke offline når nettet kom tilbake mens elementet var ute", async () => {
+    const { flate, status } = await monterNy()
+    window.dispatchEvent(new Event("offline"))
+    expect(linje()?.dataset.state).toBe("offline")
+
+    status.remove()
+    window.dispatchEvent(new Event("online"))
+    flate.append(status)
+
+    expect(navigator.onLine).toBe(true)
+    expect(linje()?.dataset.state).toBe("online")
+  })
+
+  it("lar appens egen feilmelding stå gjennom en flytting", async () => {
+    const { flate, status } = await monterNy()
+    status.reportFailure()
+
+    status.remove()
+    flate.append(status)
+
+    expect(linje()?.dataset.state).toBe("offline")
+  })
+})

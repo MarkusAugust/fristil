@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 /**
- * Kommandolinja til Fristil, med to kommandoer.
+ * Kommandolinja til Fristil, med fem kommandoer.
  *
  * `fristil overta <komponent>` kopierer kildekoden til én komponent inn i
  * prosjektet ditt, når tilpasning gjennom CSS ikke strekker til. Regnestykket
@@ -97,7 +97,8 @@ function lesArgumenter(argumenter: string[]) {
   for (const del of argumenter) {
     // Bindestrek er med i navnet: flagg som `--knapp-hjorner` leses ellers
     // som en fil, og temaet fikk da runde hjørner uten at noen ba om det.
-    const treff = /^--([a-zæøå-]+)=(.+)$/.exec(del)
+    // Sifre også: `--merke1` ble lest som et filnavn.
+    const treff = /^--([a-zæøå0-9-]+)=(.+)$/.exec(del)
     if (treff) flagg[treff[1]] = treff[2]
     else filer.push(del)
   }
@@ -152,6 +153,17 @@ async function overta(argumenter: string[]): Promise<void> {
   const { flagg, filer } = lesArgumenter(argumenter)
   const komponenter = await finnKomponenter()
   const navn = filer[0]
+
+  // Som i `agent`: `--ut src/ui` uten likhetstegn ble lest som to filnavn,
+  // og kopien havnet stille i standardmappa.
+  const withoutValue = filer.find((del) => del.startsWith("--"))
+  if (withoutValue) {
+    console.error(
+      `«${withoutValue}» mangler en verdi.\n\n` +
+        `Skriv ${withoutValue}=<verdi>, med likhetstegn og uten mellomrom.\n`,
+    )
+    process.exit(1)
+  }
 
   if (!navn || !komponenter.has(navn)) {
     console.error(
@@ -521,7 +533,7 @@ Eksempler:
   npx @fristil/designsystem sjekk maler/*.html
   npx @fristil/designsystem agent
   npx @fristil/designsystem overta button --ut=src/ui
-  npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
+  npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \\
     --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
 `
 

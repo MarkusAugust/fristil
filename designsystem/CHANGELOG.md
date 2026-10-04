@@ -23,6 +23,44 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **En dialog styrt av React-tilstand lot seg ikke lukke i React 19.** React
+  skriver `el.open = undefined` når en prop går fra `true` til borte, og
+  setteren vekslet attributtet i stedet for å fjerne det. Dialogen åpnet seg
+  igjen etter både knappen og Escape, og sprettoppvinduet ble stående åpent.
+  Det samme gjaldt `invalid`, `disabled` og `optional` på `<fs-field>` og
+  `prefiltered` på `<fs-suggestion>`.
+- **Fanene lot seg ikke bytte under `server-controlled`.** Klikket ble angret
+  i neste mikrotask, fordi komponenten leste serverens gamle valg fra minnet.
+  Klikket står nå til noen andre rører `aria-selected` eller `hidden`, og da
+  bestemmer serveren som før.
+- **`optional` og `required-marker` på `<fs-field>` lot seg ikke slå av.**
+  Komponenten leste sin egen `data-optional` og `data-required` tilbake fra
+  ledeteksten. Markeringer serveren skrev der, står fortsatt.
+- **`<fs-field>` fjernet en `data-state="invalid"` malen hadde skrevet.** Den
+  fjerner nå bare den den selv satte.
+- **Feiloppsummeringen tok fokus når en synlig liste ble tømt og fylt igjen.**
+  Brukeren ble rykket ut av feltet han rettet. Fokus flyttes nå bare når
+  boksen går fra skjult til synlig.
+- **`<fs-connection-status>` ble hengende etter å ha vært ute av dokumentet.**
+  Kvitteringen sto for godt, og linja sa offline etter at nettet var tilbake.
+- **Økttidsvarselet sluttet å være modalt når elementet ble flyttet,** og
+  opplesningen sa «2 minutter» med 1:30 igjen. Den sier nå «ett minutt og 30
+  sekunder».
+- **`fs.setAttributes` rydder de boolske valgene.** `data-interactive` på
+  kortet, `data-hoverable` på tabellen, `data-selectable` på etiketten,
+  `data-autofocus` på feiloppsummeringen og `placement` på sprettoppvinduet
+  ble stående etter at valget var tatt bort.
+- **`fristil tema --merke1`, `--merke2` og `--merke3` ble lest som
+  filnavn.** Flaggleseren godtok ikke sifre.
+- **`fristil overta button --ut src/ui` ignorerte flagget** og skrev til
+  standardmappa. Den stopper nå og ber om likhetstegn, slik `agent` gjør.
+- **Advarselen fra `fs.dialog()` uten id ba om `id`.** Valget heter
+  `titleId`, og det står nå i meldingen.
+- **Eksempellinja i `fristil --hjelp`** hadde en linjefortsettelse som ble
+  til fem mellomrom midt i kommandoen.
+
 ## 0.27.1 (2026-10-03)
 
 ### Rettet

@@ -437,6 +437,36 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// Merkefargene har et siffer i flaggnavnet, og ble lest som filnavn
+{
+  const uten = await kjør(["tema", "--aksent=#7c3aed"])
+  const med = await kjør(["tema", "--aksent=#7c3aed", "--merke1=#aa3366"])
+
+  krev(med.kode === 0, `--merke1 avsluttet med kode ${med.kode}`)
+  krev(
+    med.ut.includes("--fs-color-brand1-fill") && med.ut !== uten.ut,
+    "--merke1 endret ikke temaet",
+  )
+}
+
+// Et flagg uten likhetstegn stopper, framfor å skrive til standardmappa
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const { kode, feil: melding } = await kjør([
+    "overta",
+    "button",
+    "--ut",
+    join(mappe, "ui"),
+  ])
+
+  krev(kode !== 0, "overta med --ut uten likhetstegn skulle gitt en feilkode")
+  krev(
+    melding.includes("--ut") && melding.includes("="),
+    "feilmeldingen sier ikke at --ut mangler en verdi",
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // Sier hvilke komponenter som finnes når navnet er ukjent
 {
   const { kode, feil: melding } = await kjør(["overta", "knapp"])
