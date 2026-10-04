@@ -72,6 +72,15 @@ type ControlMemory = {
   server: ControlWord
 }
 
+/**
+ * Det samme minnet for markeringene på ledeteksten. Komponenten både leser
+ * og skriver `data-required` og `data-optional`, og uten å vite hva den selv
+ * skrev, leste den sitt eget svar tilbake: `optional` og `required-marker`
+ * lot seg ikke slå av igjen.
+ */
+type LabelWord = { required: string | null; optional: boolean }
+type LabelMemory = { written: LabelWord; server: LabelWord }
+
 type ControlWord = {
   invalid: string | null
   describedBy: string | null
@@ -148,6 +157,9 @@ export class FsField extends HostElement {
    * løsrevet node i live: er kontrollen borte for godt, er minnet det også.
    */
   private readonly memory = new WeakMap<Element, ControlMemory>()
+  private readonly labelMemory = new WeakMap<Element, LabelMemory>()
+  /** Kontrollene der `data-state` er komponentens egen. */
+  private readonly stateByMe = new WeakSet<Element>()
 
   /**
    * Egenskapene speiler attributtene.
@@ -161,7 +173,7 @@ export class FsField extends HostElement {
   }
 
   set invalid(value: boolean) {
-    this.toggleAttribute("invalid", value)
+    setFlag(this, "invalid", value)
   }
 
   get disabled(): boolean {
@@ -169,7 +181,7 @@ export class FsField extends HostElement {
   }
 
   set disabled(value: boolean) {
-    this.toggleAttribute("disabled", value)
+    setFlag(this, "disabled", value)
   }
 
   get optional(): boolean {
@@ -177,7 +189,7 @@ export class FsField extends HostElement {
   }
 
   set optional(value: boolean) {
-    this.toggleAttribute("optional", value)
+    setFlag(this, "optional", value)
   }
 
   /**
@@ -316,6 +328,27 @@ export class FsField extends HostElement {
    * Ellers er hvert attributt serverens hvis det er et annet enn det
    * komponenten skrev, og uendret hvis det er det samme.
    */
+  private serverLabelWord(label: Element | null): LabelWord {
+    if (!label) return { required: null, optional: false }
+    const now: LabelWord = {
+      required: label.getAttribute("data-required"),
+      optional: label.hasAttribute("data-optional"),
+    }
+    const known = this.labelMemory.get(label)
+    if (!known) return now
+
+    return {
+      required:
+        now.required !== known.written.required
+          ? now.required
+          : known.server.required,
+      optional:
+        now.optional !== known.written.optional
+          ? now.optional
+          : known.server.optional,
+    }
+  }
+
   private serverWord(control: Element, now: ControlWord): ControlWord {
     const known = this.memory.get(control)
     if (!known) return now
@@ -412,9 +445,10 @@ export class FsField extends HostElement {
     // sine egne attributter ville fjernet dem igjen. I React ga det en
     // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
     // tok det bort, og så mente React at HTML-en ikke stemte.
+    const serverLabel = this.serverLabelWord(label)
     const marker =
       readMarker(this.getAttribute("required-marker")) ??
-      readMarker(label?.getAttribute("data-required"))
+      readMarker(serverLabel.required)
 
     // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
@@ -464,9 +498,7 @@ export class FsField extends HostElement {
       helpId: help?.id,
       errorId: error?.id,
       required: marker === "symbol" || marker === "text" ? marker : undefined,
-      optional:
-        this.hasAttribute("optional") ||
-        label?.hasAttribute("data-optional") === true,
+      optional: this.hasAttribute("optional") || serverLabel.optional,
       invalid,
       disabled,
       describedBy: [...serverExtras, this.getAttribute("described-by") ?? ""],
@@ -481,6 +513,13 @@ export class FsField extends HostElement {
       setAttr(label, "for", computed.label.for)
       setAttr(label, "data-required", computed.label["data-required"])
       setAttr(label, "data-optional", computed.label["data-optional"])
+      this.labelMemory.set(label, {
+        written: {
+          required: computed.label["data-required"] ?? null,
+          optional: computed.label["data-optional"] !== undefined,
+        },
+        server: serverLabel,
+      })
       setAttr(label, "aria-disabled", computed.label["aria-disabled"])
     }
 
@@ -523,9 +562,9 @@ export class FsField extends HostElement {
     })
 
     // `data-state` settes bare på systemets egne kontroller, og bare når
-    // konsumenten ikke har satt den selv. Den fjernes bare når den sier
-    // «invalid» og feltet ikke lenger er det: da er den komponentens egen
-    // fra forrige runde.
+    // konsumenten ikke har satt den selv. Den fjernes bare når komponenten
+    // selv satte den og feltet ikke lenger er ugyldig. En `data-state` en
+    // mal har skrevet for hånd, er malens.
     const isSystemField =
       control.classList.contains("fs-input") ||
       control.classList.contains("fs-textarea") ||
@@ -534,8 +573,14 @@ export class FsField extends HostElement {
     const state = computed.control["data-state"]
     if (state && isSystemField && !control.hasAttribute("data-state")) {
       setAttr(control, "data-state", state)
-    } else if (!state && control.getAttribute("data-state") === "invalid") {
+      this.stateByMe.add(control)
+    } else if (
+      !state &&
+      this.stateByMe.has(control) &&
+      control.getAttribute("data-state") === "invalid"
+    ) {
       control.removeAttribute("data-state")
+      this.stateByMe.delete(control)
     }
   }
 }

@@ -726,3 +726,165 @@ describe("fs-tabs kobler fra bar struktur", () => {
     expect(paneler.map((p) => p.hidden)).toEqual([true, true, false])
   })
 })
+
+describe("fs-tabs under server-controlled", () => {
+  beforeAll(() => {
+    defineFsTabs()
+  })
+
+  /** Oppskriften fra Datastar-fanen på komponentsiden, bar struktur. */
+  const BAR = `
+    <fs-tabs server-controlled>
+      <div class="fs-tabs__list" aria-label="Deler av saken">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
+      </div>
+      <div class="fs-tabs__panel">Søknaden</div>
+      <div class="fs-tabs__panel" hidden>Vedlegg</div>
+    </fs-tabs>`
+
+  function tilstand() {
+    return {
+      valgt: [...document.querySelectorAll("fs-tabs button")].map((knapp) =>
+        knapp.getAttribute("aria-selected"),
+      ),
+      skjult: [
+        ...document.querySelectorAll<HTMLElement>(".fs-tabs__panel"),
+      ].map((panel) => panel.hidden),
+    }
+  }
+
+  it("lar et klikk stå etter at observatøren har kjørt", async () => {
+    /*
+     * Klikket ble angret i neste mikrotask: `repair()` leste serverens gamle
+     * ord fra minnet. En test som leser rett etter klikket ser det ikke, så
+     * denne venter på tegningen først.
+     */
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+
+    document.querySelectorAll<HTMLElement>("fs-tabs button")[1].click()
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "true"],
+      skjult: [true, false],
+    })
+  })
+
+  it("lar serveren flytte valget etter klikket", async () => {
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const paneler = document.querySelectorAll<HTMLElement>(".fs-tabs__panel")
+
+    document.querySelectorAll<HTMLElement>("fs-tabs button")[1].click()
+    await ventPaTegning()
+
+    // Serveren sender den første fanen igjen, og rører bare panelene.
+    paneler[0].removeAttribute("hidden")
+    paneler[1].setAttribute("hidden", "")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["true", "false"],
+      skjult: [false, true],
+    })
+  })
+
+  /** Tre faner: med to er «tilbake til den første» også det gale svaret. */
+  const TRE = `
+    <fs-tabs server-controlled>
+      <div class="fs-tabs__list" aria-label="Deler av saken">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
+        <button>Meldinger</button>
+      </div>
+      <div class="fs-tabs__panel">Søknaden</div>
+      <div class="fs-tabs__panel" hidden>Vedlegg</div>
+      <div class="fs-tabs__panel" hidden>Meldinger</div>
+    </fs-tabs>`
+
+  async function klikkAndre() {
+    monter(TRE)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    document.querySelectorAll<HTMLElement>("fs-tabs button")[1].click()
+    await ventPaTegning()
+    return {
+      faner: [...document.querySelectorAll<HTMLElement>("fs-tabs button")],
+      paneler: [...document.querySelectorAll<HTMLElement>(".fs-tabs__panel")],
+    }
+  }
+
+  it("følger serveren til en tredje fane, ikke tilbake til den første", async () => {
+    const { paneler } = await klikkAndre()
+
+    // Serveren svarer med den tredje, og rører bare panelene.
+    paneler[1].setAttribute("hidden", "")
+    paneler[2].removeAttribute("hidden")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "false", "true"],
+      skjult: [true, true, false],
+    })
+  })
+
+  it("følger serveren når den flytter aria-selected til en tredje fane", async () => {
+    const { faner } = await klikkAndre()
+
+    faner[1].setAttribute("aria-selected", "false")
+    faner[2].setAttribute("aria-selected", "true")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "false", "true"],
+      skjult: [true, true, false],
+    })
+  })
+
+  it("følger serveren også etter at en fane kom til mens klikket ventet", async () => {
+    const { paneler } = await klikkAndre()
+    const vert = document.querySelector("fs-tabs") as HTMLElement
+
+    // En patch legger til en fjerde fane. Den har ikke sagt noe om valget.
+    vert
+      .querySelector(".fs-tabs__list")
+      ?.insertAdjacentHTML("beforeend", "<button>Historikk</button>")
+    vert.insertAdjacentHTML(
+      "beforeend",
+      '<div class="fs-tabs__panel" hidden>Historikk</div>',
+    )
+    await ventPaTegning()
+    expect(tilstand().valgt).toEqual(["false", "true", "false", "false"])
+
+    // Så flytter serveren til den tredje, med bare `hidden`.
+    paneler[1].setAttribute("hidden", "")
+    paneler[2].removeAttribute("hidden")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "false", "true", "false"],
+      skjult: [true, true, false, true],
+    })
+  })
+
+  it("står på den klikkede fanen når serveren bekrefter den med bar markup", async () => {
+    /*
+     * Morfingen river `aria-selected` av fanene, siden serverens markup ikke
+     * har den, og lar panelene stå: de er alt slik serveren sendte dem.
+     * Serverens gamle ord om panelene vant da, og raden hoppet tilbake.
+     */
+    const { faner } = await klikkAndre()
+
+    for (const fane of faner) fane.removeAttribute("aria-selected")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "true", "false"],
+      skjult: [true, false, true],
+    })
+  })
+})

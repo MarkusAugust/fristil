@@ -66,9 +66,15 @@ export function setAttr(
  * attributtet slik det skal, skjer ingenting. Den er derfor den eneste
  * lovlige veien til `hidden`, `disabled` og de andre boolske attributtene i en
  * komponent som observerer sine egne.
+ *
+ * `Boolean(on)` og ikke `on` alene: med `undefined` som andre argument
+ * veksler `toggleAttribute` i stedet for å fjerne. React 19 skriver
+ * `el.open = undefined` når en prop går fra `true` til borte, og setteren
+ * satte da attributtet tilbake: en dialog brukeren hadde lukket, åpnet seg
+ * igjen i det appen fulgte etter.
  */
 export function setFlag(element: Element, name: string, on: boolean): void {
-  element.toggleAttribute(name, on)
+  element.toggleAttribute(name, Boolean(on))
 }
 
 /**

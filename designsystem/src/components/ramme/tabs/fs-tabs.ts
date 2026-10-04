@@ -113,6 +113,18 @@ export class FsTabs extends HostElement {
   private readonly roledByMe = new WeakSet<Element>()
   private selectedMemory = new WeakMap<Element, Word>()
   private hiddenMemory = new WeakMap<Element, Word>()
+  /**
+   * Fanen brukeren klikket under `server-controlled`, til serveren svarer.
+   *
+   * Det er ikke brukerens valg i betydningen `chosenTab`: det settes aldri
+   * tilbake mot serverens ord. Det står bare til noen andre har rørt
+   * `aria-selected` eller `hidden`, lagt til en fane eller et panel, fjernet
+   * fanen, eller tatt bort `server-controlled`. Uten det leste `repair()` serverens
+   * gamle ord fra minnet i neste mikrotask og angret klikket, så fanene lot
+   * seg ikke bytte, og en `data-attr:hidden` som skrev det samme som
+   * komponenten nettopp hadde skrevet, ble aldri sett.
+   */
+  private pendingTab?: HTMLButtonElement
 
   connectedCallback(): void {
     /*
@@ -153,6 +165,7 @@ export class FsTabs extends HostElement {
     // og neste patch bestemmer.
     if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.chosenTab = undefined
+      this.pendingTab = undefined
       // Det som står der nå er utgangspunktet. Uten dette hoppet raden
       // tilbake til fanen serveren sa sist, før brukeren valgte en annen.
       this.selectedMemory = new WeakMap()
@@ -205,6 +218,58 @@ export class FsTabs extends HostElement {
     const known = memory.get(element)
     if (!known) return now
     return now !== known.written ? now : known.server
+  }
+
+  /** Står det noe annet på en fane eller et panel enn komponenten skrev? */
+  private touchedByOthers(): boolean {
+    return this.tabs.some((tab, index) => {
+      const selected = this.selectedMemory.get(tab)
+      if (!selected || tab.getAttribute("aria-selected") !== selected.written) {
+        return true
+      }
+      const panel = this.panelFor(tab, index)
+      if (!panel) return false
+      const hidden = this.hiddenMemory.get(panel)
+      const now = panel.hasAttribute("hidden") ? "" : null
+      return !hidden || now !== hidden.written
+    })
+  }
+
+  /**
+   * Slipper klikket, og gjør det som står i markupen nå til serverens ord.
+   *
+   * Minnet har serverens ord fra før klikket, og de er foreldet: serveren
+   * har svart. Et attributt serveren skrev likt med komponenten, kan ikke
+   * skilles fra et den ikke rørte, så de gamle ordene vant, og raden hoppet
+   * tilbake til fanen fra før klikket idet serveren bekreftet den nye.
+   *
+   * `hidden` på panelene leses derfor som det står. `aria-selected` leses
+   * som det står når serveren har rørt minst én fane, altså når serveren
+   * snakker i `aria-selected`. Har den ikke det, er verdiene komponentens
+   * egne fra klikket, og da sier panelene hvilken fane som gjelder.
+   */
+  private releasePending(): void {
+    this.pendingTab = undefined
+    const tabs = this.tabs
+    const serverSpoke = tabs.some((tab) => {
+      const now = tab.getAttribute("aria-selected")
+      const known = this.selectedMemory.get(tab)
+      // En ny, bar knapp har ikke sagt noe. Telte den, ble klikkets
+      // `aria-selected` lest som serverens, og en senere flytting med bare
+      // `hidden` ble satt tilbake.
+      return known ? now !== known.written : now !== null
+    })
+    this.hiddenMemory = new WeakMap()
+    if (serverSpoke) {
+      this.selectedMemory = new WeakMap()
+      return
+    }
+    for (const tab of tabs) {
+      this.selectedMemory.set(tab, {
+        written: tab.getAttribute("aria-selected"),
+        server: null,
+      })
+    }
   }
 
   private serverSelected(tab: Element): string | null {
@@ -388,6 +453,15 @@ export class FsTabs extends HostElement {
    * ting og skjermen en annen.
    */
   private repair(): void {
+    if (this.pendingTab) {
+      const index = this.tabs.indexOf(this.pendingTab)
+      if (isServerControlled(this) && index >= 0 && !this.touchedByOthers()) {
+        this.apply(index)
+        return
+      }
+      this.releasePending()
+    }
+
     if (!this.chosenTab || isServerControlled(this)) {
       /*
        * Ingen brukervalg å sette tilbake, så serverens ord bestemmer, og det
@@ -535,6 +609,7 @@ export class FsTabs extends HostElement {
     // det igjen.
     if (!isServerControlled(this)) this.chosenTab = tabs[index]
     this.apply(index)
+    if (isServerControlled(this)) this.pendingTab = tabs[index]
     this.notify(index)
   }
 

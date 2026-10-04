@@ -408,3 +408,53 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     nullstilt.mockRestore()
   })
 })
+
+describe("fs-session-timeout: opplesning og flytting", () => {
+  beforeAll(() => {
+    defineFsSessionTimeout()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("leser opp det samme som tallet viser når det ikke er hele minutter", async () => {
+    // Rundet av sa opplesningen «2 minutter» mens tallet viste 1:30.
+    monter(
+      `<fs-session-timeout ${attr(sessionTimeout({ warnAt: 1, expiresAt: 91 }))}></fs-session-timeout>`,
+    )
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(1)
+
+    expect(dialog().querySelector("[role='status']")?.textContent).toBe(
+      "Du blir logget ut om ett minutt og 30 sekunder.",
+    )
+  })
+
+  it("er fortsatt modal etter at elementet er flyttet mens varselet står", async () => {
+    const flate = monter(
+      `<fs-session-timeout ${attr(KORT)}></fs-session-timeout><div id="annet"></div>`,
+    )
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(3)
+    expect(dialog().matches(":modal")).toBe(true)
+
+    const vert = document.querySelector("fs-session-timeout") as HTMLElement
+    flate.querySelector("#annet")?.append(vert)
+
+    expect(dialog().open).toBe(true)
+    expect(dialog().matches(":modal")).toBe(true)
+  })
+})

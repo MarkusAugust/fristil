@@ -35,11 +35,13 @@ function clock(seconds: number): string {
 }
 
 function words(seconds: number): string {
-  if (seconds >= 60) {
-    const m = Math.round(seconds / 60)
-    return m === 1 ? "ett minutt" : `${m} minutter`
-  }
-  return seconds === 1 ? "ett sekund" : `${seconds} sekunder`
+  const s = seconds % 60
+  const rest = s === 1 ? "ett sekund" : `${s} sekunder`
+  if (seconds < 60) return rest
+  // Rundet av sa opplesningen «2 minutter» mens tallet viste 1:30.
+  const m = Math.floor(seconds / 60)
+  const minutes = m === 1 ? "ett minutt" : `${m} minutter`
+  return s === 0 ? minutes : `${minutes} og ${rest}`
 }
 
 function isSeconds(raw: string | null): boolean {
@@ -125,6 +127,17 @@ export class FsSessionTimeout extends HostElement {
     }
     this.ticker = window.setInterval(() => this.tick(), 1000)
     this.validate()
+    /*
+     * Flyttes elementet mens varselet står, tar nettleseren dialogen ut av
+     * topplaget og lar `open` stå. Den var da en boks uten bakteppe og
+     * fokusfelle, og `tick()` åpnet den aldri på nytt, siden den alt var
+     * «åpen». `removeAttribute` og ikke `close()`: en lukking leses som at
+     * brukeren forlenget økten.
+     */
+    if (this.dialog?.open && !this.dialog.matches(":modal")) {
+      this.dialog.removeAttribute("open")
+      this.dialog.showModal()
+    }
   }
 
   disconnectedCallback(): void {

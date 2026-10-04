@@ -65,7 +65,21 @@ export class FsConnectionStatus extends HostElement {
     this.classList.add(CONNECTION_STATUS_CLASS)
     window.addEventListener("offline", this.handleOffline)
     window.addEventListener("online", this.handleOnline)
-    if (!navigator.onLine) this.showOffline()
+    if (!navigator.onLine) {
+      this.showOffline()
+      return
+    }
+    /*
+     * Elementet kan ha vært ute av dokumentet, og da er både hendelsene og
+     * tidsuret tapt. Sto kvitteringen der, ble den stående for godt, og sto
+     * linja som «offline» mens nettet kom tilbake, sa den det til neste
+     * gang nettet falt. `failing` er appens ord og ikke nettverkets, så det
+     * står.
+     */
+    if (this.bar?.dataset.state === "online") this.scheduleRemoval(this.bar)
+    else if (this.bar?.dataset.state === "offline" && !this.failing) {
+      this.showOnline()
+    }
   }
 
   disconnectedCallback(): void {
@@ -143,9 +157,15 @@ export class FsConnectionStatus extends HostElement {
     this.write(bar, false, "online", this.onlineText)
     this.emit("connection-restored")
 
+    this.scheduleRemoval(bar)
+  }
+
+  private scheduleRemoval(bar: HTMLElement): void {
+    if (this.timer) window.clearTimeout(this.timer)
     this.timer = window.setTimeout(() => {
       bar.remove()
       this.bar = undefined
+      this.timer = undefined
     }, RECEIPT_MS)
   }
 
