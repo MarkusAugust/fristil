@@ -15,15 +15,20 @@
   }
 
   .fs-label[data-required="text"]::after {
-    content: " (påkrevd)";
+    /* `\e5` er å. Skrevet rett ut ble det «pÃ¥krevd» når siden manglet
+       `<meta charset>` og tjeneren ikke sendte tegnsettet. */
+    content: " (p\e5 krevd)";
     color: var(--fs-color-danger-text);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }
 
-  .fs-label[data-optional]::after {
+  /* Ikke når feltet også er merket påkrevd: byggefunksjonen velger påkrevd,
+     og håndskrevet markup med begge skal gi det samme. Fargen er ikke
+     `disabled-text`: teksten er ikke deaktivert, og den hadde 4,37:1. */
+  .fs-label[data-optional]:not([data-required])::after {
     content: " (valgfri)";
-    color: var(--fs-color-disabled-text);
+    color: var(--fs-color-neutral-text-subtle);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
   }

@@ -33,7 +33,10 @@
 
   .fs-input:disabled,
   .fs-input[aria-disabled="true"] {
-    background: var(--fs-color-disabled-surface);
+    /* `background-color` og ikke kortformen, her og i tilstandene under.
+       Kortformen nullstiller `background-image`, og et søkefelt mistet
+       forstørrelsesglasset når `input.css` ble lastet etter `search.css`. */
+    background-color: var(--fs-color-disabled-surface);
     color: var(--fs-color-disabled-text);
     border-color: var(--fs-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
@@ -51,7 +54,7 @@
 
   .fs-input[data-state="invalid"] {
     border-color: var(--fs-color-danger-text);
-    background: var(--fs-color-danger-surface);
+    background-color: var(--fs-color-danger-surface);
   }
 
   .fs-input[data-state="invalid"]:focus-visible {
@@ -60,7 +63,7 @@
 
   .fs-input[data-state="success"] {
     border-color: var(--fs-color-success-text);
-    background: var(--fs-color-success-surface);
+    background-color: var(--fs-color-success-surface);
   }
 
   .fs-input[data-state="success"]:focus-visible {

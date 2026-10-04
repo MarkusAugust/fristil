@@ -60,6 +60,23 @@ egen overskrift «Brytende».
   `titleId`, og det står nå i meldingen.
 - **Eksempellinja i `fristil --hjelp`** hadde en linjefortsettelse som ble
   til fem mellomrom midt i kommandoen.
+- **En deaktivert knapp med variant så aktiv ut.** `secondary`, `ghost` og
+  `danger` hadde samme bakgrunn, tekst og kant med og uten `disabled`, og
+  fikk hoverfarge under musa. Regelen for deaktivert sto over variantene og
+  tapte på rekkefølgen.
+- **Musa tok bort feilrammen og rammen på en valgt** avkryssingsboks, radio
+  og bryter. Hover var løftet over tilstandene med `:not(:disabled)`.
+- **Hjelpeboblen sto en hel boblebredde til venstre i RTL.**
+- **Søkefeltet mistet forstørrelsesglasset** når det var ugyldig, gyldig
+  eller deaktivert og `input.css` ble lastet etter `search.css`. Tilstandene
+  setter nå `background-color` og ikke kortformen.
+- **«(valgfri)» hadde kontrast 4,37:1 i lyst tema.** Teksten brukte fargen
+  for deaktivert tekst. Den bruker nå `--fs-color-neutral-text-subtle`.
+- **«(påkrevd)» kunne komme ut som «pÃ¥krevd».** Tegnet sto rått i
+  stilarket, og en side uten `<meta charset>` fra en tjener som ikke sender
+  tegnsettet, leste det feil. Det står nå som en escape.
+- **Markup med både `data-required` og `data-optional` viste «(valgfri)».**
+  Byggefunksjonen velger påkrevd, og stilarket gjør nå det samme.
 
 ## 0.27.1 (2026-10-03)
 

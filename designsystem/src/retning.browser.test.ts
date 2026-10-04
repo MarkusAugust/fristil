@@ -9,6 +9,7 @@ import "./components/css/input/input.css"
 import "./components/css/search/search.css"
 import "./components/css/switch/switch.css"
 import "./components/css/select/select.css"
+import "./components/css/tooltip/tooltip.css"
 
 /**
  * At komponentene snur når språket går fra høyre til venstre.
@@ -140,6 +141,41 @@ describe("høyre til venstre", () => {
     // ligger på slutten i den andre.
     expect(avEtter).toBe(paaFoer)
     expect(paaEtter).toBe(avFoer)
+  })
+
+  it("holder hjelpeboblen midt over knappen i begge retninger", async () => {
+    /*
+     * `inset-inline-start: 50%` snur, `translateX(-50%)` gjør det ikke, og
+     * boblen sto en hel boblebredde til venstre i RTL. Ett element i hver
+     * retning side om side, av samme grunn som i testene over.
+     */
+    monter(
+      ["ltr", "rtl"]
+        .map(
+          (retning) => `
+        <div dir="${retning}" style="padding: 4rem 12rem">
+          <span class="fs-tooltip">
+            <button type="button" id="knapp-${retning}" aria-describedby="boble-${retning}">Arkiver</button>
+            <span class="fs-tooltip__bubble" role="tooltip" id="boble-${retning}">Saken flyttes til arkivet</span>
+          </span>
+        </div>`,
+        )
+        .join(""),
+    )
+    await ventPaTegning()
+
+    for (const retning of ["ltr", "rtl"]) {
+      const knapp = document
+        .getElementById(`knapp-${retning}`)
+        ?.getBoundingClientRect() as DOMRect
+      const boble = document
+        .getElementById(`boble-${retning}`)
+        ?.getBoundingClientRect() as DOMRect
+      const avvik =
+        boble.left + boble.width / 2 - (knapp.left + knapp.width / 2)
+
+      expect(Math.abs(avvik), retning).toBeLessThan(1)
+    }
   })
 
   it("lar de logiske egenskapene snu av seg selv", async () => {

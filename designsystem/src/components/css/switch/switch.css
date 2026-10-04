@@ -28,7 +28,10 @@
       background-position 120ms ease;
   }
 
-  .fs-switch:hover:not(:disabled) {
+  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
+     under, så musa tok bort rammen på en bryter som var på. Reglene for
+     valgt og deaktivert står etter denne og vinner på rekkefølgen. */
+  .fs-switch:hover {
     border-color: var(--fs-color-neutral-border-strong);
   }
 
