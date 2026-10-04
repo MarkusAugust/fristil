@@ -200,11 +200,23 @@ export class FsSuggestion extends HostElement {
     if (!control.hasAttribute("aria-autocomplete")) {
       setAttr(control, "aria-autocomplete", "list")
     }
+    const label = this.querySelector("label")
+    const root = this.getRootNode() as Document | ShadowRoot
+    /*
+     * `for` og `id` er den samme opplysningen. Byttet en patch ut feltet,
+     * kom det nye uten id mens ledeteksten beholdt sin `for`, og en ny,
+     * tilfeldig id på feltet rev koblingen. Peker `for` på ingenting, er det
+     * den id-en feltet skal ha.
+     */
     if (!control.id) {
+      const wanted = label?.getAttribute("for")
+      const free = wanted && !root.getElementById?.(wanted)
+      // Husket på noden, så en senere morfing som river både `id` og `for`
+      // gir den samme tilbake.
+      if (free) this.ids.set(control, wanted)
       setAttr(control, "id", this.rememberedId(control, "fs-suggestion"))
     }
 
-    const label = this.querySelector("label")
     if (label) {
       addClass(label, LABEL_CLASS)
       if (!label.hasAttribute("for")) setAttr(label, "for", control.id)
@@ -215,6 +227,11 @@ export class FsSuggestion extends HostElement {
       addClass(list, SUGGESTION_LIST_CLASS)
       if (!list.hasAttribute("role")) setAttr(list, "role", "listbox")
       if (!list.id) {
+        // Samme regel som for feltet: peker `aria-controls` på ingenting,
+        // er det den id-en den nye lista skal ha.
+        const wanted = control.getAttribute("aria-controls")
+        const free = wanted && !root.getElementById?.(wanted)
+        if (free) this.ids.set(list, wanted)
         setAttr(list, "id", this.rememberedId(list, "fs-suggestion-list"))
       }
       if (!control.hasAttribute("aria-controls")) {

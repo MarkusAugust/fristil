@@ -61,6 +61,16 @@ export class FsConnectionStatus extends HostElement {
     this.setAttribute("online-text", value)
   }
 
+  attributeChangedCallback(): void {
+    // Byttes teksten mens linja står, som når språket endres, skal linja
+    // si det nye. `textContent` skrives bare når teksten er en annen.
+    const bar = this.bar
+    if (!bar || bar.textContent === "") return
+    const text =
+      bar.dataset.state === "offline" ? this.offlineText : this.onlineText
+    if (bar.textContent !== text) bar.textContent = text
+  }
+
   connectedCallback(): void {
     this.classList.add(CONNECTION_STATUS_CLASS)
     window.addEventListener("offline", this.handleOffline)
@@ -120,10 +130,13 @@ export class FsConnectionStatus extends HostElement {
     bar: HTMLElement,
     fresh: boolean,
     state: "offline" | "online",
-    text: string,
   ): void {
+    // Teksten leses i det den skrives, ikke i det den bestilles. Ble
+    // `offline-text` byttet i tegningen imellom, skrev linja den gamle.
+    const text = () =>
+      state === "offline" ? this.offlineText : this.onlineText
     if (!fresh || typeof requestAnimationFrame === "undefined") {
-      bar.textContent = text
+      bar.textContent = text()
       return
     }
     requestAnimationFrame(() => {
@@ -131,7 +144,7 @@ export class FsConnectionStatus extends HostElement {
       // tegning, står linja alt som «online», og offline-teksten skal ikke
       // skrives oppå kvitteringen.
       if (this.bar === bar && bar.dataset.state === state) {
-        bar.textContent = text
+        bar.textContent = text()
       }
     })
   }
@@ -146,7 +159,7 @@ export class FsConnectionStatus extends HostElement {
     if (this.timer) window.clearTimeout(this.timer)
     const { bar, fresh } = this.ensureBar()
     bar.dataset.state = "offline"
-    this.write(bar, fresh, "offline", this.offlineText)
+    this.write(bar, fresh, "offline")
     this.emit("connection-lost")
   }
 
@@ -154,7 +167,7 @@ export class FsConnectionStatus extends HostElement {
     if (!this.bar || this.bar.dataset.state === "online") return
     const bar = this.bar
     bar.dataset.state = "online"
-    this.write(bar, false, "online", this.onlineText)
+    this.write(bar, false, "online")
     this.emit("connection-restored")
 
     this.scheduleRemoval(bar)

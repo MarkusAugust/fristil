@@ -888,3 +888,110 @@ describe("fs-tabs under server-controlled", () => {
     })
   })
 })
+
+describe("fs-tabs når en patch bytter ut et panel", () => {
+  beforeAll(() => {
+    defineFsTabs()
+  })
+
+  const BAR = `
+    <fs-tabs>
+      <div class="fs-tabs__list">
+        <button>Søknaden</button>
+        <button>Vedlegg</button>
+      </div>
+      <div class="fs-tabs__panel">Søknaden</div>
+      <div class="fs-tabs__panel">Vedlegg</div>
+    </fs-tabs>`
+
+  it("gir det nye panelet den samme id-en, rollen og hidden", async () => {
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const fane = document.querySelectorAll("fs-tabs button")[1]
+    const gammelt = document.querySelectorAll(".fs-tabs__panel")[1]
+    const id = gammelt.id
+    expect(fane.getAttribute("aria-controls")).toBe(id)
+
+    const nytt = document.createElement("div")
+    nytt.className = "fs-tabs__panel"
+    nytt.textContent = "Nye vedlegg"
+    gammelt.replaceWith(nytt)
+    await ventPaTegning()
+
+    expect(nytt.id, "fanen peker på en id som ikke finnes").toBe(id)
+    expect(nytt.getAttribute("role")).toBe("tabpanel")
+    expect(
+      nytt.hidden,
+      "panelet til en fane som ikke er valgt står synlig",
+    ).toBe(true)
+    expect(nytt.getAttribute("aria-labelledby")).toBe(fane.id)
+  })
+
+  it("gjetter ikke når et panel er fjernet og de andre har rykket fram", async () => {
+    // Plassen er da en annen fanes. To faner på samme panel var verre enn
+    // en fane uten: begge pekte dit, og advarselen kom aldri.
+    monter(`
+      <fs-tabs>
+        <div class="fs-tabs__list">
+          <button>En</button><button>To</button><button>Tre</button>
+        </div>
+        <div class="fs-tabs__panel">en</div>
+        <div class="fs-tabs__panel">to</div>
+        <div class="fs-tabs__panel">tre</div>
+      </fs-tabs>`)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const faner = [...document.querySelectorAll("fs-tabs button")]
+    const paneler = [...document.querySelectorAll(".fs-tabs__panel")]
+    const pekere = faner.map((fane) => fane.getAttribute("aria-controls"))
+
+    paneler[1].remove()
+    await ventPaTegning()
+
+    expect(faner.map((fane) => fane.getAttribute("aria-controls"))).toEqual(
+      pekere,
+    )
+    expect(paneler[2].getAttribute("aria-labelledby")).toBe(faner[2].id)
+  })
+
+  it("gir den samme id-en tilbake etter at en morfing river begge halvdelene", async () => {
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const fane = document.querySelectorAll("fs-tabs button")[1]
+    const id = fane.getAttribute("aria-controls")
+    const nytt = document.createElement("div")
+    nytt.className = "fs-tabs__panel"
+    document.querySelectorAll(".fs-tabs__panel")[1].replaceWith(nytt)
+    await ventPaTegning()
+
+    fane.removeAttribute("aria-controls")
+    nytt.removeAttribute("id")
+    await ventPaTegning()
+
+    expect(nytt.id).toBe(id)
+    expect(fane.getAttribute("aria-controls")).toBe(id)
+  })
+
+  it("lar nettleserens egne snarveier med Alt og Cmd være", async () => {
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const faner = [...document.querySelectorAll<HTMLElement>("fs-tabs button")]
+    faner[0].focus()
+
+    for (const modifikator of ["altKey", "metaKey", "ctrlKey"] as const) {
+      const trykk = new KeyboardEvent("keydown", {
+        key: "ArrowRight",
+        [modifikator]: true,
+        bubbles: true,
+        cancelable: true,
+      })
+      faner[0].dispatchEvent(trykk)
+
+      expect(trykk.defaultPrevented, modifikator).toBe(false)
+      expect(faner[0].getAttribute("aria-selected"), modifikator).toBe("true")
+    }
+  })
+})

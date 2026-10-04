@@ -885,3 +885,42 @@ describe("tommeldingen når appen filtrerer selv", () => {
     expect(tom.hasAttribute("hidden")).toBe(true)
   })
 })
+
+describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  it("gir det nye feltet id-en ledeteksten peker på, og lista den feltet peker på", async () => {
+    monter(`
+      <fs-suggestion>
+        <label>Kommune</label>
+        <div class="fs-suggestion__field">
+          <input class="fs-input">
+          <ul class="fs-suggestion__list"><li>Oslo</li></ul>
+          <p class="fs-suggestion__empty">Ingen treff</p>
+          <span class="fs-suggestion__status" role="status"></span>
+        </div>
+      </fs-suggestion>
+    `)
+    const vert = await tegn()
+    const ledetekst = vert.querySelector("label") as HTMLLabelElement
+    const peker = ledetekst.getAttribute("for")
+    const listepeker = (
+      vert.querySelector("input") as HTMLElement
+    ).getAttribute("aria-controls")
+
+    const nyttFelt = document.createElement("input")
+    nyttFelt.className = "fs-input"
+    nyttFelt.setAttribute("aria-controls", listepeker ?? "")
+    vert.querySelector("input")?.replaceWith(nyttFelt)
+    const nyListe = document.createElement("ul")
+    nyListe.className = "fs-suggestion__list"
+    nyListe.innerHTML = "<li>Bergen</li>"
+    vert.querySelector("ul")?.replaceWith(nyListe)
+    await tegn()
+
+    expect(nyttFelt.id, "ledetekstens for peker på ingenting").toBe(peker)
+    expect(nyListe.id, "aria-controls peker på ingenting").toBe(listepeker)
+  })
+})

@@ -334,7 +334,15 @@ export class FsPopover extends HostElement {
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== "Escape") return
+    if (event.key !== "Escape" || !this.open) return
+    // Kom tastetrykket fra knappen eller panelet, er det brukt. Uten dette
+    // lukket det også en modal dialog vinduet sto i: ett trykk tok begge,
+    // og brukeren mistet dialogen. Kom det fra et annet sted, som en dialog
+    // åpnet oppå vinduet, er det ikke vinduets å stoppe.
+    const target = event.composedPath()[0] as Node
+    if (this.contains(target) || this.panel?.contains(target)) {
+      event.preventDefault()
+    }
     this.hide()
     // Fokus tilbake til knappen. Uten dette står fokus på et panel som ikke
     // lenger finnes, og neste tastetrykk starter på toppen av siden.
