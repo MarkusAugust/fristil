@@ -41,6 +41,12 @@ intellijPlatform {
         // `id`, `name` og `vendor` står i `plugin.xml`. Versjonen og
         // byggrammen settes her, siden de kommer fra `gradle.properties`.
         version = providers.gradleProperty("pluginVersion")
+        // Vises på Marketplace og i IDE-en ved oppdatering, og må være på
+        // engelsk som beskrivelsen. Skriv en ny linje for hver versjon.
+        changeNotes = """
+            <b>0.1.0</b>: First release. Completion for Fristil's CSS classes in
+            HTML files and in HTML injected into strings.
+        """.trimIndent()
         ideaVersion {
             sinceBuild = providers.gradleProperty("sinceBuild")
             untilBuild = provider { null }
