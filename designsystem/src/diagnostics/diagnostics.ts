@@ -751,10 +751,19 @@ export function diagnose(
       const closer = /<\/fs-session-timeout\b/gi
       closer.lastIndex = end
       const close = closer.exec(source)?.index ?? -1
-      const content = source.slice(end + 1, close < 0 ? source.length : close)
-      findings.push(
-        ...checkSessionTimeout(tag, nameStart, nameEnd, content, element.link),
-      )
+      // Uten lukketagg er markupen halvskrevet, og resten av fila hører ikke
+      // til elementet. En <dialog> lenger ned ville ellers tatt meldingen.
+      if (close >= 0) {
+        findings.push(
+          ...checkSessionTimeout(
+            tag,
+            nameStart,
+            nameEnd,
+            source.slice(end + 1, close),
+            element.link,
+          ),
+        )
+      }
     }
 
     if (tag === "fs-field") {

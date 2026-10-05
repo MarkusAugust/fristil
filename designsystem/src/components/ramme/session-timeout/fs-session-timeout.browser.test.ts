@@ -409,6 +409,30 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(hendelser).toEqual(["session-warn", "session-logout"])
   })
 
+  it("melder utlogging selv om klokka tikker før close kommer", async () => {
+    // `close` kommer i en senere oppgave enn klikket. Tikket klokka imellom,
+    // åpnet komponenten dialogen igjen, og den køede hendelsen ble lest som
+    // en forlengelse: appen fikk `session-extend` og aldri `session-logout`.
+    const element = await monterKort()
+    const hendelser = lytt(element, [
+      "session-warn",
+      "session-extend",
+      "session-logout",
+    ])
+    await gaFram(4)
+
+    const lukket = new Promise((r) =>
+      dialog().addEventListener("close", r, { once: true }),
+    )
+    knapp("logout").click()
+    await gaFram(1)
+    await lukket
+    await gaFram(2)
+
+    expect(hendelser).toEqual(["session-warn", "session-logout"])
+    expect(dialog().open).toBe(false)
+  })
+
   it("fyller inn rollen og navnet på en bar dialog", async () => {
     // En mal uten byggefunksjonen kan glemme dem. Tilgjengeligheten krever
     // begge, så komponenten setter dem når de mangler, og bare da.

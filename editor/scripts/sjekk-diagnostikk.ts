@@ -192,6 +192,11 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "et varsel om økten uten lukketagg, med en annen dialog lenger ned",
+    html: `<fs-session-timeout warn-at="1500">\n<fs-dialog><dialog><h2>Annet</h2></dialog></fs-dialog>`,
+    count: 0,
+  },
+  {
     name: "et varsel om økten der dialogen står i en partial",
     html: `<fs-session-timeout>{{ template "okt" . }}</fs-session-timeout>`,
     count: 0,

@@ -156,6 +156,15 @@ export class FsSessionTimeout extends HostElement {
   private expired = false
   /** Id-en komponenten ga overskriften, så den samme kommer tilbake. */
   private titleId?: string
+  /**
+   * Dialogen komponenten åpnet, til `close` er kommet.
+   *
+   * `close` kommer i en senere oppgave enn klikket som lukket dialogen. Tikket
+   * klokka imellom, åpnet `tick()` dialogen igjen og nullstilte
+   * `returnValue`, og den køede hendelsen leste da `""` og forlenget økten:
+   * brukeren trykket «Logg ut nå», og appen fikk `session-extend`.
+   */
+  private shownDialog?: HTMLDialogElement
 
   /** Sekunder uten aktivitet før varselet kommer. */
   get warnAt(): number {
@@ -328,6 +337,7 @@ export class FsSessionTimeout extends HostElement {
   private handleClose = (event: Event): void => {
     const dialog = event.target
     if (!(dialog instanceof HTMLDialogElement) || dialog !== this.dialog) return
+    this.shownDialog = undefined
 
     const live = dialog.querySelector("[role=status]")
     if (live) setText(live, "")
@@ -349,6 +359,14 @@ export class FsSessionTimeout extends HostElement {
 
   private tick(): void {
     if (this.expired) return
+
+    // En lukking er på vei. Vent på `close`, så den blir lest riktig. Er
+    // dialogen byttet ut imens, kommer den aldri, og da slippes minnet.
+    const current = this.dialog
+    if (this.shownDialog && this.shownDialog !== current) {
+      this.shownDialog = undefined
+    }
+    if (this.shownDialog && !this.shownDialog.open) return
 
     const elapsed = Math.floor((Date.now() - this.lastActivity) / 1000)
     const left = this.expiresAt - elapsed
@@ -434,6 +452,7 @@ export class FsSessionTimeout extends HostElement {
     this.show(dialog, left, true)
     dialog.returnValue = ""
     dialog.showModal()
+    this.shownDialog = dialog
     this.emit("session-warn")
   }
 

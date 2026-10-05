@@ -92,8 +92,11 @@ export function languageOf(element: Element): string | undefined {
    */
   let node: Element | null = element
   while (node) {
-    const lang = node.closest("[lang]")?.getAttribute("lang")?.trim()
-    if (lang) {
+    const owner = node.closest("[lang]")
+    // `lang=""` betyr «ukjent språk» og stopper arven fra foreldrene.
+    if (owner) {
+      const lang = owner.getAttribute("lang")?.trim()
+      if (!lang) return undefined
       try {
         Intl.getCanonicalLocales(lang)
         return lang
