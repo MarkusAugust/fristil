@@ -267,8 +267,9 @@ const FANENAVN = new Set([
 /**
  * Verter der byggefunksjonen gir attributter komponenten ikke setter selv.
  *
- * Bare de frittstående: der er verten noe du skriver én gang i appen, og
- * fristelsen til å skrive den for hånd er størst.
+ * Der er verten noe du skriver én gang i appen, og fristelsen til å skrive
+ * den for hånd er størst. Alle tre har `data-ignore-morph`, som komponenten
+ * ikke kan sette på seg selv.
  */
 const VERTER: Array<[string, string]> = [
   ["fs-toast", "toast"],
@@ -280,9 +281,8 @@ const VERTER: Array<[string, string]> = [
  * Klasser en byggefunksjon faktisk sender ut, og hvilken funksjon det er.
  *
  * Uten denne ville regelen felt hver `fs-`-klasse i en React- eller
- * Astro-fane, også de som ikke har noen funksjon å kalle. Seks klasser er
- * slik i dag, og alle seks lager komponenten selv:
- * `fs-connection-status__bar` og de fem `fs-session-timeout__*`.
+ * Astro-fane, også de som ikke har noen funksjon å kalle. Én klasse er slik
+ * i dag, og den lager komponenten selv: `fs-connection-status__bar`.
  */
 const FRA_BYGGER = new Map<string, string>()
 for (const [navn, f] of Object.entries(fs)) {
@@ -333,9 +333,10 @@ for (const [navn, f] of Object.entries(fs)) {
 
 /** Attributtnavnene en byggefunksjon faktisk sender ut for verten sin. */
 function kreves(bygger: string): string[] {
+  // De samme prøvevalgene som over: `fs.sessionTimeout()` krever `titleId`.
   const svar = (fs as Record<string, (o?: unknown) => Record<string, unknown>>)[
     bygger
-  ]()
+  ]({ titleId: "t" })
   const sett = (svar.host ?? svar) as Record<string, unknown>
   return Object.keys(sett).filter((k) => k !== "class")
 }

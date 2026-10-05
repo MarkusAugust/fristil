@@ -78,6 +78,27 @@ export const elements: Elements = {
       "prefiltered": {
         "type": "flag"
       },
+      "count-none": {
+        "type": "text"
+      },
+      "count-zero": {
+        "type": "text"
+      },
+      "count-one": {
+        "type": "text"
+      },
+      "count-two": {
+        "type": "text"
+      },
+      "count-few": {
+        "type": "text"
+      },
+      "count-many": {
+        "type": "text"
+      },
+      "count-other": {
+        "type": "text"
+      },
       "server-controlled": {
         "type": "flag"
       }
@@ -101,6 +122,9 @@ export const elements: Elements = {
         "type": "number"
       },
       "label": {
+        "type": "text"
+      },
+      "close-label": {
         "type": "text"
       }
     }

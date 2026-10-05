@@ -34,6 +34,17 @@ import { filer, NAVN } from "./generate-agent.js"
 
 const avvik: string[] = []
 
+/** Alle komponentenes stilark i én streng, for oppslag på variabelnavn. */
+function komponentstilark(mappe = join(PAKKE, "src/components")): string {
+  return readdirSync(mappe, { withFileTypes: true })
+    .map((oppføring) => {
+      const sti = join(mappe, oppføring.name)
+      if (oppføring.isDirectory()) return komponentstilark(sti)
+      return oppføring.name.endsWith(".css") ? readFileSync(sti, "utf8") : ""
+    })
+    .join("\n")
+}
+
 /*
  * Tellerne er ikke pynt. En vakt som går gjennom en liste skal telle hva den
  * faktisk gjorde, sist i løkka, og kreve at tallet er både likt det forventede
@@ -232,6 +243,12 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // 7. Hvert tokennavn finnes. Ellipsen er med i prosaen som mønster, og
   // hopper derfor over.
   const tokens = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
+  /*
+   * En komponentvariabel, som `--fs-label-required-text`, er ikke et token,
+   * men den finnes i stilarket til komponenten. Navnet må stå i det ene eller
+   * det andre, så en regelbok kan ikke nevne en variabel pakken ikke har.
+   */
+  const stilark = komponentstilark()
 
   /*
    * Mønsteret må slutte på et bokstav- eller talltegn, og ikke ha et til etter
@@ -251,8 +268,8 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     const heleNavnet = new RegExp(`${treff[0]}(?![a-zA-Z0-9-])`)
 
     krev(
-      heleNavnet.test(tokens),
-      `${sti} nevner ${treff[0]}, som ikke finnes i tokens.css`,
+      heleNavnet.test(tokens) || heleNavnet.test(stilark),
+      `${sti} nevner ${treff[0]}, som verken finnes i tokens.css eller i et komponentstilark`,
     )
     sjekkedeTokens += 1
     for (const slag of SLAG)

@@ -924,3 +924,72 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
     expect(nyListe.id, "aria-controls peker på ingenting").toBe(listepeker)
   })
 })
+
+describe("fs-suggestion leser opp antallet på sidens språk", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  /** Forslagsfeltet på en side med `lang`, og tekstene som attributter. */
+  async function felt(lang: string, attributter: string) {
+    monter(`
+      <div lang="${lang}">
+        <fs-suggestion ${attributter}>
+          <label ${attr(FORSLAG.label)}>Municipality</label>
+          <div ${attr(FORSLAG.field)}>
+            <input ${attr(FORSLAG.control)} name="kommune">
+            <ul ${attr(FORSLAG.list)}>
+              ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n")}
+            </ul>
+            <span ${attr(FORSLAG.status)}></span>
+          </div>
+        </fs-suggestion>
+      </div>
+    `)
+    return tegn()
+  }
+
+  async function opplest(element: FsSuggestion, tekst: string) {
+    skriv(element, tekst)
+    await tegn()
+    return (element.querySelector("[role='status']") as HTMLElement).textContent
+  }
+
+  it("bruker formen språket krever, med tallet satt inn", async () => {
+    const element = await felt(
+      "en",
+      'count-none="No results" count-one="{n} result" count-other="{n} results"',
+    )
+
+    expect(await opplest(element, "bod")).toBe("1 result")
+    expect(await opplest(element, "o")).toBe("3 results")
+    expect(await opplest(element, "xyz")).toBe("No results")
+  })
+
+  it("faller tilbake på count-other når en form mangler", async () => {
+    // Engelsk har formen `one`. Står bare `count-other`, skal den gjelde
+    // også for ett treff, framfor at opplesningen blir norsk.
+    const element = await felt("en", 'count-other="{n} results"')
+
+    expect(await opplest(element, "bod")).toBe("1 results")
+    expect(await opplest(element, "xyz")).toBe("0 results")
+  })
+
+  it("velger bøyningen etter språket, ikke etter tallet alene", async () => {
+    // Polsk har fire former. 2, 3 og 4 er `few`, og 1 er `one`.
+    const element = await felt(
+      "pl",
+      'count-one="{n} wynik" count-few="{n} wyniki" count-many="{n} wyników" count-other="{n} wyniku"',
+    )
+
+    expect(await opplest(element, "o")).toBe("3 wyniki")
+    expect(await opplest(element, "bod")).toBe("1 wynik")
+  })
+
+  it("er norsk når ingen tekst er satt", async () => {
+    const element = await felt("en", "")
+
+    expect(await opplest(element, "bod")).toBe("Ett treff")
+    expect(await opplest(element, "o")).toBe("3 treff")
+  })
+})
