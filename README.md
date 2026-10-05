@@ -53,13 +53,13 @@ Bun-monorepo med tre workspaces, og ett Gradle-prosjekt ved siden av:
 | `editor/` | `fristil-vscode` | VS Code-utvidelsen: fullføring, snippets og diagnostikk |
 | `editor-intellij/` | ikke en bun-workspace | IntelliJ-pluginen, bygget med Gradle |
 
-Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som eier DOM-en mens siden lever:
+Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som lager markupen og om en web-komponent legger oppførsel på den:
 
 - `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
 - `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
 - `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-connection-status>`.
 
-Ingen komponent bruker shadow DOM. Kategorien sier hvem som eier DOM-en mens siden lever: serveren, eller komponenten. Se `.claude/CLAUDE.md`.
+Ingen komponent bruker shadow DOM. Kategorien sier hvem som lager nodene: den som rendrer, eller web-komponenten selv. Se `.claude/CLAUDE.md`.
 
 ## Lokal utvikling
 

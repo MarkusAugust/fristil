@@ -518,8 +518,8 @@ Registreringen, én gang i sidemalen:
     ekstra: `## 6. Når serveren sender ny HTML
 
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
-\`innerHTML\`-oppdatering, er spørsmålet hvem som eier tilstanden. Som standard
-eier komponenten den: \`<fs-tabs>\` husker fanen brukeren valgte, og setter den
+\`innerHTML\`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
+standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren valgte, og setter den
 tilbake når en patch river den bort. Malen trenger ingenting for det.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
@@ -683,8 +683,8 @@ fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
 
 Kall den på nytt for å endre tilstand. Tre regler:
 
-- **Har byggefunksjonen et valg for et attributt, eier den det.** Et kall
-  uten valget tar attributtet bort, så valgene sendes på nytt hver gang.
+- **Har byggefunksjonen et valg for et attributt, tar et kall uten valget
+  attributtet bort.** Send derfor valgene på nytt hver gang.
   \`fs.spinner()\` uten \`label\` fjerner \`role\` og \`aria-label\`.
 - **Det byggefunksjonen ikke har et valg for, står.** \`fs.button()\` rører
   ikke \`disabled\` eller \`type\`. \`id\` og \`for\` fjernes aldri.
@@ -1091,8 +1091,8 @@ Komponenten kobler da \`for\` og \`id\`, setter \`fs-label\`, legger på
 med for akkurat dette feltet. Det er poenget med at \`ramme\`-komponentene bor i
 vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
-Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som eier
-den. Som standard eier komponenten den: \`<fs-tabs>\` husker fanen brukeren
+Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
+bestemmer den. Som standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren
 valgte, og setter den tilbake når en patch river den bort. Skal serveren kunne
 flytte den, sier du det med \`server-controlled\`:
 

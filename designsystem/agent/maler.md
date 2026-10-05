@@ -295,9 +295,10 @@ Registreringen, én gang i sidemalen:
 ## 6. Når serveren sender ny HTML
 
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
-`innerHTML`-oppdatering, er spørsmålet hvem som eier tilstanden. Som standard
-eier komponenten den: `<fs-tabs>` husker fanen brukeren valgte, og setter den
-tilbake når en patch river den bort. Malen trenger ingenting for det.
+`innerHTML`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
+standard gjør web-komponenten det: `<fs-tabs>` husker fanen brukeren valgte,
+og setter den tilbake når en patch river den bort. Malen trenger ingenting for
+det.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å

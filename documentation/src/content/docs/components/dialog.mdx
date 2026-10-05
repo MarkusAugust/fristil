@@ -286,7 +286,7 @@ De to `open`-ene i eksempelet er ikke det samme:
 
 `server-controlled` på `<fs-dialog>` slår av den siste. Da bestemmer hver oppdatering om dialogen vises, også når den står i topplaget.
 
-At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren eier.
+At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren bestemmer.
 
 Attributtet på selve `<dialog>` er noe annet: nettleseren setter det i `showModal()`, og serveren sendte det ikke, så en oppdatering river det bort og skjuler dialogen i det øyeblikket den åpnet den. Komponenten setter det tilbake når dialogen fortsatt står i topplaget, så malen din trenger ingenting ekstra.
 
