@@ -168,7 +168,9 @@ følger av den:
 
 - Egen CSS inne i grensen skal ligge i et lag etter `fristil`. CSS uten lag
   forsvinner der på samme måte som vertens.
-- Elementer uten Fristil-klasse får nettleserens egen stil, ikke vertens.
+- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten har
+  erklært før `fristil`, som Tailwinds Preflight i `base`, gjelder fortsatt
+  der Fristil ikke setter noe.
 - Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
   spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
   alltid. Det samme gjør `!important` og lag verten har erklært etter

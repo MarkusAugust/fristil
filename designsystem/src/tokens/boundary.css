@@ -20,7 +20,8 @@
  * fra verten med (0,2,0) vinner hvis den står etter denne, en med mer
  * vinner alltid, og det samme gjør `!important`.
  *
- * Hvert pseudoelement har sin egen regel. Et pseudoelement nettleseren
+ * Pseudoelementene er de Fristil styler, og de normalize styler, siden
+ * den er den vanligste nullstillingen en vert har. Hvert har sin egen regel. Et pseudoelement nettleseren
  * ikke kjenner gjør hele regelen ugyldig, og Firefox forkaster en liste
  * med `::picker(select)` i, slik at grensen ville forsvunnet der.
  */
@@ -70,6 +71,18 @@
 }
 
 [data-fs-boundary][data-fs-boundary] *::-webkit-search-cancel-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-search-decoration {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-inner-spin-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-outer-spin-button {
   all: revert-layer;
 }
 

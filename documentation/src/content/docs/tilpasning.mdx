@@ -99,9 +99,9 @@ Dette står igjen:
 Dette må du vite:
 
 - **Din egen CSS inne i grensen må ligge i et lag** etter `fristil`, for eksempel `components` eller `utilities` i [lagrekkefølgen](../tailwind/#lagrekkefølgen). CSS uten lag forsvinner der på samme måte som vertens. Tailwind-klassene ligger alt i et lag.
-- **Elementer uten Fristil-klasse får nettleserens egen stil,** ikke vertens. En vanlig `<p>` mister vertens marger, og et `<button>` uten `fs-button` får nettleserens knapp.
+- **Elementer uten Fristil-klasse mister vertens CSS uten lag.** En vanlig `<p>` mister vertens marger, og et `<button>` uten `fs-button` får nettleserens knapp, med mindre et lag sier noe annet.
 - **Grensen har spesifisiteten (0,2,0).** Den slår vertens nullstillinger, som `button:not(:disabled)`, `a:hover` og `input[type="text"]`. En regel fra verten med samme spesifisitet vinner hvis den lastes etter grensen, og en med mer, som `.app .innhold a`, vinner alltid. Det samme gjør `!important`.
-- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Har verten egne lag som er erklært etter `fristil`, vinner de, og den rekkefølgen er vertens å bestemme.
+- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Et lag verten har erklært etter `fristil` vinner over Fristil. Et lag erklært før, som Tailwinds Preflight i `base`, gjelder der Fristil ikke setter noe.
 
 ### Brukeren kan få velge
 
