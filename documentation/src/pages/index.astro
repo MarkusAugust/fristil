@@ -5,6 +5,11 @@ import "@fristil/designsystem/sr-only.css"
 import FristilLogo from "../components/FristilLogo.astro"
 import "../styles/custom-pages-tailwind.css"
 import sobernetics from "../assets/sobernetics.svg?raw"
+import { DELINGSBILDE, metaAttributter } from "../delingsbilde.mjs"
+
+const tittel = "Fristil designsystem"
+const beskrivelse =
+  "Rammeverksuavhengig designsystem der komponentene er CSS-klasser og web components. Samme API i React, Astro, Datastar og ren HTML."
 ---
 
 <!DOCTYPE html>
@@ -23,11 +28,21 @@ import sobernetics from "../assets/sobernetics.svg?raw"
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
   />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
-  <title>Fristil designsystem</title>
-  <meta
-    name="description"
-    content="Rammeverksuavhengig designsystem der komponentene er CSS-klasser og web components. Samme API i React, Astro, Datastar og ren HTML."
-  />
+  <title>{tittel}</title>
+  <meta name="description" content={beskrivelse} />
+  <!-- Forsiden står utenfor Starlight, så taggene for delte lenker, som
+       Starlight skriver på de andre sidene, står her. -->
+  <meta property="og:title" content={tittel} />
+  <meta property="og:description" content={beskrivelse} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={Astro.site?.href} />
+  <meta property="og:locale" content="nb" />
+  <meta property="og:site_name" content="Fristil - Dokumentasjon" />
+  <meta name="twitter:card" content="summary_large_image" />
+  {DELINGSBILDE.map((tagg) => {
+    const { property, name, content } = metaAttributter(tagg)
+    return <meta property={property} name={name} content={content} />
+  })}
 </head>
 <body class="min-h-screen bg-zinc-950 bg-[linear-gradient(145deg,#0b1020_0%,#12122e_55%,#181540_100%)] text-zinc-50 antialiased">
   <div class="flex min-h-screen flex-col">
