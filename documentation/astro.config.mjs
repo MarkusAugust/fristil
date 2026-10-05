@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
+import { DELINGSBILDE, metaAttributter } from "./src/delingsbilde.mjs"
 import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
 import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
 
@@ -60,6 +61,15 @@ export default defineConfig({
             title: "llms.txt",
           },
         },
+        /*
+         * Bildet en lenke får når den deles. Starlight skriver tittel,
+         * beskrivelse og `twitter:card` selv, men ikke noe bilde, og uten det
+         * viser X lenken uten forhåndsvisning.
+         */
+        ...DELINGSBILDE.map((tagg) => ({
+          tag: "meta",
+          attrs: metaAttributter(tagg),
+        })),
       ],
       defaultLocale: "root",
       locales: {
