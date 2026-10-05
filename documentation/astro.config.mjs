@@ -199,6 +199,10 @@ export default defineConfig({
                 { label: "Error Summary", slug: "components/error-summary" },
                 { label: "Field", slug: "components/field" },
                 { label: "Popover", slug: "components/popover" },
+                {
+                  label: "Session Timeout",
+                  slug: "components/session-timeout",
+                },
                 { label: "Suggestion", slug: "components/suggestion" },
                 { label: "Tabs", slug: "components/tabs" },
               ],
@@ -209,10 +213,6 @@ export default defineConfig({
                 {
                   label: "Connection Status",
                   slug: "components/connection-status",
-                },
-                {
-                  label: "Session Timeout",
-                  slug: "components/session-timeout",
                 },
                 { label: "Toast", slug: "components/toast" },
               ],
