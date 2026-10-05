@@ -55,4 +55,11 @@ intellijPlatform {
             untilBuild = provider { null }
         }
     }
+    // Tokenet kommer fra hemmeligheten JETBRAINS_MARKETPLACE_TOKEN i
+    // `publiser-intellij.yml`. Pluginen signeres ikke med eget sertifikat:
+    // uten `signPlugin.certificateChain` og `privateKey` hopper Gradle over
+    // signeringen, og Marketplace signerer den selv.
+    publishing {
+        token = providers.gradleProperty("intellijPlatformPublishingToken")
+    }
 }
