@@ -118,7 +118,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
 
     ```tsx
     <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-    <fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+    <fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
     <fs-connection-status offline="Nede" />  // feil: ukjent attributt
     ```
 
@@ -335,7 +335,7 @@ Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen,
 
 | Symptom | Årsak |
 | --- | --- |
-| En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting | `define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv, så uten registrering er elementet tomt. En `ramme`-komponents markup er serverens og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, eller et `<fs-session-timeout>` varsler aldri | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv, så uten registrering er elementet tomt, og `<fs-session-timeout>` teller ikke tiden. En `ramme`-komponents markup er din og står der uansett |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 | Stilene mangler | `tokens.css` er ikke importert |

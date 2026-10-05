@@ -1,0 +1,102 @@
+---
+title: Oversettelse
+description: Fristil har nesten ingen tekst. Du skriver den med det oversettelsesverktøyet appen alt bruker, og de få tekstene pakken har, kan byttes ut.
+---
+
+Fristil har nesten ingen tekst. Den som rendrer, skriver teksten i markupen, på sitt eget språk og med det oversettelsesverktøyet appen alt bruker. De få tekstene pakken har innebygd, er standardverdier, og hver av dem kan byttes ut. De står i tabellen nederst.
+
+## Teksten står i markupen din
+
+En knapp, en ledetekst og en dialog er markup du skriver selv, og teksten i dem er din. I React med i18next ser varselet om økten slik ut:
+
+```tsx
+import { useId } from "react"
+import { useTranslation } from "react-i18next"
+import { fs } from "@fristil/designsystem/react"
+
+export function Okt() {
+  const { t } = useTranslation()
+  const okt = fs.sessionTimeout({ titleId: useId() })
+
+  return (
+    <fs-session-timeout {...okt.host}>
+      <dialog {...okt.dialog}>
+        <h2 {...okt.title}>{t("okt.tittel")}</h2>
+        <p {...okt.text}>
+          {t("okt.forTallet")} <span {...okt.count} /> {t("okt.etterTallet")}
+        </p>
+        <span {...okt.live} />
+        <form {...okt.actions}>
+          <button {...okt.extend}>{t("okt.fortsett")}</button>
+          <button {...okt.logout}>{t("okt.loggUt")}</button>
+        </form>
+      </dialog>
+    </fs-session-timeout>
+  )
+}
+```
+
+På en server er det den samme markupen, med teksten fra serverens eget oppsett. I en Go-mal kan det være en funksjon appen selv har registrert:
+
+```html
+<h2 class="fs-session-timeout__title" id="okt-tittel">{{ T "okt.tittel" }}</h2>
+```
+
+## Verktøyene
+
+Fristil bryr seg ikke om hvilket verktøy du bruker, så lenge det gir tekst. Noen vanlige valg:
+
+| Der markupen lages | Vanlige verktøy |
+| --- | --- |
+| React | i18next med react-i18next, FormatJS (react-intl), Lingui |
+| Annen JavaScript | i18next, Paraglide, FormatJS |
+| Server | gettext, go-i18n i Go, ressursfiler i .NET, `ResourceBundle` i Kotlin og Java |
+
+## Hvorfor Fristil ikke har en integrasjon
+
+- **Pakken har ingen avhengigheter, og skal ikke få noen.** En integrasjon med i18next ville gjort i18next til en del av hver app som bruker Fristil.
+- **De fleste verktøyene har en egen pakke per rammeverk,** som react-i18next. En integrasjon ville bundet Fristil til ett rammeverk igjen, og det er det hele systemet er bygget for å unngå.
+- **En server i Go eller Kotlin kan ikke bruke et JavaScript-bibliotek.** Teksten deres må komme fra serveren uansett.
+- **Teksten hører til markupen, og markupen eies av den som rendrer den.** Se [Markup og oppførsel](/markup-og-oppforsel/).
+
+## Tall og varigheter
+
+Komponentene formaterer tall og varigheter med nettleserens eget `Intl`, etter `lang` på siden. Opplesningen i [Session Timeout](/components/session-timeout/) sier «1 minutt og 30 sekunder» på en norsk side og «1 minute and 30 seconds» på en engelsk, uten at noen har oversatt den. [Suggestion](/components/suggestion/) velger bøyningsform med `Intl.PluralRules`, så polsk får alle sine fire former.
+
+Sett derfor `lang` på `<html>`, og på et element som har et annet språk enn resten av siden. Uten `lang` brukes nettleserens eget språk.
+
+## Tekstene pakken har
+
+Dette er hver tekst Fristil skriver inn i siden selv. En vaktpost i bygget feller en ny tekst som ikke står her, en tekst i CSS som ikke leses fra en variabel, og en tekst som er skrevet rett i en komponent.
+
+| Komponent | Standardtekst | Slik byttes den ut |
+| --- | --- | --- |
+| [Toast](/components/toast/), regionen | Varsler | `label` på `<fs-toast>`, eller `label` i `fs.toast()` |
+| [Toast](/components/toast/), lukkeknappen | Lukk melding | `close-label` på `<fs-toast>`, `closeLabel` i `fs.toast()`, eller `closeLabel` i `show()` for én melding |
+| [Connection Status](/components/connection-status/), uten forbindelse | Ingen forbindelse. Det du skriver blir ikke lagret. | `offline-text` |
+| [Connection Status](/components/connection-status/), tilbake | Forbindelsen er tilbake. | `online-text` |
+| [Suggestion](/components/suggestion/), null treff | Ingen treff | `count-none` |
+| [Suggestion](/components/suggestion/), ett treff | Ett treff | `count-one` |
+| [Suggestion](/components/suggestion/), flere treff | `{n} treff` | `count-other`, og `count-zero`, `count-two`, `count-few` og `count-many` for språk som har dem |
+| [Label](/components/label/) og [Fieldset](/components/fieldset/), påkrevd med tegn | * | `--fs-label-required-symbol` |
+| [Label](/components/label/) og [Fieldset](/components/fieldset/), påkrevd med tekst | (påkrevd) | `--fs-label-required-text` |
+| [Label](/components/label/) og [Fieldset](/components/fieldset/), valgfri | (valgfri) | `--fs-label-optional-text` |
+
+[Session Timeout](/components/session-timeout/) står ikke i tabellen. Den har ingen tekst: du skriver dialogen selv.
+
+Tekstene i stilarkene byttes med en variabel, for eksempel etter språket på siden:
+
+```css
+:root:lang(en) {
+  --fs-label-required-text: " (required)";
+  --fs-label-optional-text: " (optional)";
+}
+```
+
+I forslagsfeltet står `{n}` for antallet. Skriv det i alle formene unntatt `count-none`, også i `count-one`: på fransk gjelder den formen også 0 treff, og på russisk også 21.
+
+```html
+<fs-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
+```
+
+Bruker du i18next, kan du sende oversettelsen rett inn, som `count-other={t("treff.flere")}`. i18next lar `{n}` med enkle klammer stå, så den kan stå i oversettelsesfila.

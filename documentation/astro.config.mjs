@@ -130,6 +130,7 @@ export default defineConfig({
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
             { label: "Tilgjengelighet", slug: "tilgjengelighet" },
+            { label: "Oversettelse", slug: "oversettelse" },
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
             { label: "Editoren", slug: "editoren" },

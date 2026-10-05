@@ -1,4 +1,7 @@
 @import "../../css/button/button.css";
+/* Opplesningen står i markupen med `fs-sr-only`, og må være skjult uten at
+   konsumenten laster noe mer. */
+@import "../../css/sr-only/sr-only.css";
 
 @layer fristil {
   /* Både elementet og klassen. `fs.sessionTimeout()` sender ut

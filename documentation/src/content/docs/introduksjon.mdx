@@ -44,11 +44,11 @@ En web component som lager alt innholdet sitt selv, fordi det ikke finnes noe fo
 <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
 ```
 
-Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er to av dem: [`<fs-session-timeout>`](../components/session-timeout/), der nedtellingen er klientens klokke, og [`<fs-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<fs-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
+Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er én av dem: [`<fs-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<fs-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
 
 ## Hvorfor tre kategorier
 
-Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, og markupen må stå i HTML-en serveren sender, ellers finnes ikke feltet før skriptet har kjørt. En nedtelling mot at økten går ut finnes derimot ikke før klienten begynner å telle.
+Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, og markupen må stå i HTML-en serveren sender, ellers finnes ikke feltet før skriptet har kjørt. En beskjed om at forbindelsen er borte, kan derimot ikke komme fra serveren som er borte.
 
 Vilkåret som avgjør hvor en komponent hører hjemme:
 
@@ -71,7 +71,7 @@ Ingen komponent bruker shadow DOM. Alle elementene står i vanlig DOM, og CSS-en
 | `<fs-suggestion>` | ramme | `suggestion.css` |
 | `<fs-dialog>` | ramme | `dialog.css` |
 | `<fs-toast>` | frittstående | `toast.css` |
-| `<fs-session-timeout>` | frittstående | `session-timeout.css` |
+| `<fs-session-timeout>` | ramme | `session-timeout.css` |
 | `<fs-connection-status>` | frittstående | `connection-status.css` |
 
 ## Design tokens

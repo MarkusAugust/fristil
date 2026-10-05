@@ -282,8 +282,12 @@ const STILER_MANGLER: [string, string] = [
   "`tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe",
 ]
 const INGEN_DEFINE: [string, string] = [
-  "En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv og er tomme uten den. Markupen i de andre er din og står der uansett",
+  "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
+  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett",
+]
+const NORSK_TEKST: [string, string] = [
+  "En komponent snakker norsk på en side på et annet språk",
+  "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/",
 ]
 const ALLTID_UGYLDIG: [string, string] = [
   "Feltet er alltid ugyldig",
@@ -409,6 +413,7 @@ ${SJEKK_I_TESTER}`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],
@@ -535,6 +540,7 @@ pakken uten noen utvidelse.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       SERVERRENDERING,
       TYPESCRIPT_I_SKRIPT,
@@ -665,7 +671,13 @@ fanger \`fs-buton\`, \`data-variant="secundary"\`, \`<fs-modal>\` og
 markupen din er en streng for kompilatoren.
 
 ${SJEKK_I_TESTER}`,
-    fallgruver: [STILER_MANGLER, INGEN_DEFINE, ALLTID_UGYLDIG, SERVERRENDERING],
+    fallgruver: [
+      STILER_MANGLER,
+      INGEN_DEFINE,
+      NORSK_TEKST,
+      ALLTID_UGYLDIG,
+      SERVERRENDERING,
+    ],
   },
   {
     navn: "react",
@@ -809,7 +821,7 @@ det hele tatt, og du får \`Property 'fs-field' does not exist on type
 
 \`\`\`tsx
 <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-<fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 \`\`\`
 
@@ -820,6 +832,7 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       SERVERRENDERING,
       [
@@ -944,6 +957,7 @@ vanlige web components, og trenger verken en Astro-integrasjon eller et
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       [
         "Komponenten gjør ingenting, og ingenting sier fra",
@@ -1068,6 +1082,7 @@ nettleseren.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],

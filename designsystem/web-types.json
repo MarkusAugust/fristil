@@ -174,6 +174,62 @@
               }
             },
             {
+              "name": "count-none",
+              "description": "Opplesningen ved null treff. Standard er «Ingen treff».",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-zero",
+              "description": "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-one",
+              "description": "Opplesningen for ett treff. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-two",
+              "description": "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-few",
+              "description": "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-many",
+              "description": "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
+              "name": "count-other",
+              "description": "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet.",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
+            },
+            {
               "name": "server-controlled",
               "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
               "value": {
@@ -223,12 +279,20 @@
                 "kind": "plain",
                 "type": "text"
               }
+            },
+            {
+              "name": "close-label",
+              "description": "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding».",
+              "value": {
+                "kind": "plain",
+                "type": "text"
+              }
             }
           ]
         },
         {
           "name": "fs-session-timeout",
-          "description": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
+          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
           "doc-url": "https://fristil.sobernetics.no/components/session-timeout/",
           "attributes": [
             {
@@ -562,6 +626,36 @@
           "doc-url": "https://fristil.sobernetics.no/components/popover/"
         },
         {
+          "name": "fs-session-timeout",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
+          "name": "fs-session-timeout__dialog",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
+          "name": "fs-session-timeout__title",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
+          "name": "fs-session-timeout__text",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
+          "name": "fs-session-timeout__count",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
+          "name": "fs-session-timeout__actions",
+          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+        },
+        {
           "name": "fs-suggestion__field",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
@@ -600,36 +694,6 @@
           "name": "fs-connection-status__bar",
           "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
           "doc-url": "https://fristil.sobernetics.no/components/connection-status/"
-        },
-        {
-          "name": "fs-session-timeout",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
-        },
-        {
-          "name": "fs-session-timeout__dialog",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
-        },
-        {
-          "name": "fs-session-timeout__title",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
-        },
-        {
-          "name": "fs-session-timeout__text",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
-        },
-        {
-          "name": "fs-session-timeout__count",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
-        },
-        {
-          "name": "fs-session-timeout__actions",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "fs-toast",
