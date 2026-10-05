@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
   <defs>
-    <linearGradient id="fristilFavicon" x1="8%" y1="10%" x2="88%" y2="90%">
+    <linearGradient id="fristilCyan" gradientUnits="userSpaceOnUse" x1="5" y1="2" x2="60" y2="98">
       <stop offset="0%" stop-color="#00f2fe" />
-      <stop offset="50%" stop-color="#4facfe" />
+      <stop offset="100%" stop-color="#4facfe" />
+    </linearGradient>
+    <linearGradient id="fristilLilla" gradientUnits="userSpaceOnUse" x1="24" y1="21" x2="60" y2="45">
+      <stop offset="0%" stop-color="#4facfe" />
       <stop offset="100%" stop-color="#b15cff" />
     </linearGradient>
   </defs>
-  <g fill="none" stroke="url(#fristilFavicon)" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 63C17 48 25 32 39 27C49 23 60 26 68 34C75 41 78 52 74 63C70 73 61 80 50 81C38 82 26 75 21 63Z" stroke-width="8" opacity="0.95" />
-    <path d="M28 67C35 57 42 50 50 44C57 39 66 33 73 26" stroke-width="8" />
-    <path d="M28 32C35 41 42 48 50 54C58 60 66 66 73 74" stroke-width="8" />
-  </g>
+  <path d="M5 2H88L74 16H19V40H71L57 54H19V84L5 98Z" fill="url(#fristilCyan)" />
+  <path d="M24 21H76L95 2V35H24ZM24 59H59L78 40V73H38V98H12L24 86Z" fill="url(#fristilLilla)" />
 </svg>
