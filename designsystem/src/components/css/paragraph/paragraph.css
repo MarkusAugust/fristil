@@ -2,7 +2,7 @@
   .fs-paragraph {
     margin: 0;
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-paragraph-line-height, var(--fs-line-height-article));
     color: var(--fs-color-neutral-text-strong);
     /* Under 75 tegn per linje. Lengre linjer gjør det vanskelig å finne
@@ -15,16 +15,16 @@
   }
 
   .fs-paragraph[data-size="small"] {
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
   }
 
   .fs-paragraph[data-size="large"] {
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
     line-height: 1.55;
   }
 
   .fs-paragraph[data-variant="lead"] {
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
     line-height: 1.55;
     color: var(--fs-color-neutral-text-subtle);
   }

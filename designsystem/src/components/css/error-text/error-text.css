@@ -5,8 +5,8 @@
        nettleserens 1em i bunn hos konsumenter uten reset. */
     margin: var(--fs-spacing-1) 0 0;
     font-family: inherit;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
+    font-size: var(--fs-font-size-xs);
+    font-weight: var(--fs-font-weight-medium);
     line-height: var(--fs-line-height-compact);
     color: var(--fs-color-danger-text);
   }

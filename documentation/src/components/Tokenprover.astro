@@ -31,13 +31,13 @@ const { semantiske = [], matrise = [] } = Astro.props
 				<span
 					style={`width: var(--fs-spacing-10); height: var(--fs-spacing-6); border-radius: var(--fs-spacing-1); border: 1px solid var(--fs-color-neutral-border-subtle); background: var(--${navn})`}
 				/>
-				<code style="font-size: var(--font-size-s);">--{navn}</code>
+				<code style="font-size: var(--fs-font-size-s);">--{navn}</code>
 			</div>
 		))}
 
 		{matrise.map((familie) => (
 			<div style="display: flex; gap: var(--fs-spacing-1); align-items: center;">
-				<code style="font-size: var(--font-size-xs); width: 5.5rem;">{familie}</code>
+				<code style="font-size: var(--fs-font-size-xs); width: 5.5rem;">{familie}</code>
 				{ROLLER.map((rolle) => (
 					<span
 						title={`--fs-color-${familie}-${rolle}`}

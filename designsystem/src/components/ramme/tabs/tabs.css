@@ -15,7 +15,7 @@
     padding: var(--fs-tabs-padding, var(--fs-spacing-2) var(--fs-spacing-4));
     min-block-size: var(--fs-spacing-10);
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-accent-text);
     background: transparent;
@@ -38,7 +38,7 @@
 
   .fs-tabs__list button[aria-selected="true"] {
     color: var(--fs-color-neutral-text-strong);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--fs-font-weight-semibold);
     border-block-end-color: var(--fs-color-accent-border);
   }
 

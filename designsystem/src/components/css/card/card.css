@@ -16,8 +16,8 @@
 
   .fs-card__title {
     margin: 0;
-    font-size: var(--font-size-l);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-l);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: var(--fs-line-height-compact);
   }
 

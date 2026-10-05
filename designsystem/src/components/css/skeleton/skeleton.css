@@ -21,7 +21,7 @@
   }
 
   .fs-skeleton[data-variant="text"] {
-    block-size: var(--font-size-m);
+    block-size: var(--fs-font-size-m);
     border-radius: var(--fs-spacing-0-5);
   }
 

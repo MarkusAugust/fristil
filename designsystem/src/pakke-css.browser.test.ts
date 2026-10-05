@@ -90,7 +90,13 @@ describe("stilarkene pakken sender ut", () => {
     expect(filer.length).toBeGreaterThan(5)
   })
 
-  it.each(filer)("%s ligger i @layer fristil", (_navn, source) => {
+  /*
+   * Grensen mot en vertsside er unntaket. Den virker bare fordi den står
+   * utenfor laget, på samme nivå som vertens CSS; se `boundary.css`.
+   */
+  const lagdelte = filer.filter(([navn]) => !navn.endsWith("/boundary.css"))
+
+  it.each(lagdelte)("%s ligger i @layer fristil", (_navn, source) => {
     // `@import` må stå først i en CSS-fil, så den delen hoppes over.
     const utenImport = onlyRules(source)
       .split("\n")
@@ -360,9 +366,7 @@ describe("Tailwind-temaet", () => {
       (treff) => treff[1],
     )
 
-    const fremmede = lest.filter(
-      (navn) => !erToken(navn) && !navn.startsWith("--font-"),
-    )
+    const fremmede = lest.filter((navn) => !erToken(navn))
 
     expect([...new Set(fremmede)]).toEqual([])
   })

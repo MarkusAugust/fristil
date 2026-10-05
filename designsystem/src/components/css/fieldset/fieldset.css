@@ -18,8 +18,8 @@
     padding: 0;
     margin-block-end: var(--fs-spacing-1);
     font-family: inherit;
-    font-size: var(--font-size-m);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-m);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
   }
@@ -29,7 +29,7 @@
   .fs-legend[data-required]::after {
     content: var(--fs-label-required-symbol, " *");
     color: var(--fs-color-danger-text);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--fs-font-weight-bold);
   }
 
   .fs-legend[data-required="text"]::after {
@@ -37,8 +37,8 @@
        `<meta charset>` og tjeneren ikke sendte tegnsettet. */
     content: var(--fs-label-required-text, " (p\e5 krevd)");
     color: var(--fs-color-danger-text);
-    font-weight: var(--font-weight-regular);
-    font-size: var(--font-size-xs);
+    font-weight: var(--fs-font-weight-regular);
+    font-size: var(--fs-font-size-xs);
   }
 
   /* Ikke når feltet også er merket påkrevd: byggefunksjonen velger påkrevd,
@@ -47,8 +47,8 @@
   .fs-legend[data-optional]:not([data-required])::after {
     content: var(--fs-label-optional-text, " (valgfri)");
     color: var(--fs-color-neutral-text-subtle);
-    font-weight: var(--font-weight-regular);
-    font-size: var(--font-size-xs);
+    font-weight: var(--fs-font-weight-regular);
+    font-size: var(--fs-font-size-xs);
   }
 
   .fs-fieldset[data-state="invalid"] .fs-legend {

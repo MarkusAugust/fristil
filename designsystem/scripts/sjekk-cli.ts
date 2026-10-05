@@ -183,11 +183,11 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema uten farger avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--font-family-base: Helvetica, Arial, sans-serif;"),
+    ut.includes("--fs-font-family-base: Helvetica, Arial, sans-serif;"),
     "skriften kom ikke med",
   )
   krev(
-    ut.includes("font-family: var(--font-family-base);"),
+    ut.includes("font-family: var(--fs-font-family-base);"),
     "skriften ble ikke satt som en regel, bare som et token",
   )
   krev(
@@ -232,7 +232,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema fra fil med skrift og form avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--font-family-base: Georgia, serif;"),
+    ut.includes("--fs-font-family-base: Georgia, serif;"),
     "skriften fra fila kom ikke med",
   )
   krev(

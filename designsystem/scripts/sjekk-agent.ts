@@ -72,7 +72,7 @@ let sjekkedeAkser = 0
  * feller et slag som forsvinner helt, som `--fs-spacing-` eller
  * `--fs-line-height-`.
  */
-const SLAG = ["--fs-color-", "--fs-spacing-", "--fs-line-height-", "--font-"]
+const SLAG = ["--fs-color-", "--fs-spacing-", "--fs-line-height-", "--fs-font-"]
 const lesteSlag = new Map<string, Set<string>>()
 let sjekkedeBlokker = 0
 const blokkerPerFil = new Map<string, number>()
@@ -258,7 +258,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
    * å klippe i.
    */
   for (const treff of innhold.matchAll(
-    /--(?:fs|font)-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
+    /--fs-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
   )) {
     /*
      * Navnet må stå helt ut i `tokens.css`, ikke bare som en begynnelse:

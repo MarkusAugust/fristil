@@ -51,7 +51,40 @@ egen overskrift «Brytende».
   du rett til fila på en CDN, bytt `frittstaende/session-timeout` med
   `ramme/session-timeout` i adressen.
 
+- **Skrifttokenene heter `--fs-font-size-*` og `--fs-font-weight-*`.** De
+  fjorten navnene var de eneste uten `fs-`, og de står på `:root` i en side
+  Fristil ikke alltid eier. Et annet designsystem på samme side deklarerte de
+  samme navnene, og da avgjorde rekkefølgen på stilarkene hvilken verdi
+  begge systemenes komponenter fikk. Ved 0.22.0 fikk de beholde navnene,
+  siden de alt fulgte CSS-egenskapen de setter; det holder ikke når
+  navnet deles med andre. Det gjelder de ni størrelsene, de fire vektene og
+  `--font-family-base` fra temageneratoren, som nå heter
+  `--fs-font-family-base`. Tailwind-klassene, som `text-fs-m`, heter det
+  samme. Det finnes ingen aliaser, siden et alias fortsatt måtte stått på
+  `:root` under det gamle navnet. Det du må gjøre: bytt `--font-size-` med
+  `--fs-font-size-`, `--font-weight-` med `--fs-font-weight-` og
+  `--font-family-base` med `--fs-font-family-base` i egen CSS, og lag
+  temaet ditt på nytt med `fristil tema` hvis du har ett. Et tema laget med
+  en eldre utgave setter skriften under de gamle navnene, og den delen av
+  temaet virker ikke lenger uten at noe sier fra. Fargene virker som før.
+
 ### Nytt
+
+- **`data-fs-boundary` er en grense mot vertssiden.** Bygges en komponent
+  inn i en side du ikke eier, slår vertens CSS uten lag `@layer fristil`, og
+  en `button { background: none }` tar bakgrunnen fra `.fs-button`. Under
+  et element med attributtet ser nettleseren bort fra CSS uten lag, så
+  Fristils lag gjelder igjen, mens skrift og annet som arves fortsatt kommer
+  fra verten og `--fs-*`-variablene virker. Regelen ligger i `fristil.css`,
+  og som `@fristil/designsystem/boundary.css`. Den har spesifisiteten (0,2,0),
+  og egen CSS inne i grensen må ligge i et lag. Se «Vertens CSS stopper ved
+  grensen» under Tilpasning.
+- **`--fs-select-padding` og `--fs-select-width`.** Luften i nedtrekkslista
+  kan settes som i feltet. I standardutseendet står plassen til pila fast,
+  og `auto` gir et kompakt felt så bredt som innholdet.
+- **`--fs-input-width`,** av samme grunn.
+- **Boblen i `.fs-tooltip` har `box-sizing: border-box`,** så
+  `--fs-tooltip-width` er hele boblen også i en side uten en CSS-reset.
 
 - **`close-label` på `<fs-toast>`** er standard for hva lukkeknappen i hver
   melding heter for skjermleseren. `fs.toast({ closeLabel })` skriver det,

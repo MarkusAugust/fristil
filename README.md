@@ -104,7 +104,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 | Sjekk | Hva den krever |
 | --- | --- |
-| `pakke-css.browser.test.ts` | Alt ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
+| `pakke-css.browser.test.ts` | Alt utenom grensen mot en vertsside ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
 | `fs.browser.test.ts` | Hver byggefunksjon i `fs` gir en klasse og ingen `undefined`-attributter |
 | `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
 | `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har |

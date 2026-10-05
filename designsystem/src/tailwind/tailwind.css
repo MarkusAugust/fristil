@@ -135,14 +135,14 @@
   --color-fs-warning-text-subtle: var(--fs-color-warning-text-subtle);
 
   /* Tekststørrelser */
-  --text-fs-xxs: var(--font-size-xxs);
-  --text-fs-xs: var(--font-size-xs);
-  --text-fs-s: var(--font-size-s);
-  --text-fs-m: var(--font-size-m);
-  --text-fs-l: var(--font-size-l);
-  --text-fs-xl: var(--font-size-xl);
-  --text-fs-xxl: var(--font-size-xxl);
-  --text-fs-mega: var(--font-size-mega);
+  --text-fs-xxs: var(--fs-font-size-xxs);
+  --text-fs-xs: var(--fs-font-size-xs);
+  --text-fs-s: var(--fs-font-size-s);
+  --text-fs-m: var(--fs-font-size-m);
+  --text-fs-l: var(--fs-font-size-l);
+  --text-fs-xl: var(--fs-font-size-xl);
+  --text-fs-xxl: var(--fs-font-size-xxl);
+  --text-fs-mega: var(--fs-font-size-mega);
 
   /* Bredder for sideoppsett */
   --container-fs-xs: 100%;

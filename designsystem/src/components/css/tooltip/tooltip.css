@@ -5,6 +5,9 @@
   }
 
   .fs-tooltip__bubble {
+    /* Bredden i `--fs-tooltip-width` er hele boblen, også i en side uten
+       en CSS-reset som setter border-box. */
+    box-sizing: border-box;
     position: absolute;
     inset-block-end: calc(100% + var(--fs-spacing-2));
     inset-inline-start: 50%;
@@ -13,7 +16,7 @@
     inline-size: max-content;
     max-inline-size: var(--fs-tooltip-width, 16rem);
     padding: var(--fs-tooltip-padding, var(--fs-spacing-1) var(--fs-spacing-2));
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
     line-height: var(--fs-line-height-compact);
     color: var(--fs-color-neutral-canvas);
     background: var(--fs-color-neutral-text-strong);

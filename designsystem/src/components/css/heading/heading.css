@@ -2,31 +2,31 @@
   .fs-heading {
     margin: 0;
     font-family: inherit;
-    font-weight: var(--fs-heading-font-weight, var(--font-weight-bold));
+    font-weight: var(--fs-heading-font-weight, var(--fs-font-weight-bold));
     line-height: var(--fs-heading-line-height, var(--fs-line-height-heading));
     color: var(--fs-color-neutral-text-strong);
     text-wrap: balance;
-    font-size: var(--font-size-xl);
+    font-size: var(--fs-font-size-xl);
   }
 
   .fs-heading[data-size="mega"] {
-    font-size: var(--font-size-mega);
+    font-size: var(--fs-font-size-mega);
   }
 
   .fs-heading[data-size="xl"] {
-    font-size: var(--font-size-xxl);
+    font-size: var(--fs-font-size-xxl);
   }
 
   .fs-heading[data-size="m"] {
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
   }
 
   .fs-heading[data-size="s"] {
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
   }
 
   .fs-heading[data-size="xs"] {
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
