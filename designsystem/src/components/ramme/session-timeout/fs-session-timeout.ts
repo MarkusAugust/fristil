@@ -35,7 +35,8 @@ const ACTIVITY_OPTIONS = { passive: true, capture: true } as const
 /**
  * Grunnene komponenten selv lukker dialogen med.
  *
- * De kan ikke være lik en `value` den som rendrer kan ha gitt en knapp.
+ * De sammenlignes nøyaktig, og navnene er valgt så de ikke kolliderer med en
+ * `value` den som rendrer har gitt en knapp.
  * `reset()` lukket før med «extend», og lukkingen ble da lest som at
  * brukeren trykket på knappen med den verdien.
  */
@@ -107,8 +108,9 @@ function isSeconds(raw: string | null): boolean {
  * språket appen bruker, med det oversettelsesverktøyet appen alt har.
  * Komponenten tar tiden: den teller aktivitet, åpner dialogen med
  * `showModal()`, fyller inn tallet og leser opp nedtellingen. Det er alt den
- * skriver, sammen med `role="alertdialog"` og navnet fra overskriften når de
- * mangler.
+ * skriver, sammen med det en mal kan ha glemt: klassen
+ * `fs-session-timeout__dialog` på dialogen, `role="alertdialog"`, og navnet
+ * fra den første overskriften, med en id på overskriften når den mangler.
  *
  * Delene kjennes igjen på det som uansett må stå der: `<dialog>` inne i
  * verten, `.fs-session-timeout__count` for tallet, `[role=status]` for
@@ -318,8 +320,7 @@ export class FsSessionTimeout extends HostElement {
   /**
    * Brukeren lukket dialogen, eller komponenten gjorde det.
    *
-   * Komponentens egne lukkinger har en grunn som starter med `fs-`, og
-   * gjør ingenting her. `value="logout"` logger ut. Alt annet, Escape og
+   * Komponentens egne lukkinger har sine egne grunner, og gjør ingenting her. `value="logout"` logger ut. Alt annet, Escape og
    * knappen med `value="extend"` medregnet, er «jeg er her». Det gjelder
    * også en knapp med en annen verdi: ellers ble dialogen lukket, og neste
    * tikk åpnet den igjen ett sekund senere.
@@ -334,7 +335,7 @@ export class FsSessionTimeout extends HostElement {
     this.previousFocus = null
 
     const reason = dialog.returnValue
-    if (reason.startsWith("fs-")) return
+    if (reason === CLOSED_BY_RESET || reason === CLOSED_BY_EXPIRY) return
     if (reason === SESSION_LOGOUT) {
       // Som ved utløp: komponenten står stille til `extend()` eller
       // `reset()`. Ellers så neste tikk en lukket dialog etter
@@ -388,10 +389,11 @@ export class FsSessionTimeout extends HostElement {
     /*
      * Opplesningen er avsnittet, med tallet uttalt. Da står den på det
      * språket den som rendrer skrev, uten en egen tekst for skjermleseren.
-     * Uten et avsnitt leses varigheten alene.
+     * Uten et avsnitt med tallet i leses varigheten alene.
      */
     const text = dialog.querySelector(`.${SESSION_TIMEOUT_TEXT_CLASS}`)
-    if (!text) {
+    // Står tallet utenfor avsnittet, ville avsnittet blitt lest uten tall.
+    if (!text || !count || !text.contains(count)) {
       setText(live, duration)
       return
     }
@@ -404,18 +406,22 @@ export class FsSessionTimeout extends HostElement {
     if (!dialog) {
       // Her har siden for lengst falt til ro, så et tomt element er ikke et
       // område som venter på innhold. Det er et varsel som aldri kommer.
+      // Har elementet innhold uten dialog, har `validate()` alt sagt fra.
       warnAboutMarkup(
         this,
         "skulle vist varselet, men fant ingen <dialog>. Den som rendrer må " +
           "skrive dialogen og teksten selv. Brukeren får ingen advarsel før " +
           "økten går ut.",
-        () => this.dialog === null,
+        () => this.dialog === null && this.childElementCount === 0,
       )
       return
     }
     if (dialog.open) return
 
     this.wire(dialog)
+    // Dialogen kan ha kommet etter tilkoblingen, med HTML som strømmer inn.
+    // Da så `validate()` den aldri.
+    this.validateParts()
     // Fokus skal tilbake dit brukeren var. Uten dette starter neste
     // tastetrykk på toppen av siden, midt i et skjema.
     this.previousFocus = document.activeElement as HTMLElement | null
@@ -441,7 +447,13 @@ export class FsSessionTimeout extends HostElement {
     this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true }))
   }
 
-  /** Forlenger økten og lukker varselet. Kall den når serveren har svart. */
+  /**
+   * Forlenger økten, lukker varselet og sender `session-extend`.
+   *
+   * Lytter appen på `session-extend` for å be serveren forlenge, skal den
+   * kalle `reset()` når svaret kommer, ikke denne. Ellers sender svaret en ny
+   * `session-extend`, som sender et nytt kall.
+   */
   extend(): void {
     this.reset()
     this.emit("session-extend")

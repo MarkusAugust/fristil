@@ -33,7 +33,9 @@ egen overskrift «Brytende».
   på `<dialog>`, `.fs-session-timeout__count`, `[role=status]` og knappene i
   et `<form method="dialog">`. En knapp med `value="logout"` logger ut, og
   alt annet, Escape medregnet, forlenger. Hendelsene, `warn-at`,
-  `expires-at`, `extend()` og `reset()` er de samme. Det du må gjøre: skriv
+  `expires-at`, `extend()` og `reset()` er de samme, men `session-logout`
+  og `session-extend` fra en knapp kommer nå med `close`-hendelsen, altså
+  litt etter klikket og ikke i det. Det du må gjøre: skriv
   dialogen inn i elementet, slik komponentsiden viser. Et tomt
   `<fs-session-timeout>` sier fra i konsollen i det varselet skulle kommet,
   og `fristil sjekk` melder det.
@@ -64,8 +66,9 @@ egen overskrift «Brytende».
   med `Intl` etter `lang`, så den er «1 minutt og 30 sekunder» på en norsk
   side og «1 minute and 30 seconds» på en engelsk.
 - **`@fristil/designsystem/default-texts`** har hver standardtekst pakken
-  skriver inn i siden, og en vaktpost i bygget feller en ny tekst som ikke
-  står der eller ikke kan byttes ut.
+  skriver inn i siden. En vaktpost i bygget feller en tekst som står rett i
+  en komponent i stedet for der, en tekst i CSS som ikke leses fra en
+  variabel, og en tekst som mangler i tabellen på siden om oversettelse.
 
 ## 0.28.0 (2026-10-04)
 

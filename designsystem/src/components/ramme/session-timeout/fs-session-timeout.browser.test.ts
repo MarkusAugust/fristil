@@ -567,6 +567,45 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
     expect(opplest()).toMatch(/1.*30/)
   })
 
+  it("finner lang utenfor en skyggerot", async () => {
+    // `closest()` stopper ved skyggeroten. Hver forhåndsvisning i
+    // dokumentasjonen ligger i en, og uten dette leste demoen opp på
+    // nettleserens språk på en norsk side.
+    // Norsk og ikke engelsk: nettleseren testene kjører i, har engelsk som
+    // eget språk, og da ville engelsk gått gjennom også uten rettingen.
+    const flate = monter(`<div lang="nb"><div id="vert"></div></div>`)
+    const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
+      mode: "open",
+    })
+    rot.innerHTML = varsel({ warnAt: 1, expiresAt: 91 })
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(1)
+
+    expect(rot.querySelector("[role='status']")?.textContent).toBe(
+      "Vi logger deg ut om 1 minutt og 30 sekunder for å beskytte opplysningene dine.",
+    )
+  })
+
+  it("leser opp tiden alene når tallet står utenfor avsnittet", async () => {
+    // Ellers ble avsnittet lest uten tall, og tallet på skjermen er
+    // `aria-hidden`, så skjermleseren hørte aldri hvor lang tid som var igjen.
+    monter(`
+      <div lang="nb">
+        <fs-session-timeout warn-at="1" expires-at="91">
+          <dialog>
+            <h2>Ut om <span class="fs-session-timeout__count" aria-hidden="true"></span></h2>
+            <p class="fs-session-timeout__text">Lagre det du holder på med.</p>
+            <span class="fs-sr-only" role="status"></span>
+            <form method="dialog"><button value="extend">Fortsett</button></form>
+          </dialog>
+        </fs-session-timeout>
+      </div>`)
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(1)
+
+    expect(opplest()).toBe("1 minutt og 30 sekunder")
+  })
+
   it("er fortsatt modal etter at elementet er flyttet mens varselet står", async () => {
     const flate = monter(`${varsel()}<div id="annet"></div>`)
     await customElements.whenDefined("fs-session-timeout")

@@ -67,28 +67,38 @@ function linje(kilde: string, indeks: number): number {
 // `\x60` er backtick, som ikke kan escapes på vanlig måte med Unicode-flagget.
 const TEKST = String.raw`(["'\x60])((?:(?!\1)[^\\]|\\.)*\p{L}(?:(?!\1)[^\\]|\\.)*)\1`
 
-const MØNSTRE: { navn: string; mønster: RegExp }[] = [
-  {
-    navn: "setText",
-    mønster: new RegExp(String.raw`setText\([^,()]+,\s*${TEKST}`, "gu"),
-  },
-  {
-    navn: "textContent",
-    mønster: new RegExp(String.raw`\.textContent\s*=\s*${TEKST}`, "gu"),
-  },
-  {
-    navn: "append",
-    mønster: new RegExp(String.raw`\.append\(\s*${TEKST}`, "gu"),
-  },
-  {
-    navn: "aria-label",
-    mønster: new RegExp(String.raw`["']aria-label["']\s*,\s*${TEKST}`, "gu"),
-  },
-  {
-    navn: "DEFAULT_",
-    mønster: new RegExp(String.raw`const\s+DEFAULT_\w+\s*=\s*${TEKST}`, "gu"),
-  },
-]
+/**
+ * En linje som skriver tekst inn i siden. Står det en streng med bokstaver
+ * på en slik linje, er det tekst for brukeren, uansett hvor i kallet den
+ * står: `setText(s, n ? "a" : "b")` er like mye tekst som `setText(s, "a")`,
+ * og `setText(this.querySelector("[role=status]"), "a")` like mye som begge.
+ */
+const SKRIVER_TEKST = new RegExp(
+  [
+    String.raw`\bsetText\(`,
+    String.raw`\.(?:textContent|innerText|ariaLabel)\s*=`,
+    String.raw`\bcreateTextNode\(`,
+    String.raw`\.(?:append|prepend)\(`,
+    String.raw`["'](?:aria-label|title|placeholder)["']\s*,`,
+    String.raw`\bconst\s+DEFAULT_\w+\s*=`,
+  ].join("|"),
+)
+
+/** Attributtnavnene selv er ikke tekst. */
+const IKKE_TEKST = new Set(["aria-label", "title", "placeholder"])
+
+/**
+ * Linja uten det som ikke er tekst: argumentene til oppslag i DOM-en, som er
+ * velgere, og strengen i en sammenligning, som `name === "label"`.
+ */
+function utenVelgere(kode: string): string {
+  return kode
+    .replace(
+      /\b(?:querySelector(?:All)?|closest|matches|getAttribute|hasAttribute)\((?:[^()]|\([^()]*\))*\)/g,
+      "",
+    )
+    .replace(/[!=]==\s*(["'])(?:(?!\1).)*\1/g, "")
+}
 
 const avvik: string[] = []
 
@@ -96,15 +106,17 @@ let tsLest = 0
 for (const fil of filer(KOMPONENTER, ".ts")) {
   if (fil === TEKSTFIL) continue
   const kilde = utenKommentarer(readFileSync(fil, "utf8"))
-  for (const { navn, mønster } of MØNSTRE) {
-    for (const treff of kilde.matchAll(mønster)) {
+  kilde.split("\n").forEach((kode, i) => {
+    if (!SKRIVER_TEKST.test(kode)) return
+    for (const treff of utenVelgere(kode).matchAll(new RegExp(TEKST, "gu"))) {
+      if (IKKE_TEKST.has(treff[2])) continue
       avvik.push(
-        `${relative(process.cwd(), fil)}:${linje(kilde, treff.index ?? 0)}: ` +
-          `teksten «${treff[3]}» står i komponenten (${navn}). ` +
-          "Legg den i default-texts.ts, med en måte å bytte den ut på.",
+        `${relative(process.cwd(), fil)}:${i + 1}: teksten «${treff[2]}» ` +
+          "står i komponenten. Legg den i default-texts.ts, med en måte å " +
+          "bytte den ut på.",
       )
     }
-  }
+  })
   tsLest++
 }
 
@@ -121,7 +133,9 @@ for (const fil of filer(KOMPONENTER, ".css")) {
     // escapet: `\e5 ` er å.
     const tekster = strenger.map(pakkUt).filter((s) => /\p{L}/u.test(s))
     if (tekster.length === 0) continue
-    if (!/^var\(--fs-[a-z0-9-]+\s*,/.test(verdi)) {
+    // Hele verdien må være én variabel med teksten som reserve. Tekst ved
+    // siden av variabelen kan ikke byttes ut.
+    if (!/^var\(--fs-[a-z0-9-]+\s*,\s*(["'])(?:(?!\1).)*\1\s*\)$/.test(verdi)) {
       avvik.push(
         `${relative(process.cwd(), fil)}:${linje(kilde, treff.index ?? 0)}: ` +
           `content: ${verdi} har tekst som ikke kan byttes ut. ` +
@@ -144,11 +158,23 @@ try {
 } catch {
   avvik.push(`Fant ikke ${relative(process.cwd(), SIDE)}.`)
 }
+if (side !== "" && side.trim() === "") {
+  avvik.push(`${relative(process.cwd(), SIDE)} er tom.`)
+}
+/*
+ * Teksten skal stå i en celle i tabellen, ikke hvor som helst på siden. Et
+ * ord i brødteksten, eller en stjerne i fet skrift, er ikke tabellen.
+ */
+const celler = new Set(
+  [...side.matchAll(/\|([^|\n]+)(?=\|)/g)].map((celle) =>
+    celle[1].trim().replace(/^`(.*)`$/, "$1"),
+  ),
+)
 const forventet = [...Object.values(DEFAULT_TEXTS), ...new Set(reserver)]
 let dokumentert = 0
 for (const tekst of forventet) {
   const kjerne = tekst.trim()
-  if (side && !side.includes(kjerne)) {
+  if (!celler.has(kjerne)) {
     avvik.push(
       `Teksten «${kjerne}» står ikke i tabellen på ${relative(process.cwd(), SIDE)}.`,
     )

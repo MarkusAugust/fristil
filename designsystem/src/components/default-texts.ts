@@ -10,8 +10,8 @@
  *
  * Teksten står her og ikke i komponentene, så den er ett sted å lese.
  * `scripts/sjekk-tekster.ts` feller bygget på en tekst for brukeren som står
- * i en komponent og ikke her, og `sjekk-dokumentasjon.ts` krever at hver av
- * dem står på siden om oversettelse.
+ * i en komponent og ikke her, og krever at hver av dem står i tabellen på
+ * siden om oversettelse.
  *
  * Tekstene i CSS, som « (påkrevd)», kan ikke importere noe. De leses fra en
  * `--fs-`-variabel med teksten som reserve, og `sjekk-tekster.ts` krever det.

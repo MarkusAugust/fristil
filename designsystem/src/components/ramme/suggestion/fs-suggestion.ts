@@ -661,7 +661,7 @@ export class FsSuggestion extends HostElement {
    * `count-none` gjelder null treff, siden «Ingen treff» er en egen setning
    * og ikke en bøyning. Ellers velger `Intl.PluralRules` formen språket
    * krever, og `count-<form>` gir teksten, med `{n}` for tallet. Mangler
-   * formen, gjelder `count-other`. Uten noen av dem er teksten norsk.
+   * formen, gjelder `count-other`. Mangler den også, er teksten norsk.
    */
   private countText(hits: number): string {
     const lang = languageOf(this)
@@ -671,19 +671,15 @@ export class FsSuggestion extends HostElement {
       (hits === 0 ? written("count-none") : null) ??
       written(`count-${form}`) ??
       written("count-other")
-    if (template !== null) {
-      return template.replaceAll(
-        "{n}",
-        new Intl.NumberFormat(lang).format(hits),
-      )
-    }
+    const number = new Intl.NumberFormat(lang).format(hits)
+    if (template !== null) return template.replaceAll("{n}", number)
     const fallback =
       hits === 0
         ? DEFAULT_TEXTS.suggestionNone
         : hits === 1
           ? DEFAULT_TEXTS.suggestionOne
           : DEFAULT_TEXTS.suggestionOther
-    return fallback.replaceAll("{n}", String(hits))
+    return fallback.replaceAll("{n}", number)
   }
 
   private markActive(index: number): void {

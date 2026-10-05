@@ -85,14 +85,26 @@ export function setFlag(element: Element, name: string, on: boolean): void {
  * bedre enn ingen tekst.
  */
 export function languageOf(element: Element): string | undefined {
-  const lang = element.closest("[lang]")?.getAttribute("lang")?.trim()
-  if (!lang) return undefined
-  try {
-    Intl.getCanonicalLocales(lang)
-    return lang
-  } catch {
-    return undefined
+  /*
+   * `closest()` stopper ved en skyggerot. Står elementet i en, som hver
+   * forhåndsvisning i dokumentasjonen, fortsetter letingen fra verten, ellers
+   * fant den aldri `lang` på `<html>`.
+   */
+  let node: Element | null = element
+  while (node) {
+    const lang = node.closest("[lang]")?.getAttribute("lang")?.trim()
+    if (lang) {
+      try {
+        Intl.getCanonicalLocales(lang)
+        return lang
+      } catch {
+        return undefined
+      }
+    }
+    const root = node.getRootNode()
+    node = root instanceof ShadowRoot ? root.host : null
   }
+  return undefined
 }
 
 /**

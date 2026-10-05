@@ -183,7 +183,7 @@ Komponenten finner delene på det som uansett må stå der:
 
 Knappene er vanlige knapper. Nettleseren lukker dialogen og setter `returnValue` til knappens `value`, uten skript. `value="logout"` logger ut. Alt annet, Escape og knappen med `value="extend"` medregnet, betyr at brukeren vil fortsette.
 
-Mangler `role="alertdialog"` eller et navn på dialogen, fyller komponenten dem inn, med navnet fra den første overskriften. Det den som rendrer har skrevet, blir stående.
+Mangler klassen `fs-session-timeout__dialog`, `role="alertdialog"` eller et navn på dialogen, fyller komponenten dem inn. Navnet kommer fra den første overskriften, som får en id hvis den ikke har en. Det den som rendrer har skrevet, blir stående.
 
 Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte tastaturet. Derfor setter byggefunksjonen `data-ignore-morph`: en patch fra serveren skal ikke rive bort `open` fra en dialog som står i topplaget. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
