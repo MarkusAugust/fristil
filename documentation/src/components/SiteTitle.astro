@@ -1,9 +1,13 @@
 ---
 import FristilLogo from "./FristilLogo.astro"
+import Versjonsmerke from "./Versjonsmerke.astro"
 
 const { siteTitleHref } = Astro.locals.starlightRoute
 ---
 
-<a href={siteTitleHref} class="site-title inline-flex items-center no-underline text-inherit">
-	<FristilLogo size="sm" />
-</a>
+<div class="inline-flex items-center gap-6">
+	<a href={siteTitleHref} class="site-title inline-flex items-center no-underline text-inherit">
+		<FristilLogo size="sm" />
+	</a>
+	<Versjonsmerke />
+</div>

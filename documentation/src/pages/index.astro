@@ -3,6 +3,7 @@ import "@fristil/designsystem/button.css"
 import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/sr-only.css"
 import FristilLogo from "../components/FristilLogo.astro"
+import Versjonsmerke from "../components/Versjonsmerke.astro"
 import "../styles/custom-pages-tailwind.css"
 import sobernetics from "../assets/sobernetics.svg?raw"
 import { DELINGSBILDE, metaAttributter } from "../delingsbilde.mjs"
@@ -48,9 +49,12 @@ const beskrivelse =
   <div class="flex min-h-screen flex-col">
   <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-[rgb(11_16_32/0.85)] backdrop-blur-xl">
     <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:px-8 sm:py-5">
-      <a href="/" class="inline-flex items-center text-inherit no-underline">
-          <FristilLogo size="sm" />
-      </a>
+      <div class="inline-flex items-center gap-6">
+        <a href="/" class="inline-flex items-center text-inherit no-underline">
+            <FristilLogo size="sm" />
+        </a>
+        <Versjonsmerke />
+      </div>
       <nav>
           <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-zinc-300 sm:gap-x-8 sm:text-base">
             <li><a class="transition-colors hover:text-white" href="/introduksjon/">Dokumentasjon</a></li>

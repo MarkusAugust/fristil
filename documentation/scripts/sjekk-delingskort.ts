@@ -74,16 +74,21 @@ const KRAV: [string, string, (verdi: string) => boolean][] = [
 
 /*
  * Det forventede antallet kommer fra kilden, ikke fra globben over `dist`:
- * én side per dokument under `src/content/docs`, pluss forsiden og 404-siden.
- * Telte den bare det globben fant, ville en side som manglet i bygget aldri
- * blitt savnet.
+ * én side per dokument under `src/content/docs`, én per `.astro`-side i
+ * `src/pages` utenom demoene (forsiden og versjonsloggen), pluss 404-siden
+ * Starlight lager selv. Telte den bare det globben fant, ville en side som
+ * manglet i bygget aldri blitt savnet.
  */
 const forventet =
   [
     ...new Glob("**/*.{md,mdx}").scanSync(
       `${ROT}documentation/src/content/docs`,
     ),
-  ].length + 2
+  ].length +
+  [...new Glob("**/*.astro").scanSync(`${ROT}documentation/src/pages`)].filter(
+    (rel) => !rel.startsWith("demo/"),
+  ).length +
+  1
 
 for (const side of ["index.html", "404.html"]) {
   if (!existsSync(DIST + side)) funn.push(`${side} finnes ikke i dist`)
