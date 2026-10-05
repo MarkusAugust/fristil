@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.29.0 (2026-10-05)
+
 ### Brytende
 
 - **`<fs-session-timeout>` lager ikke lenger dialogen selv.** Den som
