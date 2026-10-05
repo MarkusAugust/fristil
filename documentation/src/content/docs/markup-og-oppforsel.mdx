@@ -3,9 +3,9 @@ title: Markup og oppførsel
 description: Hvem som skriver HTML-en, hvem som fester oppførselen, og hvilken av de to formene du skal bruke.
 ---
 
-Fristil er delt i to lag som aldri rører det samme. Det ene gir deg markupen, det andre gir deg oppførselen.
+Fristil er delt i to lag. Det ene gir deg markupen, det andre legger oppførsel på den.
 
-> Markup eies av den som lager den. Oppførsel eies av komponenten.
+> Markupen kommer fra den som rendrer den. Web-komponenten legger til oppførselen. Den legger aldri til noder, og alt den skriver, regner den ut fra markupen og fra det brukeren gjør.
 
 Dette gjelder like mye om appen din rendrer alt i nettleseren, server-rendrer med hydrering, eller sender HTML fra serveren hele veien. Fristil er ikke et system for én av dem.
 
@@ -129,7 +129,7 @@ Det er hele grunnen til at det samme API-et virker i alle tre miljøene. Ingenti
 
 **React Server Components.** Byggefunksjonene er rene funksjoner uten klientkode. De kjører på serveren og forsvinner. Skal du bruke en web component i tillegg, kaller du `defineFs*` fra en klientkomponent.
 
-**TanStack Start.** Spre attributtene i JSX. React eier dem og sender dem ut likt ved hver rendring, så det er ingenting som kan komme i utakt.
+**TanStack Start.** Spre attributtene i JSX. React skriver dem og sender dem ut likt ved hver re-render, så det er ingenting som kan komme i utakt.
 
 ```tsx
 const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
@@ -153,7 +153,7 @@ Noen attributter endrer seg mens brukeren holder på. `aria-expanded` på en kna
 
 En oppdatering fra serveren river dem bort, siden ingenting av dem sto i HTML-en den sendte. Komponenten ser det og setter dem tilbake. Du trenger ikke gjøre noe, og malen din trenger ikke kjenne til attributtene i det hele tatt.
 
-Skal serveren eie tilstanden, sier du det på verten:
+Skal serveren alene bestemme tilstanden, sier du det på host-elementet:
 
 ```html
 <fs-tabs server-controlled>
@@ -286,10 +286,10 @@ og et slikt attributt betyr bare noe for koden som leser det. Fredning virker
 altså fordi morferen leser lista. Reparasjon virker fordi komponenten leser
 markupen, og det avhenger ikke av hvem som morfer.
 
-#### Når serveren skal eie tilstanden
+#### Når serveren alene skal bestemme tilstanden
 
 Fredningen ga én ting reparasjonen måtte erstatte: den som skrev markupen
-kunne bestemme hvem som eier tilstanden. «Gå videre til steg 2» er en ekte
+kunne bestemme tilstanden alene. «Gå videre til steg 2» er en ekte
 ting en server vil kunne gjøre.
 
 Ett attributt gjør det, på verten:
@@ -309,7 +309,7 @@ om at vinduet er åpent, blir det stående gjennom en patch. Sender serveren
 En app lukker det med egenskapen: `meny.open = false`, `hide()` eller
 `toggle()`. Styrer du `open` med et attributt utenfra, som med Datastars
 `data-attr:open`, ser komponenten ingen forskjell på det og en morfing, og da
-skal siden si `server-controlled` og la serveren eie tilstanden.
+skal siden si `server-controlled` og la serveren alene bestemme tilstanden.
 
 #### Når brukeren selv utløser oppdateringen
 
@@ -337,7 +337,7 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
 2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
    `aria-describedby` selv, i hvilket som helst språk.
 3. **Det brukeren gjorde setter komponenten tilbake.** Du trenger ikke gjøre
-   noe. Skal serveren eie tilstanden, sier du det med `server-controlled`.
+   noe. Skal serveren alene bestemme tilstanden, sier du det med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
 fyller det ut, kan serveren skrive hele koblingen selv. Da har komponenten
@@ -380,7 +380,7 @@ Fanereglen viser det første panelet som ikke er skjult, så den overstyrer ikke
 
 Reglene er nevnt her fordi `:not(:defined)` er lett å ta for en feil når du leser CSS-en.
 
-## Komponenter som eier sitt eget innhold
+## Komponenter som lager sitt eget innhold
 
 To komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/introduksjon/#tre-kategorier):
 

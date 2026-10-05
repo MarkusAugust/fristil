@@ -1,12 +1,12 @@
 # Presentasjon om designsystemarkitektur
 
-Presentasjonen handler om arkitekturen et designsystem uten rammeverk trenger: hvem som
-eier markupen, hvem som eier oppførselen, og hva det koster. Fristil er
+Presentasjonen handler om arkitekturen et designsystem uten rammeverk trenger: hvor
+markupen kommer fra, hva web componenten legger til, og hva det koster. Fristil er
 eksempelet som viser at det virker, ikke temaet.
 
 Hele presentasjonen er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
 ingen server. Åpne fila i en nettleser, eller se den på
-[fristil-arkitektur.sobernetics.no](https://fristil-arkitektur.sobernetics.no/),
+[designsystemarkitektur.sobernetics.no](https://designsystemarkitektur.sobernetics.no/),
 som bygger fra master ved hver push. Netlify-prosjektet bak heter
 `designsystemarkitetktur`, med skrivefeilen, og
 `designsystemarkitetktur.netlify.app` gir den samme siden. `netlify.toml` her sier hvordan: fila

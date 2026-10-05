@@ -55,7 +55,7 @@ const SAMLET = samletStørrelse(byggSamletCss().css)
 /** «90 kB, 11 kB komprimert», slik html, maler og datastar oppgir den. */
 export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB komprimert`
 
-/** Mappa hver komponent ligger i, som avgjør hvem som eier DOM-en. */
+/** Mappa hver komponent ligger i, som avgjør hvem som lager markupen. */
 function kategorier(): Map<string, string> {
   const kart = new Map<string, string>()
 

@@ -321,10 +321,10 @@ Komponenten kobler da `for` og `id`, setter `fs-label`, legger på
 for akkurat dette feltet. Det er poenget med at `ramme`-komponentene bor i
 vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
-Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som eier
-den. Som standard eier komponenten den: `<fs-tabs>` husker fanen brukeren
-valgte, og setter den tilbake når en patch river den bort. Skal serveren kunne
-flytte den, sier du det med `server-controlled`:
+Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
+bestemmer den. Som standard gjør web-komponenten det: `<fs-tabs>` husker fanen
+brukeren valgte, og setter den tilbake når en patch river den bort. Skal
+serveren kunne flytte den, sier du det med `server-controlled`:
 
 ```html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
