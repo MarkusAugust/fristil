@@ -68,8 +68,8 @@ const forventet: [klasse: string, inneholder: string][] = [
   // Én farge også som tekst, så navnerommet ikke bare virker for bakgrunn.
   ["text-fs-accent-text", "var(--fs-color-accent-text)"],
   ["border-fs-neutral-border", "var(--fs-color-neutral-border)"],
-  ["text-fs-xxs", "var(--font-size-xxs)"],
-  ["text-fs-mega", "var(--font-size-mega)"],
+  ["text-fs-xxs", "var(--fs-font-size-xxs)"],
+  ["text-fs-mega", "var(--fs-font-size-mega)"],
   ["max-w-fs-aside", "384px"],
   ["shadow-fs-overlay", "var(--fs-shadow-overlay)"],
 ]

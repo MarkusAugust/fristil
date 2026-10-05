@@ -126,10 +126,11 @@ Mål: `--fs-spacing-0-5`, `--fs-spacing-1`, `--fs-spacing-10`,
 `--fs-spacing-4`, `--fs-spacing-5`, `--fs-spacing-6`, `--fs-spacing-7`,
 `--fs-spacing-8`, `--fs-spacing-px`.
 
-Skrift: `--font-size-l`, `--font-size-m`, `--font-size-mega`,
-`--font-size-reference`, `--font-size-s`, `--font-size-xl`, `--font-size-xs`,
-`--font-size-xxl`, `--font-size-xxs`, `--font-weight-bold`,
-`--font-weight-medium`, `--font-weight-regular`, `--font-weight-semibold`.
+Skrift: `--fs-font-size-l`, `--fs-font-size-m`, `--fs-font-size-mega`,
+`--fs-font-size-reference`, `--fs-font-size-s`, `--fs-font-size-xl`,
+`--fs-font-size-xs`, `--fs-font-size-xxl`, `--fs-font-size-xxs`,
+`--fs-font-weight-bold`, `--fs-font-weight-medium`,
+`--fs-font-weight-regular`, `--fs-font-weight-semibold`.
 
 Linjehøyde: `--fs-line-height-article`, `--fs-line-height-compact`,
 `--fs-line-height-default`, `--fs-line-height-heading`.
@@ -158,6 +159,32 @@ du ikke eier, setter du attributtet på komponentens eget rotelement:
 ```
 
 Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
+
+**Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
+`button { background: none; border: none }` eller en normalize, og de slår
+`@layer fristil`. Sett da `data-fs-boundary` på det samme rotelementet:
+
+```html
+<div data-fs-boundary data-theme="light">
+  <button class="fs-button">Lagre</button>
+</div>
+```
+
+Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
+spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i
+`fristil.css` og i `@fristil/designsystem/boundary.css`. Skrift og annet som
+arves kommer fortsatt fra verten, og `--fs-*`-variablene virker. Tre ting
+følger av den:
+
+- Egen CSS inne i grensen skal ligge i et lag etter `fristil`. CSS uten lag
+  forsvinner der på samme måte som vertens.
+- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten har
+  erklært før `fristil`, som Tailwinds Preflight i `base`, gjelder fortsatt
+  der Fristil ikke setter noe.
+- Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
+  spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
+  alltid. Det samme gjør `!important` og lag verten har erklært etter
+  `fristil`.
 
 Fristil setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,

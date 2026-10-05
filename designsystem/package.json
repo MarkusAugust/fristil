@@ -39,6 +39,7 @@
       "import": "./dist/index.js"
     },
     "./tokens.css": "./src/tokens/tokens.css",
+    "./boundary.css": "./src/tokens/boundary.css",
     "./fristil.css": "./dist/fristil.css",
     "./button.css": "./src/components/css/button/button.css",
     "./link.css": "./src/components/css/link/link.css",

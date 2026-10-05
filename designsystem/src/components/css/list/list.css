@@ -4,7 +4,7 @@
     margin: 0;
     padding-inline-start: var(--fs-spacing-5);
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-article);
     color: var(--fs-color-neutral-text-strong);
   }

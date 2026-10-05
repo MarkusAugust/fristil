@@ -260,7 +260,7 @@ export function malOgSkrift(): string {
   return [
     `Mål: ${liste(tokennavn(/--fs-spacing-[a-z0-9-]+/g))}.`,
     "",
-    `Skrift: ${liste(tokennavn(/--font-[a-z0-9-]+/g))}.`,
+    `Skrift: ${liste(tokennavn(/--fs-font-[a-z0-9-]+/g))}.`,
     "",
     `Linjehøyde: ${liste(tokennavn(/--fs-line-height-[a-z0-9-]+/g))}.`,
   ].join("\n")

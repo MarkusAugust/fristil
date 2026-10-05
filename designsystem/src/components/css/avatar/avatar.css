@@ -8,8 +8,8 @@
     block-size: var(--fs-avatar-size, var(--fs-spacing-10));
     overflow: hidden;
     font-family: inherit;
-    font-size: var(--font-size-s);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-s);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: 1;
     color: var(--fs-color-accent-text);
     background: var(--fs-color-accent-surface);
@@ -28,13 +28,13 @@
   .fs-avatar[data-size="small"] {
     inline-size: var(--fs-spacing-6);
     block-size: var(--fs-spacing-6);
-    font-size: var(--font-size-xs);
+    font-size: var(--fs-font-size-xs);
   }
 
   .fs-avatar[data-size="large"] {
     inline-size: var(--fs-spacing-16);
     block-size: var(--fs-spacing-16);
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
   }
 
   .fs-avatar[data-variant="square"] {

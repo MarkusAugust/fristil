@@ -78,6 +78,31 @@ Legger du Fristil inn i en side du ikke eier, er dette måten å gjøre det på.
 
 Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attributt som tilhører siden, ikke deg.
 
+### Vertens CSS stopper ved grensen
+
+Verten har ofte regler uten lag, som `button { background: none; border: none }` eller en normalize. Regler uten lag slår `@layer fristil`, så inne i komponenten din mister `.fs-button` bakgrunnen og kanten. Sett `data-fs-boundary` på rotelementet, ved siden av `data-theme`:
+
+```html
+<div data-fs-boundary data-theme="light">
+	<button type="button" class="fs-button">Prøv igjen</button>
+</div>
+```
+
+Grensen ligger i `fristil.css`, og som egen fil i `@fristil/designsystem/boundary.css` for deg som importerer stilarkene ett og ett. Det er den eneste regelen i pakken som står utenfor laget, og den gjør én ting: under rotelementet ser nettleseren bort fra CSS uten lag, innenfor spesifisiteten under, og Fristils lag gjelder igjen. Der ingen lag sier noe, gjelder nettleserens egne regler.
+
+Dette står igjen:
+
+- **Skriften og alt annet som arves.** Arven kommer inn gjennom rotelementet, og grensen rører ikke det. Fristil arver skrift med vilje, så komponenten får vertens skrift.
+- **`--fs-*`-variablene,** både på rotelementet og på `:root`.
+- **Regler på selve rotelementet,** også dine egne uten lag.
+
+Dette må du vite:
+
+- **Din egen CSS inne i grensen må ligge i et lag** etter `fristil`, for eksempel `components` eller `utilities` i [lagrekkefølgen](../tailwind/#lagrekkefølgen). CSS uten lag forsvinner der på samme måte som vertens. Tailwind-klassene ligger alt i et lag.
+- **Elementer uten Fristil-klasse mister vertens CSS uten lag.** En vanlig `<p>` mister vertens marger, og et `<button>` uten `fs-button` får nettleserens knapp, med mindre et lag sier noe annet.
+- **Grensen har spesifisiteten (0,2,0).** Den slår vertens nullstillinger, som `button:not(:disabled)`, `a:hover` og `input[type="text"]`. En regel fra verten med samme spesifisitet vinner hvis den lastes etter grensen, og en med mer, som `.app .innhold a`, vinner alltid. Det samme gjør `!important`.
+- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Et lag verten har erklært etter `fristil` vinner over Fristil. Et lag erklært før, som Tailwinds Preflight i `base`, gjelder der Fristil ikke setter noe.
+
 ### Brukeren kan få velge
 
 `fs-theme-control` på en radioknapp gjør `value` til et temavalg, i ren CSS:
@@ -203,9 +228,9 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-button-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
 | `--fs-button-radius` | `var(--fs-spacing-1)` |
 | `--fs-button-border-width` | `1px` |
-| `--fs-button-font-weight` | `var(--font-weight-medium)` |
+| `--fs-button-font-weight` | `var(--fs-font-weight-medium)` |
 | `--fs-button-line-height` | `var(--fs-line-height-default)` |
-| `--fs-heading-font-weight` | `var(--font-weight-bold)` |
+| `--fs-heading-font-weight` | `var(--fs-font-weight-bold)` |
 | `--fs-heading-line-height` | `var(--fs-line-height-heading)` |
 | `--fs-paragraph-line-height` | `var(--fs-line-height-article)` |
 | `--fs-badge-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
@@ -269,11 +294,14 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-suggestion-radius` | `var(--fs-spacing-1)` |
 | `--fs-suggestion-layer` | `30` |
 | `--fs-suggestion-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
+| `--fs-input-width` | `100%` |
 | `--fs-input-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-input-radius` | `var(--fs-spacing-1)` |
 | `--fs-textarea-min-height` | `calc(var(--fs-spacing-4) * 5)` |
 | `--fs-textarea-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-textarea-radius` | `var(--fs-spacing-1)` |
+| `--fs-select-width` | `100%` |
+| `--fs-select-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-select-radius` | `var(--fs-spacing-1)` |
 | `--fs-select-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-select-viewport-margin` | `var(--fs-spacing-2)` |
@@ -301,7 +329,7 @@ Standardverdiene peker på `--fs-spacing-*`-skalaen. Endrer du skalaen, følger 
 
 ## Når variabelen ikke rekker
 
-Alt Fristil sender ut, både tokens og komponent-CSS, ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
+Tokens og komponent-CSS ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
 
 ```css
 .fs-button {
@@ -310,6 +338,8 @@ Alt Fristil sender ut, både tokens og komponent-CSS, ligger i `@layer fristil`.
 ```
 
 Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="danger"]:hover`, eller ty til `!important`.
+
+Under `data-fs-boundary` må regelen ligge i et lag, se [Vertens CSS stopper ved grensen](#vertens-css-stopper-ved-grensen).
 
 :::caution[`!important` snur rekkefølgen]
 For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.

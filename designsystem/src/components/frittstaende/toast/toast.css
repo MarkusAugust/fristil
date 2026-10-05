@@ -28,7 +28,7 @@
     gap: var(--fs-spacing-3);
     padding: var(--fs-toast-padding, var(--fs-spacing-3) var(--fs-spacing-4));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     background: var(--fs-color-neutral-canvas);
@@ -57,7 +57,7 @@
     min-block-size: var(--fs-spacing-6);
     padding: 0;
     font-family: inherit;
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
     line-height: 1;
     color: var(--fs-color-neutral-text-subtle);
     background: transparent;

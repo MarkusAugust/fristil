@@ -161,6 +161,19 @@ const temaEksempel = (oppskrift: Oppskrift) =>
 </div>
 \`\`\``
 
+const grenseEksempel = (oppskrift: Oppskrift) =>
+  oppskrift.navn === "react"
+    ? `\`\`\`tsx
+<div data-fs-boundary data-theme="light">
+  <button {...fs.button()}>Lagre</button>
+</div>
+\`\`\``
+    : `\`\`\`html
+<div data-fs-boundary data-theme="light">
+  <button class="fs-button">Lagre</button>
+</div>
+\`\`\``
+
 /*
  * Velgeren skrives i regelbokas eget språk, av samme grunn som temaEksempel.
  *
@@ -201,6 +214,27 @@ du ikke eier, setter du attributtet på komponentens eget rotelement:
 ${temaEksempel(oppskrift)}
 
 Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
+
+**Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
+\`button { background: none; border: none }\` eller en normalize, og de slår
+\`@layer fristil\`. Sett da \`data-fs-boundary\` på det samme rotelementet:
+
+${grenseEksempel(oppskrift)}
+
+Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
+spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i \`fristil.css\` og i
+\`@fristil/designsystem/boundary.css\`. Skrift og annet som arves kommer
+fortsatt fra verten, og \`--fs-*\`-variablene virker. Tre ting følger av den:
+
+- Egen CSS inne i grensen skal ligge i et lag etter \`fristil\`. CSS uten lag
+  forsvinner der på samme måte som vertens.
+- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten
+  har erklært før \`fristil\`, som Tailwinds Preflight i \`base\`, gjelder
+  fortsatt der Fristil ikke setter noe.
+- Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
+  spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
+  alltid. Det samme gjør \`!important\` og lag verten har erklært etter
+  \`fristil\`.
 
 Fristil setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,

@@ -20,7 +20,7 @@
     max-block-size: calc(100vh - var(--fs-spacing-16));
     padding: var(--fs-dialog-padding, var(--fs-spacing-5));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     background: var(--fs-color-neutral-canvas);
@@ -142,8 +142,8 @@
 
   .fs-dialog__title {
     margin: 0 0 var(--fs-spacing-2);
-    font-size: var(--font-size-l);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-l);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: var(--fs-line-height-compact);
   }
 
@@ -224,7 +224,7 @@
      under 4,5:1 på suksess- og advarselsbåndet. */
   .fs-dialog__subtitle {
     margin: var(--fs-spacing-1) 0 0;
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
     line-height: var(--fs-line-height-default);
   }
 

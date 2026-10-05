@@ -198,11 +198,11 @@ function kanskje(
 
 function typografiVerdier(t: ThemeTypography): Record<string, string> {
   const verdier: Record<string, string> = {}
-  kanskje(verdier, "--font-family-base", t.fontFamily)
-  kanskje(verdier, "--font-weight-regular", t.weights?.regular)
-  kanskje(verdier, "--font-weight-medium", t.weights?.medium)
-  kanskje(verdier, "--font-weight-semibold", t.weights?.semibold)
-  kanskje(verdier, "--font-weight-bold", t.weights?.bold)
+  kanskje(verdier, "--fs-font-family-base", t.fontFamily)
+  kanskje(verdier, "--fs-font-weight-regular", t.weights?.regular)
+  kanskje(verdier, "--fs-font-weight-medium", t.weights?.medium)
+  kanskje(verdier, "--fs-font-weight-semibold", t.weights?.semibold)
+  kanskje(verdier, "--fs-font-weight-bold", t.weights?.bold)
   kanskje(verdier, "--fs-line-height-default", t.lineHeights?.default)
   kanskje(verdier, "--fs-line-height-heading", t.lineHeights?.heading)
   kanskje(verdier, "--fs-line-height-article", t.lineHeights?.article)
@@ -218,11 +218,11 @@ function typografiVerdier(t: ThemeTypography): Record<string, string> {
  * variabel sender leseren til feil sted i sin egen fil.
  */
 const OPPSKRIFTSNAVN: Record<string, string> = {
-  "--font-family-base": "fontFamily",
-  "--font-weight-regular": "weights.regular",
-  "--font-weight-medium": "weights.medium",
-  "--font-weight-semibold": "weights.semibold",
-  "--font-weight-bold": "weights.bold",
+  "--fs-font-family-base": "fontFamily",
+  "--fs-font-weight-regular": "weights.regular",
+  "--fs-font-weight-medium": "weights.medium",
+  "--fs-font-weight-semibold": "weights.semibold",
+  "--fs-font-weight-bold": "weights.bold",
   "--fs-line-height-default": "lineHeights.default",
   "--fs-line-height-heading": "lineHeights.heading",
   "--fs-line-height-article": "lineHeights.article",
@@ -302,7 +302,7 @@ function tilCss(
    * eneste bokstav.
    */
   if (typografi?.fontFamily)
-    deler.push("  :root {\n    font-family: var(--font-family-base);\n  }")
+    deler.push("  :root {\n    font-family: var(--fs-font-family-base);\n  }")
 
   /*
    * Begge attributtene skrives, ikke bare det mørke.

@@ -16,7 +16,7 @@ import "@fristil/designsystem/tokens.css"
 .min-komponent {
 	color: var(--fs-color-accent-fill);
 	padding: var(--fs-spacing-4);
-	font-size: var(--font-size-m);
+	font-size: var(--fs-font-size-m);
 }
 ```
 
@@ -126,14 +126,14 @@ Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhol
   maxWidth="34rem"
   ekstraCss={`
     .prove { margin: 0; }
-    .prove-xxs { font-size: var(--font-size-xxs); }
-    .prove-xs { font-size: var(--font-size-xs); }
-    .prove-s { font-size: var(--font-size-s); }
-    .prove-m { font-size: var(--font-size-m); }
-    .prove-l { font-size: var(--font-size-l); }
-    .prove-xl { font-size: var(--font-size-xl); }
-    .prove-xxl { font-size: var(--font-size-xxl); }
-    .prove-mega { font-size: var(--font-size-mega); }
+    .prove-xxs { font-size: var(--fs-font-size-xxs); }
+    .prove-xs { font-size: var(--fs-font-size-xs); }
+    .prove-s { font-size: var(--fs-font-size-s); }
+    .prove-m { font-size: var(--fs-font-size-m); }
+    .prove-l { font-size: var(--fs-font-size-l); }
+    .prove-xl { font-size: var(--fs-font-size-xl); }
+    .prove-xxl { font-size: var(--fs-font-size-xxl); }
+    .prove-mega { font-size: var(--fs-font-size-mega); }
   `}
 >
   <p class="prove prove-xxs">xxs, 0.625rem</p>
@@ -146,7 +146,7 @@ Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhol
   <p class="prove prove-mega">mega, 2.625rem</p>
 </Preview>
 
-`--font-size-m` er brødteksten. `--font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.
+`--fs-font-size-m` er brødteksten. `--fs-font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.
 
 ### Vekt og linjeavstand
 
@@ -154,16 +154,16 @@ Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en or
 
 | Token | Verdi | Brukt av |
 | --- | --- | --- |
-| `--font-weight-regular` | 400 | merkelappene «(påkrevd)» og «(valgfri)» på ledetekst og feltsett |
-| `--font-weight-medium` | 500 | knapp, feilmelding |
-| `--font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsvarsel, tabell, faner, valggruppe |
-| `--font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
+| `--fs-font-weight-regular` | 400 | merkelappene «(påkrevd)» og «(valgfri)» på ledetekst og feltsett |
+| `--fs-font-weight-medium` | 500 | knapp, feilmelding |
+| `--fs-font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsvarsel, tabell, faner, valggruppe |
+| `--fs-font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
 | `--fs-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
 | `--fs-line-height-heading` | 1.2 | overskrift |
 | `--fs-line-height-article` | 1.6 | brødtekst, liste, korttekst |
 | `--fs-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
 
-Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
+Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--fs-button-font-weight, var(--fs-font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
 
 Tre linjeavstander står fortsatt som tall i stilarkene. `1` i paginering, avatar og lukkeknappen på meldingen er ikke typografi, men en måte å få et tall eller et kryss til å stå midt i en sirkel. `1.3` og `1.55` står i én komponent hver.
 
@@ -182,7 +182,7 @@ const token: CssToken = "--fs-color-accent-fill"
 element.style.setProperty(token, "red")
 
 colorTokens["--fs-color-accent-fill"] // "#226dba"
-cssTokens["--font-size-mega"]         // "2.625rem"
+cssTokens["--fs-font-size-mega"]         // "2.625rem"
 ```
 
 Skriver du `--fs-color-accent-fil`, får du feil i editoren i stedet for en `var()` som stille faller tilbake til ingenting. Det samme gjelder en rolle som ikke finnes: `--fs-color-accent-fill-hover` er en typefeil, ikke en tom verdi.
@@ -228,7 +228,7 @@ Hver celle i matrisen blir en klasse, med samme navn: `bg-fs-accent-fill` leser 
 | `bg-fs-danger-surface` | `--fs-color-danger-surface` |
 | `text-fs-neutral-text-subtle` | `--fs-color-neutral-text-subtle` |
 | `border-fs-neutral-border` | `--fs-color-neutral-border` |
-| `text-fs-mega` | `--font-size-mega` |
+| `text-fs-mega` | `--fs-font-size-mega` |
 | `max-w-fs-aside` | 384px |
 | `shadow-fs-overlay` | `--fs-shadow-overlay` |
 

@@ -16,7 +16,8 @@
  * Lista er `exports` i `package.json`, ikke mappa: det er oppføringene som
  * er kontrakten, og en ny komponent kommer med av seg selv når den får sin
  * oppføring. `tokens.css` legges først, siden alt annet bygger på den, og
- * Tailwind-temaet holdes utenfor, siden det er en `@theme`-blokk for
+ * `boundary.css` sist, siden den er den eneste regelen uten lag og ellers
+ * ville stått midt i fila. Tailwind-temaet holdes utenfor, siden det er en `@theme`-blokk for
  * Tailwind og ikke et stilark for en side.
  *
  * Hver fil tas med én gang, uansett hvor mange som importerer den, og en
@@ -66,6 +67,8 @@ export function byggSamletCss(): SamletCss {
     .sort((a, b) => {
       if (a.navn === "./tokens.css") return -1
       if (b.navn === "./tokens.css") return 1
+      if (a.navn === "./boundary.css") return 1
+      if (b.navn === "./boundary.css") return -1
       return a.navn.localeCompare(b.navn)
     })
 
@@ -133,8 +136,16 @@ export function byggSamletCss(): SamletCss {
       `fristil.css har fortsatt @import: ${gjenstaaende[0]?.trim() ?? ""}`,
     )
 
+  /*
+   * Grensen mot en vertsside er den ene fila uten lag, med vilje; se
+   * `boundary.css`. Den trekkes fra ved navn, så en annen fil uten lag
+   * fortsatt feller vakten.
+   */
+  const utenLag = [...tatt].filter((fil) =>
+    fil.endsWith(join("src", "tokens", "boundary.css")),
+  ).length
   const lag = (css.match(/^@layer fristil \{/gm) ?? []).length
-  if (lag !== tatt.size || tatt.size < oppføringer.length)
+  if (lag !== tatt.size - utenLag || tatt.size < oppføringer.length)
     throw new Error(
       `fristil.css har ${lag} @layer fristil-blokker, men ${tatt.size} filer ble tatt av ${oppføringer.length} oppføringer`,
     )

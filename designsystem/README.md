@@ -113,7 +113,7 @@ npx @fristil/designsystem overta button --ut=src/ui
 
 ## Tilpasning
 
-All CSS ligger i `@layer fristil`, så dine egne regler vinner uten `!important`. Form og størrelse leses fra `--fs-*`-variabler med tokenverdien som reserve:
+Komponentene ligger i `@layer fristil`, så dine egne regler vinner uten `!important`. Bygger du en komponent inn i en side du ikke eier, gir `data-fs-boundary` på rotelementet Fristils stil tilbake der vertens CSS uten lag ellers ville tatt den; se Tilpasning i dokumentasjonen. Form og størrelse leses fra `--fs-*`-variabler med tokenverdien som reserve:
 
 ```css
 .fs-button {

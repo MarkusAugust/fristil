@@ -135,8 +135,9 @@ function deler(ts: string): string[] {
  * feil i begge retninger: `shadow-fs-accent-fill` finnes i Tailwind 4, siden
  * `--color-*` også mater `shadow-<farge>`, og ville blitt meldt som ukjent,
  * mens et utdatert `w-fs-aside` eller `p-fs-4` aldri ville blitt sett.
+ * Et `data-fs-…` er et attributt, ikke en klasse, og telles ikke.
  */
-const KANDIDAT = /(?<![\w-])[a-z][a-z-]*-fs-[a-z0-9][a-z0-9-]*/g
+const KANDIDAT = /(?<![\w-])(?!data-fs-)[a-z][a-z-]*-fs-[a-z0-9][a-z0-9-]*/g
 
 const kandidater = new Map<string, Set<string>>()
 
@@ -179,6 +180,7 @@ for (const fil of new Bun.Glob("**/*.mdx").scanSync(
   const rest = tekst
     .replace(KANDIDAT, " ")
     .replace(/--fs-[a-z0-9-]*/g, " ")
+    .replace(/(?<![\w-])data-fs-[a-z0-9-]*/g, " ")
     .replace(/(?<![\w-])fs-[a-z0-9_-]+/g, " ")
     /*
      * Et kodeord med en plassholder i er et navnemønster og ikke et navn:
@@ -287,7 +289,7 @@ const tokenside = les(`${ROT}documentation/src/content/docs/design-tokens.mdx`)
  * Alt som ikke er en celle kreves fortsatt navngitt.
  */
 const tokenCss = les(`${ROT}designsystem/src/tokens/tokens.css`)
-const alleTokens = [...tokenCss.matchAll(/^\s*(--(?:fs|font)-[\w-]+):/gm)].map(
+const alleTokens = [...tokenCss.matchAll(/^\s*(--fs-[\w-]+):/gm)].map(
   (treff) => treff[1],
 )
 
