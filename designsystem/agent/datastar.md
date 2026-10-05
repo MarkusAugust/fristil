@@ -41,7 +41,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 ></script>
 ```
 
-`fristil.css` er 93 kB, 11 kB komprimert, og har alle komponentene. Vil du
+`fristil.css` er 95 kB, 12 kB komprimert, og har alle komponentene. Vil du
 bare ha det du bruker, gjelder at `tokens.css` definerer alle variablene, og
 alle de andre stilarkene bygger på den. Den må lastes, og står først av vane:
 rekkefølgen mellom den og de andre har ikke noe å si.
@@ -86,7 +86,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/spinner/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/sr-only/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/switch/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/table/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/table/table.css` | `data-variant`: striped |
 | `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/tag/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/toggle-group/toggle-group.css` | ingen |

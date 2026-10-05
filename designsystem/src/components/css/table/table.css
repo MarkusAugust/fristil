@@ -52,6 +52,98 @@
     text-align: end;
   }
 
+  /*
+   * En kolonne som kan sorteres har en knapp i overskriften, og knappen fyller
+   * cellen. Cellen mister sin egen luft og knappen tar den over, så teksten
+   * står der den ville stått uten knapp og hele cellen kan trykkes. Uten det
+   * fikk overskriften luft både fra cellen og fra knappen, og ble høyere og
+   * forskjøvet mot cellene under.
+   */
+  .fs-table th:has(> .fs-table__sort) {
+    padding: 0;
+  }
+
+  .fs-table__sort {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: var(--fs-spacing-2);
+    inline-size: 100%;
+    margin: 0;
+    padding: var(
+      --fs-table-cell-padding,
+      var(--fs-spacing-2) var(--fs-spacing-3)
+    );
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    /* Kan også være en lenke, når serveren sorterer uten JavaScript. */
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .fs-table th[data-align="end"] > .fs-table__sort {
+    justify-content: flex-end;
+  }
+
+  .fs-table__sort:hover {
+    background: var(--fs-color-neutral-surface);
+  }
+
+  .fs-table__sort:focus-visible {
+    outline: var(--fs-focus-ring);
+    outline-offset: -2px;
+  }
+
+  /*
+   * Pila leses fra `aria-sort` på cellen, ikke fra en klasse. Det er det
+   * samme attributtet skjermleseren leser, så det som vises og det som sies
+   * kan ikke gli fra hverandre. Uten attributtet viser knappen begge pilene,
+   * dempet, så det synes at kolonnen kan sorteres.
+   *
+   * Pila er en maske og ikke et bilde, så den tar tekstfargen og snur med
+   * temaet. Tomt `content` gjør at den aldri blir en del av knappens navn.
+   */
+  .fs-table__sort::after {
+    content: "";
+    flex: none;
+    inline-size: var(--fs-spacing-3);
+    block-size: var(--fs-spacing-3);
+    background-color: var(--fs-color-neutral-text-subtle);
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 13 6.5H3zM8 15 3 9.5H13z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  .fs-table th[aria-sort="ascending"] > .fs-table__sort::after {
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 14 11H2z'/%3E%3C/svg%3E");
+  }
+
+  .fs-table th[aria-sort="descending"] > .fs-table__sort::after {
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 13 2 5H14z'/%3E%3C/svg%3E");
+  }
+
+  /* Høykontrast: modusen tvinger bakgrunnsfargen til flatens farge, og da
+     ville pila blitt usynlig. En systemfarge får stå, så den tegnes i
+     systemets tekstfarge. */
+  @media (forced-colors: active) {
+    .fs-table__sort::after,
+    .fs-table th[aria-sort] > .fs-table__sort::after {
+      background-color: CanvasText;
+    }
+  }
+
+  /* Pila står foran teksten i en høyrestilt kolonne, så teksten slutter der
+     tallene under slutter. */
+  .fs-table th[data-align="end"] > .fs-table__sort::after {
+    order: -1;
+  }
+
   /* En tabell som er bredere enn skjermen må kunne rulles, og det området må
      kunne nås med tastatur. Derfor tabindex="0" på beholderen. */
   .fs-table-scroll {

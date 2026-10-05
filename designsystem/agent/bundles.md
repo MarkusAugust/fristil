@@ -96,7 +96,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
 | `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
@@ -315,7 +315,7 @@ fs.button({ variant: "secondary" })
 ```
 
 Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der
-malspråket støtter spredning, eller leses ut felt for felt. De 44
+malspråket støtter spredning, eller leses ut felt for felt. De 45
 byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
@@ -326,8 +326,9 @@ byggefunksjonene:
 `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
 `fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
-`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
-`fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`,
+`fs.tableSort()`, `fs.tabs()`, `fs.tag()`, `fs.textarea()`, `fs.toast()`,
+`fs.toggleGroup()`, `fs.tooltip()`
 
 Der malspråket ikke kan spre et objekt, setter `fs.setAttributes()`
 attributtene på et element i vanlig DOM:

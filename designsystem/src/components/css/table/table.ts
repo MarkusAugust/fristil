@@ -48,3 +48,59 @@ export const table = Object.assign(
     isVariant: createGuard(tableVariants),
   },
 )
+
+/** Klassen på knappen i en kolonneoverskrift som kan sorteres. */
+export const TABLE_SORT_CLASS = "fs-table__sort" as const
+
+export const tableSortDirections = ["ascending", "descending"] as const
+
+export type TableSortDirection = (typeof tableSortDirections)[number]
+
+export type TableSortOptions = {
+  /**
+   * Retningen kolonnen er sortert i. Utelatt betyr at tabellen ikke er
+   * sortert etter denne kolonnen, og da får overskriften ikke `aria-sort`.
+   */
+  direction?: TableSortDirection
+}
+
+export type TableSortAttributes = {
+  header: {
+    "aria-sort"?: TableSortDirection
+  }
+  button: {
+    class: typeof TABLE_SORT_CLASS
+    type: "button"
+  }
+}
+
+/**
+ * Attributtene for en kolonneoverskrift som kan sorteres.
+ *
+ * `aria-sort` står på `<th>`, ikke på knappen, for det er cellen som
+ * beskriver kolonnen. Bare den sorterte kolonnen har attributtet. Pila
+ * tegnes fra det samme attributtet, så det skjermleseren sier og det som
+ * vises kan ikke gli fra hverandre. Selve sorteringen er appens.
+ *
+ * ```ts
+ * const dato = fs.tableSort({ direction: "descending" })
+ * ```
+ * ```html
+ * <th scope="col" {...dato.header}>
+ *   <button {...dato.button}>Dato</button>
+ * </th>
+ * ```
+ */
+export const tableSort = Object.assign(
+  ({ direction }: TableSortOptions = {}): TableSortAttributes => ({
+    header: attributes({ "aria-sort": direction }),
+    button: attributes({ class: TABLE_SORT_CLASS, type: "button" as const }),
+  }),
+  {
+    // Lista ligger ved siden av, som `tableSortDirections`, og ikke på
+    // funksjonen. Vaktposten for listene krever at attributtet og klassen
+    // står på samme element, og her står `aria-sort` på cellen og klassen på
+    // knappen. At hver retning gir sin egen pil, krever tabelltesten.
+    isDirection: createGuard(tableSortDirections),
+  },
+)

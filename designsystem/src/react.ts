@@ -33,7 +33,7 @@ import { skipLink } from "./components/css/skip-link/skip-link.js"
 import { spinner } from "./components/css/spinner/spinner.js"
 import { srOnly } from "./components/css/sr-only/sr-only.js"
 import { switchControl } from "./components/css/switch/switch.js"
-import { table } from "./components/css/table/table.js"
+import { table, tableSort } from "./components/css/table/table.js"
 import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
@@ -192,6 +192,16 @@ export const fs = {
   toggleGroup: forReact(toggleGroup),
   tooltip: forReact(tooltip),
   table: forReact(table),
+  tableSort: Object.assign(
+    (options?: Parameters<typeof tableSort>[0]) => {
+      const built = tableSort(options)
+      return {
+        header: built.header,
+        button: toReactAttributes(built.button),
+      }
+    },
+    { isDirection: tableSort.isDirection },
+  ),
   tag: forReact(tag),
   textarea: forReact(textarea),
 
