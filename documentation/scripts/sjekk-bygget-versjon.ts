@@ -68,9 +68,12 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
 
   // Starlight rømmer `@` i noen sammenhenger, så det er ordet VERSJON rett
   // etter pakkenavnet som letes etter, ikke plassholderen tegn for tegn.
+  // Versjonsloggen er unntatt ved navn: den rendres fra CHANGELOG.md, som
+  // nevner plassholderen der den ble innført, og har ingen CDN-adresser.
   if (
-    tekst.includes(PLASSHOLDER) ||
-    /designsystem@?(?:&#\d+;)?VERSJON/.test(tekst)
+    rel !== "documentation/dist/versjonslogg/index.html" &&
+    (tekst.includes(PLASSHOLDER) ||
+      /designsystem@?(?:&#\d+;)?VERSJON/.test(tekst))
   )
     funn.push(`${rel} har en plassholder som ikke ble byttet ut`)
 

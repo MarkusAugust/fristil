@@ -6,12 +6,16 @@
     box-sizing: border-box;
 
     display: block;
-    width: 100%;
-    padding-block: var(--fs-spacing-2);
-    padding-inline: var(--fs-spacing-3)
-      calc(var(--fs-spacing-4) + var(--fs-spacing-2));
+    width: var(--fs-select-width, 100%);
+    padding: var(--fs-select-padding, var(--fs-spacing-2) var(--fs-spacing-3));
+    /* Sluttsiden er plassen til pila, og den står fast: pila er tegnet et
+       fast stykke fra kanten, så en mindre plass ville lagt teksten oppå
+       den. Derfor gjelder `--fs-select-padding` alt utenom denne siden her.
+       Med `data-picker="styled"` tar pila ekte plass, og der gjelder
+       variabelen alle fire sidene. */
+    padding-inline-end: calc(var(--fs-spacing-4) + var(--fs-spacing-2));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     background-color: var(--fs-color-neutral-canvas);
@@ -118,7 +122,10 @@
       justify-content: space-between;
       gap: var(--fs-spacing-2);
       background-image: none;
-      padding-inline: var(--fs-spacing-3);
+      padding: var(
+        --fs-select-padding,
+        var(--fs-spacing-2) var(--fs-spacing-3)
+      );
     }
 
     /* Teksten i knappen er valget som står nå. Lange valg skal klippes, ikke
@@ -207,7 +214,7 @@
        tilbake til sine egne verdier. */
     .fs-select[data-picker="styled"] optgroup {
       padding-block: var(--fs-spacing-2) var(--fs-spacing-1);
-      font-size: var(--font-size-s);
+      font-size: var(--fs-font-size-s);
       color: var(--fs-color-neutral-text-subtle);
       text-indent: var(--fs-spacing-3);
     }
@@ -222,7 +229,7 @@
         var(--fs-spacing-2) var(--fs-spacing-3)
       );
       font-family: inherit;
-      font-size: var(--font-size-m);
+      font-size: var(--fs-font-size-m);
       line-height: var(--fs-line-height-default);
       color: var(--fs-color-neutral-text-strong);
       background: var(--fs-color-neutral-canvas);
@@ -281,7 +288,10 @@
       display: block;
       appearance: auto;
       background-image: none;
-      padding-inline: var(--fs-spacing-3);
+      padding: var(
+        --fs-select-padding,
+        var(--fs-spacing-2) var(--fs-spacing-3)
+      );
     }
   }
 }

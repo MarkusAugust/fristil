@@ -57,7 +57,7 @@ Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier 
 
 - `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
 - `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
-- `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-session-timeout>`.
+- `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-connection-status>`.
 
 Ingen komponent bruker shadow DOM. Kategorien sier hvem som eier DOM-en mens siden lever: serveren, eller komponenten. Se `.claude/CLAUDE.md`.
 
@@ -104,7 +104,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 | Sjekk | Hva den krever |
 | --- | --- |
-| `pakke-css.browser.test.ts` | Alt ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
+| `pakke-css.browser.test.ts` | Alt utenom grensen mot en vertsside ligger i `@layer fristil`, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
 | `fs.browser.test.ts` | Hver byggefunksjon i `fs` gir en klasse og ingen `undefined`-attributter |
 | `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
 | `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse, hver `part` og hver `--fs-`-variabel den har |

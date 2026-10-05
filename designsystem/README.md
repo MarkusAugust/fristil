@@ -64,16 +64,16 @@ import { fs } from "@fristil/designsystem/react"
 Ingenting registreres ved import alene. Du kaller `defineFs*` selv, så du bestemmer når elementet finnes og hva det skal hete:
 
 ```js
-import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+import { defineFsToast } from "@fristil/designsystem/toast"
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/session-timeout.css"
+import "@fristil/designsystem/toast.css"
 
-defineFsSessionTimeout()
+defineFsToast()
 ```
 
 ```html
-<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                    data-ignore-morph></fs-session-timeout>
+<fs-toast class="fs-toast" role="status" aria-live="polite" aria-atomic="false"
+          aria-label="Varsler" data-ignore-morph></fs-toast>
 ```
 
 ## Serveren skriver markupen
@@ -113,7 +113,7 @@ npx @fristil/designsystem overta button --ut=src/ui
 
 ## Tilpasning
 
-All CSS ligger i `@layer fristil`, så dine egne regler vinner uten `!important`. Form og størrelse leses fra `--fs-*`-variabler med tokenverdien som reserve:
+Komponentene ligger i `@layer fristil`, så dine egne regler vinner uten `!important`. Bygger du en komponent inn i en side du ikke eier, gir `data-fs-boundary` på rotelementet Fristils stil tilbake der vertens CSS uten lag ellers ville tatt den; se Tilpasning i dokumentasjonen. Form og størrelse leses fra `--fs-*`-variabler med tokenverdien som reserve:
 
 ```css
 .fs-button {

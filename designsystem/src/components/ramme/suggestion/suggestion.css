@@ -50,7 +50,7 @@
       var(--fs-spacing-2) var(--fs-spacing-3)
     );
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     cursor: pointer;
@@ -73,7 +73,7 @@
       --fs-suggestion-option-padding,
       var(--fs-spacing-2) var(--fs-spacing-3)
     );
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     color: var(--fs-color-neutral-text-subtle);
   }
 

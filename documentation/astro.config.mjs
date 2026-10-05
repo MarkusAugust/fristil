@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
+import { DELINGSBILDE, metaAttributter } from "./src/delingsbilde.mjs"
 import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
 import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
 
@@ -60,6 +61,15 @@ export default defineConfig({
             title: "llms.txt",
           },
         },
+        /*
+         * Bildet en lenke får når den deles. Starlight skriver tittel,
+         * beskrivelse og `twitter:card` selv, men ikke noe bilde, og uten det
+         * viser X lenken uten forhåndsvisning.
+         */
+        ...DELINGSBILDE.map((tagg) => ({
+          tag: "meta",
+          attrs: metaAttributter(tagg),
+        })),
       ],
       defaultLocale: "root",
       locales: {
@@ -120,11 +130,13 @@ export default defineConfig({
             { label: "Tilpasning", slug: "tilpasning" },
             { label: "Tailwind", slug: "tailwind" },
             { label: "Tilgjengelighet", slug: "tilgjengelighet" },
+            { label: "Oversettelse", slug: "oversettelse" },
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
             { label: "Editoren", slug: "editoren" },
             { label: "Kodeagenter", slug: "kodeagenter" },
             { label: "Lisens og pris", slug: "lisens" },
+            { label: "Versjonslogg", link: "/versjonslogg/" },
           ],
         },
         {
@@ -188,6 +200,10 @@ export default defineConfig({
                 { label: "Error Summary", slug: "components/error-summary" },
                 { label: "Field", slug: "components/field" },
                 { label: "Popover", slug: "components/popover" },
+                {
+                  label: "Session Timeout",
+                  slug: "components/session-timeout",
+                },
                 { label: "Suggestion", slug: "components/suggestion" },
                 { label: "Tabs", slug: "components/tabs" },
               ],
@@ -198,10 +214,6 @@ export default defineConfig({
                 {
                   label: "Connection Status",
                   slug: "components/connection-status",
-                },
-                {
-                  label: "Session Timeout",
-                  slug: "components/session-timeout",
                 },
                 { label: "Toast", slug: "components/toast" },
               ],

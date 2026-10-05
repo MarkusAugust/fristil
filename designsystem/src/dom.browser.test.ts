@@ -126,6 +126,7 @@ const GRUNNVALG: Record<string, Record<string, unknown>> = {
   dialog: { titleId: "tittel" },
   popover: { id: "panel" },
   errorSummary: { count: 1 },
+  sessionTimeout: { titleId: "okt" },
 }
 
 /**
@@ -161,6 +162,7 @@ const ALT_PAA: Record<string, unknown> = {
   value: 4,
   max: 10,
   autofocus: false,
+  direction: "descending",
 }
 
 /** `fs.label({ required: "symbol" })` henger på `label.markers`. */

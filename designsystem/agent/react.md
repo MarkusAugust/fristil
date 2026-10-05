@@ -8,7 +8,7 @@ til å ha sin egen fil: React skriver om attributtnavnene. `class` heter
 hovedinngangen skriver React «Invalid DOM property» i konsollen for hvert
 element. Derfor har pakken en egen React-inngang.
 
-Dette er @fristil/designsystem 0.28.0. Fila er generert av pakken og følger
+Dette er @fristil/designsystem 0.30.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
@@ -85,7 +85,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
 | `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
@@ -115,10 +115,11 @@ Mål: `--fs-spacing-0-5`, `--fs-spacing-1`, `--fs-spacing-10`,
 `--fs-spacing-4`, `--fs-spacing-5`, `--fs-spacing-6`, `--fs-spacing-7`,
 `--fs-spacing-8`, `--fs-spacing-px`.
 
-Skrift: `--font-size-l`, `--font-size-m`, `--font-size-mega`,
-`--font-size-reference`, `--font-size-s`, `--font-size-xl`, `--font-size-xs`,
-`--font-size-xxl`, `--font-size-xxs`, `--font-weight-bold`,
-`--font-weight-medium`, `--font-weight-regular`, `--font-weight-semibold`.
+Skrift: `--fs-font-size-l`, `--fs-font-size-m`, `--fs-font-size-mega`,
+`--fs-font-size-reference`, `--fs-font-size-s`, `--fs-font-size-xl`,
+`--fs-font-size-xs`, `--fs-font-size-xxl`, `--fs-font-size-xxs`,
+`--fs-font-weight-bold`, `--fs-font-weight-medium`,
+`--fs-font-weight-regular`, `--fs-font-weight-semibold`.
 
 Linjehøyde: `--fs-line-height-article`, `--fs-line-height-compact`,
 `--fs-line-height-default`, `--fs-line-height-heading`.
@@ -147,6 +148,32 @@ du ikke eier, setter du attributtet på komponentens eget rotelement:
 ```
 
 Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
+
+**Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
+`button { background: none; border: none }` eller en normalize, og de slår
+`@layer fristil`. Sett da `data-fs-boundary` på det samme rotelementet:
+
+```tsx
+<div data-fs-boundary data-theme="light">
+  <button {...fs.button()}>Lagre</button>
+</div>
+```
+
+Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
+spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i
+`fristil.css` og i `@fristil/designsystem/boundary.css`. Skrift og annet som
+arves kommer fortsatt fra verten, og `--fs-*`-variablene virker. Tre ting
+følger av den:
+
+- Egen CSS inne i grensen skal ligge i et lag etter `fristil`. CSS uten lag
+  forsvinner der på samme måte som vertens.
+- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten har
+  erklært før `fristil`, som Tailwinds Preflight i `base`, gjelder fortsatt
+  der Fristil ikke setter noe.
+- Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
+  spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
+  alltid. Det samme gjør `!important` og lag verten har erklært etter
+  `fristil`.
 
 Fristil setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
@@ -224,10 +251,10 @@ Tre regler gjelder alle sammen:
 | `<fs-tabs>` | ramme | `@fristil/designsystem/tabs.css` | `defineFsTabs()` fra `@fristil/designsystem/tabs` | `server-controlled` (flag) | `fs-tabs__list`<br>`fs-tabs__panel` |
 | `<fs-error-summary>` | ramme | `@fristil/designsystem/error-summary.css` | `defineFsErrorSummary()` fra `@fristil/designsystem/error-summary` | `data-autofocus`: false<br>`hidden` (flag) | `fs-error-summary`<br>`fs-error-summary__title` |
 | `<fs-popover>` | ramme | `@fristil/designsystem/popover.css` | `defineFsPopover()` fra `@fristil/designsystem/popover` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `@fristil/designsystem/suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-suggestion>` | ramme | `@fristil/designsystem/suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
 | `<fs-dialog>` | ramme | `@fristil/designsystem/dialog.css` | `defineFsDialog()` fra `@fristil/designsystem/dialog` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
-| `<fs-toast>` | frittstaende | `@fristil/designsystem/toast.css` | `defineFsToast()` fra `@fristil/designsystem/toast` | `duration` (number)<br>`label` (text) | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
-| `<fs-session-timeout>` | frittstaende | `@fristil/designsystem/session-timeout.css` | `defineFsSessionTimeout()` fra `@fristil/designsystem/session-timeout` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
+| `<fs-toast>` | frittstaende | `@fristil/designsystem/toast.css` | `defineFsToast()` fra `@fristil/designsystem/toast` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
+| `<fs-session-timeout>` | ramme | `@fristil/designsystem/session-timeout.css` | `defineFsSessionTimeout()` fra `@fristil/designsystem/session-timeout` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
 | `<fs-connection-status>` | frittstaende | `@fristil/designsystem/connection-status.css` | `defineFsConnectionStatus()` fra `@fristil/designsystem/connection-status` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
@@ -304,7 +331,7 @@ Id-en kommer fra `useId()`, så serveren og nettleseren lager den samme.
 
 `fs` importeres fra `@fristil/designsystem/react`, aldri fra hovedinngangen:
 React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
-`for`. De 44 byggefunksjonene finnes i begge:
+`for`. De 45 byggefunksjonene finnes i begge:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,
@@ -314,8 +341,9 @@ React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
 `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
 `fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
-`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
-`fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`,
+`fs.tableSort()`, `fs.tabs()`, `fs.tag()`, `fs.textarea()`, `fs.toast()`,
+`fs.toggleGroup()`, `fs.tooltip()`
 
 ## 6. Bare `open={åpen || undefined}` virker
 
@@ -348,7 +376,7 @@ får du autofullføring og feil på attributtene:
 
 ```tsx
 <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-<fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 ```
 
@@ -362,7 +390,8 @@ elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv og er tomme uten den. Markupen i de andre er din og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett |
+| En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | Komponenten gjør ingenting, og ingenting sier fra | Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren |
 | «Invalid DOM property `class`» | `fs` er importert fra hovedinngangen. Bruk `@fristil/designsystem/react` |

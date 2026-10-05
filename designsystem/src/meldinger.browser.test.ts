@@ -3,6 +3,7 @@ import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
 import { defineFsErrorSummary } from "./components/ramme/error-summary/fs-error-summary"
 import { defineFsField } from "./components/ramme/field/fs-field"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover"
+import { defineFsSessionTimeout } from "./components/ramme/session-timeout/fs-session-timeout"
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
 import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
 import { monter, ventPaTegning } from "./testing/a11y"
@@ -44,6 +45,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     defineFsTabs()
     defineFsErrorSummary()
     defineFsDialog()
+    defineFsSessionTimeout()
   })
 
   afterEach(() => {
@@ -170,6 +172,42 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(meldinger(advarsel).some((m) => m.includes("<dialog>"))).toBe(true)
+  })
+
+  it("varselet om økten uten en <dialog>", async () => {
+    const advarsel = lytt()
+
+    monter(`
+      <fs-session-timeout>
+        <div class="fs-session-timeout__dialog">
+          <h2>Du blir snart logget ut</h2>
+        </div>
+      </fs-session-timeout>
+    `)
+    await ventTilRo()
+
+    expect(meldinger(advarsel).some((m) => m.includes("<dialog>"))).toBe(true)
+  })
+
+  it("varselet om økten uten tall, opplesning eller knapper", async () => {
+    const advarsel = lytt()
+
+    monter(`
+      <fs-session-timeout>
+        <dialog>
+          <h2>Du blir snart logget ut</h2>
+          <p>Vi logger deg ut snart.</p>
+        </dialog>
+      </fs-session-timeout>
+    `)
+    await ventTilRo()
+
+    const sagt = meldinger(advarsel)
+    expect(sagt.some((m) => m.includes(".fs-session-timeout__count"))).toBe(
+      true,
+    )
+    expect(sagt.some((m) => m.includes("[role=status]"))).toBe(true)
+    expect(sagt.some((m) => m.includes('<form method="dialog">'))).toBe(true)
   })
 
   it("forslagsfeltet uten et felt", async () => {
@@ -387,6 +425,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
         <fs-popover></fs-popover>
         <fs-suggestion></fs-suggestion>
         <fs-error-summary hidden></fs-error-summary>
+        <fs-session-timeout></fs-session-timeout>
       </div>
     `)
     await ventTilRo()
@@ -451,6 +490,20 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
           <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
           <ul class="fs-list"><li><a href="#kommune">Velg en kommune</a></li></ul>
         </fs-error-summary>
+
+        <fs-session-timeout data-ignore-morph>
+          <dialog class="fs-session-timeout__dialog" role="alertdialog"
+                  aria-labelledby="okt-tittel">
+            <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
+            <p class="fs-session-timeout__text">Vi logger deg ut om
+              <span class="fs-session-timeout__count" aria-hidden="true"></span>.</p>
+            <span class="fs-sr-only" role="status"></span>
+            <form method="dialog" class="fs-session-timeout__actions">
+              <button class="fs-button" value="extend">Fortsett å være innlogget</button>
+              <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+            </form>
+          </dialog>
+        </fs-session-timeout>
       </div>
     `)
     await ventTilRo()

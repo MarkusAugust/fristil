@@ -158,9 +158,16 @@ export { switchControl } from "./components/css/switch/switch.js"
 export type {
   TableAttributes,
   TableOptions,
+  TableSortAttributes,
+  TableSortDirection,
+  TableSortOptions,
   TableVariant,
 } from "./components/css/table/table.js"
-export { table } from "./components/css/table/table.js"
+export {
+  table,
+  tableSort,
+  tableSortDirections,
+} from "./components/css/table/table.js"
 export type {
   TagAttributes,
   TagOptions,
@@ -178,8 +185,6 @@ export type { TooltipAttributes } from "./components/css/tooltip/tooltip.js"
 export { tooltip } from "./components/css/tooltip/tooltip.js"
 export * from "./components/frittstaende/connection-status/connection-status.js"
 export * from "./components/frittstaende/connection-status/fs-connection-status.js"
-export * from "./components/frittstaende/session-timeout/fs-session-timeout.js"
-export * from "./components/frittstaende/session-timeout/session-timeout.js"
 export * from "./components/frittstaende/toast/fs-toast.js"
 export * from "./components/frittstaende/toast/toast.js"
 export type {
@@ -194,6 +199,8 @@ export * from "./components/ramme/field/field-core.js"
 export * from "./components/ramme/field/fs-field.js"
 export * from "./components/ramme/popover/fs-popover.js"
 export * from "./components/ramme/popover/popover.js"
+export * from "./components/ramme/session-timeout/fs-session-timeout.js"
+export * from "./components/ramme/session-timeout/session-timeout.js"
 export * from "./components/ramme/suggestion/fs-suggestion.js"
 export * from "./components/ramme/suggestion/suggestion.js"
 export * from "./components/ramme/tabs/fs-tabs.js"

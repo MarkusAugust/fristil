@@ -12,7 +12,7 @@
     box-sizing: border-box;
     padding: var(--fs-error-summary-padding, var(--fs-spacing-4));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     background: var(--fs-color-danger-surface);
@@ -28,8 +28,8 @@
 
   .fs-error-summary__title {
     margin: 0 0 var(--fs-spacing-2);
-    font-size: var(--font-size-l);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-l);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: var(--fs-line-height-compact);
   }
 

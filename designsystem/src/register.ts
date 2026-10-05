@@ -12,12 +12,12 @@
  * øverst i en modul som kjøres begge steder.
  */
 import { defineFsConnectionStatus } from "./components/frittstaende/connection-status/fs-connection-status.js"
-import { defineFsSessionTimeout } from "./components/frittstaende/session-timeout/fs-session-timeout.js"
 import { defineFsToast } from "./components/frittstaende/toast/fs-toast.js"
 import { defineFsDialog } from "./components/ramme/dialog/fs-dialog.js"
 import { defineFsErrorSummary } from "./components/ramme/error-summary/fs-error-summary.js"
 import { defineFsField } from "./components/ramme/field/fs-field.js"
 import { defineFsPopover } from "./components/ramme/popover/fs-popover.js"
+import { defineFsSessionTimeout } from "./components/ramme/session-timeout/fs-session-timeout.js"
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion.js"
 import { defineFsTabs } from "./components/ramme/tabs/fs-tabs.js"
 

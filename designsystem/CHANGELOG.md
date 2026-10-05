@@ -23,6 +23,102 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.30.0 (2026-10-05)
+
+### Nytt
+
+- **Kolonner som kan sorteres i `.fs-table`.** `.fs-table__sort` er knappen
+  i overskriften, og `aria-sort` på `<th>` er tilstanden. Pila tegnes fra
+  `aria-sort`, med begge pilene dempet når kolonnen ikke er sortert, og
+  knappen fyller cellen, så overskriftsraden har samme høyde og innrykk som
+  uten knapp. `fs.tableSort({ direction })` gir `header` og `button`, og
+  `tableSortDirections` er de lovlige retningene. Sorteringen er appens.
+
+## 0.29.0 (2026-10-05)
+
+### Brytende
+
+- **`<fs-session-timeout>` lager ikke lenger dialogen selv.** Den som
+  rendrer skriver dialogen og teksten inne i elementet, på sitt eget språk,
+  og komponenten tar tiden: den åpner og lukker dialogen, fyller inn tallet
+  og leser opp nedtellingen. Før var tittelen, teksten og knappene norsk
+  skrevet rett i koden, og kunne ikke oversettes. Komponenten finner delene
+  på `<dialog>`, `.fs-session-timeout__count`, `[role=status]` og knappene i
+  et `<form method="dialog">`, og setter `open` tilbake når en morfing tar
+  det fra en dialog som står i topplaget, slik `<fs-dialog>` gjør. Uten det
+  sto siden fast etter en patch fra Datastar uten `data-ignore-morph`. En
+  knapp med `value="logout"` logger ut, og
+  alt annet, Escape medregnet, forlenger. Hendelsene, `warn-at`,
+  `expires-at`, `extend()` og `reset()` er de samme, men `session-logout`
+  og `session-extend` fra en knapp kommer nå med `close`-hendelsen, altså
+  litt etter klikket og ikke i det. Det du må gjøre: skriv
+  dialogen inn i elementet, slik komponentsiden viser. Et tomt
+  `<fs-session-timeout>` sier fra i konsollen i det varselet skulle kommet,
+  og `fristil sjekk` melder det.
+- **`fs.sessionTimeout()` gir ett attributtsett per del,** som
+  `fs.dialog()`: `host`, `dialog`, `title`, `text`, `count`, `live`,
+  `actions`, `extend` og `logout`. `titleId` er påkrevd, siden en id som
+  lages av seg selv ikke overlever hydrering.
+- **Komponenten ligger i `ramme/` og ikke i `frittstaende/`.** Navnene i
+  `exports` er de samme, men stien til fila er ny. Det du må gjøre: lenker
+  du rett til fila på en CDN, bytt `frittstaende/session-timeout` med
+  `ramme/session-timeout` i adressen.
+
+- **Skrifttokenene heter `--fs-font-size-*` og `--fs-font-weight-*`.** De
+  fjorten navnene var de eneste uten `fs-`, og de står på `:root` i en side
+  Fristil ikke alltid eier. Et annet designsystem på samme side deklarerte de
+  samme navnene, og da avgjorde rekkefølgen på stilarkene hvilken verdi
+  begge systemenes komponenter fikk. Ved 0.22.0 fikk de beholde navnene,
+  siden de alt fulgte CSS-egenskapen de setter; det holder ikke når
+  navnet deles med andre. Det gjelder de ni størrelsene, de fire vektene og
+  `--font-family-base` fra temageneratoren, som nå heter
+  `--fs-font-family-base`. Tailwind-klassene, som `text-fs-m`, heter det
+  samme. Det finnes ingen aliaser, siden et alias fortsatt måtte stått på
+  `:root` under det gamle navnet. Det du må gjøre: bytt `--font-size-` med
+  `--fs-font-size-`, `--font-weight-` med `--fs-font-weight-` og
+  `--font-family-base` med `--fs-font-family-base` i egen CSS, og lag
+  temaet ditt på nytt med `fristil tema` hvis du har ett. Et tema laget med
+  en eldre utgave setter skriften under de gamle navnene, og den delen av
+  temaet virker ikke lenger uten at noe sier fra. Fargene virker som før.
+
+### Nytt
+
+- **`data-fs-boundary` er en grense mot vertssiden.** Bygges en komponent
+  inn i en side du ikke eier, slår vertens CSS uten lag `@layer fristil`, og
+  en `button { background: none }` tar bakgrunnen fra `.fs-button`. Under
+  et element med attributtet ser nettleseren bort fra CSS uten lag, så
+  Fristils lag gjelder igjen, mens skrift og annet som arves fortsatt kommer
+  fra verten og `--fs-*`-variablene virker. Regelen ligger i `fristil.css`,
+  og som `@fristil/designsystem/boundary.css`. Den har spesifisiteten (0,2,0),
+  og egen CSS inne i grensen må ligge i et lag. Se «Vertens CSS stopper ved
+  grensen» under Tilpasning.
+- **`--fs-select-padding` og `--fs-select-width`.** Luften i nedtrekkslista
+  kan settes som i feltet. I standardutseendet står plassen til pila fast,
+  og `auto` gir et kompakt felt så bredt som innholdet.
+- **`--fs-input-width`,** av samme grunn.
+- **Boblen i `.fs-tooltip` har `box-sizing: border-box`,** så
+  `--fs-tooltip-width` er hele boblen også i en side uten en CSS-reset.
+
+- **`close-label` på `<fs-toast>`** er standard for hva lukkeknappen i hver
+  melding heter for skjermleseren. `fs.toast({ closeLabel })` skriver det,
+  og `closeLabel` i `show()` overstyrer det for én melding.
+- **Antall treff i `<fs-suggestion>` kan oversettes,** med `count-none`,
+  `count-one` og `count-other`, og `count-zero`, `count-two`, `count-few` og
+  `count-many` for språk som har dem. `{n}` står for antallet, og
+  `Intl.PluralRules` velger form etter `lang` på siden. Uten attributtene er
+  teksten norsk som før.
+- **Markeringen på `.fs-label` og `.fs-legend` leses fra variabler:**
+  `--fs-label-required-symbol`, `--fs-label-required-text` og
+  `--fs-label-optional-text`, med « *», « (påkrevd)» og « (valgfri)» som
+  reserve.
+- **Opplesningen av nedtellingen følger sidens språk.** Varigheten skrives
+  med `Intl` etter `lang`, så den er «1 minutt og 30 sekunder» på en norsk
+  side og «1 minute and 30 seconds» på en engelsk.
+- **`@fristil/designsystem/default-texts`** har hver standardtekst pakken
+  skriver inn i siden. En vaktpost i bygget feller en tekst som står rett i
+  en komponent i stedet for der, en tekst i CSS som ikke leses fra en
+  variabel, og en tekst som mangler i tabellen på siden om oversettelse.
+
 ## 0.28.0 (2026-10-04)
 
 ### Brytende

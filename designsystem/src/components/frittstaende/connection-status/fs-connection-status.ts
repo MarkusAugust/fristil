@@ -6,8 +6,10 @@ import {
 
 export const FS_CONNECTION_STATUS_TAG = "fs-connection-status" as const
 
-const DEFAULT_OFFLINE = "Ingen forbindelse. Det du skriver blir ikke lagret."
-const DEFAULT_ONLINE = "Forbindelsen er tilbake."
+import { DEFAULT_TEXTS } from "../../default-texts.js"
+
+const DEFAULT_OFFLINE = DEFAULT_TEXTS.connectionOffline
+const DEFAULT_ONLINE = DEFAULT_TEXTS.connectionOnline
 
 /** Hvor lenge «tilbake på nett» blir stående. */
 const RECEIPT_MS = 4000

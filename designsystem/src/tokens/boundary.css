@@ -1,0 +1,103 @@
+/*
+ * Grensen mot en vertsside: `data-fs-boundary` på rotelementet til en
+ * komponent som bygges inn i en side du ikke eier.
+ *
+ * Fila står med vilje utenfor `@layer fristil`, som den eneste i pakken.
+ * Stil uten lag slår alle lag, så vertens `button { background: none }`
+ * tar bakgrunnen fra `.fs-button`. `revert-layer` i en regel uten lag ser
+ * bort fra alle regler uten lag for elementet, og faller tilbake til lagene.
+ * Da gjelder `@layer fristil` igjen, og der ingen lag sier noe, gjelder
+ * nettleserens egne regler.
+ *
+ * `all` rører ikke egendefinerte egenskaper, så `--fs-*` virker som før.
+ * Roten selv treffes ikke: den er konsumentens, og arv fra verten, som
+ * skriften, kommer inn gjennom den.
+ *
+ * Attributtet står to ganger for spesifisiteten. Med ett var regelen
+ * (0,1,0) og tapte for vanlige nullstillinger som `button:not(:disabled)`,
+ * `a:hover` og `input[type="text"]`, som alle er (0,1,1). Rekkefølgen kan
+ * ikke avgjøre det, siden vertens stilark ofte lastes etter dette. En regel
+ * fra verten med (0,2,0) vinner hvis den står etter denne, en med mer
+ * vinner alltid, og det samme gjør `!important`.
+ *
+ * Pseudoelementene er de Fristil styler, og de normalize styler, siden
+ * den er den vanligste nullstillingen en vert har. Hvert har sin egen regel. Et pseudoelement nettleseren
+ * ikke kjenner gjør hele regelen ugyldig, og Firefox forkaster en liste
+ * med `::picker(select)` i, slik at grensen ville forsvunnet der.
+ */
+
+[data-fs-boundary][data-fs-boundary] * {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::before {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::after {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::marker {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::placeholder {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::backdrop {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::file-selector-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::checkmark {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::picker-icon {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::picker(select) {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-details-marker {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-search-cancel-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-search-decoration {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-inner-spin-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-outer-spin-button {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-calendar-picker-indicator {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-progress-bar {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-webkit-progress-value {
+  all: revert-layer;
+}
+
+[data-fs-boundary][data-fs-boundary] *::-moz-progress-bar {
+  all: revert-layer;
+}

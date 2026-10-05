@@ -516,6 +516,13 @@ export const classes: Classes = {
       }
     }
   },
+  "fs-table__sort": {
+    "component": "table",
+    "title": "Table",
+    "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+    "link": "https://fristil.sobernetics.no/components/table/",
+    "attributes": {}
+  },
   "fs-table-scroll": {
     "component": "table",
     "title": "Table",
@@ -643,6 +650,48 @@ export const classes: Classes = {
     "link": "https://fristil.sobernetics.no/components/popover/",
     "attributes": {}
   },
+  "fs-session-timeout": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
+  "fs-session-timeout__dialog": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
+  "fs-session-timeout__title": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
+  "fs-session-timeout__text": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
+  "fs-session-timeout__count": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
+  "fs-session-timeout__actions": {
+    "component": "session-timeout",
+    "title": "Session Timeout",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "attributes": {}
+  },
   "fs-suggestion__field": {
     "component": "suggestion",
     "title": "Suggestion",
@@ -697,48 +746,6 @@ export const classes: Classes = {
     "title": "Connection Status",
     "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
     "link": "https://fristil.sobernetics.no/components/connection-status/",
-    "attributes": {}
-  },
-  "fs-session-timeout": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "attributes": {}
-  },
-  "fs-session-timeout__dialog": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "attributes": {}
-  },
-  "fs-session-timeout__title": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "attributes": {}
-  },
-  "fs-session-timeout__text": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "attributes": {}
-  },
-  "fs-session-timeout__count": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "attributes": {}
-  },
-  "fs-session-timeout__actions": {
-    "component": "session-timeout",
-    "title": "Session Timeout",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
     "attributes": {}
   },
   "fs-toast": {

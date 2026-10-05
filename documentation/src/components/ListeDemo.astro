@@ -75,14 +75,42 @@ import Preview from "./Preview.astro"
 </Preview>
 
 <script>
-	type Sak = { nummer: string; dato: string; status: string }
+	type Sak = { nummer: string; dato: string; sendt: string; status: string }
 
 	const SAKER: Sak[] = [
-		{ nummer: "2026-0481", dato: "4. mars", status: "Under behandling" },
-		{ nummer: "2026-0377", dato: "12. februar", status: "Innvilget" },
-		{ nummer: "2025-1204", dato: "3. desember", status: "Avslått" },
-		{ nummer: "2025-0988", dato: "14. oktober", status: "Innvilget" },
+		{ nummer: "2026-0481", dato: "4. mars", sendt: "2026-03-04", status: "Under behandling" },
+		{ nummer: "2026-0377", dato: "12. februar", sendt: "2026-02-12", status: "Innvilget" },
+		{ nummer: "2025-1204", dato: "3. desember", sendt: "2025-12-03", status: "Avslått" },
+		{ nummer: "2025-0988", dato: "14. oktober", sendt: "2025-10-14", status: "Innvilget" },
 	]
+
+	/*
+	 * Sorteringen er demoens, ikke systemets. Fristil gir knappen og pila, og
+	 * leser retningen fra `aria-sort`. Hvilken kolonne som er sortert, står
+	 * bare her, og skrives ut som `aria-sort` på én overskrift.
+	 */
+	type Kolonne = "nummer" | "sendt"
+	type Retning = "ascending" | "descending"
+	let sortering: { kolonne: Kolonne; retning: Retning } = {
+		kolonne: "sendt",
+		retning: "descending",
+	}
+	let viste: Sak[] = []
+
+	function sorter(saker: Sak[]): Sak[] {
+		const { kolonne, retning } = sortering
+		const fortegn = retning === "ascending" ? 1 : -1
+		return [...saker].sort(
+			(a, b) => fortegn * a[kolonne].localeCompare(b[kolonne]),
+		)
+	}
+
+	function overskrift(kolonne: Kolonne, tekst: string): string {
+		const sortert = sortering.kolonne === kolonne
+		return `<th scope="col"${sortert ? ` aria-sort="${sortering.retning}"` : ""}>
+			<button type="button" class="fs-table__sort" data-kolonne="${kolonne}">${tekst}</button>
+		</th>`
+	}
 
 	const flate = document.getElementById("demo-liste")?.shadowRoot
 	const rot = flate?.getElementById("demo-liste-rot")
@@ -147,15 +175,16 @@ import Preview from "./Preview.astro"
 
 	function visSaker(saker: Sak[]) {
 		if (!resultat) return
+		viste = saker
 		resultat.innerHTML = `
 			<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Saker">
 				<table class="fs-table" data-variant="striped">
-					<caption class="fs-sr-only">Saker som passer med søket</caption>
+					<caption class="fs-sr-only">Saker som passer med søket. Kolonner med knapp kan sorteres.</caption>
 					<thead>
-						<tr><th scope="col">Saksnummer</th><th scope="col">Sendt</th><th scope="col">Status</th></tr>
+						<tr>${overskrift("nummer", "Saksnummer")}${overskrift("sendt", "Sendt")}<th scope="col">Status</th></tr>
 					</thead>
 					<tbody>
-						${saker
+						${sorter(saker)
 							.map(
 								(sak) => `<tr>
 									<th scope="row">${sak.nummer}</th>
@@ -168,10 +197,10 @@ import Preview from "./Preview.astro"
 				</table>
 			</div>`
 
-		if (treff) {
-			treff.textContent =
-				saker.length === 1 ? "1 sak" : `${saker.length} saker`
-		}
+		// Bare når antallet er et annet: sorteringen tegner de samme sakene på
+		// nytt, og den samme teksten skrevet inn igjen leses opp på nytt.
+		const antall = saker.length === 1 ? "1 sak" : `${saker.length} saker`
+		if (treff && treff.textContent !== antall) treff.textContent = antall
 	}
 
 	function tegn() {
@@ -222,6 +251,27 @@ import Preview from "./Preview.astro"
 	}
 
 	flate?.getElementById("demo-last-om-igjen")?.addEventListener("click", tegn)
+
+	// Sorteringen henter ingenting på nytt, den tegner de samme sakene i ny
+	// rekkefølge. Tabellen byttes ut, så fokus må settes tilbake på knappen
+	// brukeren trykket på, ellers havner det på `<body>`.
+	resultat?.addEventListener("click", (hendelse) => {
+		const knapp = (hendelse.target as Element).closest<HTMLElement>(".fs-table__sort")
+		const kolonne = knapp?.dataset.kolonne as Kolonne | undefined
+		if (!kolonne) return
+
+		sortering = {
+			kolonne,
+			retning:
+				sortering.kolonne === kolonne && sortering.retning === "ascending"
+					? "descending"
+					: "ascending",
+		}
+		visSaker(viste)
+		resultat
+			.querySelector<HTMLElement>(`.fs-table__sort[data-kolonne="${kolonne}"]`)
+			?.focus()
+	})
 
 	tegn()
 </script>

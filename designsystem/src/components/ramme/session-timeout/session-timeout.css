@@ -1,4 +1,7 @@
 @import "../../css/button/button.css";
+/* Opplesningen står i markupen med `fs-sr-only`, og må være skjult uten at
+   konsumenten laster noe mer. */
+@import "../../css/sr-only/sr-only.css";
 
 @layer fristil {
   /* Både elementet og klassen. `fs.sessionTimeout()` sender ut
@@ -25,7 +28,7 @@
 
   .fs-session-timeout__title {
     margin: 0 0 var(--fs-spacing-2);
-    font-size: var(--font-size-l);
+    font-size: var(--fs-font-size-l);
     line-height: 1.3;
   }
 
@@ -36,7 +39,7 @@
 
   .fs-session-timeout__count {
     font-variant-numeric: tabular-nums;
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--fs-font-weight-semibold);
   }
 
   .fs-session-timeout__actions {

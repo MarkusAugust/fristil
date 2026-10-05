@@ -77,6 +77,61 @@ fs.setAttributes(tabell, fs.table({ variant: "striped", hoverable: true }))
 
 Tall står i `tabular-nums`, så sifrene får lik bredde og kolonnen kan leses nedover.
 
+## Kolonner som kan sorteres
+
+En kolonne som kan sorteres har en knapp i overskriften, og hvilken vei den er sortert står i `aria-sort` på `<th>`. Pila tegnes fra det samme attributtet, så det skjermleseren sier og det leseren ser er det samme. Knappen fyller cellen, så overskriften har samme høyde og innrykk som cellene under. Uten `aria-sort` viser knappen begge pilene, dempet.
+
+<Eksempel stiler={["table", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<table class="fs-table">
+  <caption>Fakturaer i 2026<span class="fs-sr-only">, kolonner med knapp kan sorteres</span></caption>
+  <thead>
+    <tr>
+      <th scope="col">
+        <button type="button" class="fs-table__sort">Faktura</button>
+      </th>
+      <th scope="col" aria-sort="descending">
+        <button type="button" class="fs-table__sort">Forfall</button>
+      </th>
+      <th scope="col" data-align="end">Beløp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">2026-0482</th>
+      <td>4. april</td>
+      <td data-align="end">980 kr</td>
+    </tr>
+    <tr>
+      <th scope="row">2026-0481</th>
+      <td>4. mars</td>
+      <td data-align="end">1 240 kr</td>
+    </tr>
+  </tbody>
+</table>
+`}>
+<Fragment slot="ts">
+
+`fs.tableSort()` gir ett sett attributter til cellen og ett til knappen:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+const forfall = fs.tableSort({ direction: "descending" })
+
+<th scope="col" {...forfall.header}>
+  <button {...forfall.button} onClick={() => sorterEtter("forfall")}>Forfall</button>
+</th>
+```
+
+Uten `direction` får cellen ikke `aria-sort`. `fs.tableSort.isDirection()` sjekker en verdi fra adressen eller skjemaet, og `tableSortDirections` fra hovedinngangen er de to lovlige verdiene.
+
+</Fragment>
+</Eksempel>
+
+Selve sorteringen er din. I React holder appen kolonnen og retningen i tilstand og tegner raden på nytt. Sender serveren HTML, i Datastar eller en mal, sorterer den og skriver `aria-sort` på riktig overskrift. Uten JavaScript kan knappen være en lenke, `<a class="fs-table__sort" href="?sorter=forfall&retning=ascending">`, så sorterer serveren ved neste side. Lenken får klassen alene, siden `fs.tableSort().button` også gir `type="button"`.
+
+Tegner du tabellen på nytt etter et klikk, sett fokus tilbake på knappen brukeren trykket på. Ellers havner det på `<body>`. [Liste med filtre](../../monster/liste/) gjør det i demoen.
+
 ## Brede tabeller
 
 En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det området må kunne nås med tastatur:
@@ -95,6 +150,7 @@ En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det område
 | --- | --- |
 | `.fs-table` | Selve tabellen. Varianten kommer fra `data-variant`. |
 | `.fs-table-scroll` | Beholderen som lar en bred tabell rulles |
+| `.fs-table__sort` | Knappen i en kolonneoverskrift som kan sorteres. Pila er `::after`. |
 
 | Variabel | Standard |
 | --- | --- |
@@ -132,7 +188,7 @@ Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er �
 </table>
 `} />
 
-Skriften skal du la være. `--font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
+Skriften skal du la være. `--fs-font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
 
 ## Tilgjengelighet
 
@@ -140,3 +196,6 @@ Skriften skal du la være. `--font-size-m` i tabellen er den samme som brødteks
 - Gi tabellen en `<caption>`. Den sier hva tabellen inneholder, og er det første som leses opp.
 - Slå aldri sammen celler for å få et oppsett til å se riktig ut. Sammenslåtte celler gjør navigasjonen uforutsigbar.
 - Skal rader kunne trykkes på, legg lenken i en celle. En hel rad som er klikkbar kan ikke nås med tastatur.
+- `aria-sort` står på `<th>`, ikke på knappen, og bare på den kolonnen tabellen er sortert etter. Kolonner som ikke er sortert, har ikke attributtet.
+- Si i `<caption>` at kolonnene kan sorteres, gjerne med `.fs-sr-only`. Skjermleseren leser opp tittelen når brukeren kommer til tabellen, og ellers er knappene i overskriften det eneste hintet.
+- Skjermlesere leser en endring i `aria-sort` ulikt, og noen ikke i det hele tatt. Skal endringen sies høyt, skriv den i et felt med `role="status"`.

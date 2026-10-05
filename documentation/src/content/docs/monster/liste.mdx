@@ -59,6 +59,42 @@ En tabell med flere enn to kolonner blir bredere enn en telefon. Legg den i rull
 
 `tabindex="0"` er ikke valgfritt. Uten den kommer ingen som navigerer med tastatur til kolonnene utenfor kanten.
 
+### Sortering
+
+Kolonnene «Saksnummer» og «Sendt» i demoen kan sorteres. Knappen i overskriften og pila er [Fristils](../../components/table/#kolonner-som-kan-sorteres), mens rekkefølgen er demoens: den holder kolonnen og retningen, og skriver `aria-sort` på én overskrift. Et klikk henter ingenting på nytt, men tabellen tegnes på nytt, så demoen setter fokus tilbake på knappen.
+
+### Raden under tabellen
+
+Antall treff, hvor mange som vises per side og sidene står gjerne på én rad under tabellen. Raden er oppsett, og oppsettet er ditt:
+
+```html
+<div class="tabellfot">
+  <p class="fs-paragraph">Viser 1 til 10 av 137</p>
+  <div class="tabellfot__antall">
+    <label class="fs-label" for="per-side">Antall per side</label>
+    <select class="fs-select" id="per-side"><option>10</option><option>50</option></select>
+  </div>
+  <nav aria-label="Sider"><ul class="fs-pagination">…</ul></nav>
+</div>
+```
+
+```css
+.tabellfot,
+.tabellfot__antall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fs-spacing-2) var(--fs-spacing-6);
+}
+
+.tabellfot__antall {
+  --fs-select-width: auto;
+  gap: var(--fs-spacing-2);
+}
+```
+
+`--fs-select-width: auto` gjør nedtrekkslista så bred som innholdet. `.fs-label` er en blokk, og raden rundt legger den ved siden av feltet.
+
 Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i en [liste](../../components/list/) ofte bedre enn en tabell på liten skjerm.
 
 ## Feilet, ikke tomt
@@ -78,4 +114,5 @@ La aldri plassholderne bli stående når noe feiler. Da venter brukeren på noe 
 
 - **Henting av data, og hvor lenge du venter før du viser plassholdere.** Under rundt 300 millisekunder er det bedre å vise ingenting enn et glimt av grått.
 - **Sidenavigering eller «vis flere».** [Pagination](../../components/pagination/) gir utseendet; hvilken side du er på hører til adressen.
+- **Selve sorteringen.** Fristil tegner knappen og pila ut fra `aria-sort`. Hvilken kolonne som er sortert, og rekkefølgen radene står i, er appens.
 - **Hva som er en rimelig standardsortering.** Det avhenger av hva lista er.

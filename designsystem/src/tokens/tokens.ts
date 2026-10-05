@@ -31,15 +31,15 @@ export type Container = keyof typeof Containers
  */
 export const cssTokens = {
   // Tekststørrelser
-  "--font-size-reference": "16px",
-  "--font-size-xxs": "0.625rem",
-  "--font-size-xs": "0.75rem",
-  "--font-size-s": "0.875rem",
-  "--font-size-m": "1rem",
-  "--font-size-l": "1.125rem",
-  "--font-size-xl": "1.375rem",
-  "--font-size-xxl": "1.875rem",
-  "--font-size-mega": "2.625rem",
+  "--fs-font-size-reference": "16px",
+  "--fs-font-size-xxs": "0.625rem",
+  "--fs-font-size-xs": "0.75rem",
+  "--fs-font-size-s": "0.875rem",
+  "--fs-font-size-m": "1rem",
+  "--fs-font-size-l": "1.125rem",
+  "--fs-font-size-xl": "1.375rem",
+  "--fs-font-size-xxl": "1.875rem",
+  "--fs-font-size-mega": "2.625rem",
 
   /*
    * Skriftvekter og linjeavstander står her, ikke i hver komponent, fordi en
@@ -47,10 +47,10 @@ export const cssTokens = {
    * annet norsk designsystem har fete knapper med linjeavstand 1,666, våre er
    * halvfete med 1,5, og forskjellen skal settes ett sted.
    */
-  "--font-weight-regular": "400",
-  "--font-weight-medium": "500",
-  "--font-weight-semibold": "600",
-  "--font-weight-bold": "700",
+  "--fs-font-weight-regular": "400",
+  "--fs-font-weight-medium": "500",
+  "--fs-font-weight-semibold": "600",
+  "--fs-font-weight-bold": "700",
 
   /** Kontroller og knapper. */
   "--fs-line-height-default": "1.5",

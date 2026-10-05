@@ -84,6 +84,10 @@ const SIDEN = `
     <ul><li><button type="button">1</button></li><li><button type="button">2</button></li></ul>
   </nav>
 
+  <table class="fs-table">
+    <thead><tr><th scope="col" aria-sort="ascending"><button class="fs-table__sort" type="button">Dato</button></th></tr></thead>
+  </table>
+
   <fieldset class="fs-toggle-group">
     <label class="fs-toggle-group__option">
       <input type="radio" name="visning" /> Kart

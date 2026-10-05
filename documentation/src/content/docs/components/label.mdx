@@ -98,13 +98,22 @@ Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjem
 | --- | --- |
 | `.fs-label` | Ledeteksten. Markeringene legges på med `::after`. |
 
-Markeringen bak `data-required` og `data-optional` er tekst i `::after`, så den kan byttes uten å endre markupen:
+Markeringen bak `data-required` og `data-optional` er tekst i `::after`, og teksten leses fra en variabel. Da kan den byttes, eller oversettes, uten å endre markupen:
+
+| Variabel | Standard |
+| --- | --- |
+| `--fs-label-required-symbol` | `" *"` |
+| `--fs-label-required-text` | `" (påkrevd)"` |
+| `--fs-label-optional-text` | `" (valgfri)"` |
 
 ```css
-.fs-label[data-optional]::after {
-	content: " (kan stå tomt)";
+:root:lang(en) {
+	--fs-label-required-text: " (required)";
+	--fs-label-optional-text: " (optional)";
 }
 ```
+
+Variablene gjelder også `.fs-legend` i [Fieldset](../fieldset/). Se [Oversettelse](../../oversettelse/).
 
 Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
 

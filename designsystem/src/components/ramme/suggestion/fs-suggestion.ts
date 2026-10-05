@@ -1,10 +1,12 @@
 import { LABEL_CLASS } from "../../css/label/label.js"
+import { DEFAULT_TEXTS } from "../../default-texts.js"
 import {
   addClass,
   defineElement,
   derivedParts,
   HostElement,
   isServerControlled,
+  languageOf,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
@@ -17,6 +19,20 @@ import {
   SUGGESTION_LIST_CLASS,
   SUGGESTION_OPTION_CLASS,
 } from "./suggestion.js"
+
+/**
+ * Tekstene for antall treff, ett attributt per form. `count-none` er null
+ * treff, og resten er formene `Intl.PluralRules` kjenner.
+ */
+const COUNT_ATTRIBUTES = [
+  "count-none",
+  "count-zero",
+  "count-one",
+  "count-two",
+  "count-few",
+  "count-many",
+  "count-other",
+] as const
 
 export const FS_SUGGESTION_TAG = "fs-suggestion" as const
 
@@ -67,7 +83,11 @@ const OPTION_SELECTOR = `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([ro
  * ```
  */
 export class FsSuggestion extends HostElement {
-  static observedAttributes = ["prefiltered", SERVER_CONTROLLED] as const
+  static observedAttributes = [
+    "prefiltered",
+    SERVER_CONTROLLED,
+    ...COUNT_ATTRIBUTES,
+  ] as const
 
   private observer?: MutationObserver
   private control?: HTMLInputElement
@@ -632,10 +652,34 @@ export class FsSuggestion extends HostElement {
     const status = this.querySelector<HTMLElement>("[role='status']")
     if (!status) return
 
-    const text =
-      hits === 0 ? "Ingen treff" : hits === 1 ? "Ett treff" : `${hits} treff`
+    setText(status, this.countText(hits))
+  }
 
-    setText(status, text)
+  /**
+   * Teksten for et antall, på sidens språk.
+   *
+   * `count-none` gjelder null treff, siden «Ingen treff» er en egen setning
+   * og ikke en bøyning. Ellers velger `Intl.PluralRules` formen språket
+   * krever, og `count-<form>` gir teksten, med `{n}` for tallet. Mangler
+   * formen, gjelder `count-other`. Mangler den også, er teksten norsk.
+   */
+  private countText(hits: number): string {
+    const lang = languageOf(this)
+    const written = (name: string) => this.getAttribute(name)
+    const form = new Intl.PluralRules(lang).select(hits)
+    const template =
+      (hits === 0 ? written("count-none") : null) ??
+      written(`count-${form}`) ??
+      written("count-other")
+    const number = new Intl.NumberFormat(lang).format(hits)
+    if (template !== null) return template.replaceAll("{n}", number)
+    const fallback =
+      hits === 0
+        ? DEFAULT_TEXTS.suggestionNone
+        : hits === 1
+          ? DEFAULT_TEXTS.suggestionOne
+          : DEFAULT_TEXTS.suggestionOther
+    return fallback.replaceAll("{n}", number)
   }
 
   private markActive(index: number): void {

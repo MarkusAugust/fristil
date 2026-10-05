@@ -3,6 +3,10 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## Ikke utgitt
+
+- Nytt ikon: det nye Fristil-merket, en F i to lag.
+
 ## 0.7.0
 
 I takt med pakkens 0.28.0.

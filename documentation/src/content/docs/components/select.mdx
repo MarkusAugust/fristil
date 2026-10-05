@@ -120,11 +120,17 @@ fs.select({ picker: "styled" })
 
 | Variabel | Standard | Gjelder |
 | --- | --- | --- |
+| `--fs-select-width` | `100%` | Bredden på feltet |
+| `--fs-select-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` | Luften i feltet |
 | `--fs-select-radius` | `var(--fs-spacing-1)` | Feltet, og listen som tegnes i siden |
 | `--fs-select-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` | Ett valg i listen som tegnes i siden |
 | `--fs-select-viewport-margin` | `var(--fs-spacing-2)` | Luft mellom listen og kanten av vinduet |
 
 Pilen er to gradienter i bakgrunnen, tegnet i `--fs-color-neutral-text-subtle`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
+
+I standardutseendet står plassen til pilen ved enden av feltet fast, siden pilen er tegnet et fast stykke fra kanten, og `--fs-select-padding` gjelder de tre andre sidene. Med `data-picker="styled"` tar pilen sin egen plass, og variabelen gjelder alle fire.
+
+Et kompakt felt, som «Antall per side», blir så bredt som innholdet med `--fs-select-width: auto`. Skal ledeteksten stå ved siden av feltet, er det oppsettet rundt dem som avgjør det, ikke Fristil. `.fs-label` er en blokk, og en rad med `display: flex` rundt de to legger dem på linje.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 

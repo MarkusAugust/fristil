@@ -16,7 +16,7 @@
       --fs-connection-status-padding,
       var(--fs-spacing-2) var(--fs-spacing-4)
     );
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
     line-height: var(--fs-line-height-compact);
     text-align: center;
     color: var(--fs-color-danger-text);

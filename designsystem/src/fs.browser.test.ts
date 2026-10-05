@@ -283,15 +283,17 @@ describe("fs.field sammen med feltfunksjonene", () => {
  * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
  * ikke i det hele tatt.
  */
-const ANTALL_BYGGEFUNKSJONER = 44
+const ANTALL_BYGGEFUNKSJONER = 45
 
-/** De sju som gir attributter per del framfor ett flatt sett. */
+/** De som gir attributter per del framfor ett flatt sett. */
 const SAMMENSATTE_NAVN = [
   "dialog",
   "errorSummary",
   "field",
   "popover",
+  "sessionTimeout",
   "suggestion",
+  "tableSort",
   "tabs",
   "toast",
 ]
@@ -371,7 +373,9 @@ describe("attributter bare morferen leser", () => {
       errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
       field: () => fs.field({ id: "epost", help: true, error: true }),
       popover: () => fs.popover({ id: "panel" }),
+      sessionTimeout: () => fs.sessionTimeout({ titleId: "okt" }),
       suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
+      tableSort: () => fs.tableSort({ direction: "ascending" }),
       tabs: () => fs.tabs({ id: "faner", count: 2 }),
       toast: () => fs.toast(),
     },

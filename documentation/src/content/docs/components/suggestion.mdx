@@ -261,6 +261,23 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 
 `prefiltered` handler om hva som vises. Skal serveren i tillegg eie om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
 
+## Antall treff på andre språk
+
+Komponenten leser opp «Ingen treff», «Ett treff» og `{n} treff` når ingenting annet er sagt. Teksten byttes med attributter på `<fs-suggestion>`, der `{n}` står for antallet:
+
+```html
+<fs-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
+```
+
+| Attributt | Gjelder |
+| --- | --- |
+| `count-none` | Null treff. En egen setning, ikke en bøyning |
+| `count-one` | Formen `one`. Skriv `{n}` i teksten: på fransk gjelder formen også 0, og på russisk også 21 |
+| `count-other` | Alle andre antall, og reserven når en form mangler. Setter du noen av attributtene, må denne stå, ellers leses antall som mangler en form, opp på norsk |
+| `count-zero`, `count-two`, `count-few`, `count-many` | Formene noen språk har i tillegg, som polsk `few` og `many` |
+
+Hvilken form et antall har, avgjøres av `Intl.PluralRules` etter `lang` på siden. Se [Oversettelse](/oversettelse/).
+
 ## Før komponenten er registrert
 
 `fs.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `fs-suggestion:not(:defined) .fs-suggestion__list` i `suggestion.css` den skjult til `defineFsSuggestion()` har kjørt.

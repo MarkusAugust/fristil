@@ -9,7 +9,7 @@
     padding: 0;
     list-style: none;
     font-family: inherit;
-    font-size: var(--font-size-s);
+    font-size: var(--fs-font-size-s);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-subtle);
   }
@@ -47,7 +47,7 @@
 
   .fs-breadcrumbs [aria-current="page"] {
     color: var(--fs-color-neutral-text-strong);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--fs-font-weight-semibold);
     text-decoration: none;
   }
 }

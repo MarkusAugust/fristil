@@ -6,7 +6,7 @@
     gap: var(--fs-spacing-1);
     padding: var(--fs-alert-padding, var(--fs-spacing-3) var(--fs-spacing-4));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-neutral-text-strong);
     background: var(--fs-color-neutral-surface);
@@ -19,8 +19,8 @@
 
   .fs-alert__title {
     margin: 0;
-    font-size: var(--font-size-m);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--fs-font-size-m);
+    font-weight: var(--fs-font-weight-semibold);
     line-height: var(--fs-line-height-default);
   }
 

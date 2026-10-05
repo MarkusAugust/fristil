@@ -81,3 +81,31 @@ describe("fs-label tilgjengelighet", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 })
+
+describe("teksten i markeringen kan byttes ut", () => {
+  it("er norsk når variablene ikke er satt", () => {
+    monter(`
+      <label id="krav" class="fs-label" data-required="text">Navn</label>
+      <label id="valg" class="fs-label" data-optional>Mellomnavn</label>
+    `)
+
+    expect(css("krav", "::after").content).toBe('" (påkrevd)"')
+    expect(css("valg", "::after").content).toBe('" (valgfri)"')
+  })
+
+  it("leser teksten fra variablene, så den kan oversettes", () => {
+    // En pakke kan ikke sende med alle språk, så teksten hører til appen.
+    // `:lang(en)` er én måte, en variabel satt fra i18next en annen.
+    monter(`
+      <div style="--fs-label-required-text: ' (required)'; --fs-label-optional-text: ' (optional)'; --fs-label-required-symbol: ' †'">
+        <label id="krav" class="fs-label" data-required="text">Name</label>
+        <label id="valg" class="fs-label" data-optional>Middle name</label>
+        <label id="tegn" class="fs-label" data-required>Email</label>
+      </div>
+    `)
+
+    expect(css("krav", "::after").content).toBe('" (required)"')
+    expect(css("valg", "::after").content).toBe('" (optional)"')
+    expect(css("tegn", "::after").content).toBe('" †"')
+  })
+})

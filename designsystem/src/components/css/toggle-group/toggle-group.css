@@ -20,7 +20,7 @@
     min-block-size: var(--fs-toggle-group-height, var(--fs-spacing-10));
     padding: var(--fs-toggle-group-padding, 0 var(--fs-spacing-4));
     font-family: inherit;
-    font-size: var(--font-size-m);
+    font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-default);
     color: var(--fs-color-accent-text);
     background: var(--fs-color-neutral-canvas);
@@ -58,7 +58,7 @@
   .fs-toggle-group__option:has(input:checked) {
     color: var(--fs-color-accent-content);
     background: var(--fs-color-accent-fill);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--fs-font-weight-semibold);
   }
 
   .fs-toggle-group__option:has(input:disabled) {

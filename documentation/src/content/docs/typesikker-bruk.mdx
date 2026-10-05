@@ -137,7 +137,7 @@ Da får attributtene autofullføring og sjekk:
 ```tsx
 <fs-field required-marker="text" />      // ok
 <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-<fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 ```
 

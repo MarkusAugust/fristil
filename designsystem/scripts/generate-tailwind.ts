@@ -73,7 +73,7 @@ linjer.push(
   "",
   "  /* Tekststørrelser */",
   ...["xxs", "xs", "s", "m", "l", "xl", "xxl", "mega"].map(
-    (navn) => `  --text-fs-${navn}: var(--font-size-${navn});`,
+    (navn) => `  --text-fs-${navn}: var(--fs-font-size-${navn});`,
   ),
   "",
   "  /* Bredder for sideoppsett */",

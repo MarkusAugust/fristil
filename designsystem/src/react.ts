@@ -33,13 +33,12 @@ import { skipLink } from "./components/css/skip-link/skip-link.js"
 import { spinner } from "./components/css/spinner/spinner.js"
 import { srOnly } from "./components/css/sr-only/sr-only.js"
 import { switchControl } from "./components/css/switch/switch.js"
-import { table } from "./components/css/table/table.js"
+import { table, tableSort } from "./components/css/table/table.js"
 import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
 import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
-import { sessionTimeout } from "./components/frittstaende/session-timeout/session-timeout.js"
 import { toast } from "./components/frittstaende/toast/toast.js"
 import { dialog } from "./components/ramme/dialog/dialog.js"
 import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
@@ -49,6 +48,7 @@ import {
   type FieldOptions,
 } from "./components/ramme/field/field-core.js"
 import { popover } from "./components/ramme/popover/popover.js"
+import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
 import { suggestion } from "./components/ramme/suggestion/suggestion.js"
 import { tabs } from "./components/ramme/tabs/tabs.js"
 import { setAttributes } from "./dom.js"
@@ -192,6 +192,16 @@ export const fs = {
   toggleGroup: forReact(toggleGroup),
   tooltip: forReact(tooltip),
   table: forReact(table),
+  tableSort: Object.assign(
+    (options?: Parameters<typeof tableSort>[0]) => {
+      const built = tableSort(options)
+      return {
+        header: built.header,
+        button: toReactAttributes(built.button),
+      }
+    },
+    { isDirection: tableSort.isDirection },
+  ),
   tag: forReact(tag),
   textarea: forReact(textarea),
 
@@ -288,7 +298,29 @@ export const fs = {
     }
   },
 
-  sessionTimeout: forReact(sessionTimeout),
+  sessionTimeout: Object.assign(
+    (options: Parameters<typeof sessionTimeout>[0]) => {
+      const built = sessionTimeout(options)
+      return {
+        host: toReactAttributes(built.host),
+        dialog: toReactAttributes(built.dialog),
+        title: toReactAttributes(built.title),
+        text: toReactAttributes(built.text),
+        count: toReactAttributes(built.count),
+        live: toReactAttributes(built.live),
+        actions: toReactAttributes(built.actions),
+        extend: toReactAttributes(built.extend),
+        logout: toReactAttributes(built.logout),
+      }
+    },
+    {
+      dialog: sessionTimeout.dialog,
+      title: sessionTimeout.title,
+      text: sessionTimeout.text,
+      count: sessionTimeout.count,
+      actions: sessionTimeout.actions,
+    },
+  ),
   connectionStatus: forReact(connectionStatus),
 
   setAttributes,

@@ -161,6 +161,19 @@ const temaEksempel = (oppskrift: Oppskrift) =>
 </div>
 \`\`\``
 
+const grenseEksempel = (oppskrift: Oppskrift) =>
+  oppskrift.navn === "react"
+    ? `\`\`\`tsx
+<div data-fs-boundary data-theme="light">
+  <button {...fs.button()}>Lagre</button>
+</div>
+\`\`\``
+    : `\`\`\`html
+<div data-fs-boundary data-theme="light">
+  <button class="fs-button">Lagre</button>
+</div>
+\`\`\``
+
 /*
  * Velgeren skrives i regelbokas eget språk, av samme grunn som temaEksempel.
  *
@@ -201,6 +214,27 @@ du ikke eier, setter du attributtet på komponentens eget rotelement:
 ${temaEksempel(oppskrift)}
 
 Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
+
+**Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
+\`button { background: none; border: none }\` eller en normalize, og de slår
+\`@layer fristil\`. Sett da \`data-fs-boundary\` på det samme rotelementet:
+
+${grenseEksempel(oppskrift)}
+
+Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
+spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i \`fristil.css\` og i
+\`@fristil/designsystem/boundary.css\`. Skrift og annet som arves kommer
+fortsatt fra verten, og \`--fs-*\`-variablene virker. Tre ting følger av den:
+
+- Egen CSS inne i grensen skal ligge i et lag etter \`fristil\`. CSS uten lag
+  forsvinner der på samme måte som vertens.
+- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten
+  har erklært før \`fristil\`, som Tailwinds Preflight i \`base\`, gjelder
+  fortsatt der Fristil ikke setter noe.
+- Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
+  spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
+  alltid. Det samme gjør \`!important\` og lag verten har erklært etter
+  \`fristil\`.
 
 Fristil setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
@@ -282,8 +316,12 @@ const STILER_MANGLER: [string, string] = [
   "`tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe",
 ]
 const INGEN_DEFINE: [string, string] = [
-  "En `<fs-toast>`, `<fs-session-timeout>` eller `<fs-connection-status>` viser ingenting, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. De tre lager innholdet sitt selv og er tomme uten den. Markupen i de andre er din og står der uansett",
+  "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
+  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett",
+]
+const NORSK_TEKST: [string, string] = [
+  "En komponent snakker norsk på en side på et annet språk",
+  "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/",
 ]
 const ALLTID_UGYLDIG: [string, string] = [
   "Feltet er alltid ugyldig",
@@ -409,6 +447,7 @@ ${SJEKK_I_TESTER}`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],
@@ -535,6 +574,7 @@ pakken uten noen utvidelse.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       SERVERRENDERING,
       TYPESCRIPT_I_SKRIPT,
@@ -665,7 +705,13 @@ fanger \`fs-buton\`, \`data-variant="secundary"\`, \`<fs-modal>\` og
 markupen din er en streng for kompilatoren.
 
 ${SJEKK_I_TESTER}`,
-    fallgruver: [STILER_MANGLER, INGEN_DEFINE, ALLTID_UGYLDIG, SERVERRENDERING],
+    fallgruver: [
+      STILER_MANGLER,
+      INGEN_DEFINE,
+      NORSK_TEKST,
+      ALLTID_UGYLDIG,
+      SERVERRENDERING,
+    ],
   },
   {
     navn: "react",
@@ -809,7 +855,7 @@ det hele tatt, og du får \`Property 'fs-field' does not exist on type
 
 \`\`\`tsx
 <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
-<fs-session-timeout warnAt={1500} />     // feil: attributtet heter warn-at
+<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 \`\`\`
 
@@ -820,6 +866,7 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       SERVERRENDERING,
       [
@@ -944,6 +991,7 @@ vanlige web components, og trenger verken en Astro-integrasjon eller et
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       [
         "Komponenten gjør ingenting, og ingenting sier fra",
@@ -1068,6 +1116,7 @@ nettleseren.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
+      NORSK_TEKST,
       ALLTID_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],

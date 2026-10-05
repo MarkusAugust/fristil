@@ -1,3 +1,4 @@
+import { DEFAULT_TEXTS } from "../../default-texts.js"
 import { defineElement, HostElement, whenUpgraded } from "../../host-element.js"
 import { TOAST_CLASS, TOAST_CLOSE_CLASS, TOAST_MESSAGE_CLASS } from "./toast.js"
 
@@ -11,14 +12,18 @@ export function isToastColor(value: unknown): value is ToastColor {
 }
 
 const DEFAULT_DURATION = 6000
-const DEFAULT_LABEL = "Varsler"
+const DEFAULT_LABEL = DEFAULT_TEXTS.toastRegion
+const DEFAULT_CLOSE_LABEL = DEFAULT_TEXTS.toastClose
 
 export type ShowOptions = {
   /** Hva meldingen betyr. Standard: `neutral`. */
   color?: ToastColor
   /** Millisekunder før meldingen forsvinner. `0` lar den bli stående. */
   duration?: number
-  /** Tekst på lukkeknappen. Standard: «Lukk melding». */
+  /**
+   * Hva lukkeknappen heter for skjermleseren. Standard: `close-label` på
+   * verten, og ellers «Lukk melding».
+   */
   closeLabel?: string
 }
 
@@ -54,7 +59,19 @@ export type ShowOptions = {
  * ```
  */
 export class FsToast extends HostElement {
-  static observedAttributes = ["duration", "label"] as const
+  static observedAttributes = ["duration", "label", "close-label"] as const
+
+  /**
+   * Hva lukkeknappen heter for skjermleseren, i hver melding som vises.
+   * `closeLabel` i `show()` overstyrer den for én melding.
+   */
+  get closeLabel(): string {
+    return this.getAttribute("close-label") || DEFAULT_CLOSE_LABEL
+  }
+
+  set closeLabel(value: string) {
+    this.setAttribute("close-label", value)
+  }
 
   /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
   get duration(): number {
@@ -105,7 +122,7 @@ export class FsToast extends HostElement {
     const {
       color = "neutral",
       duration = this.duration,
-      closeLabel = "Lukk melding",
+      closeLabel = this.closeLabel,
     } = options
 
     const toast = document.createElement("div")
