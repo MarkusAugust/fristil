@@ -136,6 +136,7 @@ export default defineConfig({
             { label: "Editoren", slug: "editoren" },
             { label: "Kodeagenter", slug: "kodeagenter" },
             { label: "Lisens og pris", slug: "lisens" },
+            { label: "Versjonslogg", link: "/versjonslogg/" },
           ],
         },
         {

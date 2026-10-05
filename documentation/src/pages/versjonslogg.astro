@@ -1,0 +1,55 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark"
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro"
+import logg from "../../../designsystem/CHANGELOG.md?raw"
+import { rehypeTabellrull } from "../plugins/rehype-tabellrull.mjs"
+
+/*
+ * Versjonsloggen rendres fra `designsystem/CHANGELOG.md`, som er den ene
+ * kilden. Fila hentes med `?raw` og ikke med `readFileSync`: en sti
+ * regnet fra `import.meta.url` peker feil etter at bygget har bundlet siden.
+ * Overskriften i fila byttes ut med sidens egen tittel, ellers står
+ * det to `<h1>` på siden. «Ikke utgitt» står i fila hele tiden, også tom
+ * rett etter en utgivelse, og tas bare med når det står noe under den.
+ */
+const kilde = logg
+  .replace(/^# .*\n/, "")
+  .replace(/^## Ikke utgitt\s*\n(?=## )/m, "")
+
+/*
+ * Siden går utenom Starlights egen markdown, så det sidene ellers får må
+ * oppgis her. GFM er på fra før. Tabellrullen er med, slik at en tabell i
+ * loggen ruller som på de andre sidene. Fargelegging er av: uten Expressive
+ * Code ville Shiki skrevet en mørk kodeblokk med inline farger også i lyst
+ * tema, mens en bar `<pre>` får Starlights egne farger i begge.
+ */
+const markdown = await createMarkdownProcessor({
+  rehypePlugins: [rehypeTabellrull],
+  syntaxHighlight: false,
+})
+const { code, metadata } = await markdown.render(kilde)
+const overskrifter = metadata.headings.filter((h) => h.depth === 2)
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Versjonslogg",
+    description: "Hva som er endret i hver versjon av @fristil/designsystem.",
+  }}
+  headings={overskrifter}
+>
+  <Fragment set:html={code} />
+</StarlightPage>
+
+<style>
+  /*
+   * Uten Expressive Code ruller ikke kodeblokkene, og en linje i loggen er
+   * bredere enn 375 piksler. Linjene brekkes framfor at blokken ruller: et
+   * rullefelt måtte hatt `tabindex` for å nås med tastaturet. Ord deles bare
+   * når de alene er for lange.
+   */
+  :global(.sl-markdown-content pre) {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+</style>

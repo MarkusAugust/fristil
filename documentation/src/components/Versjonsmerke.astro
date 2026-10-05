@@ -1,0 +1,49 @@
+---
+import pakke from "../../../designsystem/package.json" with { type: "json" }
+
+/*
+ * Versjonen leses av pakken når siden bygges, slik at merket følger
+ * `prepare-version` uten at noen husker det. Merket står ved siden av
+ * logolenken og ikke inni den: en lenke i en lenke er ugyldig HTML.
+ * Navnet begynner med den synlige teksten, så en som styrer med stemmen
+ * og sier «v0.30.0», treffer lenken.
+ */
+const { version } = pakke
+---
+
+<a
+  href="/versjonslogg/"
+  class="versjonsmerke"
+  aria-label={`v${version}, versjonslogg`}
+  translate="no"
+>v{version}</a>
+
+<style>
+  .versjonsmerke {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 999px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.75;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 150ms, border-color 150ms;
+  }
+
+  .versjonsmerke:hover {
+    opacity: 1;
+    border-color: rgb(148 163 184 / 0.7);
+  }
+
+  .versjonsmerke:focus-visible {
+    opacity: 1;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>
