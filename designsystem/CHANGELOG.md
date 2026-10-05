@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.30.0 (2026-10-05)
+
 ### Nytt
 
 - **Kolonner som kan sorteres i `.fs-table`.** `.fs-table__sort` er knappen
