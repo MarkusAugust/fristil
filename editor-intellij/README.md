@@ -37,8 +37,14 @@ streng, blir fragmentet et ekte `PsiFile` med HTML-språk, og bidragsyteren
 kalles for det. Den samme linja dekker derfor `.html`-filer og merkede
 strenger, uten en registrering per vertsspråk.
 
-Testene dekker `.html` og Kotlin. En merket TypeScript-streng skal virke av
-den samme grunnen, men det er ikke etterprøvd.
+Testene dekker `.html` og Kotlin. En merket TypeScript-streng virker av den
+samme grunnen, og begge er etterprøvd for hånd i IntelliJ IDEA Ultimate
+2026.2.3.
+
+Skal du etterprøve for hånd, må Kotlin-fila ligge i en modul. En løs `.kt`-fil
+i en mappe IntelliJ har åpnet uten modul får ingen injeksjon, og fullføringen
+svarer «No suggestions» selv med pluginen på. `⌥↩` inne i strengen viser
+*Edit HTML Fragment* når injeksjonen er aktiv.
 
 ## Dataene
 
@@ -70,6 +76,19 @@ par minutter. Senere kjøringer tar sekunder.
 
 Pluginen havner i `build/distributions/` som en zip du kan installere med
 `Settings → Plugins → ⚙ → Install Plugin from Disk`.
+
+## Utgivelse
+
+Pluginen ligger på [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/34764-fristil)
+med ID-en `no.fristil`. Tre ting er verdt å vite:
+
+- **ID-en kan aldri endres** etter første opplasting.
+- **Beskrivelsen i `plugin.xml` og `changeNotes` i `build.gradle.kts` er på
+  engelsk.** Marketplace krever engelsk som hovedspråk.
+- **En ny versjon** får nytt nummer i `pluginVersion` i `gradle.properties` og
+  en linje i `changeNotes`, bygges med `./gradlew buildPlugin` og lastes opp
+  under *Upload Update* på sida til pluginen. JetBrains godkjenner hver
+  versjon før den blir synlig.
 
 ## Hvorfor den ikke er i `bun run sjekk`
 
