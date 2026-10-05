@@ -179,6 +179,24 @@ const cases: Case[] = [
     severity: "warning",
   },
   {
+    name: "et varsel om økten uten dialog, slik det ble skrevet før",
+    html: `<fs-session-timeout warn-at="1500"></fs-session-timeout>`,
+    count: 1,
+    mentions: ["fant ingen <dialog>", "uten advarsel"],
+    severity: "warning",
+    covers: "fs-session-timeout",
+  },
+  {
+    name: "et varsel om økten med dialog",
+    html: `<fs-session-timeout><dialog><h2>Snart ute</h2></dialog></fs-session-timeout>`,
+    count: 0,
+  },
+  {
+    name: "et varsel om økten der dialogen står i en partial",
+    html: `<fs-session-timeout>{{ template "okt" . }}</fs-session-timeout>`,
+    count: 0,
+  },
+  {
     name: "et tomt felt er et område serveren ikke har fylt",
     html: `<fs-field id="senere"></fs-field>`,
     count: 0,

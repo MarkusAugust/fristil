@@ -9,7 +9,7 @@
   }
 
   .fs-label[data-required]::after {
-    content: " *";
+    content: var(--fs-label-required-symbol, " *");
     color: var(--fs-color-danger-text);
     font-weight: var(--font-weight-bold);
   }
@@ -17,7 +17,7 @@
   .fs-label[data-required="text"]::after {
     /* `\e5` er å. Skrevet rett ut ble det «pÃ¥krevd» når siden manglet
        `<meta charset>` og tjeneren ikke sendte tegnsettet. */
-    content: " (p\e5 krevd)";
+    content: var(--fs-label-required-text, " (p\e5 krevd)");
     color: var(--fs-color-danger-text);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);
@@ -27,7 +27,7 @@
      og håndskrevet markup med begge skal gi det samme. Fargen er ikke
      `disabled-text`: teksten er ikke deaktivert, og den hadde 4,37:1. */
   .fs-label[data-optional]:not([data-required])::after {
-    content: " (valgfri)";
+    content: var(--fs-label-optional-text, " (valgfri)");
     color: var(--fs-color-neutral-text-subtle);
     font-weight: var(--font-weight-regular);
     font-size: var(--font-size-xs);

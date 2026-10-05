@@ -11,7 +11,20 @@ import Preview from "./Preview.astro"
 		class="fs-session-timeout"
 		warn-at="5"
 		expires-at="65"
-		data-ignore-morph></fs-session-timeout>
+		data-ignore-morph>
+		<dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="demo-okt-tittel">
+			<h2 class="fs-session-timeout__title" id="demo-okt-tittel">Du blir snart logget ut</h2>
+			<p class="fs-session-timeout__text">
+				Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
+				for å beskytte opplysningene dine.
+			</p>
+			<span class="fs-sr-only" role="status"></span>
+			<form method="dialog" class="fs-session-timeout__actions">
+				<button class="fs-button" value="extend">Fortsett å være innlogget</button>
+				<button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+			</form>
+		</dialog>
+	</fs-session-timeout>
 </Preview>
 
 <script>

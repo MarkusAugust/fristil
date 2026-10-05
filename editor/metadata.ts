@@ -201,6 +201,25 @@ export const elements: readonly ElementDoc[] = [
       prefiltered: flag(
         "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet».",
       ),
+      "count-none": text(
+        "Opplesningen ved null treff. Standard er «Ingen treff».",
+      ),
+      "count-zero": text(
+        "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet.",
+      ),
+      "count-one": text("Opplesningen for ett treff. `{n}` er tallet."),
+      "count-two": text(
+        "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet.",
+      ),
+      "count-few": text(
+        "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet.",
+      ),
+      "count-many": text(
+        "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet.",
+      ),
+      "count-other": text(
+        "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet.",
+      ),
       "server-controlled": serverControlled,
     },
   ),
@@ -226,13 +245,16 @@ export const elements: readonly ElementDoc[] = [
         "Millisekunder før en melding forsvinner. Standard er 6000, og 0 lar meldingene stå.",
       ),
       label: text("Tekst som sier hva regionen er for skjermlesere."),
+      "close-label": text(
+        "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding».",
+      ),
     },
   ),
 
   element<typeof FsSessionTimeout>(
     FS_SESSION_TIMEOUT_TAG,
     "session-timeout",
-    "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
+    'Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method="dialog">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.',
     {
       "warn-at": number("Sekunder uten aktivitet før varselet kommer."),
       "expires-at": number("Sekunder uten aktivitet før økten er ute."),

@@ -235,6 +235,7 @@ Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributte
 | --- | --- |
 | `duration` | Standard levetid i millisekunder. `0` lar meldingene bli stående. |
 | `label` | Tekst som sier hva regionen er. Blir `aria-label`. Standard: «Varsler» |
+| `close-label` | Hva lukkeknappen i hver melding heter for skjermleseren. Standard: «Lukk melding». `fs.toast({ closeLabel })` skriver det |
 | `show(tekst, valg)` | Viser en melding og returnerer elementet |
 | `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
 | `clear()` | Fjerner alle, uten å sende noe |
@@ -247,7 +248,9 @@ Valgene til `show()`:
 | --- | --- | --- |
 | `color` | `neutral` | `success`, `warning` eller `danger` gir en farget kant |
 | `duration` | fra elementet | Millisekunder før meldingen forsvinner |
-| `closeLabel` | `Lukk melding` | Tekst på lukkeknappen |
+| `closeLabel` | fra `close-label` | Hva lukkeknappen heter for skjermleseren, for denne ene meldingen |
+
+Begge tekstene kan oversettes. Se [Oversettelse](/oversettelse/).
 
 ## Meldinger som forsvinner
 

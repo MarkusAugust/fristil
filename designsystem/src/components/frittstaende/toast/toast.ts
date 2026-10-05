@@ -1,4 +1,5 @@
 import { attributes } from "../../css/shared.js"
+import { DEFAULT_TEXTS } from "../../default-texts.js"
 
 /**
  * Klassen på verten, altså regionen meldingene ligger i.
@@ -14,6 +15,11 @@ export const TOAST_CLOSE_CLASS = "fs-toast__close" as const
 export type ToastOptions = {
   /** Tekst som sier hva regionen er. Blir `aria-label`. */
   label?: string
+  /**
+   * Hva lukkeknappen i hver melding heter for skjermleseren. Standard:
+   * «Lukk melding». `closeLabel` i `show()` overstyrer den for én melding.
+   */
+  closeLabel?: string
 }
 
 export type ToastAttributes = {
@@ -23,6 +29,7 @@ export type ToastAttributes = {
     "aria-live": "polite"
     "aria-atomic": "false"
     "aria-label": string
+    "close-label"?: string
     "data-ignore-morph": ""
   }
   message: { class: typeof TOAST_MESSAGE_CLASS }
@@ -42,7 +49,8 @@ export type ToastAttributes = {
  * siden morfingen leser det fra serverens node.
  */
 export const toast = ({
-  label = "Varsler",
+  label = DEFAULT_TEXTS.toastRegion,
+  closeLabel,
 }: ToastOptions = {}): ToastAttributes => ({
   host: attributes({
     class: TOAST_CLASS,
@@ -52,6 +60,7 @@ export const toast = ({
     // nytt for hver melding som kommer til.
     "aria-atomic": "false" as const,
     "aria-label": label,
+    "close-label": closeLabel,
     "data-ignore-morph": "" as const,
   }),
   message: attributes({ class: TOAST_MESSAGE_CLASS }),

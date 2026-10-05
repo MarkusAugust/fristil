@@ -571,6 +571,36 @@ function checkField(
 }
 
 /*
+ * Det `<fs-session-timeout>` selv sier fra om i nettleseren, med den samme
+ * teksten: varselet er en dialog den som rendrer skriver, og uten den kommer
+ * det ingen advarsel. Et tomt element meldes her, i motsetning til i
+ * nettleseren, der det kan være et område som ikke er fylt ennå: i en fil er
+ * et tomt `<fs-session-timeout>` den gamle bruken. Et element med mal i
+ * meldes ikke, siden dialogen kan stå i en partial.
+ */
+function checkSessionTimeout(
+  tag: string,
+  nameStart: number,
+  nameEnd: number,
+  content: string,
+  link: string,
+): Finding[] {
+  if (isTemplatedContent(content)) return []
+  if (/<dialog(?=[\s/>])/i.test(content)) return []
+  return [
+    {
+      start: nameStart,
+      end: nameEnd,
+      link,
+      severity: "warning",
+      message:
+        `<${tag}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ` +
+        "ut uten advarsel.",
+    },
+  ]
+}
+
+/*
  * Klassene og det de tar. Kjøres over hver tagg, ikke bare `<fs-…>`: en
  * `fs-button` står på en `<button>`. Et klassenavn som begynner på `fs-` og
  * ikke finnes, meldes med det nærmeste kjente som forslag. Har taggen en
@@ -715,6 +745,16 @@ export function diagnose(
     for (const attribute of attributes) {
       const finding = checkAttribute(tag, element, attribute, templatedTag)
       if (finding) findings.push(finding)
+    }
+
+    if (tag === "fs-session-timeout") {
+      const closer = /<\/fs-session-timeout\b/gi
+      closer.lastIndex = end
+      const close = closer.exec(source)?.index ?? -1
+      const content = source.slice(end + 1, close < 0 ? source.length : close)
+      findings.push(
+        ...checkSessionTimeout(tag, nameStart, nameEnd, content, element.link),
+      )
     }
 
     if (tag === "fs-field") {

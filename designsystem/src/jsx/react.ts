@@ -110,6 +110,20 @@ type FsSuggestionAttributes = Host & {
    * Antall treff leses opp uansett hvem som filtrerte.
    */
   prefiltered?: Flag
+  /** Opplesningen ved null treff, som «Ingen treff». */
+  "count-none"?: string
+  /** Opplesningen i formen `Intl.PluralRules` kaller `zero`. `{n}` er tallet. */
+  "count-zero"?: string
+  /** Opplesningen for ett treff, som «{n} treff». `{n}` er tallet. */
+  "count-one"?: string
+  /** Opplesningen i formen `two`. `{n}` er tallet. */
+  "count-two"?: string
+  /** Opplesningen i formen `few`. `{n}` er tallet. */
+  "count-few"?: string
+  /** Opplesningen i formen `many`. `{n}` er tallet. */
+  "count-many"?: string
+  /** Opplesningen for alle andre antall, og reserven. `{n}` er tallet. */
+  "count-other"?: string
 } & ServerControlled
 
 type FsDialogAttributes = Host &
@@ -144,6 +158,8 @@ type FsToastAttributes = Host & {
   duration?: number
   /** Tekst som sier hva regionen er. */
   label?: string
+  /** Hva lukkeknappen i hver melding heter for skjermleseren. */
+  "close-label"?: string
 }
 
 declare module "react" {

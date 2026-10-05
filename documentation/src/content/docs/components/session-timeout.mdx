@@ -1,12 +1,14 @@
 ---
 title: Session Timeout
-description: Varsler før en innlogget økt går ut, og teller ned. Frittstående komponent.
+description: Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SessionTimeoutDemo from "../../../components/SessionTimeoutDemo.astro"
 
 Dette er tingen hver store organisasjon bygger selv, og gjør feil. Enten kommer det ingen advarsel, og brukeren mister et halvutfylt søknadsskjema. Eller dialogen stjeler fokus midt i en setning. Eller skjermleseren leser nedtellingen hvert eneste sekund.
+
+Du skriver dialogen og teksten selv, på språket appen bruker. Komponenten teller aktivitet, åpner dialogen, fyller inn tallet og leser opp nedtellingen.
 
 ```ts
 // main.ts, kjøres én gang når appen starter
@@ -27,18 +29,31 @@ defineFsSessionTimeout()
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/session-timeout/session-timeout.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/session-timeout/session-timeout.css">
     <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
     ```
 
     ```html
     <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                        data-ignore-morph></fs-session-timeout>
+                        data-ignore-morph>
+      <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
+        <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
+        <p class="fs-session-timeout__text">
+          Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
+          for å beskytte opplysningene dine.
+        </p>
+        <span class="fs-sr-only" role="status"></span>
+        <form method="dialog" class="fs-session-timeout__actions">
+          <button class="fs-button" value="extend">Fortsett å være innlogget</button>
+          <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+        </form>
+      </dialog>
+    </fs-session-timeout>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsSessionTimeout } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/session-timeout/fs-session-timeout.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/session-timeout/fs-session-timeout.js"
 
       defineFsSessionTimeout()
     </script>
@@ -64,7 +79,7 @@ defineFsSessionTimeout()
 
     ```tsx
     import "@fristil/designsystem/session-timeout.css"
-    import { useEffect, useRef } from "react"
+    import { useEffect, useId, useRef } from "react"
     import { fs } from "@fristil/designsystem/react"
     import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
     import "@fristil/designsystem/tokens.css"
@@ -73,6 +88,7 @@ defineFsSessionTimeout()
 
     export function Okt() {
       const ref = useRef<HTMLElement>(null)
+      const okt = fs.sessionTimeout({ titleId: useId(), warnAt: 1500, expiresAt: 1800 })
 
       useEffect(() => {
         const element = ref.current
@@ -89,9 +105,25 @@ defineFsSessionTimeout()
         }
       }, [])
 
-      return <fs-session-timeout ref={ref} {...fs.sessionTimeout({ warnAt: 1500, expiresAt: 1800 })} />
+      return (
+        <fs-session-timeout ref={ref} {...okt.host}>
+          <dialog {...okt.dialog}>
+            <h2 {...okt.title}>Du blir snart logget ut</h2>
+            <p {...okt.text}>
+              Vi logger deg ut om <span {...okt.count} /> for å beskytte opplysningene dine.
+            </p>
+            <span {...okt.live} />
+            <form {...okt.actions}>
+              <button {...okt.extend}>Fortsett å være innlogget</button>
+              <button {...okt.logout}>Logg ut nå</button>
+            </form>
+          </dialog>
+        </fs-session-timeout>
+      )
     }
     ```
+
+    Teksten er vanlig JSX, så den kan komme fra `t()` i i18next eller fra et hvilket som helst annet oppsett. Se [Oversettelse](/oversettelse/).
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -102,13 +134,13 @@ defineFsSessionTimeout()
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/session-timeout/session-timeout.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/session-timeout/session-timeout.css">
     <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
       import { defineFsSessionTimeout } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/session-timeout/fs-session-timeout.js"
+        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/session-timeout/fs-session-timeout.js"
 
       defineFsSessionTimeout()
     </script>
@@ -117,23 +149,43 @@ defineFsSessionTimeout()
                         data-ignore-morph
                         data-on:session-extend="@post('/api/forleng-okt')"
                         data-on:session-expired="window.location = '/logg-inn?arsak=utlopt'">
+      <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
+        <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
+        <p class="fs-session-timeout__text">
+          Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
+          for å beskytte opplysningene dine.
+        </p>
+        <span class="fs-sr-only" role="status"></span>
+        <form method="dialog" class="fs-session-timeout__actions">
+          <button class="fs-button" value="extend">Fortsett å være innlogget</button>
+          <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+        </form>
+      </dialog>
     </fs-session-timeout>
     ```
 
-    `data-ignore-morph` er nødvendig her. Uten den forsvinner dialogen i det serveren patcher området rundt.
+    `data-ignore-morph` er nødvendig her. Uten den river morfingen `open` bort fra dialogen mens den står i topplaget.
   </TabItem>
 </Tabs>
 
-## Hvorfor den eier sitt eget innhold
+## Hvorfor du skriver dialogen selv
 
-De fleste komponentene i Fristil rører ikke DOM-en serveren har sendt. Denne gjør, og grunnen er at nedtellingen er klientens klokke. Tallet endrer seg hvert sekund ut fra når brukeren sist rørte tastaturet, og det er en tilstand ingen server kan sende. Å patche den over en strøm hvert sekund ville vært meningsløst.
+Teksten i varselet hører til appen. Den skal stå på språket appen bruker, med de ordene appen bruker om innlogging, og komme fra det oversettelsesoppsettet appen alt har. Lå teksten i komponenten, kunne den ikke oversettes i det hele tatt. Se [Oversettelse](/oversettelse/).
 
-Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet være, slik at en patch ikke river dialogen bort mens den står åpen. Se [Markup og oppførsel](/markup-og-oppforsel/) for hele regelen.
+Komponenten finner delene på det som uansett må stå der:
 
-```html
-<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                    data-ignore-morph></fs-session-timeout>
-```
+| Del | Kjennes igjen på |
+| --- | --- |
+| Dialogen | Den første `<dialog>` inne i elementet |
+| Tallet | `.fs-session-timeout__count`. Står tomt, og komponenten fyller det inn |
+| Opplesningen | `[role=status]`. Står tom, og komponenten fyller den inn |
+| Knappene | Knapper i et `<form method="dialog">` |
+
+Knappene er vanlige knapper. Nettleseren lukker dialogen og setter `returnValue` til knappens `value`, uten skript. `value="logout"` logger ut. Alt annet, Escape og knappen med `value="extend"` medregnet, betyr at brukeren vil fortsette.
+
+Mangler `role="alertdialog"` eller et navn på dialogen, fyller komponenten dem inn, med navnet fra den første overskriften. Det den som rendrer har skrevet, blir stående.
+
+Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte tastaturet. Derfor setter byggefunksjonen `data-ignore-morph`: en patch fra serveren skal ikke rive bort `open` fra en dialog som står i topplaget. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Attributter
 
@@ -142,7 +194,7 @@ Derfor setter byggefunksjonen `data-ignore-morph`. Det ber Datastar la innholdet
 | `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
 | `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
 
-Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det. Escape i dialogen regnes derimot som «jeg er her», og gjør det samme som knappen: forlenger, og sender `session-extend`.
+Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
 
 Er `warn-at` eller `expires-at` ikke et tall større enn eller lik null, brukes standardverdien, og er `warn-at` ikke mindre enn `expires-at`, kommer varselet aldri. Komponenten sier fra om begge deler i konsollen.
 
@@ -177,7 +229,7 @@ Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet
 | `.fs-session-timeout__title` | Overskriften |
 | `.fs-session-timeout__text` | Avsnittet med nedtellingen i |
 | `.fs-session-timeout__count` | Tallet som teller ned |
-| `.fs-session-timeout__actions` | Raden med knapper |
+| `.fs-session-timeout__actions` | Skjemaet med knappene |
 
 Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve:
 
@@ -199,6 +251,7 @@ Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape
 Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
 
 - **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
-- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og et eget område melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
-- **Knappen som forlenger står først.** Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og opplesningen melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
+- **Opplesningen står på sidens språk.** Den er avsnittet ditt, med tallet byttet ut med en uttalt varighet. Varigheten skrives med nettleserens `Intl` etter `lang` på siden, så den sier «1 minutt og 30 sekunder» på en norsk side og «1 minute and 30 seconds» på en engelsk.
 
+Sett knappen som forlenger først. Det er den de fleste vil ha, og den skal være det første tastaturet treffer.

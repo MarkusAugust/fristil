@@ -23,6 +23,50 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`<fs-session-timeout>` lager ikke lenger dialogen selv.** Den som
+  rendrer skriver dialogen og teksten inne i elementet, på sitt eget språk,
+  og komponenten tar tiden: den åpner og lukker dialogen, fyller inn tallet
+  og leser opp nedtellingen. Før var tittelen, teksten og knappene norsk
+  skrevet rett i koden, og kunne ikke oversettes. Komponenten finner delene
+  på `<dialog>`, `.fs-session-timeout__count`, `[role=status]` og knappene i
+  et `<form method="dialog">`. En knapp med `value="logout"` logger ut, og
+  alt annet, Escape medregnet, forlenger. Hendelsene, `warn-at`,
+  `expires-at`, `extend()` og `reset()` er de samme. Det du må gjøre: skriv
+  dialogen inn i elementet, slik komponentsiden viser. Et tomt
+  `<fs-session-timeout>` sier fra i konsollen i det varselet skulle kommet,
+  og `fristil sjekk` melder det.
+- **`fs.sessionTimeout()` gir ett attributtsett per del,** som
+  `fs.dialog()`: `host`, `dialog`, `title`, `text`, `count`, `live`,
+  `actions`, `extend` og `logout`. `titleId` er påkrevd, siden en id som
+  lages av seg selv ikke overlever hydrering.
+- **Komponenten ligger i `ramme/` og ikke i `frittstaende/`.** Navnene i
+  `exports` er de samme, men stien til fila er ny. Det du må gjøre: lenker
+  du rett til fila på en CDN, bytt `frittstaende/session-timeout` med
+  `ramme/session-timeout` i adressen.
+
+### Nytt
+
+- **`close-label` på `<fs-toast>`** er standard for hva lukkeknappen i hver
+  melding heter for skjermleseren. `fs.toast({ closeLabel })` skriver det,
+  og `closeLabel` i `show()` overstyrer det for én melding.
+- **Antall treff i `<fs-suggestion>` kan oversettes,** med `count-none`,
+  `count-one` og `count-other`, og `count-zero`, `count-two`, `count-few` og
+  `count-many` for språk som har dem. `{n}` står for antallet, og
+  `Intl.PluralRules` velger form etter `lang` på siden. Uten attributtene er
+  teksten norsk som før.
+- **Markeringen på `.fs-label` og `.fs-legend` leses fra variabler:**
+  `--fs-label-required-symbol`, `--fs-label-required-text` og
+  `--fs-label-optional-text`, med « *», « (påkrevd)» og « (valgfri)» som
+  reserve.
+- **Opplesningen av nedtellingen følger sidens språk.** Varigheten skrives
+  med `Intl` etter `lang`, så den er «1 minutt og 30 sekunder» på en norsk
+  side og «1 minute and 30 seconds» på en engelsk.
+- **`@fristil/designsystem/default-texts`** har hver standardtekst pakken
+  skriver inn i siden, og en vaktpost i bygget feller en ny tekst som ikke
+  står der eller ikke kan byttes ut.
+
 ## 0.28.0 (2026-10-04)
 
 ### Brytende

@@ -230,6 +230,55 @@
           "valueSet": "v"
         },
         {
+          "name": "count-none",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen ved null treff. Standard er «Ingen treff»."
+          }
+        },
+        {
+          "name": "count-zero",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet."
+          }
+        },
+        {
+          "name": "count-one",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen for ett treff. `{n}` er tallet."
+          }
+        },
+        {
+          "name": "count-two",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet."
+          }
+        },
+        {
+          "name": "count-few",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet."
+          }
+        },
+        {
+          "name": "count-many",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet."
+          }
+        },
+        {
+          "name": "count-other",
+          "description": {
+            "kind": "markdown",
+            "value": "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet."
+          }
+        },
+        {
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
@@ -296,6 +345,13 @@
             "kind": "markdown",
             "value": "Tekst som sier hva regionen er for skjermlesere."
           }
+        },
+        {
+          "name": "close-label",
+          "description": {
+            "kind": "markdown",
+            "value": "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding»."
+          }
         }
       ],
       "references": [
@@ -309,7 +365,7 @@
       "name": "fs-session-timeout",
       "description": {
         "kind": "markdown",
-        "value": "Varsler før en innlogget økt går ut, og teller ned. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute."
+        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute."
       },
       "attributes": [
         {

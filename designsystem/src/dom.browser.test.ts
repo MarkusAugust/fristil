@@ -126,6 +126,7 @@ const GRUNNVALG: Record<string, Record<string, unknown>> = {
   dialog: { titleId: "tittel" },
   popover: { id: "panel" },
   errorSummary: { count: 1 },
+  sessionTimeout: { titleId: "okt" },
 }
 
 /**

@@ -64,16 +64,16 @@ import { fs } from "@fristil/designsystem/react"
 Ingenting registreres ved import alene. Du kaller `defineFs*` selv, så du bestemmer når elementet finnes og hva det skal hete:
 
 ```js
-import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+import { defineFsToast } from "@fristil/designsystem/toast"
 import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/session-timeout.css"
+import "@fristil/designsystem/toast.css"
 
-defineFsSessionTimeout()
+defineFsToast()
 ```
 
 ```html
-<fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
-                    data-ignore-morph></fs-session-timeout>
+<fs-toast class="fs-toast" role="status" aria-live="polite" aria-atomic="false"
+          aria-label="Varsler" data-ignore-morph></fs-toast>
 ```
 
 ## Serveren skriver markupen

@@ -78,6 +78,24 @@ export function setFlag(element: Element, name: string, on: boolean): void {
 }
 
 /**
+ * Språket nærmest elementet, eller `undefined` når siden ikke sier noe.
+ *
+ * `undefined` gir `Intl` nettleserens eget språk. Et `lang` som ikke er en
+ * gyldig språkkode får `Intl` til å kaste, og da er nettleserens språk
+ * bedre enn ingen tekst.
+ */
+export function languageOf(element: Element): string | undefined {
+  const lang = element.closest("[lang]")?.getAttribute("lang")?.trim()
+  if (!lang) return undefined
+  try {
+    Intl.getCanonicalLocales(lang)
+    return lang
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Skriver tekst i et element, men bare når teksten er en annen.
  *
  * `textContent` er en `childList`-endring, og komponentene observerer barna
