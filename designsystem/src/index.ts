@@ -158,9 +158,16 @@ export { switchControl } from "./components/css/switch/switch.js"
 export type {
   TableAttributes,
   TableOptions,
+  TableSortAttributes,
+  TableSortDirection,
+  TableSortOptions,
   TableVariant,
 } from "./components/css/table/table.js"
-export { table } from "./components/css/table/table.js"
+export {
+  table,
+  tableSort,
+  tableSortDirections,
+} from "./components/css/table/table.js"
 export type {
   TagAttributes,
   TagOptions,

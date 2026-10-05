@@ -546,6 +546,11 @@
           "doc-url": "https://fristil.sobernetics.no/components/table/"
         },
         {
+          "name": "fs-table__sort",
+          "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+          "doc-url": "https://fristil.sobernetics.no/components/table/"
+        },
+        {
           "name": "fs-table-scroll",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
           "doc-url": "https://fristil.sobernetics.no/components/table/"

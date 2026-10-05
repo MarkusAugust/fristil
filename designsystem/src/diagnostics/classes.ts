@@ -516,6 +516,13 @@ export const classes: Classes = {
       }
     }
   },
+  "fs-table__sort": {
+    "component": "table",
+    "title": "Table",
+    "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+    "link": "https://fristil.sobernetics.no/components/table/",
+    "attributes": {}
+  },
   "fs-table-scroll": {
     "component": "table",
     "title": "Table",

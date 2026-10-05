@@ -87,7 +87,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
 | `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
@@ -283,7 +283,7 @@ Kjøres ved bygging. Ut kommer ren HTML:
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 44
+`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 45
 byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
@@ -294,8 +294,9 @@ byggefunksjonene:
 `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
 `fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
-`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
-`fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`,
+`fs.tableSort()`, `fs.tabs()`, `fs.tag()`, `fs.textarea()`, `fs.toast()`,
+`fs.toggleGroup()`, `fs.tooltip()`
 
 ## 6. Felt uten JavaScript
 

@@ -85,7 +85,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped |
 | `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
@@ -331,7 +331,7 @@ Id-en kommer fra `useId()`, så serveren og nettleseren lager den samme.
 
 `fs` importeres fra `@fristil/designsystem/react`, aldri fra hovedinngangen:
 React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
-`for`. De 44 byggefunksjonene finnes i begge:
+`for`. De 45 byggefunksjonene finnes i begge:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,
@@ -341,8 +341,9 @@ React-inngangen gir `className` og `htmlFor`, hovedinngangen gir `class` og
 `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
 `fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
-`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`, `fs.tabs()`,
-`fs.tag()`, `fs.textarea()`, `fs.toast()`, `fs.toggleGroup()`, `fs.tooltip()`
+`fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`,
+`fs.tableSort()`, `fs.tabs()`, `fs.tag()`, `fs.textarea()`, `fs.toast()`,
+`fs.toggleGroup()`, `fs.tooltip()`
 
 ## 6. Bare `open={åpen || undefined}` virker
 

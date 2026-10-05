@@ -45,6 +45,7 @@ internal val KLASSER: List<Klasse> =
     Klasse("fs-switch", "Switch", "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.sobernetics.no/components/switch/"),
     Klasse("fs-switch-row", "Switch", "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.sobernetics.no/components/switch/"),
     Klasse("fs-table", "Table", "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.sobernetics.no/components/table/"),
+    Klasse("fs-table__sort", "Table", "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.sobernetics.no/components/table/"),
     Klasse("fs-table-scroll", "Table", "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.", "https://fristil.sobernetics.no/components/table/"),
     Klasse("fs-tag", "Tag", "Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.", "https://fristil.sobernetics.no/components/tag/"),
     Klasse("fs-textarea", "Textarea", "Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.", "https://fristil.sobernetics.no/components/textarea/"),

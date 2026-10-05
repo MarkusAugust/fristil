@@ -85,6 +85,11 @@ const TILFELLER: Tilfelle[] = [
     velger: ".fs-table td",
   },
   {
+    regel: ".fs-table__sort:hover",
+    markup: `<table class="fs-table"><thead><tr><th scope="col" aria-sort="ascending"><button type="button" class="fs-table__sort">Dato</button></th></tr></thead></table>`,
+    velger: ".fs-table__sort",
+  },
+  {
     regel: ".fs-toggle-group__option:hover",
     markup: `<fieldset class="fs-toggle-group"><label class="fs-toggle-group__option"><input type="radio" name="v" /> Kart</label></fieldset>`,
     velger: ".fs-toggle-group__option",

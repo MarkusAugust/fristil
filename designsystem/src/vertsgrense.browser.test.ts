@@ -99,9 +99,10 @@ describe("grensen mot en vertsside", () => {
     /*
      * Skriften fra vertens `body` er med i begge avlesningene, siden den skal
      * arves også inne i grensen. Skriftfamilien sjekkes i testen under og
-     * ikke her: WebKit oppgir `-webkit-standard` for `.fs-select` uten
-     * vertens nullstilling og vertens skrift med den, så tallet i
-     * sammenligningen ville handlet om WebKit og ikke om grensen.
+     * ikke her. Settes skriften på `body` i samme stilberegning som en
+     * `<select>` settes inn, svarer `getComputedStyle` i WebKit med den
+     * gamle verdien, `-webkit-standard`, selv om lista tegnes med riktig
+     * skrift. Sammenligningen ville da handlet om WebKit og ikke om grensen.
      */
     document.body.innerHTML = MARKUP
     verten(ARV)

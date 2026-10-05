@@ -42,7 +42,7 @@ Eller fra `node_modules`, hvis du serverer mappa:
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
 ```
 
-`fristil.css` er 93 kB, 11 kB komprimert, og har alle komponentene. Velg den.
+`fristil.css` er 95 kB, 12 kB komprimert, og har alle komponentene. Velg den.
 Alternativet er ett stilark per komponent, og da gjelder at `tokens.css`
 definerer alle variablene, og alle de andre stilarkene bygger på den. Den må
 lastes, og står først av vane: rekkefølgen mellom den og de andre har ikke noe
@@ -97,7 +97,7 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/spinner/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/sr-only/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/switch/switch.css` | ingen |
-| `fs-table`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/table/table.css` | `data-variant`: striped |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/table/table.css` | `data-variant`: striped |
 | `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/tag/tag.css` | `data-variant`: filled |
 | `fs-textarea` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.29.0/src/components/css/toggle-group/toggle-group.css` | ingen |

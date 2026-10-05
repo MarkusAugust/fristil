@@ -23,6 +23,15 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Nytt
+
+- **Kolonner som kan sorteres i `.fs-table`.** `.fs-table__sort` er knappen
+  i overskriften, og `aria-sort` på `<th>` er tilstanden. Pila tegnes fra
+  `aria-sort`, med begge pilene dempet når kolonnen ikke er sortert, og
+  knappen fyller cellen, så overskriftsraden har samme høyde og innrykk som
+  uten knapp. `fs.tableSort({ direction })` gir `header` og `button`, og
+  `tableSortDirections` er de lovlige retningene. Sorteringen er appens.
+
 ## 0.29.0 (2026-10-05)
 
 ### Brytende

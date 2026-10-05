@@ -19,6 +19,7 @@ import "./components/css/tag/tag.css"
 import "./components/css/toggle-group/toggle-group.css"
 import "./components/css/pagination/pagination.css"
 import "./components/css/tooltip/tooltip.css"
+import "./components/css/table/table.css"
 import "./components/ramme/suggestion/suggestion.css"
 
 /**
@@ -155,6 +156,30 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
     // Uten modusen har boblen mørk flate og lys tekst, og trenger ingen kant.
     expect(stil("hint").borderTopWidth).toBe("1px")
+  })
+
+  it("tegner pila i en sorterbar kolonne i systemets tekstfarge", async () => {
+    // Pila er en maske med bakgrunnsfarge, og bakgrunner tvinges til
+    // sideflatens farge. Uten regelen ble den usynlig.
+    monter(`
+      <table class="fs-table">
+        <thead><tr>
+          <th scope="col" aria-sort="ascending"><button type="button" class="fs-table__sort" id="sortert">Dato</button></th>
+          <th scope="col"><button type="button" class="fs-table__sort" id="usortert">Beløp</button></th>
+        </tr></thead>
+      </table>
+    `)
+    await settHoeykontrast(true)
+    const flate = getComputedStyle(document.body).backgroundColor
+
+    for (const id of ["sortert", "usortert"]) {
+      const pil = getComputedStyle(
+        document.getElementById(id) as HTMLElement,
+        "::after",
+      )
+      expect(pil.backgroundColor, id).not.toBe(flate)
+      expect(pil.maskImage, id).toContain("svg")
+    }
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {

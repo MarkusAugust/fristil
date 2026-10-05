@@ -212,6 +212,35 @@ function lesSkjema() {
     `antall treff meldes ikke: «${forst.status}»`,
   )
 
+  // Sorteringen: et klikk på «Saksnummer» snur rekkefølgen, flytter
+  // `aria-sort` og lar fokus bli på knappen, selv om tabellen tegnes på nytt.
+  await side
+    .locator("#demo-liste .fs-table__sort", { hasText: "Saksnummer" })
+    .click()
+  const sortert = await side.evaluate(() => {
+    const rot = document.getElementById("demo-liste")?.shadowRoot
+    return {
+      forste: rot?.querySelector("tbody th")?.textContent?.trim() ?? "",
+      sortert: [...(rot?.querySelectorAll("th[aria-sort]") ?? [])].map(
+        (th) => `${th.textContent?.trim()}=${th.getAttribute("aria-sort")}`,
+      ),
+      fokus: rot?.activeElement?.textContent?.trim() ?? "",
+    }
+  })
+
+  krev(
+    sortert.forste === "2025-0988",
+    `første rad etter sortering er «${sortert.forste}», ventet 2025-0988`,
+  )
+  krev(
+    sortert.sortert.join() === "Saksnummer=ascending",
+    `aria-sort står på ${sortert.sortert.join() || "ingen"}, ventet Saksnummer=ascending`,
+  )
+  krev(
+    sortert.fokus === "Saksnummer",
+    `fokus er på «${sortert.fokus}» etter sorteringen, ventet knappen`,
+  )
+
   await side.evaluate(() => {
     const rot = document.getElementById("demo-liste")?.shadowRoot
     const felt = rot?.getElementById("demo-sok") as HTMLInputElement
