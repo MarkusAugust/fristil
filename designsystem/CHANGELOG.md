@@ -31,7 +31,10 @@ egen overskrift «Brytende».
   og leser opp nedtellingen. Før var tittelen, teksten og knappene norsk
   skrevet rett i koden, og kunne ikke oversettes. Komponenten finner delene
   på `<dialog>`, `.fs-session-timeout__count`, `[role=status]` og knappene i
-  et `<form method="dialog">`. En knapp med `value="logout"` logger ut, og
+  et `<form method="dialog">`, og setter `open` tilbake når en morfing tar
+  det fra en dialog som står i topplaget, slik `<fs-dialog>` gjør. Uten det
+  sto siden fast etter en patch fra Datastar uten `data-ignore-morph`. En
+  knapp med `value="logout"` logger ut, og
   alt annet, Escape medregnet, forlenger. Hendelsene, `warn-at`,
   `expires-at`, `extend()` og `reset()` er de samme, men `session-logout`
   og `session-extend` fra en knapp kommer nå med `close`-hendelsen, altså

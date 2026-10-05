@@ -433,6 +433,33 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
   })
 
+  it("setter open tilbake når en morfing tar det mens varselet står", async () => {
+    // Datastars morfing uten data-ignore-morph fjerner `open`, siden den som
+    // rendrer ikke sendte det. Dialogen ble stående i topplaget, usynlig, og
+    // resten av siden var inert. Etterprøvd med ekte Datastar 1.0.4.
+    await monterKort(varsel().replace("data-ignore-morph", ""))
+    await gaFram(4)
+    expect(dialog().matches(":modal")).toBe(true)
+
+    dialog().removeAttribute("open")
+    await ventPaTegning()
+
+    expect(dialog().open).toBe(true)
+    expect(dialog().matches(":modal")).toBe(true)
+  })
+
+  it("lar open være borte når brukeren har lukket dialogen", async () => {
+    // Vilkåret er `:modal`. En lukket dialog har forlatt topplaget, og skal
+    // ikke åpnes igjen av reparasjonen.
+    await monterKort()
+    await gaFram(4)
+
+    await lukk(() => knapp("extend").click())
+    await ventPaTegning()
+
+    expect(dialog().open).toBe(false)
+  })
+
   it("fyller inn rollen og navnet på en bar dialog", async () => {
     // En mal uten byggefunksjonen kan glemme dem. Tilgjengeligheten krever
     // begge, så komponenten setter dem når de mangler, og bare da.

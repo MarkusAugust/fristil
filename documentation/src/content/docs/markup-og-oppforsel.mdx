@@ -388,7 +388,7 @@ To komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/int
 
 [`<fs-toast>`](/components/toast/) viser meldinger appen lager mens siden står. Serveren har ingen utgave av dem å sende.
 
-Begge skal ha `data-ignore-morph`, som ber morfingen la innholdet stå. Det skal [`<fs-session-timeout>`](/components/session-timeout/) også: dialogen er markupen din, men `open` settes av `showModal()`, og en morfing ville revet det bort mens varselet står. Det skal også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut. Skriver du markupen for hånd, i en Go- eller Kotlin-mal, må du skrive det selv: komponentene setter det ikke.
+Begge skal ha `data-ignore-morph`, som ber morfingen la innholdet stå. Det bør [`<fs-session-timeout>`](/components/session-timeout/) også: dialogen er markupen din, men tallet skrives av komponenten, og en morfing ville tømt det til neste tikk. `open`, som `showModal()` setter, tar komponenten tilbake selv. Det skal også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut. Skriver du markupen for hånd, i en Go- eller Kotlin-mal, må du skrive det selv: komponentene setter det ikke.
 
 Her holder ikke reparasjon. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 

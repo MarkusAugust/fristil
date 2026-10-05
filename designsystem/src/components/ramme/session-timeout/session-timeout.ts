@@ -61,8 +61,10 @@ export type SessionTimeoutAttributes = {
  *
  * Knappene er vanlige knapper i et `<form method="dialog">`. Nettleseren
  * lukker dialogen og setter `returnValue` til knappens `value`, og
- * komponenten leser det. `data-ignore-morph` er ikke valgfri: uten den river
- * Datastars morfing `open` bort mens dialogen står i topplaget.
+ * komponenten leser det. `data-ignore-morph` ber Datastars morfing la
+ * varselet være. Uten den tar morfingen `open` og tallet mens dialogen står i
+ * topplaget. Komponenten setter `open` tilbake og tallet kommer igjen ved
+ * neste tikk. Med attributtet står tallet hele tiden.
  *
  * ```ts
  * const okt = fs.sessionTimeout({ titleId: "okt-tittel" })

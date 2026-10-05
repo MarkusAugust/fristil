@@ -165,6 +165,8 @@ export class FsSessionTimeout extends HostElement {
    * brukeren trykket «Logg ut nå», og appen fikk `session-extend`.
    */
   private shownDialog?: HTMLDialogElement
+  /** Ser etter `open` som forsvinner fra en dialog i topplaget. Se `repairOpen()`. */
+  private openObserver?: MutationObserver
 
   /** Sekunder uten aktivitet før varselet kommer. */
   get warnAt(): number {
@@ -196,6 +198,12 @@ export class FsSessionTimeout extends HostElement {
      * uten at komponenten må holde på en bestemt node.
      */
     this.addEventListener("close", this.handleClose, true)
+    this.openObserver = new MutationObserver(() => this.repairOpen())
+    this.openObserver.observe(this, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["open"],
+    })
     this.ticker = window.setInterval(() => this.tick(), 1000)
     this.validate()
 
@@ -222,6 +230,8 @@ export class FsSessionTimeout extends HostElement {
       )
     }
     this.removeEventListener("close", this.handleClose, true)
+    this.openObserver?.disconnect()
+    this.openObserver = undefined
     if (this.ticker) window.clearInterval(this.ticker)
     this.ticker = undefined
   }
@@ -319,6 +329,24 @@ export class FsSessionTimeout extends HostElement {
       setAttr(title, "id", this.titleId)
     }
     setAttr(dialog, "aria-labelledby", title.id)
+  }
+
+  /**
+   * Setter `open` tilbake på en dialog som fortsatt står i topplaget.
+   *
+   * `showModal()` setter attributtet selv, og den som rendrer sendte det
+   * ikke. En morfing uten `data-ignore-morph` tar det derfor, og dialogen
+   * ble stående i topplaget, usynlig, med resten av siden inert. Siden sto
+   * fast. Tallet kommer tilbake ved neste tikk.
+   *
+   * `:modal` og ikke `open` er vilkåret: lukker brukeren dialogen, forlater
+   * den topplaget, og da er det manglende attributtet ekte. Samme regel som
+   * i `<fs-dialog>`.
+   */
+  private repairOpen(): void {
+    const dialog = this.dialog
+    if (!dialog?.matches(":modal") || dialog.open) return
+    setAttr(dialog, "open", "")
   }
 
   private registerActivity = (): void => {

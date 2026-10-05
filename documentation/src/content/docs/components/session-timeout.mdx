@@ -164,7 +164,7 @@ defineFsSessionTimeout()
     </fs-session-timeout>
     ```
 
-    `data-ignore-morph` er nødvendig her. Uten den river morfingen `open` bort fra dialogen mens den står i topplaget.
+    `data-ignore-morph` ber morfingen la varselet være. Uten den tar morfingen `open` og tallet mens dialogen står i topplaget. Komponenten setter `open` tilbake, og tallet kommer igjen ved neste tikk, men med attributtet står tallet hele tiden.
   </TabItem>
 </Tabs>
 
@@ -185,7 +185,7 @@ Knappene er vanlige knapper. Nettleseren lukker dialogen og setter `returnValue`
 
 Mangler klassen `fs-session-timeout__dialog`, `role="alertdialog"` eller et navn på dialogen, fyller komponenten dem inn. Navnet kommer fra den første overskriften, som får en id hvis den ikke har en. Det den som rendrer har skrevet, blir stående.
 
-Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte tastaturet. Derfor setter byggefunksjonen `data-ignore-morph`: en patch fra serveren skal ikke rive bort `open` fra en dialog som står i topplaget. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte tastaturet. Derfor setter byggefunksjonen `data-ignore-morph`, så en patch fra serveren lar varselet være. Tar en patch likevel `open` fra en dialog som står i topplaget, setter komponenten det tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Attributter
 
