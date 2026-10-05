@@ -86,9 +86,13 @@ med ID-en `no.fristil`. Tre ting er verdt å vite:
 - **Beskrivelsen i `plugin.xml` og `changeNotes` i `build.gradle.kts` er på
   engelsk.** Marketplace krever engelsk som hovedspråk.
 - **En ny versjon** får nytt nummer i `pluginVersion` i `gradle.properties` og
-  en linje i `changeNotes`, bygges med `./gradlew buildPlugin` og lastes opp
-  under *Upload Update* på sida til pluginen. JetBrains godkjenner hver
-  versjon før den blir synlig.
+  en linje i `changeNotes`. Når den ligger på master, dyttes taggen opp:
+  `git tag intellij-v0.2.0 && git push origin intellij-v0.2.0`. Da bygger,
+  tester og laster `publiser-intellij.yml` opp pluginen med tokenet i
+  hemmeligheten `JETBRAINS_MARKETPLACE_TOKEN`. Taggen må stemme med
+  `pluginVersion`. JetBrains godkjenner hver versjon før den blir synlig.
+- **Pluginen signeres ikke med eget sertifikat.** Det er valgfritt, Gradle
+  hopper over `signPlugin` uten sertifikat, og Marketplace signerer den selv.
 
 ## Hvorfor den ikke er i `bun run sjekk`
 
