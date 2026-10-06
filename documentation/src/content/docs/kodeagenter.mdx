@@ -85,7 +85,9 @@ allerede har er nok. Bytt `react` for miljøet ditt:
 Prosjektet bruker Fristil (@fristil/designsystem). Les reglene før du skriver
 markup eller CSS: node_modules/@fristil/designsystem/agent/react.md, eller
 https://fristil.sobernetics.no/agent/react.md hvis pakken ikke er installert. Kjør
-`npx @fristil/designsystem sjekk <fil>` på markup du har skrevet.
+`npx @fristil/designsystem sjekk <fil>` på markup du har skrevet, og
+`npx @fristil/designsystem sjekk <adresse>` på hver side du har endret, med
+appen i gang. Du er ferdig når begge svarer «Markupen stemmer med Fristil».
 ```
 
 Hvor den hører hjemme:
@@ -131,9 +133,20 @@ npx @fristil/designsystem sjekk maler/*.html
 
 Ett funn gir feilkode, så den hører i CI. Den er laget for maler og går ikke i
 baret på malsyntaks: `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>` gir
-ingen falske funn. Lager koden HTML-en som strenger, kjører du den samme sjekken
-i testene med `diagnoseMarkup` fra `@fristil/designsystem/diagnostics`. Alt om
-dette står på [Editoren](../editoren/).
+ingen falske funn.
+
+En mal kan ikke vise om koblingen stemmer, for ledeteksten og feltet kan stå i
+hver sin fil. Det er nettopp koblingen en agent oftest bommer på. Derfor er
+det andre halvdelen av løkka å sjekke siden slik serveren sender den:
+
+```bash
+npx @fristil/designsystem sjekk http://localhost:8080/skjema
+```
+
+Da krever sjekken også at hver `for` og `aria-describedby` peker på en id som
+finnes, og at hvert felt har en ledetekst. Det virker likt i alle språk, siden
+det er HTML-en som sjekkes. Flagg og eksempler for tester står på
+[Kommandolinjen](../kommandolinjen/).
 
 I et typet prosjekt er typene den første sjekken: importerer du
 `@fristil/designsystem/react-jsx`, blir en variant som ikke finnes en

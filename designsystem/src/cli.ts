@@ -32,7 +32,11 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { diagnoseMarkup, type Finding } from "./diagnostics/index.js"
+import {
+  diagnoseMarkup,
+  diagnosePage,
+  type Finding,
+} from "./diagnostics/index.js"
 import {
   buildEntryPoints,
   type PackageExports,
@@ -416,21 +420,58 @@ async function agent(args: string[]): Promise<void> {
 }
 
 /**
- * `fristil sjekk <fil…>`: den samme sjekken som editoren kjører mens du
- * skriver, over ferdige filer. Uten filer leses standard inn, så en test
+ * `fristil sjekk <fil|adresse…>`: den samme sjekken som editoren kjører mens
+ * du skriver, over ferdige filer. Uten filer leses standard inn, så en test
  * kan sende HTML-en serveren faktisk sender. Hvert funn skrives som
  * `fil:linje:kolonne: feil: melding`, som en kompilator, og ett funn er nok til
  * å avslutte med feil: en advarsel fra editoren er en feil i en mal ingen
  * kompilator ser på.
+ *
+ * En adresse hentes med `fetch` og sjekkes som en hel side: da kreves det i
+ * tillegg at hver id det pekes på finnes, og at hvert felt er koblet. Det
+ * samme gjør `--rendret` for filer og standard inn. En mal sjekkes ikke slik
+ * uten flagget, siden en id i en mal kan stå i en annen fil.
  */
-async function check(paths: string[]): Promise<void> {
-  const sources: Array<{ name: string; text: string }> = []
+async function check(args: string[]): Promise<void> {
+  const rendered = args.includes("--rendret")
+  const paths = args.filter((arg) => arg !== "--rendret")
+  const sources: Array<{ name: string; text: string; page: boolean }> = []
   const missing: string[] = []
+  const unreachable: string[] = []
 
   if (paths.length > 0) {
     for (const path of paths) {
+      if (/^https?:\/\//i.test(path)) {
+        // Statuskoden leses: en 404-side er HTML, og uten dette ville den
+        // blitt sjekket og kanskje meldt grønt uten at siden fantes.
+        try {
+          const response = await fetch(path)
+          if (!response.ok) {
+            unreachable.push(`${path} svarte ${response.status}.`)
+            continue
+          }
+          // En sti som svarer JSON eller ren tekst, er ikke en side, og ville
+          // ellers blitt meldt som ren markup.
+          const type = response.headers.get("content-type") ?? ""
+          if (!/text\/html|application\/xhtml\+xml/i.test(type)) {
+            unreachable.push(
+              `${path} svarte med ${type || "ingen innholdstype"}, ikke HTML.`,
+            )
+            continue
+          }
+          sources.push({ name: path, text: await response.text(), page: true })
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error)
+          unreachable.push(`Fikk ikke kontakt med ${path}: ${reason}`)
+        }
+        continue
+      }
       try {
-        sources.push({ name: path, text: await readFile(path, "utf8") })
+        sources.push({
+          name: path,
+          text: await readFile(path, "utf8"),
+          page: rendered,
+        })
       } catch {
         missing.push(path)
       }
@@ -454,17 +495,18 @@ async function check(paths: string[]): Promise<void> {
       console.error("Ingen markup å sjekke: standard inn var tom.")
       process.exit(1)
     }
-    sources.push({ name: "stdin", text })
+    sources.push({ name: "stdin", text, page: rendered })
   }
 
-  if (missing.length > 0) {
+  if (missing.length > 0 || unreachable.length > 0) {
     for (const path of missing) console.error(`Fant ikke fila «${path}».`)
+    for (const reason of unreachable) console.error(reason)
     process.exit(1)
   }
 
   let count = 0
-  for (const { name, text } of sources) {
-    for (const finding of diagnoseMarkup(text)) {
+  for (const { name, text, page } of sources) {
+    for (const finding of page ? diagnosePage(text) : diagnoseMarkup(text)) {
       count += 1
       console.log(`${name}:${describe(text, finding)}`)
     }
@@ -490,8 +532,11 @@ function describe(text: string, finding: Finding): string {
 /** Det kommandoen kan, skrevet ut på én skjerm. */
 const HJELP = `fristil <kommando>
 
-  sjekk <fil…>         Sjekker markupen mot Fristil, som editoren gjør.
-                       Uten filer leses standard inn. Ett funn gir feilkode
+  sjekk <fil|adresse…> Sjekker markupen mot Fristil, som editoren gjør.
+                       Uten filer leses standard inn. Ett funn gir feilkode.
+                       En adresse hentes og sjekkes som en hel side: hver
+                       id det pekes på må finnes, og hvert felt være koblet
+    --rendret          Sjekk filer og standard inn som hele sider også
 
   sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
                        Leser --fs-color-*-verdiene i hver blokk og sier
@@ -531,6 +576,8 @@ fra en JSON-fil: fristil tema fristil.tema.json
 
 Eksempler:
   npx @fristil/designsystem sjekk maler/*.html
+  npx @fristil/designsystem sjekk http://localhost:8080/skjema
+  curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
   npx @fristil/designsystem agent
   npx @fristil/designsystem overta button --ut=src/ui
   npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \\

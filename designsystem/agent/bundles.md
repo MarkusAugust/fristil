@@ -32,7 +32,11 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    `npx @fristil/designsystem sjekk src/komponenter/*.vue`. Den kjenner hver
    klasse, hvert element, hvert attributt og hver lovlige verdi, skriver
    `fil:linje:kolonne: feil: melding`, eller `advarsel:`, og avslutter med
-   feilkode hvis den finner noe.
+   feilkode hvis den finner noe. Med appen i gang, sjekk også hver side du har
+   endret: `npx @fristil/designsystem sjekk http://localhost:8080/side`. Da
+   kreves det i tillegg at hver `for` og `aria-describedby` peker på en id som
+   finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
+   «Markupen stemmer med Fristil».
 
 ## 1. Stilarkene
 
@@ -363,14 +367,21 @@ fanger `fs-buton`, `data-variant="secundary"`, `<fs-modal>` og `<fs-field>`
 uten kontroll eller ledetekst, altså alt det typene ikke ser, fordi markupen
 din er en streng for kompilatoren.
 
-Lager koden HTML-en som strenger, finnes det ingen fil å sjekke. Kjør da den
-samme sjekken i testene:
+Lager koden HTML-en som strenger, finnes det ingen fil å sjekke. Sjekk da
+siden slik serveren sender den, som en hel side, med koblingen medregnet:
+
+```bash
+npx @fristil/designsystem sjekk http://localhost:8080/skjema
+curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
+```
+
+I en test skrevet i JavaScript gjør `diagnosePage` det samme:
 
 ```js
-import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"
+import { diagnosePage } from "@fristil/designsystem/diagnostics"
 
-const funn = diagnoseMarkup(html)
-// funn er tom når markupen stemmer
+const funn = diagnosePage(html)
+// funn er tom når siden stemmer
 ```
 
 ## Kjente fallgruver

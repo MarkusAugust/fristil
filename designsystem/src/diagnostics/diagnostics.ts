@@ -294,7 +294,7 @@ export function tagEnd(text: string, from: number): number {
   return -1
 }
 
-type ReadAttribute = {
+export type ReadAttribute = {
   name: string
   value: string | undefined
   start: number
@@ -314,7 +314,7 @@ type ReadAttribute = {
  * Svelte, og klammene kan ha klammer i seg. Den leses som én verdi, så det
  * som står inni ikke blir attributtnavn.
  */
-function readAttributes(body: string, offset: number): ReadAttribute[] {
+export function readAttributes(body: string, offset: number): ReadAttribute[] {
   const out: ReadAttribute[] = []
   let i = 0
   const skipSpace = () => {

@@ -35,12 +35,47 @@ export {
   withoutHidden,
 } from "./diagnostics.js"
 export { elements } from "./elements.js"
+export { checkReferences, pageSource } from "./references.js"
 
 import { classes } from "./classes.js"
-import { diagnose, type Finding } from "./diagnostics.js"
+import {
+  type Classes,
+  diagnose,
+  type Elements,
+  type Finding,
+} from "./diagnostics.js"
 import { elements } from "./elements.js"
+import { checkReferences, pageSource } from "./references.js"
 
 /** Alle funn i teksten, mot pakkens egne elementer og klasser. */
 export function diagnoseMarkup(text: string): Finding[] {
   return diagnose(text, elements, classes)
+}
+
+/**
+ * Alle funn på en hel side: det `diagnoseMarkup` finner, og i tillegg at
+ * hver `for`, `aria-describedby`, `aria-labelledby` og `aria-controls` peker
+ * på en id som finnes, at ingen id står to ganger, og at hvert Fristil-felt
+ * og hver hjelpetekst og feilmelding er koblet.
+ *
+ * Bruk den på HTML-en serveren sender, ikke på en mal: i en mal som er delt
+ * i biter, kan id-en stå i en annen fil.
+ *
+ * ```ts
+ * const html = await (await fetch("http://localhost:8080/skjema")).text()
+ * expect(diagnosePage(html)).toEqual([])
+ * ```
+ */
+export function diagnosePage(
+  text: string,
+  elementList: Elements = elements,
+  classList: Classes = classes,
+): Finding[] {
+  // Ordforrådet sjekkes på den samme teksten som koblingen: uten innholdet i
+  // `<template>` og uten markup i attributtverdier. Se `pageSource`.
+  const page = pageSource(text)
+  return [
+    ...diagnose(page, elementList, classList),
+    ...checkReferences(page),
+  ].sort((a, b) => a.start - b.start)
 }

@@ -28,7 +28,11 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    `npx @fristil/designsystem sjekk src/pages/*.astro`. Den kjenner hver
    klasse, hvert element, hvert attributt og hver lovlige verdi, skriver
    `fil:linje:kolonne: feil: melding`, eller `advarsel:`, og avslutter med
-   feilkode hvis den finner noe.
+   feilkode hvis den finner noe. Med appen i gang, sjekk også hver side du har
+   endret: `npx @fristil/designsystem sjekk http://localhost:8080/side`. Da
+   kreves det i tillegg at hver `for` og `aria-describedby` peker på en id som
+   finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
+   «Markupen stemmer med Fristil».
 
 ## 1. Stilarkene
 

@@ -106,7 +106,11 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
   `**Kjør sjekken på det du har skrevet:** \`${oppskrift.sjekk}\`. Den kjenner
    hver klasse, hvert element, hvert attributt og hver lovlige verdi, skriver
    \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode hvis den finner
-   noe.`
+   noe. Med appen i gang, sjekk også hver side du har endret:
+   \`npx @fristil/designsystem sjekk http://localhost:8080/side\`. Da kreves
+   det i tillegg at hver \`for\` og \`aria-describedby\` peker på en id som
+   finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
+   «Markupen stemmer med Fristil».`
 }`
 
 const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. Hva som finnes
@@ -341,13 +345,21 @@ stilarkene bygger på den. Den må lastes, og står først av vane: rekkefølgen
 mellom den og de andre har ikke noe å si.`
 
 const SJEKK_I_TESTER = `Lager koden HTML-en som strenger, finnes det ingen fil å
-sjekke. Kjør da den samme sjekken i testene:
+sjekke. Sjekk da siden slik serveren sender den, som en hel side, med
+koblingen medregnet:
+
+\`\`\`bash
+npx @fristil/designsystem sjekk http://localhost:8080/skjema
+curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
+\`\`\`
+
+I en test skrevet i JavaScript gjør \`diagnosePage\` det samme:
 
 \`\`\`js
-import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"
+import { diagnosePage } from "@fristil/designsystem/diagnostics"
 
-const funn = diagnoseMarkup(html)
-// funn er tom når markupen stemmer
+const funn = diagnosePage(html)
+// funn er tom når siden stemmer
 \`\`\``
 
 const OPPSKRIFTER: Oppskrift[] = [
