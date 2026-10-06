@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.31.0 (2026-10-06)
+
 ### Nytt
 
 - **`fristil sjekk` sjekker hele sider.** En adresse, som
