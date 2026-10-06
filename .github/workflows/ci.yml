@@ -84,6 +84,21 @@ jobs:
             exit 1
           fi
 
+      # Byggefunksjonene i Kotlin mot kontrakten fra TypeScript. Står her, i
+      # den påkrevde jobben og etter steget over, så testene leser
+      # `contract/cases.json` slik den er committet, og en rød Kotlin-test
+      # stopper en merge. En egen arbeidsflyt med `paths` ble prøvd først,
+      # men den var ikke en påkrevd sjekk, og en rød kjøring stoppet ingenting.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Kotlin mot kontrakten
+        run: bun run test:kotlin
+
       # Kjører axe mot hver bygde side i begge temaer, og kontrollerer at
       # dokumentasjonen følger koden.
       - name: Dokumentasjon

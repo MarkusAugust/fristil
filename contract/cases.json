@@ -1,0 +1,6761 @@
+{
+  "values": {
+    "requiredMarkers": [
+      "symbol",
+      "text"
+    ],
+    "fieldStates": [
+      "default",
+      "invalid",
+      "success"
+    ],
+    "inputTypes": [
+      "text",
+      "password",
+      "email",
+      "number",
+      "date",
+      "datetime-local",
+      "week",
+      "month",
+      "tel",
+      "url",
+      "search",
+      "time"
+    ],
+    "helpTextVariants": [
+      "muted",
+      "strong",
+      "success",
+      "warning"
+    ],
+    "errorTextVariants": [
+      "error",
+      "warning"
+    ]
+  },
+  "cases": [
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "invalid": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": ""
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-optional": "",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "symbol"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "symbol",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "text"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "epost",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "epost",
+          "data-required": "text",
+          "aria-disabled": "true"
+        },
+        "control": {
+          "id": "epost",
+          "aria-describedby": "epost-help epost-error",
+          "aria-invalid": "true",
+          "data-state": "invalid",
+          "disabled": true
+        },
+        "help": {
+          "id": "epost-help"
+        },
+        "error": {
+          "id": "epost-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format eksempel"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format eksempel"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format eksempel"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format eksempel"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "errorId": "feil",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help format"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format eksempel"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-help"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format eksempel"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format eksempel"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-help"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format eksempel"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp format"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "feil",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "fodselsdato-help feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "fodselsdato-help"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error fodselsdato-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp fodselsdato-error format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "fodselsdato-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil"
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format",
+          "format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "  format   eksempel "
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "fodselsdato-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil fodselsdato-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "format eksempel"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil format eksempel",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "fodselsdato",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "hjelp",
+        "errorId": "feil",
+        "describedBy": [
+          "﻿format"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "fodselsdato"
+        },
+        "control": {
+          "id": "fodselsdato",
+          "aria-describedby": "hjelp feil format",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "hjelp"
+        },
+        "error": {
+          "id": "feil"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": "",
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": "",
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "",
+          "hidden": true
+        },
+        "state": "default"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": "for navn-help"
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-error navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": "for navn-error"
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": ""
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          ""
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "field",
+      "options": {
+        "id": "for navn",
+        "help": true,
+        "error": true,
+        "invalid": true,
+        "helpId": "",
+        "errorId": "",
+        "describedBy": [
+          "for navn-help"
+        ]
+      },
+      "expected": {
+        "label": {
+          "class": "fs-label",
+          "for": "for navn"
+        },
+        "control": {
+          "id": "for navn",
+          "aria-describedby": "for navn-help",
+          "aria-invalid": "true",
+          "data-state": "invalid"
+        },
+        "help": {
+          "id": ""
+        },
+        "error": {
+          "id": ""
+        },
+        "state": "invalid"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {},
+      "expected": {
+        "class": "fs-input",
+        "type": "text"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "text"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "text",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "text",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "text",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "text",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "password"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "password"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "password",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "password"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "password",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "password",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "password",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "password",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "email"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "email"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "email",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "email"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "email",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "email",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "email",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "email",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "number"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "number"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "number",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "number"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "number",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "number",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "number",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "number",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "date"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "date",
+        "data-variant": "date"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "date",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "date",
+        "data-variant": "date"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "date",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "date",
+        "data-variant": "date",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "date",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "date",
+        "data-variant": "date",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "datetime-local"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "datetime-local",
+        "data-variant": "datetime-local"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "datetime-local",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "datetime-local",
+        "data-variant": "datetime-local"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "datetime-local",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "datetime-local",
+        "data-variant": "datetime-local",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "datetime-local",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "datetime-local",
+        "data-variant": "datetime-local",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "week"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "week"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "week",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "week"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "week",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "week",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "week",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "week",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "month"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "month"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "month",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "month"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "month",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "month",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "month",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "month",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "tel"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "tel"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "tel",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "tel"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "tel",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "tel",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "tel",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "tel",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "url"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "url"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "url",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "url"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "url",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "url",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "url",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "url",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "search"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "search"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "search",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "search"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "search",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "search",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "search",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "search",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "time"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "time",
+        "data-variant": "time"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "time",
+        "state": "default"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "time",
+        "data-variant": "time"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "time",
+        "state": "invalid"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "time",
+        "data-variant": "time",
+        "data-state": "invalid",
+        "aria-invalid": "true"
+      }
+    },
+    {
+      "builder": "input",
+      "options": {
+        "type": "time",
+        "state": "success"
+      },
+      "expected": {
+        "class": "fs-input",
+        "type": "time",
+        "data-variant": "time",
+        "data-state": "success"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {},
+      "expected": {
+        "class": "fs-label"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "optional": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-optional": ""
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-optional": "",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "symbol"
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "symbol"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "symbol",
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "symbol",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "symbol",
+        "optional": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "symbol"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "symbol",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "symbol",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "text"
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "text"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "text",
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "text",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "text",
+        "optional": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "text"
+      }
+    },
+    {
+      "builder": "label",
+      "options": {
+        "required": "text",
+        "optional": true,
+        "disabled": true
+      },
+      "expected": {
+        "class": "fs-label",
+        "data-required": "text",
+        "aria-disabled": "true"
+      }
+    },
+    {
+      "builder": "helpText",
+      "options": {},
+      "expected": {
+        "class": "fs-help-text"
+      }
+    },
+    {
+      "builder": "helpText",
+      "options": {
+        "variant": "muted"
+      },
+      "expected": {
+        "class": "fs-help-text"
+      }
+    },
+    {
+      "builder": "helpText",
+      "options": {
+        "variant": "strong"
+      },
+      "expected": {
+        "class": "fs-help-text",
+        "data-variant": "strong"
+      }
+    },
+    {
+      "builder": "helpText",
+      "options": {
+        "variant": "success"
+      },
+      "expected": {
+        "class": "fs-help-text",
+        "data-variant": "success"
+      }
+    },
+    {
+      "builder": "helpText",
+      "options": {
+        "variant": "warning"
+      },
+      "expected": {
+        "class": "fs-help-text",
+        "data-variant": "warning"
+      }
+    },
+    {
+      "builder": "errorText",
+      "options": {},
+      "expected": {
+        "class": "fs-error-text"
+      }
+    },
+    {
+      "builder": "errorText",
+      "options": {
+        "variant": "error"
+      },
+      "expected": {
+        "class": "fs-error-text"
+      }
+    },
+    {
+      "builder": "errorText",
+      "options": {
+        "variant": "warning"
+      },
+      "expected": {
+        "class": "fs-error-text",
+        "data-variant": "warning"
+      }
+    }
+  ]
+}

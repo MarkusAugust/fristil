@@ -25,4 +25,7 @@ editor-intellij/.gradle/
 editor-intellij/.kotlin/
 editor-intellij/.intellijPlatform/
 editor-intellij/build/
+kotlin/.gradle/
+kotlin/.kotlin/
+kotlin/build/
 presentasjon/index.html
