@@ -125,6 +125,7 @@ export default defineConfig({
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
             { label: "Editoren", slug: "editoren" },
+            { label: "Kommandolinjen", slug: "kommandolinjen" },
             { label: "Kodeagenter", slug: "kodeagenter" },
             { label: "Lisens og pris", slug: "lisens" },
             { label: "Versjonslogg", link: "/versjonslogg/" },

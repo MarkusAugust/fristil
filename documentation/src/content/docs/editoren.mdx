@@ -44,23 +44,15 @@ Feilmeldingene og hurtigrettelsene finnes bare i VS Code. IntelliJ IDEA Communit
 
 ## Kommandolinjen og testene
 
-Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, eller standard inn, og skriver hvert funn som `fil:linje:kolonne: feil: melding`, eller `advarsel:` der det er en advarsel. Ett funn gir feilkode, så den kan stå i CI:
+Den samme sjekken finnes uten editor. `fristil sjekk` leser filer, standard inn eller en adresse, og skriver hvert funn som `fil:linje:kolonne: feil: melding`, eller `advarsel:` der det er en advarsel. Ett funn gir feilkode, så den kan stå i CI:
 
 ```bash
 npx @fristil/designsystem sjekk maler/*.html
+npx @fristil/designsystem sjekk http://localhost:8080/skjema
 ```
 
-Lager serveren HTML-en i kode, som strenger i en Kotlin-app, finnes det ingen malfil å sjekke. Da kjører du sjekken i appens egne tester, over HTML-en serveren faktisk sender:
-
-```ts
-import { diagnoseMarkup } from "@fristil/designsystem/diagnostics"
-
-const funn = diagnoseMarkup(html)
-expect(funn).toEqual([])
-```
-
-Hvert funn har `start`, `end`, `severity` og `message`, og noen har en `fix`. `diagnose(text, elements, classes)` tar egne lister, om du vil sjekke mot et utvalg.
+Lager serveren HTML-en i kode, som strenger i en Kotlin-app, finnes det ingen malfil å sjekke. Da sjekker du siden serveren sender, med adressen eller med `--rendret` i appens egne tester. Flagg, utdata og eksempler for tester i JavaScript og Kotlin står på [Kommandolinjen](../kommandolinjen/).
 
 ## Det ingen av dem ser
 
-Editoren ser én fil om gangen. En ledetekst i én partial og et felt i en annen henger sammen først i nettleseren, og der sier komponenten fra hvis koblingen mangler. Se [Markup og oppførsel](../markup-og-oppforsel/).
+Editoren ser én fil om gangen. En ledetekst i én partial og et felt i en annen henger sammen først når siden er satt sammen. Det ser `sjekk` på en hel side, der den krever at hver id det pekes på finnes og at hvert felt er koblet. Se [Kommandolinjen](../kommandolinjen/#maler-og-hele-sider). I nettleseren sier web-komponenten fra hvis koblingen mangler. Se [Markup og oppførsel](../markup-og-oppforsel/).

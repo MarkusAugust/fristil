@@ -23,6 +23,23 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Nytt
+
+- **`fristil sjekk` sjekker hele sider.** En adresse, som
+  `fristil sjekk http://localhost:8080/skjema`, hentes og sjekkes som en hel
+  side, og `--rendret` gjør det samme for filer og standard inn. På en hel side
+  kreves det i tillegg at hver id i `for`, `aria-describedby`,
+  `aria-labelledby` og `aria-controls` finnes, at `for` peker på et felt, at
+  ingen id står to ganger, at hvert felt med en `fs-`-klasse har en
+  ledetekst, at hver synlige hjelpetekst og feilmelding er koblet, og at hver
+  lenke i `<fs-error-summary>` går til en id som finnes. En adresse som svarer
+  med noe annet enn HTML, gir feilkode. Bar markup inni `<fs-field>` gir ingen
+  funn. En mal sjekkes som før uten flagget, siden en id der kan stå i en
+  annen fil.
+- **`diagnosePage(html)` og `checkReferences(html)`** i
+  `@fristil/designsystem/diagnostics` gir den samme sjekken til tester skrevet
+  i JavaScript.
+
 ## 0.30.0 (2026-10-05)
 
 ### Nytt

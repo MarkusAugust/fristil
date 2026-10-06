@@ -20,8 +20,10 @@
 
 import {
   type Classes,
+  checkReferences,
   diagnose,
   type Elements,
+  pageSource,
 } from "../../designsystem/src/diagnostics/index.js"
 import { classesData, diagnosticsData, snippets } from "./generate"
 
@@ -45,6 +47,8 @@ type Case = {
   fixPreferred?: boolean
   /** Hvor lang tid tilfellet får, når farten er poenget. */
   maxMs?: number
+  /** Sjekk som en hel side, med reglene for koblingen. */
+  page?: boolean
 }
 
 const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
@@ -632,13 +636,241 @@ const cases: Case[] = [
   },
 ]
 
-// Snippetene fra komponentsidene skal være rene.
-for (const [tag, snippet] of Object.entries(snippets()))
-  cases.push({
-    name: `snippeten for <${tag}>`,
-    html: snippet.body.join("\n").replace(/\\\$/g, "$").replace(/\\\\/g, "\\"),
+// Koblingen på en hel side, med `--rendret` eller en adresse.
+const LABELLED = `<label class="fs-label" for="epost">E-post</label><input class="fs-input" id="epost" aria-describedby="epost-help"><p class="fs-help-text" id="epost-help">Hjelp</p>`
+cases.push(
+  {
+    name: "side: et rent felt med ledetekst og hjelpetekst",
+    html: LABELLED,
     count: 0,
-  })
+    page: true,
+  },
+  {
+    name: "side: for peker på en id som ikke finnes",
+    html: `<label class="fs-label" for="e-post">E-post</label><input class="fs-input" id="epost">`,
+    count: 2,
+    page: true,
+    severity: "error",
+    mentions: ["for=", "«e-post»", "ledeteksten", "fs.field({ id })"],
+    covers: "e-post",
+  },
+  {
+    name: "side: én av flere id-er i aria-describedby finnes ikke",
+    html: LABELLED.replace(
+      'aria-describedby="epost-help"',
+      'aria-describedby="epost-help epost-feil"',
+    ),
+    count: 1,
+    page: true,
+    severity: "error",
+    mentions: ["«epost-feil»", "beskrivelsen"],
+    covers: "epost-feil",
+  },
+  {
+    name: "side: aria-labelledby peker på en id som ikke finnes",
+    html: `<input class="fs-input" id="sok" aria-labelledby="sok-tittel">`,
+    count: 1,
+    page: true,
+    mentions: ["aria-labelledby", "navnet"],
+  },
+  {
+    name: "side: aria-controls får ingen oppskrift om feltet",
+    html: `<button class="fs-button" aria-controls="meny">Meny</button>`,
+    count: 1,
+    page: true,
+    mentions: ["aria-controls", "«meny»"],
+    notMentions: ["fs.field("],
+  },
+  {
+    name: "side: en id som står to ganger",
+    html: `${LABELLED}<p id="epost">Igjen</p>`,
+    count: 1,
+    page: true,
+    severity: "error",
+    mentions: ['id="epost"', "mer enn én gang"],
+    covers: "epost",
+  },
+  {
+    name: "side: et Fristil-felt uten ledetekst",
+    html: `<label class="fs-label">Navn</label><input class="fs-input" id="navn">`,
+    count: 1,
+    page: true,
+    severity: "warning",
+    mentions: ["<input> har ingen ledetekst", "fs.field({ id })"],
+    covers: "input",
+  },
+  {
+    name: "side: et felt med <label> rundt har ledetekst",
+    html: `<label class="fs-label">Navn <input class="fs-input"></label>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: et felt med aria-label har ledetekst",
+    html: `<input class="fs-input fs-search" type="search" aria-label="Søk">`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: et skjult felt og en sendeknapp trenger ingen ledetekst",
+    html: `<input class="fs-input" type="hidden" name="t"><input class="fs-button" type="submit" value="Send">`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: bar markup inni <fs-field> er riktig",
+    html: `<fs-field><label class="fs-label">Navn</label><input class="fs-input"><p class="fs-help-text">Hjelp</p><p class="fs-error-text" hidden>Feil</p></fs-field>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en id som peker feil inni <fs-field>, meldes likevel",
+    html: `<fs-field><label class="fs-label" for="x">Navn</label><input class="fs-input" id="y"></fs-field>`,
+    count: 1,
+    page: true,
+    mentions: ["«x»"],
+  },
+  {
+    name: "side: en hjelpetekst uten id",
+    html: `<label class="fs-label" for="a">A</label><input class="fs-input" id="a"><p class="fs-help-text">Hjelp</p>`,
+    count: 1,
+    page: true,
+    severity: "warning",
+    mentions: ["Hjelpeteksten", "har ingen id"],
+  },
+  {
+    name: "side: en synlig feilmelding som ingen peker på",
+    html: `<label class="fs-label" for="a">A</label><input class="fs-input" id="a"><p class="fs-error-text" id="a-feil">Feil</p>`,
+    count: 1,
+    page: true,
+    mentions: ["Feilmeldingen", "«a-feil»"],
+  },
+  {
+    name: "side: en skjult feilmelding trenger ingen kobling",
+    html: `<label class="fs-label" for="a">A</label><input class="fs-input" id="a"><p class="fs-error-text" id="a-feil" hidden>Feil</p>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en id i en kommentar teller ikke",
+    html: `<!-- <p id="hjelp"></p> --><label class="fs-label" for="hjelp">A</label><input class="fs-input" id="a">`,
+    count: 2,
+    page: true,
+    mentions: ["«hjelp»"],
+  },
+  {
+    name: "side: <fs-suggestion> setter for på ledeteksten selv",
+    html: `<fs-suggestion><label class="fs-label">Kommune</label><input class="fs-input" type="text"></fs-suggestion>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en hjelpetekst inni <fs-suggestion> må kobles",
+    html: `<fs-suggestion><label class="fs-label">Kommune</label><input class="fs-input" type="text"><p class="fs-help-text">Hjelp</p></fs-suggestion>`,
+    count: 1,
+    page: true,
+    mentions: ["Hjelpeteksten"],
+  },
+  {
+    name: "side: id-er i en shadow root har sitt eget rom",
+    html: `${LABELLED}<div><template shadowrootmode="open"><label class="fs-label" for="epost">E-post</label><input class="fs-input" id="epost"></template></div>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: markup i en attributtverdi er tekst, ikke elementer",
+    html: `${LABELLED}<button class="fs-button" data-code='<fs-modal open><input class="fs-input" id="epost">'>Kopier</button>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en verdi som slutter på = sluker ikke resten av siden",
+    html: `<img src="data:image/png;base64,iVBORw0KGgo=" alt="">${LABELLED}`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: et felt etter en verdi som slutter på = sjekkes fortsatt",
+    html: `<a href="/s" title="1+1=">x</a><input class="fs-input" id="q">`,
+    count: 1,
+    page: true,
+    mentions: ["<input> har ingen ledetekst"],
+  },
+  {
+    name: "side: for som peker på en <div>",
+    html: `<label class="fs-label" for="boks">Navn</label><div id="boks"></div><input class="fs-input" aria-label="Navn">`,
+    count: 1,
+    page: true,
+    severity: "error",
+    mentions: ["<div>", "ikke kan ha en ledetekst"],
+    covers: "boks",
+  },
+  {
+    name: "side: en lenke i feiloppsummeringen til et felt som ikke finnes",
+    html: `${LABELLED}<fs-error-summary><h2>Rett feilene</h2><ul><li><a href="#e-post">E-post</a></li></ul></fs-error-summary>`,
+    count: 1,
+    page: true,
+    severity: "error",
+    mentions: ["feiloppsummeringen", "«#e-post»"],
+    covers: "e-post",
+  },
+  {
+    name: "side: en lenke i feiloppsummeringen til et felt som finnes",
+    html: `${LABELLED}<fs-error-summary><h2>Rett feilene</h2><ul><li><a href="#epost">E-post</a></li></ul></fs-error-summary>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en hjelpetekst i en skjult forelder eller lukket dialog",
+    html: `<div hidden><p class="fs-help-text">A</p></div><dialog><p class="fs-error-text">B</p></dialog>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en hjelpetekst i en åpen dialog sjekkes",
+    html: `<dialog open><p class="fs-help-text">A</p></dialog>`,
+    count: 1,
+    page: true,
+    mentions: ["Hjelpeteksten"],
+  },
+  {
+    name: "side: entiteter dekodes før id-ene sammenlignes",
+    html: `<label class="fs-label" for="c&#46;d">C</label><input class="fs-input" id="c.d">`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: markup i en <textarea> er tekst",
+    html: `${LABELLED}<label class="fs-label" for="t">T</label><textarea class="fs-textarea" id="t"><input class="fs-input" id="epost"></textarea>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "mal: markup i en attributtverdi leses som før uten --rendret",
+    html: `<button class="fs-button" data-code="<fs-modal>">Kopier</button>`,
+    count: 1,
+    mentions: ["fs-modal"],
+  },
+  {
+    name: "mal: en id som peker ut av fila meldes ikke uten --rendret",
+    html: `<label class="fs-label" for="e-post">E-post</label><input class="fs-input" id="epost">`,
+    count: 0,
+  },
+)
+
+// Snippetene fra komponentsidene skal være rene, også som hele sider: de
+// skal kunne limes inn og virke, koblingen medregnet.
+for (const [tag, snippet] of Object.entries(snippets()))
+  for (const page of [false, true])
+    cases.push({
+      name: `snippeten for <${tag}>${page ? " som hel side" : ""}`,
+      html: snippet.body
+        .join("\n")
+        .replace(/\\\$/g, "$")
+        .replace(/\\\\/g, "\\"),
+      count: 0,
+      page,
+    })
 
 const started = performance.now()
 for (const c of cases) {
@@ -646,7 +878,13 @@ for (const c of cases) {
   let found: ReturnType<typeof diagnose>
   const before = performance.now()
   try {
-    found = diagnose(c.html, all, classes)
+    // Som `diagnosePage`, men mot listene fra generatoren.
+    const page = c.page ? pageSource(c.html) : c.html
+    found = c.page
+      ? [...diagnose(page, all, classes), ...checkReferences(page)].sort(
+          (a, b) => a.start - b.start,
+        )
+      : diagnose(c.html, all, classes)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue

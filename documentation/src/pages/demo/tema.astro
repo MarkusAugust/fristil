@@ -47,7 +47,7 @@ const VALG = [
       </p>
 
       <div class="demo__skjema">
-        <fieldset class="fs-toggle-group">
+        <fieldset class="fs-toggle-group" aria-describedby="demo-tema-bytte">
           <legend class="fs-sr-only">Tema</legend>
           {
             VALG.map(({ verdi, tekst }) => (
@@ -64,7 +64,7 @@ const VALG = [
             ))
           }
         </fieldset>
-        <p class="fs-help-text">
+        <p class="fs-help-text" id="demo-tema-bytte">
           Byttet er ren CSS. Å få valget til å vare er en annen oppgave, og den
           er appens: her er det ingen server og ingen lagring, så valget står
           til du laster siden på nytt.

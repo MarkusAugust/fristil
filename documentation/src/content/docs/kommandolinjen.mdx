@@ -1,0 +1,212 @@
+---
+title: Kommandolinjen
+description: Kommandoene i @fristil/designsystem, med flagg, utdata og exit-koder. Sjekk markup og hele sider, hent regelboka for kodeagenter, ta over en komponent og lag et tema.
+---
+
+Pakken har en kommandolinje med fem kommandoer. Den har ingen avhengigheter, og
+du trenger ikke installere noe ekstra:
+
+```bash
+npx @fristil/designsystem <kommando>
+```
+
+Står pakken i `package.json`, heter kommandoen `fristil`, så `npx fristil sjekk`
+og et skript med `fristil sjekk` gjør det samme. `npx @fristil/designsystem`
+uten kommando, eller med `--hjelp`, viser hele oversikten.
+
+| Kommando | Gjør |
+| --- | --- |
+| `sjekk` | sjekker markup mot Fristil, i filer, fra standard inn eller fra en adresse |
+| `agent` | skriver regelboka for kodeagenter for miljøet ditt |
+| `overta` | kopierer kildekoden til én komponent inn i prosjektet |
+| `tema` | lager et fargetema av merkefargene dine |
+| `sjekk-tema` | kontrollerer at et tema holder kontrastkravene |
+
+## sjekk
+
+`sjekk` er den samme kontrollen som [editoren](../editoren/) kjører mens du
+skriver. Den kjenner hver klasse, hvert element, hvert attributt og hver
+lovlige verdi i pakken du har installert.
+
+```bash
+npx @fristil/designsystem sjekk maler/*.html
+npx @fristil/designsystem sjekk http://localhost:8080/skjema
+curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
+```
+
+Den leser tre slags inndata:
+
+- **filer**, oppgitt som argumenter;
+- **standard inn**, når ingen filer er oppgitt;
+- **en adresse** som begynner med `http://` eller `https://`. Den hentes med
+  `fetch`. En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
+  gir feilkode i stedet for å bli sjekket.
+
+Hvert funn skrives som en kompilator skriver det, med fil, linje og kolonne:
+
+```text
+skjema.html:4:27: advarsel: data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.
+skjema.html:5:13: advarsel: Klassen «fs-modal» finnes ikke i Fristil.
+
+2 funn i 1 fil.
+```
+
+Exit-koden er 0 når det ikke er noen funn, og 1 ellers, også når alle funnene er
+advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom inndata,
+en fil som ikke finnes, og en adresse som ikke svarer, gir også 1.
+
+### Maler og hele sider
+
+En mal er ofte delt i biter. En ledetekst kan stå i én fil og feltet i en
+annen, og malsyntaks som `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>`
+står der verdien kommer senere. Uten flagg sjekker `sjekk` derfor bare det som
+kan avgjøres i én fil: elementer, klasser, attributter, verdier og at hvert
+`<fs-field>` har en ledetekst.
+
+En side slik serveren sender den, er hel. Da kan `sjekk` også kreve at
+koblingen stemmer:
+
+- hver id i `for`, `aria-describedby`, `aria-labelledby` og `aria-controls`
+  finnes på siden, og `for` peker på et felt eller en knapp;
+- ingen id står mer enn én gang;
+- hvert felt med en `fs-`-klasse har en ledetekst: en `<label for>`, en
+  `<label>` rundt, `aria-label` eller `aria-labelledby`;
+- hver synlige hjelpetekst og feilmelding er pekt på fra `aria-describedby`.
+  En tekst er ikke synlig når den selv eller en forelder har `hidden`, eller
+  står i en lukket `<dialog>` eller `<details>`;
+- hver lenke i `<fs-error-summary>` går til en id som finnes.
+
+En adresse sjekkes alltid slik. Filer og standard inn sjekkes slik med
+`--rendret`. Bar markup inni `<fs-field>` gir ingen funn, siden web-komponenten
+setter koblingen i nettleseren. Det samme gjelder et felt inni
+`<fs-suggestion>`. En id som er skrevet og peker feil, meldes uansett hvor den
+står.
+
+To ting leses ikke som en del av siden. Innholdet i en `<template>` er ikke i
+dokumentet, og i en shadow root, `<template shadowrootmode>`, har id-ene sitt
+eget rom. Markup som står i en attributtverdi, som et kodeeksempel bak en
+kopieringsknapp, eller inni en `<textarea>`, er tekst. Ingen av dem sjekkes.
+
+```text
+http://localhost:8080/skjema:12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. Skjermleseren mister ledeteksten. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren.
+```
+
+Det er denne sjekken som virker likt i alle språk. HTML-en serveren sender, ser
+lik ut enten den kommer fra Kotlin, Go, PHP eller Node, og det er den som
+sjekkes, ikke koden som lager den.
+
+### I testene og i CI
+
+Med en server som kjører, er én linje nok:
+
+```bash
+npx @fristil/designsystem sjekk http://localhost:8080/ http://localhost:8080/skjema
+```
+
+Den samme sjekken finnes som funksjoner, for tester skrevet i JavaScript eller
+TypeScript:
+
+```ts
+import { diagnoseMarkup, diagnosePage } from "@fristil/designsystem/diagnostics"
+
+expect(diagnoseMarkup(mal)).toEqual([]) // en mal eller en bit av en side
+expect(diagnosePage(html)).toEqual([]) // en hel side, med koblingen
+```
+
+Hvert funn har `start`, `end`, `severity` og `message`, og noen har en `fix`
+editoren kan tilby.
+
+Er appen skrevet i et annet språk, kjører testen kommandoen over HTML-en den
+rendrer. I Kotlin:
+
+```kotlin
+@Test
+fun `skjemaet er koblet riktig`() {
+    val html = app.render("/skjema")
+    val sjekk = ProcessBuilder("npx", "@fristil/designsystem", "sjekk", "--rendret")
+        .redirectErrorStream(true)
+        .start()
+    sjekk.outputStream.use { it.write(html.toByteArray()) }
+    val utdata = sjekk.inputStream.bufferedReader().readText()
+    assertEquals(0, sjekk.waitFor(), utdata)
+}
+```
+
+Testen feiler med funnene som melding, og det er meldingen en kodeagent leser
+og retter etter.
+
+## agent
+
+Skriver regelboka for kodeagenter til standard ut. Ingen fil skrives noe sted.
+
+```bash
+npx @fristil/designsystem agent
+npx @fristil/designsystem agent --rammeverk=datastar
+```
+
+Uten flagg leses miljøet av avhengighetene i `package.json`: Astro, React,
+Datastar, eller et byggesteg som Vite. Finnes det ingen `package.json`, som i en Kotlin- eller Go-app, er
+det regelboka for maler. Hvilken det ble, og hvorfor, står på standard feil.
+
+| `--rammeverk` | Regelboka for |
+| --- | --- |
+| `html` | håndskrevet HTML uten byggesteg, der nettleseren laster filene direkte |
+| `maler` | serverskrevet HTML: Go-maler, Razor, PHP, Jinja, ERB og andre, og HTML skrevet i kode |
+| `bundles` | et byggesteg der markupen er vanlig HTML: Vue, Svelte, Solid, Lit og Vite |
+| `react` | React |
+| `astro` | Astro |
+| `datastar` | HTML med Datastar |
+
+Hvordan agenten finner regelboka, står på [Kodeagenter](../kodeagenter/).
+
+## overta
+
+Kopierer kildekoden til én komponent inn i prosjektet: TypeScript-fila og
+stilarket. Henvisningene ut av komponenten skrives om til pakken, så resten av
+systemet fortsatt kommer fra `@fristil/designsystem` og kan oppgraderes.
+
+```bash
+npx @fristil/designsystem overta button --ut=src/ui
+```
+
+| Flagg | Betydning |
+| --- | --- |
+| `--ut=<mappe>` | hvor kopien skal ligge. Standard: `src/fristil` |
+| `--overskriv=ja` | skriv over en kopi som finnes fra før |
+
+Uten navn lister kommandoen komponentene. Når du bør ta over en komponent, og
+hva du bør prøve først, står på [Tilpasning](../tilpasning/#når-css-ikke-er-nok).
+
+## tema
+
+Lager et fargetema av merkefargene dine, med lyst og mørkt utseende og
+kontrastkravene oppfylt. Temaet skrives til standard ut, eller til en fil.
+
+```bash
+npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
+  --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
+npx @fristil/designsystem tema fristil.tema.json --ut=tema.css
+```
+
+| Flagg | Betydning |
+| --- | --- |
+| `--aksent`, `--fare`, `--suksess`, `--advarsel`, `--noytral`, `--besokt` | fargene for rollene, heksadesimalt |
+| `--merke1`, `--merke2`, `--merke3` | merkefarger for flater og kategorier |
+| `--skrift` | skriftstakken temaet skal bruke |
+| `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner` | hjørnene på knapper, felt og flater |
+| `--knapp-ramme`, `--knapp-vekt` | rammetykkelsen og vekten på knappeteksten |
+| `--ut=<fil>` | skriv til fil i stedet for til standard ut |
+
+Hva hver rolle styrer, og hvordan temaet tas i bruk, står på
+[Eget tema](../eget-tema/).
+
+## sjekk-tema
+
+Kontrollerer et tema du har skrevet selv. Kommandoen leser
+`--fs-color-*`-verdiene i hver blokk og sier hvilken celle som ryker, og hvorfor.
+
+```bash
+npx @fristil/designsystem sjekk-tema tema.css
+```
+
+Ett brudd gir feilkode. Et tema laget med `tema` holder kravene fra før.
