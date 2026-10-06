@@ -38,7 +38,12 @@ export { elements } from "./elements.js"
 export { checkReferences, pageSource } from "./references.js"
 
 import { classes } from "./classes.js"
-import { diagnose, type Finding } from "./diagnostics.js"
+import {
+  type Classes,
+  diagnose,
+  type Elements,
+  type Finding,
+} from "./diagnostics.js"
 import { elements } from "./elements.js"
 import { checkReferences, pageSource } from "./references.js"
 
@@ -61,11 +66,16 @@ export function diagnoseMarkup(text: string): Finding[] {
  * expect(diagnosePage(html)).toEqual([])
  * ```
  */
-export function diagnosePage(text: string): Finding[] {
+export function diagnosePage(
+  text: string,
+  elementList: Elements = elements,
+  classList: Classes = classes,
+): Finding[] {
   // Ordforrådet sjekkes på den samme teksten som koblingen: uten innholdet i
   // `<template>` og uten markup i attributtverdier. Se `pageSource`.
   const page = pageSource(text)
-  return [...diagnoseMarkup(page), ...checkReferences(page)].sort(
-    (a, b) => a.start - b.start,
-  )
+  return [
+    ...diagnose(page, elementList, classList),
+    ...checkReferences(page),
+  ].sort((a, b) => a.start - b.start)
 }

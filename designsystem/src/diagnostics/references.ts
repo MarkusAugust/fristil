@@ -20,7 +20,6 @@ import {
   type ReadAttribute,
   readAttributes,
   tagEnd,
-  withoutHidden,
 } from "./diagnostics.js"
 
 const LINK = "https://fristil.sobernetics.no/components/field/"
@@ -118,16 +117,34 @@ const ENTITIES: Record<string, string> = {
   nbsp: " ",
 }
 
+/** Et tegn fra et tall i en entitet, eller entiteten som den sto når tallet ikke er et tegn. */
+const fromCode = (code: number, hit: string) =>
+  Number.isInteger(code) && code > 0 && code <= 0x10ffff
+    ? String.fromCodePoint(code)
+    : hit
+
 /** En attributtverdi slik nettleseren leser den, med entitetene dekodet. */
 function decode(text: string): string {
   return text.replace(/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi, (hit, code) => {
     const lower = code.toLowerCase()
     if (lower.startsWith("#x"))
-      return String.fromCodePoint(Number.parseInt(lower.slice(2), 16))
+      return fromCode(Number.parseInt(lower.slice(2), 16), hit)
     if (lower.startsWith("#"))
-      return String.fromCodePoint(Number.parseInt(lower.slice(1), 10))
+      return fromCode(Number.parseInt(lower.slice(1), 10), hit)
     return ENTITIES[lower] ?? hit
   })
+}
+
+/**
+ * Id-en en lenke som `href="#f%C3%B8dselsdato"` går til. Nettleseren
+ * dekoder prosentkodingen før den leter etter id-en.
+ */
+function fragment(href: string): string {
+  try {
+    return decode(decodeURIComponent(href))
+  } catch {
+    return decode(href)
+  }
 }
 
 /** Bytter hvert tegn med mellomrom, unntatt linjeskift, så posisjonene står. */
@@ -154,50 +171,82 @@ function* scan(
   }
 }
 
+/** Elementer der innholdet er tekst, ikke elementer på siden. */
+const RAW_TEXT = new Set(["script", "style", "textarea", "template"])
+
 /**
  * Siden slik den leses som en hel side, med samme lengde: uten kommentarer,
- * skript og stilark, uten innholdet i `<template>` og `<textarea>`, og uten
- * markup som står i en attributtverdi. Alt dette er tekst for nettleseren,
- * ikke elementer på siden.
+ * uten innholdet i `<script>`, `<style>`, `<textarea>` og `<template>`, og
+ * uten markup som står i en attributtverdi. Alt dette er tekst for
+ * nettleseren, ikke elementer på siden.
  *
  * Innholdet i en `<template>` er ikke i dokumentet. Er den en shadow root
  * (`shadowrootmode`), har den sine egne id-er, og en id der kan verken
  * kollidere med eller pekes på fra siden utenfor. Den sjekkes derfor ikke.
  *
- * En kopieringsknapp har gjerne hele kodeeksempelet i et attributt, med `<`
- * uescapet, som HTML tillater. Uten dette ble eksempelet lest som ekte
- * markup. Verdiene blankes tagg for tagg: et regulært uttrykk over hele siden
- * løp over taggrenser fra en verdi som sluttet på `=`, som base64 i en `src`.
+ * Siden leses én gang, fra start til slutt, tagg for tagg, og ingenting
+ * blankes med et regulært uttrykk over hele teksten. To ganger løp et slikt
+ * uttrykk over taggrenser og slukte ekte markup: fra en attributtverdi som
+ * sluttet på `=`, og fra en `data-code="<textarea>"` til neste ekte
+ * `</textarea>`. Her er en `<` i en attributtverdi aldri starten på noe.
  */
 export function pageSource(text: string): string {
-  let out = withoutHidden(text)
-  out = out.replace(/<template\b[\s\S]*?<\/template\s*>/gi, blank)
-  out = out.replace(
-    /(<textarea\b[^>]*>)([\s\S]*?)(<\/textarea\s*>)/gi,
-    (_, open, content, close) => `${open}${blank(content)}${close}`,
-  )
   const ranges: Array<[number, number]> = []
-  for (const tag of scan(out)) {
-    if (tag.closing) continue
-    const nameEnd = tag.start + 1 + tag.name.length
-    for (const attribute of readAttributes(
-      out.slice(nameEnd, tag.end),
-      nameEnd,
-    ))
+  const tagAt = /<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])/iy
+  let i = 0
+  while (i < text.length) {
+    const lt = text.indexOf("<", i)
+    if (lt < 0) break
+    if (text.startsWith("<!--", lt)) {
+      const close = text.indexOf("-->", lt + 4)
+      const end = close < 0 ? text.length : close + 3
+      ranges.push([lt, end])
+      i = end
+      continue
+    }
+    tagAt.lastIndex = lt
+    const hit = tagAt.exec(text)
+    if (!hit) {
+      i = lt + 1
+      continue
+    }
+    const end = tagEnd(text, lt + hit[0].length)
+    if (end < 0) break
+    i = end + 1
+    if (hit[1] === "/") continue
+
+    const nameEnd = lt + hit[0].length
+    for (const attribute of readAttributes(text.slice(nameEnd, end), nameEnd))
       if (attribute.value?.includes("<"))
         ranges.push([
           attribute.valueStart,
           attribute.valueStart + attribute.value.length,
         ])
+
+    const name = hit[2].toLowerCase()
+    if (RAW_TEXT.has(name)) {
+      const closer = new RegExp(`</${name}\\s*>`, "gi")
+      closer.lastIndex = end + 1
+      const close = closer.exec(text)?.index ?? text.length
+      ranges.push([end + 1, close])
+      i = close
+    }
   }
+
   let result = ""
   let from = 0
   for (const [start, end] of ranges) {
-    result += out.slice(from, start) + blank(out.slice(start, end))
+    result += text.slice(from, start) + blank(text.slice(start, end))
     from = end
   }
-  return result + out.slice(from)
+  return result + text.slice(from)
 }
+
+/**
+ * Om taggen avsluttes med `/>`. En `/` til slutt i en verdi uten
+ * anførselstegn, som `href=/sok/`, hører til verdien.
+ */
+const selfClosing = (body: string) => /(^|[\s"'])\/$/.test(body)
 
 /** Elementene på siden som et tre, i den rekkefølgen de står. */
 function tree(source: string): Node[] {
@@ -215,15 +264,21 @@ function tree(source: string): Node[] {
     const nameStart = tag.start + 1
     const nameEnd = nameStart + tag.name.length
     const body = source.slice(nameEnd, tag.end)
+    const closes = selfClosing(body)
     const node: Node = {
       name: tag.name,
       nameStart,
       nameEnd,
-      attributes: readAttributes(body.replace(/\/$/, ""), nameEnd),
+      attributes: readAttributes(closes ? body.slice(0, -1) : body, nameEnd),
       parent: stack[stack.length - 1],
     }
     nodes.push(node)
-    if (!VOID.has(tag.name) && !body.endsWith("/")) stack.push(node)
+    // I HTML lukker `/>` bare i SVG og MathML. `<div/>` åpner et element.
+    const foreign =
+      tag.name === "svg" ||
+      tag.name === "math" ||
+      stack.some((n) => n.name === "svg" || n.name === "math")
+    if (!VOID.has(tag.name) && !(closes && foreign)) stack.push(node)
   }
   return nodes
 }
@@ -269,9 +324,9 @@ export function checkReferences(text: string): Finding[] {
     for (const [name, loses] of Object.entries(REFERENCES)) {
       const attribute = value(node, name)
       if (!attribute?.value) continue
-      for (const target of attribute.value.split(/\s+/)) {
-        if (!target) continue
-        const at = attribute.valueStart + attribute.value.indexOf(target)
+      for (const token of attribute.value.matchAll(/\S+/g)) {
+        const target = token[0]
+        const at = attribute.valueStart + (token.index ?? 0)
         const found = ids.get(decode(target))
         if (!found) {
           findings.push({
@@ -318,7 +373,7 @@ export function checkReferences(text: string): Finding[] {
     ) {
       const href = value(node, "href")
       const target = href?.value?.startsWith("#") ? href.value.slice(1) : ""
-      if (href && target && !ids.has(decode(target))) {
+      if (href && target && !ids.has(fragment(target))) {
         findings.push({
           start: href.valueStart + 1,
           end: href.valueStart + target.length + 1,

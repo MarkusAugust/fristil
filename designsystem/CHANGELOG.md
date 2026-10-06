@@ -39,7 +39,9 @@ egen overskrift «Brytende».
   annen fil.
 - **`diagnosePage(html)` og `checkReferences(html)`** i
   `@fristil/designsystem/diagnostics` gir den samme sjekken til tester skrevet
-  i JavaScript.
+  i JavaScript. **`pageSource(html)`** gir siden slik sjekken leser den, uten
+  kommentarer, innholdet i `<script>`, `<style>`, `<textarea>` og
+  `<template>`, og markup i attributtverdier, med posisjonene uendret.
 
 ## 0.30.0 (2026-10-05)
 

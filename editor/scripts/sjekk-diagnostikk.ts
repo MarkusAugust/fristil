@@ -20,10 +20,9 @@
 
 import {
   type Classes,
-  checkReferences,
   diagnose,
+  diagnosePage,
   type Elements,
-  pageSource,
 } from "../../designsystem/src/diagnostics/index.js"
 import { classesData, diagnosticsData, snippets } from "./generate"
 
@@ -39,6 +38,11 @@ type Case = {
   severity?: "error" | "warning"
   /** Teksten funnet skal dekke, når posisjonen er poenget. */
   covers?: string
+  /**
+   * Der funnet skal begynne. Trengs når den samme teksten står flere steder:
+   * `covers` alene består da også når funnet peker på feil forekomst.
+   */
+  coversAt?: number
   /** Det meldingen ikke skal nevne. */
   notMentions?: string[]
   /** Rettelsen anvendt på html skal gi dette. */
@@ -852,6 +856,67 @@ cases.push(
     page: true,
   },
   {
+    name: "side: en <textarea> i en attributtverdi sluker ikke siden",
+    html: `<button class="fs-button" data-code="<textarea>">Kopier</button><label class="fs-label" for="borte">X</label><label class="fs-label" for="t">T</label><textarea class="fs-textarea" id="t"></textarea>`,
+    count: 1,
+    page: true,
+    mentions: ["«borte»"],
+  },
+  {
+    name: "side: en <template> i en attributtverdi sluker ikke siden",
+    html: `<button class="fs-button" data-code='<template>'>Kopier</button><label class="fs-label" for="borte">X</label><p>tekst</p><template></template>`,
+    count: 1,
+    page: true,
+    mentions: ["«borte»"],
+  },
+  {
+    name: "side: en kommentar i en attributtverdi sluker ikke siden",
+    html: `<button class="fs-button" data-code="<!--">Kopier</button><label class="fs-label" for="borte">X</label><!-- slutt -->`,
+    count: 1,
+    page: true,
+    mentions: ["«borte»"],
+  },
+  {
+    name: "side: en tallentitet utenfor Unicode krasjer ikke",
+    html: `<p id="&#99999999;">A</p><p id="&#x110000;">B</p>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en prosentkodet lenke i feiloppsummeringen",
+    html: `<label class="fs-label" for="fødselsdato">F</label><input class="fs-input" id="fødselsdato"><fs-error-summary><h2>Feil</h2><ul><li><a href="#f%C3%B8dselsdato">Dato</a></li></ul></fs-error-summary>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en id som er en del av en annen id, teller for seg",
+    html: `${LABELLED.replace('aria-describedby="epost-help"', 'aria-describedby="epost-help epost"')}`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: funnet peker på den id-en som mangler",
+    html: `<input class="fs-input" aria-label="A" aria-describedby="x-help x"><p id="x-help">H</p>`,
+    count: 1,
+    page: true,
+    covers: "x",
+    // Den andre `x`-en i verdien, ikke den første bokstaven i `x-help`.
+    coversAt: '<input class="fs-input" aria-label="A" aria-describedby="x-help '
+      .length,
+  },
+  {
+    name: "side: <label/> åpner et element i HTML",
+    html: `<label class="fs-label"/>Navn <input class="fs-input"></label>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "side: en / til slutt i en verdi uten anførselstegn hører til verdien",
+    html: `<label class="fs-label" for=a/>A</label><input class="fs-input" id="a/">`,
+    count: 0,
+    page: true,
+  },
+  {
     name: "mal: markup i en attributtverdi leses som før uten --rendret",
     html: `<button class="fs-button" data-code="<fs-modal>">Kopier</button>`,
     count: 1,
@@ -884,12 +949,10 @@ for (const c of cases) {
   let found: ReturnType<typeof diagnose>
   const before = performance.now()
   try {
-    // Som `diagnosePage`, men mot listene fra generatoren.
-    const page = c.page ? pageSource(c.html) : c.html
+    // `diagnosePage` selv, mot listene fra generatoren, så en endring i den
+    // også feller her.
     found = c.page
-      ? [...diagnose(page, all, classes), ...checkReferences(page)].sort(
-          (a, b) => a.start - b.start,
-        )
+      ? diagnosePage(c.html, all, classes)
       : diagnose(c.html, all, classes)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
@@ -921,6 +984,8 @@ for (const c of cases) {
     if (covered !== c.covers)
       fail(`funnet dekker «${covered}», ikke «${c.covers}»`)
   }
+  if (c.coversAt !== undefined && first.start !== c.coversAt)
+    fail(`funnet begynner på ${first.start}, ikke på ${c.coversAt}`)
   if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
