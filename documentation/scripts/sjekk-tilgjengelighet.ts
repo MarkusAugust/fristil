@@ -112,6 +112,30 @@ const axeKilde = readFileSync(
 const sider = finnSider()
 const nettleser = await chromium.launch()
 const brudd: Brudd[] = []
+// Sider der skriptet til Expressive Code ikke hadde kjørt etter 20 sekunder.
+// Skrives ut som bevis, men feller ikke sjekken: tilgangen står i HTML-en.
+const ikkeKjort: string[] = []
+
+/*
+ * Hvert kodefelt skal ha tastaturtilgang i HTML-en, før noe skript kjører.
+ *
+ * `ec-tabindex.mjs` setter `tabindex="0"` og `role="region"` på hver `<pre>`
+ * Expressive Code rendrer, og skriptet deres tar dem bort der feltet får
+ * plass. Forsvinner tillegget, kommer tilgangen igjen bare fra skriptet, og
+ * den eneste gangen det sviktet var i CI, uten at noen fant ut hvorfor.
+ * Telles over hver bygde fil, og krever at tallet er større enn null.
+ */
+let kodefelt = 0
+const kodefeltUten: string[] = []
+for (const fil of new Bun.Glob("**/*.html").scanSync(DIST)) {
+  const html = readFileSync(join(DIST, fil), "utf8")
+  for (const [tagg] of html.matchAll(/<pre\b[^>]*\bdata-language\b[^>]*>/g)) {
+    kodefelt++
+    if (!/\btabindex="0"/.test(tagg) || !/\brole="region"/.test(tagg)) {
+      kodefeltUten.push(`${fil}: ${tagg.slice(0, 80)}`)
+    }
+  }
+}
 
 /*
  * Advarslene komponentene skriver ut, samlet på hver eneste side.
@@ -289,19 +313,72 @@ async function sjekkSider(
        * ved neste kjøring. Et vilkår som slår av en venting er det samme som
        * et vilkår som slår av en sjekk.
        */
+      /*
+       * Et synlig felt som får plass, men fortsatt har `tabindex` fra
+       * HTML-en, betyr at skriptet til Expressive Code ikke har kjørt ennå.
+       * Det er ingen feil for leseren, men det var dette som gikk galt i CI
+       * én gang, og da skal rapporten si hva som ble lastet.
+       */
+      const ikkeRyddet = () =>
+        [...document.querySelectorAll(".expressive-code pre")].filter(
+          (felt) =>
+            felt.getClientRects().length > 0 &&
+            felt.scrollWidth <= felt.clientWidth &&
+            felt.hasAttribute("tabindex"),
+        )
+
       const frist = Date.now() + 20_000
-      while (uten().length > 0 && Date.now() < frist) {
+      while (
+        (uten().length > 0 || ikkeRyddet().length > 0) &&
+        Date.now() < frist
+      ) {
         await new Promise((r) => setTimeout(r, 50))
       }
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
       )
 
-      return uten().map((felt) => felt.outerHTML.slice(0, 160))
+      let skriptet: string | null = null
+      if (ikkeRyddet().length > 0) {
+        const lastet = performance
+          .getEntriesByType("resource")
+          .filter((e) => /\/_astro\/ec\.[^/]*\.js$/.test(e.name))
+          // En forespørsel som svarte 404, har også en oppføring her, så
+          // statuskoden må med. `responseStatus` finnes i Chromium.
+          .map((e) => {
+            const t = e as PerformanceResourceTiming & {
+              responseStatus?: number
+            }
+            return `${e.name.split("/").pop()} svarte ${t.responseStatus ?? "ukjent"} etter ${Math.round(t.responseEnd)} ms`
+          })
+        const ledig = await Promise.race([
+          new Promise<string>((r) => {
+            const start = performance.now()
+            requestIdleCallback(() =>
+              r(`kjørte etter ${Math.round(performance.now() - start)} ms`),
+            )
+          }),
+          new Promise<string>((r) =>
+            setTimeout(() => r("kjørte ikke innen 1 s"), 1000),
+          ),
+        ])
+        skriptet =
+          `${ikkeRyddet().length} felt som får plass har fortsatt tabindex. ` +
+          `Skriptet: ${lastet.length > 0 ? lastet.join(", ") : "ikke lastet"}. ` +
+          `requestIdleCallback ${ledig}. Siden er ${document.visibilityState}.`
+      }
+
+      return {
+        uten: uten().map((felt) => felt.outerHTML.slice(0, 160)),
+        skriptet,
+      }
     })
+    if (ventetForgjeves.skriptet !== null) {
+      ikkeKjort.push(`${url} [${tema}]: ${ventetForgjeves.skriptet}`)
+    }
     // Et brudd med eget navn, ikke et kast: da står det i rapporten sammen
     // med resten, og vakten nederst avgjør utfallet som ellers.
-    if (ventetForgjeves.length > 0) {
+    if (ventetForgjeves.uten.length > 0) {
       brudd.push({
         side: url,
         tema,
@@ -309,7 +386,7 @@ async function sjekkSider(
         forklaring:
           "Rullbare <pre> uten tabindex etter 20 sekunder. Enten kjørte ikke " +
           "Expressive Code sitt skript, eller så mangler feltet tastaturtilgang for godt.",
-        elementer: ventetForgjeves,
+        elementer: ventetForgjeves.uten,
       })
     }
     await side.addScriptTag({ content: axeKilde })
@@ -387,6 +464,23 @@ brudd.sort(
 
 console.log(`Sjekket ${sjekket} sidevisninger over ${TEMAER.length} temaer.`)
 
+if (kodefeltUten.length === 0 && kodefelt > 0) {
+  console.log(`Alle ${kodefelt} kodefelt har tabindex og role i HTML-en.`)
+} else if (kodefelt === 0) {
+  console.log(
+    "\n✗ Fant ingen kodefelt i den bygde dokumentasjonen. Rendrer Expressive Code fortsatt <pre data-language>?",
+  )
+} else {
+  console.log(
+    `\n✗ ${kodefeltUten.length} av ${kodefelt} kodefelt mangler tabindex eller role i HTML-en. Er ec-tabindex.mjs med i ec.config.mjs?`,
+  )
+  for (const k of kodefeltUten.slice(0, 10)) console.log(`  ${k}`)
+}
+
+for (const k of ikkeKjort) {
+  console.log(`\nSkriptet til Expressive Code hadde ikke kjørt: ${k}`)
+}
+
 /*
  * Begge rapportene skrives ut, og så avgjøres utfallet.
  *
@@ -419,4 +513,11 @@ if (ufullstendig) {
   process.exit(2)
 }
 
-process.exit(brudd.length > 0 || advarsler.size > 0 ? 1 : 0)
+process.exit(
+  brudd.length > 0 ||
+    advarsler.size > 0 ||
+    kodefelt === 0 ||
+    kodefeltUten.length > 0
+    ? 1
+    : 0,
+)

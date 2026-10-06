@@ -79,17 +79,8 @@ export default defineConfig({
         SiteTitle: "./src/components/SiteTitle.astro",
         MarkdownContent: "./src/components/MarkdownContent.astro",
       },
-      /*
-       * Expressive Code skriver stilarket sitt som en `<link>` inne i
-       * `<body>`, ved den første kodeblokken på siden. På komponentsidene ser
-       * nettleseren den først rundt 36 000 tegn inn i dokumentet, og må stoppe
-       * tegningen på den: 59 av 61 sider hadde et tegneblokkerende stilark
-       * midt i innholdet. Med `emitExternalStylesheet: false` legges stilen
-       * inline i stedet, og ingen side har det lenger. Prisen er omtrent
-       * 4 kB gzip mer HTML per side, altså ingen ekstra rundtur mot en litt
-       * større førstelevering.
-       */
-      expressiveCode: { emitExternalStylesheet: false },
+      // Valgene for Expressive Code står i `ec.config.mjs`. `<Code>` krever at
+      // de kan gjøres om til JSON når de står her, og det kan ikke et tillegg.
       /*
        * Tre stilark, og det er ikke en innstramming for innstrammingens skyld:
        * de 42 komponentstilarkene som sto her ble lastet på hver av de 62
