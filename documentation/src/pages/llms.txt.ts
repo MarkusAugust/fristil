@@ -65,9 +65,14 @@ const REGLENE = `Fire feil står for nesten alt som går galt. De gjelder i alle
 Sjekk markupen når du er ferdig, og rett det den melder:
 
     npx @fristil/designsystem sjekk <fil>
+    npx @fristil/designsystem sjekk http://localhost:8080/side
 
 Den kjenner hver klasse, hvert element, hvert attributt og hver lovlige verdi,
-skriver \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode ved funn.`
+skriver \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode ved funn.
+Med en adresse sjekker den siden slik serveren sender den, og krever i tillegg
+at hver \`for\` og \`aria-describedby\` peker på en id som finnes, og at hvert
+felt har en ledetekst. Du er ferdig når begge svarer «Markupen stemmer med
+Fristil». Alt om kommandoene: ${BASE}/kommandolinjen/`
 
 type Rad = { tittel: string; beskrivelse: string; adresse: string }
 

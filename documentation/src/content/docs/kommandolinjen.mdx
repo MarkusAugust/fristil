@@ -73,7 +73,9 @@ koblingen stemmer:
   `<label>` rundt, `aria-label` eller `aria-labelledby`;
 - hver synlige hjelpetekst og feilmelding er pekt på fra `aria-describedby`.
   En tekst er ikke synlig når den selv eller en forelder har `hidden`, eller
-  står i en lukket `<dialog>` eller `<details>`;
+  står i en lukket `<dialog>` eller `<details>`. Et statusfelt, med
+  `role="status"`, `role="alert"` eller `aria-live`, leses opp av seg selv og
+  trenger ingen kobling;
 - hver lenke i `<fs-error-summary>` går til en id som finnes.
 
 En adresse sjekkes alltid slik. Filer og standard inn sjekkes slik med

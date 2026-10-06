@@ -834,6 +834,12 @@ cases.push(
     mentions: ["Hjelpeteksten"],
   },
   {
+    name: "side: en hjelpetekst som er et statusfelt, trenger ingen kobling",
+    html: `<p class="fs-help-text" role="status"></p><p class="fs-error-text" aria-live="assertive"></p>`,
+    count: 0,
+    page: true,
+  },
+  {
     name: "side: entiteter dekodes før id-ene sammenlignes",
     html: `<label class="fs-label" for="c&#46;d">C</label><input class="fs-input" id="c.d">`,
     count: 0,

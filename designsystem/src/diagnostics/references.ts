@@ -368,7 +368,12 @@ export function checkReferences(text: string): Finding[] {
       : hasClass(node, (c) => c === "fs-help-text")
         ? "Hjelpeteksten"
         : undefined
-    if (kind && !isHidden(node)) {
+    // Et statusfelt, med `role="status"`, `role="alert"` eller `aria-live`,
+    // leses opp av seg selv når det endres, og trenger ingen kobling.
+    const live =
+      ["status", "alert"].includes(value(node, "role")?.value ?? "") ||
+      value(node, "aria-live") !== undefined
+    if (kind && !live && !isHidden(node)) {
       const id = value(node, "id")?.value
       if (!id || !describedBy.has(decode(id))) {
         findings.push({

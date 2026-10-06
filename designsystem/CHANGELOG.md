@@ -31,7 +31,8 @@ egen overskrift «Brytende».
   kreves det i tillegg at hver id i `for`, `aria-describedby`,
   `aria-labelledby` og `aria-controls` finnes, at `for` peker på et felt, at
   ingen id står to ganger, at hvert felt med en `fs-`-klasse har en
-  ledetekst, at hver synlige hjelpetekst og feilmelding er koblet, og at hver
+  ledetekst, at hver synlige hjelpetekst og feilmelding som ikke er et
+  statusfelt er koblet, og at hver
   lenke i `<fs-error-summary>` går til en id som finnes. En adresse som svarer
   med noe annet enn HTML, gir feilkode. Bar markup inni `<fs-field>` gir ingen
   funn. En mal sjekkes som før uten flagget, siden en id der kan stå i en
