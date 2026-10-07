@@ -8,13 +8,23 @@
  * Kjør med: bun run build && xvfb-run -a bun scripts/sjekk-vscode.ts
  */
 
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { runTests } from "@vscode/test-electron"
 
 const utvidelse = fileURLToPath(new URL("..", import.meta.url))
+const VERSJON = (
+  JSON.parse(readFileSync(join(utvidelse, "package.json"), "utf8")) as {
+    engines: { vscode: string }
+  }
+).engines.vscode.replace(/^\^/, "")
 
 try {
   await runTests({
+    // Den laveste versjonen utvidelsen lover å virke på, `engines.vscode`.
+    // Den nyeste endrer seg uten varsel, og arkivet for 1.141.0 kom avkuttet.
+    version: VERSJON,
     extensionDevelopmentPath: utvidelse,
     extensionTestsPath: fileURLToPath(
       new URL("../test/suite.cjs", import.meta.url),

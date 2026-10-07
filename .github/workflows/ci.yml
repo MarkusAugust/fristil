@@ -95,6 +95,13 @@ jobs:
           (cd editor && bun run build)
           FRISTIL_CLI="[\"node\",\"$PWD/editor/dist/server.js\"]" bun designsystem/scripts/sjekk-lsp.ts
 
+      # VS Code er 300 MB, og hentes bare når versjonen i engines endres.
+      - name: Hent VS Code fra hurtigbufferen
+        uses: actions/cache@v6
+        with:
+          path: .vscode-test
+          key: vscode-${{ runner.os }}-${{ hashFiles('editor/package.json') }}
+
       # Utvidelsen i en ekte VS Code, med språkserveren koblet til.
       - name: VS Code-utvidelsen
         run: xvfb-run -a bun editor/scripts/sjekk-vscode.ts
