@@ -5,6 +5,8 @@ import com.dylibso.chicory.build.time.compiler.Generator
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -31,6 +33,14 @@ abstract class CompileCore : DefaultTask() {
     @get:OutputDirectory
     abstract val sources: DirectoryProperty
 
+    /** Navnet på klassen, med pakken. Kjernen er `no.fristil.FristilCore`. */
+    @get:Input
+    abstract val className: Property<String>
+
+    init {
+        className.convention("no.fristil.FristilCore")
+    }
+
     @TaskAction
     fun compile() {
         classes.get().asFile.apply { deleteRecursively(); mkdirs() }
@@ -38,14 +48,14 @@ abstract class CompileCore : DefaultTask() {
         val config =
             Config.builder()
                 .withWasmFile(wasm.get().asFile.toPath())
-                .withName("no.fristil.FristilCore")
+                .withName(className.get())
                 .withTargetClassFolder(classes.get().asFile.toPath())
                 .withTargetWasmFolder(classes.get().asFile.toPath())
                 .withTargetSourceFolder(sources.get().asFile.toPath())
                 .build()
         val generator = Generator(config)
         val interpreted = generator.generateResources()
-        check(interpreted.isEmpty()) { "Chicory kunne ikke kompilere funksjonene $interpreted i kjernen." }
+        check(interpreted.isEmpty()) { "Chicory kunne ikke kompilere funksjonene $interpreted i ${className.get()}." }
         generator.generateMetaWasm(interpreted)
         generator.generateSources()
     }

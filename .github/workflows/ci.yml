@@ -81,6 +81,21 @@ jobs:
           cargo build --release -p fristil --manifest-path kjerne/Cargo.toml
           FRISTIL_SAMMENLIGN="$PWD/kjerne/target/release/fristil" bun designsystem/scripts/sjekk-cli.ts
 
+      # Java 17, den laveste versjonen jar-en lover å virke på.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Og det samme for `java -jar fristil.jar`, som kjører WASI-modulen med
+      # Chicory.
+      - name: Kommandolinja på JVM-en svarer som den i pakken
+        run: |
+          (cd kotlin && ./gradlew :kommandolinje:jar)
+          FRISTIL_SAMMENLIGN="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-cli.ts
+
       # De genererte filene skal være de generatoren ville skrevet nå.
       #
       # `build` kjører `generate` som første steg, så vaktpostene sammenligner

@@ -50,10 +50,15 @@ pub fn run(arguments: &[String]) {
     let inputs: Vec<&String> = arguments.iter().filter(|a| *a != "--rendret").collect();
 
     if inputs.is_empty() {
-        // WASI kan ikke se om standard inn er en terminal, så verten sier det.
-        if std::io::stdin().is_terminal()
-            || std::env::var("FRISTIL_TERMINAL").is_ok_and(|v| v == "1")
-        {
+        // WASI kan ikke se om standard inn er en terminal, så verten sier
+        // det. Chicory melder et rør som en terminal, så som WASI-modul
+        // stoler kommandolinja bare på verten.
+        let terminal = if cfg!(target_os = "wasi") {
+            std::env::var("FRISTIL_TERMINAL").is_ok_and(|v| v == "1")
+        } else {
+            std::io::stdin().is_terminal()
+        };
+        if terminal {
             error("Leser markup fra standard inn. Avslutt med Ctrl-D.");
         }
         let bytes = read_all_input();

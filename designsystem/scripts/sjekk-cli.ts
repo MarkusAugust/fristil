@@ -24,12 +24,17 @@ const cli = join(pakke, "dist/cli.js")
  * `FRISTIL_CLI` peker på en annen, som den kjørbare fila fra `kjerne/cli`, så
  * de samme påstandene prøves mot den. `FRISTIL_SAMMENLIGN` kjører hver
  * kjøring med begge og krever det samme svaret byte for byte: utdata,
- * feilkanalen og feilkoden.
+ * feilkanalen og feilkoden. Begge kan være en JSON-liste, en kommando med
+ * argumenter, som `["java", "-jar", "fristil.jar"]`.
  */
+const kommando = (verdi: string): string[] =>
+  verdi.startsWith("[") ? JSON.parse(verdi) : [verdi]
 const KOMMANDO = process.env.FRISTIL_CLI
-  ? [process.env.FRISTIL_CLI]
+  ? kommando(process.env.FRISTIL_CLI)
   : ["node", cli]
 const SAMMENLIGN = process.env.FRISTIL_SAMMENLIGN
+  ? kommando(process.env.FRISTIL_SAMMENLIGN)
+  : undefined
 const avvik: string[] = []
 
 const FARGER = [
@@ -66,7 +71,7 @@ async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   const resultat = await svar(start(KOMMANDO))
   // `overta` skrives i Rust i fase 4D, og til da finnes den bare her.
   if (SAMMENLIGN && argumenter[0] !== "overta") {
-    const annet = await svar(start([SAMMENLIGN]))
+    const annet = await svar(start(SAMMENLIGN))
     /*
      * To forklaringer kom fra JavaScript-motoren selv, og kan ikke bli like:
      * hva som er galt i en JSON-fil, og hvorfor ingen svarte på en adresse
