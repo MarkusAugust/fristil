@@ -31,6 +31,7 @@ pub mod manifest;
 pub mod references;
 pub mod suppress;
 pub mod text;
+pub mod theme;
 pub mod types;
 
 use std::cell::RefCell;
@@ -124,7 +125,7 @@ pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
     out
 }
 
-fn json_string(s: &str) -> String {
+pub(crate) fn json_string(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
     out.push('"');
     for c in s.chars() {
@@ -209,6 +210,81 @@ pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
             1
         }
     }
+}
+
+fn json_object(entries: &[(String, String)]) -> String {
+    let fields: Vec<String> = entries
+        .iter()
+        .map(|(k, v)| format!("{}:{}", json_string(k), json_string(v)))
+        .collect();
+    format!("{{{}}}", fields.join(","))
+}
+
+/// Bygger et tema av oppskriften verten har skrevet inn, som JSON: de samme
+/// feltene som `ThemeInput` i TypeScript. Svarer 0 med temaet, eller 1 med
+/// `{"error": …}`, som `load_manifest_raw`.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
+    let built = json::parse(&read_input(ptr, length)).and_then(|input| theme::build_theme(&input));
+    match built {
+        Ok(t) => {
+            let violations: Vec<String> = t
+                .violations
+                .iter()
+                .map(|v| {
+                    format!(
+                        "{{\"family\":{},\"promise\":{},\"ratio\":{},\"required\":{}}}",
+                        json_string(&v.family),
+                        json_string(&v.promise),
+                        theme::js_number(v.ratio),
+                        theme::js_number(v.required)
+                    )
+                })
+                .collect();
+            respond(format!(
+                "{{\"light\":{},\"dark\":{},\"violations\":[{}],\"css\":{}}}",
+                json_object(&t.light),
+                json_object(&t.dark),
+                violations.join(","),
+                json_string(&t.css)
+            ));
+            0
+        }
+        Err(error) => {
+            respond(format!("{{\"error\":{}}}", json_string(&error)));
+            1
+        }
+    }
+}
+
+/// Kontrollerer et tema verten har skrevet inn, som CSS-tekst.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) {
+    let report = theme::check::inspect_theme(&read_input(ptr, length));
+    let problems: Vec<String> = report
+        .problems
+        .iter()
+        .map(|p| {
+            format!(
+                "{{\"selector\":{},\"message\":{}}}",
+                json_string(&p.selector),
+                json_string(&p.message)
+            )
+        })
+        .collect();
+    respond(format!(
+        "{{\"problems\":[{}],\"blocks\":{},\"declarations\":{},\"promises\":{}}}",
+        problems.join(","),
+        report.blocks,
+        report.declarations,
+        report.promises
+    ));
 }
 
 /// Går tilbake til det innebygde manifestet.

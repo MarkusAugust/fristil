@@ -1,5 +1,6 @@
 /**
- * Kjernen: Fristils sjekk, skrevet i Rust og bygget til én WebAssembly-modul.
+ * Kjernen: Fristils sjekk og temagenerator, skrevet i Rust og bygget til én
+ * WebAssembly-modul.
  *
  * Den samme modulen kjøres her, i VS Code, på JVM-en (Chicory) og i IntelliJ,
  * og gir det samme svaret overalt. Modulen har ingen importer, så den trenger
@@ -61,6 +62,34 @@ export type CoreVersion = {
   schemaVersion: number
 }
 
+/** Et løfte i fargekontrakten som ikke holder. */
+export type Violation = {
+  family: string
+  promise: string
+  ratio: number
+  required: number
+}
+
+/** Temaet `buildTheme` gir: tokenene per utseende, løftene som ryker, og CSS-en. */
+export type CoreTheme = {
+  light: Record<string, string>
+  dark: Record<string, string>
+  /** Løfter som ikke holder. Tom når temaet er i orden. */
+  violations: Violation[]
+  css: string
+}
+
+/** Det `inspectTheme` fant i et tema konsumenten har skrevet selv. */
+export type CoreThemeReport = {
+  problems: { selector: string; message: string }[]
+  /** Blokker som faktisk ble lest. */
+  blocks: number
+  /** Verdier konsumenten selv skrev, og som ble forstått. */
+  declarations: number
+  /** Løfter som faktisk ble kontrollert. */
+  promises: number
+}
+
 export type Core = {
   diagnoseMarkup(html: string): Finding[]
   diagnosePage(html: string): Finding[]
@@ -69,6 +98,10 @@ export type Core = {
   /** Går tilbake til manifestet kjernen er bygget med. */
   resetManifest(): void
   version(): CoreVersion
+  /** Bygger et tema av oppskriften. Kaster med kjernens forklaring når den ikke kan brukes. */
+  buildTheme(recipe: unknown): CoreTheme
+  /** Kontrollerer hvert løfte i et tema skrevet som CSS. */
+  inspectTheme(css: string): CoreThemeReport
 }
 
 type Exports = {
@@ -79,6 +112,8 @@ type Exports = {
   load_manifest_raw(pointer: number, length: number): number
   reset_manifest(): void
   version_raw(): void
+  build_theme_raw(pointer: number, length: number): number
+  inspect_theme_raw(pointer: number, length: number): void
   result_ptr(): number
   result_len(): number
 }
@@ -124,6 +159,15 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
     resetManifest: () => e.reset_manifest(),
     version: () => {
       e.version_raw()
+      return read()
+    },
+    buildTheme: (recipe) => {
+      if (e.build_theme_raw(...write(JSON.stringify(recipe))) !== 0)
+        throw new Error(read<{ error: string }>().error)
+      return read()
+    },
+    inspectTheme: (css) => {
+      e.inspect_theme_raw(...write(css))
       return read()
     },
   }

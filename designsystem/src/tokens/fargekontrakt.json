@@ -1,0 +1,231 @@
+{
+  "$comment": "Fargekontrakten: familiene, Fristils merkefarger, lysheten og metningen per rolle, lagene bare den nøytrale familien har, kontrastkravene og løftene. Lest av kjernen (kjerne/src/theme/) og av skriptene i designsystem/. Et løfte med own: true måles mot familiens egen rolle, ellers mot laget i den nøytrale familien.",
+  "families": [
+    "accent",
+    "visited",
+    "brand1",
+    "brand2",
+    "brand3",
+    "neutral",
+    "danger",
+    "warning",
+    "success"
+  ],
+  "brands": {
+    "accent": "#1362ae",
+    "visited": "#5a77a8",
+    "brand1": "#0d7a5f",
+    "brand2": "#5b3fa0",
+    "brand3": "#b04c5c",
+    "neutral": "#24272b",
+    "danger": "#a82e39",
+    "warning": "#896508",
+    "success": "#316f2a"
+  },
+  "roles": {
+    "surface": {
+      "lightness": {
+        "light": 0.96,
+        "dark": 0.26
+      },
+      "chroma": 0.22
+    },
+    "borderSubtle": {
+      "lightness": {
+        "light": 0.88,
+        "dark": 0.34
+      },
+      "chroma": 0.35
+    },
+    "border": {
+      "lightness": {
+        "light": 0.575,
+        "dark": 0.625
+      },
+      "chroma": 0.55
+    },
+    "borderStrong": {
+      "lightness": {
+        "light": 0.48,
+        "dark": 0.74
+      },
+      "chroma": 0.6
+    },
+    "fill": {
+      "lightness": {
+        "light": 0.53,
+        "dark": 0.65
+      },
+      "chroma": 1
+    },
+    "text": {
+      "lightness": {
+        "light": 0.42,
+        "dark": 0.82
+      },
+      "chroma": 0.85
+    },
+    "textStrong": {
+      "lightness": {
+        "light": 0.28,
+        "dark": 0.93
+      },
+      "chroma": 0.5
+    },
+    "textSubtle": {
+      "lightness": {
+        "light": 0.485,
+        "dark": 0.73
+      },
+      "chroma": 0.7
+    },
+    "content": {
+      "lightness": {
+        "light": 0.99,
+        "dark": 0.16
+      },
+      "chroma": 0.04
+    }
+  },
+  "layers": {
+    "canvas": {
+      "lightness": {
+        "light": 1,
+        "dark": 0.18
+      },
+      "chroma": 0.08
+    },
+    "raised": {
+      "lightness": {
+        "light": 0.92,
+        "dark": 0.32
+      },
+      "chroma": 0.12
+    }
+  },
+  "requirements": {
+    "text": 4.6,
+    "graphic": 3.1
+  },
+  "promises": [
+    {
+      "name": "text mot canvas",
+      "foreground": "text",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text mot surface",
+      "foreground": "text",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text mot raised",
+      "foreground": "text",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text mot egen surface",
+      "foreground": "text",
+      "background": "surface",
+      "own": true,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong mot canvas",
+      "foreground": "textStrong",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong mot surface",
+      "foreground": "textStrong",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong mot raised",
+      "foreground": "textStrong",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle mot canvas",
+      "foreground": "textSubtle",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle mot surface",
+      "foreground": "textSubtle",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle mot raised",
+      "foreground": "textSubtle",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "border mot canvas",
+      "foreground": "border",
+      "background": "canvas",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "border mot raised",
+      "foreground": "border",
+      "background": "raised",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "border mot egen surface",
+      "foreground": "border",
+      "background": "surface",
+      "own": true,
+      "requirement": "graphic"
+    },
+    {
+      "name": "fill mot canvas",
+      "foreground": "fill",
+      "background": "canvas",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "fill mot raised",
+      "foreground": "fill",
+      "background": "raised",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "content oppå fill",
+      "foreground": "content",
+      "background": "fill",
+      "own": true,
+      "requirement": "text"
+    },
+    {
+      "name": "content oppå text",
+      "foreground": "content",
+      "background": "text",
+      "own": true,
+      "requirement": "text"
+    }
+  ]
+}
