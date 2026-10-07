@@ -517,3 +517,58 @@ fn counts_the_consumers_own_values_not_the_defaults() {
     assert_eq!(one_line.declarations, 1);
     assert_eq!(whole.declarations, family_count() * role_count() + 2);
 }
+
+// Sjekken leser CSS med tokenizeren, slik nettleseren gjør. Den gamle lesingen
+// talte klammer og semikolon tegn for tegn, og ble lurt av alle disse.
+
+#[test]
+fn a_brace_in_a_string_does_not_end_the_block() {
+    let css = ":root { content: \"}\"; --fs-color-danger-text: #ff9999; }";
+    let blocks = parse_blocks(css);
+    assert_eq!(blocks.len(), 1);
+    assert_eq!(
+        declared(&blocks[0], "--fs-color-danger-text"),
+        Some("#ff9999")
+    );
+    let report = inspect_theme(css);
+    assert!(!messages(&report)
+        .iter()
+        .any(|m| m.contains("ikke er lukket")));
+    assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
+}
+
+#[test]
+fn a_semicolon_in_a_string_does_not_split_a_declaration() {
+    let css = ":root { font-family: \"a;--fs-color-accent-text: #ffffff\"; --fs-color-danger-text: #7a1f28 }";
+    let blocks = parse_blocks(css);
+    assert_eq!(
+        blocks[0].declarations.len(),
+        1,
+        "{:?}",
+        blocks[0].declarations
+    );
+    assert!(inspect_theme(css).problems.is_empty());
+}
+
+#[test]
+fn a_brace_in_a_url_is_not_a_block() {
+    let css = ":root { background: url(data:image/svg+xml,{x}); --fs-color-danger-text: #7a1f28 }";
+    assert_eq!(parse_blocks(css).len(), 1);
+    assert!(inspect_theme(css).problems.is_empty());
+}
+
+#[test]
+fn a_comment_in_the_selector_is_not_shown() {
+    let css = ":root /* lyst */ { --fs-color-danger-text: #ff9999 }";
+    assert_eq!(parse_blocks(css)[0].selector, ":root");
+}
+
+#[test]
+fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
+    let report = inspect_theme(":root { --fs-color-danger-text: #ff9999");
+    assert_eq!(report.blocks, 1);
+    assert!(messages(&report)
+        .iter()
+        .any(|m| m.contains("ikke er lukket")));
+    assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
+}

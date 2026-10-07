@@ -1,6 +1,6 @@
 # Fristil-kjernen
 
-Fristils sjekk i Rust, kompilert til én WebAssembly-modul som alle
+Fristils sjekk og temagenerator i Rust, kompilert til én WebAssembly-modul som alle
 vertsspråk kjører: Node, Bun og nettleseren direkte (`@fristil/designsystem/diagnostics`),
 VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
 (`../editor-intellij`), og Go, .NET og Python gjennom sine egne runtimer.
@@ -39,6 +39,18 @@ Lasteren for JavaScript står i `designsystem/src/diagnostics/core.ts`, og
 den for Kotlin i `../kotlin/src/main/kotlin/no/fristil/Fristil.kt`. Hver er
 rundt 40 linjer.
 
+## Temaet
+
+`src/theme/` bygger et fargetema av merkefarger og kontrollerer et tema skrevet
+som CSS. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
+`designsystem/src/tokens/fargekontrakt.json`, som kjernen bærer innebygd.
+`build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
+eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
+svarer med funnene og hva som ble kontrollert.
+
+CSS-en leses med `cssparser`, tokenizeren fra Servo som Firefox bruker, etter
+CSS Syntax Level 3. Det er kjernens eneste avhengighet.
+
 ## Ordforrådet
 
 Kjernen leser `designsystem/manifest/manifest.json`, som pakken skriver fra
@@ -72,6 +84,11 @@ Reglene står i `src/types.rs` (`RULES`).
 - `editor/scripts/sjekk-diagnostikk.ts`: 156 tilfeller som hver sier hvor
   mange funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
+- `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
+  merkefarger rundt hele fargesirkelen i begge utseender.
+- `tema/`: oppskrifter og temaer med svaret ved siden av, skrevet av
+  TypeScript-utgaven av temaet før den ble slettet. `sjekk-kjerne.ts` krever
+  det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
 - `../kotlin`: den samme fasiten fra JVM-en.
 
 ## Kjør

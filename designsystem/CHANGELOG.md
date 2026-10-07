@@ -100,6 +100,12 @@ egen overskrift «Brytende».
   `@* *@` i Razor, `{{/* */}}` i Go, `{# #}` i Jinja, Twig og Nunjucks, og
   `<%-- --%>` i JSP ble sjekket som om den ble rendret, og en tagg i en
   kommentar ga funn.
+- **`fristil sjekk-tema` og `inspectTheme` leser CSS med en ekte
+  tokenizer**, den fra Servo som Firefox bruker. En klamme eller et semikolon
+  i en streng, i `url(…)` eller i en kommentar delte en blokk eller en
+  deklarasjon, og en farge kunne forsvinne fra kontrollen uten et ord. En
+  blokk som ikke er lukket, leses nå til fila slutter, slik nettleseren gjør,
+  i stedet for å hoppes over, og meldingen om klammene står fortsatt.
 - **En stor side med mange funn sjekkes raskere.** Linja og kolonnen til hvert
   funn ble regnet fra starten av teksten. 6000 funn på en side med 3000 linjer
   tok en kvart sekund, og tar nå 25 millisekunder.

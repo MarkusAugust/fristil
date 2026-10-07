@@ -202,6 +202,79 @@ for (const [navn, ventet] of Object.entries(rapporter)) {
     )
 }
 
+// Temaene ødelagt, klipt og skjøtet: kjernen skal svare, ikke krasje. En
+// panikk i Rust blir et krasj i WebAssembly, og da får verten bare
+// «unreachable». En oppskrift kan avvises, men bare med en forklaring.
+let temafrø = 20261008
+const temaTilfeldig = (n: number) => {
+  temafrø = (temafrø * 1103515245 + 12345) % 2 ** 31
+  return temafrø % n
+}
+const temaKilder = readdirSync(TEMA)
+  .filter((f) => f.endsWith(".css"))
+  .map((f) => readFileSync(join(TEMA, f), "utf8"))
+const TEMABITER = [
+  "{",
+  "}",
+  ";",
+  ":",
+  '"',
+  "'",
+  "/*",
+  "*/",
+  "\\",
+  "url(",
+  ")",
+  "@media x {",
+  "!important",
+  "\n",
+  "ø",
+  "#",
+]
+const ØDELAGTE_TEMAER = 2000
+for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
+  let css = temaKilder[temaTilfeldig(temaKilder.length)]
+  for (let steg = 0, ganger = 1 + temaTilfeldig(6); steg < ganger; steg++) {
+    const ved = temaTilfeldig(css.length + 1)
+    const valg = temaTilfeldig(3)
+    if (valg === 0)
+      css =
+        css.slice(0, ved) +
+        TEMABITER[temaTilfeldig(TEMABITER.length)] +
+        css.slice(ved)
+    else if (valg === 1)
+      css = css.slice(0, ved) + css.slice(ved + 1 + temaTilfeldig(30))
+    else css = css.slice(0, ved)
+  }
+  antall += 1
+  try {
+    kjerne.inspectTheme(css)
+  } catch (e) {
+    feil.push(
+      `inspectTheme krasjet på ${JSON.stringify(css).slice(0, 300)}: ${e}`,
+    )
+  }
+}
+for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
+  for (const ødelagt of [
+    { ...(oppskrift as object), accent: 42 },
+    { typography: { fontFamily: ["Arial"] } },
+    { shape: { buttonRadius: null } },
+    "ikke et objekt",
+    [],
+  ]) {
+    antall += 1
+    try {
+      kjerne.buildTheme(ødelagt)
+    } catch (e) {
+      if (!(e instanceof Error) || /unreachable|RuntimeError/.test(String(e)))
+        feil.push(
+          `buildTheme krasjet på ${navn}, ${JSON.stringify(ødelagt)}: ${e}`,
+        )
+    }
+  }
+}
+
 // Malspråkene: hver fil i `maler/` har markup med malsyntaks, og nøyaktig én
 // skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
 const MALER = join(ROT, "kjerne/maler")
@@ -316,7 +389,7 @@ for (let n = 0; n < ØDELAGTE; n++) {
 }
 
 console.log(
-  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
+  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer og ${ØDELAGTE_TEMAER} ødelagte, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
 )
 if (feil.length > 0) {
   console.error(`\n${feil.length} feil:\n`)

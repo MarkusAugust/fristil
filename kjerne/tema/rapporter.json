@@ -132,7 +132,7 @@
     "problems": [
       {
         "selector": "(hele fila)",
-        "message": "Fila har 2 «{» og 1 «}». En blokk som ikke er lukket blir ikke lest, så deler av temaet kan være ukontrollert."
+        "message": "Fila har 2 «{» og 1 «}». En blokk som ikke er lukket, leses til fila slutter, så noe av temaet kan mangle eller være lest feil."
       }
     ],
     "blocks": 1,

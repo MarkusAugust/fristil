@@ -13,6 +13,10 @@ use super::contract::{
     Family, Layers,
 };
 use super::{is_js_space, js_number, js_trim};
+use cssparser::{
+    AtRuleParser, CowRcStr, DeclarationParser, ParseError, Parser, ParserState,
+    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, StyleSheetParser,
+};
 
 pub struct ParsedBlock {
     /// Selektoren blokka sto under, brukt i meldingene.
@@ -23,78 +27,248 @@ pub struct ParsedBlock {
     pub declarations: Vec<(String, String)>,
 }
 
-/// `/\/\*[\s\S]*?\*\//g`: kommentarene som er lukket, tatt bort.
+/// Kommentarene tatt bort, til teksten i en selektor og en verdi.
 fn without_comments(css: &str) -> String {
     let mut out = String::with_capacity(css.len());
     let mut rest = css;
     while let Some(start) = rest.find("/*") {
+        out.push_str(&rest[..start]);
         match rest[start + 2..].find("*/") {
-            Some(end) => {
-                out.push_str(&rest[..start]);
-                rest = &rest[start + 2 + end + 2..];
-            }
-            None => break,
+            Some(end) => rest = &rest[start + 2 + end + 2..],
+            None => return out,
         }
     }
     out.push_str(rest);
     out
 }
 
+/// En blokk slik CSS-en skriver den: selektoren, deklarasjonene i den, og
+/// blokkene inni.
+struct Node {
+    selector: String,
+    declarations: Vec<(String, String)>,
+    children: Vec<Node>,
+}
+
+/// Det én regel i en blokk er: en deklarasjon, en nøstet blokk, eller noe
+/// sjekken ikke bryr seg om, som `@import`.
+enum Item {
+    Declaration(String, String),
+    Block(Node),
+    Nothing,
+}
+
+/// Leseren cssparser kaller for hver regel. Den tar vare på teksten slik den
+/// sto, så meldingene viser selektoren konsumenten skrev.
+struct Reader;
+
+/// Alle tokenene som er igjen, som teksten de sto skrevet med.
+fn rest_as_text<'i>(input: &mut Parser<'i>) -> String {
+    let start = input.position();
+    while input.next_including_whitespace_and_comments().is_ok() {}
+    js_trim(&without_comments(input.slice_from(start))).to_string()
+}
+
+fn body<'i>(input: &mut Parser<'i>) -> (Vec<(String, String)>, Vec<Node>) {
+    let mut declarations: Vec<(String, String)> = Vec::new();
+    let mut children = Vec::new();
+    let mut reader = Reader;
+    for item in RuleBodyParser::new(input, &mut reader).flatten() {
+        match item {
+            Item::Declaration(name, value) => {
+                match declarations.iter_mut().find(|(n, _)| *n == name) {
+                    Some(existing) => existing.1 = value,
+                    None => declarations.push((name, value)),
+                }
+            }
+            Item::Block(node) => children.push(node),
+            Item::Nothing => {}
+        }
+    }
+    (declarations, children)
+}
+
+impl<'i> DeclarationParser<'i> for Reader {
+    type Declaration = Item;
+    type Error = ();
+
+    fn parse_value(
+        &mut self,
+        name: CowRcStr<'i>,
+        input: &mut Parser<'i>,
+        _start: &ParserState,
+    ) -> Result<Item, ParseError<()>> {
+        let value = rest_as_text(input);
+        // Bare det sjekken bruker: fargene, og `color-scheme`, som sier om
+        // blokka er lys eller mørk. Navnet på en egendefinert variabel skiller
+        // mellom store og små bokstaver, navnet på en egenskap gjør det ikke.
+        if name.starts_with("--fs-color-") || name.eq_ignore_ascii_case("color-scheme") {
+            let name = if name.starts_with("--") {
+                name.to_string()
+            } else {
+                name.to_ascii_lowercase()
+            };
+            Ok(Item::Declaration(name, value))
+        } else {
+            Ok(Item::Nothing)
+        }
+    }
+}
+
+impl<'i> QualifiedRuleParser<'i> for Reader {
+    type Prelude = String;
+    type QualifiedRule = Item;
+    type Error = ();
+
+    fn parse_prelude(&mut self, input: &mut Parser<'i>) -> Result<String, ParseError<()>> {
+        Ok(rest_as_text(input))
+    }
+
+    fn parse_block(
+        &mut self,
+        selector: String,
+        _start: &ParserState,
+        input: &mut Parser<'i>,
+    ) -> Result<Item, ParseError<()>> {
+        let (declarations, children) = body(input);
+        Ok(Item::Block(Node {
+            selector,
+            declarations,
+            children,
+        }))
+    }
+}
+
+impl<'i> AtRuleParser<'i> for Reader {
+    type Prelude = String;
+    type AtRule = Item;
+    type Error = ();
+
+    fn parse_prelude(
+        &mut self,
+        name: CowRcStr<'i>,
+        input: &mut Parser<'i>,
+    ) -> Result<String, ParseError<()>> {
+        let prelude = rest_as_text(input);
+        Ok(js_trim(&format!("@{name} {prelude}")).to_string())
+    }
+
+    fn rule_without_block(&mut self, _prelude: String, _start: &ParserState) -> Result<Item, ()> {
+        Ok(Item::Nothing)
+    }
+
+    fn parse_block(
+        &mut self,
+        selector: String,
+        _start: &ParserState,
+        input: &mut Parser<'i>,
+    ) -> Result<Item, ParseError<()>> {
+        let (declarations, children) = body(input);
+        Ok(Item::Block(Node {
+            selector,
+            declarations,
+            children,
+        }))
+    }
+}
+
+impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
+    fn parse_declarations(&self) -> bool {
+        true
+    }
+    fn parse_qualified(&self) -> bool {
+        true
+    }
+}
+
+/// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
+/// over seg som sti.
+fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
+    path.push(node.selector);
+    for child in node.children {
+        flatten(child, path, out);
+    }
+    let colors: Vec<(String, String)> = node
+        .declarations
+        .iter()
+        .filter(|(n, _)| n.starts_with("--fs-color-"))
+        .map(|(n, v)| (n.clone(), without_important(v).to_string()))
+        .collect();
+    if !colors.is_empty() {
+        let scheme = node
+            .declarations
+            .iter()
+            .rev()
+            .find(|(n, _)| n == "color-scheme")
+            .map(|(_, v)| v.as_str());
+        out.push(ParsedBlock {
+            selector: path
+                .iter()
+                .filter(|s| !s.is_empty())
+                .cloned()
+                .collect::<Vec<_>>()
+                .join(" "),
+            appearance: read_appearance(&path.join(" "), scheme),
+            declarations: colors,
+        });
+    }
+    path.pop();
+}
+
 /// Deler CSS-teksten i blokker, med en ramme per nivå.
 ///
-/// Hver ramme holder sin egen tekst, ikke bare selektoren. Uten det ble alt
-/// som sto før en nøstet regel lest som en del av selektoren, og
-/// deklarasjonen forsvant uten et ord.
+/// Lest med CSS-tokenizeren fra Servo, etter CSS Syntax Level 3, så en klamme
+/// eller et semikolon i en streng, en kommentar eller `url(…)` ikke deler en
+/// blokk, og nøstede regler og `@media` inni en blokk blir sine egne. En blokk
+/// som ikke er lukket, leses som om den slutter der fila slutter, slik
+/// nettleseren gjør.
 pub fn parse_blocks(css: &str) -> Vec<ParsedBlock> {
-    struct Frame {
-        selector: String,
-        text: String,
-    }
-    let clean = without_comments(css);
+    let mut parser = Parser::new(css);
+    let mut reader = Reader;
     let mut blocks = Vec::new();
-    let mut stack: Vec<Frame> = Vec::new();
-    let mut buffer = String::new();
-    for c in clean.chars() {
-        match c {
-            '{' => {
-                let split = buffer.rfind(';').map_or(0, |i| i + 1);
-                if let Some(top) = stack.last_mut() {
-                    top.text.push_str(&buffer[..split]);
-                }
-                stack.push(Frame {
-                    selector: js_trim(&buffer[split..]).to_string(),
-                    text: String::new(),
-                });
-                buffer.clear();
-            }
-            '}' => {
-                if let Some(mut frame) = stack.pop() {
-                    frame.text.push_str(&buffer);
-                    let declarations = read_declarations(&frame.text);
-                    if !declarations.is_empty() {
-                        let path: Vec<&str> = stack
-                            .iter()
-                            .map(|f| f.selector.as_str())
-                            .chain([frame.selector.as_str()])
-                            .collect();
-                        blocks.push(ParsedBlock {
-                            selector: path
-                                .iter()
-                                .filter(|s| !s.is_empty())
-                                .copied()
-                                .collect::<Vec<_>>()
-                                .join(" "),
-                            appearance: read_appearance(&path.join(" "), &frame.text),
-                            declarations,
-                        });
-                    }
-                }
-                buffer.clear();
-            }
-            c => buffer.push(c),
+    for item in StyleSheetParser::new(&mut parser, &mut reader).flatten() {
+        if let Item::Block(node) = item {
+            flatten(node, &mut Vec::new(), &mut blocks);
         }
     }
     blocks
+}
+
+/// Klammene i teksten, `{` og `}`, utenom dem i strenger, kommentarer og
+/// escape-sekvenser.
+fn braces(css: &str) -> (usize, usize) {
+    let (mut opened, mut closed) = (0, 0);
+    let mut chars = css.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => {
+                chars.next();
+            }
+            '/' if chars.peek() == Some(&'*') => {
+                chars.next();
+                let mut previous = ' ';
+                for c in chars.by_ref() {
+                    if previous == '*' && c == '/' {
+                        break;
+                    }
+                    previous = c;
+                }
+            }
+            '"' | '\'' => {
+                while let Some(d) = chars.next() {
+                    if d == '\\' {
+                        chars.next();
+                    } else if d == c || d == '\n' {
+                        break;
+                    }
+                }
+            }
+            '{' => opened += 1,
+            '}' => closed += 1,
+            _ => {}
+        }
+    }
+    (opened, closed)
 }
 
 /// `\s*!important\s*$`, uten hensyn til store bokstaver, tatt bort.
@@ -107,56 +281,11 @@ fn without_important(value: &str) -> &str {
     value
 }
 
-fn read_declarations(text: &str) -> Vec<(String, String)> {
-    let mut out: Vec<(String, String)> = Vec::new();
-    for part in text.split(';') {
-        let Some(separator) = part.find(':') else {
-            continue;
-        };
-        let name = js_trim(&part[..separator]);
-        if !name.starts_with("--fs-color-") {
-            continue;
-        }
-        // `!important` er lovlig og plausibelt i et håndskrevet tema, og sier
-        // ingenting om fargen.
-        let value = js_trim(without_important(&part[separator + 1..])).to_string();
-        match out.iter_mut().find(|(n, _)| n == name) {
-            Some(existing) => existing.1 = value,
-            None => out.push((name.to_string(), value)),
-        }
-    }
-    out
-}
-
 /// Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
-fn read_appearance(selector: &str, body: &str) -> Appearance {
-    // Siste deklarasjon vinner, som i kaskaden.
-    let chars: Vec<char> = body.chars().collect();
-    let lower: Vec<char> = body.to_lowercase().chars().collect();
-    let mut declared: Option<String> = None;
-    let target: Vec<char> = "color-scheme".chars().collect();
-    let mut i = 0;
-    while lower.len() == chars.len() && i + target.len() <= lower.len() {
-        let starts =
-            i == 0 || is_js_space(chars[i - 1]) || chars[i - 1] == ';' || chars[i - 1] == '{';
-        if starts && lower[i..i + target.len()] == target[..] {
-            let mut j = i + target.len();
-            while j < chars.len() && is_js_space(chars[j]) {
-                j += 1;
-            }
-            if j < chars.len() && chars[j] == ':' {
-                let start = j + 1;
-                let mut end = start;
-                while end < chars.len() && chars[end] != ';' && chars[end] != '}' {
-                    end += 1;
-                }
-                declared = Some(chars[start..end].iter().collect());
-                i = end;
-                continue;
-            }
-        }
-        i += 1;
-    }
+///
+/// `scheme` er verdien i blokkas siste `color-scheme`, som vinner i kaskaden.
+fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
+    let declared = scheme;
     if let Some(value) = declared {
         // Verdien leses, den mønstermatches ikke. Grammatikken er
         // `normal | [ light | dark | <custom-ident> ]+ && only?`, og `only`
@@ -272,14 +401,13 @@ pub fn inspect_theme(css: &str) -> Report {
     let mut checked_promises = 0;
     let mut understood = 0;
 
-    // Klammene telles for seg: en ulukket blokk blir ikke lest.
-    let clean = without_comments(css);
-    let opened = clean.matches('{').count();
-    let closed = clean.matches('}').count();
+    // Klammene telles for seg: går de ikke opp, er fila trolig avkuttet, og
+    // det som skulle stått etter, er ikke kontrollert.
+    let (opened, closed) = braces(css);
     if opened != closed {
         problems.push(Problem {
             selector: "(hele fila)".into(),
-            message: format!("Fila har {opened} «{{» og {closed} «}}». En blokk som ikke er lukket blir ikke lest, så deler av temaet kan være ukontrollert."),
+            message: format!("Fila har {opened} «{{» og {closed} «}}». En blokk som ikke er lukket, leses til fila slutter, så noe av temaet kan mangle eller være lest feil."),
         });
     }
 

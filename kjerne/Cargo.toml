@@ -3,15 +3,19 @@ name = "fristil-kjerne"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Fristils diagnostikk, kompilert til WebAssembly for alle vertsspråk."
+description = "Fristils sjekk og temagenerator, kompilert til WebAssembly for alle vertsspråk."
 publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-# Ingen avhengigheter. Ordforrådet er generert Rust, ikke JSON, så det trengs
-# ingen parser, og de regulære uttrykkene fra TypeScript er skrevet ut for
+# Én avhengighet: CSS-tokenizeren fra Servo, den Firefox bruker, som leser CSS
+# etter CSS Syntax Level 3. Sjekken av et tema trenger den, og den samme skal
+# bære leseren av stilarkene. Manifestet leses av en liten JSON-leser i
+# `src/json.rs`, og de regulære uttrykkene fra TypeScript er skrevet ut for
 # hånd, så modulen slipper en regex-motor.
+[dependencies]
+cssparser = "0.38"
 
 [profile.release]
 opt-level = "s"
