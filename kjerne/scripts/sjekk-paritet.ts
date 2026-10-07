@@ -55,7 +55,16 @@ let funnTotalt = 0
 const avvik: string[] = []
 const kaster: string[] = []
 
-function sammenlign(navn: string, html: string) {
+/*
+ * Undertrykking med `fristil-ignore-next` finnes bare i kjernen, og testes i
+ * Rust. Her gjøres kommentaren virkningsløs med en tekst like lang, så begge
+ * sjekker det samme og posisjonene står.
+ */
+const UNDERTRYKKING = /fristil-ignore-next/g
+const UVIRKSOM = "fristil-uvirket-nxt"
+
+function sammenlign(navn: string, original: string) {
+  const html = original.replace(UNDERTRYKKING, UVIRKSOM)
   for (const [hva, ts, rust] of [
     ["markup", diagnoseMarkup, kjerne.diagnoseMarkup],
     ["side", diagnosePage, kjerne.diagnosePage],
