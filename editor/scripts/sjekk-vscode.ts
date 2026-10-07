@@ -22,6 +22,9 @@ try {
     launchArgs: ["--disable-extensions", "--disable-workspace-trust"],
   })
   console.log("Utvidelsen gir funn og rettelser i VS Code.")
+  // `runTests` lar noe stå igjen som feiler etter at VS Code er lukket, og
+  // Bun avslutter da med feilkode. Svaret er alt gitt.
+  process.exit(0)
 } catch (error) {
   console.error(`✗ Utvidelsen i VS Code: ${error}`)
   process.exit(1)
