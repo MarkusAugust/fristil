@@ -67,11 +67,17 @@ dependencies {
     compileOnly(files(kompilerKommandolinje.map { it.classes }))
 }
 
-// Én fil med alt i, så `java -jar fristil.jar` er hele installasjonen.
-tasks.jar {
+/*
+ * Én fil med alt i, så `java -jar fristil.jar` er hele installasjonen. Den
+ * vanlige jar-en er uten avhengighetene, og er den Gradle-pluginen bruker.
+ */
+val samletJar = tasks.register<Jar>("samletJar") {
     archiveFileName.set("fristil.jar")
     manifest { attributes("Main-Class" to "no.fristil.cli.MainKt") }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.map { it.output })
     from(configurations.runtimeClasspath.map { classpath -> classpath.map { zipTree(it) } })
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "META-INF/versions/**/module-info.class", "module-info.class")
 }
+
+tasks.assemble { dependsOn(samletJar) }

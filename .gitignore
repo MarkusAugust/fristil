@@ -33,6 +33,7 @@ kotlin/.kotlin/
 kotlin/build/
 kotlin/kotlinx-html/build/
 kotlin/kommandolinje/build/
+kotlin/gradle-plugin/build/
 kotlin/buildSrc/.gradle/
 kotlin/buildSrc/.kotlin/
 kotlin/buildSrc/build/

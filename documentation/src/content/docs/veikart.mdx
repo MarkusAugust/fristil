@@ -62,7 +62,9 @@ ingenting du laster ned, krever et sertifikat for å kjøre.
   utgivelse på GitHub, med attestasjon av hvor de ble bygd.
 - `fristil overta` gir kopien et eget navn, `app-…`, og stavekontrollen sjekker
   den videre. Det du overtar, eier du.
-- En Gradle-plugin som sjekker maler i JTE og Thymeleaf som en del av bygget.
+- En Gradle-plugin som sjekker maler i JTE og Thymeleaf som en del av bygget,
+  bygger temaet, og skriver manifestet prosjektet sjekkes mot til
+  `build/fristil/manifest.json`, der språkserveren finner det.
 
 ## Fase 5: Språkserver
 

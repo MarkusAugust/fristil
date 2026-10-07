@@ -172,6 +172,46 @@ Et funn du vil beholde, undertrykkes med en kommentar over taggen:
 
 Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
 
+## Gradle-pluginen
+
+Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("io.github.markusaugust.fristil") version "{versjon}"
+}
+
+fristil {
+    templates.from(fileTree("src/main/jte"))
+    themeRecipe = file("fristil.tema.json")
+}
+```
+
+| Oppgave | Gjør |
+| --- | --- |
+| `fristilSjekk` | sjekker `templates` som `fristil sjekk`, og feiler med funnene. Kjøres av `check`. |
+| `fristilTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/fristil/tema.css` |
+| `fristilManifest` | skriver manifestet prosjektet sjekkes mot til `build/fristil/manifest.json`. Kjøres av `assemble`. |
+
+```text
+> Task :fristilSjekk FAILED
+Markupen stemmer ikke med Fristil:
+
+src/main/jte/soknad.jte:14:18: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?
+```
+
+`rendered = true` sjekker filene som hele sider, med koblingen, som `--rendret`. Har du overtatt en komponent med [`fristil overta`](../kommandolinjen/#overta), legger du fragmentet i `manifests`, så markupen for kopien sjekkes også, og kopien kommer med i `build/fristil/manifest.json`:
+
+```kotlin
+fristil {
+    templates.from(fileTree("src/main/jte"))
+    manifests.from("src/main/fristil/button/fristil-manifest.json")
+}
+```
+
+Pluginen kommer på Maven Central sammen med pakken. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
+
 ## Hvordan det virker
 
 Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen kjører i Node, i VS Code og her. På JVM-en kjøres den av [Chicory](https://chicory.dev), en WebAssembly-runtime skrevet i ren Java. Modulen er gjort om til JVM-bytekode da pakken ble bygget, så den kjører med JIT-en og starter på en brøkdel av et sekund. Hver tråd får sin egen instans, så tester som kjører samtidig, venter ikke på hverandre.

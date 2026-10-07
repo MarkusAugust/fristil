@@ -75,9 +75,16 @@ ved bygg, og henter adresser med Javas egen HTTP-klient. Den gis ut på GitHub
 Releases, ikke på Maven.
 
 ```bash
-cd kotlin && ./gradlew :kommandolinje:jar
+cd kotlin && ./gradlew :kommandolinje:samletJar
 java -jar kommandolinje/build/libs/fristil.jar --hjelp
 ```
+
+## Gradle-pluginen
+
+`gradle-plugin/` er pluginen `io.github.markusaugust.fristil`, med
+`fristilSjekk`, `fristilTema` og `fristilManifest`. Den kjører kommandolinja
+fra `kommandolinje/` i Gradle-prosessen. `FristilPluginTest` kjører den i et
+lite prosjekt med Gradle TestKit, også med konfigurasjonsbufferen.
 
 ## Kjør
 

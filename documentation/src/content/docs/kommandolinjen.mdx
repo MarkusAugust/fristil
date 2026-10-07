@@ -3,7 +3,7 @@ title: Kommandolinjen
 description: Kommandoene i @fristil/designsystem, med flagg, utdata og exit-koder. Sjekk markup og hele sider, hent regelboka for kodeagenter, ta over en komponent og lag et tema.
 ---
 
-Pakken har en kommandolinje med fem kommandoer. Den har ingen avhengigheter, og
+Pakken har en kommandolinje med seks kommandoer. Den har ingen avhengigheter, og
 du trenger ikke installere noe ekstra:
 
 ```bash
@@ -21,6 +21,7 @@ uten kommando, eller med `--hjelp`, viser hele oversikten.
 | `overta` | kopierer kildekoden til én komponent inn i prosjektet |
 | `tema` | lager et fargetema av merkefargene dine |
 | `sjekk-tema` | kontrollerer at et tema holder kontrastkravene |
+| `manifest` | skriver manifestet sjekken bruker, med fragmentene fra `overta` |
 
 ## Uten Node
 
@@ -232,6 +233,24 @@ ganger, én gang for hver kopi.
 
 Uten navn lister kommandoen komponentene. Når du bør ta over en komponent, og
 hva du bør prøve først, står på [Tilpasning](../tilpasning/#når-css-ikke-er-nok).
+
+## manifest
+
+Skriver manifestet `sjekk` bruker: Fristils klasser, elementer og lovlige
+verdier, med fragmentene fra `overta` lagt til. Det er det en editor eller et
+annet verktøy trenger for å kjenne ordforrådet prosjektet faktisk har.
+
+```bash
+npx @fristil/designsystem manifest --manifest=src/ui/button/fristil-manifest.json --ut=build/fristil/manifest.json
+```
+
+| Flagg | Betydning |
+| --- | --- |
+| `--manifest=<fil>` | et fragment fra `overta`. Kan gis flere ganger |
+| `--ut=<fil>` | skriv til fil i stedet for til standard ut |
+
+[Gradle-pluginen](../kotlin/#gradle-pluginen) skriver den samme fila til
+`build/fristil/manifest.json`.
 
 ## tema
 

@@ -91,6 +91,12 @@ egen overskrift «Brytende».
   `fristil-manifest.json`, og `fristil sjekk --manifest=<fil>` sjekker
   markupen for kopien mot det. Bare kopiens egne navn sjekkes, ikke resten av
   prosjektets klasser.
+- **`fristil manifest`** skriver manifestet sjekken bruker, med fragmentene
+  lagt til, for en editor eller et annet verktøy.
+- **Gradle-pluginen `io.github.markusaugust.fristil`**, med `fristilSjekk`
+  (kjøres av `check`), `fristilTema` og `fristilManifest`, som skriver
+  `build/fristil/manifest.json`. Den kjører den samme kommandolinja i
+  Gradle-prosessen.
 
 - **Kommandolinja er skrevet i Rust.** `npx @fristil/designsystem` kjører den
   som en WASI-modul med Node sin egen `node:wasi`, og den samme koden kan

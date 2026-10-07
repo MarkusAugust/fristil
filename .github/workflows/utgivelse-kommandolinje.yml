@@ -46,7 +46,7 @@ jobs:
 
       - name: Kommandolinja som jar
         working-directory: kotlin
-        run: ./gradlew :kommandolinje:jar
+        run: ./gradlew :kommandolinje:samletJar
 
       - name: Samle filene
         run: |

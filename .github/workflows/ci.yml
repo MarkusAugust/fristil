@@ -93,7 +93,7 @@ jobs:
       # Chicory.
       - name: Kommandolinja på JVM-en svarer som den i pakken
         run: |
-          (cd kotlin && ./gradlew :kommandolinje:jar)
+          (cd kotlin && ./gradlew :kommandolinje:samletJar)
           FRISTIL_SAMMENLIGN="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-cli.ts
 
       # De genererte filene skal være de generatoren ville skrevet nå.

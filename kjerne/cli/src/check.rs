@@ -35,11 +35,9 @@ fn read_all_input() -> Vec<u8> {
     }
 }
 
-/// Ordforrådet: Fristils eget, med fragmentene lagt til.
-fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
-    if manifests.is_empty() {
-        return manifest::current();
-    }
+/// Fragmentene i filene, hvert av dem kontrollert for seg, så en feil sier
+/// hvilken fil den står i.
+pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
     let mut texts = Vec::new();
     for path in manifests {
         let Ok(bytes) = std::fs::read(path) else {
@@ -55,6 +53,15 @@ fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabula
         }
         texts.push(text);
     }
+    texts
+}
+
+/// Ordforrådet: Fristils eget, med fragmentene lagt til.
+fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
+    if manifests.is_empty() {
+        return manifest::current();
+    }
+    let texts = read_fragments(manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
     match manifest::with_fragments(&all) {
         Ok(vocabulary) => std::rc::Rc::new(vocabulary),

@@ -76,6 +76,11 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
 /// én overtatt komponent, og skrives av `fristil overta` ved siden av kopien.
 /// Et navn som finnes fra før, byttes ut.
 pub fn with_fragments(fragments: &[&str]) -> Result<Vocabulary, String> {
+    from_value(&merged(fragments)?)
+}
+
+/// Det innebygde manifestet med fragmentene lagt til, som JSON.
+pub fn merged(fragments: &[&str]) -> Result<Json, String> {
     let mut root = parse(BUILTIN)?;
     for fragment in fragments {
         let fragment = parse(fragment)?;
@@ -108,7 +113,7 @@ pub fn with_fragments(fragments: &[&str]) -> Result<Vocabulary, String> {
             }
         }
     }
-    from_value(&root)
+    Ok(root)
 }
 
 fn from_value(root: &Json) -> Result<Vocabulary, String> {

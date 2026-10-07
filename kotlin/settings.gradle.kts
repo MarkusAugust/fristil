@@ -6,3 +6,6 @@ include("kotlinx-html")
 
 // Kommandolinja som `java -jar fristil.jar`. Gis ut som fil, ikke på Maven.
 include("kommandolinje")
+
+// Gradle-pluginen, som kjører kommandolinja i bygget.
+include("gradle-plugin")

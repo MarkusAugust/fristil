@@ -13,6 +13,7 @@ mod agent;
 mod check;
 mod check_theme;
 mod fetch;
+mod manifest;
 mod output;
 mod takeover;
 mod theme;
@@ -43,6 +44,10 @@ pub const HELP: &str = r#"fristil <kommando>
                        med nytt navn (app-…), så den er din å endre
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
+
+  manifest             Skriver manifestet sjekken bruker, med fragmentene
+    --manifest=<fil>   fra fristil overta lagt til
+    --ut=<fil>         Skriv til fil i stedet for til utdata
 
   tema                 Lager et tema av merkefargene, skriften og formen din
     --aksent=<farge>      Lenker, knapper og fokus
@@ -78,7 +83,7 @@ Eksempler:
 "#;
 
 const HELP_FLAGS: [&str; 5] = ["--help", "-h", "help", "hjelp", "--hjelp"];
-const COMMANDS: [&str; 5] = ["agent", "sjekk", "sjekk-tema", "overta", "tema"];
+const COMMANDS: [&str; 6] = ["agent", "sjekk", "sjekk-tema", "overta", "tema", "manifest"];
 
 /// Flaggene med likhetstegn, `--navn=verdi`, og resten som filer.
 ///
@@ -170,6 +175,7 @@ fn main() {
         "sjekk" => check::run(rest),
         "sjekk-tema" => check_theme::run(rest),
         "overta" => takeover::run(rest),
+        "manifest" => manifest::run(rest),
         // `tema` kan stå først, siden kommandoen kjøres som
         // `npx @fristil/designsystem tema`.
         "tema" => theme::run(rest),

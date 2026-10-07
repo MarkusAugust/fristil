@@ -514,6 +514,25 @@ function krev(påstand: boolean, beskrivelse: string): void {
     utenFragment.kode === 0,
     "sjekken uten fragmentet skulle latt app-button være",
   )
+  const samlet = await kjør(["manifest", fragment])
+  krev(
+    samlet.kode === 0 &&
+      samlet.ut.includes('"app-button"') &&
+      samlet.ut.includes('"fs-button"'),
+    "manifest med fragmentet har ikke både kopien og Fristils egne klasser",
+  )
+  const manifestFil = join(mappe, "build/fristil/manifest.json")
+  const skrevet = await kjør(["manifest", fragment, `--ut=${manifestFil}`])
+  krev(
+    skrevet.kode === 0 &&
+      (await readFile(manifestFil, "utf8")) === `${samlet.ut}`,
+    "manifest --ut skrev noe annet enn det som står i utdata",
+  )
+  const feilArgument = await kjør(["manifest", "skjema.html"])
+  krev(
+    feilArgument.kode !== 0 && feilArgument.feil.includes("skjema.html"),
+    "manifest med en fil i stedet for et flagg ble ikke meldt",
+  )
   const ukjent = await kjør([
     "sjekk",
     `--manifest=${join(mappe, "finnes-ikke.json")}`,
