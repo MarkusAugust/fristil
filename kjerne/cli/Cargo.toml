@@ -1,0 +1,15 @@
+[package]
+name = "fristil"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Kommandolinja til Fristil: sjekker markup og temaer mot designsystemet, og lager temaer."
+repository = "https://github.com/MarkusAugust/fristil"
+publish = false
+
+[[bin]]
+name = "fristil"
+path = "src/main.rs"
+
+[dependencies]
+fristil-kjerne = { path = ".." }

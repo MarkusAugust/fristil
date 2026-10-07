@@ -74,6 +74,13 @@ jobs:
       - name: Bygg
         run: bun run build
 
+      # Kommandolinja skrevet i Rust skal svare det samme som den i pakken,
+      # byte for byte, på hver kjøring i sjekk-cli.ts.
+      - name: Kommandolinja i Rust svarer som den i pakken
+        run: |
+          cargo build --release -p fristil --manifest-path kjerne/Cargo.toml
+          FRISTIL_SAMMENLIGN="$PWD/kjerne/target/release/fristil" bun designsystem/scripts/sjekk-cli.ts
+
       # De genererte filene skal være de generatoren ville skrevet nå.
       #
       # `build` kjører `generate` som første steg, så vaktpostene sammenligner
@@ -121,15 +128,22 @@ jobs:
         working-directory: kjerne
         run: rustc --version
 
+      # Kjernen bygges for nettleseren og vertene (wasm32-unknown-unknown),
+      # kommandolinja for maskinen og som WASI-modul (wasm32-wasip1).
       - name: Formatering og lint i Rust
         working-directory: kjerne
         run: |
-          cargo fmt --check
+          cargo fmt --all --check
           cargo clippy --release --target wasm32-unknown-unknown -- -D warnings
+          cargo clippy --release -p fristil --tests -- -D warnings
 
       - name: Enhetstester i Rust
         working-directory: kjerne
-        run: cargo test
+        run: cargo test --workspace
+
+      - name: Kommandolinja som WASI-modul
+        working-directory: kjerne
+        run: cargo build --release -p fristil --target wasm32-wasip1
 
       - name: Bygg kjernen
         run: bun kjerne/scripts/bygg.ts

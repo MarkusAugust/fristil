@@ -19,6 +19,19 @@ import { lightCells } from "../src/tokens/matrise.js"
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
 
+/*
+ * Kommandoen som prøves. Standard er den bygde fila, som en konsument får.
+ * `FRISTIL_CLI` peker på en annen, som den kjørbare fila fra `kjerne/cli`, så
+ * de samme påstandene prøves mot den. `FRISTIL_SAMMENLIGN` kjører hver
+ * kjøring med begge og krever det samme svaret byte for byte: utdata,
+ * feilkanalen og feilkoden.
+ */
+const KOMMANDO = process.env.FRISTIL_CLI
+  ? [process.env.FRISTIL_CLI]
+  : ["node", cli]
+const SAMMENLIGN = process.env.FRISTIL_SAMMENLIGN
+const avvik: string[] = []
+
 const FARGER = [
   "--aksent=#7c3aed",
   "--fare=#b3261e",
@@ -33,21 +46,43 @@ let antallKjøringer = 0
 async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   antallKjøringer += 1
 
-  const prosess = Bun.spawn(["node", cli, ...argumenter], {
-    stdout: "pipe",
-    stderr: "pipe",
-    // `agent` leser package.json i arbeidsmappa. Uten dette ville hver kjøring
-    // sett pakkens egen, og deteksjonen aldri blitt prøvd.
-    cwd: mappe,
-  })
+  const start = (kommando: string[]) =>
+    Bun.spawn([...kommando, ...argumenter], {
+      stdout: "pipe",
+      stderr: "pipe",
+      // `agent` leser package.json i arbeidsmappa. Uten dette ville hver
+      // kjøring sett pakkens egen, og deteksjonen aldri blitt prøvd.
+      cwd: mappe,
+    })
+  const svar = async (prosess: ReturnType<typeof start>) => {
+    const [ut, feil, kode] = await Promise.all([
+      new Response(prosess.stdout).text(),
+      new Response(prosess.stderr).text(),
+      prosess.exited,
+    ])
+    return { kode, ut, feil }
+  }
 
-  const [ut, feil, kode] = await Promise.all([
-    new Response(prosess.stdout).text(),
-    new Response(prosess.stderr).text(),
-    prosess.exited,
-  ])
-
-  return { kode, ut, feil }
+  const resultat = await svar(start(KOMMANDO))
+  // `overta` skrives i Rust i fase 4D, og til da finnes den bare her.
+  if (SAMMENLIGN && argumenter[0] !== "overta") {
+    const annet = await svar(start([SAMMENLIGN]))
+    /*
+     * To forklaringer kom fra JavaScript-motoren selv, og kan ikke bli like:
+     * hva som er galt i en JSON-fil, og hvorfor ingen svarte på en adresse
+     * («fetch failed»). Resten av meldingen skal være lik.
+     */
+    const likt = (tekst: string) =>
+      tekst
+        .replace(/(er ikke gyldig JSON: ).*/g, "$1…")
+        .replace(/(Fikk ikke kontakt med \S+: ).*/g, "$1…")
+    for (const del of ["kode", "ut", "feil"] as const)
+      if (likt(String(resultat[del])) !== likt(String(annet[del])))
+        avvik.push(
+          `${argumenter.join(" ")} (${del})\n    ${JSON.stringify(resultat[del]).slice(0, 400)}\n    ${JSON.stringify(annet[del]).slice(0, 400)}`,
+        )
+  }
+  return resultat
 }
 
 const feil: string[] = []
@@ -562,7 +597,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
 
   // Fra standard inn, slik en test i en app sender HTML-en serveren lager
-  const prosess = Bun.spawn(["node", cli, "sjekk"], {
+  const prosess = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
     stdout: "pipe",
     stderr: "pipe",
@@ -595,7 +630,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
   // test som glemte å sende noe skal ikke melde grønt.
-  const tom = Bun.spawn(["node", cli, "sjekk"], {
+  const tom = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: new Blob([""]),
     stdout: "pipe",
     stderr: "pipe",
@@ -623,7 +658,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const kutt = bytes.indexOf(0xc3) + 1
   // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
   krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
-  const treg = Bun.spawn(["node", cli, "sjekk"], {
+  const treg = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
@@ -762,7 +797,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     const blokker = [...bok.ut.matchAll(/```html\n([\s\S]*?)```/g)]
 
     for (const [nummer, blokk] of blokker.entries()) {
-      const prøve = Bun.spawn(["node", cli, "sjekk"], {
+      const prøve = Bun.spawn([...KOMMANDO, "sjekk"], {
         stdin: new Blob([blokk[1]]),
         stdout: "pipe",
         stderr: "pipe",
@@ -781,6 +816,76 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   }
 
   await rm(mappe, { recursive: true, force: true })
+}
+
+// En adresse hentes og sjekkes som en hel side
+{
+  const side =
+    '<!doctype html><html lang="nb"><body><label for="borte">Navn</label><button class="fs-buton">Lagre</button></body></html>'
+  const tjener = Bun.serve({
+    port: 0,
+    fetch(forespørsel) {
+      const sti = new URL(forespørsel.url).pathname
+      const html = { "content-type": "text/html; charset=utf-8" }
+      if (sti === "/side") return new Response(side, { headers: html })
+      if (sti === "/videre")
+        return new Response(null, {
+          status: 302,
+          headers: { location: "/side" },
+        })
+      if (sti === "/biter")
+        return new Response(
+          new ReadableStream({
+            start(kontroll) {
+              const koder = new TextEncoder()
+              kontroll.enqueue(koder.encode(side.slice(0, 40)))
+              kontroll.enqueue(koder.encode(side.slice(40)))
+              kontroll.close()
+            },
+          }),
+          { headers: html },
+        )
+      if (sti === "/json") return Response.json({ ok: true })
+      return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
+    },
+  })
+  const rot = `http://localhost:${tjener.port}`
+
+  for (const sti of ["/side", "/videre", "/biter"]) {
+    const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
+    krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
+    krev(
+      ut.includes(`${rot}${sti}:1:`) && ut.includes("fs-buton"),
+      `${sti}: klassen som ikke finnes, ble ikke meldt med adressen: ${ut.slice(0, 160)}`,
+    )
+    krev(
+      ut.includes("«borte»"),
+      `${sti}: siden ble ikke sjekket som hel side, for-koblingen mangler: ${ut.slice(0, 200)}`,
+    )
+  }
+
+  const json = await kjør(["sjekk", `${rot}/json`])
+  krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")
+  krev(json.feil.includes("ikke HTML"), `JSON ble ikke avvist: ${json.feil}`)
+
+  const borte = await kjør(["sjekk", `${rot}/borte`])
+  krev(borte.kode === 1, "en 404 skulle gitt feilkode")
+  krev(borte.feil.includes("svarte 404"), `404 ble ikke meldt: ${borte.feil}`)
+
+  tjener.stop(true)
+  const ingen = await kjør(["sjekk", rot])
+  krev(ingen.kode === 1, "en adresse der ingen svarer, skulle gitt feilkode")
+  krev(
+    ingen.feil.includes(`Fikk ikke kontakt med ${rot}`),
+    `en adresse der ingen svarer, ble ikke meldt: ${ingen.feil}`,
+  )
+}
+
+if (avvik.length > 0) {
+  console.error(
+    `${avvik.length} kjøringer svarte forskjellig fra ${SAMMENLIGN}:\n\n${avvik.map((a) => `  ${a}`).join("\n\n")}\n`,
+  )
+  process.exit(1)
 }
 
 if (feil.length > 0) {

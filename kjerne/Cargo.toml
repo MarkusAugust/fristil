@@ -9,6 +9,11 @@ publish = false
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+# Kommandolinja, `fristil`, er en egen crate i `cli/`. Den bruker kjernen som
+# et vanlig bibliotek, og bygges både for maskinen og som WASI-modul.
+[workspace]
+members = ["cli"]
+
 # Én avhengighet: CSS-tokenizeren fra Servo, den Firefox bruker, som leser CSS
 # etter CSS Syntax Level 3. Sjekken av et tema trenger den, og den samme skal
 # bære leseren av stilarkene. Manifestet leses av en liten JSON-leser i

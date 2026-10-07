@@ -44,6 +44,17 @@ pub fn js_number(n: f64) -> String {
     }
 }
 
+/// `tall.toFixed(2)` i JavaScript: likt avstand rundes opp, ikke til partall.
+pub fn to_fixed2(n: f64) -> String {
+    let scaled = n * 100.0;
+    let floor = scaled.floor();
+    if scaled - floor == 0.5 {
+        let up = (floor + 1.0) / 100.0;
+        return format!("{up:.2}");
+    }
+    format!("{n:.2}")
+}
+
 /// Knappene, feltene og flatene som deler hjørne i temaet.
 const BUTTONS: [&str; 3] = ["button", "pagination", "skip-link"];
 const FIELDS: [&str; 3] = ["input", "select", "textarea"];

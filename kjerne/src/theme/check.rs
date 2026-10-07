@@ -364,17 +364,6 @@ fn is_hex(value: &str) -> bool {
     (digits.len() == 3 || digits.len() == 6) && digits.bytes().all(|b| b.is_ascii_hexdigit())
 }
 
-/// `tall.toFixed(2)` i JavaScript: likt avstand rundes opp, ikke til partall.
-fn to_fixed2(n: f64) -> String {
-    let scaled = n * 100.0;
-    let floor = scaled.floor();
-    if scaled - floor == 0.5 {
-        let up = (floor + 1.0) / 100.0;
-        return format!("{up:.2}");
-    }
-    format!("{n:.2}")
-}
-
 pub struct Problem {
     pub selector: String,
     pub message: String,
@@ -525,7 +514,7 @@ pub fn inspect_theme(css: &str) -> Report {
                     "{}: {} er {}:1, kravet er {}:1.",
                     violation.family,
                     violation.promise,
-                    to_fixed2(violation.ratio),
+                    super::to_fixed2(violation.ratio),
                     js_number(violation.required)
                 ),
             });
