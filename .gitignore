@@ -26,3 +26,8 @@ editor-intellij/.kotlin/
 editor-intellij/.intellijPlatform/
 editor-intellij/build/
 presentasjon/index.html
+
+# JVM-prototypens byggemapper
+jvm/.gradle/
+jvm/.kotlin/
+jvm/build/

@@ -1,0 +1,62 @@
+{
+  "markup": [
+    {
+      "start": 26,
+      "end": 46,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
+      "fix": {
+        "title": "Bytt til ghost",
+        "start": 40,
+        "end": 45,
+        "text": "ghost",
+        "preferred": false
+      }
+    },
+    {
+      "start": 89,
+      "end": 111,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+    },
+    {
+      "start": 151,
+      "end": 169,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/badge/",
+      "message": "data-color kan ikke være «lilla» på badge. Lovlige verdier: success, warning, danger, neutral, og info uten attributt."
+    }
+  ],
+  "side": [
+    {
+      "start": 26,
+      "end": 46,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
+      "fix": {
+        "title": "Bytt til ghost",
+        "start": 40,
+        "end": 45,
+        "text": "ghost",
+        "preferred": false
+      }
+    },
+    {
+      "start": 89,
+      "end": 111,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+    },
+    {
+      "start": 151,
+      "end": 169,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/badge/",
+      "message": "data-color kan ikke være «lilla» på badge. Lovlige verdier: success, warning, danger, neutral, og info uten attributt."
+    }
+  ]
+}

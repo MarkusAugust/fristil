@@ -14,7 +14,9 @@
       "!editor/snippets.json",
       "!designsystem/src/diagnostics/elements.ts",
       "!designsystem/src/diagnostics/classes.ts",
-      "!designsystem/web-types.json"
+      "!designsystem/web-types.json",
+      "!jvm/src/main/resources/no/fristil/sjekk/diagnostikk.js",
+      "!jvm/src/test/resources/paritet"
     ]
   },
   "formatter": {

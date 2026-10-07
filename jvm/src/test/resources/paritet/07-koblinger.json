@@ -1,0 +1,33 @@
+{
+  "markup": [],
+  "side": [
+    {
+      "start": 12,
+      "end": 23,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "for=\"finnes-ikke\" peker på id-en «finnes-ikke», som ikke finnes på siden. Skjermleseren mister ledeteksten. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+    },
+    {
+      "start": 48,
+      "end": 53,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "<input> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+    },
+    {
+      "start": 104,
+      "end": 111,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "aria-describedby=\"hjelp mangler\" peker på id-en «mangler», som ikke finnes på siden. Skjermleseren mister beskrivelsen. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+    },
+    {
+      "start": 175,
+      "end": 180,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "id=\"hjelp\" står mer enn én gang på siden. for og aria-describedby peker da på det første elementet, og koblingen til dette er brutt. Hver id må være unik."
+    }
+  ]
+}
