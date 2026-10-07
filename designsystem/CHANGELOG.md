@@ -23,6 +23,15 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Nytt
+
+- **Hver side i dokumentasjonen finnes som Markdown.** `/components/button/`
+  har sin på `/components/button.md`, og hver side lenker til sin med
+  `<link rel="alternate" type="text/markdown">`. Lenkene i `/llms.txt` går dit.
+  Filene lages av de bygde sidene, så «Ren HTML»-fanen med `<link>`-ene,
+  importlinjene og versjonsnummeret står der slik siden viser dem, og fanene
+  står etter hverandre.
+
 ## 0.31.0 (2026-10-06)
 
 ### Nytt

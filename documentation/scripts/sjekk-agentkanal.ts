@@ -118,7 +118,10 @@ function tellSider(mappe: string): number {
 
 if (llms.trim() !== "") {
   const sider = tellSider(`${ROT}documentation/src/content/docs`)
-  const lenker = [...llms.matchAll(/^- \[[^\]]+\]\(https:\/\/[^)]+\/\)/gm)]
+  // Sidene lenkes til Markdown-utgaven, og regelbøkene under `/agent/` er ikke sider.
+  const lenker = [
+    ...llms.matchAll(/^- \[[^\]]+\]\((https:\/\/[^)]+\.md)\)/gm),
+  ].filter(([, adresse]) => !adresse.includes("/agent/"))
 
   if (lenker.length !== sider) {
     avvik.push(
