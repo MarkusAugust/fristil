@@ -41,7 +41,7 @@ val manifestFil = rootDir.resolve("../designsystem/manifest/manifest.json")
  * aldri kan bære en utdatert kjerne. Manifestet er generert og sjekket inn, så
  * dette trenger bare Rust, ikke Bun.
  */
-val byggKjerne by tasks.registering(Exec::class) {
+val byggKjerne = tasks.register<Exec>("byggKjerne") {
     workingDir = kjerne
     commandLine("cargo", "build", "--release", "--target", "wasm32-unknown-unknown")
     inputs.dir(kjerne.resolve("src"))
@@ -52,7 +52,7 @@ val byggKjerne by tasks.registering(Exec::class) {
 }
 
 // Modulen gjøres om til JVM-bytekode her, ikke når den lastes. Se `buildSrc/`.
-val kompilerKjerne by tasks.registering(no.fristil.build.CompileCore::class) {
+val kompilerKjerne = tasks.register<no.fristil.build.CompileCore>("kompilerKjerne") {
     dependsOn(byggKjerne)
     wasm.set(kjerneWasm)
     classes.set(layout.buildDirectory.dir("chicory/classes"))
@@ -60,7 +60,7 @@ val kompilerKjerne by tasks.registering(no.fristil.build.CompileCore::class) {
 }
 
 // API-et genereres fra manifestet: verdiene som `enum`-er, og byggefunksjonene som har en tabell.
-val genererApi by tasks.registering(no.fristil.build.GenerateApi::class) {
+val genererApi = tasks.register<no.fristil.build.GenerateApi>("genererApi") {
     manifest.set(manifestFil)
     output.set(layout.buildDirectory.dir("generated/fristil"))
 }
