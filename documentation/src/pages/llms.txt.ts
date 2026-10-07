@@ -17,6 +17,7 @@
 import { getCollection } from "astro:content"
 import type { APIRoute } from "astro"
 import pakke from "../../../designsystem/package.json"
+import { markdownAdresse } from "../markdownadresse"
 
 const BASE = pakke.homepage.replace(/\/$/, "")
 
@@ -96,7 +97,7 @@ export const GET: APIRoute = async () => {
   ) => ({
     tittel: data.title,
     beskrivelse: data.description ?? "",
-    adresse: `${BASE}/${id}/`,
+    adresse: `${BASE}${markdownAdresse(`/${id}/`)}`,
   })
 
   const veiledning: Rad[] = []

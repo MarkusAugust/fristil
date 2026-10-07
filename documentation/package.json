@@ -6,7 +6,7 @@
     "dev": "bunx --bun astro dev",
     "start": "bunx --bun astro dev",
     "build": "bunx --bun astro build",
-    "test:docs": "bun scripts/sjekk-dokumentasjon.ts && bun scripts/sjekk-oppskrifter.ts && bun scripts/sjekk-nettleserimport.ts && bun scripts/sjekk-bygget-versjon.ts && bun scripts/sjekk-delingskort.ts && bun scripts/sjekk-stilark.ts && bun scripts/sjekk-agentkanal.ts && bun scripts/sjekk-monster.ts && bun scripts/sjekk-komponentdemoer.ts && bun scripts/sjekk-mobil.ts && bun scripts/sjekk-tilgjengelighet.ts",
+    "test:docs": "bun scripts/sjekk-dokumentasjon.ts && bun scripts/sjekk-oppskrifter.ts && bun scripts/sjekk-nettleserimport.ts && bun scripts/sjekk-bygget-versjon.ts && bun scripts/sjekk-delingskort.ts && bun scripts/sjekk-stilark.ts && bun scripts/sjekk-agentkanal.ts && bun scripts/sjekk-markdownsider.ts && bun scripts/sjekk-monster.ts && bun scripts/sjekk-komponentdemoer.ts && bun scripts/sjekk-mobil.ts && bun scripts/sjekk-tilgjengelighet.ts",
     "preview": "bunx --bun astro preview",
     "astro": "bunx --bun astro"
   },
@@ -21,8 +21,14 @@
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@tailwindcss/vite": "^4.3.0",
     "axe-core": "4.13.0",
+    "hast-util-select": "6.0.4",
+    "hast-util-to-text": "4.0.2",
     "playwright": "1.60.0",
+    "rehype-parse": "9.0.1",
+    "rehype-remark": "10.0.1",
     "remark-gfm": "4.0.1",
-    "tailwindcss": "^4.3.0"
+    "remark-stringify": "11.0.0",
+    "tailwindcss": "^4.3.0",
+    "unified": "11.0.5"
   }
 }
