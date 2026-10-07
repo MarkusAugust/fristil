@@ -48,11 +48,7 @@ const KILDER = [
  * endring. Den dagen en fil er ren, tas den ut. Lista kan altså bare
  * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
-const KJENT_GJELD = new Map<string, number>([
-  ["designsystem/src/cli.ts", 112],
-  ["designsystem/src/tokens/color.ts", 5],
-  ["designsystem/src/tokens/theme.ts", 77],
-])
+const KJENT_GJELD = new Map<string, number>([["designsystem/src/cli.ts", 112]])
 
 const NORSKE_ORD = new Set([
   "aktiv",

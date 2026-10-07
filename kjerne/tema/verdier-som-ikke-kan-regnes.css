@@ -1,0 +1,6 @@
+:root {
+  --fs-color-accent-fill: var(--noe-annet);
+  --fs-color-danger-text: #ff9999cc;
+  --fs-color-danger-txt: #ff0000;
+  --fs-color-danger-canvas: #ff0000;
+}

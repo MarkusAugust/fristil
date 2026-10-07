@@ -13,6 +13,9 @@
  * 3. Ødelagt markup: hver fikstur, klipt, skjøtet og med tegn satt inn og tatt
  *    bort, med et fast frø, så et funn kan gjenskapes.
  *
+ * Temaet har sin egen fasit i `tema/`: oppskrifter til `buildTheme`, og
+ * temaer skrevet som CSS til `inspectTheme`, med svaret ved siden av.
+ *
  * I tillegg malene i `maler/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
  * Blade. Hver har nøyaktig én skrivefeil med vilje, og skal gi nøyaktig det
  * funnet og ingen andre.
@@ -153,6 +156,52 @@ for (const [navn, html] of fiksturer) {
   holder(navn, html)
 }
 
+// Temaet: oppskriftene og temaene i `tema/` mot fasiten ved siden av. Fasiten
+// ble skrevet av TypeScript-utgaven av temaet før den ble slettet.
+const TEMA = join(ROT, "kjerne/tema")
+/** JSON med nøklene sortert: rekkefølgen i et objekt er ikke en del av svaret. */
+const sortert = (verdi: unknown): string =>
+  JSON.stringify(verdi, (_, v) =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1)),
+        )
+      : v,
+  )
+const oppskrifter: Record<
+  string,
+  { oppskrift: unknown; tema?: unknown; feil?: string }
+> = JSON.parse(readFileSync(join(TEMA, "oppskrifter.json"), "utf8"))
+for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
+  oppskrifter,
+)) {
+  antall += 1
+  let svar: unknown
+  try {
+    svar = { tema: kjerne.buildTheme(oppskrift) }
+  } catch (e) {
+    svar = { feil: e instanceof Error ? e.message : String(e) }
+  }
+  const ventet = ventetFeil === undefined ? { tema } : { feil: ventetFeil }
+  if (sortert(svar) !== sortert(ventet))
+    feil.push(
+      `tema/oppskrifter.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+    )
+}
+const rapporter: Record<string, unknown> = JSON.parse(
+  readFileSync(join(TEMA, "rapporter.json"), "utf8"),
+)
+for (const [navn, ventet] of Object.entries(rapporter)) {
+  antall += 1
+  const svar = kjerne.inspectTheme(
+    readFileSync(join(TEMA, `${navn}.css`), "utf8"),
+  )
+  if (sortert(svar) !== sortert(ventet))
+    feil.push(
+      `tema/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+    )
+}
+
 // Malspråkene: hver fil i `maler/` har markup med malsyntaks, og nøyaktig én
 // skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
 const MALER = join(ROT, "kjerne/maler")
@@ -267,7 +316,7 @@ for (let n = 0; n < ØDELAGTE; n++) {
 }
 
 console.log(
-  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
+  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
 )
 if (feil.length > 0) {
   console.error(`\n${feil.length} feil:\n`)

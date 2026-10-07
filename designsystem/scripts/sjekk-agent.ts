@@ -25,11 +25,10 @@ import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { diagnoseMarkup } from "../src/diagnostics/index.js"
 import { fs } from "../src/index.js"
-import { ROLES } from "../src/tokens/contract.js"
-import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
 import { PAKKE, pakke } from "./agent-deler.js"
+import { FAMILIES, ROLES, roleToCss } from "./fargekontrakt.js"
 import { filer, NAVN } from "./generate-agent.js"
 
 const avvik: string[] = []
@@ -232,7 +231,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   }
 
   for (const rolle of Object.keys(ROLES)) {
-    const navn = roleToCss(rolle as keyof typeof ROLES)
+    const navn = roleToCss(rolle)
     krev(
       gjerder.includes(`\`${navn}\``),
       `${sti} nevner ikke rollen ${navn} i et kodegjerde`,

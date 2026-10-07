@@ -6,7 +6,6 @@
 import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server } from "vitest/browser"
 import { ventPaTegning } from "./testing/a11y"
-import { buildTheme } from "./tokens/theme"
 import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
@@ -250,17 +249,6 @@ describe("temavelgeren virker uten JavaScript", () => {
       expect(tokenKilde).toContain(velger)
       expect(blokk(`  [data-theme="${tema}"]`).size).toBeGreaterThan(0)
     }
-  })
-
-  it("står i et konsumenttema også", () => {
-    /*
-     * Den samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0.
-     * Uten denne linja byttet velgeren til Fristils egne farger inne i et
-     * konsumenttema, siden bare attributtblokkene hadde temaets verdier.
-     */
-    const { css } = buildTheme({ accent: "#7c3aed" })
-    expect(css).toContain(':root:has(.fs-theme-control[value="light"]:checked)')
-    expect(css).toContain(':root:has(.fs-theme-control[value="dark"]:checked)')
   })
 
   it("lar hvert valg bestemme color-scheme, også «følg systemet»", () => {

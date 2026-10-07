@@ -43,7 +43,7 @@ import {
   planTakeover,
   type SourceFile,
 } from "./takeover.js"
-import type { Family } from "./tokens/matrix.js"
+import type { Family } from "./tokens/matrise.js"
 import {
   buildTheme,
   type ThemeInput,

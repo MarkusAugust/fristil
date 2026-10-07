@@ -14,8 +14,11 @@
       "!editor/snippets.json",
       "!designsystem/src/vocabulary/elements.ts",
       "!designsystem/src/vocabulary/classes.ts",
+      "!designsystem/src/tokens/matrise.ts",
       "!designsystem/web-types.json",
       "!kjerne/paritet",
+      "!kjerne/maler",
+      "!kjerne/tema",
       "!designsystem/manifest/manifest.json",
       "!designsystem/manifest/byggetilfeller.json"
     ]

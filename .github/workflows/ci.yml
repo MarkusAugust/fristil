@@ -134,14 +134,10 @@ jobs:
       - name: Bygg kjernen
         run: bun kjerne/scripts/bygg.ts
 
-      # Fiksturene mot fasiten, og markupen i repoet og 4000 ødelagte sider
-      # mot kravene et svar må holde.
+      # Fiksturene, malene og temaene mot fasiten, og markupen i repoet og
+      # 4000 ødelagte sider mot kravene et svar må holde.
       - name: Kjernen svarer det den skal
         run: bun kjerne/scripts/sjekk-kjerne.ts
-
-      # Midlertidig, mens temaet finnes i både Rust og TypeScript.
-      - name: Temaet fra Rust og TypeScript er likt
-        run: bun kjerne/scripts/sjekk-tema-paritet.ts
 
       - uses: actions/setup-java@v5
         with:

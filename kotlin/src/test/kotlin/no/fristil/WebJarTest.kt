@@ -36,7 +36,7 @@ class WebJarTest {
 
     @Test
     fun `det som bare er for Node eller React er ikke med`() {
-        for (path in listOf("dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics")) {
+        for (path in listOf("dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics", "dist/tokens/theme.js")) {
             assertTrue(!File(root, path).exists(), "$path skal ikke være i WebJar-en")
         }
     }

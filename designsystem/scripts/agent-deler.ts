@@ -16,18 +16,15 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fs } from "../src/index.js"
-import { ROLES } from "../src/tokens/contract.js"
-import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
 import { byggSamletCss, samletStørrelse } from "./css-samlet.js"
+import { FAMILIES, ROLES, roleToCss } from "./fargekontrakt.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 
 /** Rollenavnene slik de står i CSS, i rekkefølgen kontrakten gir dem. */
-const ROLE_NAMES = Object.keys(ROLES).map((rolle) =>
-  roleToCss(rolle as keyof typeof ROLES),
-)
+const ROLE_NAMES = Object.keys(ROLES).map((rolle) => roleToCss(rolle))
 
 type Pakke = {
   version: string

@@ -178,7 +178,7 @@ Regelen står i `@layer fristil-tema`, som resten av temaet, så din egen CSS vi
 
 ## Programmatisk
 
-Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et byggesteg eller en temavelger:
+Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et byggesteg:
 
 ```ts
 import { buildTheme } from "@fristil/designsystem/tema"
@@ -198,7 +198,19 @@ tema.violations // løfter som ikke holder. Tom når temaet er i orden
 
 Nøklene er familienavnene på engelsk: `accent`, `visited`, `brand1` til `brand3`, `neutral`, `danger`, `warning` og `success`. På kommandolinjen heter de det samme på norsk.
 
-Vil du regne selv, har `@fristil/designsystem/farge` regnestykkene bak: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Kontrakten, altså hvilken lyshet hver rolle har og hvilke par som måles, ligger i `@fristil/designsystem/kontrakt`.
+Temaet regnes av kjernen, skrevet i Rust og bygget til WebAssembly, den samme som `fristil tema` og Fristil for Kotlin bruker. `buildTheme` laster den fra pakken i Node, Bun og Deno. I nettleseren, for eksempel i en temavelger, laster du den selv:
+
+```ts
+import { loadCore } from "@fristil/designsystem/diagnostics"
+import modul from "@fristil/designsystem/kjerne.wasm?url"
+
+const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(modul)))
+const tema = kjerne.buildTheme({ accent: "#7c3aed" })
+```
+
+`?url` er Vite sin måte å få adressen til en fil. Uten et byggesteg legger du `fristil-kjerne.wasm` fra pakken ved siden av siden, og henter den derfra.
+
+Vil du regne selv, har `@fristil/designsystem/farge` regnestykkene: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Hvilken lyshet hver rolle har og kravene til kontrast står i `@fristil/designsystem/kontrakt`, og Fristils egne farger i `@fristil/designsystem/matrise`.
 
 ## Kontrollen
 

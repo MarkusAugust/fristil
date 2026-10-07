@@ -1,0 +1,9 @@
+:root {
+  --fs-color-danger-text: #ff9999;
+  &:hover {
+    color: red;
+  }
+  @media print {
+    --fs-color-accent-fill: #123456;
+  }
+}

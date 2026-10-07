@@ -109,7 +109,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 ## Tokens
 
-`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene står i `FRISTIL_BRANDS` i `src/tokens/matrix.ts`, og lyshetene i `ROLES` i `src/tokens/contract.ts`. Skal du flytte en farge, er det en av de to du redigerer:
+`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene, lyshetene per rolle og løftene står i `src/tokens/fargekontrakt.json`, og kjernen i `kjerne/` regner fargene av dem. Skal du flytte en farge, er det den fila du redigerer:
 
 ```bash
 bun --filter @fristil/designsystem generate
@@ -119,7 +119,7 @@ Fargene er en matrise av **familie**, altså hva fargen betyr, og **rolle**, alt
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Løftene den må holde, står i `src/tokens/contract.ts`, og de samme løftene sjekker Fristils egne farger.
+Temageneratoren bygger et helt tema av en konsuments merkefarger. Den er skrevet i Rust, i `kjerne/src/theme/`, og når JavaScript gjennom `@fristil/designsystem/tema`. Løftene den må holde, står i `src/tokens/fargekontrakt.json`, og de samme løftene sjekker Fristils egne farger. Testene for kontrakten står i `kjerne/src/theme/tests.rs`.
 
 ## Tester
 

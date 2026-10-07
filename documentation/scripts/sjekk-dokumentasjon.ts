@@ -15,8 +15,11 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { compile } from "tailwindcss"
-import { ROLES } from "../../designsystem/src/tokens/contract.ts"
-import { FAMILIES, roleToCss } from "../../designsystem/src/tokens/matrix.ts"
+import {
+  FAMILIES,
+  ROLES,
+  roleToCss,
+} from "../../designsystem/scripts/fargekontrakt.ts"
 
 const ROT = fileURLToPath(new URL("../../", import.meta.url))
 const KOMPONENTER = `${ROT}designsystem/src/components/`

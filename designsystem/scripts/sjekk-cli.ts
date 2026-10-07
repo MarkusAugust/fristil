@@ -14,7 +14,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { buildMatrix, FRISTIL_BRANDS } from "../src/tokens/matrix.js"
+import { lightCells } from "../src/tokens/matrise.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
@@ -114,7 +114,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await writeFile(
     godt,
     ":root {\n  color-scheme: light;\n" +
-      Object.entries(buildMatrix(FRISTIL_BRANDS, "light").tokens)
+      Object.entries(lightCells)
         .map(([navn, verdi]) => `  ${navn}: ${verdi};`)
         .join("\n") +
       "\n}\n",

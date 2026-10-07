@@ -86,6 +86,9 @@ pub struct Contract {
     pub roles: Vec<(String, Spec)>,
     pub canvas: Spec,
     pub raised: Spec,
+    /// Kontrastkravene, med margin over WCAG: tekst og grafikk.
+    pub text_requirement: f64,
+    pub graphic_requirement: f64,
     pub promises: Vec<Promise>,
 }
 
@@ -145,6 +148,14 @@ fn read(source: &str) -> Result<Contract, String> {
             .get("layers")
             .and_then(|l| spec(l.get("raised")?))
             .ok_or_else(|| wrong("layers.raised"))?,
+        text_requirement: requirements
+            .get("text")
+            .and_then(Json::as_f64)
+            .ok_or_else(|| wrong("requirements.text"))?,
+        graphic_requirement: requirements
+            .get("graphic")
+            .and_then(Json::as_f64)
+            .ok_or_else(|| wrong("requirements.graphic"))?,
         promises: root
             .get("promises")
             .and_then(Json::as_array)

@@ -8,6 +8,8 @@
 pub mod check;
 pub mod color;
 pub mod contract;
+#[cfg(test)]
+mod tests;
 
 use crate::json::Json;
 use contract::{build_matrix, contract, Appearance, Violation};
@@ -406,7 +408,7 @@ fn truthy(v: &Json) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
+mod recipe_tests {
     use super::*;
     use crate::json::parse;
 
@@ -448,6 +450,16 @@ mod tests {
             "{}",
             t.css
         );
+    }
+
+    #[test]
+    fn the_theme_control_stands_in_a_consumer_theme_too() {
+        // Den samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0:
+        // uten disse byttet velgeren til Fristils egne farger inne i et
+        // konsumenttema, siden bare attributtblokkene hadde temaets verdier.
+        let css = theme(r##"{"accent": "#7c3aed"}"##).unwrap().css;
+        assert!(css.contains(r#":root:has(.fs-theme-control[value="light"]:checked)"#));
+        assert!(css.contains(r#":root:has(.fs-theme-control[value="dark"]:checked)"#));
     }
 
     #[test]

@@ -93,7 +93,11 @@ val webjar = tasks.register<Sync>("webjar") {
     into(layout.buildDirectory.dir("webjar"))
     from(designsystem) {
         include("dist/**/*.js", "dist/fristil.css", "src/components/**/*.css", "src/tokens/**/*.css")
-        exclude("dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**")
+        exclude(
+            "dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**",
+            // Temaet leser kjernen fra disken, og er for Node, ikke nettleseren.
+            "dist/tokens/theme.js", "dist/tokens/theme-check.js",
+        )
         into("META-INF/resources/webjars/fristil/$version")
     }
 }

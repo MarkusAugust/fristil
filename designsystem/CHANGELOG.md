@@ -48,6 +48,30 @@ egen overskrift «Brytende».
 
   Ingenting endres i `fs`, i komponentene eller i CSS-en.
 
+- **Temaet er Rust-kjernen.** `buildTheme` i `@fristil/designsystem/tema` og
+  `inspectTheme` og `checkTheme` i `@fristil/designsystem/tema-sjekk` kjører
+  den samme WebAssembly-modulen som sjekken. Svarene er de samme: de to
+  utgavene ble kjørt side om side på over 6000 oppskrifter og temaer, med
+  ugyldige farger, farlige verdier og ødelagt CSS, uten ett avvik, heller ikke
+  i kontrastforholdene. `buildTheme` laster modulen fra pakken i Node, Bun og
+  Deno. I nettleseren lastes den med `loadCore` fra
+  `@fristil/designsystem/diagnostics`, og modulen er
+  `@fristil/designsystem/kjerne.wasm`.
+
+  Fargekontrakten er data, i `src/tokens/fargekontrakt.json`, og regningen
+  finnes bare i kjernen. Disse forsvinner:
+
+  | Borte | I stedet |
+  | --- | --- |
+  | `buildMatrix(merker, utseende)` fra `matrise` | `buildTheme(merker)`, som gir `light`, `dark` og `violations`. Fristils egne farger er `lightCells` og `darkCells` i `matrise`. |
+  | `buildFamily`, `promisesFor`, `checkPromises` og typen `Violation` fra `kontrakt` | `buildTheme` for et tema, `inspectTheme` for å kontrollere ett. `Violation` står i `tema`. |
+  | `parseBlocks` og typen `ParsedBlock` fra `tema-sjekk` | `inspectTheme`, som leser blokkene. |
+  | typene `Matrix` og `RoleCss` fra `matrise` | `MatrixToken` gir hvert navn. |
+
+  `ROLES`, `NEUTRAL_LAYERS`, `REQUIREMENT`, `FAMILIES`, `FRISTIL_BRANDS`,
+  `roleToCss` og `tokenName` er der som før, og `@fristil/designsystem/farge`
+  er uendret.
+
 ### Nytt
 
 - **Funnene har regelnavn, linje og kolonne.** `rule` er navnet på regelen,
