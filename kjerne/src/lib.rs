@@ -259,6 +259,32 @@ mod tests {
     }
 
     #[test]
+    fn a_flag_on_a_class_takes_no_value() {
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        assert!(markup(r#"<label class="fs-label" data-optional>Navn</label>"#).is_empty());
+        assert!(markup(r#"<label class="fs-label" data-optional="">Navn</label>"#).is_empty());
+        let found = markup(r#"<label class="fs-label" data-optional="false">Navn</label>"#);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert_eq!(found[0].rule, "boolsk-med-verdi");
+        assert!(
+            found[0].message.contains("flagg på label"),
+            "{}",
+            found[0].message
+        );
+        let fix = found[0].fix.as_ref().unwrap();
+        assert_eq!(fix.text, "");
+    }
+
+    #[test]
+    fn checks_the_color_of_a_dialog() {
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        assert!(markup(r#"<dialog class="fs-dialog" data-color="danger"></dialog>"#).is_empty());
+        let found = markup(r#"<dialog class="fs-dialog" data-color="red"></dialog>"#);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert_eq!(found[0].rule, "ugyldig-klasseverdi");
+    }
+
+    #[test]
     fn looks_up_lines_like_counting_them() {
         let text = utf16("\n\nab\n\ncd\n");
         let lines = Lines::new(&text);

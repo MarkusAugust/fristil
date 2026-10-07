@@ -592,7 +592,18 @@ export const classes: Classes = {
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
     "link": "https://fristil.sobernetics.no/components/dialog/",
-    "attributes": {}
+    "attributes": {
+      "data-color": {
+        "values": [
+          "brand",
+          "info",
+          "success",
+          "warning",
+          "danger"
+        ],
+        "default": "neutral"
+      }
+    }
   },
   "fs-dialog__body": {
     "component": "dialog",

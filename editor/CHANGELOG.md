@@ -9,6 +9,8 @@ bare endrer seg når et element eller et attributt gjør det.
 - Feilmeldingene kommer fra Rust-kjernen, den samme som `fristil sjekk`,
   IntelliJ og Fristil for Kotlin bruker. Modulen ligger i utvidelsen, så den
   trenger fortsatt ingenting installert.
+- Fullføring og sjekk av `data-color` på `fs-dialog`, med fargene
+  `fs.dialog({ color })` gir. Før sa en ukjent farge ingenting.
 - Hver feilmelding viser regelnavnet, som `ukjent-klasse`, med lenke til
   komponentsiden. Navnet er det `<!-- fristil-ignore-next ukjent-klasse -->`
   tar for å undertrykke ett funn.

@@ -58,19 +58,36 @@
           "attributes": {
             "type": "object",
             "additionalProperties": {
-              "type": "object",
-              "required": ["values"],
-              "properties": {
-                "values": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+              "description": "Et attributt med en lukket liste over verdier, eller et flagg, som er på når det står der.",
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": ["values"],
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {
+                      "description": "Verdien fraværet betyr.",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
                 },
-                "default": {
-                  "type": "string"
+                {
+                  "type": "object",
+                  "required": ["flag"],
+                  "properties": {
+                    "flag": {
+                      "const": true
+                    }
+                  },
+                  "additionalProperties": false
                 }
-              }
+              ]
             }
           }
         }

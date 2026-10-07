@@ -116,17 +116,23 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
             &format!("{path}.attributes"),
         )? {
             let attribute_path = format!("{path}.attributes.{attribute_name}");
+            let flag = matches!(attribute.get("flag"), Some(Json::Bool(true)));
             attributes.push((
                 attribute_name.clone(),
                 ClassAttribute {
-                    values: texts(
-                        field(attribute, "values", &attribute_path)?,
-                        &attribute_path,
-                    )?,
+                    values: if flag {
+                        Vec::new()
+                    } else {
+                        texts(
+                            field(attribute, "values", &attribute_path)?,
+                            &attribute_path,
+                        )?
+                    },
                     default_value: attribute
                         .get("default")
                         .map(|d| text(d, &attribute_path))
                         .transpose()?,
+                    flag,
                 },
             ));
         }

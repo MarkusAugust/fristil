@@ -490,12 +490,74 @@ for (const b of byggefunksjoner) {
   if (t) b.table = t
 }
 
+/*
+ * Flaggene på klassene: `data-optional` på `fs-label`, `data-interactive` på
+ * `fs-card`. Et flagg er på når det står der, og stilarket spør bare om det
+ * finnes, så det har ingen liste over verdier, og `classes.ts` har det ikke.
+ *
+ * Det leses av byggetilfellene: står et `data-*`-attributt som flagg i svaret
+ * med et boolsk valg på, men ikke uten, hører det til klassen i det samme
+ * settet.
+ */
+type Sett = Record<string, unknown>
+const settene = (svar: unknown): [string, Sett][] => {
+  if (typeof svar !== "object" || svar === null) return []
+  const verdier = Object.entries(svar)
+  return verdier.some(([, v]) => typeof v === "object" && v !== null)
+    ? (verdier.filter(
+        ([, v]) => typeof v === "object" && v !== null && !Array.isArray(v),
+      ) as [string, Sett][])
+    : [["", svar as Sett]]
+}
+const flagg = new Map<string, Set<string>>()
+for (const b of byggefunksjoner) {
+  const egne = tilfeller.filter((t) => t.builder === b.name && t.expected)
+  for (const valg of b.options.filter((o) => o.type.kind === "flag")) {
+    for (const på of egne.filter((t) => t.options[valg.name] === true)) {
+      const { [valg.name]: _, ...uten } = på.options
+      const av = egne.find((t) => likt(t.options, uten))
+      if (!av) continue
+      const før = new Map(settene(av.expected))
+      for (const [navn, sett] of settene(på.expected)) {
+        const klasser = String(sett.class ?? "")
+          .split(/\s+/)
+          .filter((k) => classes[k])
+        for (const [attributt, verdi] of Object.entries(sett))
+          if (
+            attributt.startsWith("data-") &&
+            (verdi === true || verdi === "") &&
+            før.get(navn)?.[attributt] === undefined
+          )
+            for (const klasse of klasser)
+              flagg.set(klasse, (flagg.get(klasse) ?? new Set()).add(attributt))
+      }
+    }
+  }
+}
+const klasser = Object.fromEntries(
+  Object.entries(classes).map(([navn, klasse]) => [
+    navn,
+    {
+      ...klasse,
+      attributes: {
+        ...klasse.attributes,
+        ...Object.fromEntries(
+          [...(flagg.get(navn) ?? [])]
+            .filter((a) => !(a in klasse.attributes))
+            .sort()
+            .map((a) => [a, { flag: true }]),
+        ),
+      },
+    },
+  ]),
+)
+
 const manifest = {
   $schema: "./manifest.schema.json",
   schemaVersion: SKJEMAVERSJON,
   version: versjon,
   elements,
-  classes,
+  classes: klasser,
   builders: byggefunksjoner,
 }
 

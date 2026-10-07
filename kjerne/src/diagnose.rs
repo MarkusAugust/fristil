@@ -830,6 +830,33 @@ fn check_classes(
             let Some((_, takes)) = info.attributes.iter().find(|(n, _)| equals(&a.name, n)) else {
                 continue;
             };
+            if takes.flag {
+                // Stilarket spør bare om flagget står der, så `="false"` slår
+                // det på. Det samme som for et boolsk attributt på et element.
+                if lowercase(value) != a.name {
+                    let name = lossy(&a.name);
+                    let v = lossy(value);
+                    findings.push(Finding {
+                        start: a.start,
+                        end: a.value_end,
+                        severity: Severity::Warning,
+                        link: info.link.clone(),
+                        message: format!(
+                            "{name} er et flagg på {}: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av.",
+                            lossy(&lowercase(&utf16(&info.title)))
+                        ),
+                        fix: Some(Fix {
+                            title: format!("Ta bort {name}"),
+                            start: a.space_start,
+                            end: a.value_end,
+                            text: String::new(),
+                            preferred: true,
+                        }),
+                        rule: "boolsk-med-verdi",
+                    });
+                }
+                break;
+            }
             if takes.values.iter().any(|v| equals(value, v))
                 || takes
                     .default_value

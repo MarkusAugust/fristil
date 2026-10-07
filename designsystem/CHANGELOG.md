@@ -63,6 +63,15 @@ egen overskrift «Brytende».
 - **`@fristil/designsystem/manifest.json`** beskriver hele ordforrådet og
   hver byggefunksjon som data, med skjema. Det er det Fristil for Kotlin
   genereres fra, og det kjernen sjekker mot.
+- **`data-color` på `fs-dialog` sjekkes.** Sjekken kjente ikke fargene
+  `fs.dialog({ color })` gir, fordi ordlista bare leste byggefunksjoner som
+  svarer med ett sett. `data-color="red"` sa derfor ingenting. Nå meldes en
+  ukjent farge, med de fem lovlige og `neutral` som standard.
+- **Flaggene på klassene står i manifestet:** `data-optional` på `fs-label`
+  og `fs-legend`, `data-interactive` på `fs-card`, `data-selectable` på
+  `fs-tag` og `data-hoverable` på `fs-table`. Sjekken sier fra om
+  `data-optional="false"`, som slår flagget på, slik den gjør for boolske
+  attributter på elementene.
 - **En stor side med mange funn sjekkes raskere.** Linja og kolonnen til hvert
   funn ble regnet fra starten av teksten. 6000 funn på en side med 3000 linjer
   tok en kvart sekund, og tar nå 25 millisekunder.

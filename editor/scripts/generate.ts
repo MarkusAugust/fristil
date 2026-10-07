@@ -333,49 +333,66 @@ export function classesData(): Classes {
     } catch {
       continue
     }
-    const targets = [...new Set(classesIn(base))].filter((c) => out[c])
-    if (!targets.length) continue
-    for (const [list, option] of Object.entries(OPTION_LISTS)) {
-      const values = (builder as unknown as Record<string, unknown>)[list]
-      if (!Array.isArray(values)) continue
-      // Hvert attributt en verdi blir til: `fs.input({ type: "date" })` gir både
-      // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
-      // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et fs-input.
-      const emitted = new Map<string, string[]>()
-      const silent: string[] = []
-      for (const value of values as string[]) {
-        const result = build({
-          id: "x",
-          titleId: "x",
-          [option]: value,
-        }) as Record<string, unknown>
-        const extra = Object.entries(result).filter(
-          ([key, v]) =>
-            typeof v === "string" &&
-            key !== "class" &&
-            key !== "type" &&
-            (base as Record<string, unknown>)[key] !== v &&
-            v === value,
-        )
-        if (!extra.length) {
-          silent.push(value)
-          continue
-        }
-        for (const [attribute] of extra) {
-          emitted.set(attribute, [...(emitted.get(attribute) ?? []), value])
-        }
-      }
-      for (const [attribute, list] of emitted)
-        for (const target of targets)
-          out[target].attributes[attribute] = {
-            values: list,
-            // Standardverdien er den ene verdien som ikke gir noe attributt,
-            // som `primary` for `data-variant`. Gir flere ingenting, som de
-            // fleste typene på et input, betyr fraværet ikke én av dem.
-            ...(silent.length === 1 && emitted.size === 1
-              ? { default: silent[0] }
-              : {}),
+    /*
+     * Settene svaret består av. En byggefunksjon som `button` gir ett, og
+     * `dialog` gir ett per del, `host`, `dialog`, `header` og så videre.
+     * Hvert sett sjekkes for seg, så `data-color` havner på `fs-dialog`, som
+     * står i det samme settet, og ikke på overskriften.
+     */
+    const parts = (result: unknown): [string, Record<string, unknown>][] => {
+      if (typeof result !== "object" || result === null) return []
+      const entries = Object.entries(result as Record<string, unknown>)
+      return entries.some(([, v]) => typeof v === "object" && v !== null)
+        ? (entries.filter(
+            ([, v]) => typeof v === "object" && v !== null && !Array.isArray(v),
+          ) as [string, Record<string, unknown>][])
+        : [["", result as Record<string, unknown>]]
+    }
+    const baseParts = new Map(parts(base))
+    for (const [part, basePart] of baseParts) {
+      const targets = [...new Set(classesIn(basePart))].filter((c) => out[c])
+      if (!targets.length) continue
+      for (const [list, option] of Object.entries(OPTION_LISTS)) {
+        const values = (builder as unknown as Record<string, unknown>)[list]
+        if (!Array.isArray(values)) continue
+        // Hvert attributt en verdi blir til: `fs.input({ type: "date" })` gir både
+        // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
+        // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et fs-input.
+        const emitted = new Map<string, string[]>()
+        const silent: string[] = []
+        for (const value of values as string[]) {
+          const result =
+            new Map(
+              parts(build({ id: "x", titleId: "x", [option]: value })),
+            ).get(part) ?? {}
+          const extra = Object.entries(result).filter(
+            ([key, v]) =>
+              typeof v === "string" &&
+              key !== "class" &&
+              key !== "type" &&
+              basePart[key] !== v &&
+              v === value,
+          )
+          if (!extra.length) {
+            silent.push(value)
+            continue
           }
+          for (const [attribute] of extra) {
+            emitted.set(attribute, [...(emitted.get(attribute) ?? []), value])
+          }
+        }
+        for (const [attribute, list] of emitted)
+          for (const target of targets)
+            out[target].attributes[attribute] = {
+              values: list,
+              // Standardverdien er den ene verdien som ikke gir noe attributt,
+              // som `primary` for `data-variant`. Gir flere ingenting, som de
+              // fleste typene på et input, betyr fraværet ikke én av dem.
+              ...(silent.length === 1 && emitted.size === 1
+                ? { default: silent[0] }
+                : {}),
+            }
+      }
     }
   }
   return out

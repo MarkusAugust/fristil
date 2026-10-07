@@ -21,11 +21,13 @@ pub struct Element {
     pub attributes: Vec<(String, Attribute)>,
 }
 
-/// Et attributt en klasse tar, som `data-variant` på `fs-button`.
+/// Et attributt en klasse tar, som `data-variant` på `fs-button`, eller et
+/// flagg, som `data-optional` på `fs-label`, som er på når det står der.
 #[derive(Clone, Debug)]
 pub struct ClassAttribute {
     pub values: Vec<String>,
     pub default_value: Option<String>,
+    pub flag: bool,
 }
 
 #[derive(Clone, Debug)]
