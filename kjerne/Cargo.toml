@@ -1,0 +1,21 @@
+[package]
+name = "fristil-kjerne"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Fristils diagnostikk, kompilert til WebAssembly for alle vertsspråk."
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# Ingen avhengigheter. Ordforrådet er generert Rust, ikke JSON, så det trengs
+# ingen parser, og de regulære uttrykkene fra TypeScript er skrevet ut for
+# hånd, så modulen slipper en regex-motor.
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

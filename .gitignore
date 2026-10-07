@@ -31,3 +31,7 @@ presentasjon/index.html
 jvm/.gradle/
 jvm/.kotlin/
 jvm/build/
+
+# Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
+kjerne/target/
+kjerne/dist/

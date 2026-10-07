@@ -11,10 +11,9 @@ import org.junit.jupiter.params.provider.MethodSource
 /**
  * At JVM-versjonen svarer nøyaktig det TypeScript-versjonen svarer.
  *
- * Fasiten i `paritet/`, én `.json` per `.html`, er skrevet av `jvm/scripts/bygg.ts` med den
- * samme diagnostikken kjørt i Bun. Avviker ett tegn i én melding eller én
- * posisjon, feiler testen: da er det to implementasjoner, og det er nettopp
- * det dette biblioteket skal unngå.
+ * Fasiten i `kjerne/paritet/`, én `.json` per `.html`, er skrevet av
+ * `kjerne/scripts/bygg.ts` med TypeScript-versjonen av diagnostikken. Avviker
+ * ett tegn i én melding eller én posisjon, feiler testen.
  */
 class ParitetTest {
     private val json = jacksonObjectMapper()
@@ -48,7 +47,7 @@ class ParitetTest {
         }
 
     companion object {
-        private val MAPPE = File("src/test/resources/paritet")
+        private val MAPPE = File(System.getProperty("paritet"))
 
         @JvmStatic
         fun fiksturer(): List<String> {

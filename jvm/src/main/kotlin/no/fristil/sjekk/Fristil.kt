@@ -1,69 +1,82 @@
 package no.fristil.sjekk
 
+import com.dylibso.chicory.compiler.MachineFactoryCompiler
+import com.dylibso.chicory.runtime.ExportFunction
+import com.dylibso.chicory.runtime.Instance
+import com.dylibso.chicory.wasm.Parser
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.roastedroot.quickjs4j.core.Runner
 
 /**
- * Fristils diagnostikk på JVM-en, uten Node.
+ * Fristils diagnostikk på JVM-en, uten Node og uten JavaScript.
  *
- * Koden er ikke skrevet på nytt i Kotlin. Det er den samme diagnostikken som
- * editorutvidelsen og `fristil sjekk` bruker, pakket av `jvm/scripts/bygg.ts`
- * og kjørt i QuickJS. Paritetstesten krever at svarene er identiske med
- * TypeScript-versjonen.
+ * Diagnostikken er skrevet i Rust (`kjerne/`) og kompilert til én
+ * WebAssembly-modul. Den samme modulen kjøres av Node og nettleseren. Her
+ * kjøres den av Chicory, en WebAssembly-runtime skrevet i ren Java: en
+ * vanlig Maven-avhengighet, uten JNI og uten noe å installere.
  *
  * ```kotlin
  * val html = client.get("/soknad").bodyAsText()
  * assertEquals(emptyList(), Fristil.diagnosePage(html))
  * ```
  *
- * Posisjonene er tegnindekser i UTF-16, som i JavaScript, og det er de samme
- * indeksene en Kotlin-`String` bruker. `html.substring(funn.start, funn.end)`
- * gir derfor nøyaktig teksten funnet gjelder.
+ * Posisjonene er tegnindekser i UTF-16, de samme indeksene en Kotlin-`String`
+ * bruker. `html.substring(funn.start, funn.end)` gir derfor nøyaktig teksten
+ * funnet gjelder.
  */
 object Fristil {
     /** Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment. */
-    fun diagnoseMarkup(html: String): List<Funn> = diagnose("diagnoseMarkup", html)
+    fun diagnoseMarkup(html: String): List<Funn> = diagnose(markup, html)
 
     /**
      * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
      * pekes på finnes, at ingen id står to ganger, og at hvert felt er koblet.
      * Bruk den på HTML-en serveren sender, ikke på en mal.
      */
-    fun diagnosePage(html: String): List<Funn> = diagnose("diagnosePage", html)
+    fun diagnosePage(html: String): List<Funn> = diagnose(side, html)
 
     private val json: ObjectMapper =
         jacksonObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
-    private val bunten: String by lazy {
-        Fristil::class.java.getResourceAsStream("diagnostikk.js")
-            ?.use { it.readBytes().toString(Charsets.UTF_8) }
-            ?: error("Fant ikke diagnostikk.js i jar-en. Kjør bun jvm/scripts/bygg.ts.")
+    /*
+     * Én instans, lest og satt opp én gang. Modulen har ingen importer og
+     * ingen tilstand mellom kall utover svaret fra forrige kall, så kallene
+     * bare må gå ett om gangen.
+     */
+    private val instans: Instance by lazy {
+        val modul =
+            Fristil::class.java.getResourceAsStream("fristil-kjerne.wasm")
+                ?: error("Fant ikke fristil-kjerne.wasm i jar-en.")
+        // Kompilert til JVM-bytekode, ikke tolket: tolken brukte sekunder på
+        // en side kompilatoren bruker millisekunder på.
+        Instance.builder(modul.use { Parser.parse(it) })
+            .withMachineFactory(MachineFactoryCompiler::compile)
+            .build()
     }
 
-    /*
-     * Bunten kompileres til QuickJS-bytekode én gang. Hvert kall får sin egen
-     * motor, så kall fra flere tråder ikke deler tilstand, og bare det lille
-     * kallet kompileres på nytt.
-     */
-    private val kompilert: ByteArray by lazy { Runner.builder().build().use { it.compile(bunten) } }
+    private val alloc by lazy { instans.export("alloc") }
+    private val markup by lazy { instans.export("diagnose_markup_raw") }
+    private val side by lazy { instans.export("diagnose_page_raw") }
+    private val svarPeker by lazy { instans.export("result_ptr") }
+    private val svarLengde by lazy { instans.export("result_len") }
 
     // Navnet er ASCII med vilje: `readValue` lager en klasse oppkalt etter
     // funksjonen, og en klassefil med «ø» i navnet feiler i et miljø uten
     // UTF-8 som standard.
-    private fun diagnose(funksjon: String, html: String): List<Funn> {
-        // HTML-en sendes inn som en JSON-streng, som også er en gyldig
-        // JavaScript-streng: ingen tegn i markupen kan bryte ut av den.
-        val kall = "console.log(JSON.stringify(FristilDiagnostikk.$funksjon(${json.writeValueAsString(html)})))"
+    @Synchronized
+    private fun diagnose(funksjon: ExportFunction, html: String): List<Funn> {
+        val bytes = html.toByteArray(Charsets.UTF_8)
+        val peker = alloc.apply(bytes.size.toLong())[0]
+        instans.memory().write(peker.toInt(), bytes)
+        funksjon.apply(peker, bytes.size.toLong())
         val ut =
-            Runner.builder().build().use { runner ->
-                runner.exec(kompilert)
-                runner.compileAndExec(kall)
-                runner.stdout()
-            }
-        return json.readValue(ut.trim())
+            instans.memory().readBytes(
+                svarPeker.apply()[0].toInt(),
+                svarLengde.apply()[0].toInt(),
+            )
+        return json.readValue(ut)
     }
 }
 
