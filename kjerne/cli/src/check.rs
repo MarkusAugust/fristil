@@ -15,6 +15,26 @@ use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::Severity;
 use fristil_kjerne::{diagnose_markup, diagnose_page, manifest, Lines};
 
+/// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
+/// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
+/// tilfeldigvis var kommet.
+fn read_all_input() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    let mut buffer = [0u8; 64 * 1024];
+    let mut stdin = std::io::stdin().lock();
+    loop {
+        match stdin.read(&mut buffer) {
+            Ok(0) => return bytes,
+            Ok(n) => bytes.extend_from_slice(&buffer[..n]),
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                std::thread::sleep(std::time::Duration::from_millis(5));
+            }
+            Err(_) => return bytes,
+        }
+    }
+}
+
 struct Source {
     name: String,
     text: String,
@@ -30,11 +50,13 @@ pub fn run(arguments: &[String]) {
     let inputs: Vec<&String> = arguments.iter().filter(|a| *a != "--rendret").collect();
 
     if inputs.is_empty() {
-        if std::io::stdin().is_terminal() {
+        // WASI kan ikke se om standard inn er en terminal, så verten sier det.
+        if std::io::stdin().is_terminal()
+            || std::env::var("FRISTIL_TERMINAL").is_ok_and(|v| v == "1")
+        {
             error("Leser markup fra standard inn. Avslutt med Ctrl-D.");
         }
-        let mut bytes = Vec::new();
-        let _ = std::io::stdin().read_to_end(&mut bytes);
+        let bytes = read_all_input();
         let text = String::from_utf8_lossy(&bytes).into_owned();
         // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
         // ville ellers meldt grønt uten å ha sett på noe.

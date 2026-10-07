@@ -141,6 +141,12 @@ pub fn refuse_without_value(arguments: &Arguments) {
 }
 
 fn main() {
+    // En WASI-modul begynner i mappa `/`, så en relativ sti som
+    // `package.json` ville blitt lest fra rota. Verten sier hvor
+    // arbeidsmappa er, og modulen går dit før den gjør noe annet.
+    if let Ok(directory) = std::env::var("FRISTIL_ARBEIDSMAPPE") {
+        let _ = std::env::set_current_dir(directory);
+    }
     let arguments: Vec<String> = std::env::args().skip(1).collect();
 
     // Uten argumenter, eller når noen ber om hjelp, skal kommandoen fortelle

@@ -7,7 +7,9 @@
  *
  * Modulen havner i `designsystem/kjerne/fristil-kjerne.wasm`, der
  * `@fristil/designsystem/diagnostics` leser den, både fra `src/` og fra
- * `dist/`. Den sjekkes ikke inn: den bygges av kildekoden ved siden av.
+ * `dist/`. Kommandolinja (`cli/`) bygges som WASI-modul til
+ * `designsystem/kjerne/fristil.wasm`, som `npx @fristil/designsystem` kjører.
+ * Ingen av dem sjekkes inn: de bygges av kildekoden ved siden av.
  *
  * Kjør med: bun kjerne/scripts/bygg.ts, eller bun run kjerne i designsystem/.
  * Krever Rust. `rust-toolchain.toml` henter versjonen og målet.
@@ -23,6 +25,8 @@ const WASM = join(
   "target/wasm32-unknown-unknown/release/fristil_kjerne.wasm",
 )
 export const MODUL = join(KJERNE, "../designsystem/kjerne/fristil-kjerne.wasm")
+const CLI = join(KJERNE, "target/wasm32-wasip1/release/fristil.wasm")
+export const KOMMANDOLINJE = join(KJERNE, "../designsystem/kjerne/fristil.wasm")
 
 if (import.meta.main) {
   const cargo = Bun.spawnSync(
@@ -30,9 +34,25 @@ if (import.meta.main) {
     { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
   )
   if (cargo.exitCode !== 0) process.exit(cargo.exitCode ?? 1)
+  const wasi = Bun.spawnSync(
+    [
+      "cargo",
+      "build",
+      "--release",
+      "-p",
+      "fristil",
+      "--target",
+      "wasm32-wasip1",
+    ],
+    { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
+  )
+  if (wasi.exitCode !== 0) process.exit(wasi.exitCode ?? 1)
   mkdirSync(dirname(MODUL), { recursive: true })
   copyFileSync(WASM, MODUL)
+  copyFileSync(CLI, KOMMANDOLINJE)
 
-  const kb = (statSync(MODUL).size / 1024).toFixed(0)
-  console.log(`Skrev ${MODUL} (${kb} kB).`)
+  const kb = (sti: string) => (statSync(sti).size / 1024).toFixed(0)
+  console.log(
+    `Skrev ${MODUL} (${kb(MODUL)} kB) og ${KOMMANDOLINJE} (${kb(KOMMANDOLINJE)} kB).`,
+  )
 }

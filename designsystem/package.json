@@ -326,6 +326,7 @@
     "web-types.json",
     "manifest/manifest.json",
     "kjerne/fristil-kjerne.wasm",
+    "kjerne/fristil.wasm",
     "manifest/manifest.schema.json",
     "src/tokens",
     "src/components",

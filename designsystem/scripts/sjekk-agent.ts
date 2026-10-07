@@ -324,8 +324,12 @@ for (const [sti, innhold] of Object.entries(forventet)) {
 
 // 9. Kommandoen kjenner nøyaktig de regelbøkene som finnes. Uten dette kunne
 // en ny regelbok bli liggende uten at `fristil agent` kunne skrive den ut.
-const cli = readFileSync(join(PAKKE, "src/cli.ts"), "utf8")
-const iKommandoen = [...cli.matchAll(/\["([a-z]+)", "agent\/([a-z]+)\.md"\]/g)]
+const cli = readFileSync(join(PAKKE, "../kjerne/cli/src/agent.rs"), "utf8")
+const iKommandoen = [
+  ...cli.matchAll(
+    /\(\s*"([a-z]+)",\s*include_str!\(\s*"\.\.\/\.\.\/\.\.\/designsystem\/agent\/([a-z]+)\.md",?\s*\),?\s*\)/g,
+  ),
+]
 const kjenner = iKommandoen.map(([, navn]) => navn)
 
 krev(

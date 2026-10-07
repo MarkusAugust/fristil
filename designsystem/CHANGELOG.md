@@ -74,6 +74,14 @@ egen overskrift «Brytende».
 
 ### Nytt
 
+- **Kommandolinja er skrevet i Rust.** `npx @fristil/designsystem` kjører den
+  som en WASI-modul med Node sin egen `node:wasi`, og den samme koden kan
+  bygges som en kjørbar fil. Kommandoene, flaggene, meldingene og feilkodene
+  er de samme: alle 130 kjøringene i pakkens egen test av kommandolinja svarer
+  likt, byte for byte. Én melding er ny: er en oppskrift til `fristil tema`
+  ikke gyldig JSON, er forklaringen kjernens egen og ikke Nodes.
+  `fristil overta` er fortsatt skrevet i TypeScript.
+
 - **Funnene har regelnavn, linje og kolonne.** `rule` er navnet på regelen,
   som `ukjent-klasse`, og `line` og `column` er der funnet begynner, fra 1.
 - **Et funn kan undertrykkes med en kommentar** over taggen:
