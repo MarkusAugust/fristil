@@ -77,12 +77,15 @@ object Fristil {
     }
 }
 
-/** Ett funn, med de samme feltene som `Finding` i TypeScript. */
+/** Ett funn, med de samme feltene som `Finding` i TypeScript, og regel, linje og kolonne. */
 data class Finding(
     val start: Int,
     val end: Int,
+    val line: Int,
+    val column: Int,
     val message: String,
     val severity: String,
+    val rule: String,
     val link: String,
     val fix: Fix? = null,
 )

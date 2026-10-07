@@ -39,6 +39,8 @@ class ParityTest {
     private fun toJson(findings: List<Finding>): JsonNode =
         json.valueToTree<JsonNode>(findings).onEach { node ->
             (node as com.fasterxml.jackson.databind.node.ObjectNode).apply {
+                // Regel, linje og kolonne finnes bare i kjernen, ikke i fasiten fra TypeScript.
+                remove(listOf("rule", "line", "column"))
                 if (get("fix")?.isNull == true) remove("fix")
                 (get("fix") as? com.fasterxml.jackson.databind.node.ObjectNode)?.let {
                     if (it.get("preferred")?.isNull == true) it.remove("preferred")

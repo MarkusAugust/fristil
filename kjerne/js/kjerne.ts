@@ -1,9 +1,10 @@
 /**
  * Kjernen i JavaScript: laster WebAssembly-modulen og gir de samme to
- * funksjonene som `@fristil/designsystem/diagnostics`.
+ * funksjonene som `@fristil/designsystem/diagnostics`, og i tillegg
+ * manifestet og versjonen.
  *
  * Modulen har ingen importer, så den trenger ingen lim. Lasteren skriver
- * HTML-en inn som UTF-8 og leser funnene ut som JSON, slik hvert annet
+ * teksten inn som UTF-8 og leser svaret ut som JSON, slik hvert annet
  * vertsspråk gjør det.
  *
  * ```ts
@@ -20,16 +21,43 @@ import type { Finding } from "../../designsystem/src/diagnostics/index.js"
 
 type Exports = {
   memory: WebAssembly.Memory
-  alloc(lengde: number): number
-  diagnose_markup_raw(peker: number, lengde: number): void
-  diagnose_page_raw(peker: number, lengde: number): void
+  alloc(length: number): number
+  diagnose_markup_raw(pointer: number, length: number): void
+  diagnose_page_raw(pointer: number, length: number): void
+  load_manifest_raw(pointer: number, length: number): number
+  reset_manifest(): void
+  version_raw(): void
   result_ptr(): number
   result_len(): number
 }
 
+/** Et funn fra kjernen: det samme som `Finding`, med regel, linje og kolonne. */
+export type CoreFinding = Finding & {
+  /** Navnet på regelen, som `ukjent-klasse`. */
+  rule: string
+  /** Linja funnet begynner på, fra 1. */
+  line: number
+  /** Kolonnen funnet begynner på, fra 1, i UTF-16-enheter. */
+  column: number
+}
+
+export type CoreVersion = {
+  /** Versjonen av kjernen. */
+  core: string
+  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra. */
+  manifest: string
+  /** Formen på manifestet kjernen forstår. */
+  schemaVersion: number
+}
+
 export type Core = {
-  diagnoseMarkup(html: string): Finding[]
-  diagnosePage(html: string): Finding[]
+  diagnoseMarkup(html: string): CoreFinding[]
+  diagnosePage(html: string): CoreFinding[]
+  /** Sjekker mot et annet manifest. Kaster med kjernens forklaring hvis det ikke kan leses. */
+  loadManifest(json: string): void
+  /** Går tilbake til manifestet kjernen er bygget med. */
+  resetManifest(): void
+  version(): CoreVersion
 }
 
 export function loadCore(source: BufferSource | WebAssembly.Module): Core {
@@ -41,25 +69,38 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
   const encoder = new TextEncoder()
   const decoder = new TextDecoder()
 
-  const run = (
-    entry: "diagnose_markup_raw" | "diagnose_page_raw",
-    html: string,
-  ) => {
-    const bytes = encoder.encode(html)
+  /** Skriver teksten inn i modulens minne og gir pekeren og lengden. */
+  const write = (text: string): [number, number] => {
+    const bytes = encoder.encode(text)
     const pointer = e.alloc(bytes.length)
     // Minnet kan vokse ved hvert kall, så visningen lages etter `alloc`.
     new Uint8Array(e.memory.buffer, pointer, bytes.length).set(bytes)
-    e[entry](pointer, bytes.length)
-    const result = new Uint8Array(
-      e.memory.buffer,
-      e.result_ptr(),
-      e.result_len(),
-    )
-    return JSON.parse(decoder.decode(result)) as Finding[]
+    return [pointer, bytes.length]
   }
+  const read = <T>(): T =>
+    JSON.parse(
+      decoder.decode(
+        new Uint8Array(e.memory.buffer, e.result_ptr(), e.result_len()),
+      ),
+    ) as T
 
   return {
-    diagnoseMarkup: (html) => run("diagnose_markup_raw", html),
-    diagnosePage: (html) => run("diagnose_page_raw", html),
+    diagnoseMarkup: (html) => {
+      e.diagnose_markup_raw(...write(html))
+      return read()
+    },
+    diagnosePage: (html) => {
+      e.diagnose_page_raw(...write(html))
+      return read()
+    },
+    loadManifest: (json) => {
+      if (e.load_manifest_raw(...write(json)) !== 0)
+        throw new Error(read<{ error: string }>().error)
+    },
+    resetManifest: () => e.reset_manifest(),
+    version: () => {
+      e.version_raw()
+      return read()
+    },
   }
 }

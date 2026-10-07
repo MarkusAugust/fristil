@@ -7,7 +7,6 @@
 
 use std::collections::HashMap;
 
-use crate::ordforrad::{CLASSES, ELEMENTS};
 use crate::text::*;
 use crate::types::*;
 
@@ -134,37 +133,37 @@ fn common_prefix(a: &[u16], b: &[u16]) -> usize {
     a.iter().zip(b).take_while(|(x, y)| x == y).count()
 }
 
-pub type Cache = HashMap<Utf16, Option<(&'static str, bool)>>;
+pub type Cache = HashMap<Utf16, Option<(String, bool)>>;
 
 /// Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil.
 pub fn closest(
     name: &[u16],
-    candidates: &[&'static str],
+    candidates: &[&str],
     cache: Option<&mut Cache>,
-) -> Option<(&'static str, bool)> {
+) -> Option<(String, bool)> {
     if let Some(h) = &cache {
         if let Some(respond) = h.get(name) {
-            return *respond;
+            return respond.clone();
         }
     }
     let respond = find_closest(name, candidates);
     if let Some(h) = cache {
-        h.insert(name.to_vec(), respond);
+        h.insert(name.to_vec(), respond.clone());
     }
     respond
 }
 
-fn find_closest(name: &[u16], candidates: &[&'static str]) -> Option<(&'static str, bool)> {
+fn find_closest(name: &[u16], candidates: &[&str]) -> Option<(String, bool)> {
     let wanted = normalized(name);
-    if let Some(samme) = candidates.iter().find(|k| normalized(&utf16(k)) == wanted) {
-        return Some((samme, true));
+    if let Some(same) = candidates.iter().find(|k| normalized(&utf16(k)) == wanted) {
+        return Some((same.to_string(), true));
     }
     let lower = lowercase(name);
     let max = if name.len() >= 8 { 2 } else { 1 };
-    let mut best: Option<(&'static str, Utf16)> = None;
+    let mut best: Option<(&str, Utf16)> = None;
     let mut best_distance = max + 1;
-    for &kandidat in candidates {
-        let k = utf16(kandidat);
+    for &candidate in candidates {
+        let k = utf16(candidate);
         if k.len().abs_diff(lower.len()) > max {
             continue;
         }
@@ -176,10 +175,10 @@ fn find_closest(name: &[u16], candidates: &[&'static str]) -> Option<(&'static s
                     .is_some_and(|(_, b)| common_prefix(&lower, &k) > common_prefix(&lower, b)));
         if better {
             best_distance = d;
-            best = Some((kandidat, k));
+            best = Some((candidate, k));
         }
     }
-    best.map(|(name, _)| (name, false))
+    best.map(|(name, _)| (name.to_string(), false))
 }
 
 /// `[\s\S]*?` til det første treffet av `slutt`, eller til slutten av teksten.
@@ -386,8 +385,8 @@ fn braces_end(t: &[u16], from: usize) -> usize {
     t.len()
 }
 
-fn list(name: impl IntoIterator<Item = &'static str>) -> String {
-    name.into_iter().collect::<Vec<_>>().join(", ")
+fn list<'a>(names: impl IntoIterator<Item = &'a str>) -> String {
+    names.into_iter().collect::<Vec<_>>().join(", ")
 }
 
 /// `Number(verdi)` i JavaScript, og tomt er ikke et tall.
@@ -454,13 +453,14 @@ fn check_attribute(
     templated_tag: bool,
 ) -> Option<Finding> {
     let name = lossy(&a.name);
-    let findings = |severity, message: String, fix| Finding {
+    let findings = |rule, severity, message: String, fix| Finding {
         start: a.start,
         end: a.end,
         severity,
-        link: element.link.to_string(),
+        link: element.link.clone(),
         message,
         fix,
+        rule,
     };
     let Some(known) = find_attribute(element, &a.name) else {
         let norm = normalized(&a.name);
@@ -470,13 +470,14 @@ fn check_attribute(
             .find(|(k, _)| normalized(&utf16(k)) == norm)
         {
             return Some(findings(
+                "ukjent-attributt",
                 Severity::Warning,
                 format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
                 Some(Fix {
                     title: format!("Bytt til {meant}"),
                     start: a.start,
                     end: a.end,
-                    text: meant.to_string(),
+                    text: meant.clone(),
                     preferred: true,
                 }),
             ));
@@ -485,10 +486,11 @@ fn check_attribute(
             return None;
         }
         return Some(findings(
+            "ukjent-attributt",
             Severity::Warning,
             format!(
                 "<{tag}> har ikke attributtet «{name}», og komponenten leser det ikke. Attributtene er {}.",
-                list(element.attributes.iter().map(|(n, _)| *n))
+                list(element.attributes.iter().map(|(n, _)| n.as_str()))
             ),
             None,
         ));
@@ -505,6 +507,7 @@ fn check_attribute(
             if !value.is_empty() && lowercase(value) != a.name {
                 let v = lossy(value);
                 return Some(findings(
+                    "boolsk-med-verdi",
                     Severity::Warning,
                     format!(
                         "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
@@ -530,16 +533,18 @@ fn check_attribute(
             }
             let v = a.value.as_deref().map(lossy).unwrap_or_default();
             Some(findings(
+                "ugyldig-verdi",
                 Severity::Error,
                 format!(
                     "{name} kan ikke være «{v}». Lovlige verdier: {}.",
-                    list(values.iter().copied())
+                    list(values.iter().map(String::as_str))
                 ),
                 None,
             ))
         }
         Attribute::Number => match a.value.as_deref() {
             Some(v) if !is_number(v) => Some(findings(
+                "ikke-tall",
                 Severity::Error,
                 format!("{name} skal være et tall, ikke «{}».", lossy(v)),
                 None,
@@ -679,17 +684,19 @@ fn check_field(
     if !has_element || is_templated_content(content) {
         return vec![];
     }
-    let findings = |message: String, fix| Finding {
+    let findings = |rule, message: String, fix| Finding {
         start: name_start,
         end: name_end,
         severity: Severity::Warning,
         link: link.to_string(),
         message,
         fix,
+        rule,
     };
     let indent = content.iter().take_while(|&&c| is_space(c)).count();
     let Some(control) = find_control(content) else {
         return vec![findings(
+            "felt-uten-kontroll",
             format!(
                 "<{tag}> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
             ),
@@ -720,6 +727,7 @@ fn check_field(
     let leading = &content[..indent];
     let newline = leading.contains(&(b'\n' as u16));
     vec![findings(
+        "felt-uten-ledetekst",
         format!(
             "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
         ),
@@ -752,14 +760,19 @@ fn check_session_timeout(
             "<{tag}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
         ),
         fix: None,
+        rule: "tidsavbrudd-uten-dialog",
     }]
 }
 
-fn find_class(name: &[u16]) -> Option<&'static Class> {
-    CLASSES.iter().find(|k| equals(name, k.name))
+fn find_class<'a>(vocabulary: &'a Vocabulary, name: &[u16]) -> Option<&'a Class> {
+    vocabulary.classes.iter().find(|k| equals(name, &k.name))
 }
 
-fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding> {
+fn check_classes(
+    vocabulary: &Vocabulary,
+    attributes: &[ReadAttribute],
+    cache: &mut Cache,
+) -> Vec<Finding> {
     let mut findings = Vec::new();
     let Some(class_attribute) = attributes.iter().find(|a| equals(&a.name, "class")) else {
         return findings;
@@ -770,8 +783,8 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
     if is_templated_value(value) {
         return findings;
     }
-    let name: Vec<&'static str> = CLASSES.iter().map(|k| k.name).collect();
-    let mut present: Vec<&'static Class> = Vec::new();
+    let name: Vec<&str> = vocabulary.classes.iter().map(|k| k.name.as_str()).collect();
+    let mut present: Vec<&Class> = Vec::new();
     for (offset, token) in words(value) {
         let start = class_attribute.value_start + offset;
         if !starts_at(token, 0, "fs-")
@@ -779,7 +792,7 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
         {
             continue;
         }
-        if let Some(info) = find_class(token) {
+        if let Some(info) = find_class(vocabulary, token) {
             present.push(info);
             continue;
         }
@@ -789,10 +802,10 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
             start,
             end: start + token.len(),
             severity: Severity::Warning,
-            link: meant.map_or(DOCS.to_string(), |(m, _)| {
-                find_class(&utf16(m)).unwrap().link.to_string()
+            link: meant.as_ref().map_or(DOCS.to_string(), |(m, _)| {
+                find_class(vocabulary, &utf16(m)).unwrap().link.clone()
             }),
-            message: match meant {
+            message: match &meant {
                 Some((m, _)) => format!("Klassen «{t}» finnes ikke i Fristil. Mente du {m}?"),
                 None => format!("Klassen «{t}» finnes ikke i Fristil."),
             },
@@ -800,9 +813,10 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
                 title: format!("Bytt til {m}"),
                 start,
                 end: start + token.len(),
-                text: m.to_string(),
+                text: m,
                 preferred: sure,
             }),
+            rule: "ukjent-klasse",
         });
     }
     for a in attributes {
@@ -817,16 +831,19 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
                 continue;
             };
             if takes.values.iter().any(|v| equals(value, v))
-                || takes.default_value.is_some_and(|d| equals(value, d))
+                || takes
+                    .default_value
+                    .as_deref()
+                    .is_some_and(|d| equals(value, d))
             {
                 continue;
             }
-            let mut candidates: Vec<&'static str> = takes.values.to_vec();
-            candidates.extend(takes.default_value);
+            let mut candidates: Vec<&str> = takes.values.iter().map(String::as_str).collect();
+            candidates.extend(takes.default_value.as_deref());
             let meant = closest(value, &candidates, None);
             let shown = collapse_spaces(value);
             let name = lossy(&a.name);
-            let end = match takes.default_value {
+            let end = match takes.default_value.as_deref() {
                 Some(d) => format!(", og {d} uten attributt."),
                 None => ".".into(),
             };
@@ -834,19 +851,20 @@ fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding
                 start: a.start,
                 end: a.value_end,
                 severity: Severity::Warning,
-                link: info.link.to_string(),
+                link: info.link.clone(),
                 message: format!(
                     "{name} kan ikke være «{shown}» på {}. Lovlige verdier: {}{end}",
-                    lossy(&lowercase(&utf16(info.title))),
-                    list(takes.values.iter().copied())
+                    lossy(&lowercase(&utf16(&info.title))),
+                    list(takes.values.iter().map(String::as_str))
                 ),
                 fix: meant.map(|(m, sure)| Fix {
                     title: format!("Bytt til {m}"),
                     start: a.value_start,
                     end: a.value_start + value.len(),
-                    text: m.to_string(),
+                    text: m,
                     preferred: sure,
                 }),
+                rule: "ugyldig-klasseverdi",
             });
             break;
         }
@@ -914,7 +932,7 @@ fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
 }
 
 /// Alle funn i teksten, i den rekkefølgen de står.
-pub fn diagnose(text: &[u16]) -> Vec<Finding> {
+pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let source = without_hidden(text);
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
@@ -935,7 +953,11 @@ pub fn diagnose(text: &[u16]) -> Vec<Finding> {
         if !has_class_attribute(b) {
             continue;
         }
-        findings.extend(check_classes(&read_attributes(b, name_end), &mut cache));
+        findings.extend(check_classes(
+            vocabulary,
+            &read_attributes(b, name_end),
+            &mut cache,
+        ));
     }
 
     let mut i = 0;
@@ -957,7 +979,7 @@ pub fn diagnose(text: &[u16]) -> Vec<Finding> {
         let name_end = j;
         i = j;
         let tag = lossy(&lowercase(&source[name_start..name_end]));
-        let Some(element) = ELEMENTS.iter().find(|e| e.tag == tag) else {
+        let Some(element) = vocabulary.elements.iter().find(|e| e.tag == tag) else {
             findings.push(Finding {
                 start: name_start,
                 end: name_end,
@@ -965,9 +987,10 @@ pub fn diagnose(text: &[u16]) -> Vec<Finding> {
                 link: DOCS.into(),
                 message: format!(
                     "<{tag}> finnes ikke i Fristil. Elementene er {}.",
-                    list(ELEMENTS.iter().map(|e| e.tag))
+                    list(vocabulary.elements.iter().map(|e| e.tag.as_str()))
                 ),
                 fix: None,
+                rule: "ukjent-element",
             });
             continue;
         };
@@ -988,7 +1011,7 @@ pub fn diagnose(text: &[u16]) -> Vec<Finding> {
                     name_start,
                     name_end,
                     &source[end + 1..close.max(end + 1)],
-                    element.link,
+                    &element.link,
                 ));
             }
         }
@@ -1005,7 +1028,7 @@ pub fn diagnose(text: &[u16]) -> Vec<Finding> {
                 content,
                 end + 1,
                 &attributes,
-                element.link,
+                &element.link,
             ));
         }
     }

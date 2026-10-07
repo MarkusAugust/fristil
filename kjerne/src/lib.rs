@@ -11,52 +11,76 @@
 //! 3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)` kjører
 //!    sjekken, frigjør inndataene og legger svaret i modulens minne.
 //! 4. `result_ptr()` og `result_len()` sier hvor svaret står: funnene som
-//!    JSON, i UTF-8, med de samme feltene som `Finding` i TypeScript.
+//!    JSON, i UTF-8, med de samme feltene som `Finding` i TypeScript, og i
+//!    tillegg `rule`, `line` og `column`.
+//!
+//! I tillegg:
+//!
+//! - `load_manifest_raw(peker, lengde)` bytter ordforrådet til et annet
+//!   manifest. Svarer 0 når det gikk, og 1 med `{"error": …}` som svar når
+//!   det ikke gikk. `reset_manifest()` går tilbake til det innebygde.
+//! - `version_raw()` legger versjonene i svaret: kjernens, manifestets og
+//!   formen på manifestet kjernen forstår.
 //!
 //! Posisjonene i funnene er UTF-16-indekser, som i JavaScript og Kotlin.
+//! `line` og `column` begynner på 1, og kolonnen telles i UTF-16-enheter.
 
 pub mod diagnose;
+pub mod json;
+pub mod manifest;
 pub mod references;
-// Generert, og formatert av generatoren, ikke av rustfmt.
-#[rustfmt::skip]
-mod ordforrad;
+pub mod suppress;
 pub mod text;
 pub mod types;
 
 use std::cell::RefCell;
 
 use text::{utf16, Utf16};
-use types::{Finding, Severity};
+use types::{Finding, Severity, Vocabulary};
 
 /// Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
-pub fn diagnose_markup(html: &str) -> Vec<Finding> {
-    diagnose::diagnose(&utf16(html))
+pub fn diagnose_markup(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
+    suppress::apply(html, diagnose::diagnose(html, vocabulary))
 }
 
 /// Det `diagnosePage` finner: ordforrådet og koblingen på en hel side.
-pub fn diagnose_page(html: &str) -> Vec<Finding> {
-    let side: Utf16 = references::page_source(&utf16(html));
-    let mut findings = diagnose::diagnose(&side);
-    findings.extend(references::check_references(&side));
+pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
+    let page: Utf16 = references::page_source(html);
+    let mut findings = diagnose::diagnose(&page, vocabulary);
+    findings.extend(references::check_references(&page));
     findings.sort_by_key(|f| f.start);
-    findings
+    suppress::apply(html, findings)
 }
 
-/// Funnene som JSON, i samme form som `JSON.stringify` av `Finding[]`.
-pub fn to_json(findings: &[Finding]) -> String {
+/// Linje og kolonne for en UTF-16-posisjon, begge fra 1.
+pub fn line_and_column(text: &[u16], at: usize) -> (usize, usize) {
+    let before = &text[..at.min(text.len())];
+    let line = 1 + before.iter().filter(|&&c| c == b'\n' as u16).count();
+    let column = match before.iter().rposition(|&c| c == b'\n' as u16) {
+        Some(newline) => at - newline,
+        None => at + 1,
+    };
+    (line, column)
+}
+
+/// Funnene som JSON, i samme form som `JSON.stringify` av `Finding[]`, med
+/// regelnavn, linje og kolonne i tillegg.
+pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
     let mut out = String::from("[");
     for (i, f) in findings.iter().enumerate() {
         if i > 0 {
             out.push(',');
         }
+        let (line, column) = line_and_column(text, f.start);
         out.push_str(&format!(
-            "{{\"start\":{},\"end\":{},\"severity\":{},\"link\":{},\"message\":{}",
+            "{{\"start\":{},\"end\":{},\"line\":{line},\"column\":{column},\"severity\":{},\"rule\":{},\"link\":{},\"message\":{}",
             f.start,
             f.end,
             json_string(match f.severity {
                 Severity::Error => "error",
                 Severity::Warning => "warning",
             }),
+            json_string(f.rule),
             json_string(&f.link),
             json_string(&f.message),
         ));
@@ -98,6 +122,10 @@ thread_local! {
     static RESPONSE: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
 }
 
+fn respond(json: String) {
+    RESPONSE.with(|s| *s.borrow_mut() = json.into_bytes());
+}
+
 /// Et område på `lengde` byte i modulens minne, som verten skriver HTML-en til.
 #[no_mangle]
 pub extern "C" fn alloc(length: usize) -> *mut u8 {
@@ -122,22 +150,59 @@ unsafe fn read_input(ptr: *mut u8, length: usize) -> String {
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
-fn respond(findings: Vec<Finding>) {
-    RESPONSE.with(|s| *s.borrow_mut() = to_json(&findings).into_bytes());
-}
-
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) {
-    respond(diagnose_markup(&read_input(ptr, length)));
+    let html = utf16(&read_input(ptr, length));
+    let findings = diagnose_markup(&html, &manifest::current());
+    respond(to_json(&findings, &html));
 }
 
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) {
-    respond(diagnose_page(&read_input(ptr, length)));
+    let html = utf16(&read_input(ptr, length));
+    let findings = diagnose_page(&html, &manifest::current());
+    respond(to_json(&findings, &html));
+}
+
+/// Bytter ordforrådet til manifestet verten har skrevet inn.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
+    match manifest::from_json(&read_input(ptr, length)) {
+        Ok(vocabulary) => {
+            manifest::set_current(Some(vocabulary));
+            respond("{\"ok\":true}".into());
+            0
+        }
+        Err(error) => {
+            respond(format!("{{\"error\":{}}}", json_string(&error)));
+            1
+        }
+    }
+}
+
+/// Går tilbake til det innebygde manifestet.
+#[no_mangle]
+pub extern "C" fn reset_manifest() {
+    manifest::set_current(None);
+}
+
+/// Legger versjonene i svaret, som JSON.
+#[no_mangle]
+pub extern "C" fn version_raw() {
+    let vocabulary = manifest::current();
+    respond(format!(
+        "{{\"core\":{},\"manifest\":{},\"schemaVersion\":{}}}",
+        json_string(env!("CARGO_PKG_VERSION")),
+        json_string(&vocabulary.version),
+        manifest::SCHEMA_VERSION
+    ));
 }
 
 /// Hvor svaret fra siste kall står.
@@ -150,4 +215,45 @@ pub extern "C" fn result_ptr() -> *const u8 {
 #[no_mangle]
 pub extern "C" fn result_len() -> usize {
     RESPONSE.with(|s| s.borrow().len())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn check(html: &str) -> Vec<Finding> {
+        diagnose_page(&utf16(html), &manifest::builtin())
+    }
+
+    #[test]
+    fn gives_line_and_column_from_one() {
+        let text = utf16("ab\nø🧾x");
+        assert_eq!(line_and_column(&text, 0), (1, 1));
+        assert_eq!(line_and_column(&text, 3), (2, 1));
+        // «🧾» er to UTF-16-enheter.
+        assert_eq!(line_and_column(&text, 6), (2, 4));
+    }
+
+    #[test]
+    fn names_the_rule() {
+        let findings = check(r#"<button class="fs-buton">Send</button>"#);
+        assert_eq!(findings[0].rule, "ukjent-klasse");
+        assert!(findings.iter().all(|f| types::RULES.contains(&f.rule)));
+    }
+
+    #[test]
+    fn checks_against_another_manifest() {
+        let html = utf16("<fs-kart sone=\"oslo\"></fs-kart>");
+        assert_eq!(
+            diagnose_markup(&html, &manifest::builtin())[0].rule,
+            "ukjent-element"
+        );
+        let mut vocabulary = (*manifest::builtin()).clone();
+        vocabulary.elements.push(types::Element {
+            tag: "fs-kart".into(),
+            link: String::new(),
+            attributes: vec![("sone".into(), types::Attribute::Text)],
+        });
+        assert!(diagnose_markup(&html, &vocabulary).is_empty());
+    }
 }

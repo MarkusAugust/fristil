@@ -1,9 +1,9 @@
 /**
- * Skriver ordforrådet som Rust, bygger WebAssembly-modulen og skriver fasiten.
+ * Bygger WebAssembly-modulen og skriver fasiten.
  *
- * Ordforrådet er det samme som `classes.ts` og `elements.ts`, i samme
- * rekkefølge, og står som Rust av samme grunn som `Klasser.kt` står som
- * Kotlin: kompilatoren leser dataene, og modulen trenger ingen parser.
+ * Ordforrådet er ikke en del av Rust-koden. Kjernen leser manifestet
+ * (`designsystem/manifest/manifest.json`) og bærer det innebygd som standard,
+ * så en ny klasse eller variant i pakken når kjernen ved neste bygg av den.
  *
  * Fasiten er det TypeScript-versjonen svarer på hver fil i `paritet/`. JVM-
  * testen sammenligner med den. `sjekk-paritet.ts` sammenligner modulen med
@@ -24,10 +24,8 @@ import {
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
-  classes,
   diagnoseMarkup,
   diagnosePage,
-  elements,
 } from "../../designsystem/src/diagnostics/index.js"
 
 const KJERNE = fileURLToPath(new URL("..", import.meta.url))
@@ -37,54 +35,7 @@ const WASM = join(
 )
 export const MODUL = join(KJERNE, "dist/fristil-kjerne.wasm")
 
-/** En Rust-strengliteral. JSON-strenger er gyldige, bortsett fra `\u{…}`. */
-const r = (s: string) =>
-  JSON.stringify(s).replace(/\\u([0-9a-f]{4})/gi, (_, h) => `\\u{${h}}`)
-
-const liste = (verdier: readonly string[]) => `&[${verdier.map(r).join(", ")}]`
-
-function ordforråd(): string {
-  const elementer = Object.entries(elements).map(([tagg, e]) => {
-    const attributter = Object.entries(e.attributes).map(([navn, a]) => {
-      const type =
-        a.type === "values"
-          ? `Attribute::Values(${liste(a.values)})`
-          : {
-              flag: "Attribute::Flag",
-              text: "Attribute::Text",
-              number: "Attribute::Number",
-            }[a.type]
-      return `(${r(navn)}, ${type})`
-    })
-    return `    Element {\n        tag: ${r(tagg)},\n        link: ${r(e.link)},\n        attributes: &[${attributter.join(", ")}],\n    },`
-  })
-  const klasser = Object.entries(classes).map(([navn, k]) => {
-    const attributter = Object.entries(k.attributes).map(
-      ([a, info]) =>
-        `(${r(a)}, ClassAttribute { values: ${liste(info.values)}, default_value: ${info.default === undefined ? "None" : `Some(${r(info.default)})`} })`,
-    )
-    return `    Class {\n        name: ${r(navn)},\n        title: ${r(k.title)},\n        link: ${r(k.link)},\n        attributes: &[${attributter.join(", ")}],\n    },`
-  })
-  return `// Generert av kjerne/scripts/bygg.ts fra classes.ts og elements.ts. Ikke rediger.
-use crate::types::*;
-
-pub static ELEMENTS: &[Element] = &[
-${elementer.join("\n")}
-];
-
-pub static CLASSES: &[Class] = &[
-${klasser.join("\n")}
-];
-`
-}
-
-export function skrivOrdforråd(): string {
-  return ordforråd()
-}
-
 if (import.meta.main) {
-  writeFileSync(join(KJERNE, "src/ordforrad.rs"), ordforråd())
-
   const cargo = Bun.spawnSync(
     ["cargo", "build", "--release", "--target", "wasm32-unknown-unknown"],
     { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
@@ -104,5 +55,5 @@ if (import.meta.main) {
   }
 
   const kb = (statSync(MODUL).size / 1024).toFixed(0)
-  console.log(`Skrev ${MODUL} (${kb} kB), ordforrad.rs og fasiten i paritet/.`)
+  console.log(`Skrev ${MODUL} (${kb} kB) og fasiten i paritet/.`)
 }

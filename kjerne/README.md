@@ -9,8 +9,8 @@ vertsspråk kjører: Node, Bun og nettleseren direkte, JVM-en gjennom Chicory
 Diagnostikken er det eneste som leser markup fra en servermal: Thymeleaf,
 JTE, kotlinx.html, Go-maler, Razor eller en streng. I TypeScript var den
 bare tilgjengelig der det fantes en JavaScript-motor. I Rust er den én liten
-modul (rundt 120 kB) uten importer, og verten trenger bare en
-WebAssembly-runtime.
+modul (rundt 210 kB, med manifestet innebygd) uten importer, og verten
+trenger bare en WebAssembly-runtime.
 
 ## Grensesnittet
 
@@ -21,9 +21,34 @@ Ingen bindingsverktøy, så den samme modulen virker overalt:
 3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)`.
 4. `result_ptr()` og `result_len()` peker på funnene som JSON.
 
-Funnene har de samme feltene som `Finding` i TypeScript. Posisjonene er
+I tillegg bytter `load_manifest_raw(peker, lengde)` til et annet manifest,
+`reset_manifest()` går tilbake til det innebygde, og `version_raw()` gir
+kjernens og manifestets versjon.
+
+Funnene har de samme feltene som `Finding` i TypeScript, og i tillegg
+`rule` (navnet på regelen), `line` og `column` (fra 1). Posisjonene er
 UTF-16-indekser, som i JavaScript og Kotlin: hele kjernen jobber på
 UTF-16-enheter, så ingen posisjon må regnes om.
+
+## Ordforrådet
+
+Kjernen leser `designsystem/manifest/manifest.json`, som pakken skriver fra
+koden, og bærer det innebygd som standard. En vert kan gi den et annet
+manifest, for eksempel det prosjektet har installert. Manifestet har en
+`schemaVersion`, og kjernen avviser et manifest med en form den ikke forstår,
+med en forklaring.
+
+## Undertrykking
+
+En kommentar gjelder den neste taggen:
+
+```html
+<!-- fristil-ignore-next -->
+<!-- fristil-ignore-next ukjent-klasse ugyldig-klasseverdi -->
+```
+
+Uten regelnavn undertrykkes alle funn i taggen, med regelnavn bare dem.
+Reglene står i `src/types.rs` (`RULES`).
 
 Lasteren for JavaScript står i `js/kjerne.ts`, og den for Kotlin i
 `../kotlin/src/main/kotlin/no/fristil/Fristil.kt`. Hver er rundt 40
@@ -50,7 +75,7 @@ attributt.
 ## Kjør
 
 ```bash
-bun kjerne/scripts/bygg.ts           # ordforrådet, modulen og fasiten
+bun kjerne/scripts/bygg.ts           # modulen og fasiten
 bun kjerne/scripts/sjekk-paritet.ts  # Rust mot TypeScript
 cd kotlin && ./gradlew test          # Kotlin mot fasiten
 ```
@@ -58,8 +83,8 @@ cd kotlin && ./gradlew test          # Kotlin mot fasiten
 Krever Rust med målet `wasm32-unknown-unknown`
 (`rustup target add wasm32-unknown-unknown`).
 
-`src/ordforrad.rs` er generert fra `classes.ts` og `elements.ts` og sjekket
-inn, som `Klasser.kt`. Gradle-bygget trenger derfor bare Rust, ikke Bun.
+Manifestet er generert og sjekket inn, så Gradle-bygget trenger bare Rust,
+ikke Bun. `cargo test` kjører enhetstestene.
 
 ## Ytelse
 

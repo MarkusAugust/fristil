@@ -379,8 +379,16 @@ fn tree(source: &[u16]) -> Vec<Node> {
     nodes
 }
 
-fn findings(start: usize, end: usize, severity: Severity, link: &str, message: String) -> Finding {
+fn findings(
+    rule: &'static str,
+    start: usize,
+    end: usize,
+    severity: Severity,
+    link: &str,
+    message: String,
+) -> Finding {
     Finding {
+        rule,
         start,
         end,
         severity,
@@ -406,6 +414,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                 ledig.insert(n);
             } else {
                 out.push(findings(
+                    "duplikat-id",
                     id.value_start,
                     id.value_start + v.len(),
                     Severity::Error,
@@ -439,6 +448,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                 let at = a.value_start + offset;
                 match ids.get(&decode(target)) {
                     None => out.push(findings(
+                    "id-finnes-ikke",
                         at,
                         at + target.len(),
                         Severity::Error,
@@ -454,6 +464,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                         let f = &nodes[found].name;
                         if *name == "for" && node.name == "label" && !LABELABLE.contains(&f.as_str()) && !f.contains('-') {
                             out.push(findings(
+                    "for-peker-feil",
                                 at,
                                 at + target.len(),
                                 Severity::Error,
@@ -483,6 +494,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                 };
                 if !target.is_empty() && !ids.contains_key(&fragment(target)) {
                     out.push(findings(
+                    "oppsummering-peker-feil",
                         href.value_start + 1,
                         href.value_start + target.len() + 1,
                         Severity::Error,
@@ -516,6 +528,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                 || value(node, "aria-labelledby").is_some();
             if !named {
                 out.push(findings(
+                    "kontroll-uten-ledetekst",
                     node.name_start,
                     node.name_end,
                     Severity::Warning,
@@ -554,6 +567,7 @@ pub fn check_references(text: &[u16]) -> Vec<Finding> {
                         }
                     };
                     out.push(findings(
+                    "tekst-ikke-koblet",
                         node.name_start,
                         node.name_end,
                         Severity::Warning,

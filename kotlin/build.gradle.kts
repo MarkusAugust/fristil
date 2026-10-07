@@ -49,6 +49,8 @@ val byggKjerne by tasks.registering(Exec::class) {
     commandLine("cargo", "build", "--release", "--target", "wasm32-unknown-unknown")
     inputs.dir(kjerne.resolve("src"))
     inputs.file(kjerne.resolve("Cargo.toml"))
+    // Manifestet er bygget inn i modulen.
+    inputs.file(rootDir.resolve("../designsystem/manifest/manifest.json"))
     outputs.file(wasm)
 }
 

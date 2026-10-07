@@ -121,6 +121,10 @@ jobs:
           cargo fmt --check
           cargo clippy --release --target wasm32-unknown-unknown -- -D warnings
 
+      - name: Enhetstester i Rust
+        working-directory: kjerne
+        run: cargo test
+
       # Skriver ordforrådet, bygger modulen og skriver fasiten fra
       # TypeScript-diagnostikken.
       - name: Bygg kjernen

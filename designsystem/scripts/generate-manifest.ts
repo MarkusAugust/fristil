@@ -210,7 +210,12 @@ const PRØVER: Record<Valgtype["kind"], unknown[]> = {
 }
 const prøver = (v: Valg) => {
   const verdier = v.type.kind === "values" ? v.type.values : PRØVER[v.type.kind]
-  return v.required ? verdier : [undefined, ...verdier]
+  // En påkrevd id som er tom, får TypeScript til å lage en tilfeldig id og
+  // si fra i konsollen. Svaret er da ulikt fra kjøring til kjøring, og et
+  // språk med typer stopper det før det kjører. Den prøves ikke.
+  if (v.required)
+    return v.type.kind === "text" ? verdier.filter((x) => x !== "") : verdier
+  return [undefined, ...verdier]
 }
 
 const MAKS_KOMBINASJONER = 512
@@ -226,7 +231,7 @@ type Tilfelle = {
 function kombinasjoner(valg: Valg[]): Record<string, unknown>[] {
   const akser = valg.map(prøver)
   const grunn = Object.fromEntries(
-    valg.filter((v) => v.required).map((v, i) => [v.name, akser[i][0]]),
+    valg.flatMap((v, i) => (v.required ? [[v.name, akser[i][0]]] : [])),
   )
   const ut: Record<string, unknown>[] = [{ ...grunn }]
   valg.forEach((v, i) => {
