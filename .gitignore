@@ -31,6 +31,9 @@ presentasjon/index.html
 kotlin/.gradle/
 kotlin/.kotlin/
 kotlin/build/
+kotlin/buildSrc/.gradle/
+kotlin/buildSrc/.kotlin/
+kotlin/buildSrc/build/
 
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
 kjerne/target/

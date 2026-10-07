@@ -1,7 +1,5 @@
 package no.fristil
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,13 +14,11 @@ import org.junit.jupiter.params.provider.MethodSource
  * ett tegn i én melding eller én posisjon, feiler testen.
  */
 class ParityTest {
-    private val json = jacksonObjectMapper()
-
     @ParameterizedTest(name = "{0}")
     @MethodSource("fixtures")
     fun `svarer det samme som TypeScript`(name: String) {
         val html = File(DIR, "$name.html").readText()
-        val expected = json.readTree(File(DIR, "$name.json"))
+        val expected = Json.parse(File(DIR, "$name.json").readText()) as Map<*, *>
 
         assertEquals(expected["markup"], toJson(Fristil.diagnoseMarkup(html)), "diagnoseMarkup")
         assertEquals(expected["side"], toJson(Fristil.diagnosePage(html)), "diagnosePage")
@@ -35,15 +31,30 @@ class ParityTest {
         assertEquals("data-variant=\"sekundær\"", html.substring(finding.start, finding.end))
     }
 
-    // `fix` og `preferred` utelates i JSON når de mangler, som i TypeScript.
-    private fun toJson(findings: List<Finding>): JsonNode =
-        json.valueToTree<JsonNode>(findings).onEach { node ->
-            (node as com.fasterxml.jackson.databind.node.ObjectNode).apply {
-                // Regel, linje og kolonne finnes bare i kjernen, ikke i fasiten fra TypeScript.
-                remove(listOf("rule", "line", "column"))
-                if (get("fix")?.isNull == true) remove("fix")
-                (get("fix") as? com.fasterxml.jackson.databind.node.ObjectNode)?.let {
-                    if (it.get("preferred")?.isNull == true) it.remove("preferred")
+    /*
+     * Funnene i formen fasiten har. Regel, linje og kolonne finnes bare i
+     * kjernen, ikke i fasiten fra TypeScript, og `fix` og `preferred` utelates
+     * når de mangler, som i TypeScript.
+     */
+    private fun toJson(findings: List<Finding>): List<Map<String, Any>> =
+        findings.map { f ->
+            buildMap {
+                put("start", f.start.toDouble())
+                put("end", f.end.toDouble())
+                put("message", f.message)
+                put("severity", f.severity)
+                put("link", f.link)
+                f.fix?.let { fix ->
+                    put(
+                        "fix",
+                        buildMap {
+                            put("title", fix.title)
+                            put("start", fix.start.toDouble())
+                            put("end", fix.end.toDouble())
+                            put("text", fix.text)
+                            fix.preferred?.let { put("preferred", it) }
+                        },
+                    )
                 }
             }
         }

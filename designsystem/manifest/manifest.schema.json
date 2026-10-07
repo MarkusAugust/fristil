@@ -6,7 +6,9 @@
   "type": "object",
   "required": ["schemaVersion", "version", "elements", "classes", "builders"],
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "schemaVersion": {
       "const": 1,
       "description": "Formen på fila. Økes bare når en leser må endres for å forstå den."
@@ -22,10 +24,14 @@
         "type": "object",
         "required": ["link", "attributes"],
         "properties": {
-          "link": { "type": "string" },
+          "link": {
+            "type": "string"
+          },
           "attributes": {
             "type": "object",
-            "additionalProperties": { "$ref": "#/$defs/elementAttribute" }
+            "additionalProperties": {
+              "$ref": "#/$defs/elementAttribute"
+            }
           }
         }
       }
@@ -37,18 +43,33 @@
         "type": "object",
         "required": ["component", "title", "description", "link", "attributes"],
         "properties": {
-          "component": { "type": "string" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "link": { "type": "string" },
+          "component": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
           "attributes": {
             "type": "object",
             "additionalProperties": {
               "type": "object",
               "required": ["values"],
               "properties": {
-                "values": { "type": "array", "items": { "type": "string" } },
-                "default": { "type": "string" }
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "default": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -62,20 +83,62 @@
         "type": "object",
         "required": ["name", "options", "returns"],
         "properties": {
-          "name": { "type": "string" },
+          "name": {
+            "type": "string"
+          },
           "options": {
             "type": "array",
             "items": {
               "type": "object",
               "required": ["name", "required", "type"],
               "properties": {
-                "name": { "type": "string" },
-                "required": { "type": "boolean" },
-                "type": { "$ref": "#/$defs/optionType" }
+                "name": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "type": {
+                  "$ref": "#/$defs/optionType"
+                }
               }
             }
           },
-          "returns": { "$ref": "#/$defs/returns" }
+          "returns": {
+            "$ref": "#/$defs/returns"
+          },
+          "table": {
+            "description": "Når valgene virker hver for seg: grunnmengden og det hvert valg bidrar med, utledet av svarene og etterprøvd mot hvert byggetilfelle. Et annet språk kan lage byggefunksjonen fra den alene.",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["kind", "table"],
+                "properties": {
+                  "kind": {
+                    "const": "attributes"
+                  },
+                  "table": {
+                    "$ref": "#/$defs/table"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["kind", "fields"],
+                "properties": {
+                  "kind": {
+                    "const": "group"
+                  },
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/$defs/table"
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       }
     }
@@ -86,14 +149,25 @@
         {
           "type": "object",
           "required": ["type"],
-          "properties": { "type": { "enum": ["flag", "text", "number"] } }
+          "properties": {
+            "type": {
+              "enum": ["flag", "text", "number"]
+            }
+          }
         },
         {
           "type": "object",
           "required": ["type", "values"],
           "properties": {
-            "type": { "const": "values" },
-            "values": { "type": "array", "items": { "type": "string" } }
+            "type": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       ]
@@ -104,15 +178,24 @@
           "type": "object",
           "required": ["kind"],
           "properties": {
-            "kind": { "enum": ["flag", "text", "number", "textList"] }
+            "kind": {
+              "enum": ["flag", "text", "number", "textList"]
+            }
           }
         },
         {
           "type": "object",
           "required": ["kind", "values"],
           "properties": {
-            "kind": { "const": "values" },
-            "values": { "type": "array", "items": { "type": "string" } }
+            "kind": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       ]
@@ -123,41 +206,103 @@
           "type": "object",
           "required": ["kind"],
           "properties": {
-            "kind": { "enum": ["attributes", "text"] },
-            "optional": { "type": "boolean" }
+            "kind": {
+              "enum": ["attributes", "text"]
+            },
+            "optional": {
+              "type": "boolean"
+            }
           }
         },
         {
           "type": "object",
           "required": ["kind", "values"],
           "properties": {
-            "kind": { "const": "values" },
-            "values": { "type": "array", "items": { "type": "string" } },
-            "optional": { "type": "boolean" }
+            "kind": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional": {
+              "type": "boolean"
+            }
           }
         },
         {
           "type": "object",
           "required": ["kind", "of"],
           "properties": {
-            "kind": { "const": "list" },
-            "of": { "$ref": "#/$defs/returns" },
-            "optional": { "type": "boolean" }
+            "kind": {
+              "const": "list"
+            },
+            "of": {
+              "$ref": "#/$defs/returns"
+            },
+            "optional": {
+              "type": "boolean"
+            }
           }
         },
         {
           "type": "object",
           "required": ["kind", "fields"],
           "properties": {
-            "kind": { "const": "group" },
+            "kind": {
+              "const": "group"
+            },
             "fields": {
               "type": "object",
-              "additionalProperties": { "$ref": "#/$defs/returns" }
+              "additionalProperties": {
+                "$ref": "#/$defs/returns"
+              }
             },
-            "optional": { "type": "boolean" }
+            "optional": {
+              "type": "boolean"
+            }
           }
         }
       ]
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Attributtnavn til verdi. Tom tekst er et boolsk attributt som er på, null fjerner attributtet, og {navn} er verdien av valget med det navnet.",
+      "additionalProperties": {
+        "type": ["string", "null"]
+      }
+    },
+    "table": {
+      "type": "object",
+      "required": ["base", "options"],
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/attributes"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["cases"],
+            "properties": {
+              "cases": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/attributes"
+                }
+              },
+              "template": {
+                "$ref": "#/$defs/attributes"
+              },
+              "empty": {
+                "$ref": "#/$defs/attributes"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

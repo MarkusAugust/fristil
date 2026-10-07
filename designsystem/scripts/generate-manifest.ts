@@ -50,7 +50,12 @@ type Svar =
   | { kind: "list"; of: Svar }
   | { kind: "group"; fields: Record<string, Svar & { optional?: boolean }> }
 
-type Byggefunksjon = { name: string; options: Valg[]; returns: Svar }
+type Byggefunksjon = {
+  name: string
+  options: Valg[]
+  returns: Svar
+  table?: Tabeller
+}
 
 /*
  * Rekkefølgen på lovlige verdier. TypeScript gir en union i den rekkefølgen
@@ -295,6 +300,194 @@ try {
   }
 } finally {
   console.warn = advar
+}
+
+/*
+ * Tabellen: en byggefunksjon der hvert valg legger til faste attributter,
+ * uavhengig av de andre valgene, kan beskrives som en grunnmengde og det hvert
+ * valg bidrar med. Da kan et annet språk lage den fra manifestet alene, uten
+ * at noen skriver den for hånd.
+ *
+ * Tabellen er utledet av svarene, ikke av koden, og den tas bare med når den
+ * gir nøyaktig det TypeScript svarte på hvert eneste tilfelle. En byggefunksjon
+ * der valgene virker sammen, som `label`, der `optional` ikke gjelder når
+ * `required` er satt, får ingen tabell og skrives for hånd.
+ *
+ * Verdiene er tekst. Et boolsk attributt som er på, er den tomme strengen, og
+ * `null` betyr at valget fjerner et attributt grunnmengden har. En verdi som
+ * er nøyaktig `{navn}`, er verdien av valget med det navnet, slik
+ * `{ "aria-labelledby": "{titleId}" }` i `dialog`. En byggefunksjon som svarer
+ * med flere sett, som `dialog` og `popover`, får én tabell per sett.
+ */
+type Attributter = Record<string, string | null>
+type Tabellvalg = {
+  cases: Record<string, Attributter>
+  template?: Attributter
+  empty?: Attributter
+}
+type Tabell = { base: Attributter; options: Record<string, Tabellvalg> }
+type Tabeller =
+  | { kind: "attributes"; table: Tabell }
+  | { kind: "group"; fields: Record<string, Tabell> }
+
+const tekst = (verdier: Record<string, unknown>): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(verdier).map(([k, v]) => [k, v === true ? "" : String(v)]),
+  )
+
+function forskjell(
+  grunn: Record<string, string>,
+  svar: Record<string, string>,
+): Attributter {
+  const d: Attributter = {}
+  for (const k of new Set([...Object.keys(grunn), ...Object.keys(svar)]))
+    if (svar[k] !== grunn[k]) d[k] = svar[k] ?? null
+  return d
+}
+
+const likt = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+// Rekkefølgen på attributtene betyr ikke noe for svaret.
+const sortert = (x: Record<string, string>) =>
+  Object.fromEntries(Object.entries(x).sort(([a], [c]) => (a < c ? -1 : 1)))
+
+/** Bytter verdier som er nøyaktig verdien av et påkrevd valg, med `{navn}`. */
+function medPlassholdere(
+  a: Attributter,
+  påkrevde: [string, string][],
+): Attributter {
+  return Object.fromEntries(
+    Object.entries(a).map(([k, x]) => {
+      const treff = påkrevde.find(([, verdi]) => verdi === x)
+      return [k, treff ? `{${treff[0]}}` : x]
+    }),
+  )
+}
+
+/** Tabellen for ett sett, der `sett` plukker settet ut av svaret. */
+function tabellFor(
+  b: Byggefunksjon,
+  egne: Tilfelle[],
+  grunnValg: Record<string, unknown>,
+  sett: (svar: unknown) => Record<string, unknown>,
+): Tabell | undefined {
+  const påkrevde = Object.entries(grunnValg).map(
+    ([k, v]) => [k, String(v)] as [string, string],
+  )
+  const grunnTilfelle = egne.find((t) => likt(t.options, grunnValg))
+  if (!grunnTilfelle) return undefined
+  const grunn = tekst(sett(grunnTilfelle.expected))
+
+  const options: Record<string, Tabellvalg> = {}
+  for (const v of b.options) {
+    if (v.required) continue
+    const enkle = egne.filter(
+      (t) =>
+        Object.keys(t.options).length === påkrevde.length + 1 &&
+        v.name in t.options &&
+        påkrevde.every(([k]) => likt(t.options[k], grunnValg[k])),
+    )
+    const valg: Tabellvalg = { cases: {} }
+    for (const t of enkle) {
+      const verdi = t.options[v.name]
+      const d = medPlassholdere(
+        forskjell(grunn, tekst(sett(t.expected))),
+        påkrevde,
+      )
+      if (v.type.kind === "values" || v.type.kind === "flag") {
+        valg.cases[String(verdi)] = d
+        continue
+      }
+      if (v.type.kind === "textList") return undefined
+      // Tekst og tall: der verdien står, står plassholderen.
+      const s = String(verdi)
+      if (s === "") {
+        valg.empty = d
+        continue
+      }
+      const mal = Object.fromEntries(
+        Object.entries(d).map(([k, x]) => [k, x === s ? `{${v.name}}` : x]),
+      )
+      if (valg.template && !likt(valg.template, mal)) return undefined
+      valg.template = mal
+    }
+    options[v.name] = valg
+  }
+
+  const resultat: Tabell = { base: medPlassholdere(grunn, påkrevde), options }
+  for (const t of egne) {
+    const fasit = sortert(tekst(sett(t.expected)))
+    if (!likt(anvend(resultat, b, t.options), fasit)) return undefined
+  }
+  return resultat
+}
+
+function tabeller(b: Byggefunksjon): Tabeller | undefined {
+  const egne = tilfeller.filter((t) => t.builder === b.name)
+  if (egne.length === 0 || egne.some((t) => t.throws)) return undefined
+  // Grunnen er de påkrevde valgene med sin første prøveverdi, og ingen andre.
+  const grunnValg = Object.fromEntries(
+    b.options.filter((v) => v.required).map((v) => [v.name, prøver(v)[0]]),
+  )
+  if (b.returns.kind === "attributes") {
+    const table = tabellFor(
+      b,
+      egne,
+      grunnValg,
+      (svar) => svar as Record<string, unknown>,
+    )
+    return table && { kind: "attributes", table }
+  }
+  if (b.returns.kind !== "group") return undefined
+  const fields: Record<string, Tabell> = {}
+  for (const [navn, felt] of Object.entries(b.returns.fields)) {
+    if (felt.kind !== "attributes" || felt.optional) return undefined
+    const table = tabellFor(
+      b,
+      egne,
+      grunnValg,
+      (svar) => (svar as Record<string, Record<string, unknown>>)[navn],
+    )
+    if (!table) return undefined
+    fields[navn] = table
+  }
+  return { kind: "group", fields }
+}
+
+/** Svaret tabellen gir for valgene. Brukes til å etterprøve den. */
+function anvend(
+  t: Tabell,
+  b: Byggefunksjon,
+  valg: Record<string, unknown>,
+): Record<string, string> {
+  const fyll = (a: Attributter): Attributter =>
+    Object.fromEntries(
+      Object.entries(a).map(([k, x]) => {
+        const navn = x?.match(/^\{(\w+)\}$/)?.[1]
+        return [k, navn !== undefined && navn in valg ? String(valg[navn]) : x]
+      }),
+    )
+  const svar: Attributter = fyll(t.base)
+  for (const v of b.options) {
+    if (v.required || !(v.name in valg)) continue
+    const verdi = valg[v.name]
+    const tv = t.options[v.name]
+    const bidrag =
+      v.type.kind === "values" || v.type.kind === "flag"
+        ? tv.cases[String(verdi)]
+        : String(verdi) === "" && tv.empty
+          ? tv.empty
+          : tv.template
+    if (!bidrag) return { "\u0000": "mangler" }
+    Object.assign(svar, fyll(bidrag))
+  }
+  const ut: Record<string, string> = {}
+  for (const [k, x] of Object.entries(svar)) if (x !== null) ut[k] = x
+  return sortert(ut)
+}
+
+for (const b of byggefunksjoner) {
+  const t = tabeller(b)
+  if (t) b.table = t
 }
 
 const manifest = {

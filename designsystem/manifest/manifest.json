@@ -947,6 +947,24 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-accordion"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "default": {},
+                "plain": {
+                  "data-variant": "plain"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -968,6 +986,32 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-alert"
+          },
+          "options": {
+            "color": {
+              "cases": {
+                "info": {
+                  "data-color": "info"
+                },
+                "success": {
+                  "data-color": "success"
+                },
+                "warning": {
+                  "data-color": "warning"
+                },
+                "danger": {
+                  "data-color": "danger"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -999,6 +1043,35 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-avatar"
+          },
+          "options": {
+            "size": {
+              "cases": {
+                "small": {
+                  "data-size": "small"
+                },
+                "medium": {},
+                "large": {
+                  "data-size": "large"
+                }
+              }
+            },
+            "variant": {
+              "cases": {
+                "circle": {},
+                "square": {
+                  "data-variant": "square"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1021,6 +1094,33 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-badge"
+          },
+          "options": {
+            "color": {
+              "cases": {
+                "info": {},
+                "success": {
+                  "data-color": "success"
+                },
+                "warning": {
+                  "data-color": "warning"
+                },
+                "danger": {
+                  "data-color": "danger"
+                },
+                "neutral": {
+                  "data-color": "neutral"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1028,6 +1128,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-breadcrumbs"
+          },
+          "options": {}
+        }
       }
     },
     {
@@ -1049,6 +1158,30 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-button"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "primary": {},
+                "secondary": {
+                  "data-variant": "secondary"
+                },
+                "ghost": {
+                  "data-variant": "ghost"
+                },
+                "danger": {
+                  "data-variant": "danger"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1075,6 +1208,32 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-card"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "outline": {},
+                "filled": {
+                  "data-variant": "filled"
+                }
+              }
+            },
+            "interactive": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "data-interactive": ""
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1095,6 +1254,29 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-checkbox",
+            "type": "checkbox"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1117,6 +1299,35 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-connection-status",
+            "data-ignore-morph": ""
+          },
+          "options": {
+            "offlineText": {
+              "cases": {},
+              "template": {
+                "offline-text": "{offlineText}"
+              },
+              "empty": {
+                "offline-text": ""
+              }
+            },
+            "onlineText": {
+              "cases": {},
+              "template": {
+                "online-text": "{onlineText}"
+              },
+              "empty": {
+                "online-text": ""
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1177,6 +1388,186 @@
             "kind": "attributes"
           }
         }
+      },
+      "table": {
+        "kind": "group",
+        "fields": {
+          "host": {
+            "base": {},
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {
+                    "open": ""
+                  }
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          },
+          "dialog": {
+            "base": {
+              "class": "fs-dialog",
+              "aria-labelledby": "{titleId}"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {
+                    "open": ""
+                  }
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {
+                    "data-color": "brand"
+                  },
+                  "info": {
+                    "data-color": "info"
+                  },
+                  "success": {
+                    "data-color": "success"
+                  },
+                  "warning": {
+                    "data-color": "warning"
+                  },
+                  "danger": {
+                    "data-color": "danger"
+                  }
+                }
+              }
+            }
+          },
+          "header": {
+            "base": {
+              "class": "fs-dialog__header"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          },
+          "title": {
+            "base": {
+              "class": "fs-dialog__title",
+              "id": "{titleId}"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          },
+          "subtitle": {
+            "base": {
+              "class": "fs-dialog__subtitle"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          },
+          "body": {
+            "base": {
+              "class": "fs-dialog__body"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          },
+          "footer": {
+            "base": {
+              "class": "fs-dialog__footer"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "color": {
+                "cases": {
+                  "neutral": {},
+                  "brand": {},
+                  "info": {},
+                  "success": {},
+                  "warning": {},
+                  "danger": {}
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1197,6 +1588,27 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-divider"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "default": {},
+                "subtle": {
+                  "data-variant": "subtle"
+                },
+                "strong": {
+                  "data-variant": "strong"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1246,6 +1658,24 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-error-text"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "error": {},
+                "warning": {
+                  "data-variant": "warning"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1377,6 +1807,35 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-fieldset"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            },
+            "disabled": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "disabled": ""
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1411,6 +1870,46 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-file-upload",
+            "type": "file"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            },
+            "multiple": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "multiple": ""
+                }
+              }
+            },
+            "accept": {
+              "cases": {},
+              "template": {
+                "accept": "{accept}"
+              },
+              "empty": {
+                "accept": ""
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1434,6 +1933,36 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-heading"
+          },
+          "options": {
+            "size": {
+              "cases": {
+                "xs": {
+                  "data-size": "xs"
+                },
+                "s": {
+                  "data-size": "s"
+                },
+                "m": {
+                  "data-size": "m"
+                },
+                "l": {},
+                "xl": {
+                  "data-size": "xl"
+                },
+                "mega": {
+                  "data-size": "mega"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1455,6 +1984,30 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-help-text"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "muted": {},
+                "strong": {
+                  "data-variant": "strong"
+                },
+                "success": {
+                  "data-variant": "success"
+                },
+                "warning": {
+                  "data-variant": "warning"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1496,6 +2049,70 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-input",
+            "type": "text"
+          },
+          "options": {
+            "type": {
+              "cases": {
+                "text": {},
+                "password": {
+                  "type": "password"
+                },
+                "email": {
+                  "type": "email"
+                },
+                "number": {
+                  "type": "number"
+                },
+                "date": {
+                  "type": "date",
+                  "data-variant": "date"
+                },
+                "datetime-local": {
+                  "type": "datetime-local",
+                  "data-variant": "datetime-local"
+                },
+                "week": {
+                  "type": "week"
+                },
+                "month": {
+                  "type": "month"
+                },
+                "tel": {
+                  "type": "tel"
+                },
+                "url": {
+                  "type": "url"
+                },
+                "search": {
+                  "type": "search"
+                },
+                "time": {
+                  "type": "time",
+                  "data-variant": "time"
+                }
+              }
+            },
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1577,6 +2194,24 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-link"
+          },
+          "options": {
+            "disabled": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "aria-disabled": "true"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1597,6 +2232,27 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-list"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "default": {},
+                "plain": {
+                  "data-variant": "plain"
+                },
+                "divided": {
+                  "data-variant": "divided"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1604,6 +2260,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-pagination"
+          },
+          "options": {}
+        }
       }
     },
     {
@@ -1635,6 +2300,35 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-paragraph"
+          },
+          "options": {
+            "size": {
+              "cases": {
+                "small": {
+                  "data-size": "small"
+                },
+                "medium": {},
+                "large": {
+                  "data-size": "large"
+                }
+              }
+            },
+            "variant": {
+              "cases": {
+                "default": {},
+                "lead": {
+                  "data-variant": "lead"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1681,6 +2375,85 @@
             "kind": "attributes"
           }
         }
+      },
+      "table": {
+        "kind": "group",
+        "fields": {
+          "host": {
+            "base": {},
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {
+                    "open": ""
+                  }
+                }
+              },
+              "placement": {
+                "cases": {
+                  "bottom-start": {},
+                  "bottom-end": {
+                    "placement": "bottom-end"
+                  },
+                  "top-start": {
+                    "placement": "top-start"
+                  },
+                  "top-end": {
+                    "placement": "top-end"
+                  }
+                }
+              }
+            }
+          },
+          "trigger": {
+            "base": {
+              "aria-expanded": "false",
+              "aria-controls": "{id}"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {
+                    "aria-expanded": "true"
+                  }
+                }
+              },
+              "placement": {
+                "cases": {
+                  "bottom-start": {},
+                  "bottom-end": {},
+                  "top-start": {},
+                  "top-end": {}
+                }
+              }
+            }
+          },
+          "panel": {
+            "base": {
+              "class": "fs-popover",
+              "id": "{id}",
+              "popover": "manual"
+            },
+            "options": {
+              "open": {
+                "cases": {
+                  "false": {},
+                  "true": {}
+                }
+              },
+              "placement": {
+                "cases": {
+                  "bottom-start": {},
+                  "bottom-end": {},
+                  "top-start": {},
+                  "top-end": {}
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1722,6 +2495,51 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-progress",
+            "max": "100"
+          },
+          "options": {
+            "value": {
+              "cases": {},
+              "template": {
+                "value": "{value}"
+              }
+            },
+            "max": {
+              "cases": {},
+              "template": {
+                "max": "{max}"
+              }
+            },
+            "color": {
+              "cases": {
+                "success": {
+                  "data-color": "success"
+                },
+                "warning": {
+                  "data-color": "warning"
+                },
+                "danger": {
+                  "data-color": "danger"
+                }
+              }
+            },
+            "label": {
+              "cases": {},
+              "template": {
+                "aria-label": "{label}"
+              },
+              "empty": {
+                "aria-label": ""
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1742,6 +2560,29 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-radio",
+            "type": "radio"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1762,6 +2603,29 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-input fs-search",
+            "type": "search"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1793,6 +2657,36 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-select"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            },
+            "picker": {
+              "cases": {
+                "auto": {},
+                "styled": {
+                  "data-picker": "styled"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1851,6 +2745,160 @@
             "kind": "attributes"
           }
         }
+      },
+      "table": {
+        "kind": "group",
+        "fields": {
+          "host": {
+            "base": {
+              "class": "fs-session-timeout",
+              "data-ignore-morph": ""
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {
+                  "warn-at": "{warnAt}"
+                }
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {
+                  "expires-at": "{expiresAt}"
+                }
+              }
+            }
+          },
+          "dialog": {
+            "base": {
+              "class": "fs-session-timeout__dialog",
+              "role": "alertdialog",
+              "aria-labelledby": "{titleId}"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "title": {
+            "base": {
+              "class": "fs-session-timeout__title",
+              "id": "{titleId}"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "text": {
+            "base": {
+              "class": "fs-session-timeout__text"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "count": {
+            "base": {
+              "class": "fs-session-timeout__count",
+              "aria-hidden": "true"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "live": {
+            "base": {
+              "class": "fs-sr-only",
+              "role": "status"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "actions": {
+            "base": {
+              "class": "fs-session-timeout__actions",
+              "method": "dialog"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "extend": {
+            "base": {
+              "class": "fs-button",
+              "value": "extend"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          },
+          "logout": {
+            "base": {
+              "class": "fs-button",
+              "data-variant": "secondary",
+              "value": "logout"
+            },
+            "options": {
+              "warnAt": {
+                "cases": {},
+                "template": {}
+              },
+              "expiresAt": {
+                "cases": {},
+                "template": {}
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1871,6 +2919,28 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-skeleton",
+            "aria-hidden": "true"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "block": {},
+                "text": {
+                  "data-variant": "text"
+                },
+                "circle": {
+                  "data-variant": "circle"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1878,6 +2948,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-skip-link"
+          },
+          "options": {}
+        }
       }
     },
     {
@@ -1905,6 +2984,37 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-spinner"
+          },
+          "options": {
+            "size": {
+              "cases": {
+                "small": {
+                  "data-size": "small"
+                },
+                "medium": {},
+                "large": {
+                  "data-size": "large"
+                }
+              }
+            },
+            "label": {
+              "cases": {},
+              "template": {
+                "role": "status",
+                "aria-label": "{label}"
+              },
+              "empty": {
+                "aria-label": ""
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -1912,6 +3022,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-sr-only"
+          },
+          "options": {}
+        }
       }
     },
     {
@@ -2077,6 +3196,26 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-switch",
+            "type": "checkbox",
+            "role": "switch"
+          },
+          "options": {
+            "disabled": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "disabled": ""
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -2103,6 +3242,32 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-table"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "default": {},
+                "striped": {
+                  "data-variant": "striped"
+                }
+              }
+            },
+            "hoverable": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "data-hoverable": ""
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -2128,6 +3293,40 @@
           },
           "button": {
             "kind": "attributes"
+          }
+        }
+      },
+      "table": {
+        "kind": "group",
+        "fields": {
+          "header": {
+            "base": {},
+            "options": {
+              "direction": {
+                "cases": {
+                  "ascending": {
+                    "aria-sort": "ascending"
+                  },
+                  "descending": {
+                    "aria-sort": "descending"
+                  }
+                }
+              }
+            }
+          },
+          "button": {
+            "base": {
+              "class": "fs-table__sort",
+              "type": "button"
+            },
+            "options": {
+              "direction": {
+                "cases": {
+                  "ascending": {},
+                  "descending": {}
+                }
+              }
+            }
           }
         }
       }
@@ -2209,6 +3408,32 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-tag"
+          },
+          "options": {
+            "variant": {
+              "cases": {
+                "outline": {},
+                "filled": {
+                  "data-variant": "filled"
+                }
+              }
+            },
+            "selectable": {
+              "cases": {
+                "false": {},
+                "true": {
+                  "data-selectable": ""
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -2229,6 +3454,28 @@
       ],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-textarea"
+          },
+          "options": {
+            "state": {
+              "cases": {
+                "default": {},
+                "invalid": {
+                  "data-state": "invalid",
+                  "aria-invalid": "true"
+                },
+                "success": {
+                  "data-state": "success"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -2262,6 +3509,75 @@
             "kind": "attributes"
           }
         }
+      },
+      "table": {
+        "kind": "group",
+        "fields": {
+          "host": {
+            "base": {
+              "class": "fs-toast",
+              "role": "status",
+              "aria-live": "polite",
+              "aria-atomic": "false",
+              "aria-label": "Varsler",
+              "data-ignore-morph": ""
+            },
+            "options": {
+              "label": {
+                "cases": {},
+                "template": {
+                  "aria-label": "{label}"
+                },
+                "empty": {
+                  "aria-label": ""
+                }
+              },
+              "closeLabel": {
+                "cases": {},
+                "template": {
+                  "close-label": "{closeLabel}"
+                },
+                "empty": {
+                  "close-label": ""
+                }
+              }
+            }
+          },
+          "message": {
+            "base": {
+              "class": "fs-toast__message"
+            },
+            "options": {
+              "label": {
+                "cases": {},
+                "template": {},
+                "empty": {}
+              },
+              "closeLabel": {
+                "cases": {},
+                "template": {},
+                "empty": {}
+              }
+            }
+          },
+          "close": {
+            "base": {
+              "class": "fs-toast__close"
+            },
+            "options": {
+              "label": {
+                "cases": {},
+                "template": {},
+                "empty": {}
+              },
+              "closeLabel": {
+                "cases": {},
+                "template": {},
+                "empty": {}
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -2269,6 +3585,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-toggle-group"
+          },
+          "options": {}
+        }
       }
     },
     {
@@ -2276,6 +3601,15 @@
       "options": [],
       "returns": {
         "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-tooltip"
+          },
+          "options": {}
+        }
       }
     }
   ]
