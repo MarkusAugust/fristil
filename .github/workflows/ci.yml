@@ -81,6 +81,19 @@ jobs:
           cargo build --release -p fristil --manifest-path kjerne/Cargo.toml
           FRISTIL_SAMMENLIGN="$PWD/kjerne/target/release/fristil" bun designsystem/scripts/sjekk-cli.ts
 
+      # Språkserveren over ekte standard inn og ut, i hver vert: Node, den
+      # kjørbare fila og VS Code-utvidelsens server. Jar-en prøves under.
+      - name: Språkserveren
+        run: |
+          bun designsystem/scripts/sjekk-lsp.ts
+          FRISTIL_CLI="$PWD/kjerne/target/release/fristil" bun designsystem/scripts/sjekk-lsp.ts
+          (cd editor && bun run build)
+          FRISTIL_CLI="[\"node\",\"$PWD/editor/dist/server.js\"]" bun designsystem/scripts/sjekk-lsp.ts
+
+      # Utvidelsen i en ekte VS Code, med språkserveren koblet til.
+      - name: VS Code-utvidelsen
+        run: xvfb-run -a bun editor/scripts/sjekk-vscode.ts
+
       # Java 17, den laveste versjonen jar-en lover å virke på.
       - uses: actions/setup-java@v5
         with:
@@ -95,6 +108,7 @@ jobs:
         run: |
           (cd kotlin && ./gradlew :kommandolinje:samletJar)
           FRISTIL_SAMMENLIGN="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-cli.ts
+          FRISTIL_CLI="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-lsp.ts
 
       # De genererte filene skal være de generatoren ville skrevet nå.
       #

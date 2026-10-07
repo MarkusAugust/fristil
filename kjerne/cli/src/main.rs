@@ -13,6 +13,7 @@ mod agent;
 mod check;
 mod check_theme;
 mod fetch;
+mod lsp;
 mod manifest;
 mod output;
 mod takeover;
@@ -44,6 +45,10 @@ pub const HELP: &str = r#"fristil <kommando>
                        med nytt navn (app-…), så den er din å endre
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
+
+  lsp                  Språkserveren for editorer, over standard inn og ut.
+                       Leser manifestet i build/fristil/ eller i
+                       node_modules, med det innebygde som reserve
 
   manifest             Skriver manifestet sjekken bruker, med fragmentene
     --manifest=<fil>   fra fristil overta lagt til
@@ -83,7 +88,15 @@ Eksempler:
 "#;
 
 const HELP_FLAGS: [&str; 5] = ["--help", "-h", "help", "hjelp", "--hjelp"];
-const COMMANDS: [&str; 6] = ["agent", "sjekk", "sjekk-tema", "overta", "tema", "manifest"];
+const COMMANDS: [&str; 7] = [
+    "agent",
+    "sjekk",
+    "sjekk-tema",
+    "overta",
+    "tema",
+    "manifest",
+    "lsp",
+];
 
 /// Flaggene med likhetstegn, `--navn=verdi`, og resten som filer.
 ///
@@ -176,6 +189,7 @@ fn main() {
         "sjekk-tema" => check_theme::run(rest),
         "overta" => takeover::run(rest),
         "manifest" => manifest::run(rest),
+        "lsp" => lsp::run(rest),
         // `tema` kan stå først, siden kommandoen kjøres som
         // `npx @fristil/designsystem tema`.
         "tema" => theme::run(rest),

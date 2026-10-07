@@ -6,9 +6,13 @@ bare endrer seg når et element eller et attributt gjør det.
 ## Ikke utgitt
 
 - Nytt ikon: det nye Fristil-merket, en F i to lag.
-- Feilmeldingene kommer fra Rust-kjernen, den samme som `fristil sjekk`,
-  IntelliJ og Fristil for Kotlin bruker. Modulen ligger i utvidelsen, så den
-  trenger fortsatt ingenting installert.
+- Feilmeldingene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`,
+  den samme som Neovim og Helix bruker, skrevet i Rust. Den ligger i
+  utvidelsen, så den trenger fortsatt ingenting installert, og sjekker mot
+  Fristil-versjonen prosjektet har installert (`node_modules`) eller det
+  Gradle-pluginen har skrevet (`build/fristil/manifest.json`), med
+  komponenter tatt over med `fristil overta`. Uten noen av dem sjekker den
+  mot versjonen den er bygget fra.
 - Fullføring og sjekk av `data-color` på `fs-dialog`, med fargene
   `fs.dialog({ color })` gir. Før sa en ukjent farge ingenting.
 - Markup i en kommentar i malspråket, som `{{-- --}}` i Blade og `@* *@` i

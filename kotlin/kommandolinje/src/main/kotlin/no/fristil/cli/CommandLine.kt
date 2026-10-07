@@ -19,7 +19,6 @@ import com.dylibso.chicory.runtime.Instance
 import com.dylibso.chicory.wasi.WasiExitException
 import com.dylibso.chicory.wasi.WasiOptions
 import com.dylibso.chicory.wasi.WasiPreview1
-import java.io.BufferedOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -70,6 +69,24 @@ private fun fetch(client: HttpClient, address: String): String =
         "$address\n0\n${reason.replace('\n', ' ')}\n"
     }
 
+/**
+ * Sender hver skriving videre med en gang. Modulen buffrer selv, per linje,
+ * og språkserveren må svare mens den kjører, ikke når den avslutter.
+ */
+private class Flushing(private val out: OutputStream) : OutputStream() {
+    override fun write(b: Int) {
+        out.write(b)
+        out.flush()
+    }
+
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        out.write(b, off, len)
+        out.flush()
+    }
+
+    override fun flush() = out.flush()
+}
+
 /** Kommandolinja, kjørt i denne prosessen. */
 object CommandLine {
     /**
@@ -101,8 +118,8 @@ object CommandLine {
                 moduleArgs += "--hentet=${forWasi(file.toString())}"
             }
 
-            val out = BufferedOutputStream(stdout)
-            val err = BufferedOutputStream(stderr)
+            val out = Flushing(stdout)
+            val err = Flushing(stderr)
             val options =
                 WasiOptions.builder()
                     .withStdin(stdin)

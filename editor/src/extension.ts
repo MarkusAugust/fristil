@@ -1,19 +1,12 @@
 /**
- * Kobler diagnostikken til VS Code, og gir fullføring, forklaring og
- * hurtigrettelser oppå den.
+ * VS Code-utvidelsen: språkserveren for funnene og rettelsene, og
+ * fullføring og forklaring oppå.
  *
- * Alt som sjekker noe står i kjernen, skrevet i Rust og bygget til
- * WebAssembly, uten VS Code i seg. Den samme modulen kjører i `fristil sjekk`,
- * på JVM-en og i IntelliJ. Her leses `elements` og `classes` fra pakken, og:
+ * Funnene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den
+ * samme som Neovim, Zed og Helix bruker, skrevet i Rust og kjørt som
+ * WASI-modul (se `server.ts`). Den leser manifestet prosjektet faktisk har,
+ * også med komponenter tatt over med `fristil overta`. Her er resten:
  *
- *   - hvert dokument i et av språkene i `fristil.languages` kjøres gjennom
- *     når det åpnes og endres, og funnene blir røde og gule streker med
- *     komponentsiden som lenke. Endringer ventes ut i et kort øyeblikk, og
- *     en ventende kjøring for et dokument som lukkes avlyses;
- *   - funn med en rettelse blir en lyspære, som bytter navnet, tar bort
- *     attributtet eller setter inn ledeteksten. Den sikre rettelsen, samme
- *     bokstaver skrevet annerledes, er foretrukket; et forslag på avstand
- *     er et forslag;
  *   - inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en
  *     klasse tar, som `data-variant` på `fs-button`, fullføres verdiene.
  *     I andre språk enn HTML, der VS Codes egen HTML-tjeneste ikke er med,
@@ -26,22 +19,20 @@
  * fil skal ikke kopieres for hvert tastetrykk.
  */
 
-import { readFileSync } from "node:fs"
 import * as vscode from "vscode"
-/*
- * Kjernen og ordforrådet hentes fra kilden i pakken, ikke fra
- * `@fristil/designsystem/diagnostics`: utvidelsen pakkes til én fil, og har
- * modulen med seg i `dist/` i stedet for å lete etter den i `node_modules`.
- */
 import {
-  type Finding,
-  loadCore,
-} from "../../designsystem/src/diagnostics/core.js"
+  LanguageClient,
+  type LanguageClientOptions,
+  type ServerOptions,
+  TransportKind,
+} from "vscode-languageclient/node"
+/*
+ * Ordforrådet hentes fra kilden i pakken: utvidelsen pakkes til én fil, og
+ * leter ikke etter pakken i `node_modules`.
+ */
 import { classes } from "../../designsystem/src/vocabulary/classes.js"
 import { elements } from "../../designsystem/src/vocabulary/elements.js"
 
-const DELAY_MS = 250
-const SOURCE = "Fristil"
 /** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
 const WINDOW = 4000
 
@@ -68,13 +59,6 @@ function tagEnd(text: string, from: number): number {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // Kjernen er bygget fra Rust og ligger ved siden av utvidelsen i `dist/`.
-  const core = loadCore(
-    readFileSync(
-      vscode.Uri.joinPath(context.extensionUri, "dist", "fristil-kjerne.wasm")
-        .fsPath,
-    ),
-  )
   const classNames = Object.keys(classes)
   const elementNames = Object.keys(elements)
 
@@ -82,101 +66,38 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.getConfiguration("fristil").get<string[]>("languages") ?? [
       "html",
     ]
-  const supported = (document: vscode.TextDocument) =>
-    languages().includes(document.languageId)
   const selector = (): vscode.DocumentSelector =>
     languages().map((language) => ({ language }))
 
-  /* Diagnostikken */
+  /* Språkserveren */
 
-  const collection = vscode.languages.createDiagnosticCollection("fristil")
-  const pending = new Map<string, ReturnType<typeof setTimeout>>()
-  /** Siste funn per dokument, så lyspæra finner rettelsen til en strek. */
-  const latest = new Map<string, Finding[]>()
-
-  const rangeOf = (document: vscode.TextDocument, start: number, end: number) =>
-    new vscode.Range(document.positionAt(start), document.positionAt(end))
-
-  const toDiagnostic = (document: vscode.TextDocument, finding: Finding) => {
-    const diagnostic = new vscode.Diagnostic(
-      rangeOf(document, finding.start, finding.end),
-      finding.message,
-      finding.severity === "error"
-        ? vscode.DiagnosticSeverity.Error
-        : vscode.DiagnosticSeverity.Warning,
-    )
-    diagnostic.source = SOURCE
-    // Regelnavnet er det `<!-- fristil-ignore-next … -->` tar.
-    diagnostic.code = {
-      value: finding.rule,
-      target: vscode.Uri.parse(finding.link),
+  let client: LanguageClient | undefined
+  const serverOptions: ServerOptions = {
+    module: vscode.Uri.joinPath(context.extensionUri, "dist", "server.js")
+      .fsPath,
+    transport: TransportKind.stdio,
+  }
+  const startClient = async () => {
+    await client?.stop()
+    const clientOptions: LanguageClientOptions = {
+      documentSelector: languages().flatMap((language) => [
+        { scheme: "file", language },
+        { scheme: "untitled", language },
+      ]),
+      synchronize: {
+        // Et nytt bygg eller en oppgradering av pakken endrer manifestet.
+        fileEvents: vscode.workspace.createFileSystemWatcher(
+          "**/{build/fristil/manifest.json,node_modules/@fristil/designsystem/manifest/manifest.json}",
+        ),
+      },
     }
-    return diagnostic
-  }
-
-  const check = (document: vscode.TextDocument) => {
-    if (!supported(document) || document.isClosed) return
-    const findings = core.diagnoseMarkup(document.getText())
-    latest.set(document.uri.toString(), findings)
-    collection.set(
-      document.uri,
-      findings.map((finding) => toDiagnostic(document, finding)),
+    client = new LanguageClient(
+      "fristil",
+      "Fristil",
+      serverOptions,
+      clientOptions,
     )
-  }
-
-  const cancel = (document: vscode.TextDocument) => {
-    const key = document.uri.toString()
-    clearTimeout(pending.get(key))
-    pending.delete(key)
-  }
-
-  const checkSoon = (document: vscode.TextDocument) => {
-    if (!supported(document)) return
-    cancel(document)
-    pending.set(
-      document.uri.toString(),
-      setTimeout(() => {
-        pending.delete(document.uri.toString())
-        check(document)
-      }, DELAY_MS),
-    )
-  }
-
-  const checkAll = () => {
-    for (const document of vscode.workspace.textDocuments) check(document)
-  }
-
-  /* Lyspærene */
-
-  const codeActions: vscode.CodeActionProvider = {
-    provideCodeActions(document, _range, actionContext) {
-      const findings = latest.get(document.uri.toString()) ?? []
-      const actions: vscode.CodeAction[] = []
-      for (const diagnostic of actionContext.diagnostics) {
-        if (diagnostic.source !== SOURCE) continue
-        const finding = findings.find(
-          (f) =>
-            f.fix &&
-            f.message === diagnostic.message &&
-            rangeOf(document, f.start, f.end).isEqual(diagnostic.range),
-        )
-        if (!finding?.fix) continue
-        const action = new vscode.CodeAction(
-          finding.fix.title,
-          vscode.CodeActionKind.QuickFix,
-        )
-        action.diagnostics = [diagnostic]
-        action.isPreferred = finding.fix.preferred ?? false
-        action.edit = new vscode.WorkspaceEdit()
-        action.edit.replace(
-          document.uri,
-          rangeOf(document, finding.fix.start, finding.fix.end),
-          finding.fix.text,
-        )
-        actions.push(action)
-      }
-      return actions
-    },
+    await client.start()
   }
 
   /* Taggen markøren står i */
@@ -393,9 +314,6 @@ export function activate(context: vscode.ExtensionContext) {
     for (const p of providers) p.dispose()
     providers.length = 0
     providers.push(
-      vscode.languages.registerCodeActionsProvider(selector(), codeActions, {
-        providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
-      }),
       vscode.languages.registerCompletionItemProvider(
         selector(),
         completions,
@@ -408,30 +326,17 @@ export function activate(context: vscode.ExtensionContext) {
       ),
       vscode.languages.registerHoverProvider(selector(), hover),
     )
-    collection.clear()
-    latest.clear()
-    checkAll()
+    void startClient()
   }
 
   context.subscriptions.push(
-    collection,
-    vscode.workspace.onDidOpenTextDocument(check),
-    vscode.workspace.onDidChangeTextDocument((event) =>
-      checkSoon(event.document),
-    ),
-    vscode.workspace.onDidCloseTextDocument((document) => {
-      cancel(document)
-      collection.delete(document.uri)
-      latest.delete(document.uri.toString())
-    }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration("fristil.languages")) register()
     }),
     {
       dispose() {
-        for (const timer of pending.values()) clearTimeout(timer)
-        pending.clear()
         for (const p of providers) p.dispose()
+        void client?.stop()
       },
     },
   )

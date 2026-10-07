@@ -91,6 +91,11 @@ egen overskrift «Brytende».
   `fristil-manifest.json`, og `fristil sjekk --manifest=<fil>` sjekker
   markupen for kopien mot det. Bare kopiens egne navn sjekkes, ikke resten av
   prosjektets klasser.
+- **`fristil lsp`, språkserveren.** Funnene og hurtigrettelsene i hver editor
+  som snakker LSP: Neovim, Helix, VS Code og andre, med UTF-16-posisjoner.
+  Den sjekker mot manifestet i `build/fristil/` eller i `node_modules`, med
+  det innebygde som reserve, og leser det på nytt når det endres. Den
+  startes med `npx`, `java -jar`, wasmtime eller den kjørbare fila.
 - **`fristil manifest`** skriver manifestet sjekken bruker, med fragmentene
   lagt til, for en editor eller et annet verktøy.
 - **Gradle-pluginen `io.github.markusaugust.fristil`**, med `fristilSjekk`

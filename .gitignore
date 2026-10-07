@@ -18,6 +18,7 @@ demoer-lokalt/
 
 # Pakket utvidelse, lages av `bun --filter fristil-vscode sjekk`
 *.vsix
+editor/.vscode-test/
 
 # IntelliJ-pluginens byggemapper. `.intellijPlatform` er en hel IDE lastet
 # ned for å kompilere mot, rundt en gigabyte.

@@ -60,11 +60,27 @@ impl Json {
         out
     }
 
+    /// Verdien som tekst på én linje, som `JSON.stringify(verdi)`.
+    pub fn to_compact(&self) -> String {
+        let mut out = String::new();
+        self.write_with(&mut out, None);
+        out
+    }
+
     fn write(&self, out: &mut String, depth: usize) {
-        let indent = |out: &mut String, depth: usize| {
-            out.push('\n');
-            out.push_str(&"  ".repeat(depth));
+        self.write_with(out, Some(depth));
+    }
+
+    /// `depth` er innrykket, eller `None` for alt på én linje.
+    fn write_with(&self, out: &mut String, depth: Option<usize>) {
+        let indent = |out: &mut String, depth: Option<usize>| {
+            if let Some(depth) = depth {
+                out.push('\n');
+                out.push_str(&"  ".repeat(depth));
+            }
         };
+        let inner = depth.map(|d| d + 1);
+        let colon = if depth.is_some() { ": " } else { ":" };
         match self {
             Json::Null => out.push_str("null"),
             Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
@@ -78,8 +94,8 @@ impl Json {
                     if i > 0 {
                         out.push(',');
                     }
-                    indent(out, depth + 1);
-                    item.write(out, depth + 1);
+                    indent(out, inner);
+                    item.write_with(out, inner);
                 }
                 indent(out, depth);
                 out.push(']');
@@ -90,10 +106,10 @@ impl Json {
                     if i > 0 {
                         out.push(',');
                     }
-                    indent(out, depth + 1);
+                    indent(out, inner);
                     out.push_str(&crate::json_string(key));
-                    out.push_str(": ");
-                    value.write(out, depth + 1);
+                    out.push_str(colon);
+                    value.write_with(out, inner);
                 }
                 indent(out, depth);
                 out.push('}');
@@ -326,5 +342,9 @@ mod tests {
             "{\n  \"a\": [\n    1,\n    2.5,\n    \"x\\\"y\"\n  ],\n  \"b\": {},\n  \"c\": [],\n  \"d\": {\n    \"e\": null,\n    \"f\": true\n  }\n}"
         );
         assert_eq!(parse(&v.to_pretty()).unwrap(), v);
+        assert_eq!(
+            v.to_compact(),
+            r#"{"a":[1,2.5,"x\"y"],"b":{},"c":[],"d":{"e":null,"f":true}}"#
+        );
     }
 }

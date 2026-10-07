@@ -68,10 +68,13 @@ ingenting du laster ned, krever et sertifikat for å kjøre.
 
 ## Fase 5: Språkserver
 
-- `fristil lsp` gir feilmeldinger og rettelser i alle editorer som snakker
-  LSP: VS Code, IntelliJ, Neovim, Zed og Helix. Den leser kontrakten fra
-  Fristil-versjonen prosjektet ditt har installert, så editoren aldri sier noe
-  annet enn testene.
+- `fristil lsp` gir feilmeldinger og rettelser i editorer som snakker LSP:
+  VS Code, Neovim og Helix. Den leser manifestet fra Fristil-versjonen
+  prosjektet ditt har installert, eller fra Gradle-pluginen, så editoren aldri
+  sier noe annet enn testene. IntelliJ beholder pluginen, som også ser HTML i
+  strenger. Zed trenger en egen utvidelse.
+- Senere: fullføring og forklaring i språkserveren, så utvidelsene kan bli
+  enda tynnere.
 
 ## Fase 6: Sjekk av den ferdige siden
 
