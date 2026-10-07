@@ -7,55 +7,55 @@
 //! listene i meldingene står.
 
 /// Et attributt et `<fs-…>`-element leser.
-pub enum Attributt {
-    Flagg,
-    Tekst,
-    Tall,
-    Verdier(&'static [&'static str]),
+pub enum Attribute {
+    Flag,
+    Text,
+    Number,
+    Values(&'static [&'static str]),
 }
 
 pub struct Element {
-    pub tagg: &'static str,
-    pub lenke: &'static str,
-    pub attributter: &'static [(&'static str, Attributt)],
+    pub tag: &'static str,
+    pub link: &'static str,
+    pub attributes: &'static [(&'static str, Attribute)],
 }
 
 /// Et attributt en klasse tar, som `data-variant` på `fs-button`.
-pub struct KlasseAttributt {
-    pub verdier: &'static [&'static str],
-    pub standard: Option<&'static str>,
+pub struct ClassAttribute {
+    pub values: &'static [&'static str],
+    pub default_value: Option<&'static str>,
 }
 
-pub struct Klasse {
-    pub navn: &'static str,
-    pub tittel: &'static str,
-    pub lenke: &'static str,
-    pub attributter: &'static [(&'static str, KlasseAttributt)],
+pub struct Class {
+    pub name: &'static str,
+    pub title: &'static str,
+    pub link: &'static str,
+    pub attributes: &'static [(&'static str, ClassAttribute)],
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum Alvor {
-    Feil,
-    Advarsel,
+pub enum Severity {
+    Error,
+    Warning,
 }
 
 /// En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
 #[derive(Clone, Debug)]
-pub struct Rettelse {
-    pub tittel: String,
+pub struct Fix {
+    pub title: String,
     pub start: usize,
-    pub slutt: usize,
-    pub tekst: String,
-    pub foretrukket: bool,
+    pub end: usize,
+    pub text: String,
+    pub preferred: bool,
 }
 
 /// Ett funn. Posisjonene er UTF-16-indekser i den opprinnelige teksten.
 #[derive(Clone, Debug)]
-pub struct Funn {
+pub struct Finding {
     pub start: usize,
-    pub slutt: usize,
-    pub alvor: Alvor,
-    pub lenke: String,
-    pub melding: String,
-    pub rettelse: Option<Rettelse>,
+    pub end: usize,
+    pub severity: Severity,
+    pub link: String,
+    pub message: String,
+    pub fix: Option<Fix>,
 }

@@ -55,7 +55,7 @@ val byggKjerne by tasks.registering(Exec::class) {
 val kjerneRessurs by tasks.registering(Copy::class) {
     dependsOn(byggKjerne)
     from(wasm)
-    into(layout.buildDirectory.dir("kjerne/no/fristil/sjekk"))
+    into(layout.buildDirectory.dir("kjerne/no/fristil"))
     rename { "fristil-kjerne.wasm" }
 }
 

@@ -26,7 +26,7 @@ UTF-16-indekser, som i JavaScript og Kotlin: hele kjernen jobber på
 UTF-16-enheter, så ingen posisjon må regnes om.
 
 Lasteren for JavaScript står i `js/kjerne.ts`, og den for Kotlin i
-`../kotlin/src/main/kotlin/no/fristil/sjekk/Fristil.kt`. Hver er rundt 40
+`../kotlin/src/main/kotlin/no/fristil/Fristil.kt`. Hver er rundt 40
 linjer.
 
 ## Paritet

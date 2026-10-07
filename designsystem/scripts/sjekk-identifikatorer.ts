@@ -32,6 +32,12 @@ const KILDER = [
     unntatt: ["testing", "types"],
   },
   { rot: new URL("../../editor/src", import.meta.url).pathname, unntatt: [] },
+  { rot: new URL("../../kjerne/js", import.meta.url).pathname, unntatt: [] },
+  { rot: new URL("../../kjerne/src", import.meta.url).pathname, unntatt: [] },
+  {
+    rot: new URL("../../kotlin/src/main", import.meta.url).pathname,
+    unntatt: [],
+  },
 ]
 
 /**
@@ -164,7 +170,7 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
         les(sti)
         continue
       }
-      if (!oppføring.name.endsWith(".ts")) continue
+      if (!/\.(ts|rs|kt)$/.test(oppføring.name)) continue
       if (oppføring.name.endsWith(".d.ts")) continue
       if (oppføring.name.includes(".test.")) continue
       filer.push(sti)
@@ -172,6 +178,21 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
   }
   les(rot)
   return filer
+}
+
+/**
+ * Levetider (`'static`) og tegn (`'a'`, `b'x'`) i Rust, byttet med mellomrom.
+ *
+ * Skanneren under er skrevet for TypeScript, der `'` åpner en streng. I Rust
+ * står den alene foran en levetid, og resten av linja ville blitt lest som
+ * en streng som aldri lukkes. Kotlin har tegn i `'…'` som TypeScript har
+ * strenger, så det trengs ikke der.
+ */
+function utenRustTegn(fil: string, innhold: string): string {
+  if (!fil.endsWith(".rs")) return innhold
+  return innhold
+    .replace(/b?'(\\.|[^'\\\n])'/g, (treff) => " ".repeat(treff.length))
+    .replace(/'[a-z_]+\b(?!')/g, (treff) => " ".repeat(treff.length))
 }
 
 /**
@@ -331,7 +352,7 @@ for (const { rot, unntatt } of KILDER) {
   for (const fil of kildefiler(rot, unntatt)) {
     lest += 1
     const relativt = relative(REPO, fil)
-    const kode = bareKode(readFileSync(fil, "utf8"))
+    const kode = bareKode(utenRustTegn(fil, readFileSync(fil, "utf8")))
     kode.split("\n").forEach((linje, i) => {
       for (const treff of linje.matchAll(IDENTIFIKATOR)) {
         const navn = treff[0]

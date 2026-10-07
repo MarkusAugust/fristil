@@ -48,31 +48,31 @@ function ordforråd(): string {
     const attributter = Object.entries(e.attributes).map(([navn, a]) => {
       const type =
         a.type === "values"
-          ? `Attributt::Verdier(${liste(a.values)})`
+          ? `Attribute::Values(${liste(a.values)})`
           : {
-              flag: "Attributt::Flagg",
-              text: "Attributt::Tekst",
-              number: "Attributt::Tall",
+              flag: "Attribute::Flag",
+              text: "Attribute::Text",
+              number: "Attribute::Number",
             }[a.type]
       return `(${r(navn)}, ${type})`
     })
-    return `    Element {\n        tagg: ${r(tagg)},\n        lenke: ${r(e.link)},\n        attributter: &[${attributter.join(", ")}],\n    },`
+    return `    Element {\n        tag: ${r(tagg)},\n        link: ${r(e.link)},\n        attributes: &[${attributter.join(", ")}],\n    },`
   })
   const klasser = Object.entries(classes).map(([navn, k]) => {
     const attributter = Object.entries(k.attributes).map(
       ([a, info]) =>
-        `(${r(a)}, KlasseAttributt { verdier: ${liste(info.values)}, standard: ${info.default === undefined ? "None" : `Some(${r(info.default)})`} })`,
+        `(${r(a)}, ClassAttribute { values: ${liste(info.values)}, default_value: ${info.default === undefined ? "None" : `Some(${r(info.default)})`} })`,
     )
-    return `    Klasse {\n        navn: ${r(navn)},\n        tittel: ${r(k.title)},\n        lenke: ${r(k.link)},\n        attributter: &[${attributter.join(", ")}],\n    },`
+    return `    Class {\n        name: ${r(navn)},\n        title: ${r(k.title)},\n        link: ${r(k.link)},\n        attributes: &[${attributter.join(", ")}],\n    },`
   })
   return `// Generert av kjerne/scripts/bygg.ts fra classes.ts og elements.ts. Ikke rediger.
-use crate::typer::*;
+use crate::types::*;
 
-pub static ELEMENTER: &[Element] = &[
+pub static ELEMENTS: &[Element] = &[
 ${elementer.join("\n")}
 ];
 
-pub static KLASSER: &[Klasse] = &[
+pub static CLASSES: &[Class] = &[
 ${klasser.join("\n")}
 ];
 `

@@ -1,4 +1,4 @@
-package no.fristil.sjekk
+package no.fristil
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -15,29 +15,29 @@ import org.junit.jupiter.params.provider.MethodSource
  * `kjerne/scripts/bygg.ts` med TypeScript-versjonen av diagnostikken. Avviker
  * ett tegn i én melding eller én posisjon, feiler testen.
  */
-class ParitetTest {
+class ParityTest {
     private val json = jacksonObjectMapper()
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("fiksturer")
-    fun `svarer det samme som TypeScript`(navn: String) {
-        val html = File(MAPPE, "$navn.html").readText()
-        val fasit = json.readTree(File(MAPPE, "$navn.json"))
+    @MethodSource("fixtures")
+    fun `svarer det samme som TypeScript`(name: String) {
+        val html = File(DIR, "$name.html").readText()
+        val expected = json.readTree(File(DIR, "$name.json"))
 
-        assertEquals(fasit["markup"], tilJson(Fristil.diagnoseMarkup(html)), "diagnoseMarkup")
-        assertEquals(fasit["side"], tilJson(Fristil.diagnosePage(html)), "diagnosePage")
+        assertEquals(expected["markup"], toJson(Fristil.diagnoseMarkup(html)), "diagnoseMarkup")
+        assertEquals(expected["side"], toJson(Fristil.diagnosePage(html)), "diagnosePage")
     }
 
     @org.junit.jupiter.api.Test
     fun `posisjonene peker på riktig tekst i en Kotlin-streng`() {
-        val html = File(MAPPE, "09-norske-tegn.html").readText()
-        val funn = Fristil.diagnoseMarkup(html).single()
-        assertEquals("data-variant=\"sekundær\"", html.substring(funn.start, funn.end))
+        val html = File(DIR, "09-norske-tegn.html").readText()
+        val finding = Fristil.diagnoseMarkup(html).single()
+        assertEquals("data-variant=\"sekundær\"", html.substring(finding.start, finding.end))
     }
 
     // `fix` og `preferred` utelates i JSON når de mangler, som i TypeScript.
-    private fun tilJson(funn: List<Funn>): JsonNode =
-        json.valueToTree<JsonNode>(funn).onEach { node ->
+    private fun toJson(findings: List<Finding>): JsonNode =
+        json.valueToTree<JsonNode>(findings).onEach { node ->
             (node as com.fasterxml.jackson.databind.node.ObjectNode).apply {
                 if (get("fix")?.isNull == true) remove("fix")
                 (get("fix") as? com.fasterxml.jackson.databind.node.ObjectNode)?.let {
@@ -47,13 +47,13 @@ class ParitetTest {
         }
 
     companion object {
-        private val MAPPE = File(System.getProperty("paritet"))
+        private val DIR = File(System.getProperty("paritet"))
 
         @JvmStatic
-        fun fiksturer(): List<String> {
-            val navn = MAPPE.listFiles { f -> f.name.endsWith(".html") }!!.map { it.nameWithoutExtension }.sorted()
-            assertTrue(navn.isNotEmpty(), "Ingen fiksturer i $MAPPE")
-            return navn
+        fun fixtures(): List<String> {
+            val names = DIR.listFiles { f -> f.name.endsWith(".html") }!!.map { it.nameWithoutExtension }.sorted()
+            assertTrue(names.isNotEmpty(), "Ingen fiksturer i $DIR")
+            return names
         }
     }
 }

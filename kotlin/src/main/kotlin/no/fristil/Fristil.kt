@@ -1,4 +1,4 @@
-package no.fristil.sjekk
+package no.fristil
 
 import com.dylibso.chicory.compiler.MachineFactoryCompiler
 import com.dylibso.chicory.runtime.ExportFunction
@@ -28,14 +28,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
  */
 object Fristil {
     /** Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment. */
-    fun diagnoseMarkup(html: String): List<Funn> = diagnose(markup, html)
+    fun diagnoseMarkup(html: String): List<Finding> = diagnose(markupEntry, html)
 
     /**
      * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
      * pekes på finnes, at ingen id står to ganger, og at hvert felt er koblet.
      * Bruk den på HTML-en serveren sender, ikke på en mal.
      */
-    fun diagnosePage(html: String): List<Funn> = diagnose(side, html)
+    fun diagnosePage(html: String): List<Finding> = diagnose(pageEntry, html)
 
     private val json: ObjectMapper =
         jacksonObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -45,53 +45,50 @@ object Fristil {
      * ingen tilstand mellom kall utover svaret fra forrige kall, så kallene
      * bare må gå ett om gangen.
      */
-    private val instans: Instance by lazy {
-        val modul =
+    private val instance: Instance by lazy {
+        val module =
             Fristil::class.java.getResourceAsStream("fristil-kjerne.wasm")
                 ?: error("Fant ikke fristil-kjerne.wasm i jar-en.")
         // Kompilert til JVM-bytekode, ikke tolket: tolken brukte sekunder på
         // en side kompilatoren bruker millisekunder på.
-        Instance.builder(modul.use { Parser.parse(it) })
+        Instance.builder(module.use { Parser.parse(it) })
             .withMachineFactory(MachineFactoryCompiler::compile)
             .build()
     }
 
-    private val alloc by lazy { instans.export("alloc") }
-    private val markup by lazy { instans.export("diagnose_markup_raw") }
-    private val side by lazy { instans.export("diagnose_page_raw") }
-    private val svarPeker by lazy { instans.export("result_ptr") }
-    private val svarLengde by lazy { instans.export("result_len") }
+    private val alloc by lazy { instance.export("alloc") }
+    private val markupEntry by lazy { instance.export("diagnose_markup_raw") }
+    private val pageEntry by lazy { instance.export("diagnose_page_raw") }
+    private val resultPtr by lazy { instance.export("result_ptr") }
+    private val resultLen by lazy { instance.export("result_len") }
 
-    // Navnet er ASCII med vilje: `readValue` lager en klasse oppkalt etter
-    // funksjonen, og en klassefil med «ø» i navnet feiler i et miljø uten
-    // UTF-8 som standard.
     @Synchronized
-    private fun diagnose(funksjon: ExportFunction, html: String): List<Funn> {
+    private fun diagnose(entry: ExportFunction, html: String): List<Finding> {
         val bytes = html.toByteArray(Charsets.UTF_8)
-        val peker = alloc.apply(bytes.size.toLong())[0]
-        instans.memory().write(peker.toInt(), bytes)
-        funksjon.apply(peker, bytes.size.toLong())
-        val ut =
-            instans.memory().readBytes(
-                svarPeker.apply()[0].toInt(),
-                svarLengde.apply()[0].toInt(),
+        val pointer = alloc.apply(bytes.size.toLong())[0]
+        instance.memory().write(pointer.toInt(), bytes)
+        entry.apply(pointer, bytes.size.toLong())
+        val result =
+            instance.memory().readBytes(
+                resultPtr.apply()[0].toInt(),
+                resultLen.apply()[0].toInt(),
             )
-        return json.readValue(ut)
+        return json.readValue(result)
     }
 }
 
 /** Ett funn, med de samme feltene som `Finding` i TypeScript. */
-data class Funn(
+data class Finding(
     val start: Int,
     val end: Int,
     val message: String,
     val severity: String,
     val link: String,
-    val fix: Rettelse? = null,
+    val fix: Fix? = null,
 )
 
 /** En rettelse: bytt ut teksten fra `start` til `end` med `text`. */
-data class Rettelse(
+data class Fix(
     val title: String,
     val start: Int,
     val end: Int,

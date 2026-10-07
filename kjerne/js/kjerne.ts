@@ -7,7 +7,7 @@
  * vertsspråk gjør det.
  *
  * ```ts
- * const kjerne = lastKjerne(readFileSync("fristil-kjerne.wasm"))
+ * const kjerne = loadCore(readFileSync("fristil-kjerne.wasm"))
  * kjerne.diagnosePage(html)
  * ```
  *
@@ -18,7 +18,7 @@
 
 import type { Finding } from "../../designsystem/src/diagnostics/index.js"
 
-type Eksporter = {
+type Exports = {
   memory: WebAssembly.Memory
   alloc(lengde: number): number
   diagnose_markup_raw(peker: number, lengde: number): void
@@ -27,33 +27,39 @@ type Eksporter = {
   result_len(): number
 }
 
-export type Kjerne = {
+export type Core = {
   diagnoseMarkup(html: string): Finding[]
   diagnosePage(html: string): Finding[]
 }
 
-export function lastKjerne(kilde: BufferSource | WebAssembly.Module): Kjerne {
-  const modul =
-    kilde instanceof WebAssembly.Module ? kilde : new WebAssembly.Module(kilde)
-  const e = new WebAssembly.Instance(modul, {}).exports as unknown as Eksporter
-  const inn = new TextEncoder()
-  const ut = new TextDecoder()
+export function loadCore(source: BufferSource | WebAssembly.Module): Core {
+  const module =
+    source instanceof WebAssembly.Module
+      ? source
+      : new WebAssembly.Module(source)
+  const e = new WebAssembly.Instance(module, {}).exports as unknown as Exports
+  const encoder = new TextEncoder()
+  const decoder = new TextDecoder()
 
-  const kjør = (
-    funksjon: "diagnose_markup_raw" | "diagnose_page_raw",
+  const run = (
+    entry: "diagnose_markup_raw" | "diagnose_page_raw",
     html: string,
   ) => {
-    const bytes = inn.encode(html)
-    const peker = e.alloc(bytes.length)
+    const bytes = encoder.encode(html)
+    const pointer = e.alloc(bytes.length)
     // Minnet kan vokse ved hvert kall, så visningen lages etter `alloc`.
-    new Uint8Array(e.memory.buffer, peker, bytes.length).set(bytes)
-    e[funksjon](peker, bytes.length)
-    const svar = new Uint8Array(e.memory.buffer, e.result_ptr(), e.result_len())
-    return JSON.parse(ut.decode(svar)) as Finding[]
+    new Uint8Array(e.memory.buffer, pointer, bytes.length).set(bytes)
+    e[entry](pointer, bytes.length)
+    const result = new Uint8Array(
+      e.memory.buffer,
+      e.result_ptr(),
+      e.result_len(),
+    )
+    return JSON.parse(decoder.decode(result)) as Finding[]
   }
 
   return {
-    diagnoseMarkup: (html) => kjør("diagnose_markup_raw", html),
-    diagnosePage: (html) => kjør("diagnose_page_raw", html),
+    diagnoseMarkup: (html) => run("diagnose_markup_raw", html),
+    diagnosePage: (html) => run("diagnose_page_raw", html),
   }
 }

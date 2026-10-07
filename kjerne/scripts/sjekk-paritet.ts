@@ -25,11 +25,11 @@ import {
   diagnosePage,
   type Finding,
 } from "../../designsystem/src/diagnostics/index.js"
-import { lastKjerne } from "../js/kjerne.js"
+import { loadCore } from "../js/kjerne.js"
 import { MODUL } from "./bygg.js"
 
 const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const kjerne = lastKjerne(readFileSync(MODUL))
+const kjerne = loadCore(readFileSync(MODUL))
 
 /** Feltene i fast rekkefølge, så to like funn blir like strenger. */
 const kanonisk = (funn: Finding[]) =>

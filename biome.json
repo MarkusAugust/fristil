@@ -15,7 +15,9 @@
       "!designsystem/src/diagnostics/elements.ts",
       "!designsystem/src/diagnostics/classes.ts",
       "!designsystem/web-types.json",
-      "!kjerne/paritet"
+      "!kjerne/paritet",
+      "!designsystem/manifest/manifest.json",
+      "!designsystem/manifest/byggetilfeller.json"
     ]
   },
   "formatter": {

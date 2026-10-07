@@ -1,4 +1,4 @@
-//! Ordforrådet: elementer, attributter, klasser og verdier.
+//! Ordforrådet: elementer, attributter, klasser og values.
 //!
 //! En oversettelse av `designsystem/src/diagnostics/diagnostics.ts`, funksjon
 //! for funksjon og med de samme meldingene. Kommentarene der forklarer
@@ -7,9 +7,9 @@
 
 use std::collections::HashMap;
 
-use crate::ordforrad::{ELEMENTER, KLASSER};
-use crate::tekst::*;
-use crate::typer::*;
+use crate::ordforrad::{CLASSES, ELEMENTS};
+use crate::text::*;
+use crate::types::*;
 
 pub const DOCS: &str = "https://fristil.sobernetics.no/components/";
 
@@ -47,161 +47,161 @@ const GLOBAL: &[&str] = &[
     "xmlns",
 ];
 
-fn er_global(navn: &[u16]) -> bool {
-    GLOBAL.iter().any(|g| lik(navn, g))
-        || lik(navn, "_")
+fn is_global(name: &[u16]) -> bool {
+    GLOBAL.iter().any(|g| equals(name, g))
+        || equals(name, "_")
         || ["data-", "aria-", "on", "hx-", "x-", "v-", "i18n"]
             .iter()
-            .any(|p| har_ved(navn, 0, p))
-        || navn
+            .any(|p| starts_at(name, 0, p))
+        || name
             .iter()
             .any(|&c| c < 0x80 && b":@*[](){}%$#?".contains(&(c as u8)))
 }
 
 /// `/\{\{|\{%|\{#|<\?|<%|\$\{|@\(/`: Go, Jinja, PHP, ASP, JS-maler og Razor.
-pub fn er_mal(t: &[u16]) -> bool {
+pub fn is_templated(t: &[u16]) -> bool {
     ["{{", "{%", "{#", "<?", "<%", "${", "@("]
         .iter()
-        .any(|m| inneholder(t, m))
+        .any(|m| contains_str(t, m))
 }
 
 /// En verdi i klammer er Astro eller Svelte, og et uttrykk: `/^\s*[@{]/`.
-pub fn er_mal_verdi(t: &[u16]) -> bool {
-    er_mal(t)
+pub fn is_templated_value(t: &[u16]) -> bool {
+    is_templated(t)
         || t.iter()
-            .find(|&&c| !er_mellomrom(c))
+            .find(|&&c| !is_space(c))
             .is_some_and(|&c| c == b'@' as u16 || c == b'{' as u16)
 }
 
 /// Razor i innholdet, utenfor taggene.
-fn er_mal_innhold(t: &[u16]) -> bool {
-    if er_mal(t) {
+fn is_templated_content(t: &[u16]) -> bool {
+    if is_templated(t) {
         return true;
     }
     // `text.replace(/<[^>]*>/g, " ")`
-    let mut uten = Vec::with_capacity(t.len());
+    let mut stripped = Vec::with_capacity(t.len());
     let mut i = 0;
     while i < t.len() {
         if t[i] == LT {
-            if let Some(gt) = finn_tegn(t, i + 1, GT) {
-                uten.push(b' ' as u16);
+            if let Some(gt) = find_unit(t, i + 1, GT) {
+                stripped.push(b' ' as u16);
                 i = gt + 1;
                 continue;
             }
         }
-        uten.push(t[i]);
+        stripped.push(t[i]);
         i += 1;
     }
     // `/(^|\s)@[A-Za-z]/`
-    (0..uten.len()).any(|i| {
-        uten[i] == b'@' as u16
-            && (i == 0 || er_mellomrom(uten[i - 1]))
-            && i + 1 < uten.len()
-            && er_ascii_bokstav(uten[i + 1])
+    (0..stripped.len()).any(|i| {
+        stripped[i] == b'@' as u16
+            && (i == 0 || is_space(stripped[i - 1]))
+            && i + 1 < stripped.len()
+            && is_ascii_letter(stripped[i + 1])
     })
 }
 
-/// Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil.
-fn normalisert(t: &[u16]) -> Tekst {
-    liten(t)
+/// Navnet stripped bindestreker og store bokstaver, for å kjenne igjen skrivefeil.
+fn normalized(t: &[u16]) -> Utf16 {
+    lowercase(t)
         .into_iter()
         .filter(|&c| c != b'-' as u16 && c != b'_' as u16)
         .collect()
 }
 
 /// Redigeringsavstanden, med ombytte av to nabotegn som én.
-fn avstand(a: &[u16], b: &[u16]) -> usize {
-    let mut før: Vec<usize> = vec![0; b.len() + 1];
-    let mut forrige: Vec<usize> = (0..=b.len()).collect();
+fn distance(a: &[u16], b: &[u16]) -> usize {
+    let mut before: Vec<usize> = vec![0; b.len() + 1];
+    let mut previous: Vec<usize> = (0..=b.len()).collect();
     for i in 1..=a.len() {
-        let mut nå = vec![i; b.len() + 1];
+        let mut current = vec![i; b.len() + 1];
         for j in 1..=b.len() {
-            let mut d = (forrige[j] + 1)
-                .min(nå[j - 1] + 1)
-                .min(forrige[j - 1] + usize::from(a[i - 1] != b[j - 1]));
+            let mut d = (previous[j] + 1)
+                .min(current[j - 1] + 1)
+                .min(previous[j - 1] + usize::from(a[i - 1] != b[j - 1]));
             if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1] {
-                d = d.min(før[j - 2] + 1);
+                d = d.min(before[j - 2] + 1);
             }
-            nå[j] = d;
+            current[j] = d;
         }
-        før = forrige;
-        forrige = nå;
+        before = previous;
+        previous = current;
     }
-    forrige[b.len()]
+    previous[b.len()]
 }
 
-fn felles_begynnelse(a: &[u16], b: &[u16]) -> usize {
+fn common_prefix(a: &[u16], b: &[u16]) -> usize {
     a.iter().zip(b).take_while(|(x, y)| x == y).count()
 }
 
-pub type Hukommelse = HashMap<Tekst, Option<(&'static str, bool)>>;
+pub type Cache = HashMap<Utf16, Option<(&'static str, bool)>>;
 
 /// Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil.
-pub fn nærmeste(
-    navn: &[u16],
-    kandidater: &[&'static str],
-    hukommelse: Option<&mut Hukommelse>,
+pub fn closest(
+    name: &[u16],
+    candidates: &[&'static str],
+    cache: Option<&mut Cache>,
 ) -> Option<(&'static str, bool)> {
-    if let Some(h) = &hukommelse {
-        if let Some(svar) = h.get(navn) {
-            return *svar;
+    if let Some(h) = &cache {
+        if let Some(respond) = h.get(name) {
+            return *respond;
         }
     }
-    let svar = finn_nærmeste(navn, kandidater);
-    if let Some(h) = hukommelse {
-        h.insert(navn.to_vec(), svar);
+    let respond = find_closest(name, candidates);
+    if let Some(h) = cache {
+        h.insert(name.to_vec(), respond);
     }
-    svar
+    respond
 }
 
-fn finn_nærmeste(navn: &[u16], kandidater: &[&'static str]) -> Option<(&'static str, bool)> {
-    let ønsket = normalisert(navn);
-    if let Some(samme) = kandidater.iter().find(|k| normalisert(&u(k)) == ønsket) {
+fn find_closest(name: &[u16], candidates: &[&'static str]) -> Option<(&'static str, bool)> {
+    let wanted = normalized(name);
+    if let Some(samme) = candidates.iter().find(|k| normalized(&utf16(k)) == wanted) {
         return Some((samme, true));
     }
-    let lav = liten(navn);
-    let maks = if navn.len() >= 8 { 2 } else { 1 };
-    let mut best: Option<(&'static str, Tekst)> = None;
-    let mut best_avstand = maks + 1;
-    for &kandidat in kandidater {
-        let k = u(kandidat);
-        if k.len().abs_diff(lav.len()) > maks {
+    let lower = lowercase(name);
+    let max = if name.len() >= 8 { 2 } else { 1 };
+    let mut best: Option<(&'static str, Utf16)> = None;
+    let mut best_distance = max + 1;
+    for &kandidat in candidates {
+        let k = utf16(kandidat);
+        if k.len().abs_diff(lower.len()) > max {
             continue;
         }
-        let d = avstand(&lav, &k);
-        let bedre = d < best_avstand
-            || (d == best_avstand
-                && best.as_ref().is_some_and(|(_, b)| {
-                    felles_begynnelse(&lav, &k) > felles_begynnelse(&lav, b)
-                }));
-        if bedre {
-            best_avstand = d;
+        let d = distance(&lower, &k);
+        let better = d < best_distance
+            || (d == best_distance
+                && best
+                    .as_ref()
+                    .is_some_and(|(_, b)| common_prefix(&lower, &k) > common_prefix(&lower, b)));
+        if better {
+            best_distance = d;
             best = Some((kandidat, k));
         }
     }
-    best.map(|(navn, _)| (navn, false))
+    best.map(|(name, _)| (name, false))
 }
 
 /// `[\s\S]*?` til det første treffet av `slutt`, eller til slutten av teksten.
-fn blank_fra(ut: &mut [u16], fra: usize, til: usize) {
-    blank(&mut ut[fra..til]);
+fn blank_range(out: &mut [u16], from: usize, to: usize) {
+    blank(&mut out[from..to]);
 }
 
-/// `<script\b` og `<style\b`: navnet uten hensyn til store bokstaver, og
+/// `<script\b` og `<style\b`: navnet stripped hensyn til store bokstaver, og
 /// ikke et ordtegn etter.
-fn åpner(t: &[u16], i: usize, navn: &str) -> bool {
-    har_ved(t, i, "<")
-        && har_ved_ci(t, i + 1, navn)
-        && t.get(i + 1 + navn.len()).is_none_or(|&c| !er_ordtegn(c))
+fn opens(t: &[u16], i: usize, name: &str) -> bool {
+    starts_at(t, i, "<")
+        && starts_at_ci(t, i + 1, name)
+        && t.get(i + 1 + name.len()).is_none_or(|&c| !is_word(c))
 }
 
 /// Den første `</navn\s*>` fra `fra`, med indeksen der den slutter.
-fn lukker(t: &[u16], fra: usize, navn: &str) -> Option<(usize, usize)> {
-    let mut i = fra;
+fn closer(t: &[u16], from: usize, name: &str) -> Option<(usize, usize)> {
+    let mut i = from;
     while i < t.len() {
-        if t[i] == LT && har_ved(t, i + 1, "/") && har_ved_ci(t, i + 2, navn) {
-            let mut j = i + 2 + navn.len();
-            while j < t.len() && er_mellomrom(t[j]) {
+        if t[i] == LT && starts_at(t, i + 1, "/") && starts_at_ci(t, i + 2, name) {
+            let mut j = i + 2 + name.len();
+            while j < t.len() && is_space(t[j]) {
                 j += 1;
             }
             if j < t.len() && t[j] == GT {
@@ -213,51 +213,51 @@ fn lukker(t: &[u16], fra: usize, navn: &str) -> Option<(usize, usize)> {
     None
 }
 
-/// Teksten uten kommentarer, skript og stilark, med samme lengde.
-pub fn uten_skjult(tekst: &[u16]) -> Tekst {
-    let mut ut = tekst.to_vec();
+/// Teksten stripped kommentarer, skript og stilark, med samme lengde.
+pub fn without_hidden(text: &[u16]) -> Utf16 {
+    let mut out = text.to_vec();
     // Kommentarene først, så skriptene og stilarkene i det som er igjen, som
     // de tre `replace`-kallene i TypeScript.
     let mut i = 0;
-    while let Some(start) = finn(&ut, i, "<!--") {
-        let slutt = finn(&ut, start + 4, "-->").map_or(ut.len(), |e| e + 3);
-        blank_fra(&mut ut, start, slutt);
-        i = slutt.max(start + 1);
+    while let Some(start) = find_at(&out, i, "<!--") {
+        let end = find_at(&out, start + 4, "-->").map_or(out.len(), |e| e + 3);
+        blank_range(&mut out, start, end);
+        i = end.max(start + 1);
     }
-    for navn in ["script", "style"] {
+    for name in ["script", "style"] {
         let mut i = 0;
-        while i < ut.len() {
-            if åpner(&ut, i, navn) {
-                let slutt = lukker(&ut, i + 1 + navn.len(), navn).map_or(ut.len(), |(_, e)| e);
-                blank_fra(&mut ut, i, slutt);
-                i = slutt.max(i + 1);
+        while i < out.len() {
+            if opens(&out, i, name) {
+                let end = closer(&out, i + 1 + name.len(), name).map_or(out.len(), |(_, e)| e);
+                blank_range(&mut out, i, end);
+                i = end.max(i + 1);
             } else {
                 i += 1;
             }
         }
     }
-    ut
+    out
 }
 
 /// Der taggen som begynner på `fra` slutter: indeksen til `>`.
-pub fn tagg_slutt(t: &[u16], fra: usize) -> Option<usize> {
-    let mut sitat: Option<u16> = None;
-    let mut i = fra;
+pub fn tag_end(t: &[u16], from: usize) -> Option<usize> {
+    let mut quote: Option<u16> = None;
+    let mut i = from;
     while i < t.len() {
         let c = t[i];
-        if let Some(q) = sitat {
+        if let Some(q) = quote {
             if c == q {
-                sitat = None;
+                quote = None;
             }
             i += 1;
             continue;
         }
-        if c == DOBBEL || c == ENKEL {
-            sitat = Some(c);
-        } else if c == LT && (har_ved(t, i + 1, "?") || har_ved(t, i + 1, "%")) {
-            let lukk = [t[i + 1], GT];
-            let funnet = (i + 2..t.len().saturating_sub(1)).find(|&k| t[k..k + 2] == lukk)?;
-            i = funnet + 1;
+        if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
+            quote = Some(c);
+        } else if c == LT && (starts_at(t, i + 1, "?") || starts_at(t, i + 1, "%")) {
+            let close = [t[i + 1], GT];
+            let found = (i + 2..t.len().saturating_sub(1)).find(|&k| t[k..k + 2] == close)?;
+            i = found + 1;
         } else if c == GT {
             return Some(i);
         }
@@ -267,112 +267,118 @@ pub fn tagg_slutt(t: &[u16], fra: usize) -> Option<usize> {
 }
 
 #[derive(Clone, Debug)]
-pub struct LestAttributt {
-    pub navn: Tekst,
-    pub verdi: Option<Tekst>,
+pub struct ReadAttribute {
+    pub name: Utf16,
+    pub value: Option<Utf16>,
     pub start: usize,
     /// Der navnet slutter.
-    pub slutt: usize,
+    pub end: usize,
     /// Der hele attributtet slutter, med verdi og anførselstegn.
-    pub verdi_slutt: usize,
+    pub value_end: usize,
     /// Der mellomrommet foran attributtet begynner.
-    pub mellomrom_start: usize,
-    /// Der selve verdien står, uten anførselstegn.
-    pub verdi_start: usize,
+    pub space_start: usize,
+    /// Der selve verdien står, stripped anførselstegn.
+    pub value_start: usize,
 }
 
-impl LestAttributt {
-    pub fn verdi_ikke_tom(&self) -> Option<&Tekst> {
-        self.verdi.as_ref().filter(|v| !v.is_empty())
+impl ReadAttribute {
+    pub fn non_empty_value(&self) -> Option<&Utf16> {
+        self.value.as_ref().filter(|v| !v.is_empty())
     }
 }
 
 /// Attributtene i en tagg, lest fra teksten mellom navnet og `>`.
-pub fn les_attributter(body: &[u16], offset: usize) -> Vec<LestAttributt> {
-    let mut ut = Vec::new();
+pub fn read_attributes(body: &[u16], offset: usize) -> Vec<ReadAttribute> {
+    let mut out = Vec::new();
     let mut i = 0;
-    let hopp = |i: &mut usize| {
-        while *i < body.len() && er_mellomrom(body[*i]) {
+    let skip_space = |i: &mut usize| {
+        while *i < body.len() && is_space(body[*i]) {
             *i += 1;
         }
     };
     while i < body.len() {
-        let mellomrom_start = i;
-        hopp(&mut i);
-        let navn_start = i;
+        let space_start = i;
+        skip_space(&mut i);
+        let name_start = i;
         while i < body.len()
-            && !er_mellomrom(body[i])
-            && !matches!(body[i], DOBBEL | ENKEL | LIK | LT | GT | SKRÅSTREK)
+            && !is_space(body[i])
+            && !matches!(
+                body[i],
+                DOUBLE_QUOTE | SINGLE_QUOTE | EQUALS | LT | GT | SLASH
+            )
         {
             i += 1;
         }
-        if i == navn_start {
+        if i == name_start {
             i += 1;
             continue;
         }
-        let navn = &body[navn_start..i];
-        let mut verdi: Option<Tekst> = None;
-        let mut verdi_start = i;
-        let etter_navn = i;
-        hopp(&mut i);
-        if i < body.len() && body[i] == LIK {
+        let name = &body[name_start..i];
+        let mut value: Option<Utf16> = None;
+        let mut value_start = i;
+        let after_name = i;
+        skip_space(&mut i);
+        if i < body.len() && body[i] == EQUALS {
             i += 1;
-            hopp(&mut i);
-            let åpne = body.get(i).copied();
-            if åpne == Some(DOBBEL) || åpne == Some(ENKEL) {
-                let lukk = finn_tegn(body, i + 1, åpne.unwrap());
-                verdi_start = i + 1;
-                let til = lukk.unwrap_or(body.len());
-                verdi = Some(body[verdi_start.min(til)..til].to_vec());
-                i = lukk.map_or(body.len(), |l| l + 1);
-            } else if åpne == Some(b'{' as u16) {
-                verdi_start = i;
-                i = klammer_slutt(body, i);
-                verdi = Some(body[verdi_start..i].to_vec());
+            skip_space(&mut i);
+            let open = body.get(i).copied();
+            if open == Some(DOUBLE_QUOTE) || open == Some(SINGLE_QUOTE) {
+                let close = find_unit(body, i + 1, open.unwrap());
+                value_start = i + 1;
+                let to = close.unwrap_or(body.len());
+                value = Some(body[value_start.min(to)..to].to_vec());
+                i = close.map_or(body.len(), |l| l + 1);
+            } else if open == Some(b'{' as u16) {
+                value_start = i;
+                i = braces_end(body, i);
+                value = Some(body[value_start..i].to_vec());
             } else {
-                verdi_start = i;
+                value_start = i;
                 while i < body.len()
-                    && !er_mellomrom(body[i])
-                    && !matches!(body[i], DOBBEL | ENKEL | LIK | LT | GT | BAKOVER)
+                    && !is_space(body[i])
+                    && !matches!(
+                        body[i],
+                        DOUBLE_QUOTE | SINGLE_QUOTE | EQUALS | LT | GT | BACKTICK
+                    )
                 {
                     i += 1;
                 }
-                verdi = Some(body[verdi_start..i].to_vec());
+                value = Some(body[value_start..i].to_vec());
             }
         } else {
-            i = etter_navn;
+            i = after_name;
         }
-        let har_verdi = verdi.is_some();
-        ut.push(LestAttributt {
-            navn: liten(navn),
-            verdi,
-            start: offset + navn_start,
-            slutt: offset + navn_start + navn.len(),
-            verdi_slutt: offset + if har_verdi { i } else { etter_navn },
-            mellomrom_start: offset + mellomrom_start,
-            verdi_start: offset + if har_verdi { verdi_start } else { etter_navn },
+        let has_value = value.is_some();
+        out.push(ReadAttribute {
+            name: lowercase(name),
+            value,
+            start: offset + name_start,
+            end: offset + name_start + name.len(),
+            value_end: offset + if has_value { i } else { after_name },
+            space_start: offset + space_start,
+            value_start: offset + if has_value { value_start } else { after_name },
         });
     }
-    ut
+    out
 }
 
-fn klammer_slutt(t: &[u16], fra: usize) -> usize {
-    let mut dybde = 0i32;
-    let mut sitat: Option<u16> = None;
-    for (i, &c) in t.iter().enumerate().skip(fra) {
-        if let Some(q) = sitat {
+fn braces_end(t: &[u16], from: usize) -> usize {
+    let mut depth = 0i32;
+    let mut quote: Option<u16> = None;
+    for (i, &c) in t.iter().enumerate().skip(from) {
+        if let Some(q) = quote {
             if c == q {
-                sitat = None;
+                quote = None;
             }
             continue;
         }
-        if c == DOBBEL || c == ENKEL || c == BAKOVER {
-            sitat = Some(c);
+        if c == DOUBLE_QUOTE || c == SINGLE_QUOTE || c == BACKTICK {
+            quote = Some(c);
         } else if c == b'{' as u16 {
-            dybde += 1;
+            depth += 1;
         } else if c == b'}' as u16 {
-            dybde -= 1;
-            if dybde == 0 {
+            depth -= 1;
+            if depth == 0 {
                 return i + 1;
             }
         }
@@ -380,229 +386,229 @@ fn klammer_slutt(t: &[u16], fra: usize) -> usize {
     t.len()
 }
 
-fn liste(navn: impl IntoIterator<Item = &'static str>) -> String {
-    navn.into_iter().collect::<Vec<_>>().join(", ")
+fn list(name: impl IntoIterator<Item = &'static str>) -> String {
+    name.into_iter().collect::<Vec<_>>().join(", ")
 }
 
 /// `Number(verdi)` i JavaScript, og tomt er ikke et tall.
-fn er_tall(verdi: &[u16]) -> bool {
-    let t = trimmet(verdi);
+fn is_number(value: &[u16]) -> bool {
+    let t = trimmed(value);
     if t.is_empty() || t.iter().any(|&c| c >= 0x80) {
         return false;
     }
     let s: String = t.iter().map(|&c| c as u8 as char).collect();
     let b = s.as_bytes();
-    // Heksadesimalt, oktalt og binært, uten fortegn.
+    // Heksadesimalt, oktalt og binært, stripped fortegn.
     if b.len() > 2 && b[0] == b'0' {
         let siffer = &s[2..];
-        let gyldig = match b[1] {
+        let valid = match b[1] {
             b'x' | b'X' => siffer.bytes().all(|c| c.is_ascii_hexdigit()),
             b'o' | b'O' => siffer.bytes().all(|c| (b'0'..=b'7').contains(&c)),
             b'b' | b'B' => siffer.bytes().all(|c| c == b'0' || c == b'1'),
-            _ => return desimalt(&s),
+            _ => return is_decimal(&s),
         };
-        return gyldig;
+        return valid;
     }
-    desimalt(&s)
+    is_decimal(&s)
 }
 
 /// StrDecimalLiteral: fortegn, `Infinity`, sifre med punktum og eksponent.
-fn desimalt(s: &str) -> bool {
+fn is_decimal(s: &str) -> bool {
     let s = s.strip_prefix(['+', '-']).unwrap_or(s);
     if s == "Infinity" {
         return true;
     }
-    let (mantisse, eksponent) = match s.find(['e', 'E']) {
+    let (mantissa, exponent) = match s.find(['e', 'E']) {
         Some(i) => (&s[..i], Some(&s[i + 1..])),
         None => (s, None),
     };
-    let (heltall, brøk) = match mantisse.find('.') {
-        Some(i) => (&mantisse[..i], &mantisse[i + 1..]),
-        None => (mantisse, ""),
+    let (integer, fraction) = match mantissa.find('.') {
+        Some(i) => (&mantissa[..i], &mantissa[i + 1..]),
+        None => (mantissa, ""),
     };
-    let sifre = |x: &str| x.bytes().all(|c| c.is_ascii_digit());
-    if !sifre(heltall) || !sifre(brøk) || (heltall.is_empty() && brøk.is_empty()) {
+    let digits = |x: &str| x.bytes().all(|c| c.is_ascii_digit());
+    if !digits(integer) || !digits(fraction) || (integer.is_empty() && fraction.is_empty()) {
         return false;
     }
-    match eksponent {
+    match exponent {
         None => true,
         Some(e) => {
             let e = e.strip_prefix(['+', '-']).unwrap_or(e);
-            !e.is_empty() && sifre(e)
+            !e.is_empty() && digits(e)
         }
     }
 }
 
-fn finn_attributt<'a>(element: &'a Element, navn: &[u16]) -> Option<&'a Attributt> {
+fn find_attribute<'a>(element: &'a Element, name: &[u16]) -> Option<&'a Attribute> {
     element
-        .attributter
+        .attributes
         .iter()
-        .find(|(n, _)| lik(navn, n))
+        .find(|(n, _)| equals(name, n))
         .map(|(_, a)| a)
 }
 
-fn sjekk_attributt(
-    tagg: &str,
+fn check_attribute(
+    tag: &str,
     element: &Element,
-    a: &LestAttributt,
-    tagg_med_mal: bool,
-) -> Option<Funn> {
-    let navn = s(&a.navn);
-    let funn = |alvor, melding: String, rettelse| Funn {
+    a: &ReadAttribute,
+    templated_tag: bool,
+) -> Option<Finding> {
+    let name = lossy(&a.name);
+    let findings = |severity, message: String, fix| Finding {
         start: a.start,
-        slutt: a.slutt,
-        alvor,
-        lenke: element.lenke.to_string(),
-        melding,
-        rettelse,
+        end: a.end,
+        severity,
+        link: element.link.to_string(),
+        message,
+        fix,
     };
-    let Some(kjent) = finn_attributt(element, &a.navn) else {
-        let normalt = normalisert(&a.navn);
-        if let Some((ment, _)) = element
-            .attributter
+    let Some(known) = find_attribute(element, &a.name) else {
+        let norm = normalized(&a.name);
+        if let Some((meant, _)) = element
+            .attributes
             .iter()
-            .find(|(k, _)| normalisert(&u(k)) == normalt)
+            .find(|(k, _)| normalized(&utf16(k)) == norm)
         {
-            return Some(funn(
-                Alvor::Advarsel,
-                format!("<{tagg}> har ikke attributtet «{navn}». Mente du {ment}?"),
-                Some(Rettelse {
-                    tittel: format!("Bytt til {ment}"),
+            return Some(findings(
+                Severity::Warning,
+                format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
+                Some(Fix {
+                    title: format!("Bytt til {meant}"),
                     start: a.start,
-                    slutt: a.slutt,
-                    tekst: ment.to_string(),
-                    foretrukket: true,
+                    end: a.end,
+                    text: meant.to_string(),
+                    preferred: true,
                 }),
             ));
         }
-        if tagg_med_mal || er_global(&a.navn) {
+        if templated_tag || is_global(&a.name) {
             return None;
         }
-        return Some(funn(
-            Alvor::Advarsel,
+        return Some(findings(
+            Severity::Warning,
             format!(
-                "<{tagg}> har ikke attributtet «{navn}», og komponenten leser det ikke. Attributtene er {}.",
-                liste(element.attributter.iter().map(|(n, _)| *n))
+                "<{tag}> har ikke attributtet «{name}», og komponenten leser det ikke. Attributtene er {}.",
+                list(element.attributes.iter().map(|(n, _)| *n))
             ),
             None,
         ));
     };
-    if a.verdi.as_deref().is_some_and(er_mal_verdi) {
+    if a.value.as_deref().is_some_and(is_templated_value) {
         return None;
     }
-    match kjent {
-        Attributt::Flagg => {
-            let verdi = a.verdi.as_deref()?;
-            if navn == "hidden" && lik(verdi, "until-found") {
+    match known {
+        Attribute::Flag => {
+            let value = a.value.as_deref()?;
+            if name == "hidden" && equals(value, "until-found") {
                 return None;
             }
-            if !verdi.is_empty() && liten(verdi) != a.navn {
-                let v = s(verdi);
-                return Some(funn(
-                    Alvor::Advarsel,
+            if !value.is_empty() && lowercase(value) != a.name {
+                let v = lossy(value);
+                return Some(findings(
+                    Severity::Warning,
                     format!(
-                        "{navn} er et boolsk attributt: det står der eller ikke. {navn}=\"{v}\" betyr det samme som {navn}. Ta det bort for å slå det av."
+                        "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
                     ),
-                    Some(Rettelse {
-                        tittel: format!("Ta bort {navn}"),
-                        start: a.mellomrom_start,
-                        slutt: a.verdi_slutt,
-                        tekst: String::new(),
-                        foretrukket: true,
+                    Some(Fix {
+                        title: format!("Ta bort {name}"),
+                        start: a.space_start,
+                        end: a.value_end,
+                        text: String::new(),
+                        preferred: true,
                     }),
                 ));
             }
             None
         }
-        Attributt::Verdier(verdier) => {
-            let gyldig = a
-                .verdi
+        Attribute::Values(values) => {
+            let valid = a
+                .value
                 .as_deref()
-                .is_some_and(|v| verdier.iter().any(|k| lik(v, k)));
-            if gyldig {
+                .is_some_and(|v| values.iter().any(|k| equals(v, k)));
+            if valid {
                 return None;
             }
-            let v = a.verdi.as_deref().map(s).unwrap_or_default();
-            Some(funn(
-                Alvor::Feil,
+            let v = a.value.as_deref().map(lossy).unwrap_or_default();
+            Some(findings(
+                Severity::Error,
                 format!(
-                    "{navn} kan ikke være «{v}». Lovlige verdier: {}.",
-                    liste(verdier.iter().copied())
+                    "{name} kan ikke være «{v}». Lovlige verdier: {}.",
+                    list(values.iter().copied())
                 ),
                 None,
             ))
         }
-        Attributt::Tall => match a.verdi.as_deref() {
-            Some(v) if !er_tall(v) => Some(funn(
-                Alvor::Feil,
-                format!("{navn} skal være et tall, ikke «{}».", s(v)),
+        Attribute::Number => match a.value.as_deref() {
+            Some(v) if !is_number(v) => Some(findings(
+                Severity::Error,
+                format!("{name} skal være et tall, ikke «{}».", lossy(v)),
                 None,
             )),
             _ => None,
         },
-        Attributt::Tekst => None,
+        Attribute::Text => None,
     }
 }
 
 /// `/<(input|textarea|select)(?=[\s/>])/gi`, og den første kontrollen som
 /// ikke er `type="hidden"`.
-fn finn_kontroll(innhold: &[u16]) -> Option<Vec<LestAttributt>> {
+fn find_control(content: &[u16]) -> Option<Vec<ReadAttribute>> {
     let mut i = 0;
-    while i < innhold.len() {
-        if innhold[i] != LT {
+    while i < content.len() {
+        if content[i] != LT {
             i += 1;
             continue;
         }
-        let treff = ["input", "textarea", "select"].into_iter().find(|navn| {
-            har_ved_ci(innhold, i + 1, navn) && følges_av_slutt(innhold, i + 1 + navn.len())
+        let hit = ["input", "textarea", "select"].into_iter().find(|name| {
+            starts_at_ci(content, i + 1, name) && followed_by_end(content, i + 1 + name.len())
         });
-        let Some(navn) = treff else {
+        let Some(name) = hit else {
             i += 1;
             continue;
         };
-        let fra = i + 1 + navn.len();
-        i = fra;
-        let Some(til) = tagg_slutt(innhold, fra) else {
+        let from = i + 1 + name.len();
+        i = from;
+        let Some(to) = tag_end(content, from) else {
             continue;
         };
-        let attributter = les_attributter(&innhold[fra..til], 0);
-        let type_ = attributter
+        let attributes = read_attributes(&content[from..to], 0);
+        let type_ = attributes
             .iter()
-            .find(|a| lik(&a.navn, "type"))
-            .and_then(|a| a.verdi.as_deref());
-        if navn == "input" && type_.is_some_and(|t| liten(t) == u("hidden")) {
+            .find(|a| equals(&a.name, "type"))
+            .and_then(|a| a.value.as_deref());
+        if name == "input" && type_.is_some_and(|t| lowercase(t) == utf16("hidden")) {
             continue;
         }
-        return Some(attributter);
+        return Some(attributes);
     }
     None
 }
 
 /// `(?=[\s/>])`
-pub fn følges_av_slutt(t: &[u16], i: usize) -> bool {
+pub fn followed_by_end(t: &[u16], i: usize) -> bool {
     t.get(i)
-        .is_some_and(|&c| er_mellomrom(c) || c == SKRÅSTREK || c == GT)
+        .is_some_and(|&c| is_space(c) || c == SLASH || c == GT)
 }
 
 /// Verdiene i hver `<label for>` i dokumentet, som
 /// `/<label\b[^>]*?\sfor\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi`.
-fn ledetekst_mål(t: &[u16]) -> Vec<Tekst> {
-    let mut ut = Vec::new();
+fn label_targets(t: &[u16]) -> Vec<Utf16> {
+    let mut out = Vec::new();
     let mut i = 0;
-    'ytre: while i < t.len() {
-        let start_ok = t[i] == LT
-            && har_ved_ci(t, i + 1, "label")
-            && t.get(i + 6).is_none_or(|&c| !er_ordtegn(c));
-        if !start_ok {
+    'outer: while i < t.len() {
+        let starts_label = t[i] == LT
+            && starts_at_ci(t, i + 1, "label")
+            && t.get(i + 6).is_none_or(|&c| !is_word(c));
+        if !starts_label {
             i += 1;
             continue;
         }
         let mut p = i + 6;
         loop {
-            if let Some((verdi, slutt)) = for_ved(t, p) {
-                ut.push(verdi);
-                i = slutt;
-                continue 'ytre;
+            if let Some((value, end)) = for_at(t, p) {
+                out.push(value);
+                i = end;
+                continue 'outer;
             }
             if p >= t.len() || t[p] == GT {
                 break;
@@ -611,397 +617,398 @@ fn ledetekst_mål(t: &[u16]) -> Vec<Tekst> {
         }
         i += 1;
     }
-    ut
+    out
 }
 
 /// `\sfor\s*=\s*(verdi)` ved `p`: verdien og der treffet slutter.
-fn for_ved(t: &[u16], p: usize) -> Option<(Tekst, usize)> {
-    if !t.get(p).is_some_and(|&c| er_mellomrom(c)) || !har_ved_ci(t, p + 1, "for") {
+fn for_at(t: &[u16], p: usize) -> Option<(Utf16, usize)> {
+    if !t.get(p).is_some_and(|&c| is_space(c)) || !starts_at_ci(t, p + 1, "for") {
         return None;
     }
     let mut j = p + 4;
-    while j < t.len() && er_mellomrom(t[j]) {
+    while j < t.len() && is_space(t[j]) {
         j += 1;
     }
-    if t.get(j) != Some(&LIK) {
+    if t.get(j) != Some(&EQUALS) {
         return None;
     }
     j += 1;
-    while j < t.len() && er_mellomrom(t[j]) {
+    while j < t.len() && is_space(t[j]) {
         j += 1;
     }
     let c = *t.get(j)?;
-    if c == DOBBEL || c == ENKEL {
-        if let Some(lukk) = finn_tegn(t, j + 1, c) {
-            return Some((t[j + 1..lukk].to_vec(), lukk + 1));
+    if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
+        if let Some(close) = find_unit(t, j + 1, c) {
+            return Some((t[j + 1..close].to_vec(), close + 1));
         }
         return None;
     }
-    let fra = j;
+    let from = j;
     while j < t.len()
-        && !er_mellomrom(t[j])
-        && !matches!(t[j], DOBBEL | ENKEL | LIK | LT | GT | BAKOVER)
+        && !is_space(t[j])
+        && !matches!(
+            t[j],
+            DOUBLE_QUOTE | SINGLE_QUOTE | EQUALS | LT | GT | BACKTICK
+        )
     {
         j += 1;
     }
-    (j > fra).then(|| (t[fra..j].to_vec(), j))
+    (j > from).then(|| (t[from..j].to_vec(), j))
 }
 
 /// `/<navn(?=[\s/>])/i`
-fn har_tagg(t: &[u16], navn: &str) -> bool {
+fn has_tag(t: &[u16], name: &str) -> bool {
     (0..t.len()).any(|i| {
-        t[i] == LT && har_ved_ci(t, i + 1, navn) && følges_av_slutt(t, i + 1 + navn.len())
+        t[i] == LT && starts_at_ci(t, i + 1, name) && followed_by_end(t, i + 1 + name.len())
     })
 }
 
 #[allow(clippy::too_many_arguments)]
-fn sjekk_felt(
-    ledetekster: &[Tekst],
-    tagg: &str,
-    navn_start: usize,
-    navn_slutt: usize,
-    innhold: &[u16],
-    innhold_start: usize,
-    attributter: &[LestAttributt],
-    lenke: &str,
-) -> Vec<Funn> {
-    let har_element = (0..innhold.len())
-        .any(|i| innhold[i] == LT && innhold.get(i + 1).is_some_and(|&c| er_ascii_bokstav(c)));
-    if !har_element || er_mal_innhold(innhold) {
+fn check_field(
+    labels: &[Utf16],
+    tag: &str,
+    name_start: usize,
+    name_end: usize,
+    content: &[u16],
+    content_start: usize,
+    attributes: &[ReadAttribute],
+    link: &str,
+) -> Vec<Finding> {
+    let has_element = (0..content.len())
+        .any(|i| content[i] == LT && content.get(i + 1).is_some_and(|&c| is_ascii_letter(c)));
+    if !has_element || is_templated_content(content) {
         return vec![];
     }
-    let funn = |melding: String, rettelse| Funn {
-        start: navn_start,
-        slutt: navn_slutt,
-        alvor: Alvor::Advarsel,
-        lenke: lenke.to_string(),
-        melding,
-        rettelse,
+    let findings = |message: String, fix| Finding {
+        start: name_start,
+        end: name_end,
+        severity: Severity::Warning,
+        link: link.to_string(),
+        message,
+        fix,
     };
-    let innrykk = innhold.iter().take_while(|&&c| er_mellomrom(c)).count();
-    let Some(kontroll) = finn_kontroll(innhold) else {
-        return vec![funn(
+    let indent = content.iter().take_while(|&&c| is_space(c)).count();
+    let Some(control) = find_control(content) else {
+        return vec![findings(
             format!(
-                "<{tagg}> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+                "<{tag}> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
             ),
             None,
         )];
     };
-    if har_tagg(innhold, "label") {
+    if has_tag(content, "label") {
         return vec![];
     }
-    let har = |navn: &str| kontroll.iter().find(|a| lik(&a.navn, navn));
-    if har("aria-label").is_some() || har("aria-labelledby").is_some() {
+    let has = |name: &str| control.iter().find(|a| equals(&a.name, name));
+    if has("aria-label").is_some() || has("aria-labelledby").is_some() {
         return vec![];
     }
-    let ider = [
-        attributter
+    let ids = [
+        attributes
             .iter()
-            .find(|a| lik(&a.navn, "control-id"))
-            .and_then(|a| a.verdi.clone()),
-        har("id").and_then(|a| a.verdi.clone()),
+            .find(|a| equals(&a.name, "control-id"))
+            .and_then(|a| a.value.clone()),
+        has("id").and_then(|a| a.value.clone()),
     ];
-    if ider
+    if ids
         .iter()
         .flatten()
-        .any(|id| !id.is_empty() && ledetekster.contains(id))
+        .any(|id| !id.is_empty() && labels.contains(id))
     {
         return vec![];
     }
-    let ledende = &innhold[..innrykk];
-    let ny_linje = ledende.contains(&(b'\n' as u16));
-    vec![funn(
+    let leading = &content[..indent];
+    let newline = leading.contains(&(b'\n' as u16));
+    vec![findings(
         format!(
-            "<{tagg}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
+            "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
         ),
-        Some(Rettelse {
-            tittel: "Sett inn en ledetekst".into(),
-            start: innhold_start + innrykk,
-            slutt: innhold_start + innrykk,
-            tekst: format!("<label>Ledetekst</label>{}", if ny_linje { s(ledende) } else { String::new() }),
-            foretrukket: true,
+        Some(Fix {
+            title: "Sett inn en ledetekst".into(),
+            start: content_start + indent,
+            end: content_start + indent,
+            text: format!("<label>Ledetekst</label>{}", if newline { lossy(leading) } else { String::new() }),
+            preferred: true,
         }),
     )]
 }
 
-fn sjekk_tidsavbrudd(
-    tagg: &str,
-    navn_start: usize,
-    navn_slutt: usize,
-    innhold: &[u16],
-    lenke: &str,
-) -> Vec<Funn> {
-    if er_mal_innhold(innhold) || har_tagg(innhold, "dialog") {
+fn check_session_timeout(
+    tag: &str,
+    name_start: usize,
+    name_end: usize,
+    content: &[u16],
+    link: &str,
+) -> Vec<Finding> {
+    if is_templated_content(content) || has_tag(content, "dialog") {
         return vec![];
     }
-    vec![Funn {
-        start: navn_start,
-        slutt: navn_slutt,
-        alvor: Alvor::Advarsel,
-        lenke: lenke.to_string(),
-        melding: format!(
-            "<{tagg}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+    vec![Finding {
+        start: name_start,
+        end: name_end,
+        severity: Severity::Warning,
+        link: link.to_string(),
+        message: format!(
+            "<{tag}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
         ),
-        rettelse: None,
+        fix: None,
     }]
 }
 
-fn finn_klasse(navn: &[u16]) -> Option<&'static Klasse> {
-    KLASSER.iter().find(|k| lik(navn, k.navn))
+fn find_class(name: &[u16]) -> Option<&'static Class> {
+    CLASSES.iter().find(|k| equals(name, k.name))
 }
 
-fn sjekk_klasser(attributter: &[LestAttributt], hukommelse: &mut Hukommelse) -> Vec<Funn> {
-    let mut funn = Vec::new();
-    let Some(klasse) = attributter.iter().find(|a| lik(&a.navn, "class")) else {
-        return funn;
+fn check_classes(attributes: &[ReadAttribute], cache: &mut Cache) -> Vec<Finding> {
+    let mut findings = Vec::new();
+    let Some(class_attribute) = attributes.iter().find(|a| equals(&a.name, "class")) else {
+        return findings;
     };
-    let Some(verdi) = klasse.verdi_ikke_tom() else {
-        return funn;
+    let Some(value) = class_attribute.non_empty_value() else {
+        return findings;
     };
-    if er_mal_verdi(verdi) {
-        return funn;
+    if is_templated_value(value) {
+        return findings;
     }
-    let navn: Vec<&'static str> = KLASSER.iter().map(|k| k.navn).collect();
-    let mut til_stede: Vec<&'static Klasse> = Vec::new();
-    for (posisjon, token) in ord(verdi) {
-        let start = klasse.verdi_start + posisjon;
-        if !har_ved(token, 0, "fs-") || token.iter().any(|&c| c == b'{' as u16 || c == b'}' as u16)
+    let name: Vec<&'static str> = CLASSES.iter().map(|k| k.name).collect();
+    let mut present: Vec<&'static Class> = Vec::new();
+    for (offset, token) in words(value) {
+        let start = class_attribute.value_start + offset;
+        if !starts_at(token, 0, "fs-")
+            || token.iter().any(|&c| c == b'{' as u16 || c == b'}' as u16)
         {
             continue;
         }
-        if let Some(info) = finn_klasse(token) {
-            til_stede.push(info);
+        if let Some(info) = find_class(token) {
+            present.push(info);
             continue;
         }
-        let ment = nærmeste(token, &navn, Some(hukommelse));
-        let t = s(token);
-        funn.push(Funn {
+        let meant = closest(token, &name, Some(cache));
+        let t = lossy(token);
+        findings.push(Finding {
             start,
-            slutt: start + token.len(),
-            alvor: Alvor::Advarsel,
-            lenke: ment.map_or(DOCS.to_string(), |(m, _)| {
-                finn_klasse(&u(m)).unwrap().lenke.to_string()
+            end: start + token.len(),
+            severity: Severity::Warning,
+            link: meant.map_or(DOCS.to_string(), |(m, _)| {
+                find_class(&utf16(m)).unwrap().link.to_string()
             }),
-            melding: match ment {
+            message: match meant {
                 Some((m, _)) => format!("Klassen «{t}» finnes ikke i Fristil. Mente du {m}?"),
                 None => format!("Klassen «{t}» finnes ikke i Fristil."),
             },
-            rettelse: ment.map(|(m, sikker)| Rettelse {
-                tittel: format!("Bytt til {m}"),
+            fix: meant.map(|(m, sure)| Fix {
+                title: format!("Bytt til {m}"),
                 start,
-                slutt: start + token.len(),
-                tekst: m.to_string(),
-                foretrukket: sikker,
+                end: start + token.len(),
+                text: m.to_string(),
+                preferred: sure,
             }),
         });
     }
-    for a in attributter {
-        let Some(verdi) = a.verdi_ikke_tom() else {
+    for a in attributes {
+        let Some(value) = a.non_empty_value() else {
             continue;
         };
-        if er_mal_verdi(verdi) {
+        if is_templated_value(value) {
             continue;
         }
-        for info in &til_stede {
-            let Some((_, tar)) = info.attributter.iter().find(|(n, _)| lik(&a.navn, n)) else {
+        for info in &present {
+            let Some((_, takes)) = info.attributes.iter().find(|(n, _)| equals(&a.name, n)) else {
                 continue;
             };
-            if tar.verdier.iter().any(|v| lik(verdi, v))
-                || tar.standard.is_some_and(|d| lik(verdi, d))
+            if takes.values.iter().any(|v| equals(value, v))
+                || takes.default_value.is_some_and(|d| equals(value, d))
             {
                 continue;
             }
-            let mut kandidater: Vec<&'static str> = tar.verdier.to_vec();
-            kandidater.extend(tar.standard);
-            let ment = nærmeste(verdi, &kandidater, None);
-            let vist = vis_med_ett_mellomrom(verdi);
-            let navn = s(&a.navn);
-            let slutt = match tar.standard {
+            let mut candidates: Vec<&'static str> = takes.values.to_vec();
+            candidates.extend(takes.default_value);
+            let meant = closest(value, &candidates, None);
+            let shown = collapse_spaces(value);
+            let name = lossy(&a.name);
+            let end = match takes.default_value {
                 Some(d) => format!(", og {d} uten attributt."),
                 None => ".".into(),
             };
-            funn.push(Funn {
+            findings.push(Finding {
                 start: a.start,
-                slutt: a.verdi_slutt,
-                alvor: Alvor::Advarsel,
-                lenke: info.lenke.to_string(),
-                melding: format!(
-                    "{navn} kan ikke være «{vist}» på {}. Lovlige verdier: {}{slutt}",
-                    s(&liten(&u(info.tittel))),
-                    liste(tar.verdier.iter().copied())
+                end: a.value_end,
+                severity: Severity::Warning,
+                link: info.link.to_string(),
+                message: format!(
+                    "{name} kan ikke være «{shown}» på {}. Lovlige verdier: {}{end}",
+                    lossy(&lowercase(&utf16(info.title))),
+                    list(takes.values.iter().copied())
                 ),
-                rettelse: ment.map(|(m, sikker)| Rettelse {
-                    tittel: format!("Bytt til {m}"),
-                    start: a.verdi_start,
-                    slutt: a.verdi_start + verdi.len(),
-                    tekst: m.to_string(),
-                    foretrukket: sikker,
+                fix: meant.map(|(m, sure)| Fix {
+                    title: format!("Bytt til {m}"),
+                    start: a.value_start,
+                    end: a.value_start + value.len(),
+                    text: m.to_string(),
+                    preferred: sure,
                 }),
             });
             break;
         }
     }
-    funn
+    findings
 }
 
 /// `value.replace(/\s+/g, " ")`
-fn vis_med_ett_mellomrom(t: &[u16]) -> String {
-    let mut ut = Vec::with_capacity(t.len());
+fn collapse_spaces(t: &[u16]) -> String {
+    let mut out = Vec::with_capacity(t.len());
     let mut i = 0;
     while i < t.len() {
-        if er_mellomrom(t[i]) {
-            while i < t.len() && er_mellomrom(t[i]) {
+        if is_space(t[i]) {
+            while i < t.len() && is_space(t[i]) {
                 i += 1;
             }
-            ut.push(b' ' as u16);
+            out.push(b' ' as u16);
         } else {
-            ut.push(t[i]);
+            out.push(t[i]);
             i += 1;
         }
     }
-    s(&ut)
+    lossy(&out)
 }
 
 /// `/<([a-z][a-z0-9-]*)(?=[\s/>])/gi` ved `i`: der navnet slutter.
-pub fn tagg_navn(t: &[u16], i: usize) -> Option<usize> {
-    if t.get(i) != Some(&LT) || !t.get(i + 1).is_some_and(|&c| er_ascii_bokstav(c)) {
+pub fn tag_name_end(t: &[u16], i: usize) -> Option<usize> {
+    if t.get(i) != Some(&LT) || !t.get(i + 1).is_some_and(|&c| is_ascii_letter(c)) {
         return None;
     }
     let mut j = i + 2;
-    while j < t.len() && er_navnetegn(t[j]) {
+    while j < t.len() && is_name_char(t[j]) {
         j += 1;
     }
-    følges_av_slutt(t, j).then_some(j)
+    followed_by_end(t, j).then_some(j)
 }
 
-/// Kroppen til en tagg, uten én `/` til slutt.
-fn kropp(t: &[u16], fra: usize, til: usize) -> &[u16] {
-    let b = &t[fra..til];
-    b.strip_suffix(&[SKRÅSTREK]).unwrap_or(b)
+/// Kroppen til en tagg, stripped én `/` til slutt.
+fn tag_body(t: &[u16], from: usize, to: usize) -> &[u16] {
+    let b = &t[from..to];
+    b.strip_suffix(&[SLASH]).unwrap_or(b)
 }
 
 /// `/\bclass\s*=/i`
-fn har_class(b: &[u16]) -> bool {
+fn has_class_attribute(b: &[u16]) -> bool {
     (0..b.len()).any(|i| {
-        har_ved_ci(b, i, "class") && (i == 0 || !er_ordtegn(b[i - 1])) && {
+        starts_at_ci(b, i, "class") && (i == 0 || !is_word(b[i - 1])) && {
             let mut j = i + 5;
-            while j < b.len() && er_mellomrom(b[j]) {
+            while j < b.len() && is_space(b[j]) {
                 j += 1;
             }
-            b.get(j) == Some(&LIK)
+            b.get(j) == Some(&EQUALS)
         }
     })
 }
 
 /// `/<\/navn\b/gi` fra `fra`.
-fn lukketagg(t: &[u16], fra: usize, navn: &str) -> Option<usize> {
-    (fra..t.len()).find(|&i| {
+fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
+    (from..t.len()).find(|&i| {
         t[i] == LT
-            && har_ved(t, i + 1, "/")
-            && har_ved_ci(t, i + 2, navn)
-            && t.get(i + 2 + navn.len()).is_none_or(|&c| !er_ordtegn(c))
+            && starts_at(t, i + 1, "/")
+            && starts_at_ci(t, i + 2, name)
+            && t.get(i + 2 + name.len()).is_none_or(|&c| !is_word(c))
     })
 }
 
 /// Alle funn i teksten, i den rekkefølgen de står.
-pub fn diagnose(tekst: &[u16]) -> Vec<Funn> {
-    let kilde = uten_skjult(tekst);
-    let mut funn = Vec::new();
-    let mut ledetekster: Option<Vec<Tekst>> = None;
-    let mut hukommelse = Hukommelse::new();
+pub fn diagnose(text: &[u16]) -> Vec<Finding> {
+    let source = without_hidden(text);
+    let mut findings = Vec::new();
+    let mut labels: Option<Vec<Utf16>> = None;
+    let mut cache = Cache::new();
 
     // Klassene, på alle tagger.
     let mut i = 0;
-    while i < kilde.len() {
-        let Some(navn_slutt) = tagg_navn(&kilde, i) else {
+    while i < source.len() {
+        let Some(name_end) = tag_name_end(&source, i) else {
             i += 1;
             continue;
         };
-        i = navn_slutt;
-        let Some(slutt) = tagg_slutt(&kilde, navn_slutt) else {
+        i = name_end;
+        let Some(end) = tag_end(&source, name_end) else {
             continue;
         };
-        let b = kropp(&kilde, navn_slutt, slutt);
-        if !har_class(b) {
+        let b = tag_body(&source, name_end, end);
+        if !has_class_attribute(b) {
             continue;
         }
-        funn.extend(sjekk_klasser(
-            &les_attributter(b, navn_slutt),
-            &mut hukommelse,
-        ));
+        findings.extend(check_classes(&read_attributes(b, name_end), &mut cache));
     }
 
     let mut i = 0;
-    while i < kilde.len() {
-        let er_fs = kilde[i] == LT && har_ved_ci(&kilde, i + 1, "fs-");
-        if !er_fs {
+    while i < source.len() {
+        let is_fs = source[i] == LT && starts_at_ci(&source, i + 1, "fs-");
+        if !is_fs {
             i += 1;
             continue;
         }
         let mut j = i + 4;
-        while j < kilde.len() && er_navnetegn(kilde[j]) {
+        while j < source.len() && is_name_char(source[j]) {
             j += 1;
         }
-        if !følges_av_slutt(&kilde, j) {
+        if !followed_by_end(&source, j) {
             i += 1;
             continue;
         }
-        let navn_start = i + 1;
-        let navn_slutt = j;
+        let name_start = i + 1;
+        let name_end = j;
         i = j;
-        let tagg = s(&liten(&kilde[navn_start..navn_slutt]));
-        let Some(element) = ELEMENTER.iter().find(|e| e.tagg == tagg) else {
-            funn.push(Funn {
-                start: navn_start,
-                slutt: navn_slutt,
-                alvor: Alvor::Feil,
-                lenke: DOCS.into(),
-                melding: format!(
-                    "<{tagg}> finnes ikke i Fristil. Elementene er {}.",
-                    liste(ELEMENTER.iter().map(|e| e.tagg))
+        let tag = lossy(&lowercase(&source[name_start..name_end]));
+        let Some(element) = ELEMENTS.iter().find(|e| e.tag == tag) else {
+            findings.push(Finding {
+                start: name_start,
+                end: name_end,
+                severity: Severity::Error,
+                link: DOCS.into(),
+                message: format!(
+                    "<{tag}> finnes ikke i Fristil. Elementene er {}.",
+                    list(ELEMENTS.iter().map(|e| e.tag))
                 ),
-                rettelse: None,
+                fix: None,
             });
             continue;
         };
-        let Some(slutt) = tagg_slutt(&kilde, navn_slutt) else {
+        let Some(end) = tag_end(&source, name_end) else {
             continue;
         };
-        let b = kropp(&kilde, navn_slutt, slutt);
-        let tagg_med_mal = er_mal(b);
-        let attributter = les_attributter(b, navn_slutt);
-        for a in &attributter {
-            funn.extend(sjekk_attributt(&tagg, element, a, tagg_med_mal));
+        let b = tag_body(&source, name_end, end);
+        let templated_tag = is_templated(b);
+        let attributes = read_attributes(b, name_end);
+        for a in &attributes {
+            findings.extend(check_attribute(&tag, element, a, templated_tag));
         }
 
-        if tagg == "fs-session-timeout" {
-            if let Some(lukk) = lukketagg(&kilde, slutt, "fs-session-timeout") {
-                funn.extend(sjekk_tidsavbrudd(
-                    &tagg,
-                    navn_start,
-                    navn_slutt,
-                    &kilde[slutt + 1..lukk.max(slutt + 1)],
-                    element.lenke,
+        if tag == "fs-session-timeout" {
+            if let Some(close) = closing_tag(&source, end, "fs-session-timeout") {
+                findings.extend(check_session_timeout(
+                    &tag,
+                    name_start,
+                    name_end,
+                    &source[end + 1..close.max(end + 1)],
+                    element.link,
                 ));
             }
         }
 
-        if tagg == "fs-field" {
-            let lukk = lukketagg(&kilde, slutt, "fs-field").unwrap_or(kilde.len());
-            let innhold = &kilde[(slutt + 1).min(lukk.max(slutt + 1))..lukk.max(slutt + 1)];
-            let ledetekster = ledetekster.get_or_insert_with(|| ledetekst_mål(&kilde));
-            funn.extend(sjekk_felt(
-                ledetekster,
-                &tagg,
-                navn_start,
-                navn_slutt,
-                innhold,
-                slutt + 1,
-                &attributter,
-                element.lenke,
+        if tag == "fs-field" {
+            let close = closing_tag(&source, end, "fs-field").unwrap_or(source.len());
+            let content = &source[(end + 1).min(close.max(end + 1))..close.max(end + 1)];
+            let labels = labels.get_or_insert_with(|| label_targets(&source));
+            findings.extend(check_field(
+                labels,
+                &tag,
+                name_start,
+                name_end,
+                content,
+                end + 1,
+                &attributes,
+                element.link,
             ));
         }
     }
-    funn.sort_by_key(|f| f.start);
-    funn
+    findings.sort_by_key(|f| f.start);
+    findings
 }
