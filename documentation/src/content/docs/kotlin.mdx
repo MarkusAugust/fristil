@@ -16,7 +16,7 @@ dependencies {
 }
 ```
 
-Versjonen er den samme som npm-pakkens, så `fristil:0.32.0` og `@fristil/designsystem@0.32.0` er det samme Fristil. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme Fristil i Maven og på npm. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
 
 ## CSS-en og web-komponentene
 
@@ -40,7 +40,13 @@ routing {
 """
 ```
 
-En adresse fra komponentsidene, som `https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css`, blir `${FristilWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
+En adresse fra komponentsidene beholder stien og bytter bare begynnelsen. Denne:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+```
+
+blir `${FristilWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
 
 ## Byggefunksjonene
 
@@ -77,6 +83,62 @@ Et flagg som `hidden` har den tomme teksten som verdi, og skrives som navnet ale
 ### At de svarer det samme som i TypeScript
 
 Byggefunksjonene genereres fra manifestet Fristil skriver fra TypeScript-koden, og de få der valgene virker sammen, som `field` og `tabs`, er skrevet for hånd. Alle testes mot over tusen byggetilfeller med svaret fra TypeScript. Svarer én byggefunksjon ett attributt annerledes, slippes ikke pakken.
+
+## kotlinx.html
+
+`io.github.markusaugust:fristil-kotlinx-html` har én utvidelse, `fs(…)`, som legger attributtene fra byggefunksjonene på en tagg. Den er en egen pakke, så hovedpakken ikke tar med kotlinx.html til den som ikke bruker det.
+
+```kotlin
+import kotlinx.html.*
+import no.fristil.*
+import no.fristil.InputType
+import no.fristil.html.fs
+
+fun FlowContent.epost(ugyldig: Boolean) {
+    val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+    label { fs(felt.label); +"E-postadresse" }
+    input { fs(Fs.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
+    p { fs(Fs.helpText(), felt.help); +"Vi sender kvittering hit." }
+    p { fs(Fs.errorText(), felt.error); +"Skriv en gyldig adresse." }
+}
+```
+
+Flere sett legges på i rekkefølge, og et senere vinner, som `{...a} {...b}` i JSX. Klassene legges til dem taggen har, så `div(classes = "min-egen") { fs(Fs.card()) }` gir begge. `InputType` importeres for seg, siden kotlinx.html har en med samme navn.
+
+### Med Ktor
+
+```kotlin
+routing {
+    staticResources("/webjars", "META-INF/resources/webjars")
+    get("/soknad") {
+        call.respondHtml {
+            head { link(rel = "stylesheet", href = FristilWebJar.CSS) }
+            body {
+                form(action = "/soknad", method = FormMethod.post) {
+                    epost(ugyldig = false)
+                    button { fs(Fs.button()); +"Send" }
+                }
+                script(type = "module") { unsafe { +"import { defineFs } from \"${FristilWebJar.REGISTER}\"; defineFs()" } }
+            }
+        }
+    }
+}
+```
+
+## Maler: JTE, Thymeleaf og de andre
+
+En mal kan ikke kalle `Fs` for hver verdi, og da er det sjekken som passer på. Skriv markupen som på komponentsidene, og sjekk det malen gir i en test. Med [JTE](https://jte.gg):
+
+```kotlin
+@Test
+fun `søknaden er riktig markup`() {
+    val ut = StringOutput()
+    templateEngine.render("soknad.kte", mapOf("ugyldig" to true), ut)
+    assertFristil(ut.toString())
+}
+```
+
+Det samme gjelder Thymeleaf, Freemarker og Pebble: render malen til en tekst, og gi den til `assertFristil`. Malsyntaksen i selve malfila, som `${…}`, `th:…` og `@if`, forstår sjekken også, så [editoren](../editoren/) kan si fra mens du skriver.
 
 ## Sjekken i testene
 

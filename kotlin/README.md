@@ -50,6 +50,13 @@ Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke
 kilden. Hver tråd får sin egen instans, så kall fra flere tråder venter ikke på
 hverandre.
 
+## kotlinx.html
+
+`kotlinx-html/` er en egen pakke, `fristil-kotlinx-html`, med utvidelsen
+`Tag.fs(…)`, som legger attributtene fra byggefunksjonene på en tagg.
+`FsTest` bygger en søknadsside med den og krever at `assertFristil` består,
+med og uten feil i skjemaet.
+
 ## WebJar-en
 
 `fristil.css`, stilarket for hver komponent og JavaScript-modulene for
