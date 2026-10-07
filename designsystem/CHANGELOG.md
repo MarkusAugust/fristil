@@ -91,6 +91,15 @@ egen overskrift «Brytende».
   `fristil-manifest.json`, og `fristil sjekk --manifest=<fil>` sjekker
   markupen for kopien mot det. Bare kopiens egne navn sjekkes, ikke resten av
   prosjektets klasser.
+- **Sjekken ser stilarkene.** `fristil sjekk --css=<fil>`, og `css` som valg
+  til `diagnoseMarkup` og `diagnosePage`, sier fra om en klasse ingen av
+  stilarkene styler (`ustylet-klasse`) og om en verdi uten regel
+  (`ustylet-verdi`). Stilarkene leses av en CSS-leser i kjernen, med
+  nesting, `:is()`, `:where()`, `@layer` og `@import`. Pakkens egen kontroll
+  av at CSS-en og manifestet sier det samme, bruker den også.
+- **`diagnoseRendered(page)`** sjekker siden slik nettleseren har rendret
+  den, med Playwright: DOM-en etter at web-komponentene og skriptene har
+  kjørt, og stilarkene den faktisk lastet, også fra et CDN.
 - **`fristil lsp`, språkserveren.** Funnene og hurtigrettelsene i hver editor
   som snakker LSP: Neovim, Helix, VS Code og andre, med UTF-16-posisjoner.
   Den sjekker mot manifestet i `build/fristil/` eller i `node_modules`, med

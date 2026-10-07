@@ -14,12 +14,16 @@
  *      som mangler i API-et, eller en intern verdi komponenten setter selv.
  *      Den siste står i `INTERN` med grunnen.
  *
+ * Stilarkene leses av kjernens CSS-leser (`kjerne/src/styles.rs`), den samme
+ * som `fristil sjekk --css` bruker, så vitnet og sjekken ser det samme.
+ *
  * Kjør med: bun scripts/sjekk-css-vitne.ts, eller som en del av `bun run build`.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { defaultCore } from "../src/diagnostics/default-core.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 
@@ -80,20 +84,17 @@ function* stilark(mappe: string): Generator<string> {
 
 /** Hver `klasse[attributt]` og `klasse[attributt="verdi"]` stilarkene bruker. */
 const vitnet = new Map<string, string>()
-const SAMMENSATT =
-  /\.(fs-[a-z0-9_-]+)((?:\[[^\]]*\]|::?[a-z-]+(?:\([^()]*\))?|\.[a-z0-9_-]+)*)/g
-const ATTRIBUTT = /\[(data-[a-z-]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\]\s]+)))?\]/g
+const kjerne = defaultCore()
 for (const sti of [
   ...stilark(join(PAKKE, "src/components")),
   ...stilark(join(PAKKE, "src/tokens")),
 ]) {
-  const css = readFileSync(sti, "utf8").replace(/\/\*[\s\S]*?\*\//g, "")
   const fil = sti.slice(PAKKE.length)
-  for (const [, klasse, resten] of css.matchAll(SAMMENSATT)) {
-    for (const [, attributt, a, b, c] of resten.matchAll(ATTRIBUTT)) {
-      const verdi = a ?? b ?? c
-      vitnet.set(nøkkel(klasse, attributt, verdi), fil)
-    }
+  for (const { class: klasse, attribute, value } of kjerne.inspectStyles(
+    readFileSync(sti, "utf8"),
+  ).attributes) {
+    if (klasse.startsWith("fs-") && attribute.startsWith("data-"))
+      vitnet.set(nøkkel(klasse, attribute, value), fil)
   }
 }
 

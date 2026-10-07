@@ -81,6 +81,11 @@ jobs:
           cargo build --release -p fristil --manifest-path kjerne/Cargo.toml
           FRISTIL_SAMMENLIGN="$PWD/kjerne/target/release/fristil" bun designsystem/scripts/sjekk-cli.ts
 
+      # Siden slik Chromium har rendret den, med stilarkene den lastet.
+      - name: Den rendrede siden
+        working-directory: designsystem
+        run: bun scripts/sjekk-rendret.ts
+
       # Språkserveren over ekte standard inn og ut, i hver vert: Node, den
       # kjørbare fila og VS Code-utvidelsens server. Jar-en prøves under.
       - name: Språkserveren

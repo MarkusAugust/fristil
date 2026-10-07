@@ -29,6 +29,7 @@ pub mod diagnose;
 pub mod json;
 pub mod manifest;
 pub mod references;
+pub mod styles;
 pub mod suppress;
 pub mod text;
 pub mod theme;
@@ -51,6 +52,27 @@ pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     findings.extend(references::check_references(&page));
     findings.sort_by_key(|f| f.start);
     suppress::apply(html, findings)
+}
+
+/// Sjekken med stilarkene i tillegg: det `diagnose_markup`, eller
+/// `diagnose_page` når `page` er sann, finner, og det stilarkene ikke styler.
+pub fn diagnose_styled(
+    html: &[u16],
+    vocabulary: &Vocabulary,
+    styles: &styles::Styles,
+    page: bool,
+) -> Vec<Finding> {
+    let mut findings = if page {
+        diagnose_page(html, vocabulary)
+    } else {
+        diagnose_markup(html, vocabulary)
+    };
+    findings.extend(suppress::apply(
+        html,
+        diagnose::check_styles(html, vocabulary, styles),
+    ));
+    findings.sort_by_key(|f| f.start);
+    findings
 }
 
 /// Hvor hver linje begynner, så linje og kolonne for et funn er et oppslag.
@@ -287,6 +309,66 @@ pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) {
     ));
 }
 
+/// Det et stilark styler: klassene, attributtverdiene og `@import`-adressene.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn inspect_styles_raw(ptr: *mut u8, length: usize) {
+    respond(styles_json(&styles::read_styles(&read_input(ptr, length))));
+}
+
+/// Sjekken med stilarkene: `{"html": "…", "css": ["…"], "page": true}` inn,
+/// funnene ut, som `diagnose_page_raw`.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) {
+    let input = json::parse(&read_input(ptr, length)).unwrap_or(json::Json::Null);
+    let html = utf16(input.get("html").and_then(json::Json::as_str).unwrap_or(""));
+    let mut styles = styles::Styles::default();
+    for css in input
+        .get("css")
+        .and_then(json::Json::as_array)
+        .unwrap_or(&[])
+    {
+        styles.extend(styles::read_styles(css.as_str().unwrap_or("")));
+    }
+    let page = matches!(input.get("page"), Some(json::Json::Bool(true)));
+    let findings = diagnose_styled(&html, &manifest::current(), &styles, page);
+    respond(to_json(&findings, &html));
+}
+
+/// Det stilarkene styler, som JSON.
+pub fn styles_json(styles: &styles::Styles) -> String {
+    let classes: Vec<String> = styles.classes.iter().map(|c| json_string(c)).collect();
+    let attributes: Vec<String> = styles
+        .attributes
+        .iter()
+        .map(|(class, attribute, value)| match value {
+            Some(v) => format!(
+                "{{\"class\":{},\"attribute\":{},\"value\":{}}}",
+                json_string(class),
+                json_string(attribute),
+                json_string(v)
+            ),
+            None => format!(
+                "{{\"class\":{},\"attribute\":{}}}",
+                json_string(class),
+                json_string(attribute)
+            ),
+        })
+        .collect();
+    let imports: Vec<String> = styles.imports.iter().map(|i| json_string(i)).collect();
+    format!(
+        "{{\"classes\":[{}],\"attributes\":[{}],\"imports\":[{}]}}",
+        classes.join(","),
+        attributes.join(","),
+        imports.join(",")
+    )
+}
+
 /// Går tilbake til det innebygde manifestet.
 #[no_mangle]
 pub extern "C" fn reset_manifest() {
@@ -442,5 +524,39 @@ mod tests {
         );
         assert_eq!(found(r#"<app-dialog lukket></app-dialog>"#).len(), 1);
         assert!(found(r#"<app-dialog open></app-dialog><app-dialogs></app-dialogs>"#).is_empty());
+    }
+
+    #[test]
+    fn says_what_the_style_sheets_do_not_style() {
+        let styles = styles::read_styles(
+            r#".fs-button { } .fs-button[data-variant="ghost"] { }
+            .fs-input[data-state="invalid"] { } .fs-search { }
+            .fs-label[data-optional] { }"#,
+        );
+        let found =
+            |html: &str| diagnose_styled(&utf16(html), &manifest::builtin(), &styles, false);
+        assert!(found(r#"<button class="fs-button" data-variant="ghost">x</button>"#).is_empty());
+        // Standardverdien trenger ingen regel.
+        assert!(found(r#"<button class="fs-button" data-variant="primary">x</button>"#).is_empty());
+
+        let unstyled = found(r#"<button class="fs-button" data-variant="danger">x</button>"#);
+        assert_eq!(unstyled.len(), 1);
+        assert_eq!(unstyled[0].rule, "ustylet-verdi");
+
+        let missing = found(r#"<div class="fs-card">x</div>"#);
+        assert_eq!(missing[0].rule, "ustylet-klasse");
+        assert!(missing[0].message.contains("fs-card"));
+
+        // Tilstanden på fs-search styles på fs-input, på det samme elementet.
+        assert!(found(r#"<input class="fs-search fs-input" data-state="invalid">"#).is_empty());
+        // Et flagg styles av en selektor som spør om det finnes.
+        assert!(found(r#"<label class="fs-label" data-optional>x</label>"#).is_empty());
+        // Klasser utenfor Fristil er ikke sjekkens sak.
+        assert!(found(r#"<div class="kort">x</div>"#).is_empty());
+        // Og en kommentar undertrykker, som for de andre reglene.
+        assert!(found(
+            "<!-- fristil-ignore-next ustylet-klasse -->\n<div class=\"fs-card\">x</div>"
+        )
+        .is_empty());
     }
 }

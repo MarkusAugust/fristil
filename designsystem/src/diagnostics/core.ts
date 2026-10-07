@@ -90,6 +90,16 @@ export type CoreThemeReport = {
   promises: number
 }
 
+/** Det `inspectStyles` fant i et stilark. */
+export type CoreStyles = {
+  /** Hver klasse som står i en selektor. */
+  classes: string[]
+  /** Hver klasse med et attributt, og verdien når selektoren krever en. */
+  attributes: { class: string; attribute: string; value?: string }[]
+  /** Adressene i `@import`. */
+  imports: string[]
+}
+
 export type Core = {
   diagnoseMarkup(html: string): Finding[]
   diagnosePage(html: string): Finding[]
@@ -102,6 +112,14 @@ export type Core = {
   buildTheme(recipe: unknown): CoreTheme
   /** Kontrollerer hvert løfte i et tema skrevet som CSS. */
   inspectTheme(css: string): CoreThemeReport
+  /** Klassene og attributtverdiene et stilark styler, lest med kjernens CSS-leser. */
+  inspectStyles(css: string): CoreStyles
+  /**
+   * Sjekken med stilarkene i tillegg: en klasse ingen av dem styler, og en
+   * verdi uten regel. `page` sjekker som `diagnosePage`, ellers som
+   * `diagnoseMarkup`.
+   */
+  diagnoseStyled(html: string, css: string[], page: boolean): Finding[]
 }
 
 type Exports = {
@@ -114,6 +132,8 @@ type Exports = {
   version_raw(): void
   build_theme_raw(pointer: number, length: number): number
   inspect_theme_raw(pointer: number, length: number): void
+  inspect_styles_raw(pointer: number, length: number): void
+  diagnose_styled_raw(pointer: number, length: number): void
   result_ptr(): number
   result_len(): number
 }
@@ -168,6 +188,14 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
     },
     inspectTheme: (css) => {
       e.inspect_theme_raw(...write(css))
+      return read()
+    },
+    inspectStyles: (css) => {
+      e.inspect_styles_raw(...write(css))
+      return read()
+    },
+    diagnoseStyled: (html, css, page) => {
+      e.diagnose_styled_raw(...write(JSON.stringify({ html, css, page })))
       return read()
     },
   }

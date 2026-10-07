@@ -571,6 +571,43 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// Med stilarkene sier sjekken også fra om det de ikke styler
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+  )
+  await writeFile(join(mappe, "app.css"), '@import "knapp.css";\n')
+  await writeFile(join(mappe, "knapp.css"), ".fs-button { }\n")
+
+  const hele = await kjør([
+    "sjekk",
+    `--css=${join(pakke, "dist/fristil.css")}`,
+    side,
+  ])
+  krev(
+    hele.kode === 0,
+    `med hele fristil.css skulle siden vært ren: ${hele.ut}`,
+  )
+
+  const delvis = await kjør(["sjekk", `--css=${join(mappe, "app.css")}`, side])
+  krev(
+    delvis.kode !== 0 &&
+      delvis.ut.includes('data-variant="ghost"') &&
+      delvis.ut.includes("«fs-card»"),
+    `et stilark som bare styler knappen, skulle gitt to funn: ${delvis.ut}`,
+  )
+
+  const borte = await kjør(["sjekk", `--css=${join(mappe, "borte.css")}`, side])
+  krev(
+    borte.kode !== 0 && borte.feil.includes("borte.css"),
+    "et stilark som ikke finnes, ble ikke meldt",
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // Merkefargene har et siffer i flaggnavnet, og ble lest som filnavn
 {
   const uten = await kjør(["tema", "--aksent=#7c3aed"])

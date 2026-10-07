@@ -172,6 +172,26 @@ Et funn du vil beholde, undertrykkes med en kommentar over taggen:
 
 Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
 
+## Den rendrede siden
+
+Med Playwright for Java sjekkes siden slik nettleseren har rendret den, med
+markupen web-komponentene la til og stilarkene den lastet. Pakken avhenger
+ikke av Playwright: `assertFristilRendered` tar en funksjon som kjører et
+skript på siden.
+
+```kotlin
+@Test
+fun `skjemaet er riktig slik det vises`() {
+    page.navigate("http://localhost:8080/skjema")
+    assertFristilRendered { script -> page.evaluate(script) }
+}
+```
+
+Den feiler på det `assertFristil` feiler på, og i tillegg på en klasse ingen
+stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
+`assertFristil(html, css = listOf(stilark))` og
+`Fristil.diagnosePage(html, css)` den samme sjekken uten nettleser.
+
 ## Gradle-pluginen
 
 Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:

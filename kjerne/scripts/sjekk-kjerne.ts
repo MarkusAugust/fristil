@@ -254,6 +254,20 @@ for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
       `inspectTheme krasjet på ${JSON.stringify(css).slice(0, 300)}: ${e}`,
     )
   }
+  // Den samme ødelagte CSS-en gjennom leseren for selektorer, og som
+  // stilark til sjekken.
+  try {
+    kjerne.inspectStyles(css)
+    kjerne.diagnoseStyled(
+      '<div class="fs-card fs-button" data-variant="ghost"></div>',
+      [css],
+      true,
+    )
+  } catch (e) {
+    feil.push(
+      `inspectStyles krasjet på ${JSON.stringify(css).slice(0, 300)}: ${e}`,
+    )
+  }
 }
 for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
   for (const ødelagt of [

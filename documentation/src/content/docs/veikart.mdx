@@ -80,12 +80,14 @@ ingenting du laster ned, krever et sertifikat for å kjøre.
 
 - En leser for CSS som sammenligner stilarkene med kontrakten: en klasse som
   brukes uten at stilarket som definerer den er lastet, eller en variant uten
-  styling, meldes.
-- `fristil sjekk-side` sjekker en side slik den er rendret, i en ekte
-  nettleser. Når siden er et DOM, ser React, Astro og en Kotlin-mal like ut,
-  og det kan sjekkes det kildekoden ikke kan svare på: om stilarket faktisk er
-  lastet, og løfter som bare Fristil kjenner. Generelle WCAG-regler er løst
-  grundigere av andre verktøy, som axe, og gjentas ikke.
+  styling, meldes. `fristil sjekk --css=…` på kommandolinja.
+- Sjekk av siden slik den er rendret, i en ekte nettleser:
+  `diagnoseRendered(page)` i JavaScript og `assertFristilRendered` i Kotlin,
+  med Playwright i testene du alt har. Når siden er et DOM, ser React, Astro
+  og en Kotlin-mal like ut, og det kan sjekkes det kildekoden ikke kan svare
+  på: om stilarket faktisk er lastet, og markupen web-komponentene la til.
+  Generelle WCAG-regler er løst grundigere av andre verktøy, som axe, og
+  gjentas ikke.
 
 ## Komponenter
 

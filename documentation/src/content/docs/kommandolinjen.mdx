@@ -84,6 +84,12 @@ skjema.html:5:13: advarsel: Klassen «fs-modal» finnes ikke i Fristil.
 2 funn i 1 fil.
 ```
 
+| Flagg | Betydning |
+| --- | --- |
+| `--rendret` | sjekk filer og standard inn som hele sider, med koblingen |
+| `--css=<fil>` | sjekk også at stilarkene styler markupen. Se [Med stilarkene](#med-stilarkene) |
+| `--manifest=<fil>` | sjekk også en komponent du har tatt over. Se [overta](#overta) |
+
 Exit-koden er 0 når det ikke er noen funn, og 1 ellers, også når alle funnene er
 advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom inndata,
 en fil som ikke finnes, og en adresse som ikke svarer, gir også 1.
@@ -129,6 +135,49 @@ http://localhost:8080/skjema:12:30: feil: for="epost" peker på id-en «epost»,
 Det er denne sjekken som virker likt i alle språk. HTML-en serveren sender, ser
 lik ut enten den kommer fra Kotlin, Go, PHP eller Node, og det er den som
 sjekkes, ikke koden som lager den.
+
+### Med stilarkene
+
+Markupen kan være riktig og likevel se feil ut: stilarket til komponenten er
+ikke lastet, eller en variant har ingen regel. Med `--css` leser `sjekk`
+stilarkene siden laster, med det de importerer, og sier fra om begge deler:
+
+```bash
+npx @fristil/designsystem sjekk --css=public/app.css maler/*.html
+```
+
+```text
+maler/kort.html:3:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
+maler/knapp.html:1:27: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
+```
+
+Det siste er nyttigst for en komponent du har [tatt over](#overta): legger du
+til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig og ser ut
+som standard. `@import` følges til filer ved siden av og til pakker i
+`node_modules`, som `@fristil/designsystem/fristil.css`. `--css` kan gis flere
+ganger. Stilarkene leses med en ekte CSS-leser, så nesting, `:is()`,
+`:where()`, `@layer` og `@media` forstås som nettleseren forstår dem.
+
+### Den rendrede siden
+
+Det serveren sender, er ikke alltid det brukeren ser. Web-komponentene legger
+til markup, et skript kan sette en klasse, og stilarkene er de nettleseren
+faktisk lastet. `diagnoseRendered` sjekker siden slik nettleseren har rendret
+den, med Playwright:
+
+```ts
+import { diagnoseRendered } from "@fristil/designsystem/diagnostics"
+
+test("skjemaet er riktig slik det vises", async ({ page }) => {
+  await page.goto("http://localhost:8080/skjema")
+  expect(await diagnoseRendered(page)).toEqual([])
+})
+```
+
+Den gir det `diagnosePage` gir, og det stilarkene ikke styler. Et stilark fra
+et CDN leses også, når det svarer med `Access-Control-Allow-Origin`, som
+jsDelivr og unpkg gjør. Med [Fristil for Kotlin](../kotlin/#den-rendrede-siden)
+heter det `assertFristilRendered`.
 
 ### I testene og i CI
 

@@ -7,6 +7,7 @@
 
 use std::collections::HashMap;
 
+use crate::styles::Styles;
 use crate::text::*;
 use crate::types::*;
 
@@ -1148,5 +1149,126 @@ pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
         }
     }
     findings.sort_by_key(|f| f.start);
+    findings
+}
+
+/// Det stilarkene ikke styler: en klasse ingen av dem nevner, og en verdi
+/// ingen selektor har en regel for.
+///
+/// Den første er et stilark som ikke er lastet, eller lastet etter en
+/// omskriving. Den andre er oftest en variant lagt til i manifestet for en
+/// overtatt komponent, uten at CSS-en fikk den: markupen er gyldig, men ser
+/// ut som standard.
+pub fn check_styles(text: &[u16], vocabulary: &Vocabulary, styles: &Styles) -> Vec<Finding> {
+    let source = without_hidden(text);
+    let mut findings = Vec::new();
+    let mut i = 0;
+    while i < source.len() {
+        let Some(name_end) = tag_name_end(&source, i) else {
+            i += 1;
+            continue;
+        };
+        i = name_end;
+        let Some(end) = tag_end(&source, name_end) else {
+            continue;
+        };
+        let b = tag_body(&source, name_end, end);
+        if !has_class_attribute(b) {
+            continue;
+        }
+        let attributes = read_attributes(b, name_end);
+        let Some(class_attribute) = attributes.iter().find(|a| equals(&a.name, "class")) else {
+            continue;
+        };
+        let Some(value) = class_attribute.non_empty_value() else {
+            continue;
+        };
+        if is_templated_value(value) {
+            continue;
+        }
+        let tokens: Vec<String> = words(value).into_iter().map(|(_, t)| lossy(t)).collect();
+        let mut styled: Vec<&Class> = Vec::new();
+        for (offset, token) in words(value) {
+            if !checked_class(vocabulary, token) {
+                continue;
+            }
+            let Some(info) = find_class(vocabulary, token) else {
+                continue;
+            };
+            let name = lossy(token);
+            if styles.classes.contains(&name) {
+                styled.push(info);
+                continue;
+            }
+            let start = class_attribute.value_start + offset;
+            findings.push(Finding {
+                start,
+                end: start + token.len(),
+                severity: Severity::Warning,
+                link: info.link.clone(),
+                message: format!(
+                    "Klassen «{name}» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til {}, lastet?",
+                    lossy(&lowercase(&utf16(&info.title)))
+                ),
+                fix: None,
+                rule: "ustylet-klasse",
+            });
+        }
+        for a in &attributes {
+            let value = a.non_empty_value();
+            if value.is_some_and(|v| is_templated_value(v)) {
+                continue;
+            }
+            for info in &styled {
+                let Some((attribute, takes)) =
+                    info.attributes.iter().find(|(n, _)| equals(&a.name, n))
+                else {
+                    continue;
+                };
+                let wanted = if takes.flag {
+                    None
+                } else {
+                    let Some(value) = value else { break };
+                    let known = takes.values.iter().any(|v| equals(value, v));
+                    let default = takes
+                        .default_value
+                        .as_deref()
+                        .is_some_and(|d| equals(value, d));
+                    // En ukjent verdi meldes av sjekken av ordforrådet, og
+                    // standardverdien trenger ingen regel.
+                    if !known || default {
+                        break;
+                    }
+                    Some(lossy(value))
+                };
+                // Verdien kan styles på en annen klasse på det samme
+                // elementet, som tilstanden på fs-search, som styles på
+                // fs-input.
+                if tokens
+                    .iter()
+                    .any(|t| styles.styles_value(t, attribute, wanted.as_deref()))
+                {
+                    break;
+                }
+                let shown = match &wanted {
+                    Some(v) => format!("{attribute}=\"{v}\""),
+                    None => attribute.clone(),
+                };
+                findings.push(Finding {
+                    start: a.start,
+                    end: a.value_end,
+                    severity: Severity::Warning,
+                    link: info.link.clone(),
+                    message: format!(
+                        "{shown} på {} har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.",
+                        lossy(&lowercase(&utf16(&info.title)))
+                    ),
+                    fix: None,
+                    rule: "ustylet-verdi",
+                });
+                break;
+            }
+        }
+    }
     findings
 }

@@ -11,9 +11,10 @@ use std::io::{IsTerminal, Read};
 
 use crate::fetch;
 use crate::output::{count, error, fail, log};
+use fristil_kjerne::styles::{read_styles, Styles};
 use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::Severity;
-use fristil_kjerne::{diagnose_markup, diagnose_page, manifest, Lines};
+use fristil_kjerne::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
 
 /// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
 /// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
@@ -69,6 +70,53 @@ fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabula
     }
 }
 
+/// Stilarkene, med det de importerer.
+///
+/// `@import` følges til en fil ved siden av, og til en pakke i
+/// `node_modules`, som `@fristil/designsystem/fristil.css`. En adresse på
+/// nettet hentes ikke.
+fn read_style_sheets(paths: &[&str]) -> Styles {
+    let mut styles = Styles::default();
+    let mut seen: Vec<std::path::PathBuf> = Vec::new();
+    let mut queue: Vec<(std::path::PathBuf, bool)> = paths
+        .iter()
+        .map(|p| (std::path::PathBuf::from(p), true))
+        .collect();
+    while let Some((path, given)) = queue.pop() {
+        if seen.contains(&path) {
+            continue;
+        }
+        seen.push(path.clone());
+        let Ok(bytes) = std::fs::read(&path) else {
+            if given {
+                fail(&format!("Fant ikke stilarket «{}».", path.display()));
+            }
+            continue;
+        };
+        let read = read_styles(&String::from_utf8_lossy(&bytes));
+        let folder = path
+            .parent()
+            .map(std::path::Path::to_path_buf)
+            .unwrap_or_default();
+        for import in &read.imports {
+            if import.contains("://") || import.starts_with("data:") {
+                continue;
+            }
+            let beside = folder.join(import);
+            queue.push((
+                if beside.exists() {
+                    beside
+                } else {
+                    std::path::Path::new("node_modules").join(import)
+                },
+                false,
+            ));
+        }
+        styles.extend(read);
+    }
+    styles
+}
+
 struct Source {
     name: String,
     text: String,
@@ -88,9 +136,15 @@ pub fn run(arguments: &[String]) {
         .collect();
     let inputs: Vec<&String> = arguments
         .iter()
-        .filter(|a| *a != "--rendret" && !a.starts_with("--manifest="))
+        .filter(|a| *a != "--rendret" && !a.starts_with("--manifest=") && !a.starts_with("--css="))
         .collect();
     let vocabulary = vocabulary(&manifests);
+    // Stilarkene, så sjekken også ser det som ikke er stylet.
+    let style_sheets: Vec<&str> = arguments
+        .iter()
+        .filter_map(|a| a.strip_prefix("--css="))
+        .collect();
+    let styles = (!style_sheets.is_empty()).then(|| read_style_sheets(&style_sheets));
 
     if inputs.is_empty() {
         // WASI kan ikke se om standard inn er en terminal, så verten sier
@@ -159,10 +213,10 @@ pub fn run(arguments: &[String]) {
     let mut found = 0;
     for source in &sources {
         let text = utf16(&source.text);
-        let findings = if source.page {
-            diagnose_page(&text, &vocabulary)
-        } else {
-            diagnose_markup(&text, &vocabulary)
+        let findings = match &styles {
+            Some(styles) => diagnose_styled(&text, &vocabulary, styles, source.page),
+            None if source.page => diagnose_page(&text, &vocabulary),
+            None => diagnose_markup(&text, &vocabulary),
         };
         let lines = Lines::new(&text);
         for finding in findings {

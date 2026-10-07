@@ -96,4 +96,6 @@ pub const RULES: &[&str] = &[
     "oppsummering-peker-feil",
     "kontroll-uten-ledetekst",
     "tekst-ikke-koblet",
+    "ustylet-klasse",
+    "ustylet-verdi",
 ];

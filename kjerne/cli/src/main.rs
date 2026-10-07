@@ -31,6 +31,8 @@ pub const HELP: &str = r#"fristil <kommando>
     --rendret          Sjekk filer og standard inn som hele sider også
     --manifest=<fil>   Sjekk også en overtatt komponent, med fragmentet
                        fristil overta skrev ved siden av kopien
+    --css=<fil>        Sjekk også at stilarkene styler markupen: en klasse
+                       uten stilark, og en verdi uten regel
 
   sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
                        Leser --fs-color-*-verdiene i hver blokk og sier

@@ -21,15 +21,77 @@ import com.dylibso.chicory.runtime.Instance
  * funnet gjelder.
  */
 object Fristil {
-    /** Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment. */
-    fun diagnoseMarkup(html: String): List<Finding> = diagnose(MARKUP, html)
+    /**
+     * Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
+     *
+     * Med [css], teksten i stilarkene siden laster, sier den også fra om en
+     * klasse ingen av dem styler, og om en verdi uten regel.
+     */
+    fun diagnoseMarkup(html: String, css: List<String> = emptyList()): List<Finding> =
+        if (css.isEmpty()) diagnose(MARKUP, html) else diagnoseStyled(html, css, page = false)
 
     /**
      * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
      * pekes på finnes, at ingen id står to ganger, og at hvert felt er koblet.
-     * Bruk den på HTML-en serveren sender, ikke på en mal.
+     * Bruk den på HTML-en serveren sender, ikke på en mal. [css] som for
+     * [diagnoseMarkup].
      */
-    fun diagnosePage(html: String): List<Finding> = diagnose(PAGE, html)
+    fun diagnosePage(html: String, css: List<String> = emptyList()): List<Finding> =
+        if (css.isEmpty()) diagnose(PAGE, html) else diagnoseStyled(html, css, page = true)
+
+    /**
+     * Skriptet som leser den rendrede siden i nettleseren: DOM-en slik den
+     * står nå, og teksten i hvert stilark. Gi det til `page.evaluate` i
+     * Playwright, eller bruk [assertFristilRendered].
+     *
+     * Svaret er et objekt med `html` og `css`. Det samme skriptet står i
+     * `@fristil/designsystem/diagnostics`.
+     */
+    const val READ_RENDERED_PAGE: String = """
+// begynner: READ_RENDERED_PAGE
+async () => {
+  const sheets = [...document.styleSheets, ...document.adoptedStyleSheets]
+  const css = []
+  const read = async (sheet) => {
+    let rules
+    try {
+      rules = sheet.cssRules
+    } catch {
+      if (!sheet.href) return
+      const answer = await fetch(sheet.href)
+      if (!answer.ok)
+        throw new Error(
+          `Stilarket ${'$'}{sheet.href} kunne ikke leses, og svarte ${'$'}{answer.status} da det ble hentet på nytt.`,
+        )
+      css.push(await answer.text())
+      return
+    }
+    for (const rule of rules)
+      if (rule instanceof CSSImportRule && rule.styleSheet) await read(rule.styleSheet)
+    css.push([...rules].map((rule) => rule.cssText).join("\n"))
+  }
+  for (const sheet of sheets) await read(sheet)
+  const doctype = document.doctype ? `<!DOCTYPE ${'$'}{document.doctype.name}>` : ""
+  return { html: doctype + document.documentElement.outerHTML, css }
+}
+// slutter: READ_RENDERED_PAGE
+"""
+
+    /**
+     * Sjekker svaret fra [READ_RENDERED_PAGE]: siden slik nettleseren rendret
+     * den, med stilarkene den lastet.
+     */
+    fun diagnoseRendered(rendered: Map<*, *>): List<Finding> =
+        diagnoseStyled(
+            rendered["html"] as String,
+            (rendered["css"] as List<*>).map { it as String },
+            page = true,
+        )
+
+    private fun diagnoseStyled(html: String, css: List<String>, page: Boolean): List<Finding> {
+        val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
+        return (Json.parse(core.get().call(STYLED, input)) as List<*>).map { finding(it as Map<*, *>) }
+    }
 
     /*
      * En instans har sitt eget minne, og svaret fra et kall ligger der til
@@ -43,6 +105,7 @@ object Fristil {
 
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
+    private const val STYLED = "diagnose_styled_raw"
 
     private fun finding(f: Map<*, *>): Finding =
         Finding(

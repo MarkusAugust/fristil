@@ -9,6 +9,24 @@ package no.fristil
  * er en feil i Fristil, og meldingen sier hvor.
  */
 internal object Json {
+    /** En tekst som en JSON-streng, med anførselstegn. */
+    fun string(text: String): String =
+        buildString {
+            append('"')
+            for (c in text) {
+                when {
+                    c == '"' -> append("\\\"")
+                    c == '\\' -> append("\\\\")
+                    c == '\n' -> append("\\n")
+                    c == '\r' -> append("\\r")
+                    c == '\t' -> append("\\t")
+                    c < ' ' -> append("\\u%04x".format(c.code))
+                    else -> append(c)
+                }
+            }
+            append('"')
+        }
+
     fun parse(text: String): Any? {
         val reader = Reader(text)
         val value = reader.value()
