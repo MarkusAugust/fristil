@@ -6,6 +6,7 @@ import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
 import { DELINGSBILDE, metaAttributter } from "./src/delingsbilde.mjs"
+import { markdownsider } from "./src/plugins/markdownsider.mjs"
 import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
 import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
 
@@ -71,6 +72,8 @@ export default defineConfig({
           attrs: metaAttributter(tagg),
         })),
       ],
+      // Pekeren til hver sides Markdown-utgave, som `markdownsider` skriver.
+      routeMiddleware: "./src/rutedata.ts",
       defaultLocale: "root",
       locales: {
         root: { label: "Norsk", lang: "nb" },
@@ -214,5 +217,7 @@ export default defineConfig({
         },
       ],
     }),
+    // Etter Starlight, så sidene den leser er ferdige.
+    markdownsider(),
   ],
 })

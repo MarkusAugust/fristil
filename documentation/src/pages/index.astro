@@ -84,6 +84,9 @@ const beskrivelse =
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
           Komponentene er ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
         </p>
+        <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
+          Dokumentasjonen er skrevet for utviklere og lest like godt av kodeagenter: hver side finnes også som Markdown, og en regelbok per rammeverk følger pakken.
+        </p>
         <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
           <a href="/kom-i-gang/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(96,165,250,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(96,165,250,0.55)] sm:w-auto">
           Kom i gang
@@ -104,8 +107,13 @@ const beskrivelse =
              Tegnet er “ og ikke «. Som stor dekor er « to tynne vinkler som
              ligger i bunnen av sin egen boks, så det havner ved linje to
              uansett hva margen sier. “ er fylt og sitter øverst av seg selv.
-             Løpende tekst i dokumentasjonen bruker fortsatt «». -->
-        <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto">
+             Løpende tekst i dokumentasjonen bruker fortsatt «».
+             På bred skjerm sentreres sitatet i plassen som er til overs ved
+             siden av «Dette får du». `my-auto` blir null når den plassen er
+             brukt opp, og da la sitatet seg rett under knappene. `pt-12` er
+             gulvet, omtrent den avstanden sitatet hadde før heltetekst fikk
+             et avsnitt til. -->
+        <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto lg:pt-12">
           <span
             aria-hidden="true"
             class="font-sitat -mt-1 shrink-0 text-5xl leading-none text-logo-lilla/70 sm:text-7xl"
@@ -177,10 +185,10 @@ const beskrivelse =
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <div class="mb-10 max-w-2xl">
         <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Styrker</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre ting du slipper å løse selv</h2>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Fire ting du slipper å løse selv</h2>
       </div>
 
-      <div class="grid gap-5 lg:grid-cols-3">
+      <div class="grid gap-5 lg:grid-cols-2">
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
           <h3 class="mb-3 text-xl font-bold">Editoren kjenner komponentene</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
@@ -230,6 +238,20 @@ const beskrivelse =
           </p>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
             Komponentene kjøres gjennom axe i Chromium, Firefox og WebKit. Hver side i denne dokumentasjonen kjøres gjennom axe i begge temaer.
+          </p>
+        </article>
+
+        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
+          <h3 class="mb-3 text-xl font-bold">Kodeagenten slipper å gjette</h3>
+          <p class="mb-5 text-sm leading-7 text-zinc-300">
+            En agent som ikke kjenner designsystemet, finner opp <code class="text-zinc-200">fs-modal</code>, hardkoder fargene og skriver egen CSS når stilarket mangler. Fristil har en regelbok for agenter per rammeverk, og den følger pakken. Når agenten er ferdig, sier sjekken hva som er galt, med fil og linje.
+          </p>
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>npx @fristil/designsystem sjekk skjema.html
+
+skjema.html:3:13: advarsel: Klassen «fs-modal»
+  finnes ikke i Fristil.</code></pre>
+          <p class="mt-5 text-sm leading-7 text-zinc-300">
+            Hele dokumentasjonen finnes også som Markdown, laget av de samme sidene du leser nå, og <a href="/llms.txt" class="text-blue-300 underline-offset-4 hover:underline">llms.txt</a> viser vei. Mer om oppsettet under <a href="/kodeagenter/" class="text-blue-300 underline-offset-4 hover:underline">Kodeagenter</a>.
           </p>
         </article>
       </div>
