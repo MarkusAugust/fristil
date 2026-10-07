@@ -48,10 +48,7 @@ const KILDER = [
  * endring. Den dagen en fil er ren, tas den ut. Lista kan altså bare
  * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
-const KJENT_GJELD = new Map<string, number>([
-  // Flyttet fra cli.ts. Skrives i Rust med resten av kommandolinja.
-  ["designsystem/src/overta.ts", 60],
-])
+const KJENT_GJELD = new Map<string, number>([])
 
 const NORSKE_ORD = new Set([
   "aktiv",
@@ -404,5 +401,5 @@ const gjeldsliste = [...gjeld]
   .map(([fil, antall]) => `${fil} (${antall})`)
   .join(", ")
 console.log(
-  `Identifikatorene er engelske i ${lest} filer. Kjent gjeld: ${gjeldsliste}.`,
+  `Identifikatorene er engelske i ${lest} filer. ${gjeldsliste ? `Kjent gjeld: ${gjeldsliste}.` : "Ingen kjent gjeld."}`,
 )

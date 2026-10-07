@@ -51,6 +51,55 @@ impl Json {
             _ => None,
         }
     }
+
+    /// Verdien som tekst, rykket inn med to mellomrom, som
+    /// `JSON.stringify(verdi, null, 2)`.
+    pub fn to_pretty(&self) -> String {
+        let mut out = String::new();
+        self.write(&mut out, 0);
+        out
+    }
+
+    fn write(&self, out: &mut String, depth: usize) {
+        let indent = |out: &mut String, depth: usize| {
+            out.push('\n');
+            out.push_str(&"  ".repeat(depth));
+        };
+        match self {
+            Json::Null => out.push_str("null"),
+            Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+            Json::Number(n) => out.push_str(&crate::theme::js_number(*n)),
+            Json::String(s) => out.push_str(&crate::json_string(s)),
+            Json::Array(items) if items.is_empty() => out.push_str("[]"),
+            Json::Object(entries) if entries.is_empty() => out.push_str("{}"),
+            Json::Array(items) => {
+                out.push('[');
+                for (i, item) in items.iter().enumerate() {
+                    if i > 0 {
+                        out.push(',');
+                    }
+                    indent(out, depth + 1);
+                    item.write(out, depth + 1);
+                }
+                indent(out, depth);
+                out.push(']');
+            }
+            Json::Object(entries) => {
+                out.push('{');
+                for (i, (key, value)) in entries.iter().enumerate() {
+                    if i > 0 {
+                        out.push(',');
+                    }
+                    indent(out, depth + 1);
+                    out.push_str(&crate::json_string(key));
+                    out.push_str(": ");
+                    value.write(out, depth + 1);
+                }
+                indent(out, depth);
+                out.push('}');
+            }
+        }
+    }
 }
 
 /// Leser én JSON-verdi. Feilmeldingen sier hvor i teksten den stoppet.
@@ -266,5 +315,16 @@ mod tests {
     fn reports_where_it_stops() {
         assert!(parse("{\"a\": }").unwrap_err().contains("byte 6"));
         assert!(parse("[1] 2").is_err());
+    }
+
+    #[test]
+    fn writes_like_json_stringify() {
+        let v = parse(r#"{"a": [1, 2.5, "x\"y"], "b": {}, "c": [], "d": {"e": null, "f": true}}"#)
+            .unwrap();
+        assert_eq!(
+            v.to_pretty(),
+            "{\n  \"a\": [\n    1,\n    2.5,\n    \"x\\\"y\"\n  ],\n  \"b\": {},\n  \"c\": [],\n  \"d\": {\n    \"e\": null,\n    \"f\": true\n  }\n}"
+        );
+        assert_eq!(parse(&v.to_pretty()).unwrap(), v);
     }
 }

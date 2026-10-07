@@ -35,6 +35,33 @@ fn read_all_input() -> Vec<u8> {
     }
 }
 
+/// Ordforrådet: Fristils eget, med fragmentene lagt til.
+fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
+    if manifests.is_empty() {
+        return manifest::current();
+    }
+    let mut texts = Vec::new();
+    for path in manifests {
+        let Ok(bytes) = std::fs::read(path) else {
+            fail(&format!(
+                "Fant ikke manifestet «{path}».\n\nFragmentet skrives av fristil overta, ved siden av kopien.\n"
+            ));
+        };
+        let text = String::from_utf8_lossy(&bytes).into_owned();
+        if let Err(reason) = manifest::with_fragments(&[&text]) {
+            fail(&format!(
+                "«{path}» kan ikke leses som et manifest: {reason}\n"
+            ));
+        }
+        texts.push(text);
+    }
+    let all: Vec<&str> = texts.iter().map(String::as_str).collect();
+    match manifest::with_fragments(&all) {
+        Ok(vocabulary) => std::rc::Rc::new(vocabulary),
+        Err(reason) => fail(&format!("Manifestene kan ikke leses sammen: {reason}\n")),
+    }
+}
+
 struct Source {
     name: String,
     text: String,
@@ -47,7 +74,16 @@ pub fn run(arguments: &[String]) {
     let mut missing: Vec<String> = Vec::new();
     let mut unreachable: Vec<String> = Vec::new();
 
-    let inputs: Vec<&String> = arguments.iter().filter(|a| *a != "--rendret").collect();
+    // Fragmentene fra `fristil overta`, så markupen for en kopi sjekkes også.
+    let manifests: Vec<&str> = arguments
+        .iter()
+        .filter_map(|a| a.strip_prefix("--manifest="))
+        .collect();
+    let inputs: Vec<&String> = arguments
+        .iter()
+        .filter(|a| *a != "--rendret" && !a.starts_with("--manifest="))
+        .collect();
+    let vocabulary = vocabulary(&manifests);
 
     if inputs.is_empty() {
         // WASI kan ikke se om standard inn er en terminal, så verten sier
@@ -113,7 +149,6 @@ pub fn run(arguments: &[String]) {
         std::process::exit(1);
     }
 
-    let vocabulary = manifest::current();
     let mut found = 0;
     for source in &sources {
         let text = utf16(&source.text);

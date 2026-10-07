@@ -72,7 +72,25 @@ egen overskrift «Brytende».
   `roleToCss` og `tokenName` er der som før, og `@fristil/designsystem/farge`
   er uendret.
 
+- **`fristil overta` gir kopien nytt navn.** `fs-button` blir `app-button` i
+  klassene, taggene, `customElements.define` og selektorene, så kopien er
+  din og kan stå ved siden av originalen. Variablene fra temaet, `--fs-*`,
+  beholder navnet. Bytt til det nye navnet i markupen der kopien skal brukes.
+  Kopier du har tatt fra før, røres ikke.
+
 ### Nytt
+
+- **Kommandolinja uten Node.** Den samme kommandolinja kjører som
+  `java -jar fristil.jar` (Java 17 eller nyere), i wasmtime som
+  `fristil.wasm`, og som en kjørbar fil med
+  `cargo install --git https://github.com/MarkusAugust/fristil fristil`.
+  Jar-en og modulen ligger ved hver utgivelse på GitHub, med attestasjon av
+  hvilken commit de ble bygd av, og svarer det samme som `npx`, byte for
+  byte.
+- **`fristil overta` skriver et fragment av manifestet** ved siden av kopien,
+  `fristil-manifest.json`, og `fristil sjekk --manifest=<fil>` sjekker
+  markupen for kopien mot det. Bare kopiens egne navn sjekkes, ikke resten av
+  prosjektets klasser.
 
 - **Kommandolinja er skrevet i Rust.** `npx @fristil/designsystem` kjører den
   som en WASI-modul med Node sin egen `node:wasi`, og den samme koden kan
@@ -80,7 +98,6 @@ egen overskrift «Brytende».
   er de samme: alle 130 kjøringene i pakkens egen test av kommandolinja svarer
   likt, byte for byte. Én melding er ny: er en oppskrift til `fristil tema`
   ikke gyldig JSON, er forklaringen kjernens egen og ikke Nodes.
-  `fristil overta` er fortsatt skrevet i TypeScript.
 
 - **Funnene har regelnavn, linje og kolonne.** `rule` er navnet på regelen,
   som `ukjent-klasse`, og `line` og `column` er der funnet begynner, fra 1.

@@ -416,4 +416,31 @@ mod tests {
         });
         assert!(diagnose_markup(&html, &vocabulary).is_empty());
     }
+
+    #[test]
+    fn checks_a_taken_over_component_and_nothing_else() {
+        let vocabulary = manifest::with_fragments(&[r#"{
+            "schemaVersion": 1, "version": "0",
+            "elements": {"app-dialog": {"link": "", "attributes": {"open": {"type": "flag"}}}},
+            "classes": {
+                "app-button": {"title": "Button", "link": "", "attributes": {"data-variant": {"values": ["primary"]}}},
+                "app-button__icon": {"title": "Button", "link": "", "attributes": {}}
+            }
+        }"#])
+        .unwrap();
+        let found = |html: &str| diagnose_markup(&utf16(html), &vocabulary);
+        assert!(
+            found(r#"<button class="app-button app-button__icon app-header">x</button>"#)
+                .is_empty()
+        );
+        let wrong = found(r#"<button class="app-button__ikon">x</button>"#);
+        assert_eq!(wrong[0].rule, "ukjent-klasse");
+        assert_eq!(wrong[0].fix.as_ref().unwrap().text, "app-button__icon");
+        assert_eq!(
+            found(r#"<button class="app-button" data-variant="secondary">x</button>"#).len(),
+            1
+        );
+        assert_eq!(found(r#"<app-dialog lukket></app-dialog>"#).len(), 1);
+        assert!(found(r#"<app-dialog open></app-dialog><app-dialogs></app-dialogs>"#).is_empty());
+    }
 }

@@ -14,6 +14,7 @@ mod check;
 mod check_theme;
 mod fetch;
 mod output;
+mod takeover;
 mod theme;
 
 use output::{fail, log};
@@ -26,6 +27,8 @@ pub const HELP: &str = r#"fristil <kommando>
                        En adresse hentes og sjekkes som en hel side: hver
                        id det pekes på må finnes, og hvert felt være koblet
     --rendret          Sjekk filer og standard inn som hele sider også
+    --manifest=<fil>   Sjekk også en overtatt komponent, med fragmentet
+                       fristil overta skrev ved siden av kopien
 
   sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
                        Leser --fs-color-*-verdiene i hver blokk og sier
@@ -36,7 +39,8 @@ pub const HELP: &str = r#"fristil <kommando>
                        package.json. Navn: html, maler, bundles, react, astro,
                        datastar. Vue, Svelte, Solid og Lit deler «bundles»
 
-  overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet
+  overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet,
+                       med nytt navn (app-…), så den er din å endre
     --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
     --overskriv=ja     Skriv over en kopi som finnes fra før
 
@@ -165,9 +169,7 @@ fn main() {
         "agent" => agent::run(rest),
         "sjekk" => check::run(rest),
         "sjekk-tema" => check_theme::run(rest),
-        "overta" => fail(
-            "fristil overta finnes foreløpig bare i npm-utgaven: npx @fristil/designsystem overta <komponent>\n",
-        ),
+        "overta" => takeover::run(rest),
         // `tema` kan stå først, siden kommandoen kjøres som
         // `npx @fristil/designsystem tema`.
         "tema" => theme::run(rest),

@@ -94,7 +94,7 @@ val webjar = tasks.register<Sync>("webjar") {
     from(designsystem) {
         include("dist/**/*.js", "dist/fristil.css", "src/components/**/*.css", "src/tokens/**/*.css")
         exclude(
-            "dist/cli.js", "dist/overta.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**",
+            "dist/cli.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**",
             // Temaet leser kjernen fra disken, og er for Node, ikke nettleseren.
             "dist/tokens/theme.js", "dist/tokens/theme-check.js",
         )

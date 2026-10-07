@@ -9,9 +9,9 @@
  * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
  */
 
-import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { lightCells } from "../src/tokens/matrise.js"
@@ -51,8 +51,8 @@ let antallKjøringer = 0
 async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   antallKjøringer += 1
 
-  const start = (kommando: string[]) =>
-    Bun.spawn([...kommando, ...argumenter], {
+  const start = (kommando: string[], med = argumenter) =>
+    Bun.spawn([...kommando, ...med], {
       stdout: "pipe",
       stderr: "pipe",
       // `agent` leser package.json i arbeidsmappa. Uten dette ville hver
@@ -68,10 +68,35 @@ async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
     return { kode, ut, feil }
   }
 
+  /*
+   * `overta` skriver til mappa i `--ut`. Den andre kommandoen får sin egen
+   * kopi av mappa, slik den var før den første kjørte, og stien byttes
+   * tilbake i svaret før det sammenlignes.
+   */
+  const ut =
+    SAMMENLIGN && argumenter[0] === "overta"
+      ? argumenter.find((del) => del.startsWith("--ut="))?.slice("--ut=".length)
+      : undefined
+  const annenUt = ut
+    ? join(await mkdtemp(join(tmpdir(), "fristil-sammenlign-")), "ut")
+    : undefined
+  if (ut && annenUt) await cp(ut, annenUt, { recursive: true }).catch(() => {})
+
   const resultat = await svar(start(KOMMANDO))
-  // `overta` skrives i Rust i fase 4D, og til da finnes den bare her.
-  if (SAMMENLIGN && argumenter[0] !== "overta") {
-    const annet = await svar(start(SAMMENLIGN))
+  if (SAMMENLIGN) {
+    const annet = await svar(
+      start(
+        SAMMENLIGN,
+        argumenter.map((del) =>
+          ut && annenUt && del === `--ut=${ut}` ? `--ut=${annenUt}` : del,
+        ),
+      ),
+    )
+    if (ut && annenUt) {
+      annet.ut = annet.ut.replaceAll(annenUt, ut)
+      annet.feil = annet.feil.replaceAll(annenUt, ut)
+      await rm(dirname(annenUt), { recursive: true, force: true })
+    }
     /*
      * To forklaringer kom fra JavaScript-motoren selv, og kan ikke bli like:
      * hva som er galt i en JSON-fil, og hvorfor ingen svarte på en adresse
@@ -394,6 +419,16 @@ function krev(påstand: boolean, beskrivelse: string): void {
     krev(kode === 0, `overta ${navn} avsluttet med kode ${kode}`)
 
     const kopimappe = join(mappe, navn, navn)
+    const lest = await kjør([
+      "sjekk",
+      `--manifest=${join(kopimappe, "fristil-manifest.json")}`,
+      join(kopimappe, `${(await readdir(kopimappe))[0]}`),
+    ])
+    krev(
+      !lest.feil.includes("kan ikke leses som et manifest") &&
+        !lest.feil.includes("Fant ikke manifestet"),
+      `fragmentet for ${navn} kunne ikke leses: ${lest.feil.slice(0, 200)}`,
+    )
     for (const fil of await readdir(kopimappe)) {
       const innhold = await readFile(join(kopimappe, fil), "utf8")
 
@@ -447,6 +482,46 @@ function krev(påstand: boolean, beskrivelse: string): void {
   krev(
     melding.includes("er nå din"),
     "utskriften sier ikke at kopien er konsumentens ansvar",
+  )
+
+  // Kopien har fått nytt navn, og et fragment av manifestet med det navnet.
+  krev(
+    kilde.includes('"app-button"') && !kilde.includes('"fs-button"'),
+    "kopien heter fortsatt fs-button",
+  )
+  const css = await readFile(join(mappe, "ui/button/button.css"), "utf8")
+  krev(
+    css.includes(".app-button") && css.includes("var(--fs-"),
+    "stilarket fikk ikke nytt navn, eller mistet variablene fra temaet",
+  )
+  krev(
+    filer.includes("fristil-manifest.json"),
+    "fragmentet av manifestet ble ikke skrevet",
+  )
+  const fragment = `--manifest=${join(mappe, "ui/button/fristil-manifest.json")}`
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="app-button" data-variant="feil">x</button>\n',
+  )
+  const medFragment = await kjør(["sjekk", fragment, side])
+  krev(
+    medFragment.kode !== 0 && medFragment.ut.includes("data-variant"),
+    "sjekken med fragmentet så ikke feilen i markupen for kopien",
+  )
+  const utenFragment = await kjør(["sjekk", side])
+  krev(
+    utenFragment.kode === 0,
+    "sjekken uten fragmentet skulle latt app-button være",
+  )
+  const ukjent = await kjør([
+    "sjekk",
+    `--manifest=${join(mappe, "finnes-ikke.json")}`,
+    side,
+  ])
+  krev(
+    ukjent.kode !== 0 && ukjent.feil.includes("finnes-ikke.json"),
+    "et manifest som ikke finnes, ble ikke meldt",
   )
 
   // Kopien skal ikke skrives over uten at det er bedt om.

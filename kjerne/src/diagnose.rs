@@ -798,6 +798,51 @@ fn check_session_timeout(
     }]
 }
 
+/// Navnet på blokken en klasse hører til: `app-button` for `app-button--primary`.
+fn block(name: &str) -> &str {
+    let end = [name.find("__"), name.find("--")]
+        .into_iter()
+        .flatten()
+        .min()
+        .unwrap_or(name.len());
+    &name[..end]
+}
+
+/// Om en klasse skal sjekkes mot ordforrådet.
+///
+/// Alt som begynner med `fs-` er Fristils. En overtatt komponent har et annet
+/// navn, som `app-button`, og da sjekkes bare den blokken, med elementer og
+/// varianter: resten av prosjektets `app-*`-klasser er ikke Fristils sak.
+fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
+    if starts_at(token, 0, "fs-") {
+        return true;
+    }
+    vocabulary
+        .classes
+        .iter()
+        .filter(|c| !c.name.starts_with("fs-"))
+        .any(|c| {
+            let block = block(&c.name);
+            starts_at(token, 0, block)
+                && (token.len() == block.encode_utf16().count()
+                    || starts_at(token, block.encode_utf16().count(), "--")
+                    || starts_at(token, block.encode_utf16().count(), "__"))
+        })
+}
+
+/// Om en tagg som begynner ved `at` er en av elementene i ordforrådet som
+/// ikke heter `fs-…`, som en overtatt `<app-dialog>`.
+fn own_element_at(vocabulary: &Vocabulary, source: &[u16], at: usize) -> bool {
+    vocabulary
+        .elements
+        .iter()
+        .filter(|e| !e.tag.starts_with("fs-"))
+        .any(|e| {
+            let end = at + e.tag.encode_utf16().count();
+            starts_at_ci(source, at, &e.tag) && source.get(end).is_none_or(|&c| !is_name_char(c))
+        })
+}
+
 fn find_class<'a>(vocabulary: &'a Vocabulary, name: &[u16]) -> Option<&'a Class> {
     vocabulary.classes.iter().find(|k| equals(name, &k.name))
 }
@@ -821,7 +866,7 @@ fn check_classes(
     let mut present: Vec<&Class> = Vec::new();
     for (offset, token) in words(value) {
         let start = class_attribute.value_start + offset;
-        if !starts_at(token, 0, "fs-")
+        if !checked_class(vocabulary, token)
             || token.iter().any(|&c| c == b'{' as u16 || c == b'}' as u16)
         {
             continue;
@@ -839,9 +884,17 @@ fn check_classes(
             link: meant.as_ref().map_or(DOCS.to_string(), |(m, _)| {
                 find_class(vocabulary, &utf16(m)).unwrap().link.clone()
             }),
-            message: match &meant {
-                Some((m, _)) => format!("Klassen «{t}» finnes ikke i Fristil. Mente du {m}?"),
-                None => format!("Klassen «{t}» finnes ikke i Fristil."),
+            message: {
+                // En overtatt komponent er ikke lenger Fristils.
+                let place = if starts_at(token, 0, "fs-") {
+                    "i Fristil"
+                } else {
+                    "i manifestet for kopien"
+                };
+                match &meant {
+                    Some((m, _)) => format!("Klassen «{t}» finnes ikke {place}. Mente du {m}?"),
+                    None => format!("Klassen «{t}» finnes ikke {place}."),
+                }
             },
             fix: meant.map(|(m, sure)| Fix {
                 title: format!("Bytt til {m}"),
@@ -1023,12 +1076,13 @@ pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
 
     let mut i = 0;
     while i < source.len() {
-        let is_fs = source[i] == LT && starts_at_ci(&source, i + 1, "fs-");
+        let is_fs = source[i] == LT
+            && (starts_at_ci(&source, i + 1, "fs-") || own_element_at(vocabulary, &source, i + 1));
         if !is_fs {
             i += 1;
             continue;
         }
-        let mut j = i + 4;
+        let mut j = i + 1;
         while j < source.len() && is_name_char(source[j]) {
             j += 1;
         }

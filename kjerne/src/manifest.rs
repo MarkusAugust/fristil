@@ -67,8 +67,52 @@ fn entries<'a>(value: &'a Json, path: &str) -> Result<&'a [(String, Json)], Stri
 
 /// Leser et manifest. Feilmeldingen sier hva som er galt og hvor.
 pub fn from_json(source: &str) -> Result<Vocabulary, String> {
-    let root = parse(source)?;
-    let schema_version = field(&root, "schemaVersion", "manifestet")?
+    from_value(&parse(source)?)
+}
+
+/// Det innebygde manifestet med fragmentene lagt til.
+///
+/// Et fragment har samme form som manifestet, med elementene og klassene til
+/// én overtatt komponent, og skrives av `fristil overta` ved siden av kopien.
+/// Et navn som finnes fra før, byttes ut.
+pub fn with_fragments(fragments: &[&str]) -> Result<Vocabulary, String> {
+    let mut root = parse(BUILTIN)?;
+    for fragment in fragments {
+        let fragment = parse(fragment)?;
+        let schema_version = field(&fragment, "schemaVersion", "fragmentet")?
+            .as_f64()
+            .ok_or("schemaVersion skal være et tall.")? as u32;
+        if schema_version != SCHEMA_VERSION {
+            return Err(format!(
+                "Fragmentet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}."
+            ));
+        }
+        for section in ["elements", "classes"] {
+            let Some(added) = fragment.get(section) else {
+                continue;
+            };
+            let added = entries(added, section)?.to_vec();
+            let Json::Object(root_entries) = &mut root else {
+                return Err("Manifestet skal være et objekt.".into());
+            };
+            let Some((_, Json::Object(existing))) =
+                root_entries.iter_mut().find(|(k, _)| k == section)
+            else {
+                return Err(format!("Manifestet mangler «{section}»."));
+            };
+            for (name, value) in added {
+                match existing.iter_mut().find(|(k, _)| *k == name) {
+                    Some(entry) => entry.1 = value,
+                    None => existing.push((name, value)),
+                }
+            }
+        }
+    }
+    from_value(&root)
+}
+
+fn from_value(root: &Json) -> Result<Vocabulary, String> {
+    let schema_version = field(root, "schemaVersion", "manifestet")?
         .as_f64()
         .ok_or("schemaVersion skal være et tall.")? as u32;
     if schema_version != SCHEMA_VERSION {
@@ -76,10 +120,10 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
             "Manifestet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}. Oppdater kjernen og manifestet til samme versjon av Fristil."
         ));
     }
-    let version = text(field(&root, "version", "manifestet")?, "version")?;
+    let version = text(field(root, "version", "manifestet")?, "version")?;
 
     let mut elements = Vec::new();
-    for (tag, element) in entries(field(&root, "elements", "manifestet")?, "elements")? {
+    for (tag, element) in entries(field(root, "elements", "manifestet")?, "elements")? {
         let path = format!("elements.{tag}");
         let mut attributes = Vec::new();
         for (name, attribute) in entries(
@@ -108,7 +152,7 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
     }
 
     let mut classes = Vec::new();
-    for (name, class) in entries(field(&root, "classes", "manifestet")?, "classes")? {
+    for (name, class) in entries(field(root, "classes", "manifestet")?, "classes")? {
         let path = format!("classes.{name}");
         let mut attributes = Vec::new();
         for (attribute_name, attribute) in entries(
@@ -155,6 +199,18 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn adds_a_fragment_to_the_builtin_manifest() {
+        let v = with_fragments(&[r#"{"schemaVersion": 1, "version": "0", "elements": {"app-dialog": {"link": "", "attributes": {}}}, "classes": {"app-button": {"title": "Button", "link": "", "attributes": {}}}}"#]).unwrap();
+        assert!(v.classes.iter().any(|c| c.name == "app-button"));
+        assert!(
+            v.classes.iter().any(|c| c.name == "fs-button"),
+            "Fristils egne står"
+        );
+        assert!(v.elements.iter().any(|e| e.tag == "app-dialog"));
+        assert!(with_fragments(&[r#"{"schemaVersion": 2}"#]).is_err());
+    }
 
     #[test]
     fn reads_the_builtin_manifest() {

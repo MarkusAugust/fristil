@@ -67,6 +67,18 @@ krever at hver import i hver modul peker på en fil i WebJar-en.
 
 Versjonen er den samme som npm-pakkens, lest fra `../designsystem/package.json`.
 
+## Kommandolinja
+
+`kommandolinje/` bygger `fristil.jar`, kommandolinja som `java -jar`. Den
+kjører WASI-modulen fra `../kjerne/cli` med Chicory, kompilert til bytekode
+ved bygg, og henter adresser med Javas egen HTTP-klient. Den gis ut på GitHub
+Releases, ikke på Maven.
+
+```bash
+cd kotlin && ./gradlew :kommandolinje:jar
+java -jar kommandolinje/build/libs/fristil.jar --hjelp
+```
+
 ## Kjør
 
 ```bash

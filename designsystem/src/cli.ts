@@ -15,8 +15,6 @@
  * - henter adressene `fristil sjekk` får, siden WASI ikke har nettverk, og
  *   gir siden til modulen som en fil (se `kjerne/cli/src/fetch.rs`);
  * - sier fra når standard inn er en terminal, som WASI ikke kan se.
- *
- * `fristil overta` er fortsatt skrevet i TypeScript (`overta.ts`).
  */
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
@@ -27,12 +25,6 @@ import { isatty } from "node:tty"
 const MODULE = new URL("../kjerne/fristil.wasm", import.meta.url)
 
 const args = process.argv.slice(2)
-
-if (args[0] === "overta") {
-  const { overta } = await import("./overta.js")
-  await overta(args.slice(1))
-  process.exit(0)
-}
 
 const windows = process.platform === "win32"
 

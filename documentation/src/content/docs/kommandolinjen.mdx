@@ -22,6 +22,37 @@ uten kommando, eller med `--hjelp`, viser hele oversikten.
 | `tema` | lager et fargetema av merkefargene dine |
 | `sjekk-tema` | kontrollerer at et tema holder kontrastkravene |
 
+## Uten Node
+
+Kommandoene er skrevet én gang, i Rust, og bygget som en WebAssembly-modul
+for WASI. `npx` kjører den med Node, men den samme modulen kjører også uten,
+og svarer det samme, byte for byte. Velg det som allerede finnes på maskinen:
+
+| Har du | Kjør |
+| --- | --- |
+| Java 17 eller nyere | `java -jar fristil.jar sjekk skjema.html` |
+| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. fristil.wasm sjekk skjema.html` |
+| Rust | `cargo install --git https://github.com/MarkusAugust/fristil fristil`, og så `fristil sjekk skjema.html` |
+
+`fristil.jar` og `fristil.wasm` ligger ved hver
+[utgivelse på GitHub](https://github.com/MarkusAugust/fristil/releases/latest),
+med samme versjon som npm-pakken. Ingen av dem er signert med et sertifikat.
+GitHub attesterer i stedet hvilken commit og hvilken arbeidsflyt hver fil ble
+bygd av, og det kan du kontrollere selv:
+
+```bash
+gh attestation verify fristil.jar --repo MarkusAugust/fristil
+```
+
+Jar-en har alt i seg og trenger ingen avhengigheter. wasmtime ser bare mappene
+du gir den med `--dir`, så stiene i kommandoen må ligge under dem.
+
+En adresse hentes av verten, siden WASI ikke har nettverk. `npx` og `java -jar`
+henter både `http://` og `https://`. Den kjørbare fila fra `cargo install`
+henter `http://`, som er det en lokal server svarer på. I wasmtime, og for
+`https://` fra `cargo install`, sender du siden inn selv:
+`curl -s https://… | fristil sjekk --rendret`.
+
 ## sjekk
 
 `sjekk` er den samme kontrollen som [editoren](../editoren/) kjører mens du
@@ -38,8 +69,8 @@ Den leser tre slags inndata:
 
 - **filer**, oppgitt som argumenter;
 - **standard inn**, når ingen filer er oppgitt;
-- **en adresse** som begynner med `http://` eller `https://`. Den hentes med
-  `fetch`. En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
+- **en adresse** som begynner med `http://` eller `https://`. Den hentes av
+  kommandolinja, se [Uten Node](#uten-node). En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
   gir feilkode i stedet for å bli sjekket.
 
 Hvert funn skrives som en kompilator skriver det, med fil, linje og kolonne:
@@ -138,8 +169,9 @@ fun `skjemaet er koblet riktig`() {
 Testen feiler med funnene som melding, og det er meldingen en kodeagent leser
 og retter etter.
 
+Uten Node i CI bytter du `npx @fristil/designsystem` med `java -jar fristil.jar`.
 Med [Fristil for Kotlin](../kotlin/) blir det `assertFristil(html)`, med den
-samme sjekken kjørt i JVM-en, uten Node.
+samme sjekken kjørt i JVM-en.
 
 ## agent
 
@@ -168,12 +200,30 @@ Hvordan agenten finner regelboka, står på [Kodeagenter](../kodeagenter/).
 ## overta
 
 Kopierer kildekoden til én komponent inn i prosjektet: TypeScript-fila og
-stilarket. Henvisningene ut av komponenten skrives om til pakken, så resten av
-systemet fortsatt kommer fra `@fristil/designsystem` og kan oppgraderes.
+stilarket. Kopien er din fra det øyeblikket den er skrevet, og kommandoen gjør
+tre ting for at den skal kunne være det:
+
+- **Kopien får nytt navn.** `fs-button` blir `app-button` i klassene,
+  taggene, `customElements.define` og selektorene. Kopien kan dermed stå ved
+  siden av originalen, og du bytter navnet i markupen der kopien skal brukes.
+  Variablene fra temaet, `--fs-*`, er de samme, så kopien følger temaet ditt
+  som før.
+- **Henvisningene ut av komponenten skrives om** til pakken, så resten av
+  systemet fortsatt kommer fra `@fristil/designsystem` og kan oppgraderes.
+- **Et fragment av manifestet skrives ved siden av**, `fristil-manifest.json`,
+  med klassene, elementene og verdiene til kopien under det nye navnet. Med
+  det sjekker `sjekk` markupen for kopien også:
 
 ```bash
 npx @fristil/designsystem overta button --ut=src/ui
+npx @fristil/designsystem sjekk --manifest=src/ui/button/fristil-manifest.json maler/*.html
 ```
+
+Uten `--manifest` lar `sjekk` alt som ikke begynner med `fs-` være. Med det
+sjekkes bare kopiens egne navn, `app-button` med varianter og elementer, ikke
+resten av prosjektets klasser. Endrer du kopien, for eksempel med en ny
+variant, skriver du den inn i fragmentet også. `--manifest` kan gis flere
+ganger, én gang for hver kopi.
 
 | Flagg | Betydning |
 | --- | --- |
