@@ -6,6 +6,12 @@ bare endrer seg når et element eller et attributt gjør det.
 ## Ikke utgitt
 
 - Nytt ikon: det nye Fristil-merket, en F i to lag.
+- Feilmeldingene kommer fra Rust-kjernen, den samme som `fristil sjekk`,
+  IntelliJ og Fristil for Kotlin bruker. Modulen ligger i utvidelsen, så den
+  trenger fortsatt ingenting installert.
+- Hver feilmelding viser regelnavnet, som `ukjent-klasse`, med lenke til
+  komponentsiden. Navnet er det `<!-- fristil-ignore-next ukjent-klasse -->`
+  tar for å undertrykke ett funn.
 
 ## 0.7.0
 

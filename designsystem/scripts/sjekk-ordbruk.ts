@@ -135,8 +135,8 @@ const HOPP_OVER = [
   // Generert fra tokens.ts.
   "designsystem/src/tokens/tokens.css",
   // Generert av editor/scripts/generate.ts fra metadata.ts, som leses.
-  "designsystem/src/diagnostics/classes.ts",
-  "designsystem/src/diagnostics/elements.ts",
+  "designsystem/src/vocabulary/classes.ts",
+  "designsystem/src/vocabulary/elements.ts",
 ]
 
 const funn: string[] = []

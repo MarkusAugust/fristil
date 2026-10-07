@@ -9,9 +9,9 @@
  *   - `editor/snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `designsystem/src/diagnostics/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
+ *   - `designsystem/src/vocabulary/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
  *     for tagg.
- *   - `designsystem/src/diagnostics/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
+ *   - `designsystem/src/vocabulary/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
  *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
  *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken
@@ -33,7 +33,7 @@ import type {
   Attribute,
   Classes,
   Elements,
-} from "@fristil/designsystem/diagnostics"
+} from "../../designsystem/src/vocabulary/types.js"
 import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
@@ -419,26 +419,25 @@ export function files(): Record<string, string> {
   ).version
   const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`
   /*
-   * Diagnostikkens lister skrives som TypeScript-moduler inn i pakken, ikke
-   * som JSON: Node krever `with { type: "json" }` for å importere JSON i
+   * Ordforrådet skrives som TypeScript-moduler inn i pakken, ikke som JSON: Node krever `with { type: "json" }` for å importere JSON i
    * ESM, og `tsc` skriver ikke attributtet. Biome hopper over filene, siden
    * `JSON.stringify` ikke setter avsluttende komma.
    */
   const module = (name: string, type: string, value: unknown) =>
     `// Generert av editor/scripts/generate.ts. Ikke rediger.\n` +
-    `import type { ${type} } from "./diagnostics.js"\n\n` +
+    `import type { ${type} } from "./types.js"\n\n` +
     `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
     "editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt":
       kotlinKlasser(),
     "editor/fristil.html-data.json": json(htmlData()),
     "editor/snippets.json": json(snippets()),
-    "designsystem/src/diagnostics/elements.ts": module(
+    "designsystem/src/vocabulary/elements.ts": module(
       "elements",
       "Elements",
       diagnosticsData(),
     ),
-    "designsystem/src/diagnostics/classes.ts": module(
+    "designsystem/src/vocabulary/classes.ts": module(
       "classes",
       "Classes",
       classesData(),

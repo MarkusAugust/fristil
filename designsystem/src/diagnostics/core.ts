@@ -1,23 +1,75 @@
 /**
- * Kjernen i JavaScript: laster WebAssembly-modulen og gir de samme to
- * funksjonene som `@fristil/designsystem/diagnostics`, og i tillegg
- * manifestet og versjonen.
+ * Kjernen: Fristils sjekk, skrevet i Rust og bygget til én WebAssembly-modul.
  *
- * Modulen har ingen importer, så den trenger ingen lim. Lasteren skriver
- * teksten inn som UTF-8 og leser svaret ut som JSON, slik hvert annet
- * vertsspråk gjør det.
+ * Den samme modulen kjøres her, i VS Code, på JVM-en (Chicory) og i IntelliJ,
+ * og gir det samme svaret overalt. Modulen har ingen importer, så den trenger
+ * ingen lim: lasteren skriver teksten inn som UTF-8 og leser svaret ut som
+ * JSON, slik hvert vertsspråk gjør det.
+ *
+ * `diagnoseMarkup` og `diagnosePage` i `index.ts` laster modulen fra pakken
+ * selv. `loadCore` er for den som har modulen på en annen måte, som en
+ * utvidelse som pakker den med seg, eller en nettleser:
  *
  * ```ts
- * const kjerne = loadCore(readFileSync("fristil-kjerne.wasm"))
+ * const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(url)))
  * kjerne.diagnosePage(html)
  * ```
  *
  * Synkron, fordi Node, Bun og VS Code tillater det. I nettleseren må modulen
- * kompileres med `WebAssembly.compile` først, og den kompilerte modulen kan
- * så gis hit.
+ * kompileres med `WebAssembly.compile` først, og den kompilerte modulen gis
+ * hit.
  */
 
-import type { Finding } from "../../designsystem/src/diagnostics/index.js"
+export type Severity = "error" | "warning"
+
+/**
+ * En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
+ * `preferred` er den sikre, som `onlinetext` til `online-text`: samme
+ * bokstaver, bare skrevet annerledes. Et forslag på avstand er et forslag.
+ */
+export type Fix = {
+  title: string
+  start: number
+  end: number
+  text: string
+  preferred?: boolean
+}
+
+export type Finding = {
+  /** Der funnet begynner, som indeks i teksten (UTF-16, som en `string`). */
+  start: number
+  end: number
+  /** Linja funnet begynner på, fra 1. */
+  line: number
+  /** Kolonnen funnet begynner på, fra 1, i UTF-16-enheter. */
+  column: number
+  message: string
+  severity: Severity
+  /** Navnet på regelen, som `ukjent-klasse`. Det er det `fristil-ignore-next` tar. */
+  rule: string
+  /** Komponentsiden, som lenke i meldingen. */
+  link: string
+  fix?: Fix
+}
+
+export type CoreVersion = {
+  /** Versjonen av kjernen. */
+  core: string
+  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra. */
+  manifest: string
+  /** Formen på manifestet kjernen forstår. */
+  schemaVersion: number
+}
+
+export type Core = {
+  diagnoseMarkup(html: string): Finding[]
+  diagnosePage(html: string): Finding[]
+  /** Sjekker mot et annet manifest. Kaster med kjernens forklaring hvis det ikke kan leses. */
+  loadManifest(json: string): void
+  /** Går tilbake til manifestet kjernen er bygget med. */
+  resetManifest(): void
+  version(): CoreVersion
+}
 
 type Exports = {
   memory: WebAssembly.Memory
@@ -31,35 +83,7 @@ type Exports = {
   result_len(): number
 }
 
-/** Et funn fra kjernen: det samme som `Finding`, med regel, linje og kolonne. */
-export type CoreFinding = Finding & {
-  /** Navnet på regelen, som `ukjent-klasse`. */
-  rule: string
-  /** Linja funnet begynner på, fra 1. */
-  line: number
-  /** Kolonnen funnet begynner på, fra 1, i UTF-16-enheter. */
-  column: number
-}
-
-export type CoreVersion = {
-  /** Versjonen av kjernen. */
-  core: string
-  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra. */
-  manifest: string
-  /** Formen på manifestet kjernen forstår. */
-  schemaVersion: number
-}
-
-export type Core = {
-  diagnoseMarkup(html: string): CoreFinding[]
-  diagnosePage(html: string): CoreFinding[]
-  /** Sjekker mot et annet manifest. Kaster med kjernens forklaring hvis det ikke kan leses. */
-  loadManifest(json: string): void
-  /** Går tilbake til manifestet kjernen er bygget med. */
-  resetManifest(): void
-  version(): CoreVersion
-}
-
+/** Laster kjernen fra modulens bytes eller en ferdig kompilert modul. */
 export function loadCore(source: BufferSource | WebAssembly.Module): Core {
   const module =
     source instanceof WebAssembly.Module

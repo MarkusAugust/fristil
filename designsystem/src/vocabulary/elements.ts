@@ -1,5 +1,5 @@
 // Generert av editor/scripts/generate.ts. Ikke rediger.
-import type { Elements } from "./diagnostics.js"
+import type { Elements } from "./types.js"
 
 export const elements: Elements = {
   "fs-field": {

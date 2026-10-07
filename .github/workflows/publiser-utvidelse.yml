@@ -45,6 +45,11 @@ jobs:
       - name: Bygg pakken
         run: bun run typecheck
 
+      # Utvidelsen har kjernen med seg i dist/, bygget fra Rust. rustup henter
+      # versjonen i `kjerne/rust-toolchain.toml`.
+      - name: Bygg kjernen
+        run: bun kjerne/scripts/bygg.ts
+
       # Kontrollerer at filene i repoet er de generatoren ville skrevet nå,
       # og pakker editor/fristil.vsix.
       - name: Sjekk og pakk

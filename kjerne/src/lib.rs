@@ -52,26 +52,50 @@ pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     suppress::apply(html, findings)
 }
 
-/// Linje og kolonne for en UTF-16-posisjon, begge fra 1.
+/// Hvor hver linje begynner, så linje og kolonne for et funn er et oppslag.
+///
+/// Telte hvert funn linjeskiftene fra starten av teksten, vokste tiden med
+/// kvadratet av sidens lengde: 6000 funn på en side med 3000 linjer tok en
+/// kvart sekund.
+pub struct Lines {
+    starts: Vec<usize>,
+}
+
+impl Lines {
+    pub fn new(text: &[u16]) -> Self {
+        let mut starts = vec![0];
+        starts.extend(
+            text.iter()
+                .enumerate()
+                .filter(|&(_, &c)| c == b'\n' as u16)
+                .map(|(i, _)| i + 1),
+        );
+        Lines { starts }
+    }
+
+    /// Linje og kolonne for en UTF-16-posisjon, begge fra 1.
+    pub fn line_and_column(&self, at: usize) -> (usize, usize) {
+        // Linja er den siste som begynner på eller før `at`.
+        let line = self.starts.partition_point(|&start| start <= at);
+        (line, at - self.starts[line - 1] + 1)
+    }
+}
+
+/// Linje og kolonne for én UTF-16-posisjon, begge fra 1.
 pub fn line_and_column(text: &[u16], at: usize) -> (usize, usize) {
-    let before = &text[..at.min(text.len())];
-    let line = 1 + before.iter().filter(|&&c| c == b'\n' as u16).count();
-    let column = match before.iter().rposition(|&c| c == b'\n' as u16) {
-        Some(newline) => at - newline,
-        None => at + 1,
-    };
-    (line, column)
+    Lines::new(&text[..at.min(text.len())]).line_and_column(at)
 }
 
 /// Funnene som JSON, i samme form som `JSON.stringify` av `Finding[]`, med
 /// regelnavn, linje og kolonne i tillegg.
 pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
+    let lines = Lines::new(text);
     let mut out = String::from("[");
     for (i, f) in findings.iter().enumerate() {
         if i > 0 {
             out.push(',');
         }
-        let (line, column) = line_and_column(text, f.start);
+        let (line, column) = lines.line_and_column(f.start);
         out.push_str(&format!(
             "{{\"start\":{},\"end\":{},\"line\":{line},\"column\":{column},\"severity\":{},\"rule\":{},\"link\":{},\"message\":{}",
             f.start,
@@ -232,6 +256,21 @@ mod tests {
         assert_eq!(line_and_column(&text, 3), (2, 1));
         // «🧾» er to UTF-16-enheter.
         assert_eq!(line_and_column(&text, 6), (2, 4));
+    }
+
+    #[test]
+    fn looks_up_lines_like_counting_them() {
+        let text = utf16("\n\nab\n\ncd\n");
+        let lines = Lines::new(&text);
+        for at in 0..=text.len() {
+            let before = &text[..at];
+            let line = 1 + before.iter().filter(|&&c| c == b'\n' as u16).count();
+            let column = match before.iter().rposition(|&c| c == b'\n' as u16) {
+                Some(newline) => at - newline,
+                None => at + 1,
+            };
+            assert_eq!(lines.line_and_column(at), (line, column), "ved {at}");
+        }
     }
 
     #[test]

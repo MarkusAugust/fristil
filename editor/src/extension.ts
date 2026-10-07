@@ -2,8 +2,9 @@
  * Kobler diagnostikken til VS Code, og gir fullføring, forklaring og
  * hurtigrettelser oppå den.
  *
- * Alt som sjekker noe står i `diagnostics.ts`, uten VS Code i seg. Her leses
- * `elements` og `classes` fra pakken, og:
+ * Alt som sjekker noe står i kjernen, skrevet i Rust og bygget til
+ * WebAssembly, uten VS Code i seg. Den samme modulen kjører i `fristil sjekk`,
+ * på JVM-en og i IntelliJ. Her leses `elements` og `classes` fra pakken, og:
  *
  *   - hvert dokument i et av språkene i `fristil.languages` kjøres gjennom
  *     når det åpnes og endres, og funnene blir røde og gule streker med
@@ -25,21 +26,55 @@
  * fil skal ikke kopieres for hvert tastetrykk.
  */
 
-import {
-  classes,
-  diagnose,
-  elements,
-  type Finding,
-  tagEnd,
-} from "@fristil/designsystem/diagnostics"
+import { readFileSync } from "node:fs"
 import * as vscode from "vscode"
+/*
+ * Kjernen og ordforrådet hentes fra kilden i pakken, ikke fra
+ * `@fristil/designsystem/diagnostics`: utvidelsen pakkes til én fil, og har
+ * modulen med seg i `dist/` i stedet for å lete etter den i `node_modules`.
+ */
+import {
+  type Finding,
+  loadCore,
+} from "../../designsystem/src/diagnostics/core.js"
+import { classes } from "../../designsystem/src/vocabulary/classes.js"
+import { elements } from "../../designsystem/src/vocabulary/elements.js"
 
 const DELAY_MS = 250
 const SOURCE = "Fristil"
 /** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
 const WINDOW = 4000
 
+/**
+ * Der taggen som begynner før `from` slutter, eller -1 når den ikke er lukket.
+ * `>` i en verdi i anførselstegn, og i `<?…?>` og `<%…%>`, avslutter den ikke.
+ */
+function tagEnd(text: string, from: number): number {
+  let quote: string | null = null
+  for (let i = from; i < text.length; i++) {
+    const char = text[i]
+    if (quote) {
+      if (char === quote) quote = null
+      continue
+    }
+    if (char === '"' || char === "'") quote = char
+    else if (char === "<" && (text[i + 1] === "?" || text[i + 1] === "%")) {
+      const closer = text.indexOf(`${text[i + 1]}>`, i + 2)
+      if (closer < 0) return -1
+      i = closer + 1
+    } else if (char === ">") return i
+  }
+  return -1
+}
+
 export function activate(context: vscode.ExtensionContext) {
+  // Kjernen er bygget fra Rust og ligger ved siden av utvidelsen i `dist/`.
+  const core = loadCore(
+    readFileSync(
+      vscode.Uri.joinPath(context.extensionUri, "dist", "fristil-kjerne.wasm")
+        .fsPath,
+    ),
+  )
   const classNames = Object.keys(classes)
   const elementNames = Object.keys(elements)
 
@@ -71,8 +106,9 @@ export function activate(context: vscode.ExtensionContext) {
         : vscode.DiagnosticSeverity.Warning,
     )
     diagnostic.source = SOURCE
+    // Regelnavnet er det `<!-- fristil-ignore-next … -->` tar.
     diagnostic.code = {
-      value: "dokumentasjon",
+      value: finding.rule,
       target: vscode.Uri.parse(finding.link),
     }
     return diagnostic
@@ -80,7 +116,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const check = (document: vscode.TextDocument) => {
     if (!supported(document) || document.isClosed) return
-    const findings = diagnose(document.getText(), elements, classes)
+    const findings = core.diagnoseMarkup(document.getText())
     latest.set(document.uri.toString(), findings)
     collection.set(
       document.uri,

@@ -324,6 +324,7 @@
     "dist",
     "web-types.json",
     "manifest/manifest.json",
+    "kjerne/fristil-kjerne.wasm",
     "manifest/manifest.schema.json",
     "src/tokens",
     "src/components",
@@ -339,7 +340,8 @@
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
     "bygg:css": "bun scripts/bygg-css.ts",
-    "build": "bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:tekster && bun run sjekk:identifikatorer && bun run sjekk:agent && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "kjerne": "bun ../kjerne/scripts/bygg.ts",
+    "build": "bun run generate && bun run kjerne && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:tekster && bun run sjekk:identifikatorer && bun run sjekk:agent && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",

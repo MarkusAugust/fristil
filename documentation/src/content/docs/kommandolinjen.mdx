@@ -115,8 +115,9 @@ expect(diagnoseMarkup(mal)).toEqual([]) // en mal eller en bit av en side
 expect(diagnosePage(html)).toEqual([]) // en hel side, med koblingen
 ```
 
-Hvert funn har `start`, `end`, `severity` og `message`, og noen har en `fix`
-editoren kan tilby.
+Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule` og
+`message`, og noen har en `fix` editoren kan tilby. Sjekken er den samme
+Rust-kjernen som editorene bruker, bygget til WebAssembly og med i pakken.
 
 Er appen skrevet i et annet språk, kjører testen kommandoen over HTML-en den
 rendrer. I Kotlin:
@@ -136,6 +137,9 @@ fun `skjemaet er koblet riktig`() {
 
 Testen feiler med funnene som melding, og det er meldingen en kodeagent leser
 og retter etter.
+
+Med [Fristil for Kotlin](../kotlin/) blir det `assertFristil(html)`, med den
+samme sjekken kjørt i JVM-en, uten Node.
 
 ## agent
 

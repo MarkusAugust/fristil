@@ -73,7 +73,7 @@ en klasse diagnostikken avviser.
 
 Den er Kotlin og ikke JSON med vilje: da trengs ingen parser og ingen
 avhengighet, og kompilatoren leser dataene. Det er det samme valget som for
-`src/diagnostics/classes.ts`.
+`src/vocabulary/classes.ts`.
 
 Regenerer med:
 

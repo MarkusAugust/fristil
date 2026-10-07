@@ -1,11 +1,9 @@
 /**
- * At diagnostikken feller hver feiltype den skal, og bare dem.
+ * At kjernen feller hver feiltype den skal, og bare dem.
  *
- * Elementene leses fra generatoren i minnet, ikke fra `elements.ts` på
- * disk, så sjekken bruker den samme kilden som utvidelsen ville fått etter
- * `bun run generate`. Diagnostikken importeres fra kilden i pakken, ikke
- * fra `dist`: da feller en regel som er skrudd av med en gang, uten et
- * bygg imellom, slik en mutasjonstest skal. Hvert tilfelle sier hvor mange funn det skal gi og
+ * Kjernen er Rust-modulen slik `bun run kjerne` sist bygget den, med
+ * manifestet innebygd. En regel som er skrudd av i Rust, feller her etter
+ * neste bygg av modulen. Hvert tilfelle sier hvor mange funn det skal gi og
  * hva meldingen skal nevne, og de rene tilfellene skal gi null. Snippetene
  * fra komponentsidene er med som rene tilfeller: gir en av dem funn, er
  * enten regelen eller oppskriften feil, og begge deler skal fram.
@@ -15,19 +13,24 @@
  * linjer, et felt uten lukketagg. En gren uten tilfelle overlever at den
  * fjernes, og da vet ingen at den virker.
  *
- * Kjør med: bun scripts/sjekk-diagnostikk.ts
+ * Kjør med: bun scripts/sjekk-diagnostikk.ts (etter bun run kjerne i designsystem/)
  */
 
+import { readFileSync } from "node:fs"
 import {
-  type Classes,
-  diagnose,
-  diagnosePage,
-  type Elements,
-} from "../../designsystem/src/diagnostics/index.js"
+  type Finding,
+  loadCore,
+} from "../../designsystem/src/diagnostics/core.js"
+import type {
+  Classes,
+  Elements,
+} from "../../designsystem/src/vocabulary/types.js"
+import { MODUL } from "../../kjerne/scripts/bygg.js"
 import { classesData, diagnosticsData, snippets } from "./generate"
 
 const all: Elements = diagnosticsData()
 const classes: Classes = classesData()
+const core = loadCore(readFileSync(MODUL))
 const findings: string[] = []
 
 type Case = {
@@ -946,14 +949,10 @@ for (const [tag, snippet] of Object.entries(snippets()))
 const started = performance.now()
 for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
-  let found: ReturnType<typeof diagnose>
+  let found: Finding[]
   const before = performance.now()
   try {
-    // `diagnosePage` selv, mot listene fra generatoren, så en endring i den
-    // også feller her.
-    found = c.page
-      ? diagnosePage(c.html, all, classes)
-      : diagnose(c.html, all, classes)
+    found = c.page ? core.diagnosePage(c.html) : core.diagnoseMarkup(c.html)
   } catch (error) {
     fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
     continue

@@ -23,12 +23,12 @@
 
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { classes } from "../src/diagnostics/classes.js"
-import { elements } from "../src/diagnostics/elements.js"
 import { diagnoseMarkup } from "../src/diagnostics/index.js"
 import { fs } from "../src/index.js"
 import { ROLES } from "../src/tokens/contract.js"
 import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
+import { classes } from "../src/vocabulary/classes.js"
+import { elements } from "../src/vocabulary/elements.js"
 import { PAKKE, pakke } from "./agent-deler.js"
 import { filer, NAVN } from "./generate-agent.js"
 

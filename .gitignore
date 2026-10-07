@@ -38,3 +38,4 @@ kotlin/buildSrc/build/
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
 kjerne/target/
 kjerne/dist/
+designsystem/kjerne/

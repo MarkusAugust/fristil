@@ -23,7 +23,49 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Sjekken er Rust-kjernen.** `diagnoseMarkup` og `diagnosePage` i
+  `@fristil/designsystem/diagnostics` kjører nå den samme
+  WebAssembly-modulen som VS Code, IntelliJ og Fristil for Kotlin, i stedet for
+  en egen utgave i TypeScript. Svarene er de samme: begge utgavene ble kjørt
+  side om side på over 4000 sider uten ett avvik før TypeScript-utgaven ble
+  slettet. Modulen følger pakken og lastes første gang en av funksjonene
+  kalles, i Node, Bun og Deno.
+
+  Disse forsvinner fra `@fristil/designsystem/diagnostics`:
+
+  | Borte | I stedet |
+  | --- | --- |
+  | `diagnose(text, elements, classes)` | `diagnoseMarkup(text)`. Et eget ordforråd gis som manifest med `loadCore(modul).loadManifest(json)`. |
+  | `checkReferences(text)` | `diagnosePage(text)`, som gir koblingsfunnene sammen med resten. Regelnavnet i `rule` skiller dem. |
+  | `pageSource(text)` | Ingen. `diagnosePage` leser siden slik den gjorde. |
+  | `elements`, `classes` | `@fristil/designsystem/manifest.json`, med elementene, klassene og de lovlige verdiene. |
+  | `closest`, `tagEnd`, `withoutHidden` | Ingen. De var hjelpere for sjekken. |
+  | typene `Attribute`, `Element`, `Elements`, `ClassAttribute`, `ClassInfo`, `Classes` | Skjemaet i `@fristil/designsystem/manifest.json` (`manifest.schema.json`). |
+
+  `diagnosePage(text, elementer, klasser)` tar ikke lenger egne lister.
+
+  Ingenting endres i `fs`, i komponentene eller i CSS-en.
+
 ### Nytt
+
+- **Funnene har regelnavn, linje og kolonne.** `rule` er navnet på regelen,
+  som `ukjent-klasse`, og `line` og `column` er der funnet begynner, fra 1.
+- **Et funn kan undertrykkes med en kommentar** over taggen:
+  `<!-- fristil-ignore-next ukjent-klasse -->`. Uten regelnavn gjelder den
+  alle reglene for den neste taggen. Det virker i `fristil sjekk`, i
+  editorene og i testene.
+- **`loadCore(modul)`** i `@fristil/designsystem/diagnostics` laster kjernen
+  fra en modul du har selv, som i nettleseren eller i en utvidelse som pakker
+  den med seg. Den gir også `loadManifest(json)`, `resetManifest()` og
+  `version()`.
+- **`@fristil/designsystem/manifest.json`** beskriver hele ordforrådet og
+  hver byggefunksjon som data, med skjema. Det er det Fristil for Kotlin
+  genereres fra, og det kjernen sjekker mot.
+- **En stor side med mange funn sjekkes raskere.** Linja og kolonnen til hvert
+  funn ble regnet fra starten av teksten. 6000 funn på en side med 3000 linjer
+  tok en kvart sekund, og tar nå 25 millisekunder.
 
 - **Hver side i dokumentasjonen finnes som Markdown.** `/components/button/`
   har sin på `/components/button.md`, og hver side lenker til sin med

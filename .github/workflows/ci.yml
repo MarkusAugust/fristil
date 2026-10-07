@@ -63,6 +63,12 @@ jobs:
       - name: Tester
         run: bun run test
 
+      # Pakken har kjernen med seg, bygget fra Rust. `rust-toolchain.toml` i
+      # `kjerne/` bestemmer versjonen, og rustup henter den ved første kall.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
       # Bygger pakken og dokumentasjonen, og kontrollerer at pakken inneholder
       # det den lover.
       - name: Bygg
@@ -91,10 +97,10 @@ jobs:
 
   # Rust-kjernen og Kotlin-pakken, ved siden av hovedjobben.
   #
-  # Uten filter på stier, i motsetning til IntelliJ-pluginen: kjernen er en
-  # oversettelse av diagnostikken i TypeScript, og en endring der skal felle
-  # paritetstesten selv om ingen rørte Rust-koden. En jobb som alltid kjører,
-  # kan også gjøres påkrevd uten å bli stående og vente.
+  # Uten filter på stier, i motsetning til IntelliJ-pluginen: kjernen leser
+  # manifestet, og en endring i en komponent skal kunne felle den selv om
+  # ingen rørte Rust-koden. En jobb som alltid kjører, kan også gjøres
+  # påkrevd uten å bli stående og vente.
   kjerne:
     name: Rust-kjernen og Kotlin
     runs-on: ubuntu-latest
@@ -125,22 +131,13 @@ jobs:
         working-directory: kjerne
         run: cargo test
 
-      # Skriver ordforrådet, bygger modulen og skriver fasiten fra
-      # TypeScript-diagnostikken.
       - name: Bygg kjernen
         run: bun kjerne/scripts/bygg.ts
 
-      - name: Ordforrådet og fasiten er generert
-        run: |
-          if [ -n "$(git status --porcelain kjerne)" ]; then
-            echo "Kjør bun kjerne/scripts/bygg.ts og commit:"
-            git status --porcelain kjerne
-            git diff kjerne
-            exit 1
-          fi
-
-      - name: Rust og TypeScript svarer det samme
-        run: bun kjerne/scripts/sjekk-paritet.ts
+      # Fiksturene mot fasiten, og markupen i repoet og 4000 ødelagte sider
+      # mot kravene et svar må holde.
+      - name: Kjernen svarer det den skal
+        run: bun kjerne/scripts/sjekk-kjerne.ts
 
       - uses: actions/setup-java@v5
         with:

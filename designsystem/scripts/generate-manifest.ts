@@ -23,9 +23,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import ts from "typescript"
-import { classes } from "../src/diagnostics/classes.js"
-import { elements } from "../src/diagnostics/elements.js"
 import { fs } from "../src/fs.js"
+import { classes } from "../src/vocabulary/classes.js"
+import { elements } from "../src/vocabulary/elements.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 const UT = `${PAKKE}manifest/`

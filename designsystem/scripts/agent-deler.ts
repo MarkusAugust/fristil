@@ -15,11 +15,11 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { classes } from "../src/diagnostics/classes.js"
-import { elements } from "../src/diagnostics/elements.js"
 import { fs } from "../src/index.js"
 import { ROLES } from "../src/tokens/contract.js"
 import { FAMILIES, roleToCss } from "../src/tokens/matrix.js"
+import { classes } from "../src/vocabulary/classes.js"
+import { elements } from "../src/vocabulary/elements.js"
 import { byggSamletCss, samletStørrelse } from "./css-samlet.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))

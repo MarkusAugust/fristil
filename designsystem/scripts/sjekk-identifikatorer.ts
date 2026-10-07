@@ -32,7 +32,6 @@ const KILDER = [
     unntatt: ["testing", "types"],
   },
   { rot: new URL("../../editor/src", import.meta.url).pathname, unntatt: [] },
-  { rot: new URL("../../kjerne/js", import.meta.url).pathname, unntatt: [] },
   { rot: new URL("../../kjerne/src", import.meta.url).pathname, unntatt: [] },
   {
     rot: new URL("../../kotlin/src/main", import.meta.url).pathname,
