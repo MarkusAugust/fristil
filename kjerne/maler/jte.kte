@@ -1,0 +1,17 @@
+@param soknad: no.eksempel.Soknad
+@param ugyldig: Boolean
+<!-- JTE med Kotlin. Skrivefeilen med vilje er data-variant="secundary". -->
+<form action="/soknad" method="post" novalidate>
+  <fs-field invalid="${ugyldig}">
+    <label class="fs-label" data-required="text">E-postadresse</label>
+    <input class="fs-input" type="email" name="epost" value="${soknad.epost}">
+    @if(ugyldig)
+      <p class="fs-error-text">Skriv en gyldig adresse.</p>
+    @endif
+  </fs-field>
+  @for(valg in soknad.valg)
+    <span class="fs-tag" data-selectable="${valg.valgbar}">${valg.navn}</span>
+  @endfor
+  <button class="fs-button" data-variant="${if (soknad.utkast) "secondary" else null}" type="submit">Send</button>
+  <button class="fs-button" data-variant="secundary" type="button">Avbryt</button>
+</form>

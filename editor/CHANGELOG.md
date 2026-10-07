@@ -11,6 +11,8 @@ bare endrer seg når et element eller et attributt gjør det.
   trenger fortsatt ingenting installert.
 - Fullføring og sjekk av `data-color` på `fs-dialog`, med fargene
   `fs.dialog({ color })` gir. Før sa en ukjent farge ingenting.
+- Markup i en kommentar i malspråket, som `{{-- --}}` i Blade og `@* *@` i
+  Razor, gir ikke lenger funn.
 - Hver feilmelding viser regelnavnet, som `ukjent-klasse`, med lenke til
   komponentsiden. Navnet er det `<!-- fristil-ignore-next ukjent-klasse -->`
   tar for å undertrykke ett funn.

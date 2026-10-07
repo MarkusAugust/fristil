@@ -276,6 +276,25 @@ mod tests {
     }
 
     #[test]
+    fn skips_comments_in_template_languages() {
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        for comment in [
+            "{{-- <fs-feil> --}}",
+            "{{/* <fs-feil> */}}",
+            "{# <fs-feil> #}",
+            "{#- <fs-feil> -#}",
+            "@* <fs-feil> *@",
+            "<%-- <fs-feil> --%>",
+        ] {
+            assert!(markup(comment).is_empty(), "{comment}");
+        }
+        // `{#if}` i Svelte er en blokk, ikke en kommentar, og en ulukket
+        // kommentar blanker ikke resten.
+        assert_eq!(markup("{#if x}<fs-feil></fs-feil>{/if}").len(), 1);
+        assert_eq!(markup("{{-- <fs-feil>").len(), 1);
+    }
+
+    #[test]
     fn checks_the_color_of_a_dialog() {
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
         assert!(markup(r#"<dialog class="fs-dialog" data-color="danger"></dialog>"#).is_empty());

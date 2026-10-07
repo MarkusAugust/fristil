@@ -1,4 +1,4 @@
-//! Ordforrådet: elementer, attributter, klasser og values.
+//! Ordforrådet: elementer, attributter, klasser og verdier.
 //!
 //! En oversettelse av `designsystem/src/diagnostics/diagnostics.ts`, funksjon
 //! for funksjon og med de samme meldingene. Kommentarene der forklarer
@@ -100,7 +100,7 @@ fn is_templated_content(t: &[u16]) -> bool {
     })
 }
 
-/// Navnet stripped bindestreker og store bokstaver, for å kjenne igjen skrivefeil.
+/// Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil.
 fn normalized(t: &[u16]) -> Utf16 {
     lowercase(t)
         .into_iter()
@@ -186,7 +186,7 @@ fn blank_range(out: &mut [u16], from: usize, to: usize) {
     blank(&mut out[from..to]);
 }
 
-/// `<script\b` og `<style\b`: navnet stripped hensyn til store bokstaver, og
+/// `<script\b` og `<style\b`: navnet uten hensyn til store bokstaver, og
 /// ikke et ordtegn etter.
 fn opens(t: &[u16], i: usize, name: &str) -> bool {
     starts_at(t, i, "<")
@@ -212,16 +212,50 @@ fn closer(t: &[u16], from: usize, name: &str) -> Option<(usize, usize)> {
     None
 }
 
-/// Teksten stripped kommentarer, skript og stilark, med samme lengde.
+/// Kommentarene i malspråkene: det som står i dem, rendres ikke.
+///
+/// Blade `{{-- --}}`, Go `{{/* */}}`, Jinja, Twig og Nunjucks `{# #}`, Razor
+/// `@* *@`, og JSP og ASP `<%-- --%>`. I motsetning til en HTML-kommentar
+/// blankes de bare når de er lukket: `{#` innleder også en blokk i Svelte,
+/// som `{#if}`, og en ulukket kommentar ville da blanket resten av fila.
+const TEMPLATE_COMMENTS: [(&str, &str); 5] = [
+    ("{{--", "--}}"),
+    ("{{/*", "*/}}"),
+    ("{#", "#}"),
+    ("@*", "*@"),
+    ("<%--", "--%>"),
+];
+
+/// Teksten uten kommentarer, skript og stilark, med samme lengde.
 pub fn without_hidden(text: &[u16]) -> Utf16 {
     let mut out = text.to_vec();
-    // Kommentarene først, så skriptene og stilarkene i det som er igjen, som
-    // de tre `replace`-kallene i TypeScript.
+    // Kommentarene først, så skriptene og stilarkene i det som er igjen.
     let mut i = 0;
     while let Some(start) = find_at(&out, i, "<!--") {
         let end = find_at(&out, start + 4, "-->").map_or(out.len(), |e| e + 3);
         blank_range(&mut out, start, end);
         i = end.max(start + 1);
+    }
+    for (open, close) in TEMPLATE_COMMENTS {
+        let mut i = 0;
+        while let Some(start) = find_at(&out, i, open) {
+            i = start + 1;
+            // `{#if}` i Svelte er ingen kommentar: Jinja skriver mellomrom
+            // eller `-` etter `{#`.
+            if open == "{#"
+                && !out
+                    .get(start + 2)
+                    .is_some_and(|&c| is_space(c) || c == b'-' as u16)
+            {
+                continue;
+            }
+            let Some(end) = find_at(&out, start + open.len(), close) else {
+                continue;
+            };
+            let end = end + close.len();
+            blank_range(&mut out, start, end);
+            i = end;
+        }
     }
     for name in ["script", "style"] {
         let mut i = 0;
@@ -276,7 +310,7 @@ pub struct ReadAttribute {
     pub value_end: usize,
     /// Der mellomrommet foran attributtet begynner.
     pub space_start: usize,
-    /// Der selve verdien står, stripped anførselstegn.
+    /// Der selve verdien står, uten anførselstegn.
     pub value_start: usize,
 }
 
@@ -397,7 +431,7 @@ fn is_number(value: &[u16]) -> bool {
     }
     let s: String = t.iter().map(|&c| c as u8 as char).collect();
     let b = s.as_bytes();
-    // Heksadesimalt, oktalt og binært, stripped fortegn.
+    // Heksadesimalt, oktalt og binært, uten fortegn.
     if b.len() > 2 && b[0] == b'0' {
         let siffer = &s[2..];
         let valid = match b[1] {
@@ -929,7 +963,7 @@ pub fn tag_name_end(t: &[u16], i: usize) -> Option<usize> {
     followed_by_end(t, j).then_some(j)
 }
 
-/// Kroppen til en tagg, stripped én `/` til slutt.
+/// Kroppen til en tagg, uten én `/` til slutt.
 fn tag_body(t: &[u16], from: usize, to: usize) -> &[u16] {
     let b = &t[from..to];
     b.strip_suffix(&[SLASH]).unwrap_or(b)

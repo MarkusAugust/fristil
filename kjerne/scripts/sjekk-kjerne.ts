@@ -13,6 +13,10 @@
  * 3. Ødelagt markup: hver fikstur, klipt, skjøtet og med tegn satt inn og tatt
  *    bort, med et fast frø, så et funn kan gjenskapes.
  *
+ * I tillegg malene i `maler/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
+ * Blade. Hver har nøyaktig én skrivefeil med vilje, og skal gi nøyaktig det
+ * funnet og ingen andre.
+ *
  * For 2 og 3 finnes ingen fasit, men svaret må holde: kjernen kaster ikke,
  * hvert funn ligger innenfor teksten, linja og kolonnen svarer til `start`,
  * regelen er en kjernen har, og en rettelse ligger innenfor teksten. Sjekken
@@ -149,6 +153,28 @@ for (const [navn, html] of fiksturer) {
   holder(navn, html)
 }
 
+// Malspråkene: hver fil i `maler/` har markup med malsyntaks, og nøyaktig én
+// skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
+const MALER = join(ROT, "kjerne/maler")
+const SKRIVEFEILEN: Record<string, string> = {
+  "thymeleaf.html": "ukjent-klasse",
+  "jte.kte": "ugyldig-klasseverdi",
+  "go.tmpl": "ukjent-klasse",
+  "razor.cshtml": "ugyldig-klasseverdi",
+  "blade.blade.php": "ukjent-element",
+}
+for (const navn of readdirSync(MALER)) {
+  antall += 1
+  const funn = kjerne.diagnoseMarkup(readFileSync(join(MALER, navn), "utf8"))
+  const regler = funn.map((f) => f.rule).join(", ") || "ingen"
+  if (!(navn in SKRIVEFEILEN))
+    feil.push(`maler/${navn}: står ikke i SKRIVEFEILEN i sjekk-kjerne.ts`)
+  else if (regler !== SKRIVEFEILEN[navn])
+    feil.push(
+      `maler/${navn}: ventet ett funn, ${SKRIVEFEILEN[navn]}, fikk ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
+    )
+}
+
 // 2. Markupen i repoet.
 const UTVIDELSER = /\.(html|astro|mdx?|ts)$/
 const HOPP = new Set([
@@ -241,7 +267,7 @@ for (let n = 0; n < ØDELAGTE; n++) {
 }
 
 console.log(
-  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
+  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
 )
 if (feil.length > 0) {
   console.error(`\n${feil.length} feil:\n`)

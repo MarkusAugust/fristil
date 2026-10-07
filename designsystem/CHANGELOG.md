@@ -72,6 +72,10 @@ egen overskrift «Brytende».
   `fs-tag` og `data-hoverable` på `fs-table`. Sjekken sier fra om
   `data-optional="false"`, som slår flagget på, slik den gjør for boolske
   attributter på elementene.
+- **Kommentarer i malspråkene hoppes over.** Markup i `{{-- --}}` i Blade,
+  `@* *@` i Razor, `{{/* */}}` i Go, `{# #}` i Jinja, Twig og Nunjucks, og
+  `<%-- --%>` i JSP ble sjekket som om den ble rendret, og en tagg i en
+  kommentar ga funn.
 - **En stor side med mange funn sjekkes raskere.** Linja og kolonnen til hvert
   funn ble regnet fra starten av teksten. 6000 funn på en side med 3000 linjer
   tok en kvart sekund, og tar nå 25 millisekunder.

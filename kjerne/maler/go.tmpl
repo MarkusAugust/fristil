@@ -1,0 +1,15 @@
+{{/* Go html/template. Skrivefeilen med vilje er fs-fiedl. */}}
+{{define "skjema"}}
+<form action="/soknad" method="post" novalidate>
+  <fs-field {{if .Feil.Epost}}invalid{{end}}>
+    <label class="fs-label" data-required="text">E-postadresse</label>
+    <input class="fs-input" type="email" name="epost" value="{{.Epost}}">
+    <p class="fs-error-text">{{.Feil.Epost}}</p>
+  </fs-field>
+  {{range .Valg}}
+    <label class="fs-checkbox"><input type="checkbox" name="valg" value="{{.Verdi}}" {{if .Valgt}}checked{{end}}> {{.Navn}}</label>
+  {{end}}
+  <button class="fs-button" data-variant="{{.Variant}}" type="submit">Send</button>
+  <div class="fs-fiedl">Ekstra</div>
+</form>
+{{end}}
