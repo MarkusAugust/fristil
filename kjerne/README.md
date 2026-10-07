@@ -2,7 +2,7 @@
 
 Fristils diagnostikk i Rust, kompilert til én WebAssembly-modul som alle
 vertsspråk kjører: Node, Bun og nettleseren direkte, JVM-en gjennom Chicory
-(`../jvm`), og Go, .NET og Python gjennom sine egne runtimer.
+(`../kotlin`), og Go, .NET og Python gjennom sine egne runtimer.
 
 ## Hvorfor
 
@@ -26,7 +26,7 @@ UTF-16-indekser, som i JavaScript og Kotlin: hele kjernen jobber på
 UTF-16-enheter, så ingen posisjon må regnes om.
 
 Lasteren for JavaScript står i `js/kjerne.ts`, og den for Kotlin i
-`../jvm/src/main/kotlin/no/fristil/sjekk/Fristil.kt`. Hver er rundt 40
+`../kotlin/src/main/kotlin/no/fristil/sjekk/Fristil.kt`. Hver er rundt 40
 linjer.
 
 ## Paritet
@@ -52,7 +52,7 @@ attributt.
 ```bash
 bun kjerne/scripts/bygg.ts           # ordforrådet, modulen og fasiten
 bun kjerne/scripts/sjekk-paritet.ts  # Rust mot TypeScript
-cd jvm && ./gradlew test             # Kotlin mot fasiten
+cd kotlin && ./gradlew test          # Kotlin mot fasiten
 ```
 
 Krever Rust med målet `wasm32-unknown-unknown`

@@ -402,7 +402,9 @@ pub fn sjekk_koblinger(tekst: &[u16]) -> Vec<Funn> {
         if let Some(id) = verdi(node, "id").filter(|a| a.verdi_ikke_tom().is_some()) {
             let v = id.verdi.as_ref().unwrap();
             let dekodet = dekod(v);
-            if ider.contains_key(&dekodet) {
+            if let std::collections::hash_map::Entry::Vacant(ledig) = ider.entry(dekodet) {
+                ledig.insert(n);
+            } else {
                 ut.push(funn(
                     id.verdi_start,
                     id.verdi_start + v.len(),
@@ -413,8 +415,6 @@ pub fn sjekk_koblinger(tekst: &[u16]) -> Vec<Funn> {
                         s(v)
                     ),
                 ));
-            } else {
-                ider.insert(dekodet, n);
             }
         }
         if node.navn == "label" {

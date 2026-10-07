@@ -359,8 +359,7 @@ pub fn les_attributter(body: &[u16], offset: usize) -> Vec<LestAttributt> {
 fn klammer_slutt(t: &[u16], fra: usize) -> usize {
     let mut dybde = 0i32;
     let mut sitat: Option<u16> = None;
-    for i in fra..t.len() {
-        let c = t[i];
+    for (i, &c) in t.iter().enumerate().skip(fra) {
         if let Some(q) = sitat {
             if c == q {
                 sitat = None;

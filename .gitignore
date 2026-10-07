@@ -27,10 +27,10 @@ editor-intellij/.intellijPlatform/
 editor-intellij/build/
 presentasjon/index.html
 
-# JVM-prototypens byggemapper
-jvm/.gradle/
-jvm/.kotlin/
-jvm/build/
+# Kotlin-prosjektets byggemapper
+kotlin/.gradle/
+kotlin/.kotlin/
+kotlin/build/
 
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
 kjerne/target/

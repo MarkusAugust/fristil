@@ -131,6 +131,7 @@ export default defineConfig({
             { label: "Kommandolinjen", slug: "kommandolinjen" },
             { label: "Kodeagenter", slug: "kodeagenter" },
             { label: "Lisens og pris", slug: "lisens" },
+            { label: "Veikart", slug: "veikart" },
             { label: "Versjonslogg", link: "/versjonslogg/" },
           ],
         },

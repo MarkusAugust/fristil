@@ -1,4 +1,4 @@
-# Fristil på JVM (prototype)
+# Fristil for Kotlin (prototype)
 
 Fristils diagnostikk i Kotlin og Java, uten Node og uten JavaScript.
 
@@ -19,7 +19,7 @@ kilden.
 ## Kjør
 
 ```bash
-cd jvm && ./gradlew test
+cd kotlin && ./gradlew test
 ```
 
 Gradle bygger modulen fra `../kjerne` med `cargo`, så jar-en aldri bærer en

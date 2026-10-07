@@ -77,12 +77,12 @@ pub fn har_ved_ci(t: &[u16], ved: usize, mønster: &str) -> bool {
 }
 
 pub fn har_ved(t: &[u16], ved: usize, mønster: &str) -> bool {
-    let mut i = ved;
-    for c in mønster.encode_utf16() {
-        if i >= t.len() || t[i] != c {
+    let m = mønster.encode_utf16();
+    let mut rest = t.iter().skip(ved);
+    for c in m {
+        if rest.next() != Some(&c) {
             return false;
         }
-        i += 1;
     }
     true
 }

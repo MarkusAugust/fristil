@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "2.2.21"
 }
 
-group = "no.fristil"
+group = "io.github.markusaugust"
 version = "0.1.0-SNAPSHOT"
 
 repositories {

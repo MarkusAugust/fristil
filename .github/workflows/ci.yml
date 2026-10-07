@@ -88,3 +88,63 @@ jobs:
       # dokumentasjonen følger koden.
       - name: Dokumentasjon
         run: bun run test:docs
+
+  # Rust-kjernen og Kotlin-pakken, ved siden av hovedjobben.
+  #
+  # Uten filter på stier, i motsetning til IntelliJ-pluginen: kjernen er en
+  # oversettelse av diagnostikken i TypeScript, og en endring der skal felle
+  # paritetstesten selv om ingen rørte Rust-koden. En jobb som alltid kjører,
+  # kan også gjøres påkrevd uten å bli stående og vente.
+  kjerne:
+    name: Rust-kjernen og Kotlin
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      # `rust-toolchain.toml` i `kjerne/` bestemmer versjonen. rustup finnes
+      # på maskinen og henter den ved første kall.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
+      - name: Formatering og lint i Rust
+        working-directory: kjerne
+        run: |
+          cargo fmt --check
+          cargo clippy --release --target wasm32-unknown-unknown -- -D warnings
+
+      # Skriver ordforrådet, bygger modulen og skriver fasiten fra
+      # TypeScript-diagnostikken.
+      - name: Bygg kjernen
+        run: bun kjerne/scripts/bygg.ts
+
+      - name: Ordforrådet og fasiten er generert
+        run: |
+          if [ -n "$(git status --porcelain kjerne)" ]; then
+            echo "Kjør bun kjerne/scripts/bygg.ts og commit:"
+            git status --porcelain kjerne
+            git diff kjerne
+            exit 1
+          fi
+
+      - name: Rust og TypeScript svarer det samme
+        run: bun kjerne/scripts/sjekk-paritet.ts
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Kotlin
+        working-directory: kotlin
+        run: ./gradlew test

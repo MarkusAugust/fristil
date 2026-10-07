@@ -1,0 +1,8 @@
+# WebAssembly slik den første standarden beskrev den (MVP), uten utvidelsene
+# Rust slår på som standard fra 1.82 (multivalue, reference-types og flere).
+#
+# Modulen skal kjøre likt i Node, i nettlesere som ikke er de nyeste, og i
+# Chicory på JVM-en. Kjernen trenger ingen av utvidelsene: den er ren tekst inn
+# og JSON ut, uten importer.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-cpu=mvp"]

@@ -1,0 +1,10 @@
+# Én fast Rust-versjon for kjernen, lokalt og i CI.
+#
+# Kompilatoren bestemmer hvilke WebAssembly-funksjoner modulen bruker, og
+# nyere versjoner slår på flere av dem som standard. En fast versjon gjør at
+# modulen ikke endrer seg bare fordi noen oppdaterte Rust.
+[toolchain]
+channel = "1.97.0"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"
