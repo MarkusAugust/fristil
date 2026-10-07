@@ -5,7 +5,14 @@ plugins {
 }
 
 group = "io.github.markusaugust"
-version = "0.1.0-SNAPSHOT"
+
+/*
+ * Samme versjon som npm-pakken, lest fra `package.json`. Kjernen, manifestet,
+ * npm og Maven slippes sammen, så `io.github.markusaugust:fristil:0.32.0` og
+ * `@fristil/designsystem@0.32.0` er alltid det samme Fristil.
+ */
+val designsystem = rootDir.resolve("../designsystem")
+version = (groovy.json.JsonSlurper().parse(designsystem.resolve("package.json")) as Map<*, *>)["version"] as String
 
 repositories {
     mavenCentral()
@@ -34,7 +41,7 @@ java {
 
 val kjerne = rootDir.resolve("../kjerne")
 val kjerneWasm = kjerne.resolve("target/wasm32-unknown-unknown/release/fristil_kjerne.wasm")
-val manifestFil = rootDir.resolve("../designsystem/manifest/manifest.json")
+val manifestFil = designsystem.resolve("manifest/manifest.json")
 
 /*
  * Modulen bygges fra kildekoden i `kjerne/` hver gang den er endret, så jar-en
@@ -65,7 +72,34 @@ val genererApi = tasks.register<no.fristil.build.GenerateApi>("genererApi") {
     output.set(layout.buildDirectory.dir("generated/fristil"))
 }
 
+/*
+ * WebJar-en: CSS-en og JavaScript-modulene for nettleseren, med de samme
+ * stiene som i npm-pakken, under `META-INF/resources/webjars/fristil/<versjon>/`.
+ * Spring Boot, Ktor og Servlet-containere serverer den mappa som den er, så
+ * en Kotlin-app trenger verken npm eller et CDN. Det som bare er for Node
+ * eller React, holdes utenfor.
+ */
+val byggNettleserfiler = tasks.register<Exec>("byggNettleserfiler") {
+    workingDir = designsystem
+    commandLine("bun", "run", "bygg:nettleser")
+    inputs.dir(designsystem.resolve("src"))
+    inputs.file(designsystem.resolve("tsconfig.json"))
+    outputs.file(designsystem.resolve("dist/fristil.css"))
+    outputs.file(designsystem.resolve("dist/register.js"))
+}
+
+val webjar = tasks.register<Sync>("webjar") {
+    dependsOn(byggNettleserfiler)
+    into(layout.buildDirectory.dir("webjar"))
+    from(designsystem) {
+        include("dist/**/*.js", "dist/fristil.css", "src/components/**/*.css", "src/tokens/**/*.css")
+        exclude("dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**")
+        into("META-INF/resources/webjars/fristil/$version")
+    }
+}
+
 sourceSets.main {
+    resources.srcDir(webjar)
     kotlin.srcDir(genererApi)
     java.srcDir(kompilerKjerne.map { it.sources })
     // Klassene for modulen er ferdig kompilert, så de legges i jar-en som de er.
@@ -79,6 +113,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
     systemProperty("paritet", kjerne.resolve("paritet").absolutePath)
-    systemProperty("byggetilfeller", rootDir.resolve("../designsystem/manifest/byggetilfeller.json").absolutePath)
+    systemProperty("byggetilfeller", designsystem.resolve("manifest/byggetilfeller.json").absolutePath)
+    systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/fristil/$version").get().asFile.absolutePath)
     testLogging { events("failed") }
 }

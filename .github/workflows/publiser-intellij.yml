@@ -29,6 +29,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Kotlin-pakken har WebJar-en med seg, og den bygges fra TypeScript og
+      # CSS-en i designsystem/ med Bun.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
       # Pluginen bygger Rust-kjernen gjennom `../kotlin`. rustup finnes på
       # maskinen og henter versjonen i `kjerne/rust-toolchain.toml`.
       - name: Rust-versjon

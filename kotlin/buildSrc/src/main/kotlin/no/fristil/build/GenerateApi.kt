@@ -112,7 +112,45 @@ class Generator(manifest: Map<String, Any?>) {
         "Fs.kt" to fsFile(),
         "Parts.kt" to partsFile(),
         "Dispatch.kt" to dispatchFile(),
+        "WebJar.kt" to webJarFile(),
     )
+
+    private fun webJarFile(): String =
+        header +
+            """
+            |package no.fristil
+            |
+            |/**
+            | * Stiene til CSS-en og JavaScript-en i WebJar-en som følger pakken.
+            | *
+            | * Filene ligger under `META-INF/resources/webjars/fristil/$version/`, med de
+            | * samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer
+            | * dem som de er. I Ktor: `staticResources("/webjars", "META-INF/resources/webjars")`.
+            | *
+            | * ```kotlin
+            | * ""${'"'}
+            | * <link rel="stylesheet" href="${'$'}{FristilWebJar.CSS}">
+            | * <script type="module">
+            | *   import { defineFs } from "${'$'}{FristilWebJar.REGISTER}"
+            | *   defineFs()
+            | * </script>
+            | * ""${'"'}
+            | * ```
+            | */
+            |object FristilWebJar {
+            |    /** Versjonen av Fristil, den samme som npm-pakken. */
+            |    const val VERSION = "$version"
+            |
+            |    /** Mappa filene serveres fra. En fil i npm-pakken, som `dist/fristil.css`, ligger under den med samme sti. */
+            |    const val ROOT = "/webjars/fristil/${'$'}VERSION"
+            |
+            |    /** Alle stilarkene i én fil. */
+            |    const val CSS = "${'$'}ROOT/dist/fristil.css"
+            |
+            |    /** Modulen som registrerer alle web-komponentene med `defineFs()`. */
+            |    const val REGISTER = "${'$'}ROOT/dist/register.js"
+            |}
+            |""".trimMargin()
 
     private val header = "// Generert fra manifestet til @fristil/designsystem $version. Ikke rediger.\n"
 

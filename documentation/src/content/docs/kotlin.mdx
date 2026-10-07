@@ -3,20 +3,44 @@ title: Kotlin og Java
 description: Byggefunksjonene med enum-er, og Fristils sjekk i vanlige tester, på JVM-en uten Node og uten JavaScript.
 ---
 
-Fristil for Kotlin gir deg to ting: byggefunksjonene fra `fs`, der de lovlige verdiene er `enum`-er, og den samme sjekken som `fristil sjekk` og editoren bruker, som en vanlig funksjon i testene dine. Begge kjører i JVM-en. Ingen Node, ingen prosess å starte og ingenting å installere ved siden av.
+Fristil for Kotlin gir deg tre ting: byggefunksjonene fra `fs`, der de lovlige verdiene er `enum`-er, den samme sjekken som `fristil sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
 
 :::caution[Ikke utgitt ennå]
-Pakken er ikke på Maven Central ennå. Den kommer som `io.github.markusaugust:fristil` 0.1.0, og fram til da kan du bygge den fra [kildekoden](https://github.com/MarkusAugust/fristil/tree/master/kotlin). Se [Veikart](../veikart/).
+Pakken er ikke på Maven Central ennå. Den kommer som `io.github.markusaugust:fristil`, med samme versjon som `@fristil/designsystem`, og fram til da kan du bygge den fra [kildekoden](https://github.com/MarkusAugust/fristil/tree/master/kotlin). Se [Veikart](../veikart/).
 :::
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.markusaugust:fristil:0.1.0")
+    implementation("io.github.markusaugust:fristil:{versjon}")
 }
 ```
 
-Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+Versjonen er den samme som npm-pakkens, så `fristil:0.32.0` og `@fristil/designsystem@0.32.0` er det samme Fristil. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+
+## CSS-en og web-komponentene
+
+Pakken er også en [WebJar](https://www.webjars.org): `fristil.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/fristil/{versjon}/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
+
+```kotlin
+routing {
+    staticResources("/webjars", "META-INF/resources/webjars")
+}
+```
+
+`FristilWebJar` har stiene, med versjonen i, så malen aldri peker på en annen versjon enn den pakken har:
+
+```kotlin
+"""
+<link rel="stylesheet" href="${FristilWebJar.CSS}">
+<script type="module">
+  import { defineFs } from "${FristilWebJar.REGISTER}"
+  defineFs()
+</script>
+"""
+```
+
+En adresse fra komponentsidene, som `https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css`, blir `${FristilWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
 
 ## Byggefunksjonene
 

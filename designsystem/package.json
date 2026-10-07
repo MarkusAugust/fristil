@@ -340,6 +340,7 @@
   "scripts": {
     "generate": "bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
     "bygg:css": "bun scripts/bygg-css.ts",
+    "bygg:nettleser": "tsc -b && bun run bygg:css",
     "kjerne": "bun ../kjerne/scripts/bygg.ts",
     "build": "bun run generate && bun run kjerne && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:skriving && bun run sjekk:tekster && bun run sjekk:identifikatorer && bun run sjekk:agent && bun run sjekk:css-vitne && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
     "typecheck": "tsc --noEmit",

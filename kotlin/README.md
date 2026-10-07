@@ -1,7 +1,7 @@
 # Fristil for Kotlin (prototype)
 
-Fristil i Kotlin og Java, uten Node og uten JavaScript: byggefunksjonene og
-diagnostikken.
+Fristil i Kotlin og Java, uten Node og uten npm: byggefunksjonene,
+diagnostikken, og CSS-en og web-komponentene som WebJar.
 
 ```kotlin
 val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, error = true, invalid = ugyldig)
@@ -50,6 +50,16 @@ Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke
 kilden. Hver tråd får sin egen instans, så kall fra flere tråder venter ikke på
 hverandre.
 
+## WebJar-en
+
+`fristil.css`, stilarket for hver komponent og JavaScript-modulene for
+nettleseren ligger under `META-INF/resources/webjars/fristil/<versjon>/`, med
+de samme stiene som i npm-pakken. `FristilWebJar` har stiene. Gradle bygger
+filene fra `../designsystem` med `bun run bygg:nettleser`, og `WebJarTest`
+krever at hver import i hver modul peker på en fil i WebJar-en.
+
+Versjonen er den samme som npm-pakkens, lest fra `../designsystem/package.json`.
+
 ## Kjør
 
 ```bash
@@ -57,8 +67,8 @@ cd kotlin && ./gradlew test
 ```
 
 Gradle bygger modulen fra `../kjerne` med `cargo`, så jar-en aldri bærer en
-utdatert kjerne. Det krever Rust med målet `wasm32-unknown-unknown`, men ikke
-Bun: manifestet er sjekket inn.
+utdatert kjerne, og WebJar-en fra `../designsystem` med Bun. Det krever Rust
+og Bun, og `bun install` i rota av repoet.
 
 `ParityTest` krever at funnene er identiske med det TypeScript-versjonen
 svarer på fiksturene i `../kjerne/paritet/`, og at posisjonene peker på riktig
