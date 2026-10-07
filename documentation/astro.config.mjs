@@ -127,6 +127,7 @@ export default defineConfig({
             { label: "Oversettelse", slug: "oversettelse" },
             { label: "Eget tema", slug: "eget-tema" },
             { label: "Typesikker bruk", slug: "typesikker-bruk" },
+            { label: "Kotlin og Java", slug: "kotlin" },
             { label: "Editoren", slug: "editoren" },
             { label: "Kommandolinjen", slug: "kommandolinjen" },
             { label: "Kodeagenter", slug: "kodeagenter" },
