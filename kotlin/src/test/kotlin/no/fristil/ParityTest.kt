@@ -31,6 +31,18 @@ class ParityTest {
         assertEquals("data-variant=\"sekundær\"", html.substring(finding.start, finding.end))
     }
 
+    @org.junit.jupiter.api.Test
+    fun `assertFristil feiler med funnene som melding`() {
+        assertFristil("""<button class="fs-button">Lagre</button>""")
+        val error = kotlin.test.assertFailsWith<AssertionError> {
+            assertFristil("""<button class="fs-buton">Lagre</button>""", fragment = true)
+        }
+        assertEquals(
+            "Fristil fant ett funn:\n1:16: advarsel: ${Fristil.diagnoseMarkup("<button class=\"fs-buton\">").single().message} [ukjent-klasse]",
+            error.message,
+        )
+    }
+
     /*
      * Funnene i formen fasiten har. Regel, linje og kolonne finnes bare i
      * kjernen, ikke i fasiten fra TypeScript, og `fix` og `preferred` utelates

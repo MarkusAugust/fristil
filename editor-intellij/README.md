@@ -1,7 +1,7 @@
 # Fristil for IntelliJ
 
-Fullføring på Fristils CSS-klasser i HTML, også i HTML som er injisert i en
-streng.
+Fullføring på Fristils CSS-klasser og feilmeldinger fra Fristils sjekk i HTML,
+også i HTML som er injisert i en streng.
 
 ## Hvorfor den finnes
 
@@ -12,7 +12,25 @@ bare for **filer**, og et injisert fragment er ikke en fil.
 Det er etterprøvd: med `web-types.json` på plass gir `class="fs-` forslag i en
 `.html`-fil, men ingenting i den samme markupen inne i en multiline-streng.
 
-Pluginen lukker det hullet, og bare det.
+Pluginen lukker det hullet. I tillegg viser den feilmeldingene fra sjekken,
+som ingen annen kilde gir i IntelliJ.
+
+## Feilmeldingene
+
+`FristilAnnotator` kjører den samme Rust-kjernen som `fristil sjekk` og VS
+Code, gjennom Maven-pakken i `../kotlin`. Der er kjernen kompilert til
+WebAssembly og så til JVM-bytekode, og Chicory kjører den i IDE-ens egen JVM.
+Ingen Node, ingen prosess å starte.
+
+Det er et vanlig `Annotator` på HTML-språket, av samme grunn som fullføringen:
+da kalles det også for injiserte fragmenter. Sjekken er `diagnoseMarkup`, fordi
+en fil eller et fragment er en mal. Hvert funn har regelnavnet og en lenke til
+dokumentasjonen, og en rettelse når kjernen har en. Et funn undertrykkes med
+`<!-- fristil-ignore-next regelnavn -->` over taggen.
+
+Gradle bygger `../kotlin`, og dermed kjernen, med `includeBuild`. Det krever
+Rust med målet `wasm32-unknown-unknown`, som `kjerne/rust-toolchain.toml`
+henter.
 
 ## Strengen må være merket
 
@@ -37,7 +55,7 @@ streng, blir fragmentet et ekte `PsiFile` med HTML-språk, og bidragsyteren
 kalles for det. Den samme linja dekker derfor `.html`-filer og merkede
 strenger, uten en registrering per vertsspråk.
 
-Testene dekker `.html` og Kotlin. En merket TypeScript-streng virker av den
+Testene dekker `.html` og Kotlin, for både fullføringen og feilmeldingene. En merket TypeScript-streng virker av den
 samme grunnen, og begge er etterprøvd for hånd i IntelliJ IDEA Ultimate
 2026.2.3.
 

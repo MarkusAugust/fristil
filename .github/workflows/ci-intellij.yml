@@ -10,6 +10,9 @@
 # `editor/scripts/generate.ts`: endrer noen klasselista, skal pluginen bygges
 # på nytt selv om ingen rørte Kotlin-koden.
 #
+# Feilmeldingene kommer fra Rust-kjernen gjennom `../kotlin`, som bygges med
+# pluginen. Derfor står `kjerne/**`, `kotlin/**` og manifestet også i `paths`.
+#
 name: IntelliJ-plugin
 
 on:
@@ -17,10 +20,16 @@ on:
     branches: [master]
     paths:
       - "editor-intellij/**"
+      - "kotlin/**"
+      - "kjerne/**"
+      - "designsystem/manifest/**"
       - ".github/workflows/ci-intellij.yml"
   pull_request:
     paths:
       - "editor-intellij/**"
+      - "kotlin/**"
+      - "kjerne/**"
+      - "designsystem/manifest/**"
       - ".github/workflows/ci-intellij.yml"
   workflow_dispatch:
 
@@ -41,6 +50,12 @@ jobs:
           java-version: "21"
 
       - uses: gradle/actions/setup-gradle@v4
+
+      # `rust-toolchain.toml` i `kjerne/` bestemmer versjonen. rustup finnes
+      # på maskinen og henter den ved første kall, når Gradle bygger kjernen.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
 
       # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
       # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,

@@ -29,6 +29,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Pluginen bygger Rust-kjernen gjennom `../kotlin`. rustup finnes på
+      # maskinen og henter versjonen i `kjerne/rust-toolchain.toml`.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
       - name: Les versjonen
         id: versjon
         working-directory: editor-intellij
