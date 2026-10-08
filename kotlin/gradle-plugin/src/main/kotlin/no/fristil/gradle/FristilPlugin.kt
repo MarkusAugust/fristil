@@ -110,8 +110,15 @@ private fun run(args: List<String>, workingDirectory: File): Pair<Int, String> {
 }
 
 /** Stien slik den står i en melding: fra prosjektmappa når fila ligger der. */
-private fun shown(file: File, workingDirectory: File): String {
-    val relative = workingDirectory.toPath().relativize(file.toPath()).toString()
+internal fun shown(file: File, workingDirectory: File): String {
+    // På Windows kan fila ligge på en annen stasjon enn prosjektet, og da
+    // finnes det ingen relativ sti: `relativize` kaster.
+    val relative =
+        try {
+            workingDirectory.toPath().relativize(file.toPath()).toString()
+        } catch (otherRoot: IllegalArgumentException) {
+            return file.absolutePath
+        }
     return if (relative.startsWith("..")) file.absolutePath else relative
 }
 

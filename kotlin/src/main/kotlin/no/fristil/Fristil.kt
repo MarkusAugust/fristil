@@ -25,10 +25,12 @@ object Fristil {
      * Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
      *
      * Med [css], teksten i stilarkene siden laster, sier den også fra om en
-     * klasse ingen av dem styler, og om en verdi uten regel.
+     * klasse ingen av dem styler, og om en verdi uten regel. En tom liste er
+     * en side uten stilark, der ingenting er stylet, som i TypeScript: et
+     * glob som ikke traff noe, skal felle testen, ikke slå sjekken av.
      */
-    fun diagnoseMarkup(html: String, css: List<String> = emptyList()): List<Finding> =
-        if (css.isEmpty()) diagnose(MARKUP, html) else diagnoseStyled(html, css, page = false)
+    fun diagnoseMarkup(html: String, css: List<String>? = null): List<Finding> =
+        if (css == null) diagnose(MARKUP, html) else diagnoseStyled(html, css, page = false)
 
     /**
      * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
@@ -36,8 +38,8 @@ object Fristil {
      * Bruk den på HTML-en serveren sender, ikke på en mal. [css] som for
      * [diagnoseMarkup].
      */
-    fun diagnosePage(html: String, css: List<String> = emptyList()): List<Finding> =
-        if (css.isEmpty()) diagnose(PAGE, html) else diagnoseStyled(html, css, page = true)
+    fun diagnosePage(html: String, css: List<String>? = null): List<Finding> =
+        if (css == null) diagnose(PAGE, html) else diagnoseStyled(html, css, page = true)
 
     /**
      * Skriptet som leser den rendrede siden i nettleseren: DOM-en slik den
@@ -45,11 +47,10 @@ object Fristil {
      * Playwright, eller bruk [assertFristilRendered].
      *
      * Svaret er et objekt med `html` og `css`. Det samme skriptet står i
-     * `@fristil/designsystem/diagnostics`.
+     * `@fristil/designsystem/diagnostics`. Teksten er bare funksjonen, uten
+     * kommentarer rundt: Playwright pakker den inn i parenteser og kaller den.
      */
-    const val READ_RENDERED_PAGE: String = """
-// begynner: READ_RENDERED_PAGE
-async () => {
+    const val READ_RENDERED_PAGE: String = """async () => {
   const sheets = [...document.styleSheets, ...document.adoptedStyleSheets]
   const css = []
   const read = async (sheet) => {
@@ -73,9 +74,7 @@ async () => {
   for (const sheet of sheets) await read(sheet)
   const doctype = document.doctype ? `<!DOCTYPE ${'$'}{document.doctype.name}>` : ""
   return { html: doctype + document.documentElement.outerHTML, css }
-}
-// slutter: READ_RENDERED_PAGE
-"""
+}"""
 
     /**
      * Sjekker svaret fra [READ_RENDERED_PAGE]: siden slik nettleseren rendret

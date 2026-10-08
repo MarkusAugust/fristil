@@ -24,7 +24,7 @@ package no.fristil
  * Meldingen har én linje per funn, som `12:30: feil: melding [regel]`, og det
  * er den en kodeagent leser og retter etter.
  */
-fun assertFristil(html: String, fragment: Boolean = false, css: List<String> = emptyList()) {
+fun assertFristil(html: String, fragment: Boolean = false, css: List<String>? = null) {
     report(if (fragment) Fristil.diagnoseMarkup(html, css) else Fristil.diagnosePage(html, css))
 }
 

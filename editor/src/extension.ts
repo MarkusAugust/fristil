@@ -89,11 +89,25 @@ export function activate(context: vscode.ExtensionContext) {
    * ventet ellers begge på den samme gamle klienten, og startet hver sin
    * server: funnene kom to ganger, og den ene serveren ble aldri stoppet.
    */
+  /*
+   * En klient som ikke klarte å starte, kaster når den stoppes. Da ble alle
+   * senere omstarter stående i `catch`, og funnene kom ikke tilbake før
+   * vinduet ble lastet på nytt.
+   */
+  const stopClient = async () => {
+    const old = client
+    client = undefined
+    try {
+      await old?.stop()
+    } catch {
+      // Den kjørte ikke, og er ikke noe å stoppe.
+    }
+  }
   let restarts: Promise<void> = Promise.resolve()
   const startClient = () => {
     restarts = restarts
       .then(async () => {
-        await client?.stop()
+        await stopClient()
         client = new LanguageClient("fristil", "Fristil", serverOptions, {
           documentSelector: languages().flatMap((language) => [
             { scheme: "file", language },
@@ -347,7 +361,7 @@ export function activate(context: vscode.ExtensionContext) {
     {
       dispose() {
         for (const p of providers) p.dispose()
-        void client?.stop()
+        void stopClient()
       },
     },
   )

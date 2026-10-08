@@ -169,7 +169,13 @@ fn main() {
     // `package.json` ville blitt lest fra rota. Verten sier hvor
     // arbeidsmappa er, og modulen går dit før den gjør noe annet.
     if let Ok(directory) = std::env::var("FRISTIL_ARBEIDSMAPPE") {
-        let _ = std::env::set_current_dir(directory);
+        // En nettverksmappe på Windows (`\\\\server\\…`) er ikke åpnet for
+        // modulen. Den skal få vite det, ikke få «Fant ikke fila» etterpå.
+        if let Err(reason) = std::env::set_current_dir(&directory) {
+            output::error(&format!(
+                "Advarsel: kommandolinja kan ikke gå til arbeidsmappa «{directory}» ({reason}). Relative stier leses fra rota. Bruk absolutte stier, eller kjør fra en mappe på en stasjon."
+            ));
+        }
     }
     let arguments: Vec<String> = std::env::args().skip(1).collect();
 

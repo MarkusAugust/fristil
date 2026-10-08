@@ -60,7 +60,12 @@ private fun toModule(part: String): String {
  */
 private fun fetch(client: HttpClient, address: String): String =
     try {
-        val request = HttpRequest.newBuilder(URI(address)).GET().build()
+        val request = HttpRequest.newBuilder(URI(address))
+            // Som den kjørbare fila: en server som aldri svarer, skal ikke
+            // henge en CI-jobb til den blir drept.
+            .timeout(java.time.Duration.ofSeconds(30))
+            .GET()
+            .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
         val type = response.headers().firstValue("content-type").orElse("")
         "$address\n${response.statusCode()}\n$type\n${String(response.body(), Charsets.UTF_8)}"
@@ -106,7 +111,7 @@ object CommandLine {
         try {
             val moduleArgs = mutableListOf<String>()
             val address = Regex("^https?://", RegexOption.IGNORE_CASE)
-            val client by lazy { HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build() }
+            val client by lazy { HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).connectTimeout(java.time.Duration.ofSeconds(30)).build() }
             for ((index, part) in args.withIndex()) {
                 if (args[0] != "sjekk" || index == 0 || !address.containsMatchIn(part)) {
                     moduleArgs += toModule(part)

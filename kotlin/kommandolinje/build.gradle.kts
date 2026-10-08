@@ -22,6 +22,12 @@ repositories {
 dependencies {
     implementation("com.dylibso.chicory:runtime:1.7.5")
     implementation("com.dylibso.chicory:wasi:1.7.5")
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging { events("failed") }
 }
 
 kotlin {

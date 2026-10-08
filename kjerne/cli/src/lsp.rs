@@ -112,6 +112,40 @@ pub fn path_of(uri: &str) -> Option<String> {
     })
 }
 
+/// Stien til manifestet i `initializationOptions`, slik programmet ser
+/// filsystemet. Den kan være en `file:`-adresse, en absolutt sti, også på
+/// Windows (`C:\\prosjekt\\…` eller `\\\\server\\…`), eller relativ til
+/// arbeidsområdet.
+pub fn manifest_path(path: &str, root: Option<&str>) -> String {
+    if let Some(from_uri) = path.strip_prefix("file:").and(path_of(path)) {
+        return from_uri;
+    }
+    let bytes = path.as_bytes();
+    let drive = bytes.len() >= 3
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && matches!(bytes[2], b'/' | b'\\');
+    if drive {
+        // Som WASI-modul har verten åpnet stasjonen som `/c`.
+        return if cfg!(target_os = "wasi") {
+            format!(
+                "/{}/{}",
+                (bytes[0] as char).to_ascii_lowercase(),
+                path[3..].replace('\\', "/")
+            )
+        } else {
+            path.to_string()
+        };
+    }
+    if path.starts_with('/') || path.starts_with('\\') {
+        return path.to_string();
+    }
+    match root {
+        Some(root) => format!("{}/{path}", root.trim_end_matches('/')),
+        None => path.to_string(),
+    }
+}
+
 fn percent_decode(s: &str) -> String {
     let bytes = s.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
@@ -365,16 +399,10 @@ impl Server {
             }
         }
         if let Some(options) = params.get("initializationOptions") {
-            self.preferred =
-                options
-                    .get("manifest")
-                    .and_then(Json::as_str)
-                    .map(|p| match self.roots.first() {
-                        Some(root) if !p.starts_with('/') => {
-                            format!("{}/{p}", root.trim_end_matches('/'))
-                        }
-                        _ => p.to_string(),
-                    });
+            self.preferred = options
+                .get("manifest")
+                .and_then(Json::as_str)
+                .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
         let version = self.vocabulary().version.clone();
@@ -870,6 +898,22 @@ mod tests {
             assert_eq!(windows, "C:/prosjekt");
         }
         assert_eq!(path_of("untitled:Untitled-1"), None);
+        // Manifestet i initializationOptions.
+        let windows = manifest_path(r"C:\proj\build\fristil\manifest.json", Some("/c/proj"));
+        if cfg!(target_os = "wasi") {
+            assert_eq!(windows, "/c/proj/build/fristil/manifest.json");
+        } else {
+            assert_eq!(windows, r"C:\proj\build\fristil\manifest.json");
+        }
+        assert_eq!(
+            manifest_path("build/m.json", Some("/r/")),
+            "/r/build/m.json"
+        );
+        assert_eq!(manifest_path("/abs/m.json", Some("/r")), "/abs/m.json");
+        assert_eq!(
+            manifest_path("file:///abs/m%20x.json", Some("/r")),
+            "/abs/m x.json"
+        );
         assert_eq!(path_of("file:///a%+fb"), Some("/a%+fb".into()));
     }
 

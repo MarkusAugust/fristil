@@ -91,7 +91,11 @@ export async function runCommandLine(
       fetchedDir ??= mkdtempSync(join(tmpdir(), "fristil-"))
       let answer: string
       try {
-        const response = await fetch(part)
+        // Som den kjørbare fila: en server som aldri svarer, skal ikke henge
+        // en CI-jobb til den blir drept.
+        const response = await fetch(part, {
+          signal: AbortSignal.timeout(30_000),
+        })
         const type = response.headers.get("content-type") ?? ""
         answer = `${part}\n${response.status}\n${type}\n${await response.text()}`
       } catch (error) {

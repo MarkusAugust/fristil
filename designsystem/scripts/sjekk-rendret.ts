@@ -114,15 +114,23 @@ try {
     join(pakke, "../kotlin/src/main/kotlin/no/fristil/Fristil.kt"),
     "utf8",
   )
-  const kotlinSkript =
-    /\/\/ begynner: READ_RENDERED_PAGE\n([\s\S]*?)\/\/ slutter: READ_RENDERED_PAGE/
-      .exec(kotlin)?.[1]
-      // `${'$'}` er et dollartegn i en Kotlin-streng.
-      ?.replaceAll("$" + "{'$'}", "$")
+  const kotlinSkript = /READ_RENDERED_PAGE: String = """([\s\S]*?)"""/
+    .exec(kotlin)?.[1]
+    // `${'$'}` er et dollartegn i en Kotlin-streng.
+    ?.replaceAll("$" + "{'$'}", "$")
   krev(kotlinSkript !== undefined, "fant ikke READ_RENDERED_PAGE i Fristil.kt")
+  krev(
+    kotlinSkript?.startsWith("async () => {") === true &&
+      kotlinSkript.endsWith("}") &&
+      !/^\s*\/\//m.test(kotlinSkript),
+    "READ_RENDERED_PAGE i Fristil.kt skal være bare funksjonen, uten blanke tegn eller kommentarer rundt",
+  )
   for (const sti of ["/med-stilark", "/fra-cdn"]) {
     await page.goto(`${server.url}${sti.slice(1)}`)
     const fraTs = await page.evaluate(READ_RENDERED_PAGE)
+    // Playwright for Java sender teksten, og Playwright pakker den inn i
+    // parenteser og kaller den. En kommentar på siste linje ville da slukt
+    // parentesen, så teksten må være bare funksjonen.
     const fraKotlin = await page.evaluate(`(${kotlinSkript})()`)
     krev(
       JSON.stringify(fraTs) === JSON.stringify(fraKotlin),

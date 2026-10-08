@@ -19,6 +19,8 @@ class StylesTest {
         assertTrue(Fristil.diagnoseMarkup("""<button class="fs-button" data-variant="ghost">x</button>""", css).isEmpty())
         // Uten stilark er det som før.
         assertTrue(Fristil.diagnoseMarkup(html).isEmpty())
+        // En tom liste er en side uten stilark, som i TypeScript.
+        assertEquals(listOf("ustylet-klasse", "ustylet-klasse"), Fristil.diagnoseMarkup(html, emptyList()).map { it.rule })
     }
 
     @Test
