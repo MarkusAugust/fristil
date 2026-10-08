@@ -94,8 +94,13 @@ export type Stilark = keyof typeof STILARK
 interface Props {
   /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
   stiler?: Stilark[]
-  /** `rad` legger innholdet side om side, `stabel` under hverandre. */
-  layout?: "rad" | "stabel"
+  /**
+   * `rad` legger innholdet side om side, `stabel` under hverandre.
+   * `flyt` er vanlig blokkflyt, der margene slås sammen slik de gjør på en
+   * ekte side. I `stabel` er flaten en flex-kolonne, og der legges margene
+   * og mellomrommet oppå hverandre.
+   */
+  layout?: "rad" | "stabel" | "flyt"
   /** Valgfri maksbredde, for eksempel "34rem". */
   maxWidth?: string
   /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
@@ -189,6 +194,10 @@ const stilark = [
 	.flate[data-layout="stabel"] {
 		flex-direction: column;
 		align-items: stretch;
+	}
+
+	.flate[data-layout="flyt"] {
+		display: block;
 	}
 
 	/* Bevisst ingen reset her. Flaten skal vise nøyaktig det en konsument får

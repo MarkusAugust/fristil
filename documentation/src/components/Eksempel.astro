@@ -15,8 +15,13 @@ const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${pakke.version}
 interface Props {
   /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
   stiler?: Stilark[]
-  /** `rad` legger innholdet side om side, `stabel` under hverandre. */
-  layout?: "rad" | "stabel"
+  /**
+   * `rad` legger innholdet side om side, `stabel` under hverandre.
+   * `flyt` er vanlig blokkflyt, der margene slås sammen slik de gjør på en
+   * ekte side. I `stabel` er flaten en flex-kolonne, og der legges margene
+   * og mellomrommet oppå hverandre.
+   */
+  layout?: "rad" | "stabel" | "flyt"
   /** Valgfri maksbredde, for eksempel "34rem". */
   maxWidth?: string
   /** Markupen. Vises både levende og som kode. */

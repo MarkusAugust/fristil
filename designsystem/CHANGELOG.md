@@ -35,6 +35,13 @@ egen overskrift «Brytende».
   Har du gjort streken smalere selv, står den nå til start; sett
   `margin-inline: auto` for å sentrere den.
 
+### Endret
+
+- **`fs-divider` med `data-variant="subtle"` er litt tydeligere.** Den brukte
+  `--fs-color-neutral-surface`, som lå så nær lerretet at streken nesten
+  forsvant. Nå bruker den `--fs-color-neutral-raised`, som ligger mellom
+  flatefargen og `border-subtle` i både lyst og mørkt tema.
+
 ## 0.32.0 (2026-10-08)
 
 ### Brytende

@@ -19,8 +19,10 @@
     background: var(--fs-color-neutral-border-strong);
   }
 
+  /* Flatefargen alene var så nær lerretet at streken nesten forsvant.
+     raised ligger mellom den og border-subtle i begge temaer. */
   .fs-divider[data-variant="subtle"] {
-    background: var(--fs-color-neutral-surface);
+    background: var(--fs-color-neutral-raised);
   }
 
   /* Høykontrast: bakgrunner tvinges til sideflatens farge, og streken var
