@@ -20,6 +20,16 @@ dependencies {
         testFramework(TestFrameworkType.Platform)
     }
     testImplementation("junit:junit:4.13.2")
+
+    /*
+     * Diagnostikken: Rust-kjernen kompilert til JVM-bytekode, kjørt av
+     * Chicory. Kommer fra `../kotlin` gjennom `includeBuild`, så pluginen
+     * alltid har den samme kjernen som resten av repoet. IDE-en har sitt
+     * eget Kotlin-standardbibliotek, så pakkens utgave holdes utenfor.
+     */
+    implementation("io.github.markusaugust:fristil:0.1.0-SNAPSHOT") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 kotlin {
@@ -44,6 +54,9 @@ intellijPlatform {
         // Vises på Marketplace og i IDE-en ved oppdatering, og må være på
         // engelsk som beskrivelsen. Skriv en ny linje for hver versjon.
         changeNotes = """
+            <b>0.3.0</b>: Diagnostics from Fristil's checker, in HTML files and in
+            HTML injected into strings, with quick fixes. The checker is written in
+            Rust and runs inside the IDE as WebAssembly, without Node.js.<br>
             <b>0.2.0</b>: Completion for <code>fs-table__sort</code>, the sort button
             in a table header. The session timeout is now described as a frame
             component, and the plugin has the new Fristil icon.<br>

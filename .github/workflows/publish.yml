@@ -41,6 +41,12 @@ jobs:
       # Bygger bare pakken. Dokumentasjonen har ingenting med utgivelsen å
       # gjøre, og bygget kontrollerer selv at pakken inneholder det `exports`
       # lover, at kommandolinja virker, og at versjonen står i loggen.
+      # Pakken har kjernen med seg, bygget fra Rust i samme jobb som den
+      # publiseres fra. rustup henter versjonen i `kjerne/rust-toolchain.toml`.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
       - name: Bygg pakken
         run: bun --filter @fristil/designsystem build
 

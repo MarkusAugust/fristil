@@ -6,6 +6,20 @@ bare endrer seg når et element eller et attributt gjør det.
 ## Ikke utgitt
 
 - Nytt ikon: det nye Fristil-merket, en F i to lag.
+- Feilmeldingene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`,
+  den samme som Neovim og Helix bruker, skrevet i Rust. Den ligger i
+  utvidelsen, så den trenger fortsatt ingenting installert, og sjekker mot
+  Fristil-versjonen prosjektet har installert (`node_modules`) eller det
+  Gradle-pluginen har skrevet (`build/fristil/manifest.json`), med
+  komponenter tatt over med `fristil overta`. Uten noen av dem sjekker den
+  mot versjonen den er bygget fra.
+- Fullføring og sjekk av `data-color` på `fs-dialog`, med fargene
+  `fs.dialog({ color })` gir. Før sa en ukjent farge ingenting.
+- Markup i en kommentar i malspråket, som `{{-- --}}` i Blade og `@* *@` i
+  Razor, gir ikke lenger funn.
+- Hver feilmelding viser regelnavnet, som `ukjent-klasse`, med lenke til
+  komponentsiden. Navnet er det `<!-- fristil-ignore-next ukjent-klasse -->`
+  tar for å undertrykke ett funn.
 
 ## 0.7.0
 

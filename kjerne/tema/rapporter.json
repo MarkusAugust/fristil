@@ -1,0 +1,153 @@
+{
+  "eget-tema-holder": {
+    "problems": [],
+    "blocks": 2,
+    "declarations": 166,
+    "promises": 306
+  },
+  "for-lys-tekst": {
+    "problems": [
+      {
+        "selector": ":root",
+        "message": "accent: border mot canvas er 1.43:1, kravet er 3.1:1."
+      },
+      {
+        "selector": ":root",
+        "message": "accent: border mot raised er 1.12:1, kravet er 3.1:1."
+      },
+      {
+        "selector": ":root",
+        "message": "accent: border mot egen surface er 1.27:1, kravet er 3.1:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot canvas er 2.05:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot surface er 1.82:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot raised er 1.61:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot egen surface er 1.81:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: content oppå text er 1.98:1, kravet er 4.6:1."
+      }
+    ],
+    "blocks": 1,
+    "declarations": 2,
+    "promises": 153
+  },
+  "morkt-i-media": {
+    "problems": [],
+    "blocks": 1,
+    "declarations": 83,
+    "promises": 153
+  },
+  "verdier-som-ikke-kan-regnes": {
+    "problems": [
+      {
+        "selector": ":root",
+        "message": "--fs-color-accent-fill er «var(--noe-annet)». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+      },
+      {
+        "selector": ":root",
+        "message": "--fs-color-danger-text er «#ff9999cc». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+      },
+      {
+        "selector": ":root",
+        "message": "--fs-color-danger-txt er ikke et token i systemet. Navnet er --fs-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+      },
+      {
+        "selector": ":root",
+        "message": "--fs-color-danger-canvas er ikke et token i systemet. Navnet er --fs-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+      }
+    ],
+    "blocks": 1,
+    "declarations": 0,
+    "promises": 153
+  },
+  "ufullstendig-familie": {
+    "problems": [
+      {
+        "selector": ":root",
+        "message": "brand4 mangler surface, border-subtle, border, border-strong, text, text-strong, text-subtle, content. En familie må ha alle rollene for at løftene skal kunne kontrolleres."
+      }
+    ],
+    "blocks": 1,
+    "declarations": 1,
+    "promises": 153
+  },
+  "bindestrek-i-familien": {
+    "problems": [
+      {
+        "selector": ":root",
+        "message": "min-merkevare mangler border-subtle, border, border-strong, fill, text-strong, text-subtle, content. En familie må ha alle rollene for at løftene skal kunne kontrolleres."
+      }
+    ],
+    "blocks": 1,
+    "declarations": 2,
+    "promises": 153
+  },
+  "color-scheme-varianter": {
+    "problems": [],
+    "blocks": 4,
+    "declarations": 4,
+    "promises": 612
+  },
+  "nostet": {
+    "problems": [
+      {
+        "selector": ":root",
+        "message": "danger: text mot canvas er 2.05:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot surface er 1.82:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot raised er 1.61:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: text mot egen surface er 1.81:1, kravet er 4.6:1."
+      },
+      {
+        "selector": ":root",
+        "message": "danger: content oppå text er 1.98:1, kravet er 4.6:1."
+      }
+    ],
+    "blocks": 2,
+    "declarations": 2,
+    "promises": 306
+  },
+  "avkuttet": {
+    "problems": [
+      {
+        "selector": "(hele fila)",
+        "message": "Fila har 2 «{» og 1 «}». En blokk som ikke er lukket, leses til fila slutter, så noe av temaet kan mangle eller være lest feil."
+      }
+    ],
+    "blocks": 1,
+    "declarations": 1,
+    "promises": 153
+  },
+  "ingen-tokens": {
+    "blocks": 0,
+    "declarations": 0,
+    "promises": 0,
+    "problems": [
+      {
+        "selector": "(hele fila)",
+        "message": "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?"
+      }
+    ]
+  }
+}

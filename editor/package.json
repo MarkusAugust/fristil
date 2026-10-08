@@ -163,7 +163,7 @@
   },
   "scripts": {
     "generate": "bun scripts/generate.ts",
-    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/fristil-kjerne.wasm && cp ../designsystem/kjerne/fristil.wasm dist/",
     "sjekk": "bun scripts/sjekk.ts && bun scripts/sjekk-diagnostikk.ts && bun run build && vsce package --no-dependencies --out fristil.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -171,6 +171,8 @@
     "@fristil/designsystem": "workspace:*",
     "@types/node": "24.12.4",
     "@types/vscode": "1.90.0",
-    "@vscode/vsce": "^3.6.0"
+    "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "vscode-languageclient": "9.0.1"
   }
 }

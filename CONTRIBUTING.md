@@ -29,6 +29,12 @@ Kjører nøyaktig det CI kjører, i samme rekkefølge:
 | `test` | godt over tre tusen tester i Chromium, Firefox og WebKit, pluss Tailwind-temaet |
 | `build` | Bygger pakken, og kontrollerer at den inneholder det den lover |
 | `test:docs` | axe mot hver bygde side i begge temaer, og at dokumentasjonen følger koden |
+| `sjekk:kjerne` | Rust-kjernen mot fasiten og kravene, og Kotlin-pakken mot den samme fasiten |
+
+`build` og `sjekk:kjerne` krever Rust i tillegg til Bun: sjekken i pakken er
+bygget fra `kjerne/`. Installer [rustup](https://rustup.rs), og
+`kjerne/rust-toolchain.toml` henter riktig versjon ved første kall.
+`sjekk:kjerne` krever også Java 17 eller nyere for Kotlin.
 
 Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under arbeid er `bun --filter @fristil/designsystem test:browser --project chromium` nok. `bun run test -- --project chromium` virker ikke: `bun run` legger argumentene bakerst i skriptteksten, og `test` er to kommandoer etter hverandre, så flaggene havner på den siste.
 
@@ -58,8 +64,8 @@ Fjorten filer skrives av et skript, og en endring rett i dem blir overskrevet ve
 | --- | --- |
 | `editor/fristil.html-data.json` | VS Codes format for tagger og attributter |
 | `editor/snippets.json` | én snippet per element |
-| `designsystem/src/diagnostics/elements.ts` | det diagnostikken trenger, tagg for tagg |
-| `designsystem/src/diagnostics/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
+| `designsystem/src/vocabulary/elements.ts` | elementene og attributtene, som manifestet skrives fra |
+| `designsystem/src/vocabulary/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
 | `editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt` | katalogen IntelliJ-pluginen slår opp i |
 
@@ -117,17 +123,16 @@ Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, 
 
 `editor/` er VS Code-utvidelsen. `package.json` peker på
 `fristil.html-data.json` og `snippets.json`, som gir fullføring og snippets
-uten kode, og på `dist/extension.js`: diagnostikken i
-`designsystem/src/diagnostics/` leser hver `<fs-…>`-tagg og hver
-`class="…"` i et dokument og sjekker dem mot `elements.ts` og `classes.ts`
-ved siden av, og `src/extension.ts` kobler den til editoren med streker,
-lyspærer, fullføring og hover. Diagnostikken ligger i pakken, som
-`@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen
-importerer den derfra. `classes.ts` leses fra pakkens CSS og fra
-byggefunksjonene i `fs`, kalt én gang per variant, så en ny variant er med
-når `fs` gir den. De fire filene genereres fra `editor/metadata.ts`, CSS-en
-og «Ren HTML»-fanene på komponentsidene, sammen med
-`designsystem/web-types.json` for JetBrains. Endrer du et
+uten kode, og på `dist/extension.js`, som kobler sjekken til editoren med
+streker, lyspærer, fullføring og hover. Sjekken er Rust-kjernen i `kjerne/`,
+bygget til WebAssembly. Den samme modulen ligger i pakken, som
+`@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen har en
+kopi i `dist/`. Kjernen sjekker mot manifestet, som skrives fra
+`designsystem/src/vocabulary/elements.ts` og `classes.ts`. `classes.ts` leses
+fra pakkens CSS og fra byggefunksjonene i `fs`, kalt én gang per variant, så
+en ny variant er med når `fs` gir den. Filene genereres fra
+`editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
+sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
 setning om det, og `bun run build` stopper til filene er generert på nytt:
 
@@ -135,10 +140,10 @@ setning om det, og `bun run build` stopper til filene er generert på nytt:
 bun --filter fristil-vscode generate
 ```
 
-Diagnostikken har ingen VS Code i seg, og `scripts/sjekk-diagnostikk.ts`
+Kjernen har ingen VS Code i seg, og `scripts/sjekk-diagnostikk.ts`
 kjører den over hver feiltype den skal fange, snippetene medregnet som rene
-tilfeller. Legger du til en regel, legg til tilfellet som feller den, og se
-at det faktisk feller ved å skru regelen av. `bun --filter fristil-vscode
+tilfeller. Legger du til en regel i `kjerne/src/`, legg til tilfellet som feller den, og se
+at det faktisk feller ved å skru regelen av. Se `kjerne/README.md`. `bun --filter fristil-vscode
 sjekk` kjører begge sjekkene, bygger `dist/extension.js` og pakker
 `fristil.vsix`.
 
@@ -169,6 +174,19 @@ eksempelet, og du ser ikke lenger det en konsument får.
 ## Commit-meldinger
 
 På norsk, i imperativ, uten prefiks: «Rett fokus i feiloppsummeringen», ikke «fix: …». Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
+
+## Forfatter
+
+Commits skrives alltid i eierens navn, `MASK <m.a.sobergklyver@gmail.com>`, også når en kodeagent har skrevet koden. En agent skal aldri stå som forfatter eller committer, og meldingen skal ikke ha linjer som gir den æren: ingen `Co-Authored-By: Claude …`, ingen `Claude-Session: …` og ingen «Generated with Claude Code». Det samme gjelder beskrivelsen av en PR, og regelen går foran det et verktøy ellers ber om.
+
+Sjekk identiteten før første commit, særlig i et nytt miljø som en sky-økt:
+
+```bash
+git config user.name "MASK"
+git config user.email "m.a.sobergklyver@gmail.com"
+```
+
+CI-jobben **Forfattere** (`bun run sjekk:forfattere`) går gjennom hele historikken og feiler på begge deler. Grener får beskrivende navn, ikke `claude/…`.
 
 ## Når CI er rød på master
 

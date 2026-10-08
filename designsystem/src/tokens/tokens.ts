@@ -1,4 +1,4 @@
-import { buildMatrix, FRISTIL_BRANDS, type MatrixToken } from "./matrix.js"
+import { darkCells, lightCells, type MatrixToken } from "./matrise.js"
 
 export const Breakpoints = {
   sm: "640px",
@@ -25,9 +25,10 @@ export type Container = keyof typeof Containers
 /**
  * Alt som ikke er farge.
  *
- * Fargene står ikke her. De regnes av kontrakten i `contract.ts` og bygges av
- * `buildMatrix`, så systemets egne farger er den samme kontrakten anvendt på
- * systemets egne kulører. Se `colorTokens` under.
+ * Fargene står ikke her. De regnes av kjernen fra fargekontrakten
+ * (`fargekontrakt.json`) og skrives til `matrise.ts`, så systemets egne farger
+ * er den samme kontrakten anvendt på systemets egne kulører. Se `colorTokens`
+ * under.
  */
 export const cssTokens = {
   // Tekststørrelser
@@ -156,22 +157,6 @@ type SystemColorToken =
 
 /** Hvert fargenavn systemet sender ut. */
 export type ColorToken = MatrixToken | SystemColorToken
-
-/*
- * `buildMatrix` tar merkefarger fra en konsument, så nøklene den gir er
- * `string`. Her er merkene systemets egne, og da er de nøyaktig `MatrixToken`.
- * At de virkelig er det, er en påstand `contract.browser.test.ts` gjør: «har
- * hver familie med hver rolle» kaller matrisen og krever hver celle.
- */
-const lightCells = buildMatrix(FRISTIL_BRANDS, "light").tokens as Record<
-  MatrixToken,
-  string
->
-
-const darkCells = buildMatrix(FRISTIL_BRANDS, "dark").tokens as Record<
-  MatrixToken,
-  string
->
 
 export const colorTokens: Record<ColorToken, string> = {
   ...lightCells,

@@ -1,0 +1,241 @@
+---
+title: Kotlin og Java
+description: Byggefunksjonene med enum-er, og Fristils sjekk i vanlige tester, på JVM-en uten Node og uten JavaScript.
+---
+
+Fristil for Kotlin gir deg tre ting: byggefunksjonene fra `fs`, der de lovlige verdiene er `enum`-er, den samme sjekken som `fristil sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
+
+:::caution[Ikke utgitt ennå]
+Pakken er ikke på Maven Central ennå. Den kommer som `io.github.markusaugust:fristil`, med samme versjon som `@fristil/designsystem`, og fram til da kan du bygge den fra [kildekoden](https://github.com/MarkusAugust/fristil/tree/master/kotlin). Se [Veikart](../veikart/).
+:::
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.github.markusaugust:fristil:{versjon}")
+}
+```
+
+Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme Fristil i Maven og på npm. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+
+## CSS-en og web-komponentene
+
+Pakken er også en [WebJar](https://www.webjars.org): `fristil.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/fristil/{versjon}/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
+
+```kotlin
+routing {
+    staticResources("/webjars", "META-INF/resources/webjars")
+}
+```
+
+`FristilWebJar` har stiene, med versjonen i, så malen aldri peker på en annen versjon enn den pakken har:
+
+```kotlin
+"""
+<link rel="stylesheet" href="${FristilWebJar.CSS}">
+<script type="module">
+  import { defineFs } from "${FristilWebJar.REGISTER}"
+  defineFs()
+</script>
+"""
+```
+
+En adresse fra komponentsidene beholder stien og bytter bare begynnelsen. Denne:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+```
+
+blir `${FristilWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
+
+## Byggefunksjonene
+
+`Fs` har de samme byggefunksjonene og valgene som `fs` i TypeScript. Hver gir attributtene du legger på elementet:
+
+```kotlin
+import no.fristil.*
+
+val lagre = Fs.button(variant = ButtonVariant.SECONDARY)
+
+"""<button ${lagre.toHtml()}>Lagre utkast</button>"""
+// <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+```
+
+De lovlige verdiene er `enum`-er, så `ButtonVariant.SECUNDARY` er en kompileringsfeil, og IDE-en viser hva som finnes. Verdier som går igjen, har ett felles navn: `Size`, `FieldState` og `RequiredMarker` brukes av alle byggefunksjonene som har dem. Hver `enum` har `value`, teksten som havner i HTML-en, og `of(tekst)`, som gir verdien eller `null` for en tekst utenfra.
+
+Svaret er et `Attributes`, som er et vanlig `Map<String, String>`. Det kan gis til hvilken som helst malmotor. Uten malmotor skriver `toHtml()` det ut med verdiene escapet, og `+` legger to sett sammen.
+
+Byggefunksjonene som gir flere sett, gir en dataklasse med ett felt per sett. `Fs.field` kobler ledetekst, kontroll, hjelpetekst og feilmelding:
+
+```kotlin
+val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+
+"""
+<label ${felt.label.toHtml()}>E-postadresse</label>
+<input ${(Fs.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>
+<p ${(Fs.helpText() + felt.help).toHtml()}>Vi sender kvittering hit.</p>
+<p ${(Fs.errorText() + felt.error).toHtml()}>Skriv en gyldig adresse.</p>
+"""
+```
+
+Et flagg som `hidden` har den tomme teksten som verdi, og skrives som navnet alene.
+
+### At de svarer det samme som i TypeScript
+
+Byggefunksjonene genereres fra manifestet Fristil skriver fra TypeScript-koden, og de få der valgene virker sammen, som `field` og `tabs`, er skrevet for hånd. Alle testes mot over tusen byggetilfeller med svaret fra TypeScript. Svarer én byggefunksjon ett attributt annerledes, slippes ikke pakken.
+
+## kotlinx.html
+
+`io.github.markusaugust:fristil-kotlinx-html` har én utvidelse, `fs(…)`, som legger attributtene fra byggefunksjonene på en tagg. Den er en egen pakke, så hovedpakken ikke tar med kotlinx.html til den som ikke bruker det.
+
+```kotlin
+import kotlinx.html.*
+import no.fristil.*
+import no.fristil.InputType
+import no.fristil.html.fs
+
+fun FlowContent.epost(ugyldig: Boolean) {
+    val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+    label { fs(felt.label); +"E-postadresse" }
+    input { fs(Fs.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
+    p { fs(Fs.helpText(), felt.help); +"Vi sender kvittering hit." }
+    p { fs(Fs.errorText(), felt.error); +"Skriv en gyldig adresse." }
+}
+```
+
+Flere sett legges på i rekkefølge, og et senere vinner, som `{...a} {...b}` i JSX. Klassene legges til dem taggen har, så `div(classes = "min-egen") { fs(Fs.card()) }` gir begge. `InputType` importeres for seg, siden kotlinx.html har en med samme navn.
+
+### Med Ktor
+
+```kotlin
+routing {
+    staticResources("/webjars", "META-INF/resources/webjars")
+    get("/soknad") {
+        call.respondHtml {
+            head { link(rel = "stylesheet", href = FristilWebJar.CSS) }
+            body {
+                form(action = "/soknad", method = FormMethod.post) {
+                    epost(ugyldig = false)
+                    button { fs(Fs.button()); +"Send" }
+                }
+                script(type = "module") { unsafe { +"import { defineFs } from \"${FristilWebJar.REGISTER}\"; defineFs()" } }
+            }
+        }
+    }
+}
+```
+
+## Maler: JTE, Thymeleaf og de andre
+
+En mal kan ikke kalle `Fs` for hver verdi, og da er det sjekken som passer på. Skriv markupen som på komponentsidene, og sjekk det malen gir i en test. Med [JTE](https://jte.gg):
+
+```kotlin
+@Test
+fun `søknaden er riktig markup`() {
+    val ut = StringOutput()
+    templateEngine.render("soknad.kte", mapOf("ugyldig" to true), ut)
+    assertFristil(ut.toString())
+}
+```
+
+Det samme gjelder Thymeleaf, Freemarker og Pebble: render malen til en tekst, og gi den til `assertFristil`. Malsyntaksen i selve malfila, som `${…}`, `th:…` og `@if`, forstår sjekken også, så [editoren](../editoren/) kan si fra mens du skriver.
+
+## Sjekken i testene
+
+`assertFristil` sjekker HTML-en serveren sender, og feiler med funnene som melding:
+
+```kotlin
+@Test
+fun `skjemaet er koblet riktig`() {
+    assertFristil(app.render("/skjema"))
+}
+```
+
+```text
+Fristil fant 2 funn:
+12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. … [for-peker-feil]
+18:9: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button? [ukjent-klasse]
+```
+
+Den kaster en `AssertionError`, som JUnit, Kotest og TestNG alle forstår. Som standard sjekkes en hel side: at hver id det pekes på finnes, og at hvert felt er koblet. Er HTML-en en bit av en side, som en komponent, sjekker `assertFristil(html, fragment = true)` bare ordforrådet.
+
+Det virker likt for alt som lager HTML på JVM-en: strenger, kotlinx.html, Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke koden som lager den.
+
+Trenger du funnene selv, gir `Fristil.diagnosePage(html)` og `Fristil.diagnoseMarkup(html)` dem som en liste. Hvert funn har `start` og `end`, `line` og `column`, `severity`, `rule`, `message`, `link` og noen ganger en `fix`. Posisjonene er indekser i en Kotlin-`String`, så `html.substring(funn.start, funn.end)` gir nøyaktig teksten funnet gjelder, også med «æøå» og emoji foran.
+
+Et funn du vil beholde, undertrykkes med en kommentar over taggen:
+
+```html
+<!-- fristil-ignore-next ukjent-klasse -->
+<div class="fs-eksperiment">…</div>
+```
+
+Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
+
+## Den rendrede siden
+
+Med Playwright for Java sjekkes siden slik nettleseren har rendret den, med
+markupen web-komponentene la til og stilarkene den lastet. Pakken avhenger
+ikke av Playwright: `assertFristilRendered` tar en funksjon som kjører et
+skript på siden.
+
+```kotlin
+@Test
+fun `skjemaet er riktig slik det vises`() {
+    page.navigate("http://localhost:8080/skjema")
+    assertFristilRendered { script -> page.evaluate(script) }
+}
+```
+
+Den feiler på det `assertFristil` feiler på, og i tillegg på en klasse ingen
+stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
+`assertFristil(html, css = listOf(stilark))` og
+`Fristil.diagnosePage(html, css)` den samme sjekken uten nettleser.
+
+## Gradle-pluginen
+
+Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("io.github.markusaugust.fristil") version "{versjon}"
+}
+
+fristil {
+    templates.from(fileTree("src/main/jte"))
+    themeRecipe = file("fristil.tema.json")
+}
+```
+
+| Oppgave | Gjør |
+| --- | --- |
+| `fristilSjekk` | sjekker `templates` som `fristil sjekk`, og feiler med funnene. Kjøres av `check`. |
+| `fristilTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/fristil/tema.css` |
+| `fristilManifest` | skriver manifestet prosjektet sjekkes mot til `build/fristil/manifest.json`. Kjøres av `assemble`. |
+
+```text
+> Task :fristilSjekk FAILED
+Markupen stemmer ikke med Fristil:
+
+src/main/jte/soknad.jte:14:18: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?
+```
+
+`rendered = true` sjekker filene som hele sider, med koblingen, som `--rendret`. Har du overtatt en komponent med [`fristil overta`](../kommandolinjen/#overta), legger du fragmentet i `manifests`, så markupen for kopien sjekkes også, og kopien kommer med i `build/fristil/manifest.json`:
+
+```kotlin
+fristil {
+    templates.from(fileTree("src/main/jte"))
+    manifests.from("src/main/fristil/button/fristil-manifest.json")
+}
+```
+
+Pluginen kommer på Maven Central sammen med pakken. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
+
+## Hvordan det virker
+
+Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen kjører i Node, i VS Code og her. På JVM-en kjøres den av [Chicory](https://chicory.dev), en WebAssembly-runtime skrevet i ren Java. Modulen er gjort om til JVM-bytekode da pakken ble bygget, så den kjører med JIT-en og starter på en brøkdel av et sekund. Hver tråd får sin egen instans, så tester som kjører samtidig, venter ikke på hverandre.
+
+## I IntelliJ
+
+Pluginen [Fristil](https://plugins.jetbrains.com/plugin/34764-fristil) kjører den samme sjekken mens du skriver, også i HTML i en Kotlin-streng merket med `@Language("HTML")` eller `// language=HTML`. Se [Editoren](../editoren/#jetbrains).

@@ -9,15 +9,33 @@
  * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
  */
 
-import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { buildMatrix, FRISTIL_BRANDS } from "../src/tokens/matrix.js"
+import { lightCells } from "../src/tokens/matrise.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const cli = join(pakke, "dist/cli.js")
+
+/*
+ * Kommandoen som prøves. Standard er den bygde fila, som en konsument får.
+ * `FRISTIL_CLI` peker på en annen, som den kjørbare fila fra `kjerne/cli`, så
+ * de samme påstandene prøves mot den. `FRISTIL_SAMMENLIGN` kjører hver
+ * kjøring med begge og krever det samme svaret byte for byte: utdata,
+ * feilkanalen og feilkoden. Begge kan være en JSON-liste, en kommando med
+ * argumenter, som `["java", "-jar", "fristil.jar"]`.
+ */
+const kommando = (verdi: string): string[] =>
+  verdi.startsWith("[") ? JSON.parse(verdi) : [verdi]
+const KOMMANDO = process.env.FRISTIL_CLI
+  ? kommando(process.env.FRISTIL_CLI)
+  : ["node", cli]
+const SAMMENLIGN = process.env.FRISTIL_SAMMENLIGN
+  ? kommando(process.env.FRISTIL_SAMMENLIGN)
+  : undefined
+const avvik: string[] = []
 
 const FARGER = [
   "--aksent=#7c3aed",
@@ -33,21 +51,68 @@ let antallKjøringer = 0
 async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
   antallKjøringer += 1
 
-  const prosess = Bun.spawn(["node", cli, ...argumenter], {
-    stdout: "pipe",
-    stderr: "pipe",
-    // `agent` leser package.json i arbeidsmappa. Uten dette ville hver kjøring
-    // sett pakkens egen, og deteksjonen aldri blitt prøvd.
-    cwd: mappe,
-  })
+  const start = (kommando: string[], med = argumenter) =>
+    Bun.spawn([...kommando, ...med], {
+      stdout: "pipe",
+      stderr: "pipe",
+      // `agent` leser package.json i arbeidsmappa. Uten dette ville hver
+      // kjøring sett pakkens egen, og deteksjonen aldri blitt prøvd.
+      cwd: mappe,
+    })
+  const svar = async (prosess: ReturnType<typeof start>) => {
+    const [ut, feil, kode] = await Promise.all([
+      new Response(prosess.stdout).text(),
+      new Response(prosess.stderr).text(),
+      prosess.exited,
+    ])
+    return { kode, ut, feil }
+  }
 
-  const [ut, feil, kode] = await Promise.all([
-    new Response(prosess.stdout).text(),
-    new Response(prosess.stderr).text(),
-    prosess.exited,
-  ])
+  /*
+   * `overta` skriver til mappa i `--ut`. Den andre kommandoen får sin egen
+   * kopi av mappa, slik den var før den første kjørte, og stien byttes
+   * tilbake i svaret før det sammenlignes.
+   */
+  const ut =
+    SAMMENLIGN && argumenter[0] === "overta"
+      ? argumenter.find((del) => del.startsWith("--ut="))?.slice("--ut=".length)
+      : undefined
+  const annenUt = ut
+    ? join(await mkdtemp(join(tmpdir(), "fristil-sammenlign-")), "ut")
+    : undefined
+  if (ut && annenUt) await cp(ut, annenUt, { recursive: true }).catch(() => {})
 
-  return { kode, ut, feil }
+  const resultat = await svar(start(KOMMANDO))
+  if (SAMMENLIGN) {
+    const annet = await svar(
+      start(
+        SAMMENLIGN,
+        argumenter.map((del) =>
+          ut && annenUt && del === `--ut=${ut}` ? `--ut=${annenUt}` : del,
+        ),
+      ),
+    )
+    if (ut && annenUt) {
+      annet.ut = annet.ut.replaceAll(annenUt, ut)
+      annet.feil = annet.feil.replaceAll(annenUt, ut)
+      await rm(dirname(annenUt), { recursive: true, force: true })
+    }
+    /*
+     * To forklaringer kom fra JavaScript-motoren selv, og kan ikke bli like:
+     * hva som er galt i en JSON-fil, og hvorfor ingen svarte på en adresse
+     * («fetch failed»). Resten av meldingen skal være lik.
+     */
+    const likt = (tekst: string) =>
+      tekst
+        .replace(/(er ikke gyldig JSON: ).*/g, "$1…")
+        .replace(/(Fikk ikke kontakt med \S+: ).*/g, "$1…")
+    for (const del of ["kode", "ut", "feil"] as const)
+      if (likt(String(resultat[del])) !== likt(String(annet[del])))
+        avvik.push(
+          `${argumenter.join(" ")} (${del})\n    ${JSON.stringify(resultat[del]).slice(0, 400)}\n    ${JSON.stringify(annet[del]).slice(0, 400)}`,
+        )
+  }
+  return resultat
 }
 
 const feil: string[] = []
@@ -114,7 +179,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await writeFile(
     godt,
     ":root {\n  color-scheme: light;\n" +
-      Object.entries(buildMatrix(FRISTIL_BRANDS, "light").tokens)
+      Object.entries(lightCells)
         .map(([navn, verdi]) => `  ${navn}: ${verdi};`)
         .join("\n") +
       "\n}\n",
@@ -354,6 +419,16 @@ function krev(påstand: boolean, beskrivelse: string): void {
     krev(kode === 0, `overta ${navn} avsluttet med kode ${kode}`)
 
     const kopimappe = join(mappe, navn, navn)
+    const lest = await kjør([
+      "sjekk",
+      `--manifest=${join(kopimappe, "fristil-manifest.json")}`,
+      join(kopimappe, `${(await readdir(kopimappe))[0]}`),
+    ])
+    krev(
+      !lest.feil.includes("kan ikke leses som et manifest") &&
+        !lest.feil.includes("Fant ikke manifestet"),
+      `fragmentet for ${navn} kunne ikke leses: ${lest.feil.slice(0, 200)}`,
+    )
     for (const fil of await readdir(kopimappe)) {
       const innhold = await readFile(join(kopimappe, fil), "utf8")
 
@@ -409,6 +484,65 @@ function krev(påstand: boolean, beskrivelse: string): void {
     "utskriften sier ikke at kopien er konsumentens ansvar",
   )
 
+  // Kopien har fått nytt navn, og et fragment av manifestet med det navnet.
+  krev(
+    kilde.includes('"app-button"') && !kilde.includes('"fs-button"'),
+    "kopien heter fortsatt fs-button",
+  )
+  const css = await readFile(join(mappe, "ui/button/button.css"), "utf8")
+  krev(
+    css.includes(".app-button") && css.includes("var(--fs-"),
+    "stilarket fikk ikke nytt navn, eller mistet variablene fra temaet",
+  )
+  krev(
+    filer.includes("fristil-manifest.json"),
+    "fragmentet av manifestet ble ikke skrevet",
+  )
+  const fragment = `--manifest=${join(mappe, "ui/button/fristil-manifest.json")}`
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="app-button" data-variant="feil">x</button>\n',
+  )
+  const medFragment = await kjør(["sjekk", fragment, side])
+  krev(
+    medFragment.kode !== 0 && medFragment.ut.includes("data-variant"),
+    "sjekken med fragmentet så ikke feilen i markupen for kopien",
+  )
+  const utenFragment = await kjør(["sjekk", side])
+  krev(
+    utenFragment.kode === 0,
+    "sjekken uten fragmentet skulle latt app-button være",
+  )
+  const samlet = await kjør(["manifest", fragment])
+  krev(
+    samlet.kode === 0 &&
+      samlet.ut.includes('"app-button"') &&
+      samlet.ut.includes('"fs-button"'),
+    "manifest med fragmentet har ikke både kopien og Fristils egne klasser",
+  )
+  const manifestFil = join(mappe, "build/fristil/manifest.json")
+  const skrevet = await kjør(["manifest", fragment, `--ut=${manifestFil}`])
+  krev(
+    skrevet.kode === 0 &&
+      (await readFile(manifestFil, "utf8")) === `${samlet.ut}`,
+    "manifest --ut skrev noe annet enn det som står i utdata",
+  )
+  const feilArgument = await kjør(["manifest", "skjema.html"])
+  krev(
+    feilArgument.kode !== 0 && feilArgument.feil.includes("skjema.html"),
+    "manifest med en fil i stedet for et flagg ble ikke meldt",
+  )
+  const ukjent = await kjør([
+    "sjekk",
+    `--manifest=${join(mappe, "finnes-ikke.json")}`,
+    side,
+  ])
+  krev(
+    ukjent.kode !== 0 && ukjent.feil.includes("finnes-ikke.json"),
+    "et manifest som ikke finnes, ble ikke meldt",
+  )
+
   // Kopien skal ikke skrives over uten at det er bedt om.
   await writeFile(join(mappe, "ui/button/button.ts"), "// min egen versjon\n")
   const igjen = await kjør(["overta", "button", `--ut=${join(mappe, "ui")}`])
@@ -434,6 +568,43 @@ function krev(påstand: boolean, beskrivelse: string): void {
     "kopien ble ikke erstattet med --overskriv=ja",
   )
 
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Med stilarkene sier sjekken også fra om det de ikke styler
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+  )
+  await writeFile(join(mappe, "app.css"), '@import "knapp.css";\n')
+  await writeFile(join(mappe, "knapp.css"), ".fs-button { }\n")
+
+  const hele = await kjør([
+    "sjekk",
+    `--css=${join(pakke, "dist/fristil.css")}`,
+    side,
+  ])
+  krev(
+    hele.kode === 0,
+    `med hele fristil.css skulle siden vært ren: ${hele.ut}${hele.feil}`,
+  )
+
+  const delvis = await kjør(["sjekk", `--css=${join(mappe, "app.css")}`, side])
+  krev(
+    delvis.kode !== 0 &&
+      delvis.ut.includes('data-variant="ghost"') &&
+      delvis.ut.includes("«fs-card»"),
+    `et stilark som bare styler knappen, skulle gitt to funn: ${delvis.ut}`,
+  )
+
+  const borte = await kjør(["sjekk", `--css=${join(mappe, "borte.css")}`, side])
+  krev(
+    borte.kode !== 0 && borte.feil.includes("borte.css"),
+    "et stilark som ikke finnes, ble ikke meldt",
+  )
   await rm(mappe, { recursive: true, force: true })
 }
 
@@ -562,7 +733,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
 
   // Fra standard inn, slik en test i en app sender HTML-en serveren lager
-  const prosess = Bun.spawn(["node", cli, "sjekk"], {
+  const prosess = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
     stdout: "pipe",
     stderr: "pipe",
@@ -595,7 +766,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
   // test som glemte å sende noe skal ikke melde grønt.
-  const tom = Bun.spawn(["node", cli, "sjekk"], {
+  const tom = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: new Blob([""]),
     stdout: "pipe",
     stderr: "pipe",
@@ -623,7 +794,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const kutt = bytes.indexOf(0xc3) + 1
   // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
   krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
-  const treg = Bun.spawn(["node", cli, "sjekk"], {
+  const treg = Bun.spawn([...KOMMANDO, "sjekk"], {
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
@@ -762,7 +933,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     const blokker = [...bok.ut.matchAll(/```html\n([\s\S]*?)```/g)]
 
     for (const [nummer, blokk] of blokker.entries()) {
-      const prøve = Bun.spawn(["node", cli, "sjekk"], {
+      const prøve = Bun.spawn([...KOMMANDO, "sjekk"], {
         stdin: new Blob([blokk[1]]),
         stdout: "pipe",
         stderr: "pipe",
@@ -781,6 +952,76 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   }
 
   await rm(mappe, { recursive: true, force: true })
+}
+
+// En adresse hentes og sjekkes som en hel side
+{
+  const side =
+    '<!doctype html><html lang="nb"><body><label for="borte">Navn</label><button class="fs-buton">Lagre</button></body></html>'
+  const tjener = Bun.serve({
+    port: 0,
+    fetch(forespørsel) {
+      const sti = new URL(forespørsel.url).pathname
+      const html = { "content-type": "text/html; charset=utf-8" }
+      if (sti === "/side") return new Response(side, { headers: html })
+      if (sti === "/videre")
+        return new Response(null, {
+          status: 302,
+          headers: { location: "/side" },
+        })
+      if (sti === "/biter")
+        return new Response(
+          new ReadableStream({
+            start(kontroll) {
+              const koder = new TextEncoder()
+              kontroll.enqueue(koder.encode(side.slice(0, 40)))
+              kontroll.enqueue(koder.encode(side.slice(40)))
+              kontroll.close()
+            },
+          }),
+          { headers: html },
+        )
+      if (sti === "/json") return Response.json({ ok: true })
+      return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
+    },
+  })
+  const rot = `http://localhost:${tjener.port}`
+
+  for (const sti of ["/side", "/videre", "/biter"]) {
+    const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
+    krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
+    krev(
+      ut.includes(`${rot}${sti}:1:`) && ut.includes("fs-buton"),
+      `${sti}: klassen som ikke finnes, ble ikke meldt med adressen: ${ut.slice(0, 160)}`,
+    )
+    krev(
+      ut.includes("«borte»"),
+      `${sti}: siden ble ikke sjekket som hel side, for-koblingen mangler: ${ut.slice(0, 200)}`,
+    )
+  }
+
+  const json = await kjør(["sjekk", `${rot}/json`])
+  krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")
+  krev(json.feil.includes("ikke HTML"), `JSON ble ikke avvist: ${json.feil}`)
+
+  const borte = await kjør(["sjekk", `${rot}/borte`])
+  krev(borte.kode === 1, "en 404 skulle gitt feilkode")
+  krev(borte.feil.includes("svarte 404"), `404 ble ikke meldt: ${borte.feil}`)
+
+  tjener.stop(true)
+  const ingen = await kjør(["sjekk", rot])
+  krev(ingen.kode === 1, "en adresse der ingen svarer, skulle gitt feilkode")
+  krev(
+    ingen.feil.includes(`Fikk ikke kontakt med ${rot}`),
+    `en adresse der ingen svarer, ble ikke meldt: ${ingen.feil}`,
+  )
+}
+
+if (avvik.length > 0) {
+  console.error(
+    `${avvik.length} kjøringer svarte forskjellig fra ${SAMMENLIGN}:\n\n${avvik.map((a) => `  ${a}`).join("\n\n")}\n`,
+  )
+  process.exit(1)
 }
 
 if (feil.length > 0) {

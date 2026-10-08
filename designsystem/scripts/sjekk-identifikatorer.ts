@@ -32,6 +32,11 @@ const KILDER = [
     unntatt: ["testing", "types"],
   },
   { rot: new URL("../../editor/src", import.meta.url).pathname, unntatt: [] },
+  { rot: new URL("../../kjerne/src", import.meta.url).pathname, unntatt: [] },
+  {
+    rot: new URL("../../kotlin/src/main", import.meta.url).pathname,
+    unntatt: [],
+  },
 ]
 
 /**
@@ -43,11 +48,7 @@ const KILDER = [
  * endring. Den dagen en fil er ren, tas den ut. Lista kan altså bare
  * krympe, og et vilkår som slår av sjekken finnes ikke.
  */
-const KJENT_GJELD = new Map<string, number>([
-  ["designsystem/src/cli.ts", 112],
-  ["designsystem/src/tokens/color.ts", 5],
-  ["designsystem/src/tokens/theme.ts", 77],
-])
+const KJENT_GJELD = new Map<string, number>([])
 
 const NORSKE_ORD = new Set([
   "aktiv",
@@ -164,7 +165,7 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
         les(sti)
         continue
       }
-      if (!oppføring.name.endsWith(".ts")) continue
+      if (!/\.(ts|rs|kt)$/.test(oppføring.name)) continue
       if (oppføring.name.endsWith(".d.ts")) continue
       if (oppføring.name.includes(".test.")) continue
       filer.push(sti)
@@ -172,6 +173,21 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
   }
   les(rot)
   return filer
+}
+
+/**
+ * Levetider (`'static`) og tegn (`'a'`, `b'x'`) i Rust, byttet med mellomrom.
+ *
+ * Skanneren under er skrevet for TypeScript, der `'` åpner en streng. I Rust
+ * står den alene foran en levetid, og resten av linja ville blitt lest som
+ * en streng som aldri lukkes. Kotlin har tegn i `'…'` som TypeScript har
+ * strenger, så det trengs ikke der.
+ */
+function utenRustTegn(fil: string, innhold: string): string {
+  if (!fil.endsWith(".rs")) return innhold
+  return innhold
+    .replace(/b?'(\\.|[^'\\\n])'/g, (treff) => " ".repeat(treff.length))
+    .replace(/'[a-z_]+\b(?!')/g, (treff) => " ".repeat(treff.length))
 }
 
 /**
@@ -331,7 +347,7 @@ for (const { rot, unntatt } of KILDER) {
   for (const fil of kildefiler(rot, unntatt)) {
     lest += 1
     const relativt = relative(REPO, fil)
-    const kode = bareKode(readFileSync(fil, "utf8"))
+    const kode = bareKode(utenRustTegn(fil, readFileSync(fil, "utf8")))
     kode.split("\n").forEach((linje, i) => {
       for (const treff of linje.matchAll(IDENTIFIKATOR)) {
         const navn = treff[0]
@@ -385,5 +401,5 @@ const gjeldsliste = [...gjeld]
   .map(([fil, antall]) => `${fil} (${antall})`)
   .join(", ")
 console.log(
-  `Identifikatorene er engelske i ${lest} filer. Kjent gjeld: ${gjeldsliste}.`,
+  `Identifikatorene er engelske i ${lest} filer. ${gjeldsliste ? `Kjent gjeld: ${gjeldsliste}.` : "Ingen kjent gjeld."}`,
 )

@@ -1,0 +1,62 @@
+{
+  "markup": [
+    {
+      "start": 22,
+      "end": 32,
+      "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "severity": "warning",
+      "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "fix": {
+        "title": "Bytt til online-text",
+        "start": 22,
+        "end": 32,
+        "text": "online-text",
+        "preferred": true
+      }
+    },
+    {
+      "start": 79,
+      "end": 86,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "invalid er et boolsk attributt: det står der eller ikke. invalid=\"false\" betyr det samme som invalid. Ta det bort for å slå det av.",
+      "fix": {
+        "title": "Ta bort invalid",
+        "start": 78,
+        "end": 94,
+        "text": "",
+        "preferred": true
+      }
+    }
+  ],
+  "side": [
+    {
+      "start": 22,
+      "end": 32,
+      "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "severity": "warning",
+      "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "fix": {
+        "title": "Bytt til online-text",
+        "start": 22,
+        "end": 32,
+        "text": "online-text",
+        "preferred": true
+      }
+    },
+    {
+      "start": 79,
+      "end": 86,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "invalid er et boolsk attributt: det står der eller ikke. invalid=\"false\" betyr det samme som invalid. Ta det bort for å slå det av.",
+      "fix": {
+        "title": "Ta bort invalid",
+        "start": 78,
+        "end": 94,
+        "text": "",
+        "preferred": true
+      }
+    }
+  ]
+}

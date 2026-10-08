@@ -1,0 +1,96 @@
+name: Kommandolinja på GitHub Releases
+
+# Kommandolinja uten Node: `fristil.wasm` for wasmtime og andre WASI-verter,
+# og `fristil.jar` for `java -jar`. Begge bygges fra kildekoden i samme
+# versjonstagg som npm-pakken, og legges ved utgivelsen på GitHub.
+#
+# Ingen av filene er signert med et sertifikat, og ingen må stole på en tredje
+# part. GitHub attesterer i stedet hvilken commit og hvilken arbeidsflyt hver
+# fil ble bygd av, og den som laster ned, kan kontrollere det selv:
+#
+#   gh attestation verify fristil.jar --repo MarkusAugust/fristil
+on:
+  push:
+    tags: ["v*"]
+  # For hånd bygges filene og legges ved kjøringen, uten å gis ut.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  bygg:
+    name: Bygg, attester og gi ut
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # `rust-toolchain.toml` i `kjerne/` bestemmer versjonen og målene.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
+      - name: Kommandolinja som WASI-modul
+        working-directory: kjerne
+        run: cargo build --release -p fristil --target wasm32-wasip1
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Kommandolinja som jar
+        working-directory: kotlin
+        run: ./gradlew :kommandolinje:samletJar
+
+      - name: Samle filene
+        run: |
+          mkdir utgivelse
+          cp kjerne/target/wasm32-wasip1/release/fristil.wasm utgivelse/
+          cp kotlin/kommandolinje/build/libs/fristil.jar utgivelse/
+          (cd utgivelse && sha256sum fristil.wasm fristil.jar > SHA256SUMS)
+          cat utgivelse/SHA256SUMS
+
+      # Filene skal svare før de gis ut.
+      - name: Filene virker
+        run: |
+          java -jar utgivelse/fristil.jar --hjelp > /dev/null
+          echo '<button class="fs-button">Lagre</button>' | java -jar utgivelse/fristil.jar sjekk
+
+      # Taggen og versjonen i package.json må si det samme, som for npm.
+      - name: Se at taggen og versjonen stemmer
+        if: github.ref_type == 'tag'
+        run: |
+          versjon="$(node -p "require('./designsystem/package.json').version")"
+          if [ "${GITHUB_REF_NAME#v}" != "$versjon" ]; then
+            echo "Taggen $GITHUB_REF_NAME sier ${GITHUB_REF_NAME#v}, mens package.json sier $versjon." >&2
+            exit 1
+          fi
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            utgivelse/fristil.wasm
+            utgivelse/fristil.jar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kommandolinja
+          path: utgivelse/
+
+      # Utgivelsen lages første gang, og filene byttes ut om den alt finnes,
+      # så en ny kjøring for samme tagg ikke feiler.
+      - name: Gi ut
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "Se CHANGELOG.md i designsystem/."
+          fi
+          gh release upload "$GITHUB_REF_NAME" utgivelse/fristil.wasm utgivelse/fristil.jar utgivelse/SHA256SUMS --clobber

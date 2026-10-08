@@ -1,5 +1,10 @@
 /**
- * Fargeregning: sRGB, OKLCH og kontrast.
+ * Fargeregning: sRGB, OKLCH og kontrast, som `@fristil/designsystem/farge`.
+ *
+ * Temaet regnes i kjernen, skrevet i Rust (`kjerne/src/theme/color.rs`). Disse
+ * fem regnestykkene er de samme, for den som vil regne selv i JavaScript, også
+ * i nettleseren. Testene som måler fargene en nettleser faktisk tegner, bruker
+ * dem også, og måler da kjernen mot en uavhengig utgave av formelen.
  *
  * Regningen skjer i OKLCH og ikke i HSL. I HSL betyr lyshet noe annet for hver
  * kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort,
@@ -16,14 +21,14 @@ export type Oklch = { l: number; c: number; h: number }
 
 /** Leser `#rrggbb` eller `#rgb`. */
 export function parseHex(hex: string): Rgb {
-  const rent = hex.trim().replace(/^#/, "")
+  const clean = hex.trim().replace(/^#/, "")
   const full =
-    rent.length === 3
-      ? rent
+    clean.length === 3
+      ? clean
           .split("")
-          .map((tegn) => tegn + tegn)
+          .map((char) => char + char)
           .join("")
-      : rent
+      : clean
 
   if (!/^[0-9a-fA-F]{6}$/.test(full)) {
     throw new Error(`«${hex}» er ikke en gyldig heksadesimal farge`)
@@ -37,22 +42,24 @@ export function parseHex(hex: string): Rgb {
 }
 
 export function toHex({ r, g, b }: Rgb): string {
-  const tall = (value: number) =>
+  const channel = (value: number) =>
     Math.round(Math.min(255, Math.max(0, value)))
       .toString(16)
       .padStart(2, "0")
 
-  return `#${tall(r)}${tall(g)}${tall(b)}`
+  return `#${channel(r)}${channel(g)}${channel(b)}`
 }
 
-function toLinear(kanal: number): number {
-  const c = kanal / 255
+function toLinear(channel: number): number {
+  const c = channel / 255
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
 }
 
-function fromLinear(kanal: number): number {
+function fromLinear(channel: number): number {
   const c =
-    kanal <= 0.0031308 ? kanal * 12.92 : 1.055 * kanal ** (1 / 2.4) - 0.055
+    channel <= 0.0031308
+      ? channel * 12.92
+      : 1.055 * channel ** (1 / 2.4) - 0.055
   return c * 255
 }
 
@@ -100,10 +107,10 @@ function oklchToRgbRaw({ l, c, h }: Oklch): Rgb {
   }
 }
 
-function utenfor({ r, g, b }: Rgb): boolean {
-  const slingringsmonn = 0.5
+function outside({ r, g, b }: Rgb): boolean {
+  const margin = 0.5
   return [r, g, b].some(
-    (kanal) => kanal < -slingringsmonn || kanal > 255 + slingringsmonn,
+    (channel) => channel < -margin || channel > 255 + margin,
   )
 }
 
@@ -114,29 +121,29 @@ function utenfor({ r, g, b }: Rgb): boolean {
  * fargen utenfor, dempes metningen til den er innenfor, framfor å klippe
  * kanalene hver for seg. Det siste ville endret kuløren.
  */
-export function oklchToRgb(farge: Oklch): Rgb {
-  const forsok = oklchToRgbRaw(farge)
-  if (!utenfor(forsok)) return forsok
+export function oklchToRgb(color: Oklch): Rgb {
+  const attempt = oklchToRgbRaw(color)
+  if (!outside(attempt)) return attempt
 
-  let lav = 0
-  let hoy = farge.c
+  let low = 0
+  let high = color.c
 
   for (let i = 0; i < 24; i += 1) {
-    const midt = (lav + hoy) / 2
-    if (utenfor(oklchToRgbRaw({ ...farge, c: midt }))) hoy = midt
-    else lav = midt
+    const middle = (low + high) / 2
+    if (outside(oklchToRgbRaw({ ...color, c: middle }))) high = middle
+    else low = middle
   }
 
-  return oklchToRgbRaw({ ...farge, c: lav })
+  return oklchToRgbRaw({ ...color, c: low })
 }
 
-function luminans({ r, g, b }: Rgb): number {
+function luminance({ r, g, b }: Rgb): number {
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
 }
 
 /** Kontrastforholdet mellom to farger, slik WCAG 2.1 regner det. */
 export function contrastRatio(a: Rgb, b: Rgb): number {
-  const la = luminans(a)
-  const lb = luminans(b)
+  const la = luminance(a)
+  const lb = luminance(b)
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }

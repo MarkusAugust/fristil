@@ -1,0 +1,20 @@
+{
+  "markup": [
+    {
+      "start": 148,
+      "end": 171,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+    }
+  ],
+  "side": [
+    {
+      "start": 148,
+      "end": 171,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+    }
+  ]
+}

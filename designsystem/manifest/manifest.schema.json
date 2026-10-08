@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fristil.sobernetics.no/manifest.schema.json",
+  "title": "Fristils manifest",
+  "description": "Det Fristil lover: elementene, klassene og byggefunksjonene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "type": "object",
+  "required": ["schemaVersion", "version", "elements", "classes", "builders"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "description": "Formen på fila. Økes bare når en leser må endres for å forstå den."
+    },
+    "version": {
+      "type": "string",
+      "description": "Versjonen av @fristil/designsystem manifestet er skrevet fra."
+    },
+    "elements": {
+      "type": "object",
+      "description": "Hvert <fs-…>-element, med attributtene komponenten leser.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["link", "attributes"],
+        "properties": {
+          "link": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/elementAttribute"
+            }
+          }
+        }
+      }
+    },
+    "classes": {
+      "type": "object",
+      "description": "Hver fs-klasse, med komponenten den hører til og attributtene den tar.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["component", "title", "description", "link", "attributes"],
+        "properties": {
+          "component": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "description": "Et attributt med en lukket liste over verdier, eller et flagg, som er på når det står der.",
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": ["values"],
+                  "properties": {
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {
+                      "description": "Verdien fraværet betyr.",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "required": ["flag"],
+                  "properties": {
+                    "flag": {
+                      "const": true
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "builders": {
+      "type": "array",
+      "description": "Hver byggefunksjon i fs, med valgene og formen på svaret.",
+      "items": {
+        "type": "object",
+        "required": ["name", "options", "returns"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "required", "type"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "type": {
+                  "$ref": "#/$defs/optionType"
+                }
+              }
+            }
+          },
+          "returns": {
+            "$ref": "#/$defs/returns"
+          },
+          "table": {
+            "description": "Når valgene virker hver for seg: grunnmengden og det hvert valg bidrar med, utledet av svarene og etterprøvd mot hvert byggetilfelle. Et annet språk kan lage byggefunksjonen fra den alene.",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["kind", "table"],
+                "properties": {
+                  "kind": {
+                    "const": "attributes"
+                  },
+                  "table": {
+                    "$ref": "#/$defs/table"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["kind", "fields"],
+                "properties": {
+                  "kind": {
+                    "const": "group"
+                  },
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/$defs/table"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "elementAttribute": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "enum": ["flag", "text", "number"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "values"],
+          "properties": {
+            "type": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "optionType": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": {
+              "enum": ["flag", "text", "number", "textList"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "values"],
+          "properties": {
+            "kind": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "returns": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": {
+              "enum": ["attributes", "text"]
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "values"],
+          "properties": {
+            "kind": {
+              "const": "values"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": {
+              "const": "list"
+            },
+            "of": {
+              "$ref": "#/$defs/returns"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "fields"],
+          "properties": {
+            "kind": {
+              "const": "group"
+            },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/returns"
+              }
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Attributtnavn til verdi. Tom tekst er et boolsk attributt som er på, null fjerner attributtet, og {navn} er verdien av valget med det navnet.",
+      "additionalProperties": {
+        "type": ["string", "null"]
+      }
+    },
+    "table": {
+      "type": "object",
+      "required": ["base", "options"],
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/attributes"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["cases"],
+            "properties": {
+              "cases": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/attributes"
+                }
+              },
+              "template": {
+                "$ref": "#/$defs/attributes"
+              },
+              "empty": {
+                "$ref": "#/$defs/attributes"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

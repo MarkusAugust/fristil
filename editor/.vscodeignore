@@ -4,3 +4,5 @@ metadata.ts
 tsconfig.json
 node_modules/**
 *.vsix
+test/**
+.vscode-test/**

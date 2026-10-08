@@ -1,0 +1,48 @@
+{
+  "markup": [
+    {
+      "start": 1,
+      "end": 9,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn.",
+      "fix": {
+        "title": "Sett inn en ledetekst",
+        "start": 13,
+        "end": 13,
+        "text": "<label>Ledetekst</label>\n  ",
+        "preferred": true
+      }
+    },
+    {
+      "start": 63,
+      "end": 71,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "<fs-field> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+    }
+  ],
+  "side": [
+    {
+      "start": 1,
+      "end": 9,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn.",
+      "fix": {
+        "title": "Sett inn en ledetekst",
+        "start": 13,
+        "end": 13,
+        "text": "<label>Ledetekst</label>\n  ",
+        "preferred": true
+      }
+    },
+    {
+      "start": 63,
+      "end": 71,
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "severity": "warning",
+      "message": "<fs-field> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+    }
+  ]
+}

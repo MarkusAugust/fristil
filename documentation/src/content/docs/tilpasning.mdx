@@ -395,24 +395,34 @@ Variabler og laget dekker utseendet. De dekker ikke at komponenten skal gjøre n
 npx @fristil/designsystem overta button --ut=src/ui
 ```
 
-Kommandoen kopierer komponentens filer inn i prosjektet ditt, og skriver om henvisningene ut av mappa, slik at kopien virker der den havner:
+Kommandoen kopierer komponentens filer inn i prosjektet ditt, gir kopien et eget navn, og skriver om henvisningene ut av mappa, slik at kopien virker der den havner:
 
 ```text
 Kopierte button til src/ui/button/
-  button.ts
   button.css
+  button.ts
+  fristil-manifest.json
 
 Komponenten er nå din. Oppdateringer av @fristil/designsystem rører den ikke.
+
+Kopien heter app-button, og kan stå ved siden av originalen.
+Bytt til det nye navnet i markupen der kopien skal brukes. Variablene
+fra temaet (--fs-*) er de samme.
 
 Henvisninger ut av mappa peker nå på pakken:
   ../shared.js → @fristil/designsystem/shared
 
-Bytt ut disse importene med kopien:
+Disse importene laster originalen, og kan fjernes når ingen bruker den:
   @fristil/designsystem/button
   @fristil/designsystem/button.css
+
+Sjekk markupen for kopien med:
+  fristil sjekk --manifest=src/ui/button/fristil-manifest.json <filer…>
 ```
 
-Klassenavnene følger med. Importerer du stilarket fra pakken i tillegg, finnes komponenten to ganger, og hvilken som vinner avgjøres av rekkefølgen. Bytt derfor ut importene, som utskriften sier.
+Kopien heter `app-button` i klassene, taggene og selektorene, så den og originalen kan brukes side om side uten at rekkefølgen på stilarkene avgjør hvilken som vinner. Variablene fra temaet beholder navnet, så kopien følger temaet ditt.
+
+`fristil-manifest.json` er klassene, elementene og de lovlige verdiene til kopien, under det nye navnet. Gir du det til `sjekk` med `--manifest`, sjekkes markupen for kopien like strengt som for resten av Fristil. Legger du til en variant i kopien, skriver du den inn i fragmentet også. Se [overta](../kommandolinjen/#overta).
 
 Det du gir fra deg er oppdateringene. Rettelser og forbedringer i pakken treffer ikke kopien, og det er du som eier den derfra. Bruk kommandoen på den ene komponenten som trenger det, ikke på alle.
 

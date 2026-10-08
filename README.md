@@ -15,32 +15,10 @@ Bidrag fra andre skjer kun etter avtale med eier.
 
 ### Planlagt
 
-- **Stegindikator.** En flerstegs søknad trenger å vise hvor brukeren er. Det
-  er `aria-current="step"` og ren CSS, og det hører sammen med
-  framdriftsstolpen.
-
-- **`fristil sjekk-side`.** Sjekkene i dette repoet svarer på om Fristil er
-  bygget riktig. Ingen av dem svarer på om en app som bruker Fristil, bruker det
-  riktig, og det er det spørsmålet konsumenten faktisk sitter med. En app kan
-  skrive `class="fs-link"` uten å ha lastet `link.css`, og ingenting sier fra:
-  klassen finnes bare ikke, og elementet faller stille tilbake til nettleserens
-  eget utseende. Den kan sette `data-variant` til en verdi komponenten ikke har.
-  Den kan legge inn et `<fs-field>` uten `<label>`. Alle tre er brudd på løfter
-  bare Fristil kjenner, og derfor er det bare Fristil som kan si fra om dem.
-
-  Kommandoen sjekker en side som allerede er rendret, ikke kildekoden. Det er
-  den eneste måten som er uavhengig av rammeverket: i det øyeblikket det er et
-  DOM, ser React, Astro og en Kotlin-mal like ut, beregnede klassenavn er løst
-  opp, og den beregnede CSS-en kan leses. Statisk analyse av kilden må skrives
-  på nytt for hvert rammeverk, og kan uansett ikke avgjøre kontrast, synlighet
-  eller fokusrekkefølge. Nettlesermaskineriet finnes allerede her:
-  komponenttestene kjører i Chromium, Firefox og WebKit.
-
-  Dette erstatter ikke axe. Generelle WCAG-regler er løst av andre, grundigere
-  enn dette repoet kommer til å gjøre det, og sjekken skal ikke gjenta dem. Det
-  som mangler er reglene et designsystem er alene om å kunne uttale. Skulle
-  formatet en dag bli skrevet av andre enn oss, hører motoren hjemme i sitt eget
-  verktøy. Inntil det skjer, er den en sjekk her.
+Det som kommer, og i hvilken rekkefølge, står på
+[veikartet](https://fristil.sobernetics.no/veikart/). Siden ligger i
+`documentation/src/content/docs/veikart.mdx`, og den er det eneste stedet
+planene står, så README og dokumentasjon ikke kan si noe ulikt.
 
 ## Repoet
 
@@ -131,7 +109,7 @@ Seks sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 ## Tokens
 
-`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene står i `FRISTIL_BRANDS` i `src/tokens/matrix.ts`, og lyshetene i `ROLES` i `src/tokens/contract.ts`. Skal du flytte en farge, er det en av de to du redigerer:
+`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene, lyshetene per rolle og løftene står i `src/tokens/fargekontrakt.json`, og kjernen i `kjerne/` regner fargene av dem. Skal du flytte en farge, er det den fila du redigerer:
 
 ```bash
 bun --filter @fristil/designsystem generate
@@ -141,7 +119,7 @@ Fargene er en matrise av **familie**, altså hva fargen betyr, og **rolle**, alt
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren i `src/tokens/theme.ts` bygger et helt tema av en konsuments merkefarger. Løftene den må holde, står i `src/tokens/contract.ts`, og de samme løftene sjekker Fristils egne farger.
+Temageneratoren bygger et helt tema av en konsuments merkefarger. Den er skrevet i Rust, i `kjerne/src/theme/`, og når JavaScript gjennom `@fristil/designsystem/tema`. Løftene den må holde, står i `src/tokens/fargekontrakt.json`, og de samme løftene sjekker Fristils egne farger. Testene for kontrakten står i `kjerne/src/theme/tests.rs`.
 
 ## Tester
 

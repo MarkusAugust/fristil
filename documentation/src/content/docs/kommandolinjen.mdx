@@ -3,7 +3,7 @@ title: Kommandolinjen
 description: Kommandoene i @fristil/designsystem, med flagg, utdata og exit-koder. Sjekk markup og hele sider, hent regelboka for kodeagenter, ta over en komponent og lag et tema.
 ---
 
-Pakken har en kommandolinje med fem kommandoer. Den har ingen avhengigheter, og
+Pakken har en kommandolinje med sju kommandoer. Den har ingen avhengigheter, og
 du trenger ikke installere noe ekstra:
 
 ```bash
@@ -21,6 +21,62 @@ uten kommando, eller med `--hjelp`, viser hele oversikten.
 | `overta` | kopierer kildekoden til én komponent inn i prosjektet |
 | `tema` | lager et fargetema av merkefargene dine |
 | `sjekk-tema` | kontrollerer at et tema holder kontrastkravene |
+| `manifest` | skriver manifestet sjekken bruker, med fragmentene fra `overta` |
+| `lsp` | språkserveren for editorer, se [Editoren](../editoren/#språkserveren) |
+
+## Uten Node
+
+Kommandoene er skrevet én gang, i Rust, og bygget som en WebAssembly-modul
+for WASI. `npx` kjører den med Node, men den samme modulen kjører også uten,
+og svarer det samme, byte for byte. Velg det som allerede finnes på maskinen:
+
+| Har du | Kjør |
+| --- | --- |
+| Java 17 eller nyere | `java -jar fristil.jar sjekk skjema.html` |
+| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. fristil.wasm sjekk skjema.html` |
+| Rust | `cargo install --git https://github.com/MarkusAugust/fristil fristil`, og så `fristil sjekk skjema.html` |
+
+`fristil.jar` og `fristil.wasm` ligger ved hver
+[utgivelse på GitHub](https://github.com/MarkusAugust/fristil/releases/latest),
+med samme versjon som npm-pakken. Ingen av dem er signert med et sertifikat.
+GitHub attesterer i stedet hvilken commit og hvilken arbeidsflyt hver fil ble
+bygd av, og det kan du kontrollere selv:
+
+```bash
+gh attestation verify fristil.jar --repo MarkusAugust/fristil
+```
+
+Jar-en har alt i seg og trenger ingen avhengigheter.
+
+En adresse hentes av verten, siden WASI ikke har nettverk. `npx` og `java -jar`
+henter både `http://` og `https://`. Den kjørbare fila fra `cargo install`
+henter `http://`, som er det en lokal server svarer på. For `https://` fra
+`cargo install` sender du siden inn selv:
+`curl -s https://… | fristil sjekk --rendret`.
+
+### Ulempene med wasmtime
+
+wasmtime er med for den som har det fra før, eller ikke har Node, Java eller
+Rust. Det er den svakeste av vertene, og det bør du vite før du velger den:
+
+- **Du må stole på en tredjepart.** wasmtime installeres fra
+  [wasmtime.dev](https://wasmtime.dev), utenfor npm, Maven og cargo, og er
+  laget av Bytecode Alliance, ikke av Fristil.
+- **Ingen adresser.** wasmtime har ikke nettverk, og ingen vert henter siden
+  for modulen. `fristil sjekk http://…` sier at den ikke fikk kontakt. Send
+  siden inn selv: `curl -s http://localhost:8080/skjema | wasmtime run
+  --dir=. fristil.wasm sjekk --rendret`.
+- **Bare mappene du åpner.** wasmtime ser bare det du gir den med `--dir`.
+  Med `--dir=.` virker stier under arbeidsmappa, og en fil utenfor gir «Fant
+  ikke fila», selv om den finnes. Språkserveren trenger `--dir=/::/`, som gir
+  den hele filsystemet.
+- **Ingen beskjed om standard inn.** De andre vertene sier «Leser markup fra
+  standard inn» når du kjører `sjekk` uten filer i en terminal. wasmtime kan
+  ikke se det, så kommandoen venter stille til du avslutter med Ctrl-D.
+- **Windows er ikke prøvd.** De andre vertene oversetter `C:\…` til det
+  modulen forstår. I wasmtime må du åpne stasjonen selv med `--dir`.
+- **Ikke prøvd i CI.** `npx`, `java -jar` og den kjørbare fila prøves på
+  hver endring, med de samme kjøringene. wasmtime er prøvd for hånd.
 
 ## sjekk
 
@@ -38,8 +94,8 @@ Den leser tre slags inndata:
 
 - **filer**, oppgitt som argumenter;
 - **standard inn**, når ingen filer er oppgitt;
-- **en adresse** som begynner med `http://` eller `https://`. Den hentes med
-  `fetch`. En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
+- **en adresse** som begynner med `http://` eller `https://`. Den hentes av
+  kommandolinja, se [Uten Node](#uten-node). En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
   gir feilkode i stedet for å bli sjekket.
 
 Hvert funn skrives som en kompilator skriver det, med fil, linje og kolonne:
@@ -50,6 +106,12 @@ skjema.html:5:13: advarsel: Klassen «fs-modal» finnes ikke i Fristil.
 
 2 funn i 1 fil.
 ```
+
+| Flagg | Betydning |
+| --- | --- |
+| `--rendret` | sjekk filer og standard inn som hele sider, med koblingen |
+| `--css=<fil>` | sjekk også at stilarkene styler markupen. Se [Med stilarkene](#med-stilarkene) |
+| `--manifest=<fil>` | sjekk også en komponent du har tatt over. Se [overta](#overta) |
 
 Exit-koden er 0 når det ikke er noen funn, og 1 ellers, også når alle funnene er
 advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom inndata,
@@ -97,6 +159,49 @@ Det er denne sjekken som virker likt i alle språk. HTML-en serveren sender, ser
 lik ut enten den kommer fra Kotlin, Go, PHP eller Node, og det er den som
 sjekkes, ikke koden som lager den.
 
+### Med stilarkene
+
+Markupen kan være riktig og likevel se feil ut: stilarket til komponenten er
+ikke lastet, eller en variant har ingen regel. Med `--css` leser `sjekk`
+stilarkene siden laster, med det de importerer, og sier fra om begge deler:
+
+```bash
+npx @fristil/designsystem sjekk --css=public/app.css maler/*.html
+```
+
+```text
+maler/kort.html:3:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
+maler/knapp.html:1:27: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
+```
+
+Det siste er nyttigst for en komponent du har [tatt over](#overta): legger du
+til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig og ser ut
+som standard. `@import` følges til filer ved siden av og til pakker i
+`node_modules`, som `@fristil/designsystem/fristil.css`. `--css` kan gis flere
+ganger. Stilarkene leses med en ekte CSS-leser, så nesting, `:is()`,
+`:where()`, `@layer` og `@media` forstås som nettleseren forstår dem.
+
+### Den rendrede siden
+
+Det serveren sender, er ikke alltid det brukeren ser. Web-komponentene legger
+til markup, et skript kan sette en klasse, og stilarkene er de nettleseren
+faktisk lastet. `diagnoseRendered` sjekker siden slik nettleseren har rendret
+den, med Playwright:
+
+```ts
+import { diagnoseRendered } from "@fristil/designsystem/diagnostics"
+
+test("skjemaet er riktig slik det vises", async ({ page }) => {
+  await page.goto("http://localhost:8080/skjema")
+  expect(await diagnoseRendered(page)).toEqual([])
+})
+```
+
+Den gir det `diagnosePage` gir, og det stilarkene ikke styler. Et stilark fra
+et CDN leses også, når det svarer med `Access-Control-Allow-Origin`, som
+jsDelivr og unpkg gjør. Med [Fristil for Kotlin](../kotlin/#den-rendrede-siden)
+heter det `assertFristilRendered`.
+
 ### I testene og i CI
 
 Med en server som kjører, er én linje nok:
@@ -115,8 +220,9 @@ expect(diagnoseMarkup(mal)).toEqual([]) // en mal eller en bit av en side
 expect(diagnosePage(html)).toEqual([]) // en hel side, med koblingen
 ```
 
-Hvert funn har `start`, `end`, `severity` og `message`, og noen har en `fix`
-editoren kan tilby.
+Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule` og
+`message`, og noen har en `fix` editoren kan tilby. Sjekken er den samme
+Rust-kjernen som editorene bruker, bygget til WebAssembly og med i pakken.
 
 Er appen skrevet i et annet språk, kjører testen kommandoen over HTML-en den
 rendrer. I Kotlin:
@@ -136,6 +242,10 @@ fun `skjemaet er koblet riktig`() {
 
 Testen feiler med funnene som melding, og det er meldingen en kodeagent leser
 og retter etter.
+
+Uten Node i CI bytter du `npx @fristil/designsystem` med `java -jar fristil.jar`.
+Med [Fristil for Kotlin](../kotlin/) blir det `assertFristil(html)`, med den
+samme sjekken kjørt i JVM-en.
 
 ## agent
 
@@ -164,12 +274,30 @@ Hvordan agenten finner regelboka, står på [Kodeagenter](../kodeagenter/).
 ## overta
 
 Kopierer kildekoden til én komponent inn i prosjektet: TypeScript-fila og
-stilarket. Henvisningene ut av komponenten skrives om til pakken, så resten av
-systemet fortsatt kommer fra `@fristil/designsystem` og kan oppgraderes.
+stilarket. Kopien er din fra det øyeblikket den er skrevet, og kommandoen gjør
+tre ting for at den skal kunne være det:
+
+- **Kopien får nytt navn.** `fs-button` blir `app-button` i klassene,
+  taggene, `customElements.define` og selektorene. Kopien kan dermed stå ved
+  siden av originalen, og du bytter navnet i markupen der kopien skal brukes.
+  Variablene fra temaet, `--fs-*`, er de samme, så kopien følger temaet ditt
+  som før.
+- **Henvisningene ut av komponenten skrives om** til pakken, så resten av
+  systemet fortsatt kommer fra `@fristil/designsystem` og kan oppgraderes.
+- **Et fragment av manifestet skrives ved siden av**, `fristil-manifest.json`,
+  med klassene, elementene og verdiene til kopien under det nye navnet. Med
+  det sjekker `sjekk` markupen for kopien også:
 
 ```bash
 npx @fristil/designsystem overta button --ut=src/ui
+npx @fristil/designsystem sjekk --manifest=src/ui/button/fristil-manifest.json maler/*.html
 ```
+
+Uten `--manifest` lar `sjekk` alt som ikke begynner med `fs-` være. Med det
+sjekkes bare kopiens egne navn, `app-button` med varianter og elementer, ikke
+resten av prosjektets klasser. Endrer du kopien, for eksempel med en ny
+variant, skriver du den inn i fragmentet også. `--manifest` kan gis flere
+ganger, én gang for hver kopi.
 
 | Flagg | Betydning |
 | --- | --- |
@@ -178,6 +306,24 @@ npx @fristil/designsystem overta button --ut=src/ui
 
 Uten navn lister kommandoen komponentene. Når du bør ta over en komponent, og
 hva du bør prøve først, står på [Tilpasning](../tilpasning/#når-css-ikke-er-nok).
+
+## manifest
+
+Skriver manifestet `sjekk` bruker: Fristils klasser, elementer og lovlige
+verdier, med fragmentene fra `overta` lagt til. Det er det en editor eller et
+annet verktøy trenger for å kjenne ordforrådet prosjektet faktisk har.
+
+```bash
+npx @fristil/designsystem manifest --manifest=src/ui/button/fristil-manifest.json --ut=build/fristil/manifest.json
+```
+
+| Flagg | Betydning |
+| --- | --- |
+| `--manifest=<fil>` | et fragment fra `overta`. Kan gis flere ganger |
+| `--ut=<fil>` | skriv til fil i stedet for til standard ut |
+
+[Gradle-pluginen](../kotlin/#gradle-pluginen) skriver den samme fila til
+`build/fristil/manifest.json`.
 
 ## tema
 

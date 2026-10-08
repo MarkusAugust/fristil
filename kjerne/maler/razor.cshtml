@@ -1,0 +1,15 @@
+@model Soknad
+@* Razor. Skrivefeilen med vilje er data-color="red" på merket. *@
+<form asp-action="Send" method="post" novalidate>
+  <fs-field invalid="@(ViewData.ModelState["Epost"]?.Errors.Count > 0)">
+    <label class="fs-label" data-required="text" asp-for="Epost">E-postadresse</label>
+    <input class="fs-input" asp-for="Epost" type="email">
+    <span class="fs-error-text" asp-validation-for="Epost">Skriv en gyldig adresse.</span>
+  </fs-field>
+  @if (Model.Utkast)
+  {
+    <span class="fs-badge" data-color="warning">Utkast</span>
+  }
+  <span class="fs-badge" data-color="red">Feil farge</span>
+  <button class="fs-button" data-variant="@(Model.Utkast ? "secondary" : null)" type="submit">Send</button>
+</form>

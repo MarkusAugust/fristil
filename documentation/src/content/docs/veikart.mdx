@@ -1,0 +1,96 @@
+---
+title: Veikart
+description: Det som er planlagt for Fristil, i den rekkefølgen det kommer, og hvorfor rekkefølgen er slik.
+---
+
+Fristil er før 1.0. Denne siden viser hva som kommer, i rekkefølge. Hver fase
+slippes for seg og er nyttig alene, så ingenting her venter på noe lenger ned
+på lista. Endringer en konsument merker, står som før i
+[versjonsloggen](/versjonslogg/), med brytende endringer under «Brytende».
+
+## Retningen
+
+> Én kontrakt, skrevet av Fristil. Lukkede typer der språket har dem. Én sjekk
+> overalt ellers. Det du overtar, eier du.
+
+Stavekontrollen, det som leser markupen din og sier fra om klasser som ikke
+finnes, felt uten ledetekst og id-er som ikke peker på noe, flyttes til én
+kjerne skrevet i Rust og bygget til WebAssembly. Den samme fila kjører i Node,
+på JVM-en og i hvert språk som har en WebAssembly-runtime, og gir det samme
+svaret overalt.
+
+Alt leveres gjennom kanalene språket ditt allerede bruker: npm, Maven Central
+og crates.io. Ingenting krever at du stoler på en tredjeparts pakkekilde, og
+ingenting du laster ned, krever et sertifikat for å kjøre.
+
+## Fase 1: Kontrakten og Fristil for Kotlin
+
+- Kontrakten blir én fil, `manifest.json`, skrevet av Fristil fra koden:
+  klassene, elementene, de lovlige verdiene og hva hver byggefunksjon svarer.
+  Alle verktøyene leser den.
+- En Maven-pakke med byggefunksjonene i Kotlin, der de lovlige verdiene er
+  `enum`-er, så en skrivefeil er en kompileringsfeil. Med i pakken er
+  `assertFristil(html)`, som sjekker HTML-en serveren sender i en vanlig test,
+  uten Node og uten JavaScript.
+- Feilmeldinger i IntelliJ mens du skriver, også i HTML i Kotlin-strenger.
+- Funnene får linje, kolonne og navnet på regelen, og en kommentar i markupen
+  kan undertrykke ett funn.
+
+## Fase 2: Én stavekontroll
+
+- `fristil sjekk`, `@fristil/designsystem/diagnostics` og VS Code-utvidelsen
+  bruker Rust-kjernen. Utgaven i TypeScript slettes. Funnene er de samme, og
+  det er etterprøvd mot all markupen i dette repoet.
+- **Brytende:** hjelpefunksjonene som i dag eksporteres fra
+  `@fristil/designsystem/diagnostics` utenom `diagnoseMarkup` og
+  `diagnosePage`, forsvinner.
+- `fristil.css` og JavaScript-fila i Maven-pakken, så Kotlin-prosjekter
+  slipper npm.
+- Typede utvidelser for kotlinx.html, og eksempler med Ktor og JTE.
+
+## Fase 3: Temaer uten Node
+
+- Temageneratoren og kontrastløftene flyttes til Rust. `fristil tema` og
+  `fristil sjekk-tema` virker da fra npm, fra Maven-pakken og fra en
+  Gradle-oppgave.
+
+## Fase 4: Kommandolinjen overalt
+
+- Én kommandolinje, skrevet én gang, som kjører der du er: `npx fristil`,
+  `java -jar fristil.jar`, `wasmtime fristil.wasm`, eller som en ekte kjørbar
+  fil med `cargo install`. Jar-en og WebAssembly-modulen ligger ved hver
+  utgivelse på GitHub, med attestasjon av hvor de ble bygd.
+- `fristil overta` gir kopien et eget navn, `app-…`, og stavekontrollen sjekker
+  den videre. Det du overtar, eier du.
+- En Gradle-plugin som sjekker maler i JTE og Thymeleaf som en del av bygget,
+  bygger temaet, og skriver manifestet prosjektet sjekkes mot til
+  `build/fristil/manifest.json`, der språkserveren finner det.
+
+## Fase 5: Språkserver
+
+- `fristil lsp` gir feilmeldinger og rettelser i editorer som snakker LSP:
+  VS Code, Neovim og Helix. Den leser manifestet fra Fristil-versjonen
+  prosjektet ditt har installert, eller fra Gradle-pluginen, så editoren aldri
+  sier noe annet enn testene. IntelliJ beholder pluginen, som også ser HTML i
+  strenger. Zed trenger en egen utvidelse.
+- Senere: fullføring og forklaring i språkserveren, så utvidelsene kan bli
+  enda tynnere.
+
+## Fase 6: Sjekk av den ferdige siden
+
+- En leser for CSS som sammenligner stilarkene med kontrakten: en klasse som
+  brukes uten at stilarket som definerer den er lastet, eller en variant uten
+  styling, meldes. `fristil sjekk --css=…` på kommandolinja.
+- Sjekk av siden slik den er rendret, i en ekte nettleser:
+  `diagnoseRendered(page)` i JavaScript og `assertFristilRendered` i Kotlin,
+  med Playwright i testene du alt har. Når siden er et DOM, ser React, Astro
+  og en Kotlin-mal like ut, og det kan sjekkes det kildekoden ikke kan svare
+  på: om stilarket faktisk er lastet, og markupen web-komponentene la til.
+  Generelle WCAG-regler er løst grundigere av andre verktøy, som axe, og
+  gjentas ikke.
+
+## Komponenter
+
+- **Stegindikator.** En flerstegs søknad trenger å vise hvor brukeren er. Det
+  er `aria-current="step"` og ren CSS, og det hører sammen med
+  framdriftsstolpen.

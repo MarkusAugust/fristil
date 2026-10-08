@@ -1,6 +1,6 @@
 ---
 title: Editoren
-description: Fullføring, forklaring og feilmeldinger for Fristil i VS Code og JetBrains, også der ingen kompilator ser på markupen.
+description: Fullføring, forklaring og feilmeldinger for Fristil i VS Code, JetBrains, Neovim, Helix og andre editorer med LSP, også der ingen kompilator ser på markupen.
 ---
 
 Skriver du TypeScript eller JSX, får du hjelp fra typene: `fs.` viser hele systemet, og en variant som ikke finnes stopper bygget. Se [Typesikker bruk](../typesikker-bruk/). Skriver du markup uten JavaScript, i en Go-mal, en Razor-visning, PHP eller håndskrevet HTML, ser ingen kompilator på attributtene. Da er det editoren som må si fra, og det gjør den.
@@ -23,7 +23,7 @@ Det du får, i HTML-filer og i malspråkene:
 
 Malspråkene den virker i uten innstillinger: PHP, Razor, Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go-maler, EJS, Liquid, Nunjucks og Edge. Der det står malsyntaks, holder den seg unna: en mal er ikke hel, og kontrollen kan stå i en partial. Lista er innstillingen `fristil.languages`.
 
-Fullføringen og listene den sjekker mot genereres fra komponentene i repoet. Utvidelsen har sitt eget versjonsnummer, og følger ikke pakken, siden den bare endrer seg når et element, en klasse eller et attributt gjør det.
+Feilmeldingene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den samme som de andre editorene under bruker. Den sjekker mot Fristil-versjonen prosjektet har installert, og mot komponenter du har [tatt over](../kommandolinjen/#overta), se [Språkserveren](#språkserveren). Fullføringen genereres fra komponentene i repoet. Utvidelsen har sitt eget versjonsnummer, og følger ikke pakken, siden den bare endrer seg når et element, en klasse eller et attributt gjør det.
 
 ## JetBrains
 
@@ -38,9 +38,51 @@ fun lagreknapp() = """
 """
 ```
 
-`// language=HTML` og `@Language("HTML")` er IntelliJs egne merker, og krever ingen avhengighet. Uten et slikt merke er strengen bare tekst for IDE-en, og da er det ingenting for pluginen å feste seg i. Pluginen gir bare klassene, ikke elementene eller attributtene. Etterprøvd i Kotlin og TypeScript i IntelliJ IDEA Ultimate 2026.2.3.
+`// language=HTML` og `@Language("HTML")` er IntelliJs egne merker, og krever ingen avhengighet. Uten et slikt merke er strengen bare tekst for IDE-en, og da er det ingenting for pluginen å feste seg i. Fullføringen gir bare klassene, ikke elementene eller attributtene. Etterprøvd i Kotlin og TypeScript i IntelliJ IDEA Ultimate 2026.2.3.
 
-Feilmeldingene og hurtigrettelsene finnes bare i VS Code. IntelliJ IDEA Community har ikke JavaScript-støtten dette bygger på.
+Fra versjon 0.3.0 gir pluginen også **feilmeldingene**, i HTML-filer og i merkede strenger: et element, en klasse, et attributt eller en verdi som ikke finnes, med hurtigrettelse der det finnes ett riktig svar. Sjekken er den samme Rust-kjernen som `fristil sjekk` og VS Code bruker, kjørt i IDE-ens egen JVM. Den trenger ikke Node eller JavaScript-støtten i IDE-en. Et funn du vil beholde, undertrykkes med `<!-- fristil-ignore-next regelnavn -->` over taggen.
+
+## Språkserveren
+
+Feilmeldingene og hurtigrettelsene finnes som en språkserver, `fristil lsp`, for hver editor som snakker LSP. Den er skrevet i Rust, er den samme sjekken som `fristil sjekk`, og startes på den måten som passer prosjektet:
+
+| Har du | Kommandoen |
+| --- | --- |
+| Node | `npx @fristil/designsystem lsp` |
+| Java 17 eller nyere | `java -jar fristil.jar lsp` |
+| wasmtime | `wasmtime run --dir=/::/ fristil.wasm lsp` |
+| `cargo install` | `fristil lsp` |
+
+Hvor du får `fristil.jar`, `fristil.wasm` og den kjørbare fila, står på [Kommandolinjen](../kommandolinjen/#uten-node). wasmtime ser bare mappene den får, og `--dir=/::/` gir den hele filsystemet, med de samme stiene som editoren bruker. Det er den svakeste av vertene. Se [Ulempene med wasmtime](../kommandolinjen/#ulempene-med-wasmtime).
+
+Serveren sjekker mot det prosjektet faktisk har. Den leter i arbeidsområdet etter `build/fristil/manifest.json`, som [Gradle-pluginen](../kotlin/#gradle-pluginen) skriver, og så etter `node_modules/@fristil/designsystem/manifest/manifest.json`, den installerte pakken. Finnes ingen av dem, sjekker den mot Fristil-versjonen den selv er bygget fra. Fila leses på nytt når den endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
+
+I **Neovim** 0.11 eller nyere:
+
+```lua
+vim.lsp.config("fristil", {
+  cmd = { "npx", "@fristil/designsystem", "lsp" },
+  filetypes = { "html", "htmldjango", "php", "gotmpl", "eruby", "jinja", "twig", "blade" },
+  root_markers = { "package.json", "build.gradle.kts", ".git" },
+})
+vim.lsp.enable("fristil")
+```
+
+I **Helix**, i `languages.toml`, ved siden av HTML-serveren:
+
+```toml
+[language-server.fristil]
+command = "npx"
+args = ["@fristil/designsystem", "lsp"]
+
+[[language]]
+name = "html"
+language-servers = ["vscode-html-language-server", "fristil"]
+```
+
+**Zed** starter bare språkservere som en Zed-utvidelse har meldt inn, og en slik utvidelse for Fristil finnes ikke ennå.
+
+Serveren gir funn og rettelser. Fullføring og forklaring gjør den ikke ennå, så i VS Code og JetBrains kommer de fortsatt fra utvidelsen og pluginen. `initializationOptions` kan ha `manifest`, en sti til et manifest som går foran de andre, og `rendered: true`, som sjekker hver fil som en hel side, med koblingen.
 
 ## Kommandolinjen og testene
 

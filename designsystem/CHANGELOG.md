@@ -23,7 +23,141 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Sjekken er Rust-kjernen.** `diagnoseMarkup` og `diagnosePage` i
+  `@fristil/designsystem/diagnostics` kjører nå den samme
+  WebAssembly-modulen som VS Code, IntelliJ og Fristil for Kotlin, i stedet for
+  en egen utgave i TypeScript. Svarene er de samme: begge utgavene ble kjørt
+  side om side på over 4000 sider uten ett avvik før TypeScript-utgaven ble
+  slettet. Modulen følger pakken og lastes første gang en av funksjonene
+  kalles, i Node, Bun og Deno.
+
+  Disse forsvinner fra `@fristil/designsystem/diagnostics`:
+
+  | Borte | I stedet |
+  | --- | --- |
+  | `diagnose(text, elements, classes)` | `diagnoseMarkup(text)`. Et eget ordforråd gis som manifest med `loadCore(modul).loadManifest(json)`. |
+  | `checkReferences(text)` | `diagnosePage(text)`, som gir koblingsfunnene sammen med resten. Regelnavnet i `rule` skiller dem. |
+  | `pageSource(text)` | Ingen. `diagnosePage` leser siden slik den gjorde. |
+  | `elements`, `classes` | `@fristil/designsystem/manifest.json`, med elementene, klassene og de lovlige verdiene. |
+  | `closest`, `tagEnd`, `withoutHidden` | Ingen. De var hjelpere for sjekken. |
+  | typene `Attribute`, `Element`, `Elements`, `ClassAttribute`, `ClassInfo`, `Classes` | Skjemaet i `@fristil/designsystem/manifest.json` (`manifest.schema.json`). |
+
+  `diagnosePage(text, elementer, klasser)` tar ikke lenger egne lister.
+
+  Ingenting endres i `fs`, i komponentene eller i CSS-en.
+
+- **Temaet er Rust-kjernen.** `buildTheme` i `@fristil/designsystem/tema` og
+  `inspectTheme` og `checkTheme` i `@fristil/designsystem/tema-sjekk` kjører
+  den samme WebAssembly-modulen som sjekken. Svarene er de samme: de to
+  utgavene ble kjørt side om side på over 6000 oppskrifter og temaer, med
+  ugyldige farger, farlige verdier og ødelagt CSS, uten ett avvik, heller ikke
+  i kontrastforholdene. `buildTheme` laster modulen fra pakken i Node, Bun og
+  Deno. I nettleseren lastes den med `loadCore` fra
+  `@fristil/designsystem/diagnostics`, og modulen er
+  `@fristil/designsystem/kjerne.wasm`.
+
+  Fargekontrakten er data, i `src/tokens/fargekontrakt.json`, og regningen
+  finnes bare i kjernen. Disse forsvinner:
+
+  | Borte | I stedet |
+  | --- | --- |
+  | `buildMatrix(merker, utseende)` fra `matrise` | `buildTheme(merker)`, som gir `light`, `dark` og `violations`. Fristils egne farger er `lightCells` og `darkCells` i `matrise`. |
+  | `buildFamily`, `promisesFor`, `checkPromises` og typen `Violation` fra `kontrakt` | `buildTheme` for et tema, `inspectTheme` for å kontrollere ett. `Violation` står i `tema`. |
+  | `parseBlocks` og typen `ParsedBlock` fra `tema-sjekk` | `inspectTheme`, som leser blokkene. |
+  | typene `Matrix` og `RoleCss` fra `matrise` | `MatrixToken` gir hvert navn. |
+
+  `ROLES`, `NEUTRAL_LAYERS`, `REQUIREMENT`, `FAMILIES`, `FRISTIL_BRANDS`,
+  `roleToCss` og `tokenName` er der som før, og `@fristil/designsystem/farge`
+  er uendret.
+
+- **Pakken krever Node 20.16 eller nyere** (`engines` i `package.json`), eller
+  Bun eller Deno. Kjernen lastes med `process.getBuiltinModule`, som kom i
+  Node 20.16 og 22.3. En eldre Node får beskjed om at versjonen er for
+  gammel. Node 18 og 20 har ikke lenger støtte fra Node-prosjektet.
+- **`fristil overta` gir kopien nytt navn.** `fs-button` blir `app-button` i
+  klassene, taggene, `customElements.define` og selektorene, så kopien er
+  din og kan stå ved siden av originalen. Variablene fra temaet, `--fs-*`,
+  beholder navnet. Bytt til det nye navnet i markupen der kopien skal brukes.
+  Kopier du har tatt fra før, røres ikke.
+
 ### Nytt
+
+- **Kommandolinja uten Node.** Den samme kommandolinja kjører som
+  `java -jar fristil.jar` (Java 17 eller nyere), i wasmtime som
+  `fristil.wasm`, og som en kjørbar fil med
+  `cargo install --git https://github.com/MarkusAugust/fristil fristil`.
+  Jar-en og modulen ligger ved hver utgivelse på GitHub, med attestasjon av
+  hvilken commit de ble bygd av, og svarer det samme som `npx`, byte for
+  byte.
+- **`fristil overta` skriver et fragment av manifestet** ved siden av kopien,
+  `fristil-manifest.json`, og `fristil sjekk --manifest=<fil>` sjekker
+  markupen for kopien mot det. Bare kopiens egne navn sjekkes, ikke resten av
+  prosjektets klasser.
+- **Sjekken ser stilarkene.** `fristil sjekk --css=<fil>`, og `css` som valg
+  til `diagnoseMarkup` og `diagnosePage`, sier fra om en klasse ingen av
+  stilarkene styler (`ustylet-klasse`) og om en verdi uten regel
+  (`ustylet-verdi`). Stilarkene leses av en CSS-leser i kjernen, med
+  nesting, `:is()`, `:where()`, `@layer` og `@import`. Pakkens egen kontroll
+  av at CSS-en og manifestet sier det samme, bruker den også.
+- **`diagnoseRendered(page)`** sjekker siden slik nettleseren har rendret
+  den, med Playwright: DOM-en etter at web-komponentene og skriptene har
+  kjørt, og stilarkene den faktisk lastet, også fra et CDN.
+- **`fristil lsp`, språkserveren.** Funnene og hurtigrettelsene i hver editor
+  som snakker LSP: Neovim, Helix, VS Code og andre, med UTF-16-posisjoner.
+  Den sjekker mot manifestet i `build/fristil/` eller i `node_modules`, med
+  det innebygde som reserve, og leser det på nytt når det endres. Den
+  startes med `npx`, `java -jar`, wasmtime eller den kjørbare fila.
+- **`fristil manifest`** skriver manifestet sjekken bruker, med fragmentene
+  lagt til, for en editor eller et annet verktøy.
+- **Gradle-pluginen `io.github.markusaugust.fristil`**, med `fristilSjekk`
+  (kjøres av `check`), `fristilTema` og `fristilManifest`, som skriver
+  `build/fristil/manifest.json`. Den kjører den samme kommandolinja i
+  Gradle-prosessen.
+
+- **Kommandolinja er skrevet i Rust.** `npx @fristil/designsystem` kjører den
+  som en WASI-modul med Node sin egen `node:wasi`, og den samme koden kan
+  bygges som en kjørbar fil. Kommandoene, flaggene, meldingene og feilkodene
+  er de samme: alle 130 kjøringene i pakkens egen test av kommandolinja svarer
+  likt, byte for byte. Én melding er ny: er en oppskrift til `fristil tema`
+  ikke gyldig JSON, er forklaringen kjernens egen og ikke Nodes.
+
+- **Funnene har regelnavn, linje og kolonne.** `rule` er navnet på regelen,
+  som `ukjent-klasse`, og `line` og `column` er der funnet begynner, fra 1.
+- **Et funn kan undertrykkes med en kommentar** over taggen:
+  `<!-- fristil-ignore-next ukjent-klasse -->`. Uten regelnavn gjelder den
+  alle reglene for den neste taggen. Det virker i `fristil sjekk`, i
+  editorene og i testene.
+- **`loadCore(modul)`** i `@fristil/designsystem/diagnostics` laster kjernen
+  fra en modul du har selv, som i nettleseren eller i en utvidelse som pakker
+  den med seg. Den gir også `loadManifest(json)`, `resetManifest()` og
+  `version()`.
+- **`@fristil/designsystem/manifest.json`** beskriver hele ordforrådet og
+  hver byggefunksjon som data, med skjema. Det er det Fristil for Kotlin
+  genereres fra, og det kjernen sjekker mot.
+- **`data-color` på `fs-dialog` sjekkes.** Sjekken kjente ikke fargene
+  `fs.dialog({ color })` gir, fordi ordlista bare leste byggefunksjoner som
+  svarer med ett sett. `data-color="red"` sa derfor ingenting. Nå meldes en
+  ukjent farge, med de fem lovlige og `neutral` som standard.
+- **Flaggene på klassene står i manifestet:** `data-optional` på `fs-label`
+  og `fs-legend`, `data-interactive` på `fs-card`, `data-selectable` på
+  `fs-tag` og `data-hoverable` på `fs-table`. Sjekken sier fra om
+  `data-optional="false"`, som slår flagget på, slik den gjør for boolske
+  attributter på elementene.
+- **Kommentarer i malspråkene hoppes over.** Markup i `{{-- --}}` i Blade,
+  `@* *@` i Razor, `{{/* */}}` i Go, `{# #}` i Jinja, Twig og Nunjucks, og
+  `<%-- --%>` i JSP ble sjekket som om den ble rendret, og en tagg i en
+  kommentar ga funn.
+- **`fristil sjekk-tema` og `inspectTheme` leser CSS med en ekte
+  tokenizer**, den fra Servo som Firefox bruker. En klamme eller et semikolon
+  i en streng, i `url(…)` eller i en kommentar delte en blokk eller en
+  deklarasjon, og en farge kunne forsvinne fra kontrollen uten et ord. En
+  blokk som ikke er lukket, leses nå til fila slutter, slik nettleseren gjør,
+  i stedet for å hoppes over, og meldingen om klammene står fortsatt.
+- **En stor side med mange funn sjekkes raskere.** Linja og kolonnen til hvert
+  funn ble regnet fra starten av teksten. 6000 funn på en side med 3000 linjer
+  tok en kvart sekund, og tar nå 25 millisekunder.
 
 - **Hver side i dokumentasjonen finnes som Markdown.** `/components/button/`
   har sin på `/components/button.md`, og hver side lenker til sin med

@@ -18,6 +18,7 @@ demoer-lokalt/
 
 # Pakket utvidelse, lages av `bun --filter fristil-vscode sjekk`
 *.vsix
+.vscode-test/
 
 # IntelliJ-pluginens byggemapper. `.intellijPlatform` er en hel IDE lastet
 # ned for å kompilere mot, rundt en gigabyte.
@@ -26,3 +27,19 @@ editor-intellij/.kotlin/
 editor-intellij/.intellijPlatform/
 editor-intellij/build/
 presentasjon/index.html
+
+# Kotlin-prosjektets byggemapper
+kotlin/.gradle/
+kotlin/.kotlin/
+kotlin/build/
+kotlin/kotlinx-html/build/
+kotlin/kommandolinje/build/
+kotlin/gradle-plugin/build/
+kotlin/buildSrc/.gradle/
+kotlin/buildSrc/.kotlin/
+kotlin/buildSrc/build/
+
+# Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
+kjerne/target/
+kjerne/dist/
+designsystem/kjerne/

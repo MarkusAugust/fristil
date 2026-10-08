@@ -9,7 +9,7 @@
         kommer etter, slik retningslinjene tillater.
     -->
     <description><![CDATA[
-        Completion for the CSS classes of the
+        Completion and diagnostics for the
         <a href="https://fristil.sobernetics.no">Fristil</a> design system in HTML,
         including HTML injected into a string.
         <br><br>
@@ -21,10 +21,15 @@
         plugin closes that gap, using the same class list as the package, so the
         editor and the diagnostics never disagree.
         <br><br>
+        Diagnostics come from Fristil's own checker, compiled from Rust to
+        WebAssembly and run inside the IDE with Chicory, a pure Java runtime:
+        unknown elements, classes, attributes and values, with quick fixes where
+        the checker has one. No Node.js is needed.
+        <br><br>
         <a href="https://github.com/MarkusAugust/fristil">Source code</a> (MIT)
         <br><br>
-        <b>Norsk:</b> Fullføring på Fristils CSS-klasser i HTML, også i HTML som
-        er injisert i en streng merket med <code>@Language("HTML")</code>.
+        <b>Norsk:</b> Fullføring og feilmeldinger for Fristil i HTML, også i HTML
+        som er injisert i en streng merket med <code>@Language("HTML")</code>.
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -44,5 +49,14 @@
             language="HTML"
             order="first"
             implementationClass="no.fristil.intellij.FristilCompletionContributor" />
+
+        <!--
+            Feilmeldingene fra Rust-kjernen, kjørt av Chicory i IDE-ens JVM.
+            Også på HTML-språket, av samme grunn: da dekker den injiserte
+            fragmenter.
+        -->
+        <annotator
+            language="HTML"
+            implementationClass="no.fristil.intellij.FristilAnnotator" />
     </extensions>
 </idea-plugin>

@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import { monter, ventPaTegning } from "./testing/a11y"
-import { buildMatrix, FRISTIL_BRANDS } from "./tokens/matrix"
+import { lightCells } from "./tokens/matrise"
 
 import "./tokens/tokens.css"
 import "./components/css/accordion/accordion.css"
@@ -193,9 +193,7 @@ describe("tastaturfokus er synlig", () => {
      * `accent-border-strong`, og en test som gjentar heksverdien ville måttet
      * rettes hver gang kontrakten flytter en lyshet.
      */
-    const forventet = buildMatrix(FRISTIL_BRANDS, "light").tokens[
-      "--fs-color-accent-border-strong"
-    ]
+    const forventet = lightCells["--fs-color-accent-border-strong"]
 
     expect(ring).toMatch(/^2px solid /)
     expect(ring.toLowerCase()).toContain(forventet.toLowerCase())
