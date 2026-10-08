@@ -4,7 +4,14 @@
        fargen under er den eneste som vises. */
     border: 0;
     block-size: 1px;
+    /* Nettleseren gir også <hr> auto-marger til sidene. I en flex-kolonne
+       vinner de over stretch, og streken krymper til innholdet sitt, som er
+       ingenting. Den var 0 piksler bred og usynlig. Den strekker seg også
+       selv når forelderen sentrerer barna eller legger dem til start. */
     margin-block: var(--fs-divider-space, var(--fs-spacing-4));
+    margin-inline: 0;
+    align-self: stretch;
+    justify-self: stretch;
     background: var(--fs-color-neutral-border-subtle);
   }
 

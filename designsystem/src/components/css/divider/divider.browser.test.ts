@@ -30,6 +30,29 @@ describe("fs-divider", () => {
     expect(stil.height).toBe("1px")
   })
 
+  it.each([
+    "display: flex; flex-direction: column",
+    "display: flex; flex-direction: column; align-items: center",
+    "display: grid",
+    "display: grid; justify-items: start",
+  ])("fyller bredden i en forelder med %s", (oppsett) => {
+    // Nettleserens auto-marger til sidene vinner over stretch i flex, og
+    // streken ble 0 piksler bred. Dokumentasjonssiden viste ingen strek.
+    monter(`
+      <div id="forelder" style="${oppsett}; inline-size: 20rem">
+        <p>Saken er registrert.</p>
+        <hr class="fs-divider" id="i-forelder" />
+        <p>Du får svar innen tre uker.</p>
+      </div>
+    `)
+    const forelder = document.getElementById("forelder") as Element
+    const strek = document.getElementById("i-forelder") as Element
+
+    expect(strek.getBoundingClientRect().width).toBe(
+      forelder.getBoundingClientRect().width,
+    )
+  })
+
   it("gir hver variant sin egen styrke", () => {
     const farger = ["vanlig", "sterk", "svak"].map(
       (id) =>
