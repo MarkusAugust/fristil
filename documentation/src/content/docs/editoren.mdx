@@ -53,7 +53,7 @@ Feilmeldingene og hurtigrettelsene finnes som en språkserver, `fristil lsp`, fo
 | wasmtime | `wasmtime run --dir=/::/ fristil.wasm lsp` |
 | `cargo install` | `fristil lsp` |
 
-Hvor du får `fristil.jar`, `fristil.wasm` og den kjørbare fila, står på [Kommandolinjen](../kommandolinjen/#uten-node). wasmtime ser bare mappene den får, og `--dir=/::/` gir den filsystemet med de samme stiene som editoren bruker.
+Hvor du får `fristil.jar`, `fristil.wasm` og den kjørbare fila, står på [Kommandolinjen](../kommandolinjen/#uten-node). wasmtime ser bare mappene den får, og `--dir=/::/` gir den hele filsystemet, med de samme stiene som editoren bruker. Det er den svakeste av vertene. Se [Ulempene med wasmtime](../kommandolinjen/#ulempene-med-wasmtime).
 
 Serveren sjekker mot det prosjektet faktisk har. Den leter i arbeidsområdet etter `build/fristil/manifest.json`, som [Gradle-pluginen](../kotlin/#gradle-pluginen) skriver, og så etter `node_modules/@fristil/designsystem/manifest/manifest.json`, den installerte pakken. Finnes ingen av dem, sjekker den mot Fristil-versjonen den selv er bygget fra. Fila leses på nytt når den endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
 

@@ -46,14 +46,37 @@ bygd av, og det kan du kontrollere selv:
 gh attestation verify fristil.jar --repo MarkusAugust/fristil
 ```
 
-Jar-en har alt i seg og trenger ingen avhengigheter. wasmtime ser bare mappene
-du gir den med `--dir`, så stiene i kommandoen må ligge under dem.
+Jar-en har alt i seg og trenger ingen avhengigheter.
 
 En adresse hentes av verten, siden WASI ikke har nettverk. `npx` og `java -jar`
 henter både `http://` og `https://`. Den kjørbare fila fra `cargo install`
-henter `http://`, som er det en lokal server svarer på. I wasmtime, og for
-`https://` fra `cargo install`, sender du siden inn selv:
+henter `http://`, som er det en lokal server svarer på. For `https://` fra
+`cargo install` sender du siden inn selv:
 `curl -s https://… | fristil sjekk --rendret`.
+
+### Ulempene med wasmtime
+
+wasmtime er med for den som har det fra før, eller ikke har Node, Java eller
+Rust. Det er den svakeste av vertene, og det bør du vite før du velger den:
+
+- **Du må stole på en tredjepart.** wasmtime installeres fra
+  [wasmtime.dev](https://wasmtime.dev), utenfor npm, Maven og cargo, og er
+  laget av Bytecode Alliance, ikke av Fristil.
+- **Ingen adresser.** wasmtime har ikke nettverk, og ingen vert henter siden
+  for modulen. `fristil sjekk http://…` sier at den ikke fikk kontakt. Send
+  siden inn selv: `curl -s http://localhost:8080/skjema | wasmtime run
+  --dir=. fristil.wasm sjekk --rendret`.
+- **Bare mappene du åpner.** wasmtime ser bare det du gir den med `--dir`.
+  Med `--dir=.` virker stier under arbeidsmappa, og en fil utenfor gir «Fant
+  ikke fila», selv om den finnes. Språkserveren trenger `--dir=/::/`, som gir
+  den hele filsystemet.
+- **Ingen beskjed om standard inn.** De andre vertene sier «Leser markup fra
+  standard inn» når du kjører `sjekk` uten filer i en terminal. wasmtime kan
+  ikke se det, så kommandoen venter stille til du avslutter med Ctrl-D.
+- **Windows er ikke prøvd.** De andre vertene oversetter `C:\…` til det
+  modulen forstår. I wasmtime må du åpne stasjonen selv med `--dir`.
+- **Ikke prøvd i CI.** `npx`, `java -jar` og den kjørbare fila prøves på
+  hver endring, med de samme kjøringene. wasmtime er prøvd for hånd.
 
 ## sjekk
 
