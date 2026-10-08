@@ -134,6 +134,8 @@ object CommandLine {
                     .withEnvironment("FRISTIL_ARBEIDSMAPPE", forWasi(workingDirectory.absolutePath))
                     .apply {
                         if (terminal) withEnvironment("FRISTIL_TERMINAL", "1")
+                        // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
+                        if (windows) withEnvironment("FRISTIL_WINDOWS", "1")
                         // Hele filsystemet åpnes, og modulen går selv til arbeidsmappa.
                         if (windows) {
                             for (root in File.listRoots()) {

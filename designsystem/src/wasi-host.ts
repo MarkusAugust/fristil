@@ -120,6 +120,8 @@ export async function runCommandLine(
       args: ["fristil", ...moduleArgs],
       env: {
         FRISTIL_ARBEIDSMAPPE: forWasi(process.cwd()),
+        // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
+        ...(windows ? { FRISTIL_WINDOWS: "1" } : {}),
         // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter
         // et rør i ikke-blokkerende modus, og modulen ga da opp å lese før
         // skriveren var ferdig, som i `curl … | fristil sjekk`.

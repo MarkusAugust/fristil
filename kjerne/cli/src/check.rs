@@ -10,7 +10,7 @@
 use std::io::{IsTerminal, Read};
 
 use crate::fetch;
-use crate::output::{count, error, fail, log};
+use crate::output::{count, error, fail, log, shown};
 use fristil_kjerne::styles::{read_styles, Styles};
 use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::Severity;
@@ -43,13 +43,15 @@ pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
     for path in manifests {
         let Ok(bytes) = std::fs::read(path) else {
             fail(&format!(
-                "Fant ikke manifestet «{path}».\n\nFragmentet skrives av fristil overta, ved siden av kopien.\n"
+                "Fant ikke manifestet «{}».\n\nFragmentet skrives av fristil overta, ved siden av kopien.\n",
+                shown(path)
             ));
         };
         let text = String::from_utf8_lossy(&bytes).into_owned();
         if let Err(reason) = manifest::with_fragments(&[&text]) {
             fail(&format!(
-                "«{path}» kan ikke leses som et manifest: {reason}\n"
+                "«{}» kan ikke leses som et manifest: {reason}\n",
+                shown(path)
             ));
         }
         texts.push(text);
@@ -111,7 +113,10 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
         seen.push(path.clone());
         let Ok(bytes) = std::fs::read(&path) else {
             if given {
-                fail(&format!("Fant ikke stilarket «{}».", path.display()));
+                fail(&format!(
+                    "Fant ikke stilarket «{}».",
+                    shown(&path.display().to_string())
+                ));
             }
             continue;
         };
@@ -224,7 +229,7 @@ pub fn run(arguments: &[String]) {
 
     if !missing.is_empty() || !unreachable.is_empty() {
         for path in &missing {
-            error(&format!("Fant ikke fila «{path}»."));
+            error(&format!("Fant ikke fila «{}».", shown(path)));
         }
         for reason in &unreachable {
             error(reason);
@@ -250,7 +255,8 @@ pub fn run(arguments: &[String]) {
             };
             log(&format!(
                 "{}:{line}:{column}: {kind}: {}",
-                source.name, finding.message
+                shown(&source.name),
+                finding.message
             ));
         }
     }

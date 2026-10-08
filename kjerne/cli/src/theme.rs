@@ -10,7 +10,7 @@
 //! riktig ut. Et flagg eller en nøkkel som ikke finnes, stopper kjøringen: en
 //! skrivefeil skal ikke se ut som om kommandoen gjorde det du ba om.
 
-use crate::output::{error, fail, log};
+use crate::output::{error, fail, log, shown};
 use crate::Arguments;
 use fristil_kjerne::json::{parse, Json};
 use fristil_kjerne::theme::{build_theme, js_number, to_fixed2};
@@ -98,8 +98,9 @@ fn unknown_keys(value: Option<&Json>, allowed: &[&str], path: &str) -> Vec<Strin
 }
 
 /// Oppskriften i en JSON-fil, eller en forklaring og feilkode.
-fn read_recipe(path: &str) -> Object {
-    let Ok(bytes) = std::fs::read(path) else {
+fn read_recipe(file: &str) -> Object {
+    let path = shown(file);
+    let Ok(bytes) = std::fs::read(file) else {
         fail(&format!(
             "Fant ikke fila «{path}».\n\nOppgi en JSON-fil med fargene, eller sett dem som flagg. Se `fristil --hjelp`.\n"
         ));
@@ -261,10 +262,11 @@ pub fn run(arguments: &[String]) {
     match arguments.flag("ut") {
         Some(path) => {
             if let Err(e) = std::fs::write(path, &theme.css) {
-                fail(&format!("Klarte ikke skrive {path}: {e}"));
+                fail(&format!("Klarte ikke skrive {}: {e}", shown(path)));
             }
             error(&format!(
-                "\nSkrev {path}. {} farger i hvert tema, alle løfter holder.",
+                "\nSkrev {}. {} farger i hvert tema, alle løfter holder.",
+                shown(path),
                 theme.light.len()
             ));
         }

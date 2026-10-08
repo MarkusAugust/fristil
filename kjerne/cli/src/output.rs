@@ -38,3 +38,46 @@ pub fn write(text: &str) {
 pub fn count(n: usize, one: &str, many: &str) -> String {
     format!("{n} {}", if n == 1 { one } else { many })
 }
+
+/// En sti slik brukeren skrev den.
+///
+/// På Windows gjør verten `C:\\prosjekt\\a.html` om til `/c/prosjekt/a.html`,
+/// som WASI-modulen forstår, og setter `FRISTIL_WINDOWS`. I meldingene skal
+/// stien se ut som den brukeren kjenner igjen.
+pub fn shown(path: &str) -> String {
+    shown_with(path, std::env::var("FRISTIL_WINDOWS").as_deref() == Ok("1"))
+}
+
+fn shown_with(path: &str, windows: bool) -> String {
+    if !windows || path.contains("://") {
+        return path.to_string();
+    }
+    let b = path.as_bytes();
+    if b.len() >= 2 && b[0] == b'/' && b[1].is_ascii_lowercase() && (b.len() == 2 || b[2] == b'/') {
+        format!(
+            "{}:\\{}",
+            (b[1] as char).to_ascii_uppercase(),
+            path.get(3..).unwrap_or("").replace('/', "\\")
+        )
+    } else {
+        path.replace('/', "\\")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shows_windows_paths_as_written() {
+        assert_eq!(
+            shown_with("/c/Users/a/galt.html", true),
+            r"C:\Users\a\galt.html"
+        );
+        assert_eq!(shown_with("/d", true), r"D:\");
+        assert_eq!(shown_with("maler/a.html", true), r"maler\a.html");
+        assert_eq!(shown_with("http://localhost/x", true), "http://localhost/x");
+        assert_eq!(shown_with("stdin", true), "stdin");
+        assert_eq!(shown_with("/c/Users/a.html", false), "/c/Users/a.html");
+    }
+}

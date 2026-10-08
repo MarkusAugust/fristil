@@ -191,7 +191,7 @@ jobs:
       - name: Bygg kjernen og pakken
         run: |
           bun kjerne/scripts/bygg.ts
-          (cd designsystem && bunx tsc -b)
+          (cd designsystem && bun run bygg:nettleser)
           (cd editor && bun run build)
 
       - name: Kommandolinja gjennom npx

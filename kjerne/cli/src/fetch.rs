@@ -45,8 +45,12 @@ fn judge(
 
 /// En side verten har hentet. Se forklaringen øverst.
 pub fn from_host(file: &str) -> Result<(String, String), String> {
-    let bytes =
-        std::fs::read(file).map_err(|e| format!("Fant ikke det verten hentet, «{file}»: {e}"))?;
+    let bytes = std::fs::read(file).map_err(|e| {
+        format!(
+            "Fant ikke det verten hentet, «{}»: {e}",
+            crate::output::shown(file)
+        )
+    })?;
     let text = String::from_utf8_lossy(&bytes).into_owned();
     let mut parts = text.splitn(4, '\n');
     let address = parts.next().unwrap_or_default().to_string();

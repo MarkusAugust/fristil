@@ -9,7 +9,7 @@
 //! lese ordforrådet prosjektet faktisk har, med de overtatte komponentene.
 
 use crate::check::read_fragments;
-use crate::output::{count, error, fail, log};
+use crate::output::{count, error, fail, log, shown};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::Json;
 use fristil_kjerne::manifest::merged;
@@ -60,10 +60,11 @@ pub fn run(arguments: &[String]) {
                 let _ = std::fs::create_dir_all(folder);
             }
             if let Err(e) = std::fs::write(path, &json) {
-                fail(&format!("Klarte ikke skrive {path}: {e}"));
+                fail(&format!("Klarte ikke skrive {}: {e}", shown(path)));
             }
             error(&format!(
-                "Skrev {path}, med {}.",
+                "Skrev {}, med {}.",
+                shown(path),
                 count(manifests.len(), "fragment", "fragmenter")
             ));
         }

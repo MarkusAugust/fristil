@@ -9,7 +9,7 @@
 
 use std::io::ErrorKind;
 
-use crate::output::{count, error, fail, log};
+use crate::output::{count, error, fail, log, shown};
 use fristil_kjerne::theme::check::inspect_theme;
 
 pub fn run(arguments: &[String]) {
@@ -43,11 +43,14 @@ pub fn run(arguments: &[String]) {
         });
         match read {
             Ok(bytes) => sources.push((path, String::from_utf8_lossy(&bytes).into_owned())),
-            Err(e) => unreadable.push(match e.kind() {
-                ErrorKind::IsADirectory => format!("{path} (er en mappe)"),
-                ErrorKind::NotFound => format!("{path} (finnes ikke)"),
-                ErrorKind::PermissionDenied => format!("{path} (EACCES)"),
-                _ => format!("{path} (kunne ikke leses)"),
+            Err(e) => unreadable.push({
+                let path = shown(path);
+                match e.kind() {
+                    ErrorKind::IsADirectory => format!("{path} (er en mappe)"),
+                    ErrorKind::NotFound => format!("{path} (finnes ikke)"),
+                    ErrorKind::PermissionDenied => format!("{path} (EACCES)"),
+                    _ => format!("{path} (kunne ikke leses)"),
+                }
             }),
         }
     }
@@ -60,8 +63,10 @@ pub fn run(arguments: &[String]) {
         let report = inspect_theme(css);
         for problem in &report.problems {
             error(&format!(
-                "{path}  {}\n  {}",
-                problem.selector, problem.message
+                "{}  {}\n  {}",
+                shown(path),
+                problem.selector,
+                problem.message
             ));
             problems += 1;
         }

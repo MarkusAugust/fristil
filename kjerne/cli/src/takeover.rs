@@ -23,7 +23,7 @@
 //! Kildekoden er bygget inn i kommandolinja (se `build.rs`), så kommandoen
 //! virker likt overalt.
 
-use crate::output::{error, fail};
+use crate::output::{error, fail, shown};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
@@ -434,7 +434,7 @@ pub fn run(arguments: &[String]) {
 
     let base = parsed.flag("ut").unwrap_or("src/fristil");
     let target = std::path::Path::new(base).join(component.name);
-    let shown = target.display().to_string();
+    let shown = shown(&target.display().to_string());
     if target.exists() && parsed.flag("overskriv") != Some("ja") {
         fail(&format!(
             "{shown} finnes allerede.\n\nHar du endret kopien, blir endringene borte. Kjør med --overskriv=ja hvis den skal erstattes.\n"
@@ -467,7 +467,10 @@ pub fn run(arguments: &[String]) {
     let write = |file: &str, content: &str| {
         let path = target.join(file);
         if let Err(e) = std::fs::write(&path, content) {
-            fail(&format!("Klarte ikke skrive {}: {e}", path.display()));
+            fail(&format!(
+                "Klarte ikke skrive {}: {e}",
+                crate::output::shown(&path.display().to_string())
+            ));
         }
     };
     for file in &plan.files {
@@ -523,7 +526,7 @@ pub fn run(arguments: &[String]) {
     lines.push("Sjekk markupen for kopien med:".into());
     lines.push(format!(
         "  fristil sjekk --manifest={} <filer…>",
-        target.join(FRAGMENT).display()
+        crate::output::shown(&target.join(FRAGMENT).display().to_string())
     ));
 
     error(&format!("{}\n", lines.join("\n")));

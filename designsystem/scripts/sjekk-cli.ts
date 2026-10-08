@@ -589,7 +589,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   ])
   krev(
     hele.kode === 0,
-    `med hele fristil.css skulle siden vært ren: ${hele.ut}`,
+    `med hele fristil.css skulle siden vært ren: ${hele.ut}${hele.feil}`,
   )
 
   const delvis = await kjør(["sjekk", `--css=${join(mappe, "app.css")}`, side])
