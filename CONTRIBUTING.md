@@ -94,8 +94,10 @@ Taggen settes først når versjonen ligger på master:
 
 ```bash
 git checkout master && git pull
-git tag v0.4.0 && git push origin v0.4.0
+bun run tag pakke
 ```
+
+`bun run tag` uten argumenter viser versjonene på commiten og hvilke som er tagget. Med `pakke`, `utvidelse` eller `intellij` (gjerne flere) setter det taggene og dytter dem opp. Det nekter når du ikke står på master slik den er på GitHub, når arbeidstreet har endringer, når taggen finnes fra før, og når versjonen mangler i versjonsloggen. `--prøv` viser hva som ville skjedd.
 
 **Tagg med én gang grenen er slått sammen.** Dokumentasjonen rulles ut av
 Netlify i det master endrer seg, og oppskriftene der peker på
@@ -151,7 +153,7 @@ Utvidelsen har sitt eget versjonsnummer i `editor/package.json` og sin egen
 logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:
 
 ```bash
-git tag utvidelse-v0.1.0 && git push origin utvidelse-v0.1.0
+bun run tag utvidelse
 ```
 
 Taggen starter `.github/workflows/publiser-utvidelse.yml`. Marketplace har
