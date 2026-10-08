@@ -196,7 +196,7 @@ Slik gir du den ut:
 Når grenen er slått sammen, og først da:
 
   git checkout master && git pull
-  git tag v${nyVersjon} && git push origin v${nyVersjon}`)
+  bun run tag pakke`)
 
 /** Sammenligner to versjoner på formen 0.3.0, tall for tall. */
 function erHoyere(ny: string, gammel: string): boolean {
