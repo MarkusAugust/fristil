@@ -3,7 +3,9 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
-## Ikke utgitt
+## 0.8.0
+
+I takt med pakkens 0.32.0.
 
 - Nytt ikon: det nye Fristil-merket, en F i to lag.
 - Feilmeldingene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`,

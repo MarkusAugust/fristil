@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.32.0 (2026-10-08)
+
 ### Brytende
 
 - **Sjekken er Rust-kjernen.** `diagnoseMarkup` og `diagnosePage` i

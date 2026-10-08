@@ -2,7 +2,7 @@
   "name": "fristil-vscode",
   "displayName": "Fristil",
   "description": "Fullføring, forklaringer, snippets, feilmeldinger og hurtigrettelser for Fristil-designsystemet: <fs-*>-elementene, fs-klassene og variantene deres.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "publisher": "Fristil",
   "license": "MIT",
   "icon": "ikon.png",
