@@ -70,6 +70,28 @@ fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabula
     }
 }
 
+/// Stien uten `.` og `..`, så to stier til samme fil er like. Uten dette
+/// ble `a/../b/y.css` og `a/../b/../b/y.css` to filer, og to stilark som
+/// importerer hverandre gjennom `../`, ga en løkke uten ende.
+fn normalized(path: &std::path::Path) -> std::path::PathBuf {
+    use std::path::Component;
+    let mut out = std::path::PathBuf::new();
+    for part in path.components() {
+        match part {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if matches!(out.components().next_back(), Some(Component::Normal(_))) {
+                    out.pop();
+                } else {
+                    out.push("..");
+                }
+            }
+            other => out.push(other.as_os_str()),
+        }
+    }
+    out
+}
+
 /// Stilarkene, med det de importerer.
 ///
 /// `@import` følges til en fil ved siden av, og til en pakke i
@@ -80,7 +102,7 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
     let mut seen: Vec<std::path::PathBuf> = Vec::new();
     let mut queue: Vec<(std::path::PathBuf, bool)> = paths
         .iter()
-        .map(|p| (std::path::PathBuf::from(p), true))
+        .map(|p| (normalized(std::path::Path::new(p)), true))
         .collect();
     while let Some((path, given)) = queue.pop() {
         if seen.contains(&path) {
@@ -102,12 +124,12 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
             if import.contains("://") || import.starts_with("data:") {
                 continue;
             }
-            let beside = folder.join(import);
+            let beside = normalized(&folder.join(import));
             queue.push((
                 if beside.exists() {
                     beside
                 } else {
-                    std::path::Path::new("node_modules").join(import)
+                    normalized(&std::path::Path::new("node_modules").join(import))
                 },
                 false,
             ));
@@ -238,4 +260,39 @@ pub fn run(arguments: &[String]) {
         fail(&format!("\n{found} funn i {files}."));
     }
     log(&format!("Markupen stemmer med Fristil i {files}."));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalizes_paths() {
+        assert_eq!(
+            normalized(std::path::Path::new("a/../b/./y.css")),
+            std::path::PathBuf::from("b/y.css")
+        );
+        assert_eq!(
+            normalized(std::path::Path::new("../a/x.css")),
+            std::path::PathBuf::from("../a/x.css")
+        );
+        assert_eq!(
+            normalized(std::path::Path::new("/r/a/../b")),
+            std::path::PathBuf::from("/r/b")
+        );
+    }
+
+    #[test]
+    fn style_sheets_that_import_each_other_are_read_once() {
+        let root = std::env::temp_dir().join(format!("fristil-import-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("a")).unwrap();
+        std::fs::create_dir_all(root.join("b")).unwrap();
+        std::fs::write(root.join("a/x.css"), "@import \"../b/y.css\";\n.fs-a { }").unwrap();
+        std::fs::write(root.join("b/y.css"), "@import \"../a/x.css\";\n.fs-b { }").unwrap();
+        let start = root.join("a/x.css");
+        let styles = read_style_sheets(&[start.to_str().unwrap()]);
+        assert!(styles.classes.contains("fs-a") && styles.classes.contains("fs-b"));
+        assert_eq!(styles.imports.len(), 2, "hvert stilark leses én gang");
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

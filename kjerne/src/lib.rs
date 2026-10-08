@@ -51,35 +51,38 @@ pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let mut findings = diagnose::diagnose(&page, vocabulary);
     findings.extend(references::check_references(&page));
     findings.sort_by_key(|f| f.start);
-    suppress::apply(html, findings)
+    suppress::apply(&references::page_source_with_comments(html), findings)
 }
 
 /// Sjekken med stilarkene i tillegg: det `diagnose_markup`, eller
 /// `diagnose_page` når `page` er sann, finner, og det stilarkene ikke styler.
+///
+/// En hel side leses som `diagnose_page` leser den: det som står i en
+/// `<template>`, en `<textarea>` eller en attributtverdi, vises ikke, og
+/// sjekkes heller ikke mot stilarkene. Siden leses én gang for begge.
 pub fn diagnose_styled(
     html: &[u16],
     vocabulary: &Vocabulary,
     styles: &styles::Styles,
     page: bool,
 ) -> Vec<Finding> {
-    let mut findings = if page {
-        diagnose_page(html, vocabulary)
-    } else {
-        diagnose_markup(html, vocabulary)
-    };
-    // En hel side leses som `diagnose_page` leser den: det som står i en
-    // `<template>`, en `<textarea>` eller en attributtverdi, vises ikke.
     let source: Utf16 = if page {
         references::page_source(html)
     } else {
         html.to_vec()
     };
-    findings.extend(suppress::apply(
-        html,
-        diagnose::check_styles(&source, vocabulary, styles),
-    ));
+    let visible = diagnose::without_hidden(&source);
+    let mut findings = diagnose::check_styles_visible(&visible, vocabulary, styles);
+    findings.extend(diagnose::diagnose_visible(visible, vocabulary));
+    if page {
+        findings.extend(references::check_references(&source));
+    }
     findings.sort_by_key(|f| f.start);
-    findings
+    if page {
+        suppress::apply(&references::page_source_with_comments(html), findings)
+    } else {
+        suppress::apply(html, findings)
+    }
 }
 
 /// Hvor hver linje begynner, så linje og kolonne for et funn er et oppslag.
@@ -514,6 +517,23 @@ mod tests {
         let findings = check(r#"<button class="fs-buton">Send</button>"#);
         assert_eq!(findings[0].rule, "ukjent-klasse");
         assert!(findings.iter().all(|f| types::RULES.contains(&f.rule)));
+    }
+
+    #[test]
+    fn a_comment_that_is_text_suppresses_nothing_on_a_page() {
+        let found = |html: &str| diagnose_page(&utf16(html), &manifest::builtin());
+        // Kommentaren står i en textarea og er tekst, så funnet på feltet
+        // etter står.
+        let in_textarea =
+            found(r#"<textarea><!-- fristil-ignore-next --></textarea><input class="fs-inptu">"#);
+        let rules: Vec<&str> = in_textarea.iter().map(|f| f.rule).collect();
+        assert_eq!(
+            rules,
+            ["kontroll-uten-ledetekst", "ukjent-klasse"],
+            "{rules:?}"
+        );
+        // En ekte kommentar undertrykker som før.
+        assert!(found(r#"<!-- fristil-ignore-next --><input class="fs-inptu">"#).is_empty());
     }
 
     #[test]

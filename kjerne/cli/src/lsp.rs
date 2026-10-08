@@ -61,6 +61,15 @@ pub struct Server {
     shut_down: bool,
     /// Meldinger til editoren som venter på å bli sendt.
     outgoing: Vec<Json>,
+    /// Manifestet er lest på nytt, og alle åpne dokumenter skal sjekkes.
+    reloaded: bool,
+    /// Endringer sjekkes først når det ikke ligger flere meldinger i kø, se
+    /// [`Server::flush`]. Av i testene, der hver melding sjekkes med en gang.
+    deferred: bool,
+    /// Dokumentene som er endret og ikke sjekket ennå.
+    dirty: Vec<String>,
+    /// Om editoren lar serveren melde inn filovervåkere selv.
+    can_watch: bool,
 }
 
 fn object(entries: Vec<(&str, Json)>) -> Json {
@@ -108,7 +117,12 @@ fn percent_decode(s: &str) -> String {
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;
     while i < bytes.len() {
-        if bytes[i] == b'%' && i + 2 < bytes.len() {
+        // `%` og to heksadesimale sifre. `from_str_radix` godtar et `+`
+        // foran, og `%+f` er ikke en kodet byte.
+        if bytes[i] == b'%'
+            && i + 2 < bytes.len()
+            && bytes[i + 1..i + 3].iter().all(u8::is_ascii_hexdigit)
+        {
             if let Ok(byte) =
                 u8::from_str_radix(std::str::from_utf8(&bytes[i + 1..i + 3]).unwrap_or(""), 16)
             {
@@ -179,6 +193,10 @@ impl Server {
             source: None,
             shut_down: false,
             outgoing: Vec::new(),
+            reloaded: false,
+            deferred: false,
+            dirty: Vec::new(),
+            can_watch: false,
         }
     }
 
@@ -219,6 +237,8 @@ impl Server {
                 return Rc::clone(&source.vocabulary);
             }
         }
+        // Et manifest som er byttet eller endret, gjelder alle åpne dokumenter.
+        self.reloaded = self.source.is_some();
         let vocabulary = match &path {
             None => manifest::builtin(),
             Some(file) => match std::fs::read(file)
@@ -281,10 +301,52 @@ impl Server {
                 self.documents.len() - 1
             }
         };
-        self.check(index);
+        if self.deferred {
+            if !self.dirty.iter().any(|u| u == uri) {
+                self.dirty.push(uri.to_string());
+            }
+        } else {
+            self.check(index);
+            self.after_reload();
+        }
+    }
+
+    /// Sjekker alle åpne dokumenter.
+    fn check_all(&mut self) {
+        for index in 0..self.documents.len() {
+            self.check(index);
+        }
+        self.reloaded = false;
+    }
+
+    /// Ble manifestet lest på nytt, er funnene i de andre dokumentene gamle.
+    fn after_reload(&mut self) {
+        if self.reloaded {
+            self.check_all();
+        }
+    }
+
+    /// Sjekker dokumentene som er endret siden sist. Kjøres når det ikke
+    /// ligger flere meldinger i kø, så tastetrykk som kom tett, sjekkes som
+    /// én endring, med den nyeste teksten.
+    pub fn flush(&mut self) {
+        for uri in std::mem::take(&mut self.dirty) {
+            if let Some(index) = self.documents.iter().position(|d| d.uri == uri) {
+                self.check(index);
+            }
+        }
+        self.after_reload();
     }
 
     fn initialize(&mut self, params: &Json) -> Json {
+        self.can_watch = matches!(
+            params
+                .get("capabilities")
+                .and_then(|c| c.get("workspace"))
+                .and_then(|w| w.get("didChangeWatchedFiles"))
+                .and_then(|d| d.get("dynamicRegistration")),
+            Some(Json::Bool(true))
+        );
         if let Some(folders) = params.get("workspaceFolders").and_then(Json::as_array) {
             self.roots = folders
                 .iter()
@@ -323,7 +385,12 @@ impl Server {
                     ("positionEncoding", text("utf-16")),
                     (
                         "textDocumentSync",
-                        object(vec![("openClose", Json::Bool(true)), ("change", number(1))]),
+                        object(vec![
+                            ("openClose", Json::Bool(true)),
+                            ("change", number(1)),
+                            // Et bygg kan ha skrevet et nytt manifest.
+                            ("save", object(vec![("includeText", Json::Bool(false))])),
+                        ]),
                     ),
                     (
                         "codeActionProvider",
@@ -417,6 +484,45 @@ impl Server {
                 Some(Json::Null)
             }
             "exit" => return Some(if self.shut_down { 0 } else { 1 }),
+            "initialized" => {
+                // Editoren overvåker manifestene og sier fra når de endres,
+                // også i Neovim og Helix, der ingen utvidelse gjør det.
+                if self.can_watch {
+                    self.outgoing.push(object(vec![
+                        ("jsonrpc", text("2.0")),
+                        ("id", text("fristil-manifest")),
+                        ("method", text("client/registerCapability")),
+                        (
+                            "params",
+                            object(vec![(
+                                "registrations",
+                                Json::Array(vec![object(vec![
+                                    ("id", text("fristil-manifest")),
+                                    ("method", text("workspace/didChangeWatchedFiles")),
+                                    (
+                                        "registerOptions",
+                                        object(vec![(
+                                            "watchers",
+                                            Json::Array(
+                                                CANDIDATES
+                                                    .iter()
+                                                    .map(|c| {
+                                                        object(vec![(
+                                                            "globPattern",
+                                                            text(&format!("**/{c}")),
+                                                        )])
+                                                    })
+                                                    .collect(),
+                                            ),
+                                        )]),
+                                    ),
+                                ])]),
+                            )]),
+                        ),
+                    ]));
+                }
+                None
+            }
             "textDocument/didOpen" => {
                 let content = params
                     .get("textDocument")
@@ -443,6 +549,7 @@ impl Server {
             }
             "textDocument/didClose" => {
                 self.documents.retain(|d| d.uri != document_uri);
+                self.dirty.retain(|u| *u != document_uri);
                 self.notify(
                     "textDocument/publishDiagnostics",
                     object(vec![
@@ -454,12 +561,15 @@ impl Server {
             }
             // Et nytt bygg eller en oppgradering kan ha endret manifestet.
             "textDocument/didSave" | "workspace/didChangeWatchedFiles" => {
-                for index in 0..self.documents.len() {
-                    self.check(index);
-                }
+                self.flush();
+                self.check_all();
                 None
             }
-            "textDocument/codeAction" => Some(self.code_actions(&params)),
+            // Rettelsene skal gjelde den nyeste teksten.
+            "textDocument/codeAction" => {
+                self.flush();
+                Some(self.code_actions(&params))
+            }
             _ => None,
         };
 
@@ -513,13 +623,23 @@ fn read_exact(input: &mut impl Read, buffer: &mut [u8]) -> bool {
     true
 }
 
+/// Det som ble lest fra editoren.
+#[derive(Debug, PartialEq)]
+enum Incoming {
+    Message(Vec<u8>),
+    /// Hodene hadde ingen `Content-Length` som kunne leses.
+    BadHeader,
+    /// Editoren lukket røret.
+    Closed,
+}
+
 /// Én melding: hodene til en tom linje, og så `Content-Length` byte JSON.
-fn read_message(input: &mut impl Read) -> Option<Vec<u8>> {
+fn read_message(input: &mut impl Read) -> Incoming {
     let mut header = Vec::new();
     let mut byte = [0u8];
     while !header.ends_with(b"\r\n\r\n") {
         if !read_exact(input, &mut byte) {
-            return None;
+            return Incoming::Closed;
         }
         header.push(byte[0]);
     }
@@ -529,9 +649,16 @@ fn read_message(input: &mut impl Read) -> Option<Vec<u8>> {
         name.trim()
             .eq_ignore_ascii_case("content-length")
             .then(|| value.trim().parse::<usize>().ok())?
-    })?;
+    });
+    let Some(length) = length else {
+        return Incoming::BadHeader;
+    };
     let mut body = vec![0u8; length];
-    read_exact(input, &mut body).then_some(body)
+    if read_exact(input, &mut body) {
+        Incoming::Message(body)
+    } else {
+        Incoming::Closed
+    }
 }
 
 fn write_message(output: &mut impl Write, message: &Json) {
@@ -540,36 +667,50 @@ fn write_message(output: &mut impl Write, message: &Json) {
     let _ = output.flush();
 }
 
+/// Svaret på en melding som ikke kunne leses.
+fn parse_error(reason: &str) -> Json {
+    object(vec![
+        ("jsonrpc", text("2.0")),
+        ("id", Json::Null),
+        (
+            "error",
+            object(vec![
+                ("code", Json::Number(-32700.0)),
+                ("message", text(reason)),
+            ]),
+        ),
+    ])
+}
+
 pub fn run(_arguments: &[String]) {
     let mut server = Server::new();
+    server.deferred = true;
     let stdin = std::io::stdin();
-    let mut input = stdin.lock();
+    // Egen buffer, så serveren kan se om det ligger flere meldinger i kø.
+    let mut input = std::io::BufReader::with_capacity(1 << 16, stdin.lock());
     let stdout = std::io::stdout();
     loop {
-        let Some(body) = read_message(&mut input) else {
+        let code = match read_message(&mut input) {
             // Editoren lukket røret uten `exit`.
-            std::process::exit(1);
-        };
-        let code = match parse(&String::from_utf8_lossy(&body)) {
-            Ok(message) => server.handle(&message),
-            Err(reason) => {
-                write_message(
-                    &mut stdout.lock(),
-                    &object(vec![
-                        ("jsonrpc", text("2.0")),
-                        ("id", Json::Null),
-                        (
-                            "error",
-                            object(vec![
-                                ("code", Json::Number(-32700.0)),
-                                ("message", text(&reason)),
-                            ]),
-                        ),
-                    ]),
-                );
+            Incoming::Closed => std::process::exit(1),
+            // Én ødelagt melding skal ikke ta ned serveren.
+            Incoming::BadHeader => {
+                server.outgoing.push(parse_error(
+                    "Meldingen hadde ingen Content-Length som kunne leses.",
+                ));
                 None
             }
+            Incoming::Message(body) => match parse(&String::from_utf8_lossy(&body)) {
+                Ok(message) => server.handle(&message),
+                Err(reason) => {
+                    server.outgoing.push(parse_error(&reason));
+                    None
+                }
+            },
         };
+        if input.buffer().is_empty() {
+            server.flush();
+        }
         let mut out = stdout.lock();
         for message in server.take() {
             write_message(&mut out, &message);
@@ -729,14 +870,22 @@ mod tests {
             assert_eq!(windows, "C:/prosjekt");
         }
         assert_eq!(path_of("untitled:Untitled-1"), None);
+        assert_eq!(path_of("file:///a%+fb"), Some("/a%+fb".into()));
     }
 
     #[test]
     fn frames_messages_with_content_length() {
         let mut input: &[u8] = b"Content-Length: 2\r\n\r\n{}Content-Length: 4\r\n\r\nnull";
-        assert_eq!(read_message(&mut input).unwrap(), b"{}");
-        assert_eq!(read_message(&mut input).unwrap(), b"null");
-        assert!(read_message(&mut input).is_none());
+        assert_eq!(read_message(&mut input), Incoming::Message(b"{}".to_vec()));
+        assert_eq!(
+            read_message(&mut input),
+            Incoming::Message(b"null".to_vec())
+        );
+        assert_eq!(read_message(&mut input), Incoming::Closed);
+        // Et hode uten lengde er en ødelagt melding, ikke et lukket rør.
+        let mut broken: &[u8] = b"Content-Type: x\r\n\r\nContent-Length: 2\r\n\r\n{}";
+        assert_eq!(read_message(&mut broken), Incoming::BadHeader);
+        assert_eq!(read_message(&mut broken), Incoming::Message(b"{}".to_vec()));
     }
 
     #[test]
@@ -781,6 +930,84 @@ mod tests {
                 .len(),
             1
         );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn deferred_changes_are_checked_once_with_the_newest_text() {
+        let mut server = started();
+        server.deferred = true;
+        for (version, text) in [(1, "fs-buton"), (2, "fs-butto"), (3, "fs-button")] {
+            server.handle(&notification(
+                if version == 1 { "textDocument/didOpen" } else { "textDocument/didChange" },
+                &format!(
+                    r#"{{"textDocument":{{"uri":"file:///a.html","version":{version},"text":"<b class=\"{text}\"></b>"}},"contentChanges":[{{"text":"<b class=\"{text}\"></b>"}}]}}"#
+                ),
+            ));
+        }
+        assert!(
+            server.take().is_empty(),
+            "ingenting sjekkes mens det ligger meldinger i kø"
+        );
+        server.flush();
+        let sent = server.take();
+        assert_eq!(sent.len(), 1, "tre endringer gir én sjekk");
+        assert!(sent[0]
+            .get("params")
+            .unwrap()
+            .get("diagnostics")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .is_empty());
+    }
+
+    #[test]
+    fn registers_watchers_and_rechecks_every_document_when_the_manifest_changes() {
+        let root = std::env::temp_dir().join(format!("fristil-lsp-alle-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("build/fristil")).unwrap();
+        let mut server = Server::new();
+        server.handle(&request(
+            1,
+            "initialize",
+            &format!(
+                r#"{{"rootUri":"file://{}","capabilities":{{"workspace":{{"didChangeWatchedFiles":{{"dynamicRegistration":true}}}}}}}}"#,
+                root.display()
+            ),
+        ));
+        server.take();
+        server.handle(&notification("initialized", "{}"));
+        let registration = &server.take()[0];
+        assert_eq!(
+            registration.get("method").unwrap().as_str(),
+            Some("client/registerCapability")
+        );
+
+        for uri in ["file:///a.html", "file:///b.html"] {
+            server.handle(&notification(
+                "textDocument/didOpen",
+                &format!(r#"{{"textDocument":{{"uri":"{uri}","version":1,"text":"<b class=\"app-button\"></b>"}}}}"#),
+            ));
+        }
+        server.take();
+        let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
+        std::fs::write(
+            root.join("build/fristil/manifest.json"),
+            manifest::merged(&[fragment]).unwrap().to_pretty(),
+        )
+        .unwrap();
+        server.handle(&notification(
+            "workspace/didChangeWatchedFiles",
+            r#"{"changes":[]}"#,
+        ));
+        let published = server
+            .take()
+            .iter()
+            .filter(|m| {
+                m.get("method").and_then(Json::as_str) == Some("textDocument/publishDiagnostics")
+            })
+            .count();
+        assert_eq!(published, 2, "begge dokumentene sjekkes på nytt");
         std::fs::remove_dir_all(root).unwrap();
     }
 }

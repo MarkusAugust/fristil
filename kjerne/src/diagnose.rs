@@ -1048,7 +1048,11 @@ fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
 
 /// Alle funn i teksten, i den rekkefølgen de står.
 pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    let source = without_hidden(text);
+    diagnose_visible(without_hidden(text), vocabulary)
+}
+
+/// Som [`diagnose`], på tekst som alt er lest med [`without_hidden`].
+pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
     let mut cache = Cache::new();
@@ -1160,19 +1164,27 @@ pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
 /// overtatt komponent, uten at CSS-en fikk den: markupen er gyldig, men ser
 /// ut som standard.
 pub fn check_styles(text: &[u16], vocabulary: &Vocabulary, styles: &Styles) -> Vec<Finding> {
-    let source = without_hidden(text);
+    check_styles_visible(&without_hidden(text), vocabulary, styles)
+}
+
+/// Som [`check_styles`], på tekst som alt er lest med [`without_hidden`].
+pub fn check_styles_visible(
+    source: &[u16],
+    vocabulary: &Vocabulary,
+    styles: &Styles,
+) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut i = 0;
     while i < source.len() {
-        let Some(name_end) = tag_name_end(&source, i) else {
+        let Some(name_end) = tag_name_end(source, i) else {
             i += 1;
             continue;
         };
         i = name_end;
-        let Some(end) = tag_end(&source, name_end) else {
+        let Some(end) = tag_end(source, name_end) else {
             continue;
         };
-        let b = tag_body(&source, name_end, end);
+        let b = tag_body(source, name_end, end);
         if !has_class_attribute(b) {
             continue;
         }

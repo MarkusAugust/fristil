@@ -106,26 +106,63 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
     let mut subjects = Vec::new();
     // Variantene av den sammensatte selektoren som leses nå.
     let mut current = vec![Compound::default()];
+    // Om den har en klasse eller et attributt, og om den har noe i det hele
+    // tatt: `*` og `div` er sammensatte selektorer uten noe å vitne om.
     let mut touched = false;
-    let finish = |current: &mut Vec<Compound>, touched: &mut bool, out: &mut Styles| {
-        if *touched {
-            record(current, out);
+    let mut started = false;
+    // Den forrige sammensatte selektoren, avsluttet av et mellomrom eller en
+    // kombinator. Kommer det ingen etter den, er det den som styles:
+    // `:is(.a, .b )` og `.a , .b` har et mellomrom før skilletegnet.
+    let mut last: Option<Vec<Compound>> = None;
+    let finish = |current: &mut Vec<Compound>,
+                  touched: &mut bool,
+                  started: &mut bool,
+                  last: &mut Option<Vec<Compound>>,
+                  out: &mut Styles| {
+        if *started {
+            if *touched {
+                record(current, out);
+                *last = Some(std::mem::take(current));
+            } else {
+                *last = None;
+            }
         }
         *current = vec![Compound::default()];
         *touched = false;
+        *started = false;
     };
+    // Den som styles i selektoren som slutter her.
+    let subject =
+        |current: Vec<Compound>, touched: bool, started: bool, last: Option<Vec<Compound>>| {
+            if started {
+                touched.then_some(current)
+            } else {
+                last
+            }
+        };
     while let Ok(token) = input.next_including_whitespace() {
-        match token.clone() {
+        let token = token.clone();
+        if !matches!(
+            token,
+            Token::WhiteSpace(_) | Token::Comma | Token::Delim('>' | '+' | '~')
+        ) {
+            started = true;
+        }
+        match token {
             Token::Comma => {
                 if touched {
                     record(&current, out);
-                    subjects.extend(current);
                 }
+                subjects.extend(
+                    subject(std::mem::take(&mut current), touched, started, last.take())
+                        .unwrap_or_default(),
+                );
                 current = vec![Compound::default()];
                 touched = false;
+                started = false;
             }
             Token::WhiteSpace(_) | Token::Delim('>') | Token::Delim('+') | Token::Delim('~') => {
-                finish(&mut current, &mut touched, out);
+                finish(&mut current, &mut touched, &mut started, &mut last, out);
             }
             Token::Delim('.') => {
                 if let Ok(Token::Ident(name)) = input.next_including_whitespace().cloned() {
@@ -210,8 +247,8 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
     }
     if touched {
         record(&current, out);
-        subjects.extend(current);
     }
+    subjects.extend(subject(current, touched, started, last).unwrap_or_default());
     subjects
 }
 
@@ -409,6 +446,23 @@ mod tests {
         assert!(!s.classes.contains("fs-url"));
         assert!(s.classes.contains("fs-input") && s.classes.contains("fs-field"));
         assert!(s.classes.contains("fs-x") && s.classes.contains("fs-y"));
+    }
+
+    #[test]
+    fn a_space_before_a_comma_or_a_parenthesis_keeps_the_selector() {
+        let s = read_styles(
+            r#":is(.fs-tag, .fs-badge )[data-size="small"] { }
+            .fs-alert , .fs-card { &[data-color="danger"] { } }
+            .fs-list > * { &[data-x="y"] { } }
+            .fs-table   { &[data-size="small"] { } }"#,
+        );
+        assert!(s.styles_value("fs-badge", "data-size", Some("small")));
+        assert!(s.styles_value("fs-tag", "data-size", Some("small")));
+        assert!(s.styles_value("fs-alert", "data-color", Some("danger")));
+        assert!(s.styles_value("fs-card", "data-color", Some("danger")));
+        assert!(s.styles_value("fs-table", "data-size", Some("small")));
+        // `*` er det som styles, ikke `.fs-list`.
+        assert!(!s.styles_value("fs-list", "data-x", Some("y")));
     }
 
     #[test]

@@ -232,6 +232,9 @@ impl Parser<'_> {
         let digits = self
             .bytes
             .get(self.at..self.at + 4)
+            // Fire heksadesimale sifre, ikke mer: `from_str_radix` godtar et
+            // `+` foran, og `\u+041` er ikke gyldig JSON.
+            .filter(|b| b.iter().all(u8::is_ascii_hexdigit))
             .and_then(|b| std::str::from_utf8(b).ok())
             .and_then(|s| u32::from_str_radix(s, 16).ok())
             .ok_or_else(|| self.error("ugyldig \\u-sekvens"))?;
@@ -271,15 +274,22 @@ impl Parser<'_> {
                         b't' => out.push('\t'),
                         b'u' => {
                             let first = self.hex4()?;
-                            let code = if (0xD800..0xDC00).contains(&first)
+                            let mut code = first;
+                            if (0xD800..0xDC00).contains(&first)
                                 && self.bytes[self.at..].starts_with(b"\\u")
                             {
+                                let back = self.at;
                                 self.at += 2;
                                 let second = self.hex4()?;
-                                0x10000 + ((first - 0xD800) << 10) + (second - 0xDC00)
-                            } else {
-                                first
-                            };
+                                if (0xDC00..0xE000).contains(&second) {
+                                    code = 0x10000 + ((first - 0xD800) << 10) + (second - 0xDC00);
+                                } else {
+                                    // Ikke et par: den andre leses for seg.
+                                    self.at = back;
+                                }
+                            }
+                            // En surrogat alene blir U+FFFD, som også er én
+                            // UTF-16-enhet, så posisjonene etter står.
                             out.push(char::from_u32(code).unwrap_or('\u{fffd}'));
                         }
                         _ => return Err(self.error("ukjent escape")),
@@ -346,5 +356,23 @@ mod tests {
             v.to_compact(),
             r#"{"a":[1,2.5,"x\"y"],"b":{},"c":[],"d":{"e":null,"f":true}}"#
         );
+    }
+
+    #[test]
+    fn reads_lone_surrogates_without_changing_the_length() {
+        let utf16_len = |v: Json| v.as_str().unwrap().encode_utf16().count();
+        // To høye etter hverandre, en høy foran et linjeskift, og en lav alene:
+        // hver blir U+FFFD, og lengden i UTF-16 er den samme som i originalen.
+        assert_eq!(utf16_len(parse(r#""\uD800\uD800""#).unwrap()), 2);
+        assert_eq!(utf16_len(parse(r#""\uD800\n""#).unwrap()), 2);
+        assert_eq!(utf16_len(parse(r#""\uDC00x""#).unwrap()), 2);
+        assert_eq!(parse(r#""\uD83E\uDDFE""#).unwrap().as_str(), Some("🧾"));
+    }
+
+    #[test]
+    fn refuses_escapes_that_are_not_four_hex_digits() {
+        assert!(parse(r#""\u+041""#).is_err());
+        assert!(parse(r#""\u004""#).is_err());
+        assert_eq!(parse(r#""\u0041""#).unwrap().as_str(), Some("A"));
     }
 }

@@ -269,6 +269,20 @@ fn tag_at(t: &[u16], i: usize) -> Option<(bool, usize, usize)> {
 
 /// Siden slik den leses som en hel side, med samme lengde.
 pub fn page_source(text: &[u16]) -> Utf16 {
+    hidden(text, true)
+}
+
+/// Som [`page_source`], men med kommentarene urørt. Det er den
+/// `<!-- fristil-ignore-next -->` leses fra på en hel side: en kommentar i en
+/// `<textarea>`, en `<template>` eller en attributtverdi er tekst, og
+/// undertrykker ingenting.
+pub fn page_source_with_comments(text: &[u16]) -> Utf16 {
+    hidden(text, false)
+}
+
+/// Teksten med det som ikke er en del av siden blanket ut, og kommentarene
+/// også når `comments` er sann.
+fn hidden(text: &[u16], comments: bool) -> Utf16 {
     let mut ranges: Vec<(usize, usize)> = Vec::new();
     let mut i = 0;
     while i < text.len() {
@@ -277,7 +291,9 @@ pub fn page_source(text: &[u16]) -> Utf16 {
         };
         if starts_at(text, lt, "<!--") {
             let end = find_at(text, lt + 4, "-->").map_or(text.len(), |c| c + 3);
-            ranges.push((lt, end));
+            if comments {
+                ranges.push((lt, end));
+            }
             i = end;
             continue;
         }

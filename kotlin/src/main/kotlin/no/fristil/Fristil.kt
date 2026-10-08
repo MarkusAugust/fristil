@@ -90,7 +90,7 @@ async () => {
 
     private fun diagnoseStyled(html: String, css: List<String>, page: Boolean): List<Finding> {
         val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
-        val (status, answer) = core.get().callWithStatus(STYLED, input)
+        val (status, answer) = withCore { it.callWithStatus(STYLED, input) }
         // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
         if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
@@ -98,13 +98,33 @@ async () => {
 
     /*
      * En instans har sitt eget minne, og svaret fra et kall ligger der til
-     * neste kall. To tråder kan derfor ikke dele en, men hver tråd kan ha sin
-     * egen, så kallene ikke venter på hverandre.
+     * neste kall. To tråder kan derfor ikke bruke den samme samtidig. Hvert
+     * kall låner en instans og leverer den tilbake, så kallene ikke venter på
+     * hverandre.
+     *
+     * Med én instans per tråd fikk hver tråd i en stor pool, som de IntelliJ
+     * kjører sjekken på, sin egen, og ingen ble frigjort. Her beholdes aldri
+     * flere ledige enn maskinen har kjerner, og en ny koster nesten ingenting,
+     * siden modulen er kompilert til bytekode.
      */
-    private val core = ThreadLocal.withInitial { Core() }
+    private val idle = java.util.concurrent.ConcurrentLinkedQueue<Core>()
+    private val idleCount = java.util.concurrent.atomic.AtomicInteger()
+    private val maxIdle = Runtime.getRuntime().availableProcessors()
+
+    internal fun <T> withCore(block: (Core) -> T): T {
+        val core = idle.poll()?.also { idleCount.decrementAndGet() } ?: Core()
+        try {
+            return block(core)
+        } finally {
+            if (idleCount.incrementAndGet() <= maxIdle) idle.offer(core) else idleCount.decrementAndGet()
+        }
+    }
+
+    /** Hvor mange ledige instanser som er beholdt. For testene. */
+    internal fun idleCores(): Int = idleCount.get()
 
     private fun diagnose(entry: String, html: String): List<Finding> =
-        (Json.parse(core.get().call(entry, html)) as List<*>).map { finding(it as Map<*, *>) }
+        (Json.parse(withCore { it.call(entry, html) }) as List<*>).map { finding(it as Map<*, *>) }
 
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
@@ -133,7 +153,7 @@ async () => {
 }
 
 /** Én instans av modulen, med funksjonene den eksporterer. */
-private class Core {
+internal class Core {
     /*
      * `FristilCore` er modulen kompilert til JVM-bytekode da pakken ble bygget
      * (se `buildSrc/`). Den kjører med JIT-en, ikke i Chicorys tolk, som
