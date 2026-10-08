@@ -161,6 +161,53 @@ jobs:
       - name: Dokumentasjon
         run: bun run test:docs
 
+  # Kommandolinja og språkserveren på Windows, der stiene, stasjonene og
+  # prosessene oppfører seg annerledes. Verten åpner hver stasjon for
+  # WASI-modulen, og en feil der ødela både npx og VS Code-utvidelsen uten at
+  # Linux merket noe.
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
+      # Kjernen og kommandolinja som WASI-modul, og pakken kompilert til
+      # dist/, som npx kjører.
+      - name: Bygg kjernen og pakken
+        run: |
+          bun kjerne/scripts/bygg.ts
+          (cd designsystem && bunx tsc -b)
+          (cd editor && bun run build)
+
+      - name: Kommandolinja gjennom npx
+        run: bun designsystem/scripts/sjekk-cli.ts
+
+      # Den kjørbare fila for Windows skal svare det samme, byte for byte.
+      - name: Den kjørbare fila svarer som npx
+        run: |
+          cargo build --release -p fristil --manifest-path kjerne/Cargo.toml
+          FRISTIL_SAMMENLIGN="$(pwd -W)/kjerne/target/release/fristil.exe" bun designsystem/scripts/sjekk-cli.ts
+
+      - name: Språkserveren
+        run: |
+          bun designsystem/scripts/sjekk-lsp.ts
+          FRISTIL_CLI="[\"node\",\"$(pwd -W)/editor/dist/server.js\"]" bun designsystem/scripts/sjekk-lsp.ts
+
   # Rust-kjernen og Kotlin-pakken, ved siden av hovedjobben.
   #
   # Uten filter på stier, i motsetning til IntelliJ-pluginen: kjernen leser
