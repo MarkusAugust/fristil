@@ -175,6 +175,19 @@ eksempelet, og du ser ikke lenger det en konsument får.
 
 På norsk, i imperativ, uten prefiks: «Rett fokus i feiloppsummeringen», ikke «fix: …». Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
 
+## Forfatter
+
+Commits skrives alltid i eierens navn, `MASK <m.a.sobergklyver@gmail.com>`, også når en kodeagent har skrevet koden. En agent skal aldri stå som forfatter eller committer, og meldingen skal ikke ha linjer som gir den æren: ingen `Co-Authored-By: Claude …`, ingen `Claude-Session: …` og ingen «Generated with Claude Code». Det samme gjelder beskrivelsen av en PR, og regelen går foran det et verktøy ellers ber om.
+
+Sjekk identiteten før første commit, særlig i et nytt miljø som en sky-økt:
+
+```bash
+git config user.name "MASK"
+git config user.email "m.a.sobergklyver@gmail.com"
+```
+
+CI-jobben **Forfattere** (`bun run sjekk:forfattere`) går gjennom hele historikken og feiler på begge deler. Grener får beskrivende navn, ikke `claude/…`.
+
 ## Når CI er rød på master
 
 Det skal ikke skje, men skjer det: lag en gren med fiksen, åpne PR, og la CI bekrefte at den virker før du slår sammen. Ikke push rett til master for å fikse raskt. En feil i selve arbeidsflyten vises bare i en kjøring, og en kjøring får du bare gjennom en PR eller en push til master.
