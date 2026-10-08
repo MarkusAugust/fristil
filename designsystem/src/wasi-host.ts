@@ -15,7 +15,13 @@
  * - sier fra når standard inn er en terminal, som WASI ikke kan se.
  */
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isatty } from "node:tty"
@@ -57,8 +63,12 @@ export async function runCommandLine(
    */
   const preopens: Record<string, string> = {}
   if (windows) {
-    for (const letter of "abcdefghijklmnopqrstuvwxyz")
-      preopens[`/${letter}`] = `${letter.toUpperCase()}:\\`
+    // Bare stasjonene som finnes. En mappe som ikke kan åpnes, stopper
+    // `node:wasi` før modulen starter, og de fleste maskiner har bare C:.
+    for (const letter of "abcdefghijklmnopqrstuvwxyz") {
+      const drive = `${letter.toUpperCase()}:\\`
+      if (existsSync(drive)) preopens[`/${letter}`] = drive
+    }
   } else preopens["/"] = "/"
 
   /*
@@ -69,58 +79,62 @@ export async function runCommandLine(
    * side og om statuskoden er i orden, gjør modulen.
    */
   let fetchedDir: string | undefined
-  const address = /^https?:\/\//i
-  const moduleArgs: string[] = []
-  for (const [index, part] of args.entries()) {
-    if (args[0] !== "sjekk" || index === 0 || !address.test(part)) {
-      moduleArgs.push(toModule(part))
-      continue
-    }
-    fetchedDir ??= mkdtempSync(join(tmpdir(), "fristil-"))
-    let answer: string
-    try {
-      const response = await fetch(part)
-      const type = response.headers.get("content-type") ?? ""
-      answer = `${part}\n${response.status}\n${type}\n${await response.text()}`
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      answer = `${part}\n0\n${reason.replace(/\n/g, " ")}\n`
-    }
-    const file = join(fetchedDir, `${index}.txt`)
-    writeFileSync(file, answer)
-    moduleArgs.push(`--hentet=${forWasi(file)}`)
-  }
-
-  // `node:wasi` er merket eksperimentell, og sier det i konsollen. Det er ikke
-  // noe brukeren av kommandolinja kan gjøre noe med.
   const warn = process.emitWarning
-  process.emitWarning = ((warning: string | Error, ...resten: unknown[]) => {
-    if (String(warning).includes("WASI")) return
-    ;(warn as (...a: unknown[]) => void).call(process, warning, ...resten)
-  }) as typeof process.emitWarning
+  try {
+    const address = /^https?:\/\//i
+    const moduleArgs: string[] = []
+    for (const [index, part] of args.entries()) {
+      if (args[0] !== "sjekk" || index === 0 || !address.test(part)) {
+        moduleArgs.push(toModule(part))
+        continue
+      }
+      fetchedDir ??= mkdtempSync(join(tmpdir(), "fristil-"))
+      let answer: string
+      try {
+        const response = await fetch(part)
+        const type = response.headers.get("content-type") ?? ""
+        answer = `${part}\n${response.status}\n${type}\n${await response.text()}`
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        answer = `${part}\n0\n${reason.replace(/\n/g, " ")}\n`
+      }
+      const file = join(fetchedDir, `${index}.txt`)
+      writeFileSync(file, answer)
+      moduleArgs.push(`--hentet=${forWasi(file)}`)
+    }
 
-  const { WASI } = await import("node:wasi")
-  const wasi = new WASI({
-    version: "preview1",
-    args: ["fristil", ...moduleArgs],
-    env: {
-      FRISTIL_ARBEIDSMAPPE: forWasi(process.cwd()),
-      // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter
-      // et rør i ikke-blokkerende modus, og modulen ga da opp å lese før
-      // skriveren var ferdig, som i `curl … | fristil sjekk`.
-      ...(isatty(0) ? { FRISTIL_TERMINAL: "1" } : {}),
-    },
-    preopens,
-    returnOnExit: true,
-  })
+    // `node:wasi` er merket eksperimentell, og sier det i konsollen. Det er ikke
+    // noe brukeren av kommandolinja kan gjøre noe med.
+    process.emitWarning = ((warning: string | Error, ...resten: unknown[]) => {
+      if (String(warning).includes("WASI")) return
+      ;(warn as (...a: unknown[]) => void).call(process, warning, ...resten)
+    }) as typeof process.emitWarning
 
-  const compiled = await WebAssembly.compile(readFileSync(module))
-  const instance = await WebAssembly.instantiate(
-    compiled,
-    wasi.getImportObject() as WebAssembly.Imports,
-  )
-  const code = wasi.start(instance)
+    const { WASI } = await import("node:wasi")
+    const wasi = new WASI({
+      version: "preview1",
+      args: ["fristil", ...moduleArgs],
+      env: {
+        FRISTIL_ARBEIDSMAPPE: forWasi(process.cwd()),
+        // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter
+        // et rør i ikke-blokkerende modus, og modulen ga da opp å lese før
+        // skriveren var ferdig, som i `curl … | fristil sjekk`.
+        ...(isatty(0) ? { FRISTIL_TERMINAL: "1" } : {}),
+      },
+      preopens,
+      returnOnExit: true,
+    })
 
-  if (fetchedDir) rmSync(fetchedDir, { recursive: true, force: true })
-  return code
+    const compiled = await WebAssembly.compile(readFileSync(module))
+    const instance = await WebAssembly.instantiate(
+      compiled,
+      wasi.getImportObject() as WebAssembly.Imports,
+    )
+    return wasi.start(instance)
+  } finally {
+    // Også når modulen krasjer: de hentede sidene skal ikke bli liggende, og
+    // varslene skal tilbake for resten av prosessen.
+    process.emitWarning = warn
+    if (fetchedDir) rmSync(fetchedDir, { recursive: true, force: true })
+  }
 }

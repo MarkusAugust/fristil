@@ -44,9 +44,17 @@ val byggKommandolinje = tasks.register<Exec>("byggKommandolinje") {
     inputs.dir(kjerne.resolve("cli/src"))
     inputs.file(kjerne.resolve("Cargo.toml"))
     inputs.file(kjerne.resolve("cli/Cargo.toml"))
-    // Manifestet og regelbøkene for agenter er bygget inn i modulen.
+    inputs.file(kjerne.resolve("cli/build.rs"))
+    inputs.file(kjerne.resolve("Cargo.lock"))
+    inputs.file(kjerne.resolve("rust-toolchain.toml"))
+    // Alt som er bygget inn i modulen: manifestet, fargekontrakten,
+    // regelbøkene for agenter, og kildekoden til komponentene og
+    // `package.json` for `fristil overta` (se `build.rs`).
     inputs.file(designsystem.resolve("manifest/manifest.json"))
+    inputs.file(designsystem.resolve("src/tokens/fargekontrakt.json"))
     inputs.dir(designsystem.resolve("agent"))
+    inputs.dir(designsystem.resolve("src/components"))
+    inputs.file(designsystem.resolve("package.json"))
     outputs.file(kommandolinjeWasm)
 }
 

@@ -72,6 +72,10 @@ egen overskrift «Brytende».
   `roleToCss` og `tokenName` er der som før, og `@fristil/designsystem/farge`
   er uendret.
 
+- **Pakken krever Node 20.16 eller nyere** (`engines` i `package.json`), eller
+  Bun eller Deno. Kjernen lastes med `process.getBuiltinModule`, som kom i
+  Node 20.16 og 22.3. En eldre Node får beskjed om at versjonen er for
+  gammel. Node 18 og 20 har ikke lenger støtte fra Node-prosjektet.
 - **`fristil overta` gir kopien nytt navn.** `fs-button` blir `app-button` i
   klassene, taggene, `customElements.define` og selektorene, så kopien er
   din og kan stå ved siden av originalen. Variablene fra temaet, `--fs-*`,

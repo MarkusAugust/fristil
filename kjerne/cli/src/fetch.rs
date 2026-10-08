@@ -117,18 +117,36 @@ fn split(address: &str) -> Result<(String, u16, String), String> {
     };
     let path = path.split('#').next().unwrap_or("/").to_string();
     let authority = authority.rsplit('@').next().unwrap_or(authority);
-    let (host, port) = match authority.rsplit_once(':') {
-        Some((h, p)) if !h.ends_with(']') || authority.starts_with('[') => (
-            h.to_string(),
-            p.parse::<u16>()
-                .map_err(|_| format!("ugyldig port i {address}"))?,
-        ),
-        _ => (authority.to_string(), 80),
+    // En IPv6-adresse står i klammer, med kolon inni: porten er det som står
+    // etter `]`, ikke etter det siste kolonet.
+    let (host, port) = match authority.strip_prefix('[') {
+        Some(inner) => {
+            let close = inner
+                .find(']')
+                .ok_or_else(|| format!("ugyldig vert i {address}"))?;
+            let host = format!("[{}]", &inner[..close]);
+            match &inner[close + 1..] {
+                "" => (host, 80),
+                rest => match rest.strip_prefix(':') {
+                    Some(p) => (host, port_of(p, address)?),
+                    None => return Err(format!("ugyldig vert i {address}")),
+                },
+            }
+        }
+        None => match authority.rsplit_once(':') {
+            Some((h, p)) => (h.to_string(), port_of(p, address)?),
+            None => (authority.to_string(), 80),
+        },
     };
     if host.is_empty() {
         return Err(format!("{address} har ingen vert"));
     }
     Ok((host, port, path))
+}
+
+fn port_of(text: &str, address: &str) -> Result<u16, String> {
+    text.parse::<u16>()
+        .map_err(|_| format!("ugyldig port i {address}"))
 }
 
 fn unavailable(address: &str) -> String {
@@ -213,22 +231,37 @@ fn unchunk(mut data: &[u8]) -> Vec<u8> {
     out
 }
 
-/// En omdirigering kan peke på en sti eller en hel adresse.
+/// En omdirigering kan peke på en hel adresse, en adresse uten protokoll
+/// (`//vert/sti`), en sti fra roten, en spørring eller en sti ved siden av.
 fn resolve(base: &str, location: &str) -> String {
     if is_address(location) {
         return location.to_string();
     }
     let scheme_end = base.find("://").map_or(0, |i| i + 3);
+    if location.starts_with("//") {
+        return format!("{}{location}", &base[..scheme_end - 2]);
+    }
+    // Verten slutter ved den første `/`, `?` eller `#`, og stien ved den
+    // første `?` eller `#`. En `/` i spørringen er ikke en mappe.
     let authority_end = base[scheme_end..]
-        .find('/')
+        .find(['/', '?', '#'])
         .map_or(base.len(), |i| scheme_end + i);
+    let path_end = base[authority_end..]
+        .find(['?', '#'])
+        .map_or(base.len(), |i| authority_end + i);
     if location.starts_with('/') {
         format!("{}{location}", &base[..authority_end])
+    } else if location.starts_with('?') {
+        let path = &base[authority_end..path_end];
+        format!(
+            "{}{}{location}",
+            &base[..authority_end],
+            if path.is_empty() { "/" } else { path }
+        )
     } else {
-        let directory_end = base
+        let directory_end = base[authority_end..path_end]
             .rfind('/')
-            .filter(|&i| i >= authority_end)
-            .map_or(base.len(), |i| i + 1);
+            .map_or(authority_end, |i| authority_end + i + 1);
         let prefix = &base[..directory_end];
         if prefix.ends_with('/') {
             format!("{prefix}{location}")
@@ -284,5 +317,38 @@ mod tests {
             .unwrap_err()
             .contains("ingen innholdstype"));
         assert!(judge("u", 200, "Text/HTML; charset=utf-8", "x".into()).is_ok());
+    }
+
+    #[test]
+    fn reads_ipv6_hosts_with_and_without_port() {
+        assert_eq!(
+            split("http://[::1]/skjema").unwrap(),
+            ("[::1]".into(), 80, "/skjema".into())
+        );
+        assert_eq!(
+            split("http://[::1]:8080/").unwrap(),
+            ("[::1]".into(), 8080, "/".into())
+        );
+        assert!(split("http://[::1]x/").is_err());
+        assert!(split("http://[::1/").is_err());
+        assert!(split("http://localhost:abc/").is_err());
+    }
+
+    #[test]
+    fn resolves_redirects_like_a_browser() {
+        assert_eq!(
+            resolve("http://a.no/x", "//cdn.local/skjema"),
+            "http://cdn.local/skjema"
+        );
+        assert_eq!(resolve("http://a.no/x?r=/y", "z"), "http://a.no/z");
+        assert_eq!(resolve("http://a.no/m/x?r=/y", "z"), "http://a.no/m/z");
+        assert_eq!(resolve("http://a.no/m/x?r=/y", "/z"), "http://a.no/z");
+        assert_eq!(
+            resolve("http://a.no/m/x?r=1", "?r=2"),
+            "http://a.no/m/x?r=2"
+        );
+        assert_eq!(resolve("http://a.no?r=1", "?r=2"), "http://a.no/?r=2");
+        assert_eq!(resolve("http://a.no", "z"), "http://a.no/z");
+        assert_eq!(resolve("http://a.no/m/", "z"), "http://a.no/m/z");
     }
 }

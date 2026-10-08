@@ -52,6 +52,26 @@ exports.run = async () => {
   )
   await diagnosticsFor(document.uri, (d) => d.length === 0)
 
+  // To endringer av språklista rett etter hverandre gir én server, ikke to:
+  // funnet skal komme én gang.
+  const config = vscode.workspace.getConfiguration("fristil")
+  const languages = config.get("languages")
+  await Promise.all([
+    config.update("languages", [...languages, "plaintext"], true),
+    config.update("languages", languages, true),
+  ])
+  const second = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: '<button class="fs-buton">Send</button>\n',
+  })
+  await new Promise((resolve) => setTimeout(resolve, 3000))
+  const once = await diagnosticsFor(second.uri, (d) => d.length > 0)
+  assert.strictEqual(
+    once.filter((d) => d.source === "Fristil").length,
+    1,
+    `funnet kom ${once.length} ganger etter to omstarter`,
+  )
+
   // Fullføringen er fortsatt utvidelsens egen.
   const edit = new vscode.WorkspaceEdit()
   edit.insert(document.uri, new vscode.Position(2, 0), '<b class="fs-')

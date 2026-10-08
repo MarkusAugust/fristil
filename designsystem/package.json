@@ -24,6 +24,9 @@
     "universell-utforming"
   ],
   "type": "module",
+  "engines": {
+    "node": ">=20.16"
+  },
   "web-types": "./web-types.json",
   "sideEffects": [
     "*.css"

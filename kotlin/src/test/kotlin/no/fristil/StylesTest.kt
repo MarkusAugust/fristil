@@ -30,4 +30,11 @@ class StylesTest {
         } }
         assertContains(error.message!!, "ustylet-klasse")
     }
+
+    @Test
+    fun `markup with quotes, newlines and control characters reaches the core unchanged`() {
+        val html = "<p title=\"«\\\"\u0001»\">🧾\n\t</p>\r\n<div class=\"fs-card\">x</div>"
+        val finding = Fristil.diagnosePage(html, css).single { it.rule == "ustylet-klasse" }
+        assertEquals("fs-card", html.substring(finding.start, finding.end))
+    }
 }

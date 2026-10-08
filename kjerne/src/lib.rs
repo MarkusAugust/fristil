@@ -67,9 +67,16 @@ pub fn diagnose_styled(
     } else {
         diagnose_markup(html, vocabulary)
     };
+    // En hel side leses som `diagnose_page` leser den: det som står i en
+    // `<template>`, en `<textarea>` eller en attributtverdi, vises ikke.
+    let source: Utf16 = if page {
+        references::page_source(html)
+    } else {
+        html.to_vec()
+    };
     findings.extend(suppress::apply(
         html,
-        diagnose::check_styles(html, vocabulary, styles),
+        diagnose::check_styles(&source, vocabulary, styles),
     ));
     findings.sort_by_key(|f| f.start);
     findings
@@ -319,25 +326,51 @@ pub unsafe extern "C" fn inspect_styles_raw(ptr: *mut u8, length: usize) {
 }
 
 /// Sjekken med stilarkene: `{"html": "…", "css": ["…"], "page": true}` inn,
-/// funnene ut, som `diagnose_page_raw`.
+/// funnene ut, som `diagnose_page_raw`. Gir 0, eller 1 med `{"error": "…"}`
+/// når inndata ikke har den formen. Et tomt svar skal bety ingen funn, ikke
+/// at ingenting ble sjekket.
 ///
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
-pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) {
-    let input = json::parse(&read_input(ptr, length)).unwrap_or(json::Json::Null);
-    let html = utf16(input.get("html").and_then(json::Json::as_str).unwrap_or(""));
-    let mut styles = styles::Styles::default();
-    for css in input
+pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) -> u32 {
+    match styled_input(&read_input(ptr, length)) {
+        Ok((html, styles, page)) => {
+            let findings = diagnose_styled(&html, &manifest::current(), &styles, page);
+            respond(to_json(&findings, &html));
+            0
+        }
+        Err(error) => {
+            respond(format!("{{\"error\":{}}}", json_string(&error)));
+            1
+        }
+    }
+}
+
+/// Leser inndata til `diagnose_styled_raw`.
+fn styled_input(text: &str) -> Result<(Utf16, styles::Styles, bool), String> {
+    let input = json::parse(text)?;
+    let html = input
+        .get("html")
+        .and_then(json::Json::as_str)
+        .ok_or("Inndata mangler «html» som tekst.")?;
+    let sheets = input
         .get("css")
         .and_then(json::Json::as_array)
-        .unwrap_or(&[])
-    {
-        styles.extend(styles::read_styles(css.as_str().unwrap_or("")));
+        .ok_or("Inndata mangler «css» som en liste med stilark.")?;
+    let mut styles = styles::Styles::default();
+    for (i, css) in sheets.iter().enumerate() {
+        let css = css
+            .as_str()
+            .ok_or_else(|| format!("css[{i}] skal være teksten i et stilark."))?;
+        styles.extend(styles::read_styles(css));
     }
-    let page = matches!(input.get("page"), Some(json::Json::Bool(true)));
-    let findings = diagnose_styled(&html, &manifest::current(), &styles, page);
-    respond(to_json(&findings, &html));
+    let page = match input.get("page") {
+        None | Some(json::Json::Bool(false)) => false,
+        Some(json::Json::Bool(true)) => true,
+        Some(_) => return Err("«page» skal være true eller false.".into()),
+    };
+    Ok((utf16(html), styles, page))
 }
 
 /// Det stilarkene styler, som JSON.
@@ -553,10 +586,34 @@ mod tests {
         assert!(found(r#"<label class="fs-label" data-optional>x</label>"#).is_empty());
         // Klasser utenfor Fristil er ikke sjekkens sak.
         assert!(found(r#"<div class="kort">x</div>"#).is_empty());
+        // Markup som ikke vises på en hel side, sjekkes ikke mot stilarkene.
+        let page = |html: &str| diagnose_styled(&utf16(html), &manifest::builtin(), &styles, true);
+        assert!(page(r#"<template><div class="fs-card"></div></template><textarea><div class="fs-card"></div></textarea><button data-x='<div class="fs-card">'>x</button>"#)
+            .iter()
+            .all(|f| !f.rule.starts_with("ustylet")));
+        assert_eq!(
+            page(r#"<div class="fs-card"></div>"#)[0].rule,
+            "ustylet-klasse"
+        );
         // Og en kommentar undertrykker, som for de andre reglene.
         assert!(found(
             "<!-- fristil-ignore-next ustylet-klasse -->\n<div class=\"fs-card\">x</div>"
         )
         .is_empty());
+    }
+
+    #[test]
+    fn styled_input_says_what_is_wrong() {
+        assert!(styled_input(r#"{"html": "<b></b>", "css": [".fs-x {}"], "page": true}"#).is_ok());
+        assert!(styled_input(r#"{"html": "<b></b>", "css": []}"#).is_ok());
+        for wrong in [
+            "ikke json",
+            r#"{"css": []}"#,
+            r#"{"html": "x"}"#,
+            r#"{"html": "x", "css": [42]}"#,
+            r#"{"html": "x", "css": [], "page": "ja"}"#,
+        ] {
+            assert!(styled_input(wrong).is_err(), "{wrong}");
+        }
     }
 }

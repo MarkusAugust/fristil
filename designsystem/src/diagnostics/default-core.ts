@@ -24,10 +24,16 @@ export function defaultCore(): Core {
   const fs = globalThis.process?.getBuiltinModule?.("node:fs") as
     | typeof import("node:fs")
     | undefined
-  if (!fs)
+  if (!fs) {
+    // `getBuiltinModule` kom i Node 20.16 og 22.3. En eldre Node er Node,
+    // og skal få vite at det er versjonen som er feil.
+    const node = globalThis.process?.versions?.node
     throw new Error(
-      "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv og gi den til loadCore.",
+      node
+        ? `Fristil krever Node 20.16 eller nyere, og dette er Node ${node}.`
+        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv og gi den til loadCore.",
     )
+  }
   let bytes: Uint8Array
   try {
     bytes = fs.readFileSync(MODULE)

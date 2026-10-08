@@ -77,27 +77,38 @@ export function activate(context: vscode.ExtensionContext) {
       .fsPath,
     transport: TransportKind.stdio,
   }
-  const startClient = async () => {
-    await client?.stop()
-    const clientOptions: LanguageClientOptions = {
-      documentSelector: languages().flatMap((language) => [
-        { scheme: "file", language },
-        { scheme: "untitled", language },
-      ]),
-      synchronize: {
-        // Et nytt bygg eller en oppgradering av pakken endrer manifestet.
-        fileEvents: vscode.workspace.createFileSystemWatcher(
-          "**/{build/fristil/manifest.json,node_modules/@fristil/designsystem/manifest/manifest.json}",
-        ),
-      },
-    }
-    client = new LanguageClient(
-      "fristil",
-      "Fristil",
-      serverOptions,
-      clientOptions,
-    )
-    await client.start()
+  // Et nytt bygg eller en oppgradering av pakken endrer manifestet. Én
+  // overvåker for hele levetiden, ikke én per omstart.
+  const manifests = vscode.workspace.createFileSystemWatcher(
+    "**/{build/fristil/manifest.json,node_modules/@fristil/designsystem/manifest/manifest.json}",
+  )
+  context.subscriptions.push(manifests)
+
+  /*
+   * Omstartene står i kø. To endringer av språklista rett etter hverandre
+   * ventet ellers begge på den samme gamle klienten, og startet hver sin
+   * server: funnene kom to ganger, og den ene serveren ble aldri stoppet.
+   */
+  let restarts: Promise<void> = Promise.resolve()
+  const startClient = () => {
+    restarts = restarts
+      .then(async () => {
+        await client?.stop()
+        client = new LanguageClient("fristil", "Fristil", serverOptions, {
+          documentSelector: languages().flatMap((language) => [
+            { scheme: "file", language },
+            { scheme: "untitled", language },
+          ]),
+          synchronize: { fileEvents: manifests },
+        } satisfies LanguageClientOptions)
+        await client.start()
+      })
+      .catch((error: unknown) => {
+        void vscode.window.showErrorMessage(
+          `Fristil kunne ikke starte språkserveren: ${error instanceof Error ? error.message : String(error)}`,
+        )
+      })
+    return restarts
   }
 
   /* Taggen markøren står i */

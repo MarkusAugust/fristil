@@ -90,7 +90,10 @@ async () => {
 
     private fun diagnoseStyled(html: String, css: List<String>, page: Boolean): List<Finding> {
         val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
-        return (Json.parse(core.get().call(STYLED, input)) as List<*>).map { finding(it as Map<*, *>) }
+        val (status, answer) = core.get().callWithStatus(STYLED, input)
+        // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
+        if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
     }
 
     /*
@@ -144,12 +147,15 @@ private class Core {
     private val resultLen: ExportFunction = instance.export("result_len")
 
     /** Kaller en av funksjonene som tar en tekst, og gir svaret som tekst. */
-    fun call(entry: String, text: String): String {
+    fun call(entry: String, text: String): String = callWithStatus(entry, text).second
+
+    /** Som [call], med tallet funksjonen gir tilbake: 0 er i orden. */
+    fun callWithStatus(entry: String, text: String): Pair<Long, String> {
         val bytes = text.toByteArray(Charsets.UTF_8)
         val pointer = alloc.apply(bytes.size.toLong())[0]
         instance.memory().write(pointer.toInt(), bytes)
-        instance.export(entry).apply(pointer, bytes.size.toLong())
-        return instance.memory().readString(resultPtr.apply()[0].toInt(), resultLen.apply()[0].toInt())
+        val status = instance.export(entry).apply(pointer, bytes.size.toLong())?.firstOrNull() ?: 0L
+        return status to instance.memory().readString(resultPtr.apply()[0].toInt(), resultLen.apply()[0].toInt())
     }
 }
 

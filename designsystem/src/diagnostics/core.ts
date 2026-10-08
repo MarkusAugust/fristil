@@ -133,7 +133,7 @@ type Exports = {
   build_theme_raw(pointer: number, length: number): number
   inspect_theme_raw(pointer: number, length: number): void
   inspect_styles_raw(pointer: number, length: number): void
-  diagnose_styled_raw(pointer: number, length: number): void
+  diagnose_styled_raw(pointer: number, length: number): number
   result_ptr(): number
   result_len(): number
 }
@@ -195,7 +195,11 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
       return read()
     },
     diagnoseStyled: (html, css, page) => {
-      e.diagnose_styled_raw(...write(JSON.stringify({ html, css, page })))
+      if (
+        e.diagnose_styled_raw(...write(JSON.stringify({ html, css, page }))) !==
+        0
+      )
+        throw new Error(read<{ error: string }>().error)
       return read()
     },
   }

@@ -399,8 +399,11 @@ fn findings(
 }
 
 /// Alle funn om koblingen på siden, i den rekkefølgen de står.
-pub fn check_references(text: &[u16]) -> Vec<Finding> {
-    let nodes = tree(&page_source(text));
+///
+/// `page` er siden slik [`page_source`] leser den. `diagnose_page` har den
+/// fra før, og lager den ikke på nytt for hvert kall.
+pub fn check_references(page: &[u16]) -> Vec<Finding> {
+    let nodes = tree(page);
     let mut out = Vec::new();
     let mut ids: HashMap<Utf16, usize> = HashMap::new();
     let mut label_for: HashSet<Utf16> = HashSet::new();

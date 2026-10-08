@@ -53,8 +53,11 @@ val byggKjerne = tasks.register<Exec>("byggKjerne") {
     commandLine("cargo", "build", "--release", "--target", "wasm32-unknown-unknown")
     inputs.dir(kjerne.resolve("src"))
     inputs.file(kjerne.resolve("Cargo.toml"))
-    // Manifestet er bygget inn i modulen.
+    inputs.file(kjerne.resolve("Cargo.lock"))
+    inputs.file(kjerne.resolve("rust-toolchain.toml"))
+    // Manifestet og fargekontrakten er bygget inn i modulen (`include_str!`).
     inputs.file(manifestFil)
+    inputs.file(designsystem.resolve("src/tokens/fargekontrakt.json"))
     outputs.file(kjerneWasm)
 }
 
