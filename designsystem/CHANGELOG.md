@@ -23,6 +23,25 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **`fs-divider` var usynlig i flex og grid.** Nettleseren gir `<hr>`
+  auto-marger til sidene, og i en flex-kolonne vinner de over
+  `align-items: stretch`. Streken har ikke noe innhold å være bred av, så den
+  ble 0 piksler bred og forsvant. Det gjaldt også eksempelet på
+  komponentsiden og demosiden for sideskjelettet. Klassen nullstiller nå
+  margene til sidene og strekker seg selv, så streken fyller bredden også i en
+  flex- eller grid-forelder som sentrerer barna eller legger dem til start.
+  Har du gjort streken smalere selv, står den nå til start; sett
+  `margin-inline: auto` for å sentrere den.
+
+### Endret
+
+- **`fs-divider` med `data-variant="subtle"` er litt tydeligere.** Den brukte
+  `--fs-color-neutral-surface`, som lå så nær lerretet at streken nesten
+  forsvant. Nå bruker den `--fs-color-neutral-raised`, som ligger mellom
+  flatefargen og `border-subtle` i både lyst og mørkt tema.
+
 ## 0.32.0 (2026-10-08)
 
 ### Brytende
