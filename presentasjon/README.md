@@ -22,22 +22,31 @@ open presentasjon/designsystemarkitektur.html
 
 `flytur.html` er den samme presentasjonen som en flytur gjennom en digital by,
 i tradisjonen fra *Ghost in the Shell*: mørke tårn med lysende kanter,
-kretsbaner som pulserer langs bakken, kolonner av tegn som faller og skilt som
-henger i lufta. Det er ingen lysbilder i den. Teksten står i byen, og kameraet
-flyr fra tekst til tekst.
+kretsbaner som pulserer, kolonner av tegn som faller og skilt som henger i
+lufta. Byen er en skål rundt en kjerne, og kameraet virvler rundt kjernen og
+nedover mot den, som i en malstrøm. Det er ingen lysbilder i den.
 
 Flyturen har ingen egen kopi av innholdet. Den henter
-`designsystemarkitektur.html`, leser lysbildene med `DOMParser` og tar ut
-teksten: overskrifter, avsnitt, punkter, kode, tabeller og linjene om hva
-kravet koster. Teksten deles i stoppesteder som er korte nok til å leses mens
-kameraet står stille, rundt to hundre i alt. Endres et lysbilde, endres
-flyturen.
+`designsystemarkitektur.html`, leser lysbildene med `DOMParser` og deler
+teksten i små scener, rundt 230 i alt. Endres et lysbilde, endres flyturen.
+Hver scene får en form etter hva teksten er:
 
-Når kameraet kommer fram, dekodes teksten fra tilfeldige tegn, og når det
-flyr videre, løser den seg opp og kameraet flyr gjennom den. Hvert kapittel er
-et eget distrikt med sin farge og sitt landemerke, hentet fra ikonet på
-kapittelforsiden. Avhengighetsgrafen er bygget i tre dimensjoner fra det samme
-datasettet som lysbildet tegner sin graf fra, ett designsystem per stoppested.
+| Form | Hva den brukes til |
+| --- | --- |
+| Partikler | Overskriftene, som samler seg av lys fra virvelen. Kapittelforsidene har nummeret sitt stort bak. |
+| Ord for ord | Korte setninger og sitater. Ordene kommer hver for seg, fra virvelen, fra dypet, som regn ovenfra, sprengt ut fra midten eller skrevet fram, og det skifter fra scene til scene. |
+| Setninger | Lange avsnitt, én setning om gangen i en trapp innover i rommet. |
+| Utrop | Punkter med uthevet start: den uthevede delen som overskrift, forklaringen under, og nummeret stort bak. |
+| Konstellasjon | Lister med korte punkter, som noder i en ring som tennes etter tur. |
+| Satellitter | Linjene om produktteamene, designsystemteamet og Fristil, som kretser rundt et senter. |
+| Kode | Kodelinjer som skrives fram på et buet bånd med en markør. |
+| Søyler | Tabeller med kilobyte, som søyler i riktig høyde. Andre tabeller blir et rutenett i rommet. |
+| Tall | Et stort tall med like mange noder i bane rundt seg. |
+| Graf | Avhengighetsgrafen i tre dimensjoner, fra det samme datasettet som lysbildet. |
+
+Ved hver scene sirkler kameraet rundt innholdet i en bane som skifter: en
+sving, et løft, en spiral eller et langsomt dykk. Innholdet vender seg mot
+kameraet, men ikke helt, så dybden i det synes.
 
 Musikken lages i nettleseren mens den spilles, med Web Audio og ingen
 lydfiler: varme flater i dur, arpeggio-kaskader, en svingende breakbeat og en
@@ -48,9 +57,10 @@ den gjentar seg ikke.
 
 | Fil | Hva den gjør |
 | --- | --- |
-| `flytur/innhold.js` | Tar teksten ut av lysbildene og deler den i stoppesteder |
-| `flytur/tekst.js` | Tegner hvert stoppested, med dekodingen |
-| `flytur/verden.js` | Byen, kamerakurven, grafene og etterbehandlingen, med three.js |
+| `flytur/innhold.js` | Tar teksten ut av lysbildene og deler den i scener med form |
+| `flytur/tekst.js` | Legger ut teksten ord for ord, og gjør tekst om til partikler |
+| `flytur/former.js` | Formene, og hvordan hver av dem kommer og går |
+| `flytur/verden.js` | Byen, virvelen, kamerabanen og etterbehandlingen, med three.js |
 | `flytur/lyd.js` | Den generative musikken |
 | `flytur/flytur.js` | Limet: autopilot, taster, lyd og instrumentpanel |
 | `flytur/vendor/` | three.js 0.186.1 med bloom-passene, og Datastar 1.0.4 |
@@ -65,11 +75,11 @@ ut fra antall ord, og en strek nederst viser hvor lenge det er igjen.
 Piltastene tar over når som helst. `PageDown` og `PageUp` hopper et helt
 lysbilde, mellomrom slår autopiloten av og på, og `M` lyden. Adressen får
 `#punkt-12`, og `#lysbilde-6` fra dekket virker også. Lenken «Lysbildet» øverst
-åpner lysbildet stoppestedet er hentet fra.
+åpner lysbildet scenen er hentet fra.
 
 Modulene og `fetch` virker ikke når fila åpnes rett fra disk, så flyturen må
 serveres, for eksempel med `bunx serve presentasjon`. Ber nettleseren om
-mindre bevegelse, kutter kameraet rett til neste stoppested.
+mindre bevegelse, kutter kameraet rett til neste scene.
 
 ## Én fil, og git som historikk
 

@@ -1,10 +1,13 @@
 /*
- * Verdenen bak lysbildene.
+ * Verdenen: en by av data sett innenfra, bygget som en malstrøm.
  *
- * En by av data sett innenfra, i tradisjonen fra Ghost in the Shell: mørke
- * tårn med lysende kanter, kretsbaner som pulserer langs bakken, kolonner av
- * tegn som faller, og hologrammer som henger i lufta. Kameraet følger én
- * kurve gjennom hele byen, og hvert lysbilde er et stoppested på den.
+ * I tradisjonen fra Ghost in the Shell: mørke tårn med lysende kanter,
+ * kretsbaner som pulserer, kolonner av tegn som faller, og skilt som henger
+ * i lufta. Byen er en skål rundt en kjerne, og tre spiralarmer av lys
+ * roterer rundt den. Scenene ligger på en spiral som går rundt kjernen og
+ * nedover, så kameraet virvler inn mot midten gjennom hele presentasjonen.
+ * Ved hver scene sirkler kameraet langsomt rundt innholdet, i en bane som
+ * skifter fra scene til scene.
  *
  * Hvert kapittel er et eget distrikt med sin farge og sitt motiv, hentet fra
  * ikonet på kapittelforsiden: nettleservinduer, markup i en ramme, to kilder
@@ -14,6 +17,7 @@
  * Verdenen er bygget av et frø, så den er den samme hver gang presentasjonen
  * åpnes. Det er bare musikken som skal være ny hver gang.
  */
+import { lagForm, MODUSLISTE } from "./former.js"
 import * as THREE from "./vendor/three-0.186.1.min.js"
 import {
   EffectComposer,
@@ -70,6 +74,7 @@ const F = {
   uPuls: { value: 0 },
   uAksent: { value: new THREE.Color("#5fe8ff") },
   uKamera: { value: new THREE.Vector3() },
+  uSkala: { value: 600 },
 }
 
 const TAAKE_GLSL = /* glsl */ `
@@ -504,108 +509,116 @@ function pulslinjer(pos, avstand, fase, farge) {
   return new THREE.LineSegments(geo, mat)
 }
 
-/* ---------- Verdenen ---------- */
-
 export function lagVerden(lerret, punkter, valg = {}) {
   const redusert = valg.redusert ?? false
-  const smal = () => innerWidth <= 860
+  const smal = () => innerWidth < innerHeight * 0.9
 
   const renderer = new THREE.WebGLRenderer({
     canvas: lerret,
     antialias: false,
     powerPreference: "high-performance",
   })
-  let pikselforhold = Math.min(devicePixelRatio || 1, smal() ? 1 : 1.5)
+  let pikselforhold = Math.min(devicePixelRatio || 1, innerWidth <= 860 ? 1 : 1.5)
   renderer.setPixelRatio(pikselforhold)
   renderer.setSize(innerWidth, innerHeight, false)
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.0
 
   const scene = new THREE.Scene()
-  scene.fog = new THREE.FogExp2(F.uTaakeFarge.value.clone(), 0.0042)
+  F.uTaakeTetthet.value = 0.0026
+  scene.fog = new THREE.FogExp2(F.uTaakeFarge.value.clone(), 0.0026)
   scene.background = F.uTaakeFarge.value.clone()
 
-  const kamera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.5, 900)
+  const kamera = new THREE.PerspectiveCamera(56, innerWidth / innerHeight, 0.5, 1800)
 
-  /* ---------- Stoppestedene ---------- */
+  /* ---------- Virvelen ---------- */
 
-  // Hvert stoppested er et punkt på kurven kameraet følger. Innenfor et
-  // lysbilde ligger de tett, et nytt lysbilde er et lengre stykke, og et
-  // nytt kapittel er et langt sprang opp over byen.
+  // Scenene ligger på en spiral som går rundt kjernen i midten av byen og
+  // nedover mot den, som en malstrøm. Innenfor et lysbilde er stegene korte,
+  // et nytt lysbilde er en lengre sving, og et nytt kapittel er et sprang
+  // opp og rundt før dykket.
   const n = punkter.length
-  const stasjoner = []
+  const θ = []
+  const R = []
+  const Y = []
+  const YB = []
   {
-    let pos = V(0, 16, 0)
-    let retning = 0
-    punkter.forEach((p, i) => {
-      if (i > 0) {
-        const steg = p.forside ? 150 : p.nyttLysbilde ? 84 : 46
-        retning = klem(retning * 0.55 + mellom(-0.5, 0.5), -0.65, 0.65)
-        pos = pos.clone().add(V(Math.sin(retning) * steg, 0, -Math.cos(retning) * steg))
-        pos.y = p.forside ? 34 : 15 + Math.sin(i * 0.7) * 3
-      }
-      stasjoner.push({ ...p, pos })
+    let a = 0
+    punkter.forEach((p, k) => {
+      if (k > 0) a += p.forside ? 1.25 : p.nyttLysbilde ? 0.62 : 0.34
+      const s = k / Math.max(1, n - 1)
+      θ.push(a)
+      R.push(330 - 255 * s ** 0.85)
+      YB.push(30 + 120 * (1 - s) ** 1.1)
+      Y.push(YB[k] + (p.forside ? 26 : 0) + Math.sin(k * 0.9) * 4)
     })
   }
-  // Teksten står mellom stoppestedet og det neste, rett foran kameraet.
-  // Kameraet flyr gjennom den på vei videre, mens den løser seg opp.
-  const AVSTAND = 26
-  stasjoner.forEach((s, i) => {
-    const neste = stasjoner[i + 1]?.pos ?? s.pos.clone().add(V(0, 0, -60))
-    const r = neste.clone().sub(s.pos)
-    r.y = 0
-    r.normalize()
-    s.blikk = r
-    s.tvers = V(-r.z, 0, r.x)
-    s.tekst = s.pos.clone().addScaledVector(r, AVSTAND)
-    if (s.forside) s.tekst.y -= 3
-    if (s.graf) s.tekst.y += 6.5
-    s.fokus = s.graf ? s.tekst.clone().add(V(0, -6.5, 0)) : s.tekst.clone()
-  })
+  const startpunkt = V(Math.cos(θ[0] - 0.9) * (R[0] + 200), 260, Math.sin(θ[0] - 0.9) * (R[0] + 200))
 
-  const s0 = stasjoner[0].pos
-  const sist = stasjoner[n - 1].pos
-  const kurvepunkter = [
-    V(s0.x - 40, 130, s0.z + 220),
-    ...stasjoner.map((s) => s.pos),
-    V(sist.x, sist.y + 30, sist.z - 160),
-  ]
-  const kurve = new THREE.CatmullRomCurve3(kurvepunkter, false, "centripetal")
-  const M = kurvepunkter.length - 1
-  const punktPå = (u, mål = new THREE.Vector3()) =>
-    kurve.getPoint(klem(u, 0, M) / M, mål)
+  // Et punkt på spiralen for et flyttall mellom to scener. Under 0 er det
+  // på vei inn fra startpunktet høyt over byen.
+  const H = (u, mål = new THREE.Vector3()) => {
+    if (u < 0) {
+      const t = klem(u + 1, 0, 1)
+      H(0, mål)
+      return mål.lerp(startpunkt, 1 - glatt(t))
+    }
+    const a = Math.min(Math.floor(u), n - 1)
+    const b = Math.min(a + 1, n - 1)
+    const f = klem(u - a, 0, 1)
+    const t = θ[a] + (θ[b] - θ[a]) * f
+    const r = R[a] + (R[b] - R[a]) * f
+    const y = Y[a] + (Y[b] - Y[a]) * f
+    return mål.set(Math.cos(t) * r, y, Math.sin(t) * r)
+  }
 
-  // Banen slått opp etter z, så byen kan holde den fri.
-  const prøver = []
-  for (let i = 0; i <= 6000; i++) prøver.push(kurve.getPoint(i / 6000))
-  const baneVed = (zz) => {
-    let lav = 0
-    let høy = prøver.length - 1
-    while (høy - lav > 1) {
-      const m = (lav + høy) >> 1
-      if (prøver[m].z > zz) lav = m
-      else høy = m
-    }
-    return prøver[lav]
+  // Ankeret er der innholdet står: litt foran og innenfor spiralen, så
+  // kameraet ser innover mot kjernen med innholdet foran seg.
+  const ankre = []
+  const retninger = []
+  const STILER = ["sving", "løft", "spiral", "dykk"]
+  const banestil = []
+  const ordmodus = []
+  for (let k = 0; k < n; k++) {
+    const P = H(k)
+    const T = V(-Math.sin(θ[k]), 0, Math.cos(θ[k]))
+    const I = V(-Math.cos(θ[k]), 0, -Math.sin(θ[k]))
+    const A = P.clone().addScaledVector(T, 7).addScaledVector(I, 26)
+    A.y += Math.sin(k * 1.7) * 3 - (punkter[k].forside ? 10 : 0)
+    ankre.push(A)
+    // Kameraet ser på skrå inn i virvelen, ikke rett mot kjernen, så byen
+    // buer seg bort på den ene siden og kjernen lyser på den andre.
+    retninger.push(V(0, 0, 0).addScaledVector(I, -0.55).addScaledVector(T, -0.8).add(V(0, 0.18, 0)).normalize())
+    let st
+    do st = velg(STILER)
+    while (k > 0 && st === banestil[k - 1])
+    banestil.push(st)
+    let md
+    do md = velg(MODUSLISTE)
+    while (k > 0 && md === ordmodus[k - 1])
+    ordmodus.push(md)
   }
-  const distriktVed = (zz) => {
-    let d = stasjoner[0].distrikt
-    for (const s of stasjoner) {
-      if (s.pos.z + 30 < zz) break
-      d = s.distrikt
-    }
-    return d
+
+  // Radius til scene, for å vite hvilket distrikt et sted i byen hører til
+  // og hvor høyt kameraet flyr der.
+  const sceneVedRadius = (r) => {
+    let beste = 0
+    for (let k = 0; k < n; k++) if (Math.abs(R[k] - r) < Math.abs(R[beste] - r)) beste = k
+    return beste
   }
-  const zStart = kurvepunkter[0].z + 120
-  const zSlutt = kurvepunkter[kurvepunkter.length - 1].z - 260
+  const distriktVedRadius = (r) => punkter[sceneVedRadius(r)].distrikt
+  const høydeVedRadius = (r) => {
+    if (r > R[0] + 30) return 400
+    if (r < R[n - 1] - 20) return YB[n - 1]
+    return YB[sceneVedRadius(r)]
+  }
 
   /* ---------- Bakken ---------- */
 
   const bakke = new THREE.Mesh(
-    new THREE.PlaneGeometry(1600, 1600, 1, 1),
+    new THREE.PlaneGeometry(2600, 2600, 1, 1),
     new THREE.ShaderMaterial({
-      uniforms: { ...F, uRing: { value: 0 } },
-      transparent: false,
+      uniforms: { ...F, uRing: { value: -1 } },
       vertexShader: /* glsl */ `
         varying vec3 vVerden;
         void main() {
@@ -622,21 +635,24 @@ export function lagVerden(lerret, punkter, valg = {}) {
         uniform vec3 uKamera;
         varying vec3 vVerden;
         ${TAAKE_GLSL}
-        float strek(vec2 p, float s) {
-          vec2 q = p / s;
-          vec2 g = abs(fract(q - 0.5) - 0.5) / fwidth(q);
-          return 1.0 - min(min(g.x, g.y), 1.0);
+        float strek(float q) {
+          float g = abs(fract(q - 0.5) - 0.5) / fwidth(q);
+          return 1.0 - min(g, 1.0);
         }
         void main() {
           vec2 p = vVerden.xz;
-          float stor = strek(p, 24.0);
-          float liten = strek(p, 4.0) * 0.35;
+          float r = length(p);
+          float a = atan(p.y, p.x);
+          // Ringer og eiker rundt kjernen, og et fint rutenett under.
+          float ringer = strek(r / 30.0);
+          float eiker = strek(a / 6.2831853 * 48.0) * smoothstep(20.0, 60.0, r);
+          float fint = max(strek(p.x / 6.0), strek(p.y / 6.0)) * 0.25;
+          float spiral = strek((a / 6.2831853) * 6.0 + log(r + 1.0) * 1.6 - uTid * 0.08) * 0.5;
           float d = length(vVerden - uKamera);
-          float ring = exp(-abs(length(p - uKamera.xz) - uRing) * 0.18) * step(0.0, uRing);
-          float skann = pow(0.5 + 0.5 * sin(p.y * 0.05 + uTid * 1.4), 12.0) * 0.5;
+          float bolge = exp(-abs(r - uRing) * 0.12) * step(0.0, uRing) * max(0.0, 1.0 - uRing / 900.0);
           vec3 c = vec3(0.004, 0.012, 0.014);
-          c += uAksent * (stor * (0.55 + uPuls * 0.6) + liten * 0.4) * (0.6 + skann);
-          c += uAksent * ring * 1.6 * max(0.0, 1.0 - uRing / 320.0);
+          c += uAksent * (ringer * 0.6 + eiker * 0.35 + fint + spiral * 0.5) * (0.7 + uPuls * 0.5);
+          c += uAksent * bolge * 2.0;
           gl_FragColor = vec4(mix(c, uTaakeFarge, taake(d)), 1.0);
         }
       `,
@@ -648,6 +664,8 @@ export function lagVerden(lerret, punkter, valg = {}) {
 
   /* ---------- Tårnene ---------- */
 
+  // Byen er en skål: høye tårn i en mur ytterst, og lavere jo nærmere
+  // kjernen, alltid under spiralen kameraet flyr i.
   const tårnGeo = new THREE.BoxGeometry(1, 1, 1)
   tårnGeo.translate(0, 0.5, 0)
   const tårnMat = new THREE.ShaderMaterial({
@@ -707,19 +725,17 @@ export function lagVerden(lerret, punkter, valg = {}) {
     `,
   })
   const tårnListe = []
-  for (let zz = zStart; zz > zSlutt; zz -= 9) {
-    const bane = baneVed(zz)
-    for (let k = 0; k < 7; k++) {
-      const x = bane.x + mellom(-220, 220)
-      const dz = zz + mellom(-4.5, 4.5)
-      const dx = Math.abs(x - bane.x)
-      const b = mellom(4, 13)
-      const d = mellom(4, 13)
-      let h = Math.pow(tilf(), 2.4) * 95 + mellom(3, 12)
-      if (dx < 22 + b) h = Math.min(h, Math.max(1.5, bane.y - 12))
-      else if (dx < 46) h = Math.min(h, bane.y + 14)
-      tårnListe.push({ x, z: dz, b, d, h, distrikt: distriktVed(dz) })
-    }
+  for (let i = 0; i < 5200; i++) {
+    const r = 60 + Math.sqrt(tilf()) * 600
+    const a = tilf() * Math.PI * 2
+    const x = Math.cos(a) * r
+    const z = Math.sin(a) * r
+    const b = mellom(4, 12) * (r > 380 ? 1.6 : 1)
+    const d = mellom(4, 12) * (r > 380 ? 1.6 : 1)
+    let h = Math.pow(tilf(), 2.2) * 110 + mellom(3, 14)
+    if (r > 370) h = mellom(40, 190) * (0.6 + 0.4 * Math.sin(a * 7) ** 2)
+    else h = Math.min(h, Math.max(2, høydeVedRadius(r) - 20))
+    tårnListe.push({ x, z, b, d, h, distrikt: r > 370 ? 0 : distriktVedRadius(r) })
   }
   const tårn = new THREE.InstancedMesh(tårnGeo, tårnMat, tårnListe.length)
   {
@@ -731,6 +747,8 @@ export function lagVerden(lerret, punkter, valg = {}) {
       tårn.setMatrixAt(i, m)
       c.set(DISTRIKTER[t.distrikt].farge)
       if (tilf() < 0.12) c.lerp(new THREE.Color("#cde1f9"), 0.6)
+      // Muren ytterst er mørkere, så den ikke blender når kameraet ser utover.
+      if (t.h > 60) c.multiplyScalar(0.45)
       tårn.setColorAt(i, c)
     })
   }
@@ -739,78 +757,43 @@ export function lagVerden(lerret, punkter, valg = {}) {
 
   /* ---------- Kretsbanene ---------- */
 
+  // Buer og eiker på bakken og i lufta, med lys som går langs dem.
   {
     const pos = []
     const avstand = []
     const fase = []
     const farge = []
     const c = new THREE.Color()
-    for (let i = 0; i < 260; i++) {
-      const zz = mellom(zStart, zSlutt)
-      const bane = baneVed(zz)
-      const høyde = tilf() < 0.55 ? 0.08 : mellom(18, 70)
-      let p = V(bane.x + mellom(-200, 200), høyde, zz)
+    for (let i = 0; i < 320; i++) {
+      let r = mellom(30, 560)
+      let a = tilf() * Math.PI * 2
+      const y = tilf() < 0.6 ? 0.1 : Math.min(høydeVedRadius(r) - 8, mellom(12, 90))
+      c.set(DISTRIKTER[distriktVedRadius(r)].farge).multiplyScalar(0.45)
       let lengde = 0
-      const f = tilf()
-      c.set(DISTRIKTER[distriktVed(zz)].farge)
-      for (let k = 0; k < 14; k++) {
-        const steg = mellom(6, 34)
-        const q = p.clone()
-        if (k % 2) q.x += steg * (tilf() < 0.5 ? -1 : 1)
-        else q.z -= steg
+      const legg = (p, q) => {
         pos.push(p.x, p.y, p.z, q.x, q.y, q.z)
-        avstand.push(lengde, lengde + steg)
-        lengde += steg
-        fase.push(f, f)
+        const l = p.distanceTo(q)
+        avstand.push(lengde, lengde + l)
+        lengde += l
+        fase.push(0.2, 0.2)
         farge.push(c.r, c.g, c.b, c.r, c.g, c.b)
-        p = q
+      }
+      const punkt = (aa, rr) => V(Math.cos(aa) * rr, y, Math.sin(aa) * rr)
+      for (let k = 0; k < 10; k++) {
+        if (k % 2 === 0) {
+          // En bue rundt kjernen, tegnet som korte stykker.
+          const a1 = a + mellom(-0.5, 0.5)
+          for (let s = 0; s < 8; s++) legg(punkt(a + ((a1 - a) * s) / 8, r), punkt(a + ((a1 - a) * (s + 1)) / 8, r))
+          a = a1
+        } else {
+          // En eike inn mot kjernen eller ut fra den.
+          const r1 = Math.max(25, r + mellom(-50, 50))
+          legg(punkt(a, r), punkt(a, r1))
+          r = r1
+        }
       }
     }
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3))
-    geo.setAttribute("avstand", new THREE.Float32BufferAttribute(avstand, 1))
-    geo.setAttribute("fase", new THREE.Float32BufferAttribute(fase, 1))
-    geo.setAttribute("farge", new THREE.Float32BufferAttribute(farge, 3))
-    const mat = new THREE.ShaderMaterial({
-      uniforms: F,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      vertexShader: /* glsl */ `
-        attribute float avstand;
-        attribute float fase;
-        attribute vec3 farge;
-        varying float vA;
-        varying float vF;
-        varying vec3 vFarge;
-        varying float vD;
-        uniform vec3 uKamera;
-        void main() {
-          vA = avstand; vF = fase; vFarge = farge;
-          vec4 v = modelMatrix * vec4(position, 1.0);
-          vD = length(v.xyz - uKamera);
-          gl_Position = projectionMatrix * viewMatrix * v;
-        }
-      `,
-      fragmentShader: /* glsl */ `
-        uniform float uTid;
-        uniform float uPuls;
-        varying float vA;
-        varying float vF;
-        varying vec3 vFarge;
-        varying float vD;
-        ${TAAKE_GLSL}
-        void main() {
-          float x = fract(vA * 0.006 - uTid * (0.12 + vF * 0.2) + vF * 7.0);
-          float puls = pow(smoothstep(0.0, 1.0, x), 18.0) * 3.0;
-          float x2 = fract(vA * 0.011 - uTid * (0.2 + vF * 0.1) + vF * 3.0);
-          puls += pow(x2, 30.0) * 2.0;
-          vec3 c = vFarge * (0.16 + puls + uPuls * 0.2);
-          gl_FragColor = vec4(c * (1.0 - taake(vD)), 1.0);
-        }
-      `,
-    })
-    const baner = new THREE.LineSegments(geo, mat)
+    const baner = pulslinjer(pos, avstand, fase, farge)
     baner.frustumCulled = false
     scene.add(baner)
   }
@@ -953,36 +936,110 @@ export function lagVerden(lerret, punkter, valg = {}) {
     return mat
   })()
 
+
+  /* ---------- Malstrømmen ---------- */
+
+  // Tre spiralarmer av lys som roterer rundt kjernen, raskere jo nærmere
+  // midten, og løfter seg i en trakt som følger kameraets vei ned.
+  const virvel = (() => {
+    const antall = 26000
+    const data = new Float32Array(antall * 4)
+    for (let i = 0; i < antall; i++) {
+      const r0 = 45 + Math.pow(tilf(), 1.15) * 480
+      const arm = i % 3
+      const a0 = (arm / 3) * Math.PI * 2 + Math.log(r0) * 2.3 + (tilf() - 0.5) * 0.7
+      data[i * 4] = r0
+      data[i * 4 + 1] = a0
+      data[i * 4 + 2] = tilf()
+      data[i * 4 + 3] = tilf()
+    }
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(antall * 3), 3))
+    geo.setAttribute("data", new THREE.BufferAttribute(data, 4))
+    const mat = new THREE.ShaderMaterial({
+      uniforms: F,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */ `
+        attribute vec4 data;
+        uniform float uTid;
+        uniform float uSkala;
+        uniform float uPuls;
+        varying float vA;
+        varying float vD;
+        void main() {
+          float r = data.x;
+          float a = data.y + uTid * (6.0 / (r + 14.0) + 0.012);
+          float y = 8.0 + pow(r / 330.0, 1.35) * 150.0 + (data.z - 0.5) * (6.0 + r * 0.06);
+          vec4 mv = modelViewMatrix * vec4(cos(a) * r, y, sin(a) * r, 1.0);
+          vD = -mv.z;
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = min(6.0, (0.35 + data.w * 0.5) * uSkala / max(-mv.z, 1.0));
+          vA = (0.2 + data.w * 0.4) * (0.7 + uPuls * 0.4) * smoothstep(4.0, 30.0, -mv.z);
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uAksent;
+        varying float vA;
+        varying float vD;
+        ${TAAKE_GLSL}
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          float a = smoothstep(0.5, 0.0, d);
+          gl_FragColor = vec4(mix(uAksent, vec3(0.85, 1.0, 1.0), 0.35) * a * vA * (1.0 - taake(vD) * 0.7), 1.0);
+        }
+      `,
+    })
+    const p = new THREE.Points(geo, mat)
+    p.frustumCulled = false
+    scene.add(p)
+    return p
+  })()
+  void virvel
+
+  // Kjernen i midten: en kule av tråd, en lyssøyle og ringer som går rundt.
+  const sentrum = new THREE.Group()
+  {
+    const k = kjerne("#cde1f9", 22)
+    k.position.y = 46
+    sentrum.add(k)
+    const søyle = new THREE.Mesh(
+      new THREE.CylinderGeometry(3, 7, 900, 32, 1, true),
+      flatemateriale("#9ccff2", 0.035),
+    )
+    søyle.position.y = 400
+    sentrum.add(søyle)
+    for (let i = 0; i < 7; i++) {
+      const r = 60 + i * 55
+      const ring = new THREE.LineSegments(
+        new Strek().ring(r, 180).geometri(),
+        linjemateriale(i % 2 ? "#6ff2d0" : "#9ccff2", 0.35),
+      )
+      ring.position.y = 6 + Math.pow(r / 330, 1.35) * 150
+      ring.userData.fart = (0.02 + 0.03 / (i + 1)) * (i % 2 ? -1 : 1)
+      sentrum.add(ring)
+    }
+    sentrum.userData.kjerne = k
+    scene.add(sentrum)
+  }
+
+
   /* ---------- Skiltene ---------- */
 
-  const ORD = [
-    "電脳",
-    "情報網",
-    "攻性防壁",
-    "記憶",
-    "義体",
-    "外部記憶",
-    "接続",
-    "構造",
-    "公安",
-    "網",
-    "電脳空間",
-    "解析",
-  ]
+  const ORD = ["電脳", "情報網", "攻性防壁", "記憶", "義体", "外部記憶", "接続", "構造", "公安", "網", "電脳空間", "解析"]
   const skiltListe = []
-  for (let i = 0; i < 70; i++) {
-    const zz = mellom(zStart - 100, zSlutt + 100)
-    const bane = baneVed(zz)
-    const side = tilf() < 0.5 ? -1 : 1
+  for (let i = 0; i < 80; i++) {
+    const r = mellom(70, 460)
+    const a = tilf() * Math.PI * 2
     const loddrett = tilf() < 0.6
     const { tekstur, forhold } = skilt(velg(ORD), loddrett)
-    const h = loddrett ? mellom(18, 34) : mellom(7, 12)
-    const farge = new THREE.Color(DISTRIKTER[distriktVed(zz)].farge)
+    const h = loddrett ? mellom(22, 44) : mellom(8, 14)
     const m = new THREE.Mesh(
       new THREE.PlaneGeometry(h * forhold, h),
       new THREE.MeshBasicMaterial({
         map: tekstur,
-        color: farge,
+        color: new THREE.Color(DISTRIKTER[distriktVedRadius(r)].farge),
         transparent: true,
         opacity: 0.55,
         blending: THREE.AdditiveBlending,
@@ -991,72 +1048,122 @@ export function lagVerden(lerret, punkter, valg = {}) {
         fog: true,
       }),
     )
-    m.position.set(bane.x + side * mellom(34, 110), mellom(14, 60), zz)
-    m.lookAt(bane.x, m.position.y, zz + 60)
+    m.position.set(Math.cos(a) * r, mellom(16, Math.max(20, høydeVedRadius(r) + 30)), Math.sin(a) * r)
+    m.lookAt(0, m.position.y, 0)
     m.userData.fase = tilf() * 10
     skiltListe.push(m)
     scene.add(m)
   }
 
-
   /* ---------- Landemerkene ---------- */
 
-  // Hvert kapittel har et stort motiv bak forsiden, og ekko av det langs
-  // sidene ved hvert nytt lysbilde, så distriktet kjennes igjen i flukt.
+  // Hvert kapittel har sitt motiv stort bak forsiden, og ekko av det rundt
+  // spiralen ved hvert nytt lysbilde, så distriktet kjennes igjen i flukt.
   const motivListe = []
-  const leggMotiv = (m, pos, skala, mot) => {
+  const leggMotiv = (m, pos, skala) => {
     m.position.copy(pos)
     m.scale.setScalar(skala)
-    if (!m.userData.kjerne && !m.userData.lag) m.lookAt(mot.x, pos.y, mot.z)
+    if (!m.userData.kjerne && !m.userData.lag) m.lookAt(0, pos.y, 0)
     m.userData.fase = tilf() * 10
     m.userData.grunnY = pos.y
     motivListe.push(m)
     scene.add(m)
   }
-  stasjoner.forEach((s, i) => {
-    const farge = DISTRIKTER[s.distrikt].farge
-    const lag = MOTIVER[s.distrikt]
-    if (s.forside || i === 0) {
-      const p = s.pos.clone().addScaledVector(s.blikk, i === 0 ? 170 : 125)
-      p.y = i === 0 ? 40 : 20
-      leggMotiv(lag(farge), p, i === 0 ? 2.2 : 2.6, s.pos)
+  punkter.forEach((p, k) => {
+    const farge = DISTRIKTER[p.distrikt].farge
+    const lag = MOTIVER[p.distrikt]
+    const P = H(k)
+    const ut = V(Math.cos(θ[k]), 0, Math.sin(θ[k]))
+    if (p.forside) {
+      const q = ankre[k].clone().addScaledVector(ut, -55)
+      q.y -= 14
+      leggMotiv(lag(farge), q, 2.6)
     }
-    if (s.nyttLysbilde && s.distrikt !== 0 && s.distrikt !== 9) {
-      for (const side of [-1, 1]) {
-        const p = s.pos
-          .clone()
-          .addScaledVector(s.tvers, side * mellom(52, 84))
-          .addScaledVector(s.blikk, mellom(20, 70))
-        p.y = mellom(22, 46)
-        leggMotiv(lag(farge), p, mellom(0.6, 1.1), s.pos)
-      }
+    if (p.nyttLysbilde && p.distrikt !== 0 && p.distrikt !== 9) {
+      leggMotiv(lag(farge), P.clone().addScaledVector(ut, mellom(40, 70)).add(V(0, mellom(-6, 16), 0)), mellom(0.7, 1.2))
+      leggMotiv(lag(farge), P.clone().addScaledVector(ut, -mellom(70, 110)).add(V(0, mellom(-20, 0), 0)), mellom(0.8, 1.3))
     }
-  })
-  {
-    const s = stasjoner[n - 1]
-    const p = s.pos.clone().addScaledVector(s.blikk, 150)
-    p.y = 36
-    leggMotiv(kjerne(DISTRIKTER[9].farge, 26), p, 2, s.pos)
-  }
-  // Portene i typedistriktet ligger rundt selve banen, så kameraet flyr
-  // gjennom dem.
-  stasjoner.forEach((s, i) => {
-    if (s.distrikt !== 5 || i === n - 1 || !s.nyttLysbilde) return
-    for (let k = 1; k <= 2; k++) {
-      const p = punktPå(i + 1 + k / 3)
-      const ring = new THREE.LineSegments(
-        new Strek().ring(15, 6).geometri(),
-        linjemateriale(DISTRIKTER[5].farge, 1.2),
-      )
-      ring.position.copy(p)
-      ring.lookAt(punktPå(i + 1 + k / 3 + 0.05))
+    // Portene i typedistriktet står rundt selve spiralen, så kameraet
+    // flyr gjennom dem.
+    if (p.distrikt === 5 && p.nyttLysbilde && k < n - 1) {
+      const q = H(k + 0.5)
+      const ring = new THREE.LineSegments(new Strek().ring(16, 6).geometri().rotateX(Math.PI / 2), linjemateriale(farge, 1.2))
+      ring.position.copy(q)
+      ring.lookAt(H(k + 0.55))
       ring.userData.fase = k
-      ring.userData.grunnY = p.y
+      ring.userData.grunnY = q.y
       ring.userData.snurrZ = 0.25
       motivListe.push(ring)
       scene.add(ring)
     }
   })
+
+
+  /* ---------- Formene ---------- */
+
+  // Innholdet tegnes i en egen scene etter bloom, så det aldri blør ut og
+  // aldri skjules av et tårn. Det som er en del av byen, som partikler,
+  // noder og søyler, står i byen og lyser med den.
+  const tekstScene = new THREE.Scene()
+  const former = new Map()
+
+  function hentForm(k) {
+    let f = former.get(k)
+    if (f) return f
+    const form = lagForm(punkter[k], { F, smal: smal(), modus: ordmodus[k], lagGraf })
+    form.tekst.position.copy(ankre[k])
+    form.rom.position.copy(ankre[k])
+    const q = new THREE.Object3D()
+    q.position.copy(ankre[k])
+    q.lookAt(ankre[k].clone().add(retninger[k]))
+    form.tekst.quaternion.copy(q.quaternion)
+    form.rom.quaternion.copy(q.quaternion)
+    tekstScene.add(form.tekst)
+    scene.add(form.rom)
+    f = { form, k, qBase: q.quaternion.clone(), ankomst: Infinity, avreise: null }
+    former.set(k, f)
+    return f
+  }
+
+  function fjernForm(f) {
+    tekstScene.remove(f.form.tekst)
+    scene.remove(f.form.rom)
+    f.form.fjern()
+    former.delete(f.k)
+  }
+
+  // Hvor langt unna kameraet må stå for at formen fyller skjermen uten å
+  // gå utenfor.
+  function avstandFor(k) {
+    const { b, h } = hentForm(k).form.størrelse
+    const t = Math.tan((56 * Math.PI) / 360)
+    return Math.max(16, b / 2 / (t * kamera.aspect * 0.8), h / 2 / (t * 0.78))
+  }
+
+  // Der kameraet står ved en scene: rundt ankeret i en langsom bane, med
+  // en stil som skifter fra scene til scene.
+  function hvilested(k, tA, mål = new THREE.Vector3()) {
+    let yaw = 0
+    let pitch = 0.04
+    let d = avstandFor(k)
+    const st = redusert ? "ingen" : banestil[k]
+    if (st === "sving") yaw = 0.32 * Math.sin(tA * 0.12 + k)
+    else if (st === "løft") {
+      yaw = 0.08 * Math.sin(tA * 0.1)
+      pitch = 0.08 + 0.16 * Math.sin(tA * 0.11)
+    } else if (st === "spiral") {
+      yaw = 0.26 * Math.sin(tA * 0.1)
+      pitch = 0.04 + 0.13 * Math.cos(tA * 0.1)
+    } else if (st === "dykk") {
+      d *= 1.2 - 0.2 * glatt(klem(tA / 14, 0, 1))
+      yaw = 0.12 * Math.sin(tA * 0.09)
+    }
+    const r = retninger[k].clone()
+    r.applyAxisAngle(V(0, 1, 0), yaw)
+    const side = V(0, 1, 0).cross(r).normalize()
+    r.applyAxisAngle(side, -pitch)
+    return mål.copy(ankre[k]).addScaledVector(r, d)
+  }
 
   /* ---------- Avhengighetsgrafene ---------- */
 
@@ -1136,112 +1243,17 @@ export function lagVerden(lerret, punkter, valg = {}) {
     return s
   }
 
-  stasjoner.forEach((s) => {
-    if (!s.graf) return
-    const g = lagGraf(s.graf)
-    g.position.copy(s.tekst).addScaledVector(s.blikk, 10).add(V(0, -12.5, 0))
-    g.lookAt(s.pos.x, g.position.y, s.pos.z)
-    g.userData.fase = tilf() * 10
-    g.userData.grunnY = g.position.y
-    motivListe.push(g)
-    scene.add(g)
-  })
-
-  /* ---------- Teksten ---------- */
-
-  // Teksten tegnes i en egen scene etter bloom, så den aldri blør ut og
-  // aldri skjules av et tårn.
-  const tekstScene = new THREE.Scene()
-  const tekstGeo = new THREE.PlaneGeometry(1, 1)
-  const flater = new Map()
-  const TEKSTBREDDE = 30
-  const TEKSTHØYDE = 23
-
-  function lagFlate(k) {
-    const s = stasjoner[k]
-    const t = valg.lagTekst(k)
-    const kart = new THREE.CanvasTexture(t.lerret)
-    kart.colorSpace = THREE.SRGBColorSpace
-    kart.anisotropy = renderer.capabilities.getMaxAnisotropy()
-    // Samme skriftstørrelse i rommet uansett hvor bredt lerretet er.
-    let b = (t.lerret.width * TEKSTBREDDE) / 1600
-    let h = b / t.forhold
-    const maksH = t.lerret.width < 1600 ? TEKSTHØYDE * 1.6 : TEKSTHØYDE
-    if (h > maksH) {
-      h = maksH
-      b = h * t.forhold
-    }
-    const mat = new THREE.ShaderMaterial({
-      uniforms: {
-        kart: { value: kart },
-        uOpasitet: { value: 0 },
-        uOppl: { value: 0 },
-        uGlitch: { value: 0 },
-        uTid: F.uTid,
-        uAksent: F.uAksent,
-        uCeller: { value: new THREE.Vector2(150, 150 / t.forhold) },
-      },
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
-      vertexShader: /* glsl */ `
-        varying vec2 vUv;
-        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-      `,
-      fragmentShader: /* glsl */ `
-        uniform sampler2D kart;
-        uniform float uOpasitet;
-        uniform float uOppl;
-        uniform float uGlitch;
-        uniform float uTid;
-        uniform vec3 uAksent;
-        uniform vec2 uCeller;
-        varying vec2 vUv;
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-        void main() {
-          vec2 uv = vUv;
-          float rad = floor(uv.y * 48.0);
-          float t = floor(uTid * 20.0);
-          uv.x += (hash(vec2(rad, t)) - 0.5) * 0.05 * uGlitch * step(0.72, hash(vec2(rad, t * 0.37)));
-          vec4 f = texture2D(kart, uv);
-          float n = hash(floor(vUv * uCeller));
-          if (n < uOppl) discard;
-          float kant = 1.0 - smoothstep(uOppl, uOppl + 0.1, n);
-          vec3 c = f.rgb + uAksent * kant * step(0.001, uOppl) * 2.0 * f.a;
-          gl_FragColor = vec4(c, f.a * uOpasitet);
-        }
-      `,
-    })
-    const mesh = new THREE.Mesh(tekstGeo, mat)
-    mesh.scale.set(b, h, 1)
-    mesh.position.copy(s.tekst)
-    mesh.lookAt(s.pos)
-    tekstScene.add(mesh)
-    t.tegn(0.15)
-    const flate = { mesh, mat, kart, tekst: t, p: 0.15, høyde: h, bredde: b }
-    flater.set(k, flate)
-    return flate
-  }
-
-  function fjernFlate(k) {
-    const f = flater.get(k)
-    if (!f) return
-    tekstScene.remove(f.mesh)
-    f.mat.dispose()
-    f.kart.dispose()
-    flater.delete(k)
-  }
 
   /* ---------- Etterbehandling ---------- */
 
   const komponist = new EffectComposer(renderer)
   komponist.addPass(new RenderPass(scene, kamera))
-  const blomst = new UnrealBloomPass(
-    new THREE.Vector2(innerWidth, innerHeight),
-    0.85,
-    0.6,
-    0.2,
-  )
+  const blomst = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.85, 0.6, 0.2)
+  komponist.addPass(blomst)
+  const tekstPass = new RenderPass(tekstScene, kamera)
+  tekstPass.clear = false
+  tekstPass.clearDepth = true
+  komponist.addPass(tekstPass)
   const skjerm = new ShaderPass({
     uniforms: {
       tDiffuse: { value: null },
@@ -1280,105 +1292,73 @@ export function lagVerden(lerret, punkter, valg = {}) {
       }
     `,
   })
-  komponist.addPass(blomst)
-  const tekstPass = new RenderPass(tekstScene, kamera)
-  tekstPass.clear = false
-  tekstPass.clearDepth = true
-  komponist.addPass(tekstPass)
   komponist.addPass(skjerm)
   komponist.addPass(new OutputPass())
 
   /* ---------- Flukten ---------- */
 
-  // u er posisjonen på kurven: 0 er høyt over byen før start, og
-  // stoppested k ligger på u = k + 1.
-  let u = 0
-  let fra = 0
-  let til = 0
+  // u er plassen på spiralen: -1 er høyt over byen før start, og scene k
+  // ligger på u = k.
+  let u = -1
+  let fra = -1
+  let til = -1
   let start = 0
   let varighet = 0
   let klokke = performance.now() / 1000
   let tid = 0
-  let ringStart = -10
+  let ringStart = -100
   let fart = 0
   const lyd = { puls: () => 0 }
-
-  function flyTil(k, sekunder) {
-    const mål = klem(k, 0, n - 1) + 1
-    const avstand = Math.abs(mål - u)
-    fra = u
-    til = mål
-    start = tid
-    const lang = stasjoner[mål - 1].forside ? 0.9 : 0
-    varighet =
-      redusert || avstand < 0.001
-        ? 0
-        : (sekunder ?? klem(1.5 + lang + 0.45 * Math.sqrt(avstand), 1.5, 4.8))
-    if (varighet === 0) u = mål
-    return varighet
-  }
-
-  const aktiv = () => Math.round(til) - 1
-
+  const forskyvFra = new THREE.Vector3()
+  const blikkFra = new THREE.Vector3()
   const blikk = new THREE.Vector3()
-  const foran = new THREE.Vector3()
+  const tmp = new THREE.Vector3()
+  const tmp2 = new THREE.Vector3()
   const hvile = new THREE.Vector3()
-  const tangent = new THREE.Vector3()
-  const tangent2 = new THREE.Vector3()
-  let fov = 62
+  let fov = 56
   let rull = 0
   const farge = new THREE.Color(DISTRIKTER[0].farge)
   const taakeFarge = new THREE.Color(DISTRIKTER[0].taake)
 
-  function fokusVed(uu, mål) {
-    const s = uu - 1
-    if (s <= 0) return mål.copy(stasjoner[0].fokus)
-    const a = Math.min(Math.floor(s), n - 1)
-    const b = Math.min(a + 1, n - 1)
-    return mål.copy(stasjoner[a].fokus).lerp(stasjoner[b].fokus, glatt(klem(s - a, 0, 1)))
+  function flyTil(k, sekunder) {
+    k = klem(k, 0, n - 1)
+    const avstand = Math.abs(k - u)
+    // Flukten begynner der kameraet er nå, også midt i en annen flukt.
+    H(u, tmp)
+    forskyvFra.copy(kamera.position).sub(tmp)
+    blikkFra.copy(blikk)
+    fra = u
+    til = k
+    start = tid
+    const lang = punkter[k].forside ? 1 : 0
+    varighet =
+      redusert || avstand < 0.001 ? 0 : (sekunder ?? klem(1.9 + lang + 0.5 * Math.sqrt(avstand), 1.9, 5.5))
+    if (varighet === 0) u = k
+    const f = hentForm(k)
+    f.avreise = null
+    f.ankomst = tid + varighet * 0.6
+    return varighet
   }
 
-  // Synsfeltet: teksten skal fylle omtrent 80 prosent av bredden også på
-  // en stående telefon, og aldri gå ut over toppen og bunnen.
-  function grunnFov() {
-    const f = flater.get(aktiv())
-    const b = f?.bredde ?? TEKSTBREDDE
-    const h = (f?.høyde ?? 16) + (stasjoner[aktiv()]?.graf ? 26 : 0)
-    const vannrett = 2 * Math.atan(b / 0.92 / (2 * AVSTAND * kamera.aspect))
-    const loddrett = 2 * Math.atan(h / 0.84 / (2 * AVSTAND))
-    return klem((Math.max(vannrett, loddrett) * 180) / Math.PI, 44, 118)
-  }
+  const aktiv = () => Math.round(til)
 
-  function oppdaterTekst(dt, framme, k) {
+  function oppdaterFormer(dt) {
     const a = aktiv()
-    if (a >= 0 && !flater.has(a)) lagFlate(a)
-    else if (a + 1 < n && !flater.has(a + 1) && k > 0.2) lagFlate(a + 1)
-    for (const [i, f] of flater) {
-      const m = f.mat.uniforms
-      let mål = 0
-      let dekode = 0.15
-      if (i === a) {
-        mål = 1
-        dekode = framme ? 1 : 0.25
-        m.uOppl.value = Math.max(0, m.uOppl.value - dt * 1.6)
-      } else if (i === a + 1) {
-        mål = 0.14
-        m.uOppl.value = Math.max(0, m.uOppl.value - dt)
-      } else {
-        mål = 1
-        dekode = Math.min(f.p, 0.6)
-        m.uOppl.value += dt / (redusert ? 0.3 : 1.1)
-        if (m.uOppl.value >= 1) {
-          fjernFlate(i)
-          continue
-        }
+    for (const f of former.values()) {
+      if (f.k !== a && f.avreise === null) f.avreise = tid
+      const inn = tid - f.ankomst
+      const ut = f.avreise === null ? -1 : tid - f.avreise
+      if (ut > 2.4) {
+        fjernForm(f)
+        continue
       }
-      m.uOpasitet.value += (mål - m.uOpasitet.value) * Math.min(1, dt * 4)
-      const steg = dt / (redusert ? 0.15 : 0.95)
-      f.p = f.p < dekode ? Math.min(dekode, f.p + steg) : Math.max(dekode, f.p - steg * 2)
-      if (f.tekst.tegn(f.p)) f.kart.needsUpdate = true
-      m.uGlitch.value = (1 - f.p) * 0.7 + (i !== a ? m.uOppl.value : 0)
-      f.mesh.renderOrder = -Math.round(f.mesh.position.distanceTo(kamera.position))
+      f.form.oppdater(dt, inn, ut)
+      // Formen vender seg mest mot kameraet, men ikke helt, så dybden i den
+      // synes når kameraet sirkler.
+      tmp2.copy(kamera.position)
+      const q = f.form.tekst.quaternion
+      q.copy(f.qBase).slerp(kamera.quaternion, 0.7)
+      f.form.rom.quaternion.copy(q)
     }
   }
 
@@ -1389,42 +1369,55 @@ export function lagVerden(lerret, punkter, valg = {}) {
     tid += dt
     F.uTid.value = tid
 
-    let k = 1
+    let e = 1
     let iFlukt = 0
     if (varighet > 0) {
-      k = klem((tid - start) / varighet, 0, 1)
+      const k = klem((tid - start) / varighet, 0, 1)
+      e = glatt(k)
       const forrige = u
-      u = fra + (til - fra) * glatt(k)
+      u = fra + (til - fra) * e
       fart = Math.abs(u - forrige) / Math.max(dt, 1e-4)
-      iFlukt = Math.sin(k * Math.PI)
+      iFlukt = Math.sin(e * Math.PI)
       if (k >= 1) varighet = 0
     } else fart *= 0.9
-    const warp = klem(fart / 1.6, 0, 1)
-    const framme = k > 0.72
+    const warp = klem(fart / 2.2, 0, 1)
+    const framme = varighet === 0 || (tid - start) / varighet > 0.7
 
-    punktPå(u, kamera.position)
-    if (!redusert) {
-      kamera.position.x += Math.sin(tid * 0.31) * 0.5
-      kamera.position.y += Math.sin(tid * 0.47) * 0.35
+    // Posisjonen: spiralen, pluss det som skiller hvilestedene fra den, og
+    // en sving opp og ut midt i flukten.
+    if (til < 0) {
+      kamera.position.copy(startpunkt)
+      kamera.position.x += Math.sin(tid * 0.06) * 40
+      kamera.position.z += Math.cos(tid * 0.06) * 40
+      blikk.set(0, 40, 0)
+    } else {
+      const tA = tid - (former.get(til)?.ankomst ?? tid)
+      hvilested(til, Math.max(0, tA), hvile)
+      H(til, tmp)
+      const forskyvTil = hvile.clone().sub(tmp)
+      H(u, kamera.position)
+      kamera.position.add(forskyvFra.clone().lerp(forskyvTil, e))
+      const ut = V(Math.cos(θ[Math.round(klem(u, 0, n - 1))]), 0, Math.sin(θ[Math.round(klem(u, 0, n - 1))]))
+      const sprang = Math.min(4, Math.abs(til - fra))
+      kamera.position.y += iFlukt * (6 + sprang * 4)
+      kamera.position.addScaledVector(ut, iFlukt * (8 + sprang * 3))
+      // Blikket glir fra forrige innhold til det neste, og ser framover langs
+      // spiralen midt i flukten.
+      const be = glatt(klem((e - 0.15) / 0.75, 0, 1))
+      blikk.copy(blikkFra).lerp(ankre[til], varighet === 0 ? 1 : be)
+      H(u + 0.9, tmp)
+      blikk.lerp(tmp, iFlukt * 0.45)
+      if (!redusert) {
+        kamera.position.y += Math.sin(tid * 0.47) * 0.25
+      }
     }
-    if (til < 0.01) {
-      kamera.position.x += Math.sin(tid * 0.05) * 30
-      kamera.position.z += Math.cos(tid * 0.05) * 20
-    }
-
-    fokusVed(u, hvile)
-    punktPå(u + 0.55, foran)
-    foran.y -= 3
-    blikk.copy(hvile).lerp(foran, Math.max(iFlukt * 0.8, warp * 0.7))
     kamera.lookAt(blikk)
-
-    kurve.getTangent(klem(u / M, 0, 1), tangent)
-    kurve.getTangent(klem((u + 0.3) / M, 0, 1), tangent2)
-    const sving = klem((tangent2.x - tangent.x) * 4, -0.4, 0.4)
-    rull += (-sving * Math.max(iFlukt, warp) - rull) * Math.min(1, dt * 3)
+    // Kameraet legger seg inn i svingen rundt kjernen.
+    const målRull = iFlukt * 0.32 + (redusert ? 0 : Math.sin(tid * 0.17) * 0.03)
+    rull += (målRull - rull) * Math.min(1, dt * 3)
     kamera.rotateZ(rull)
 
-    const nyFov = grunnFov() + warp * 16
+    const nyFov = 56 + warp * 18
     if (Math.abs(nyFov - fov) > 0.01) {
       fov += (nyFov - fov) * Math.min(1, dt * 6)
       kamera.fov = fov
@@ -1432,7 +1425,7 @@ export function lagVerden(lerret, punkter, valg = {}) {
     }
     F.uKamera.value.copy(kamera.position)
 
-    const d = DISTRIKTER[distriktVed(kamera.position.z - 20)]
+    const d = DISTRIKTER[punkter[klem(Math.round(u), 0, n - 1)].distrikt]
     farge.lerp(d.fargeC, Math.min(1, dt * 1.2))
     taakeFarge.lerp(d.taakeC, Math.min(1, dt * 1.2))
     F.uAksent.value.copy(farge)
@@ -1442,51 +1435,48 @@ export function lagVerden(lerret, punkter, valg = {}) {
 
     const puls = lyd.puls()
     F.uPuls.value = puls
-    bakke.position.set(
-      Math.round(kamera.position.x / 24) * 24,
-      0,
-      Math.round(kamera.position.z / 24) * 24,
-    )
-    bakke.material.uniforms.uRing.value = (tid - ringStart) * 90
+    bakke.material.uniforms.uRing.value = (tid - ringStart) * 140
 
     const skala = renderer.domElement.height / (2 * Math.tan((fov * Math.PI) / 360))
+    F.uSkala.value = skala
     regn.uniforms.uSkala.value = skala
     regn.uniforms.uFart.value = 1 + warp * 3
     støv.uniforms.uSkala.value = skala
 
+    sentrum.userData.kjerne.rotation.y += dt * 0.08
+    for (const r of sentrum.userData.kjerne.children)
+      if (r.userData.akse) r.rotateOnAxis(r.userData.akse, r.userData.fart * dt)
+    sentrum.userData.kjerne.children[1].scale.setScalar(1 + puls * 0.15)
+    for (const r of sentrum.children) if (r.userData.fart) r.rotation.y += r.userData.fart * dt
+
     for (const m of motivListe) {
       const f = m.userData.fase
-      m.position.y = m.userData.grunnY + Math.sin(tid * 0.6 + f) * (m.userData.graf ? 0.4 : 1.2)
+      m.position.y = m.userData.grunnY + Math.sin(tid * 0.6 + f) * 1.2
       if (m.userData.snurr) m.rotation.y += m.userData.snurr * dt
       if (m.userData.snurrZ) m.rotateZ(m.userData.snurrZ * dt)
       if (m.userData.kjerne) {
         m.rotation.y += dt * 0.08
-        for (const r of m.children)
-          if (r.userData.akse) r.rotateOnAxis(r.userData.akse, r.userData.fart * dt)
-        m.children[1].scale.setScalar(1 + puls * 0.12)
+        for (const r of m.children) if (r.userData.akse) r.rotateOnAxis(r.userData.akse, r.userData.fart * dt)
       }
       if (m.userData.lag)
         m.children.forEach((l, i) => {
           l.position.y = l.userData.grunn * (1 + 0.35 * Math.sin(tid * 0.5 + f)) + i * puls
         })
-      if (m.userData.flimmer)
-        m.visible = Math.sin(tid * 13 + f * 5) > -0.92 || Math.random() > 0.4
+      if (m.userData.flimmer) m.visible = Math.sin(tid * 13 + f * 5) > -0.92 || Math.random() > 0.4
     }
-    for (const s of skiltListe) {
+    for (const s of skiltListe)
       s.material.opacity =
-        0.42 + 0.18 * Math.sin(tid * 1.3 + s.userData.fase) +
-        (Math.sin(tid * 31 + s.userData.fase * 7) > 0.96 ? -0.35 : 0)
-    }
+        0.42 + 0.18 * Math.sin(tid * 1.3 + s.userData.fase) + (Math.sin(tid * 31 + s.userData.fase * 7) > 0.96 ? -0.35 : 0)
 
-    oppdaterTekst(dt, framme, k)
+    oppdaterFormer(dt)
 
-    blomst.strength = 0.8 + puls * 0.3 + warp * 0.25
+    blomst.strength = 0.65 + puls * 0.3 + warp * 0.25
     skjerm.uniforms.uTid.value = tid
     skjerm.uniforms.uAberrasjon.value = 0.003 + warp * 0.03
     skjerm.uniforms.uGlitch.value = Math.max(0, warp - 0.75) * 2
 
     komponist.render()
-    return { k, warp, framme }
+    return { k: varighet ? (tid - start) / varighet : 1, warp, framme }
   }
 
   function størrelse() {
@@ -1528,14 +1518,21 @@ export function lagVerden(lerret, punkter, valg = {}) {
   }
 
   return {
-    stasjoner,
     kamera,
     aktiv,
     flyTil,
     start: () => requestAnimationFrame(løkke),
     plasserUmiddelbart(k) {
-      u = fra = til = klem(k, 0, n - 1) + 1
+      k = klem(k, 0, n - 1)
+      u = fra = til = k
       varighet = 0
+      const f = hentForm(k)
+      f.ankomst = tid - 0.5
+      hvilested(k, 0, kamera.position)
+      H(k, tmp)
+      forskyvFra.copy(kamera.position).sub(tmp)
+      blikk.copy(ankre[k])
+      blikkFra.copy(blikk)
     },
     ring() {
       ringStart = tid

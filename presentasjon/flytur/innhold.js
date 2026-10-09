@@ -6,16 +6,15 @@
  * teksten: overskrifter, avsnitt, punkter, kode, tabeller og linjene om hva
  * kravet koster. Endres et lysbilde, endres flyturen.
  *
- * Teksten deles i stoppesteder. Hvert stoppested er så kort at det kan leses
+ * Teksten deles i små scener. Hver scene er så kort at den kan leses
  * mens kameraet står stille, og henger som tekst i byen, ikke på et kort.
  *
  * Avhengighetsgrafen er tegnet av et skript i lysbildet. Her leses
  * datasettet ut av det samme skriptet, og hvert designsystem blir et eget
- * stoppested med grafen bygget i tre dimensjoner.
+ * scene med grafen bygget i tre dimensjoner.
  */
 
 const KILDE = "designsystemarkitektur.html"
-const BUDSJETT = 330
 
 const HOPP_TAGGER = new Set([
   "script",
@@ -152,47 +151,97 @@ const lengde = (b) =>
     : ren(b.løp).length
 
 /*
- * Stoppestedene i ett lysbilde. Det første er alltid hodet: merket og
- * overskriften, og ingressen om den er kort. Resten fylles opp til
- * budsjettet, men en ny boks, en etikett, kode og tabeller begynner alltid
- * på et nytt sted.
+ * Scenene i ett lysbilde.
+ *
+ * Teksten deles i små biter, og hver bit får en form etter hva den er:
+ *
+ * - tittel: overskriften, bygget av partikler som samler seg
+ * - ord: en kort setning, ord for ord
+ * - setninger: et langt avsnitt, én setning om gangen i en trapp innover
+ * - utrop: et punkt med uthevet start, som stor overskrift og forklaring
+ * - konstellasjon: en liste med korte punkter, som noder i en ring
+ * - satellitter: rollene nederst på lysbildet, som kretser rundt et senter
+ * - kode: kodelinjer som skrives fram på et buet bånd
+ * - tabell: tallkolonner som søyler, og resten som et rutenett i rommet
+ * - tall: et stort tall med det det teller i bane rundt seg
+ * - graf: avhengighetsgrafen i tre dimensjoner
  */
-function stoppesteder(bl) {
+const KORT = 75
+
+const startSterk = (b) => b.løp[0]?.s === "sterk" && b.løp.length > 1
+
+function delUtrop(b) {
+  const leder = b.løp[0].t.trim().replace(/[.:]$/, "")
+  const resten = rens(b.løp.slice(1))
+  return { leder: [{ t: leder, s: "vanlig" }], kropp: resten }
+}
+
+function scener(bl) {
   const ut = []
-  let nå = []
-  let sum = 0
-  const ferdig = () => {
-    if (nå.length) ut.push(nå)
-    nå = []
-    sum = 0
-  }
   let i = 0
-  while (i < bl.length && bl[i].type === "merke") nå.push(bl[i++])
-  if (bl[i]?.type === "tittel") nå.push(bl[i++])
-  if (bl[i]?.type === "ingress" && lengde(bl[i]) < 260) nå.push(bl[i++])
-  ferdig()
-  let gruppe = null
-  for (; i < bl.length; i++) {
+  let etikett = null
+  const legg = (sc) => {
+    if (etikett) {
+      sc.etikett = etikett
+      etikett = null
+    }
+    ut.push(sc)
+  }
+  const merker = []
+  while (bl[i]?.type === "merke") merker.push(bl[i++])
+  if (bl[i]?.type === "tittel") legg({ form: "tittel", blokker: [...merker, bl[i++]] })
+  else if (merker.length) legg({ form: "ord", blokker: merker })
+
+  while (i < bl.length) {
     const b = bl[i]
     const l = lengde(b)
-    const nyGruppe = b.gruppe !== gruppe
-    gruppe = b.gruppe
-    const alene = b.type === "kode" || b.type === "tabell"
-    const forrige = nå[nå.length - 1]
-    const etterEtikett = forrige?.type === "etikett" || forrige?.type === "tall"
-    if (
-      !etterEtikett &&
-      nå.length &&
-      (sum + l > BUDSJETT || nyGruppe || alene || b.type === "etikett" || b.type === "tall" ||
-        forrige?.type === "kode" || forrige?.type === "tabell")
-    )
-      ferdig()
-    nå.push(b)
-    sum += l
-    // Kapittellista på forsidene leses som én.
-    if (b.liste === "kapittel") sum = Math.min(sum, BUDSJETT - 80)
+    if (b.type === "etikett") {
+      etikett = b.løp
+      i++
+    } else if (b.type === "merke") {
+      // Et merke i en boks, som CSR og SSR, er overskriften til det som følger.
+      const neste = bl[i + 1]
+      if (neste && neste.gruppe === b.gruppe && neste.løp) {
+        legg({ form: "utrop", blokker: [b, neste], leder: b.løp, kropp: neste.løp })
+        i += 2
+      } else {
+        legg({ form: "ord", blokker: [b] })
+        i++
+      }
+    } else if (b.type === "tall") {
+      const neste = bl[i + 1]
+      legg({ form: "tall", blokker: neste ? [b, neste] : [b], tall: ren(b.løp), kropp: neste?.løp ?? [] })
+      i += neste ? 2 : 1
+    } else if (b.type === "kode") {
+      legg({ form: "kode", blokker: [b] })
+      i++
+    } else if (b.type === "tabell") {
+      legg({ form: "tabell", blokker: [b] })
+      i++
+    } else if (b.type === "rolle") {
+      const roller = []
+      while (bl[i]?.type === "rolle") roller.push(bl[i++])
+      legg({ form: "satellitter", blokker: roller })
+    } else if (b.type === "punkt") {
+      const liste = []
+      const g = b.gruppe
+      while (bl[i]?.type === "punkt" && bl[i].gruppe === g && (liste.length === 0 || bl[i].nr !== 1)) liste.push(bl[i++])
+      const korte = liste.every((x) => lengde(x) <= KORT) || b.liste === "kapittel"
+      if (korte && liste.length > 1) {
+        for (let k = 0; k < liste.length; k += 8)
+          legg({ form: "konstellasjon", blokker: liste.slice(k, k + 8) })
+      } else
+        for (const p of liste) {
+          if (startSterk(p)) legg({ form: "utrop", blokker: [p], ...delUtrop(p), nr: p.nr })
+          else legg({ form: lengde(p) > 170 ? "setninger" : "ord", blokker: [p] })
+        }
+    } else {
+      // Avsnitt, ingress og dempet tekst.
+      const sitat = l < 130 && b.løp.every((x) => x.s === "sterk" || !x.t.trim())
+      legg({ form: l > 170 ? "setninger" : "ord", blokker: [b], sitat })
+      i++
+    }
   }
-  ferdig()
   return ut
 }
 
@@ -231,6 +280,7 @@ function grafsteder(data) {
         s: "vanlig",
       })
     return {
+      form: "graf",
       blokker: [
         { type: "tittel", løp: [{ t: sys.navn, s: "vanlig" }] },
         { type: "kode", løp: [{ t: sys.kommando, s: "vanlig" }] },
@@ -264,10 +314,12 @@ export async function hentInnhold() {
       distrikt = kapittel
     } else distrikt = kapittel === 0 ? 0 : 9
 
-    const steder = stoppesteder(blokker(l)).map((b) => ({ blokker: b }))
+    const steder = scener(blokker(l))
     // Grafen settes inn etter hodet og avsnittet som forklarer den.
     if (l.classList.contains("avh") && data) steder.splice(2, 0, ...grafsteder(data))
 
+    if (forside && steder[0])
+      steder[0].kapittelNr = /(\d+)/.exec(l.querySelector(".merke")?.textContent ?? "")?.[1] ?? ""
     steder.forEach((s, i) => {
       punkter.push({
         ...s,

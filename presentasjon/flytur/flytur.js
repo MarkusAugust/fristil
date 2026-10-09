@@ -1,7 +1,7 @@
 /*
  * Flyturen: limet mellom teksten, byen og musikken.
  *
- * Teksten hentes fra lysbildene (innhold.js), og hvert stoppested blir et
+ * Teksten hentes fra lysbildene (innhold.js), og hver scene blir et
  * sted i byen (verden.js). Autopiloten flyr videre når teksten har stått
  * lenge nok til å bli lest, regnet ut fra antall ord. Piltastene tar over
  * når som helst, og mellomrom setter autopiloten på pause.
@@ -12,7 +12,6 @@
 import { getPath, mergePatch } from "./vendor/datastar-1.0.4.js"
 import { hentInnhold, klartekst, ordIPunkt, ren } from "./innhold.js"
 import { lagMusikk } from "./lyd.js"
-import { lagTekst } from "./tekst.js"
 import { DISTRIKTER, lagVerden } from "./verden.js"
 
 const rot = document.documentElement
@@ -27,7 +26,6 @@ try {
   verden = lagVerden(document.getElementById("verden"), punkter, {
     redusert,
     vedBilde,
-    lagTekst: (k) => lagTekst(punkter[k], innerWidth < innerHeight * 0.9),
   })
 } catch (feil) {
   console.warn("Flyturen kunne ikke starte.", feil)
@@ -42,8 +40,10 @@ let nesteTid = Infinity
 let oppholdNå = 1
 let sistHud = 0
 
+// Lesetiden: ordene, og litt ekstra for formene som tar tid å bygge.
+const EKSTRA = { tittel: 1.5, konstellasjon: 3, satellitter: 3, tabell: 3.5, kode: 2.5, graf: 4, setninger: 1.5 }
 const opphold = (k) =>
-  Math.min(24, Math.max(4.5, 2.6 + ordIPunkt(punkter[k]) * 0.36)) + (punkter[k].graf ? 3 : 0)
+  Math.min(26, Math.max(4.5, 2.4 + ordIPunkt(punkter[k]) * 0.34)) + (EKSTRA[punkter[k].form] ?? 0.8)
 
 function musikken() {
   if (!musikk) {
