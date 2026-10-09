@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.32.1 (2026-10-09)
+
 ### Rettet
 
 - **`fs-divider` var usynlig i flex og grid.** Nettleseren gir `<hr>`
