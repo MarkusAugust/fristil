@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designsystemarkitektur – flyturen</title>
+<style>
+/*
+ * Flyturen gjennom designsystemarkitekturen.
+ *
+ * Det er ingen lysbilder her. Teksten hentes ut av
+ * designsystemarkitektur.html og henger i en digital by som kameraet flyr
+ * gjennom, stoppested for stoppested. Siden selv er bare lerretet, et
+ * instrumentpanel og en startskjerm.
+ */
+:root {
+  --cyan: #6ff2d0;
+  --cyan-svak: rgba(110, 240, 220, 0.35);
+  --tekst: #e8f1f8;
+  --dempet: #9fb2c4;
+  --sans: Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { block-size: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--sans);
+  background: #02090c;
+  color: var(--tekst);
+  -webkit-font-smoothing: antialiased;
+}
+
+#verden {
+  position: fixed;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+}
+
+/* Det skjermlesere får: teksten på stoppestedet, opplest når det byttes. */
+.skjult {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Uten moduler, for eksempel fra disk, eller uten WebGL. */
+.reserve {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+.reserve p { max-inline-size: 34rem; color: var(--dempet); line-height: 1.5; }
+.reserve a { color: var(--cyan); }
+html.flytur .reserve { display: none; }
+
+.hud, .start { display: none; }
+
+/* ---------- Instrumentpanelet ---------- */
+
+html.flytur-i-gang .hud {
+  position: fixed;
+  inset-block-start: 0.9rem;
+  inset-inline: 1rem;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  pointer-events: none;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(150, 255, 225, 0.85);
+  text-shadow: 0 0 8px rgba(80, 255, 200, 0.55);
+}
+.hud-avlesning { display: grid; gap: 0.15rem; }
+.hud-avlesning strong { color: #e6fffa; font-weight: 600; }
+.hud-dempet { opacity: 0.6; }
+.hud-knapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  pointer-events: auto;
+}
+.hud button, .hud a {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  text-shadow: inherit;
+  text-decoration: none;
+  background: rgba(2, 14, 16, 0.6);
+  border: 1px solid var(--cyan-svak);
+  border-radius: 0.2rem;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+}
+.hud button:hover, .hud a:hover { background: rgba(20, 70, 64, 0.7); }
+.hud button[aria-pressed="true"] { border-color: rgba(150, 255, 225, 0.9); color: #e6fffa; }
+.hud :focus-visible { outline: 2px solid #9ccff2; outline-offset: 2px; }
+
+.fremdrift {
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  block-size: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+  opacity: 0.7;
+}
+
+/* Knappene nederst er for den som ikke har tastatur. */
+.styring {
+  position: fixed;
+  inset-block-end: 1rem;
+  inset-inline: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+.styring button {
+  pointer-events: auto;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e6fffa;
+  background: rgba(2, 14, 16, 0.6);
+  border: 1px solid var(--cyan-svak);
+  border-radius: 0.2rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+html.flytur-i-gang body:hover .styring button,
+.styring button:focus-visible { opacity: 1; }
+@media (hover: none) {
+  html.flytur-i-gang .styring button { opacity: 1; }
+}
+
+/* ---------- Startskjermen ---------- */
+
+html.flytur .start {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(2, 10, 12, 0.15), rgba(2, 10, 12, 0.78));
+}
+.start-innhold {
+  max-inline-size: 42rem;
+  text-align: center;
+  display: grid;
+  gap: 1.1rem;
+  justify-items: center;
+}
+.start-merke {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(150, 255, 225, 0.85);
+  text-shadow: 0 0 10px rgba(80, 255, 200, 0.6);
+}
+.start h1 {
+  font-size: clamp(2rem, 4.6vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(110, 240, 220, 0.45);
+}
+.start p { color: var(--dempet); line-height: 1.5; }
+.start-valg { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-block-start: 0.6rem; }
+.start button {
+  font: inherit;
+  font-size: 1.05rem;
+  padding: 0.8rem 1.5rem;
+  color: #e6fffa;
+  background: rgba(8, 40, 40, 0.75);
+  border: 1px solid rgba(110, 240, 220, 0.6);
+  border-radius: 0.25rem;
+  box-shadow: 0 0 30px -8px rgba(110, 240, 220, 0.6);
+  cursor: pointer;
+}
+.start button.start-stille {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--cyan-svak);
+  color: var(--dempet);
+}
+.start button:hover { background: rgba(20, 80, 74, 0.85); }
+.start button:focus-visible { outline: 2px solid #9ccff2; outline-offset: 3px; }
+.start-hint { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.04em; }
+.start kbd {
+  font-family: var(--mono);
+  border: 1px solid var(--cyan-svak);
+  border-radius: 0.2rem;
+  padding: 0 0.3rem;
+  color: #e6fffa;
+}
+
+@media (max-width: 860px) {
+  .hud-avlesning span:not(:first-child) { display: none; }
+  .start-hint { display: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="verden" aria-hidden="true"></canvas>
+<div id="opplest" class="skjult" aria-live="polite"></div>
+
+<div class="reserve">
+  <p>Flyturen trenger WebGL og må åpnes fra en server, ikke rett fra disk. Presentasjonen finnes også som vanlige lysbilder: <a href="designsystemarkitektur.html">designsystemarkitektur.html</a>.</p>
+</div>
+
+<div data-signals__ifmissing="{startet: false, lyd: false, autopilot: true, tittel: '', hud: {lysbilde: 1, sektor: '01', antall: '36', punkt: '1 / 1', distrikt: 'Ankomst', koordinater: '', fart: '0.0', fremdrift: 0}}">
+  <div class="hud">
+    <div class="hud-avlesning" aria-hidden="true">
+      <span>Lysbilde <strong data-text="$hud.sektor">01</strong> / <span data-text="$hud.antall">36</span> · <span data-text="$hud.punkt"></span></span>
+      <strong data-text="$hud.distrikt">Ankomst</strong>
+      <span class="hud-dempet" data-text="$hud.koordinater"></span>
+      <span class="hud-dempet">Fart <span data-text="$hud.fart">0.0</span></span>
+    </div>
+    <div class="hud-knapper">
+      <button type="button" aria-pressed="true"
+        data-attr:aria-pressed="$autopilot ? 'true' : 'false'"
+        data-on:click="$autopilot = !$autopilot"
+        data-text="$autopilot ? 'Autopilot på' : 'Autopilot av'">Autopilot på</button>
+      <button type="button" aria-pressed="false"
+        data-attr:aria-pressed="$lyd ? 'true' : 'false'"
+        data-on:click="window.flytur?.lyd(!$lyd)"
+        data-text="$lyd ? 'Lyd på' : 'Lyd av'">Lyd av</button>
+      <a href="designsystemarkitektur.html"
+        data-attr:href="'designsystemarkitektur.html#lysbilde-' + $hud.lysbilde">Lysbildet</a>
+    </div>
+  </div>
+
+  <div class="fremdrift" aria-hidden="true" data-style:width="$hud.fremdrift + '%'" data-show="$startet && $autopilot"></div>
+
+  <div class="styring" data-show="$startet">
+    <button type="button" data-on:click="window.flytur?.forrige()" aria-label="Forrige stoppested">Tilbake</button>
+    <button type="button" data-on:click="window.flytur?.neste()" aria-label="Neste stoppested">Videre</button>
+  </div>
+
+  <div class="start" data-show="!$startet" role="dialog" aria-modal="true" aria-labelledby="start-tittel">
+    <div class="start-innhold">
+      <p class="start-merke">Designsystemarkitektur · Fristil</p>
+      <h1 id="start-tittel" data-text="$tittel"></h1>
+      <p>En flytur gjennom syv krav og fellene mellom dem. Hvert kapittel er et eget distrikt i byen, og teksten står der kameraet stopper.</p>
+      <div class="start-valg">
+        <button type="button" class="start-knapp" data-on:click="window.flytur?.start(true)">Start flyturen</button>
+        <button type="button" class="start-stille" data-on:click="window.flytur?.start(false)">Uten lyd</button>
+      </div>
+      <p class="start-hint"><kbd>→</kbd> videre · <kbd>←</kbd> tilbake · <kbd>PgDn</kbd> neste lysbilde · <kbd>Mellomrom</kbd> autopilot · <kbd>M</kbd> lyd</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="flytur/vendor/datastar-1.0.4.js"></script>
+<script type="module" src="flytur/flytur.js"></script>
+</body>
+</html>

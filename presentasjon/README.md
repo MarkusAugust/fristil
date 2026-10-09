@@ -4,17 +4,72 @@ Presentasjonen handler om arkitekturen et designsystem uten rammeverk trenger: h
 markupen kommer fra, hva web componenten legger til, og hva det koster. Fristil er
 eksempelet som viser at det virker, ikke temaet.
 
-Hele presentasjonen er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
-ingen server. Åpne fila i en nettleser, eller se den på
+Lysbildene er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
+ingen server. Flyturen gjennom de samme lysbildene ligger ved siden av, i
+`flytur.html` og `flytur/`. Åpne fila i en nettleser, eller se den på
 [designsystemarkitektur.sobernetics.no](https://designsystemarkitektur.sobernetics.no/),
 som bygger fra master ved hver push. Netlify-prosjektet bak heter
 `designsystemarkitetktur`, med skrivefeilen, og
-`designsystemarkitetktur.netlify.app` gir den samme siden. `netlify.toml` her sier hvordan: fila
-kopieres til `index.html`, og det er alt.
+`designsystemarkitetktur.netlify.app` gir den samme siden. `netlify.toml` her sier hvordan:
+flyturen kopieres til `index.html`, og lysbildene ligger på
+`/designsystemarkitektur.html`, der flyturen også henter teksten sin.
 
 ```bash
 open presentasjon/designsystemarkitektur.html
 ```
+
+## Flyturen
+
+`flytur.html` er den samme presentasjonen som en flytur gjennom en digital by,
+i tradisjonen fra *Ghost in the Shell*: mørke tårn med lysende kanter,
+kretsbaner som pulserer langs bakken, kolonner av tegn som faller og skilt som
+henger i lufta. Det er ingen lysbilder i den. Teksten står i byen, og kameraet
+flyr fra tekst til tekst.
+
+Flyturen har ingen egen kopi av innholdet. Den henter
+`designsystemarkitektur.html`, leser lysbildene med `DOMParser` og tar ut
+teksten: overskrifter, avsnitt, punkter, kode, tabeller og linjene om hva
+kravet koster. Teksten deles i stoppesteder som er korte nok til å leses mens
+kameraet står stille, rundt to hundre i alt. Endres et lysbilde, endres
+flyturen.
+
+Når kameraet kommer fram, dekodes teksten fra tilfeldige tegn, og når det
+flyr videre, løser den seg opp og kameraet flyr gjennom den. Hvert kapittel er
+et eget distrikt med sin farge og sitt landemerke, hentet fra ikonet på
+kapittelforsiden. Avhengighetsgrafen er bygget i tre dimensjoner fra det samme
+datasettet som lysbildet tegner sin graf fra, ett designsystem per stoppested.
+
+Musikken lages i nettleseren mens den spilles, med Web Audio og ingen
+lydfiler: varme flater i dur, arpeggio-kaskader, en svingende breakbeat og en
+stemme som sveller opp baklengs. Harmonikken vandrer i en Markov-kjede, hver
+frase får nye eller muterte mønstre, og et nytt kapittel gir et brudd, en
+oppbygging og et fall, og en ny toneart. Ingenting er skrevet på forhånd, så
+den gjentar seg ikke.
+
+| Fil | Hva den gjør |
+| --- | --- |
+| `flytur/innhold.js` | Tar teksten ut av lysbildene og deler den i stoppesteder |
+| `flytur/tekst.js` | Tegner hvert stoppested, med dekodingen |
+| `flytur/verden.js` | Byen, kamerakurven, grafene og etterbehandlingen, med three.js |
+| `flytur/lyd.js` | Den generative musikken |
+| `flytur/flytur.js` | Limet: autopilot, taster, lyd og instrumentpanel |
+| `flytur/vendor/` | three.js 0.186.1 med bloom-passene, og Datastar 1.0.4 |
+
+Instrumentpanelet og startskjermen er Datastar-signaler, og `flytur.js`
+oppdaterer dem med den samme sammenslåingen en `patch-signals` fra serveren
+ville brukt. Bibliotekene ligger i mappa og ikke på et CDN, av samme grunn som
+skriften: presentasjonen skal ikke feile på nettet i møterommet.
+
+Autopiloten flyr videre når teksten har stått lenge nok til å bli lest, regnet
+ut fra antall ord, og en strek nederst viser hvor lenge det er igjen.
+Piltastene tar over når som helst. `PageDown` og `PageUp` hopper et helt
+lysbilde, mellomrom slår autopiloten av og på, og `M` lyden. Adressen får
+`#punkt-12`, og `#lysbilde-6` fra dekket virker også. Lenken «Lysbildet» øverst
+åpner lysbildet stoppestedet er hentet fra.
+
+Modulene og `fetch` virker ikke når fila åpnes rett fra disk, så flyturen må
+serveres, for eksempel med `bunx serve presentasjon`. Ber nettleseren om
+mindre bevegelse, kutter kameraet rett til neste stoppested.
 
 ## Én fil, og git som historikk
 
