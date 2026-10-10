@@ -44,11 +44,14 @@
 
   /* Pila er to gradienter, og `background-position` har ingen logisk
      variant. Speilvendingen er de samme to bitene, flyttet til venstre kant
-     og byttet om: den som lå ytterst ligger nå innerst. */
+     og byttet om: den som lå ytterst ligger nå innerst. Fra venstre måles
+     posisjonen til bitens venstre kant, fra høyre med `calc(100% - …)` til
+     samme punkt på andre siden, så avstandene er de samme tallene. Med
+     0,35rem trukket fra sto pila 6 piksler fra kanten i stedet for 12. */
   .fs-select:dir(rtl) {
     background-position:
-      calc(0.75rem - 0.35rem) calc(50% - 0.1rem),
-      calc(1rem - 0.35rem) calc(50% - 0.1rem);
+      0.75rem calc(50% - 0.1rem),
+      1rem calc(50% - 0.1rem);
   }
 
   .fs-select:hover {
@@ -95,6 +98,15 @@
 
   .fs-select[data-state="success"]:focus-visible {
     outline-color: var(--fs-color-success-text);
+  }
+
+  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
+     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
+     var slått av under innsending så rødt ut, ikke avslått. */
+  .fs-select:is(:disabled, [aria-disabled="true"])[data-state] {
+    background-color: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
   }
 
   /*

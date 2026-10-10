@@ -130,6 +130,9 @@ const TILFELLER: Tilfelle[] = [
 const UTEN_MUS = [
   ".fs-file-upload::file-selector-button:hover",
   '.fs-select[data-picker="styled"] option:hover',
+  // Høykontrast: holder `Highlight` også under musa. Det er ingen hover-farge,
+  // og den testes i `hoeykontrast.browser.test.ts`.
+  '.fs-pagination [aria-current="page"], .fs-pagination [aria-current="page"]:hover',
 ]
 
 /**

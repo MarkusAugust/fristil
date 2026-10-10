@@ -21,7 +21,8 @@
     gap: var(--fs-spacing-2);
     padding: var(
       --fs-accordion-padding,
-      var(--fs-spacing-3) var(--fs-spacing-4)
+      var(--fs-spacing-3)
+        var(--fs-accordion-padding-inline, var(--fs-spacing-4))
     );
     font-weight: var(--fs-font-weight-semibold);
     cursor: pointer;
@@ -48,6 +49,17 @@
     transform: rotate(225deg) translate(-2px, -2px);
   }
 
+  /* Kantene er logiske og bytter side i høyre-til-venstre, men `rotate` er
+     fysisk. Uten disse pekte pila sidelengs: mot venstre lukket og mot høyre
+     åpen. Vinkelen og forskyvningen snus, så den peker ned og opp som ellers. */
+  .fs-accordion summary:dir(rtl)::after {
+    transform: rotate(-45deg) translate(2px, -2px);
+  }
+
+  .fs-accordion[open] summary:dir(rtl)::after {
+    transform: rotate(-225deg) translate(2px, -2px);
+  }
+
   .fs-accordion summary:hover {
     background: var(--fs-color-neutral-surface);
   }
@@ -57,8 +69,20 @@
     outline-offset: -2px;
   }
 
+  /* Dokumentasjonen viser en overskrift i `summary`, så panelene får en
+     plass i dokumentets disposisjon. Uten dette fikk den nettleserens marg og
+     størrelse, og raden ble høyere og teksten større enn uten overskrift.
+     `:where` lar `.fs-heading` på overskriften vinne. */
+  :where(.fs-accordion summary) > :where(h2, h3, h4, h5, h6) {
+    margin: 0;
+    font: inherit;
+  }
+
+  /* Samme luft til sidene som overskriften, så tekst og innhold står i
+     samme linje også når den endres. */
   .fs-accordion__content {
-    padding: 0 var(--fs-spacing-4) var(--fs-spacing-4);
+    padding: 0 var(--fs-accordion-padding-inline, var(--fs-spacing-4))
+      var(--fs-spacing-4);
   }
 
   .fs-accordion__content > :first-child {

@@ -452,4 +452,23 @@
   ) {
     color-scheme: light dark;
   }
+
+  :is(
+    [class^="fs-"],
+    [class*=" fs-"],
+    fs-field,
+    fs-tabs,
+    fs-error-summary,
+    fs-popover,
+    fs-suggestion,
+    fs-dialog,
+    fs-toast,
+    fs-session-timeout,
+    fs-connection-status,
+    .fs-select option,
+    .fs-pagination *
+  )[hidden]:not([hidden="until-found" i]) {
+    /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */
+    display: none !important;
+  }
 }

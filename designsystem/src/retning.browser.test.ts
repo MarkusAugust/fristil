@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { monter, ventPaTegning } from "./testing/a11y"
 
 import "./tokens/tokens.css"
+import "./components/css/accordion/accordion.css"
 import "./components/css/input/input.css"
 import "./components/css/search/search.css"
 import "./components/css/switch/switch.css"
@@ -85,6 +86,17 @@ describe("høyre til venstre", () => {
 
     expect(rtl.backgroundPositionX).not.toBe(ltr.backgroundPositionX)
 
+    // Like langt fra kanten i begge retninger. Fra høyre står avstanden som
+    // `calc(100% - …)`, fra venstre som en lengde. Før sto pila 6 piksler
+    // fra kanten i høyre-til-venstre og 12 ellers.
+    const avstander = (verdi: string) =>
+      [...verdi.matchAll(/(\d+(?:\.\d+)?)px/g)]
+        .map((treff) => Number(treff[1]))
+        .sort((a, b) => a - b)
+    expect(avstander(rtl.backgroundPositionX)).toEqual(
+      avstander(ltr.backgroundPositionX),
+    )
+
     // Plassen pila ligger i må følge med. Sto den igjen på samme fysiske
     // side, ville pila lagt seg oppå teksten.
     expect(rtl.paddingLeft).toBe(ltr.paddingRight)
@@ -147,7 +159,8 @@ describe("høyre til venstre", () => {
     /*
      * `inset-inline-start: 50%` snur, `translateX(-50%)` gjør det ikke, og
      * boblen sto en hel boblebredde til venstre i RTL. Ett element i hver
-     * retning side om side, av samme grunn som i testene over.
+     * retning side om side, av samme grunn som i testene over. Begge boblene
+     * vises med `display: block`, siden bare én knapp kan ha fokus.
      */
     monter(
       ["ltr", "rtl"]
@@ -156,7 +169,7 @@ describe("høyre til venstre", () => {
         <div dir="${retning}" style="padding: 4rem 12rem">
           <span class="fs-tooltip">
             <button type="button" id="knapp-${retning}" aria-describedby="boble-${retning}">Arkiver</button>
-            <span class="fs-tooltip__bubble" role="tooltip" id="boble-${retning}">Saken flyttes til arkivet</span>
+            <span class="fs-tooltip__bubble" role="tooltip" id="boble-${retning}" style="display: block">Saken flyttes til arkivet</span>
           </span>
         </div>`,
         )
@@ -175,6 +188,37 @@ describe("høyre til venstre", () => {
         boble.left + boble.width / 2 - (knapp.left + knapp.width / 2)
 
       expect(Math.abs(avvik), retning).toBeLessThan(1)
+    }
+  })
+
+  it("lar pila i en accordion peke ned og opp i begge retninger", async () => {
+    // Kantene er logiske og bytter side, men `rotate` er fysisk. Før pekte
+    // pila sidelengs i høyre-til-venstre.
+    monter(
+      ["ltr", "rtl"]
+        .map(
+          (retning) => `
+        <div dir="${retning}">
+          <details class="fs-accordion" id="lukket-${retning}"><summary>Spørsmål</summary></details>
+          <details class="fs-accordion" id="apen-${retning}" open><summary>Spørsmål</summary></details>
+        </div>`,
+        )
+        .join(""),
+    )
+    await ventPaTegning()
+
+    const vinkel = (id: string) => {
+      const summary = document.querySelector(`#${id} summary`) as Element
+      const matrise = new DOMMatrix(
+        getComputedStyle(summary, "::after").transform,
+      )
+      return Math.round((Math.atan2(matrise.b, matrise.a) * 180) / Math.PI)
+    }
+    // Speilet: samme vinkel med motsatt fortegn, så spissen peker likt.
+    for (const tilstand of ["lukket", "apen"]) {
+      expect(vinkel(`${tilstand}-rtl`), tilstand).toBe(
+        -vinkel(`${tilstand}-ltr`),
+      )
     }
   })
 

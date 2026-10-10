@@ -20,11 +20,19 @@
     gap: var(--fs-breadcrumbs-gap, var(--fs-spacing-2));
   }
 
-  /* Skilletegnet er dekorasjon, og legges derfor inn med CSS. Sto det i
-     markupen, ville skjermlesere lest «skråstrek» mellom hvert steg. */
+  /* Skilletegnet er dekorasjon. Generert innhold leses likevel opp, så det
+     får en tom alternativ tekst etter skråstreken. Nettlesere som ikke kjenner
+     den formen, forkaster hele deklarasjonen, og da forsvant skilletegnet:
+     derfor står den bak `@supports`, og de beholder streken uten å tie. */
   .fs-breadcrumbs li + li::before {
     content: "/";
     color: var(--fs-color-neutral-text-subtle);
+  }
+
+  @supports (content: "/" / "") {
+    .fs-breadcrumbs li + li::before {
+      content: "/" / "";
+    }
   }
 
   .fs-breadcrumbs a {

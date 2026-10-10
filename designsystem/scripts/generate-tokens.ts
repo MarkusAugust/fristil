@@ -4,6 +4,9 @@ import {
   darkColorTokens,
   darkTokens,
 } from "../src/tokens/tokens"
+import { elements } from "../src/vocabulary/elements"
+
+const ELEMENTER = Object.keys(elements)
 
 const sections: Record<string, string[]> = {}
 
@@ -193,6 +196,31 @@ lines.push(
   '    .fs-theme-control[value="auto"]:checked',
   "  ) {",
   "    color-scheme: light dark;",
+  "  }",
+  "",
+  /*
+   * `hidden` skal skjule, også en komponent som setter `display` selv.
+   *
+   * Forfatterstil i et hvilket som helst lag slår nettleserens
+   * `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` sto
+   * synlig. `!important` i laget er det nettleseren selv gjør, og slår alle
+   * vanlige deklarasjoner uansett spesifisitet, også varianter som
+   * `.fs-select[data-picker="styled"] option`. Det slår også konsumentens
+   * egen `!important` uten lag, så `hidden` kan ikke overstyres her.
+   *
+   * Barna i lista har ingen `fs-`-klasse, men får `display` fra en regel som
+   * gjør det. Elementene står for seg, siden en web component ikke trenger
+   * en klasse. `until-found` skal ikke skjules helt: nettleseren søker i det.
+   */
+  "  :is(",
+  '    [class^="fs-"],',
+  '    [class*=" fs-"],',
+  ...ELEMENTER.map((tag) => `    ${tag},`),
+  "    .fs-select option,",
+  "    .fs-pagination *",
+  '  )[hidden]:not([hidden="until-found" i]) {',
+  "    /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */",
+  "    display: none !important;",
   "  }",
   "}",
 )

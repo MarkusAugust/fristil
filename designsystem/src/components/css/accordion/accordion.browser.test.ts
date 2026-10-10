@@ -67,6 +67,40 @@ describe("fs-accordion", () => {
     expect(skjult.textContent).toContain("folkeregistrert")
   })
 
+  it("gir en overskrift i summary samme størrelse som uten", () => {
+    // Dokumentasjonen viser `<summary><h3>`. Før fikk overskriften
+    // nettleserens marg og størrelse.
+    monter(`
+      <details class="fs-accordion"><summary id="uten">Spørsmål</summary></details>
+      <details class="fs-accordion"><summary><h3 id="med">Spørsmål</h3></summary></details>
+    `)
+    const overskrift = getComputedStyle(
+      document.getElementById("med") as Element,
+    )
+    const uten = getComputedStyle(document.getElementById("uten") as Element)
+
+    expect(overskrift.marginBlockStart).toBe("0px")
+    expect(overskrift.fontSize).toBe(uten.fontSize)
+  })
+
+  it("gir overskriften og innholdet samme luft til sidene", () => {
+    monter(`
+      <details class="fs-accordion" open style="--fs-accordion-padding-inline: 40px">
+        <summary id="topp">Spørsmål</summary>
+        <div class="fs-accordion__content" id="innhold"><p>Svar</p></div>
+      </details>
+    `)
+
+    expect(
+      getComputedStyle(document.getElementById("innhold") as Element)
+        .paddingInlineStart,
+    ).toBe("40px")
+    expect(
+      getComputedStyle(document.getElementById("topp") as Element)
+        .paddingInlineStart,
+    ).toBe("40px")
+  })
+
   it("setter attributtene fra byggefunksjonen", () => {
     expect(accordion()).toEqual({ class: "fs-accordion" })
     expect(accordion({ variant: "plain" })).toEqual({

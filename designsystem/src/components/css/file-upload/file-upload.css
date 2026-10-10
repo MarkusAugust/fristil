@@ -59,6 +59,15 @@
     border-color: var(--fs-color-success-text);
   }
 
+  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
+     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
+     var slått av under innsending så rødt ut, ikke avslått. */
+  .fs-file-upload:disabled[data-state] {
+    background: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
+  }
+
   /* Lista over filene som er valgt. Den skriver du selv, siden bare du vet
      hva som skal skje når en fil fjernes. */
   .fs-file-upload-list {
