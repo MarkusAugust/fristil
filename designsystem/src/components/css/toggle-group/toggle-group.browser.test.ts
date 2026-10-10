@@ -8,6 +8,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { rgb } from "../../../testing/farge"
 import { contrastRatio } from "../../../tokens/color"
 import { toggleGroup } from "./toggle-group"
 
@@ -69,11 +70,6 @@ describe("fs-toggle-group", () => {
 })
 
 describe("fokusringen på det valgte alternativet", () => {
-  const rgb = (verdi: string) => {
-    const [r, g, b] = verdi.match(/[\d.]+/g)?.map(Number) ?? []
-    return { r, g, b }
-  }
-
   for (const tema of ["light", "dark"] as const) {
     it(`synes mot den valgte flaten (${tema})`, async () => {
       monter(`

@@ -75,7 +75,9 @@ En side som vil bestemme temaet selv, setter `data-theme` på `<html>`:
 
 Et tema kan ligge inne i et annet, begge veier. En lys boks i en mørk seksjon er like gyldig som det motsatte.
 
-Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Regelen har spesifisitet null, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn. Fokusringen og fargene for avslått tilstand følger også grensen.
+Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Det gjelder ikke `<html>`, som er din, og ikke `fs-toast`. Regelen har spesifisitet null i `@layer fristil`, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn, og det samme gjør din egen stil uten lag eller i et lag etter `fristil`. Står stilen din i et lag *foran* `fristil`, som `base` i Tailwind-oppsettet, vinner Fristils flate.
+
+Fokusringen og fargene for avslått tilstand følger også grensen, fordi de deklareres på nytt i hver temablokk. Overstyrer du `--fs-focus-ring`, `--fs-color-disabled-surface` eller `--fs-color-disabled-text`, skriv overstyringen på `[data-theme="light"]` og `[data-theme="dark"]` også, ellers gjelder den bare utenfor temagrensene.
 
 ### En innebygd komponent låser sitt eget tema
 
@@ -270,6 +272,7 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-pagination-radius` | `var(--fs-spacing-1)` |
 | `--fs-progress-fill` | `var(--fs-color-accent-fill)`, og `data-color` endrer den |
 | `--fs-progress-track` | `var(--fs-color-neutral-surface)` |
+| `--fs-progress-border` | `var(--fs-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
 | `--fs-progress-height` | `var(--fs-spacing-2)` |
 | `--fs-progress-radius` | `var(--fs-spacing-1)` |
 | `--fs-skip-link-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |

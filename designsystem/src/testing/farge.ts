@@ -31,3 +31,17 @@ export function farge(
   const { r, g, b } = parseHex(hex)
   return `rgb(${r}, ${g}, ${b})`
 }
+
+/**
+ * Leser `rgb(r, g, b)` eller `rgba(r, g, b, a)` fra `getComputedStyle`, så en
+ * test kan regne kontrast mellom to fargene den måler.
+ */
+export function rgb(verdi: string): {
+  r: number
+  g: number
+  b: number
+  a: number
+} {
+  const [r = 0, g = 0, b = 0, a = 1] = verdi.match(/[\d.]+/g)?.map(Number) ?? []
+  return { r, g, b, a }
+}

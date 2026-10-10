@@ -2,13 +2,14 @@
 
 import { afterEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { farge } from "./testing/farge"
+import { farge, rgb } from "./testing/farge"
 import { contrastRatio } from "./tokens/color"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/card/card.css"
 import "./components/css/paragraph/paragraph.css"
+import "./components/frittstaende/toast/toast.css"
 
 /**
  * At en temagrense gir alt under seg temaet, ikke bare fargetokenene.
@@ -17,11 +18,6 @@ import "./components/css/paragraph/paragraph.css"
  * `<div data-theme="dark">` sto gjennomsiktig. Testene her bygger siden selv,
  * slik «Kom i gang» sier en konsument skal gjøre det.
  */
-
-function rgb(verdi: string) {
-  const [r, g, b, a = 1] = verdi.match(/[\d.]+/g)?.map(Number) ?? []
-  return { r, g, b, a }
-}
 
 function kontrast(a: string, b: string): number {
   return contrastRatio(rgb(a), rgb(b))
@@ -81,6 +77,26 @@ describe("en temagrense", () => {
     expect(getComputedStyle(kort).backgroundColor).toBe(
       farge("--fs-color-neutral-surface", "dark"),
     )
+  })
+
+  it("maler ikke roten", () => {
+    // En bakgrunn på `<html>` stopper sidens egen `body`-bakgrunn fra å fylle
+    // vinduet. Pakken kan være gjest på en side den ikke eier.
+    document.documentElement.setAttribute("data-theme", "dark")
+    side("<p>Tekst</p>")
+
+    expect(getComputedStyle(document.documentElement).backgroundColor).toBe(
+      "rgba(0, 0, 0, 0)",
+    )
+  })
+
+  it("gir ikke meldingskolonnen en flate", () => {
+    side(`<fs-toast data-theme="dark" id="meldinger"></fs-toast>`)
+
+    expect(
+      getComputedStyle(document.getElementById("meldinger") as Element)
+        .backgroundColor,
+    ).toBe("rgba(0, 0, 0, 0)")
   })
 
   it("rører ikke et data-theme uten temablokk", () => {

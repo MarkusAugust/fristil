@@ -90,7 +90,7 @@ Skriver du dine egne verdier, er løftene dine å holde. `fristil sjekk-tema tem
 | `--fs-color-disabled-surface`, `--fs-color-disabled-text` | Kontroller som er slått av. Unntatt kontrastkravet i WCAG 1.4.3, og med vilje dempet: en kontroll som er av skal se av |
 | `--fs-color-overlay` | Flaten bak en modal |
 | `--fs-shadow-overlay` | Skyggen under et panel som ligger over siden |
-| `--fs-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Bredden og stilen gjelder hele systemet. Fargen byttes med vilje noen steder, som på et ugyldig felt og på det valgte alternativet i en Toggle Group, der ringen står oppå en farget flate |
+| `--fs-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Bredden og stilen gjelder hele systemet. Fargen byttes med vilje noen steder: på et ugyldig felt, i skip-lenken og feiloppsummeringen, og på det valgte alternativet i en Select med stylet liste og i en Toggle Group, der ringen står oppå en farget flate |
 | `--fs-icon-search`, `--fs-icon-check`, `--fs-icon-dash`, `--fs-icon-calendar`, `--fs-icon-clock` | Ikoner tegnet inn i en bakgrunn |
 
 `--fs-color-disabled-surface`, `--fs-color-disabled-text` og `--fs-focus-ring` er bygget av andre tokens, og deklareres på nytt i hver temagrense, så de følger temaet til elementet. Overstyrer du en av dem på `:root`, gjelder ikke overstyringen inne i et `data-theme`. Skriv den også på `[data-theme="light"]` og `[data-theme="dark"]`, slik fargene skrives i [Tilpasning](../tilpasning/).

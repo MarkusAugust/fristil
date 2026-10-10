@@ -111,13 +111,23 @@ const lightLines = morkeNavn.map((name) => {
  * med `data-theme="dark"` på en lys side den lyse fokusringen, 2,4:1 mot den
  * mørke flaten, og en avslått knapp ble lysegrå. Deklarert på nytt i hver
  * temablokk, også mediespørringen så blokkene holder seg like, regnes de ut
- * mot temaets farger, også et generert tema i
- * `fristil-tema`-laget. Lista finner dem selv, så et nytt token av samme slag
- * kommer med.
+ * mot temaets farger, også et generert tema i `fristil-tema`-laget.
+ *
+ * Prisen er at en overstyring på `:root` ikke når inn i et `data-theme`: en
+ * deklarasjon på elementet selv slår en verdi det arver. Lista er derfor
+ * skrevet ut, så et nytt alias som `var(--fs-font-family-base)` ikke havner
+ * her uten at noen har bestemt det.
  */
-const avledetLines = Object.keys(alle)
-  .filter((name) => !morkeNavn.includes(name) && /var\(--fs-/.test(alle[name]))
-  .map((name) => `      ${name}: ${alle[name]};`)
+const AVLEDET = [
+  "--fs-color-disabled-surface",
+  "--fs-color-disabled-text",
+  "--fs-focus-ring",
+]
+const avledetLines = AVLEDET.map((name) => {
+  if (alle[name] === undefined)
+    throw new Error(`${name} finnes ikke i tokens.ts.`)
+  return `      ${name}: ${alle[name]};`
+})
 
 /*
  * Mørkt tema skrives to ganger, og det er med vilje.
@@ -193,13 +203,19 @@ lines.push(
    * En temagrense gir også flaten og teksten. Uten dette sto en
    * `<div data-theme="dark">` på en lys side gjennomsiktig: tokenene ble
    * mørke, men bakgrunnen var fortsatt sidens hvite, og brødteksten ble
-   * 1,23:1. Bare `light` og `dark`: andre verdier har ingen temablokk, og
-   * andre biblioteker bruker også `data-theme`. `:where` gir spesifisitet
-   * null, så en komponent med `data-theme` på seg beholder sin egen flate.
-   * Bar `:root` får ingenting, siden pakken kan være gjest på en side den
-   * ikke eier.
+   * 1,23:1. Bare `light` og `dark`: andre verdier har ingen temablokk.
+   * `:where` gir spesifisitet null, så en komponent med `data-theme` på seg
+   * beholder sin egen flate.
+   *
+   * Roten får ingenting. Pakken kan være gjest på en side den ikke eier, og
+   * en bakgrunn på `<html>` stoppet sidens egen `body`-bakgrunn fra å fylle
+   * vinduet. `fs-toast` er en fast kolonne over siden, og skal ikke bli en
+   * mørk stripe bak meldingene.
    */
-  '  :where([data-theme="light"], [data-theme="dark"]) {',
+  "  :where(",
+  '    [data-theme="light"]:not(:root, fs-toast),',
+  '    [data-theme="dark"]:not(:root, fs-toast)',
+  "  ) {",
   "    background-color: var(--fs-color-neutral-canvas);",
   "    color: var(--fs-color-neutral-text);",
   "  }",

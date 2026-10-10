@@ -7,16 +7,11 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
+import { farge, rgb } from "../../../testing/farge"
 import { contrastRatio } from "../../../tokens/color"
 
 import "../../../tokens/tokens.css"
 import "./progress.css"
-
-function rgb(verdi: string) {
-  const [r, g, b] = verdi.match(/[\d.]+/g)?.map(Number) ?? []
-  return { r, g, b }
-}
 
 describe(".fs-progress", () => {
   for (const tema of ["light", "dark"] as const) {
@@ -31,15 +26,26 @@ describe(".fs-progress", () => {
 
       // Sporet alene er 1,12:1 mot siden. Kanten holder 3:1, og fyllet skiller
       // seg fra sporet.
+      expect(stil.outlineStyle).toBe("solid")
       expect(
-        contrastRatio(rgb(stil.borderTopColor), side),
+        contrastRatio(rgb(stil.outlineColor), side),
       ).toBeGreaterThanOrEqual(3)
-      expect(stil.borderTopWidth).not.toBe("0px")
       expect(
         contrastRatio(rgb(stil.color), rgb(stil.backgroundColor)),
       ).toBeGreaterThanOrEqual(3)
     })
   }
+
+  it("tar ikke kanten av høyden, så en tynn stolpe beholder fyllet", async () => {
+    // En `border` med `border-box` tok 2 piksler, og en stolpe på 2 piksler
+    // ble en grå strek uten fyll.
+    monter(`
+      <progress class="fs-progress" id="p" value="30" max="100"
+        aria-label="Lastet opp" style="--fs-progress-height: 2px"></progress>`)
+    await ventPaTegning()
+
+    expect((document.getElementById("p") as HTMLElement).clientHeight).toBe(2)
+  })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
     monter(`

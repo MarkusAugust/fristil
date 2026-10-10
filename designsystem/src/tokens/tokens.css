@@ -456,7 +456,10 @@
     --fs-focus-ring: 2px solid var(--fs-color-accent-border-strong);
   }
 
-  :where([data-theme="light"], [data-theme="dark"]) {
+  :where(
+    [data-theme="light"]:not(:root, fs-toast),
+    [data-theme="dark"]:not(:root, fs-toast)
+  ) {
     background-color: var(--fs-color-neutral-canvas);
     color: var(--fs-color-neutral-text);
   }
