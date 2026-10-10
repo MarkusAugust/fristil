@@ -309,7 +309,7 @@ describe("fs-dialog", () => {
     const meldinger: boolean[] = []
     const { vert, d } = await monterDialog(false)
     vert.addEventListener("dialog-toggle", (event) => {
-      meldinger.push((event as CustomEvent<{ open: boolean }>).detail.open)
+      meldinger.push(event.detail.open)
     })
 
     vert.setAttribute("open", "")
@@ -438,7 +438,7 @@ describe("fs-dialog", () => {
     const { vert, d } = await monterDialog(true)
     const meldinger: boolean[] = []
     vert.addEventListener("dialog-toggle", (event) => {
-      meldinger.push((event as CustomEvent<{ open: boolean }>).detail.open)
+      meldinger.push(event.detail.open)
     })
 
     // `close`-hendelsen er køet, ikke synkron. Uten en sperre kom den fram
@@ -484,7 +484,7 @@ describe("fs-dialog", () => {
     const { vert, d } = await monterDialog(true)
     let svar: string | undefined
     vert.addEventListener("dialog-toggle", (event) => {
-      svar = (event as CustomEvent<{ returnValue: string }>).detail.returnValue
+      svar = event.detail.returnValue
     })
 
     await lukkOgVent(d, "slett")
@@ -501,7 +501,7 @@ describe("fs-dialog", () => {
 
     const svar: Array<{ open: boolean; returnValue: string }> = []
     vert.addEventListener("dialog-toggle", (event) => {
-      svar.push((event as CustomEvent).detail)
+      svar.push(event.detail)
     })
     vert.removeAttribute("open")
     await ventPaTegning()
@@ -574,7 +574,7 @@ describe("fs-dialog", () => {
     const { vert, d } = await monterDialog(true)
     const svar: boolean[] = []
     vert.addEventListener("dialog-toggle", (event) => {
-      svar.push((event as CustomEvent<{ open: boolean }>).detail.open)
+      svar.push(event.detail.open)
     })
 
     vert.prepend(document.createElement("span"))
@@ -589,7 +589,7 @@ describe("fs-dialog", () => {
     const { vert, d } = await monterDialog(true)
     const svar: boolean[] = []
     vert.addEventListener("dialog-toggle", (event) => {
-      svar.push((event as CustomEvent<{ open: boolean }>).detail.open)
+      svar.push(event.detail.open)
     })
 
     const annet = document.createElement("div")
@@ -1065,9 +1065,7 @@ describe("fs-dialog med server-controlled", () => {
     const vert = document.querySelector("fs-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
     const meldinger: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) =>
-      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
-    )
+    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
 
     d.removeAttribute("open")
     vert.removeAttribute("open")
@@ -1104,9 +1102,7 @@ describe("fs-dialog med server-controlled", () => {
     const vert = document.querySelector("fs-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
     const meldinger: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) =>
-      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
-    )
+    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
     expect(d.matches(":modal")).toBe(true)
 
     d.removeAttribute("open")
@@ -1363,9 +1359,7 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(d.matches(":modal")).toBe(true)
 
     const meldt: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) =>
-      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
-    )
+    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
     const lukket = new Promise((r) =>
       d.addEventListener("close", r, { once: true }),
     )
@@ -1395,9 +1389,7 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(d.matches(":modal")).toBe(true)
 
     const meldt: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) =>
-      meldt.push((e as CustomEvent<{ open: boolean }>).detail.open),
-    )
+    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
     const lukket = new Promise((r) =>
       d.addEventListener("close", r, { once: true }),
     )

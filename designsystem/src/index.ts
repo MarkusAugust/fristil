@@ -183,6 +183,7 @@ export type { ToggleGroupAttributes } from "./components/css/toggle-group/toggle
 export { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 export type { TooltipAttributes } from "./components/css/tooltip/tooltip.js"
 export { tooltip } from "./components/css/tooltip/tooltip.js"
+export type { FsEventMap } from "./components/events.js"
 export * from "./components/frittstaende/connection-status/connection-status.js"
 export * from "./components/frittstaende/connection-status/fs-connection-status.js"
 export * from "./components/frittstaende/toast/fs-toast.js"

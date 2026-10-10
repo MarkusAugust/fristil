@@ -111,7 +111,7 @@ describe("fs-popover", () => {
     const boks = document.querySelector("fs-popover") as HTMLElement
     const meldinger: boolean[] = []
     boks.addEventListener("popover-toggle", (event) => {
-      meldinger.push((event as CustomEvent<{ open: boolean }>).detail.open)
+      meldinger.push(event.detail.open)
     })
 
     const utloser = document.getElementById("utloser") as HTMLElement
@@ -270,7 +270,7 @@ describe("fs-popover plasserer panelet", () => {
     const panel = document.getElementById("p5") as HTMLElement
     const meldinger: boolean[] = []
     vert.addEventListener("popover-toggle", (e) =>
-      meldinger.push((e as CustomEvent<{ open: boolean }>).detail.open),
+      meldinger.push(e.detail.open),
     )
 
     knapp.click()

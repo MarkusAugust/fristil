@@ -126,9 +126,7 @@ describe("fs-tabs", () => {
     document
       .querySelector("fs-tabs")
       ?.addEventListener("tab-select", (hendelse) => {
-        meldinger.push(
-          (hendelse as CustomEvent<{ index: number }>).detail.index,
-        )
+        meldinger.push(hendelse.detail.index)
       })
     ;(document.getElementById("sak-tab-1") as HTMLElement).click()
     await tegn()
@@ -429,7 +427,7 @@ describe("fs-tabs leser koblingen og hopper over det som ikke kan velges", () =>
     const meldinger: number[] = []
     const faner = document.querySelector("fs-tabs") as FsTabs
     faner.addEventListener("tab-select", (h) => {
-      meldinger.push((h as CustomEvent<{ index: number }>).detail.index)
+      meldinger.push(h.detail.index)
     })
     faner.selected = 2
     await tegn()
