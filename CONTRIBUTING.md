@@ -19,32 +19,49 @@ Grenen kan slås sammen når CI er grønn. GitHub er satt opp til å kreve det, 
 
 ## `bun run sjekk`
 
-Kjører nøyaktig det CI kjører, i samme rekkefølge:
+Kjører stegene i `.github/workflows/ci.yml`, i samme rekkefølge og på samme
+måte: hvert `run:` med bash og `-eo pipefail`, i mappa steget oppgir.
+`scripts/sjekk.ts` leser stegene fra fila, så en ny sjekk i CI kjøres lokalt
+fra første dag. Jobbene går etter hverandre:
 
-| Steg | Hva det kontrollerer |
+| Jobb | Hva den kontrollerer |
 | --- | --- |
-| `lint` | Formatering og lintregler, med Biome |
-| `typecheck` | Typene i pakken og dokumentasjonen |
-| `typecheck:tests` | Typene i testene, som ellers ikke leses av `tsc -b` |
-| `test` | godt over tre tusen tester i Chromium, Firefox og WebKit, pluss Tailwind-temaet |
-| `build` | Bygger pakken, og kontrollerer at den inneholder det den lover |
-| `test:docs` | axe mot hver bygde side i begge temaer, og at dokumentasjonen følger koden |
-| `sjekk:kjerne` | Rust-kjernen mot fasiten og kravene, og Kotlin-pakken mot den samme fasiten |
+| `forfattere` | at ingen commit har en agent som forfatter |
+| `sjekk` | lint, typene, nettlesertestene i Chromium, Firefox og WebKit, bygget, kommandolinja og språkserveren i hver vert, den rendrede siden, VS Code-utvidelsen, at ingenting er ugenerert, og axe mot den bygde dokumentasjonen |
+| `kjerne` | Rust-formatering og clippy, Rust-testene, WASI-modulen, kjernen mot fasiten og Kotlin-testene |
 
-`build` og `sjekk:kjerne` krever Rust i tillegg til Bun: sjekken i pakken er
-bygget fra `kjerne/`. Installer [rustup](https://rustup.rs), og
-`kjerne/rust-toolchain.toml` henter riktig versjon ved første kall.
-`sjekk:kjerne` krever også Java 17 eller nyere for Kotlin.
+Tre ting kjøres ikke lokalt, og står med grunnen i `SKIPPED` i skriptet:
+Windows-jobben, oppgraderingen av den globale npm-en, og hentingen av
+nettlesere. Står et navn der som ikke finnes i `ci.yml`, stopper kjøringen,
+så lista kan ikke bli stående etter at et steg har byttet navn.
 
-Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under arbeid er `bun --filter @fristil/designsystem test:browser --project chromium` nok. `bun run test -- --project chromium` virker ikke: `bun run` legger argumentene bakerst i skriptteksten, og `test` er to kommandoer etter hverandre, så flaggene havner på den siste.
+«Ingenting er ugenerert» spør git om bygget endret noe, så kjør `sjekk` etter
+at endringen er committet. Steget feiler ellers på dine egne endringer.
 
-`sjekk` henter nettleserne først, så den virker i et nyklonet repo. Kommandoen er rask når de allerede ligger der. Trenger du bare dem:
+Det krever Rust, Java 17 eller nyere og VS Code-testens nedlasting i tillegg
+til Bun: sjekken i pakken er bygget fra `kjerne/`. Installer
+[rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter riktig
+versjon ved første kall.
+
+Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under
+arbeid er `bun --filter @fristil/designsystem test:browser --project chromium`
+nok. `bun run test -- --project chromium` virker ikke: `bun run` legger
+argumentene bakerst i skriptteksten, og `test` er to kommandoer etter
+hverandre, så flaggene havner på den siste.
+
+Nettleserne hentes én gang:
 
 ```bash
 bun --filter @fristil/designsystem nettlesere
 ```
 
 Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon enn den vitest bruker, og heller ikke `bun --filter <pakke> run <skript>`, som gir «No packages matched the filter». Skriptnavnet skal stå uten `run`.
+
+Kan Playwrights nettlesere ikke hentes, uten nett eller bak en brannmur,
+kjører `bun --filter @fristil/designsystem test:chromium` testene i en Chrome
+eller Chromium som alt står på maskinen. Stien leses fra `CHROMIUM`, ellers
+prøves de vanlige stedene. Bare Chromium: Firefox og WebKit må være
+Playwrights egne bygg.
 
 ## Genererte filer
 

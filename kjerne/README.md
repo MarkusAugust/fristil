@@ -88,7 +88,8 @@ Reglene står i `src/types.rs` (`RULES`).
   mange funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
 - `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
-  merkefarger rundt hele fargesirkelen i begge utseender.
+  merkefarger rundt hele fargesirkelen mot ti nøytrale, fra svart og hvitt
+  til farget grått, i begge utseender: 240 kombinasjoner.
 - `tema/`: oppskrifter og temaer med svaret ved siden av, skrevet av
   TypeScript-utgaven av temaet før den ble slettet. `sjekk-kjerne.ts` krever
   det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
