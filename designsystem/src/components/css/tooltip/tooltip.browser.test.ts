@@ -2,7 +2,7 @@
 /// <reference types="@vitest/browser-playwright" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { cdp, server, userEvent } from "vitest/browser"
+import { cdp, server } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -54,35 +54,33 @@ describe("fs-tooltip", () => {
     ).toBe("hint")
   })
 
-  it("holder boblen oppe når musa flyttes fra knappen til boblen", async () => {
-    // Det var et gap mellom knappen og boblen, og `:hover` slapp på vei opp.
-    // Gapet skal være dekket i hele knappens bredde, ikke bare midt på.
+  it("dekker gapet mellom knappen og boblen i hele knappens bredde", async () => {
+    // Det var et gap, og `:hover` slapp på vei opp. Broen står mens boblen
+    // vises, også ved fokus, og testen bruker fokus: nettlesersiden har én
+    // mus, og en annen testfil som flytter den samtidig, ga tilfeldige feil
+    // i Firefox.
     const utloser = document.getElementById("utloser") as HTMLElement
     const omslag = utloser.closest(".fs-tooltip") as HTMLElement
     const boble = document.getElementById("hint") as HTMLElement
-    await userEvent.hover(utloser)
-    try {
-      await ventPaTegning()
-      const knapp = utloser.getBoundingClientRect()
-      const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
+    utloser.focus()
+    await ventPaTegning()
 
-      for (const x of [
-        knapp.left + 2,
-        knapp.left + knapp.width / 2,
-        knapp.right - 2,
-      ]) {
-        expect(
-          omslag.contains(document.elementFromPoint(x, hoyde)),
-          `x=${x}`,
-        ).toBe(true)
-      }
-      // Ikke bredere enn knappen: ved siden av står det som var der.
+    const knapp = utloser.getBoundingClientRect()
+    const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
+    for (const x of [
+      knapp.left + 2,
+      knapp.left + knapp.width / 2,
+      knapp.right - 2,
+    ]) {
       expect(
-        omslag.contains(document.elementFromPoint(knapp.right + 4, hoyde)),
-      ).toBe(false)
-    } finally {
-      await userEvent.unhover(utloser)
+        omslag.contains(document.elementFromPoint(x, hoyde)),
+        `x=${x}`,
+      ).toBe(true)
     }
+    // Ikke bredere enn knappen: ved siden av står det som var der.
+    expect(
+      omslag.contains(document.elementFromPoint(knapp.right + 4, hoyde)),
+    ).toBe(false)
   })
 
   it.skipIf(server.browser !== "chromium")(
