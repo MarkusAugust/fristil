@@ -252,6 +252,9 @@
       --fs-color-neutral-raised: #323333;
       --fs-color-overlay: rgba(0, 0, 0, 0.72);
       --fs-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.6);
+      --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+      --fs-color-disabled-text: var(--fs-color-neutral-border);
+      --fs-focus-ring: 2px solid var(--fs-color-accent-border-strong);
     }
   }
 
@@ -349,6 +352,9 @@
     --fs-color-neutral-raised: #e4e4e5;
     --fs-color-overlay: #1a1a1a80;
     --fs-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12);
+    --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+    --fs-color-disabled-text: var(--fs-color-neutral-border);
+    --fs-focus-ring: 2px solid var(--fs-color-accent-border-strong);
   }
 
   [data-theme="dark"],
@@ -445,6 +451,14 @@
     --fs-color-neutral-raised: #323333;
     --fs-color-overlay: rgba(0, 0, 0, 0.72);
     --fs-shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.6);
+    --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+    --fs-color-disabled-text: var(--fs-color-neutral-border);
+    --fs-focus-ring: 2px solid var(--fs-color-accent-border-strong);
+  }
+
+  :where([data-theme="light"], [data-theme="dark"]) {
+    background-color: var(--fs-color-neutral-canvas);
+    color: var(--fs-color-neutral-text);
   }
 
   :root:not([data-theme="light"]):not([data-theme="dark"]):has(

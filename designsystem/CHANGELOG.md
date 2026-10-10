@@ -23,6 +23,27 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **En temagrense sto gjennomsiktig.** En `<div data-theme="dark">` på en lys
+  side fikk mørke tokens, men beholdt sidens hvite bakgrunn, så brødteksten
+  ble 1,23:1. Et element med `data-theme="light"` eller `data-theme="dark"`
+  får nå temaets flate og tekstfarge. Regelen har spesifisitet null, så en
+  komponent med `data-theme` på seg beholder sin egen bakgrunn. Andre
+  verdier, som `auto`, og bar `:root` får ingenting.
+- **Fokusringen og avslått tilstand fulgte ikke en temagrense.**
+  `--fs-focus-ring`, `--fs-color-disabled-surface` og
+  `--fs-color-disabled-text` sto bare på `:root`, og der regnes en `var()` ut
+  én gang for hele siden. En mørk seksjon på en lys side fikk den lyse
+  ringen, 2,4:1 mot flaten. De deklareres nå i hver temablokk og følger også
+  et generert tema. Har du overstyrt en av dem på `:root`, gjelder ikke
+  overstyringen inne i et `data-theme`; skriv den også der.
+- **Fokusringen på det valgte alternativet i `fs-toggle-group` var 1,23:1.**
+  Ringen står oppå den valgte flaten, og har nå `accent-content` som farge
+  der.
+- **Sporet i `fs-progress` var 1,12:1 mot siden.** Stolpen har nå en kant i
+  `neutral-border`, så det synes hvor langt den går.
+
 ## 0.32.1 (2026-10-09)
 
 ### Rettet

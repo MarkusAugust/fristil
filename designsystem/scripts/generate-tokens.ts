@@ -104,6 +104,22 @@ const lightLines = morkeNavn.map((name) => {
 })
 
 /*
+ * Tokenene som er bygget av andre tokens, som fokusringen og avslått tilstand.
+ *
+ * En `var()` i en egendefinert egenskap regnes ut der den deklareres, og
+ * barna arver den ferdige verdien. Sto de bare på `:root`, fikk en seksjon
+ * med `data-theme="dark"` på en lys side den lyse fokusringen, 2,4:1 mot den
+ * mørke flaten, og en avslått knapp ble lysegrå. Deklarert på nytt i hver
+ * temablokk, også mediespørringen så blokkene holder seg like, regnes de ut
+ * mot temaets farger, også et generert tema i
+ * `fristil-tema`-laget. Lista finner dem selv, så et nytt token av samme slag
+ * kommer med.
+ */
+const avledetLines = Object.keys(alle)
+  .filter((name) => !morkeNavn.includes(name) && /var\(--fs-/.test(alle[name]))
+  .map((name) => `      ${name}: ${alle[name]};`)
+
+/*
  * Mørkt tema skrives to ganger, og det er med vilje.
  *
  * Mediespørringen gjør at systemvalget gjelder uten at konsumenten skriver
@@ -150,6 +166,7 @@ lines.push(
   "  @media (prefers-color-scheme: dark) {",
   '    :root:not([data-theme="light"]) {',
   ...darkLines,
+  ...avledetLines,
   "    }",
   "  }",
   "",
@@ -161,6 +178,7 @@ lines.push(
   "    color-scheme: light;",
   "",
   ...lightLines.map((l) => l.slice(2)),
+  ...avledetLines.map((l) => l.slice(2)),
   "  }",
   "",
   '  [data-theme="dark"],',
@@ -168,6 +186,22 @@ lines.push(
   "    color-scheme: dark;",
   "",
   ...darkLines.map((l) => l.slice(2)),
+  ...avledetLines.map((l) => l.slice(2)),
+  "  }",
+  "",
+  /*
+   * En temagrense gir også flaten og teksten. Uten dette sto en
+   * `<div data-theme="dark">` på en lys side gjennomsiktig: tokenene ble
+   * mørke, men bakgrunnen var fortsatt sidens hvite, og brødteksten ble
+   * 1,23:1. Bare `light` og `dark`: andre verdier har ingen temablokk, og
+   * andre biblioteker bruker også `data-theme`. `:where` gir spesifisitet
+   * null, så en komponent med `data-theme` på seg beholder sin egen flate.
+   * Bar `:root` får ingenting, siden pakken kan være gjest på en side den
+   * ikke eier.
+   */
+  '  :where([data-theme="light"], [data-theme="dark"]) {',
+  "    background-color: var(--fs-color-neutral-canvas);",
+  "    color: var(--fs-color-neutral-text);",
   "  }",
   "",
   /*

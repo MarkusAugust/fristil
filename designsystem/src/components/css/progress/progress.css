@@ -18,7 +18,9 @@
     display: block;
     inline-size: 100%;
     block-size: var(--fs-progress-height, var(--fs-spacing-2));
-    border: 0;
+    /* Sporet alene er 1,12:1 mot siden, og uten kant så ingen hvor langt
+       stolpen går. `neutral-border` holder 3:1. */
+    border: 1px solid var(--fs-color-neutral-border);
     border-radius: var(--fs-progress-radius, var(--fs-spacing-1));
     overflow: hidden;
     background: var(--fs-progress-track, var(--fs-color-neutral-surface));
