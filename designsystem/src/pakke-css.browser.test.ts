@@ -36,6 +36,20 @@ function onlyRules(source: string): string {
     .replace(/'[^']*'/g, " ")
 }
 
+/**
+ * Det som står etter klammen som lukker den første blokken. For et stilark
+ * som starter med `@layer fristil {`, er det alt utenfor laget. Strenger og
+ * kommentarer må være tatt bort først, som `onlyRules` gjør.
+ */
+function afterFirstBlock(rules: string): string {
+  let depth = 0
+  for (let i = rules.indexOf("{"); i >= 0 && i < rules.length; i++) {
+    if (rules[i] === "{") depth++
+    else if (rules[i] === "}" && --depth === 0) return rules.slice(i + 1)
+  }
+  return ""
+}
+
 /** Stilark som bare samler andre filer, og derfor ikke har regler selv. */
 function isBundle(source: string): boolean {
   return onlyRules(source)
@@ -104,6 +118,19 @@ describe("stilarkene pakken sender ut", () => {
       .join("\n")
 
     expect(utenImport.trimStart().startsWith("@layer fristil")).toBe(true)
+    // Og ingenting etter at laget er lukket: en regel der står utenfor
+    // laget og slår konsumentens CSS uansett spesifisitet.
+    expect(afterFirstBlock(utenImport).trim()).toBe("")
+  })
+
+  it("finner en regel etter at laget er lukket", () => {
+    const regler = onlyRules(
+      "@layer fristil { .fs-a { color: red } }\n/* } */ .fs-b { content: \"}\" }",
+    )
+    expect(afterFirstBlock(regler).trim()).toMatch(/^\.fs-b/)
+    expect(
+      afterFirstBlock("@layer fristil { .fs-a { color: red } }\n").trim(),
+    ).toBe("")
   })
 
   it("har ingen tegn utenfor ASCII utenom kommentarene", () => {

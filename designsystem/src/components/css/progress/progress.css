@@ -123,5 +123,21 @@
       border: 1px solid CanvasText;
       outline: none;
     }
+
+    /*
+     * Stripen i en ubestemt stolpe er en gradient, og modusen fjerner
+     * gradienter. Uten unntaket sto en tom ramme igjen, og ingenting sa at
+     * noe pågikk. Fargene er systemets egne, så brukerens valg gjelder
+     * fortsatt.
+     */
+    .fs-progress:indeterminate {
+      forced-color-adjust: none;
+      background:
+        linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%)
+        no-repeat,
+        Canvas;
+      background-size: 40% 100%;
+      border-color: CanvasText;
+    }
   }
 }

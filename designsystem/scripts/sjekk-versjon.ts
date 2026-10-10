@@ -127,6 +127,29 @@ if (!maalt) {
   )
 }
 
+/*
+ * Versjonen til hver workspace står også i `bun.lock`, og `bun install`
+ * skriver den ikke på nytt når bare versjonen er endret. `prepare-version`
+ * gjør det for pakken, men utvidelsen fikk 0.8.0 i `package.json` mens
+ * låsefila sto på 0.7.0. Kravet gjelder derfor alle tre.
+ */
+const rotpakke = await Bun.file(join(ROT, "../package.json")).json()
+const laas = await Bun.file(join(ROT, "../bun.lock")).text()
+let workspaces = 0
+for (const mappe of rotpakke.workspaces as string[]) {
+  const ws = await Bun.file(join(ROT, "..", mappe, "package.json")).json()
+  if (ws.version === undefined) continue
+  const iLaas = new RegExp(
+    `"${mappe}": \\{\\s*"name": "${ws.name}",\\s*"version": "([^"]+)"`,
+  ).exec(laas)?.[1]
+  if (iLaas !== ws.version)
+    feil.push(
+      `bun.lock har ${ws.name} ${iLaas ?? "uten versjon"}, mens ${mappe}/package.json har ${ws.version}. Rett versjonen i bun.lock.`,
+    )
+  workspaces += 1
+}
+if (workspaces === 0) feil.push("Fant ingen workspace med versjon å sjekke mot bun.lock.")
+
 if (feil.length > 0) {
   console.error(
     `Versjonsloggen stemmer ikke:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
