@@ -23,8 +23,28 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **En temagrense har nå en flate.** Et element med `data-theme="light"`
+  eller `data-theme="dark"` får temaets bakgrunn og tekstfarge. Før fikk det
+  mørke tokens, men beholdt sidens hvite bakgrunn, så brødteksten i en mørk
+  seksjon på en lys side ble 1,23:1. Regelen har spesifisitet null i
+  `@layer fristil`, så en komponent med `data-theme` på seg, og din egen stil
+  uten lag eller i et senere lag, beholder sin egen bakgrunn. Stil i et lag
+  foran `fristil` taper. `<html>` og `fs-toast` får ingenting. En innebygd
+  komponent med `data-theme` på rotelementet står nå på temaets flate i
+  stedet for å være gjennomsiktig over verten.
+- **`--fs-focus-ring`, `--fs-color-disabled-surface` og
+  `--fs-color-disabled-text` følger en temagrense.** De sto bare på `:root`,
+  der en `var()` regnes ut én gang for hele siden, så en mørk seksjon på en
+  lys side fikk den lyse fokusringen, 2,4:1 mot flaten. De deklareres nå i
+  hver temablokk. Har du overstyrt en av dem på `:root`, gjelder ikke
+  overstyringen lenger inne i et `data-theme`. Skriv den også på
+  `[data-theme="light"]` og `[data-theme="dark"]`.
+
 ### Lagt til
 
+- **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.
 - **`session-activity` og `activity-interval` på `fs-session-timeout`.**
@@ -46,6 +66,12 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Fokusringen på det valgte alternativet i `fs-toggle-group` var 1,23:1.**
+  Ringen står oppå den valgte flaten, og har nå `accent-content` som farge
+  der.
+- **Sporet i `fs-progress` var 1,12:1 mot siden.** Stolpen har nå en kant i
+  `neutral-border`, så det synes hvor langt den går. Kanten er tegnet innover
+  og tar ikke av høyden.
 - **`fs-dialog` meldte forrige knapps verdi når dialogen ble lukket uten
   knapp.** Escape og `close()` uten argument lar `returnValue` stå fra forrige
   lukking. En dialog serveren åpnet på nytt og så lukket, sendte derfor

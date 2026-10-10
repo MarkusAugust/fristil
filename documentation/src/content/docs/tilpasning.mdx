@@ -42,11 +42,22 @@ Skriver du celler selv, er kontrastløftene dine å holde. `fristil sjekk-tema t
 
 :::caution[Overstyrer du, eier du kontrasten]
 Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--fs-color-accent-fill` er for eksempel både knappebakgrunn under `--fs-color-accent-content` og rammefarge på en avkryssingsboks som er huket av.
+
+Haken i en avkryssingsboks er et bilde, ikke en farge, og følger ikke `--fs-color-accent-content` av seg selv. Gjør du `--fs-color-accent-fill` lys og `--fs-color-accent-content` mørk, må du også sette `--fs-icon-check` og `--fs-icon-dash` med samme farge, ellers forsvinner haken. Et tema fra temageneratoren trenger det ikke: rollene har faste lysheter, så haken holder kontrasten der.
 :::
 
 ## Lyst og mørkt
 
-Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil bestemme selv setter `data-theme` på `<html>`:
+Uten at du gjør noe, følger fargene maskinens innstilling. Selve siden er din å male: Fristil setter ingen bakgrunn på `<html>` eller `<body>`, siden pakken kan være gjest på en side den ikke eier. Gi `<body>` flaten og teksten, ellers får du lys tekst på en hvit side når maskinen står i mørkt:
+
+```css
+body {
+	background: var(--fs-color-neutral-canvas);
+	color: var(--fs-color-neutral-text);
+}
+```
+
+En side som vil bestemme temaet selv, setter `data-theme` på `<html>`:
 
 ```html
 <html data-theme="light">
@@ -63,6 +74,10 @@ Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil bes
 ```
 
 Et tema kan ligge inne i et annet, begge veier. En lys boks i en mørk seksjon er like gyldig som det motsatte.
+
+Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Det gjelder ikke `<html>`, som er din, og ikke `fs-toast`. Regelen har spesifisitet null i `@layer fristil`, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn, og det samme gjør din egen stil uten lag eller i et lag etter `fristil`. Står stilen din i et lag *foran* `fristil`, som `base` i Tailwind-oppsettet, vinner Fristils flate.
+
+Fokusringen og fargene for avslått tilstand følger også grensen, fordi de deklareres på nytt i hver temablokk. Overstyrer du `--fs-focus-ring`, `--fs-color-disabled-surface` eller `--fs-color-disabled-text`, skriv overstyringen på `[data-theme="light"]` og `[data-theme="dark"]` også, ellers gjelder den bare utenfor temagrensene.
 
 ### En innebygd komponent låser sitt eget tema
 
@@ -257,6 +272,7 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-pagination-radius` | `var(--fs-spacing-1)` |
 | `--fs-progress-fill` | `var(--fs-color-accent-fill)`, og `data-color` endrer den |
 | `--fs-progress-track` | `var(--fs-color-neutral-surface)` |
+| `--fs-progress-border` | `var(--fs-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
 | `--fs-progress-height` | `var(--fs-spacing-2)` |
 | `--fs-progress-radius` | `var(--fs-spacing-1)` |
 | `--fs-skip-link-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
