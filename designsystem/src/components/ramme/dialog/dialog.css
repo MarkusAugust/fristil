@@ -200,16 +200,44 @@
    * knapperaden får resten av dialogens luft, så avstanden dit også er den
    * samme. Første utgave satte bunnluften til null, og en dialog med bare
    * overskrift og knapper fikk da null piksler mellom dem.
+   *
+   * Reglene gjelder alt som ikke er en av de fem fargene. Før traff de bare
+   * en dialog uten attributtet, og `neutral`, som er standardverdien og som
+   * editoren foreslår, fikk 20 piksler under overskriften i stedet for 8.
+   * Det samme fikk en tom verdi fra en mal.
    */
-  .fs-dialog:not([data-color]) > .fs-dialog__header {
+  .fs-dialog:not(
+    [data-color="brand"],
+    [data-color="info"],
+    [data-color="success"],
+    [data-color="warning"],
+    [data-color="danger"]
+  )
+  > .fs-dialog__header {
     padding-block-end: var(--fs-spacing-2);
   }
 
-  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__body {
+  .fs-dialog:not(
+      [data-color="brand"],
+      [data-color="info"],
+      [data-color="success"],
+      [data-color="warning"],
+      [data-color="danger"]
+    )
+    > .fs-dialog__header
+    + .fs-dialog__body {
     padding-block-start: 0;
   }
 
-  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__footer {
+  .fs-dialog:not(
+      [data-color="brand"],
+      [data-color="info"],
+      [data-color="success"],
+      [data-color="warning"],
+      [data-color="danger"]
+    )
+    > .fs-dialog__header
+    + .fs-dialog__footer {
     padding-block-start: calc(
       var(--fs-dialog-padding, var(--fs-spacing-5)) -
       var(--fs-spacing-2)

@@ -54,7 +54,7 @@
     "body": [
       "<!-- `popover`, id-en og `aria-controls` setter komponenten. -->",
       "<fs-popover id=\"meny\" placement=\"bottom-end\">",
-      "  <button class=\"fs-button\" data-variant=\"secondary\">Handlinger</button>",
+      "  <button class=\"fs-button\" data-variant=\"secondary\" type=\"button\">Handlinger</button>",
       "",
       "  <ul class=\"fs-popover\">",
       "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Arkiver saken</button></li>",

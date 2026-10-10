@@ -56,6 +56,8 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
       const dialog = document.getElementById("bekreft")
 
       document.getElementById("apne").addEventListener("click", () => {
+        // Escape og close() uten verdi lar forrige verdi stå.
+        dialog.returnValue = ""
         dialog.showModal()
       })
 
@@ -145,6 +147,8 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
       const dialog = document.getElementById("bekreft") as HTMLDialogElement
 
       document.getElementById("apne")?.addEventListener("click", () => {
+        // Escape og close() uten verdi lar forrige verdi stå.
+        dialog.returnValue = ""
         dialog.showModal()
       })
 
@@ -275,7 +279,7 @@ Inne i `<fs-dialog>` gir komponenten dialogen navnet sitt fra den første oversk
 
 **Gi knappen som lukker dialogen en `value`.** Uten JavaScript er dialogen en boks på siden, og `<form method="dialog">` lukker den før noe skript har kjørt. Komponenten kjenner igjen det som alt har skjedd på `returnValue`, som nettleseren setter til verdien på knappen. Er den tom, ser komponenten en vert som sier «åpen» og en lukket dialog, og åpner den igjen.
 
-Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog">`, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. Et klikk på flaten bak lukker den ikke; det gjør heller ikke en vanlig `<dialog>`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open` og `detail.returnValue`, altså verdien på knappen som lukket den. Det er den du skiller «Avbryt» fra «Slett» med.
+Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog">`, fjerner komponenten `open` fra `<fs-dialog>` igjen, slik at markupen sier det samme som skjermen. Et klikk på flaten bak lukker den ikke; det gjør heller ikke en vanlig `<dialog>`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open` og `detail.returnValue`, altså verdien på knappen som lukket den. Det er den du skiller «Avbryt» fra «Slett» med. Komponenten tømmer verdien hver gang den åpner dialogen, så en dialog som lukkes uten knapp, med Escape eller fra serveren, melder en tom verdi og ikke den fra forrige gang.
 
 De to `open`-ene i eksempelet er ikke det samme:
 
