@@ -2235,6 +2235,8 @@
               "cases": {
                 "false": {},
                 "true": {
+                  "role": "link",
+                  "tabindex": "0",
                   "aria-disabled": "true"
                 }
               }

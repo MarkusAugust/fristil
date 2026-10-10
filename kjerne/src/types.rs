@@ -87,6 +87,7 @@ pub const RULES: &[&str] = &[
     "ikke-tall",
     "ukjent-klasse",
     "ugyldig-klasseverdi",
+    "deaktivert-med-href",
     "felt-uten-kontroll",
     "felt-uten-ledetekst",
     "tidsavbrudd-uten-dialog",

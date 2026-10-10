@@ -39,9 +39,11 @@ import { fs } from "@fristil/designsystem"
 const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
 
 fs.setAttributes(lenke, fs.link({ disabled: !klar }))
+if (klar) lenke?.setAttribute("href", "/arsoppgave")
+else lenke?.removeAttribute("href")
 ```
 
-Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false`. Da fjernes `aria-disabled`, og lenken virker igjen.
+`href` er appens, ikke byggefunksjonens, så den setter og fjerner du selv. Blir årsoppgaven klar senere, kjører du begge linjene på nytt. Da fjernes `aria-disabled`, `role` og `tabindex`, og lenken virker igjen. `fs.link()` forvalter alle tre, så en `role` eller `tabindex` du har satt selv på samme lenke, fjernes også. Trenger lenken dem, sett dem etter `setAttributes`.
 
 </Fragment>
 </Eksempel>
@@ -50,12 +52,14 @@ Blir årsoppgaven klar senere, kaller du den på nytt med `disabled: false`. Da 
 
 <Eksempel stiler={["link"]} kode={`
 <a class="fs-link" href="#">Se kvittering</a>
-<a class="fs-link" aria-disabled="true" href="#">Se årsoppgave</a>
+<a class="fs-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
 `} />
 
-`aria-disabled="true"` demper fargen og slår av klikk med `pointer-events: none`. Lenken blir liggende i tabrekkefølgen, så skjermlesere kan lese den og si at den er utilgjengelig. Det er forskjellen fra å fjerne `href`.
+En deaktivert lenke har ingen `href`. `aria-disabled="true"` demper fargen og slår av musa med `pointer-events: none`, men tastaturet følger `href` med Enter uansett. Derfor må den bort.
 
-Merk at `pointer-events: none` stopper musa, ikke tastaturet. Skal lenken ikke kunne følges i det hele tatt, må du også fjerne `href`.
+Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabrekkefølgen. `role="link"` og `tabindex="0"` gir den begge tilbake, så skjermlesere finner den og kan si at den er utilgjengelig. `fs.link({ disabled: true })` gir alle tre.
+
+`fristil sjekk` melder en `fs-link` eller `fs-button` med både `aria-disabled="true"` og `href` (regelen `deaktivert-med-href`).
 
 ## Klasser du kan style
 

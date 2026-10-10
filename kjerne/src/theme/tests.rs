@@ -501,14 +501,16 @@ fn reports_a_layer_on_another_family_than_neutral() {
 
 #[test]
 fn reads_a_value_with_important() {
-    let report = inspect_theme(":root { --fs-color-danger-text: #7a1f28 !important }");
+    let report =
+        inspect_theme(":root { color-scheme: light; --fs-color-danger-text: #7a1f28 !important }");
     assert_eq!(report.declarations, 1);
     assert!(report.problems.is_empty());
 }
 
 #[test]
 fn counts_the_consumers_own_values_not_the_defaults() {
-    let one_line = inspect_theme(":root { --fs-color-neutral-canvas: #ffffff }");
+    let one_line =
+        inspect_theme(":root { color-scheme: light; --fs-color-neutral-canvas: #ffffff }");
     let whole = inspect_theme(&format!(
         ":root {{ color-scheme: light; {} }}",
         declarations(&tokens(Appearance::Light))
@@ -539,7 +541,7 @@ fn a_brace_in_a_string_does_not_end_the_block() {
 
 #[test]
 fn a_semicolon_in_a_string_does_not_split_a_declaration() {
-    let css = ":root { font-family: \"a;--fs-color-accent-text: #ffffff\"; --fs-color-danger-text: #7a1f28 }";
+    let css = ":root { color-scheme: light; font-family: \"a;--fs-color-accent-text: #ffffff\"; --fs-color-danger-text: #7a1f28 }";
     let blocks = parse_blocks(css);
     assert_eq!(
         blocks[0].declarations.len(),
@@ -552,7 +554,7 @@ fn a_semicolon_in_a_string_does_not_split_a_declaration() {
 
 #[test]
 fn a_brace_in_a_url_is_not_a_block() {
-    let css = ":root { background: url(data:image/svg+xml,{x}); --fs-color-danger-text: #7a1f28 }";
+    let css = ":root { color-scheme: light; background: url(data:image/svg+xml,{x}); --fs-color-danger-text: #7a1f28 }";
     assert_eq!(parse_blocks(css).len(), 1);
     assert!(inspect_theme(css).problems.is_empty());
 }
@@ -571,4 +573,108 @@ fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
         .iter()
         .any(|m| m.contains("ikke er lukket")));
     assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
+}
+
+// En bar `:root` gjelder i begge temaer. Fristils mørke blokk overstyrer
+// bare tokenene den selv har, så en lys verdi som ingen mørk blokk tar,
+// står også i mørkt.
+
+#[test]
+fn checks_a_bare_root_against_the_dark_theme_too() {
+    let report = inspect_theme(":root { --fs-color-neutral-text: #0d4e8c }");
+    assert!(
+        report
+            .problems
+            .iter()
+            .any(|p| p.selector.contains("i mørkt tema") && p.message.contains("neutral: text")),
+        "{:?}",
+        messages(&report)
+    );
+}
+
+#[test]
+fn a_dark_block_takes_over_the_value_from_a_bare_root() {
+    let css = ":root { --fs-color-neutral-text: #0d4e8c }
+        [data-theme=\"dark\"] { --fs-color-neutral-text: #e8eaed }";
+    assert!(
+        inspect_theme(css).problems.is_empty(),
+        "{:?}",
+        messages(&inspect_theme(css))
+    );
+}
+
+#[test]
+fn a_block_bound_to_light_is_checked_only_as_light() {
+    for css in [
+        "[data-theme=\"light\"] { --fs-color-neutral-text: #0d4e8c }",
+        ":root { color-scheme: light; --fs-color-neutral-text: #0d4e8c }",
+    ] {
+        assert!(inspect_theme(css).problems.is_empty(), "{css}");
+    }
+}
+
+#[test]
+fn light_and_dark_together_is_both_themes() {
+    let report =
+        inspect_theme(":root { color-scheme: light dark; --fs-color-neutral-text: #0d4e8c }");
+    assert!(
+        report
+            .problems
+            .iter()
+            .any(|p| p.selector.contains("i mørkt tema")),
+        "{:?}",
+        messages(&report)
+    );
+}
+
+#[test]
+fn a_print_block_is_not_checked_as_dark() {
+    let report = inspect_theme(":root { @media print { --fs-color-neutral-text: #0d4e8c } }");
+    assert!(report.problems.is_empty(), "{:?}", messages(&report));
+}
+
+#[test]
+fn light_must_be_a_word() {
+    for selector in [".highlight", ".lightbox", "@layer brand { :root"] {
+        let close = if selector.contains('{') { "}" } else { "" };
+        let css = format!("{selector} {{ --fs-color-neutral-text: #0d4e8c }}{close}");
+        let report = inspect_theme(&css);
+        assert!(
+            report
+                .problems
+                .iter()
+                .any(|p| p.selector.contains("i mørkt tema")),
+            "{css}: {:?}",
+            messages(&report)
+        );
+    }
+    for css in [
+        ".light-mode { --fs-color-neutral-text: #0d4e8c }",
+        "@media only print { :root { --fs-color-neutral-text: #0d4e8c } }",
+    ] {
+        assert!(inspect_theme(css).problems.is_empty(), "{css}");
+    }
+}
+
+#[test]
+fn not_dark_is_both_themes_and_not_light() {
+    // `:root:not([data-theme="dark"])` treffer også systemets mørke modus
+    // når `data-theme` mangler.
+    let report =
+        inspect_theme(":root:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
+    assert!(
+        report
+            .problems
+            .iter()
+            .any(|p| p.selector.contains("i mørkt tema") && p.message.contains("neutral: text")),
+        "{:?}",
+        messages(&report)
+    );
+}
+
+#[test]
+fn dark_inside_not_does_not_make_a_dark_block() {
+    let blocks =
+        parse_blocks(".kort:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
+    assert_eq!(blocks[0].appearance, Appearance::Light);
 }

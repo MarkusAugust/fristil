@@ -9,7 +9,15 @@
  * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
  */
 
-import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -604,6 +612,95 @@ function krev(påstand: boolean, beskrivelse: string): void {
   krev(
     borte.kode !== 0 && borte.feil.includes("borte.css"),
     "et stilark som ikke finnes, ble ikke meldt",
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// `@import` fra en pakke følger `exports`, slik en bundler gjør
+{
+  /*
+   * Stien i `@import "@fristil/designsystem/fristil.css"` er et navn i
+   * `exports`, ikke en fil i pakken: fila ligger i `dist/`. Sjekken slo den
+   * opp som en fil, fant ingenting og meldte hver klasse som ustylet. Pakkene
+   * står i en `node_modules` over stilarket, og kommandoen kjøres fra en
+   * annen mappe, så oppslaget går fra stilarket og ikke fra arbeidsmappa.
+   */
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
+  const fristil = join(mappe, "node_modules/@fristil/designsystem")
+  await cp(join(pakke, "dist/fristil.css"), join(fristil, "dist/fristil.css"))
+  await writeFile(
+    join(fristil, "package.json"),
+    JSON.stringify({
+      name: "@fristil/designsystem",
+      exports: { "./fristil.css": "./dist/fristil.css" },
+    }),
+  )
+  // Et betingelsesobjekt, som pakker med både `style` og `default` bruker.
+  // Fila er fristil.css igjen, så siden er bare ren hvis den blir funnet.
+  const tema = join(mappe, "node_modules/tema")
+  await cp(join(pakke, "dist/fristil.css"), join(tema, "lib/tema.css"))
+  await writeFile(
+    join(tema, "package.json"),
+    JSON.stringify({
+      name: "tema",
+      exports: { "./tema.css": { style: "./lib/tema.css" } },
+    }),
+  )
+  const stiler = join(mappe, "src/stiler")
+  await mkdir(stiler, { recursive: true })
+  await writeFile(
+    join(stiler, "app.css"),
+    '@import "@fristil/designsystem/fristil.css";\n',
+  )
+  await writeFile(join(stiler, "tema.css"), '@import "tema/tema.css";\n')
+  // Et mønster i `exports`, og en pakke importert ved navn alene.
+  const stjerne = join(mappe, "node_modules/stjerne")
+  await cp(join(pakke, "dist/fristil.css"), join(stjerne, "dist/alt.css"))
+  await writeFile(
+    join(stjerne, "package.json"),
+    JSON.stringify({ name: "stjerne", exports: { "./*": "./dist/*" } }),
+  )
+  await writeFile(join(stiler, "stjerne.css"), '@import "stjerne/alt.css";\n')
+  const naken = join(mappe, "node_modules/naken")
+  await cp(join(pakke, "dist/fristil.css"), join(naken, "alt.css"))
+  await writeFile(
+    join(naken, "package.json"),
+    JSON.stringify({ name: "naken", exports: { ".": "./alt.css" } }),
+  )
+  await writeFile(join(stiler, "naken.css"), '@import "naken";\n')
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+  )
+
+  for (const stilark of ["app.css", "tema.css", "stjerne.css", "naken.css"]) {
+    for (const fra of [mappe, stiler, tmpdir()]) {
+      const svar = await kjør(
+        ["sjekk", `--css=${join(stiler, stilark)}`, side],
+        fra,
+      )
+      krev(
+        svar.kode === 0,
+        `@import fra en pakke i ${stilark} ble ikke fulgt, kjørt fra ${fra}: ${svar.ut}${svar.feil}`,
+      )
+    }
+  }
+
+  // En relativ sti er en fil, ikke en pakke. `../alt.css` finnes ikke ved
+  // siden av stilarket, og skal ikke finnes et annet sted i prosjektet.
+  await mkdir(join(mappe, "src"), { recursive: true })
+  await cp(join(pakke, "dist/fristil.css"), join(mappe, "alt.css"))
+  await writeFile(join(mappe, "package.json"), "{}")
+  await writeFile(join(stiler, "relativ.css"), '@import "../alt.css";\n')
+  const relativ = await kjør([
+    "sjekk",
+    `--css=${join(stiler, "relativ.css")}`,
+    side,
+  ])
+  krev(
+    relativ.kode !== 0,
+    "en relativ @import som ikke finnes, ble hentet fra et annet sted i prosjektet",
   )
   await rm(mappe, { recursive: true, force: true })
 }

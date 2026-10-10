@@ -25,6 +25,8 @@ pub struct ParsedBlock {
     pub appearance: Appearance,
     /// Tokennavn til verdi, slik de sto skrevet.
     pub declarations: Vec<(String, String)>,
+    /// Om blokka selv sa `color-scheme: light`, og ikke `dark` ved siden av.
+    pub light_scheme: bool,
 }
 
 /// Kommentarene tatt bort, til teksten i en selektor og en verdi.
@@ -210,6 +212,11 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
                 .join(" "),
             appearance: read_appearance(&path.join(" "), scheme),
             declarations: colors,
+            light_scheme: scheme.is_some_and(|v| {
+                let v = v.to_lowercase();
+                let words: Vec<&str> = v.split(is_js_space).collect();
+                words.contains(&"light") && !words.contains(&"dark")
+            }),
         });
     }
     path.pop();
@@ -281,6 +288,52 @@ fn without_important(value: &str) -> &str {
     value
 }
 
+/// Om blokka bare gjelder i lyst tema: selektoren har `light` som eget ord
+/// utenfor en `:not()`, eller den står i en `@media` for `print`, som
+/// skrives ut lyst. `.highlight` og `.lightbox` er ikke lyst tema.
+fn only_light(selector: &str) -> bool {
+    let s = without_not(selector).to_ascii_lowercase();
+    let words: Vec<&str> = s
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
+        .collect();
+    words.contains(&"light")
+        || words
+            .iter()
+            .any(|w| w.starts_with("light-") || w.ends_with("-light"))
+        || s.split("@media").skip(1).any(|media| {
+            media
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|w| w == "print")
+        })
+}
+
+/// Selektoren med innholdet i hver `:not(…)` tatt bort.
+fn without_not(selector: &str) -> String {
+    let mut out = String::new();
+    let mut rest = selector;
+    while let Some(start) = rest.to_ascii_lowercase().find(":not(") {
+        out.push_str(&rest[..start]);
+        let mut depth = 0;
+        let mut end = rest.len();
+        for (i, c) in rest[start + 4..].char_indices() {
+            match c {
+                '(' => depth += 1,
+                ')' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        end = start + 4 + i + 1;
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
 /// Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
 ///
 /// `scheme` er verdien i blokkas siste `color-scheme`, som vinner i kaskaden.
@@ -307,6 +360,8 @@ fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
         }
     }
     // `dark` må stå som eget ord: `.darkmode-toggle` er ikke et mørkt tema.
+    // Det som står i `:not(…)` sier hva blokka ikke er.
+    let selector = without_not(selector);
     let s: Vec<char> = selector.chars().collect();
     let letter = |c: Option<&char>| c.is_some_and(|c| c.is_ascii_alphabetic());
     for k in 0..s.len() {
@@ -419,7 +474,38 @@ pub fn inspect_theme(css: &str) -> Report {
         .collect::<Vec<_>>()
         .join(", ");
 
-    for block in &blocks {
+    // En lys blokk som ikke er bundet til lyst tema (bar `:root`) gjelder også
+    // i mørkt, for tokenene ingen mørk blokk overstyrer. De kontrolleres mot
+    // de mørke standardverdiene.
+    let dark_names: Vec<&String> = blocks
+        .iter()
+        .filter(|b| b.appearance == Appearance::Dark)
+        .flat_map(|b| b.declarations.iter().map(|(n, _)| n))
+        .collect();
+    let mut checks: Vec<ParsedBlock> = Vec::new();
+    for b in &blocks {
+        if b.appearance != Appearance::Light || b.light_scheme || only_light(&b.selector) {
+            continue;
+        }
+        let rest: Vec<(String, String)> = b
+            .declarations
+            .iter()
+            .filter(|(n, v)| !dark_names.contains(&n) && is_hex(v) && split_token(n).is_some())
+            .cloned()
+            .collect();
+        if !rest.is_empty() {
+            checks.push(ParsedBlock {
+                selector: format!("{} (i mørkt tema, ingen mørk blokk overstyrer)", b.selector),
+                appearance: Appearance::Dark,
+                declarations: rest,
+                light_scheme: false,
+            });
+        }
+    }
+    let originals = blocks.len();
+    let all: Vec<&ParsedBlock> = blocks.iter().chain(checks.iter()).collect();
+
+    for (nth, block) in all.iter().enumerate() {
         let defaults = build_matrix(&contract().brands, block.appearance)
             .expect("Fristils egne farger skal alltid gi en matrise")
             .tokens;
@@ -437,7 +523,7 @@ pub fn inspect_theme(css: &str) -> Report {
                 Some(existing) => existing.1 = value.clone(),
                 None => values.push((name.clone(), value.clone())),
             }
-            if split_token(name).is_some() {
+            if split_token(name).is_some() && nth < originals {
                 understood += 1;
             }
         }
@@ -482,7 +568,9 @@ pub fn inspect_theme(css: &str) -> Report {
                 .collect();
             if missing.is_empty() {
                 complete.push((name, family));
-            } else {
+            } else if nth < originals {
+                // Kontrollen i mørkt tema er den samme blokka, og den har alt
+                // meldt at familien mangler roller.
                 problems.push(Problem {
                     selector: block.selector.clone(),
                     message: format!("{name} mangler {}. En familie må ha alle rollene for at løftene skal kunne kontrolleres.", missing.join(", ")),
