@@ -89,6 +89,7 @@ egen overskrift «Brytende».
 - **`"./package.json"` i `exports`.** Et verktøy som leser pakkens versjon
   med `require.resolve("@fristil/designsystem/package.json")` eller
   `import … with { type: "json" }`, fikk `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+  Nå finner de den.
 - **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.

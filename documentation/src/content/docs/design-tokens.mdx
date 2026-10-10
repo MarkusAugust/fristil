@@ -49,7 +49,7 @@ Ni roller, like for hver familie. Tekst og kant har tre trinn hver, som speiler 
 | `border` | Rammen rundt et felt eller en flate | 3,1:1 mot siden, mot `raised` og mot egen `surface` |
 | `border-strong` | Feltrammen når musa er over, og en tabellstrek | følger av `border`, som den ligger utenfor |
 | `fill` | Fylt flate: en knapp, en avkryssingsboks som er huket av | 3,1:1 mot siden og mot `raised` |
-| `content` | Teksten oppå `fill`, og oppå `text` når en knapp har musa over seg | 4,6:1 mot `fill` og mot `text` |
+| `content` | Teksten oppå `fill`, og oppå `text` på en knapp ved hover | 4,6:1 mot `fill` og mot `text` |
 | `text-subtle` | Dempet tekst: hjelpetekst, plassholdere | 4,6:1 mot siden, mot `neutral-surface` og mot `raised` |
 | `text` | Familiens farge som tekst, og knappen ved hover | de samme tre, og mot egen `surface` |
 | `text-strong` | Brødtekst, overskrifter og lenka ved hover | de samme tre |
@@ -61,7 +61,7 @@ Den nøytrale familien har to roller i tillegg, fordi den bærer siden selv:
 | `--fs-color-neutral-canvas` | Siden | hver tekstrolle i hver familie holder mot den |
 | `--fs-color-neutral-raised` | En flate som ligger over et kort | det samme |
 
-Tekst må holde mot alle tre lagene, altså siden, `neutral-surface` og `neutral-raised`. Et kort står på siden (`canvas`), og et fylt kort på `neutral-surface`, så teksten i begge holder. Ellers blir et kort på et kort uleselig uten at noe sier fra.
+Tekst må holde mot alle tre lagene, altså siden, `neutral-surface` og `neutral-raised`. Et vanlig kort har sidens bakgrunn (`canvas`), et fylt kort har `neutral-surface`, og en flate over et kort har `neutral-raised`. Holdt teksten bare mot siden, ville et kort på et kort blitt uleselig uten at noe sa fra.
 
 Hver rad er en familie, hver rute en rolle, i rekkefølgen over:
 
@@ -90,8 +90,10 @@ Skriver du dine egne verdier, er løftene dine å holde. `fristil sjekk-tema tem
 | `--fs-color-disabled-surface`, `--fs-color-disabled-text` | Kontroller som er slått av. Unntatt kontrastkravet i WCAG 1.4.3, og med vilje dempet: en kontroll som er av skal se av |
 | `--fs-color-overlay` | Flaten bak en modal |
 | `--fs-shadow-overlay` | Skyggen under et panel som ligger over siden |
-| `--fs-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Bredden og stilen gjelder hele systemet, men fargen gjør ikke det: den byttes med vilje i ugyldig tilstand i Input, Textarea, Select, Checkbox og Radio, i vellykket tilstand i Input, Textarea og Select, i Skip Link og Error Summary, og på det valgte alternativet i en Select med stylet liste og i en Toggle Group, der ringen står oppå en farget flate. Endrer du fargen i tokenet, gjelder den ikke der |
+| `--fs-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Bredden og stilen gjelder overalt, fargen ikke, se under tabellen |
 | `--fs-icon-search`, `--fs-icon-check`, `--fs-icon-dash`, `--fs-icon-calendar`, `--fs-icon-clock` | Ikoner tegnet inn i en bakgrunn |
+
+Fargen i `--fs-focus-ring` gjelder ikke overalt. Den byttes med vilje i ugyldig tilstand (Input, Textarea, Select, Checkbox, Radio), i vellykket tilstand (Input, Textarea, Select), i Skip Link og Error Summary, og på det valgte alternativet i Select med stylet liste og i Toggle Group, der ringen står oppå en farget flate. Endrer du fargen i tokenet, gjelder den ikke der.
 
 `--fs-color-disabled-surface`, `--fs-color-disabled-text` og `--fs-focus-ring` er bygget av andre tokens, og deklareres på nytt i hver temagrense, så de følger temaet til elementet. Overstyrer du en av dem på `:root`, gjelder ikke overstyringen inne i et `data-theme`. Skriv den også på `[data-theme="light"]` og `[data-theme="dark"]`, slik fargene skrives i [Tilpasning](../tilpasning/).
 

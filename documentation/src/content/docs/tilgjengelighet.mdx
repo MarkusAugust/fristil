@@ -65,10 +65,10 @@ Ber brukeren om mindre bevegelse i systemet sitt, demper systemet seg selv:
 | [Skeleton](../components/skeleton/) | Står stille, uten skimmer |
 | [Skip Link](../components/skip-link/) | Kommer til syne uten å gli |
 | [Tooltip](../components/tooltip/) | Vises uten overgang |
-| [Progress](../components/progress/) | Fyllet glir ikke fram, og den ubestemte stripen sveiper saktere, av samme grunn som spinneren |
-| [Select](../components/select/) med `data-picker="styled"` | Lista og pila åpner seg uten overgang |
+| [Progress](../components/progress/) | Fyllet glir ikke fram, og den ubestemte stripen beveger seg saktere, av samme grunn som spinneren |
+| [Select](../components/select/) med `data-picker="styled"` | Lista åpner seg og pila snur, uten overgang |
 
-[Error Summary](../components/error-summary/) har ingen egen regel. Når en lenke følges, ruller den til feltet uten å bestemme farten selv, så sidens egen `scroll-behavior` gjelder. Setter siden `scroll-behavior: smooth`, bør den slå det av under `prefers-reduced-motion: reduce`.
+[Error Summary](../components/error-summary/) har ingen egen regel. Når brukeren følger en lenke i boksen, ruller Error Summary til feltet uten å sette farten selv, så sidens `scroll-behavior` avgjør. Har siden `scroll-behavior: smooth`, bør du slå det av under `prefers-reduced-motion: reduce`.
 
 ## Smal skjerm
 

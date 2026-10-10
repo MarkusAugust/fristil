@@ -178,9 +178,11 @@ Hver CSS-komponent finnes også som eget inngangspunkt (`@fristil/designsystem/b
 
 Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, attributtene byggefunksjonene skriver (`data-*` og `aria-*` medregnet), tokennavnene, `--fs-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på.
 
-Før 1.0 kan et nytt undertall, som 0.33.0, ha brytende endringer. De står da under overskriften «Brytende» i versjonsloggen, med hva du må endre. Fra 1.0 endres ingenting av dette uten en ny hovedversjon. `npm install` skriver `^0.32.1`, og for en versjon under 1.0 betyr det 0.32 og ikke 0.33, så et nytt undertall kommer bare når du ber om det.
+Før 1.0 kan et nytt undertall, som et skifte fra 0.x til 0.(x+1), ha brytende endringer. De står da under overskriften «Brytende» i versjonsloggen, med hva du må endre. Fra 1.0 endres ingen av disse uten en ny hovedversjon.
 
-Pakken er ren ESM, uten en CommonJS-utgave. Bruk `import`.
+`npm install` skriver versjonen med `^` foran. Under 1.0 godtar `^` bare nye rettelser i det samme undertallet, så et nytt undertall får du først når du ber om det, ved å skrive det nye nummeret i `package.json` eller installere pakken på nytt.
+
+Pakken er ren ESM, uten CommonJS-utgave. Bruk `import`.
 
 Hva som er endret i hver versjon står i [CHANGELOG.md](https://github.com/MarkusAugust/fristil/blob/master/designsystem/CHANGELOG.md), som også følger med i pakken.
 
