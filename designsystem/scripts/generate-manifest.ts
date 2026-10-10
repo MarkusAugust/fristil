@@ -540,17 +540,17 @@ const klasser = Object.fromEntries(
     {
       ...klasse,
       attributes: {
-        // Flaggene står i `classes.ts` også, med en tom verdiliste. Her
-        // har de formen manifestskjemaet sier: `{ flag: true }`.
+        // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
+        // derfra, men utledes på nytt under, ellers ble et flagg som er
+        // borte fra byggefunksjonen stående i manifestet for alltid.
         ...Object.fromEntries(
-          Object.entries(klasse.attributes).map(([a, verdi]) => [
-            a,
-            verdi.flag ? { flag: true } : verdi,
-          ]),
+          Object.entries(klasse.attributes).filter(([, verdi]) => !verdi.flag),
         ),
         ...Object.fromEntries(
           [...(flagg.get(navn) ?? [])]
-            .filter((a) => !(a in klasse.attributes))
+            .filter(
+              (a) => !(a in klasse.attributes) || klasse.attributes[a].flag,
+            )
             .sort()
             .map((a) => [a, { flag: true }]),
         ),
