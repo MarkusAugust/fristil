@@ -41,12 +41,27 @@ egen overskrift «Brytende».
   hver temablokk. Har du overstyrt en av dem på `:root`, gjelder ikke
   overstyringen lenger inne i et `data-theme`. Skriv den også på
   `[data-theme="light"]` og `[data-theme="dark"]`.
+- **`hidden` skjuler nå alle komponentene.** Forfatterstil slår nettleserens
+  `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` og 41 andre
+  klasser, åtte av elementene og barn uten klasse, som `option` i en stylet
+  `fs-select`, et ledd i `fs-breadcrumbs` og en rad i fillista, sto
+  synlige. En regel i `@layer fristil` med `!important` skjuler dem nå,
+  slik nettleseren selv gjør. Den kan ikke overstyres med en regel uten
+  `!important`, og heller ikke med `!important` uten lag. `hidden="until-found"`
+  får stå.
+- **`.fs-tooltip__bubble` er `display: none` når den er skjult**, ikke
+  `visibility: hidden`. En skjult boble tok plass og ga sidelengs rulling ved
+  høyre kant. Teksten er fortsatt knappens beskrivelse gjennom
+  `aria-describedby`.
 
 ### Lagt til
 
 - **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.
+- **`--fs-accordion-padding-inline`** gir overskriften og innholdet i
+  `fs-accordion` samme luft til sidene. Før gjaldt `--fs-accordion-padding`
+  bare overskriften.
 
 ### Rettet
 
@@ -90,6 +105,24 @@ egen overskrift «Brytende».
   - Et trykk noe annet alt hadde brukt, som en forslagsliste i vinduet som
     lukket seg, lukket vinduet også. Nå står vinduet.
   - Med to vinduer inni hverandre lukkes nå det innerste først.
+- **Avslått vant ikke over en tilstand.** Et ugyldig eller vellykket felt
+  som var slått av, så rødt eller grønt ut, ikke avslått. Det gjaldt input,
+  select, textarea, filopplasting, avkryssingsboks og radioknapp.
+- **Gjeldende side i `fs-pagination` ble uleselig under musa i høykontrast.**
+  Hover-regelen slo høykontrastregelen, og bakgrunn og tekst fikk samme farge.
+- **Skilletegnet i `fs-breadcrumbs` ble lest opp.** Generert innhold leses
+  opp, så skjermleseren sa «skråstrek» mellom hvert steg. Det har nå en tom
+  alternativ tekst der nettleseren støtter det.
+- **Boblen i `fs-tooltip` forsvant før musa nådde den.** Gapet mellom knappen
+  og boblen har nå en usynlig bro i knappens bredde mens boblen vises. Flytter
+  du boblen under knappen, må broen også flyttes; snutten på komponentsiden
+  har det med. Komponentsiden sier at boblen ikke kan
+  lukkes med Escape, som WCAG 1.4.13 krever, og når Popover passer bedre.
+- **Pila i `fs-accordion` pekte sidelengs i høyre-til-venstre**, og pila i
+  `fs-select` sto 6 piksler fra kanten der i stedet for 12.
+- **En overskrift i `summary` i `fs-accordion` fikk nettleserens marg og
+  størrelse.** Dokumentasjonen viser `<summary><h3>`, og raden ble høyere og
+  teksten større enn uten overskrift.
 
 ## 0.32.1 (2026-10-09)
 

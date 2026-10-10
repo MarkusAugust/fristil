@@ -72,6 +72,19 @@
     border-color: var(--fs-color-success-text);
   }
 
+  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
+     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
+     var slått av under innsending så rødt ut, ikke avslått. */
+  .fs-checkbox:disabled[data-state] {
+    background-color: var(--fs-color-disabled-surface);
+    border-color: var(--fs-color-disabled-surface);
+  }
+
+  .fs-checkbox:disabled:is(:checked, :indeterminate)[data-state] {
+    background-color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-text);
+  }
+
   /* Boksen og teksten på én linje, med teksten på plass ved flere linjer. */
   .fs-checkbox-row {
     display: flex;

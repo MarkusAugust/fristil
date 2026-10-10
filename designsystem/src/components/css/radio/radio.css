@@ -61,6 +61,19 @@
     border-color: var(--fs-color-success-text);
   }
 
+  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
+     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
+     var slått av under innsending så rødt ut, ikke avslått. */
+  .fs-radio:disabled[data-state] {
+    background-color: var(--fs-color-disabled-surface);
+    border-color: var(--fs-color-disabled-surface);
+  }
+
+  .fs-radio:disabled:checked[data-state] {
+    background-color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-text);
+  }
+
   .fs-radio-row {
     display: flex;
     align-items: flex-start;

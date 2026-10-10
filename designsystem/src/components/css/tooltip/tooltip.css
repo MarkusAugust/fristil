@@ -21,11 +21,16 @@
     color: var(--fs-color-neutral-canvas);
     background: var(--fs-color-neutral-text-strong);
     border-radius: var(--fs-tooltip-radius, var(--fs-spacing-1));
-    /* Boblen er skjult til utløseren får fokus eller musa. `visibility` og
-       `opacity`, så den kan tones inn. `aria-describedby` leser teksten den
-       peker på også mens boblen er skjult. */
-    visibility: hidden;
+    /* Boblen er skjult til utløseren får fokus eller musa. `display: none`
+       og ikke bare `visibility`: en skjult boble tok fortsatt plass, og ved
+       høyre kant ga den sidelengs rulling på en smal skjerm.
+       `aria-describedby` leser teksten den peker på også mens boblen er
+       skjult. */
+    display: none;
     opacity: 0;
+    /* Mens den tones ut, står boblen et øyeblikk med `display` på. Uten
+       dette tok den og broen klikk som var ment for det som lå under. */
+    pointer-events: none;
   }
 
   /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
@@ -36,13 +41,37 @@
 
   .fs-tooltip:hover .fs-tooltip__bubble,
   .fs-tooltip:focus-within .fs-tooltip__bubble {
-    visibility: visible;
+    display: block;
     opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* En usynlig bro over gapet mellom knappen og boblen, så bred som
+     knappen. Uten den slapp `:hover` på vei opp, og boblen forsvant før
+     musa nådde den. Den står bare mens boblen vises, og ikke bredere enn
+     knappen, så den tar ikke klikk fra innholdet ved siden av. */
+  .fs-tooltip:is(:hover, :focus-within)::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 100%;
+    block-size: var(--fs-spacing-2);
+  }
+
+  /* Inntoningen begynner fra usynlig også når boblen går fra `display:
+     none`. Uten støtte for dette vises den bare uten toning. */
+  @starting-style {
+    .fs-tooltip:hover .fs-tooltip__bubble,
+    .fs-tooltip:focus-within .fs-tooltip__bubble {
+      opacity: 0;
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .fs-tooltip__bubble {
-      transition: opacity 120ms ease;
+      transition:
+        opacity 120ms ease,
+        display 120ms allow-discrete;
     }
   }
 
