@@ -26,11 +26,20 @@ const DEFAULT_EXPIRES_AT = 30 * 60
 const ANNOUNCE_AT = new Set([120, 60, 30, 10])
 
 /**
- * `scroll` bobler ikke, så den fanges i fangstfasen. Uten det telte rulling
- * i en tabell eller et panel ikke som aktivitet, bare rulling av selve siden.
+ * Aktiviteten som nullstiller klokka.
+ *
+ * `scroll` står her selv om den også kommer når kode ruller. En skjermleser
+ * i lesemodus sender ingen tastetrykk til siden, bare rulling, og det
+ * samme gjør et dra i rullefeltet. Uten `scroll` ble den som leste en lang
+ * side, logget ut midt i lesingen. Det er verre enn at en side som ruller
+ * selv, holder økten i live. `scroll` bobler ikke, så alt lyttes på i
+ * fangstfasen, og rulling i et panel teller også.
  */
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll"] as const
 const ACTIVITY_OPTIONS = { passive: true, capture: true } as const
+
+/** Sekunder mellom hver `session-activity`. */
+const DEFAULT_ACTIVITY_INTERVAL = 60
 
 /**
  * Grunnene komponenten selv lukker dialogen med.
@@ -140,10 +149,29 @@ function isSeconds(raw: string | null): boolean {
  * ```
  */
 export class FsSessionTimeout extends HostElement {
-  static observedAttributes = ["warn-at", "expires-at"] as const
+  static observedAttributes = [
+    "warn-at",
+    "expires-at",
+    "activity-interval",
+  ] as const
 
   private ticker?: number
   private lastActivity = Date.now()
+  /**
+   * Da komponenten sist sendte `session-activity`, og om brukeren har gjort
+   * noe siden.
+   *
+   * Klokka nullstilles av aktivitet i nettleseren, men serverøkten vet ikke
+   * om den. En bruker som skrev i et langt skjema uten et eneste kall til
+   * serveren, fikk aldri varselet, og innsendingen feilet fordi serverøkten
+   * var ute. Hendelsen lar appen holde serverøkten i live. Den sendes i
+   * starten av et intervall, og på slutten hvis brukeren har gjort noe
+   * siden, så serveren aldri er mer enn ett intervall bak klokka her.
+   */
+  private lastActivityEvent = 0
+  private activitySinceEvent = false
+  /** Sekundene som var igjen ved forrige tikk, så en terskel ikke hoppes over. */
+  private previousLeft?: number
   private previousFocus: HTMLElement | null = null
   /**
    * Sant fra økten gikk ut, eller brukeren valgte å logge ut, til `extend()`
@@ -175,6 +203,15 @@ export class FsSessionTimeout extends HostElement {
 
   set warnAt(value: number) {
     setAttr(this, "warn-at", String(value))
+  }
+
+  /** Sekunder mellom hver `session-activity` mens brukeren er aktiv. */
+  get activityInterval(): number {
+    return this.readSeconds("activity-interval", DEFAULT_ACTIVITY_INTERVAL)
+  }
+
+  set activityInterval(value: number) {
+    setAttr(this, "activity-interval", String(value))
   }
 
   /** Sekunder uten aktivitet før økten er ute. */
@@ -272,6 +309,16 @@ export class FsSessionTimeout extends HostElement {
         "aldri før økten er ute.",
       () => this.warnAt >= this.expiresAt,
     )
+    warnAboutMarkup(
+      this,
+      "har activity-interval som ikke er et tall større enn null. " +
+        "session-activity sendes høyst én gang i sekundet, eller hvert " +
+        "60. sekund om verdien ikke er et tall.",
+      () => {
+        const raw = this.getAttribute("activity-interval")
+        return raw !== null && (!isSeconds(raw) || Number(raw) < 1)
+      },
+    )
     // Et tomt element er et område som ikke er fylt ennå, og skal tie her.
     // Det sies fra om i det varselet skulle vist seg. Se `openDialog()`.
     warnAboutMarkup(
@@ -352,6 +399,34 @@ export class FsSessionTimeout extends HostElement {
   private registerActivity = (): void => {
     if (this.dialog?.open || this.expired) return
     this.lastActivity = Date.now()
+    this.activitySinceEvent = true
+    this.reportActivity()
+  }
+
+  /**
+   * Sender `session-activity` når et intervall er gått og brukeren var aktiv.
+   *
+   * Ikke mens varselet står eller etter at økten er ute: da holdt appen
+   * serverøkten i live mens klokka her talte ned mot `session-expired`.
+   * Intervallet er minst ett sekund, ellers sendte hver rulling et kall.
+   */
+  private reportActivity(): void {
+    if (!this.activitySinceEvent || this.dialog?.open || this.expired) return
+    const now = Date.now()
+    // Har fanen stått fryst forbi utløpet, er aktiviteten foreldet. Da kom
+    // `session-activity` og `session-expired` i samme tikk, og appen holdt
+    // liv i en økt komponenten samtidig sa var ute.
+    if (now - this.lastActivity >= this.expiresAt * 1000) {
+      this.activitySinceEvent = false
+      return
+    }
+    // Rulling kommer i hver ramme. Det billige først, attributtet etterpå.
+    const since = now - this.lastActivityEvent
+    if (since < 1000) return
+    if (since < Math.max(1, this.activityInterval) * 1000) return
+    this.lastActivityEvent = now
+    this.activitySinceEvent = false
+    this.emit("session-activity")
   }
 
   /**
@@ -387,6 +462,9 @@ export class FsSessionTimeout extends HostElement {
 
   private tick(): void {
     if (this.expired) return
+    // Slutten av et intervall: brukeren var aktiv, men ingen hendelse er
+    // sendt siden starten.
+    this.reportActivity()
 
     // En lukking er på vei. Vent på `close`, så den blir lest riktig. Er
     // dialogen byttet ut imens, kommer den aldri, og da slippes minnet.
@@ -416,7 +494,17 @@ export class FsSessionTimeout extends HostElement {
       this.openDialog(left)
       return
     }
-    this.show(dialog, left, ANNOUNCE_AT.has(left))
+    /*
+     * Når en terskel krysses, ikke bare når den treffes nøyaktig. Et tikk
+     * kan komme sent, eller strupes i en fane i bakgrunnen, og hoppet klokka
+     * fra 61 til 59, ble «1 minutt» aldri lest opp.
+     */
+    const previous = this.previousLeft ?? left + 1
+    this.previousLeft = left
+    const crossed = [...ANNOUNCE_AT].some(
+      (limit) => previous > limit && left <= limit,
+    )
+    this.show(dialog, left, crossed)
   }
 
   /** Skriver tallet, og opplesningen når `announce` er sant. */
@@ -478,6 +566,10 @@ export class FsSessionTimeout extends HostElement {
      * tall kom først ved neste terskel, minutter senere.
      */
     this.show(dialog, left, true)
+    this.previousLeft = left
+    // Aktivitet før varselet er alt med i klokka her. Sendt mens varselet
+    // står, holdt den serverøkten i live mens brukeren ble bedt om å svare.
+    this.activitySinceEvent = false
     dialog.returnValue = ""
     dialog.showModal()
     this.shownDialog = dialog

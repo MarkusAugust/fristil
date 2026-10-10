@@ -193,8 +193,9 @@ Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte
 | --- | --- | --- |
 | `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
 | `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
+| `activity-interval` | Sekunder mellom hver `session-activity` mens brukeren er aktiv. Minst 1 | 60 |
 
-Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
+Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Rulling teller også når en skjermleser i lesemodus ruller siden, siden den ikke sender tastetrykk til siden. Det betyr at rulling som kode gjør, som en logg som følger med, også holder klokka i gang. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
 
 Er `warn-at` eller `expires-at` ikke et tall større enn eller lik null, brukes standardverdien, og er `warn-at` ikke mindre enn `expires-at`, kommer varselet aldri. Komponenten sier fra om begge deler i konsollen.
 
@@ -208,8 +209,27 @@ Etter `session-expired` og `session-logout` står komponenten stille til `extend
 | `session-extend` | Brukeren velger å fortsette, med knappen eller Escape | Be serveren forlenge økten |
 | `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
 | `session-expired` | Tiden er ute | Send brukeren til innloggingen |
+| `session-activity` | Brukeren er aktiv, høyst én gang per `activity-interval` | Be serveren holde økten i live |
 
 Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
+
+**Lytt på `session-activity` hvis serverøkten bare forlenges av kall til serveren.** Klokka her nullstilles av aktivitet i nettleseren. En bruker som skriver i et langt skjema uten et eneste kall, får derfor aldri varselet, mens serverøkten går ut, og innsendingen feiler. Hendelsen kommer i starten av et intervall og på slutten hvis brukeren har gjort noe siden, så serveren er aldri mer enn ett intervall bak.
+
+**Flere faner deler ikke klokke.** Hver fane teller sin egen aktivitet, så en fane brukeren ikke bruker, viser varselet og sender `session-expired` mens brukeren arbeider i en annen. Skal fanene følge hverandre, la dem si fra til hverandre og kall `reset()`, både når brukeren er aktiv og når brukeren velger å fortsette i varselet. En fane som alt er logget ut, skal ikke startes igjen:
+
+```js
+const kanal = new BroadcastChannel("okt")
+let ute = false
+for (const navn of ["session-activity", "session-extend"]) {
+	okt.addEventListener(navn, () => kanal.postMessage("aktiv"))
+}
+for (const navn of ["session-expired", "session-logout"]) {
+	okt.addEventListener(navn, () => (ute = true))
+}
+kanal.addEventListener("message", () => {
+	if (!ute) okt.reset()
+})
+```
 
 ## Metoder
 

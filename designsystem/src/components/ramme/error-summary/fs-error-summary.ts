@@ -62,9 +62,12 @@ export class FsErrorSummary extends HostElement {
    */
   private focusAttempted = false
   private observer?: MutationObserver
-  private readonly links = new Set<HTMLAnchorElement>()
 
   connectedCallback(): void {
+    // Én lytter på verten, ikke én per lenke. Settet med lenker ble bare
+    // tømt ved frakobling, så hver lenke en patch byttet ut, ble liggende
+    // i minnet.
+    this.addEventListener("click", this.handleLinkClick)
     // Feilene kommer og går mens brukeren retter, og `slotchange` melder ikke
     // fra i vanlig DOM. Attributtene er de komponenten selv fyller inn, så
     // en patch som river dem bort får dem tilbake. Hver skriving
@@ -89,10 +92,7 @@ export class FsErrorSummary extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
-    for (const link of this.links) {
-      link.removeEventListener("click", this.handleLinkClick)
-    }
-    this.links.clear()
+    this.removeEventListener("click", this.handleLinkClick)
   }
 
   /**
@@ -183,10 +183,6 @@ export class FsErrorSummary extends HostElement {
           () => this.resolveTarget(id) === null,
         )
       }
-
-      if (this.links.has(link)) continue
-      link.addEventListener("click", this.handleLinkClick)
-      this.links.add(link)
     }
 
     if (this.hidden) return
@@ -233,7 +229,8 @@ export class FsErrorSummary extends HostElement {
   }
 
   private handleLinkClick = (event: Event): void => {
-    const link = event.currentTarget as HTMLAnchorElement
+    const link = (event.target as Element | null)?.closest?.("li a[href^='#']")
+    if (!link || !this.contains(link)) return
     const id = link.getAttribute("href")?.slice(1)
     if (!id) return
 

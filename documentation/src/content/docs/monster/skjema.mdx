@@ -21,7 +21,9 @@ Prøv å sende skjemaet tomt, og deretter med en ufullstendig e-postadresse:
 
 Et felt brukeren ikke har rørt, sier vi ingenting om før innsending. «Skriv e-postadressen din» før du har begynt, er å kjefte på noen som ikke har gjort noe ennå.
 
-Oppsummeringen bygges på nytt hver gang noe valideres, og leses ut av feltene. Retter du én av to feil, står den gjenværende igjen alene, og overskriften teller ned. En oppsummering som blir stående på det første tallet er verre enn ingen.
+Oppsummeringen leses ut av feltene og følger med når noe valideres. Retter du én av to feil, står den gjenværende igjen alene, og overskriften teller ned. En oppsummering som blir stående på det første tallet er verre enn ingen.
+
+Underveis skriver du den bare når innholdet endres, og du viser den ikke. Boksen er `role="alert"`, og hver endring i den leses opp med en gang: skrevet på nytt ved hvert tastetrykk eller hver Tab, avbryter den ledeteksten til neste felt hver gang.
 
 ## De tre tingene som må stemme per felt
 
@@ -64,7 +66,7 @@ Overskriften og `hidden` skrives av den som rendrer skjemaet, ikke av komponente
 
 Lenketeksten er feilmeldingen, ikke navnet på feltet. Den som hører lista skal forstå hva som er galt uten å hoppe til feltet først.
 
-Bygg lista på nytt hver gang du validerer, også når de samme feilene står igjen. Ved innsending leses den da opp på nytt, og brukeren vet at forsøket ble avvist.
+Ved innsending bygger du lista på nytt, også når de samme feilene står igjen. Da leses den opp på nytt, og brukeren vet at forsøket ble avvist.
 
 ## Nettleseren fanger ikke alt
 

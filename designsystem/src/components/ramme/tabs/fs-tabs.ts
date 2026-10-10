@@ -79,7 +79,6 @@ export class FsTabs extends HostElement {
    */
   static observedAttributes = [SERVER_CONTROLLED] as const
 
-  private readonly bound = new Set<HTMLButtonElement>()
   private observer?: MutationObserver
   /**
    * Fanen brukeren valgte, husket så en patch ikke kan ta den.
@@ -143,6 +142,13 @@ export class FsTabs extends HostElement {
      * gjorde etter at siden kom. Hver skriving sammenligner først, ellers
      * ville observatøren utløst seg selv.
      */
+    // Én lytter på verten, ikke én per fane. Før holdt komponenten hver fane
+    // den hadde koblet i et sett som bare ble tømt ved frakobling, så hver
+    // fane en morfing byttet ut, ble liggende i minnet så lenge siden levde.
+    // Fangstfasen, så en lytter på raden som stopper hendelsen, ikke tar
+    // klikk og piltaster fra fanene, slik den ikke kunne før.
+    this.addEventListener("click", this.handleClick, true)
+    this.addEventListener("keydown", this.handleKeydown, true)
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, {
       childList: true,
@@ -186,11 +192,8 @@ export class FsTabs extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
-    for (const tab of this.bound) {
-      tab.removeEventListener("click", this.handleClick)
-      tab.removeEventListener("keydown", this.handleKeydown)
-    }
-    this.bound.clear()
+    this.removeEventListener("click", this.handleClick, true)
+    this.removeEventListener("keydown", this.handleKeydown, true)
   }
 
   /**
@@ -576,23 +579,32 @@ export class FsTabs extends HostElement {
         "finnes. Fanene uten et panel kan velges uten at noe vises.",
       () => this.tabs.some((tab, i) => this.panelFor(tab, i) === null),
     )
+  }
 
-    for (const tab of tabs) {
-      if (this.bound.has(tab)) continue
-      tab.addEventListener("click", this.handleClick)
-      tab.addEventListener("keydown", this.handleKeydown)
-      this.bound.add(tab)
-    }
+  /**
+   * Fanen i denne raden hendelsen kom fra, eller -1.
+   *
+   * `indexOf` og ikke bare `closest`: en fanerad inne i et panel bobler
+   * klikkene sine hit også, og de er ikke denne radens.
+   */
+  private tabIndexOf(event: Event): number {
+    const target = event.target
+    if (!(target instanceof Element)) return -1
+    const tab = target.closest("[role='tab']")
+    return tab ? this.tabs.indexOf(tab as HTMLButtonElement) : -1
   }
 
   private handleClick = (event: Event): void => {
-    const index = this.tabs.indexOf(event.currentTarget as HTMLButtonElement)
+    const index = this.tabIndexOf(event)
     if (index >= 0) this.select(index)
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
+    // Hvert tastetrykk i et felt i et panel kommer hit. Det billige først.
+    if (!(event.target instanceof Element)) return
+    if (!event.target.closest("[role='tab']")) return
     const tabs = this.tabs
-    const current = tabs.indexOf(event.currentTarget as HTMLButtonElement)
+    const current = this.tabIndexOf(event)
     if (current < 0) return
     // Alt+venstrepil er «tilbake» i nettleseren, og Cmd+pil flytter i
     // historikken på macOS. Med en modifikator er tasten ikke fanenes.
@@ -601,12 +613,15 @@ export class FsTabs extends HostElement {
     // I en side som leses fra høyre står neste fane til venstre. Uten dette
     // flyttet høyrepil fokus visuelt bakover.
     const rtl = getComputedStyle(this).direction === "rtl"
-    const steps: Record<string, number> = {
-      ArrowRight: rtl ? -1 : 1,
-      ArrowLeft: rtl ? 1 : -1,
-      ArrowDown: 1,
-      ArrowUp: -1,
-    }
+    // Pil opp og ned stjal siderullingen i en vannrett rad og avvek fra
+    // WAI-ARIA. De gjelder bare når raden sier den står loddrett.
+    const vertical =
+      tabs[current]
+        .closest("[role='tablist']")
+        ?.getAttribute("aria-orientation") === "vertical"
+    const steps: Record<string, number> = vertical
+      ? { ArrowDown: 1, ArrowUp: -1 }
+      : { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1 }
 
     let next: number | undefined
 

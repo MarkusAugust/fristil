@@ -138,6 +138,9 @@
         },
         "expires-at": {
           "type": "number"
+        },
+        "activity-interval": {
+          "type": "number"
         }
       }
     },
@@ -2739,6 +2742,13 @@
           "type": {
             "kind": "number"
           }
+        },
+        {
+          "name": "activityInterval",
+          "required": false,
+          "type": {
+            "kind": "number"
+          }
         }
       ],
       "returns": {
@@ -2793,6 +2803,12 @@
                 "template": {
                   "expires-at": "{expiresAt}"
                 }
+              },
+              "activityInterval": {
+                "cases": {},
+                "template": {
+                  "activity-interval": "{activityInterval}"
+                }
               }
             }
           },
@@ -2808,6 +2824,10 @@
                 "template": {}
               },
               "expiresAt": {
+                "cases": {},
+                "template": {}
+              },
+              "activityInterval": {
                 "cases": {},
                 "template": {}
               }
@@ -2826,6 +2846,10 @@
               "expiresAt": {
                 "cases": {},
                 "template": {}
+              },
+              "activityInterval": {
+                "cases": {},
+                "template": {}
               }
             }
           },
@@ -2839,6 +2863,10 @@
                 "template": {}
               },
               "expiresAt": {
+                "cases": {},
+                "template": {}
+              },
+              "activityInterval": {
                 "cases": {},
                 "template": {}
               }
@@ -2857,6 +2885,10 @@
               "expiresAt": {
                 "cases": {},
                 "template": {}
+              },
+              "activityInterval": {
+                "cases": {},
+                "template": {}
               }
             }
           },
@@ -2871,6 +2903,10 @@
                 "template": {}
               },
               "expiresAt": {
+                "cases": {},
+                "template": {}
+              },
+              "activityInterval": {
                 "cases": {},
                 "template": {}
               }
@@ -2889,6 +2925,10 @@
               "expiresAt": {
                 "cases": {},
                 "template": {}
+              },
+              "activityInterval": {
+                "cases": {},
+                "template": {}
               }
             }
           },
@@ -2903,6 +2943,10 @@
                 "template": {}
               },
               "expiresAt": {
+                "cases": {},
+                "template": {}
+              },
+              "activityInterval": {
                 "cases": {},
                 "template": {}
               }
@@ -2920,6 +2964,10 @@
                 "template": {}
               },
               "expiresAt": {
+                "cases": {},
+                "template": {}
+              },
+              "activityInterval": {
                 "cases": {},
                 "template": {}
               }

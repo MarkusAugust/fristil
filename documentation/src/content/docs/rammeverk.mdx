@@ -335,7 +335,7 @@ Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen,
 
 | Symptom | Årsak |
 | --- | --- |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, eller et `<fs-session-timeout>` varsler aldri | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv, så uten registrering er elementet tomt, og `<fs-session-timeout>` teller ikke tiden. En `ramme`-komponents markup er din og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, eller et `<fs-session-timeout>` varsler aldri | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv, så uten registrering er elementet tomt, og `<fs-session-timeout>` teller ikke tiden. En `ramme`-komponents markup er din og står der uansett, bortsett fra at Tabs bare viser det første panelet og Suggestion skjuler lista til de er registrert |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 | Stilene mangler | `tokens.css` er ikke importert |

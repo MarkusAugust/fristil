@@ -205,5 +205,7 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
 
 Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
 
+Mens en modal dialog står åpen, er linja inert og ligger under bakteppet, som alt annet utenfor dialogen. Brytes forbindelsen da, får brukeren vite det først når dialogen lukkes.
+
 Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' høykontrastmodus fjernes egne farger og bakgrunner, og linja får derfor en ramme i `CanvasText`, ellers ville den vært usynlig.
 

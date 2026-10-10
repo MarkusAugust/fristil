@@ -76,6 +76,19 @@ describe("fs-error-summary", () => {
     expect(document.activeElement).toBe(boks)
   })
 
+  it("virker på lenker en patch har byttet ut", async () => {
+    // Én lytter på verten. Før fikk hver ny lenke sin egen, og de gamle ble
+    // holdt fast i minnet.
+    const liste = document.querySelector("fs-error-summary ul") as HTMLElement
+    liste.innerHTML =
+      '<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>'
+    await tegn()
+
+    ;(document.getElementById("ny-lenke") as HTMLElement).click()
+
+    expect(document.activeElement?.id).toBe("fodselsdato")
+  })
+
   it("gir fokus til selve feltet når en lenke følges", () => {
     const lenke = document.getElementById("lenke-epost") as HTMLElement
     lenke.click()
