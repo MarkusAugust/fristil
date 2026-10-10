@@ -93,7 +93,7 @@ Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke desig
 <button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
 `} />
 
-`disabled` finnes bare på `<button>`. Ser knappen ut som en lenke i markupen, bruk `aria-disabled="true"`. Da beholder skjermlesere elementet og kan si at det er utilgjengelig.
+`disabled` finnes bare på `<button>`. Er knappen en `<a>`, bruk `aria-disabled="true"` og ta bort `href`, ellers følger Enter den. Skriv `role="link"` og `tabindex="0"` ved siden av, så skjermlesere fortsatt finner lenken og kan si at den er utilgjengelig. Se [Link](../link/#deaktivert-lenke).
 
 ## Lenke som ser ut som knapp
 

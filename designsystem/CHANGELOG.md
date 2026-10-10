@@ -42,11 +42,39 @@ egen overskrift «Brytende».
   overstyringen lenger inne i et `data-theme`. Skriv den også på
   `[data-theme="light"]` og `[data-theme="dark"]`.
 
+- **`fristil sjekk-tema` kontrollerer en bar `:root` i mørkt tema også.**
+  Fristils mørke blokk overstyrer bare tokenene den selv har, så en verdi på
+  `:root` som ingen mørk blokk tar, står også når systemet er i mørkt. Sjekken
+  så den bare som lys: `--fs-color-neutral-text: #0d4e8c` på `:root` ga
+  «holder hvert løfte», men har 2,22:1 i mørkt. Funnene merkes «i mørkt tema,
+  ingen mørk blokk overstyrer». En blokk med `color-scheme: light`, en
+  selektor med `light` i seg og `@media print` gjelder bare lyst og
+  kontrolleres som før. Et tema som før var grønt kan nå gi funn, og da var
+  det brutt i mørkt hele tiden.
+- **`fristil sjekk` melder nye funn.**
+  - Et flagg med en tekstmal i verdien, som `data-optional="{{ .Optional }}"`
+    eller `open="<%= open %>"`. Malen skriver verdien som tekst, og et boolsk
+    attributt er på uansett verdi, også «false» og en tom streng. Regelen er
+    `boolsk-med-verdi`. Astro, Svelte, JSX, Razor og JTE tar selv bort et
+    usant boolsk attributt, og meldes ikke.
+  - En `fs-link` eller `fs-button` med både `aria-disabled="true"` og `href`.
+    Stilen slår av musa, men Enter følger lenken. Regelen er ny:
+    `deaktivert-med-href`.
+
 ### Lagt til
 
 - **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.
+
+### Endret
+
+- **`fs.link({ disabled: true })` gir `role="link"` og `tabindex="0"`.** En
+  avslått lenke skal skrives uten `href`, ellers følger Enter den, og uten
+  `href` er en `<a>` ingen lenke for skjermleseren og står ikke i
+  tabrekkefølgen. De to gir begge tilbake. Med `disabled: false` fjernes de.
+  Komponentsidene for Link og Button viste en avslått lenke med `href`, og er
+  rettet.
 
 ### Rettet
 
@@ -90,6 +118,20 @@ egen overskrift «Brytende».
   - Et trykk noe annet alt hadde brukt, som en forslagsliste i vinduet som
     lukket seg, lukket vinduet også. Nå står vinduet.
   - Med to vinduer inni hverandre lukkes nå det innerste først.
+- **`fristil sjekk --css` fulgte ikke `@import` fra en pakke.**
+  `@import "@fristil/designsystem/fristil.css"` er et navn i pakkens
+  `exports`, og fila ligger i `dist/`. Sjekken lette etter den som en fil i
+  `node_modules` under arbeidsmappa, fant ingenting og meldte hver klasse som
+  ustylet. Nå slår den opp i `exports`, både som streng og som
+  betingelsesobjekt, i nærmeste `node_modules` over stilarket.
+- **`fristil sjekk-tema` leste `dark` inne i `:not()`.**
+  `.kort:not([data-theme="dark"])` ble kontrollert som et mørkt tema.
+  `:root:not([data-theme="dark"])` gjelder også i systemets mørke modus, og
+  kontrolleres nå mot begge temaer.
+- **`fristil sjekk` meldte Bootstraps `fs-1` til `fs-6` som ukjente
+  klasser.** Et `fs-` med bare sifre etter er ikke Fristils.
+- **`fristil sjekk` kjente ikke `writingsuggestions`, `autocorrect` og
+  `headingoffset`.** De er globale attributter i HTML.
 
 ## 0.32.1 (2026-10-09)
 

@@ -636,4 +636,89 @@ mod tests {
             assert!(styled_input(wrong).is_err(), "{wrong}");
         }
     }
+
+    #[test]
+    fn a_text_template_in_a_flag_is_always_on() {
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        for value in [
+            "{{ .Optional }}",
+            "{% if optional %}data-optional{% endif %}",
+            "<?= $optional ?>",
+            "<%= optional %>",
+        ] {
+            let found = markup(&format!(
+                r#"<label class="fs-label" data-optional="{value}">Navn</label>"#
+            ));
+            assert_eq!(found.len(), 1, "{value}: {found:?}");
+            assert_eq!(found[0].rule, "boolsk-med-verdi");
+            assert!(
+                found[0].message.contains("flagg på label"),
+                "{}",
+                found[0].message
+            );
+
+            let found = markup(&format!(r#"<fs-popover open="{value}"></fs-popover>"#));
+            assert_eq!(found.len(), 1, "{value}: {found:?}");
+            assert_eq!(found[0].rule, "boolsk-med-verdi");
+        }
+    }
+
+    #[test]
+    fn a_template_that_drops_a_false_flag_is_left_alone() {
+        // Astro, Svelte, JSX, Razor og JTE tar selv bort attributtet.
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        for value in [
+            "{optional}",
+            "@optional",
+            "${optional}",
+            "@(Model.Optional)",
+        ] {
+            let html = format!(
+                r#"<label class="fs-label" data-optional="{value}">Navn</label><fs-popover open="{value}"></fs-popover>"#
+            );
+            assert!(markup(&html).is_empty(), "{value}: {:?}", markup(&html));
+        }
+        // En mal i en verdi som ikke er et flagg, er ingen feil.
+        assert!(
+            markup(r#"<label class="fs-label" data-required="{{ .Required }}">Navn</label>"#)
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn bootstrap_font_sizes_are_not_ours() {
+        for n in 1..=6 {
+            let found = check(&format!(r#"<p class="fs-{n}">Tekst</p>"#));
+            assert!(found.is_empty(), "fs-{n}: {found:?}");
+        }
+        // Et tall med noe etter er fortsatt en skrivefeil hos oss.
+        assert_eq!(check(r#"<p class="fs-1x">Tekst</p>"#).len(), 1);
+    }
+
+    #[test]
+    fn knows_the_newer_global_attributes() {
+        let found = check(
+            r#"<fs-popover writingsuggestions="false" autocorrect="off" headingoffset="1"></fs-popover>"#,
+        );
+        assert!(found.is_empty(), "{found:?}");
+    }
+
+    #[test]
+    fn a_disabled_link_with_href_can_still_be_followed() {
+        for html in [
+            r#"<a class="fs-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
+            r#"<a class="fs-button" href="/videre" aria-disabled="TRUE">Videre</a>"#,
+        ] {
+            let found = check(html);
+            assert_eq!(found.len(), 1, "{html}: {found:?}");
+            assert_eq!(found[0].rule, "deaktivert-med-href");
+        }
+        for html in [
+            r#"<a class="fs-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>"#,
+            r#"<a class="fs-link" aria-disabled="false" href="/arsoppgave">Se årsoppgave</a>"#,
+            r#"<a class="app-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
+        ] {
+            assert!(check(html).is_empty(), "{html}: {:?}", check(html));
+        }
+    }
 }

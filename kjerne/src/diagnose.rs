@@ -16,6 +16,7 @@ pub const DOCS: &str = "https://fristil.sobernetics.no/components/";
 const GLOBAL: &[&str] = &[
     "accesskey",
     "autocapitalize",
+    "autocorrect",
     "autofocus",
     "class",
     "contenteditable",
@@ -23,6 +24,7 @@ const GLOBAL: &[&str] = &[
     "draggable",
     "enterkeyhint",
     "exportparts",
+    "headingoffset",
     "hidden",
     "id",
     "inert",
@@ -44,6 +46,7 @@ const GLOBAL: &[&str] = &[
     "tabindex",
     "title",
     "translate",
+    "writingsuggestions",
     "xmlns",
 ];
 
@@ -63,6 +66,16 @@ pub fn is_templated(t: &[u16]) -> bool {
     ["{{", "{%", "{#", "<?", "<%", "${", "@("]
         .iter()
         .any(|m| contains_str(t, m))
+}
+
+/// En mal som skriver verdien som tekst: Go, Jinja, Handlebars, PHP og
+/// ERB/ASP. Der blir et boolsk attributt stående også når malen skriver
+/// «false» eller ingenting.
+///
+/// Ikke `{…}`, `@(…)` og `${…}`: Astro, Svelte, JSX, Razor og JTE tar selv
+/// bort et boolsk attributt med usann verdi.
+pub fn is_text_template(t: &[u16]) -> bool {
+    ["{{", "{%", "<?", "<%"].iter().any(|m| contains_str(t, m))
 }
 
 /// En verdi i klammer er Astro eller Svelte, og et uttrykk: `/^\s*[@{]/`.
@@ -531,6 +544,16 @@ fn check_attribute(
         ));
     };
     if a.value.as_deref().is_some_and(is_templated_value) {
+        if matches!(known, Attribute::Flag) && a.value.as_deref().is_some_and(is_text_template) {
+            return Some(findings(
+                "boolsk-med-verdi",
+                Severity::Warning,
+                format!(
+                    "{name} er et boolsk attributt, og malen skriver verdien som tekst: også «false» og en tom verdi slår det på. Skriv hele attributtet i en betingelse i malen."
+                ),
+                None,
+            ));
+        }
         return None;
     }
     match known {
@@ -816,7 +839,12 @@ fn block(name: &str) -> &str {
 /// varianter: resten av prosjektets `app-*`-klasser er ikke Fristils sak.
 fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
     if starts_at(token, 0, "fs-") {
-        return true;
+        // Bootstraps `fs-1` til `fs-6` (skriftstørrelse) er ikke våre.
+        let rest = &token[3..];
+        return !(!rest.is_empty()
+            && rest
+                .iter()
+                .all(|&c| (b'0' as u16..=b'9' as u16).contains(&c)));
     }
     vocabulary
         .classes
@@ -912,6 +940,28 @@ fn check_classes(
             continue;
         };
         if is_templated_value(value) {
+            if is_text_template(value) {
+                let flag = present.iter().find(|info| {
+                    info.attributes
+                        .iter()
+                        .any(|(n, t)| equals(&a.name, n) && t.flag)
+                });
+                if let Some(info) = flag {
+                    findings.push(Finding {
+                        start: a.start,
+                        end: a.value_end,
+                        severity: Severity::Warning,
+                        link: info.link.clone(),
+                        message: format!(
+                            "{} er et flagg på {}, og malen skriver verdien som tekst: også «false» og en tom verdi slår det på. Skriv hele attributtet i en betingelse i malen.",
+                            lossy(&a.name),
+                            lossy(&lowercase(&utf16(&info.title)))
+                        ),
+                        fix: None,
+                        rule: "boolsk-med-verdi",
+                    });
+                }
+            }
             continue;
         }
         for info in &present {
@@ -984,7 +1034,39 @@ fn check_classes(
             break;
         }
     }
+    findings.extend(check_disabled_link(&present, attributes));
     findings
+}
+
+/// En avslått lenke som fortsatt har `href`.
+///
+/// `aria-disabled` sier fra til skjermleseren, og stilen slår av musa med
+/// `pointer-events: none`, men Enter følger fortsatt `href`. Lenken må
+/// skrives uten, med `role="link"` og `tabindex="0"` så den fortsatt er en
+/// lenke i tabrekkefølgen. Det er det `fs.link({ disabled: true })` gir.
+fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Option<Finding> {
+    let info = present
+        .iter()
+        .find(|info| info.name == "fs-link" || info.name == "fs-button")?;
+    attributes.iter().find(|a| {
+        equals(&a.name, "aria-disabled")
+            && a.value
+                .as_deref()
+                .is_some_and(|v| equals(&lowercase(v), "true"))
+    })?;
+    let href = attributes.iter().find(|a| equals(&a.name, "href"))?;
+    Some(Finding {
+        start: href.start,
+        end: href.value_end,
+        severity: Severity::Warning,
+        link: info.link.clone(),
+        message: format!(
+            "{} er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen.",
+            info.name
+        ),
+        fix: None,
+        rule: "deaktivert-med-href",
+    })
 }
 
 /// `value.replace(/\s+/g, " ")`

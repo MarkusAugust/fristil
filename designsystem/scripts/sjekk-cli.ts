@@ -9,7 +9,15 @@
  * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
  */
 
-import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -605,6 +613,61 @@ function krev(påstand: boolean, beskrivelse: string): void {
     borte.kode !== 0 && borte.feil.includes("borte.css"),
     "et stilark som ikke finnes, ble ikke meldt",
   )
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// `@import` fra en pakke følger `exports`, slik en bundler gjør
+{
+  /*
+   * Stien i `@import "@fristil/designsystem/fristil.css"` er et navn i
+   * `exports`, ikke en fil i pakken: fila ligger i `dist/`. Sjekken slo den
+   * opp som en fil, fant ingenting og meldte hver klasse som ustylet. Pakkene
+   * står i en `node_modules` over stilarket, og kommandoen kjøres fra en
+   * annen mappe, så oppslaget går fra stilarket og ikke fra arbeidsmappa.
+   */
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
+  const fristil = join(mappe, "node_modules/@fristil/designsystem")
+  await cp(join(pakke, "dist/fristil.css"), join(fristil, "dist/fristil.css"))
+  await writeFile(
+    join(fristil, "package.json"),
+    JSON.stringify({
+      name: "@fristil/designsystem",
+      exports: { "./fristil.css": "./dist/fristil.css" },
+    }),
+  )
+  // Et betingelsesobjekt, som pakker med både `style` og `default` bruker.
+  const tema = join(mappe, "node_modules/tema")
+  await mkdir(join(tema, "lib"), { recursive: true })
+  await writeFile(join(tema, "lib/tema.css"), ".app-tema { }\n")
+  await writeFile(
+    join(tema, "package.json"),
+    JSON.stringify({
+      name: "tema",
+      exports: { "./tema.css": { style: "./lib/tema.css" } },
+    }),
+  )
+  const stiler = join(mappe, "src/stiler")
+  await mkdir(stiler, { recursive: true })
+  await writeFile(
+    join(stiler, "app.css"),
+    '@import "@fristil/designsystem/fristil.css";\n@import "tema/tema.css";\n',
+  )
+  const side = join(mappe, "side.html")
+  await writeFile(
+    side,
+    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+  )
+
+  for (const fra of [mappe, stiler, tmpdir()]) {
+    const svar = await kjør(
+      ["sjekk", `--css=${join(stiler, "app.css")}`, side],
+      fra,
+    )
+    krev(
+      svar.kode === 0,
+      `@import fra en pakke ble ikke fulgt, kjørt fra ${fra}: ${svar.ut}${svar.feil}`,
+    )
+  }
   await rm(mappe, { recursive: true, force: true })
 }
 

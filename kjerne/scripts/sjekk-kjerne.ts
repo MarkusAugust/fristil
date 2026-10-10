@@ -49,6 +49,7 @@ const REGLER = new Set([
   "ikke-tall",
   "ukjent-klasse",
   "ugyldig-klasseverdi",
+  "deaktivert-med-href",
   "felt-uten-kontroll",
   "felt-uten-ledetekst",
   "tidsavbrudd-uten-dialog",
