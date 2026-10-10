@@ -19,6 +19,16 @@
     inline-size: 100%;
     block-size: var(--fs-progress-height, var(--fs-spacing-2));
     border: 0;
+    /* Sporet alene er 1,12:1 mot siden, og uten en kant så ingen hvor langt
+       stolpen går. `neutral-border` holder 3:1. En `outline` innover og ikke
+       en `border`: med `border-box` tok kanten 2 piksler av høyden, og en
+       stolpe på 2 piksler mistet fyllet helt. */
+    /* Langformene, siden dette ikke er en fokusring: den kortformen er
+       forbeholdt `--fs-focus-ring`. */
+    outline-width: 1px;
+    outline-style: solid;
+    outline-color: var(--fs-progress-border, var(--fs-color-neutral-border));
+    outline-offset: -1px;
     border-radius: var(--fs-progress-radius, var(--fs-spacing-1));
     overflow: hidden;
     background: var(--fs-progress-track, var(--fs-color-neutral-surface));
@@ -111,6 +121,7 @@
       --fs-progress-fill: Highlight;
 
       border: 1px solid CanvasText;
+      outline: none;
     }
   }
 }

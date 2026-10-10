@@ -1,12 +1,15 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { rgb } from "../../../testing/farge"
+import { contrastRatio } from "../../../tokens/color"
 import { toggleGroup } from "./toggle-group"
 
 import "../../../tokens/tokens.css"
@@ -64,4 +67,36 @@ describe("fs-toggle-group", () => {
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
   })
+})
+
+describe("fokusringen på det valgte alternativet", () => {
+  for (const tema of ["light", "dark"] as const) {
+    it(`synes mot den valgte flaten (${tema})`, async () => {
+      monter(`
+        <div data-theme="${tema}">
+          <fieldset class="fs-toggle-group">
+            <legend class="fs-sr-only">Visning</legend>
+            <label class="fs-toggle-group__option">
+              <input type="radio" name="visning" value="liste" id="liste" checked /> Liste
+            </label>
+            <label class="fs-toggle-group__option">
+              <input type="radio" name="visning" value="kart" /> Kart
+            </label>
+          </fieldset>
+        </div>`)
+      // Fokus fra tastaturet, så `:focus-visible` gjelder. I en radiogruppe
+      // er det fokuserte alternativet alltid det valgte.
+      await userEvent.tab()
+      const valgt = document.getElementById("liste") as HTMLInputElement
+      expect(document.activeElement).toBe(valgt)
+      await ventPaTegning()
+
+      const stil = getComputedStyle(valgt.closest("label") as Element)
+      expect(stil.outlineStyle).toBe("solid")
+      // Før var ringen 1,23:1 i lyst tema og 2,01:1 i mørkt.
+      expect(
+        contrastRatio(rgb(stil.outlineColor), rgb(stil.backgroundColor)),
+      ).toBeGreaterThanOrEqual(3)
+    })
+  }
 })

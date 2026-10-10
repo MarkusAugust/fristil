@@ -61,6 +61,15 @@
     font-weight: var(--fs-font-weight-semibold);
   }
 
+  /* Ringen står innenfor, oppå den valgte flaten, og `accent-border-strong`
+     mot `accent-fill` var 1,23:1. Det valgte alternativet er alltid det
+     som får fokus i en radiogruppe, så ingen så hvor fokus var. `content`
+     mot `fill` er et løfte i fargekontrakten. Ringen kan ikke flyttes ut:
+     gruppa har `overflow: hidden`, og den ble klippet bort. */
+  .fs-toggle-group__option:has(input:checked:focus-visible) {
+    outline-color: var(--fs-color-accent-content);
+  }
+
   .fs-toggle-group__option:has(input:disabled) {
     color: var(--fs-color-disabled-text);
     background: var(--fs-color-disabled-surface);

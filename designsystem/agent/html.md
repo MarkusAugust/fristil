@@ -46,7 +46,7 @@ Eller fra `node_modules`, hvis du serverer mappa:
 <link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
 ```
 
-`fristil.css` er 100 kB, 13 kB komprimert, og har alle komponentene. Velg den.
+`fristil.css` er 101 kB, 13 kB komprimert, og har alle komponentene. Velg den.
 Alternativet er ett stilark per komponent, og da gjelder at `tokens.css`
 definerer alle variablene, og alle de andre stilarkene bygger på den. Den må
 lastes, og står først av vane: rekkefølgen mellom den og de andre har ikke noe
