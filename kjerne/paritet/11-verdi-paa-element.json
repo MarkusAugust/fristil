@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 10,
+      "end": 25,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "required-marker kan ikke være «stjerne». Lovlige verdier: symbol, text, none."
+    },
+    {
+      "start": 138,
+      "end": 152,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "message": "data-autofocus kan ikke være «kanskje». Lovlige verdier: false, true."
+    }
+  ],
+  "side": [
+    {
+      "start": 10,
+      "end": 25,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "required-marker kan ikke være «stjerne». Lovlige verdier: symbol, text, none."
+    },
+    {
+      "start": 138,
+      "end": 152,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "message": "data-autofocus kan ikke være «kanskje». Lovlige verdier: false, true."
+    }
+  ]
+}

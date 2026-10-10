@@ -184,7 +184,16 @@ abstract class FristilTheme : DefaultTask() {
     }
 }
 
-/** `fristilManifest`: manifestet med fragmentene, for editoren og språkserveren. */
+/**
+ * `fristilManifest`: manifestet med fragmentene, for editoren og språkserveren.
+ *
+ * Fila skrives bare når prosjektet har fragmenter. Språkserveren og
+ * IntelliJ-pluginen foretrekker `build/fristil/manifest.json` framfor
+ * manifestet i npm-pakken, så en fil uten fragmenter ville bare vært en kopi
+ * av det innebygde, og den ble stående når pakken ble oppdatert. Fjernes det
+ * siste fragmentet, slettes fila, ellers ville editoren fortsatt godtatt
+ * klassene fra en komponent som ikke finnes lenger.
+ */
 abstract class FristilManifest : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -199,6 +208,11 @@ abstract class FristilManifest : DefaultTask() {
     @TaskAction
     fun write() {
         val directory = workingDirectory.get().asFile
+        if (manifests.isEmpty) {
+            val old = output.get().asFile
+            if (old.exists() && !old.delete()) throw GradleException("Kunne ikke slette ${old.absolutePath}.")
+            return
+        }
         val args = buildList {
             add("manifest")
             manifests.files.sorted().forEach { add("--manifest=${shown(it, directory)}") }

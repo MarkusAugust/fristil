@@ -74,10 +74,13 @@ Reglene står i `src/types.rs` (`RULES`).
 ## Testene
 
 - `cargo test`: enhetstestene i Rust.
-- `scripts/sjekk-kjerne.ts`: fiksturene i `paritet/`, én per regel, mot
-  fasiten ved siden av, felt for felt. Fasiten ble skrevet av
-  TypeScript-utgaven, og er nå en vanlig test: et endret svar er en endret
-  fasit, og synes i diffen. I tillegg kjøres all markup i repoet og 4000
+- `scripts/sjekk-kjerne.ts`: fiksturene i `paritet/` mot fasiten ved siden
+  av, felt for felt, og krav om at de til sammen utløser hver regel i
+  `RULES`. En fikstur med en `.css` ved siden av sjekkes også med
+  stilarket. Fasiten for de ti første ble skrevet av TypeScript-utgaven, de
+  andre av kjernen, og den er nå en vanlig test: et endret svar er en endret
+  fasit, og synes i diffen. `ParityTest` i `../kotlin` krever den samme
+  fasiten fra JVM-en. I tillegg kjøres all markup i repoet og 4000
   ødelagte varianter av fiksturene, med et fast frø, mot kravene et svar må
   holde: ingen unntak, hvert funn innenfor teksten, riktig linje og kolonne,
   og en regel som finnes.

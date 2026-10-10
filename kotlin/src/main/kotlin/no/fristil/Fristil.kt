@@ -28,18 +28,24 @@ object Fristil {
      * klasse ingen av dem styler, og om en verdi uten regel. En tom liste er
      * en side uten stilark, der ingenting er stylet, som i TypeScript: et
      * glob som ikke traff noe, skal felle testen, ikke slå sjekken av.
+     *
+     * Med [manifest], teksten i et `manifest.json`, sjekkes markupen mot det
+     * i stedet for manifestet i pakken. Det er manifestet `fristil manifest`
+     * og Gradle-oppgaven `fristilManifest` skriver, med komponentene
+     * prosjektet har overtatt. Et manifest kjernen ikke kan lese, kaster
+     * [IllegalArgumentException] med grunnen.
      */
-    fun diagnoseMarkup(html: String, css: List<String>? = null): List<Finding> =
-        if (css == null) diagnose(MARKUP, html) else diagnoseStyled(html, css, page = false)
+    fun diagnoseMarkup(html: String, css: List<String>? = null, manifest: String? = null): List<Finding> =
+        if (css == null) diagnose(MARKUP, html, manifest) else diagnoseStyled(html, css, page = false, manifest)
 
     /**
      * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
      * pekes på finnes, at ingen id står to ganger, og at hvert felt er koblet.
-     * Bruk den på HTML-en serveren sender, ikke på en mal. [css] som for
-     * [diagnoseMarkup].
+     * Bruk den på HTML-en serveren sender, ikke på en mal. [css] og
+     * [manifest] som for [diagnoseMarkup].
      */
-    fun diagnosePage(html: String, css: List<String>? = null): List<Finding> =
-        if (css == null) diagnose(PAGE, html) else diagnoseStyled(html, css, page = true)
+    fun diagnosePage(html: String, css: List<String>? = null, manifest: String? = null): List<Finding> =
+        if (css == null) diagnose(PAGE, html, manifest) else diagnoseStyled(html, css, page = true, manifest)
 
     /**
      * Skriptet som leser den rendrede siden i nettleseren: DOM-en slik den
@@ -87,9 +93,13 @@ object Fristil {
             page = true,
         )
 
-    private fun diagnoseStyled(html: String, css: List<String>, page: Boolean): List<Finding> {
+    private fun diagnoseStyled(html: String, css: List<String>, page: Boolean, manifest: String? = null): List<Finding> {
         val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
-        val (status, answer) = withCore { it.callWithStatus(STYLED, input) }
+        val (status, answer) =
+            withCore {
+                it.use(manifest)
+                it.callWithStatus(STYLED, input)
+            }
         // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
         if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
@@ -122,8 +132,15 @@ object Fristil {
     /** Hvor mange ledige instanser som er beholdt. For testene. */
     internal fun idleCores(): Int = idleCount.get()
 
-    private fun diagnose(entry: String, html: String): List<Finding> =
-        (Json.parse(withCore { it.call(entry, html) }) as List<*>).map { finding(it as Map<*, *>) }
+    private fun diagnose(entry: String, html: String, manifest: String?): List<Finding> =
+        (
+            Json.parse(
+                withCore {
+                    it.use(manifest)
+                    it.call(entry, html)
+                },
+            ) as List<*>
+        ).map { finding(it as Map<*, *>) }
 
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
@@ -164,6 +181,31 @@ internal class Core {
     private val alloc: ExportFunction = instance.export("alloc")
     private val resultPtr: ExportFunction = instance.export("result_ptr")
     private val resultLen: ExportFunction = instance.export("result_len")
+
+    /*
+     * Manifestet instansen sjekker mot nå, `null` for det innebygde. En
+     * instans lånes ut igjen etter kallet, så den husker hva som er lastet,
+     * og det samme manifestet leses bare én gang per instans.
+     */
+    private var manifest: String? = null
+
+    /** Bytter til [manifest], eller tilbake til det innebygde med `null`. */
+    fun use(manifest: String?) {
+        if (manifest === this.manifest || manifest == this.manifest) return
+        if (manifest == null) {
+            instance.export("reset_manifest").apply()
+        } else {
+            val (status, answer) = callWithStatus("load_manifest_raw", manifest)
+            if (status != 0L) {
+                // Kjernen beholder det forrige ved en feil, men det er tryggest
+                // å vite hva som gjelder: det innebygde.
+                instance.export("reset_manifest").apply()
+                this.manifest = null
+                throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
+            }
+        }
+        this.manifest = manifest
+    }
 
     /** Kaller en av funksjonene som tar en tekst, og gir svaret som tekst. */
     fun call(entry: String, text: String): String = callWithStatus(entry, text).second

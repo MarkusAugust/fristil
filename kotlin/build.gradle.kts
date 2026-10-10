@@ -120,6 +120,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
     systemProperty("paritet", kjerne.resolve("paritet").absolutePath)
+    // Fiksturene og byggetilfellene leses gjennom en sti, så Gradle ser dem
+    // ikke uten dette, og en ny fikstur ville latt testen stå som oppdatert.
+    inputs.dir(kjerne.resolve("paritet")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file(designsystem.resolve("manifest/byggetilfeller.json")).withPathSensitivity(PathSensitivity.NONE)
+    systemProperty("manifest", manifestFil.absolutePath)
+    inputs.file(manifestFil).withPathSensitivity(PathSensitivity.NONE)
     systemProperty("byggetilfeller", designsystem.resolve("manifest/byggetilfeller.json").absolutePath)
     systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/fristil/$version").get().asFile.absolutePath)
     testLogging { events("failed") }

@@ -8,7 +8,8 @@ plugins {
 /*
  * Gradle-pluginen: `fristilSjekk` sjekker malene som en del av `check`,
  * `fristilTema` bygger temaet av en oppskrift, og `fristilManifest` skriver
- * manifestet prosjektet sjekkes mot til `build/fristil/manifest.json`.
+ * manifestet prosjektet sjekkes mot til `build/fristil/manifest.json` når
+ * prosjektet har fragmenter.
  *
  * Den kjører kommandolinja i Gradle-prosessen, den samme WASI-modulen som
  * `java -jar fristil.jar`, så svarene er de samme som i terminalen.
