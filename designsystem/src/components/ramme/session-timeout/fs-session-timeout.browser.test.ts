@@ -357,9 +357,27 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(element.warnAt).toBe(5)
   })
 
-  it("teller rulling i en boks som aktivitet", async () => {
-    // `scroll` bobler ikke. Lyttet uten fangst telte bare rulling av selve
-    // siden, mens dokumentasjonen lovet «rulling».
+  it("teller rulling med musa i en boks som aktivitet", async () => {
+    // Fangstfasen, så en rulling i en tabell eller et panel teller, ikke bare
+    // rulling av selve siden.
+    await monterKort(
+      `${varsel()}<div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>`,
+    )
+
+    await gaFram(2)
+    ;(document.getElementById("boks") as HTMLElement).dispatchEvent(
+      new WheelEvent("wheel", { bubbles: true }),
+    )
+    await gaFram(2)
+    expect(dialog().open).toBe(false)
+
+    await gaFram(2)
+    expect(dialog().open).toBe(true)
+  })
+
+  it("teller ikke rulling som kode gjør", async () => {
+    // En logg som følger med, eller `scrollIntoView`, holdt før økten i live
+    // mens brukeren var borte.
     await monterKort(
       `${varsel()}<div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>`,
     )
@@ -369,10 +387,58 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
       new Event("scroll"),
     )
     await gaFram(2)
-    expect(dialog().open).toBe(false)
-
-    await gaFram(2)
     expect(dialog().open).toBe(true)
+  })
+
+  it("melder aktivitet i starten og slutten av et intervall", async () => {
+    // Serverøkten vet ikke om aktivitet i nettleseren. Bare i starten ville
+    // serveren vært opptil et helt intervall bak klokka her, og logget ut
+    // før varselet var ferdig.
+    const element = await monterKort(
+      varsel({ warnAt: 100, expiresAt: 130 }).replace(
+        "<fs-session-timeout ",
+        '<fs-session-timeout activity-interval="20" ',
+      ),
+    )
+    const start = Date.now()
+    const tider: number[] = []
+    element.addEventListener("session-activity", () =>
+      tider.push(Math.round((Date.now() - start) / 1000)),
+    )
+
+    for (let sekund = 0; sekund < 50; sekund += 10) {
+      document.body.dispatchEvent(
+        new KeyboardEvent("keydown", { bubbles: true }),
+      )
+      await gaFram(10)
+    }
+
+    // Aktivitet ved 0, 10, 20, 30 og 40. Én hendelse ved 0, så én for hvert
+    // intervall der det var aktivitet: ved 20 og 40, i det tastetrykket kom,
+    // og ikke flere.
+    expect(tider).toEqual([0, 20, 40])
+  })
+
+  it("melder aktivitet på slutten av intervallet, også uten nytt tastetrykk", async () => {
+    const element = await monterKort(
+      varsel({ warnAt: 100, expiresAt: 130 }).replace(
+        "<fs-session-timeout ",
+        '<fs-session-timeout activity-interval="20" ',
+      ),
+    )
+    const start = Date.now()
+    const tider: number[] = []
+    element.addEventListener("session-activity", () =>
+      tider.push(Math.round((Date.now() - start) / 1000)),
+    )
+
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+    await gaFram(5)
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+    await gaFram(30)
+
+    // Det siste tastetrykket ved 5 når serveren ved 20, ikke aldri.
+    expect(tider).toEqual([0, 20])
   })
 
   it("nullstiller uten å melde fra med reset()", async () => {
@@ -569,6 +635,37 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     expect(nullstilt).toHaveBeenCalledTimes(1)
     expect(forlenget).toHaveLength(1)
     nullstilt.mockRestore()
+  })
+})
+
+describe("fs-session-timeout: en terskel som hoppes over", () => {
+  beforeAll(() => {
+    defineFsSessionTimeout()
+  })
+
+  beforeEach(() => {
+    falskKlokke()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("leser opp når klokka hopper forbi en terskel", async () => {
+    // Et tikk som kommer sent, eller strupes i en fane i bakgrunnen, kan
+    // hoppe fra 61 til 59. Før krevde opplesningen nøyaktig 60.
+    monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 70 })}</div>`)
+    await customElements.whenDefined("fs-session-timeout")
+    await gaFram(9)
+    expect(dialog().open).toBe(true)
+
+    vi.setSystemTime(Date.now() + 1000)
+    await gaFram(1)
+
+    expect(
+      dialog().querySelector(".fs-session-timeout__count")?.textContent,
+    ).toBe("0:59")
+    expect(opplest()).toContain("59 sekunder")
   })
 })
 

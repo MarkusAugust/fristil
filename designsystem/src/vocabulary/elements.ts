@@ -137,6 +137,9 @@ export const elements: Elements = {
       },
       "expires-at": {
         "type": "number"
+      },
+      "activity-interval": {
+        "type": "number"
       }
     }
   },

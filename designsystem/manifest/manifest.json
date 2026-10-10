@@ -138,6 +138,9 @@
         },
         "expires-at": {
           "type": "number"
+        },
+        "activity-interval": {
+          "type": "number"
         }
       }
     },

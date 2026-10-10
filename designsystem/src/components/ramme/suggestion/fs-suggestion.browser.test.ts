@@ -993,3 +993,80 @@ describe("fs-suggestion leser opp antallet på sidens språk", () => {
     expect(await opplest(element, "o")).toBe("3 treff")
   })
 })
+
+/**
+ * Etterligner verdisporingen React legger på et kontrollert felt: en egen
+ * `value` på noden som husker siste verdi satt gjennom den, og `onChange`
+ * bare når verdien fra prototypen er en annen.
+ */
+function kontrollertAvReact(felt: HTMLInputElement | HTMLTextAreaElement) {
+  const opprinnelig = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(felt),
+    "value",
+  ) as PropertyDescriptor
+  let husket = felt.value
+  Object.defineProperty(felt, "value", {
+    configurable: true,
+    get() {
+      return opprinnelig.get?.call(this)
+    },
+    set(verdi) {
+      husket = `${verdi}`
+      opprinnelig.set?.call(this, verdi)
+    },
+  })
+  const endringer: string[] = []
+  felt.addEventListener("input", () => {
+    const faktisk = opprinnelig.get?.call(felt) as string
+    if (faktisk !== husket) {
+      husket = faktisk
+      endringer.push(faktisk)
+    }
+  })
+  return endringer
+}
+
+describe("fs-suggestion med et felt React styrer", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  for (const kontroll of [
+    '<input id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list">',
+    '<textarea id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list"></textarea>',
+  ]) {
+    it(`gir onChange det valgte (${kontroll.slice(1, 6)})`, async () => {
+      // Satt rett på noden så React ingen endring, og skrev den gamle teksten
+      // tilbake ved neste rendring.
+      monter(`
+        <fs-suggestion>
+          <label for="kommune">Kommune</label>
+          <div class="fs-suggestion__field">
+            ${kontroll}
+            <ul class="fs-suggestion__list" role="listbox" id="kommune-liste" hidden>
+              <li role="option" id="kommune-0">Bergen</li>
+              <li role="option" id="kommune-1">Oslo</li>
+            </ul>
+          </div>
+        </fs-suggestion>`)
+      const felt = document.getElementById("kommune") as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+      const endringer = kontrollertAvReact(felt)
+      await customElements.whenDefined("fs-suggestion")
+      await ventPaTegning()
+
+      felt.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      )
+      await ventPaTegning()
+      felt.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      )
+      await ventPaTegning()
+
+      expect(felt.value).toBe("Bergen")
+      expect(endringer).toEqual(["Bergen"])
+    })
+  }
+})

@@ -161,8 +161,16 @@ import Preview from "./Preview.astro"
 	 * Den leses ut av feltene, ikke ført som en egen liste ved siden av.
 	 * Retter du én av to feil, er det den gjenværende som står igjen, og
 	 * overskriften teller riktig.
+	 *
+	 * Boksen er `role="alert"`, og hver endring i den leses opp med en gang.
+	 * Mens brukeren skriver og går mellom feltene, skrives den derfor bare
+	 * når innholdet faktisk endres, og den kommer ikke til syne. Før ble den
+	 * skrevet på nytt ved hvert tastetrykk i et ugyldig felt og ved hver Tab,
+	 * og skjermleseren avbrøt ledeteksten til neste felt. Ved innsending
+	 * skrives den alltid, så den leses opp og brukeren vet at forsøket ble
+	 * avvist.
 	 */
-	function oppsummer() {
+	function oppsummer(innsending = false) {
 		const feil = felter
 			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
 			.map((felt) => ({
@@ -171,10 +179,11 @@ import Preview from "./Preview.astro"
 			}))
 
 		const liste = oppsummering?.querySelector("ul")
-		if (liste) {
-			liste.innerHTML = feil
-				.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
-				.join("")
+		const markup = feil
+			.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+			.join("")
+		if (liste && (innsending || liste.innerHTML !== markup)) {
+			liste.innerHTML = markup
 		}
 
 		// Overskriften og hidden skrives her, slik en server ville gjort det.
@@ -182,15 +191,20 @@ import Preview from "./Preview.astro"
 		// Datastar fjernet den igjen. Se «Markup og oppførsel».
 		const tittel = oppsummering?.querySelector(".fs-error-summary__title")
 
-		if (oppsummering) oppsummering.hidden = feil.length === 0
+		// Bare innsending viser boksen. Underveis kan den bare forsvinne, når
+		// den siste feilen er rettet.
+		if (oppsummering && (innsending || feil.length === 0)) {
+			oppsummering.hidden = feil.length === 0
+		}
 
 		// Står lista tom, blir overskriften urørt. «Skjemaet har 0 feil» ville
 		// vært det siste som ble lest opp.
-		if (feil.length > 0 && tittel) {
-			tittel.textContent =
-				feil.length === 1
-					? "Skjemaet har én feil"
-					: `Skjemaet har ${feil.length} feil`
+		const overskrift =
+			feil.length === 1
+				? "Skjemaet har én feil"
+				: `Skjemaet har ${feil.length} feil`
+		if (feil.length > 0 && tittel && tittel.textContent !== overskrift) {
+			tittel.textContent = overskrift
 		}
 
 		return feil.length
@@ -224,7 +238,7 @@ import Preview from "./Preview.astro"
 
 		for (const felt of felter) vis(felt, meldingFor(felt))
 
-		const antall = oppsummer()
+		const antall = oppsummer(true)
 
 		if (status) {
 			status.textContent = antall === 0 ? "Søknaden er sendt." : ""

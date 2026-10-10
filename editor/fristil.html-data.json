@@ -365,7 +365,7 @@
       "name": "fs-session-timeout",
       "description": {
         "kind": "markdown",
-        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute."
+        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
       },
       "attributes": [
         {
@@ -380,6 +380,13 @@
           "description": {
             "kind": "markdown",
             "value": "Sekunder uten aktivitet før økten er ute."
+          }
+        },
+        {
+          "name": "activity-interval",
+          "description": {
+            "kind": "markdown",
+            "value": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60."
           }
         }
       ],

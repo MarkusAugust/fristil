@@ -292,7 +292,7 @@
         },
         {
           "name": "fs-session-timeout",
-          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.",
+          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
           "doc-url": "https://fristil.sobernetics.no/components/session-timeout/",
           "attributes": [
             {
@@ -306,6 +306,14 @@
             {
               "name": "expires-at",
               "description": "Sekunder uten aktivitet før økten er ute.",
+              "value": {
+                "kind": "plain",
+                "type": "number"
+              }
+            },
+            {
+              "name": "activity-interval",
+              "description": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60.",
               "value": {
                 "kind": "plain",
                 "type": "number"

@@ -89,7 +89,39 @@ export class FsToast extends HostElement {
     this.setAttribute("duration", String(value))
   }
 
+  /**
+   * Om komponenten skrev `aria-label`. Før skrev `label` over en
+   * `aria-label` forfatteren hadde satt selv, og når `label` ble fjernet,
+   * ble den gamle stående.
+   */
+  private ownsLabel = false
+  /**
+   * Elementet fokus kom fra før det gikk inn i en melding. Fjernes den
+   * siste meldingen mens den har fokus, går fokus tilbake dit. Før falt det
+   * til `body`, og neste Tab startet på toppen av siden. Kom fokus fra en
+   * skjermleser eller F6, er det ikke kjent, og da faller det fortsatt.
+   */
+  private focusOrigin: HTMLElement | null = null
+
+  private rememberOrigin = (event: FocusEvent): void => {
+    const from = event.relatedTarget
+    if (from instanceof HTMLElement && !this.contains(from)) {
+      this.focusOrigin = from
+    }
+  }
+
+  private restoreFocus(): void {
+    const origin = this.focusOrigin
+    this.focusOrigin = null
+    if (origin?.isConnected) origin.focus()
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener("focusin", this.rememberOrigin)
+  }
+
   connectedCallback(): void {
+    this.addEventListener("focusin", this.rememberOrigin)
     // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
     // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
     // får en region skjermleseren forstår.
@@ -104,6 +136,7 @@ export class FsToast extends HostElement {
       this.setAttribute("aria-atomic", "false")
     }
     if (!this.hasAttribute("aria-label")) {
+      this.ownsLabel = true
       this.setAttribute(
         "aria-label",
         this.getAttribute("label") ?? DEFAULT_LABEL,
@@ -114,7 +147,8 @@ export class FsToast extends HostElement {
   attributeChangedCallback(name: string, _old: string, value: string): void {
     // `label` kan settes etter at elementet står i DOM-en, for eksempel av et
     // rammeverk som fyller inn attributtene i et senere steg.
-    if (name === "label" && value) this.setAttribute("aria-label", value)
+    if (name !== "label" || !this.ownsLabel) return
+    this.setAttribute("aria-label", value || DEFAULT_LABEL)
   }
 
   /** Viser en melding, og returnerer elementet den ble lagt i. */
@@ -193,7 +227,11 @@ export class FsToast extends HostElement {
     const neighbour = toast.nextElementSibling ?? toast.previousElementSibling
     toast.remove()
     if (hadFocus) {
-      neighbour?.querySelector<HTMLElement>(`.${TOAST_CLOSE_CLASS}`)?.focus()
+      const next = neighbour?.querySelector<HTMLElement>(
+        `.${TOAST_CLOSE_CLASS}`,
+      )
+      if (next) next.focus()
+      else this.restoreFocus()
     }
 
     this.dispatchEvent(
@@ -203,6 +241,8 @@ export class FsToast extends HostElement {
 
   /** Fjerner alle meldingene. */
   clear(): void {
+    const hadFocus = this.contains(document.activeElement)
+    if (hadFocus) this.restoreFocus()
     for (const toast of this.querySelectorAll(`.${TOAST_MESSAGE_CLASS}`)) {
       toast.remove()
     }

@@ -27,6 +27,24 @@ egen overskrift «Brytende».
 
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.
+- **`session-activity` og `activity-interval` på `fs-session-timeout`.**
+  Klokka nullstilles av aktivitet i nettleseren, men serverøkten visste
+  ikke om den. En bruker som skrev i et langt skjema uten et eneste kall til
+  serveren, fikk aldri varselet, og innsendingen feilet fordi serverøkten
+  var ute. Hendelsen kommer i starten av hvert intervall med aktivitet og på
+  slutten hvis brukeren har gjort noe siden, høyst én gang per
+  `activity-interval` sekunder (standard 60). Komponentsiden viser også
+  hvordan flere faner holder klokkene i takt.
+
+### Endret
+
+- **Rulling som kode gjør, teller ikke lenger som aktivitet i
+  `fs-session-timeout`.** `scroll` er byttet ut med `wheel` og `touchmove`.
+  En logg som fulgte med, eller `scrollIntoView`, holdt økten i live mens
+  brukeren var borte. Rulling med tastaturet teller som før, som `keydown`.
+- **Pil opp og ned bytter ikke lenger fane i en vannrett `fs-tabs`.** De
+  stjal siderullingen og avvek fra WAI-ARIA. De virker når raden har
+  `aria-orientation="vertical"`.
 
 ### Rettet
 
@@ -64,6 +82,27 @@ egen overskrift «Brytende».
   - Et trykk noe annet alt hadde brukt, som en forslagsliste i vinduet som
     lukket seg, lukket vinduet også. Nå står vinduet.
   - Med to vinduer inni hverandre lukkes nå det innerste først.
+- **`fs-suggestion` nådde ikke et felt React styrer.** Valget ble satt rett på
+  noden, React så ingen endring, `onChange` kom aldri, og ved neste rendring
+  skrev React den gamle teksten tilbake. Komponenten bruker nå setteren fra
+  elementets prototype.
+- **`fs-session-timeout` kunne hoppe over en opplesning.** Et tikk som kom
+  sent, kunne gå fra 61 til 59 sekunder, og «1 minutt» ble aldri lest opp.
+  Opplesningen kommer nå når en terskel krysses.
+- **`fs-toast` mistet fokus.** Ble den siste meldingen lukket, eller ble alle
+  fjernet med `clear()`, mens en melding hadde fokus, falt fokus til `body`.
+  Det går nå tilbake dit det kom fra. `label` skrev også over en
+  `aria-label` forfatteren hadde satt, og når `label` ble fjernet, sto det
+  gamle navnet igjen.
+- **`fs-tabs` og `fs-error-summary` holdt fast faner og lenker en morfing
+  hadde byttet ut.** Begge har nå én lytter på verten.
+- **Dokumentasjonen lovet for mye.** «Kom i gang» og «Rammeverk» sa at
+  markupen i en `ramme`-komponent vises uansett, men Tabs og Suggestion
+  skjuler innhold til de er registrert. Datastar-oppskriften for Error
+  Summary flyttet ikke fokus ved andre feilede innsending, og skjema-mønsteret
+  skrev oppsummeringen med `role="alert"` på nytt ved hvert tastetrykk, så
+  skjermleseren ble avbrutt. Toast og Connection Status sier nå at de er
+  inerte mens en modal dialog står åpen.
 
 ## 0.32.1 (2026-10-09)
 
