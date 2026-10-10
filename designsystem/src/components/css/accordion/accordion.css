@@ -72,7 +72,7 @@
   /* Dokumentasjonen viser en overskrift i `summary`, så panelene får en
      plass i dokumentets disposisjon. Uten dette fikk den nettleserens marg og
      størrelse, og raden ble høyere og teksten større enn uten overskrift.
-     `:where` lar `.fs-heading` på overskriften vinne. */
+     `:where` lar en klasse fra Heading på overskriften vinne. */
   :where(.fs-accordion summary) > :where(h2, h3, h4, h5, h6) {
     margin: 0;
     font: inherit;
