@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentHashMap
  * først `build/fristil/manifest.json`, som Gradle-oppgaven `fristilManifest`
  * skriver når prosjektet har overtatt komponenter, så manifestet i
  * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
- * hjemmemappa er ikke prosjektets. Finnes ingen av dem, gjelder manifestet
+ * hjemmemappa er ikke prosjektets. En fil utenfor prosjektet, som en
+ * kladdefil, sjekkes derfor mot det innebygde. Finnes ingen av dem, gjelder manifestet
  * som er bygget inn i kjernen. Språkserveren har i tillegg et valg for et
  * bestemt manifest, som pluginen ikke har.
  *
@@ -55,7 +56,7 @@ internal object ProjectManifest {
                 projectDir
             } else {
                 ProjectFileIndex.getInstance(project).getContentRootForFile(virtualFile, false)
-            }
+            } ?: return null
         var dir: VirtualFile? = virtualFile.parent
         while (dir != null) {
             for (candidate in CANDIDATES) {

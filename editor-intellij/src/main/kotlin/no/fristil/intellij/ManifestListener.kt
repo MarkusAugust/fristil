@@ -15,7 +15,16 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
  */
 class ManifestListener : BulkFileListener {
     override fun after(events: List<VFileEvent>) {
-        val touched = events.any { event -> ProjectManifest.CANDIDATES.any { event.path.endsWith("/$it") } }
+        // Lages eller slettes en hel mappe, som `build/fristil` ved første
+        // bygg eller `node_modules` ved `npm install`, kommer det én hendelse
+        // for mappa og ingen for fila inni. Derfor også mappene på stien.
+        val touched =
+            events.any { event ->
+                ProjectManifest.CANDIDATES.any { candidate ->
+                    val parts = candidate.split('/')
+                    parts.indices.any { i -> event.path.endsWith("/" + parts.subList(0, i + 1).joinToString("/")) }
+                }
+            }
         if (!touched) return
         for (project in ProjectManager.getInstance().openProjects) {
             if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart()
