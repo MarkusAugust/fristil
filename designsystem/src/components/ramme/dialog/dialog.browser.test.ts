@@ -529,17 +529,22 @@ describe("fs-dialog", () => {
     expect(vert.hasAttribute("open")).toBe(true)
   })
 
-  it("melder lukket når verten fjernes mens dialogen er åpen", async () => {
-    const { vert } = await monterDialog(true)
+  it("melder ingenting når dialogen flyttes inne i verten", async () => {
+    // En patch som bytter rekkefølgen på barna tar dialogen ut av
+    // topplaget, og komponenten åpner den igjen. Før meldte den `open: true`
+    // for en dialog som hadde vært åpen hele tiden.
+    const { vert, d } = await monterDialog(true)
     const svar: boolean[] = []
     vert.addEventListener("dialog-toggle", (event) => {
       svar.push((event as CustomEvent<{ open: boolean }>).detail.open)
     })
 
-    vert.remove()
+    vert.prepend(document.createElement("span"))
+    vert.append(d)
     await ventPaTegning()
 
-    expect(svar).toEqual([false])
+    expect(d.matches(":modal")).toBe(true)
+    expect(svar).toEqual([])
   })
 
   it("melder ingenting når en åpen dialog flyttes", async () => {

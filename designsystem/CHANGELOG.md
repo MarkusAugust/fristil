@@ -41,23 +41,26 @@ egen overskrift «Brytende».
   `returnValue` for en lukking brukeren gjorde før skriptet kom, og fjernet
   `open` serveren nettopp hadde satt. Den sjekken gjøres nå bare første gang
   komponenten møter en dialog.
-- **`fs-dialog` sa ikke fra når verten ble fjernet mens dialogen var åpen.**
-  Appens tilstand ble stående på «åpen». Komponenten sender nå
-  `dialog-toggle` med `open: false` på verten. Flyttes verten i samme
-  oppgave, sendes ingenting, heller ikke en ekstra `open: true`. Hendelsen
-  bobler ikke, siden verten ikke står i siden, så bare en lytter på selve
-  verten hører den.
+- **`fs-dialog` meldte `open: true` for en dialog som var åpen hele tiden.**
+  En morfer som flytter verten eller dialogen, tar dialogen ut av topplaget,
+  og komponenten åpner den igjen. `dialog-toggle` kommer nå bare når
+  tilstanden faktisk endrer seg.
 - **`data-color="neutral"` på `fs-dialog` ga mer luft enn ingen farge.**
   Verdien er standardverdien og skal se ut som ingen verdi, men reglene for
-  luften traff bare en dialog uten attributtet.
+  luften traff bare en dialog uten attributtet. Nå gjelder de alt som ikke er
+  en av de fem fargene, også en tom verdi fra en mal.
 - **Knappen i `fs-popover` sendte skjemaet den sto i.** Komponenten setter nå
-  `type="button"` på en `<button>` uten `type`, også etter en patch som river
-  det bort. Eksemplene på komponentsiden og snippeten i editoren har det med.
-- **Escape i `fs-popover` virket uansett hvor tastetrykket kom fra.** Et trykk
-  i et annet felt, eller i en modal dialog åpnet oppå vinduet, lukket vinduet
-  og flyttet fokus til knappen. Et trykk noe annet alt hadde brukt, som en
-  forslagsliste i vinduet som lukket seg, tok vinduet også. Nå lukker bare et
-  trykk fra knappen, panelet eller siden uten fokus vinduet.
+  `type="button"` på en `<button>` uten `type`, eller med en tom eller ukjent
+  verdi, også etter en patch som river det bort. En knapp som sier
+  `type="submit"` selv, får stå. Eksemplene på komponentsiden og snippeten i editoren har det med.
+- **Escape i `fs-popover` tok for mye.**
+  - Et trykk i et annet felt flyttet fokus fra feltet til knappen. Nå lukkes
+    vinduet, og fokus blir stående.
+  - Et trykk i en modal dialog åpnet oppå vinduet lukket vinduet også. Nå
+    lukker det bare dialogen.
+  - Et trykk noe annet alt hadde brukt, som en forslagsliste i vinduet som
+    lukket seg, lukket vinduet også. Nå står vinduet.
+  - Med to vinduer inni hverandre lukkes nå det innerste først.
 
 ## 0.32.1 (2026-10-09)
 

@@ -85,10 +85,14 @@ export class FsDialog extends HostElement {
    */
   private upgradeChecked = new WeakSet<HTMLDialogElement>()
   /**
-   * Verten ble koblet fra mens dialogen var åpen, og ingen har meldt fra ennå.
-   * Se `disconnectedCallback`.
+   * Det komponenten sist meldte, så den bare melder når tilstanden endrer seg.
+   *
+   * En morfer som flytter verten eller dialogen, tar dialogen ut av
+   * topplaget, og komponenten åpner den igjen. Før meldte den da `open: true`
+   * for en dialog som hadde vært åpen hele tiden. Feltet overlever at verten
+   * kobles fra og til.
    */
-  private leftOpen = false
+  private lastNotified?: boolean
 
   /** Om dialogen er åpen. Speiler `open`-attributtet. */
   get open(): boolean {
@@ -138,32 +142,9 @@ export class FsDialog extends HostElement {
       attributeFilter: ["class", "id", "aria-labelledby"],
     })
     this.sync()
-    this.leftOpen = false
   }
 
   disconnectedCallback(): void {
-    /*
-     * Fjernes verten mens dialogen er åpen, lukkes den uten at noen hører om
-     * det, og appens tilstand blir stående på «åpen». Men en morfer som
-     * flytter verten, kobler den fra og til i samme oppgave, og da er
-     * dialogen like åpen som før. Svaret venter derfor en mikrooppgave: står
-     * verten fortsatt utenfor siden da, er den fjernet.
-     *
-     * Hendelsen sendes fra et element som ikke står i siden, så den bobler
-     * ikke. Bare en lytter på selve verten hører den, slik `onDialogToggle` i
-     * React gjør.
-     */
-    // `:modal` er alt usann her: nettleseren tar dialogen ut av topplaget i
-    // det den fjernes, før denne kjører. `open` står igjen.
-    if (this.open && this.dialogElement?.open) {
-      this.leftOpen = true
-      const returnValue = this.dialogElement.returnValue
-      queueMicrotask(() => {
-        if (!this.leftOpen || this.isConnected) return
-        this.leftOpen = false
-        this.notify(false, returnValue)
-      })
-    }
     this.observer?.disconnect()
     this.observer = undefined
     this.openObserver?.disconnect()
@@ -231,6 +212,8 @@ export class FsDialog extends HostElement {
   }
 
   private notify(open: boolean, returnValue = ""): void {
+    if (open === this.lastNotified) return
+    this.lastNotified = open
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
         bubbles: true,
@@ -400,10 +383,7 @@ export class FsDialog extends HostElement {
        */
       dialog.returnValue = ""
       dialog.showModal()
-      // Flyttet i samme oppgave: dialogen var åpen hele tiden, og det er
-      // ingenting å melde.
-      if (this.leftOpen) this.leftOpen = false
-      else this.notify(true)
+      this.notify(true)
     } else if (!this.open && (modal || dialog.open)) {
       /*
        * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens
