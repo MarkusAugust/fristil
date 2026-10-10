@@ -43,7 +43,7 @@ defineFsPopover()
     ```html
     <!-- `popover`, id-en og `aria-controls` setter komponenten. -->
     <fs-popover id="meny" placement="bottom-end">
-      <button class="fs-button" data-variant="secondary">Handlinger</button>
+      <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
 
       <ul class="fs-popover">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
@@ -169,7 +169,7 @@ defineFsPopover()
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
-        <button class="fs-button" data-variant="secondary">Handlinger</button>
+        <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
 
         <ul class="fs-popover">
           <li>
@@ -202,7 +202,7 @@ const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
 
 ```html
 <fs-popover placement="bottom-end">
-  <button class="fs-button" data-variant="secondary"
+  <button class="fs-button" data-variant="secondary" type="button"
           aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
   <ul class="fs-popover" id="handlinger" popover="manual">

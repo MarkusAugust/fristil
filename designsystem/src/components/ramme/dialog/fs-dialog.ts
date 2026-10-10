@@ -74,6 +74,21 @@ export class FsDialog extends HostElement {
    */
   private openObserver?: MutationObserver
   private dialogElement?: HTMLDialogElement
+  /**
+   * Dialogene komponenten har sett etter en lukking før oppgradering i.
+   *
+   * Sjekken gjelder bare første gang komponenten møter en dialog, ikke hver
+   * gang den kobles til. En morfer som flytter verten, kobler den fra og til,
+   * og da sto `returnValue` igjen fra en lukking brukeren gjorde for lenge
+   * siden. Komponenten trodde den var lukket før skriptet kom, og tok `open`
+   * fra verten serveren nettopp hadde åpnet.
+   */
+  private upgradeChecked = new WeakSet<HTMLDialogElement>()
+  /**
+   * Verten ble koblet fra mens dialogen var åpen, og ingen har meldt fra ennå.
+   * Se `disconnectedCallback`.
+   */
+  private leftOpen = false
 
   /** Om dialogen er åpen. Speiler `open`-attributtet. */
   get open(): boolean {
@@ -123,9 +138,32 @@ export class FsDialog extends HostElement {
       attributeFilter: ["class", "id", "aria-labelledby"],
     })
     this.sync()
+    this.leftOpen = false
   }
 
   disconnectedCallback(): void {
+    /*
+     * Fjernes verten mens dialogen er åpen, lukkes den uten at noen hører om
+     * det, og appens tilstand blir stående på «åpen». Men en morfer som
+     * flytter verten, kobler den fra og til i samme oppgave, og da er
+     * dialogen like åpen som før. Svaret venter derfor en mikrooppgave: står
+     * verten fortsatt utenfor siden da, er den fjernet.
+     *
+     * Hendelsen sendes fra et element som ikke står i siden, så den bobler
+     * ikke. Bare en lytter på selve verten hører den, slik `onDialogToggle` i
+     * React gjør.
+     */
+    // `:modal` er alt usann her: nettleseren tar dialogen ut av topplaget i
+    // det den fjernes, før denne kjører. `open` står igjen.
+    if (this.open && this.dialogElement?.open) {
+      this.leftOpen = true
+      const returnValue = this.dialogElement.returnValue
+      queueMicrotask(() => {
+        if (!this.leftOpen || this.isConnected) return
+        this.leftOpen = false
+        this.notify(false, returnValue)
+      })
+    }
     this.observer?.disconnect()
     this.observer = undefined
     this.openObserver?.disconnect()
@@ -325,9 +363,12 @@ export class FsDialog extends HostElement {
      * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
      * en `value`, og det er verdt å holde på.
      */
-    if (first && this.open && !dialog.open && dialog.returnValue !== "") {
-      this.removeAttribute("open")
-      return
+    if (!this.upgradeChecked.has(dialog)) {
+      this.upgradeChecked.add(dialog)
+      if (this.open && !dialog.open && dialog.returnValue !== "") {
+        this.removeAttribute("open")
+        return
+      }
     }
 
     // `:modal` og ikke `open`. De to er ikke det samme: et `<dialog open>`
@@ -351,8 +392,18 @@ export class FsDialog extends HostElement {
        * hendelsen.
        */
       dialog.removeAttribute("open")
+      /*
+       * Escape og `close()` uten argument lar forrige `returnValue` stå. En
+       * dialog serveren åpner på nytt, meldte da «slett» fra forrige gang
+       * når den ble lukket fra serveren, og appen som skiller «Avbryt» fra
+       * «Slett» på verdien, slettet noe brukeren aldri ba om.
+       */
+      dialog.returnValue = ""
       dialog.showModal()
-      this.notify(true)
+      // Flyttet i samme oppgave: dialogen var åpen hele tiden, og det er
+      // ingenting å melde.
+      if (this.leftOpen) this.leftOpen = false
+      else this.notify(true)
     } else if (!this.open && (modal || dialog.open)) {
       /*
        * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens

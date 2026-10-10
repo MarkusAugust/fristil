@@ -492,6 +492,72 @@ describe("fs-dialog", () => {
     expect(svar).toBe("slett")
   })
 
+  it("melder ikke forrige knapp når serveren lukker en dialog den åpnet på nytt", async () => {
+    const { vert, d } = await monterDialog(true)
+    await lukkOgVent(d, "slett")
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    expect(d.matches(":modal")).toBe(true)
+
+    const svar: Array<{ open: boolean; returnValue: string }> = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push((event as CustomEvent).detail)
+    })
+    vert.removeAttribute("open")
+    await ventPaTegning()
+
+    // Før kom «slett» fra forrige gang, og en app som slettet på den verdien
+    // slettet noe brukeren aldri ba om.
+    expect(svar).toEqual([{ open: false, returnValue: "" }])
+  })
+
+  it("åpnes av serveren også etter at verten er flyttet", async () => {
+    const { vert, d } = await monterDialog(true)
+    await lukkOgVent(d, "lukk")
+
+    // En morfer flytter verten og sender den åpen igjen. Før så komponenten
+    // `returnValue` fra lukkingen, trodde brukeren hadde lukket dialogen før
+    // skriptet kom, og tok `open` fra verten.
+    const annet = document.createElement("div")
+    document.body.append(annet)
+    vert.remove()
+    vert.setAttribute("open", "")
+    annet.append(vert)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(vert.hasAttribute("open")).toBe(true)
+  })
+
+  it("melder lukket når verten fjernes mens dialogen er åpen", async () => {
+    const { vert } = await monterDialog(true)
+    const svar: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push((event as CustomEvent<{ open: boolean }>).detail.open)
+    })
+
+    vert.remove()
+    await ventPaTegning()
+
+    expect(svar).toEqual([false])
+  })
+
+  it("melder ingenting når en åpen dialog flyttes", async () => {
+    const { vert, d } = await monterDialog(true)
+    const svar: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push((event as CustomEvent<{ open: boolean }>).detail.open)
+    })
+
+    const annet = document.createElement("div")
+    document.body.append(annet)
+    annet.append(vert)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(svar).toEqual([])
+  })
+
   it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
     await monterDialog(true)
 
@@ -1081,6 +1147,31 @@ describe("dialogen med farget topp", () => {
     )
     expect(getComputedStyle(kropp).paddingTop).toBe("0px")
     referanse.remove()
+  })
+
+  it("gir neutral samme luft som ingen farge", async () => {
+    const boks = dialog({ titleId: "uten-tittel" })
+    const noytral = dialog({ titleId: "noytral-verdi-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} id="uten" open>
+        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Uten</h2></div>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+      <dialog ${attr(noytral.dialog)} id="noytral" data-color="neutral" open>
+        <div ${attr(noytral.header)}><h2 ${attr(noytral.title)}>Nøytral</h2></div>
+        <div ${attr(noytral.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    // `neutral` er standardverdien, og editoren foreslår den. Før fikk den
+    // 20 piksler under overskriften i stedet for 8.
+    const stil = (id: string, del: string) =>
+      getComputedStyle(document.querySelector(`#${id} ${del}`) as Element)
+    expect(stil("noytral", ".fs-dialog__header").paddingBottom).toBe(
+      stil("uten", ".fs-dialog__header").paddingBottom,
+    )
+    expect(stil("noytral", ".fs-dialog__body").paddingTop).toBe("0px")
   })
 
   it("holder avstanden til knapperaden når toppen uten farge står rett over den", async () => {

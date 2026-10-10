@@ -129,6 +129,9 @@ export class FsPopover extends HostElement {
         "id",
         "aria-controls",
         "class",
+        // En patch fra en mal uten `type` river den bort, og da sender
+        // knappen skjemaet igjen.
+        "type",
       ],
     })
     this.sync()
@@ -205,6 +208,12 @@ export class FsPopover extends HostElement {
     const trigger = panel ? this.findTrigger(panel) : null
     if (panel && trigger && !trigger.hasAttribute("aria-controls")) {
       setAttr(trigger, "aria-controls", panel.id)
+    }
+    // En `<button>` uten `type` er en innsendingsknapp. En hjelpeboble ved et
+    // felt står inne i skjemaet, og et klikk for å åpne den sendte skjemaet,
+    // eller fikk feiloppsummeringen fram, i stedet for å vise panelet.
+    if (trigger?.localName === "button" && !trigger.hasAttribute("type")) {
+      setAttr(trigger, "type", "button")
     }
 
     if (!trigger || !panel) {
@@ -335,14 +344,26 @@ export class FsPopover extends HostElement {
 
   private handleKeydown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape" || !this.open) return
-    // Kom tastetrykket fra knappen eller panelet, er det brukt. Uten dette
-    // lukket det også en modal dialog vinduet sto i: ett trykk tok begge,
-    // og brukeren mistet dialogen. Kom det fra et annet sted, som en dialog
-    // åpnet oppå vinduet, er det ikke vinduets å stoppe.
+    // Noe annet har alt brukt trykket, som en forslagsliste som lukket seg.
+    // Uten dette lukket ett trykk både lista og vinduet.
+    if (event.defaultPrevented) return
+
+    /*
+     * Bare et trykk fra knappen eller panelet er vinduets. Kom det fra et
+     * annet felt, eller fra en modal dialog åpnet oppå vinduet, lukket
+     * vinduet seg likevel, og fokus hoppet fra der brukeren sto til
+     * knappen. Et trykk uten fokus noe sted er unntaket: et museklikk på
+     * knappen gir den ikke fokus i Safari, og da kommer trykket fra `body`.
+     */
     const target = event.composedPath()[0] as Node
-    if (this.contains(target) || this.panel?.contains(target)) {
-      event.preventDefault()
-    }
+    const fromWindow =
+      this.contains(target) || this.panel?.contains(target) === true
+    const fromNowhere = target === document || target === document.body
+    if (!fromWindow && !fromNowhere) return
+
+    // Brukt her. Uten dette lukket det også en modal dialog vinduet sto i:
+    // ett trykk tok begge, og brukeren mistet dialogen.
+    event.preventDefault()
     this.hide()
     // Fokus tilbake til knappen. Uten dette står fokus på et panel som ikke
     // lenger finnes, og neste tastetrykk starter på toppen av siden.

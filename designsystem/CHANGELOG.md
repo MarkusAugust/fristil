@@ -23,6 +23,42 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
+  sender skjemaet den står i.
+
+### Rettet
+
+- **`fs-dialog` meldte forrige knapps verdi når dialogen ble lukket uten
+  knapp.** Escape og `close()` uten argument lar `returnValue` stå fra forrige
+  lukking. En dialog serveren åpnet på nytt og så lukket, sendte derfor
+  `dialog-toggle` med for eksempel `returnValue: "slett"` fra gangen før, og en
+  app som skiller «Avbryt» fra «Slett» på verdien kunne slette noe brukeren
+  aldri ba om. Komponenten tømmer nå verdien hver gang den åpner dialogen.
+- **`fs-dialog` åpnet seg ikke igjen etter at verten var flyttet.** En morfer
+  som flytter verten kobler den fra og til, og komponenten tok den gamle
+  `returnValue` for en lukking brukeren gjorde før skriptet kom, og fjernet
+  `open` serveren nettopp hadde satt. Den sjekken gjøres nå bare første gang
+  komponenten møter en dialog.
+- **`fs-dialog` sa ikke fra når verten ble fjernet mens dialogen var åpen.**
+  Appens tilstand ble stående på «åpen». Komponenten sender nå
+  `dialog-toggle` med `open: false` på verten. Flyttes verten i samme
+  oppgave, sendes ingenting, heller ikke en ekstra `open: true`. Hendelsen
+  bobler ikke, siden verten ikke står i siden, så bare en lytter på selve
+  verten hører den.
+- **`data-color="neutral"` på `fs-dialog` ga mer luft enn ingen farge.**
+  Verdien er standardverdien og skal se ut som ingen verdi, men reglene for
+  luften traff bare en dialog uten attributtet.
+- **Knappen i `fs-popover` sendte skjemaet den sto i.** Komponenten setter nå
+  `type="button"` på en `<button>` uten `type`, også etter en patch som river
+  det bort. Eksemplene på komponentsiden og snippeten i editoren har det med.
+- **Escape i `fs-popover` virket uansett hvor tastetrykket kom fra.** Et trykk
+  i et annet felt, eller i en modal dialog åpnet oppå vinduet, lukket vinduet
+  og flyttet fokus til knappen. Et trykk noe annet alt hadde brukt, som en
+  forslagsliste i vinduet som lukket seg, tok vinduet også. Nå lukker bare et
+  trykk fra knappen, panelet eller siden uten fokus vinduet.
+
 ## 0.32.1 (2026-10-09)
 
 ### Rettet

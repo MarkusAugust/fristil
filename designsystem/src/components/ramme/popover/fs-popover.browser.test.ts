@@ -418,6 +418,35 @@ describe("fs-popover kobler fra bar struktur", () => {
     expect(knapp.getAttribute("aria-expanded")).toBe("false")
   })
 
+  it("gjør knappen til en vanlig knapp, så den ikke sender skjemaet", async () => {
+    monter(`
+      <form id="skjema">
+        <fs-popover>
+          <button class="fs-button">Hva betyr dette?</button>
+          <div class="fs-popover">Forklaring</div>
+        </fs-popover>
+      </form>`)
+    await tegn()
+    let sendt = 0
+    document.getElementById("skjema")?.addEventListener("submit", (event) => {
+      sendt++
+      event.preventDefault()
+    })
+    const knapp = document.querySelector("button") as HTMLButtonElement
+
+    knapp.click()
+    await tegn()
+    expect(sendt).toBe(0)
+    expect(document.querySelector("fs-popover")?.hasAttribute("open")).toBe(
+      true,
+    )
+
+    // En patch fra malen river `type` bort igjen.
+    knapp.removeAttribute("type")
+    await tegn()
+    expect(knapp.getAttribute("type")).toBe("button")
+  })
+
   it("skriver ingenting på markup fra fs.popover()", async () => {
     // Den direkte påstanden bak «det serveren skrev står»: null
     // mutasjonsposter fra komponentens første runde.
@@ -504,8 +533,10 @@ describe("fs-popover inne i en modal dialog", () => {
     dialog.close()
   })
 
-  it("stopper ikke Escape som kommer fra et annet sted enn vinduet", async () => {
-    // En dialog åpnet oppå et åpent vindu skal lukkes av sitt eget trykk.
+  it("lar Escape som kommer fra et annet sted enn vinduet være", async () => {
+    // En dialog åpnet oppå et åpent vindu skal lukkes av sitt eget trykk, og
+    // et trykk i et annet felt er ikke vinduets. Før lukket vinduet seg
+    // likevel, og fokus hoppet fra feltet til knappen.
     monter(`
       <fs-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
@@ -525,7 +556,30 @@ describe("fs-popover inne i en modal dialog", () => {
     document.getElementById("annet")?.dispatchEvent(trykk)
 
     expect(trykk.defaultPrevented).toBe(false)
-    expect(vert.open, "vinduet lukkes fortsatt").toBe(false)
+    expect(vert.open, "vinduet står").toBe(true)
+  })
+
+  it("lar et trykk noe annet alt har brukt være", async () => {
+    // En forslagsliste i vinduet lukker seg på Escape og kaller
+    // `preventDefault`. Før tok samme trykk vinduet også.
+    monter(`
+      <fs-popover ${attr(BOKS.host)}>
+        <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+        <div ${attr(BOKS.panel)}><input id="felt"></div>
+      </fs-popover>`)
+    await customElements.whenDefined("fs-popover")
+    const vert = document.querySelector("fs-popover") as FsPopover
+    vert.show()
+    await ventPaTegning()
+
+    const felt = document.getElementById("felt") as HTMLInputElement
+    felt.addEventListener("keydown", (event) => event.preventDefault())
+    felt.focus()
+    await userEvent.keyboard("{Escape}")
+    await ventPaTegning()
+
+    expect(vert.open).toBe(true)
+    expect(document.activeElement).toBe(felt)
   })
 
   it("rører ikke Escape når vinduet er lukket", async () => {

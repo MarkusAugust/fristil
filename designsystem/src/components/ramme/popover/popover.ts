@@ -30,6 +30,7 @@ export type PopoverAttributes = {
     placement?: PopoverPlacement
   }
   trigger: {
+    type: "button"
     "aria-expanded": "true" | "false"
     "aria-controls": string
   }
@@ -76,6 +77,8 @@ export const popover = Object.assign(
         placement: placement === "bottom-start" ? undefined : placement,
       }),
       trigger: attributes({
+        // En knapp uten `type` sender skjemaet den står i.
+        type: "button" as const,
         "aria-expanded": (open ? "true" : "false") as "true" | "false",
         "aria-controls": id,
       }),
