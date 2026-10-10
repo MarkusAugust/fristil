@@ -13,6 +13,7 @@ import "../../../tokens/tokens.css"
 import "./file-upload.css"
 import "../label/label.css"
 import "../help-text/help-text.css"
+import "../button/button.css"
 
 describe("fs-file-upload", () => {
   beforeEach(() => {
@@ -23,7 +24,7 @@ describe("fs-file-upload", () => {
       <p class="fs-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
 
       <ul class="fs-file-upload-list">
-        <li>fodselsattest.pdf <button type="button">Fjern fodselsattest.pdf</button></li>
+        <li>fodselsattest.pdf <button class="fs-button" data-variant="ghost" type="button">Fjern fodselsattest.pdf</button></li>
       </ul>
     `)
   })

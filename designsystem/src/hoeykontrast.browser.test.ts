@@ -18,6 +18,7 @@ import "./components/css/select/select.css"
 import "./components/css/tag/tag.css"
 import "./components/css/toggle-group/toggle-group.css"
 import "./components/css/pagination/pagination.css"
+import "./components/css/progress/progress.css"
 import "./components/css/tooltip/tooltip.css"
 import "./components/css/table/table.css"
 import "./components/ramme/suggestion/suggestion.css"
@@ -197,6 +198,24 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
       expect(pil.backgroundColor, id).not.toBe(flate)
       expect(pil.maskImage, id).toContain("svg")
     }
+  })
+
+  it("viser at noe pågår i en ubestemt fremdriftsindikator", async () => {
+    // Stripen som sveiper over, er en gradient, og gradienter fjernes i
+    // modusen. Uten unntaket sto en tom ramme igjen.
+    monter(`
+      <progress class="fs-progress" id="ubestemt" aria-label="Laster opp"></progress>
+      <span id="markering" style="color: Highlight">x</span>
+      <span id="tekst" style="color: CanvasText">x</span>
+    `)
+    await settHoeykontrast(true)
+
+    const ubestemt = stil("ubestemt")
+    expect(ubestemt.backgroundImage).toContain("gradient")
+    // Stripen er i systemets markeringsfarge, så den skiller seg fra flaten.
+    expect(ubestemt.backgroundImage).toContain(stil("markering").color)
+    expect(ubestemt.outlineStyle).toBe("solid")
+    expect(ubestemt.outlineColor).toBe(stil("tekst").color)
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {
