@@ -36,11 +36,14 @@ egen overskrift «Brytende».
   `dialog-toggle` med for eksempel `returnValue: "slett"` fra gangen før, og en
   app som skiller «Avbryt» fra «Slett» på verdien kunne slette noe brukeren
   aldri ba om. Komponenten tømmer nå verdien hver gang den åpner dialogen.
+  Skriver noe `open` på verten etter at brukeren har trykket en knapp, men før
+  `close` er kommet, åpner komponenten heller ikke dialogen igjen. Før gjorde
+  den det, og verdien ble borte for en lytter på `close`.
 - **`fs-dialog` åpnet seg ikke igjen etter at verten var flyttet.** En morfer
   som flytter verten kobler den fra og til, og komponenten tok den gamle
   `returnValue` for en lukking brukeren gjorde før skriptet kom, og fjernet
   `open` serveren nettopp hadde satt. Den sjekken gjøres nå bare første gang
-  komponenten møter en dialog.
+  en dialog sees, også når den flyttes inn i en ny vert.
 - **`fs-dialog` meldte `open: true` for en dialog som var åpen hele tiden.**
   En morfer som flytter verten eller dialogen, tar dialogen ut av topplaget,
   og komponenten åpner den igjen. `dialog-toggle` kommer nå bare når

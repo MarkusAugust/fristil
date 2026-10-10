@@ -58,6 +58,18 @@ export const FS_DIALOG_TAG = "fs-dialog" as const
  * </fs-dialog>
  * ```
  */
+/**
+ * Dialogene som er sett etter en lukking før oppgradering.
+ *
+ * Sjekken gjelder bare første gang en dialog sees, ikke hver gang en vert
+ * kobles til. En morfer som flytter verten, kobler den fra og til, og da sto
+ * `returnValue` igjen fra en lukking brukeren gjorde for lenge siden.
+ * Komponenten trodde den var lukket før skriptet kom, og tok `open` fra
+ * verten serveren nettopp hadde åpnet. Mengden står utenfor klassen, så det
+ * samme gjelder en dialog som flyttes inn i en ny vert.
+ */
+const upgradeChecked = new WeakSet<HTMLDialogElement>()
+
 export class FsDialog extends HostElement {
   static observedAttributes = ["open", SERVER_CONTROLLED] as const
 
@@ -74,16 +86,6 @@ export class FsDialog extends HostElement {
    */
   private openObserver?: MutationObserver
   private dialogElement?: HTMLDialogElement
-  /**
-   * Dialogene komponenten har sett etter en lukking før oppgradering i.
-   *
-   * Sjekken gjelder bare første gang komponenten møter en dialog, ikke hver
-   * gang den kobles til. En morfer som flytter verten, kobler den fra og til,
-   * og da sto `returnValue` igjen fra en lukking brukeren gjorde for lenge
-   * siden. Komponenten trodde den var lukket før skriptet kom, og tok `open`
-   * fra verten serveren nettopp hadde åpnet.
-   */
-  private upgradeChecked = new WeakSet<HTMLDialogElement>()
   /**
    * Det komponenten sist meldte, så den bare melder når tilstanden endrer seg.
    *
@@ -346,8 +348,8 @@ export class FsDialog extends HostElement {
      * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
      * en `value`, og det er verdt å holde på.
      */
-    if (!this.upgradeChecked.has(dialog)) {
-      this.upgradeChecked.add(dialog)
+    if (!upgradeChecked.has(dialog)) {
+      upgradeChecked.add(dialog)
       if (this.open && !dialog.open && dialog.returnValue !== "") {
         this.removeAttribute("open")
         return
@@ -360,6 +362,25 @@ export class FsDialog extends HostElement {
     // fokusfelle og uten Escape, altså nøyaktig det komponenten finnes for å
     // hindre.
     const modal = dialog.matches(":modal")
+
+    /*
+     * Brukeren har nettopp lukket dialogen med en knapp, og `close` er ikke
+     * kommet ennå. Nettleseren fjerner `open` med én gang og sender
+     * hendelsen i en senere oppgave, og verten sier fortsatt «åpen» til
+     * `handleClose` får kjøre. Skriver noe `open` på verten i mellomtiden,
+     * som et rammeverk som setter samme verdi på nytt, åpnet komponenten
+     * dialogen igjen og tømte `returnValue`, og en lytter på `close` leste
+     * en tom verdi i stedet for «slett». `returnValue` er tømt hver gang
+     * dialogen åpnes, så en verdi her kommer fra en knapp i denne runden.
+     */
+    if (
+      this.open &&
+      !modal &&
+      this.lastNotified === true &&
+      dialog.returnValue !== ""
+    ) {
+      return
+    }
 
     if (this.open && !modal) {
       /*

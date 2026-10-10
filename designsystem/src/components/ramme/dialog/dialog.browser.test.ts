@@ -529,6 +529,44 @@ describe("fs-dialog", () => {
     expect(vert.hasAttribute("open")).toBe(true)
   })
 
+  it("lar knappens verdi stå når open skrives på verten før close er kommet", async () => {
+    // Et rammeverk som skriver samme `open` på nytt rett etter klikket. Før
+    // åpnet komponenten dialogen igjen og tømte verdien, og en lytter på
+    // `close` leste en tom verdi i stedet for «slett».
+    const { vert, d } = await monterDialog(true)
+    const lest: string[] = []
+    d.addEventListener("close", () => lest.push(d.returnValue))
+    const lukket = new Promise((ferdig) =>
+      d.addEventListener("close", ferdig, { once: true }),
+    )
+
+    d.close("slett")
+    vert.setAttribute("open", "")
+    await lukket
+    await ventPaTegning()
+
+    expect(lest).toEqual(["slett"])
+    expect(d.matches(":modal")).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+  })
+
+  it("åpner en dialog som flyttes inn i en ny vert", async () => {
+    // En dialog lukket med en knapp, flyttet inn i en ny vert serveren
+    // sender åpen. Før trodde den nye verten at brukeren hadde lukket den
+    // før skriptet kom.
+    const { d } = await monterDialog(true)
+    await lukkOgVent(d, "lukk")
+
+    const ny = document.createElement("fs-dialog")
+    ny.setAttribute("open", "")
+    ny.append(d)
+    document.body.append(ny)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(ny.hasAttribute("open")).toBe(true)
+  })
+
   it("melder ingenting når dialogen flyttes inne i verten", async () => {
     // En patch som bytter rekkefølgen på barna tar dialogen ut av
     // topplaget, og komponenten åpner den igjen. Før meldte den `open: true`
