@@ -194,6 +194,44 @@ lines.push(
   "  ) {",
   "    color-scheme: light dark;",
   "  }",
+  // PROTOTYP 2.2: regnes ut på hvert temaelement, så var() følger temaet.
+  "",
+  "  :root,",
+  "  [data-theme] {",
+  ...[
+    "--fs-color-disabled-surface",
+    "--fs-color-disabled-text",
+    "--fs-focus-ring",
+  ].map((name) => `    ${name}: ${alle[name]};`),
+  "  }",
+  // PROTOTYP 3.1: `hidden` skal skjule, uansett komponentens display.
+  "",
+  "  :is(",
+  '    [class*="fs-"],',
+  ...[
+    "fs-field",
+    "fs-tabs",
+    "fs-suggestion",
+    "fs-dialog",
+    "fs-popover",
+    "fs-toast",
+    "fs-error-summary",
+    "fs-session-timeout",
+  ].map((t) => `    ${t},`),
+  "    fs-connection-status",
+  '  )[hidden]:not([hidden="until-found" i]),',
+  // KORRIGERT 3.1: barna planen begrunner !important med, har ingen fs-klasse.
+  '  .fs-select option[hidden]:not([hidden="until-found" i]),',
+  '  .fs-pagination [hidden]:not([hidden="until-found" i]) {',
+  "    /* biome-ignore lint/complexity/noImportantStyles: hidden skal vinne over komponentens display */",
+  "    display: none !important;",
+  "  }",
+  // PROTOTYP 2.1: et nøstet tema får flaten sin, med spesifisitet 0.
+  "",
+  "  :where([data-theme]) {",
+  "    background-color: var(--fs-color-neutral-canvas);",
+  "    color: var(--fs-color-neutral-text);",
+  "  }",
   "}",
 )
 

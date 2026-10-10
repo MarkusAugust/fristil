@@ -123,9 +123,21 @@ export class FsDialog extends HostElement {
       attributeFilter: ["class", "id", "aria-labelledby"],
     })
     this.sync()
+    this.movePending = false
   }
 
   disconnectedCallback(): void {
+    // PROTOTYP 1.5: fjernet mens den var åpen? Vent en mikrooppgave, en
+    // morfer kobler fra og til i samme oppgave.
+    if (this.open && !this.movePending) {
+      this.movePending = true
+      const returnValue = this.dialogElement?.returnValue ?? ""
+      queueMicrotask(() => {
+        if (!this.movePending || this.isConnected) return
+        this.movePending = false
+        this.notify(false, returnValue)
+      })
+    }
     this.observer?.disconnect()
     this.observer = undefined
     this.openObserver?.disconnect()
@@ -147,6 +159,12 @@ export class FsDialog extends HostElement {
   private get dialog(): HTMLDialogElement | null {
     return this.querySelector(":scope > dialog")
   }
+
+  /** PROTOTYP 1.5: frakoblet åpen, og ikke meldt fra ennå. */
+  private movePending = false
+
+  /** PROTOTYP 1.1: om første sync() har sett etter lukking før oppgradering. */
+  private checkedUpgrade = false
 
   /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
   private titleId?: string
@@ -325,9 +343,13 @@ export class FsDialog extends HostElement {
      * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
      * en `value`, og det er verdt å holde på.
      */
-    if (first && this.open && !dialog.open && dialog.returnValue !== "") {
-      this.removeAttribute("open")
-      return
+    // PROTOTYP 1.1: bare ved aller første sync(), ikke ved flytting.
+    if (!this.checkedUpgrade) {
+      this.checkedUpgrade = true
+      if (this.open && !dialog.open && dialog.returnValue !== "") {
+        this.removeAttribute("open")
+        return
+      }
     }
 
     // `:modal` og ikke `open`. De to er ikke det samme: et `<dialog open>`
@@ -351,8 +373,12 @@ export class FsDialog extends HostElement {
        * hendelsen.
        */
       dialog.removeAttribute("open")
+      // PROTOTYP 1.1
+      dialog.returnValue = ""
       dialog.showModal()
-      this.notify(true)
+      // PROTOTYP 1.5: flyttet i samme oppgave, ingen hendelser.
+      if (this.movePending) this.movePending = false
+      else this.notify(true)
     } else if (!this.open && (modal || dialog.open)) {
       /*
        * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens

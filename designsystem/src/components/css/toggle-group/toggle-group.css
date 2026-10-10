@@ -61,6 +61,11 @@
     font-weight: var(--fs-font-weight-semibold);
   }
 
+  /* PROTOTYP 2.3 */
+  .fs-toggle-group__option:has(input:checked:focus-visible) {
+    outline-color: var(--fs-color-accent-content);
+  }
+
   .fs-toggle-group__option:has(input:disabled) {
     color: var(--fs-color-disabled-text);
     background: var(--fs-color-disabled-surface);

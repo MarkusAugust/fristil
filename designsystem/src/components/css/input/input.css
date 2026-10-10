@@ -31,6 +31,25 @@
     border-color: var(--fs-color-accent-border);
   }
 
+  .fs-input[data-state="invalid"] {
+    border-color: var(--fs-color-danger-text);
+    background-color: var(--fs-color-danger-surface);
+  }
+
+  .fs-input[data-state="invalid"]:focus-visible {
+    outline-color: var(--fs-color-danger-text);
+  }
+
+  .fs-input[data-state="success"] {
+    border-color: var(--fs-color-success-text);
+    background-color: var(--fs-color-success-surface);
+  }
+
+  .fs-input[data-state="success"]:focus-visible {
+    outline-color: var(--fs-color-success-text);
+  }
+
+  /* PROTOTYP 3.11: flyttet etter tilstandene. */
   .fs-input:disabled,
   .fs-input[aria-disabled="true"] {
     /* `background-color` og ikke kortformen, her og i tilstandene under.
@@ -50,24 +69,6 @@
      Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
   .fs-input[aria-disabled="true"] {
     pointer-events: none;
-  }
-
-  .fs-input[data-state="invalid"] {
-    border-color: var(--fs-color-danger-text);
-    background-color: var(--fs-color-danger-surface);
-  }
-
-  .fs-input[data-state="invalid"]:focus-visible {
-    outline-color: var(--fs-color-danger-text);
-  }
-
-  .fs-input[data-state="success"] {
-    border-color: var(--fs-color-success-text);
-    background-color: var(--fs-color-success-surface);
-  }
-
-  .fs-input[data-state="success"]:focus-visible {
-    outline-color: var(--fs-color-success-text);
   }
 
   .fs-input[data-variant="date"],

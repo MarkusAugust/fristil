@@ -201,15 +201,20 @@
    * samme. Første utgave satte bunnluften til null, og en dialog med bare
    * overskrift og knapper fikk da null piksler mellom dem.
    */
-  .fs-dialog:not([data-color]) > .fs-dialog__header {
+  .fs-dialog:is(:not([data-color]), [data-color="neutral"])
+  > .fs-dialog__header {
     padding-block-end: var(--fs-spacing-2);
   }
 
-  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__body {
+  .fs-dialog:is(:not([data-color]), [data-color="neutral"])
+    > .fs-dialog__header
+    + .fs-dialog__body {
     padding-block-start: 0;
   }
 
-  .fs-dialog:not([data-color]) > .fs-dialog__header + .fs-dialog__footer {
+  .fs-dialog:is(:not([data-color]), [data-color="neutral"])
+    > .fs-dialog__header
+    + .fs-dialog__footer {
     padding-block-start: calc(
       var(--fs-dialog-padding, var(--fs-spacing-5)) -
       var(--fs-spacing-2)

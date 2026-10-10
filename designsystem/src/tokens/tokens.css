@@ -452,4 +452,34 @@
   ) {
     color-scheme: light dark;
   }
+
+  :root,
+  [data-theme] {
+    --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+    --fs-color-disabled-text: var(--fs-color-neutral-border);
+    --fs-focus-ring: 2px solid var(--fs-color-accent-border-strong);
+  }
+
+  :is(
+    [class*="fs-"],
+    fs-field,
+    fs-tabs,
+    fs-suggestion,
+    fs-dialog,
+    fs-popover,
+    fs-toast,
+    fs-error-summary,
+    fs-session-timeout,
+    fs-connection-status
+  )[hidden]:not([hidden="until-found" i]),
+  .fs-select option[hidden]:not([hidden="until-found" i]),
+  .fs-pagination [hidden]:not([hidden="until-found" i]) {
+    /* biome-ignore lint/complexity/noImportantStyles: hidden skal vinne over komponentens display */
+    display: none !important;
+  }
+
+  :where([data-theme]) {
+    background-color: var(--fs-color-neutral-canvas);
+    color: var(--fs-color-neutral-text);
+  }
 }

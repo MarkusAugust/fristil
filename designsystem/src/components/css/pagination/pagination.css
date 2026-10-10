@@ -83,7 +83,9 @@
 
   /* Høykontrast: gjeldende side skilles bare med farge. */
   @media (forced-colors: active) {
-    .fs-pagination [aria-current="page"] {
+    /* PROTOTYP 3.3 */
+    .fs-pagination [aria-current="page"],
+    .fs-pagination [aria-current="page"]:hover {
       background-color: Highlight;
       color: HighlightText;
     }

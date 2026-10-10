@@ -129,6 +129,8 @@ export class FsPopover extends HostElement {
         "id",
         "aria-controls",
         "class",
+        // PROTOTYP 1.2
+        "type",
       ],
     })
     this.sync()
@@ -205,6 +207,10 @@ export class FsPopover extends HostElement {
     const trigger = panel ? this.findTrigger(panel) : null
     if (panel && trigger && !trigger.hasAttribute("aria-controls")) {
       setAttr(trigger, "aria-controls", panel.id)
+    }
+    // PROTOTYP 1.2: en <button> uten type sender inn skjemaet den står i.
+    if (trigger?.localName === "button" && !trigger.hasAttribute("type")) {
+      setAttr(trigger, "type", "button")
     }
 
     if (!trigger || !panel) {
@@ -334,19 +340,20 @@ export class FsPopover extends HostElement {
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== "Escape" || !this.open) return
-    // Kom tastetrykket fra knappen eller panelet, er det brukt. Uten dette
-    // lukket det også en modal dialog vinduet sto i: ett trykk tok begge,
-    // og brukeren mistet dialogen. Kom det fra et annet sted, som en dialog
-    // åpnet oppå vinduet, er det ikke vinduets å stoppe.
+    // PROTOTYP 1.3
+    if (event.key !== "Escape" || !this.open || event.defaultPrevented) return
     const target = event.composedPath()[0] as Node
-    if (this.contains(target) || this.panel?.contains(target)) {
-      event.preventDefault()
-    }
+    const inside = (node: Node | null) =>
+      !!node &&
+      (this.triggerElement?.contains(node) || this.panel?.contains(node))
+    const fromInside = inside(target)
+    const active = document.activeElement
+    if (!fromInside && active !== document.body) return
+    if (fromInside) event.preventDefault()
+    // Korrigert: også fra body (Safari fokuserer ikke knapper ved klikk).
+    const focusInside = inside(active) || active === document.body
     this.hide()
-    // Fokus tilbake til knappen. Uten dette står fokus på et panel som ikke
-    // lenger finnes, og neste tastetrykk starter på toppen av siden.
-    this.triggerElement?.focus()
+    if (focusInside) this.triggerElement?.focus()
   }
 
   /** Regner ut hvor panelet skal stå, mot knappens plass på skjermen. */

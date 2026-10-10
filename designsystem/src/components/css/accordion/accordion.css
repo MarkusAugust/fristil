@@ -48,6 +48,15 @@
     transform: rotate(225deg) translate(-2px, -2px);
   }
 
+  /* PROTOTYP 3.7 */
+  .fs-accordion summary:dir(rtl)::after {
+    transform: rotate(-45deg) translate(2px, -2px);
+  }
+
+  .fs-accordion[open] summary:dir(rtl)::after {
+    transform: rotate(-225deg) translate(2px, -2px);
+  }
+
   .fs-accordion summary:hover {
     background: var(--fs-color-neutral-surface);
   }
@@ -55,6 +64,12 @@
   .fs-accordion summary:focus-visible {
     outline: var(--fs-focus-ring);
     outline-offset: -2px;
+  }
+
+  /* PROTOTYP 3.10 */
+  .fs-accordion summary > :is(h2, h3, h4, h5, h6) {
+    margin: 0;
+    font: inherit;
   }
 
   .fs-accordion__content {

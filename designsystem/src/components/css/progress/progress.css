@@ -18,7 +18,8 @@
     display: block;
     inline-size: 100%;
     block-size: var(--fs-progress-height, var(--fs-spacing-2));
-    border: 0;
+    /* PROTOTYP 2.5 */
+    border: 1px solid var(--fs-color-neutral-border);
     border-radius: var(--fs-progress-radius, var(--fs-spacing-1));
     overflow: hidden;
     background: var(--fs-progress-track, var(--fs-color-neutral-surface));
@@ -73,6 +74,18 @@
 
   .fs-progress:indeterminate::-moz-progress-bar {
     background: transparent;
+  }
+
+  /* PROTOTYP 3.4 */
+  @media (forced-colors: active) {
+    .fs-progress:indeterminate {
+      forced-color-adjust: none;
+      background:
+        linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%) no-repeat,
+        Canvas;
+      background-size: 40% 100%;
+      border: 1px solid CanvasText;
+    }
   }
 
   @keyframes fs-progress-slide {

@@ -27,6 +27,14 @@
     color: var(--fs-color-neutral-text-subtle);
   }
 
+  /* PROTOTYP 3.5 */
+  /* Korrigert: "x" stoppes av sjekk:tekster (bokstav). */
+  @supports (content: "/" / "") {
+    .fs-breadcrumbs li + li::before {
+      content: "/" / "";
+    }
+  }
+
   .fs-breadcrumbs a {
     color: var(--fs-color-accent-text);
     text-decoration: underline;

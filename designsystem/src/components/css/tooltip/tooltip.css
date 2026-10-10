@@ -26,6 +26,17 @@
        peker på også mens boblen er skjult. */
     visibility: hidden;
     opacity: 0;
+    /* PROTOTYP 3.6c */
+    display: none;
+  }
+
+  /* PROTOTYP 3.6a: bro over gapet. */
+  .fs-tooltip__bubble::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    block-size: var(--fs-spacing-2);
   }
 
   /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
@@ -38,11 +49,22 @@
   .fs-tooltip:focus-within .fs-tooltip__bubble {
     visibility: visible;
     opacity: 1;
+    display: block;
+  }
+
+  @starting-style {
+    .fs-tooltip:hover .fs-tooltip__bubble,
+    .fs-tooltip:focus-within .fs-tooltip__bubble {
+      opacity: 0;
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .fs-tooltip__bubble {
-      transition: opacity 120ms ease;
+      transition:
+        opacity 120ms ease,
+        display 120ms allow-discrete,
+        visibility 120ms allow-discrete;
     }
   }
 

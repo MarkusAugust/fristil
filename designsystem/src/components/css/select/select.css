@@ -47,8 +47,8 @@
      og byttet om: den som lå ytterst ligger nå innerst. */
   .fs-select:dir(rtl) {
     background-position:
-      calc(0.75rem - 0.35rem) calc(50% - 0.1rem),
-      calc(1rem - 0.35rem) calc(50% - 0.1rem);
+      0.75rem calc(50% - 0.1rem),
+      1rem calc(50% - 0.1rem);
   }
 
   .fs-select:hover {

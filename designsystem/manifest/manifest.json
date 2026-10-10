@@ -2434,6 +2434,7 @@
           },
           "trigger": {
             "base": {
+              "type": "button",
               "aria-expanded": "false",
               "aria-controls": "{id}"
             },
