@@ -133,8 +133,7 @@
     .fs-progress:indeterminate {
       forced-color-adjust: none;
       background:
-        linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%)
-        no-repeat,
+        linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%) no-repeat,
         Canvas;
       background-size: 40% 100%;
       border-color: CanvasText;

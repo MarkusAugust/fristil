@@ -125,7 +125,7 @@ describe("stilarkene pakken sender ut", () => {
 
   it("finner en regel etter at laget er lukket", () => {
     const regler = onlyRules(
-      "@layer fristil { .fs-a { color: red } }\n/* } */ .fs-b { content: \"}\" }",
+      '@layer fristil { .fs-a { color: red } }\n/* } */ .fs-b { content: "}" }',
     )
     expect(afterFirstBlock(regler).trim()).toMatch(/^\.fs-b/)
     expect(

@@ -148,7 +148,8 @@ for (const mappe of rotpakke.workspaces as string[]) {
     )
   workspaces += 1
 }
-if (workspaces === 0) feil.push("Fant ingen workspace med versjon å sjekke mot bun.lock.")
+if (workspaces === 0)
+  feil.push("Fant ingen workspace med versjon å sjekke mot bun.lock.")
 
 if (feil.length > 0) {
   console.error(

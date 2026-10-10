@@ -423,8 +423,7 @@ for (const { navn, sti } of komponentmapper()) {
 
   // Komponenter som ikke rendrer noe selv, som <fs-field>, har ingenting å
   // eksponere og trenger derfor ingen slik seksjon.
-  const eksponerer =
-    klasser(css).length > 0 || variabler(css + ts).length > 0
+  const eksponerer = klasser(css).length > 0 || variabler(css + ts).length > 0
   const stylbare = /## (Klasser|Deler) du kan style/.test(tekst)
   if (eksponerer && !stylbare) {
     avvik.push({
