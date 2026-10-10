@@ -78,6 +78,41 @@ pub fn is_text_template(t: &[u16]) -> bool {
     ["{{", "{%", "<?", "<%"].iter().any(|m| contains_str(t, m))
 }
 
+/// Om taggen har en betingelse i malspråket utenfor verdiene, som
+/// `{{ if .Open }} open="{{ .Open }}" {{ end }}`. Da står attributtet i
+/// betingelsen, og malen i verdien er ikke det som slår flagget på. En
+/// betingelse inne i verdien hjelper ikke: attributtet står uansett.
+fn has_condition(body: &[u16], offset: usize, attributes: &[ReadAttribute]) -> bool {
+    let inside = |i: usize| {
+        attributes.iter().any(|a| {
+            a.value.as_ref().is_some_and(|v| {
+                i + offset >= a.value_start && i + offset < a.value_start + v.len()
+            })
+        })
+    };
+    let compact: Utf16 = body
+        .iter()
+        .enumerate()
+        .filter(|&(i, &c)| !is_space(c) && !inside(i))
+        .map(|(_, &c)| c)
+        .collect();
+    [
+        "{{if",
+        "{{-if",
+        "{{#if",
+        "{{#unless",
+        "{{^",
+        "{%if",
+        "{%-if",
+        "<%if",
+        "<?phpif",
+        "<?if",
+        "@if",
+    ]
+    .iter()
+    .any(|m| contains_str(&compact, m))
+}
+
 /// En verdi i klammer er Astro eller Svelte, og et uttrykk: `/^\s*[@{]/`.
 pub fn is_templated_value(t: &[u16]) -> bool {
     is_templated(t)
@@ -499,6 +534,7 @@ fn check_attribute(
     element: &Element,
     a: &ReadAttribute,
     templated_tag: bool,
+    conditional: bool,
 ) -> Option<Finding> {
     let name = lossy(&a.name);
     let findings = |rule, severity, message: String, fix| Finding {
@@ -544,7 +580,10 @@ fn check_attribute(
         ));
     };
     if a.value.as_deref().is_some_and(is_templated_value) {
-        if matches!(known, Attribute::Flag) && a.value.as_deref().is_some_and(is_text_template) {
+        if matches!(known, Attribute::Flag)
+            && !conditional
+            && a.value.as_deref().is_some_and(is_text_template)
+        {
             return Some(findings(
                 "boolsk-med-verdi",
                 Severity::Warning,
@@ -879,6 +918,7 @@ fn find_class<'a>(vocabulary: &'a Vocabulary, name: &[u16]) -> Option<&'a Class>
 fn check_classes(
     vocabulary: &Vocabulary,
     attributes: &[ReadAttribute],
+    conditional: bool,
     cache: &mut Cache,
 ) -> Vec<Finding> {
     let mut findings = Vec::new();
@@ -940,7 +980,7 @@ fn check_classes(
             continue;
         };
         if is_templated_value(value) {
-            if is_text_template(value) {
+            if is_text_template(value) && !conditional {
                 let flag = present.iter().find(|info| {
                     info.attributes
                         .iter()
@@ -1050,9 +1090,10 @@ fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Opti
         .find(|info| info.name == "fs-link" || info.name == "fs-button")?;
     attributes.iter().find(|a| {
         equals(&a.name, "aria-disabled")
-            && a.value
-                .as_deref()
-                .is_some_and(|v| equals(&lowercase(v), "true"))
+            && a.value.as_deref().is_some_and(|v| {
+                let v: Utf16 = v.iter().copied().filter(|&c| !is_space(c)).collect();
+                equals(&lowercase(&v), "true")
+            })
     })?;
     let href = attributes.iter().find(|a| equals(&a.name, "href"))?;
     Some(Finding {
@@ -1154,9 +1195,11 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         if !has_class_attribute(b) {
             continue;
         }
+        let attributes = read_attributes(b, name_end);
         findings.extend(check_classes(
             vocabulary,
-            &read_attributes(b, name_end),
+            &attributes,
+            has_condition(b, name_end, &attributes),
             &mut cache,
         ));
     }
@@ -1202,8 +1245,15 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         let b = tag_body(&source, name_end, end);
         let templated_tag = is_templated(b);
         let attributes = read_attributes(b, name_end);
+        let conditional = has_condition(b, name_end, &attributes);
         for a in &attributes {
-            findings.extend(check_attribute(&tag, element, a, templated_tag));
+            findings.extend(check_attribute(
+                &tag,
+                element,
+                a,
+                templated_tag,
+                conditional,
+            ));
         }
 
         if tag == "fs-session-timeout" {

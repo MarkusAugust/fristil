@@ -288,11 +288,23 @@ fn without_important(value: &str) -> &str {
     value
 }
 
-/// Om blokka bare gjelder i lyst tema: selektoren sier `light` utenfor en
-/// `:not()`, eller den står i `@media print`, som skrives ut lyst.
+/// Om blokka bare gjelder i lyst tema: selektoren har `light` som eget ord
+/// utenfor en `:not()`, eller den står i en `@media` for `print`, som
+/// skrives ut lyst. `.highlight` og `.lightbox` er ikke lyst tema.
 fn only_light(selector: &str) -> bool {
     let s = without_not(selector).to_ascii_lowercase();
-    s.contains("light") || s.contains("@media print")
+    let words: Vec<&str> = s
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
+        .collect();
+    words.contains(&"light")
+        || words
+            .iter()
+            .any(|w| w.starts_with("light-") || w.ends_with("-light"))
+        || s.split("@media").skip(1).any(|media| {
+            media
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|w| w == "print")
+        })
 }
 
 /// Selektoren med innholdet i hver `:not(…)` tatt bort.

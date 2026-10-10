@@ -91,6 +91,7 @@ Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke desig
 <Eksempel stiler={["button"]} kode={`
 <button class="fs-button" disabled>Send søknad</button>
 <button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
+<a class="fs-button" role="link" tabindex="0" aria-disabled="true">Gå til oversikten</a>
 `} />
 
 `disabled` finnes bare på `<button>`. Er knappen en `<a>`, bruk `aria-disabled="true"` og ta bort `href`, ellers følger Enter den. Skriv `role="link"` og `tabindex="0"` ved siden av, så skjermlesere fortsatt finner lenken og kan si at den er utilgjengelig. Se [Link](../link/#deaktivert-lenke).

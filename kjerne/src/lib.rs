@@ -678,6 +678,13 @@ mod tests {
             );
             assert!(markup(&html).is_empty(), "{value}: {:?}", markup(&html));
         }
+        // Står attributtet alt i en betingelse, er malen i verdien ufarlig.
+        for html in [
+            r#"<fs-popover {{ if .Open }} open="{{ .Open }}" {{ end }}></fs-popover>"#,
+            r#"<label class="fs-label" {% if optional %} data-optional="{{ optional }}" {% endif %}>Navn</label>"#,
+        ] {
+            assert!(markup(html).is_empty(), "{html}: {:?}", markup(html));
+        }
         // En mal i en verdi som ikke er et flagg, er ingen feil.
         assert!(
             markup(r#"<label class="fs-label" data-required="{{ .Required }}">Navn</label>"#)
@@ -707,7 +714,7 @@ mod tests {
     fn a_disabled_link_with_href_can_still_be_followed() {
         for html in [
             r#"<a class="fs-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
-            r#"<a class="fs-button" href="/videre" aria-disabled="TRUE">Videre</a>"#,
+            r#"<a class="fs-button" href="/videre" aria-disabled=" TRUE ">Videre</a>"#,
         ] {
             let found = check(html);
             assert_eq!(found.len(), 1, "{html}: {found:?}");

@@ -28,7 +28,7 @@ export type LinkAttributes = {
  *
  * En `<a>` uten `href` er ingen lenke for skjermleseren og står ikke i
  * tabrekkefølgen. `role` og `tabindex` gir den begge tilbake mens den er
- * avslått.
+ * deaktivert.
  */
 export const link = ({ disabled = false }: LinkOptions = {}): LinkAttributes =>
   attributes({

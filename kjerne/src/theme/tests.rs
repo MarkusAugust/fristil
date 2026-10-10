@@ -634,6 +634,29 @@ fn a_print_block_is_not_checked_as_dark() {
 }
 
 #[test]
+fn light_must_be_a_word() {
+    for selector in [".highlight", ".lightbox", "@layer brand { :root"] {
+        let close = if selector.contains('{') { "}" } else { "" };
+        let css = format!("{selector} {{ --fs-color-neutral-text: #0d4e8c }}{close}");
+        let report = inspect_theme(&css);
+        assert!(
+            report
+                .problems
+                .iter()
+                .any(|p| p.selector.contains("i mørkt tema")),
+            "{css}: {:?}",
+            messages(&report)
+        );
+    }
+    for css in [
+        ".light-mode { --fs-color-neutral-text: #0d4e8c }",
+        "@media only print { :root { --fs-color-neutral-text: #0d4e8c } }",
+    ] {
+        assert!(inspect_theme(css).problems.is_empty(), "{css}");
+    }
+}
+
+#[test]
 fn not_dark_is_both_themes_and_not_light() {
     // `:root:not([data-theme="dark"])` treffer også systemets mørke modus
     // når `data-theme` mangler.

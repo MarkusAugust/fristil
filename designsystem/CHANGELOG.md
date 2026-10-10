@@ -41,40 +41,42 @@ egen overskrift «Brytende».
   hver temablokk. Har du overstyrt en av dem på `:root`, gjelder ikke
   overstyringen lenger inne i et `data-theme`. Skriv den også på
   `[data-theme="light"]` og `[data-theme="dark"]`.
-
-- **`fristil sjekk-tema` kontrollerer en bar `:root` i mørkt tema også.**
-  Fristils mørke blokk overstyrer bare tokenene den selv har, så en verdi på
-  `:root` som ingen mørk blokk tar, står også når systemet er i mørkt. Sjekken
-  så den bare som lys: `--fs-color-neutral-text: #0d4e8c` på `:root` ga
-  «holder hvert løfte», men har 2,22:1 i mørkt. Funnene merkes «i mørkt tema,
-  ingen mørk blokk overstyrer». En blokk med `color-scheme: light`, en
-  selektor med `light` i seg og `@media print` gjelder bare lyst og
-  kontrolleres som før. Et tema som før var grønt kan nå gi funn, og da var
+- **`fristil sjekk-tema` kontrollerer en blokk som ikke er bundet til lyst
+  tema, som en bar `:root`, i mørkt tema også.** Fristils mørke blokk
+  overstyrer bare tokenene den selv har, så en verdi som ingen mørk blokk
+  tar, står også når systemet er i mørkt. Sjekken så den bare som lys:
+  `--fs-color-neutral-text: #0d4e8c` på `:root` ga «holder hvert løfte», men
+  har 2,22:1 i mørkt. Funnene merkes «i mørkt tema, ingen mørk blokk
+  overstyrer». En blokk med `color-scheme: light`, en selektor med `light`
+  som eget ord og `@media print` gjelder bare lyst og kontrolleres som før. Et tema som før var grønt kan nå gi funn, og da var
   det brutt i mørkt hele tiden.
 - **`fristil sjekk` melder nye funn.**
   - Et flagg med en tekstmal i verdien, som `data-optional="{{ .Optional }}"`
     eller `open="<%= open %>"`. Malen skriver verdien som tekst, og et boolsk
     attributt er på uansett verdi, også «false» og en tom streng. Regelen er
     `boolsk-med-verdi`. Astro, Svelte, JSX, Razor og JTE tar selv bort et
-    usant boolsk attributt, og meldes ikke.
+    usant boolsk attributt, og meldes ikke. Står attributtet alt i en
+    betingelse i malen, som `{{ if .Open }} open="{{ .Open }}" {{ end }}`,
+    meldes det heller ikke.
   - En `fs-link` eller `fs-button` med både `aria-disabled="true"` og `href`.
     Stilen slår av musa, men Enter følger lenken. Regelen er ny:
     `deaktivert-med-href`.
+- **`fs.link({ disabled: true })` gir `role="link"` og `tabindex="0"`.** En
+  deaktivert lenke skal skrives uten `href`, ellers følger Enter den, og uten
+  `href` er en `<a>` ingen lenke for skjermleseren og står ikke i
+  tabrekkefølgen. De to gir begge tilbake, og `disabled: false` fjerner dem.
+  `fs.link()` forvalter dermed `role` og `tabindex`: setter du en av dem
+  selv på en lenke, som `role="menuitem"` i en meny, fjerner
+  `fs.setAttributes(lenke, fs.link())` den. Sett den etter. Komponentsidene
+  for Link og Button viste en deaktivert lenke med `href`, og det gjorde også
+  rådet i byggefunksjonen. Har du fulgt det, ta bort `href` mens lenken er
+  av.
 
 ### Lagt til
 
 - **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
 - **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
   sender skjemaet den står i.
-
-### Endret
-
-- **`fs.link({ disabled: true })` gir `role="link"` og `tabindex="0"`.** En
-  avslått lenke skal skrives uten `href`, ellers følger Enter den, og uten
-  `href` er en `<a>` ingen lenke for skjermleseren og står ikke i
-  tabrekkefølgen. De to gir begge tilbake. Med `disabled: false` fjernes de.
-  Komponentsidene for Link og Button viste en avslått lenke med `href`, og er
-  rettet.
 
 ### Rettet
 
@@ -122,14 +124,15 @@ egen overskrift «Brytende».
   `@import "@fristil/designsystem/fristil.css"` er et navn i pakkens
   `exports`, og fila ligger i `dist/`. Sjekken lette etter den som en fil i
   `node_modules` under arbeidsmappa, fant ingenting og meldte hver klasse som
-  ustylet. Nå slår den opp i `exports`, både som streng og som
-  betingelsesobjekt, i nærmeste `node_modules` over stilarket.
+  ustylet. Nå slår den opp i `exports`, også mønstre som `./*` og en pakke
+  importert ved navn alene, i nærmeste `node_modules` over stilarket. En
+  relativ sti slås aldri opp som en pakke.
 - **`fristil sjekk-tema` leste `dark` inne i `:not()`.**
   `.kort:not([data-theme="dark"])` ble kontrollert som et mørkt tema.
   `:root:not([data-theme="dark"])` gjelder også i systemets mørke modus, og
   kontrolleres nå mot begge temaer.
 - **`fristil sjekk` meldte Bootstraps `fs-1` til `fs-6` som ukjente
-  klasser.** Et `fs-` med bare sifre etter er ikke Fristils.
+  klasser.** En klasse som er `fs-` og bare sifre, er ikke Fristils.
 - **`fristil sjekk` kjente ikke `writingsuggestions`, `autocorrect` og
   `headingoffset`.** De er globale attributter i HTML.
 

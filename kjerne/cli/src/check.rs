@@ -97,12 +97,19 @@ fn normalized(path: &std::path::Path) -> std::path::PathBuf {
 /// Fila en pakkesti som `@fristil/designsystem/fristil.css` peker på.
 ///
 /// Leter etter `node_modules/<pakke>` oppover fra stilarkets mappe, og slår
-/// opp underveien i `exports` i pakkens `package.json`, enten verdien er en
-/// streng eller et betingelsesobjekt (`style`, `default`). Uten `exports`
-/// brukes den direkte stien.
+/// opp underveien i `exports` i pakkens `package.json`: en nøyaktig nøkkel,
+/// ellers et mønster som `./*`, og verdien som streng eller som
+/// betingelsesobjekt (`style`, `default`). En pakke importert ved navn alene
+/// bruker `.` og så `style`. Uten treff brukes den direkte stien.
+///
+/// En sti som begynner med `.` eller `/` er en fil, ikke en pakke, og gir
+/// `None`.
 fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathBuf> {
     use fristil_kjerne::json::{parse, Json};
     let spec = spec.strip_prefix('~').unwrap_or(spec);
+    if spec.starts_with('.') || spec.starts_with('/') || spec.starts_with('\\') {
+        return None;
+    }
     let mut parts = spec.splitn(if spec.starts_with('@') { 3 } else { 2 }, '/');
     let name = if spec.starts_with('@') {
         format!("{}/{}", parts.next()?, parts.next()?)
@@ -115,26 +122,53 @@ fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathB
     } else {
         std::env::current_dir().ok()?.join(folder)
     };
+    fn pick(entry: &Json) -> Option<String> {
+        match entry {
+            Json::String(s) => Some(s.clone()),
+            Json::Object(_) => ["style", "default", "import"]
+                .iter()
+                .find_map(|c| entry.get(c).and_then(pick)),
+            _ => None,
+        }
+    }
+    let lookup = |pkg: &Json| -> Option<String> {
+        let key = if sub.is_empty() {
+            ".".to_string()
+        } else {
+            format!("./{sub}")
+        };
+        let exports = pkg.get("exports");
+        if let Some(found) = exports.and_then(|e| e.get(&key)).and_then(pick) {
+            return Some(found);
+        }
+        // Et mønster, som `"./*": "./dist/*"`.
+        if let Some(Json::Object(entries)) = exports {
+            for (pattern, value) in entries {
+                let Some((before, after)) = pattern.split_once('*') else {
+                    continue;
+                };
+                let Some(middle) = key
+                    .strip_prefix(before)
+                    .and_then(|rest| rest.strip_suffix(after))
+                else {
+                    continue;
+                };
+                if let Some(target) = pick(value) {
+                    return Some(target.replace('*', middle));
+                }
+            }
+        }
+        if sub.is_empty() {
+            return pkg.get("style").and_then(pick);
+        }
+        None
+    };
     let mut dir = Some(normalized(&start));
     while let Some(here) = dir {
         let root = here.join("node_modules").join(&name);
         if let Ok(text) = std::fs::read_to_string(root.join("package.json")) {
-            let target = parse(&text).ok().and_then(|pkg| {
-                let key = format!("./{sub}");
-                let entry = pkg.get("exports")?.get(&key)?.clone();
-                fn pick(entry: &Json) -> Option<String> {
-                    match entry {
-                        Json::String(s) => Some(s.clone()),
-                        Json::Object(_) => ["style", "default", "import"]
-                            .iter()
-                            .find_map(|c| entry.get(c).and_then(pick)),
-                        _ => None,
-                    }
-                }
-                pick(&entry)
-            });
-            let file = normalized(&root.join(target.as_deref().unwrap_or(sub)));
-            return Some(file);
+            let target = parse(&text).ok().and_then(|pkg| lookup(&pkg));
+            return Some(normalized(&root.join(target.as_deref().unwrap_or(sub))));
         }
         dir = here.parent().map(std::path::Path::to_path_buf);
     }
@@ -182,7 +216,11 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
                     beside
                 } else {
                     package_file(&folder, import).unwrap_or_else(|| {
-                        normalized(&std::path::Path::new("node_modules").join(import))
+                        if import.starts_with('.') || import.starts_with('/') {
+                            beside
+                        } else {
+                            normalized(&std::path::Path::new("node_modules").join(import))
+                        }
                     })
                 },
                 false,

@@ -636,9 +636,9 @@ function krev(påstand: boolean, beskrivelse: string): void {
     }),
   )
   // Et betingelsesobjekt, som pakker med både `style` og `default` bruker.
+  // Fila er fristil.css igjen, så siden er bare ren hvis den blir funnet.
   const tema = join(mappe, "node_modules/tema")
-  await mkdir(join(tema, "lib"), { recursive: true })
-  await writeFile(join(tema, "lib/tema.css"), ".app-tema { }\n")
+  await cp(join(pakke, "dist/fristil.css"), join(tema, "lib/tema.css"))
   await writeFile(
     join(tema, "package.json"),
     JSON.stringify({
@@ -650,24 +650,58 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await mkdir(stiler, { recursive: true })
   await writeFile(
     join(stiler, "app.css"),
-    '@import "@fristil/designsystem/fristil.css";\n@import "tema/tema.css";\n',
+    '@import "@fristil/designsystem/fristil.css";\n',
   )
+  await writeFile(join(stiler, "tema.css"), '@import "tema/tema.css";\n')
+  // Et mønster i `exports`, og en pakke importert ved navn alene.
+  const stjerne = join(mappe, "node_modules/stjerne")
+  await cp(join(pakke, "dist/fristil.css"), join(stjerne, "dist/alt.css"))
+  await writeFile(
+    join(stjerne, "package.json"),
+    JSON.stringify({ name: "stjerne", exports: { "./*": "./dist/*" } }),
+  )
+  await writeFile(join(stiler, "stjerne.css"), '@import "stjerne/alt.css";\n')
+  const naken = join(mappe, "node_modules/naken")
+  await cp(join(pakke, "dist/fristil.css"), join(naken, "alt.css"))
+  await writeFile(
+    join(naken, "package.json"),
+    JSON.stringify({ name: "naken", exports: { ".": "./alt.css" } }),
+  )
+  await writeFile(join(stiler, "naken.css"), '@import "naken";\n')
   const side = join(mappe, "side.html")
   await writeFile(
     side,
     '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
   )
 
-  for (const fra of [mappe, stiler, tmpdir()]) {
-    const svar = await kjør(
-      ["sjekk", `--css=${join(stiler, "app.css")}`, side],
-      fra,
-    )
-    krev(
-      svar.kode === 0,
-      `@import fra en pakke ble ikke fulgt, kjørt fra ${fra}: ${svar.ut}${svar.feil}`,
-    )
+  for (const stilark of ["app.css", "tema.css", "stjerne.css", "naken.css"]) {
+    for (const fra of [mappe, stiler, tmpdir()]) {
+      const svar = await kjør(
+        ["sjekk", `--css=${join(stiler, stilark)}`, side],
+        fra,
+      )
+      krev(
+        svar.kode === 0,
+        `@import fra en pakke i ${stilark} ble ikke fulgt, kjørt fra ${fra}: ${svar.ut}${svar.feil}`,
+      )
+    }
   }
+
+  // En relativ sti er en fil, ikke en pakke. `../alt.css` finnes ikke ved
+  // siden av stilarket, og skal ikke finnes et annet sted i prosjektet.
+  await mkdir(join(mappe, "src"), { recursive: true })
+  await cp(join(pakke, "dist/fristil.css"), join(mappe, "alt.css"))
+  await writeFile(join(mappe, "package.json"), "{}")
+  await writeFile(join(stiler, "relativ.css"), '@import "../alt.css";\n')
+  const relativ = await kjør([
+    "sjekk",
+    `--css=${join(stiler, "relativ.css")}`,
+    side,
+  ])
+  krev(
+    relativ.kode !== 0,
+    "en relativ @import som ikke finnes, ble hentet fra et annet sted i prosjektet",
+  )
   await rm(mappe, { recursive: true, force: true })
 }
 
