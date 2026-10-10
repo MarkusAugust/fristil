@@ -45,6 +45,8 @@ egen overskrift «Brytende».
 ### Lagt til
 
 - **`--fs-progress-border`** styrer kanten rundt sporet i `fs-progress`.
+- **`fs.popover()` skriver `type="button"` på knappen.** En knapp uten `type`
+  sender skjemaet den står i.
 
 ### Rettet
 
@@ -54,6 +56,40 @@ egen overskrift «Brytende».
 - **Sporet i `fs-progress` var 1,12:1 mot siden.** Stolpen har nå en kant i
   `neutral-border`, så det synes hvor langt den går. Kanten er tegnet innover
   og tar ikke av høyden.
+- **`fs-dialog` meldte forrige knapps verdi når dialogen ble lukket uten
+  knapp.** Escape og `close()` uten argument lar `returnValue` stå fra forrige
+  lukking. En dialog serveren åpnet på nytt og så lukket, sendte derfor
+  `dialog-toggle` med for eksempel `returnValue: "slett"` fra gangen før, og en
+  app som skiller «Avbryt» fra «Slett» på verdien kunne slette noe brukeren
+  aldri ba om. Komponenten tømmer nå verdien hver gang den åpner dialogen.
+  Skriver noe `open` på verten etter at brukeren har trykket en knapp, men før
+  `close` er kommet, åpner komponenten heller ikke dialogen igjen. Før gjorde
+  den det, og verdien ble borte for en lytter på `close`.
+- **`fs-dialog` åpnet seg ikke igjen etter at verten var flyttet.** En morfer
+  som flytter verten kobler den fra og til, og komponenten tok den gamle
+  `returnValue` for en lukking brukeren gjorde før skriptet kom, og fjernet
+  `open` serveren nettopp hadde satt. Den sjekken gjøres nå bare første gang
+  en dialog sees, også når den flyttes inn i en ny vert.
+- **`fs-dialog` meldte `open: true` for en dialog som var åpen hele tiden.**
+  En morfer som flytter verten eller dialogen, tar dialogen ut av topplaget,
+  og komponenten åpner den igjen. `dialog-toggle` kommer nå bare når
+  tilstanden faktisk endrer seg.
+- **`data-color="neutral"` på `fs-dialog` ga mer luft enn ingen farge.**
+  Verdien er standardverdien og skal se ut som ingen verdi, men reglene for
+  luften traff bare en dialog uten attributtet. Nå gjelder de alt som ikke er
+  en av de fem fargene, også en tom verdi fra en mal.
+- **Knappen i `fs-popover` sendte skjemaet den sto i.** Komponenten setter nå
+  `type="button"` på en `<button>` uten `type`, eller med en tom eller ukjent
+  verdi, også etter en patch som river det bort. En knapp som sier
+  `type="submit"` selv, får stå. Eksemplene på komponentsiden og snippeten i editoren har det med.
+- **Escape i `fs-popover` tok for mye.**
+  - Et trykk i et annet felt flyttet fokus fra feltet til knappen. Nå lukkes
+    vinduet, og fokus blir stående.
+  - Et trykk i en modal dialog åpnet oppå vinduet lukket vinduet også. Nå
+    lukker det bare dialogen.
+  - Et trykk noe annet alt hadde brukt, som en forslagsliste i vinduet som
+    lukket seg, lukket vinduet også. Nå står vinduet.
+  - Med to vinduer inni hverandre lukkes nå det innerste først.
 
 ## 0.32.1 (2026-10-09)
 
