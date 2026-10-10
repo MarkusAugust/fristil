@@ -113,5 +113,19 @@ class FristilPluginTest {
         assertContains(manifest, "\"fs-button\"")
         assertFalse(manifest.contains("\$schema"))
         assertTrue(gradle("build", "--configuration-cache").build().output.contains("Reusing configuration cache"))
+
+        // Uten fragmenter er det innebygde manifestet det riktige, og fila
+        // fra forrige bygg må bort, ellers foretrekker editoren den.
+        setUp()
+        gradle("build").build()
+        assertFalse(File(project, "build/fristil/manifest.json").exists())
+    }
+
+    @Test
+    fun `without fragments no manifest is written`() {
+        setUp()
+        file("maler/side.html", "<button class=\"fs-button\">Send</button>\n")
+        gradle("build").build()
+        assertFalse(File(project, "build/fristil/manifest.json").exists())
     }
 }

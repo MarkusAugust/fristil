@@ -192,6 +192,20 @@ stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
 `assertFristil(html, css = listOf(stilark))` og
 `Fristil.diagnosePage(html, css)` den samme sjekken uten nettleser.
 
+Har prosjektet overtatt komponenter, tar `diagnoseMarkup` og `diagnosePage`
+manifestet som tekst i `manifest`, og sjekker da mot det samme som
+Gradle-pluginen og editoren. Uten valget gjelder manifestet i pakken.
+`assertFristil` og `assertFristilRendered` tar det ikke ennå.
+
+```kotlin
+val manifest = File("build/fristil/manifest.json").readText()
+assertEquals(emptyList(), Fristil.diagnosePage(html, manifest = manifest))
+```
+
+Fila skrives av `fristilManifest`, som kjøres av `assemble` og ikke av `test`.
+Skal testene lese den, må de vente på oppgaven:
+`tasks.test { dependsOn("fristilManifest") }`.
+
 ## Gradle-pluginen
 
 Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:
@@ -212,7 +226,7 @@ fristil {
 | --- | --- |
 | `fristilSjekk` | sjekker `templates` som `fristil sjekk`, og feiler med funnene. Kjøres av `check`. |
 | `fristilTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/fristil/tema.css` |
-| `fristilManifest` | skriver manifestet prosjektet sjekkes mot til `build/fristil/manifest.json`. Kjøres av `assemble`. |
+| `fristilManifest` | skriver manifestet prosjektet sjekkes mot til `build/fristil/manifest.json` når `manifests` har fragmenter, og sletter fila når det ikke har det. Kjøres av `assemble`. |
 
 ```text
 > Task :fristilSjekk FAILED
@@ -230,7 +244,7 @@ fristil {
 }
 ```
 
-Pluginen kommer på Maven Central sammen med pakken. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
+Pluginen kommer på Maven Central sammen med pakken. Gradle finner den der uten en egen `pluginManagement`-blokk, siden Gradle Plugin Portal sender videre til Maven Central for det den ikke har selv. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
 
 ## Hvordan det virker
 

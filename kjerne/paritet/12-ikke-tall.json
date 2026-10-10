@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 10,
+      "end": 18,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/toast/",
+      "message": "duration skal være et tall, ikke «fem sekunder»."
+    },
+    {
+      "start": 66,
+      "end": 73,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "warn-at skal være et tall, ikke «10 min»."
+    }
+  ],
+  "side": [
+    {
+      "start": 10,
+      "end": 18,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/toast/",
+      "message": "duration skal være et tall, ikke «fem sekunder»."
+    },
+    {
+      "start": 66,
+      "end": 73,
+      "severity": "error",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "warn-at skal være et tall, ikke «10 min»."
+    }
+  ]
+}

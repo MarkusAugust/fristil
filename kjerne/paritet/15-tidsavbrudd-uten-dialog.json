@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 1,
+      "end": 19,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "<fs-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+    },
+    {
+      "start": 73,
+      "end": 91,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "<fs-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+    }
+  ],
+  "side": [
+    {
+      "start": 1,
+      "end": 19,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "<fs-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+    },
+    {
+      "start": 73,
+      "end": 91,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "message": "<fs-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+    }
+  ]
+}

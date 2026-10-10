@@ -85,9 +85,13 @@ describe("fokusringen på det valgte alternativet", () => {
           </fieldset>
         </div>`)
       // Fokus fra tastaturet, så `:focus-visible` gjelder. I en radiogruppe
-      // er det fokuserte alternativet alltid det valgte.
+      // er det fokuserte alternativet alltid det valgte. Tab alene når ikke
+      // fram i WebKit på macOS, der Tab hopper over radioknapper som i
+      // Safari, så fokus settes fra kode etter det ene tastetrykket. Det
+      // teller som tastaturstyrt i alle tre motorene, som i fokustesten.
       await userEvent.tab()
       const valgt = document.getElementById("liste") as HTMLInputElement
+      valgt.focus()
       expect(document.activeElement).toBe(valgt)
       await ventPaTegning()
 

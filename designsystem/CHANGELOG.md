@@ -108,6 +108,12 @@ egen overskrift «Brytende».
   `web-types.json` har dem som `js.events`, og regelbøkene har en kolonne for
   dem. Før sto de bare på komponentsidene, og noen ikke der heller.
 
+- **`manifest` i `Fristil.diagnoseMarkup` og `Fristil.diagnosePage` i
+  Kotlin.** Teksten i et `manifest.json`, som det `fristilManifest`
+  skriver, gir sjekk mot komponentene prosjektet har overtatt. Uten valget
+  gjelder manifestet i pakken, som før. Et manifest kjernen ikke kan lese,
+  kaster `IllegalArgumentException` med grunnen.
+
 ### Endret
 
 - **Pil opp og ned bytter ikke lenger fane i en vannrett `fs-tabs`.** De
@@ -116,6 +122,19 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Kotlin skriver tall i attributter slik JavaScript gjør.** `jsNumber` ga
+  `1000000000000000000000` for `1e+21`, `0.0000001` for `1e-7` og den
+  eksakte binærverdien for heltall over 2^53, som `123456789012345683968`
+  for `123456789012345680000`, og byggefunksjonene i
+  Kotlin kunne dermed skrive et annet attributt enn `fs` i TypeScript. Nå
+  brukes de færreste sifrene som gir det samme tallet tilbake, og
+  JavaScripts regler for når eksponent brukes. Etterprøvd mot JavaScript på
+  224 614 tall uten avvik, hver toerpotens medregnet.
+- **`fristilManifest` skriver bare `build/fristil/manifest.json` når
+  `manifests` har fragmenter**, og sletter fila når det siste fragmentet er
+  fjernet. Språkserveren foretrekker den fila framfor pakken i
+  `node_modules`, så en kopi uten fragmenter ble stående med versjonen fra
+  da den ble skrevet, også etter at pakken var oppgradert.
 - **Fokusringen på det valgte alternativet i `fs-toggle-group` var 1,23:1.**
   Ringen står oppå den valgte flaten, og har nå `accent-content` som farge
   der.

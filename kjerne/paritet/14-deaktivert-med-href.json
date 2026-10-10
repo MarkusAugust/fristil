@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 40,
+      "end": 58,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/link/",
+      "message": "fs-link er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+    },
+    {
+      "start": 98,
+      "end": 112,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "fs-button er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+    }
+  ],
+  "side": [
+    {
+      "start": 40,
+      "end": 58,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/link/",
+      "message": "fs-link er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+    },
+    {
+      "start": 98,
+      "end": 112,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/button/",
+      "message": "fs-button er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+    }
+  ]
+}

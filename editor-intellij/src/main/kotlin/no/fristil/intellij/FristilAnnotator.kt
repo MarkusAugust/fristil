@@ -30,7 +30,8 @@ import no.fristil.Fristil
  * fragmentet, så kjernen leser hver fil én gang per gjennomgang.
  *
  * Sjekken er `diagnoseMarkup`, ikke `diagnosePage`: en fil eller et fragment
- * er en mal, og en id det pekes på kan godt stå i en annen mal.
+ * er en mal, og en id det pekes på kan godt stå i en annen mal. Den går mot
+ * prosjektets manifest når det har et, se [ProjectManifest].
  */
 class FristilAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -40,7 +41,7 @@ class FristilAnnotator : Annotator {
         if (!text.contains("fs-")) return
 
         val bounds = element.textRange
-        for (finding in Fristil.diagnoseMarkup(text)) {
+        for (finding in diagnose(file, text)) {
             val range = TextRange(finding.start, maxOf(finding.end, finding.start))
             // Et funn utenfor dokumentet kan ikke festes til det.
             if (!bounds.contains(range)) continue
@@ -51,6 +52,21 @@ class FristilAnnotator : Annotator {
                     .tooltip(tooltip(finding))
             finding.fix?.let { builder.withFix(ReplaceFix(it)) }
             builder.create()
+        }
+    }
+
+    /**
+     * Mot prosjektets manifest når det har et, ellers det innebygde. Et
+     * manifest kjernen ikke kan lese, gir en advarsel i loggen og sjekk mot
+     * det innebygde, som i språkserveren.
+     */
+    private fun diagnose(file: PsiFile, text: String): List<Finding> {
+        val manifest = ProjectManifest.forFile(file) ?: return Fristil.diagnoseMarkup(text)
+        return try {
+            Fristil.diagnoseMarkup(text, manifest = manifest)
+        } catch (unreadable: IllegalArgumentException) {
+            ProjectManifest.rejectedBy(manifest, unreadable.message.orEmpty())
+            Fristil.diagnoseMarkup(text)
         }
     }
 
