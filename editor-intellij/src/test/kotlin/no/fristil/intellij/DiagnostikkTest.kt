@@ -70,10 +70,18 @@ class DiagnostikkTest : BasePlatformTestCase() {
 
     fun `test leter oppover fra fila`() {
         myFixture.addFileToProject("node_modules/@fristil/designsystem/manifest/manifest.json", overtatt)
-        val fil = myFixture.addFileToProject("sider/skjema/side.html", """<div class="fs-kort">Søknad</div>""")
+        val fil =
+            myFixture.addFileToProject(
+                "sider/skjema/side.html",
+                """<div class="fs-kort">Søknad</div><div class="fs-card">Søknad</div>""",
+            )
         myFixture.configureFromExistingVirtualFile(fil.virtualFile)
-        val ut = myFixture.doHighlighting(HighlightSeverity.WARNING).filter { it.toolTip?.contains("Fristil:") == true }
-        assertTrue("ingen funn, fikk ${ut.map { it.description }}", ut.isEmpty())
+        val tekst = myFixture.editor.document.text
+        val ut =
+            myFixture.doHighlighting(HighlightSeverity.WARNING)
+                .filter { it.toolTip?.contains("Fristil:") == true }
+                .map { tekst.substring(it.startOffset, it.endOffset) }
+        assertEquals("bare fs-card skal meldes, fikk $ut", listOf("fs-card"), ut)
     }
 
     fun `test bruker prosjektets manifest i et injisert fragment`() {
@@ -84,11 +92,11 @@ class DiagnostikkTest : BasePlatformTestCase() {
                 """
                 // language=HTML
                 val kort = ""${'"'}
-                    <div class="fs-kort">Søknad</div>
+                    <div class="fs-kort">Søknad</div><div class="fs-card">Søknad</div>
                 ""${'"'}
                 """.trimIndent(),
             )
-        assertTrue("ingen funn, fikk $ut", ut.isEmpty())
+        assertEquals("bare fs-card skal meldes, fikk $ut", listOf("fs-card"), ut.map { it.first })
     }
 
     fun `test et manifest kjernen ikke kan lese gir det innebygde`() {

@@ -2,6 +2,7 @@ package no.fristil.intellij
 
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -12,17 +13,19 @@ import java.util.concurrent.ConcurrentHashMap
  * Manifestet prosjektet sjekkes mot, funnet slik språkserveren finner det
  * (`vocabulary()` i `kjerne/cli/src/lsp.rs`).
  *
- * Fra mappa fila ligger i og oppover, til og med innholdsrota den hører til:
+ * Fra mappa fila ligger i og oppover, til og med prosjektmappa, eller
+ * innholdsrota fila hører til når den ligger utenfor prosjektmappa:
  * først `build/fristil/manifest.json`, som Gradle-oppgaven `fristilManifest`
  * skriver når prosjektet har overtatt komponenter, så manifestet i
- * `node_modules/@fristil/designsystem`. Ikke over innholdsrota: en pakke i
+ * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
  * hjemmemappa er ikke prosjektets. Finnes ingen av dem, gjelder manifestet
- * som er bygget inn i kjernen.
+ * som er bygget inn i kjernen. Språkserveren har i tillegg et valg for et
+ * bestemt manifest, som pluginen ikke har.
  *
  * For et injisert fragment letes det fra fila strengen står i.
  */
 internal object ProjectManifest {
-    private val CANDIDATES =
+    val CANDIDATES =
         listOf(
             "build/fristil/manifest.json",
             "node_modules/@fristil/designsystem/manifest/manifest.json",
@@ -43,7 +46,16 @@ internal object ProjectManifest {
         val project = file.project
         val host = InjectedLanguageManager.getInstance(project).getTopLevelFile(file) ?: file
         val virtualFile = host.originalFile.virtualFile ?: return null
-        val root = ProjectFileIndex.getInstance(project).getContentRootForFile(virtualFile)
+        // Prosjektmappa svarer til arbeidsområdet språkserveren får. En
+        // modul har sin egen innholdsrot, og stoppet letingen der, ville en
+        // `node_modules` ved rota av et monorepo aldri blitt funnet.
+        val projectDir = project.guessProjectDir()
+        val root =
+            if (projectDir != null && VfsUtilCore.isAncestor(projectDir, virtualFile, false)) {
+                projectDir
+            } else {
+                ProjectFileIndex.getInstance(project).getContentRootForFile(virtualFile, false)
+            }
         var dir: VirtualFile? = virtualFile.parent
         while (dir != null) {
             for (candidate in CANDIDATES) {

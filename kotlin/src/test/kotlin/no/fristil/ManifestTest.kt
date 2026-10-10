@@ -36,16 +36,29 @@ class ManifestTest {
         )
     }
 
+    /*
+     * De to under bruker én instans direkte. Gjennom poolen kunne neste kall
+     * fått en annen instans, som aldri hadde lastet noe, og testen ville
+     * bestått også uten at manifestet ble satt tilbake.
+     */
+    private fun Core.rules(html: String, manifest: String? = null): List<String> {
+        use(manifest)
+        return (Json.parse(call("diagnose_markup_raw", html)) as List<*>).map { (it as Map<*, *>)["rule"] as String }
+    }
+
     @Test
     fun `the built-in manifest applies again without one`() {
-        assertEquals(emptyList(), rules("""<div class="fs-kort">x</div>""", takenOver))
-        assertEquals(emptyList(), rules("""<div class="fs-card">x</div>"""))
+        val core = Core()
+        assertEquals(emptyList(), core.rules("""<div class="fs-kort">x</div>""", takenOver))
+        assertEquals(listOf("ukjent-klasse"), core.rules("""<div class="fs-kort">x</div>"""))
     }
 
     @Test
     fun `a manifest the core cannot read throws, and the built-in one applies after`() {
-        val error = assertFailsWith<IllegalArgumentException> { rules("<p>x</p>", "{\"classes\": 3}") }
+        val core = Core()
+        core.rules("<p>x</p>", takenOver)
+        val error = assertFailsWith<IllegalArgumentException> { core.rules("<p>x</p>", "{\"classes\": 3}") }
         assertContains(error.message.orEmpty(), "schemaVersion")
-        assertEquals(emptyList(), rules("""<div class="fs-card">x</div>"""))
+        assertEquals(listOf("ukjent-klasse"), core.rules("""<div class="fs-kort">x</div>"""))
     }
 }

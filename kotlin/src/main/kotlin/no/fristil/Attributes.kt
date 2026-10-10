@@ -54,9 +54,12 @@ class Attributes(values: Map<String, String> = emptyMap()) : Map<String, String>
  *
  * Sifrene er de færreste som gir tilbake det samme tallet, som i JavaScript
  * (ECMA-262, `Number::toString`). Er det flere med like mange sifre, vinner
- * det som ligger nærmest, og det er det avrundingen til `p` sifre gir. Formen
- * følger de samme reglene: vanlig skrivemåte fra 1e-7 til 1e21, og ellers
- * eksponent med fortegn.
+ * det som ligger nærmest, og ved likt det med et partall sist. Begge naboene
+ * med `p` sifre prøves, ikke bare den nærmeste: under en toerpotens er
+ * avstanden til tallet under halvparten av den over, så den nærmeste kan
+ * bomme der den over treffer. `2^-24` er `5.960464477539063e-8`, ikke
+ * `5.9604644775390625e-8`. Formen følger de samme reglene: vanlig
+ * skrivemåte fra 1e-6 og opp til 1e21, og ellers eksponent med fortegn.
  */
 internal fun jsNumber(n: Number): String {
     val d = n.toDouble()
@@ -65,11 +68,19 @@ internal fun jsNumber(n: Number): String {
     // `-0` skrives `0` i JavaScript.
     if (d == 0.0) return "0"
     val exact = java.math.BigDecimal(Math.abs(d))
+    val modes = listOf(java.math.RoundingMode.FLOOR, java.math.RoundingMode.CEILING)
     val shortest =
         (1..17).asSequence()
-            .map { exact.round(java.math.MathContext(it, java.math.RoundingMode.HALF_EVEN)) }
-            .first { it.toDouble() == Math.abs(d) }
-            .stripTrailingZeros()
+            .map { p ->
+                modes
+                    .map { exact.round(java.math.MathContext(p, it)).stripTrailingZeros() }
+                    .filter { it.toDouble() == Math.abs(d) }
+                    .minWithOrNull(
+                        compareBy<java.math.BigDecimal> { it.subtract(exact).abs() }
+                            .thenBy { it.unscaledValue().testBit(0) },
+                    )
+            }
+            .first { it != null }!!
     val digits = shortest.unscaledValue().toString()
     val k = digits.length
     // Tallet er 0,`digits` ganger 10 opphøyd i `point`.

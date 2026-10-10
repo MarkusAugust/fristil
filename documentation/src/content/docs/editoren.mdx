@@ -40,7 +40,7 @@ fun lagreknapp() = """
 
 `// language=HTML` og `@Language("HTML")` er IntelliJs egne merker, og krever ingen avhengighet. Uten et slikt merke er strengen bare tekst for IDE-en, og da er det ingenting for pluginen å feste seg i. Fullføringen gir bare klassene, ikke elementene eller attributtene. Etterprøvd i Kotlin og TypeScript i IntelliJ IDEA Ultimate 2026.2.3.
 
-Fra versjon 0.3.0 gir pluginen også **feilmeldingene**, i HTML-filer og i merkede strenger: et element, en klasse, et attributt eller en verdi som ikke finnes, med hurtigrettelse der det finnes ett riktig svar. Sjekken er den samme Rust-kjernen som `fristil sjekk` og VS Code bruker, kjørt i IDE-ens egen JVM. Den trenger ikke Node eller JavaScript-støtten i IDE-en, og sjekker mot det samme manifestet som [språkserveren](#språkserveren) finner, så komponenter du har overtatt er kjent. Et funn du vil beholde, undertrykkes med `<!-- fristil-ignore-next regelnavn -->` over taggen.
+Fra versjon 0.3.0 gir pluginen også **feilmeldingene**, i HTML-filer og i merkede strenger: et element, en klasse, et attributt eller en verdi som ikke finnes, med hurtigrettelse der det finnes ett riktig svar. Sjekken er den samme Rust-kjernen som `fristil sjekk` og VS Code bruker, kjørt i IDE-ens egen JVM. Den trenger ikke Node eller JavaScript-støtten i IDE-en, og leter etter manifestet slik [språkserveren](#språkserveren) gjør, fra fila og oppover til prosjektmappa, så komponenter du har overtatt er kjent. Et funn du vil beholde, undertrykkes med `<!-- fristil-ignore-next regelnavn -->` over taggen.
 
 ## Språkserveren
 

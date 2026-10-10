@@ -71,6 +71,10 @@ class ContractTest {
         assertEquals("9007199254740994", jsNumber(9007199254740994L))
         assertEquals("Infinity", jsNumber(Double.POSITIVE_INFINITY))
         assertEquals("NaN", jsNumber(Double.NaN))
+        // Toerpotenser: tallet under er nærmere, men gir ikke tallet tilbake.
+        assertEquals("5.960464477539063e-8", jsNumber(Math.pow(2.0, -24.0)))
+        assertEquals("6.189700196426902e+26", jsNumber(Math.pow(2.0, 89.0)))
+        assertEquals("-5.684341886080802e-14", jsNumber(-Math.pow(2.0, -44.0)))
     }
 
     companion object {

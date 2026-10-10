@@ -125,6 +125,7 @@ tasks.test {
     inputs.dir(kjerne.resolve("paritet")).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file(designsystem.resolve("manifest/byggetilfeller.json")).withPathSensitivity(PathSensitivity.NONE)
     systemProperty("manifest", manifestFil.absolutePath)
+    inputs.file(manifestFil).withPathSensitivity(PathSensitivity.NONE)
     systemProperty("byggetilfeller", designsystem.resolve("manifest/byggetilfeller.json").absolutePath)
     systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/fristil/$version").get().asFile.absolutePath)
     testLogging { events("failed") }

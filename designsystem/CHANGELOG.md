@@ -123,20 +123,18 @@ egen overskrift «Brytende».
 ### Rettet
 
 - **Kotlin skriver tall i attributter slik JavaScript gjør.** `jsNumber` ga
-  `1000000000000000000000` for `1e+21` og `0.0000001` for `1e-7`, og byggefunksjonene i
+  `1000000000000000000000` for `1e+21`, `0.0000001` for `1e-7` og den
+  eksakte binærverdien for heltall over 2^53, som `123456789012345683968`
+  for `123456789012345680000`, og byggefunksjonene i
   Kotlin kunne dermed skrive et annet attributt enn `fs` i TypeScript. Nå
   brukes de færreste sifrene som gir det samme tallet tilbake, og
   JavaScripts regler for når eksponent brukes. Etterprøvd mot JavaScript på
-  220 418 tall uten avvik.
+  224 614 tall uten avvik, hver toerpotens medregnet.
 - **`fristilManifest` skriver bare `build/fristil/manifest.json` når
   `manifests` har fragmenter**, og sletter fila når det siste fragmentet er
   fjernet. Språkserveren foretrekker den fila framfor pakken i
   `node_modules`, så en kopi uten fragmenter ble stående med versjonen fra
   da den ble skrevet, også etter at pakken var oppgradert.
-- **IntelliJ-pluginen sjekker mot prosjektets manifest**, funnet slik
-  språkserveren finner det, fra fila og oppover til innholdsrota. Før
-  sjekket den mot manifestet den var bygget med, så komponenter tatt over
-  med `fristil overta` ble meldt som ukjente.
 - **Fokusringen på det valgte alternativet i `fs-toggle-group` var 1,23:1.**
   Ringen står oppå den valgte flaten, og har nå `accent-content` som farge
   der.

@@ -59,4 +59,11 @@
             language="HTML"
             implementationClass="no.fristil.intellij.FristilAnnotator" />
     </extensions>
+
+    <applicationListeners>
+        <!-- Sjekker de åpne filene på nytt når prosjektets manifest endres. -->
+        <listener
+            class="no.fristil.intellij.ManifestListener"
+            topic="com.intellij.openapi.vfs.newvfs.BulkFileListener" />
+    </applicationListeners>
 </idea-plugin>

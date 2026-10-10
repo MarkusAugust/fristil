@@ -50,9 +50,11 @@ const kjerne = loadCore(readFileSync(MODUL))
  */
 const REGLER = new Set(
   [
-    ...(/pub const RULES: &\[&str\] = &\[([^\]]*)\]/.exec(
-      readFileSync(join(ROT, "kjerne/src/types.rs"), "utf8"),
-    )?.[1] ?? "").matchAll(/"([a-z-]+)"/g),
+    ...(
+      /pub const RULES: &\[&str\] = &\[([^\]]*)\]/.exec(
+        readFileSync(join(ROT, "kjerne/src/types.rs"), "utf8"),
+      )?.[1] ?? ""
+    ).matchAll(/"([a-z-]+)"/g),
   ].map((m) => m[1]),
 )
 if (REGLER.size === 0) throw new Error("fant ikke RULES i kjerne/src/types.rs")
@@ -166,7 +168,7 @@ for (const [navn, html] of fiksturer) {
 const udekket = [...REGLER].filter((r) => !dekket.has(r))
 if (udekket.length > 0)
   feil.push(
-    `ingen fikstur i paritet/ utløser ${udekket.join(", ")}. Legg til en, så JVM-en også prøves på regelen.`,
+    `ingen fikstur i paritet/ utløser ${udekket.join(", ")}. Legg til en, så regelen også testes på JVM-en.`,
   )
 
 /** En fasit med `stylet` uten stilark, eller omvendt, sjekker ingenting. */

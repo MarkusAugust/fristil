@@ -192,9 +192,19 @@ stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
 `assertFristil(html, css = listOf(stilark))` og
 `Fristil.diagnosePage(html, css)` den samme sjekken uten nettleser.
 
-Har prosjektet overtatt komponenter, gir `manifest = File("build/fristil/manifest.json").readText()`
-`diagnoseMarkup` og `diagnosePage` det samme manifestet som Gradle-pluginen og
-editoren sjekker mot. Uten det gjelder manifestet i pakken.
+Har prosjektet overtatt komponenter, tar `diagnoseMarkup` og `diagnosePage`
+manifestet som tekst i `manifest`, og sjekker da mot det samme som
+Gradle-pluginen og editoren. Uten valget gjelder manifestet i pakken.
+`assertFristil` og `assertFristilRendered` tar det ikke ennå.
+
+```kotlin
+val manifest = File("build/fristil/manifest.json").readText()
+assertEquals(emptyList(), Fristil.diagnosePage(html, manifest = manifest))
+```
+
+Fila skrives av `fristilManifest`, som kjøres av `assemble` og ikke av `test`.
+Skal testene lese den, må de vente på oppgaven:
+`tasks.test { dependsOn("fristilManifest") }`.
 
 ## Gradle-pluginen
 
