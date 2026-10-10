@@ -130,7 +130,7 @@ describe("fs-suggestion", () => {
     const input = felt.querySelector("input") as HTMLInputElement
     const valgt: string[] = []
     felt.addEventListener("suggestion-select", (hendelse) => {
-      valgt.push((hendelse as CustomEvent<{ value: string }>).detail.value)
+      valgt.push(hendelse.detail.value)
     })
 
     input.dispatchEvent(

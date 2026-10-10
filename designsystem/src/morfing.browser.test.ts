@@ -571,9 +571,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
     expect(knapper[1].getAttribute("aria-selected")).toBe("true")
 
     const meldte: number[] = []
-    felt.addEventListener("tab-select", (e) =>
-      meldte.push((e as CustomEvent<{ index: number }>).detail.index),
-    )
+    felt.addEventListener("tab-select", (e) => meldte.push(e.detail.index))
 
     // Patchen fjerner fanen brukeren valgte, og panelet dens.
     knapper[1].remove()

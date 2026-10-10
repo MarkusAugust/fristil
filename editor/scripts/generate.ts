@@ -508,7 +508,63 @@ export function files(): Record<string, string> {
       classesData(),
     ),
     "designsystem/web-types.json": json(webTypes(version)),
+    "designsystem/src/components/events.ts": eventTypes(),
   }
+}
+
+/**
+ * Typene til hendelsene web-komponentene sender, for `addEventListener`.
+ *
+ * `FsEventMap` har hver hendelse som `CustomEvent` med `detail` slik
+ * metadataen beskriver den, og `HTMLElementEventMap` utvides med den. Det er
+ * DOM-typen TypeScript selv har, så det samme gjelder i ren TypeScript, i et
+ * skript i Astro eller Datastar, og i React gjennom en `ref`. Ingenting her
+ * importerer React.
+ *
+ * Sender to elementer en hendelse med samme navn, må `detail` være den
+ * samme, ellers kunne bare én av dem få en type. Da stopper generatoren.
+ */
+function eventTypes(): string {
+  const seen = new Map<string, { type: string; tag: string }>()
+  const lines: string[] = []
+  for (const element of elements) {
+    for (const [name, doc] of Object.entries(element.events)) {
+      const fields = Object.entries(doc.detail ?? {})
+      const type =
+        fields.length === 0
+          ? "CustomEvent<null>"
+          : `CustomEvent<{ ${fields.map(([field, kind]) => `${field}: ${kind}`).join("; ")} }>`
+      const earlier = seen.get(name)
+      if (earlier && earlier.type !== type)
+        throw new Error(
+          `${name} har ulik detail på <${earlier.tag}> og <${element.tag}>: ${earlier.type} og ${type}`,
+        )
+      if (earlier) continue
+      seen.set(name, { type, tag: element.tag })
+      lines.push(
+        `  /** \`<${element.tag}>\`: ${doc.description.replaceAll("*/", "* /")} */`,
+        `  "${name}": ${type}`,
+      )
+    }
+  }
+  return `// Generert av editor/scripts/generate.ts fra editor/metadata.ts. Ikke rediger.
+
+/**
+ * Hendelsene web-komponentene sender, med \`detail\` slik komponenten sender
+ * den. Alle bobler, og kommer ut av en skyggerot. \`HTMLElementEventMap\` og
+ * \`DocumentEventMap\` utvides med dem, så \`addEventListener("dialog-toggle",
+ * …)\` gir \`event.detail.open\` som \`boolean\` på ethvert element og på
+ * \`document\`.
+ */
+export interface FsEventMap {
+${lines.join("\n")}
+}
+
+declare global {
+  interface HTMLElementEventMap extends FsEventMap {}
+  interface DocumentEventMap extends FsEventMap {}
+}
+`
 }
 
 if (import.meta.main) {

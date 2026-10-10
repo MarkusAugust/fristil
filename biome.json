@@ -14,6 +14,7 @@
       "!editor/snippets.json",
       "!designsystem/src/vocabulary/elements.ts",
       "!designsystem/src/vocabulary/classes.ts",
+      "!designsystem/src/components/events.ts",
       "!designsystem/src/tokens/matrise.ts",
       "!designsystem/web-types.json",
       "!kjerne/paritet",

@@ -143,6 +143,23 @@ Da får attributtene autofullføring og sjekk:
 
 Ren HTML, Astro og Datastar trenger ikke dette. Der er `<fs-field>` bare en HTML-tagg.
 
+### Hendelsene
+
+Hendelsene web-komponentene sender, som `dialog-toggle` og `tab-select`, har typet `detail` i `addEventListener`. Typene følger med hver inngang til web-komponentene, også `@fristil/designsystem/register`, `/react` og `/react-jsx`, så det du alt importerer, er nok. De utvider DOM-typene `HTMLElementEventMap` og `DocumentEventMap`, og har ingenting med React å gjøre: det samme gjelder i et TypeScript-skript i Astro eller i en Datastar-app, og i React gjennom en `ref`. Siden hendelsene bobler, er også en lytter på `document` typet.
+
+```ts
+import { defineFsDialog } from "@fristil/designsystem/dialog"
+
+defineFsDialog()
+
+document.querySelector("fs-dialog")?.addEventListener("dialog-toggle", (event) => {
+  event.detail.open         // boolean
+  event.detail.returnValue  // string, verdien til knappen som lukket den
+})
+```
+
+Hver hendelse og feltene i `detail` står også som `FsEventMap` i hovedinngangen. En prop som `onDialogToggle` eller `ondialog-toggle` får ingen type. React 18 kobler ingen av dem, og React 19 bare den siste, så i React 18 ville lytteren aldri blitt kalt, uten at noe sa fra.
+
 ## Hva typene ikke fanger
 
 **Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer, for returverdien er bare et objekt med HTML-attributter.

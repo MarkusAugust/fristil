@@ -86,6 +86,14 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **Hendelsene har typer i `addEventListener`.** `HTMLElementEventMap` og
+  `DocumentEventMap` utvides med hver hendelse web-komponentene sender,
+  med `detail` slik komponenten sender den: `dialog-toggle` gir
+  `event.detail.open` som `boolean` og `returnValue` som `string`. Typene
+  følger med hver inngang til web-komponentene, `/register`, `/react` og
+  `/react-jsx` medregnet, så `as CustomEvent<…>` trengs ikke lenger. Typen
+  står også som `FsEventMap` i hovedinngangen. Den genereres fra den samme metadataen
+  som manifestet og `web-types.json`, og har ingen avhengighet av React.
 - **`"./package.json"` i `exports`.** Et verktøy som leser pakkens versjon
   med `require.resolve("@fristil/designsystem/package.json")` eller
   `import … with { type: "json" }`, fikk `ERR_PACKAGE_PATH_NOT_EXPORTED`.

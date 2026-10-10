@@ -13,10 +13,18 @@
  * nettleseren aldri en forekomst. Den finnes bare for at modulen skal kunne
  * lastes.
  */
+
 export const HostElement =
   typeof HTMLElement === "undefined"
     ? (class {} as unknown as typeof HTMLElement)
     : HTMLElement
+
+/*
+ * Typene til hendelsene, som `dialog-toggle` med `detail.open`. Hver
+ * web-komponent arver herfra, så typene følger med alle inngangene til dem,
+ * og `addEventListener` på et element blir typet uten en egen import.
+ */
+export type { FsEventMap } from "./events.js"
 
 /**
  * Registrerer en web component, én gang, og bare i nettleseren.
