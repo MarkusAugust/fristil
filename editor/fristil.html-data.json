@@ -50,7 +50,7 @@
               "name": "text",
               "description": {
                 "kind": "markdown",
-                "value": "Ordet «må fylles ut»."
+                "value": "Teksten «(påkrevd)» etter ledeteksten."
               }
             },
             {
@@ -126,6 +126,13 @@
               "description": {
                 "kind": "markdown",
                 "value": "La fokus stå der det er."
+              }
+            },
+            {
+              "name": "true",
+              "description": {
+                "kind": "markdown",
+                "value": "Flytt fokus, det samme som uten attributtet. Alt annet enn «false» flytter fokus."
               }
             }
           ]

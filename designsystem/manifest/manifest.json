@@ -37,6 +37,13 @@
         "server-controlled": {
           "type": "flag"
         }
+      },
+      "events": {
+        "tab-select": {
+          "detail": {
+            "index": "number"
+          }
+        }
       }
     },
     "fs-error-summary": {
@@ -45,7 +52,8 @@
         "data-autofocus": {
           "type": "values",
           "values": [
-            "false"
+            "false",
+            "true"
           ]
         },
         "hidden": {
@@ -70,6 +78,13 @@
         },
         "server-controlled": {
           "type": "flag"
+        }
+      },
+      "events": {
+        "popover-toggle": {
+          "detail": {
+            "open": "boolean"
+          }
         }
       }
     },
@@ -103,6 +118,13 @@
         "server-controlled": {
           "type": "flag"
         }
+      },
+      "events": {
+        "suggestion-select": {
+          "detail": {
+            "value": "string"
+          }
+        }
       }
     },
     "fs-dialog": {
@@ -113,6 +135,14 @@
         },
         "server-controlled": {
           "type": "flag"
+        }
+      },
+      "events": {
+        "dialog-toggle": {
+          "detail": {
+            "open": "boolean",
+            "returnValue": "string"
+          }
         }
       }
     },
@@ -128,6 +158,9 @@
         "close-label": {
           "type": "text"
         }
+      },
+      "events": {
+        "toast-dismiss": {}
       }
     },
     "fs-session-timeout": {
@@ -142,6 +175,13 @@
         "activity-interval": {
           "type": "number"
         }
+      },
+      "events": {
+        "session-warn": {},
+        "session-extend": {},
+        "session-logout": {},
+        "session-expired": {},
+        "session-activity": {}
       }
     },
     "fs-connection-status": {
@@ -153,6 +193,10 @@
         "online-text": {
           "type": "text"
         }
+      },
+      "events": {
+        "connection-lost": {},
+        "connection-restored": {}
       }
     }
   },

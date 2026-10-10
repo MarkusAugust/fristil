@@ -47,8 +47,9 @@ med JIT-en og starter på en brøkdel av et sekund. Pakken har én avhengighet,
 
 Det virker likt for alt som lager HTML på JVM-en: strenger, kotlinx.html,
 Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke
-kilden. Hver tråd får sin egen instans, så kall fra flere tråder venter ikke på
-hverandre.
+kilden. Et kall låner en instans fra en pool og gir den tilbake etterpå, så
+kall fra flere tråder venter ikke på hverandre. Poolen holder høyst like mange
+ledige instanser som maskinen har prosessorer.
 
 ## kotlinx.html
 

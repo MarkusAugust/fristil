@@ -84,7 +84,9 @@ fra 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt format, og
 IDE-en tar den i bruk så snart `@fristil/designsystem` står i
 `package.json`. Etterprøvd i IntelliJ IDEA Ultimate 2026.2, med fullføring av elementene, attributtene
 og verdiene, og forklaring med lenke. Feilmeldingene og hurtigrettelsene
-finnes bare i VS Code.
+kommer med pluginen «Fristil» fra JetBrains Marketplace, som også gir
+fullføring i HTML i en streng merket med `@Language("HTML")`. Se `../editor-intellij`. Neovim, Helix
+og andre editorer med LSP kan bruke `fristil lsp`.
 
 ## Slik lages den
 

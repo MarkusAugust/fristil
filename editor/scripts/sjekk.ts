@@ -103,6 +103,47 @@ for (const tag of documented.keys())
       `<${tag}> står i metadata.ts, men pakken registrerer det ikke`,
     )
 
+// 2b. Hendelsene i metadata.ts er de komponenten sender, verken flere eller
+// færre. Typesjekken ser ikke dette: navnet står bare i en streng, i
+// `new CustomEvent("…")` eller i komponentens egen `emit("…")`.
+const kilde = (tag: string): string | null => {
+  const slug = tag.replace(/^fs-/, "")
+  for (const kategori of ["ramme", "frittstaende"]) {
+    try {
+      return readFileSync(
+        join(ROOT, "designsystem/src/components", kategori, slug, `${tag}.ts`),
+        "utf8",
+      )
+    } catch {
+      // Prøv neste kategori.
+    }
+  }
+  return null
+}
+for (const element of elements) {
+  const tekst = kilde(element.tag)
+  if (tekst === null) {
+    findings.push(`Fant ikke kildekoden til <${element.tag}>`)
+    continue
+  }
+  const sendt = new Set(
+    [...tekst.matchAll(/(?:new CustomEvent|emit)\(\s*"([a-z-]+)"/g)].map(
+      (m) => m[1],
+    ),
+  )
+  const beskrevet = new Set(Object.keys(element.events))
+  for (const navn of sendt)
+    if (!beskrevet.has(navn))
+      findings.push(
+        `<${element.tag}> sender «${navn}», som mangler i metadata.ts`,
+      )
+  for (const navn of beskrevet)
+    if (!sendt.has(navn))
+      findings.push(
+        `<${element.tag}> har «${navn}» i metadata.ts, men sender den ikke`,
+      )
+}
+
 // 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
 // snippet hadde en `<dialog>` og ikke noe `<fs-dialog>`.
 const snippets = JSON.parse(generated["editor/snippets.json"]) as Record<

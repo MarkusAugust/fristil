@@ -125,6 +125,10 @@ export const classes: Classes = {
           "filled"
         ],
         "default": "outline"
+      },
+      "data-interactive": {
+        "values": [],
+        "flag": true
       }
     }
   },
@@ -212,6 +216,10 @@ export const classes: Classes = {
           "symbol",
           "text"
         ]
+      },
+      "data-optional": {
+        "values": [],
+        "flag": true
       }
     }
   },
@@ -304,6 +312,10 @@ export const classes: Classes = {
           "symbol",
           "text"
         ]
+      },
+      "data-optional": {
+        "values": [],
+        "flag": true
       }
     }
   },
@@ -513,6 +525,10 @@ export const classes: Classes = {
           "striped"
         ],
         "default": "default"
+      },
+      "data-hoverable": {
+        "values": [],
+        "flag": true
       }
     }
   },
@@ -541,6 +557,10 @@ export const classes: Classes = {
           "filled"
         ],
         "default": "outline"
+      },
+      "data-selectable": {
+        "values": [],
+        "flag": true
       }
     }
   },

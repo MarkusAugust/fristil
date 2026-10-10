@@ -14,7 +14,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    komponentene ustilte ut. Svaret er da å legge inn lenka, aldri å skrive
    egen CSS for å få dem til å se riktige ut.
 2. **Bruk bare klassene og elementene i tabellene under.** `fs-modal`,
-   `fs-datepicker` og `data-variant="outline"` finnes i andre designsystemer,
+   `fs-datepicker` og `data-variant="outlined"` finnes i andre designsystemer,
    ikke i Fristil. Er du usikker på om noe finnes, står det her eller så gjør
    det ikke det.
 3. **Ingen hardkodede farger eller piksler.** `var(--fs-color-…)` og
@@ -78,16 +78,16 @@ Standardvarianten har ingen attributt.
 | `fs-badge` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/badge/badge.css` | `data-color`: success, warning, danger, neutral |
 | `fs-breadcrumbs` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/breadcrumbs/breadcrumbs.css` | ingen |
 | `fs-button` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/button/button.css` | `data-variant`: secondary, ghost, danger |
-| `fs-card`<br>`fs-card__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/card/card.css` | `data-variant`: filled |
+| `fs-card`<br>`fs-card__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/card/card.css` | `data-variant`: filled<br>`data-interactive` (flag) |
 | `fs-checkbox`<br>`fs-checkbox-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/checkbox/checkbox.css` | `data-state`: invalid, success |
 | `fs-divider` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/divider/divider.css` | `data-variant`: subtle, strong |
 | `fs-error-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/error-text/error-text.css` | `data-variant`: warning |
-| `fs-fieldset`<br>`fs-legend` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text |
+| `fs-fieldset`<br>`fs-legend` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-file-upload`<br>`fs-file-upload-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/file-upload/file-upload.css` | `data-state`: invalid, success |
 | `fs-heading` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/heading/heading.css` | `data-size`: xs, s, m, xl, mega |
 | `fs-help-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/help-text/help-text.css` | `data-variant`: strong, success, warning |
 | `fs-input` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/input/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
-| `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/label/label.css` | `data-required`: symbol, text |
+| `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-link` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/link/link.css` | ingen |
 | `fs-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/list/list.css` | `data-variant`: plain, divided |
 | `fs-pagination`<br>`fs-pagination__gap` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/pagination/pagination.css` | ingen |
@@ -101,11 +101,14 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/spinner/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/sr-only/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/switch/switch.css` | ingen |
-| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/table/table.css` | `data-variant`: striped |
-| `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tag/tag.css` | `data-variant`: filled |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/table/table.css` | `data-variant`: striped<br>`data-hoverable` (flag) |
+| `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tag/tag.css` | `data-variant`: filled<br>`data-selectable` (flag) |
 | `fs-textarea` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/toggle-group/toggle-group.css` | ingen |
 | `fs-tooltip`<br>`fs-tooltip__bubble` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tooltip/tooltip.css` | ingen |
+
+I tillegg finnes `fs-theme-control`, en klasse på en radioknapp som lar
+brukeren velge tema. Den står i `tokens.css`, og er beskrevet under Tokens.
 
 ## 3. Tokens
 
@@ -261,17 +264,17 @@ Tre regler gjelder alle sammen:
    inn, med `id`, `for` og `aria-describedby`. Et `<fs-field>` uten kontroll,
    eller uten ledetekst, er en feil komponenten melder fra om.
 
-| Element | Kategori | Stilark | Registrering | Attributter | Klasser inni |
-| --- | --- | --- | --- | --- | --- |
-| `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/field/fs-field.js` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen |
-| `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `fs-tabs__list`<br>`fs-tabs__panel` |
-| `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false<br>`hidden` (flag) | `fs-error-summary`<br>`fs-error-summary__title` |
-| `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
-| `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
-| `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
-| `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
-| `<fs-connection-status>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/connection-status/connection-status.css` | `defineFsConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/connection-status/fs-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
+| Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/field/fs-field.js` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen | ingen |
+| `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
+| `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
+| `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
+| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `fs-dialog` (`data-color`: brand, info, success, warning, danger)<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
+| `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
+| `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
+| `<fs-connection-status>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/connection-status/connection-status.css` | `defineFsConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/connection-status/fs-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `connection-lost`<br>`connection-restored` | `fs-connection-status`<br>`fs-connection-status__bar` |
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 `querySelector`, `FormData` og vanlig CSS virker rett inn i det.

@@ -493,7 +493,7 @@ for (const b of byggefunksjoner) {
 /*
  * Flaggene på klassene: `data-optional` på `fs-label`, `data-interactive` på
  * `fs-card`. Et flagg er på når det står der, og stilarket spør bare om det
- * finnes, så det har ingen liste over verdier, og `classes.ts` har det ikke.
+ * finnes, så det har ingen liste over verdier. `classes.ts` leser dem herfra.
  *
  * Det leses av byggetilfellene: står et `data-*`-attributt som flagg i svaret
  * med et boolsk valg på, men ikke uten, hører det til klassen i det samme
@@ -540,10 +540,17 @@ const klasser = Object.fromEntries(
     {
       ...klasse,
       attributes: {
-        ...klasse.attributes,
+        // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
+        // derfra, men utledes på nytt under, ellers ble et flagg som er
+        // borte fra byggefunksjonen stående i manifestet for alltid.
+        ...Object.fromEntries(
+          Object.entries(klasse.attributes).filter(([, verdi]) => !verdi.flag),
+        ),
         ...Object.fromEntries(
           [...(flagg.get(navn) ?? [])]
-            .filter((a) => !(a in klasse.attributes))
+            .filter(
+              (a) => !(a in klasse.attributes) || klasse.attributes[a].flag,
+            )
             .sort()
             .map((a) => [a, { flag: true }]),
         ),

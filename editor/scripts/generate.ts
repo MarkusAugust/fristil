@@ -119,6 +119,24 @@ export function webTypes(version: string) {
           attributes: Object.entries(element.attributes).map(([name, doc]) =>
             webTypesAttribute(name, doc),
           ),
+          // Hendelsene, så `addEventListener("dialog-toggle", …)` og
+          // `@dialog-toggle` i et rammeverk får fullføring.
+          ...(Object.keys(element.events).length
+            ? {
+                js: {
+                  events: Object.entries(element.events).map(([name, doc]) => ({
+                    name,
+                    description: doc.detail
+                      ? `${doc.description}\n\n\`detail\`: \`{ ${Object.entries(
+                          doc.detail,
+                        )
+                          .map(([k, t]) => `${k}: ${t}`)
+                          .join(", ")} }\``
+                      : doc.description,
+                  })),
+                },
+              }
+            : {}),
         })),
       },
       /*
@@ -220,7 +238,20 @@ export function diagnosticsData(): Elements {
           ? { type: "values", values: doc.value.values.map((v) => v.name) }
           : { type: doc.value }
     }
-    out[element.tag] = { link: docsUrl(element), attributes }
+    out[element.tag] = {
+      link: docsUrl(element),
+      attributes,
+      ...(Object.keys(element.events).length
+        ? {
+            events: Object.fromEntries(
+              Object.entries(element.events).map(([name, doc]) => [
+                name,
+                doc.detail ? { detail: doc.detail } : {},
+              ]),
+            ),
+          }
+        : {}),
+    }
   }
   return out
 }
@@ -246,6 +277,8 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
  * verken VS Code, IntelliJ eller `fristil sjekk` foreslo den.
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
+
+const MANIFEST = join(ROOT, "designsystem/manifest/manifest.json")
 
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
@@ -395,6 +428,21 @@ export function classesData(): Classes {
       }
     }
   }
+
+  /*
+   * Flaggene, som `data-interactive` på `fs-card` og `data-optional` på
+   * `fs-label`, fra manifestet. Det finner dem i byggetilfellene: et
+   * `data-*`-attributt som kommer når et boolsk valg slås på. Uten dette
+   * manglet de i editoren og i regelbøkene, mens `fristil sjekk` kjente dem.
+   */
+  const manifest: {
+    classes: Record<string, { attributes: Record<string, { flag?: true }> }>
+  } = JSON.parse(readFileSync(MANIFEST, "utf8"))
+  for (const [name, info] of Object.entries(out))
+    for (const [attribute, takes] of Object.entries(
+      manifest.classes[name]?.attributes ?? {},
+    ))
+      if (takes.flag) info.attributes[attribute] ??= { values: [], flag: true }
   return out
 }
 

@@ -234,7 +234,7 @@ Pluginen kommer på Maven Central sammen med pakken. Oppgavene virker med konfig
 
 ## Hvordan det virker
 
-Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen kjører i Node, i VS Code og her. På JVM-en kjøres den av [Chicory](https://chicory.dev), en WebAssembly-runtime skrevet i ren Java. Modulen er gjort om til JVM-bytekode da pakken ble bygget, så den kjører med JIT-en og starter på en brøkdel av et sekund. Hver tråd får sin egen instans, så tester som kjører samtidig, venter ikke på hverandre.
+Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen kjører i Node, i VS Code og her. På JVM-en kjøres den av [Chicory](https://chicory.dev), en WebAssembly-runtime skrevet i ren Java. Modulen er gjort om til JVM-bytekode da pakken ble bygget, så den kjører med JIT-en og starter på en brøkdel av et sekund. Et kall låner en instans fra en pool og gir den tilbake etterpå, så tester som kjører samtidig, venter ikke på hverandre.
 
 ## I IntelliJ
 

@@ -95,7 +95,7 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
 
 1. ${oppskrift.stilarkRegel}
 2. **Bruk bare klassene og elementene i tabellene under.** \`fs-modal\`,
-   \`fs-datepicker\` og \`data-variant="outline"\` finnes i andre
+   \`fs-datepicker\` og \`data-variant="outlined"\` finnes i andre
    designsystemer, ikke i Fristil. Er du usikker på om noe finnes, står det her
    eller så gjør det ikke det.
 3. **Ingen hardkodede farger eller piksler.** \`var(--fs-color-…)\` og
@@ -122,7 +122,10 @@ hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
 
 ### CSS-komponenter (ingen JavaScript)
 
-${cssTabell(oppskrift.stilarkAdresse)}`
+${cssTabell(oppskrift.stilarkAdresse)}
+
+I tillegg finnes \`fs-theme-control\`, en klasse på en radioknapp som lar
+brukeren velge tema. Den står i \`tokens.css\`, og er beskrevet under Tokens.`
 
 const TOKENS = `## 3. Tokens
 
@@ -477,7 +480,7 @@ components, altså ting nettleseren forstår direkte, så en Go-mal får de samm
 komponentene som en React-app uten å ta inn noe JavaScript-rammeverk.
 
 Det er også miljøet med minst sikkerhetsnett. Ingen kompilator ser på
-attributtene i en mal, og ingen type stopper \`data-variant="outline"\`. Derfor
+attributtene i en mal, og ingen type stopper \`data-variant="outlined"\`. Derfor
 gjelder punkt 5 strengere her enn noe annet sted: sjekken er det eneste som
 leser markupen din.`,
     stilarkRegel: `**Én \`<link>\` til \`fristil.css\` i sidemalen,** én gang
@@ -581,8 +584,18 @@ ${SJEKK_I_TESTER}
 
 Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «Fristil»
 gir fullføring, forklaring, feilmeldinger og hurtigrettelser i seksten
-malspråk, og WebStorm og IntelliJ IDEA Ultimate leser \`web-types.json\` fra
-pakken uten noen utvidelse.`,
+malspråk. WebStorm og IntelliJ IDEA Ultimate leser \`web-types.json\` fra
+pakken uten noen utvidelse, og pluginen «Fristil» fra JetBrains Marketplace
+legger til feilmeldingene og fullføring i HTML i en streng merket med
+\`@Language("HTML")\` eller \`// language=HTML\`.
+
+På JVM-en uten Node finnes Fristil for Kotlin
+(https://fristil.sobernetics.no/kotlin/). \`fristil.jar\` er kommandolinja
+som \`java -jar fristil.jar sjekk\`, og ligger ved hver utgivelse på
+GitHub: https://github.com/MarkusAugust/fristil/releases/latest. Maven-pakken
+med \`assertFristil(html)\` og Gradle-pluginen
+\`io.github.markusaugust.fristil\` er ikke på Maven Central ennå, så begge må
+bygges fra kildekoden. Skriv ikke en \`version\` for dem som om de var utgitt.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,

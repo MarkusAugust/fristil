@@ -123,13 +123,8 @@ function cssKomponenter(): Map<string, Klasse> {
     const rad = kart.get(info.component) ?? { klasser: [], attributter: [] }
     rad.klasser.push(klasse)
 
-    for (const [navn, attributt] of Object.entries(info.attributes ?? {})) {
-      const verdier = attributt.values ?? []
-      rad.attributter.push(
-        verdier.length > 0
-          ? `\`${navn}\`: ${verdier.join(", ")}`
-          : `\`${navn}\``,
-      )
+    for (const [navn, a] of Object.entries(info.attributes ?? {})) {
+      rad.attributter.push(attributt(navn, a))
     }
 
     kart.set(info.component, rad)
@@ -161,11 +156,37 @@ export function cssTabell(stilark: (komponent: string) => string): string {
   ].join("\n")
 }
 
-/** Klassene som hører til et element, som `fs-tabs__list` under `<fs-tabs>`. */
+/**
+ * Et klasseattributt slik tabellene skriver det: verdiene, eller `(flag)` for
+ * et attributt som virker ved å stå der, slik elementtabellen skriver det.
+ */
+function attributt(
+  navn: string,
+  a: { values?: readonly string[]; flag?: true },
+): string {
+  const verdier = a.values ?? []
+  if (a.flag) return `\`${navn}\` (flag)`
+  return verdier.length > 0
+    ? `\`${navn}\`: ${verdier.join(", ")}`
+    : `\`${navn}\``
+}
+
+/**
+ * Klassene som hører til et element, som `fs-tabs__list` under `<fs-tabs>`,
+ * med attributtene sine. `data-color` på `.fs-dialog` sto før ingen steder i
+ * regelbøkene, siden dialogen ikke er en CSS-komponent.
+ */
 function klasserUnder(komponent: string): string {
   const treff = Object.entries(classes)
     .filter(([, info]) => info.component === komponent)
-    .map(([klasse]) => `\`${klasse}\``)
+    .map(([klasse, info]) => {
+      const attributter = Object.entries(info.attributes ?? {}).map(
+        ([navn, a]) => attributt(navn, a),
+      )
+      return attributter.length > 0
+        ? `\`${klasse}\` (${attributter.join("; ")})`
+        : `\`${klasse}\``
+    })
 
   return treff.join("<br>") || "ingen"
 }
@@ -196,12 +217,23 @@ export function webTabell(
     const kall = `\`${registrering(komponent)}()\``
     const fra = `\`${adresse(komponent, modul(komponent))}\``
 
-    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} fra ${fra} | ${attributter} | ${klasserUnder(komponent)} |`
+    // Hendelsene, med feltene i `detail`. En agent som skulle lytte på
+    // dialogen, måtte før lese komponentkoden for å finne navnet.
+    const hendelser =
+      Object.entries(elements[tagg].events ?? {})
+        .map(([navn, hendelse]) =>
+          hendelse.detail
+            ? `\`${navn}\` (${Object.keys(hendelse.detail).join(", ")})`
+            : `\`${navn}\``,
+        )
+        .join("<br>") || "ingen"
+
+    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} fra ${fra} | ${attributter} | ${hendelser} | ${klasserUnder(komponent)} |`
   })
 
   return [
-    "| Element | Kategori | Stilark | Registrering | Attributter | Klasser inni |",
-    "| --- | --- | --- | --- | --- | --- |",
+    "| Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
     ...rader,
   ].join("\n")
 }
