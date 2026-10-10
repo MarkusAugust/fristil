@@ -50,7 +50,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 ```
 
 Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene
-dine. `fristil.css` er 96 kB, 12 kB komprimert, og har alt flatet ut uten
+dine. `fristil.css` er 101 kB, 13 kB komprimert, og har alt flatet ut uten
 `@import`, og er det raskeste valget når du lenker.
 
 Vil du bare ha stilarkene sidene faktisk bruker, gjelder at `tokens.css`

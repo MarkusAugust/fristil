@@ -1,6 +1,8 @@
 /// <reference path="../../../types/css.d.ts" />
+/// <reference types="@vitest/browser-playwright" />
 
 import { beforeEach, describe, expect, it } from "vitest"
+import { cdp, server } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -28,26 +30,113 @@ describe("fs-tooltip", () => {
 
   it("viser boblen når utløseren får fokus, ikke bare på hover", () => {
     const boble = document.getElementById("hint") as HTMLElement
-    expect(getComputedStyle(boble).visibility).toBe("hidden")
+    expect(getComputedStyle(boble).display).toBe("none")
 
     ;(document.getElementById("utloser") as HTMLElement).focus()
 
     // En boble som bare kommer med musa finnes ikke for den som bruker
     // tastatur. Derfor :focus-within i tillegg til :hover.
-    expect(getComputedStyle(boble).visibility).toBe("visible")
+    expect(getComputedStyle(boble).display).toBe("block")
   })
 
   it("holder teksten i tilgjengelighetstreet mens den er skjult", () => {
     const boble = document.getElementById("hint") as HTMLElement
 
-    // visibility og ikke display: teksten må kunne pekes på med
-    // aria-describedby også før boblen vises.
-    expect(getComputedStyle(boble).display).not.toBe("none")
+    // Boblen er `display: none` til den vises, og teksten er likevel
+    // knappens beskrivelse: `aria-describedby` tar med innholdet i et skjult
+    // element det peker på (accname, steg 2A). Før var den `visibility:
+    // hidden` av denne grunnen, og tok da plass og ga sidelengs rulling.
+    expect(boble.textContent?.trim()).not.toBe("")
     expect(
       (document.getElementById("utloser") as HTMLElement).getAttribute(
         "aria-describedby",
       ),
     ).toBe("hint")
+  })
+
+  it("dekker gapet mellom knappen og boblen i hele knappens bredde", async () => {
+    // Det var et gap, og `:hover` slapp på vei opp. Broen står mens boblen
+    // vises, også ved fokus, og testen bruker fokus: nettlesersiden har én
+    // mus, og en annen testfil som flytter den samtidig, ga tilfeldige feil
+    // i Firefox.
+    const utloser = document.getElementById("utloser") as HTMLElement
+    const omslag = utloser.closest(".fs-tooltip") as HTMLElement
+    const boble = document.getElementById("hint") as HTMLElement
+    utloser.focus()
+    await ventPaTegning()
+
+    const knapp = utloser.getBoundingClientRect()
+    const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
+    for (const x of [
+      knapp.left + 2,
+      knapp.left + knapp.width / 2,
+      knapp.right - 2,
+    ]) {
+      expect(
+        omslag.contains(document.elementFromPoint(x, hoyde)),
+        `x=${x}`,
+      ).toBe(true)
+    }
+    // Ikke bredere enn knappen: ved siden av står det som var der.
+    expect(
+      omslag.contains(document.elementFromPoint(knapp.right + 4, hoyde)),
+    ).toBe(false)
+  })
+
+  it.skipIf(server.browser !== "chromium")(
+    "er knappens beskrivelse også mens den er skjult",
+    async () => {
+      // Boblen er `display: none`, og teksten skal likevel være knappens
+      // beskrivelse gjennom `aria-describedby`. Tilgjengelighetstreet kan
+      // bare leses over CDP, som bare Chromium har herfra.
+      expect(
+        getComputedStyle(document.getElementById("hint") as Element).display,
+      ).toBe("none")
+      const { frameTree } = (await cdp().send("Page.getFrameTree")) as {
+        frameTree: {
+          frame: { id: string; url: string }
+          childFrames?: unknown[]
+        }
+      }
+      type Ramme = { frame: { id: string; url: string }; childFrames?: Ramme[] }
+      const finn = (ramme: Ramme): string | undefined =>
+        ramme.frame.url === location.href
+          ? ramme.frame.id
+          : (ramme.childFrames ?? []).map(finn).find(Boolean)
+      const frameId = finn(frameTree as Ramme)
+      const { nodes } = (await cdp().send("Accessibility.getFullAXTree", {
+        frameId,
+      })) as {
+        nodes: Array<{
+          name?: { value?: string }
+          description?: { value?: string }
+          role?: { value?: string }
+        }>
+      }
+      const knapp = nodes.find(
+        (node) =>
+          node.role?.value === "button" && node.name?.value === "Arkiver",
+      )
+
+      expect(knapp?.description?.value?.trim()).toBe(
+        "Saken flyttes til arkivet",
+      )
+    },
+  )
+
+  it("tar ikke plass når den er skjult, så den ikke gir sidelengs rulling", () => {
+    monter(`
+      <div style="inline-size: 320px; overflow: auto" id="smal">
+        <div style="display: flex; justify-content: flex-end">
+          <span class="fs-tooltip">
+            <button type="button" aria-describedby="kant">i</button>
+            <span class="fs-tooltip__bubble" role="tooltip" id="kant">En lang forklaring som er bredere enn knappen</span>
+          </span>
+        </div>
+      </div>`)
+    const smal = document.getElementById("smal") as HTMLElement
+
+    expect(smal.scrollWidth).toBe(smal.clientWidth)
   })
 
   it("setter attributtene fra byggefunksjonen", () => {

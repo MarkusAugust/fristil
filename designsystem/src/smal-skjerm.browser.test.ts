@@ -48,10 +48,10 @@ const KOMPONENTER: [navn: string, markup: string][] = [
      <button class="fs-button" data-variant="secondary">Lagre som utkast</button>`,
   ],
   [
-    "hjelpeboble med lang tekst",
+    "hjelpeboble med lang tekst, vist",
     `<span class="fs-tooltip">
        <button class="fs-button" type="button" aria-describedby="hint">Arkiver</button>
-       <span class="fs-tooltip__bubble" role="tooltip" id="hint">Saken flyttes til arkivet, og kan hentes fram igjen senere</span>
+       <span class="fs-tooltip__bubble" role="tooltip" id="hint" style="display: block">Saken flyttes til arkivet, og kan hentes fram igjen senere</span>
      </span>`,
   ],
   [

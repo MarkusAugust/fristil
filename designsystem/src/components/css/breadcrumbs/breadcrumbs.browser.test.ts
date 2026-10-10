@@ -25,6 +25,19 @@ describe("fs-breadcrumbs", () => {
     `)
   })
 
+  it("gir skilletegnet en tom alternativ tekst, så det ikke leses opp", () => {
+    // Generert innhold leses opp, og skjermleseren sa «skråstrek» mellom
+    // hvert steg. Nettlesere uten formen beholder streken.
+    const ledd = document.querySelectorAll(".fs-breadcrumbs li")[1] as Element
+    const innhold = getComputedStyle(ledd, "::before").content
+
+    if (CSS.supports("content", '"/" / ""')) {
+      expect(innhold).toBe('"/" / ""')
+    } else {
+      expect(innhold).toBe('"/"')
+    }
+  })
+
   it("legger skilletegnet inn med CSS, ikke i markupen", () => {
     const andre = document.querySelectorAll(".fs-breadcrumbs li")[1]
     const skille = getComputedStyle(andre, "::before")

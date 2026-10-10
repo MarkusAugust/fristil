@@ -70,6 +70,15 @@
     outline-color: var(--fs-color-success-text);
   }
 
+  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
+     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
+     var slått av under innsending så rødt ut, ikke avslått. */
+  .fs-input:is(:disabled, [aria-disabled="true"])[data-state] {
+    background-color: var(--fs-color-disabled-surface);
+    color: var(--fs-color-disabled-text);
+    border-color: var(--fs-color-disabled-surface);
+  }
+
   .fs-input[data-variant="date"],
   .fs-input[data-variant="time"],
   .fs-input[data-variant="datetime-local"] {

@@ -112,15 +112,22 @@ Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du f
 	inset-block-end: auto;
 	inset-block-start: calc(100% + var(--fs-spacing-2));
 }
+
+/* Broen over gapet må med ned, ellers forsvinner boblen på vei til den. */
+.fs-tooltip:is(:hover, :focus-within)::before {
+	inset-block-end: auto;
+	inset-block-start: 100%;
+}
 ```
 
-Boblen skjules med `visibility` og `opacity`, så den kan tones inn. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
+Boblen er `display: none` når den er skjult, så den ikke tar plass, og tones inn med `opacity`. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 
 - Ingenting som bare finnes i boblen kan være nødvendig. Regn med at halvparten av brukerne aldri ser den.
-- Hold teksten kort. Boblen kan ikke rulles, og den forsvinner når musa flyttes.
-- Ikke legg lenker eller knapper inni. Brukeren rekker ikke fram til dem før boblen lukker seg.
+- Hold teksten kort. Boblen kan ikke rulles. Musa kan flyttes fra knappen og opp på boblen uten at den forsvinner, men den lukkes når musa forlater begge.
+- Ikke legg lenker eller knapper inni. Boblen er en beskrivelse, ikke et panel.
+- **Boblen kan ikke lukkes med Escape.** WCAG 1.4.13 krever at innhold som kommer fram på hover og fokus kan avvises uten å flytte musa eller fokus. Det krever JavaScript, og Tooltip er bare CSS. Bruk den derfor bare der boblen ikke dekker noe brukeren trenger å se, eller bruk [Popover](../popover/), som lukkes med Escape.
 - En boble på et felt som allerede har hjelpetekst er dobbelt opp. Velg én.
