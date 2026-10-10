@@ -78,16 +78,16 @@ Standardvarianten har ingen attributt.
 | `fs-badge` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/badge/badge.css` | `data-color`: success, warning, danger, neutral |
 | `fs-breadcrumbs` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/breadcrumbs/breadcrumbs.css` | ingen |
 | `fs-button` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/button/button.css` | `data-variant`: secondary, ghost, danger |
-| `fs-card`<br>`fs-card__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/card/card.css` | `data-variant`: filled<br>`data-interactive` |
+| `fs-card`<br>`fs-card__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/card/card.css` | `data-variant`: filled<br>`data-interactive` (flag) |
 | `fs-checkbox`<br>`fs-checkbox-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/checkbox/checkbox.css` | `data-state`: invalid, success |
 | `fs-divider` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/divider/divider.css` | `data-variant`: subtle, strong |
 | `fs-error-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/error-text/error-text.css` | `data-variant`: warning |
-| `fs-fieldset`<br>`fs-legend` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` |
+| `fs-fieldset`<br>`fs-legend` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-file-upload`<br>`fs-file-upload-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/file-upload/file-upload.css` | `data-state`: invalid, success |
 | `fs-heading` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/heading/heading.css` | `data-size`: xs, s, m, xl, mega |
 | `fs-help-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/help-text/help-text.css` | `data-variant`: strong, success, warning |
 | `fs-input` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/input/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
-| `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` |
+| `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-link` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/link/link.css` | ingen |
 | `fs-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/list/list.css` | `data-variant`: plain, divided |
 | `fs-pagination`<br>`fs-pagination__gap` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/pagination/pagination.css` | ingen |
@@ -101,14 +101,14 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/spinner/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/sr-only/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/switch/switch.css` | ingen |
-| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/table/table.css` | `data-variant`: striped<br>`data-hoverable` |
-| `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tag/tag.css` | `data-variant`: filled<br>`data-selectable` |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/table/table.css` | `data-variant`: striped<br>`data-hoverable` (flag) |
+| `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tag/tag.css` | `data-variant`: filled<br>`data-selectable` (flag) |
 | `fs-textarea` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/toggle-group/toggle-group.css` | ingen |
 | `fs-tooltip`<br>`fs-tooltip__bubble` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/tooltip/tooltip.css` | ingen |
 
-I tillegg `fs-theme-control` på en radioknapp, som lar brukeren velge tema.
-Den står i `tokens.css`, og er beskrevet under Tokens.
+I tillegg finnes `fs-theme-control`, en klasse på en radioknapp som lar
+brukeren velge tema. Den står i `tokens.css`, og er beskrevet under Tokens.
 
 ## 3. Tokens
 

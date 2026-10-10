@@ -124,8 +124,8 @@ hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
 
 ${cssTabell(oppskrift.stilarkAdresse)}
 
-I tillegg \`fs-theme-control\` på en radioknapp, som lar brukeren velge tema.
-Den står i \`tokens.css\`, og er beskrevet under Tokens.`
+I tillegg finnes \`fs-theme-control\`, en klasse på en radioknapp som lar
+brukeren velge tema. Den står i \`tokens.css\`, og er beskrevet under Tokens.`
 
 const TOKENS = `## 3. Tokens
 
@@ -586,13 +586,16 @@ Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «Fristil»
 gir fullføring, forklaring, feilmeldinger og hurtigrettelser i seksten
 malspråk. WebStorm og IntelliJ IDEA Ultimate leser \`web-types.json\` fra
 pakken uten noen utvidelse, og pluginen «Fristil» fra JetBrains Marketplace
-legger til feilmeldingene og fullføring i HTML inne i en streng.
+legger til feilmeldingene og fullføring i HTML i en streng merket med
+\`@Language("HTML")\` eller \`// language=HTML\`.
 
 På JVM-en uten Node finnes Fristil for Kotlin
-(https://fristil.sobernetics.no/kotlin/): \`assertFristil(html)\` til testene,
-\`fristil.jar\` som kommandolinje med \`java -jar\`, og Gradle-pluginen
-\`io.github.markusaugust.fristil\` med \`fristilSjekk\`. Maven-pakken er ikke
-på Maven Central ennå, så den bygges fra kildekoden.`,
+(https://fristil.sobernetics.no/kotlin/). \`fristil.jar\` er kommandolinja
+som \`java -jar fristil.jar sjekk\`, og ligger ved hver utgivelse på
+GitHub: https://github.com/MarkusAugust/fristil/releases/latest. Maven-pakken
+med \`assertFristil(html)\` og Gradle-pluginen
+\`io.github.markusaugust.fristil\` er ikke på Maven Central ennå, så begge må
+bygges fra kildekoden. Skriv ikke en \`version\` for dem som om de var utgitt.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,

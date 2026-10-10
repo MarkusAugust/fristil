@@ -303,7 +303,7 @@ export const elements: readonly ElementDoc[] = [
     {
       "toast-dismiss": {
         description:
-          "En melding ble lukket, av brukeren eller fordi tiden gikk ut.",
+          "En melding ble lukket, av brukeren, fordi tiden gikk ut, eller med `dismiss()`. `clear()` sender ingen.",
       },
     },
   ),
@@ -321,7 +321,10 @@ export const elements: readonly ElementDoc[] = [
     },
     {
       "session-warn": { description: "Varselet åpnet seg." },
-      "session-extend": { description: "Brukeren valgte å fortsette." },
+      "session-extend": {
+        description:
+          "Økten fortsetter: brukeren lukket varselet med en annen knapp enn utlogging eller med Escape, eller appen kalte `extend()`.",
+      },
       "session-logout": { description: "Brukeren valgte å logge ut." },
       "session-expired": { description: "Tiden er ute." },
       "session-activity": {

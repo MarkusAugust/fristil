@@ -68,16 +68,16 @@ Standardvarianten har ingen attributt.
 | `fs-badge` | `@fristil/designsystem/badge.css` | `data-color`: success, warning, danger, neutral |
 | `fs-breadcrumbs` | `@fristil/designsystem/breadcrumbs.css` | ingen |
 | `fs-button` | `@fristil/designsystem/button.css` | `data-variant`: secondary, ghost, danger |
-| `fs-card`<br>`fs-card__title` | `@fristil/designsystem/card.css` | `data-variant`: filled<br>`data-interactive` |
+| `fs-card`<br>`fs-card__title` | `@fristil/designsystem/card.css` | `data-variant`: filled<br>`data-interactive` (flag) |
 | `fs-checkbox`<br>`fs-checkbox-row` | `@fristil/designsystem/checkbox.css` | `data-state`: invalid, success |
 | `fs-divider` | `@fristil/designsystem/divider.css` | `data-variant`: subtle, strong |
 | `fs-error-text` | `@fristil/designsystem/error-text.css` | `data-variant`: warning |
-| `fs-fieldset`<br>`fs-legend` | `@fristil/designsystem/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` |
+| `fs-fieldset`<br>`fs-legend` | `@fristil/designsystem/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-file-upload`<br>`fs-file-upload-list` | `@fristil/designsystem/file-upload.css` | `data-state`: invalid, success |
 | `fs-heading` | `@fristil/designsystem/heading.css` | `data-size`: xs, s, m, xl, mega |
 | `fs-help-text` | `@fristil/designsystem/help-text.css` | `data-variant`: strong, success, warning |
 | `fs-input` | `@fristil/designsystem/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
-| `fs-label` | `@fristil/designsystem/label.css` | `data-required`: symbol, text<br>`data-optional` |
+| `fs-label` | `@fristil/designsystem/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-link` | `@fristil/designsystem/link.css` | ingen |
 | `fs-list` | `@fristil/designsystem/list.css` | `data-variant`: plain, divided |
 | `fs-pagination`<br>`fs-pagination__gap` | `@fristil/designsystem/pagination.css` | ingen |
@@ -91,14 +91,14 @@ Standardvarianten har ingen attributt.
 | `fs-spinner` | `@fristil/designsystem/spinner.css` | `data-size`: small, large |
 | `fs-sr-only` | `@fristil/designsystem/sr-only.css` | ingen |
 | `fs-switch`<br>`fs-switch-row` | `@fristil/designsystem/switch.css` | ingen |
-| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped<br>`data-hoverable` |
-| `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled<br>`data-selectable` |
+| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `@fristil/designsystem/table.css` | `data-variant`: striped<br>`data-hoverable` (flag) |
+| `fs-tag` | `@fristil/designsystem/tag.css` | `data-variant`: filled<br>`data-selectable` (flag) |
 | `fs-textarea` | `@fristil/designsystem/textarea.css` | `data-state`: invalid, success |
 | `fs-toggle-group`<br>`fs-toggle-group__option` | `@fristil/designsystem/toggle-group.css` | ingen |
 | `fs-tooltip`<br>`fs-tooltip__bubble` | `@fristil/designsystem/tooltip.css` | ingen |
 
-I tillegg `fs-theme-control` på en radioknapp, som lar brukeren velge tema.
-Den står i `tokens.css`, og er beskrevet under Tokens.
+I tillegg finnes `fs-theme-control`, en klasse på en radioknapp som lar
+brukeren velge tema. Den står i `tokens.css`, og er beskrevet under Tokens.
 
 ## 3. Tokens
 

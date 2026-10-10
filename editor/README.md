@@ -85,7 +85,7 @@ IDE-en tar den i bruk så snart `@fristil/designsystem` står i
 `package.json`. Etterprøvd i IntelliJ IDEA Ultimate 2026.2, med fullføring av elementene, attributtene
 og verdiene, og forklaring med lenke. Feilmeldingene og hurtigrettelsene
 kommer med pluginen «Fristil» fra JetBrains Marketplace, som også gir
-fullføring i HTML inne i en streng. Se `../editor-intellij`. Neovim, Helix
+fullføring i HTML i en streng merket med `@Language("HTML")`. Se `../editor-intellij`. Neovim, Helix
 og andre editorer med LSP kan bruke `fristil lsp`.
 
 ## Slik lages den

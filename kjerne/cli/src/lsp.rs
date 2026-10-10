@@ -262,10 +262,25 @@ impl Server {
     fn vocabulary(&mut self, uri: Option<&str>) -> Rc<Vocabulary> {
         let mut candidates: Vec<String> = self.preferred.iter().cloned().collect();
         if let Some(file) = uri.and_then(path_of) {
+            // Ikke over rota av arbeidsområdet fila ligger i: en pakke i
+            // hjemmemappa er ikke prosjektets, og editoren følger ikke med på
+            // filer der. Stien skrives med `/` som ved rota under, så den
+            // samme fila har samme nøkkel i `sources` også på Windows.
+            let file = file.replace('\\', "/");
+            let root = self
+                .roots
+                .iter()
+                .map(|r| r.replace('\\', "/").trim_end_matches('/').to_string())
+                .filter(|r| file.starts_with(&format!("{r}/")))
+                .max_by_key(String::len);
             let mut dir = std::path::Path::new(&file).parent();
             while let Some(here) = dir {
+                let here_text = here.to_string_lossy().replace('\\', "/");
                 for candidate in CANDIDATES {
-                    candidates.push(here.join(candidate).to_string_lossy().into_owned());
+                    candidates.push(format!("{}/{candidate}", here_text.trim_end_matches('/')));
+                }
+                if root.as_deref() == Some(here_text.trim_end_matches('/')) {
+                    break;
                 }
                 dir = here.parent();
             }
@@ -1054,6 +1069,24 @@ mod tests {
             count(&mut server, &outside),
             0,
             "en side ved rota ser den ikke"
+        );
+
+        // Over rota letes det ikke: arbeidsområdet `apps/web/src` ser ikke
+        // pakken i `apps/web`, som ligger utenfor det.
+        let mut narrow = Server::new();
+        narrow.handle(&request(
+            1,
+            "initialize",
+            &format!(
+                r#"{{"rootUri":"file://{}/src","capabilities":{{}}}}"#,
+                web.display()
+            ),
+        ));
+        narrow.take();
+        assert_eq!(
+            count(&mut narrow, &inside),
+            0,
+            "pakken over rota gjelder ikke"
         );
         std::fs::remove_dir_all(root).unwrap();
     }

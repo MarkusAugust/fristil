@@ -103,10 +103,10 @@ egen overskrift «Brytende».
   `fs-accordion` samme luft til sidene. Før gjaldt `--fs-accordion-padding`
   bare overskriften.
 - **Hendelsene står i manifestet, i `web-types.json` og i regelbøkene.**
-  Hvert element i manifestet har nå `events`, med feltene i `detail` og
-  typen deres, som `dialog-toggle` med `open` og `returnValue`. JetBrains
-  fullfører navnene, og regelbøkene har en kolonne for dem. Før måtte en
-  agent eller en utvikler lese komponentkoden for å finne `popover-toggle`.
+  Elementene som sender hendelser, har nå `events` i manifestet, med feltene
+  i `detail` og typen deres, som `dialog-toggle` med `open` og `returnValue`.
+  `web-types.json` har dem som `js.events`, og regelbøkene har en kolonne for
+  dem. Før sto de bare på komponentsidene, og noen ikke der heller.
 
 ### Endret
 
@@ -222,14 +222,15 @@ egen overskrift «Brytende».
 - **Editoren sa at `required-marker="text"` skriver «må fylles ut».** Den
   skriver «(påkrevd)».
 - **Regelbøkene kalte `data-variant="outline"` oppfunnet.** Det er
-  standardvarianten til `fs-card`. Eksempelet er nå `outlined`.
+  standardvarianten til `fs-card` og `fs-tag`. Eksempelet er nå `outlined`.
   `fs-theme-control` sto ikke i lista som kalles «hele lista».
 - **Språkserveren fant bare pakken ved rota av arbeidsområdet.** I et
   monorepo ble en side i `apps/web` sjekket mot det innebygde manifestet,
   enda `apps/web/node_modules` hadde pakken. Den leter nå fra mappa til fila
-  og oppover.
+  og oppover, men ikke over rota av arbeidsområdet.
 - **Dokumentasjonen sa at feilmeldingene bare finnes i VS Code.** Pluginen
-  for IntelliJ har dem, og regelbøkene nevner nå den og Fristil for Kotlin.
+  for IntelliJ har dem, i filer og i HTML i en merket streng, og regelbøkene
+  nevner nå den og Fristil for Kotlin.
   Kotlin-siden sa at hver tråd får sin egen instans av kjernen. Det er en
   pool.
 

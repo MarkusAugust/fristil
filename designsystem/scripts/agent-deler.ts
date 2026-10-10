@@ -124,7 +124,7 @@ function cssKomponenter(): Map<string, Klasse> {
     rad.klasser.push(klasse)
 
     for (const [navn, a] of Object.entries(info.attributes ?? {})) {
-      rad.attributter.push(attributt(navn, a.values ?? []))
+      rad.attributter.push(attributt(navn, a))
     }
 
     kart.set(info.component, rad)
@@ -156,8 +156,16 @@ export function cssTabell(stilark: (komponent: string) => string): string {
   ].join("\n")
 }
 
-/** Et klasseattributt slik tabellene skriver det: verdiene, eller bare navnet. */
-function attributt(navn: string, verdier: readonly string[]): string {
+/**
+ * Et klasseattributt slik tabellene skriver det: verdiene, eller `(flag)` for
+ * et attributt som virker ved å stå der, slik elementtabellen skriver det.
+ */
+function attributt(
+  navn: string,
+  a: { values?: readonly string[]; flag?: true },
+): string {
+  const verdier = a.values ?? []
+  if (a.flag) return `\`${navn}\` (flag)`
   return verdier.length > 0
     ? `\`${navn}\`: ${verdier.join(", ")}`
     : `\`${navn}\``
@@ -173,7 +181,7 @@ function klasserUnder(komponent: string): string {
     .filter(([, info]) => info.component === komponent)
     .map(([klasse, info]) => {
       const attributter = Object.entries(info.attributes ?? {}).map(
-        ([navn, a]) => attributt(navn, a.values ?? []),
+        ([navn, a]) => attributt(navn, a),
       )
       return attributter.length > 0
         ? `\`${klasse}\` (${attributter.join("; ")})`
