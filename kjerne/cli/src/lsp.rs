@@ -33,7 +33,8 @@ use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::{Finding, Severity, Vocabulary};
 use fristil_kjerne::{diagnose_markup, diagnose_page, manifest, Lines};
 
-/// Stedene manifestet letes etter, fra arbeidsområdet.
+/// Stedene manifestet letes etter: i mappa til fila og hver mappe over den,
+/// og så ved rota av hvert arbeidsområde.
 const CANDIDATES: [&str; 2] = [
     "build/fristil/manifest.json",
     "node_modules/@fristil/designsystem/manifest/manifest.json",
@@ -57,7 +58,9 @@ pub struct Server {
     roots: Vec<String>,
     preferred: Option<String>,
     rendered: bool,
-    source: Option<Source>,
+    /// Manifestene som er lest, ett per sti. I et monorepo kan to dokumenter
+    /// høre til hver sin pakke, med hver sin versjon av Fristil.
+    sources: Vec<Source>,
     shut_down: bool,
     /// Meldinger til editoren som venter på å bli sendt.
     outgoing: Vec<Json>,
@@ -224,7 +227,7 @@ impl Server {
             roots: Vec::new(),
             preferred: None,
             rendered: false,
-            source: None,
+            sources: Vec::new(),
             shut_down: false,
             outgoing: Vec::new(),
             reloaded: false,
@@ -249,10 +252,24 @@ impl Server {
         );
     }
 
-    /// Manifestet som skal gjelde nå: det første som finnes, lest på nytt
-    /// når fila er endret.
-    fn vocabulary(&mut self) -> Rc<Vocabulary> {
+    /// Manifestet som skal gjelde for et dokument: det første som finnes,
+    /// lest på nytt når fila er endret.
+    ///
+    /// Det letes fra mappa til dokumentet og oppover, slik Node finner en
+    /// pakke, og så ved rota av arbeidsområdene. Før ble bare rota sett på,
+    /// så en side i `apps/web/` i et monorepo ble sjekket mot det innebygde
+    /// manifestet, enda `apps/web/node_modules` hadde pakken.
+    fn vocabulary(&mut self, uri: Option<&str>) -> Rc<Vocabulary> {
         let mut candidates: Vec<String> = self.preferred.iter().cloned().collect();
+        if let Some(file) = uri.and_then(path_of) {
+            let mut dir = std::path::Path::new(&file).parent();
+            while let Some(here) = dir {
+                for candidate in CANDIDATES {
+                    candidates.push(here.join(candidate).to_string_lossy().into_owned());
+                }
+                dir = here.parent();
+            }
+        }
         for root in &self.roots {
             for candidate in CANDIDATES {
                 candidates.push(format!("{}/{candidate}", root.trim_end_matches('/')));
@@ -266,13 +283,15 @@ impl Server {
             Some((path, modified)) => (Some(path), modified),
             None => (None, None),
         };
-        if let Some(source) = &self.source {
-            if source.path == path && source.modified == modified {
-                return Rc::clone(&source.vocabulary);
+        let known = self.sources.iter().position(|s| s.path == path);
+        if let Some(index) = known {
+            if self.sources[index].modified == modified {
+                return Rc::clone(&self.sources[index].vocabulary);
             }
         }
-        // Et manifest som er byttet eller endret, gjelder alle åpne dokumenter.
-        self.reloaded = self.source.is_some();
+        // Et manifest som er nytt eller endret, gjelder alle åpne dokumenter
+        // som finner det. Det første som leses, er ingen endring.
+        self.reloaded = !self.sources.is_empty();
         let vocabulary = match &path {
             None => manifest::builtin(),
             Some(file) => match std::fs::read(file)
@@ -289,16 +308,21 @@ impl Server {
                 }
             },
         };
-        self.source = Some(Source {
+        let source = Source {
             path,
             modified,
             vocabulary: Rc::clone(&vocabulary),
-        });
+        };
+        match known {
+            Some(index) => self.sources[index] = source,
+            None => self.sources.push(source),
+        }
         vocabulary
     }
 
     fn check(&mut self, index: usize) {
-        let vocabulary = self.vocabulary();
+        let uri = self.documents[index].uri.clone();
+        let vocabulary = self.vocabulary(Some(&uri));
         let document = &mut self.documents[index];
         document.findings = if self.rendered {
             diagnose_page(&document.text, &vocabulary)
@@ -313,7 +337,6 @@ impl Server {
                 .map(|f| diagnostic(&lines, f))
                 .collect(),
         );
-        let uri = document.uri.clone();
         self.notify(
             "textDocument/publishDiagnostics",
             object(vec![("uri", text(&uri)), ("diagnostics", diagnostics)]),
@@ -405,7 +428,7 @@ impl Server {
                 .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
-        let version = self.vocabulary().version.clone();
+        let version = self.vocabulary(None).version.clone();
         object(vec![
             (
                 "capabilities",
@@ -973,6 +996,64 @@ mod tests {
                 .unwrap()
                 .len(),
             1
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn finds_the_manifest_in_the_folder_above_the_document() {
+        // Et monorepo: pakken står i `apps/web/node_modules`, ikke ved rota.
+        let root = std::env::temp_dir().join(format!("fristil-lsp-opp-{}", std::process::id()));
+        let web = root.join("apps/web");
+        let folder = web.join("node_modules/@fristil/designsystem/manifest");
+        std::fs::create_dir_all(&folder).unwrap();
+        let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
+        std::fs::write(
+            folder.join("manifest.json"),
+            manifest::merged(&[fragment]).unwrap().to_pretty(),
+        )
+        .unwrap();
+        let mut server = Server::new();
+        server.handle(&request(
+            1,
+            "initialize",
+            &format!(
+                r#"{{"rootUri":"file://{}","capabilities":{{}}}}"#,
+                root.display()
+            ),
+        ));
+        server.take();
+        let count = |server: &mut Server, uri: &str| {
+            server.handle(&notification(
+                "textDocument/didOpen",
+                &format!(r#"{{"textDocument":{{"uri":"{uri}","languageId":"html","version":1,"text":"<b class=\"app-button__x\"></b>"}}}}"#),
+            ));
+            server
+                .take()
+                .iter()
+                .find(|m| {
+                    m.get("method").and_then(Json::as_str)
+                        == Some("textDocument/publishDiagnostics")
+                })
+                .and_then(|m| {
+                    m.get("params")?
+                        .get("diagnostics")?
+                        .as_array()
+                        .map(<[Json]>::len)
+                })
+                .unwrap()
+        };
+        let inside = format!("file://{}/src/side.html", web.display());
+        assert_eq!(
+            count(&mut server, &inside),
+            1,
+            "siden i apps/web ser pakken der"
+        );
+        let outside = format!("file://{}/side.html", root.display());
+        assert_eq!(
+            count(&mut server, &outside),
+            0,
+            "en side ved rota ser den ikke"
         );
         std::fs::remove_dir_all(root).unwrap();
     }

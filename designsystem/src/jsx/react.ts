@@ -94,7 +94,7 @@ type FsErrorSummaryAttributes = Host & {
    * Flytt fokus hit når boksen kommer til syne. Standard: på.
    * Sett `"false"` for å la være.
    */
-  "data-autofocus"?: "false"
+  "data-autofocus"?: "false" | "true"
 }
 
 type FsSuggestionAttributes = Host & {

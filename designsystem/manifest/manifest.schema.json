@@ -32,6 +32,22 @@
             "additionalProperties": {
               "$ref": "#/$defs/elementAttribute"
             }
+          },
+          "events": {
+            "type": "object",
+            "description": "Hendelsene elementet sender. Alle bobler og krysser skyggegrenser. Mangler når elementet ikke sender noe.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "object",
+                  "description": "Feltene i event.detail med typen sin. Mangler når hendelsen ikke har noe.",
+                  "additionalProperties": {
+                    "enum": ["boolean", "string", "number"]
+                  }
+                }
+              }
+            }
           }
         }
       }

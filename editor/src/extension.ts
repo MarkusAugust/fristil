@@ -200,10 +200,11 @@ export function activate(context: vscode.ExtensionContext) {
   const classDocumentation = (name: string) => {
     const info = classes[name]
     const takes = Object.entries(info.attributes)
-      .map(
-        ([attribute, a]) =>
-          `\`${attribute}\`: ${a.values.join(", ")}` +
-          (a.default ? ` (${a.default} uten attributt)` : ""),
+      .map(([attribute, a]) =>
+        a.flag
+          ? `\`${attribute}\`: flagg, virker ved å stå der`
+          : `\`${attribute}\`: ${a.values.join(", ")}` +
+            (a.default ? ` (${a.default} uten attributt)` : ""),
       )
       .join("  \n")
     return markdown(

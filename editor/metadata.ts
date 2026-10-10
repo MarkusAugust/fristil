@@ -49,12 +49,26 @@ export type AttributeValue =
 
 export type AttributeDoc = { description: string; value: AttributeValue }
 
+/** Typen til ett felt i `detail`. */
+export type DetailType = "boolean" | "string" | "number"
+
+/**
+ * En hendelse elementet sender, som `dialog-toggle`. Alle bobler og krysser
+ * skyggegrenser (`bubbles: true, composed: true`). `detail` er feltene i
+ * `event.detail`, eller ingenting når hendelsen ikke har noe.
+ */
+export type EventDoc = {
+  description: string
+  detail?: Record<string, DetailType>
+}
+
 export type ElementDoc = {
   tag: string
   /** Siste ledd i adressen til komponentsiden, som `popover`. */
   slug: string
   description: string
   attributes: Record<string, AttributeDoc>
+  events: Record<string, EventDoc>
 }
 
 /** Klassen til en komponent, slik generatoren ser den. */
@@ -71,8 +85,9 @@ function element<T extends Component>(
   slug: string,
   description: string,
   attributes: Attributes<T>,
+  events: Record<string, EventDoc> = {},
 ): ElementDoc {
-  return { tag, slug, description, attributes }
+  return { tag, slug, description, attributes, events }
 }
 
 const flag = (description: string): AttributeDoc => ({
@@ -115,7 +130,10 @@ export const elements: readonly ElementDoc[] = [
         value: {
           values: [
             { name: "symbol", description: "En stjerne etter ledeteksten." },
-            { name: "text", description: "Ordet «må fylles ut»." },
+            {
+              name: "text",
+              description: "Teksten «(påkrevd)» etter ledeteksten.",
+            },
             {
               name: "none",
               description:
@@ -138,6 +156,12 @@ export const elements: readonly ElementDoc[] = [
     "tabs",
     "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
     { "server-controlled": serverControlled },
+    {
+      "tab-select": {
+        description: "Brukeren valgte en fane. `index` teller fra 0.",
+        detail: { index: "number" },
+      },
+    },
   ),
 
   element<typeof FsErrorSummary>(
@@ -149,7 +173,14 @@ export const elements: readonly ElementDoc[] = [
         description:
           "Om fokus flyttes til boksen når den kommer til syne. Standard er på.",
         value: {
-          values: [{ name: "false", description: "La fokus stå der det er." }],
+          values: [
+            { name: "false", description: "La fokus stå der det er." },
+            {
+              name: "true",
+              description:
+                "Flytt fokus, det samme som uten attributtet. Alt annet enn «false» flytter fokus.",
+            },
+          ],
         },
       },
       hidden: flag(
@@ -191,6 +222,12 @@ export const elements: readonly ElementDoc[] = [
       },
       "server-controlled": serverControlled,
     },
+    {
+      "popover-toggle": {
+        description: "Panelet åpnet eller lukket seg.",
+        detail: { open: "boolean" },
+      },
+    },
   ),
 
   element<typeof FsSuggestion>(
@@ -222,6 +259,13 @@ export const elements: readonly ElementDoc[] = [
       ),
       "server-controlled": serverControlled,
     },
+    {
+      "suggestion-select": {
+        description:
+          "Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.",
+        detail: { value: "string" },
+      },
+    },
   ),
 
   element<typeof FsDialog>(
@@ -233,6 +277,13 @@ export const elements: readonly ElementDoc[] = [
         "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
       ),
       "server-controlled": serverControlled,
+    },
+    {
+      "dialog-toggle": {
+        description:
+          "Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng.",
+        detail: { open: "boolean", returnValue: "string" },
+      },
     },
   ),
 
@@ -249,6 +300,12 @@ export const elements: readonly ElementDoc[] = [
         "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding».",
       ),
     },
+    {
+      "toast-dismiss": {
+        description:
+          "En melding ble lukket, av brukeren eller fordi tiden gikk ut.",
+      },
+    },
   ),
 
   element<typeof FsSessionTimeout>(
@@ -262,6 +319,16 @@ export const elements: readonly ElementDoc[] = [
         "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60.",
       ),
     },
+    {
+      "session-warn": { description: "Varselet åpnet seg." },
+      "session-extend": { description: "Brukeren valgte å fortsette." },
+      "session-logout": { description: "Brukeren valgte å logge ut." },
+      "session-expired": { description: "Tiden er ute." },
+      "session-activity": {
+        description:
+          "Brukeren er aktiv. Kommer høyst én gang per `activity-interval`, så appen kan holde serverøkten i live.",
+      },
+    },
   ),
 
   element<typeof FsConnectionStatus>(
@@ -271,6 +338,10 @@ export const elements: readonly ElementDoc[] = [
     {
       "offline-text": text("Teksten når forbindelsen er borte."),
       "online-text": text("Teksten når den kommer tilbake."),
+    },
+    {
+      "connection-lost": { description: "Forbindelsen er borte." },
+      "connection-restored": { description: "Forbindelsen er tilbake." },
     },
   ),
 ]

@@ -71,6 +71,7 @@ describe("hidden", () => {
         for (const verdi of attributt.values) {
           varianter.push([navn, verdi])
         }
+        if (attributt.flag) varianter.push([navn, ""])
       }
       for (const tagg of TAGGER) {
         for (const variant of varianter) {

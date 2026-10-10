@@ -36,6 +36,13 @@ export const elements: Elements = {
       "server-controlled": {
         "type": "flag"
       }
+    },
+    "events": {
+      "tab-select": {
+        "detail": {
+          "index": "number"
+        }
+      }
     }
   },
   "fs-error-summary": {
@@ -44,7 +51,8 @@ export const elements: Elements = {
       "data-autofocus": {
         "type": "values",
         "values": [
-          "false"
+          "false",
+          "true"
         ]
       },
       "hidden": {
@@ -69,6 +77,13 @@ export const elements: Elements = {
       },
       "server-controlled": {
         "type": "flag"
+      }
+    },
+    "events": {
+      "popover-toggle": {
+        "detail": {
+          "open": "boolean"
+        }
       }
     }
   },
@@ -102,6 +117,13 @@ export const elements: Elements = {
       "server-controlled": {
         "type": "flag"
       }
+    },
+    "events": {
+      "suggestion-select": {
+        "detail": {
+          "value": "string"
+        }
+      }
     }
   },
   "fs-dialog": {
@@ -112,6 +134,14 @@ export const elements: Elements = {
       },
       "server-controlled": {
         "type": "flag"
+      }
+    },
+    "events": {
+      "dialog-toggle": {
+        "detail": {
+          "open": "boolean",
+          "returnValue": "string"
+        }
       }
     }
   },
@@ -127,6 +157,9 @@ export const elements: Elements = {
       "close-label": {
         "type": "text"
       }
+    },
+    "events": {
+      "toast-dismiss": {}
     }
   },
   "fs-session-timeout": {
@@ -141,6 +174,13 @@ export const elements: Elements = {
       "activity-interval": {
         "type": "number"
       }
+    },
+    "events": {
+      "session-warn": {},
+      "session-extend": {},
+      "session-logout": {},
+      "session-expired": {},
+      "session-activity": {}
     }
   },
   "fs-connection-status": {
@@ -152,6 +192,10 @@ export const elements: Elements = {
       "online-text": {
         "type": "text"
       }
+    },
+    "events": {
+      "connection-lost": {},
+      "connection-restored": {}
     }
   }
 }

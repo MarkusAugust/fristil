@@ -46,7 +46,7 @@
                 },
                 {
                   "name": "text",
-                  "description": "Ordet «må fylles ut»."
+                  "description": "Teksten «(påkrevd)» etter ledeteksten."
                 },
                 {
                   "name": "none",
@@ -84,7 +84,15 @@
                 "kind": "no-value"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "tab-select",
+                "description": "Brukeren valgte en fane. `index` teller fra 0.\n\n`detail`: `{ index: number }`"
+              }
+            ]
+          }
         },
         {
           "name": "fs-error-summary",
@@ -102,6 +110,10 @@
                 {
                   "name": "false",
                   "description": "La fokus stå der det er."
+                },
+                {
+                  "name": "true",
+                  "description": "Flytt fokus, det samme som uten attributtet. Alt annet enn «false» flytter fokus."
                 }
               ]
             },
@@ -159,7 +171,15 @@
                 "kind": "no-value"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "popover-toggle",
+                "description": "Panelet åpnet eller lukket seg.\n\n`detail`: `{ open: boolean }`"
+              }
+            ]
+          }
         },
         {
           "name": "fs-suggestion",
@@ -236,7 +256,15 @@
                 "kind": "no-value"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "suggestion-select",
+                "description": "Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.\n\n`detail`: `{ value: string }`"
+              }
+            ]
+          }
         },
         {
           "name": "fs-dialog",
@@ -257,7 +285,15 @@
                 "kind": "no-value"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "dialog-toggle",
+                "description": "Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng.\n\n`detail`: `{ open: boolean, returnValue: string }`"
+              }
+            ]
+          }
         },
         {
           "name": "fs-toast",
@@ -288,7 +324,15 @@
                 "type": "text"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "toast-dismiss",
+                "description": "En melding ble lukket, av brukeren eller fordi tiden gikk ut."
+              }
+            ]
+          }
         },
         {
           "name": "fs-session-timeout",
@@ -319,7 +363,31 @@
                 "type": "number"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "session-warn",
+                "description": "Varselet åpnet seg."
+              },
+              {
+                "name": "session-extend",
+                "description": "Brukeren valgte å fortsette."
+              },
+              {
+                "name": "session-logout",
+                "description": "Brukeren valgte å logge ut."
+              },
+              {
+                "name": "session-expired",
+                "description": "Tiden er ute."
+              },
+              {
+                "name": "session-activity",
+                "description": "Brukeren er aktiv. Kommer høyst én gang per `activity-interval`, så appen kan holde serverøkten i live."
+              }
+            ]
+          }
         },
         {
           "name": "fs-connection-status",
@@ -342,7 +410,19 @@
                 "type": "text"
               }
             }
-          ]
+          ],
+          "js": {
+            "events": [
+              {
+                "name": "connection-lost",
+                "description": "Forbindelsen er borte."
+              },
+              {
+                "name": "connection-restored",
+                "description": "Forbindelsen er tilbake."
+              }
+            ]
+          }
         }
       ]
     },
