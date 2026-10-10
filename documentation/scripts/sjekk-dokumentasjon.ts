@@ -1,12 +1,14 @@
 /**
  * Kontrollerer at dokumentasjonen følger koden.
  *
- * Tabellene over komponentvariabler, klasser og deler er skrevet for hånd, og
- * de glir fra hverandre uten at noe sier fra: `--fs-calendar-trigger-padding`
+ * Tabellene over komponentvariabler og klasser er skrevet for hånd, og de
+ * glir fra hverandre uten at noe sier fra: `--fs-calendar-trigger-padding`
  * og `--fs-date-field-icon-radius` fantes i CSS-en i flere runder uten å stå
- * noe sted en konsument kunne lese. En part som ikke er dokumentert er verre
- * enn en som ikke finnes, siden navnet ligger inni skyggeroten og ikke kan
- * leses av i markupen.
+ * noe sted en konsument kunne lese.
+ *
+ * Et navn regnes som nevnt bare når det står som et helt ord, se `nevnt()`.
+ * Med `includes` var `.fs-button` dokumentert så lenge `.fs-button-group`
+ * sto på siden.
  *
  * Kjør med: bun run test:docs
  */
@@ -41,7 +43,21 @@ function filer(mønster: string): string[] {
   )
 }
 
-/** Komponentmappene, som `css/button` og `frittstaende/calendar`. */
+/**
+ * At `navn` står i `tekst` som et helt ord: uten bokstav, tall, `_` eller `-`
+ * rett før eller rett etter. `fs-button` er da ikke nevnt i `fs-button-group`,
+ * og `--fs-card-padding` ikke i `--fs-card-padding-inline`.
+ */
+function nevnt(tekst: string, navn: string): boolean {
+  const kant = /[\w-]/
+  for (let i = tekst.indexOf(navn); i >= 0; i = tekst.indexOf(navn, i + 1)) {
+    const etter = tekst[i + navn.length] ?? ""
+    if (!kant.test(tekst[i - 1] ?? "") && !kant.test(etter)) return true
+  }
+  return false
+}
+
+/** Komponentmappene: mappenavnet, som `button`, og stien til mappa. */
 function komponentmapper(): { navn: string; sti: string }[] {
   const mapper = new Map<string, string>()
   for (const fil of filer("*/*/*.ts")) {
@@ -70,7 +86,6 @@ function klasser(css: string): string[] {
   return [...new Set((rent.match(/\.fs-[\w-]+/g) ?? []).map((n) => n.slice(1)))]
 }
 
-/** Komponentvariablene et stilark leser. */
 /**
  * Komponentvariablene, altså det konsumenten kan sette på én komponent.
  *
@@ -104,22 +119,6 @@ function variabler(css: string): string[] {
         (slag) => navn === `--fs-${slag}` || navn.startsWith(`--fs-${slag}-`),
       ),
   )
-}
-
-/** Delnavnene en shadow DOM-komponent eksponerer. */
-function deler(ts: string): string[] {
-  const funnet = new Set<string>()
-  for (const treff of ts.matchAll(/part="([^"$]+)"/g)) {
-    for (const navn of treff[1].split(/\s+/)) if (navn) funnet.add(navn)
-  }
-  // dayParts() og liknende bygger lista i JavaScript
-  for (const treff of ts.matchAll(/names\.push\("([\w-]+)"\)/g)) {
-    funnet.add(treff[1])
-  }
-  for (const treff of ts.matchAll(/const names = \["([\w-]+)"\]/g)) {
-    funnet.add(treff[1])
-  }
-  return [...funnet]
 }
 
 /**
@@ -353,7 +352,7 @@ for (const rolle of roller) {
 }
 
 for (const token of andre) {
-  if (!tokenside.includes(token.replace("--", ""))) {
+  if (!nevnt(tokenside, token)) {
     avvik.push({
       hvor: "design-tokens.mdx",
       hva: `tokenet \`${token}\` er ikke dokumentert`,
@@ -423,10 +422,7 @@ for (const { navn, sti } of komponentmapper()) {
 
   // Komponenter som ikke rendrer noe selv, som <fs-field>, har ingenting å
   // eksponere og trenger derfor ingen slik seksjon.
-  const eksponerer =
-    klasser(css).length > 0 ||
-    deler(ts).length > 0 ||
-    variabler(css + ts).length > 0
+  const eksponerer = klasser(css).length > 0 || variabler(css + ts).length > 0
   const stylbare = /## (Klasser|Deler) du kan style/.test(tekst)
   if (eksponerer && !stylbare) {
     avvik.push({
@@ -436,20 +432,14 @@ for (const { navn, sti } of komponentmapper()) {
   }
 
   for (const klasse of klasser(css)) {
-    if (!tekst.includes(klasse)) {
+    if (!nevnt(tekst, klasse)) {
       avvik.push({ hvor, hva: `klassen \`.${klasse}\` er ikke dokumentert` })
-    }
-  }
-
-  for (const del of deler(ts)) {
-    if (!tekst.includes(`\`${del}\``)) {
-      avvik.push({ hvor, hva: `delen \`${del}\` er ikke dokumentert` })
     }
   }
 
   for (const variabel of variabler(css + ts)) {
     alleVariabler.add(variabel)
-    if (!tekst.includes(variabel)) {
+    if (!nevnt(tekst, variabel)) {
       avvik.push({
         hvor,
         hva: `variabelen \`${variabel}\` er ikke dokumentert`,
@@ -459,7 +449,7 @@ for (const { navn, sti } of komponentmapper()) {
 }
 
 for (const variabel of [...alleVariabler].sort()) {
-  if (!tilpasning.includes(variabel)) {
+  if (!nevnt(tilpasning, variabel)) {
     avvik.push({
       hvor: "tilpasning.mdx",
       hva: `variabelen \`${variabel}\` mangler i oversikten`,

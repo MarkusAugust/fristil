@@ -1,7 +1,7 @@
 #
 # IntelliJ-pluginen bygges for seg, ikke i hovedrekka.
 #
-# `bun run sjekk` tar tre minutter og kjøres før hver push. Et Gradle-bygg
+# `bun run sjekk` kjøres før hver push, og leser stegene i ci.yml. Et Gradle-bygg
 # laster ned en hel IDE å kompilere mot, rundt en gigabyte, og ville gjort
 # det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
 # kjører når pluginen eller dataene den leser faktisk er endret.

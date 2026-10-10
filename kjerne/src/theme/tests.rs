@@ -130,23 +130,46 @@ fn has_every_family_with_every_role() {
 
 // Kontrakten skal holde for en hvilken som helst kulør, ikke bare for våre.
 // De ekstreme er med med vilje: neon og magenta er der sRGB oppfører seg verst.
+// Den nøytrale varieres også, fra svart og hvitt til farget grått, siden
+// flatene og teksten i de andre rollene står på den.
 
 #[test]
-fn keeps_the_promises_for_any_hue() {
+fn keeps_the_promises_for_any_neutral_and_hue() {
+    let neutrals = [
+        "#24272b", "#000000", "#ffffff", "#808080", "#1e3a5f", "#5b3fa0", "#8a5a00", "#3b2f2f",
+        "#2e5a3a", "#c0c0c0",
+    ];
+    let accents = [
+        "#ff0000", "#ff8800", "#ffd600", "#39ff14", "#00e676", "#00bcd4", "#0062ba", "#5b3fa0",
+        "#ff00ff", "#ff2d6f", "#8a5a00", "#24272b",
+    ];
+    let mut checked = 0;
+    let mut broken = Vec::new();
     for appearance in APPEARANCES {
-        for accent in [
-            "#ff0000", "#ff8800", "#ffd600", "#39ff14", "#00e676", "#00bcd4", "#0062ba", "#5b3fa0",
-            "#ff00ff", "#ff2d6f", "#8a5a00", "#24272b",
-        ] {
-            let brands = brands_with(&[("accent", accent), ("neutral", "#24272b")]);
-            let matrix = build_matrix(&brands, appearance).unwrap();
-            assert!(
-                matrix.violations.is_empty(),
-                "{accent} {appearance:?}: {:?}",
-                matrix.violations
-            );
+        for neutral in neutrals {
+            for accent in accents {
+                let brands = brands_with(&[("accent", accent), ("neutral", neutral)]);
+                match build_matrix(&brands, appearance) {
+                    Ok(matrix) if matrix.violations.is_empty() => {}
+                    Ok(matrix) => broken.push(format!(
+                        "{neutral} x {accent} {appearance:?}: {:?}",
+                        matrix.violations
+                    )),
+                    Err(error) => {
+                        broken.push(format!("{neutral} x {accent} {appearance:?}: {error}"))
+                    }
+                }
+                checked += 1;
+            }
         }
     }
+    assert_eq!(checked, 2 * neutrals.len() * accents.len());
+    assert!(
+        broken.is_empty(),
+        "{} of {checked}:\n{}",
+        broken.len(),
+        broken.join("\n")
+    );
 }
 
 // Løftene kan feile. Uten disse kunne `check_promises` svart tomt uansett, og

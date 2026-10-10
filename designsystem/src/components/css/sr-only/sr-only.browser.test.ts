@@ -11,11 +11,12 @@ import { srOnly } from "./sr-only"
 
 import "../../../tokens/tokens.css"
 import "./sr-only.css"
+import "../button/button.css"
 
 describe("fs-sr-only", () => {
   beforeEach(() => {
     monter(`
-      <button type="button">
+      <button class="fs-button" type="button">
         Slett<span id="skjult" class="fs-sr-only"> søknaden fra 4. mars</span>
       </button>
     `)

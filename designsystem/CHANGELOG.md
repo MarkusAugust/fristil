@@ -126,6 +126,10 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **En ubestemt `fs-progress` var en tom ramme i høykontrastmodus.** Stripen
+  som sveiper over, er en gradient, og modusen fjerner gradienter. Den
+  tegnes nå i `Highlight` på `Canvas` med `forced-color-adjust: none`, så
+  brukerens systemfarger fortsatt gjelder.
 - **Kotlin skriver tall i attributter slik JavaScript gjør.** `jsNumber` ga
   `1000000000000000000000` for `1e+21`, `0.0000001` for `1e-7` og den
   eksakte binærverdien for heltall over 2^53, som `123456789012345683968`
