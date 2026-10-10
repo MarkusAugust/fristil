@@ -97,6 +97,10 @@ Gradle bygger modulen fra `../kjerne` med `cargo`, så jar-en aldri bærer en
 utdatert kjerne, og WebJar-en fra `../designsystem` med Bun. Det krever Rust
 og Bun, og `bun install` i rota av repoet.
 
-`ParityTest` krever at funnene er identiske med det TypeScript-versjonen
-svarer på fiksturene i `../kjerne/paritet/`, og at posisjonene peker på riktig
-tekst i en Kotlin-streng, også med «æøå» og emoji foran.
+`ParityTest` krever at funnene på JVM-en er identiske med fasiten i
+`../kjerne/paritet/`, den samme fasiten `kjerne/scripts/sjekk-kjerne.ts`
+krever av kjernen i Bun. Fiksturene utløser til sammen hver regel kjernen har,
+med og uten stilark, og posisjonene skal peke på riktig tekst i en
+Kotlin-streng, også med «æøå» og emoji foran. Skriptet som leser den rendrede
+siden, `READ_RENDERED_PAGE`, prøves av `designsystem/scripts/sjekk-rendret.ts`
+i en ekte nettleser.

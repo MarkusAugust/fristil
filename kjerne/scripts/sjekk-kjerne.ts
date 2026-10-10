@@ -3,10 +3,14 @@
  *
  * Tre kilder til markup, fra den smaleste til den bredeste:
  *
- * 1. Fiksturene i `paritet/`, én per regel. Svaret skal være nøyaktig
- *    fasiten ved siden av, felt for felt. Fasiten ble skrevet av
- *    TypeScript-versjonen av sjekken før den ble slettet, og er nå en vanlig
- *    test: en endring i et svar er en endring i fasiten, og synes i diffen.
+ * 1. Fiksturene i `paritet/`. Svaret skal være nøyaktig fasiten ved siden av,
+ *    felt for felt, og til sammen skal fiksturene utløse hver regel kjernen
+ *    har. Fasiten for de ti første ble skrevet av TypeScript-versjonen av
+ *    sjekken før den ble slettet, de andre av kjernen da de kom til. Den er
+ *    en vanlig test: en endring i et svar er en endring i fasiten, og synes i
+ *    diffen. En fikstur med en `.css` ved siden av sjekkes også med
+ *    stilarket, som `diagnoseRendered`, og svaret står under `stylet`.
+ *    `ParityTest` i `kotlin/` krever den samme fasiten fra JVM-en.
  * 2. Alt i repoet som har markup i seg: dokumentasjonen, regelbøkene,
  *    komponentene og testene deres. Det er markup skrevet av mennesker og
  *    agenter, med alt det rare det har i seg.
@@ -28,7 +32,7 @@
  * Kjør med: bun kjerne/scripts/sjekk-kjerne.ts (etter bygg.ts)
  */
 
-import { readdirSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
@@ -40,26 +44,18 @@ import { MODUL } from "./bygg.js"
 const ROT = fileURLToPath(new URL("../..", import.meta.url))
 const kjerne = loadCore(readFileSync(MODUL))
 
-/** Reglene kjernen har. Står i `kjerne/src/types.rs`. */
-const REGLER = new Set([
-  "ukjent-element",
-  "ukjent-attributt",
-  "boolsk-med-verdi",
-  "ugyldig-verdi",
-  "ikke-tall",
-  "ukjent-klasse",
-  "ugyldig-klasseverdi",
-  "deaktivert-med-href",
-  "felt-uten-kontroll",
-  "felt-uten-ledetekst",
-  "tidsavbrudd-uten-dialog",
-  "duplikat-id",
-  "id-finnes-ikke",
-  "for-peker-feil",
-  "oppsummering-peker-feil",
-  "kontroll-uten-ledetekst",
-  "tekst-ikke-koblet",
-])
+/**
+ * Reglene kjernen har, lest fra `RULES` i `kjerne/src/types.rs`. Lista sto
+ * her skrevet av for hånd, og manglet de to `ustylet-*`-reglene.
+ */
+const REGLER = new Set(
+  [
+    ...(/pub const RULES: &\[&str\] = &\[([^\]]*)\]/.exec(
+      readFileSync(join(ROT, "kjerne/src/types.rs"), "utf8"),
+    )?.[1] ?? "").matchAll(/"([a-z-]+)"/g),
+  ].map((m) => m[1]),
+)
+if (REGLER.size === 0) throw new Error("fant ikke RULES i kjerne/src/types.rs")
 
 /** Feltene fasiten har, i fast rekkefølge, så to like funn blir like strenger. */
 const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
@@ -138,23 +134,47 @@ const PARITET = join(ROT, "kjerne/paritet")
 const fiksturer = readdirSync(PARITET)
   .filter((f) => f.endsWith(".html"))
   .map((f) => [f, readFileSync(join(PARITET, f), "utf8")] as const)
+const dekket = new Set<string>()
 for (const [navn, html] of fiksturer) {
   const fasit = JSON.parse(
     readFileSync(join(PARITET, navn.replace(/\.html$/, ".json")), "utf8"),
   )
+  const cssFil = join(PARITET, navn.replace(/\.html$/, ".css"))
+  const css = existsSync(cssFil) ? [readFileSync(cssFil, "utf8")] : undefined
+  krevSammeNokler(navn, fasit, css !== undefined)
   for (const [hva, sjekk] of [
     ["markup", kjerne.diagnoseMarkup],
     ["side", kjerne.diagnosePage],
+    ...(css
+      ? ([
+          ["stylet", (h: string) => kjerne.diagnoseStyled(h, css, true)],
+        ] as const)
+      : []),
   ] as const) {
     antall += 1
-    const ventet = kanonisk(fasit[hva])
-    const svar = kanonisk(sjekk(html))
+    const funn = sjekk(html)
+    for (const f of funn) dekket.add(f.rule)
+    const ventet = kanonisk(fasit[hva] ?? [])
+    const svar = kanonisk(funn)
     if (svar !== ventet)
       feil.push(
         `${navn} (${hva})\n  Fasit:  ${ventet.slice(0, 600)}\n  Kjerne: ${svar.slice(0, 600)}`,
       )
   }
   holder(navn, html)
+}
+const udekket = [...REGLER].filter((r) => !dekket.has(r))
+if (udekket.length > 0)
+  feil.push(
+    `ingen fikstur i paritet/ utløser ${udekket.join(", ")}. Legg til en, så JVM-en også prøves på regelen.`,
+  )
+
+/** En fasit med `stylet` uten stilark, eller omvendt, sjekker ingenting. */
+function krevSammeNokler(navn: string, fasit: object, harCss: boolean) {
+  const nokler = Object.keys(fasit).sort().join(",")
+  const ventet = harCss ? "markup,side,stylet" : "markup,side"
+  if (nokler !== ventet)
+    feil.push(`${navn}: fasiten har ${nokler}, ventet ${ventet}`)
 }
 
 // Temaet: oppskriftene og temaene i `tema/` mot fasiten ved siden av. Fasiten
@@ -404,7 +424,7 @@ for (let n = 0; n < ØDELAGTE; n++) {
 }
 
 console.log(
-  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer og ${ØDELAGTE_TEMAER} ødelagte, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
+  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten med ${dekket.size} av ${REGLER.size} regler, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer og ${ØDELAGTE_TEMAER} ødelagte, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
 )
 if (feil.length > 0) {
   console.error(`\n${feil.length} feil:\n`)

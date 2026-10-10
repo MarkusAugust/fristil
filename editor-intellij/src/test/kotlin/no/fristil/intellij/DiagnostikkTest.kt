@@ -58,6 +58,45 @@ class DiagnostikkTest : BasePlatformTestCase() {
         assertTrue("ingen funn, fikk $ut", ut.isEmpty())
     }
 
+    /** Manifestet i pakken med `fs-card` byttet ut med `fs-kort`, som etter `fristil overta`. */
+    private val overtatt =
+        java.io.File(System.getProperty("manifest")).readText().replace("\"fs-card\": {", "\"fs-kort\": {")
+
+    fun `test bruker prosjektets manifest fra build-fristil`() {
+        myFixture.addFileToProject("build/fristil/manifest.json", overtatt)
+        val ut = funn("test.html", """<div class="fs-kort">Søknad</div><div class="fs-card">Søknad</div>""")
+        assertEquals("bare fs-card skal meldes, fikk $ut", listOf("fs-card"), ut.map { it.first })
+    }
+
+    fun `test leter oppover fra fila`() {
+        myFixture.addFileToProject("node_modules/@fristil/designsystem/manifest/manifest.json", overtatt)
+        val fil = myFixture.addFileToProject("sider/skjema/side.html", """<div class="fs-kort">Søknad</div>""")
+        myFixture.configureFromExistingVirtualFile(fil.virtualFile)
+        val ut = myFixture.doHighlighting(HighlightSeverity.WARNING).filter { it.toolTip?.contains("Fristil:") == true }
+        assertTrue("ingen funn, fikk ${ut.map { it.description }}", ut.isEmpty())
+    }
+
+    fun `test bruker prosjektets manifest i et injisert fragment`() {
+        myFixture.addFileToProject("build/fristil/manifest.json", overtatt)
+        val ut =
+            funn(
+                "Visning.kt",
+                """
+                // language=HTML
+                val kort = ""${'"'}
+                    <div class="fs-kort">Søknad</div>
+                ""${'"'}
+                """.trimIndent(),
+            )
+        assertTrue("ingen funn, fikk $ut", ut.isEmpty())
+    }
+
+    fun `test et manifest kjernen ikke kan lese gir det innebygde`() {
+        myFixture.addFileToProject("build/fristil/manifest.json", "{}")
+        val ut = funn("test.html", """<div class="fs-kort">Søknad</div><div class="fs-card">Søknad</div>""")
+        assertEquals("fs-kort skal meldes, fikk $ut", listOf("fs-kort"), ut.map { it.first })
+    }
+
     fun `test rettelsen bytter ut teksten`() {
         myFixture.configureByText("test.html", """<button class="fs-buton<caret>">Lagre</button>""")
         val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }

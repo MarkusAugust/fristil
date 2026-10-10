@@ -49,15 +49,42 @@ class Attributes(values: Map<String, String> = emptyMap()) : Map<String, String>
 
 /**
  * Et tall skrevet slik JavaScript skriver det, så attributtene blir de samme
- * som fra TypeScript: `3`, ikke `3.0`.
+ * som fra TypeScript: `3`, ikke `3.0`, `1e+21`, ikke `1.0E21`, og `0.1`, ikke
+ * `0.1000000000000000055511151231257827`.
+ *
+ * Sifrene er de færreste som gir tilbake det samme tallet, som i JavaScript
+ * (ECMA-262, `Number::toString`). Er det flere med like mange sifre, vinner
+ * det som ligger nærmest, og det er det avrundingen til `p` sifre gir. Formen
+ * følger de samme reglene: vanlig skrivemåte fra 1e-7 til 1e21, og ellers
+ * eksponent med fortegn.
  */
 internal fun jsNumber(n: Number): String {
     val d = n.toDouble()
-    return when {
-        d.isNaN() -> "NaN"
-        d.isInfinite() -> if (d > 0) "Infinity" else "-Infinity"
-        d == 0.0 -> "0"
-        d == Math.rint(d) && Math.abs(d) < 1e21 -> java.math.BigDecimal(d).toPlainString()
-        else -> java.math.BigDecimal(d.toString()).stripTrailingZeros().toPlainString()
-    }
+    if (d.isNaN()) return "NaN"
+    if (d.isInfinite()) return if (d > 0) "Infinity" else "-Infinity"
+    // `-0` skrives `0` i JavaScript.
+    if (d == 0.0) return "0"
+    val exact = java.math.BigDecimal(Math.abs(d))
+    val shortest =
+        (1..17).asSequence()
+            .map { exact.round(java.math.MathContext(it, java.math.RoundingMode.HALF_EVEN)) }
+            .first { it.toDouble() == Math.abs(d) }
+            .stripTrailingZeros()
+    val digits = shortest.unscaledValue().toString()
+    val k = digits.length
+    // Tallet er 0,`digits` ganger 10 opphøyd i `point`.
+    val point = k - shortest.scale()
+    val text =
+        when {
+            point in k..21 -> digits + "0".repeat(point - k)
+            point in 1..21 -> digits.substring(0, point) + "." + digits.substring(point)
+            point in -5..0 -> "0." + "0".repeat(-point) + digits
+            else -> {
+                val exponent = point - 1
+                val sign = if (exponent >= 0) "+" else "-"
+                val mantissa = if (k == 1) digits else digits[0] + "." + digits.substring(1)
+                "${mantissa}e$sign${Math.abs(exponent)}"
+            }
+        }
+    return if (d < 0) "-$text" else text
 }

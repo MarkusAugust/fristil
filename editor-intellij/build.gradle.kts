@@ -9,6 +9,14 @@ plugins {
 group = "no.fristil"
 version = providers.gradleProperty("pluginVersion").get()
 
+/*
+ * Fristil for Kotlin har samme versjon som npm-pakken. `includeBuild` bytter
+ * inn bygget ved siden av uansett hvilken versjon som står her, men et
+ * versjonskrav som ikke finnes, villedet den som leste fila.
+ */
+val fristilVersion =
+    (groovy.json.JsonSlurper().parse(rootDir.resolve("../designsystem/package.json")) as Map<*, *>)["version"] as String
+
 repositories {
     mavenCentral()
     intellijPlatform { defaultRepositories() }
@@ -27,7 +35,7 @@ dependencies {
      * alltid har den samme kjernen som resten av repoet. IDE-en har sitt
      * eget Kotlin-standardbibliotek, så pakkens utgave holdes utenfor.
      */
-    implementation("io.github.markusaugust:fristil:0.1.0-SNAPSHOT") {
+    implementation("io.github.markusaugust:fristil:$fristilVersion") {
         exclude(group = "org.jetbrains.kotlin")
     }
 }
@@ -56,7 +64,10 @@ intellijPlatform {
         changeNotes = """
             <b>0.3.0</b>: Diagnostics from Fristil's checker, in HTML files and in
             HTML injected into strings, with quick fixes. The checker is written in
-            Rust and runs inside the IDE as WebAssembly, without Node.js.<br>
+            Rust and runs inside the IDE as WebAssembly, without Node.js. It checks
+            against the project's own manifest when it finds one, as the language
+            server does, so components taken over with <code>fristil overta</code>
+            are known.<br>
             <b>0.2.0</b>: Completion for <code>fs-table__sort</code>, the sort button
             in a table header. The session timeout is now described as a frame
             component, and the plugin has the new Fristil icon.<br>
@@ -75,4 +86,11 @@ intellijPlatform {
     publishing {
         token = providers.gradleProperty("intellijPlatformPublishingToken")
     }
+}
+
+tasks.test {
+    // Testene bygger et manifest for et overtatt prosjekt av det i pakken.
+    val manifest = rootDir.resolve("../designsystem/manifest/manifest.json")
+    systemProperty("manifest", manifest.absolutePath)
+    inputs.file(manifest).withPathSensitivity(PathSensitivity.NONE)
 }
