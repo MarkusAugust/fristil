@@ -28,16 +28,9 @@
        skjult. */
     display: none;
     opacity: 0;
-  }
-
-  /* En usynlig bro over gapet mellom knappen og boblen. Uten den slapp
-     `:hover` på vei opp, og boblen forsvant før musa nådde den. */
-  .fs-tooltip__bubble::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: 100%;
-    block-size: var(--fs-spacing-2);
+    /* Mens den tones ut, står boblen et øyeblikk med `display` på. Uten
+       dette tok den og broen klikk som var ment for det som lå under. */
+    pointer-events: none;
   }
 
   /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
@@ -50,6 +43,19 @@
   .fs-tooltip:focus-within .fs-tooltip__bubble {
     display: block;
     opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* En usynlig bro over gapet mellom knappen og boblen, så bred som
+     knappen. Uten den slapp `:hover` på vei opp, og boblen forsvant før
+     musa nådde den. Den står bare mens boblen vises, og ikke bredere enn
+     knappen, så den tar ikke klikk fra innholdet ved siden av. */
+  .fs-tooltip:is(:hover, :focus-within)::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 100%;
+    block-size: var(--fs-spacing-2);
   }
 
   /* Inntoningen begynner fra usynlig også når boblen går fra `display:

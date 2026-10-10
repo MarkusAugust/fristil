@@ -1,7 +1,8 @@
 /// <reference path="../../../types/css.d.ts" />
+/// <reference types="@vitest/browser-playwright" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { userEvent } from "vitest/browser"
+import { cdp, server, userEvent } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -55,19 +56,75 @@ describe("fs-tooltip", () => {
 
   it("holder boblen oppe når musa flyttes fra knappen til boblen", async () => {
     // Det var et gap mellom knappen og boblen, og `:hover` slapp på vei opp.
+    // Gapet skal være dekket i hele knappens bredde, ikke bare midt på.
     const utloser = document.getElementById("utloser") as HTMLElement
+    const omslag = utloser.closest(".fs-tooltip") as HTMLElement
     const boble = document.getElementById("hint") as HTMLElement
     await userEvent.hover(utloser)
-    await ventPaTegning()
+    try {
+      await ventPaTegning()
+      const knapp = utloser.getBoundingClientRect()
+      const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
 
-    const knapp = utloser.getBoundingClientRect()
-    const gap = boble.getBoundingClientRect().bottom
-    const midt = knapp.left + knapp.width / 2
-    const mellom = document.elementFromPoint(midt, (gap + knapp.top) / 2)
-
-    expect(boble.contains(mellom)).toBe(true)
-    await userEvent.unhover(utloser)
+      for (const x of [
+        knapp.left + 2,
+        knapp.left + knapp.width / 2,
+        knapp.right - 2,
+      ]) {
+        expect(
+          omslag.contains(document.elementFromPoint(x, hoyde)),
+          `x=${x}`,
+        ).toBe(true)
+      }
+      // Ikke bredere enn knappen: ved siden av står det som var der.
+      expect(
+        omslag.contains(document.elementFromPoint(knapp.right + 4, hoyde)),
+      ).toBe(false)
+    } finally {
+      await userEvent.unhover(utloser)
+    }
   })
+
+  it.skipIf(server.browser !== "chromium")(
+    "er knappens beskrivelse også mens den er skjult",
+    async () => {
+      // Boblen er `display: none`, og teksten skal likevel være knappens
+      // beskrivelse gjennom `aria-describedby`. Tilgjengelighetstreet kan
+      // bare leses over CDP, som bare Chromium har herfra.
+      expect(
+        getComputedStyle(document.getElementById("hint") as Element).display,
+      ).toBe("none")
+      const { frameTree } = (await cdp().send("Page.getFrameTree")) as {
+        frameTree: {
+          frame: { id: string; url: string }
+          childFrames?: unknown[]
+        }
+      }
+      type Ramme = { frame: { id: string; url: string }; childFrames?: Ramme[] }
+      const finn = (ramme: Ramme): string | undefined =>
+        ramme.frame.url === location.href
+          ? ramme.frame.id
+          : (ramme.childFrames ?? []).map(finn).find(Boolean)
+      const frameId = finn(frameTree as Ramme)
+      const { nodes } = (await cdp().send("Accessibility.getFullAXTree", {
+        frameId,
+      })) as {
+        nodes: Array<{
+          name?: { value?: string }
+          description?: { value?: string }
+          role?: { value?: string }
+        }>
+      }
+      const knapp = nodes.find(
+        (node) =>
+          node.role?.value === "button" && node.name?.value === "Arkiver",
+      )
+
+      expect(knapp?.description?.value?.trim()).toBe(
+        "Saken flyttes til arkivet",
+      )
+    },
+  )
 
   it("tar ikke plass når den er skjult, så den ikke gir sidelengs rulling", () => {
     monter(`

@@ -27,8 +27,9 @@ egen overskrift «Brytende».
 
 - **`hidden` skjuler nå alle komponentene.** Forfatterstil slår nettleserens
   `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` og 41 andre
-  klasser, åtte av elementene og barn som `option` i en stylet `fs-select`
-  sto synlige. En regel i `@layer fristil` med `!important` skjuler dem nå,
+  klasser, åtte av elementene og barn uten klasse, som `option` i en stylet
+  `fs-select`, et ledd i `fs-breadcrumbs` og en rad i fillista, sto
+  synlige. En regel i `@layer fristil` med `!important` skjuler dem nå,
   slik nettleseren selv gjør. Den kan ikke overstyres med en regel uten
   `!important`, og heller ikke med `!important` uten lag. `hidden="until-found"`
   får stå.
@@ -90,7 +91,9 @@ egen overskrift «Brytende».
   opp, så skjermleseren sa «skråstrek» mellom hvert steg. Det har nå en tom
   alternativ tekst der nettleseren støtter det.
 - **Boblen i `fs-tooltip` forsvant før musa nådde den.** Gapet mellom knappen
-  og boblen har nå en usynlig bro. Komponentsiden sier at boblen ikke kan
+  og boblen har nå en usynlig bro i knappens bredde mens boblen vises. Flytter
+  du boblen under knappen, må broen også flyttes; snutten på komponentsiden
+  har det med. Komponentsiden sier at boblen ikke kan
   lukkes med Escape, som WCAG 1.4.13 krever, og når Popover passer bedre.
 - **Pila i `fs-accordion` pekte sidelengs i høyre-til-venstre**, og pila i
   `fs-select` sto 6 piksler fra kanten der i stedet for 12.

@@ -112,9 +112,15 @@ Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du f
 	inset-block-end: auto;
 	inset-block-start: calc(100% + var(--fs-spacing-2));
 }
+
+/* Broen over gapet må med ned, ellers forsvinner boblen på vei til den. */
+.fs-tooltip:is(:hover, :focus-within)::before {
+	inset-block-end: auto;
+	inset-block-start: 100%;
+}
 ```
 
-Boblen skjules med `visibility` og `opacity`, så den kan tones inn. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
+Boblen er `display: none` når den er skjult, så den ikke tar plass, og tones inn med `opacity`. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
