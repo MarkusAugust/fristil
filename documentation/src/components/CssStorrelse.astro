@@ -1,0 +1,21 @@
+---
+/**
+ * Størrelsen på `fristil.css`, lest fra fila når siden bygges.
+ *
+ * «Kom i gang» oppga 90 kB og 11 kB komprimert lenge etter at fila hadde
+ * vokst forbi det. Tallet leses nå av den bygde `dist/fristil.css`, altså fila
+ * konsumenten får, og regnes som i regelbøkene: tusen byte per kB, og gzip
+ * med standardnivået.
+ *
+ * Fila hentes med `?raw`, ikke med `readFileSync`. En sti regnet fra
+ * `import.meta.url` pekte inn i `documentation/` etter at bygget hadde
+ * laget en bundle av siden, slik det også gjorde for versjonsloggen.
+ */
+import { gzipSync } from "node:zlib"
+import css from "../../../designsystem/dist/fristil.css?raw"
+
+const kb = Math.round(Buffer.byteLength(css) / 1000)
+const gzipKb = Math.round(gzipSync(css).length / 1000)
+---
+
+{kb} kB, {gzipKb} kB komprimert med gzip

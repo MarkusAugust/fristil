@@ -49,7 +49,7 @@ export const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${VERSJON
  */
 const SAMLET = samletStørrelse(byggSamletCss().css)
 
-/** «90 kB, 11 kB komprimert», slik html, maler og datastar oppgir den. */
+/** «N kB, M kB komprimert», slik html, maler og datastar oppgir den, regnet ut når de skrives. */
 export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB komprimert`
 
 /** Mappa hver komponent ligger i, som avgjør hvem som lager markupen. */

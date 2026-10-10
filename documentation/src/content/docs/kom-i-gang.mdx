@@ -4,6 +4,7 @@ description: Installer Fristil, importer det du trenger, og få den første komp
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
+import CssStorrelse from "../../components/CssStorrelse.astro"
 import Preview from "../../components/Preview.astro"
 
 ## Installer
@@ -58,7 +59,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
   </TabItem>
 </Tabs>
 
-**Lenker du uten byggesteg, bruk `fristil.css`.** Én rundtur på 90 kB, 11 kB over nettet med gzip, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `fristil.css` dekker hver av dem.
+**Lenker du uten byggesteg, bruk `fristil.css`.** Én rundtur på <CssStorrelse />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `fristil.css` dekker hver av dem.
 
 ## Første komponent
 
@@ -175,7 +176,13 @@ Hver CSS-komponent finnes også som eget inngangspunkt (`@fristil/designsystem/b
 
 ## Versjoner
 
-Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, `data-*`-attributtene, `part`-navnene, tokennavnene, `--fs-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på, og de endres ikke uten en ny hovedversjon.
+Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, attributtene byggefunksjonene skriver (`data-*` og `aria-*` medregnet), tokennavnene, `--fs-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på.
+
+Før 1.0 kan et nytt undertall, som et skifte fra 0.x til 0.(x+1), ha brytende endringer. De står da under overskriften «Brytende» i versjonsloggen, med hva du må endre. Fra 1.0 endres ingen av disse uten en ny hovedversjon.
+
+`npm install` skriver versjonen med `^` foran. Under 1.0 godtar `^` bare nye rettelser i det samme undertallet, så et nytt undertall får du først når du ber om det, ved å skrive det nye nummeret i `package.json` eller installere pakken på nytt.
+
+Pakken er ren ESM, uten CommonJS-utgave. Bruk `import`.
 
 Hva som er endret i hver versjon står i [CHANGELOG.md](https://github.com/MarkusAugust/fristil/blob/master/designsystem/CHANGELOG.md), som også følger med i pakken.
 

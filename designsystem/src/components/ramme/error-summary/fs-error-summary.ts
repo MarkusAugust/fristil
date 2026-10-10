@@ -261,8 +261,9 @@ export class FsErrorSummary extends HostElement {
     }
 
     focusable.focus()
-    // Uten `behavior`: sidens egen `scroll-behavior` bestemmer, og da
-    // gjelder `prefers-reduced-motion` av seg selv.
+    // Uten `behavior`: sidens egen `scroll-behavior` bestemmer. Nettleseren
+    // slår ikke av `smooth` av seg selv under `prefers-reduced-motion`, så
+    // det er sidens sak, og «Tilgjengelighet» i dokumentasjonen sier det.
     focusable.scrollIntoView({ block: "center" })
   }
 }

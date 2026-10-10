@@ -91,7 +91,9 @@ Fargene følger matrisen: hver celle blir en klasse, og navnet er
 | `max-w-fs-aside`, `max-w-fs-wide-content` | Bredder for sideoppsett |
 | `shadow-fs-overlay` | Skyggen under flater som ligger over siden |
 
-Alle peker på tokens, så de snur med temaet. `bg-fs-neutral-canvas` er hvit i lyst tema og nesten sort i mørkt, uten at du skriver `dark:`.
+Fargene, tekststørrelsene og skyggen peker på `--fs-`-variablene, og fargene snur derfor med temaet. `bg-fs-neutral-canvas` er hvit i lyst tema og nesten svart i mørkt, uten at du skriver `dark:`.
+
+Breddene er unntaket. `max-w-fs-aside`, `max-w-fs-wide-content` og de andre breddene er faste verdier, de samme som `Containers` i `@fristil/designsystem/tokens`, fordi det ikke finnes noen `--fs-`-variabel for dem. Vil du ha andre bredder, legger du dem til i din egen `@theme`.
 
 ### Avstandene er de samme
 
