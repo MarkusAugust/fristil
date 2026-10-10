@@ -50,7 +50,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 ```
 
 Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene
-dine. `fristil.css` er 96 kB, 12 kB komprimert, og har alt flatet ut uten
+dine. `fristil.css` er 101 kB, 13 kB komprimert, og har alt flatet ut uten
 `@import`, og er det raskeste valget når du lenker.
 
 Vil du bare ha stilarkene sidene faktisk bruker, gjelder at `tokens.css`
@@ -269,7 +269,7 @@ Tre regler gjelder alle sammen:
 | `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
 | `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `fs-dialog`<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
 | `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
-| `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
+| `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
 | `<fs-connection-status>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/frittstaende/connection-status/connection-status.css` | `defineFsConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/dist/components/frittstaende/connection-status/fs-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `fs-connection-status`<br>`fs-connection-status__bar` |
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så

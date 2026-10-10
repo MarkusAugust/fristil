@@ -995,3 +995,104 @@ describe("fs-tabs når en patch bytter ut et panel", () => {
     }
   })
 })
+
+describe("fs-tabs etter morfing og med piltaster", () => {
+  beforeAll(() => {
+    defineFsTabs()
+  })
+
+  const FANER = tabs({ id: "s", count: 3, selected: 0, label: "Saken" })
+  const knapper = () =>
+    FANER.tabs
+      .map((fane, i) => `<button ${attr(fane)}>Fane ${i}</button>`)
+      .join("")
+
+  async function monterFaner() {
+    monter(`
+      <fs-tabs>
+        <div ${attr(FANER.list)}>${knapper()}</div>
+        ${FANER.panels.map((panel, i) => `<div ${attr(panel)}>Panel ${i}</div>`).join("")}
+      </fs-tabs>`)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    return document.querySelector("fs-tabs") as HTMLElement
+  }
+
+  it("virker på faner en morfing har byttet ut", async () => {
+    // Én lytter på verten. Før fikk hver ny fane sine egne lyttere, og de
+    // gamle ble holdt fast i minnet.
+    const vert = await monterFaner()
+    const rad = vert.querySelector(".fs-tabs__list") as HTMLElement
+    for (let gang = 0; gang < 3; gang++) {
+      rad.innerHTML = knapper()
+      await ventPaTegning()
+    }
+
+    ;(document.getElementById("s-tab-2") as HTMLElement).click()
+    await ventPaTegning()
+    expect(document.getElementById("s-panel-2")?.hidden).toBe(false)
+
+    const tredje = document.getElementById("s-tab-2") as HTMLElement
+    tredje.focus()
+    tredje.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    )
+    await ventPaTegning()
+    expect(document.activeElement?.id).toBe("s-tab-0")
+  })
+
+  it("virker selv om noe på raden stopper hendelsene", async () => {
+    // Lytteren sitter på verten. Uten fangstfasen nådde ikke klikk og
+    // piltaster fram når raden hadde en lytter som stoppet dem.
+    const vert = await monterFaner()
+    const rad = vert.querySelector(".fs-tabs__list") as HTMLElement
+    rad.addEventListener("keydown", (event) => event.stopPropagation())
+    rad.addEventListener("click", (event) => event.stopPropagation())
+
+    const forste = document.getElementById("s-tab-0") as HTMLElement
+    forste.focus()
+    forste.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    )
+    await ventPaTegning()
+    expect(document.activeElement?.id).toBe("s-tab-1")
+
+    ;(document.getElementById("s-tab-2") as HTMLElement).click()
+    await ventPaTegning()
+    expect(document.getElementById("s-panel-2")?.hidden).toBe(false)
+  })
+
+  it("lar pil ned være i en vannrett rad", async () => {
+    // Før flyttet den fokus, og stjal siderullingen.
+    await monterFaner()
+    const forste = document.getElementById("s-tab-0") as HTMLElement
+    forste.focus()
+    const trykk = new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      cancelable: true,
+    })
+
+    forste.dispatchEvent(trykk)
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(forste)
+    expect(trykk.defaultPrevented).toBe(false)
+  })
+
+  it("bruker pil ned i en loddrett rad", async () => {
+    const vert = await monterFaner()
+    vert
+      .querySelector("[role='tablist']")
+      ?.setAttribute("aria-orientation", "vertical")
+    const forste = document.getElementById("s-tab-0") as HTMLElement
+    forste.focus()
+
+    forste.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+    await ventPaTegning()
+
+    expect(document.activeElement?.id).toBe("s-tab-1")
+  })
+})

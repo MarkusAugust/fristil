@@ -173,6 +173,8 @@ defineFsErrorSummary()
     ```
 
     Serveren sender hele boksen på nytt når skjemaet valideres, med overskriften og lista ferdig utfylt, og uten `hidden` når det finnes feil. Komponenten oppdager at boksen ble synlig og flytter fokus dit.
+
+    Feiler skjemaet igjen mens boksen alt står synlig, flyttes ikke fokus, for signalet er at `hidden` tas bort. Send da to patcher i samme svar: først boksen med `hidden`, så boksen uten. Komponenten ser at den ble skjult og synlig igjen, og flytter fokus. Se [Markupen](#markupen).
   </TabItem>
 </Tabs>
 

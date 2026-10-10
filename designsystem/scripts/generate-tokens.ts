@@ -4,6 +4,37 @@ import {
   darkColorTokens,
   darkTokens,
 } from "../src/tokens/tokens"
+import { elements } from "../src/vocabulary/elements"
+
+const ELEMENTER = Object.keys(elements)
+
+/*
+ * Hver `fs-`-klasse komponentstilarkene styler, lest fra stilarkene selv.
+ * Eksakte klassevelgere og ikke `[class*="fs-"]`: den traff også
+ * Bootstraps `fs-1`, og bommet på en klasse med tab eller linjeskift foran.
+ */
+const KLASSER = new Set<string>()
+for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
+  cwd: `${import.meta.dir}/..`,
+  absolute: true,
+})) {
+  const kilde = (await Bun.file(fil).text()).replace(/\/\*[\s\S]*?\*\//g, "")
+  for (const [, navn] of kilde.matchAll(/\.(fs-[a-z0-9_-]+)/g))
+    KLASSER.add(navn)
+}
+
+/*
+ * Barn uten egen klasse som får `display` fra en komponentregel.
+ * `skjult.browser.test.ts` leter selv etter slike regler i stilarkene, så et
+ * nytt barn som mangler her, feiler der.
+ */
+const BARN = [
+  ".fs-accordion summary",
+  ".fs-breadcrumbs li",
+  ".fs-file-upload-list li",
+  ".fs-pagination *",
+  ".fs-select option",
+]
 
 const sections: Record<string, string[]> = {}
 
@@ -243,6 +274,31 @@ lines.push(
   '    .fs-theme-control[value="auto"]:checked',
   "  ) {",
   "    color-scheme: light dark;",
+  "  }",
+  "",
+  /*
+   * `hidden` skal skjule, også en komponent som setter `display` selv.
+   *
+   * Forfatterstil i et hvilket som helst lag slår nettleserens
+   * `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` sto
+   * synlig. `!important` i laget er det nettleseren selv gjør, og slår alle
+   * vanlige deklarasjoner uansett spesifisitet, også varianter som
+   * `.fs-select[data-picker="styled"] option`. Det slår også konsumentens
+   * egen `!important` uten lag, så `hidden` kan ikke overstyres her.
+   *
+   * Elementene står for seg, siden en web component ikke trenger en klasse,
+   * og barna i `BARN` har ingen. `until-found` skal ikke skjules helt:
+   * nettleseren søker i det.
+   */
+  "  :is(",
+  ...[
+    ...[...KLASSER].sort().map((navn) => `.${navn}`),
+    ...ELEMENTER,
+    ...BARN,
+  ].map((velger, i, alle) => `    ${velger}${i < alle.length - 1 ? "," : ""}`),
+  '  )[hidden]:not([hidden="until-found" i]) {',
+  "    /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */",
+  "    display: none !important;",
   "  }",
   "}",
 )

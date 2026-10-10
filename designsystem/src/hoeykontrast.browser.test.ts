@@ -4,7 +4,7 @@
 /// <reference types="@vitest/browser-playwright" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { cdp, server } from "vitest/browser"
+import { cdp, server, userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
 
@@ -142,6 +142,23 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
       expect(stil(på).backgroundColor, på).not.toBe(stil(av).backgroundColor)
       expect(stil(på).color, på).not.toBe(stil(av).color)
     }
+  })
+
+  it("holder gjeldende side lesbar under musa", async () => {
+    // Hover-regelen slo høykontrastregelen på spesifisitet, og bakgrunnen
+    // ble tvunget til `Canvas` under `HighlightText`: samme farge på begge.
+    monter(`
+      <ul class="fs-pagination">
+        <li><a href="#" aria-current="page" id="side-na">2</a></li>
+      </ul>
+    `)
+    await settHoeykontrast(true)
+
+    await userEvent.hover(document.getElementById("side-na") as HTMLElement)
+    await ventPaTegning()
+
+    expect(stil("side-na").backgroundColor).not.toBe(stil("side-na").color)
+    await userEvent.unhover(document.getElementById("side-na") as HTMLElement)
   })
 
   it("gir hjelpeboblen en kant, så den ikke flyter oppå innholdet", async () => {

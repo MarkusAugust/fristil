@@ -114,7 +114,7 @@ Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert.
 </fs-field>
 ```
 
-Står ledeteksten og feltet der, men uten kobling og uten stjerne, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett. Det er bare de to frittstående, `<fs-toast>` og `<fs-connection-status>`, som er tomme til de er registrert. Et `<fs-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
+Står ledeteksten og feltet der, men uten kobling og uten stjerne, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<fs-toast>` og `<fs-connection-status>`, som er tomme til de er registrert. Et `<fs-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
 
 ## Inngangspunkter
 

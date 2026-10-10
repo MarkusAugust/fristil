@@ -236,3 +236,80 @@ describe("fs-toast under et annet tagnavn", () => {
     expect(fsToast().message.class).toBe("fs-toast__message")
   })
 })
+
+describe("fs-toast og fokus og navn", () => {
+  beforeAll(() => {
+    defineFsToast()
+  })
+
+  it("sender fokus tilbake dit det kom fra når alle meldingene fjernes", () => {
+    // Før falt fokus til `body`, og neste Tab startet på toppen av siden.
+    monter(`<button id="ute">Lagre</button><fs-toast duration="0"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+    const ute = document.getElementById("ute") as HTMLButtonElement
+    const melding = region.show("Lagret")
+    ute.focus()
+    ;(melding.querySelector("button") as HTMLButtonElement).focus()
+
+    region.clear()
+
+    expect(document.activeElement).toBe(ute)
+  })
+
+  it("sender fokus tilbake når den siste meldingen lukkes", () => {
+    monter(`<button id="ute">Lagre</button><fs-toast duration="0"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+    const ute = document.getElementById("ute") as HTMLButtonElement
+    const melding = region.show("Lagret")
+    ute.focus()
+    const lukk = melding.querySelector("button") as HTMLButtonElement
+    lukk.focus()
+
+    lukk.click()
+
+    expect(document.activeElement).toBe(ute)
+  })
+
+  it("glemmer hvor fokus kom fra når det går ut av regionen", () => {
+    // Før kom fokus senere tilbake til et element brukeren forlot for lenge
+    // siden, og siden rullet dit.
+    monter(`
+      <button id="a">A</button><button id="b">B</button>
+      <fs-toast duration="0"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+    const a = document.getElementById("a") as HTMLButtonElement
+    const b = document.getElementById("b") as HTMLButtonElement
+    const melding = region.show("Lagret")
+    const lukk = melding.querySelector("button") as HTMLButtonElement
+    a.focus()
+    lukk.focus()
+    b.focus()
+    ;(document.activeElement as HTMLElement).blur()
+
+    lukk.focus()
+    lukk.click()
+
+    expect(document.activeElement).not.toBe(a)
+  })
+
+  it("gir regionen standardnavnet når label fjernes", () => {
+    monter(`<fs-toast label="Meldinger"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+    expect(region.getAttribute("aria-label")).toBe("Meldinger")
+
+    region.removeAttribute("label")
+
+    expect(region.getAttribute("aria-label")).toBe("Varsler")
+  })
+
+  it("lar en aria-label forfatteren har satt stå", () => {
+    // Før skrev `label` over den.
+    monter(`<fs-toast aria-label="Forfatter"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+
+    region.setAttribute("label", "Annet")
+    expect(region.getAttribute("aria-label")).toBe("Forfatter")
+    region.removeAttribute("label")
+    expect(region.getAttribute("aria-label")).toBe("Forfatter")
+  })
+})

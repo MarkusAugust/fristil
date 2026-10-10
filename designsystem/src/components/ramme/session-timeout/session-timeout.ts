@@ -21,6 +21,8 @@ export type SessionTimeoutOptions = {
   warnAt?: number
   /** Sekunder uten aktivitet før økten er ute. Standard: 30 minutter. */
   expiresAt?: number
+  /** Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard: 60. */
+  activityInterval?: number
 }
 
 export type SessionTimeoutAttributes = {
@@ -28,6 +30,7 @@ export type SessionTimeoutAttributes = {
     class: typeof SESSION_TIMEOUT_CLASS
     "warn-at"?: string
     "expires-at"?: string
+    "activity-interval"?: string
     "data-ignore-morph": ""
   }
   dialog: {
@@ -90,6 +93,7 @@ export const sessionTimeout = Object.assign(
     titleId: givenId,
     warnAt = 25 * 60,
     expiresAt = 30 * 60,
+    activityInterval = 60,
   }: SessionTimeoutOptions): SessionTimeoutAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
     const titleId = idOrFallback("fs.sessionTimeout()", givenId, "titleId")
@@ -99,6 +103,8 @@ export const sessionTimeout = Object.assign(
         class: SESSION_TIMEOUT_CLASS,
         "warn-at": warnAt === 25 * 60 ? undefined : String(warnAt),
         "expires-at": expiresAt === 30 * 60 ? undefined : String(expiresAt),
+        "activity-interval":
+          activityInterval === 60 ? undefined : String(activityInterval),
         "data-ignore-morph": "" as const,
       }),
       dialog: attributes({

@@ -1,7 +1,6 @@
 /// <reference path="./types/css.d.ts" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { userEvent } from "vitest/browser"
 import { farge, rgb } from "./testing/farge"
 import { contrastRatio } from "./tokens/color"
 
@@ -32,6 +31,22 @@ function flaten(element: Element | null): string {
     node = node.parentElement
   }
   return "rgb(255, 255, 255)"
+}
+
+/**
+ * Fokusringen slik den tegnes inne i et element, uten at noe får fokus.
+ *
+ * `userEvent.tab()` sto her, men i Firefox kom fokus ikke alltid fram når
+ * flere testfiler kjørte samtidig. Det som testes er tokenet der knappen
+ * står, så en prøve med samme `outline` holder.
+ */
+function ringen(inni: Element): string {
+  const prove = document.createElement("span")
+  prove.style.outline = "var(--fs-focus-ring)"
+  inni.append(prove)
+  const farge = getComputedStyle(prove).outlineColor
+  prove.remove()
+  return farge
 }
 
 function side(html: string) {
@@ -113,14 +128,10 @@ describe("en temagrense", () => {
         <button class="fs-button" id="av" type="button" disabled>Av</button>
       </div>`)
     const knapp = document.getElementById("knapp") as HTMLElement
-    await userEvent.tab()
-    expect(document.activeElement).toBe(knapp)
 
     // Før arvet seksjonen ringen og den avslåtte flaten ferdig utregnet fra
     // `:root`, altså lyst tema: 2,4:1 mot den mørke flaten.
-    expect(getComputedStyle(knapp).outlineColor).toBe(
-      farge("--fs-color-accent-border-strong", "dark"),
-    )
+    expect(ringen(knapp)).toBe(farge("--fs-color-accent-border-strong", "dark"))
     expect(
       getComputedStyle(document.getElementById("av") as HTMLElement)
         .backgroundColor,
@@ -133,12 +144,9 @@ describe("en temagrense", () => {
       <div data-theme="light">
         <button class="fs-button" id="knapp" type="button">Knapp</button>
       </div>`)
-    await userEvent.tab()
-
-    expect(
-      getComputedStyle(document.getElementById("knapp") as HTMLElement)
-        .outlineColor,
-    ).toBe(farge("--fs-color-accent-border-strong", "light"))
+    expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
+      farge("--fs-color-accent-border-strong", "light"),
+    )
   })
 
   it("lar fokusringen følge et generert tema i en seksjon", async () => {
@@ -154,12 +162,9 @@ describe("en temagrense", () => {
         <div data-theme="dark">
           <button class="fs-button" id="knapp" type="button">Knapp</button>
         </div>`)
-      await userEvent.tab()
-
-      expect(
-        getComputedStyle(document.getElementById("knapp") as HTMLElement)
-          .outlineColor,
-      ).toBe("rgb(255, 0, 0)")
+      expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
+        "rgb(255, 0, 0)",
+      )
     } finally {
       stil.remove()
     }

@@ -254,10 +254,13 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsSessionTimeout>(
     FS_SESSION_TIMEOUT_TAG,
     "session-timeout",
-    'Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method="dialog">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, og `session-expired` når tiden er ute.',
+    'Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method="dialog">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.',
     {
       "warn-at": number("Sekunder uten aktivitet før varselet kommer."),
       "expires-at": number("Sekunder uten aktivitet før økten er ute."),
+      "activity-interval": number(
+        "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60.",
+      ),
     },
   ),
 

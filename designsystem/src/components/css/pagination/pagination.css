@@ -83,7 +83,11 @@
 
   /* Høykontrast: gjeldende side skilles bare med farge. */
   @media (forced-colors: active) {
-    .fs-pagination [aria-current="page"] {
+    /* `:hover` med, ellers slo hover-regelen over denne på spesifisitet, og
+       bakgrunnen ble tvunget til `Canvas` under `HighlightText`: hvit på
+       hvit, eller svart på svart. */
+    .fs-pagination [aria-current="page"],
+    .fs-pagination [aria-current="page"]:hover {
       background-color: Highlight;
       color: HighlightText;
     }
