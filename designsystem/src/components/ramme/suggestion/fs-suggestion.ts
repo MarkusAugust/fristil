@@ -711,7 +711,14 @@ export class FsSuggestion extends HostElement {
 
     const value =
       option.getAttribute("data-value") ?? (option.textContent ?? "").trim()
-    this.control.value = value
+    // Den opprinnelige setteren, forbi en `value` React har lagt på noden.
+    const proto =
+      this.control instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype
+    const native = Object.getOwnPropertyDescriptor(proto, "value")?.set
+    if (native) native.call(this.control, value)
+    else this.control.value = value
 
     // Flagget må stå før hendelsene sendes. `input` er den samme hendelsen
     // komponenten selv lytter på, så uten dette åpner lista seg igjen i det

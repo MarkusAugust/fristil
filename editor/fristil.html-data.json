@@ -381,6 +381,13 @@
             "kind": "markdown",
             "value": "Sekunder uten aktivitet før økten er ute."
           }
+        },
+        {
+          "name": "activity-interval",
+          "description": {
+            "kind": "markdown",
+            "value": "Minste antall sekunder mellom to session-activity."
+          }
         }
       ],
       "references": [

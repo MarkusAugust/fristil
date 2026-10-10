@@ -16,6 +16,7 @@ pub const DOCS: &str = "https://fristil.sobernetics.no/components/";
 const GLOBAL: &[&str] = &[
     "accesskey",
     "autocapitalize",
+    "autocorrect",
     "autofocus",
     "class",
     "contenteditable",
@@ -23,6 +24,7 @@ const GLOBAL: &[&str] = &[
     "draggable",
     "enterkeyhint",
     "exportparts",
+    "headingoffset",
     "hidden",
     "id",
     "inert",
@@ -44,6 +46,7 @@ const GLOBAL: &[&str] = &[
     "tabindex",
     "title",
     "translate",
+    "writingsuggestions",
     "xmlns",
 ];
 
@@ -63,6 +66,13 @@ pub fn is_templated(t: &[u16]) -> bool {
     ["{{", "{%", "{#", "<?", "<%", "${", "@("]
         .iter()
         .any(|m| contains_str(t, m))
+}
+
+/// En mal som skriver verdien som tekst: Go, Jinja, PHP, ERB/ASP og
+/// JS-malstrenger. Ikke `{…}` og `@(…)`: Astro, Svelte, JSX og Razor fjerner
+/// selv et usant boolsk attributt.
+pub fn is_text_template(t: &[u16]) -> bool {
+    ["{{", "{%", "<?", "<%"].iter().any(|m| contains_str(t, m))
 }
 
 /// En verdi i klammer er Astro eller Svelte, og et uttrykk: `/^\s*[@{]/`.
@@ -531,6 +541,16 @@ fn check_attribute(
         ));
     };
     if a.value.as_deref().is_some_and(is_templated_value) {
+        if matches!(known, Attribute::Flag) && a.value.as_deref().is_some_and(is_text_template) {
+            return Some(findings(
+                "boolsk-med-verdi",
+                Severity::Warning,
+                format!(
+                    "{name} er et boolsk attributt, og malen skriver verdien som tekst: også «false» slår det på. Skriv hele attributtet i en betingelse i malen."
+                ),
+                None,
+            ));
+        }
         return None;
     }
     match known {
@@ -816,7 +836,12 @@ fn block(name: &str) -> &str {
 /// varianter: resten av prosjektets `app-*`-klasser er ikke Fristils sak.
 fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
     if starts_at(token, 0, "fs-") {
-        return true;
+        // Bootstraps `fs-1` til `fs-6` (skriftstørrelse) er ikke våre.
+        let rest = &token[3..];
+        return !(!rest.is_empty()
+            && rest
+                .iter()
+                .all(|&c| (b'0' as u16..=b'9' as u16).contains(&c)));
     }
     vocabulary
         .classes
@@ -909,9 +934,58 @@ fn check_classes(
     }
     for a in attributes {
         let Some(value) = a.non_empty_value() else {
+            // `data-color=""` er ingen av verdiene. Et flagg som
+            // `data-required=""` står der, og det er nok.
+            // `data-required` har en regel for at attributtet står (`[data-required]`),
+            // så et tomt attributt virker der. Bør komme fra manifestet.
+            if a.value.as_ref().is_some_and(|v| v.is_empty()) && equals(&a.name, "data-color") {
+                for info in &present {
+                    let Some((_, takes)) = info.attributes.iter().find(|(n, _)| equals(&a.name, n))
+                    else {
+                        continue;
+                    };
+                    if takes.flag || takes.values.is_empty() {
+                        continue;
+                    }
+                    findings.push(Finding {
+                        start: a.start,
+                        end: a.value_end,
+                        severity: Severity::Warning,
+                        link: info.link.clone(),
+                        message: format!(
+                            "{} kan ikke være tomt. Lovlige verdier: {}.",
+                            lossy(&a.name),
+                            list(takes.values.iter().map(String::as_str))
+                        ),
+                        fix: None,
+                        rule: "ugyldig-klasseverdi",
+                    });
+                    break;
+                }
+            }
             continue;
         };
         if is_templated_value(value) {
+            if is_text_template(value)
+                && present.iter().any(|info| {
+                    info.attributes
+                        .iter()
+                        .any(|(n, t)| equals(&a.name, n) && t.flag)
+                })
+            {
+                findings.push(Finding {
+                    start: a.start,
+                    end: a.value_end,
+                    severity: Severity::Warning,
+                    link: String::new(),
+                    message: format!(
+                        "{} er et flagg, og malen skriver verdien som tekst: også «false» slår det på. Skriv hele attributtet i en betingelse i malen.",
+                        lossy(&a.name)
+                    ),
+                    fix: None,
+                    rule: "boolsk-med-verdi",
+                });
+            }
             continue;
         }
         for info in &present {

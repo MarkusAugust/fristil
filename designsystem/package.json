@@ -41,6 +41,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./package.json": "./package.json",
     "./manifest.json": "./manifest/manifest.json",
     "./kjerne.wasm": "./kjerne/fristil-kjerne.wasm",
     "./tokens.css": "./src/tokens/tokens.css",

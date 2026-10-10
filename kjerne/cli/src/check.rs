@@ -94,6 +94,53 @@ fn normalized(path: &std::path::Path) -> std::path::PathBuf {
     out
 }
 
+/// Fila en pakkesti som `@fristil/designsystem/fristil.css` peker på.
+///
+/// Leter etter `node_modules/<pakke>` oppover fra stilarkets mappe, og slår
+/// opp underveien i `exports` i pakkens `package.json`, enten verdien er en
+/// streng eller et betingelsesobjekt (`style`, `default`). Uten `exports`
+/// brukes den direkte stien.
+fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathBuf> {
+    use fristil_kjerne::json::{parse, Json};
+    let spec = spec.strip_prefix('~').unwrap_or(spec);
+    let mut parts = spec.splitn(if spec.starts_with('@') { 3 } else { 2 }, '/');
+    let name = if spec.starts_with('@') {
+        format!("{}/{}", parts.next()?, parts.next()?)
+    } else {
+        parts.next()?.to_string()
+    };
+    let sub = parts.next().unwrap_or("");
+    let start = if folder.is_absolute() {
+        folder.to_path_buf()
+    } else {
+        std::env::current_dir().ok()?.join(folder)
+    };
+    let mut dir = Some(normalized(&start));
+    while let Some(here) = dir {
+        let root = here.join("node_modules").join(&name);
+        if let Ok(text) = std::fs::read_to_string(root.join("package.json")) {
+            let target = parse(&text).ok().and_then(|pkg| {
+                let key = format!("./{sub}");
+                let entry = pkg.get("exports")?.get(&key)?.clone();
+                fn pick(entry: &Json) -> Option<String> {
+                    match entry {
+                        Json::String(s) => Some(s.clone()),
+                        Json::Object(_) => ["style", "default", "import"]
+                            .iter()
+                            .find_map(|c| entry.get(c).and_then(pick)),
+                        _ => None,
+                    }
+                }
+                pick(&entry)
+            });
+            let file = normalized(&root.join(target.as_deref().unwrap_or(sub)));
+            return Some(file);
+        }
+        dir = here.parent().map(std::path::Path::to_path_buf);
+    }
+    None
+}
+
 /// Stilarkene, med det de importerer.
 ///
 /// `@import` følges til en fil ved siden av, og til en pakke i
@@ -134,7 +181,9 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
                 if beside.exists() {
                     beside
                 } else {
-                    normalized(&std::path::Path::new("node_modules").join(import))
+                    package_file(&folder, import).unwrap_or_else(|| {
+                        normalized(&std::path::Path::new("node_modules").join(import))
+                    })
                 },
                 false,
             ));

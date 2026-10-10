@@ -144,6 +144,8 @@ type FsSessionTimeoutAttributes = Host & {
   "warn-at"?: number | string
   /** Sekunder uten aktivitet før økten er ute. */
   "expires-at"?: number | string
+  /** Minste antall sekunder mellom to `session-activity`. */
+  "activity-interval"?: number | string
 }
 
 type FsConnectionStatusAttributes = Host & {

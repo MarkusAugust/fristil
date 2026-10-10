@@ -29,7 +29,13 @@ const ANNOUNCE_AT = new Set([120, 60, 30, 10])
  * `scroll` bobler ikke, så den fanges i fangstfasen. Uten det telte rulling
  * i en tabell eller et panel ikke som aktivitet, bare rulling av selve siden.
  */
-const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll"] as const
+const ACTIVITY_EVENTS = [
+  "pointerdown",
+  "keydown",
+  "wheel",
+  "touchmove",
+] as const
+const DEFAULT_ACTIVITY_INTERVAL = 60
 const ACTIVITY_OPTIONS = { passive: true, capture: true } as const
 
 /**
@@ -140,7 +146,13 @@ function isSeconds(raw: string | null): boolean {
  * ```
  */
 export class FsSessionTimeout extends HostElement {
-  static observedAttributes = ["warn-at", "expires-at"] as const
+  static observedAttributes = [
+    "warn-at",
+    "expires-at",
+    "activity-interval",
+  ] as const
+  private lastActivityEvent = 0
+  private prevLeft?: number
 
   private ticker?: number
   private lastActivity = Date.now()
@@ -352,6 +364,12 @@ export class FsSessionTimeout extends HostElement {
   private registerActivity = (): void => {
     if (this.dialog?.open || this.expired) return
     this.lastActivity = Date.now()
+    const interval =
+      this.readSeconds("activity-interval", DEFAULT_ACTIVITY_INTERVAL) * 1000
+    if (this.lastActivity - this.lastActivityEvent >= interval) {
+      this.lastActivityEvent = this.lastActivity
+      this.emit("session-activity")
+    }
   }
 
   /**
@@ -416,7 +434,10 @@ export class FsSessionTimeout extends HostElement {
       this.openDialog(left)
       return
     }
-    this.show(dialog, left, ANNOUNCE_AT.has(left))
+    const prev = this.prevLeft ?? left + 1
+    this.prevLeft = left
+    const crossed = [...ANNOUNCE_AT].some((t) => prev > t && left <= t)
+    this.show(dialog, left, crossed)
   }
 
   /** Skriver tallet, og opplesningen når `announce` er sant. */
@@ -478,6 +499,7 @@ export class FsSessionTimeout extends HostElement {
      * tall kom først ved neste terskel, minutter senere.
      */
     this.show(dialog, left, true)
+    this.prevLeft = left
     dialog.returnValue = ""
     dialog.showModal()
     this.shownDialog = dialog

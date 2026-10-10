@@ -258,6 +258,9 @@ export const elements: readonly ElementDoc[] = [
     {
       "warn-at": number("Sekunder uten aktivitet før varselet kommer."),
       "expires-at": number("Sekunder uten aktivitet før økten er ute."),
+      "activity-interval": number(
+        "Minste antall sekunder mellom to session-activity.",
+      ),
     },
   ),
 

@@ -572,3 +572,36 @@ fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
         .any(|m| m.contains("ikke er lukket")));
     assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
 }
+
+// Revisjon 7.6: rutenett av nøytral × merkefarge.
+#[test]
+fn revisjon_keeps_the_promises_for_any_neutral_and_hue() {
+    let mut brudd = Vec::new();
+    for appearance in APPEARANCES {
+        for neutral in [
+            "#24272b", "#000000", "#ffffff", "#808080", "#1e3a5f", "#5b3fa0", "#8a5a00",
+            "#3b2f2f", "#2e5a3a", "#c0c0c0",
+        ] {
+            for accent in [
+                "#ff0000", "#ff8800", "#ffd600", "#39ff14", "#00e676", "#00bcd4", "#0062ba",
+                "#5b3fa0", "#ff00ff", "#ff2d6f", "#8a5a00", "#24272b",
+            ] {
+                let brands = brands_with(&[("accent", accent), ("neutral", neutral)]);
+                match build_matrix(&brands, appearance) {
+                    Ok(m) if m.violations.is_empty() => {}
+                    Ok(m) => brudd.push(format!(
+                        "{neutral} x {accent} {appearance:?}: {} brudd",
+                        m.violations.len()
+                    )),
+                    Err(e) => brudd.push(format!("{neutral} x {accent} {appearance:?}: feil {e:?}")),
+                }
+            }
+        }
+    }
+    assert!(
+        brudd.is_empty(),
+        "{} kombinasjoner ryker:\n{}",
+        brudd.len(),
+        brudd.join("\n")
+    );
+}

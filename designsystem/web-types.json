@@ -310,6 +310,14 @@
                 "kind": "plain",
                 "type": "number"
               }
+            },
+            {
+              "name": "activity-interval",
+              "description": "Minste antall sekunder mellom to session-activity.",
+              "value": {
+                "kind": "plain",
+                "type": "number"
+              }
             }
           ]
         },

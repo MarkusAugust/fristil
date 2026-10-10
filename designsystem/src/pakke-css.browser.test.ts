@@ -104,6 +104,37 @@ describe("stilarkene pakken sender ut", () => {
       .join("\n")
 
     expect(utenImport.trimStart().startsWith("@layer fristil")).toBe(true)
+
+    // Revisjon 7.7: ingenting etter lagets avsluttende `}`. Strenger og
+    // kommentarer er alt tatt bort av `onlyRules`.
+    const start = utenImport.indexOf("{")
+    let dybde = 0
+    let slutt = -1
+    for (let i = start; i < utenImport.length; i++) {
+      if (utenImport[i] === "{") dybde++
+      else if (utenImport[i] === "}" && --dybde === 0) {
+        slutt = i
+        break
+      }
+    }
+    expect(utenImport.slice(slutt + 1).trim()).toBe("")
+  })
+
+  it("revisjon 7.7: sjekken fanger en regel etter laget", () => {
+    const kilde =
+      "@layer fristil { .fs-a { color: red } }\n.fs-b { color: blue }"
+    const start = kilde.indexOf("{")
+    let dybde = 0
+    let slutt = -1
+    for (let i = start; i < kilde.length; i++) {
+      if (kilde[i] === "{") dybde++
+      else if (kilde[i] === "}" && --dybde === 0) {
+        slutt = i
+        break
+      }
+    }
+    expect(kilde.trimStart().startsWith("@layer fristil")).toBe(true)
+    expect(kilde.slice(slutt + 1).trim()).not.toBe("")
   })
 
   it("har ingen tegn utenfor ASCII utenom kommentarene", () => {
