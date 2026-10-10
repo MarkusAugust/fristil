@@ -53,6 +53,11 @@ import { suggestion } from "./components/ramme/suggestion/suggestion.js"
 import { tabs } from "./components/ramme/tabs/tabs.js"
 import { setAttributes } from "./dom.js"
 
+// Typene til hendelsene, så `addEventListener` er typet også for den som
+// bare importerer denne inngangen. Uten linja forsvant importen fra
+// `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
+export type { FsEventMap } from "./components/events.js"
+
 /**
  * Samme API som `fs`, men med `className` og `htmlFor`.
  *

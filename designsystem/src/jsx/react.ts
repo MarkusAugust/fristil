@@ -1,5 +1,10 @@
 import type { HTMLAttributes, RefAttributes } from "react"
 
+// Typene til hendelsene, så `addEventListener` er typet også for den som
+// bare importerer denne inngangen. Uten linja forsvant importen fra
+// `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
+export type { FsEventMap } from "../components/events.js"
+
 /**
  * Typer for Fristils web components i JSX.
  *

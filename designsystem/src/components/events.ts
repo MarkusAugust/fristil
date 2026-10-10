@@ -1,10 +1,11 @@
 // Generert av editor/scripts/generate.ts fra editor/metadata.ts. Ikke rediger.
 
 /**
- * Hendelsene web-komponentene sender, med `detail` slik den er. Alle bobler
- * og krysser skyggegrenser. `HTMLElementEventMap` utvides med dem, så
- * `addEventListener("dialog-toggle", …)` gir `event.detail.open` som
- * `boolean` på ethvert element.
+ * Hendelsene web-komponentene sender, med `detail` slik komponenten sender
+ * den. Alle bobler, og kommer ut av en skyggerot. `HTMLElementEventMap` og
+ * `DocumentEventMap` utvides med dem, så `addEventListener("dialog-toggle",
+ * …)` gir `event.detail.open` som `boolean` på ethvert element og på
+ * `document`.
  */
 export interface FsEventMap {
   /** `<fs-tabs>`: Brukeren valgte en fane. `index` teller fra 0. */
@@ -35,4 +36,5 @@ export interface FsEventMap {
 
 declare global {
   interface HTMLElementEventMap extends FsEventMap {}
+  interface DocumentEventMap extends FsEventMap {}
 }
