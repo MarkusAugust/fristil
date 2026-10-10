@@ -357,27 +357,10 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(element.warnAt).toBe(5)
   })
 
-  it("teller rulling med musa i en boks som aktivitet", async () => {
-    // Fangstfasen, så en rulling i en tabell eller et panel teller, ikke bare
-    // rulling av selve siden.
-    await monterKort(
-      `${varsel()}<div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>`,
-    )
-
-    await gaFram(2)
-    ;(document.getElementById("boks") as HTMLElement).dispatchEvent(
-      new WheelEvent("wheel", { bubbles: true }),
-    )
-    await gaFram(2)
-    expect(dialog().open).toBe(false)
-
-    await gaFram(2)
-    expect(dialog().open).toBe(true)
-  })
-
-  it("teller ikke rulling som kode gjør", async () => {
-    // En logg som følger med, eller `scrollIntoView`, holdt før økten i live
-    // mens brukeren var borte.
+  it("teller rulling i en boks som aktivitet", async () => {
+    // `scroll` bobler ikke. Lyttet uten fangst telte bare rulling av selve
+    // siden, mens dokumentasjonen lovet «rulling». En skjermleser i
+    // lesemodus sender bare rulling, ingen tastetrykk.
     await monterKort(
       `${varsel()}<div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>`,
     )
@@ -387,7 +370,58 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
       new Event("scroll"),
     )
     await gaFram(2)
+    expect(dialog().open).toBe(false)
+
+    await gaFram(2)
     expect(dialog().open).toBe(true)
+  })
+
+  it("melder ikke aktivitet etter at fanen har stått fryst forbi utløpet", async () => {
+    // Før kom `session-activity` og `session-expired` i samme tikk.
+    const element = await monterKort(
+      varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
+    )
+    const hendelser = lytt(element, ["session-activity", "session-expired"])
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+    await gaFram(5)
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+
+    vi.setSystemTime(Date.now() + 200_000)
+    await gaFram(1)
+
+    expect(hendelser).toEqual(["session-activity", "session-expired"])
+  })
+
+  it("sender høyst én aktivitet i sekundet, også med activity-interval 0", async () => {
+    const element = await monterKort(
+      varsel({ warnAt: 100, expiresAt: 130 }).replace(
+        "<fs-session-timeout ",
+        '<fs-session-timeout activity-interval="0" ',
+      ),
+    )
+    const hendelser = lytt(element, ["session-activity"])
+    for (let i = 0; i < 20; i++) {
+      document.body.dispatchEvent(new Event("scroll"))
+    }
+
+    expect(hendelser).toEqual(["session-activity"])
+  })
+
+  it("melder ikke aktivitet mens varselet står", async () => {
+    // Aktiviteten ved 1 sekund ventet på slutten av intervallet, som kom
+    // etter at varselet åpnet ved 3. Da holdt appen serverøkten i live mens
+    // brukeren ble bedt om å svare.
+    const element = await monterKort(
+      varsel({ warnAt: 3, expiresAt: 13, activityInterval: 5 }),
+    )
+    const hendelser = lytt(element, ["session-activity"])
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+    await gaFram(1)
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
+    await gaFram(6)
+
+    expect(dialog().open).toBe(true)
+    expect(hendelser).toEqual(["session-activity"])
   })
 
   it("melder aktivitet i starten og slutten av et intervall", async () => {
@@ -395,10 +429,7 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     // serveren vært opptil et helt intervall bak klokka her, og logget ut
     // før varselet var ferdig.
     const element = await monterKort(
-      varsel({ warnAt: 100, expiresAt: 130 }).replace(
-        "<fs-session-timeout ",
-        '<fs-session-timeout activity-interval="20" ',
-      ),
+      varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
     )
     const start = Date.now()
     const tider: number[] = []
@@ -421,10 +452,7 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
 
   it("melder aktivitet på slutten av intervallet, også uten nytt tastetrykk", async () => {
     const element = await monterKort(
-      varsel({ warnAt: 100, expiresAt: 130 }).replace(
-        "<fs-session-timeout ",
-        '<fs-session-timeout activity-interval="20" ',
-      ),
+      varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
     )
     const start = Date.now()
     const tider: number[] = []

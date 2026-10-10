@@ -270,6 +270,28 @@ describe("fs-toast og fokus og navn", () => {
     expect(document.activeElement).toBe(ute)
   })
 
+  it("glemmer hvor fokus kom fra når det går ut av regionen", () => {
+    // Før kom fokus senere tilbake til et element brukeren forlot for lenge
+    // siden, og siden rullet dit.
+    monter(`
+      <button id="a">A</button><button id="b">B</button>
+      <fs-toast duration="0"></fs-toast>`)
+    const region = document.querySelector("fs-toast") as FsToast
+    const a = document.getElementById("a") as HTMLButtonElement
+    const b = document.getElementById("b") as HTMLButtonElement
+    const melding = region.show("Lagret")
+    const lukk = melding.querySelector("button") as HTMLButtonElement
+    a.focus()
+    lukk.focus()
+    b.focus()
+    ;(document.activeElement as HTMLElement).blur()
+
+    lukk.focus()
+    lukk.click()
+
+    expect(document.activeElement).not.toBe(a)
+  })
+
   it("gir regionen standardnavnet når label fjernes", () => {
     monter(`<fs-toast label="Meldinger"></fs-toast>`)
     const region = document.querySelector("fs-toast") as FsToast

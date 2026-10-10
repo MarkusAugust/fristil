@@ -712,16 +712,20 @@ export class FsSuggestion extends HostElement {
     const value =
       option.getAttribute("data-value") ?? (option.textContent ?? "").trim()
     /*
-     * Setteren fra elementets egen prototype, forbi en `value` React har lagt
-     * på selve noden for å følge med. Satt rett på noden så React ingen
-     * endring, `onChange` kom aldri, og ved neste rendring skrev React den
-     * gamle teksten tilbake i feltet. Prototypen er elementets egen, så det
-     * virker for `<textarea>` og et felt med `role="combobox"` også.
+     * Setteren fra prototypekjeden, forbi en `value` React har lagt på selve
+     * noden for å følge med. Satt rett på noden så React ingen endring,
+     * `onChange` kom aldri, og ved neste rendring skrev React den gamle
+     * teksten tilbake i feltet. Kjeden og ikke bare nærmeste prototype, så
+     * `<textarea>` og en underklasse av `<input>` også virker.
      */
-    const setter = Object.getOwnPropertyDescriptor(
-      Object.getPrototypeOf(this.control),
-      "value",
-    )?.set
+    let setter: ((v: string) => void) | undefined
+    for (
+      let proto = Object.getPrototypeOf(this.control);
+      proto && !setter;
+      proto = Object.getPrototypeOf(proto)
+    ) {
+      setter = Object.getOwnPropertyDescriptor(proto, "value")?.set
+    }
     if (setter) setter.call(this.control, value)
     else this.control.value = value
 

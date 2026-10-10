@@ -1041,6 +1041,27 @@ describe("fs-tabs etter morfing og med piltaster", () => {
     expect(document.activeElement?.id).toBe("s-tab-0")
   })
 
+  it("virker selv om noe på raden stopper hendelsene", async () => {
+    // Lytteren sitter på verten. Uten fangstfasen nådde ikke klikk og
+    // piltaster fram når raden hadde en lytter som stoppet dem.
+    const vert = await monterFaner()
+    const rad = vert.querySelector(".fs-tabs__list") as HTMLElement
+    rad.addEventListener("keydown", (event) => event.stopPropagation())
+    rad.addEventListener("click", (event) => event.stopPropagation())
+
+    const forste = document.getElementById("s-tab-0") as HTMLElement
+    forste.focus()
+    forste.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    )
+    await ventPaTegning()
+    expect(document.activeElement?.id).toBe("s-tab-1")
+
+    ;(document.getElementById("s-tab-2") as HTMLElement).click()
+    await ventPaTegning()
+    expect(document.getElementById("s-panel-2")?.hidden).toBe(false)
+  })
+
   it("lar pil ned være i en vannrett rad", async () => {
     // Før flyttet den fokus, og stjal siderullingen.
     await monterFaner()

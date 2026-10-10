@@ -145,8 +145,10 @@ export class FsTabs extends HostElement {
     // Én lytter på verten, ikke én per fane. Før holdt komponenten hver fane
     // den hadde koblet i et sett som bare ble tømt ved frakobling, så hver
     // fane en morfing byttet ut, ble liggende i minnet så lenge siden levde.
-    this.addEventListener("click", this.handleClick)
-    this.addEventListener("keydown", this.handleKeydown)
+    // Fangstfasen, så en lytter på raden som stopper hendelsen, ikke tar
+    // klikk og piltaster fra fanene, slik den ikke kunne før.
+    this.addEventListener("click", this.handleClick, true)
+    this.addEventListener("keydown", this.handleKeydown, true)
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, {
       childList: true,
@@ -190,8 +192,8 @@ export class FsTabs extends HostElement {
   disconnectedCallback(): void {
     this.observer?.disconnect()
     this.observer = undefined
-    this.removeEventListener("click", this.handleClick)
-    this.removeEventListener("keydown", this.handleKeydown)
+    this.removeEventListener("click", this.handleClick, true)
+    this.removeEventListener("keydown", this.handleKeydown, true)
   }
 
   /**
@@ -598,6 +600,9 @@ export class FsTabs extends HostElement {
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
+    // Hvert tastetrykk i et felt i et panel kommer hit. Det billige først.
+    if (!(event.target instanceof Element)) return
+    if (!event.target.closest("[role='tab']")) return
     const tabs = this.tabs
     const current = this.tabIndexOf(event)
     if (current < 0) return

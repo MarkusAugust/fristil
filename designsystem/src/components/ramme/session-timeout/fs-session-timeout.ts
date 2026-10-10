@@ -26,20 +26,16 @@ const DEFAULT_EXPIRES_AT = 30 * 60
 const ANNOUNCE_AT = new Set([120, 60, 30, 10])
 
 /**
- * Det brukeren gjør, ikke det siden gjør.
+ * Aktiviteten som nullstiller klokka.
  *
- * `scroll` sto her, men den kommer også når kode ruller, som en logg som
- * følger med eller `scrollIntoView`, og da holdt siden økten i live mens
- * brukeren var borte. `wheel` og `touchmove` er brukerens rulling, og
- * rulling med tastaturet er `keydown`. Fangstfasen, så en hendelse et
- * panel stopper, teller likevel.
+ * `scroll` står her selv om den også kommer når kode ruller. En skjermleser
+ * i lesemodus sender ingen tastetrykk til siden, bare rulling, og det
+ * samme gjør et dra i rullefeltet. Uten `scroll` ble den som leste en lang
+ * side, logget ut midt i lesingen. Det er verre enn at en side som ruller
+ * selv, holder økten i live. `scroll` bobler ikke, så alt lyttes på i
+ * fangstfasen, og rulling i et panel teller også.
  */
-const ACTIVITY_EVENTS = [
-  "pointerdown",
-  "keydown",
-  "wheel",
-  "touchmove",
-] as const
+const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll"] as const
 const ACTIVITY_OPTIONS = { passive: true, capture: true } as const
 
 /** Sekunder mellom hver `session-activity`. */
@@ -313,6 +309,16 @@ export class FsSessionTimeout extends HostElement {
         "aldri før økten er ute.",
       () => this.warnAt >= this.expiresAt,
     )
+    warnAboutMarkup(
+      this,
+      "har activity-interval som ikke er et tall større enn null. " +
+        "session-activity sendes høyst én gang i sekundet, eller hvert " +
+        "60. sekund om verdien ikke er et tall.",
+      () => {
+        const raw = this.getAttribute("activity-interval")
+        return raw !== null && (!isSeconds(raw) || Number(raw) < 1)
+      },
+    )
     // Et tomt element er et område som ikke er fylt ennå, og skal tie her.
     // Det sies fra om i det varselet skulle vist seg. Se `openDialog()`.
     warnAboutMarkup(
@@ -397,11 +403,27 @@ export class FsSessionTimeout extends HostElement {
     this.reportActivity()
   }
 
-  /** Sender `session-activity` når et intervall er gått og brukeren var aktiv. */
+  /**
+   * Sender `session-activity` når et intervall er gått og brukeren var aktiv.
+   *
+   * Ikke mens varselet står eller etter at økten er ute: da holdt appen
+   * serverøkten i live mens klokka her talte ned mot `session-expired`.
+   * Intervallet er minst ett sekund, ellers sendte hver rulling et kall.
+   */
   private reportActivity(): void {
-    if (!this.activitySinceEvent) return
+    if (!this.activitySinceEvent || this.dialog?.open || this.expired) return
     const now = Date.now()
-    if (now - this.lastActivityEvent < this.activityInterval * 1000) return
+    // Har fanen stått fryst forbi utløpet, er aktiviteten foreldet. Da kom
+    // `session-activity` og `session-expired` i samme tikk, og appen holdt
+    // liv i en økt komponenten samtidig sa var ute.
+    if (now - this.lastActivity >= this.expiresAt * 1000) {
+      this.activitySinceEvent = false
+      return
+    }
+    // Rulling kommer i hver ramme. Det billige først, attributtet etterpå.
+    const since = now - this.lastActivityEvent
+    if (since < 1000) return
+    if (since < Math.max(1, this.activityInterval) * 1000) return
     this.lastActivityEvent = now
     this.activitySinceEvent = false
     this.emit("session-activity")
@@ -545,6 +567,9 @@ export class FsSessionTimeout extends HostElement {
      */
     this.show(dialog, left, true)
     this.previousLeft = left
+    // Aktivitet før varselet er alt med i klokka her. Sendt mens varselet
+    // står, holdt den serverøkten i live mens brukeren ble bedt om å svare.
+    this.activitySinceEvent = false
     dialog.returnValue = ""
     dialog.showModal()
     this.shownDialog = dialog

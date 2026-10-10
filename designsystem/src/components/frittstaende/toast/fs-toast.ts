@@ -110,18 +110,33 @@ export class FsToast extends HostElement {
     }
   }
 
+  /**
+   * Fokus gikk ut av regionen til et annet sted. Da er opphavet utdatert:
+   * uten dette kom fokus senere tilbake til et element brukeren forlot for
+   * lenge siden, og siden rullet dit. Ikke når `relatedTarget` er `null`,
+   * for det er også det som skjer når meldingen med fokus fjernes.
+   */
+  private forgetOrigin = (event: FocusEvent): void => {
+    const to = event.relatedTarget
+    if (to instanceof Node && !this.contains(to)) this.focusOrigin = null
+  }
+
   private restoreFocus(): void {
     const origin = this.focusOrigin
     this.focusOrigin = null
-    if (origin?.isConnected) origin.focus()
+    // En gjenoppretting, ikke en navigasjon: siden skal ikke rulle.
+    if (origin?.isConnected) origin.focus({ preventScroll: true })
   }
 
   disconnectedCallback(): void {
     this.removeEventListener("focusin", this.rememberOrigin)
+    this.removeEventListener("focusout", this.forgetOrigin)
+    this.focusOrigin = null
   }
 
   connectedCallback(): void {
     this.addEventListener("focusin", this.rememberOrigin)
+    this.addEventListener("focusout", this.forgetOrigin)
     // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
     // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
     // får en region skjermleseren forstår.

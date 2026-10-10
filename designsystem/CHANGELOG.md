@@ -33,15 +33,13 @@ egen overskrift «Brytende».
   serveren, fikk aldri varselet, og innsendingen feilet fordi serverøkten
   var ute. Hendelsen kommer i starten av hvert intervall med aktivitet og på
   slutten hvis brukeren har gjort noe siden, høyst én gang per
-  `activity-interval` sekunder (standard 60). Komponentsiden viser også
-  hvordan flere faner holder klokkene i takt.
+  `activity-interval` sekunder (standard 60, minst 1), og aldri mens
+  varselet står eller etter at økten er ute. `fs.sessionTimeout()` tar
+  `activityInterval`. Komponentsiden viser også hvordan flere faner holder
+  klokkene i takt.
 
 ### Endret
 
-- **Rulling som kode gjør, teller ikke lenger som aktivitet i
-  `fs-session-timeout`.** `scroll` er byttet ut med `wheel` og `touchmove`.
-  En logg som fulgte med, eller `scrollIntoView`, holdt økten i live mens
-  brukeren var borte. Rulling med tastaturet teller som før, som `keydown`.
 - **Pil opp og ned bytter ikke lenger fane i en vannrett `fs-tabs`.** De
   stjal siderullingen og avvek fra WAI-ARIA. De virker når raden har
   `aria-orientation="vertical"`.
