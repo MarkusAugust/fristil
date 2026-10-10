@@ -22,8 +22,9 @@ import.meta.glob("./components/*/*/*.css", { eager: true })
  * En dialog, et sprettoppvindu og en melding regner bredden sin ut fra
  * vinduet, og står i topplaget eller med `position: fixed`, der de ikke
  * gjør siden bredere, men kan stikke utenfor skjermen likevel. Testen sjekker
- * derfor begge: at siden ikke kan rulles sidelengs, og at alt som står fast
- * eller i topplaget, står innenfor.
+ * derfor begge: at siden ikke kan rulles sidelengs, og at alt som synes,
+ * står innenfor vinduet i bredden, med unntak av det som med vilje er
+ * klippet. Over og under sjekkes ikke: en side ruller på høyden.
  *
  * Teksten er med vilje lang og norsk: det er «Send søknaden om bostøtte for
  * hele kalenderåret 2026» som sprenger en knapp, ikke «Send».
@@ -210,6 +211,7 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
       markup: `<a class="fs-skip-link" href="#hoved">Hopp til hovedinnholdet på siden om bostøtte</a>`,
       // Lenken står utenfor synet til den får fokus.
       aapne: () => element<HTMLAnchorElement>(".fs-skip-link").focus(),
+      apen: ".fs-skip-link:focus",
     },
   ],
   spinner: [
@@ -379,8 +381,9 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
         felt.value = "B"
         felt.dispatchEvent(new InputEvent("input", { bubbles: true }))
       },
-      // Lista må faktisk stå åpen, ellers er det ingenting å måle.
-      apen: ".fs-suggestion__list:not([hidden])",
+      // Komponenten må ha åpnet lista. En liste den aldri kjente igjen,
+      // står også uten `hidden`, så det er feltet som spørres.
+      apen: 'fs-suggestion input[aria-expanded="true"]',
     },
   ],
   tabs: [

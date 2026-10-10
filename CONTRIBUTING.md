@@ -33,7 +33,11 @@ fra første dag. Jobbene går etter hverandre:
 Tre ting kjøres ikke lokalt, og står med grunnen i `SKIPPED` i skriptet:
 Windows-jobben, oppgraderingen av den globale npm-en, og hentingen av
 nettlesere. Står et navn der som ikke finnes i `ci.yml`, stopper kjøringen,
-så lista kan ikke bli stående etter at et steg har byttet navn.
+så lista kan ikke bli stående etter at et steg har byttet navn. Stegene med
+`uses`, som hurtigbufferne og oppsettet av Java, hoppes også over: de gir
+CI-maskinen det maskinen din har fra før. Lokalt brukes altså den Java-en du
+har installert. Står det noe i `ci.yml` skriptet ikke forstår, som `env`,
+`if` eller `defaults`, stopper det før det kjører noe.
 
 «Ingenting er ugenerert» spør git om bygget endret noe, så kjør `sjekk` etter
 at endringen er committet. Steget feiler ellers på dine egne endringer.
