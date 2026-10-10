@@ -88,8 +88,8 @@ Reglene står i `src/types.rs` (`RULES`).
   mange funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
 - `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
-  merkefarger rundt hele fargesirkelen mot ti nøytrale, fra svart og hvitt
-  til farget grått, i begge utseender: 240 kombinasjoner.
+  aksentfarger, fra knallrød og neon til nesten svart, mot ti nøytrale, fra
+  svart og hvitt til farget grått, i begge utseender: 240 kombinasjoner.
 - `tema/`: oppskrifter og temaer med svaret ved siden av, skrevet av
   TypeScript-utgaven av temaet før den ble slettet. `sjekk-kjerne.ts` krever
   det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
@@ -103,8 +103,8 @@ bun kjerne/scripts/sjekk-kjerne.ts # fasiten og kravene
 cd kotlin && ./gradlew test        # Kotlin mot fasiten
 ```
 
-Krever Rust. `rust-toolchain.toml` henter versjonen og målet
-`wasm32-unknown-unknown` ved første kall.
+Krever Rust. `rust-toolchain.toml` henter versjonen og målene
+`wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.
 
 Manifestet er generert og sjekket inn, så Gradle-bygget trenger bare Rust,
 ikke Bun.

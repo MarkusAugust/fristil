@@ -13,7 +13,6 @@
     "typecheck:tests": "bun --filter @fristil/designsystem typecheck:tests",
     "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:tailwind",
     "test:docs": "bun --filter @fristil/documentation test:docs",
-    "sjekk:kjerne": "bun kjerne/scripts/bygg.ts && bun kjerne/scripts/sjekk-kjerne.ts && cargo test --workspace --manifest-path kjerne/Cargo.toml && cargo build --release -p fristil --manifest-path kjerne/Cargo.toml && FRISTIL_SAMMENLIGN=$PWD/kjerne/target/release/fristil bun designsystem/scripts/sjekk-cli.ts && FRISTIL_CLI=$PWD/kjerne/target/release/fristil bun designsystem/scripts/sjekk-lsp.ts && cd kotlin && ./gradlew test",
     "lint": "biome check .",
     "prepare-version": "bun designsystem/scripts/prepare-version.ts",
     "tag": "bun designsystem/scripts/tag.ts",

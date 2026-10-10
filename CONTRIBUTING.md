@@ -27,7 +27,7 @@ fra første dag. Jobbene går etter hverandre:
 | Jobb | Hva den kontrollerer |
 | --- | --- |
 | `forfattere` | at ingen commit har en agent som forfatter |
-| `sjekk` | lint, typene, nettlesertestene i Chromium, Firefox og WebKit, bygget, kommandolinja og språkserveren i hver vert, den rendrede siden, VS Code-utvidelsen, at ingenting er ugenerert, og axe mot den bygde dokumentasjonen |
+| `sjekk` | lint, typesjekk av koden og testene, nettlesertestene i Chromium, Firefox og WebKit, bygget, kommandolinja og språkserveren i hver vert, den rendrede siden, VS Code-utvidelsen, at ingenting er ugenerert, og axe mot den bygde dokumentasjonen |
 | `kjerne` | Rust-formatering og clippy, Rust-testene, WASI-modulen, kjernen mot fasiten og Kotlin-testene |
 
 Tre ting kjøres ikke lokalt, og står med grunnen i `SKIPPED` i skriptet:
@@ -38,12 +38,14 @@ så lista kan ikke bli stående etter at et steg har byttet navn.
 «Ingenting er ugenerert» spør git om bygget endret noe, så kjør `sjekk` etter
 at endringen er committet. Steget feiler ellers på dine egne endringer.
 
-Det krever Rust, Java 17 eller nyere og VS Code-testens nedlasting i tillegg
-til Bun: sjekken i pakken er bygget fra `kjerne/`. Installer
-[rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter riktig
-versjon ved første kall.
+Det krever i tillegg til Bun: Rust, siden sjekken i pakken bygges fra
+`kjerne/`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
+gang, når VS Code lastes ned. På Linux uten skjerm trengs også `xvfb-run`.
+Installer [rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter
+riktig versjon og målene ved første kall.
 
-Hele kjøringen tar noen minutter, mest på grunn av de tre nettleserne. Under
+Hele kjøringen tar rundt seks minutter på en Mac med M-brikke. Mest tid går til
+nettlesertestene, axe mot dokumentasjonen, språkserveren og jar-en. Under
 arbeid er `bun --filter @fristil/designsystem test:browser --project chromium`
 nok. `bun run test -- --project chromium` virker ikke: `bun run` legger
 argumentene bakerst i skriptteksten, og `test` er to kommandoer etter

@@ -50,7 +50,8 @@ export type Tilgjengelighetsbrudd = {
  * testen. Oftest er det kontrast over en gradient, et pseudoelement eller et
  * bilde. Men de telles, og står det noen, skrives én linje med antallet og
  * reglene, så en komponent der axe stille har sluttet å kunne svare, synes.
- * Vitest viser konsollen for en test som består bare med `--silent=false`.
+ * Med rapportøren Vitest velger utenfor en terminal, vises ikke konsollen
+ * for en test som består. `--silent=false --reporter=default` viser den.
  */
 export async function finnTilgjengelighetsbrudd(
   rot: Element = document.body,
@@ -94,11 +95,13 @@ export async function forventIngenTilgjengelighetsbrudd(
   const html = document.documentElement
   const before = html.getAttribute("data-theme")
   const brudd: Tilgjengelighetsbrudd[] = []
-  // Overgangene av før temaet byttes. En overgang som alt er i gang, stopper
-  // ikke av at `transition` settes til `none` etterpå, og axe målte en lenke
-  // midt mellom den lyse og den mørke fargen.
+  // Overgangene slås av før temaet byttes. En overgang som alt er i gang,
+  // stopper ikke av at `transition` settes til `none` etterpå, og axe leste
+  // fargen på en lenke midt mellom den lyse og den mørke. Animasjonene av
+  // også, som i `sjekk-tilgjengelighet.ts`, så axe leser en fast tilstand.
   const uten = document.createElement("style")
-  uten.textContent = "*, *::before, *::after { transition: none !important }"
+  uten.textContent =
+    "*, *::before, *::after { transition: none !important; animation: none !important }"
   document.head.append(uten)
   try {
     for (const tema of ["light", "dark"]) {
@@ -108,9 +111,13 @@ export async function forventIngenTilgjengelighetsbrudd(
         brudd.push({ ...b, regel: `${b.regel} (${tema})` })
     }
   } finally {
-    uten.remove()
+    // Temaet tilbake mens overgangene fortsatt er av, og først etter en
+    // tegning slås de på igjen. Ellers leste en test som så på fargene
+    // etterpå, en verdi på vei tilbake fra mørkt.
     if (before === null) html.removeAttribute("data-theme")
     else html.setAttribute("data-theme", before)
+    await ventPaTegning()
+    uten.remove()
   }
   if (brudd.length === 0) return
 
@@ -131,12 +138,12 @@ export async function forventIngenTilgjengelighetsbrudd(
 /**
  * Venter til nettleseren har tegnet ferdig.
  *
- * Lit oppdaterer asynkront, og axe leser utregnet stil. Uten denne pausen
- * kan axe rekke å måle et element som ennå ikke har fått stilene sine.
+ * axe leser utregnet stil. Uten denne pausen kan axe rekke å lese et
+ * element som ennå ikke har fått stilene sine.
  *
- * Gir du den et element som er en Lit-komponent, ventes det også på at
- * komponenten er ferdig med sin egen oppdatering. Testene kalte den allerede
- * slik, men argumentet ble ignorert, og ventingen var bare to bilder.
+ * Har elementet en `updateComplete`, ventes det også på den. Ingen av
+ * Fristils komponenter har en etter at Lit ble fjernet i 0.5.0, men en test
+ * kan gi den et element fra et annet bibliotek.
  */
 export async function ventPaTegning(element?: Element): Promise<void> {
   const oppdatering = (element as { updateComplete?: Promise<unknown> })

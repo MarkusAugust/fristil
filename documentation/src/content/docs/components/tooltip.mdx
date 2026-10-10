@@ -130,4 +130,5 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 - Hold teksten kort. Boblen kan ikke rulles. Musa kan flyttes fra knappen og opp på boblen uten at den forsvinner, men den lukkes når musa forlater begge.
 - Ikke legg lenker eller knapper inni. Boblen er en beskrivelse, ikke et panel.
 - **Boblen kan ikke lukkes med Escape.** WCAG 1.4.13 krever at innhold som kommer fram på hover og fokus kan avvises uten å flytte musa eller fokus. Det krever JavaScript, og Tooltip er bare CSS. Bruk den derfor bare der boblen ikke dekker noe brukeren trenger å se, eller bruk [Popover](../popover/), som lukkes med Escape.
+- **Boblen flyttes ikke inn fra kanten av skjermen.** Den står midt over knappen. Står knappen helt ved venstre eller høyre kant på en smal skjerm, havner en del av boblen utenfor. Å flytte den krever ankerplassering i CSS, som ikke finnes i alle nettlesere ennå, eller JavaScript. Legg derfor ikke en knapp med boble helt ute ved kanten.
 - En boble på et felt som allerede har hjelpetekst er dobbelt opp. Velg én.

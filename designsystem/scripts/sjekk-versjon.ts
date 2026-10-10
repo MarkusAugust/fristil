@@ -131,7 +131,8 @@ if (!maalt) {
  * Versjonen til hver workspace står også i `bun.lock`, og `bun install`
  * skriver den ikke på nytt når bare versjonen er endret. `prepare-version`
  * gjør det for pakken, men utvidelsen fikk 0.8.0 i `package.json` mens
- * låsefila sto på 0.7.0. Kravet gjelder derfor alle tre.
+ * låsefila sto på 0.7.0. Kravet gjelder derfor hver workspace som har en
+ * versjon. `documentation` har ingen, og hoppes over.
  */
 const rotpakke = await Bun.file(join(ROT, "../package.json")).json()
 const laas = await Bun.file(join(ROT, "../bun.lock")).text()

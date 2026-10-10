@@ -39,7 +39,8 @@ function onlyRules(source: string): string {
 /**
  * Det som står etter klammen som lukker den første blokken. For et stilark
  * som starter med `@layer fristil {`, er det alt utenfor laget. Strenger og
- * kommentarer må være tatt bort først, som `onlyRules` gjør.
+ * kommentarer må være tatt bort først, som `onlyRules` gjør. Blir blokken
+ * aldri lukket, svarer den med en melding om det, så sjekken feiler.
  */
 function afterFirstBlock(rules: string): string {
   let depth = 0
@@ -47,7 +48,7 @@ function afterFirstBlock(rules: string): string {
     if (rules[i] === "{") depth++
     else if (rules[i] === "}" && --depth === 0) return rules.slice(i + 1)
   }
-  return ""
+  return "(blokken lukkes aldri)"
 }
 
 /** Stilark som bare samler andre filer, og derfor ikke har regler selv. */
@@ -131,6 +132,9 @@ describe("stilarkene pakken sender ut", () => {
     expect(
       afterFirstBlock("@layer fristil { .fs-a { color: red } }\n").trim(),
     ).toBe("")
+    expect(afterFirstBlock("@layer fristil { .fs-a { color: red }")).not.toBe(
+      "",
+    )
   })
 
   it("har ingen tegn utenfor ASCII utenom kommentarene", () => {

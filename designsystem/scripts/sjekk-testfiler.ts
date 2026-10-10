@@ -14,11 +14,14 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const COMPONENTS = fileURLToPath(new URL("../src/components", import.meta.url))
-const CATEGORIES = ["css", "ramme", "frittstaende"]
 
 const missing: string[] = []
 let checked = 0
-for (const category of CATEGORIES) {
+// Kategoriene leses fra mappa, så en ny kategori ikke kan bli oversett.
+const categories = readdirSync(COMPONENTS).filter((name) =>
+  statSync(join(COMPONENTS, name)).isDirectory(),
+)
+for (const category of categories) {
   for (const name of readdirSync(join(COMPONENTS, category)).sort()) {
     const folder = join(COMPONENTS, category, name)
     if (!statSync(folder).isDirectory()) continue

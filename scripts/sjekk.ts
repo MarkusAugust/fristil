@@ -33,22 +33,67 @@ const SKIPPED: Record<string, string> = {
     "jobben kjører på Windows, og stiene og stasjonene den tester finnes ikke her",
   "sjekk/Oppdater npm": "endrer den globale npm-en på maskinen",
   "sjekk/Installer nettlesere":
-    "henter nettlesere fra nettet; hent dem én gang med `bun --filter @fristil/designsystem nettlesere`",
+    "henter nettlesere fra nettet. Hent dem én gang med `bun --filter @fristil/designsystem nettlesere`",
 }
+
+/*
+ * Det skriptet forstår av et steg. Står det noe annet, som `env`, `if`,
+ * `shell` eller `continue-on-error`, eller `defaults` på jobben, ville
+ * skriptet kjørt steget på en annen måte enn CI uten å si fra. Da stopper
+ * det heller, og må læres opp.
+ */
+const STEP_KEYS = new Set([
+  "name",
+  "id",
+  "run",
+  "uses",
+  "with",
+  "working-directory",
+])
+const JOB_KEYS = new Set([
+  "name",
+  "runs-on",
+  "steps",
+  "needs",
+  "timeout-minutes",
+  "permissions",
+])
+const WORKFLOW_KEYS = new Set([
+  "name",
+  "on",
+  "concurrency",
+  "jobs",
+  "permissions",
+])
 
 const workflow = Bun.YAML.parse(
   await Bun.file(`${ROOT}.github/workflows/ci.yml`).text(),
 ) as { jobs: Record<string, Job> }
 
+const unknown: string[] = []
+for (const key of Object.keys(workflow))
+  if (!WORKFLOW_KEYS.has(key)) unknown.push(key)
+
 const used = new Set<string>()
+let actions = 0
 const steps: { key: string; run: string; cwd: string }[] = []
 for (const [jobId, job] of Object.entries(workflow.jobs)) {
   if (jobId in SKIPPED) {
     used.add(jobId)
     continue
   }
+  for (const key of Object.keys(job))
+    if (!JOB_KEYS.has(key)) unknown.push(`${jobId}: ${key}`)
   for (const step of job.steps) {
-    if (step.run === undefined) continue
+    for (const key of Object.keys(step))
+      if (!STEP_KEYS.has(key))
+        unknown.push(`${jobId}/${step.name ?? step.uses ?? step.run}: ${key}`)
+    // Et steg med `uses` setter opp noe CI-maskinen mangler, som Java eller
+    // en hurtigbuffer. Maskinen her har det fra før.
+    if (step.run === undefined) {
+      actions += 1
+      continue
+    }
     const key = `${jobId}/${step.name ?? step.run.split("\n")[0]}`
     if (key in SKIPPED) {
       used.add(key)
@@ -68,10 +113,17 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
   }
 }
 
-const unknown = Object.keys(SKIPPED).filter((key) => !used.has(key))
 if (unknown.length > 0) {
   console.error(
-    `✗ Unntakene i scripts/sjekk.ts finnes ikke i ci.yml: ${unknown.join(", ")}. Rett navnet, eller ta unntaket bort.`,
+    `✗ ci.yml har noe scripts/sjekk.ts ikke vet hvordan det skal kjøres: ${unknown.join(", ")}. Lær skriptet det, så stegene kjøres som i CI.`,
+  )
+  process.exit(1)
+}
+
+const stale = Object.keys(SKIPPED).filter((key) => !used.has(key))
+if (stale.length > 0) {
+  console.error(
+    `✗ Unntakene i scripts/sjekk.ts finnes ikke i ci.yml: ${stale.join(", ")}. Rett navnet, eller ta unntaket bort.`,
   )
   process.exit(1)
 }
@@ -97,6 +149,10 @@ for (const step of steps) {
     console.error(
       `\n✗ ${step.key} feilet etter ${seconds} s, som steg ${done + 1} av ${steps.length}.`,
     )
+    if (step.key.endsWith("Ingenting er ugenerert"))
+      console.error(
+        "  Steget spør git om noe er endret. Lokalt teller også det du ikke har committet ennå, så commit først og kjør på nytt.",
+      )
     process.exit(result.exitCode ?? 1)
   }
   console.log(`✓ ${step.key} (${seconds} s)`)
@@ -105,5 +161,5 @@ for (const step of steps) {
 
 const minutes = ((performance.now() - started) / 60000).toFixed(1)
 console.log(
-  `\n${done} av ${steps.length} steg fra ci.yml er grønne, på ${minutes} min. Hoppet over: ${Object.keys(SKIPPED).join(", ")}.`,
+  `\n${done} av ${steps.length} steg fra ci.yml er grønne, på ${minutes} min. Hoppet over: ${Object.keys(SKIPPED).join(", ")}, og ${actions} steg som setter opp CI-maskinen.`,
 )

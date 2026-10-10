@@ -206,6 +206,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     monter(`
       <progress class="fs-progress" id="ubestemt" aria-label="Laster opp"></progress>
       <span id="markering" style="color: Highlight">x</span>
+      <span id="tekst" style="color: CanvasText">x</span>
     `)
     await settHoeykontrast(true)
 
@@ -213,7 +214,8 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     expect(ubestemt.backgroundImage).toContain("gradient")
     // Stripen er i systemets markeringsfarge, så den skiller seg fra flaten.
     expect(ubestemt.backgroundImage).toContain(stil("markering").color)
-    expect(ubestemt.borderTopStyle).toBe("solid")
+    expect(ubestemt.outlineStyle).toBe("solid")
+    expect(ubestemt.outlineColor).toBe(stil("tekst").color)
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {

@@ -41,7 +41,7 @@ Ingen komponent bruker shadow DOM. Kategorien sier hvem som lager nodene: den so
 
 ## Lokal utvikling
 
-Forutsetning: Bun.
+Forutsetning: Bun og Rust ([rustup](https://rustup.rs)). `bun run sjekk` krever også Java 17 eller nyere, se [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 bun install

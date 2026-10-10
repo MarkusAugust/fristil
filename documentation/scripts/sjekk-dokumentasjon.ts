@@ -57,7 +57,7 @@ function nevnt(tekst: string, navn: string): boolean {
   return false
 }
 
-/** Komponentmappene, som `css/button` og `frittstaende/calendar`. */
+/** Komponentmappene: mappenavnet, som `button`, og stien til mappa. */
 function komponentmapper(): { navn: string; sti: string }[] {
   const mapper = new Map<string, string>()
   for (const fil of filer("*/*/*.ts")) {
@@ -86,7 +86,6 @@ function klasser(css: string): string[] {
   return [...new Set((rent.match(/\.fs-[\w-]+/g) ?? []).map((n) => n.slice(1)))]
 }
 
-/** Komponentvariablene et stilark leser. */
 /**
  * Komponentvariablene, altså det konsumenten kan sette på én komponent.
  *
