@@ -70,7 +70,7 @@ val kompilerKommandolinje = tasks.register<no.fristil.build.CompileCore>("kompil
  */
 tasks.processResources {
     from(designsystem) {
-        include("package.json", "manifest/manifest.json", "src/tokens/fargekontrakt.json", "agent/*.md", "src/components/**")
+        include("package.json", "manifest/manifest.json", "manifest/filer.json", "src/tokens/fargekontrakt.json", "agent/*.md", "src/components/**")
         exclude("**/*.test.ts")
         into("fristil-pakke")
     }

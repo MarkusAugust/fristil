@@ -63,6 +63,17 @@ pub fn manifest() -> String {
     read("manifest/manifest.json")
 }
 
+/// Lista over regelbøkene og komponentfilene i pakken, `manifest/filer.json`.
+/// Kommandolinja leser den framfor mappene, som ikke lot seg lese gjennom
+/// Nodes WASI på Windows.
+pub fn files() -> fristil_kjerne::json::Json {
+    fristil_kjerne::json::parse(&read("manifest/filer.json")).unwrap_or_else(|e| {
+        fail(&format!(
+            "manifest/filer.json i pakken kan ikke leses: {e}\n"
+        ))
+    })
+}
+
 /// Gir kjernen fargekontrakten i pakken, før et tema bygges eller sjekkes.
 pub fn load_contract() {
     let text = read("src/tokens/fargekontrakt.json");

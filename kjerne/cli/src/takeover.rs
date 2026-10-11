@@ -31,15 +31,16 @@ pub struct Component {
     pub category: String,
     pub name: String,
     folder: std::path::PathBuf,
+    names: Vec<String>,
 }
 
 impl Component {
     /// Filnavnet og innholdet, uten testene, sortert etter navn. Leses først
     /// når komponenten er valgt.
     pub fn files(&self) -> Vec<(String, String)> {
-        listed(&self.folder)
-            .into_iter()
-            .filter(|(file, path)| !file.contains(".test.") && path.is_file())
+        self.names
+            .iter()
+            .map(|file| (file.clone(), self.folder.join(file)))
             .map(|(file, path)| {
                 let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
                     fail(&format!(
@@ -53,36 +54,33 @@ impl Component {
     }
 }
 
-/// Navnene og stiene i en mappe, sortert.
-fn listed(dir: &std::path::Path) -> Vec<(String, std::path::PathBuf)> {
-    let mut entries: Vec<(String, std::path::PathBuf)> = std::fs::read_dir(dir)
-        .into_iter()
-        .flatten()
-        .flatten()
-        .map(|e| (e.file_name().to_string_lossy().into_owned(), e.path()))
-        .collect();
-    entries.sort();
-    entries
-}
-
-/// Kategoriene under `src/components/`, uten `å` i stien med vilje.
-const CATEGORIES: [&str; 3] = ["css", "ramme", "frittstaende"];
-
 /// Komponentene i pakken, sortert etter navn.
 pub fn components() -> Vec<Component> {
     let root = crate::package::require().join("src/components");
-    let mut out = Vec::new();
-    for category in CATEGORIES {
-        for (name, folder) in listed(&root.join(category)) {
-            if folder.is_dir() {
-                out.push(Component {
-                    category: category.into(),
-                    name,
-                    folder,
-                });
-            }
-        }
-    }
+    let text = |c: &Json, key: &str| {
+        c.get(key)
+            .and_then(Json::as_str)
+            .unwrap_or_default()
+            .to_string()
+    };
+    let mut out: Vec<Component> = crate::package::files()
+        .get("components")
+        .and_then(Json::as_array)
+        .unwrap_or_default()
+        .iter()
+        .map(|c| Component {
+            category: text(c, "category"),
+            name: text(c, "name"),
+            folder: root.join(text(c, "category")).join(text(c, "name")),
+            names: c
+                .get("files")
+                .and_then(Json::as_array)
+                .unwrap_or_default()
+                .iter()
+                .filter_map(|f| f.as_str().map(str::to_string))
+                .collect(),
+        })
+        .collect();
     out.sort_by(|a, b| a.name.cmp(&b.name));
     out
 }

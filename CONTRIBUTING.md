@@ -80,6 +80,7 @@ Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved
 | `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` og fargematrisen |
 | `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
 | `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
+| `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
 
 `bun --filter fristil-vscode generate` skriver sju, og fire av dem lander i pakken:
 

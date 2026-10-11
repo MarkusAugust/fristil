@@ -14,17 +14,13 @@ use fristil_kjerne::json::{parse, Json};
 
 /// Navnene på regelbøkene i pakken, sortert. Teksten leses bare for den valgte.
 fn rulebooks() -> Vec<String> {
-    let dir = crate::package::require();
-    let mut books: Vec<String> = std::fs::read_dir(dir.join("agent"))
-        .into_iter()
-        .flatten()
-        .flatten()
-        .filter_map(|entry| {
-            let file = entry.file_name().to_string_lossy().into_owned();
-            Some(file.strip_suffix(".md")?.to_string())
-        })
+    let books: Vec<String> = crate::package::files()
+        .get("agent")
+        .and_then(Json::as_array)
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|name| name.as_str().map(str::to_string))
         .collect();
-    books.sort();
     if books.is_empty() {
         fail("Fant ingen regelbøker i agent/ i pakken.\n");
     }

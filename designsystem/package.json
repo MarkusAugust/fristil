@@ -330,6 +330,7 @@
     "dist",
     "web-types.json",
     "manifest/manifest.json",
+    "manifest/filer.json",
     "kjerne/fristil-kjerne.wasm",
     "kjerne/fristil.wasm",
     "manifest/manifest.schema.json",
