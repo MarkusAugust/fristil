@@ -2,7 +2,7 @@
  * Formen på ordforrådet: elementene og klassene Fristil har.
  *
  * `elements.ts` og `classes.ts` ved siden av genereres av
- * `editor/scripts/generate.ts`, og er kilden manifestet skrives fra
+ * `scripts/generate-ordforrad.ts`, og er kilden manifestet skrives fra
  * (`scripts/generate-manifest.ts`). Kjernen og alle verktøyene leser
  * manifestet, ikke disse filene, så de er ikke en del av pakkens API.
  */

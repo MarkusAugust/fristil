@@ -1,5 +1,7 @@
 package no.fristil.intellij
 
+import com.google.gson.JsonParser
+
 /**
  * En klasse fra Fristil, slik editoren viser den.
  *
@@ -18,20 +20,25 @@ data class Klasse(
 /**
  * Klassene Fristil sender ut.
  *
- * Lista står i `Klasser.kt`, som genereres av `editor/scripts/generate.ts`
- * fra den samme `classesData()` som skriver `classes.ts` og `web-types.json`.
- * Pluginen har derfor ingen egen utgave som kan komme ut av takt med
- * diagnostikken eller med VS Code-utvidelsen.
- *
- * Den er en Kotlin-fil og ikke JSON med vilje: da trengs ingen parser og
- * ingen avhengighet, og kompilatoren leser dataene. Det er det samme valget
- * som ble tatt for `src/diagnostics/classes.ts`.
+ * Lista leses fra manifestet i Kotlin-pakken, `no/fristil/manifest.json` i
+ * jar-en, det samme kjernen sjekker mot. Pluginen har derfor ingen egen
+ * utgave som kan komme ut av takt med diagnostikken eller med
+ * VS Code-utvidelsen. Gson følger med IntelliJ-plattformen.
  */
 object Katalog {
-    val klasser: List<Klasse> get() = KLASSER
+    val klasser: List<Klasse> by lazy {
+        val tekst =
+            Katalog::class.java.getResourceAsStream("/no/fristil/manifest.json")?.use {
+                it.readBytes().toString(Charsets.UTF_8)
+            } ?: error("manifest.json mangler i Kotlin-pakken")
+        JsonParser.parseString(tekst).asJsonObject.getAsJsonObject("classes").entrySet().map { (navn, verdi) ->
+            val klasse = verdi.asJsonObject
+            Klasse(navn, klasse["title"].asString, klasse["description"].asString, klasse["link"].asString)
+        }
+    }
 
     private val etterNavn: Map<String, Klasse> by lazy {
-        KLASSER.associateBy { it.navn }
+        klasser.associateBy { it.navn }
     }
 
     fun finn(navn: String): Klasse? = etterNavn[navn]

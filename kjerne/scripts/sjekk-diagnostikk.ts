@@ -13,10 +13,15 @@
  * linjer, et felt uten lukketagg. En gren uten tilfelle overlever at den
  * fjernes, og da vet ingen at den virker.
  *
- * Kjør med: bun scripts/sjekk-diagnostikk.ts (etter bun run kjerne i designsystem/)
+ * Kjør med: bun kjerne/scripts/sjekk-diagnostikk.ts (etter bun kjerne/scripts/bygg.ts)
  */
 
 import { readFileSync } from "node:fs"
+import {
+  classesData,
+  diagnosticsData,
+  snippets,
+} from "../../designsystem/scripts/generate-ordforrad"
 import {
   type Finding,
   loadCore,
@@ -25,8 +30,7 @@ import type {
   Classes,
   Elements,
 } from "../../designsystem/src/vocabulary/types.js"
-import { MODUL } from "../../kjerne/scripts/bygg.js"
-import { classesData, diagnosticsData, snippets } from "./generate"
+import { MODUL } from "./bygg.js"
 
 const all: Elements = diagnosticsData()
 const classes: Classes = classesData()

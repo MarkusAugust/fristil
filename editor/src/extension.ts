@@ -19,6 +19,12 @@
  * fil skal ikke kopieres for hvert tastetrykk.
  */
 
+/*
+ * Ordforrådet er manifestet i pakken, det samme kjernen sjekker mot.
+ * Utvidelsen pakkes til én fil, så manifestet følger med inn i den, og den
+ * leter ikke etter pakken i `node_modules`.
+ */
+import manifest from "@fristil/designsystem/manifest.json"
 import * as vscode from "vscode"
 import {
   LanguageClient,
@@ -26,12 +32,33 @@ import {
   type ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node"
-/*
- * Ordforrådet hentes fra kilden i pakken: utvidelsen pakkes til én fil, og
- * leter ikke etter pakken i `node_modules`.
- */
-import { classes } from "../../designsystem/src/vocabulary/classes.js"
-import { elements } from "../../designsystem/src/vocabulary/elements.js"
+
+type Vocabulary = {
+  elements: Record<
+    string,
+    {
+      link: string
+      attributes: Record<
+        string,
+        | { type: "flag" | "text" | "number" }
+        | { type: "values"; values: readonly string[] }
+      >
+    }
+  >
+  classes: Record<
+    string,
+    {
+      title: string
+      description: string
+      link: string
+      attributes: Record<
+        string,
+        { values: readonly string[]; default?: string; flag?: true }
+      >
+    }
+  >
+}
+const { classes, elements } = manifest as unknown as Vocabulary
 
 /** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
 const WINDOW = 4000

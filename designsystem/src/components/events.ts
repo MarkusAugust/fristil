@@ -1,4 +1,4 @@
-// Generert av editor/scripts/generate.ts fra editor/metadata.ts. Ikke rediger.
+// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
 
 /**
  * Hendelsene web-komponentene sender, med `detail` slik komponenten sender

@@ -10,27 +10,27 @@
  * attributt som er borte, stopper typesjekken. `scripts/sjekk.ts` tar
  * resten: at hvert element pakken registrerer står i lista.
  *
- * Fila sendes ikke ut i pakken. Den leses bare av generatoren.
+ * Fila sendes ikke ut i pakken. Den leses bare av `generate-ordforrad.ts`.
  */
 
-import type { FsConnectionStatus } from "@fristil/designsystem/connection-status"
-import { FS_CONNECTION_STATUS_TAG } from "@fristil/designsystem/connection-status"
-import type { FsDialog } from "@fristil/designsystem/dialog"
-import { FS_DIALOG_TAG } from "@fristil/designsystem/dialog"
-import type { FsErrorSummary } from "@fristil/designsystem/error-summary"
-import { FS_ERROR_SUMMARY_TAG } from "@fristil/designsystem/error-summary"
-import type { FsField } from "@fristil/designsystem/field"
-import { FS_FIELD_TAG } from "@fristil/designsystem/field"
-import type { FsPopover } from "@fristil/designsystem/popover"
-import { FS_POPOVER_TAG } from "@fristil/designsystem/popover"
-import type { FsSessionTimeout } from "@fristil/designsystem/session-timeout"
-import { FS_SESSION_TIMEOUT_TAG } from "@fristil/designsystem/session-timeout"
-import type { FsSuggestion } from "@fristil/designsystem/suggestion"
-import { FS_SUGGESTION_TAG } from "@fristil/designsystem/suggestion"
-import type { FsTabs } from "@fristil/designsystem/tabs"
-import { FS_TABS_TAG } from "@fristil/designsystem/tabs"
-import type { FsToast } from "@fristil/designsystem/toast"
-import { FS_TOAST_TAG } from "@fristil/designsystem/toast"
+import type { FsConnectionStatus } from "../src/components/frittstaende/connection-status/fs-connection-status.js"
+import { FS_CONNECTION_STATUS_TAG } from "../src/components/frittstaende/connection-status/fs-connection-status.js"
+import type { FsToast } from "../src/components/frittstaende/toast/fs-toast.js"
+import { FS_TOAST_TAG } from "../src/components/frittstaende/toast/fs-toast.js"
+import type { FsDialog } from "../src/components/ramme/dialog/fs-dialog.js"
+import { FS_DIALOG_TAG } from "../src/components/ramme/dialog/fs-dialog.js"
+import type { FsErrorSummary } from "../src/components/ramme/error-summary/fs-error-summary.js"
+import { FS_ERROR_SUMMARY_TAG } from "../src/components/ramme/error-summary/fs-error-summary.js"
+import type { FsField } from "../src/components/ramme/field/fs-field.js"
+import { FS_FIELD_TAG } from "../src/components/ramme/field/fs-field.js"
+import type { FsPopover } from "../src/components/ramme/popover/fs-popover.js"
+import { FS_POPOVER_TAG } from "../src/components/ramme/popover/fs-popover.js"
+import type { FsSessionTimeout } from "../src/components/ramme/session-timeout/fs-session-timeout.js"
+import { FS_SESSION_TIMEOUT_TAG } from "../src/components/ramme/session-timeout/fs-session-timeout.js"
+import type { FsSuggestion } from "../src/components/ramme/suggestion/fs-suggestion.js"
+import { FS_SUGGESTION_TAG } from "../src/components/ramme/suggestion/fs-suggestion.js"
+import type { FsTabs } from "../src/components/ramme/tabs/fs-tabs.js"
+import { FS_TABS_TAG } from "../src/components/ramme/tabs/fs-tabs.js"
 
 /** En lovlig verdi, med hva den betyr. */
 export type ValueDoc = { name: string; description: string }
