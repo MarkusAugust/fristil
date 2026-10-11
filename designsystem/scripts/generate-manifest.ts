@@ -563,38 +563,39 @@ for (const b of byggefunksjoner) {
  * men da beskriver det noe annet. Skriver flere byggefunksjoner det samme
  * attributtet, vinner den første i alfabetet.
  */
-const beskrivelser = new Map<string, string>()
-for (const b of byggefunksjoner) {
-  const egne = tilfeller.filter((t) => t.builder === b.name && t.expected)
-  for (const valg of b.options) {
-    if (!valg.description) continue
-    const attributtet = `data-${valg.name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
-    for (const med of egne.filter((t) => t.options[valg.name] !== undefined)) {
-      const { [valg.name]: _, ...uten } = med.options
-      const av = egne.find((t) => likt(t.options, uten))
-      if (!av) continue
-      const før = new Map(settene(av.expected))
-      for (const [navn, sett] of settene(med.expected)) {
-        const klasser = String(sett.class ?? "")
+const descriptions = new Map<string, string>()
+for (const builder of byggefunksjoner) {
+  const own = tilfeller.filter((t) => t.builder === builder.name && t.expected)
+  for (const option of builder.options) {
+    if (!option.description) continue
+    const attribute = `data-${option.name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
+    for (const withOption of own.filter(
+      (t) => t.options[option.name] !== undefined,
+    )) {
+      const { [option.name]: _, ...withoutOption } = withOption.options
+      const base = own.find((t) => likt(t.options, withoutOption))
+      if (!base) continue
+      const before = new Map(settene(base.expected))
+      for (const [setName, set] of settene(withOption.expected)) {
+        if (likt(set[attribute], before.get(setName)?.[attribute])) continue
+        const classNames = String(set.class ?? "")
           .split(/\s+/)
-          .filter((k) => classes[k])
-        for (const [attributt, verdi] of Object.entries(sett))
-          if (
-            attributt === attributtet &&
-            !likt(verdi, før.get(navn)?.[attributt])
-          )
-            for (const klasse of klasser)
-              if (!beskrivelser.has(`${klasse} ${attributt}`))
-                beskrivelser.set(`${klasse} ${attributt}`, valg.description)
+          .filter((c) => classes[c])
+        for (const className of classNames)
+          if (!descriptions.has(`${className} ${attribute}`))
+            descriptions.set(`${className} ${attribute}`, option.description)
       }
     }
   }
 }
-const medBeskrivelse = (klasse: string, attributter: Record<string, object>) =>
+const withDescriptions = (
+  className: string,
+  attributes: Record<string, object>,
+) =>
   Object.fromEntries(
-    Object.entries(attributter).map(([attributt, verdi]) => {
-      const description = beskrivelser.get(`${klasse} ${attributt}`)
-      return [attributt, description ? { ...verdi, description } : verdi]
+    Object.entries(attributes).map(([attribute, value]) => {
+      const description = descriptions.get(`${className} ${attribute}`)
+      return [attribute, description ? { ...value, description } : value]
     }),
   )
 
@@ -603,7 +604,7 @@ const klasser = Object.fromEntries(
     navn,
     {
       ...klasse,
-      attributes: medBeskrivelse(navn, {
+      attributes: withDescriptions(navn, {
         // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
         // derfra, men utledes på nytt under, ellers ble et flagg som er
         // borte fra byggefunksjonen stående i manifestet for alltid.
