@@ -275,7 +275,7 @@ defineFsDialog()
 </fs-dialog>
 ```
 
-Inne i `<fs-dialog>` gir komponenten dialogen navnet sitt fra den første overskriften: `aria-labelledby` mot overskriftens id, som den lager om den mangler, og klassen `fs-dialog__title` på overskriften. Har serveren skrevet `aria-labelledby` eller `aria-label`, står det. Lages markupen med JavaScript, skriver `fs.dialog({ titleId })` det samme.
+Inne i `<fs-dialog>` gir komponenten dialogen navnet sitt fra den første overskriften som står utenfor kroppen: `aria-labelledby` mot overskriftens id, som den lager om den mangler, og klassen `fs-dialog__title` på overskriften. En overskrift inne i `fs-dialog__body` er innholdets, ikke dialogens, og blir aldri tittel. Har serveren skrevet `aria-labelledby` eller `aria-label`, står det. Har dialogen ingen av delene og heller ingen overskrift utenfor kroppen, sier komponenten fra i konsollen. Lages markupen med JavaScript, skriver `fs.dialog({ titleId })` det samme.
 
 **Gi knappen som lukker dialogen en `value`.** Uten JavaScript er dialogen en boks på siden, og `<form method="dialog">` lukker den før noe skript har kjørt. Komponenten kjenner igjen det som alt har skjedd på `returnValue`, som nettleseren setter til verdien på knappen. Er den tom, ser komponenten en vert som sier «åpen» og en lukket dialog, og åpner den igjen.
 
@@ -392,7 +392,7 @@ Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 
-- Dialogen trenger et navn. `fs.dialog({ titleId })` skriver `aria-labelledby` mot overskriften, og inne i `<fs-dialog>` setter komponenten det fra den første overskriften når det mangler. Har du ingen overskrift, bruk `aria-label`.
+- Dialogen trenger et navn. `fs.dialog({ titleId })` skriver `aria-labelledby` mot overskriften, og inne i `<fs-dialog>` setter komponenten det fra den første overskriften utenfor kroppen når det mangler. Har du ingen overskrift, bruk `aria-label`.
 - Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».
 - Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
 - Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.

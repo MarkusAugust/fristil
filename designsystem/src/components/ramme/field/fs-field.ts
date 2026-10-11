@@ -206,7 +206,7 @@ export class FsField extends HostElement {
    * `required-marker="none"`, og markeringen serveren skrev kom tilbake.
    */
   get requiredMarker(): Marker {
-    const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+    const control = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
     return (
       readMarker(this.getAttribute("required-marker")) ??
       readMarker(this.resolveLabel(control)?.getAttribute("data-required")) ??
@@ -309,7 +309,7 @@ export class FsField extends HostElement {
    * kommer den ikke tilbake av seg selv.
    */
   private resolveLabel(control: HTMLElement | null): HTMLLabelElement | null {
-    const inside = this.querySelector("label")
+    const inside = this.ownPart<HTMLLabelElement>("label")
     if (inside || !control?.id) return inside
 
     const root = this.getRootNode() as Document | ShadowRoot
@@ -369,12 +369,31 @@ export class FsField extends HostElement {
     }
   }
 
+  /**
+   * Delene som hører til dette feltet, og ikke til et felt lenger ned.
+   *
+   * Et felt kan stå inni et annet: et søkefelt i et sprettoppvindu inni
+   * feltet, eller et `<fs-field>` i et `<fs-field>`. `querySelector` over
+   * hele undertreet fant da det innerste feltets kontroll først, og det ytre
+   * feltet skrev koblingen sin på den. Avgrensningen er den samme som
+   * `derivedParts()` i `host-element.ts` bruker for de andre komponentene.
+   */
+  private ownParts<T extends Element>(selector: string): T[] {
+    return [...this.querySelectorAll<T>(selector)].filter(
+      (part) => part.closest(this.localName) === this,
+    )
+  }
+
+  private ownPart<T extends Element>(selector: string): T | null {
+    return this.ownParts<T>(selector)[0] ?? null
+  }
+
   private sync(): void {
-    const control = this.querySelector<
+    const control = this.ownPart<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >(CONTROL_SELECTOR)
-    const help = this.querySelector<HTMLElement>(".fs-help-text")
-    const error = this.querySelector<HTMLElement>(".fs-error-text")
+    const help = this.ownPart<HTMLElement>(".fs-help-text")
+    const error = this.ownPart<HTMLElement>(".fs-error-text")
 
     if (!control) {
       warnAboutMarkup(
@@ -385,10 +404,23 @@ export class FsField extends HostElement {
         // Et tomt element er et område serveren ikke har fylt ennå, og det
         // er ikke en feil i markupen.
         () =>
-          this.childElementCount > 0 && !this.querySelector(CONTROL_SELECTOR),
+          this.childElementCount > 0 &&
+          this.ownParts(CONTROL_SELECTOR).length === 0,
       )
       return
     }
+
+    // Koblingen gjelder én kontroll, og det er den første. En kontroll til i
+    // samme felt står uten ledetekst, hjelpetekst og feilmelding, og det
+    // skal sies fra om framfor at den stilltiende står ukoblet.
+    warnAboutMarkup(
+      this,
+      "har mer enn én kontroll. Bare den første får ledeteksten, " +
+        "hjelpeteksten og feilmeldingen koblet til seg. Gi hver kontroll " +
+        "sitt eget <fs-field>, eller legg en gruppe i et <fieldset> med " +
+        "<legend>.",
+      () => this.ownParts(CONTROL_SELECTOR).length > 1,
+    )
 
     // Ledeteksten kan stå utenfor elementet. Oppslaget må skje etter at
     // kontrollen er funnet, siden det går via id-en hennes.
@@ -405,7 +437,7 @@ export class FsField extends HostElement {
        * med bare et ikon.
        */
       () => {
-        const named = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+        const named = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         if (!named || this.resolveLabel(named)) return false
         return (
           !named.hasAttribute("aria-label") &&

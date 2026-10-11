@@ -302,11 +302,11 @@ Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>
 
 Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, med de samme id-ene som før, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
 
-Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon.
+Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon. Og et felt med mer enn én kontroll gir en advarsel, siden bare den første får koblingen.
 
 ## Automatisk kobling
 
-Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant barna og:
+Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant sine egne deler og:
 
 1. Gir kontrollen en `id` hvis den mangler, og setter `label[for]` til den.
 2. Gir hjelpetekst og feilmelding `id` ved behov.
@@ -318,6 +318,8 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 Feilmeldingen kan derfor ligge i markupen hele tiden, skjult til feltet er ugyldig.
 
 Komponenten krever to klassenavn av deg: `fs-help-text` på hjelpeteksten og `fs-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet. Står ledeteksten utenfor, må du koble de to selv: gi kontrollen en `id` og ledeteksten en `for` som peker på den.
+
+Delene er bare dem som hører til dette feltet. Står et `<fs-field>` inni et annet, som et søkefelt i et sprettoppvindu inni feltet, ser det ytre feltet bare sin egen kontroll, ledetekst, hjelpetekst og feilmelding, og det indre sine.
 
 ## Attributter
 

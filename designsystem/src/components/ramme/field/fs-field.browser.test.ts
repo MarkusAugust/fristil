@@ -1003,4 +1003,48 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
 
     expect(kontroll.hasAttribute("data-state")).toBe(false)
   })
+
+  it("kobler bare sine egne deler når et felt står inni et annet", async () => {
+    /*
+     * Et søkefelt i et sprettoppvindu inni feltet, eller et felt i et felt,
+     * er vanlig markup. `querySelector` over hele undertreet fant det
+     * innerste feltets kontroll først, og det ytre feltet skrev `for`,
+     * `aria-describedby` og `id` på den. Hvert felt skal se bare sine egne.
+     */
+    document.body.innerHTML = `
+      <fs-field id="ytre">
+        <label id="ytre-label">Kommune</label>
+        <div popover>
+          <fs-field id="indre" invalid>
+            <label id="indre-label">Søk i lista</label>
+            <input id="indre-input" class="fs-input" type="search" />
+            <p class="fs-help-text" id="indre-help">Skriv minst to bokstaver.</p>
+            <p class="fs-error-text" id="indre-error">Ingen treff.</p>
+          </fs-field>
+        </div>
+        <input id="ytre-input" class="fs-input" type="text" />
+        <p class="fs-help-text" id="ytre-help">Kommunen du bor i.</p>
+      </fs-field>
+    `
+    await ventPaTegning()
+
+    const ytreLabel = document.getElementById("ytre-label") as HTMLLabelElement
+    const ytreInput = document.getElementById("ytre-input") as HTMLInputElement
+    const indreLabel = document.getElementById(
+      "indre-label",
+    ) as HTMLLabelElement
+    const indreInput = document.getElementById(
+      "indre-input",
+    ) as HTMLInputElement
+
+    expect(ytreLabel.htmlFor).toBe("ytre-input")
+    expect(ytreInput.getAttribute("aria-describedby")).toBe("ytre-help")
+    expect(ytreInput.hasAttribute("aria-invalid")).toBe(false)
+
+    expect(indreLabel.htmlFor).toBe("indre-input")
+    expect(indreInput.getAttribute("aria-describedby")).toBe(
+      "indre-help indre-error",
+    )
+    expect(indreInput.getAttribute("aria-invalid")).toBe("true")
+  })
 })
