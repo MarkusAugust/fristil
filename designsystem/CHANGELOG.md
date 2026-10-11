@@ -113,8 +113,9 @@ egen overskrift «Brytende».
 
 - **Typen `Manifest` fra `@fristil/designsystem/diagnostics`**, formen på
   `manifest.json` slik skjemaet beskriver den, for den som leser manifestet
-  selv. Kotlin-pakken har `Fristil.classes`, klassene i manifestet med
-  tittel, beskrivelse og komponentside.
+  selv. Kotlin-pakken har det samme som `Fristil.manifest`, og leser et
+  prosjekts eget manifest med `Manifest.parse`: elementene med attributter,
+  deler og hendelser, og klassene med attributtene og de lovlige verdiene.
 - **Delene og beskrivelsene står i manifestet.** Hvert element har nå
   `description` og `parts`: delene web-komponenten finner i markupen, med
   selektoren den leter med, hva delen skal inneholde, og om den kan stå
