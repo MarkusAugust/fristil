@@ -15,8 +15,7 @@
  *   - hver `fs.x()` er en byggefunksjon som finnes;
  *   - hvert tokennavn står i `tokens.css`;
  *   - bare React-regelboka viser React-inngangen, `useEffect` og `createRoot`;
- *   - ingen markup for nettleseren importerer et pakkenavn;
- *   - kommandoen kjenner nøyaktig de regelbøkene som finnes.
+ *   - ingen markup for nettleseren importerer et pakkenavn.
  *
  * Kjør med: bun scripts/sjekk-agent.ts, eller som en del av `bun run build`.
  */

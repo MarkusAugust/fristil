@@ -1,16 +1,7 @@
-//! Pakken kommandolinja leser kontrakten fra.
-//!
-//! Kommandolinja bærer ingen data. Manifestet, fargekontrakten, regelbøkene
-//! og kildekoden til komponentene ligger i `@fristil/designsystem`, og leses
-//! derfra når en kommando trenger dem. Mappa er den første av
-//!
-//! 1. `FRISTIL_PACKAGE`, som verten setter: npm-pakken peker på seg selv,
-//!    jar-en på filene den har med, og VS Code på manifestet i utvidelsen;
-//! 2. `node_modules/@fristil/designsystem` i arbeidsmappa eller en mappe
-//!    over den, slik Node finner en pakke.
-//!
-//! Finnes ingen av dem, sier kommandoen hva den mangler og stopper, framfor
-//! å sjekke mot et ordforråd ingen har valgt.
+//! Pakken kommandolinja leser manifestet, fargekontrakten, regelbøkene og
+//! komponentene fra: `FRISTIL_PACKAGE`, som verten setter, ellers
+//! `node_modules/@fristil/designsystem` i arbeidsmappa eller over den. Se
+//! `README.md`.
 
 use std::path::PathBuf;
 
@@ -54,7 +45,7 @@ pub fn read(path: &str) -> String {
     match std::fs::read(&file) {
         Ok(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
         Err(_) => fail(&format!(
-            "Fant ikke {} i pakken.\n\nFRISTIL_PACKAGE skal peke på mappa der @fristil/designsystem ligger.\n",
+            "Fant ikke {}. Pakken mangler fila, eller er ikke @fristil/designsystem.\n",
             shown(&file.to_string_lossy())
         )),
     }

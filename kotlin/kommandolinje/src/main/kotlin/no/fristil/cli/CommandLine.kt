@@ -109,7 +109,10 @@ object CommandLine {
         if (uri.scheme != "jar") return@lazy Path.of(uri).parent.parent
         val target = Files.createTempDirectory("fristil-pakke-")
         Runtime.getRuntime().addShutdownHook(Thread { target.toFile().deleteRecursively() })
-        FileSystems.newFileSystem(uri, emptyMap<String, Any>()).use { jar ->
+        // Jar-en åpnes som en fil, ikke gjennom adressen: et filsystem for
+        // adressen kan alt være åpnet av noe annet i samme JVM.
+        val jarFile = Path.of(CommandLine::class.java.protectionDomain.codeSource.location.toURI())
+        FileSystems.newFileSystem(jarFile).use { jar ->
             val root = jar.getPath("/fristil-pakke")
             Files.walk(root).use { paths ->
                 for (source in paths) {

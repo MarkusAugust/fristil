@@ -2,7 +2,7 @@
  * At kjernen feller hver feiltype den skal, og bare dem.
  *
  * Kjernen er Rust-modulen slik `bun run kjerne` sist bygget den, med
- * manifestet innebygd. En regel som er skrudd av i Rust, feller her etter
+ * pakkens manifest. En regel som er skrudd av i Rust, feller her etter
  * neste bygg av modulen. Hvert tilfelle sier hvor mange funn det skal gi og
  * hva meldingen skal nevne, og de rene tilfellene skal gi null. Snippetene
  * fra komponentsidene er med som rene tilfeller: gir en av dem funn, er

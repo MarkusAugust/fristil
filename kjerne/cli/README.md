@@ -33,7 +33,6 @@ har installert. Finnes ingen pakke, sier programmet fra og stopper. Se
 `src/package.rs`.
 
 Installert fra repoet: `cargo install --git https://github.com/MarkusAugust/fristil fristil`.
-Crate-en leser ingenting utenfor sin egen mappe når den bygges.
 
 ## At den svarer det samme
 

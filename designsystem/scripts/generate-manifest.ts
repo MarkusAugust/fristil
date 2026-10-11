@@ -5,8 +5,8 @@
  *
  *   - `manifest/manifest.json`: ordforrådet (elementene og klassene, de samme
  *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `fs` med
- *     valgene og formen på svaret. Den er liten, og Rust-kjernen bærer den
- *     innebygd som standard.
+ *     valgene og formen på svaret. Den er liten, og hver vert gir den til
+ *     Rust-kjernen.
  *   - `manifest/byggetilfeller.json`: hver byggefunksjon kalt med mange
  *     kombinasjoner av valgene, med svaret TypeScript gir. En utgave i et annet
  *     språk skal svare nøyaktig det samme på hvert tilfelle.

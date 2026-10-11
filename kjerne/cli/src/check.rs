@@ -36,9 +36,9 @@ fn read_all_input() -> Vec<u8> {
     }
 }
 
-/// Fragmentene i filene, hvert av dem kontrollert for seg, så en feil sier
-/// hvilken fil den står i.
-pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
+/// Fragmentene i filene, hvert av dem kontrollert mot `base` for seg, så en
+/// feil sier hvilken fil den står i.
+pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
     let mut texts = Vec::new();
     for path in manifests {
         let Ok(bytes) = std::fs::read(path) else {
@@ -48,7 +48,7 @@ pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
             ));
         };
         let text = String::from_utf8_lossy(&bytes).into_owned();
-        if let Err(reason) = manifest::with_fragments(&crate::package::manifest(), &[&text]) {
+        if let Err(reason) = manifest::with_fragments(base, &[&text]) {
             fail(&format!(
                 "«{}» kan ikke leses som et manifest: {reason}\n",
                 shown(path)
@@ -62,7 +62,7 @@ pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
 /// Ordforrådet: manifestet i pakken, med fragmentene lagt til.
 fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
     let base = crate::package::manifest();
-    let texts = read_fragments(manifests);
+    let texts = read_fragments(&base, manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
     match manifest::with_fragments(&base, &all) {
         Ok(vocabulary) => std::rc::Rc::new(vocabulary),

@@ -33,7 +33,7 @@ og svarer det samme, byte for byte. Velg det som allerede finnes på maskinen:
 | Har du | Kjør |
 | --- | --- |
 | Java 17 eller nyere | `java -jar fristil.jar sjekk skjema.html` |
-| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. fristil.wasm sjekk skjema.html` |
+| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. --env FRISTIL_PACKAGE=package fristil.wasm sjekk skjema.html` |
 | Rust | `cargo install --git https://github.com/MarkusAugust/fristil fristil`, og så `fristil sjekk skjema.html` |
 
 `fristil.jar` og `fristil.wasm` ligger ved hver
@@ -46,7 +46,19 @@ bygd av, og det kan du kontrollere selv:
 gh attestation verify fristil.jar --repo MarkusAugust/fristil
 ```
 
-Jar-en har alt i seg og trenger ingen avhengigheter.
+Jar-en har alt i seg og trenger ingen avhengigheter. Den kjørbare fila og
+`fristil.wasm` har ingen data: de leser manifestet, fargekontrakten,
+regelbøkene og komponentene fra `@fristil/designsystem` i `node_modules`,
+eller fra mappa `FRISTIL_PACKAGE` peker på. Uten Node henter du pakken fra
+npm-registeret og pakker den ut, så ligger den i `package/`:
+
+```bash
+curl -sL https://registry.npmjs.org/@fristil/designsystem/-/designsystem-0.32.1.tgz | tar xz
+FRISTIL_PACKAGE=package fristil sjekk skjema.html
+```
+
+Bytt ut versjonen med den du vil sjekke mot. Uten pakken stopper kommandoen
+og sier hva den mangler.
 
 En adresse hentes av verten, siden WASI ikke har nettverk. `npx` og `java -jar`
 henter både `http://` og `https://`. Den kjørbare fila fra `cargo install`
@@ -65,11 +77,13 @@ Rust. Det er den svakeste av vertene, og det bør du vite før du velger den:
 - **Ingen adresser.** wasmtime har ikke nettverk, og ingen vert henter siden
   for modulen. `fristil sjekk http://…` sier at den ikke fikk kontakt. Send
   siden inn selv: `curl -s http://localhost:8080/skjema | wasmtime run
-  --dir=. fristil.wasm sjekk --rendret`.
+  --dir=. --env FRISTIL_PACKAGE=package fristil.wasm sjekk --rendret`.
 - **Bare mappene du åpner.** wasmtime ser bare det du gir den med `--dir`.
   Med `--dir=.` virker stier under arbeidsmappa, og en fil utenfor gir «Fant
-  ikke fila», selv om den finnes. Språkserveren trenger `--dir=/::/`, som gir
-  den hele filsystemet.
+  ikke fila», selv om den finnes. Pakken må også ligge under en mappe du
+  åpner, og `FRISTIL_PACKAGE` gis med `--env`, siden wasmtime ikke gir
+  modulen miljøet ditt. Språkserveren trenger `--dir=/::/`, som gir den hele
+  filsystemet.
 - **Ingen beskjed om standard inn.** De andre vertene sier «Leser markup fra
   standard inn» når du kjører `sjekk` uten filer i en terminal. wasmtime kan
   ikke se det, så kommandoen venter stille til du avslutter med Ctrl-D.

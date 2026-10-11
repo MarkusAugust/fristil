@@ -111,18 +111,12 @@ pub fn loaded() -> bool {
     CONTRACT.with(|c| c.borrow().is_some())
 }
 
-/// Kontrakten verten har gitt.
-///
-/// I testene leses den fra pakken, fra `FRISTIL_PACKAGE` eller
-/// `designsystem/` ved siden av, når ingen er gitt.
+/// Kontrakten verten har gitt. I testene den i pakken.
 pub fn contract() -> Rc<Contract> {
     #[cfg(test)]
     if !loaded() {
-        let package = std::env::var("FRISTIL_PACKAGE")
-            .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem").into());
-        let text = std::fs::read_to_string(format!("{package}/src/tokens/fargekontrakt.json"))
-            .expect("testene trenger fargekontrakten i pakken");
-        load(&text).expect("fargekontrakten i pakken skal kunne leses");
+        load(&crate::package_file("src/tokens/fargekontrakt.json"))
+            .expect("fargekontrakten i pakken skal kunne leses");
     }
     CONTRACT
         .with(|c| c.borrow().clone())

@@ -26,13 +26,8 @@ import { lightCells } from "../src/tokens/matrise.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 
-/*
- * Den kjørbare fila fra `cargo install` bærer ingen data, og finner pakken i
- * `FRISTIL_PACKAGE` eller i `node_modules`. Her er skriptet verten, og pakken
- * er den i repoet. npm-verten og jar-en gir modulen variabelen selv, og arver
- * den ikke. Miljøet gis hver prosess eksplisitt: `Bun.spawn` arver ikke en
- * variabel som er satt i `process.env` underveis.
- */
+// Pakken for den kjørbare fila, som ikke har noen vert som setter den.
+// Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
 const MILJØ = {
   ...process.env,
   FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,

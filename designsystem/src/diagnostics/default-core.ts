@@ -1,11 +1,9 @@
 /**
  * Kjernen fra pakken selv, lastet første gang den trengs, med pakkens eget
- * manifest og fargekontrakt.
+ * manifest og fargekontrakt, som ligger ved siden av modulen.
  *
  * Både sjekken (`@fristil/designsystem/diagnostics`) og temaet
  * (`@fristil/designsystem/tema` og `tema-sjekk`) bruker den samme instansen.
- * Kjernen bærer ingen data, så det er denne fila som gir den dataene: de
- * ligger i pakken ved siden av modulen.
  */
 
 import { type Core, loadCore } from "./core.js"
@@ -36,7 +34,7 @@ export function defaultCore(): Core {
     throw new Error(
       node
         ? `Fristil krever Node 20.16 eller nyere, og dette er Node ${node}.`
-        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv og gi den til loadCore.",
+        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og fargekontrakt.json med loadContract.",
     )
   }
   let bytes: Uint8Array

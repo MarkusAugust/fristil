@@ -28,22 +28,15 @@ pub fn set_current(vocabulary: Vocabulary) {
     CURRENT.with(|c| *c.borrow_mut() = Some(Rc::new(vocabulary)));
 }
 
-/// Manifestet i pakken, til testene: fra `FRISTIL_PACKAGE`, eller
-/// `designsystem/` ved siden av. Bygget leser det aldri.
+/// Manifestet i pakken, til testene.
 #[cfg(test)]
 pub fn for_tests() -> Rc<Vocabulary> {
-    thread_local! {
-        static TESTS: Rc<Vocabulary> = Rc::new(from_json(&test_text()).expect("manifestet i pakken skal kunne leses"));
-    }
-    TESTS.with(Rc::clone)
+    Rc::new(from_json(&test_text()).expect("manifestet i pakken skal kunne leses"))
 }
 
 #[cfg(test)]
 pub fn test_text() -> String {
-    let package = std::env::var("FRISTIL_PACKAGE")
-        .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem").into());
-    std::fs::read_to_string(format!("{package}/manifest/manifest.json"))
-        .expect("testene trenger manifestet i pakken")
+    crate::package_file("manifest/manifest.json")
 }
 
 fn text(value: &Json, path: &str) -> Result<String, String> {

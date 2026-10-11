@@ -10,7 +10,7 @@ VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
 Sjekken er det eneste som leser markup fra en servermal: Thymeleaf, JTE,
 kotlinx.html, Go-maler, Razor eller en streng. Skrevet i TypeScript var den
 bare tilgjengelig der det fantes en JavaScript-motor. I Rust er den én liten
-modul (rundt 360 kB) uten importer og uten data, og verten trenger bare en
+modul (rundt 350 kB) uten importer og uten data, og verten trenger bare en
 WebAssembly-runtime.
 
 Den var skrevet i TypeScript først. Rust-utgaven ble oversatt funksjon for
@@ -28,13 +28,8 @@ Ingen bindingsverktøy, så den samme modulen virker overalt:
 4. `result_ptr()` og `result_len()` peker på funnene som JSON.
 
 Kjernen bærer ingen data. Verten gir den ordforrådet med
-`load_manifest_raw(peker, lengde)` og fargekontrakten med
-`load_contract_raw(peker, lengde)`, lest fra pakken den har. Begge svarer 0,
-eller 1 med `{"error": …}` når teksten ikke kan leses. Uten manifest svarer
-sjekken 1 med en forklaring, og uten fargekontrakt gjør temaet det samme,
-framfor å svare med en tom liste som ser ut som en side uten funn.
-`version_raw()` gir kjernens og manifestets versjon, og `null` for
-manifestet før det er gitt.
+`load_manifest_raw` og fargekontrakten med `load_contract_raw`, fra pakken
+den har. Hvordan hvert kall svarer, står øverst i `src/lib.rs`.
 
 Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule`, `link`,
 `message` og noen ganger `fix`. Posisjonene er UTF-16-indekser, som i

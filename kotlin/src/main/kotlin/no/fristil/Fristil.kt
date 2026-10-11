@@ -95,14 +95,7 @@ object Fristil {
 
     private fun diagnoseStyled(html: String, css: List<String>, page: Boolean, manifest: String? = null): List<Finding> {
         val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
-        val (status, answer) =
-            withCore {
-                it.use(manifest)
-                it.callWithStatus(STYLED, input)
-            }
-        // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
-        if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
-        return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
+        return diagnose(STYLED, input, manifest)
     }
 
     /*
@@ -138,7 +131,8 @@ object Fristil {
                 it.use(manifest)
                 it.callWithStatus(entry, html)
             }
-        if (status != 0L) throw IllegalStateException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
+        if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
     }
 

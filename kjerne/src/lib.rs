@@ -14,20 +14,12 @@
 //!    JSON, i UTF-8, med de samme feltene som `Finding` i TypeScript, og i
 //!    tillegg `rule`, `line` og `column`.
 //!
-//! I tillegg:
-//!
-//! Kjernen bærer ingen data. Verten gir den ordforrådet og fargekontrakten
-//! gjennom to porter, og leser dem fra pakken den har:
-//!
-//! - `load_manifest_raw(peker, lengde)` gir ordforrådet, et `manifest.json`.
-//!   Uten det svarer sjekken 1 med `{"error": …}`.
-//! - `load_contract_raw(peker, lengde)` gir fargekontrakten,
-//!   `fargekontrakt.json`. Uten den svarer temaet 1 med `{"error": …}`.
-//!
-//! Begge svarer 0 når det gikk, og 1 med `{"error": …}` når det ikke gikk.
-//! Det samme gjør hvert kall som sjekker eller bygger. `version_raw()`
-//! legger versjonene i svaret: kjernens, manifestets, eller `null` når det
-//! ikke er gitt, og formen på manifestet kjernen forstår.
+//! Kjernen bærer ingen data. Verten gir den ordforrådet med
+//! `load_manifest_raw(peker, lengde)` og fargekontrakten med
+//! `load_contract_raw(peker, lengde)`, fra pakken den har. Hvert kall som
+//! leser, sjekker eller bygger, svarer 0, eller 1 med `{"error": …}`, også
+//! når dataene mangler. `version_raw()` gir kjernens versjon, manifestets
+//! eller `null`, og formen på manifestet kjernen forstår.
 //!
 //! Posisjonene i funnene er UTF-16-indekser, som i JavaScript og Kotlin.
 //! `line` og `column` begynner på 1, og kolonnen telles i UTF-16-enheter.
@@ -41,6 +33,16 @@ pub mod suppress;
 pub mod text;
 pub mod theme;
 pub mod types;
+
+/// En fil i pakken, til testene: fra `designsystem/` ved siden av. Bygget
+/// leser den aldri.
+#[cfg(test)]
+pub(crate) fn package_file(path: &str) -> String {
+    std::fs::read_to_string(
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem/").to_owned() + path,
+    )
+    .unwrap_or_else(|e| panic!("testene trenger {path} i pakken: {e}"))
+}
 
 use std::cell::RefCell;
 
@@ -214,8 +216,8 @@ unsafe fn read_input(ptr: *mut u8, length: usize) -> String {
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
-/// Svarer med en feil, og gir 1. Et kall uten data skal si hvorfor, ikke
-/// svare med en tom liste som ser ut som en side uten funn.
+/// Svarer med en feil, og gir 1. Uten data skal kjernen si hvorfor, ikke svare
+/// med en tom liste som ser ut som en side uten funn.
 fn refuse(error: &str) -> u32 {
     respond(format!("{{\"error\":{}}}", json_string(error)));
     1
@@ -226,8 +228,6 @@ const NO_MANIFEST: &str =
 const NO_CONTRACT: &str =
     "Kjernen har ikke fått noen fargekontrakt. Gi den fargekontrakt.json fra pakken med load_contract_raw først.";
 
-/// Gir 0 med funnene, eller 1 når kjernen ikke har fått noe manifest.
-///
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
@@ -240,8 +240,6 @@ pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) -> u32
     0
 }
 
-/// Gir 0 med funnene, eller 1 når kjernen ikke har fått noe manifest.
-///
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]

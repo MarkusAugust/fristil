@@ -67,6 +67,8 @@ pub struct Server {
     outgoing: Vec<Json>,
     /// Manifestet er lest på nytt, og alle åpne dokumenter skal sjekkes.
     reloaded: bool,
+    /// Om serveren har sagt fra om at et dokument ikke har noe manifest.
+    warned: bool,
     /// Endringer sjekkes først når det ikke ligger flere meldinger i kø, se
     /// [`Server::flush`]. Av i testene, der hver melding sjekkes med en gang.
     deferred: bool,
@@ -232,6 +234,7 @@ impl Server {
             shut_down: false,
             outgoing: Vec::new(),
             reloaded: false,
+            warned: false,
             deferred: false,
             dirty: Vec::new(),
             can_watch: false,
@@ -318,13 +321,7 @@ impl Server {
         // som finner det. Det første som leses, er ingen endring.
         self.reloaded = !self.sources.is_empty();
         let vocabulary = match &path {
-            None => {
-                self.message(
-                    2,
-                    "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet.",
-                );
-                None
-            }
+            None => None,
             Some(file) => match std::fs::read(file)
                 .map_err(|e| e.to_string())
                 .and_then(|bytes| manifest::from_json(&String::from_utf8_lossy(&bytes)))
@@ -354,6 +351,15 @@ impl Server {
     fn check(&mut self, index: usize) {
         let uri = self.documents[index].uri.clone();
         let vocabulary = self.vocabulary(Some(&uri));
+        // Bare når et dokument faktisk står uten, og én gang: `initialize`
+        // leter bare ved rota, og i et monorepo ligger pakken lenger ned.
+        if vocabulary.is_none() && !self.warned {
+            self.warned = true;
+            self.message(
+                2,
+                "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet.",
+            );
+        }
         let document = &mut self.documents[index];
         document.findings = match vocabulary {
             None => Vec::new(),
@@ -459,10 +465,9 @@ impl Server {
                 .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
-        let version = self.vocabulary(None).map_or_else(
-            || env!("CARGO_PKG_VERSION").to_string(),
-            |v| v.version.clone(),
-        );
+        // Versjonen av Fristil serveren sjekker mot. Uten manifest er den ukjent,
+        // og feltet utelates, som LSP tillater.
+        let version = self.vocabulary(None).map(|v| v.version.clone());
         object(vec![
             (
                 "capabilities",
@@ -488,7 +493,12 @@ impl Server {
             ),
             (
                 "serverInfo",
-                object(vec![("name", text("fristil")), ("version", text(&version))]),
+                object(
+                    [("name", text("fristil"))]
+                        .into_iter()
+                        .chain(version.as_deref().map(|v| ("version", text(v))))
+                        .collect(),
+                ),
             ),
         ])
     }

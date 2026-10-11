@@ -26,8 +26,7 @@ egen overskrift «Brytende».
 ### Brytende
 
 - **Kjernen bærer ingen data.** `fristil-kjerne.wasm` hadde manifestet og
-  fargekontrakten bygget inn, og leste dem fra resten av repoet når den ble
-  bygget. Nå gir verten dem. For `diagnoseMarkup`, `diagnosePage`,
+  fargekontrakten bygget inn. Nå gir verten dem. For `diagnoseMarkup`, `diagnosePage`,
   `buildTheme` og `fristil` fra npm er ingenting endret: pakken gir
   kjernen sitt eget manifest og sin egen fargekontrakt. Den som laster
   kjernen selv, merker det:
@@ -38,8 +37,9 @@ egen overskrift «Brytende».
     manifest er gitt.
   - En vert i et annet språk kaller `load_manifest_raw` og den nye
     `load_contract_raw` først. `diagnose_markup_raw`, `diagnose_page_raw`
-    og `inspect_theme_raw` svarer nå 0, eller 1 med `{"error": …}`, som de
-    andre kallene. `reset_manifest` er fjernet.
+    og `inspect_theme_raw` svarer nå 0, eller 1 med `{"error": …}`, som
+    `build_theme_raw` og `diagnose_styled_raw` alt gjorde.
+    `reset_manifest` er fjernet.
   - Kommandolinja leser manifestet, fargekontrakten, regelbøkene og
     komponentene fra `@fristil/designsystem`: fra mappa
     `FRISTIL_PACKAGE` peker på, eller fra `node_modules` i arbeidsmappa
@@ -49,7 +49,7 @@ egen overskrift «Brytende».
     uten. `fristil agent` og `fristil overta` svarer dermed for versjonen
     prosjektet har installert.
 
-  Modulen er 93 kB mindre, og bygges uten å lese noe utenfor `kjerne/`.
+  Modulen er 93 kB mindre.
 - **En temagrense har nå en flate.** Et element med `data-theme="light"`
   eller `data-theme="dark"` får temaets bakgrunn og tekstfarge. Før fikk det
   mørke tokens, men beholdt sidens hvite bakgrunn, så brødteksten i en mørk

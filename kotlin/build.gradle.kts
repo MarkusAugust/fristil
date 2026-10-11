@@ -102,18 +102,11 @@ val webjar = tasks.register<Sync>("webjar") {
     }
 }
 
-/*
- * Manifestet i pakken, som `Fristil` gir kjernen når en konsument ikke
- * oppgir sitt eget. Kjernen bærer ingen data.
- */
-val pakkensManifest = tasks.register<Sync>("pakkensManifest") {
-    from(manifestFil)
-    into(layout.buildDirectory.dir("manifest/no/fristil"))
-}
+// Manifestet i pakken, som `Fristil` gir kjernen når en konsument ikke oppgir sitt eget.
+tasks.processResources { from(manifestFil) { into("no/fristil") } }
 
 sourceSets.main {
     resources.srcDir(webjar)
-    resources.srcDir(pakkensManifest.map { layout.buildDirectory.dir("manifest").get() })
     kotlin.srcDir(genererApi)
     java.srcDir(kompilerKjerne.map { it.sources })
     // Klassene for modulen er ferdig kompilert, så de legges i jar-en som de er.

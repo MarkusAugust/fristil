@@ -59,7 +59,15 @@ pub fn components() -> Vec<Component> {
             let files: Vec<(String, String)> = listed(&folder)
                 .into_iter()
                 .filter(|(file, path)| !file.contains(".test.") && path.is_file())
-                .filter_map(|(file, path)| Some((file, std::fs::read_to_string(path).ok()?)))
+                .map(|(file, path)| {
+                    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+                        fail(&format!(
+                            "Klarte ikke lese {}: {e}\n",
+                            shown(&path.to_string_lossy())
+                        ))
+                    });
+                    (file, text)
+                })
                 .collect();
             out.push(Component {
                 category: category.into(),

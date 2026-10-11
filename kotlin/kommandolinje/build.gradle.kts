@@ -68,22 +68,15 @@ val kompilerKommandolinje = tasks.register<no.fristil.build.CompileCore>("kompil
  * og kildekoden til komponentene for `fristil overta`. Modulen bærer ingen
  * av dem, og `CommandLine` gir den mappa som `FRISTIL_PACKAGE`.
  */
-val pakken = tasks.register<Sync>("pakken") {
+tasks.processResources {
     from(designsystem) {
-        include(
-            "package.json",
-            "manifest/manifest.json",
-            "src/tokens/fargekontrakt.json",
-            "agent/*.md",
-            "src/components/**",
-        )
+        include("package.json", "manifest/manifest.json", "src/tokens/fargekontrakt.json", "agent/*.md", "src/components/**")
         exclude("**/*.test.ts")
+        into("fristil-pakke")
     }
-    into(layout.buildDirectory.dir("pakke/fristil-pakke"))
 }
 
 sourceSets.main {
-    resources.srcDir(pakken.map { layout.buildDirectory.dir("pakke").get() })
     java.srcDir(kompilerKommandolinje.map { it.sources })
     resources.srcDir(kompilerKommandolinje.map { it.classes })
 }

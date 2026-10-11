@@ -8,8 +8,7 @@
  * JSON, slik hvert vertsspråk gjør det.
  *
  * Kjernen bærer ingen data. Ordforrådet og fargekontrakten gis den med
- * `loadManifest` og `loadContract`, fra filene i pakken. Uten manifest kaster
- * sjekken, og uten fargekontrakt kaster temaet.
+ * `loadManifest` og `loadContract`, fra filene i pakken.
  *
  * `diagnoseMarkup` og `diagnosePage` i `index.ts` laster modulen og filene
  * fra pakken selv. `loadCore` er for den som har modulen på en annen måte,
@@ -129,11 +128,6 @@ export type Core = {
   diagnoseStyled(html: string, css: string[], page: boolean): Finding[]
 }
 
-/*
- * Kallene som kan avvises svarer 0, eller 1 med `{"error": …}` som svar.
- * Uten et manifest eller en fargekontrakt avviser kjernen framfor å svare
- * med en tom liste, som ville sett ut som en side uten funn.
- */
 type Exports = {
   memory: WebAssembly.Memory
   alloc(length: number): number
