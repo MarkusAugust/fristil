@@ -1365,16 +1365,48 @@ describe("fs-dialog kobler fra bar struktur", () => {
   })
 
   it("rører ikke overskriften i en nøstet dialog", async () => {
+    // Den nøstede dialogens overskrift står først i dokumentrekkefølge, og
+    // er likevel ikke den ytre dialogens tittel. Det er overskriften etter.
     const { d } = await monterBar(
       BAR.replace("<h2>Slette søknaden?</h2>", "").replace(
         '<form method="dialog"',
-        '<dialog id="indre"><h2>Er du sikker?</h2></dialog><form method="dialog"',
+        '<dialog id="indre"><h2>Er du sikker?</h2></dialog>' +
+          '<h2 id="ytre">Slette søknaden?</h2><form method="dialog"',
       ),
     )
     const indre = d.querySelector("#indre h2") as HTMLElement
+    const ytre = d.querySelector("#ytre") as HTMLElement
 
     expect(indre.classList.contains("fs-dialog__title")).toBe(false)
-    expect(d.hasAttribute("aria-labelledby")).toBe(false)
+    expect(ytre.classList.contains("fs-dialog__title")).toBe(true)
+    expect(d.getAttribute("aria-labelledby")).toBe("ytre")
+  })
+
+  it("teller ikke en kropp utenfor sin egen dialog", async () => {
+    // En bekreftelse i kroppen til en innstillingsdialog: den indre
+    // dialogens overskrift står i den ytre dialogens kropp, men kroppen er
+    // ikke den indres, så overskriften er fortsatt tittelen dens.
+    monter(`
+      <dialog id="ytre" aria-label="Innstillinger">
+        <div class="fs-dialog__body">
+          <fs-dialog>
+            <dialog id="indre">
+              <h2 id="sikker">Er du sikker?</h2>
+              <form method="dialog" class="fs-dialog__footer">
+                <button class="fs-button" value="avbryt">Avbryt</button>
+              </form>
+            </dialog>
+          </fs-dialog>
+        </div>
+      </dialog>
+    `)
+    await customElements.whenDefined("fs-dialog")
+    await ventPaTegning()
+    const indre = document.getElementById("indre") as HTMLDialogElement
+    const tittel = document.getElementById("sikker") as HTMLElement
+
+    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(indre.getAttribute("aria-labelledby")).toBe("sikker")
   })
 
   it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {

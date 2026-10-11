@@ -185,25 +185,33 @@ export class FsDialog extends HostElement {
   /**
    * Overskriften som er dialogens tittel når serveren ikke pekte på en.
    *
-   * Den første overskriften som står utenfor kroppen, og i denne dialogen og
-   * ikke en nøstet. En overskrift i `.fs-dialog__body` er en overskrift i
-   * innholdet, ikke dialogens navn: en dialog med innstillinger i tre
-   * avsnitt fikk det første avsnittets overskrift som tittel, med klassen og
-   * stilen som følger med.
+   * Den første overskriften i denne dialogen som ikke står i kroppen. En
+   * overskrift i `.fs-dialog__body` er en overskrift i innholdet, ikke
+   * dialogens navn: en dialog med innstillinger i tre avsnitt fikk det første
+   * avsnittets overskrift som tittel, med klassen og stilen som følger med.
+   * En overskrift i en nøstet dialog er den nøstede sin, og kroppen som
+   * teller er bare en kropp i denne dialogen: står denne dialogen selv i
+   * kroppen til en annen, er den ytre kroppen ikke dens.
    */
   private headingOf(dialog: HTMLDialogElement): HTMLElement | null {
     return (
       [...dialog.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")].find(
-        (heading) =>
-          heading.closest("dialog") === dialog &&
-          !heading.closest(`.${DIALOG_BODY_CLASS}`),
+        (heading) => {
+          if (heading.closest("dialog") !== dialog) return false
+          const body = heading.closest(`.${DIALOG_BODY_CLASS}`)
+          return body === null || !dialog.contains(body)
+        },
       ) ?? null
     )
   }
 
-  /** Om dialogen står uten navn: verken peker, `aria-label` eller tittel. */
+  /**
+   * Om dialogen står uten navn: verken peker, `aria-label` eller tittel. En
+   * tom `<dialog>` er et område serveren ikke har fylt ennå, og teller ikke.
+   */
   private nameless(dialog: HTMLDialogElement): boolean {
     return (
+      dialog.childElementCount > 0 &&
       !dialog.hasAttribute("aria-labelledby") &&
       !dialog.hasAttribute("aria-label") &&
       this.headingOf(dialog) === null
@@ -348,7 +356,7 @@ export class FsDialog extends HostElement {
         this,
         "fant ingen <dialog> som direkte barn. Uten den kan ingenting " +
           "åpnes modalt, og innholdet står som en vanlig boks på siden.",
-        // Er komponenten løsrevet, byggefunksjon en morfer serverens utgave i et
+        // Er komponenten løsrevet, bygger en morfer serverens utgave i et
         // eget tre, og da er det ingenting å si fra om. Et tomt element er
         // et område serveren ikke har fylt ennå.
         () => this.childElementCount > 0 && this.dialog === null,

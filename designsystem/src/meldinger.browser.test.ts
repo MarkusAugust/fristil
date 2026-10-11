@@ -180,6 +180,19 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toHaveLength(1)
   })
 
+  it("men ikke om en tom dialog serveren ikke har fylt ennå", async () => {
+    const advarsel = lytt()
+
+    monter(`
+      <fs-dialog>
+        <dialog></dialog>
+      </fs-dialog>
+    `)
+    await ventTilRo()
+
+    expect(advarsel).not.toHaveBeenCalled()
+  })
+
   it("fanene uten knapper", async () => {
     // Knapper i raden er nok: komponenten gir dem rollen. Lenker er det ikke,
     // og uten `role="tab"` finner den ingen faner å koble.

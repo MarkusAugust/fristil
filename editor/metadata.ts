@@ -271,7 +271,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsDialog>(
     FS_DIALOG_TAG,
     "dialog",
-    'Gjør en `<dialog class="fs-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften når `aria-labelledby` mangler.',
+    'Gjør en `<dialog class="fs-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.',
     {
       open: flag(
         "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
