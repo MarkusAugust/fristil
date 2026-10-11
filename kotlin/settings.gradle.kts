@@ -4,7 +4,8 @@ rootProject.name = "fristil"
 // kotlinx.html til den som ikke bruker det.
 include("kotlinx-html")
 
-// Kommandolinja som `java -jar fristil.jar`. Gis ut som fil, ikke på Maven.
+// Kommandolinja som `java -jar fristil.jar`, gitt ut som fil på GitHub. På
+// Maven ligger den vanlige jar-en, som Gradle-pluginen avhenger av.
 include("kommandolinje")
 
 // Gradle-pluginen, som kjører kommandolinja i bygget.

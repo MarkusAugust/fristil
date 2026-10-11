@@ -133,10 +133,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # Og det samme for `java -jar fristil.jar`, som kjører WASI-modulen med
-      # Chicory.
+      # Chicory. Jar-en bygges av npm-pakken, her pakket fra denne commiten,
+      # siden koden er nyere enn det som ligger på npm.
       - name: Kommandolinja på JVM-en svarer som den i pakken
         run: |
-          (cd kotlin && ./gradlew :kommandolinje:samletJar)
+          (cd designsystem && npm pack --ignore-scripts --silent)
+          (cd kotlin && ./gradlew :kommandolinje:samletJar -Pfristil.pakke=../designsystem)
           FRISTIL_SAMMENLIGN="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-cli.ts
           FRISTIL_CLI="[\"java\",\"-jar\",\"$PWD/kotlin/kommandolinje/build/libs/fristil.jar\"]" bun designsystem/scripts/sjekk-lsp.ts
 
@@ -271,6 +273,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Kotlin-pakken bygges av npm-pakken og trenger verken Rust eller Bun.
+      # Tarballen pakkes likevel her, fra denne commiten, siden koden er nyere
+      # enn det som ligger på npm.
+      - name: Pakk npm-pakken
+        run: bun --filter @fristil/designsystem pakk
+
       - name: Kotlin
         working-directory: kotlin
-        run: ./gradlew test
+        run: ./gradlew test -Pfristil.pakke=../designsystem

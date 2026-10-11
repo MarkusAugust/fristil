@@ -51,8 +51,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Kotlin-pakken har WebJar-en med seg, og den bygges fra TypeScript og
-      # CSS-en i designsystem/ med Bun.
+      # Kotlin-pakken bygges av npm-pakken. Pluginen bruker den fra
+      # `../kotlin`, som er nyere enn det som ligger på npm, så tarballen
+      # pakkes her fra denne commiten, med Bun og Rust.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
@@ -61,10 +62,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       # `rust-toolchain.toml` i `kjerne/` bestemmer versjonen. rustup finnes
-      # på maskinen og henter den ved første kall, når Gradle bygger kjernen.
+      # på maskinen og henter den ved første kall.
       - name: Rust-versjon
         working-directory: kjerne
         run: rustc --version
+
+      - name: Pakk npm-pakken
+        run: bun --filter @fristil/designsystem pakk
 
       # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
       # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,
@@ -90,7 +94,7 @@ jobs:
 
       - name: Bygg og test
         working-directory: editor-intellij
-        run: ./gradlew build
+        run: ./gradlew build -Pfristil.pakke=../designsystem
 
       - name: Last opp pluginen
         uses: actions/upload-artifact@v4

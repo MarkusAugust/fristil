@@ -26,7 +26,7 @@ lovlige verdiene som `enum`-er. Hver gir et `Attributes`, et vanlig
 ut med `toHtml()`. Byggefunksjonene som gir flere sett, som `Fs.dialog` og
 `Fs.field`, gir en dataklasse med ett felt per sett.
 
-De fleste genereres fra manifestet (`../designsystem/manifest/manifest.json`)
+De fleste genereres fra manifestet (`manifest/manifest.json` i npm-pakken)
 når pakken bygges. Manifestet beskriver hver byggefunksjon som en tabell over
 hva hvert valg legger til, og `generate-manifest.ts` prøver tabellen mot
 TypeScript for hver kombinasjon av valg før den skrives. De seks der valgene
@@ -62,18 +62,18 @@ med og uten feil i skjemaet.
 
 `fristil.css`, stilarket for hver komponent og JavaScript-modulene for
 nettleseren ligger under `META-INF/resources/webjars/fristil/<versjon>/`, med
-de samme stiene som i npm-pakken. `FristilWebJar` har stiene. Gradle bygger
-filene fra `../designsystem` med `bun run bygg:nettleser`, og `WebJarTest`
-krever at hver import i hver modul peker på en fil i WebJar-en.
-
-Versjonen er den samme som npm-pakkens, lest fra `../designsystem/package.json`.
+de samme stiene som i npm-pakken. `FristilWebJar` har stiene. Filene kopieres
+fra npm-pakken, og `WebJarTest` krever at hver import i hver modul peker på en
+fil i WebJar-en.
 
 ## Kommandolinja
 
 `kommandolinje/` bygger `fristil.jar`, kommandolinja som `java -jar`. Den
-kjører WASI-modulen fra `../kjerne/cli` med Chicory, kompilert til bytekode
-ved bygg, og henter adresser med Javas egen HTTP-klient. Den gis ut på GitHub
-Releases, ikke på Maven.
+kjører WASI-modulen fra npm-pakken (`kjerne/fristil.wasm`) med Chicory,
+kompilert til bytekode ved bygg, og henter adresser med Javas egen
+HTTP-klient. `fristil.jar` gis ut på GitHub Releases. Den vanlige jar-en, uten
+avhengighetene i seg, ligger på Maven som `fristil-kommandolinje`, fordi
+Gradle-pluginen kjører den.
 
 ```bash
 cd kotlin && ./gradlew :kommandolinje:samletJar
@@ -93,9 +93,29 @@ lite prosjekt med Gradle TestKit, også med konfigurasjonsbufferen.
 cd kotlin && ./gradlew test
 ```
 
-Gradle bygger modulen fra `../kjerne` med `cargo`, så jar-en aldri bærer en
-utdatert kjerne, og WebJar-en fra `../designsystem` med Bun. Det krever Rust
-og Bun, og `bun install` i rota av repoet.
+Bygget trenger bare Java. Alt pakken består av, kommer fra npm-pakken
+`@fristil/designsystem` med versjonen i `gradle.properties`: kjernen og
+kommandolinja som WebAssembly, manifestet, regelbøkene og filene til
+WebJar-en. `io.github.markusaugust:fristil` og `@fristil/designsystem` med
+samme versjon er altså bygd av de samme filene.
+
+Uten noe mer hentes versjonen fra npm, og fila sammenlignes med integriteten
+registeret oppgir. Mellom to utgivelser er koden her nyere enn det som ligger
+på npm, og da pakkes tarballen fra repoet og oppgis med `fristil.pakke`, slik
+CI gjør. Det krever Bun og Rust, men bare til pakkingen:
+
+```bash
+bun --filter @fristil/designsystem pakk
+cd kotlin && ./gradlew test -Pfristil.pakke=../designsystem
+```
+
+`fristil.pakke` er tarballen eller mappa den ligger i. Er den en mappe, brukes
+`fristil-designsystem-<versjon>.tgz`. Bygget stopper hvis tarballen har en
+annen versjon enn `gradle.properties`, og `bun run prepare-version` setter
+begge.
+
+Fasiten for testene er ikke en del av npm-pakken, og leses fra repoet:
+`../designsystem/manifest/byggetilfeller.json` og `../kjerne/paritet/`.
 
 `ParityTest` krever at funnene på JVM-en er identiske med fasiten i
 `../kjerne/paritet/`, den samme fasiten `kjerne/scripts/sjekk-kjerne.ts`

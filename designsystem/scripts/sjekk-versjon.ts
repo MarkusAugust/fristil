@@ -127,6 +127,17 @@ if (!maalt) {
   )
 }
 
+// Kotlin-pakken bygges av npm-pakken med sitt eget versjonsnummer, så et
+// nummer som står bak gir en Maven-utgivelse av forrige versjon.
+const kotlinVersjon = /^version=(.+)$/m.exec(
+  await Bun.file(join(ROT, "../kotlin/gradle.properties")).text(),
+)?.[1]
+if (kotlinVersjon !== pakke.version) {
+  feil.push(
+    `kotlin/gradle.properties har version=${kotlinVersjon ?? "(mangler)"}, mens package.json har ${pakke.version}. De skal være like.`,
+  )
+}
+
 /*
  * Versjonen til hver workspace står også i `bun.lock`, og `bun install`
  * skriver den ikke på nytt når bare versjonen er endret. `prepare-version`
