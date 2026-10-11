@@ -111,6 +111,10 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **Typen `Manifest` fra `@fristil/designsystem/diagnostics`**, formen på
+  `manifest.json` slik skjemaet beskriver den, for den som leser manifestet
+  selv. Kotlin-pakken har `Fristil.classes`, klassene i manifestet med
+  tittel, beskrivelse og komponentside.
 - **`@fristil/designsystem/fargekontrakt.json`** i `exports`, så en side
   som laster kjernen i nettleseren kan gi den fargekontrakten med
   `loadContract()`, som den gir manifestet fra `./manifest.json`.

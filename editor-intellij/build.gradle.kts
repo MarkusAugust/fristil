@@ -44,16 +44,6 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
 }
 
-/*
- * Dataene står i `Klasser.kt`, ikke her.
- *
- * Fila genereres av `editor/scripts/generate.ts` fra den samme
- * `classesData()` som skriver `classes.ts` og `web-types.json`. Den er Kotlin
- * og ikke JSON, så pluginen trenger verken parser eller avhengighet, og
- * kompilatoren leser dataene. Glemmer noen å regenerere, sier CI-steget
- * «Ingenting er ugenerert» fra, som for de andre genererte filene.
- */
-
 intellijPlatform {
     pluginConfiguration {
         // `id`, `name` og `vendor` står i `plugin.xml`. Versjonen og

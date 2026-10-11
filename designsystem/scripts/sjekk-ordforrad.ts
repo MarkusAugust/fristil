@@ -1,5 +1,6 @@
 /**
- * At editorfilene på disk er de generatoren ville skrevet nå, og at
+ * At ordforrådet og editorfilene på disk er de `generate-ordforrad.ts` ville
+ * skrevet nå, og at
  * `metadata.ts` dekker hvert element pakken registrerer.
  *
  * Typesjekken tar attributtene: `metadata.ts` skriver dem som `Record` over
@@ -10,14 +11,14 @@
  * Lista over forventede elementer kommer altså fra pakken, ikke fra
  * metadataen, ellers etterprøver vakten bare seg selv.
  *
- * Kjør med: bun run sjekk
+ * Kjør med: bun scripts/sjekk-ordforrad.ts, eller som en del av `bun run build`.
  * Krever at `designsystem/dist` er bygd.
  */
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { elements } from "../metadata"
-import { files, ROOT } from "./generate"
+import { files, ROOT } from "./generate-ordforrad"
+import { elements } from "./metadata"
 
 const findings: string[] = []
 
@@ -31,9 +32,13 @@ for (const [path, expected] of Object.entries(generated)) {
     // Mangler: meldes under.
   }
   if (actual === null)
-    findings.push(`${path} finnes ikke. Kjør bun run generate.`)
+    findings.push(
+      `${path} finnes ikke. Kjør bun --filter @fristil/designsystem ordforrad.`,
+    )
   else if (actual !== expected)
-    findings.push(`${path} er utdatert. Kjør bun run generate.`)
+    findings.push(
+      `${path} er utdatert. Kjør bun --filter @fristil/designsystem ordforrad.`,
+    )
 }
 
 // 2. Hvert element pakken registrerer har en oppføring i metadata.ts.
@@ -146,7 +151,7 @@ for (const element of elements) {
 
 // 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
 // snippet hadde en `<dialog>` og ikke noe `<fs-dialog>`.
-const snippets = JSON.parse(generated["editor/snippets.json"]) as Record<
+const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
   string,
   { body: string[] }
 >

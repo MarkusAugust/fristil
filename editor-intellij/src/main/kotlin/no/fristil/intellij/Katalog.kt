@@ -1,5 +1,7 @@
 package no.fristil.intellij
 
+import no.fristil.Fristil
+
 /**
  * En klasse fra Fristil, slik editoren viser den.
  *
@@ -18,20 +20,17 @@ data class Klasse(
 /**
  * Klassene Fristil sender ut.
  *
- * Lista står i `Klasser.kt`, som genereres av `editor/scripts/generate.ts`
- * fra den samme `classesData()` som skriver `classes.ts` og `web-types.json`.
- * Pluginen har derfor ingen egen utgave som kan komme ut av takt med
- * diagnostikken eller med VS Code-utvidelsen.
- *
- * Den er en Kotlin-fil og ikke JSON med vilje: da trengs ingen parser og
- * ingen avhengighet, og kompilatoren leser dataene. Det er det samme valget
- * som ble tatt for `src/diagnostics/classes.ts`.
+ * Lista er `Fristil.classes` i Kotlin-pakken, lest fra manifestet det samme
+ * kjernen sjekker mot. Pluginen har derfor ingen egen utgave som kan komme ut
+ * av takt med diagnostikken eller med VS Code-utvidelsen.
  */
 object Katalog {
-    val klasser: List<Klasse> get() = KLASSER
+    val klasser: List<Klasse> by lazy {
+        Fristil.classes.map { Klasse(it.name, it.title, it.description, it.link) }
+    }
 
     private val etterNavn: Map<String, Klasse> by lazy {
-        KLASSER.associateBy { it.navn }
+        klasser.associateBy { it.navn }
     }
 
     fun finn(navn: String): Klasse? = etterNavn[navn]

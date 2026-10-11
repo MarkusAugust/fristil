@@ -6,12 +6,10 @@
 # det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
 # kjører når pluginen eller dataene den leser faktisk er endret.
 #
-# `Klasser.kt` står i `paths` fordi den genereres av
-# `editor/scripts/generate.ts`: endrer noen klasselista, skal pluginen bygges
-# på nytt selv om ingen rørte Kotlin-koden.
-#
-# Feilmeldingene kommer fra Rust-kjernen gjennom `../kotlin`, som bygges med
-# pluginen. Derfor står `kjerne/**`, `kotlin/**` og manifestet også i `paths`.
+# Klassene leses fra manifestet i `../kotlin`, og feilmeldingene kommer fra
+# Rust-kjernen gjennom den samme pakken, som bygges med pluginen. Derfor står
+# `kjerne/**`, `kotlin/**` og manifestet også i `paths`: endrer noen
+# klasselista, skal pluginen bygges på nytt selv om ingen rørte Kotlin-koden.
 #
 name: IntelliJ-plugin
 

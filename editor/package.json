@@ -36,89 +36,89 @@
   "contributes": {
     "html": {
       "customData": [
-        "./fristil.html-data.json"
+        "./dist/html-data.json"
       ]
     },
     "snippets": [
       {
         "language": "html",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "php",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "razor",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "aspnetcorerazor",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "astro",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "svelte",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "vue",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "twig",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "blade",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "jinja",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "jinja-html",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "django-html",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "handlebars",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "erb",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "gotmpl",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "go-template",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "ejs",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "liquid",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "nunjucks",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       },
       {
         "language": "edge",
-        "path": "./snippets.json"
+        "path": "./dist/snippets.json"
       }
     ],
     "configurationDefaults": {
@@ -162,9 +162,8 @@
     }
   },
   "scripts": {
-    "generate": "bun scripts/generate.ts",
-    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/fristil-kjerne.wasm && cp ../designsystem/kjerne/fristil.wasm dist/ && mkdir -p dist/manifest && cp ../designsystem/manifest/manifest.json dist/manifest/",
-    "sjekk": "bun scripts/sjekk.ts && bun scripts/sjekk-diagnostikk.ts && bun run build && vsce package --no-dependencies --out fristil.vsix",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/fristil-kjerne.wasm && cp ../designsystem/kjerne/fristil.wasm dist/ && mkdir -p dist/manifest && cp ../designsystem/manifest/manifest.json dist/manifest/ && cp ../designsystem/html-data.json ../designsystem/snippets.json dist/",
+    "sjekk": "bun run build && vsce package --no-dependencies --out fristil.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {

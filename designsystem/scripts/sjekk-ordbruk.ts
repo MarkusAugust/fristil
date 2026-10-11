@@ -92,8 +92,8 @@ const FORBUDT: { mønster: RegExp; i_stedet: string; unntatt?: RegExp }[] = [
  *
  * Genererte filer leses ikke: retter du ordet i kilden, følger de etter, og en
  * feil på begge steder er samme feil to ganger. `.json` er ute av samme grunn,
- * siden de tre norske json-filene i repoet genereres av `editor/scripts/
- * generate.ts` fra `metadata.ts`, som leses. `.yml` og `.toml` er ikke med, og
+ * siden de tre norske json-filene i repoet genereres av
+ * `generate-ordforrad.ts` fra `metadata.ts`, som leses. `.yml` og `.toml` er ikke med, og
  * det er et bevisst hull: der står det fire linjer norsk i alt.
  */
 const MØNSTRE = [
@@ -129,12 +129,9 @@ const HOPP_OVER = [
   "PLAN.md",
   // Generert av generate-agent.ts; kilden er oppskriftene der.
   "designsystem/agent/",
-  // Generert av editor/scripts/generate.ts, som classes.ts under. Leses den,
-  // meldes et galt ord i metadata.ts to ganger for den samme feilen.
-  "editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt",
   // Generert fra tokens.ts.
   "designsystem/src/tokens/tokens.css",
-  // Generert av editor/scripts/generate.ts fra metadata.ts, som leses.
+  // Generert av generate-ordforrad.ts fra metadata.ts, som leses.
   "designsystem/src/vocabulary/classes.ts",
   "designsystem/src/vocabulary/elements.ts",
 ]

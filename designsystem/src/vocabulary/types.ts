@@ -2,7 +2,7 @@
  * Formen på ordforrådet: elementene og klassene Fristil har.
  *
  * `elements.ts` og `classes.ts` ved siden av genereres av
- * `editor/scripts/generate.ts`, og er kilden manifestet skrives fra
+ * `scripts/generate-ordforrad.ts`, og er kilden manifestet skrives fra
  * (`scripts/generate-manifest.ts`). Kjernen og alle verktøyene leser
  * manifestet, ikke disse filene, så de er ikke en del av pakkens API.
  */
@@ -51,3 +51,24 @@ export type ClassInfo = {
 
 /** Innholdet i `classes.ts`: klassenavn til klasse. */
 export type Classes = Record<string, ClassInfo>
+
+/**
+ * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
+ * Elementene er de samme som i `elements.ts`. Et klasseattributt i
+ * manifestet er enten en verdiliste eller et flagg, og et flagg har ingen
+ * verdier, ulikt `classes.ts`, der flagget har en tom liste.
+ */
+export type Manifest = {
+  schemaVersion: number
+  version: string
+  elements: Elements
+  classes: Record<
+    string,
+    Omit<ClassInfo, "attributes"> & {
+      attributes: Record<
+        string,
+        { values?: readonly string[]; default?: string; flag?: true }
+      >
+    }
+  >
+}

@@ -82,19 +82,18 @@ Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved
 | `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
 | `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
 
-`bun --filter fristil-vscode generate` skriver sju, og fire av dem lander i pakken:
+`bun --filter @fristil/designsystem ordforrad` skriver seks, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
 
 | Fil | Hva den er |
 | --- | --- |
-| `editor/fristil.html-data.json` | VS Codes format for tagger og attributter |
-| `editor/snippets.json` | én snippet per element |
+| `designsystem/html-data.json` | VS Codes format for tagger og attributter |
+| `designsystem/snippets.json` | én snippet per element |
 | `designsystem/src/vocabulary/elements.ts` | elementene og attributtene, som manifestet skrives fra |
 | `designsystem/src/vocabulary/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
 | `designsystem/src/components/events.ts` | typene til hendelsene, som utvider `HTMLElementEventMap` |
-| `editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt` | katalogen IntelliJ-pluginen slår opp i |
 
-Alle sju kommer fra `editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
+Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene, gjennom `scripts/generate-ordforrad.ts`. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
 
 I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
 
@@ -149,8 +148,8 @@ Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, 
 ## Editorutvidelsen
 
 `editor/` er VS Code-utvidelsen. `package.json` peker på
-`fristil.html-data.json` og `snippets.json`, som gir fullføring og snippets
-uten kode, og på `dist/extension.js`, som kobler sjekken til editoren med
+`dist/html-data.json` og `dist/snippets.json`, som bygget kopierer fra
+pakken og som gir fullføring og snippets uten kode, og på `dist/extension.js`, som kobler sjekken til editoren med
 streker, lyspærer, fullføring og hover. Sjekken er Rust-kjernen i `kjerne/`,
 bygget til WebAssembly. Den samme modulen ligger i pakken, som
 `@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen har en
@@ -160,21 +159,20 @@ Manifestet skrives fra
 `designsystem/src/vocabulary/elements.ts` og `classes.ts`. `classes.ts` leses
 fra pakkens CSS og fra byggefunksjonene i `fs`, kalt én gang per variant, så
 en ny variant er med når `fs` gir den. Filene genereres fra
-`editor/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
+`designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
 sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
 setning om det, og `bun run build` stopper til filene er generert på nytt:
 
 ```bash
-bun --filter fristil-vscode generate
+bun --filter @fristil/designsystem ordforrad
 ```
 
-Kjernen har ingen VS Code i seg, og `scripts/sjekk-diagnostikk.ts`
+Kjernen har ingen VS Code i seg, og `kjerne/scripts/sjekk-diagnostikk.ts`
 kjører den over hver feiltype den skal fange, snippetene medregnet som rene
 tilfeller. Legger du til en regel i `kjerne/src/`, legg til tilfellet som feller den, og se
 at det faktisk feller ved å skru regelen av. Se `kjerne/README.md`. `bun --filter fristil-vscode
-sjekk` kjører begge sjekkene, bygger `dist/extension.js` og pakker
-`fristil.vsix`.
+sjekk` bygger `dist/extension.js` og pakker `fristil.vsix`.
 
 Utvidelsen har sitt eget versjonsnummer i `editor/package.json` og sin egen
 logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:

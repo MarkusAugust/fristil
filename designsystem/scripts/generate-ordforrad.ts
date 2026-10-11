@@ -1,16 +1,17 @@
 /**
- * Skriver editorfilene fra `metadata.ts` og komponentsidene.
+ * Skriver ordforrådet og editorfilene fra `metadata.ts` og komponentsidene.
  *
- * Fem filer kommer ut, og ingen av dem skrives for hånd. To av dem ligger i
- * utvidelsen, tre i pakken:
+ * Filene kommer ut i pakken, og ingen av dem skrives for hånd. Editorene
+ * leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og
+ * IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
  *
- *   - `editor/fristil.html-data.json`: VS Codes eget format for tagger og
+ *   - `html-data.json`: VS Codes eget format for tagger og
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
- *   - `editor/snippets.json`: én snippet per element, med markupen som viser
+ *   - `snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `designsystem/src/vocabulary/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
- *     for tagg.
+ *   - `designsystem/src/vocabulary/elements.ts`: elementene og attributtene,
+ *     tagg for tagg, som manifestet skrives fra.
  *   - `designsystem/src/vocabulary/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
  *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
@@ -20,21 +21,17 @@
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
  *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
  *
- * Kjør med: bun run generate
- * `scripts/sjekk.ts` kjører det samme i minnet og feiler hvis filene på disk
- * er utdaterte.
+ * Kjør med: bun --filter @fristil/designsystem ordforrad
+ * `sjekk-ordforrad.ts` kjører det samme i minnet og feiler hvis filene på
+ * disk er utdaterte.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { fs } from "@fristil/designsystem"
-import type {
-  Attribute,
-  Classes,
-  Elements,
-} from "../../designsystem/src/vocabulary/types.js"
-import { type AttributeDoc, type ElementDoc, elements } from "../metadata"
+import { fs } from "../src/index.js"
+import type { Attribute, Classes, Elements } from "../src/vocabulary/types.js"
+import { type AttributeDoc, type ElementDoc, elements } from "./metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.sobernetics.no/components/"
@@ -446,38 +443,6 @@ export function classesData(): Classes {
   return out
 }
 
-/** Hver fil generatoren skriver, med stien fra rota. */
-/**
- * Klasselista som en Kotlin-fil, til IntelliJ-pluginen.
- *
- * Den er Kotlin og ikke JSON av samme grunn som `classes.ts` er TypeScript:
- * da trengs ingen parser, ingen avhengighet, og kompilatoren leser dataene.
- * Kilden er `classesData()`, den samme som skriver `classes.ts` og
- * `web-types.json`, så de tre kan ikke komme ut av takt.
- */
-function kotlinKlasser(): string {
-  const sitat = (s: string) =>
-    `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\$/g, "\\$")}"`
-
-  const rader = Object.entries(classesData())
-    .map(
-      ([navn, info]) =>
-        `    Klasse(${sitat(navn)}, ${sitat(info.title)}, ` +
-        `${sitat(info.description)}, ${sitat(info.link)}),`,
-    )
-    .join("\n")
-
-  return `// Generert av editor/scripts/generate.ts. Ikke rediger.
-package no.fristil.intellij
-
-/** Klassene Fristil sender ut, lest fra pakken da fila ble generert. */
-internal val KLASSER: List<Klasse> =
-  listOf(
-${rader}
-  )
-`
-}
-
 export function files(): Record<string, string> {
   const version: string = JSON.parse(
     readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
@@ -489,14 +454,12 @@ export function files(): Record<string, string> {
    * `JSON.stringify` ikke setter avsluttende komma.
    */
   const module = (name: string, type: string, value: unknown) =>
-    `// Generert av editor/scripts/generate.ts. Ikke rediger.\n` +
+    `// Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger.\n` +
     `import type { ${type} } from "./types.js"\n\n` +
     `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
-    "editor-intellij/src/main/kotlin/no/fristil/intellij/Klasser.kt":
-      kotlinKlasser(),
-    "editor/fristil.html-data.json": json(htmlData()),
-    "editor/snippets.json": json(snippets()),
+    "designsystem/html-data.json": json(htmlData()),
+    "designsystem/snippets.json": json(snippets()),
     "designsystem/src/vocabulary/elements.ts": module(
       "elements",
       "Elements",
@@ -547,7 +510,7 @@ function eventTypes(): string {
       )
     }
   }
-  return `// Generert av editor/scripts/generate.ts fra editor/metadata.ts. Ikke rediger.
+  return `// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
 
 /**
  * Hendelsene web-komponentene sender, med \`detail\` slik komponenten sender

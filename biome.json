@@ -10,8 +10,8 @@
     "includes": [
       "**",
       "!presentasjon",
-      "!editor/fristil.html-data.json",
-      "!editor/snippets.json",
+      "!designsystem/html-data.json",
+      "!designsystem/snippets.json",
       "!designsystem/src/vocabulary/elements.ts",
       "!designsystem/src/vocabulary/classes.ts",
       "!designsystem/src/components/events.ts",

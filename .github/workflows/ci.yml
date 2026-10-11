@@ -259,6 +259,11 @@ jobs:
       - name: Kjernen svarer det den skal
         run: bun kjerne/scripts/sjekk-kjerne.ts
 
+      # Hver regel feller det den skal, og bare det, med ordforrådet fra
+      # metadataen og snippetene fra komponentsidene som rene tilfeller.
+      - name: Diagnostikken feller det den skal
+        run: bun kjerne/scripts/sjekk-diagnostikk.ts
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin

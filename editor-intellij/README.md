@@ -76,20 +76,10 @@ svarer «No suggestions» selv med pluginen på. `⌥↩` inne i strengen viser
 
 ## Dataene
 
-`Klasser.kt` er generert av `editor/scripts/generate.ts` fra `classesData()`,
-den samme funksjonen som skriver `classes.ts`, `fristil.html-data.json` og
-`web-types.json`. Fire utganger, én kilde. Pluginen kan derfor ikke foreslå
-en klasse diagnostikken avviser.
-
-Den er Kotlin og ikke JSON med vilje: da trengs ingen parser og ingen
-avhengighet, og kompilatoren leser dataene. Det er det samme valget som for
-`src/vocabulary/classes.ts`.
-
-Regenerer med:
-
-```bash
-bun --filter fristil-vscode generate
-```
+Klassene leses fra manifestet i Kotlin-pakken, `no/fristil/manifest.json` i
+jar-en, det samme kjernen sjekker mot. Pluginen kan derfor ikke foreslå en
+klasse diagnostikken avviser. Manifestet leses med Gson, som følger med
+IntelliJ-plattformen. Se `Katalog.kt`.
 
 ## Bygge og teste
 

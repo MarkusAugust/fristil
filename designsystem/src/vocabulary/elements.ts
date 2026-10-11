@@ -1,4 +1,4 @@
-// Generert av editor/scripts/generate.ts. Ikke rediger.
+// Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger.
 import type { Elements } from "./types.js"
 
 export const elements: Elements = {

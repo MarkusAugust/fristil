@@ -146,6 +146,16 @@ object Fristil {
         } ?: error("manifest.json mangler i jar-en")
     }
 
+    /**
+     * Klassene i manifestet i pakken, i den rekkefølgen manifestet har dem:
+     * navnet, tittelen på komponenten, hva den er, og komponentsiden.
+     */
+    val classes: List<ManifestClass> by lazy {
+        @Suppress("UNCHECKED_CAST")
+        val classes = (Json.parse(PACKAGE_MANIFEST) as Map<String, Any?>)["classes"] as Map<String, Map<String, Any?>>
+        classes.map { (name, c) -> ManifestClass(name, c["title"] as String, c["description"] as String, c["link"] as String) }
+    }
+
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
     private const val STYLED = "diagnose_styled_raw"
@@ -237,4 +247,12 @@ data class Fix(
     val end: Int,
     val text: String,
     val preferred: Boolean? = null,
+)
+
+/** En klasse i manifestet, som `fs-button`, med komponenten den hører til. */
+data class ManifestClass(
+    val name: String,
+    val title: String,
+    val description: String,
+    val link: String,
 )

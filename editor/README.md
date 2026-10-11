@@ -93,9 +93,9 @@ og andre editorer med LSP kan bruke `fristil lsp`.
 Fullføringen, snippetene og listene diagnostikken sjekker mot genereres fra
 komponentene og komponentsidene i
 [repoet](https://github.com/MarkusAugust/fristil). Elementene kommer fra
-`metadata.ts`, klassene fra pakkens CSS, og hva hver klasse tar leses ved å
+`designsystem/scripts/metadata.ts`, klassene fra pakkens CSS, og hva hver klasse tar leses ved å
 kalle byggefunksjonene i `fs`, så `data-variant="ghost"` er lovlig fordi
 `fs.button({ variant: "ghost" })` gir det. Bygget stopper hvis filene er
 utdaterte. Diagnostikken er
-en ren funksjon uten VS Code i seg, og `scripts/sjekk-diagnostikk.ts` kjører
+en ren funksjon uten VS Code i seg, og `kjerne/scripts/sjekk-diagnostikk.ts` kjører
 den over hver feiltype den skal fange. Se `CONTRIBUTING.md` i repoet.
