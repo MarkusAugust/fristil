@@ -143,6 +143,8 @@ cd designsystem && npm publish --access public
 
 En versjon kan aldri publiseres på nytt eller overskrives, og `npm unpublish` er stengt etter 72 timer. Skal en versjon ut av sirkulasjon, er `npm deprecate` veien.
 
+Når npm-pakken er ute, kjører samme arbeidsflyt to jobber til, begge bygd av den publiserte tarballen: `fristil.wasm` og `fristil.jar` legges ved utgivelsen på GitHub, og Kotlin-pakken går til Maven Central som `io.github.markusaugust:fristil`, `fristil-kotlinx-html`, `fristil-kommandolinje` og `fristil-gradle-plugin`. Versjonen i `kotlin/gradle.properties` settes av `prepare-version`. Central krever et navnerom bekreftet på central.sonatype.com, et brukertoken og en GPG-nøkkel, og hemmelighetene står i kommentaren over jobben i `publish.yml`. Mangler de, publiseres ingenting til Central, og kjøringen får en advarsel. En versjon på Central kan heller aldri byttes ut.
+
 Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
 
 ## Editorutvidelsen

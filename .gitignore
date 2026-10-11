@@ -43,3 +43,6 @@ kotlin/buildSrc/build/
 kjerne/target/
 kjerne/dist/
 designsystem/kjerne/
+
+# Tarballen `bun --filter @fristil/designsystem pakk` lager for Kotlin-pakken
+designsystem/*.tgz

@@ -38,9 +38,14 @@ kjernen ikke lese manifestet, gjelder manifestet i Kotlin-pakken, og det
 siste står i IDE-ens logg. Se `ProjectManifest.kt`. Kommer, endres eller forsvinner
 manifestet, sjekkes de åpne filene på nytt (`ManifestListener.kt`).
 
-Gradle bygger `../kotlin`, og dermed kjernen, med `includeBuild`. Det krever
-Rust med målet `wasm32-unknown-unknown`, som `kjerne/rust-toolchain.toml`
-henter.
+Gradle bygger `../kotlin` med `includeBuild`, og Kotlin-pakken bygges av
+npm-pakken med samme versjon. Mellom to utgivelser er den på npm for gammel,
+så pakk den fra repoet først, som i `kotlin/README.md`:
+
+```bash
+bun --filter @fristil/designsystem pakk
+cd editor-intellij && ./gradlew build -Pfristil.pakke=../designsystem
+```
 
 ## Strengen må være merket
 

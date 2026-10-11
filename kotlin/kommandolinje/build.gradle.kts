@@ -7,10 +7,11 @@ plugins {
 /*
  * Kommandolinja på JVM-en: `java -jar fristil.jar sjekk skjema.html`.
  *
- * Kommandoene er skrevet i Rust (`kjerne/cli/`) og bygges som WASI-modul.
- * Chicory kjører den, kompilert til bytekode her, så jar-en svarer det samme
- * som `npx @fristil/designsystem` og den kjørbare fila fra `cargo install`.
- * Den trenger bare Java 17, ikke Node, ikke Rust.
+ * Kommandoene er skrevet i Rust (`kjerne/cli/`), og WASI-modulen følger med
+ * npm-pakken som `kjerne/fristil.wasm`. Chicory kjører den, kompilert til
+ * bytekode her, så jar-en svarer det samme som `npx @fristil/designsystem` og
+ * den kjørbare fila fra `cargo install`. Den trenger bare Java 17, ikke Node,
+ * ikke Rust.
  */
 group = rootProject.group
 version = rootProject.version
@@ -39,25 +40,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-val kjerne = rootDir.resolve("../kjerne")
-val designsystem = rootDir.resolve("../designsystem")
-val kommandolinjeWasm = kjerne.resolve("target/wasm32-wasip1/release/fristil.wasm")
-
-val byggKommandolinje = tasks.register<Exec>("byggKommandolinje") {
-    workingDir = kjerne
-    commandLine("cargo", "build", "--release", "-p", "fristil", "--target", "wasm32-wasip1")
-    inputs.dir(kjerne.resolve("src"))
-    inputs.dir(kjerne.resolve("cli/src"))
-    inputs.file(kjerne.resolve("Cargo.toml"))
-    inputs.file(kjerne.resolve("cli/Cargo.toml"))
-    inputs.file(kjerne.resolve("Cargo.lock"))
-    inputs.file(kjerne.resolve("rust-toolchain.toml"))
-    outputs.file(kommandolinjeWasm)
-}
+// Kommandolinja og filene den leser, fra npm-pakken rotprosjektet har pakket ut.
+val pakke = rootProject.tasks.named<Sync>("pakkUt").map { it.destinationDir }
 
 val kompilerKommandolinje = tasks.register<no.fristil.build.CompileCore>("kompilerKommandolinje") {
-    dependsOn(byggKommandolinje)
-    wasm.set(kommandolinjeWasm)
+    wasm.set(pakke.map { layout.projectDirectory.file(it.resolve("kjerne/fristil.wasm").absolutePath) })
     className.set("no.fristil.cli.FristilCli")
     classes.set(layout.buildDirectory.dir("chicory/classes"))
     sources.set(layout.buildDirectory.dir("chicory/sources"))
@@ -69,9 +56,8 @@ val kompilerKommandolinje = tasks.register<no.fristil.build.CompileCore>("kompil
  * av dem, og `CommandLine` gir den mappa som `FRISTIL_PACKAGE`.
  */
 tasks.processResources {
-    from(designsystem) {
+    from(pakke) {
         include("package.json", "manifest/manifest.json", "manifest/filer.json", "src/tokens/fargekontrakt.json", "agent/*.md", "src/components/**")
-        exclude("**/*.test.ts")
         into("fristil-pakke")
     }
 }

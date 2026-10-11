@@ -1,5 +1,5 @@
 /**
- * Setter versjonen som skal publiseres, i de tre filene den står i. Den
+ * Setter versjonen som skal publiseres, i hver fil den står i. Den
  * skriver bare filene, og publiserer ingenting.
  *
  * En utgivelse består av tre ting som må si det samme: nummeret i
@@ -139,6 +139,19 @@ if (!merke.test(dekk)) {
   )
 }
 
+/*
+ * Kotlin-pakken har samme versjon, og bygges av npm-pakken med det nummeret.
+ * Står den bak, henter utgivelsen til Maven Central forrige versjon fra npm,
+ * og `sjekk-versjon.ts` feller. Kontrollen står før første skriving, som
+ * for web-types over.
+ */
+const kotlinSti = join(monorepoRot, "kotlin/gradle.properties")
+const kotlin = readFileSync(kotlinSti, "utf8")
+const kotlinFør = `\nversion=${naavaerende}\n`
+if (!kotlin.includes(kotlinFør)) {
+  stopp(`Fant ikke version=${naavaerende} i ${kotlinSti}.`)
+}
+
 await Bun.write(
   loggSti,
   logg.replace(UUTGITT, `${UUTGITT}\n\n## ${nyVersjon} (${dato})`),
@@ -173,6 +186,8 @@ if (!lockMonster.test(lock)) {
 }
 
 await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
+
+writeFileSync(kotlinSti, kotlin.replace(kotlinFør, `\nversion=${nyVersjon}\n`))
 
 writeFileSync(
   webTypesSti,

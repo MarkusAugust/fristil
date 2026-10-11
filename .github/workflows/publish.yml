@@ -1,6 +1,14 @@
-name: Publiser til npm
+name: Publiser
 
 # Kjører når en versjonstagg dyttes opp, og kan også startes for hånd.
+#
+# npm først, så kommandolinja på GitHub Releases og Kotlin-pakken på Maven
+# Central. De to siste bygges av npm-pakken som nettopp ble publisert, og
+# venter derfor på den.
+#
+# Startet for hånd publiserer den versjonen i package.json til npm hvis den
+# ikke er ute. Kommandolinja bygges da av npm-pakken, men gis ikke ut, og
+# Kotlin-pakken verken testes eller publiseres: det skjer bare for en tagg.
 on:
   push:
     tags: ["v*"]
@@ -15,7 +23,7 @@ permissions:
 
 jobs:
   publiser:
-    name: Bygg og publiser
+    name: npm
     runs-on: ubuntu-latest
 
     steps:
@@ -91,3 +99,163 @@ jobs:
       - name: Versjonen var alt publisert
         if: steps.registeret.outputs.publisert == 'ja'
         run: echo "@fristil/designsystem@${{ steps.versjon.outputs.nummer }} ligger alt på npm. Ingenting ble publisert."
+
+  # Kommandolinja uten Node: `fristil.wasm` for wasmtime og andre WASI-verter,
+  # og `fristil.jar` for `java -jar`. Begge kommer fra npm-pakken for
+  # versjonen, så de er de samme filene som `npx @fristil/designsystem` kjører.
+  #
+  # Ingen av filene er signert med et sertifikat, og ingen må stole på en
+  # tredje part. GitHub attesterer i stedet hvilken commit og hvilken
+  # arbeidsflyt hver fil ble bygd av, og den som laster ned, kan kontrollere
+  # det selv:
+  #
+  #   gh attestation verify fristil.jar --repo MarkusAugust/fristil
+  kommandolinje:
+    name: Kommandolinja på GitHub Releases
+    needs: publiser
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Registeret kan bruke litt tid før en ny versjon svarer overalt.
+      - name: Vent til versjonen svarer på npm
+        run: |
+          versjon="$(grep '^version=' kotlin/gradle.properties | cut -d= -f2)"
+          for _ in $(seq 1 30); do
+            npm view "@fristil/designsystem@$versjon" version > /dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          echo "@fristil/designsystem@$versjon svarte ikke på npm innen fem minutter." >&2
+          exit 1
+
+      # Uten `fristil.pakke` henter Gradle tarballen fra npm og sammenligner
+      # den med integriteten registeret oppgir.
+      - name: Kommandolinja som jar
+        working-directory: kotlin
+        run: ./gradlew :kommandolinje:samletJar
+
+      - name: Samle filene
+        run: |
+          mkdir utgivelse
+          cp kotlin/build/fristil-pakke/kjerne/fristil.wasm utgivelse/
+          cp kotlin/kommandolinje/build/libs/fristil.jar utgivelse/
+          (cd utgivelse && sha256sum fristil.wasm fristil.jar > SHA256SUMS)
+          cat utgivelse/SHA256SUMS
+
+      # Filene skal svare før de gis ut.
+      - name: Filene virker
+        run: |
+          java -jar utgivelse/fristil.jar --hjelp > /dev/null
+          echo '<button class="fs-button">Lagre</button>' | java -jar utgivelse/fristil.jar sjekk
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            utgivelse/fristil.wasm
+            utgivelse/fristil.jar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kommandolinja
+          path: utgivelse/
+
+      # Utgivelsen lages første gang, og filene byttes ut om den alt finnes,
+      # så en ny kjøring for samme tagg ikke feiler.
+      - name: Gi ut
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "Se CHANGELOG.md i designsystem/."
+          fi
+          gh release upload "$GITHUB_REF_NAME" utgivelse/fristil.wasm utgivelse/fristil.jar utgivelse/SHA256SUMS --clobber
+
+  # Kotlin-pakken, kotlinx.html-utvidelsen, kommandolinja og Gradle-pluginen,
+  # alle som `io.github.markusaugust:…` med samme versjon som npm-pakken.
+  #
+  # Det krever en konto på central.sonatype.com med navnerommet
+  # `io.github.markusaugust` bekreftet, et brukertoken derfra og en
+  # GPG-nøkkel lastet opp til en nøkkeltjener. Hemmelighetene heter
+  # `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `MAVEN_SIGNING_KEY`
+  # (den private nøkkelen, ASCII-armert) og `MAVEN_SIGNING_PASSWORD`. Mangler
+  # de, sier jobben fra og publiserer ingenting.
+  maven:
+    name: Maven Central
+    needs: publiser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Les versjonen
+        id: versjon
+        run: echo "nummer=$(grep '^version=' kotlin/gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Vent til versjonen svarer på npm
+        run: |
+          for _ in $(seq 1 30); do
+            npm view "@fristil/designsystem@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          echo "@fristil/designsystem@${{ steps.versjon.outputs.nummer }} svarte ikke på npm innen fem minutter." >&2
+          exit 1
+
+      # En versjon på Central kan aldri byttes ut, så en ny kjøring for samme
+      # tagg skal ikke prøve igjen.
+      # En hemmelighet som ikke finnes, kommer hit som en tom streng.
+      - name: Se om versjonen alt er ute
+        id: central
+        env:
+          BRUKER: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          PASSORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          NOKKEL: ${{ secrets.MAVEN_SIGNING_KEY }}
+          NOKKELPASSORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
+        run: |
+          v="${{ steps.versjon.outputs.nummer }}"
+          if curl -sfI "https://repo1.maven.org/maven2/io/github/markusaugust/fristil/$v/fristil-$v.pom" > /dev/null; then
+            echo "io.github.markusaugust:fristil:$v ligger alt på Maven Central. Ingenting ble publisert."
+            echo "publiser=nei" >> "$GITHUB_OUTPUT"
+          elif [ -z "$BRUKER" ] || [ -z "$PASSORD" ] || [ -z "$NOKKEL" ] || [ -z "$NOKKELPASSORD" ]; then
+            echo "::warning::En eller flere av hemmelighetene for Maven Central mangler, så Kotlin-pakken ble ikke publisert. Se kommentaren over jobben i publish.yml."
+            echo "publiser=nei" >> "$GITHUB_OUTPUT"
+          else
+            echo "publiser=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Testene kjører mot den publiserte tarballen, så det som går ut er
+      # testet mot nøyaktig de filene. Bare for en tagg: startet for hånd
+      # mellom to utgivelser er tarballen på npm eldre enn fasiten i repoet.
+      - name: Test
+        if: github.ref_type == 'tag'
+        working-directory: kotlin
+        run: ./gradlew test
+
+      - name: Publiser
+        if: steps.central.outputs.publiser == 'ja' && github.ref_type == 'tag'
+        working-directory: kotlin
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
+        run: ./gradlew publishAndReleaseToMavenCentral
