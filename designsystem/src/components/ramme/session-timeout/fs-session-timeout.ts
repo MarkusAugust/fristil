@@ -19,6 +19,20 @@ import {
 
 export const FS_SESSION_TIMEOUT_TAG = "fs-session-timeout" as const
 
+/**
+ * Delene varselet finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_SESSION_TIMEOUT_PARTS = {
+  dialog: "dialog",
+  title: "h1, h2, h3, h4, h5, h6",
+  text: `.${SESSION_TIMEOUT_TEXT_CLASS}`,
+  count: `.${SESSION_TIMEOUT_COUNT_CLASS}`,
+  status: "[role='status']",
+  button: 'form[method="dialog" i] button',
+} as const
+
 const DEFAULT_WARN_AT = 25 * 60
 const DEFAULT_EXPIRES_AT = 30 * 60
 
@@ -279,7 +293,7 @@ export class FsSessionTimeout extends HostElement {
 
   /** Dialogen komponenten styrer: den første `<dialog>` inne i verten. */
   private get dialog(): HTMLDialogElement | null {
-    return this.querySelector("dialog")
+    return this.querySelector(FS_SESSION_TIMEOUT_PARTS.dialog)
   }
 
   private readSeconds(name: string, fallback: number): number {
@@ -338,19 +352,19 @@ export class FsSessionTimeout extends HostElement {
       this,
       `fant ingen .${SESSION_TIMEOUT_COUNT_CLASS} i dialogen. Brukeren ser ` +
         "ikke hvor lenge det er igjen.",
-      () => !this.dialog?.querySelector(`.${SESSION_TIMEOUT_COUNT_CLASS}`),
+      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.count),
     )
     warnAboutMarkup(
       this,
       "fant ingen [role=status] i dialogen. Nedtellingen leses ikke opp for " +
         "den som bruker skjermleser.",
-      () => !this.dialog?.querySelector("[role=status]"),
+      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.status),
     )
     warnAboutMarkup(
       this,
       'fant ingen knapp i et <form method="dialog">. Brukeren kan bare ' +
         "forlenge økten med Escape, og kan ikke logge ut fra varselet.",
-      () => !this.dialog?.querySelector('form[method="dialog" i] button'),
+      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.button),
     )
   }
 
@@ -369,7 +383,7 @@ export class FsSessionTimeout extends HostElement {
     ) {
       return
     }
-    const title = dialog.querySelector("h1, h2, h3, h4, h5, h6")
+    const title = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.title)
     if (!title) return
     if (!title.id) {
       this.titleId ??= uniqueId("fs-session-timeout-title")
@@ -442,7 +456,7 @@ export class FsSessionTimeout extends HostElement {
     if (!(dialog instanceof HTMLDialogElement) || dialog !== this.dialog) return
     this.shownDialog = undefined
 
-    const live = dialog.querySelector("[role=status]")
+    const live = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.status)
     if (live) setText(live, "")
     this.previousFocus?.focus()
     this.previousFocus = null
@@ -513,11 +527,11 @@ export class FsSessionTimeout extends HostElement {
     left: number,
     announce: boolean,
   ): void {
-    const count = dialog.querySelector(`.${SESSION_TIMEOUT_COUNT_CLASS}`)
+    const count = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.count)
     if (count) setText(count, clock(left))
     if (!announce) return
 
-    const live = dialog.querySelector("[role=status]")
+    const live = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.status)
     if (!live) return
     const duration = spoken(left, languageOf(this))
     /*
@@ -525,7 +539,7 @@ export class FsSessionTimeout extends HostElement {
      * språket den som rendrer skrev, uten en egen tekst for skjermleseren.
      * Uten et avsnitt med tallet i leses varigheten alene.
      */
-    const text = dialog.querySelector(`.${SESSION_TIMEOUT_TEXT_CLASS}`)
+    const text = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.text)
     // Står tallet utenfor avsnittet, ville avsnittet blitt lest uten tall.
     if (!text || !count || !text.contains(count)) {
       setText(live, duration)

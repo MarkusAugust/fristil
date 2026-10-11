@@ -230,14 +230,18 @@ export function diagnosticsData(): Elements {
   for (const element of elements) {
     const attributes: Record<string, Attribute> = {}
     for (const [name, doc] of Object.entries(element.attributes)) {
-      attributes[name] =
-        typeof doc.value === "object"
+      attributes[name] = {
+        ...(typeof doc.value === "object"
           ? { type: "values", values: doc.value.values.map((v) => v.name) }
-          : { type: doc.value }
+          : { type: doc.value }),
+        description: doc.description,
+      }
     }
     out[element.tag] = {
       link: docsUrl(element),
+      description: element.description,
       attributes,
+      parts: element.parts,
       ...(Object.keys(element.events).length
         ? {
             events: Object.fromEntries(

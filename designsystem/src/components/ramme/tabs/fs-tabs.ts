@@ -11,12 +11,23 @@ import {
 } from "../../host-element.js"
 export const FS_TABS_TAG = "fs-tabs" as const
 
-/** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
-const LIST_SELECTOR = "[role='tablist'], .fs-tabs__list"
-/** En fane: rollen når den står der, ellers en knapp uten rolle i raden. */
-const TAB_SELECTOR = "[role='tab'], .fs-tabs__list > button:not([role])"
-/** Et panel: rollen når den står der, ellers klassen uten rolle. */
-const PANEL_SELECTOR = "[role='tabpanel'], .fs-tabs__panel:not([role])"
+/**
+ * Delene fanene finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_TABS_PARTS = {
+  /** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
+  list: "[role='tablist'], .fs-tabs__list",
+  /** En fane: rollen når den står der, ellers en knapp uten rolle i raden. */
+  tab: "[role='tab'], .fs-tabs__list > button:not([role])",
+  /** Et panel: rollen når den står der, ellers klassen uten rolle. */
+  panel: "[role='tabpanel'], .fs-tabs__panel:not([role])",
+} as const
+
+const LIST_SELECTOR = FS_TABS_PARTS.list
+const TAB_SELECTOR = FS_TABS_PARTS.tab
+const PANEL_SELECTOR = FS_TABS_PARTS.panel
 
 /**
  * Det komponenten sist skrev på en node, og hva serveren sist sa.

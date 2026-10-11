@@ -1,3 +1,5 @@
+import { ERROR_TEXT_CLASS } from "../../css/error-text/error-text.js"
+import { HELP_TEXT_CLASS } from "../../css/help-text/help-text.js"
 import {
   addClass,
   defineElement,
@@ -14,7 +16,19 @@ function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
 }
 
-const CONTROL_SELECTOR = "input:not([type='hidden']), textarea, select"
+/**
+ * Delene feltet finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_FIELD_PARTS = {
+  label: "label",
+  control: "input:not([type='hidden']), textarea, select",
+  help: `.${HELP_TEXT_CLASS}`,
+  error: `.${ERROR_TEXT_CLASS}`,
+} as const
+
+const CONTROL_SELECTOR = FS_FIELD_PARTS.control
 
 type Marker = "none" | "symbol" | "text"
 
@@ -309,7 +323,7 @@ export class FsField extends HostElement {
    * kommer den ikke tilbake av seg selv.
    */
   private resolveLabel(control: HTMLElement | null): HTMLLabelElement | null {
-    const inside = this.ownPart<HTMLLabelElement>("label")
+    const inside = this.ownPart<HTMLLabelElement>(FS_FIELD_PARTS.label)
     if (inside || !control?.id) return inside
 
     const root = this.getRootNode() as Document | ShadowRoot
@@ -392,8 +406,8 @@ export class FsField extends HostElement {
     const control = this.ownPart<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >(CONTROL_SELECTOR)
-    const help = this.ownPart<HTMLElement>(".fs-help-text")
-    const error = this.ownPart<HTMLElement>(".fs-error-text")
+    const help = this.ownPart<HTMLElement>(FS_FIELD_PARTS.help)
+    const error = this.ownPart<HTMLElement>(FS_FIELD_PARTS.error)
 
     if (!control) {
       warnAboutMarkup(

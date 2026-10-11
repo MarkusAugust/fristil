@@ -47,7 +47,13 @@ type Valgtype =
   | { kind: "number" }
   | { kind: "textList" }
 
-type Valg = { name: string; required: boolean; type: Valgtype }
+type Valg = {
+  name: string
+  required: boolean
+  type: Valgtype
+  /** JSDoc-en til valget i byggefunksjonens type, når den har en. */
+  description?: string
+}
 
 type Svar =
   | { kind: "attributes" }
@@ -190,12 +196,21 @@ for (const p of typer.getTypeAtLocation(fsNavn).getProperties()) {
   const options: Valg[] = []
   if (parameter) {
     const valgType = typer.getNonNullableType(typer.getTypeOfSymbol(parameter))
-    for (const v of valgType.getProperties())
+    for (const v of valgType.getProperties()) {
+      // Bare første avsnitt: resten er notater til den som vedlikeholder
+      // typen, med React-råd og historikk, og hører ikke i kontrakten.
+      const description = ts
+        .displayPartsToString(v.getDocumentationComment(typer))
+        .trim()
+        .split(/\n\s*\n/)[0]
+        .replace(/\s*\n\s*/g, " ")
       options.push({
         name: v.name,
         required: (v.flags & ts.SymbolFlags.Optional) === 0,
         type: valgtype(typer.getTypeOfSymbol(v), `fs.${p.name}({ ${v.name} })`),
+        ...(description ? { description } : {}),
       })
+    }
   }
   byggefunksjoner.push({
     name: p.name,
@@ -540,12 +555,56 @@ for (const b of byggefunksjoner) {
     }
   }
 }
+/*
+ * Beskrivelsen av et klasseattributt er beskrivelsen av valget med samme
+ * navn, `variant` for `data-variant`, og klassen finnes som flaggene over:
+ * et tilfelle med valget mot det samme uten. Et valg med et annet navn kan
+ * også endre attributtet, som `type` gjør med `data-variant` i `fs.input()`,
+ * men da beskriver det noe annet. Skriver flere byggefunksjoner det samme
+ * attributtet, vinner den første i alfabetet.
+ */
+const descriptions = new Map<string, string>()
+for (const builder of byggefunksjoner) {
+  const own = tilfeller.filter((t) => t.builder === builder.name && t.expected)
+  for (const option of builder.options) {
+    if (!option.description) continue
+    const attribute = `data-${option.name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
+    for (const withOption of own.filter(
+      (t) => t.options[option.name] !== undefined,
+    )) {
+      const { [option.name]: _, ...withoutOption } = withOption.options
+      const base = own.find((t) => likt(t.options, withoutOption))
+      if (!base) continue
+      const before = new Map(settene(base.expected))
+      for (const [setName, set] of settene(withOption.expected)) {
+        if (likt(set[attribute], before.get(setName)?.[attribute])) continue
+        const classNames = String(set.class ?? "")
+          .split(/\s+/)
+          .filter((c) => classes[c])
+        for (const className of classNames)
+          if (!descriptions.has(`${className} ${attribute}`))
+            descriptions.set(`${className} ${attribute}`, option.description)
+      }
+    }
+  }
+}
+const withDescriptions = (
+  className: string,
+  attributes: Record<string, object>,
+) =>
+  Object.fromEntries(
+    Object.entries(attributes).map(([attribute, value]) => {
+      const description = descriptions.get(`${className} ${attribute}`)
+      return [attribute, description ? { ...value, description } : value]
+    }),
+  )
+
 const klasser = Object.fromEntries(
   Object.entries(classes).map(([navn, klasse]) => [
     navn,
     {
       ...klasse,
-      attributes: {
+      attributes: withDescriptions(navn, {
         // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
         // derfra, men utledes på nytt under, ellers ble et flagg som er
         // borte fra byggefunksjonen stående i manifestet for alltid.
@@ -560,7 +619,7 @@ const klasser = Object.fromEntries(
             .sort()
             .map((a) => [a, { flag: true }]),
         ),
-      },
+      }),
     },
   ]),
 )

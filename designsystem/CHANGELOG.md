@@ -115,6 +115,22 @@ egen overskrift «Brytende».
   `manifest.json` slik skjemaet beskriver den, for den som leser manifestet
   selv. Kotlin-pakken har `Fristil.classes`, klassene i manifestet med
   tittel, beskrivelse og komponentside.
+- **Delene og beskrivelsene står i manifestet.** Hvert element har nå
+  `description` og `parts`: delene web-komponenten finner i markupen, med
+  selektoren den leter med, hva delen skal inneholde, og om den kan stå
+  flere ganger eller mangle. `<fs-field>` har ledetekst, kontroll,
+  hjelpetekst og feilmelding, og `<fs-dialog>` har dialogen, tittelen og
+  kroppen. Hvert attributt på et element og hvert valg i en
+  byggefunksjon har `description`, og et attributt på en klasse har
+  beskrivelsen til valget med samme navn. Et verktøy eller et
+  annet språk kan dermed lese hva hvert element leter etter, uten å lese
+  kildekoden.
+  Feltene er nye og valgfrie i skjemaet, så `schemaVersion` er fortsatt 1.
+  Fragmentet fra `fristil overta` gir klassene nye navn også i selektorene
+  og beskrivelsene, så kopien beskrives med sine egne klasser.
+  Selektorene eksporteres også, fra hovedinngangen og fra inngangen til
+  hver av de sju web-komponentene som finner deler, som `FS_FIELD_PARTS`
+  fra `@fristil/designsystem/field`.
 - **`@fristil/designsystem/fargekontrakt.json`** i `exports`, så en side
   som laster kjernen i nettleseren kan gi den fargekontrakten med
   `loadContract()`, som den gir manifestet fra `./manifest.json`.
