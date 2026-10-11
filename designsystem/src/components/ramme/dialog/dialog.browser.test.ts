@@ -1341,6 +1341,42 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(h2.id).toBe("")
   })
 
+  it("gjør ikke en overskrift i kroppen til tittel", async () => {
+    // Overskriften i kroppen hører til innholdet. Tittelen er den første
+    // overskriften utenfor kroppen, også når den står etter kroppen.
+    const { d } = await monterBar(
+      BAR.replace("<h2>Slette søknaden?</h2>", "")
+        .replace(
+          "<p>Søknaden og vedleggene blir borte.</p>",
+          "<h3>Vedleggene</h3><p>Søknaden og vedleggene blir borte.</p>",
+        )
+        .replace(
+          '<form method="dialog"',
+          '<h2>Slette søknaden?</h2><form method="dialog"',
+        ),
+    )
+    const h3 = d.querySelector("h3") as HTMLElement
+    const h2 = d.querySelector("h2") as HTMLElement
+
+    expect(h3.classList.contains("fs-dialog__title")).toBe(false)
+    expect(h3.id).toBe("")
+    expect(h2.classList.contains("fs-dialog__title")).toBe(true)
+    expect(d.getAttribute("aria-labelledby")).toBe(h2.id)
+  })
+
+  it("rører ikke overskriften i en nøstet dialog", async () => {
+    const { d } = await monterBar(
+      BAR.replace("<h2>Slette søknaden?</h2>", "").replace(
+        '<form method="dialog"',
+        '<dialog id="indre"><h2>Er du sikker?</h2></dialog><form method="dialog"',
+      ),
+    )
+    const indre = d.querySelector("#indre h2") as HTMLElement
+
+    expect(indre.classList.contains("fs-dialog__title")).toBe(false)
+    expect(d.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
   it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {
     /*
      * `close()` fjerner `open` synkront og køer `close`-hendelsen, og

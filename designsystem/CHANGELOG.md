@@ -134,6 +134,19 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-field>` kobler bare sine egne deler.** Sto et felt inni et annet,
+  som et søkefelt i et sprettoppvindu inni feltet, fant det ytre feltet det
+  innerste feltets kontroll først og skrev `for`, `id` og
+  `aria-describedby` på den. Nå ser hvert felt bare kontrollen, ledeteksten,
+  hjelpeteksten og feilmeldingen som hører til det selv, slik de andre
+  komponentene alt avgrenset delene sine. Et felt med mer enn én kontroll
+  gir en advarsel i konsollen, siden bare den første får koblingen.
+- **En overskrift i kroppen til `<fs-dialog>` blir ikke lenger tittel.**
+  Uten `aria-labelledby` og `aria-label` tok komponenten den første
+  overskriften i dialogen, også en som sto i `fs-dialog__body`, og ga den
+  klassen `fs-dialog__title` og stilen som følger med. Nå er tittelen den
+  første overskriften utenfor kroppen, og en dialog som står uten navn,
+  gir en advarsel i konsollen i stedet for å låne innholdets overskrift.
 - **En ubestemt `fs-progress` var en tom ramme i høykontrastmodus.** Stripen
   som sveiper over, er en gradient, og modusen fjerner gradienter. Den
   tegnes nå i `Highlight` på `Canvas` med `forced-color-adjust: none`, så

@@ -9,7 +9,11 @@ import {
   uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
-import { DIALOG_CLASS, DIALOG_TITLE_CLASS } from "./dialog.js"
+import {
+  DIALOG_BODY_CLASS,
+  DIALOG_CLASS,
+  DIALOG_TITLE_CLASS,
+} from "./dialog.js"
 
 export const FS_DIALOG_TAG = "fs-dialog" as const
 
@@ -179,12 +183,40 @@ export class FsDialog extends HostElement {
   }
 
   /**
+   * Overskriften som er dialogens tittel når serveren ikke pekte på en.
+   *
+   * Den første overskriften som står utenfor kroppen, og i denne dialogen og
+   * ikke en nøstet. En overskrift i `.fs-dialog__body` er en overskrift i
+   * innholdet, ikke dialogens navn: en dialog med innstillinger i tre
+   * avsnitt fikk det første avsnittets overskrift som tittel, med klassen og
+   * stilen som følger med.
+   */
+  private headingOf(dialog: HTMLDialogElement): HTMLElement | null {
+    return (
+      [...dialog.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")].find(
+        (heading) =>
+          heading.closest("dialog") === dialog &&
+          !heading.closest(`.${DIALOG_BODY_CLASS}`),
+      ) ?? null
+    )
+  }
+
+  /** Om dialogen står uten navn: verken peker, `aria-label` eller tittel. */
+  private nameless(dialog: HTMLDialogElement): boolean {
+    return (
+      !dialog.hasAttribute("aria-labelledby") &&
+      !dialog.hasAttribute("aria-label") &&
+      this.headingOf(dialog) === null
+    )
+  }
+
+  /**
    * Fyller inn det en mal uten JavaScript ikke skrev: klassen på dialogen,
    * og tittelen. Tittelen er det `aria-labelledby` peker på når serveren
-   * skrev det, ellers den første overskriften, og bare når dialogen ikke alt
-   * har et navn fra `aria-label`. Klassen og id-en skrives bare på tittelen:
-   * en overskrift i kroppen til en dialog med `aria-label` er ikke tittelen,
-   * og skal ikke stiles som den.
+   * skrev det, ellers den første overskriften utenfor kroppen, og bare når
+   * dialogen ikke alt har et navn fra `aria-label`. Klassen og id-en skrives
+   * bare på tittelen: en overskrift i kroppen til en dialog med `aria-label`
+   * er ikke tittelen, og skal ikke stiles som den.
    */
   private wire(dialog: HTMLDialogElement): void {
     addClass(dialog, DIALOG_CLASS)
@@ -203,8 +235,21 @@ export class FsDialog extends HostElement {
     }
     if (dialog.hasAttribute("aria-label")) return
 
-    const title = dialog.querySelector("h1, h2, h3, h4, h5, h6")
-    if (!title) return
+    const title = this.headingOf(dialog)
+    if (!title) {
+      warnAboutMarkup(
+        this,
+        "dialogen har ikke noe navn. Den har verken aria-labelledby, " +
+          "aria-label eller en overskrift utenfor kroppen, så en skjermleser " +
+          "leser den opp som «dialog» uten å si hva den gjelder. Gi den en " +
+          "overskrift, eller aria-label på <dialog>.",
+        () => {
+          const now = this.dialog
+          return now !== null && this.nameless(now)
+        },
+      )
+      return
+    }
     addClass(title, DIALOG_TITLE_CLASS)
     if (!title.id) {
       this.titleId ??= uniqueId("fs-dialog-title")

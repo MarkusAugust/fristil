@@ -120,6 +120,66 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(label.getAttribute("data-required")).toBe("symbol")
   })
 
+  it("feltet med mer enn én kontroll", async () => {
+    // Bare den første kontrollen får koblingen. Den andre står uten
+    // ledetekst, og det skal sies fra om.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-field>
+        <label class="fs-label">Søk</label>
+        <input class="fs-input" type="search" />
+        <select class="fs-select"><option>Alle</option></select>
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    expect(
+      meldinger(advarsel).filter((m) => m.includes("mer enn én kontroll")),
+    ).toHaveLength(1)
+  })
+
+  it("men ikke når den andre kontrollen står i et felt inni", async () => {
+    // Et felt i et felt er vanlig markup: et søkefelt i et sprettoppvindu
+    // inni feltet. Hvert felt har da sin egen kontroll.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-field>
+        <label class="fs-label">Kommune</label>
+        <input class="fs-input" type="text" />
+        <div popover>
+          <fs-field>
+            <label class="fs-label">Søk i lista</label>
+            <input class="fs-input" type="search" />
+          </fs-field>
+        </div>
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    expect(advarsel).not.toHaveBeenCalled()
+  })
+
+  it("dialogen uten navn", async () => {
+    // Ingen aria-labelledby, ingen aria-label, og den eneste overskriften
+    // står i kroppen, der den er innholdets og ikke dialogens.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-dialog>
+        <dialog>
+          <div class="fs-dialog__body"><h3>Vedlegg</h3><p>To vedlegg.</p></div>
+        </dialog>
+      </fs-dialog>
+    `)
+    await ventTilRo()
+
+    expect(
+      meldinger(advarsel).filter((m) => m.includes("ikke noe navn")),
+    ).toHaveLength(1)
+  })
+
   it("fanene uten knapper", async () => {
     // Knapper i raden er nok: komponenten gir dem rollen. Lenker er det ikke,
     // og uten `role="tab"` finner den ingen faner å koble.
