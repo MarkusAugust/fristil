@@ -126,8 +126,9 @@ egen overskrift «Brytende».
   annet språk kan dermed lese hva hvert element leter etter, uten å lese
   kildekoden.
   Feltene er nye og valgfrie i skjemaet, så `schemaVersion` er fortsatt 1.
-  Selektorene eksporteres også fra hver web-komponents inngang, som
-  `FS_FIELD_PARTS` fra `@fristil/designsystem/field`.
+  Selektorene eksporteres også, fra hovedinngangen og fra inngangen til
+  hver av de sju web-komponentene som finner deler, som `FS_FIELD_PARTS`
+  fra `@fristil/designsystem/field`.
 - **`@fristil/designsystem/fargekontrakt.json`** i `exports`, så en side
   som laster kjernen i nettleseren kan gi den fargekontrakten med
   `loadContract()`, som den gir manifestet fra `./manifest.json`.
