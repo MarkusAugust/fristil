@@ -43,13 +43,17 @@ rundt 40 linjer.
 
 `tema/` er en egen crate, `fristil-tema`, som kjernen avhenger av. Den bygger
 et fargetema av merkefarger og kontrollerer et tema skrevet som CSS, og har
-JSON-leseren og grensesnittet mot verten (`alloc`, `result_ptr` og
-`result_len`). Den er egen av én grunn: pakken regner fargematrisen sin med
-den før manifestet finnes, og `tokens.css` kommer av matrisen. Bar kjernen
-både manifestet og fargeregningen, måtte den bygges to ganger per bygg av
-pakken. Nå bygges `fristil-tema.wasm` først, så skriver pakken matrisen,
-tokenene og manifestet, og så bygges kjernen og kommandolinja én gang. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
-`designsystem/src/tokens/fargekontrakt.json`, som kjernen bærer innebygd.
+JSON-leseren og grensesnittet mot verten (`alloc`, `dealloc`, `result_ptr`
+og `result_len`). Den er egen av én grunn: pakken regner fargematrisen sin
+med den før manifestet finnes, og `tokens.css` kommer av matrisen. Bar
+kjernen både manifestet og fargeregningen, måtte den bygges to ganger per
+bygg av pakken. Nå bygges `fristil-tema.wasm` først, så skriver pakken
+matrisen, tokenene og manifestet, og så bygges kjernen og kommandolinja én
+gang.
+
+Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
+`designsystem/src/tokens/fargekontrakt.json`, som temaet bærer innebygd, og
+kjernen får med derfra.
 `build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
 eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
 svarer med funnene og hva som ble kontrollert.

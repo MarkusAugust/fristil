@@ -11,7 +11,8 @@
 //! modul, så en vert som har kjernen, har temaet. Modulen fra denne crate-en
 //! alene har bare temaet, og er den pakken bygger matrisen med.
 //!
-//! Grensesnittet mot verten står i `abi`:
+//! Minnet og svaret mot verten (`alloc`, `dealloc`, `result_ptr` og
+//! `result_len`) står i `abi`. De to kallene temaet svarer på, står her:
 //!
 //! - `build_theme_raw(peker, lengde)` tar oppskriften som JSON, de samme
 //!   feltene som `ThemeInput` i TypeScript, og svarer 0 med temaet eller 1

@@ -120,7 +120,7 @@ Fargene er en matrise av **familie**, altså hva fargen betyr, og **rolle**, alt
 
 Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
 
-Temageneratoren bygger et helt tema av en konsuments merkefarger. Den er skrevet i Rust, i `kjerne/src/theme/`, og når JavaScript gjennom `@fristil/designsystem/tema`. Løftene den må holde, står i `src/tokens/fargekontrakt.json`, og de samme løftene sjekker Fristils egne farger. Testene for kontrakten står i `kjerne/src/theme/tests.rs`.
+Temageneratoren bygger et helt tema av en konsuments merkefarger. Den er skrevet i Rust, i `kjerne/tema/src/theme/`, og når JavaScript gjennom `@fristil/designsystem/tema`. Løftene den må holde, står i `src/tokens/fargekontrakt.json`, og de samme løftene sjekker Fristils egne farger. Testene for kontrakten står i `kjerne/tema/src/theme/tests.rs`.
 
 ## Tester
 

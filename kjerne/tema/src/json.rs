@@ -316,6 +316,26 @@ impl Parser<'_> {
     }
 }
 
+/// En streng som JSON: anførselstegn rundt, og `"`, `\\`, linjeskift og de
+/// andre kontrolltegnene escapet. Gyldig for enhver JSON-leser.
+pub fn json_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -375,23 +395,4 @@ mod tests {
         assert!(parse(r#""\u004""#).is_err());
         assert_eq!(parse(r#""\u0041""#).unwrap().as_str(), Some("A"));
     }
-}
-
-/// En streng som JSON, med anførselstegn og escaping slik `JSON.stringify` gjør det.
-pub fn json_string(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() + 2);
-    out.push('"');
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
-            c => out.push(c),
-        }
-    }
-    out.push('"');
-    out
 }

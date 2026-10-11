@@ -44,8 +44,8 @@ at endringen er committet. Steget feiler ellers på dine egne endringer.
 
 Det krever i tillegg til Bun: Rust, siden sjekken og temaet i pakken bygges
 fra `kjerne/`, som skriver modulene til `kjerne/dist/`, og pakken henter dem
-derfra med `scripts/hent-kjerne.ts`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
-gang, når VS Code lastes ned. På Linux uten skjerm trengs også `xvfb-run`.
+derfra med `scripts/hent-kjerne.ts`; Java 17 eller nyere, for jar-en og
+Kotlin-testene; og nett første gang, når VS Code lastes ned. På Linux uten skjerm trengs også `xvfb-run`.
 Installer [rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter
 riktig versjon og målene ved første kall.
 

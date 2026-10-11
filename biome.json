@@ -19,7 +19,7 @@
       "!designsystem/web-types.json",
       "!kjerne/paritet",
       "!kjerne/maler",
-      "!kjerne/tema",
+      "!kjerne/tema/fasit",
       "!designsystem/manifest/manifest.json",
       "!designsystem/manifest/byggetilfeller.json"
     ]
