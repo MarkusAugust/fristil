@@ -1,9 +1,9 @@
 //! Ordforrådet fra manifestet.
 //!
-//! Kjernen bærer Fristils eget manifest innebygd, så den virker uten at noen
-//! sender inn noe. En vert kan i tillegg gi den et annet manifest, som det
-//! prosjektet faktisk har installert, eller et der en overtatt komponent er
-//! med, og da sjekkes det mot det.
+//! Kjernen bærer ikke noe manifest selv. Verten gir det, med
+//! `load_manifest_raw`, og sjekker mot det manifestet prosjektet faktisk har
+//! installert, eller et der en overtatt komponent er med. Uten et manifest
+//! sjekker kjernen ingenting, og sier fra.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -14,26 +14,29 @@ use crate::types::*;
 /// Formen på manifestet denne kjernen forstår.
 pub const SCHEMA_VERSION: u32 = 1;
 
-const BUILTIN: &str = include_str!("../../designsystem/manifest/manifest.json");
-
 thread_local! {
-    static BUILTIN_VOCABULARY: Rc<Vocabulary> =
-        Rc::new(from_json(BUILTIN).expect("det innebygde manifestet skal alltid kunne leses"));
     static CURRENT: RefCell<Option<Rc<Vocabulary>>> = const { RefCell::new(None) };
 }
 
-/// Ordforrådet som gjelder nå: det verten har gitt, eller det innebygde.
-pub fn current() -> Rc<Vocabulary> {
-    CURRENT.with(|c| c.borrow().clone()).unwrap_or_else(builtin)
+/// Ordforrådet verten har gitt, om den har gitt et.
+pub fn current() -> Option<Rc<Vocabulary>> {
+    CURRENT.with(|c| c.borrow().clone())
 }
 
-pub fn builtin() -> Rc<Vocabulary> {
-    BUILTIN_VOCABULARY.with(Rc::clone)
+/// Bytter ordforrådet.
+pub fn set_current(vocabulary: Vocabulary) {
+    CURRENT.with(|c| *c.borrow_mut() = Some(Rc::new(vocabulary)));
 }
 
-/// Bytter ordforrådet. `None` går tilbake til det innebygde.
-pub fn set_current(vocabulary: Option<Vocabulary>) {
-    CURRENT.with(|c| *c.borrow_mut() = vocabulary.map(Rc::new));
+/// Manifestet i pakken, til testene.
+#[cfg(test)]
+pub fn for_tests() -> Rc<Vocabulary> {
+    Rc::new(from_json(&test_text()).expect("manifestet i pakken skal kunne leses"))
+}
+
+#[cfg(test)]
+pub fn test_text() -> String {
+    crate::package_file("manifest/manifest.json")
 }
 
 fn text(value: &Json, path: &str) -> Result<String, String> {
@@ -70,18 +73,18 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
     from_value(&parse(source)?)
 }
 
-/// Det innebygde manifestet med fragmentene lagt til.
+/// Manifestet med fragmentene lagt til.
 ///
 /// Et fragment har samme form som manifestet, med elementene og klassene til
 /// én overtatt komponent, og skrives av `fristil overta` ved siden av kopien.
 /// Et navn som finnes fra før, byttes ut.
-pub fn with_fragments(fragments: &[&str]) -> Result<Vocabulary, String> {
-    from_value(&merged(fragments)?)
+pub fn with_fragments(base: &str, fragments: &[&str]) -> Result<Vocabulary, String> {
+    from_value(&merged(base, fragments)?)
 }
 
-/// Det innebygde manifestet med fragmentene lagt til, som JSON.
-pub fn merged(fragments: &[&str]) -> Result<Json, String> {
-    let mut root = parse(BUILTIN)?;
+/// Manifestet med fragmentene lagt til, som JSON.
+pub fn merged(base: &str, fragments: &[&str]) -> Result<Json, String> {
+    let mut root = parse(base)?;
     for fragment in fragments {
         let fragment = parse(fragment)?;
         let schema_version = field(&fragment, "schemaVersion", "fragmentet")?
@@ -206,20 +209,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn adds_a_fragment_to_the_builtin_manifest() {
-        let v = with_fragments(&[r#"{"schemaVersion": 1, "version": "0", "elements": {"app-dialog": {"link": "", "attributes": {}}}, "classes": {"app-button": {"title": "Button", "link": "", "attributes": {}}}}"#]).unwrap();
+    fn adds_a_fragment_to_the_manifest() {
+        let base = test_text();
+        let v = with_fragments(&base, &[r#"{"schemaVersion": 1, "version": "0", "elements": {"app-dialog": {"link": "", "attributes": {}}}, "classes": {"app-button": {"title": "Button", "link": "", "attributes": {}}}}"#]).unwrap();
         assert!(v.classes.iter().any(|c| c.name == "app-button"));
         assert!(
             v.classes.iter().any(|c| c.name == "fs-button"),
             "Fristils egne står"
         );
         assert!(v.elements.iter().any(|e| e.tag == "app-dialog"));
-        assert!(with_fragments(&[r#"{"schemaVersion": 2}"#]).is_err());
+        assert!(with_fragments(&base, &[r#"{"schemaVersion": 2}"#]).is_err());
     }
 
     #[test]
-    fn reads_the_builtin_manifest() {
-        let v = builtin();
+    fn reads_the_manifest_in_the_package() {
+        let v = for_tests();
         assert!(v.elements.iter().any(|e| e.tag == "fs-field"));
         assert!(v.classes.iter().any(|c| c.name == "fs-button"));
     }

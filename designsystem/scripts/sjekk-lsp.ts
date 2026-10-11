@@ -16,6 +16,13 @@ import { join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 const pakke = fileURLToPath(new URL("..", import.meta.url))
+
+// Pakken for den kjørbare fila, som ikke har noen vert som setter den.
+// Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
+const ENVIRONMENT = {
+  ...process.env,
+  FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
+}
 const KOMMANDO: string[] = process.env.FRISTIL_CLI
   ? process.env.FRISTIL_CLI.startsWith("[")
     ? JSON.parse(process.env.FRISTIL_CLI)
@@ -38,6 +45,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 /** Én økt med serveren: send meldinger, og vent på det den svarer. */
 async function økt(arbeidsmappe: string) {
   const prosess = Bun.spawn([...KOMMANDO, "lsp"], {
+    env: ENVIRONMENT,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",

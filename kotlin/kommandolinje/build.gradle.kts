@@ -50,17 +50,8 @@ val byggKommandolinje = tasks.register<Exec>("byggKommandolinje") {
     inputs.dir(kjerne.resolve("cli/src"))
     inputs.file(kjerne.resolve("Cargo.toml"))
     inputs.file(kjerne.resolve("cli/Cargo.toml"))
-    inputs.file(kjerne.resolve("cli/build.rs"))
     inputs.file(kjerne.resolve("Cargo.lock"))
     inputs.file(kjerne.resolve("rust-toolchain.toml"))
-    // Alt som er bygget inn i modulen: manifestet, fargekontrakten,
-    // regelbøkene for agenter, og kildekoden til komponentene og
-    // `package.json` for `fristil overta` (se `build.rs`).
-    inputs.file(designsystem.resolve("manifest/manifest.json"))
-    inputs.file(designsystem.resolve("src/tokens/fargekontrakt.json"))
-    inputs.dir(designsystem.resolve("agent"))
-    inputs.dir(designsystem.resolve("src/components"))
-    inputs.file(designsystem.resolve("package.json"))
     outputs.file(kommandolinjeWasm)
 }
 
@@ -70,6 +61,19 @@ val kompilerKommandolinje = tasks.register<no.fristil.build.CompileCore>("kompil
     className.set("no.fristil.cli.FristilCli")
     classes.set(layout.buildDirectory.dir("chicory/classes"))
     sources.set(layout.buildDirectory.dir("chicory/sources"))
+}
+
+/*
+ * Pakken kommandolinja leser fra: manifestet, fargekontrakten, regelbøkene
+ * og kildekoden til komponentene for `fristil overta`. Modulen bærer ingen
+ * av dem, og `CommandLine` gir den mappa som `FRISTIL_PACKAGE`.
+ */
+tasks.processResources {
+    from(designsystem) {
+        include("package.json", "manifest/manifest.json", "manifest/filer.json", "src/tokens/fargekontrakt.json", "agent/*.md", "src/components/**")
+        exclude("**/*.test.ts")
+        into("fristil-pakke")
+    }
 }
 
 sourceSets.main {

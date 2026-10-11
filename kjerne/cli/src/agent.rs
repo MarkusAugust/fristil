@@ -4,36 +4,28 @@
 //! `.github/copilot-instructions.md` er konsumentens egne filer. Vil noen ha
 //! regelboka på disk, er det ett rør unna, og da er det deres beslutning.
 //!
-//! Regelbøkene er bygget inn, så de følger versjonen av programmet. Valget av
-//! miljø skrives til feilkanalen, så utdata kan pipes rent.
+//! Regelbøkene leses fra pakken (se `package.rs`), så de følger versjonen
+//! prosjektet har installert. Valget av miljø skrives til feilkanalen, så
+//! utdata kan pipes rent.
 
 use crate::output::{error, fail, write};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
-const RULEBOOKS: [(&str, &str); 6] = [
-    ("html", include_str!("../../../designsystem/agent/html.md")),
-    (
-        "maler",
-        include_str!("../../../designsystem/agent/maler.md"),
-    ),
-    (
-        "bundles",
-        include_str!("../../../designsystem/agent/bundles.md"),
-    ),
-    (
-        "react",
-        include_str!("../../../designsystem/agent/react.md"),
-    ),
-    (
-        "astro",
-        include_str!("../../../designsystem/agent/astro.md"),
-    ),
-    (
-        "datastar",
-        include_str!("../../../designsystem/agent/datastar.md"),
-    ),
-];
+/// Navnene på regelbøkene i pakken, sortert. Teksten leses bare for den valgte.
+fn rulebooks() -> Vec<String> {
+    let books: Vec<String> = crate::package::files()
+        .get("agent")
+        .and_then(Json::as_array)
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|name| name.as_str().map(str::to_string))
+        .collect();
+    if books.is_empty() {
+        fail("Fant ingen regelbøker i agent/ i pakken.\n");
+    }
+    books
+}
 
 /// Rammeverk som deler regelbok: Vue, Svelte, Solid og Lit gjør det samme med
 /// stilarkene, attributtnavnene og registreringen.
@@ -112,13 +104,14 @@ pub fn run(arguments: &[String]) {
         Some(requested) => (requested.to_string(), "oppgitt med --rammeverk".to_string()),
         None => detect_framework(),
     };
-    let name = if RULEBOOKS.iter().any(|(n, _)| *n == chosen) {
+    let books = rulebooks();
+    let name = if books.contains(&chosen) {
         Some(chosen.as_str())
     } else {
         ALIASES.iter().find(|(a, _)| *a == chosen).map(|(_, n)| *n)
     };
-    let Some((name, book)) = name.and_then(|n| RULEBOOKS.iter().find(|(r, _)| *r == n)) else {
-        let names: Vec<&str> = RULEBOOKS.iter().map(|(n, _)| *n).collect();
+    let Some(name) = name.and_then(|n| books.iter().find(|r| *r == n)) else {
+        let names: Vec<&str> = books.iter().map(String::as_str).collect();
         fail(&format!(
             "Kjenner ikke «{chosen}».\n\nVelg mellom: {}\n\nVue, Svelte, Solid og Lit deler «bundles», siden de gjør det samme med\nstilarkene, attributtnavnene og registreringen.\n",
             names.join(", ")
@@ -132,5 +125,5 @@ pub fn run(arguments: &[String]) {
         format!(" via {chosen}")
     };
     error(&format!("Regelboka for {name}{via} ({reason})."));
-    write(book);
+    write(&crate::package::read(&format!("agent/{name}.md")));
 }

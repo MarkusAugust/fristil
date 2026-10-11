@@ -43,6 +43,14 @@ import { MODUL } from "./bygg.js"
 
 const ROT = fileURLToPath(new URL("../..", import.meta.url))
 const kjerne = loadCore(readFileSync(MODUL))
+// Kjernen bærer ingen data. Sjekken gir den pakkens manifest og fargekontrakt,
+// slik hver vert gjør.
+kjerne.loadManifest(
+  readFileSync(join(ROT, "designsystem/manifest/manifest.json"), "utf8"),
+)
+kjerne.loadContract(
+  readFileSync(join(ROT, "designsystem/src/tokens/fargekontrakt.json"), "utf8"),
+)
 
 /**
  * Reglene kjernen har, lest fra `RULES` i `kjerne/src/types.rs`. Lista sto

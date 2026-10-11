@@ -2,7 +2,7 @@
  * At kjernen feller hver feiltype den skal, og bare dem.
  *
  * Kjernen er Rust-modulen slik `bun run kjerne` sist bygget den, med
- * manifestet innebygd. En regel som er skrudd av i Rust, feller her etter
+ * pakkens manifest. En regel som er skrudd av i Rust, feller her etter
  * neste bygg av modulen. Hvert tilfelle sier hvor mange funn det skal gi og
  * hva meldingen skal nevne, og de rene tilfellene skal gi null. Snippetene
  * fra komponentsidene er med som rene tilfeller: gir en av dem funn, er
@@ -31,6 +31,13 @@ import { classesData, diagnosticsData, snippets } from "./generate"
 const all: Elements = diagnosticsData()
 const classes: Classes = classesData()
 const core = loadCore(readFileSync(MODUL))
+// Kjernen bærer ingen data, og får pakkens manifest som hver vert gir den.
+core.loadManifest(
+  readFileSync(
+    new URL("../../designsystem/manifest/manifest.json", import.meta.url),
+    "utf8",
+  ),
+)
 const findings: string[] = []
 
 type Case = {

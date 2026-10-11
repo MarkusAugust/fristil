@@ -1,5 +1,6 @@
 /**
- * Kjernen fra pakken selv, lastet første gang den trengs.
+ * Kjernen fra pakken selv, lastet første gang den trengs, med pakkens eget
+ * manifest og fargekontrakt, som ligger ved siden av modulen.
  *
  * Både sjekken (`@fristil/designsystem/diagnostics`) og temaet
  * (`@fristil/designsystem/tema` og `tema-sjekk`) bruker den samme instansen.
@@ -7,8 +8,10 @@
 
 import { type Core, loadCore } from "./core.js"
 
-/** Modulen i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
+/** Filene i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
 const MODULE = new URL("../../kjerne/fristil-kjerne.wasm", import.meta.url)
+const MANIFEST = new URL("../../manifest/manifest.json", import.meta.url)
+const CONTRACT = new URL("../../src/tokens/fargekontrakt.json", import.meta.url)
 
 let core: Core | undefined
 
@@ -31,7 +34,7 @@ export function defaultCore(): Core {
     throw new Error(
       node
         ? `Fristil krever Node 20.16 eller nyere, og dette er Node ${node}.`
-        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv og gi den til loadCore.",
+        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og fargekontrakt.json med loadContract.",
     )
   }
   let bytes: Uint8Array
@@ -42,6 +45,30 @@ export function defaultCore(): Core {
       `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run kjerne» i designsystem/, som krever Rust.`,
     )
   }
-  core = loadCore(bytes)
+  // Manifestet trengs bare av sjekken, og fargekontrakten bare av temaet.
+  // Hver av dem leses første gang et kall trenger den.
+  const loaded = loadCore(bytes)
+  let manifest = false
+  let contract = false
+  const withManifest = () => {
+    if (!manifest) loaded.loadManifest(fs.readFileSync(MANIFEST, "utf8"))
+    manifest = true
+    return loaded
+  }
+  const withContract = () => {
+    if (!contract) loaded.loadContract(fs.readFileSync(CONTRACT, "utf8"))
+    contract = true
+    return loaded
+  }
+  core = {
+    ...loaded,
+    diagnoseMarkup: (html) => withManifest().diagnoseMarkup(html),
+    diagnosePage: (html) => withManifest().diagnosePage(html),
+    diagnoseStyled: (html, css, page) =>
+      withManifest().diagnoseStyled(html, css, page),
+    version: () => withManifest().version(),
+    buildTheme: (recipe) => withContract().buildTheme(recipe),
+    inspectTheme: (css) => withContract().inspectTheme(css),
+  }
   return core
 }

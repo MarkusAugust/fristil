@@ -7,12 +7,16 @@
  * ingen lim: lasteren skriver teksten inn som UTF-8 og leser svaret ut som
  * JSON, slik hvert vertsspråk gjør det.
  *
- * `diagnoseMarkup` og `diagnosePage` i `index.ts` laster modulen fra pakken
- * selv. `loadCore` er for den som har modulen på en annen måte, som en
- * utvidelse som pakker den med seg, eller en nettleser:
+ * Kjernen bærer ingen data. Ordforrådet og fargekontrakten gis den med
+ * `loadManifest` og `loadContract`, fra filene i pakken.
+ *
+ * `diagnoseMarkup` og `diagnosePage` i `index.ts` laster modulen og filene
+ * fra pakken selv. `loadCore` er for den som har modulen på en annen måte,
+ * som en utvidelse som pakker den med seg, eller en nettleser:
  *
  * ```ts
  * const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(url)))
+ * kjerne.loadManifest(await (await fetch(manifestUrl)).text())
  * kjerne.diagnosePage(html)
  * ```
  *
@@ -56,8 +60,8 @@ export type Finding = {
 export type CoreVersion = {
   /** Versjonen av kjernen. */
   core: string
-  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra. */
-  manifest: string
+  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra, eller `null` uten manifest. */
+  manifest: string | null
   /** Formen på manifestet kjernen forstår. */
   schemaVersion: number
 }
@@ -101,23 +105,25 @@ export type CoreStyles = {
 }
 
 export type Core = {
+  /** Sjekker en mal eller et fragment. Kaster uten manifest. */
   diagnoseMarkup(html: string): Finding[]
+  /** Sjekker en hel side, med koblingene. Kaster uten manifest. */
   diagnosePage(html: string): Finding[]
-  /** Sjekker mot et annet manifest. Kaster med kjernens forklaring hvis det ikke kan leses. */
+  /** Gir kjernen ordforrådet. Kaster med kjernens forklaring hvis det ikke kan leses. */
   loadManifest(json: string): void
-  /** Går tilbake til manifestet kjernen er bygget med. */
-  resetManifest(): void
+  /** Gir kjernen fargekontrakten. Kaster med kjernens forklaring hvis den ikke kan leses. */
+  loadContract(json: string): void
   version(): CoreVersion
-  /** Bygger et tema av oppskriften. Kaster med kjernens forklaring når den ikke kan brukes. */
+  /** Bygger et tema av oppskriften. Kaster uten fargekontrakt, eller når oppskriften ikke kan brukes. */
   buildTheme(recipe: unknown): CoreTheme
-  /** Kontrollerer hvert løfte i et tema skrevet som CSS. */
+  /** Kontrollerer hvert løfte i et tema skrevet som CSS. Kaster uten fargekontrakt. */
   inspectTheme(css: string): CoreThemeReport
   /** Klassene og attributtverdiene et stilark styler, lest med kjernens CSS-leser. */
   inspectStyles(css: string): CoreStyles
   /**
    * Sjekken med stilarkene i tillegg: en klasse ingen av dem styler, og en
    * verdi uten regel. `page` sjekker som `diagnosePage`, ellers som
-   * `diagnoseMarkup`.
+   * `diagnoseMarkup`. Kaster uten manifest.
    */
   diagnoseStyled(html: string, css: string[], page: boolean): Finding[]
 }
@@ -125,13 +131,13 @@ export type Core = {
 type Exports = {
   memory: WebAssembly.Memory
   alloc(length: number): number
-  diagnose_markup_raw(pointer: number, length: number): void
-  diagnose_page_raw(pointer: number, length: number): void
+  diagnose_markup_raw(pointer: number, length: number): number
+  diagnose_page_raw(pointer: number, length: number): number
   load_manifest_raw(pointer: number, length: number): number
-  reset_manifest(): void
+  load_contract_raw(pointer: number, length: number): number
   version_raw(): void
   build_theme_raw(pointer: number, length: number): number
-  inspect_theme_raw(pointer: number, length: number): void
+  inspect_theme_raw(pointer: number, length: number): number
   inspect_styles_raw(pointer: number, length: number): void
   diagnose_styled_raw(pointer: number, length: number): number
   result_ptr(): number
@@ -162,45 +168,35 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
         new Uint8Array(e.memory.buffer, e.result_ptr(), e.result_len()),
       ),
     ) as T
+  /** Svaret fra et kall som kan avvises: verdien, eller kjernens forklaring som feil. */
+  const answer = <T>(status: number): T => {
+    if (status !== 0) throw new Error(read<{ error: string }>().error)
+    return read<T>()
+  }
 
   return {
-    diagnoseMarkup: (html) => {
-      e.diagnose_markup_raw(...write(html))
-      return read()
-    },
-    diagnosePage: (html) => {
-      e.diagnose_page_raw(...write(html))
-      return read()
-    },
+    diagnoseMarkup: (html) => answer(e.diagnose_markup_raw(...write(html))),
+    diagnosePage: (html) => answer(e.diagnose_page_raw(...write(html))),
     loadManifest: (json) => {
-      if (e.load_manifest_raw(...write(json)) !== 0)
-        throw new Error(read<{ error: string }>().error)
+      answer(e.load_manifest_raw(...write(json)))
     },
-    resetManifest: () => e.reset_manifest(),
+    loadContract: (json) => {
+      answer(e.load_contract_raw(...write(json)))
+    },
     version: () => {
       e.version_raw()
       return read()
     },
-    buildTheme: (recipe) => {
-      if (e.build_theme_raw(...write(JSON.stringify(recipe))) !== 0)
-        throw new Error(read<{ error: string }>().error)
-      return read()
-    },
-    inspectTheme: (css) => {
-      e.inspect_theme_raw(...write(css))
-      return read()
-    },
+    buildTheme: (recipe) =>
+      answer(e.build_theme_raw(...write(JSON.stringify(recipe)))),
+    inspectTheme: (css) => answer(e.inspect_theme_raw(...write(css))),
     inspectStyles: (css) => {
       e.inspect_styles_raw(...write(css))
       return read()
     },
-    diagnoseStyled: (html, css, page) => {
-      if (
-        e.diagnose_styled_raw(...write(JSON.stringify({ html, css, page }))) !==
-        0
-      )
-        throw new Error(read<{ error: string }>().error)
-      return read()
-    },
+    diagnoseStyled: (html, css, page) =>
+      answer(
+        e.diagnose_styled_raw(...write(JSON.stringify({ html, css, page }))),
+      ),
   }
 }

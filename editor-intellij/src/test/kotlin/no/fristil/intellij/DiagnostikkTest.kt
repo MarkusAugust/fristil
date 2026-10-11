@@ -99,7 +99,7 @@ class DiagnostikkTest : BasePlatformTestCase() {
         assertEquals("bare fs-card skal meldes, fikk $ut", listOf("fs-card"), ut.map { it.first })
     }
 
-    fun `test et manifest kjernen ikke kan lese gir det innebygde`() {
+    fun `test et manifest kjernen ikke kan lese gir pakkens`() {
         myFixture.addFileToProject("build/fristil/manifest.json", "{}")
         val ut = funn("test.html", """<div class="fs-kort">Søknad</div><div class="fs-card">Søknad</div>""")
         assertEquals("fs-kort skal meldes, fikk $ut", listOf("fs-kort"), ut.map { it.first })

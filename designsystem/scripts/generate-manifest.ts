@@ -5,8 +5,8 @@
  *
  *   - `manifest/manifest.json`: ordforrådet (elementene og klassene, de samme
  *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `fs` med
- *     valgene og formen på svaret. Den er liten, og Rust-kjernen bærer den
- *     innebygd som standard.
+ *     valgene og formen på svaret. Den er liten, og hver vert gir den til
+ *     Rust-kjernen.
  *   - `manifest/byggetilfeller.json`: hver byggefunksjon kalt med mange
  *     kombinasjoner av valgene, med svaret TypeScript gir. En utgave i et annet
  *     språk skal svare nøyaktig det samme på hvert tilfelle.
@@ -20,7 +20,13 @@
  * Kjør med: bun scripts/generate-manifest.ts, eller som en del av `generate`.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs"
 import { fileURLToPath } from "node:url"
 import ts from "typescript"
 import { fs } from "../src/fs.js"
@@ -574,6 +580,33 @@ writeFileSync(
   `${UT}byggetilfeller.json`,
   `${JSON.stringify({ version: versjon, cases: tilfeller })}\n`,
 )
+
+/*
+ * Filene kommandolinja leser fra pakken: regelbøkene for `fristil agent` og
+ * kildekoden til hver komponent for `fristil overta`, uten testene. Den leser
+ * lista framfor mappene, fordi en mappe ikke lot seg lese gjennom Nodes WASI
+ * på Windows: `overta` fant ingen komponenter der.
+ */
+const ls = (mappe: string) => readdirSync(`${PAKKE}${mappe}`).sort()
+const filer = {
+  agent: ls("agent")
+    .filter((fil) => fil.endsWith(".md"))
+    .map((fil) => fil.slice(0, -3)),
+  components: ["css", "ramme", "frittstaende"].flatMap((kategori) =>
+    ls(`src/components/${kategori}`)
+      .filter((navn) =>
+        statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
+      )
+      .map((navn) => ({
+        category: kategori,
+        name: navn,
+        files: ls(`src/components/${kategori}/${navn}`).filter(
+          (fil) => !fil.includes(".test."),
+        ),
+      })),
+  ),
+}
+writeFileSync(`${UT}filer.json`, `${JSON.stringify(filer, null, 2)}\n`)
 
 console.log(
   `✓ Manifestet: ${byggefunksjoner.length} byggefunksjoner, ${Object.keys(elements).length} elementer, ${Object.keys(classes).length} klasser, ${tilfeller.length} byggetilfeller.`,

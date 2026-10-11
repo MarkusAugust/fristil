@@ -203,12 +203,14 @@ Temaet regnes av kjernen, skrevet i Rust og bygget til WebAssembly, den samme so
 ```ts
 import { loadCore } from "@fristil/designsystem/diagnostics"
 import modul from "@fristil/designsystem/kjerne.wasm?url"
+import kontrakt from "@fristil/designsystem/fargekontrakt.json?raw"
 
 const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(modul)))
+kjerne.loadContract(kontrakt)
 const tema = kjerne.buildTheme({ accent: "#7c3aed" })
 ```
 
-`?url` er Vite sin måte å få adressen til en fil. Uten et byggesteg legger du `fristil-kjerne.wasm` fra pakken ved siden av siden, og henter den derfra.
+Kjernen har ingen farger i seg. Fargekontrakten, altså lysheten per rolle og løftene, gir du den med `loadContract`, fra fila i pakken. `?url` og `?raw` er Vite sin måte å få adressen til en fil og teksten i den. Uten et byggesteg legger du `fristil-kjerne.wasm` og `fargekontrakt.json` fra pakken ved siden av siden, og henter dem derfra.
 
 Vil du regne selv, har `@fristil/designsystem/farge` regnestykkene: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Hvilken lyshet hver rolle har og kravene til kontrast står i `@fristil/designsystem/kontrakt`, og Fristils egne farger i `@fristil/designsystem/matrise`.
 

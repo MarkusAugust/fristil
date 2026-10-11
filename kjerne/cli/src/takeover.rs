@@ -20,23 +20,70 @@
 //! - Et fragment av manifestet skrives ved siden av, med de nye navnene, så
 //!   `fristil sjekk --manifest=…` sjekker markupen for kopien også.
 //!
-//! Kildekoden er bygget inn i kommandolinja (se `build.rs`), så kommandoen
-//! virker likt overalt.
+//! Kildekoden leses fra pakken prosjektet har installert (se `package.rs`),
+//! så kopien er av den versjonen prosjektet bruker.
 
 use crate::output::{error, fail, shown};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
 pub struct Component {
-    pub category: &'static str,
-    pub name: &'static str,
-    pub files: &'static [(&'static str, &'static str)],
+    pub category: String,
+    pub name: String,
+    folder: std::path::PathBuf,
+    names: Vec<String>,
 }
 
-include!(concat!(env!("OUT_DIR"), "/components.rs"));
+impl Component {
+    /// Filnavnet og innholdet, uten testene, sortert etter navn. Leses først
+    /// når komponenten er valgt.
+    pub fn files(&self) -> Vec<(String, String)> {
+        self.names
+            .iter()
+            .map(|file| (file.clone(), self.folder.join(file)))
+            .map(|(file, path)| {
+                let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+                    fail(&format!(
+                        "Klarte ikke lese {}: {e}\n",
+                        shown(&path.to_string_lossy())
+                    ))
+                });
+                (file, text)
+            })
+            .collect()
+    }
+}
 
-const PACKAGE: &str = include_str!("../../../designsystem/package.json");
-const MANIFEST: &str = include_str!("../../../designsystem/manifest/manifest.json");
+/// Komponentene i pakken, sortert etter navn.
+pub fn components() -> Vec<Component> {
+    let root = crate::package::require().join("src/components");
+    let text = |c: &Json, key: &str| {
+        c.get(key)
+            .and_then(Json::as_str)
+            .unwrap_or_default()
+            .to_string()
+    };
+    let mut out: Vec<Component> = crate::package::files()
+        .get("components")
+        .and_then(Json::as_array)
+        .unwrap_or_default()
+        .iter()
+        .map(|c| Component {
+            category: text(c, "category"),
+            name: text(c, "name"),
+            folder: root.join(text(c, "category")).join(text(c, "name")),
+            names: c
+                .get("files")
+                .and_then(Json::as_array)
+                .unwrap_or_default()
+                .iter()
+                .filter_map(|f| f.as_str().map(str::to_string))
+                .collect(),
+        })
+        .collect();
+    out.sort_by(|a, b| a.name.cmp(&b.name));
+    out
+}
 
 /// Forstavelsen kopien får i stedet for `fs-`.
 const PREFIX: &str = "app-";
@@ -422,9 +469,9 @@ pub fn run(arguments: &[String]) {
     refuse_without_value(&parsed);
 
     let name = parsed.files.first().map(String::as_str);
-    let Some(component) = name.and_then(|n| COMPONENTS.iter().find(|c| c.name == n)) else {
-        let mut all: Vec<&str> = COMPONENTS.iter().map(|c| c.name).collect();
-        all.sort();
+    let all_components = components();
+    let Some(component) = name.and_then(|n| all_components.iter().find(|c| c.name == n)) else {
+        let all: Vec<&str> = all_components.iter().map(|c| c.name.as_str()).collect();
         fail(&format!(
             "{}Bruk: fristil overta <komponent> [--ut=<mappe>]\nHele oversikten: fristil --hjelp\n\nKomponenter:\n  {}\n",
             name.map_or(String::new(), |n| format!("Fant ingen komponent som heter «{n}».\n\n")),
@@ -433,7 +480,7 @@ pub fn run(arguments: &[String]) {
     };
 
     let base = parsed.flag("ut").unwrap_or("src/fristil");
-    let target = std::path::Path::new(base).join(component.name);
+    let target = std::path::Path::new(base).join(&component.name);
     let shown = shown(&target.display().to_string());
     if target.exists() && parsed.flag("overskriv") != Some("ja") {
         fail(&format!(
@@ -441,25 +488,27 @@ pub fn run(arguments: &[String]) {
         ));
     }
 
-    let package = parse(PACKAGE).expect("package.json er gyldig JSON");
+    let package = parse(&crate::package::read("package.json"))
+        .unwrap_or_else(|e| fail(&format!("package.json i pakken kan ikke leses: {e}\n")));
     let package_name = package
         .get("name")
         .and_then(Json::as_str)
         .unwrap_or("@fristil/designsystem");
     let entries = entry_points(package_name, package.get("exports").unwrap_or(&Json::Null));
-    let manifest = parse(MANIFEST).expect("manifestet er gyldig JSON");
+    let manifest = parse(&crate::package::manifest())
+        .unwrap_or_else(|e| fail(&format!("Manifestet i pakken kan ikke leses: {e}\n")));
 
     let folder = format!("src/components/{}/{}", component.category, component.name);
     let files: Vec<SourceFile> = component
-        .files
-        .iter()
+        .files()
+        .into_iter()
         .map(|(file, content)| SourceFile {
             path: format!("{folder}/{file}"),
-            content: content.to_string(),
+            content,
         })
         .collect();
     let plan = plan_takeover(&files, &entries);
-    let names = own_names(&manifest, component.name);
+    let names = own_names(&manifest, &component.name);
 
     if let Err(e) = std::fs::create_dir_all(&target) {
         fail(&format!("Klarte ikke lage {shown}: {e}"));
@@ -480,7 +529,7 @@ pub fn run(arguments: &[String]) {
         FRAGMENT,
         &format!(
             "{}\n",
-            fragment(&manifest, component.name, &names).to_pretty()
+            fragment(&manifest, &component.name, &names).to_pretty()
         ),
     );
 
@@ -702,23 +751,17 @@ mod tests {
     }
 
     #[test]
-    fn every_component_is_embedded_and_owns_a_name() {
-        let manifest = parse(MANIFEST).unwrap();
-        assert!(COMPONENTS.len() > 40);
-        for component in COMPONENTS {
-            assert!(
-                !component.files.is_empty(),
-                "{} har ingen filer",
-                component.name
-            );
-            assert!(component.files.iter().all(|(f, _)| !f.contains(".test.")));
-            let names = own_names(&manifest, component.name);
-            let copy: String = component
-                .files
-                .iter()
-                .map(|(_, c)| rename(c, &names))
-                .collect();
-            let original: String = component.files.iter().map(|(_, c)| *c).collect();
+    fn every_component_is_read_and_owns_a_name() {
+        let manifest = parse(&crate::package::manifest()).unwrap();
+        let components = components();
+        assert!(components.len() > 40);
+        for component in &components {
+            let files = component.files();
+            assert!(!files.is_empty(), "{} har ingen filer", component.name);
+            assert!(files.iter().all(|(f, _)| !f.contains(".test.")));
+            let names = own_names(&manifest, &component.name);
+            let copy: String = files.iter().map(|(_, c)| rename(c, &names)).collect();
+            let original: String = files.iter().map(|(_, c)| c.as_str()).collect();
             assert!(
                 names.iter().any(|n| original.contains(n.as_str())),
                 "{} nevner ikke {names:?}",
@@ -736,10 +779,11 @@ mod tests {
 
     #[test]
     fn the_fragment_is_a_manifest_the_core_can_read() {
-        let manifest = parse(MANIFEST).unwrap();
+        let text = crate::package::manifest();
+        let manifest = parse(&text).unwrap();
         let names = own_names(&manifest, "dialog");
         let fragment = fragment(&manifest, "dialog", &names).to_pretty();
-        let vocabulary = fristil_kjerne::manifest::with_fragments(&[&fragment]).unwrap();
+        let vocabulary = fristil_kjerne::manifest::with_fragments(&text, &[&fragment]).unwrap();
         assert!(vocabulary.elements.iter().any(|e| e.tag == "app-dialog"));
         assert!(vocabulary.classes.iter().any(|c| c.name == "app-dialog"));
         assert!(!fragment.contains("fs-dialog"));

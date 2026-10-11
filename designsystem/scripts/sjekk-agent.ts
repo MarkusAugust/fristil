@@ -15,8 +15,7 @@
  *   - hver `fs.x()` er en byggefunksjon som finnes;
  *   - hvert tokennavn står i `tokens.css`;
  *   - bare React-regelboka viser React-inngangen, `useEffect` og `createRoot`;
- *   - ingen markup for nettleseren importerer et pakkenavn;
- *   - kommandoen kjenner nøyaktig de regelbøkene som finnes.
+ *   - ingen markup for nettleseren importerer et pakkenavn.
  *
  * Kjør med: bun scripts/sjekk-agent.ts, eller som en del av `bun run build`.
  */
@@ -320,25 +319,6 @@ for (const [sti, innhold] of Object.entries(forventet)) {
       `${sti}, markupblokk ${nummer + 1} importerer et pakkenavn i nettleseren. Bruk hele URL-en.`,
     )
   }
-}
-
-// 9. Kommandoen kjenner nøyaktig de regelbøkene som finnes. Uten dette kunne
-// en ny regelbok bli liggende uten at `fristil agent` kunne skrive den ut.
-const cli = readFileSync(join(PAKKE, "../kjerne/cli/src/agent.rs"), "utf8")
-const iKommandoen = [
-  ...cli.matchAll(
-    /\(\s*"([a-z]+)",\s*include_str!\(\s*"\.\.\/\.\.\/\.\.\/designsystem\/agent\/([a-z]+)\.md",?\s*\),?\s*\)/g,
-  ),
-]
-const kjenner = iKommandoen.map(([, navn]) => navn)
-
-krev(
-  kjenner.join(",") === NAVN.join(","),
-  `fristil agent kjenner ${kjenner.join(", ") || "ingen"}, men generatoren skriver ${NAVN.join(", ")}`,
-)
-
-for (const [, navn, fil] of iKommandoen) {
-  krev(navn === fil, `fristil agent peker ${navn} på agent/${fil}.md`)
 }
 
 if (avvik.length > 0) {

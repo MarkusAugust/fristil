@@ -14,13 +14,12 @@
 //!    JSON, i UTF-8, med de samme feltene som `Finding` i TypeScript, og i
 //!    tillegg `rule`, `line` og `column`.
 //!
-//! I tillegg:
-//!
-//! - `load_manifest_raw(peker, lengde)` bytter ordforrådet til et annet
-//!   manifest. Svarer 0 når det gikk, og 1 med `{"error": …}` som svar når
-//!   det ikke gikk. `reset_manifest()` går tilbake til det innebygde.
-//! - `version_raw()` legger versjonene i svaret: kjernens, manifestets og
-//!   formen på manifestet kjernen forstår.
+//! Kjernen bærer ingen data. Verten gir den ordforrådet med
+//! `load_manifest_raw(peker, lengde)` og fargekontrakten med
+//! `load_contract_raw(peker, lengde)`, fra pakken den har. Hvert kall som
+//! leser, sjekker eller bygger, svarer 0, eller 1 med `{"error": …}`, også
+//! når dataene mangler. `version_raw()` gir kjernens versjon, manifestets
+//! eller `null`, og formen på manifestet kjernen forstår.
 //!
 //! Posisjonene i funnene er UTF-16-indekser, som i JavaScript og Kotlin.
 //! `line` og `column` begynner på 1, og kolonnen telles i UTF-16-enheter.
@@ -34,6 +33,16 @@ pub mod suppress;
 pub mod text;
 pub mod theme;
 pub mod types;
+
+/// En fil i pakken, til testene: fra `designsystem/` ved siden av. Bygget
+/// leser den aldri.
+#[cfg(test)]
+pub(crate) fn package_file(path: &str) -> String {
+    std::fs::read_to_string(
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem/").to_owned() + path,
+    )
+    .unwrap_or_else(|e| panic!("testene trenger {path} i pakken: {e}"))
+}
 
 use std::cell::RefCell;
 
@@ -207,25 +216,42 @@ unsafe fn read_input(ptr: *mut u8, length: usize) -> String {
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
+/// Svarer med en feil, og gir 1. Uten data skal kjernen si hvorfor, ikke svare
+/// med en tom liste som ser ut som en side uten funn.
+fn refuse(error: &str) -> u32 {
+    respond(format!("{{\"error\":{}}}", json_string(error)));
+    1
+}
+
+const NO_MANIFEST: &str =
+    "Kjernen har ikke fått noe manifest. Gi den manifest.json fra pakken med load_manifest_raw først.";
+const NO_CONTRACT: &str = theme::contract::NOT_LOADED;
+
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
-pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) {
+pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) -> u32 {
     let html = utf16(&read_input(ptr, length));
-    let findings = diagnose_markup(&html, &manifest::current());
-    respond(to_json(&findings, &html));
+    let Some(vocabulary) = manifest::current() else {
+        return refuse(NO_MANIFEST);
+    };
+    respond(to_json(&diagnose_markup(&html, &vocabulary), &html));
+    0
 }
 
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
-pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) {
+pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) -> u32 {
     let html = utf16(&read_input(ptr, length));
-    let findings = diagnose_page(&html, &manifest::current());
-    respond(to_json(&findings, &html));
+    let Some(vocabulary) = manifest::current() else {
+        return refuse(NO_MANIFEST);
+    };
+    respond(to_json(&diagnose_page(&html, &vocabulary), &html));
+    0
 }
 
-/// Bytter ordforrådet til manifestet verten har skrevet inn.
+/// Gir kjernen ordforrådet: manifestet verten har skrevet inn.
 ///
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
@@ -233,14 +259,26 @@ pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) {
 pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
     match manifest::from_json(&read_input(ptr, length)) {
         Ok(vocabulary) => {
-            manifest::set_current(Some(vocabulary));
+            manifest::set_current(vocabulary);
             respond("{\"ok\":true}".into());
             0
         }
-        Err(error) => {
-            respond(format!("{{\"error\":{}}}", json_string(&error)));
-            1
+        Err(error) => refuse(&error),
+    }
+}
+
+/// Gir kjernen fargekontrakten verten har skrevet inn.
+///
+/// # Safety
+/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn load_contract_raw(ptr: *mut u8, length: usize) -> u32 {
+    match theme::contract::load(&read_input(ptr, length)) {
+        Ok(()) => {
+            respond("{\"ok\":true}".into());
+            0
         }
+        Err(error) => refuse(&error),
     }
 }
 
@@ -260,6 +298,9 @@ fn json_object(entries: &[(String, String)]) -> String {
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
+    if !theme::contract::loaded() {
+        return refuse(NO_CONTRACT);
+    }
     let built = json::parse(&read_input(ptr, length)).and_then(|input| theme::build_theme(&input));
     match built {
         Ok(t) => {
@@ -285,19 +326,20 @@ pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
             ));
             0
         }
-        Err(error) => {
-            respond(format!("{{\"error\":{}}}", json_string(&error)));
-            1
-        }
+        Err(error) => refuse(&error),
     }
 }
 
-/// Kontrollerer et tema verten har skrevet inn, som CSS-tekst.
+/// Kontrollerer et tema verten har skrevet inn, som CSS-tekst. Gir 0 med
+/// rapporten, eller 1 når kjernen ikke har fått noen fargekontrakt.
 ///
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
-pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) {
+pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) -> u32 {
+    if !theme::contract::loaded() {
+        return refuse(NO_CONTRACT);
+    }
     let report = theme::check::inspect_theme(&read_input(ptr, length));
     let problems: Vec<String> = report
         .problems
@@ -317,6 +359,7 @@ pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) {
         report.declarations,
         report.promises
     ));
+    0
 }
 
 /// Det et stilark styler: klassene, attributtverdiene og `@import`-adressene.
@@ -339,14 +382,16 @@ pub unsafe extern "C" fn inspect_styles_raw(ptr: *mut u8, length: usize) {
 pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) -> u32 {
     match styled_input(&read_input(ptr, length)) {
         Ok((html, styles, page)) => {
-            let findings = diagnose_styled(&html, &manifest::current(), &styles, page);
-            respond(to_json(&findings, &html));
+            let Some(vocabulary) = manifest::current() else {
+                return refuse(NO_MANIFEST);
+            };
+            respond(to_json(
+                &diagnose_styled(&html, &vocabulary, &styles, page),
+                &html,
+            ));
             0
         }
-        Err(error) => {
-            respond(format!("{{\"error\":{}}}", json_string(&error)));
-            1
-        }
+        Err(error) => refuse(&error),
     }
 }
 
@@ -405,20 +450,16 @@ pub fn styles_json(styles: &styles::Styles) -> String {
     )
 }
 
-/// Går tilbake til det innebygde manifestet.
-#[no_mangle]
-pub extern "C" fn reset_manifest() {
-    manifest::set_current(None);
-}
-
-/// Legger versjonene i svaret, som JSON.
+/// Legger versjonene i svaret, som JSON. Manifestets er `null` når verten
+/// ikke har gitt noe manifest.
 #[no_mangle]
 pub extern "C" fn version_raw() {
-    let vocabulary = manifest::current();
+    let manifest_version = manifest::current()
+        .map(|v| json_string(&v.version))
+        .unwrap_or_else(|| "null".into());
     respond(format!(
-        "{{\"core\":{},\"manifest\":{},\"schemaVersion\":{}}}",
+        "{{\"core\":{},\"manifest\":{manifest_version},\"schemaVersion\":{}}}",
         json_string(env!("CARGO_PKG_VERSION")),
-        json_string(&vocabulary.version),
         manifest::SCHEMA_VERSION
     ));
 }
@@ -440,7 +481,7 @@ mod tests {
     use super::*;
 
     fn check(html: &str) -> Vec<Finding> {
-        diagnose_page(&utf16(html), &manifest::builtin())
+        diagnose_page(&utf16(html), &manifest::for_tests())
     }
 
     #[test]
@@ -454,7 +495,7 @@ mod tests {
 
     #[test]
     fn a_flag_on_a_class_takes_no_value() {
-        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         assert!(markup(r#"<label class="fs-label" data-optional>Navn</label>"#).is_empty());
         assert!(markup(r#"<label class="fs-label" data-optional="">Navn</label>"#).is_empty());
         let found = markup(r#"<label class="fs-label" data-optional="false">Navn</label>"#);
@@ -471,7 +512,7 @@ mod tests {
 
     #[test]
     fn skips_comments_in_template_languages() {
-        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         for comment in [
             "{{-- <fs-feil> --}}",
             "{{/* <fs-feil> */}}",
@@ -490,7 +531,7 @@ mod tests {
 
     #[test]
     fn checks_the_color_of_a_dialog() {
-        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         assert!(markup(r#"<dialog class="fs-dialog" data-color="danger"></dialog>"#).is_empty());
         let found = markup(r#"<dialog class="fs-dialog" data-color="red"></dialog>"#);
         assert_eq!(found.len(), 1, "{found:?}");
@@ -521,7 +562,7 @@ mod tests {
 
     #[test]
     fn a_comment_that_is_text_suppresses_nothing_on_a_page() {
-        let found = |html: &str| diagnose_page(&utf16(html), &manifest::builtin());
+        let found = |html: &str| diagnose_page(&utf16(html), &manifest::for_tests());
         // Kommentaren står i en textarea og er tekst, så funnet på feltet
         // etter står.
         let in_textarea =
@@ -540,10 +581,10 @@ mod tests {
     fn checks_against_another_manifest() {
         let html = utf16("<fs-kart sone=\"oslo\"></fs-kart>");
         assert_eq!(
-            diagnose_markup(&html, &manifest::builtin())[0].rule,
+            diagnose_markup(&html, &manifest::for_tests())[0].rule,
             "ukjent-element"
         );
-        let mut vocabulary = (*manifest::builtin()).clone();
+        let mut vocabulary = (*manifest::for_tests()).clone();
         vocabulary.elements.push(types::Element {
             tag: "fs-kart".into(),
             link: String::new(),
@@ -554,7 +595,7 @@ mod tests {
 
     #[test]
     fn checks_a_taken_over_component_and_nothing_else() {
-        let vocabulary = manifest::with_fragments(&[r#"{
+        let vocabulary = manifest::with_fragments(&manifest::test_text(), &[r#"{
             "schemaVersion": 1, "version": "0",
             "elements": {"app-dialog": {"link": "", "attributes": {"open": {"type": "flag"}}}},
             "classes": {
@@ -587,7 +628,7 @@ mod tests {
             .fs-label[data-optional] { }"#,
         );
         let found =
-            |html: &str| diagnose_styled(&utf16(html), &manifest::builtin(), &styles, false);
+            |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, false);
         assert!(found(r#"<button class="fs-button" data-variant="ghost">x</button>"#).is_empty());
         // Standardverdien trenger ingen regel.
         assert!(found(r#"<button class="fs-button" data-variant="primary">x</button>"#).is_empty());
@@ -607,7 +648,8 @@ mod tests {
         // Klasser utenfor Fristil er ikke sjekkens sak.
         assert!(found(r#"<div class="kort">x</div>"#).is_empty());
         // Markup som ikke vises på en hel side, sjekkes ikke mot stilarkene.
-        let page = |html: &str| diagnose_styled(&utf16(html), &manifest::builtin(), &styles, true);
+        let page =
+            |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, true);
         assert!(page(r#"<template><div class="fs-card"></div></template><textarea><div class="fs-card"></div></textarea><button data-x='<div class="fs-card">'>x</button>"#)
             .iter()
             .all(|f| !f.rule.starts_with("ustylet")));
@@ -639,7 +681,7 @@ mod tests {
 
     #[test]
     fn a_text_template_in_a_flag_is_always_on() {
-        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         for value in [
             "{{ .Optional }}",
             "{% if optional %}data-optional{% endif %}",
@@ -666,7 +708,7 @@ mod tests {
     #[test]
     fn a_template_that_drops_a_false_flag_is_left_alone() {
         // Astro, Svelte, JSX, Razor og JTE tar selv bort attributtet.
-        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::builtin());
+        let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         for value in [
             "{optional}",
             "@optional",

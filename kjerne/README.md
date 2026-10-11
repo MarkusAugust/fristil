@@ -10,8 +10,8 @@ VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
 Sjekken er det eneste som leser markup fra en servermal: Thymeleaf, JTE,
 kotlinx.html, Go-maler, Razor eller en streng. Skrevet i TypeScript var den
 bare tilgjengelig der det fantes en JavaScript-motor. I Rust er den én liten
-modul (rundt 245 kB, med manifestet innebygd) uten importer, og verten
-trenger bare en WebAssembly-runtime.
+modul (rundt 350 kB) uten importer og uten data, og verten trenger bare en
+WebAssembly-runtime.
 
 Den var skrevet i TypeScript først. Rust-utgaven ble oversatt funksjon for
 funksjon, og de to ble kjørt side om side, felt for felt, på over 4000 sider
@@ -23,12 +23,13 @@ Ingen bindingsverktøy, så den samme modulen virker overalt:
 
 1. `alloc(lengde)` gir et område i modulens minne.
 2. Verten skriver HTML-en dit som UTF-8.
-3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)`.
+3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)`, som
+   svarer 0 med funnene.
 4. `result_ptr()` og `result_len()` peker på funnene som JSON.
 
-I tillegg bytter `load_manifest_raw(peker, lengde)` til et annet manifest,
-`reset_manifest()` går tilbake til det innebygde, og `version_raw()` gir
-kjernens og manifestets versjon.
+Kjernen bærer ingen data. Verten gir den ordforrådet med
+`load_manifest_raw` og fargekontrakten med `load_contract_raw`, fra pakken
+den har. Hvordan hvert kall svarer, står øverst i `src/lib.rs`.
 
 Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule`, `link`,
 `message` og noen ganger `fix`. Posisjonene er UTF-16-indekser, som i
@@ -43,7 +44,7 @@ rundt 40 linjer.
 
 `src/theme/` bygger et fargetema av merkefarger og kontrollerer et tema skrevet
 som CSS. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
-`designsystem/src/tokens/fargekontrakt.json`, som kjernen bærer innebygd.
+`designsystem/src/tokens/fargekontrakt.json`, som verten gir kjernen.
 `build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
 eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
 svarer med funnene og hva som ble kontrollert.
@@ -53,9 +54,9 @@ CSS Syntax Level 3. Det er kjernens eneste avhengighet.
 
 ## Ordforrådet
 
-Kjernen leser `designsystem/manifest/manifest.json`, som pakken skriver fra
-koden, og bærer det innebygd som standard. En vert kan gi den et annet
-manifest, for eksempel det prosjektet har installert. Manifestet har en
+Manifestet er `designsystem/manifest/manifest.json`, som pakken skriver fra
+koden. Verten gir kjernen det, eller et annet, for eksempel det prosjektet
+har installert. Hvor hver vert finner det, står i lasteren for den. Manifestet har en
 `schemaVersion`, og kjernen avviser et manifest med en form den ikke forstår,
 med en forklaring.
 
@@ -98,7 +99,7 @@ Reglene står i `src/types.rs` (`RULES`).
 ## Kjør
 
 ```bash
-bun kjerne/scripts/bygg.ts         # modulen, inn i designsystem/kjerne/
+bun kjerne/scripts/bygg.ts         # modulene, til kjerne/dist/
 bun kjerne/scripts/sjekk-kjerne.ts # fasiten og kravene
 cd kotlin && ./gradlew test        # Kotlin mot fasiten
 ```
@@ -106,8 +107,9 @@ cd kotlin && ./gradlew test        # Kotlin mot fasiten
 Krever Rust. `rust-toolchain.toml` henter versjonen og målene
 `wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.
 
-Manifestet er generert og sjekket inn, så Gradle-bygget trenger bare Rust,
-ikke Bun.
+Kjernen leser ingenting utenfor `kjerne/` når den bygges, så Gradle-bygget
+trenger bare Rust, ikke Bun. Pakken henter modulene med
+`bun --filter @fristil/designsystem kjerne`.
 
 ## Ytelse
 

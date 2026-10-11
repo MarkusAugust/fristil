@@ -222,6 +222,7 @@ pub fn run(arguments: &[String]) {
         ));
     }
 
+    crate::package::load_contract();
     let theme = match build_theme(&Json::Object(input)) {
         Ok(theme) => theme,
         Err(message) => {

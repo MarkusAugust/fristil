@@ -58,6 +58,7 @@ pub fn run(arguments: &[String]) {
         fail(&format!("Klarte ikke lese: {}.", unreadable.join(", ")));
     }
 
+    crate::package::load_contract();
     let (mut problems, mut blocks, mut declarations, mut promises) = (0, 0, 0, 0);
     for (path, css) in &sources {
         let report = inspect_theme(css);

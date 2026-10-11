@@ -34,7 +34,7 @@ fra mappa fila ligger i og oppover til prosjektmappa, først
 når prosjektet har overtatt komponenter, så
 `node_modules/@fristil/designsystem/manifest/manifest.json`. For et injisert
 fragment letes det fra fila strengen står i. Finnes ingen av dem, eller kan
-kjernen ikke lese manifestet, gjelder det som er bygget inn i kjernen, og det
+kjernen ikke lese manifestet, gjelder manifestet i Kotlin-pakken, og det
 siste står i IDE-ens logg. Se `ProjectManifest.kt`. Kommer, endres eller forsvinner
 manifestet, sjekkes de åpne filene på nytt (`ManifestListener.kt`).
 

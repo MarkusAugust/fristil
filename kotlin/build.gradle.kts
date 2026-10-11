@@ -45,8 +45,8 @@ val manifestFil = designsystem.resolve("manifest/manifest.json")
 
 /*
  * Modulen bygges fra kildekoden i `kjerne/` hver gang den er endret, så jar-en
- * aldri kan bære en utdatert kjerne. Manifestet er generert og sjekket inn, så
- * dette trenger bare Rust, ikke Bun.
+ * aldri kan bære en utdatert kjerne. Kjernen bærer ingen data, så dette
+ * trenger bare Rust, ikke Bun.
  */
 val byggKjerne = tasks.register<Exec>("byggKjerne") {
     workingDir = kjerne
@@ -55,9 +55,6 @@ val byggKjerne = tasks.register<Exec>("byggKjerne") {
     inputs.file(kjerne.resolve("Cargo.toml"))
     inputs.file(kjerne.resolve("Cargo.lock"))
     inputs.file(kjerne.resolve("rust-toolchain.toml"))
-    // Manifestet og fargekontrakten er bygget inn i modulen (`include_str!`).
-    inputs.file(manifestFil)
-    inputs.file(designsystem.resolve("src/tokens/fargekontrakt.json"))
     outputs.file(kjerneWasm)
 }
 
@@ -104,6 +101,9 @@ val webjar = tasks.register<Sync>("webjar") {
         into("META-INF/resources/webjars/fristil/$version")
     }
 }
+
+// Manifestet i pakken, som `Fristil` gir kjernen når en konsument ikke oppgir sitt eget.
+tasks.processResources { from(manifestFil) { into("no/fristil") } }
 
 sourceSets.main {
     resources.srcDir(webjar)

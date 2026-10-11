@@ -440,6 +440,17 @@ pub struct Report {
 /// bare har overstyrt én celle får den kontrollert mot resten av systemet sitt
 /// framfor mot ingenting.
 pub fn inspect_theme(css: &str) -> Report {
+    if !super::contract::loaded() {
+        return Report {
+            problems: vec![Problem {
+                selector: String::new(),
+                message: super::contract::NOT_LOADED.into(),
+            }],
+            blocks: 0,
+            declarations: 0,
+            promises: 0,
+        };
+    }
     let mut problems = Vec::new();
     let blocks = parse_blocks(css);
     let mut checked_promises = 0;

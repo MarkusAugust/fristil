@@ -73,7 +73,7 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
   if (
     rel !== "documentation/dist/versjonslogg/index.html" &&
     (tekst.includes(PLASSHOLDER) ||
-      /designsystem@?(?:&#\d+;)?VERSJON/.test(tekst))
+      /designsystem[@-]?(?:&#\d+;)?VERSJON/.test(tekst))
   )
     funn.push(`${rel} har en plassholder som ikke ble byttet ut`)
 
