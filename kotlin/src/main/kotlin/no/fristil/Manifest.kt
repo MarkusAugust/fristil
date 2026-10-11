@@ -34,7 +34,8 @@ data class Manifest(
             val root = Json.parse(json).obj("manifestet")
             val schema = root["schemaVersion"].num("schemaVersion")
             require(schema == SCHEMA_VERSION.toDouble()) {
-                "Manifestet har schemaVersion $schema, og denne utgaven av Fristil leser bare $SCHEMA_VERSION."
+                val shown = if (schema % 1.0 == 0.0) schema.toLong().toString() else schema.toString()
+                "Manifestet har schemaVersion $shown, og denne utgaven av Fristil leser bare $SCHEMA_VERSION."
             }
             return Manifest(
                 version = root["version"].str("version"),

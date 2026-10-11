@@ -20,8 +20,19 @@ class ManifestReaderTest {
     @Suppress("UNCHECKED_CAST")
     private fun Any?.map() = this as Map<String, Any?>
 
+    /*
+     * Testene under sammenligner feltene leseren kjenner. Et nytt felt i
+     * skjemaet ville de ikke sett, så hvert rå objekt må ha bare disse.
+     */
+    private fun known(obj: Any?, vararg keys: String, at: String) {
+        val unknown = obj.map().keys - keys.toSet()
+        assertTrue(unknown.isEmpty(), "$at har $unknown, som Manifest ikke leser.")
+    }
+
     @Test
     fun `the package manifest is the one in the jar`() {
+        // `builders` er med vilje utelatt, se Manifest.
+        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", at = "manifestet")
         assertEquals(Manifest.parse(text), Fristil.manifest)
         assertEquals(raw["version"], Fristil.manifest.version)
     }
@@ -34,6 +45,7 @@ class ManifestReaderTest {
         for ((name, c) in classes) {
             val read = Fristil.manifest.classes.getValue(name)
             val expected = c.map()
+            known(c, "component", "title", "description", "link", "attributes", at = name)
             assertEquals(name, read.name)
             assertEquals(listOf(expected["component"], expected["title"], expected["description"], expected["link"]), listOf(read.component, read.title, read.description, read.link), name)
             val attrs = expected["attributes"].map()
@@ -41,6 +53,7 @@ class ManifestReaderTest {
             for ((attr, a) in attrs) {
                 val r = read.attributes.getValue(attr)
                 val e = a.map()
+                known(a, "values", "default", "flag", "description", at = "$name $attr")
                 assertEquals(e["values"] ?: emptyList<String>(), r.values, "$name $attr")
                 assertEquals(e["default"], r.default, "$name $attr")
                 assertEquals(e["flag"] == true, r.flag, "$name $attr")
@@ -60,27 +73,31 @@ class ManifestReaderTest {
         for ((tag, el) in elements) {
             val read = Fristil.manifest.elements.getValue(tag)
             val e = el.map()
+            known(el, "link", "description", "attributes", "parts", "events", at = tag)
             assertEquals(tag, read.tag)
             assertEquals(e["link"], read.link)
             assertEquals(e["description"], read.description)
             for ((name, a) in e["attributes"].map()) {
+                known(a, "type", "values", "description", at = "$tag $name")
                 val r = read.attributes.getValue(name)
                 assertEquals(a.map()["type"], r.type.name.lowercase(), "$tag $name")
                 assertEquals(a.map()["values"] ?: emptyList<String>(), r.values, "$tag $name")
                 assertEquals(a.map()["description"], r.description, "$tag $name")
             }
-            assertEquals(e["attributes"].map().keys, read.attributes.keys)
+            assertEquals(e["attributes"].map().keys.toList(), read.attributes.keys.toList(), tag)
             val rawParts = e["parts"]?.map() ?: emptyMap()
             assertEquals(rawParts.keys.toList(), read.parts.keys.toList(), tag)
             for ((name, p) in rawParts) {
                 val r = read.parts.getValue(name)
                 val pm = p.map()
+                known(p, "selector", "description", "content", "multiple", "optional", at = "$tag $name")
                 assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.optional), "$tag $name")
                 parts += 1
             }
             val rawEvents = e["events"]?.map() ?: emptyMap()
             assertEquals(rawEvents.keys.toList(), read.events.keys.toList(), tag)
             for ((name, ev) in rawEvents) {
+                known(ev, "detail", at = "$tag $name")
                 assertEquals(ev.map()["detail"] ?: emptyMap<String, String>(), read.events.getValue(name).detail, "$tag $name")
                 events += 1
             }
@@ -113,7 +130,7 @@ class ManifestReaderTest {
     fun `a manifest it cannot read says where`() {
         fun error(json: String) = assertFailsWith<IllegalArgumentException> { Manifest.parse(json) }.message!!
 
-        assertContains(error(text.replace("\"schemaVersion\": 1", "\"schemaVersion\": 2")), "schemaVersion 2")
+        assertContains(error(text.replace("\"schemaVersion\": 1", "\"schemaVersion\": 2")), "schemaVersion 2,")
         assertContains(
             error(text.replaceFirst("\"link\": \"https://fristil.sobernetics.no/components/tabs/\"", "\"link\": 3")),
             "elements.fs-tabs.link",
