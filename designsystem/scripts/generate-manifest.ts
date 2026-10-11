@@ -197,9 +197,13 @@ for (const p of typer.getTypeAtLocation(fsNavn).getProperties()) {
   if (parameter) {
     const valgType = typer.getNonNullableType(typer.getTypeOfSymbol(parameter))
     for (const v of valgType.getProperties()) {
+      // Bare første avsnitt: resten er notater til den som vedlikeholder
+      // typen, med React-råd og historikk, og hører ikke i kontrakten.
       const description = ts
         .displayPartsToString(v.getDocumentationComment(typer))
         .trim()
+        .split(/\n\s*\n/)[0]
+        .replace(/\s*\n\s*/g, " ")
       options.push({
         name: v.name,
         required: (v.flags & ts.SymbolFlags.Optional) === 0,
@@ -552,16 +556,19 @@ for (const b of byggefunksjoner) {
   }
 }
 /*
- * Beskrivelsen av et klasseattributt er beskrivelsen av valget som skriver
- * det, funnet som flaggene over: et tilfelle med valget mot det samme uten.
- * Skriver flere byggefunksjoner det samme attributtet, vinner den første i
- * alfabetet.
+ * Beskrivelsen av et klasseattributt er beskrivelsen av valget med samme
+ * navn, `variant` for `data-variant`, og klassen finnes som flaggene over:
+ * et tilfelle med valget mot det samme uten. Et valg med et annet navn kan
+ * også endre attributtet, som `type` gjør med `data-variant` i `fs.input()`,
+ * men da beskriver det noe annet. Skriver flere byggefunksjoner det samme
+ * attributtet, vinner den første i alfabetet.
  */
 const beskrivelser = new Map<string, string>()
 for (const b of byggefunksjoner) {
   const egne = tilfeller.filter((t) => t.builder === b.name && t.expected)
   for (const valg of b.options) {
     if (!valg.description) continue
+    const attributtet = `data-${valg.name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
     for (const med of egne.filter((t) => t.options[valg.name] !== undefined)) {
       const { [valg.name]: _, ...uten } = med.options
       const av = egne.find((t) => likt(t.options, uten))
@@ -573,7 +580,7 @@ for (const b of byggefunksjoner) {
           .filter((k) => classes[k])
         for (const [attributt, verdi] of Object.entries(sett))
           if (
-            attributt.startsWith("data-") &&
+            attributt === attributtet &&
             !likt(verdi, før.get(navn)?.[attributt])
           )
             for (const klasse of klasser)

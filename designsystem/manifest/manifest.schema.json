@@ -53,7 +53,7 @@
                   "description": "Hva delen er, og hvordan elementet kjenner den igjen."
                 },
                 "content": {
-                  "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er en kontroll uten innhold.",
+                  "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
                   "enum": ["text", "free", "parts", "none"]
                 },
                 "multiple": {

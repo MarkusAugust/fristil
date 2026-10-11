@@ -29,7 +29,7 @@ export const FS_SESSION_TIMEOUT_PARTS = {
   title: "h1, h2, h3, h4, h5, h6",
   text: `.${SESSION_TIMEOUT_TEXT_CLASS}`,
   count: `.${SESSION_TIMEOUT_COUNT_CLASS}`,
-  status: "[role=status]",
+  status: "[role='status']",
   button: 'form[method="dialog" i] button',
 } as const
 

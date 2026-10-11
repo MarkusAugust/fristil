@@ -120,9 +120,11 @@ egen overskrift «Brytende».
   selektoren den leter med, hva delen skal inneholde, og om den kan stå
   flere ganger eller mangle. `<fs-field>` har ledetekst, kontroll,
   hjelpetekst og feilmelding, og `<fs-dialog>` har dialogen, tittelen og
-  kroppen. Hvert attributt på et element, hvert attributt på en klasse og
-  hvert valg i en byggefunksjon har `description`. Et verktøy eller et
-  annet språk kan dermed skrive riktig markup fra manifestet alene.
+  kroppen. Hvert attributt på et element og hvert valg i en
+  byggefunksjon har `description`, og et attributt på en klasse har
+  beskrivelsen til valget med samme navn. Et verktøy eller et
+  annet språk kan dermed lese hva hvert element leter etter, uten å lese
+  kildekoden.
   Feltene er nye og valgfrie i skjemaet, så `schemaVersion` er fortsatt 1.
   Selektorene eksporteres også fra hver web-komponents inngang, som
   `FS_FIELD_PARTS` fra `@fristil/designsystem/field`.

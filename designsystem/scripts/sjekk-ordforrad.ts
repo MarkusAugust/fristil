@@ -123,8 +123,12 @@ for (const tag of documented.keys())
 for (const [tag, parts] of exportedParts) {
   const doc = documented.get(tag)?.parts ?? {}
   for (const [name, selector] of Object.entries(parts))
-    if (doc[name]?.selector !== selector)
+    if (!doc[name])
       findings.push(`<${tag}> har delen «${name}», som mangler i metadata.ts`)
+    else if (doc[name].selector !== selector)
+      findings.push(
+        `<${tag}> har en annen selektor for «${name}» i dist enn i kilden. Bygg pakken.`,
+      )
   for (const name of Object.keys(doc))
     if (!(name in parts))
       findings.push(

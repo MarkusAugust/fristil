@@ -161,7 +161,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     },
     control: {
       description:
-        'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>`. `type="hidden"` teller ikke, og bare den første får koblingen.',
+        'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type="hidden"` teller ikke, og bare den første får koblingen.',
       content: "none",
     },
     help: {
@@ -177,10 +177,14 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     },
   }),
   [FS_TABS_TAG]: parts(FS_TABS_PARTS, {
-    list: { description: "Raden med fanene.", content: "parts" },
+    list: {
+      description:
+        'Raden med fanene. Har en fane `role="tab"`, kan raden også ha andre knapper, som en lukkeknapp.',
+      content: "free",
+    },
     tab: {
       description:
-        "En fane: en knapp i raden. Fane nummer n styrer panel nummer n.",
+        'En fane: `role="tab"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n.',
       content: "text",
       multiple: true,
     },

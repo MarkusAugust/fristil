@@ -16,8 +16,9 @@ export type Attribute = (
  * En del av et element, som kontrollen i `<fs-field>`. `selector` er den
  * komponenten finner delen med, relativt til elementet. `content` er hva
  * delen tar: `text` er tekst og frasering uten interaktive elementer, `free`
- * fritt innhold, `parts` bare de andre delene, og `none` ingenting du
- * skriver selv. Uten `multiple` gjelder den første. Uten `optional` trenger
+ * fritt innhold, `parts` bare de andre delene, og `none` ingen tekst: delen
+ * er en kontroll, som et `<select>` med sine `<option>`, eller et element
+ * komponenten fyller. Uten `multiple` gjelder den første. Uten `optional` trenger
  * elementet delen.
  */
 export type Part = {

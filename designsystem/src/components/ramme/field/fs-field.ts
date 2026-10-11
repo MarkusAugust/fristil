@@ -1,3 +1,5 @@
+import { ERROR_TEXT_CLASS } from "../../css/error-text/error-text.js"
+import { HELP_TEXT_CLASS } from "../../css/help-text/help-text.js"
 import {
   addClass,
   defineElement,
@@ -22,8 +24,8 @@ function uniqueId(prefix: string): string {
 export const FS_FIELD_PARTS = {
   label: "label",
   control: "input:not([type='hidden']), textarea, select",
-  help: ".fs-help-text",
-  error: ".fs-error-text",
+  help: `.${HELP_TEXT_CLASS}`,
+  error: `.${ERROR_TEXT_CLASS}`,
 } as const
 
 const CONTROL_SELECTOR = FS_FIELD_PARTS.control

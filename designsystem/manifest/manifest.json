@@ -118,7 +118,7 @@
       "parts": {
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
-          "description": "Overskriften, som sier hvor mange feil skjemaet har.",
+          "description": "Overskriften i boksen. Komponenten gir den klassen for tittelen.",
           "content": "text"
         },
         "link": {
@@ -338,7 +338,7 @@
         },
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
-          "description": "Overskriften i dialogen, som blir navnet dens.",
+          "description": "Overskriften i dialogen, som blir navnet dens når verken `aria-labelledby` eller `aria-label` står på `<dialog>`.",
           "content": "text",
           "optional": true
         },
@@ -353,7 +353,7 @@
           "content": "none"
         },
         "status": {
-          "selector": "[role=status]",
+          "selector": "[role='status']",
           "description": "Opplesningen. Elementet står tomt, og komponenten fyller det.",
           "content": "none"
         },
@@ -704,8 +704,7 @@
             "date",
             "datetime-local",
             "time"
-          ],
-          "description": "HTML-typen. Settes som `type`, og styrer ikonet. Standard: `text`."
+          ]
         }
       }
     },
@@ -1044,7 +1043,7 @@
             "danger"
           ],
           "default": "neutral",
-          "description": "Farge på toppen. Standard: ingen.\n\nFargen gjelder `header`, så den må stå i markupen for å synes:\n`<div {...boks.header}>` rundt overskriften. Uten en topp har fargen\ningenting å farge."
+          "description": "Farge på toppen. Standard: ingen."
         }
       }
     },
@@ -1660,7 +1659,7 @@
           "type": {
             "kind": "flag"
           },
-          "description": "Dialogen er åpen. Standard: lukket.\n\nDette er serverens beskjed til `<fs-dialog>`. Styrer du dialogen selv\nfra nettleseren, med `showModal()`, skal du la den være: kallet kaster\n`InvalidStateError` på en dialog som alt står åpen."
+          "description": "Dialogen er åpen. Standard: lukket."
         },
         {
           "name": "color",
@@ -1676,7 +1675,7 @@
               "danger"
             ]
           },
-          "description": "Farge på toppen. Standard: ingen.\n\nFargen gjelder `header`, så den må stå i markupen for å synes:\n`<div {...boks.header}>` rundt overskriften. Uten en topp har fargen\ningenting å farge."
+          "description": "Farge på toppen. Standard: ingen."
         }
       ],
       "returns": {
@@ -2007,7 +2006,7 @@
           "type": {
             "kind": "text"
           },
-          "description": "Id på kontrollen. Påkrevd.\n\nI React kommer den fra `useId()`. Ellers er feltets eget navn som regel\ndet opplagte valget. Vet du sikkert at markupen rendres én gang, kall\n`createFieldId()` selv.\n\nDen var valgfri, og funksjonen laget en når den manglet. Id-en er\ntilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på\nen server og så i nettleseren, peker `for` og `aria-describedby` på noe\nannet enn det som står der. React melder avvik ved hydreringen, og\nadvarselen sier selv at avviket ikke blir rettet opp.\n\nKravet står i typen, og det er ikke nok alene: en konsument uten\nTypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og\nsier fra i konsollen. Da virker feltet, og utvikleren får vite hvorfor\nhan likevel bør oppgi id-en. Uten reserven fikk han `for=\"\"`,\n`aria-describedby=\"undefined-help\"` og ingen kobling i det hele tatt,\naltså verre enn den ustabile id-en kravet skulle bli kvitt."
+          "description": "Id på kontrollen. Påkrevd."
         },
         {
           "name": "help",
@@ -2535,7 +2534,7 @@
           "type": {
             "kind": "flag"
           },
-          "description": "Lenken er ikke klikkbar ennå. Gir `aria-disabled`, `role=\"link\"` og\n`tabindex=\"0\"`, så skjermlesere fortsatt finner den som en lenke og kan\nsi fra. `href` må tas bort ved siden av: ellers følger Enter den."
+          "description": "Lenken er ikke klikkbar ennå. Gir `aria-disabled`, `role=\"link\"` og `tabindex=\"0\"`, så skjermlesere fortsatt finner den som en lenke og kan si fra. `href` må tas bort ved siden av: ellers følger Enter den."
         }
       ],
       "returns": {
@@ -3565,7 +3564,7 @@
           "type": {
             "kind": "flag"
           },
-          "description": "Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så\net asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket\nog svaret."
+          "description": "Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så et asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket og svaret."
         }
       ],
       "returns": {
@@ -3715,7 +3714,7 @@
               "descending"
             ]
           },
-          "description": "Retningen kolonnen er sortert i. Utelatt betyr at tabellen ikke er\nsortert etter denne kolonnen, og da får overskriften ikke `aria-sort`."
+          "description": "Retningen kolonnen er sortert i. Utelatt betyr at tabellen ikke er sortert etter denne kolonnen, og da får overskriften ikke `aria-sort`."
         }
       ],
       "returns": {
@@ -3935,7 +3934,7 @@
           "type": {
             "kind": "text"
           },
-          "description": "Hva lukkeknappen i hver melding heter for skjermleseren. Standard:\n«Lukk melding». `closeLabel` i `show()` overstyrer den for én melding."
+          "description": "Hva lukkeknappen i hver melding heter for skjermleseren. Standard: «Lukk melding». `closeLabel` i `show()` overstyrer den for én melding."
         }
       ],
       "returns": {
