@@ -7,8 +7,8 @@ name: Publiser
 # venter derfor på den.
 #
 # Startet for hånd publiserer den versjonen i package.json til npm hvis den
-# ikke er ute. Kommandolinja og Kotlin-pakken bygges da, men gis ikke ut:
-# det skjer bare for en tagg.
+# ikke er ute. Kommandolinja bygges da av npm-pakken, men gis ikke ut, og
+# Kotlin-pakken verken testes eller publiseres: det skjer bare for en tagg.
 on:
   push:
     tags: ["v*"]
@@ -243,8 +243,10 @@ jobs:
           fi
 
       # Testene kjører mot den publiserte tarballen, så det som går ut er
-      # testet mot nøyaktig de filene.
+      # testet mot nøyaktig de filene. Bare for en tagg: startet for hånd
+      # mellom to utgivelser er tarballen på npm eldre enn fasiten i repoet.
       - name: Test
+        if: github.ref_type == 'tag'
         working-directory: kotlin
         run: ./gradlew test
 
