@@ -19,12 +19,8 @@
  * fil skal ikke kopieres for hvert tastetrykk.
  */
 
-/*
- * Ordforrådet er manifestet i pakken, det samme kjernen sjekker mot.
- * Utvidelsen pakkes til én fil, så manifestet følger med inn i den, og den
- * leter ikke etter pakken i `node_modules`.
- */
-import manifest from "@fristil/designsystem/manifest.json"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import * as vscode from "vscode"
 import {
   LanguageClient,
@@ -33,6 +29,10 @@ import {
   TransportKind,
 } from "vscode-languageclient/node"
 
+/**
+ * Ordforrådet slik manifestet skriver det. Et flagg, som `data-interactive`
+ * på `fs-card`, har ingen verdier.
+ */
 type Vocabulary = {
   elements: Record<
     string,
@@ -53,12 +53,11 @@ type Vocabulary = {
       link: string
       attributes: Record<
         string,
-        { values: readonly string[]; default?: string; flag?: true }
+        { values?: readonly string[]; default?: string; flag?: true }
       >
     }
   >
 }
-const { classes, elements } = manifest as unknown as Vocabulary
 
 /** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
 const WINDOW = 4000
@@ -86,6 +85,14 @@ function tagEnd(text: string, from: number): number {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  // Ordforrådet er manifestet i pakken, det samme kjernen sjekker mot. Bygget
+  // legger det i `dist/manifest/`, der språkserveren også leser det.
+  const { classes, elements }: Vocabulary = JSON.parse(
+    readFileSync(
+      join(context.extensionPath, "dist/manifest/manifest.json"),
+      "utf8",
+    ),
+  )
   const classNames = Object.keys(classes)
   const elementNames = Object.keys(elements)
 
@@ -230,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
       .map(([attribute, a]) =>
         a.flag
           ? `\`${attribute}\`: flagg, virker ved å stå der`
-          : `\`${attribute}\`: ${a.values.join(", ")}` +
+          : `\`${attribute}\`: ${(a.values ?? []).join(", ")}` +
             (a.default ? ` (${a.default} uten attributt)` : ""),
       )
       .join("  \n")
@@ -285,7 +292,7 @@ export function activate(context: vscode.ExtensionContext) {
         for (const name of classesIn(tag)) {
           const takes = classes[name]?.attributes[attribute]
           if (!takes) continue
-          for (const value of takes.values)
+          for (const value of takes.values ?? [])
             item(
               value,
               vscode.CompletionItemKind.EnumMember,

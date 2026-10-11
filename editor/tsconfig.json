@@ -10,8 +10,7 @@
     // egne filer. Det er ikke vår kode, og uten dette feiler typesjekken på
     // dem. designsystem/scripts/tsconfig.json har de samme feilene, men
     // kjøres ikke av noe.
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "skipLibCheck": true
   },
   "include": ["scripts/**/*", "src/**/*"]
 }

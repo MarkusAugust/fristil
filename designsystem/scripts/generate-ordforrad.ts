@@ -10,8 +10,8 @@
  *   - `snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
  *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
- *   - `designsystem/src/vocabulary/elements.ts`: det diagnostikken i utvidelsen trenger, tagg
- *     for tagg.
+ *   - `designsystem/src/vocabulary/elements.ts`: elementene og attributtene,
+ *     tagg for tagg, som manifestet skrives fra.
  *   - `designsystem/src/vocabulary/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
  *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å

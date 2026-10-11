@@ -2,12 +2,12 @@
  * Det en editor skal vite om hvert `<fs-*>`-element: én setning per element,
  * per attributt og per lovlig verdi.
  *
- * Teksten her er kilden til både `fristil.html-data.json` (VS Code) og
- * `designsystem/web-types.json` (JetBrains). Den er håndskrevet, men
+ * Teksten her er kilden til både `html-data.json` (VS Code) og
+ * `web-types.json` (JetBrains) i pakken. Den er håndskrevet, men
  * TypeScript holder den i takt med komponentene: hvert element skriver
  * attributtene sine som `Record` over `observedAttributes`, så et attributt
  * som legges til i en komponent uten en setning her, eller en setning om et
- * attributt som er borte, stopper typesjekken. `scripts/sjekk.ts` tar
+ * attributt som er borte, stopper typesjekken. `sjekk-ordforrad.ts` tar
  * resten: at hvert element pakken registrerer står i lista.
  *
  * Fila sendes ikke ut i pakken. Den leses bare av `generate-ordforrad.ts`.

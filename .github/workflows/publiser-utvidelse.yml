@@ -50,9 +50,16 @@ jobs:
       - name: Bygg kjernen
         run: bun --filter @fristil/designsystem kjerne
 
-      # Kontrollerer at filene i repoet er de generatoren ville skrevet nå,
-      # og pakker editor/fristil.vsix.
-      - name: Sjekk og pakk
+      # Kontrollerer at ordforrådet og editorfilene i pakken er de generatoren
+      # ville skrevet nå, og at diagnostikken feller det den skal, før
+      # utvidelsen pakkes med dem.
+      - name: Sjekk ordforrådet og diagnostikken
+        run: |
+          (cd designsystem && bun run bygg:nettleser)
+          bun --filter @fristil/designsystem sjekk:ordforrad
+          bun kjerne/scripts/sjekk-diagnostikk.ts
+
+      - name: Pakk
         run: bun --filter fristil-vscode sjekk
 
       # Marketplace har ingen OIDC. Tokenet lages under utgiveren på
