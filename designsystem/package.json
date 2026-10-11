@@ -346,7 +346,7 @@
     "access": "public"
   },
   "scripts": {
-    "generate": "bun scripts/generate-matrise.ts && bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
+    "generate": "bun scripts/generate-matrise.ts && bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-agent.ts && bun scripts/generate-ordforrad.ts && bun scripts/generate-manifest.ts",
     "bygg:css": "bun scripts/bygg-css.ts",
     "bygg:nettleser": "tsc -b && bun run bygg:css",
     "ordforrad": "bun scripts/generate-ordforrad.ts",
