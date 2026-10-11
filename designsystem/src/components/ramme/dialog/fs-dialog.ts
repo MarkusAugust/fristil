@@ -18,6 +18,17 @@ import {
 export const FS_DIALOG_TAG = "fs-dialog" as const
 
 /**
+ * Delene dialogen finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_DIALOG_PARTS = {
+  dialog: ":scope > dialog",
+  title: "h1, h2, h3, h4, h5, h6",
+  body: `.${DIALOG_BODY_CLASS}`,
+} as const
+
+/**
  * En modal dialog en server kan åpne.
  *
  * Å åpne en `<dialog>` er et kall og ikke et attributt. `showModal()` flytter
@@ -170,7 +181,7 @@ export class FsDialog extends HostElement {
    * annet, og skal ikke åpnes av denne komponenten.
    */
   private get dialog(): HTMLDialogElement | null {
-    return this.querySelector(":scope > dialog")
+    return this.querySelector(FS_DIALOG_PARTS.dialog)
   }
 
   /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
@@ -195,10 +206,10 @@ export class FsDialog extends HostElement {
    */
   private headingOf(dialog: HTMLDialogElement): HTMLElement | null {
     return (
-      [...dialog.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")].find(
+      [...dialog.querySelectorAll<HTMLElement>(FS_DIALOG_PARTS.title)].find(
         (heading) => {
           if (heading.closest("dialog") !== dialog) return false
-          const body = heading.closest(`.${DIALOG_BODY_CLASS}`)
+          const body = heading.closest(FS_DIALOG_PARTS.body)
           return body === null || !dialog.contains(body)
         },
       ) ?? null

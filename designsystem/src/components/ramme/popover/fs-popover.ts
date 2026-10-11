@@ -18,6 +18,16 @@ import {
 export const FS_POPOVER_TAG = "fs-popover" as const
 
 /**
+ * Delene sprettoppvinduet finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_POPOVER_PARTS = {
+  trigger: "button, [role='button']",
+  panel: `[popover], .${POPOVER_CLASS}`,
+} as const
+
+/**
  * Et panel som henger under en knapp, og som lukker seg selv.
  *
  * Panelet bruker nettleserens egen `popover`, så det havner i topplaget og
@@ -312,7 +322,7 @@ export class FsPopover extends HostElement {
 
   /** Panelet: det som har `popover`, ellers det med klassen. */
   private findPanel(): HTMLElement | null {
-    return this.querySelector<HTMLElement>(`[popover], .${POPOVER_CLASS}`)
+    return this.querySelector<HTMLElement>(FS_POPOVER_PARTS.panel)
   }
 
   /**
@@ -329,7 +339,7 @@ export class FsPopover extends HostElement {
       if (pointing) return pointing
     }
     return (
-      [...this.querySelectorAll<HTMLElement>("button, [role='button']")].find(
+      [...this.querySelectorAll<HTMLElement>(FS_POPOVER_PARTS.trigger)].find(
         (button) =>
           !panel.contains(button) && !button.hasAttribute("aria-controls"),
       ) ?? null

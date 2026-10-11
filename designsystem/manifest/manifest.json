@@ -5,15 +5,19 @@
   "elements": {
     "fs-field": {
       "link": "https://fristil.sobernetics.no/components/field/",
+      "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
       "attributes": {
         "invalid": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`."
         },
         "disabled": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Kontrollen er slått av."
         },
         "optional": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Feltet er valgfritt, og ledeteksten sier det."
         },
         "required-marker": {
           "type": "values",
@@ -21,21 +25,69 @@
             "symbol",
             "text",
             "none"
-          ]
+          ],
+          "description": "Hvordan ledeteksten viser at feltet er påkrevd."
         },
         "control-id": {
-          "type": "text"
+          "type": "text",
+          "description": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`."
         },
         "described-by": {
-          "type": "text"
+          "type": "text",
+          "description": "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom."
+        }
+      },
+      "parts": {
+        "label": {
+          "selector": "label",
+          "description": "Ledeteksten. Står den utenfor elementet, kobles den med `for` mot kontrollens id.",
+          "content": "text"
+        },
+        "control": {
+          "selector": "input:not([type='hidden']), textarea, select",
+          "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen.",
+          "content": "none"
+        },
+        "help": {
+          "selector": ".fs-help-text",
+          "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
+          "content": "text",
+          "optional": true
+        },
+        "error": {
+          "selector": ".fs-error-text",
+          "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
+          "content": "text",
+          "optional": true
         }
       }
     },
     "fs-tabs": {
       "link": "https://fristil.sobernetics.no/components/tabs/",
+      "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
       "attributes": {
         "server-controlled": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        }
+      },
+      "parts": {
+        "list": {
+          "selector": "[role='tablist'], .fs-tabs__list",
+          "description": "Raden med fanene.",
+          "content": "parts"
+        },
+        "tab": {
+          "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
+          "description": "En fane: en knapp i raden. Fane nummer n styrer panel nummer n.",
+          "content": "text",
+          "multiple": true
+        },
+        "panel": {
+          "selector": "[role='tabpanel'], .fs-tabs__panel:not([role])",
+          "description": "Innholdet til én fane, i samme rekkefølge som fanene.",
+          "content": "free",
+          "multiple": true
         }
       },
       "events": {
@@ -48,24 +100,42 @@
     },
     "fs-error-summary": {
       "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
       "attributes": {
         "data-autofocus": {
           "type": "values",
           "values": [
             "false",
             "true"
-          ]
+          ],
+          "description": "Om fokus flyttes til boksen når den kommer til syne. Standard er på."
         },
         "hidden": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Boksen er skjult. Serveren tar attributtet bort når skjemaet feiler, og komponenten flytter fokus da."
+        }
+      },
+      "parts": {
+        "title": {
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "description": "Overskriften, som sier hvor mange feil skjemaet har.",
+          "content": "text"
+        },
+        "link": {
+          "selector": "li a[href^='#']",
+          "description": "En lenke til et felt med feil, i et listepunkt. `href` er `#` og feltets id.",
+          "content": "text",
+          "multiple": true
         }
       }
     },
     "fs-popover": {
       "link": "https://fristil.sobernetics.no/components/popover/",
+      "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten.",
       "attributes": {
         "open": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet."
         },
         "placement": {
           "type": "values",
@@ -74,10 +144,24 @@
             "bottom-end",
             "top-start",
             "top-end"
-          ]
+          ],
+          "description": "Hvilken kant av knappen panelet henger fra."
         },
         "server-controlled": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        }
+      },
+      "parts": {
+        "trigger": {
+          "selector": "button, [role='button']",
+          "description": "Knappen som åpner og lukker panelet: den med `aria-controls` mot panelets id, ellers den første knappen utenfor panelet.",
+          "content": "text"
+        },
+        "panel": {
+          "selector": "[popover], .fs-popover",
+          "description": "Panelet som åpnes: elementet med `popover`, eller klassen.",
+          "content": "free"
         }
       },
       "events": {
@@ -90,33 +174,72 @@
     },
     "fs-suggestion": {
       "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "description": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
       "attributes": {
         "prefiltered": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet»."
         },
         "count-none": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen ved null treff. Standard er «Ingen treff»."
         },
         "count-zero": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet."
         },
         "count-one": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen for ett treff. `{n}` er tallet."
         },
         "count-two": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet."
         },
         "count-few": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet."
         },
         "count-many": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet."
         },
         "count-other": {
-          "type": "text"
+          "type": "text",
+          "description": "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet."
         },
         "server-controlled": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        }
+      },
+      "parts": {
+        "control": {
+          "selector": "[role='combobox'], input:not([type='hidden'])",
+          "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`.",
+          "content": "none"
+        },
+        "list": {
+          "selector": "[role='listbox'], .fs-suggestion__list",
+          "description": "Lista med forslag.",
+          "content": "parts"
+        },
+        "option": {
+          "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
+          "description": "Ett forslag i lista: `role=\"option\"`, eller et `<li>` uten rolle.",
+          "content": "text",
+          "multiple": true
+        },
+        "empty": {
+          "selector": ".fs-suggestion__empty",
+          "description": "Meldingen som vises når ingenting passer.",
+          "content": "text",
+          "optional": true
+        },
+        "status": {
+          "selector": "[role='status']",
+          "description": "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
+          "content": "none"
         }
       },
       "events": {
@@ -129,12 +252,34 @@
     },
     "fs-dialog": {
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
       "attributes": {
         "open": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`."
         },
         "server-controlled": {
-          "type": "flag"
+          "type": "flag",
+          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        }
+      },
+      "parts": {
+        "dialog": {
+          "selector": ":scope > dialog",
+          "description": "`<dialog>`-elementet, som et direkte barn av verten.",
+          "content": "free"
+        },
+        "title": {
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "description": "Tittelen: det `aria-labelledby` peker på, ellers den første overskriften utenfor kroppen. Med `aria-label` på `<dialog>` trengs den ikke.",
+          "content": "text",
+          "optional": true
+        },
+        "body": {
+          "selector": ".fs-dialog__body",
+          "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
+          "content": "free",
+          "optional": true
         }
       },
       "events": {
@@ -148,32 +293,75 @@
     },
     "fs-toast": {
       "link": "https://fristil.sobernetics.no/components/toast/",
+      "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
       "attributes": {
         "duration": {
-          "type": "number"
+          "type": "number",
+          "description": "Millisekunder før en melding forsvinner. Standard er 6000, og 0 lar meldingene stå."
         },
         "label": {
-          "type": "text"
+          "type": "text",
+          "description": "Tekst som sier hva regionen er for skjermlesere."
         },
         "close-label": {
-          "type": "text"
+          "type": "text",
+          "description": "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding»."
         }
       },
+      "parts": {},
       "events": {
         "toast-dismiss": {}
       }
     },
     "fs-session-timeout": {
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
       "attributes": {
         "warn-at": {
-          "type": "number"
+          "type": "number",
+          "description": "Sekunder uten aktivitet før varselet kommer."
         },
         "expires-at": {
-          "type": "number"
+          "type": "number",
+          "description": "Sekunder uten aktivitet før økten er ute."
         },
         "activity-interval": {
-          "type": "number"
+          "type": "number",
+          "description": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60."
+        }
+      },
+      "parts": {
+        "dialog": {
+          "selector": "dialog",
+          "description": "`<dialog>`-elementet med varselet.",
+          "content": "free"
+        },
+        "title": {
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "description": "Overskriften i dialogen, som blir navnet dens.",
+          "content": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ".fs-session-timeout__text",
+          "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
+          "content": "text"
+        },
+        "count": {
+          "selector": ".fs-session-timeout__count",
+          "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
+          "content": "none"
+        },
+        "status": {
+          "selector": "[role=status]",
+          "description": "Opplesningen. Elementet står tomt, og komponenten fyller det.",
+          "content": "none"
+        },
+        "button": {
+          "selector": "form[method=\"dialog\" i] button",
+          "description": "Knappene i `<form method=\"dialog\">`, som forlenger økten eller logger ut.",
+          "content": "text",
+          "multiple": true
         }
       },
       "events": {
@@ -186,14 +374,18 @@
     },
     "fs-connection-status": {
       "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
       "attributes": {
         "offline-text": {
-          "type": "text"
+          "type": "text",
+          "description": "Teksten når forbindelsen er borte."
         },
         "online-text": {
-          "type": "text"
+          "type": "text",
+          "description": "Teksten når den kommer tilbake."
         }
       },
+      "parts": {},
       "events": {
         "connection-lost": {},
         "connection-restored": {}
@@ -211,7 +403,8 @@
           "values": [
             "plain"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Egen ramme, eller bare en strek mellom panelene. Standard: `default`."
         }
       }
     },
@@ -234,7 +427,8 @@
             "success",
             "warning",
             "danger"
-          ]
+          ],
+          "description": "Hva meldingen betyr. Utelatt gir den nøytrale."
         }
       }
     },
@@ -255,14 +449,16 @@
           "values": [
             "square"
           ],
-          "default": "circle"
+          "default": "circle",
+          "description": "Rund eller avrundet firkant. Standard: `circle`."
         },
         "data-size": {
           "values": [
             "small",
             "large"
           ],
-          "default": "medium"
+          "default": "medium",
+          "description": "Størrelse. Standard: `medium`."
         }
       }
     },
@@ -286,7 +482,8 @@
             "danger",
             "neutral"
           ],
-          "default": "info"
+          "default": "info",
+          "description": "Hva tilstanden betyr. Standard: `info`."
         }
       }
     },
@@ -309,7 +506,8 @@
             "ghost",
             "danger"
           ],
-          "default": "primary"
+          "default": "primary",
+          "description": "Hvor tung handlingen er. Standard: `primary`."
         }
       }
     },
@@ -323,10 +521,12 @@
           "values": [
             "filled"
           ],
-          "default": "outline"
+          "default": "outline",
+          "description": "Flate eller omriss. Standard: `outline`."
         },
         "data-interactive": {
-          "flag": true
+          "flag": true,
+          "description": "Hele kortet er klikkbart. Bruk bare på `<a>` eller `<button>`."
         }
       }
     },
@@ -348,7 +548,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         }
       }
     },
@@ -370,7 +571,8 @@
             "subtle",
             "strong"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Hvor tydelig streken er. Standard: `default`."
         }
       }
     },
@@ -384,7 +586,8 @@
           "values": [
             "warning"
           ],
-          "default": "error"
+          "default": "error",
+          "description": "Om feilen stopper innsending eller bare advarer. Standard: `error`."
         }
       }
     },
@@ -399,7 +602,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand for hele gruppen. Standard: `default`."
         }
       }
     },
@@ -413,10 +617,12 @@
           "values": [
             "symbol",
             "text"
-          ]
+          ],
+          "description": "Marker gruppen som påkrevd, med stjerne eller med ordet «(påkrevd)»."
         },
         "data-optional": {
-          "flag": true
+          "flag": true,
+          "description": "Marker gruppen som valgfri. Velg én av `required` og `optional`."
         }
       }
     },
@@ -431,7 +637,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         }
       }
     },
@@ -456,7 +663,8 @@
             "xl",
             "mega"
           ],
-          "default": "l"
+          "default": "l",
+          "description": "Visuell størrelse. Standard: `l`."
         }
       }
     },
@@ -472,7 +680,8 @@
             "success",
             "warning"
           ],
-          "default": "muted"
+          "default": "muted",
+          "description": "Hvor mye teksten skal rope. Standard: `muted`."
         }
       }
     },
@@ -487,14 +696,16 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         },
         "data-variant": {
           "values": [
             "date",
             "datetime-local",
             "time"
-          ]
+          ],
+          "description": "HTML-typen. Settes som `type`, og styrer ikonet. Standard: `text`."
         }
       }
     },
@@ -508,10 +719,12 @@
           "values": [
             "symbol",
             "text"
-          ]
+          ],
+          "description": "Marker ledeteksten som påkrevd."
         },
         "data-optional": {
-          "flag": true
+          "flag": true,
+          "description": "Marker ledeteksten som valgfri."
         }
       }
     },
@@ -533,7 +746,8 @@
             "plain",
             "divided"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Punkter, rene rader, eller rader med strek mellom. Standard: `default`."
         }
       }
     },
@@ -561,14 +775,16 @@
           "values": [
             "lead"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "`lead` er ingressen rett under overskriften. Standard: `default`."
         },
         "data-size": {
           "values": [
             "small",
             "large"
           ],
-          "default": "medium"
+          "default": "medium",
+          "description": "Tekststørrelse. Standard: `medium`."
         }
       }
     },
@@ -583,7 +799,8 @@
             "success",
             "warning",
             "danger"
-          ]
+          ],
+          "description": "Hva tallet betyr. Standard er aksentfargen, altså «dette pågår»."
         }
       }
     },
@@ -598,7 +815,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         }
       }
     },
@@ -620,7 +838,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         }
       }
     },
@@ -642,13 +861,15 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         },
         "data-picker": {
           "values": [
             "styled"
           ],
-          "default": "auto"
+          "default": "auto",
+          "description": "Hvem som tegner nedtrekkslista. Standard: `auto`."
         }
       }
     },
@@ -663,7 +884,8 @@
             "text",
             "circle"
           ],
-          "default": "block"
+          "default": "block",
+          "description": "Form. Standard: `block`."
         }
       }
     },
@@ -685,7 +907,8 @@
             "small",
             "large"
           ],
-          "default": "medium"
+          "default": "medium",
+          "description": "Størrelse. Standard: `medium`."
         }
       }
     },
@@ -720,10 +943,12 @@
           "values": [
             "striped"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Annenhver rad i dempet flate. Standard: `default`."
         },
         "data-hoverable": {
-          "flag": true
+          "flag": true,
+          "description": "Marker raden under musa. Bruk bare når rader kan trykkes på."
         }
       }
     },
@@ -751,10 +976,12 @@
           "values": [
             "filled"
           ],
-          "default": "outline"
+          "default": "outline",
+          "description": "Omriss eller dempet flate. Standard: `outline`."
         },
         "data-selectable": {
-          "flag": true
+          "flag": true,
+          "description": "Merkelappen kan slås av og på. Bruk bare på en `<button>`."
         }
       }
     },
@@ -769,7 +996,8 @@
             "invalid",
             "success"
           ],
-          "default": "default"
+          "default": "default",
+          "description": "Valideringstilstand. Standard: `default`."
         }
       }
     },
@@ -815,7 +1043,8 @@
             "warning",
             "danger"
           ],
-          "default": "neutral"
+          "default": "neutral",
+          "description": "Farge på toppen. Standard: ingen.\n\nFargen gjelder `header`, så den må stå i markupen for å synes:\n`<div {...boks.header}>` rundt overskriften. Uten en topp har fargen\ningenting å farge."
         }
       }
     },
@@ -1015,7 +1244,8 @@
               "default",
               "plain"
             ]
-          }
+          },
+          "description": "Egen ramme, eller bare en strek mellom panelene. Standard: `default`."
         }
       ],
       "returns": {
@@ -1054,7 +1284,8 @@
               "warning",
               "danger"
             ]
-          }
+          },
+          "description": "Hva meldingen betyr. Utelatt gir den nøytrale."
         }
       ],
       "returns": {
@@ -1100,7 +1331,8 @@
               "medium",
               "large"
             ]
-          }
+          },
+          "description": "Størrelse. Standard: `medium`."
         },
         {
           "name": "variant",
@@ -1111,7 +1343,8 @@
               "circle",
               "square"
             ]
-          }
+          },
+          "description": "Rund eller avrundet firkant. Standard: `circle`."
         }
       ],
       "returns": {
@@ -1162,7 +1395,8 @@
               "danger",
               "neutral"
             ]
-          }
+          },
+          "description": "Hva tilstanden betyr. Standard: `info`."
         }
       ],
       "returns": {
@@ -1226,7 +1460,8 @@
               "ghost",
               "danger"
             ]
-          }
+          },
+          "description": "Hvor tung handlingen er. Standard: `primary`."
         }
       ],
       "returns": {
@@ -1269,14 +1504,16 @@
               "outline",
               "filled"
             ]
-          }
+          },
+          "description": "Flate eller omriss. Standard: `outline`."
         },
         {
           "name": "interactive",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Hele kortet er klikkbart. Bruk bare på `<a>` eller `<button>`."
         }
       ],
       "returns": {
@@ -1322,7 +1559,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         }
       ],
       "returns": {
@@ -1360,14 +1598,16 @@
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Teksten når forbindelsen er borte."
         },
         {
           "name": "onlineText",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Teksten når den kommer tilbake. Vises en kort stund."
         }
       ],
       "returns": {
@@ -1411,14 +1651,16 @@
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Id på overskriften. Dialogen navngis av den med `aria-labelledby`."
         },
         {
           "name": "open",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Dialogen er åpen. Standard: lukket.\n\nDette er serverens beskjed til `<fs-dialog>`. Styrer du dialogen selv\nfra nettleseren, med `showModal()`, skal du la den være: kallet kaster\n`InvalidStateError` på en dialog som alt står åpen."
         },
         {
           "name": "color",
@@ -1433,7 +1675,8 @@
               "warning",
               "danger"
             ]
-          }
+          },
+          "description": "Farge på toppen. Standard: ingen.\n\nFargen gjelder `header`, så den må stå i markupen for å synes:\n`<div {...boks.header}>` rundt overskriften. Uten en topp har fargen\ningenting å farge."
         }
       ],
       "returns": {
@@ -1656,7 +1899,8 @@
               "subtle",
               "strong"
             ]
-          }
+          },
+          "description": "Hvor tydelig streken er. Standard: `default`."
         }
       ],
       "returns": {
@@ -1692,14 +1936,16 @@
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Antall feil serveren fant. Er det null, skjules boksen."
         },
         {
           "name": "id",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Id på boksen, slik at skjemaet kan flytte fokus hit etter innsending."
         }
       ],
       "returns": {
@@ -1726,7 +1972,8 @@
               "error",
               "warning"
             ]
-          }
+          },
+          "description": "Om feilen stopper innsending eller bare advarer. Standard: `error`."
         }
       ],
       "returns": {
@@ -1759,35 +2006,40 @@
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Id på kontrollen. Påkrevd.\n\nI React kommer den fra `useId()`. Ellers er feltets eget navn som regel\ndet opplagte valget. Vet du sikkert at markupen rendres én gang, kall\n`createFieldId()` selv.\n\nDen var valgfri, og funksjonen laget en når den manglet. Id-en er\ntilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på\nen server og så i nettleseren, peker `for` og `aria-describedby` på noe\nannet enn det som står der. React melder avvik ved hydreringen, og\nadvarselen sier selv at avviket ikke blir rettet opp.\n\nKravet står i typen, og det er ikke nok alene: en konsument uten\nTypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og\nsier fra i konsollen. Da virker feltet, og utvikleren får vite hvorfor\nhan likevel bør oppgi id-en. Uten reserven fikk han `for=\"\"`,\n`aria-describedby=\"undefined-help\"` og ingen kobling i det hele tatt,\naltså verre enn den ustabile id-en kravet skulle bli kvitt."
         },
         {
           "name": "help",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet har en hjelpetekst som skal kobles med `aria-describedby`."
         },
         {
           "name": "error",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet har en feilmelding. Den skjules til feltet er ugyldig."
         },
         {
           "name": "helpId",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Egen id på hjelpeteksten. Utledes fra `id` hvis den utelates."
         },
         {
           "name": "errorId",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Egen id på feilmeldingen. Utledes fra `id` hvis den utelates."
         },
         {
           "name": "required",
@@ -1798,35 +2050,40 @@
               "symbol",
               "text"
             ]
-          }
+          },
+          "description": "Marker ledeteksten som påkrevd."
         },
         {
           "name": "optional",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Marker ledeteksten som valgfri."
         },
         {
           "name": "invalid",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet er ugyldig: viser feilmeldingen og setter `aria-invalid`."
         },
         {
           "name": "disabled",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Kontrollen er slått av."
         },
         {
           "name": "describedBy",
           "required": false,
           "type": {
             "kind": "textList"
-          }
+          },
+          "description": "Ekstra id-er som skal med i `aria-describedby`."
         }
       ],
       "returns": {
@@ -1868,14 +2125,16 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand for hele gruppen. Standard: `default`."
         },
         {
           "name": "disabled",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Slår av alle kontrollene i gruppen."
         }
       ],
       "returns": {
@@ -1924,21 +2183,24 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         },
         {
           "name": "multiple",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Tillat flere filer."
         },
         {
           "name": "accept",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Filtypene feltet tar imot, som `.pdf,image/*`."
         }
       ],
       "returns": {
@@ -2001,7 +2263,8 @@
               "xl",
               "mega"
             ]
-          }
+          },
+          "description": "Visuell størrelse. Standard: `l`."
         }
       ],
       "returns": {
@@ -2052,7 +2315,8 @@
               "success",
               "warning"
             ]
-          }
+          },
+          "description": "Hvor mye teksten skal rope. Standard: `muted`."
         }
       ],
       "returns": {
@@ -2105,7 +2369,8 @@
               "search",
               "time"
             ]
-          }
+          },
+          "description": "HTML-typen. Settes som `type`, og styrer ikonet. Standard: `text`."
         },
         {
           "name": "state",
@@ -2117,7 +2382,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         }
       ],
       "returns": {
@@ -2200,21 +2466,24 @@
               "symbol",
               "text"
             ]
-          }
+          },
+          "description": "Marker feltet som påkrevd, med stjerne eller med ordet «(påkrevd)»."
         },
         {
           "name": "optional",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Marker feltet som valgfritt. Velg én av `required` og `optional`."
         },
         {
           "name": "disabled",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Demper teksten når kontrollen er slått av."
         }
       ],
       "returns": {
@@ -2233,21 +2502,24 @@
               "symbol",
               "text"
             ]
-          }
+          },
+          "description": "Marker gruppen som påkrevd, med stjerne eller med ordet «(påkrevd)»."
         },
         {
           "name": "optional",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Marker gruppen som valgfri. Velg én av `required` og `optional`."
         },
         {
           "name": "disabled",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Demper teksten når gruppen er slått av."
         }
       ],
       "returns": {
@@ -2262,7 +2534,8 @@
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Lenken er ikke klikkbar ennå. Gir `aria-disabled`, `role=\"link\"` og\n`tabindex=\"0\"`, så skjermlesere fortsatt finner den som en lenke og kan\nsi fra. `href` må tas bort ved siden av: ellers følger Enter den."
         }
       ],
       "returns": {
@@ -2302,7 +2575,8 @@
               "plain",
               "divided"
             ]
-          }
+          },
+          "description": "Punkter, rene rader, eller rader med strek mellom. Standard: `default`."
         }
       ],
       "returns": {
@@ -2359,7 +2633,8 @@
               "medium",
               "large"
             ]
-          }
+          },
+          "description": "Tekststørrelse. Standard: `medium`."
         },
         {
           "name": "variant",
@@ -2370,7 +2645,8 @@
               "default",
               "lead"
             ]
-          }
+          },
+          "description": "`lead` er ingressen rett under overskriften. Standard: `default`."
         }
       ],
       "returns": {
@@ -2414,14 +2690,16 @@
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Id på panelet. Kobler knappen til panelet med `aria-controls`."
         },
         {
           "name": "open",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Panelet er åpent. Standard: lukket."
         },
         {
           "name": "placement",
@@ -2434,7 +2712,8 @@
               "top-start",
               "top-end"
             ]
-          }
+          },
+          "description": "Hvilken kant panelet henger fra. Standard: `bottom-start`."
         }
       ],
       "returns": {
@@ -2540,14 +2819,16 @@
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Hvor langt det er kommet. Utelat den, og stolpen blir ubestemt."
         },
         {
           "name": "max",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Hva som er fullt. Standard: `100`."
         },
         {
           "name": "color",
@@ -2559,14 +2840,16 @@
               "warning",
               "danger"
             ]
-          }
+          },
+          "description": "Hva tallet betyr. Standard er aksentfargen, altså «dette pågår»."
         },
         {
           "name": "label",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Hva som pågår. Blir `aria-label`, så stolpen har et navn."
         }
       ],
       "returns": {
@@ -2631,7 +2914,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         }
       ],
       "returns": {
@@ -2674,7 +2958,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         }
       ],
       "returns": {
@@ -2717,7 +3002,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         },
         {
           "name": "picker",
@@ -2728,7 +3014,8 @@
               "auto",
               "styled"
             ]
-          }
+          },
+          "description": "Hvem som tegner nedtrekkslista. Standard: `auto`."
         }
       ],
       "returns": {
@@ -2773,28 +3060,32 @@
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Id på overskriften. Dialogen navngis av den med `aria-labelledby`."
         },
         {
           "name": "warnAt",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Sekunder uten aktivitet før varselet kommer. Standard: 25 minutter."
         },
         {
           "name": "expiresAt",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Sekunder uten aktivitet før økten er ute. Standard: 30 minutter."
         },
         {
           "name": "activityInterval",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard: 60."
         }
       ],
       "returns": {
@@ -3035,7 +3326,8 @@
               "text",
               "circle"
             ]
-          }
+          },
+          "description": "Form. Standard: `block`."
         }
       ],
       "returns": {
@@ -3093,14 +3385,16 @@
               "medium",
               "large"
             ]
-          }
+          },
+          "description": "Størrelse. Standard: `medium`."
         },
         {
           "name": "label",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Hva som lastes. Blir `aria-label`, så ventingen kan leses opp."
         }
       ],
       "returns": {
@@ -3162,21 +3456,24 @@
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet er ugyldig: viser feilmeldingen og setter `aria-invalid`."
         },
         {
           "name": "error",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet har en feilmelding. Den skjules til feltet er ugyldig."
         },
         {
           "name": "disabled",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Kontrollen er slått av."
         },
         {
           "name": "required",
@@ -3187,77 +3484,88 @@
               "symbol",
               "text"
             ]
-          }
+          },
+          "description": "Marker ledeteksten som påkrevd."
         },
         {
           "name": "optional",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Marker ledeteksten som valgfri."
         },
         {
           "name": "help",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Feltet har en hjelpetekst som skal kobles med `aria-describedby`."
         },
         {
           "name": "helpId",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Egen id på hjelpeteksten. Utledes fra `id` hvis den utelates."
         },
         {
           "name": "errorId",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Egen id på feilmeldingen. Utledes fra `id` hvis den utelates."
         },
         {
           "name": "describedBy",
           "required": false,
           "type": {
             "kind": "textList"
-          }
+          },
+          "description": "Ekstra id-er som skal med i `aria-describedby`."
         },
         {
           "name": "id",
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`."
         },
         {
           "name": "count",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Antall alternativer serveren sender med. Standard: 0."
         },
         {
           "name": "activeIndex",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Alternativet som er markert med piltastene. Standard: ingen."
         },
         {
           "name": "open",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Lista er åpen. Standard: lukket."
         },
         {
           "name": "pending",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så\net asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket\nog svaret."
         }
       ],
       "returns": {
@@ -3312,7 +3620,8 @@
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Kontrollen er slått av."
         }
       ],
       "returns": {
@@ -3351,14 +3660,16 @@
               "default",
               "striped"
             ]
-          }
+          },
+          "description": "Annenhver rad i dempet flate. Standard: `default`."
         },
         {
           "name": "hoverable",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Marker raden under musa. Bruk bare når rader kan trykkes på."
         }
       ],
       "returns": {
@@ -3403,7 +3714,8 @@
               "ascending",
               "descending"
             ]
-          }
+          },
+          "description": "Retningen kolonnen er sortert i. Utelatt betyr at tabellen ikke er\nsortert etter denne kolonnen, og da får overskriften ikke `aria-sort`."
         }
       ],
       "returns": {
@@ -3460,28 +3772,32 @@
           "required": true,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Felles id-stamme. Fanene blir `${id}-tab-0`, panelene `${id}-panel-0`."
         },
         {
           "name": "count",
           "required": true,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Antall faner."
         },
         {
           "name": "selected",
           "required": false,
           "type": {
             "kind": "number"
-          }
+          },
+          "description": "Indeksen på fanen som er valgt. Standard: 0."
         },
         {
           "name": "label",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Tekst som sier hva fanene velger mellom. Blir `aria-label` på raden."
         }
       ],
       "returns": {
@@ -3517,14 +3833,16 @@
               "outline",
               "filled"
             ]
-          }
+          },
+          "description": "Omriss eller dempet flate. Standard: `outline`."
         },
         {
           "name": "selectable",
           "required": false,
           "type": {
             "kind": "flag"
-          }
+          },
+          "description": "Merkelappen kan slås av og på. Bruk bare på en `<button>`."
         }
       ],
       "returns": {
@@ -3570,7 +3888,8 @@
               "invalid",
               "success"
             ]
-          }
+          },
+          "description": "Valideringstilstand. Standard: `default`."
         }
       ],
       "returns": {
@@ -3607,14 +3926,16 @@
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Tekst som sier hva regionen er. Blir `aria-label`."
         },
         {
           "name": "closeLabel",
           "required": false,
           "type": {
             "kind": "text"
-          }
+          },
+          "description": "Hva lukkeknappen i hver melding heter for skjermleseren. Standard:\n«Lukk melding». `closeLabel` i `show()` overstyrer den for én melding."
         }
       ],
       "returns": {

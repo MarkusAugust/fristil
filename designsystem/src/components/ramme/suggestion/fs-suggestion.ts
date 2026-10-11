@@ -36,12 +36,25 @@ const COUNT_ATTRIBUTES = [
 
 export const FS_SUGGESTION_TAG = "fs-suggestion" as const
 
-/** Feltet: rollen når den står der, ellers det første inndatafeltet. */
-const CONTROL_SELECTOR = "[role='combobox'], input:not([type='hidden'])"
-/** Lista: rollen når den står der, ellers klassen. */
-const LIST_SELECTOR = `[role='listbox'], .${SUGGESTION_LIST_CLASS}`
-/** Et alternativ: rollen når den står der, ellers en `<li>` uten rolle i lista. */
-const OPTION_SELECTOR = `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([role])`
+/**
+ * Delene forslagsfeltet finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_SUGGESTION_PARTS = {
+  /** Feltet: rollen når den står der, ellers det første inndatafeltet. */
+  control: "[role='combobox'], input:not([type='hidden'])",
+  /** Lista: rollen når den står der, ellers klassen. */
+  list: `[role='listbox'], .${SUGGESTION_LIST_CLASS}`,
+  /** Et alternativ: rollen når den står der, ellers en `<li>` uten rolle i lista. */
+  option: `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([role])`,
+  empty: `.${SUGGESTION_EMPTY_CLASS}`,
+  status: "[role='status']",
+} as const
+
+const CONTROL_SELECTOR = FS_SUGGESTION_PARTS.control
+const LIST_SELECTOR = FS_SUGGESTION_PARTS.list
+const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
 
 /**
  * Tastaturet og filtreringen i et felt med forslagsliste.
@@ -372,7 +385,7 @@ export class FsSuggestion extends HostElement {
   }
 
   private get emptyElement(): HTMLElement | null {
-    return this.querySelector<HTMLElement>(`.${SUGGESTION_EMPTY_CLASS}`)
+    return this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.empty)
   }
 
   /**
@@ -462,7 +475,7 @@ export class FsSuggestion extends HostElement {
       () =>
         this.querySelector(CONTROL_SELECTOR) !== null &&
         this.listElement !== null &&
-        this.querySelector("[role='status']") === null,
+        this.querySelector(FS_SUGGESTION_PARTS.status) === null,
     )
 
     if (control !== this.control) {
@@ -649,7 +662,7 @@ export class FsSuggestion extends HostElement {
    * alt sagt fra.
    */
   private announce(hits: number): void {
-    const status = this.querySelector<HTMLElement>("[role='status']")
+    const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
     if (!status) return
 
     setText(status, this.countText(hits))

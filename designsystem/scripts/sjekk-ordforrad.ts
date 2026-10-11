@@ -53,6 +53,8 @@ const pkg = JSON.parse(
  * samme elementet ikke telles to ganger om det står bak to inngangspunkter.
  */
 const registered = new Map<string, readonly string[]>()
+/** Delene modulen eksporterer i `FS_…_PARTS`, for elementene som har dem. */
+const exportedParts = new Map<string, Record<string, string>>()
 /** Hver tagg noen modul eksporterer, hovedinngangen medregnet. */
 const allTags = new Set<string>()
 for (const target of Object.values(
@@ -75,6 +77,13 @@ for (const target of Object.values(
   for (const tag of tags) allTags.add(tag)
   if (tags.length !== 1 || components.length !== 1) continue
   registered.set(tags[0], components[0].observedAttributes)
+  const parts = Object.entries(module).filter(([name]) =>
+    name.endsWith("_PARTS"),
+  )
+  if (parts.length > 1)
+    findings.push(`<${tags[0]}> eksporterer mer enn ett sett deler`)
+  if (parts.length === 1)
+    exportedParts.set(tags[0], parts[0][1] as Record<string, string>)
 }
 
 const documented = new Map(elements.map((e) => [e.tag, e]))
@@ -107,6 +116,21 @@ for (const tag of documented.keys())
     findings.push(
       `<${tag}> står i metadata.ts, men pakken registrerer det ikke`,
     )
+
+// 2a. Hver del komponenten eksporterer har en beskrivelse i metadata.ts, med
+// den samme selektoren. Typen i `parts()` krever det for en komponent som står
+// i tabellen; denne ser komponenten som ikke gjør det.
+for (const [tag, parts] of exportedParts) {
+  const doc = documented.get(tag)?.parts ?? {}
+  for (const [name, selector] of Object.entries(parts))
+    if (doc[name]?.selector !== selector)
+      findings.push(`<${tag}> har delen «${name}», som mangler i metadata.ts`)
+  for (const name of Object.keys(doc))
+    if (!(name in parts))
+      findings.push(
+        `<${tag}> har delen «${name}» i metadata.ts, men eksporterer den ikke`,
+      )
+}
 
 // 2b. Hendelsene i metadata.ts er de komponenten sender, verken flere eller
 // færre. Typesjekken ser ikke dette: navnet står bare i en streng, i
@@ -164,9 +188,11 @@ for (const element of elements) {
 // 4. Tell, sist. Både likt det forventede og større enn null.
 const counted = registered.size
 console.log(
-  `Sjekket ${counted} elementer i pakken mot ${documented.size} i metadata.ts, ${Object.keys(snippets).length} snippets og ${Object.keys(generated).length} filer`,
+  `Sjekket ${counted} elementer i pakken mot ${documented.size} i metadata.ts, ${exportedParts.size} med deler, ${Object.keys(snippets).length} snippets og ${Object.keys(generated).length} filer`,
 )
 if (counted === 0) findings.push("Fant ingen elementer i pakken. Er dist bygd?")
+if (exportedParts.size === 0)
+  findings.push("Fant ingen deler i pakken. Er dist bygd?")
 
 if (findings.length) {
   console.error(findings.map((f) => `  - ${f}`).join("\n"))

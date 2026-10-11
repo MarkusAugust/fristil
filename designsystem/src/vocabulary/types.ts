@@ -7,9 +7,26 @@
  * manifestet, ikke disse filene, så de er ikke en del av pakkens API.
  */
 
-export type Attribute =
+export type Attribute = (
   | { type: "flag" | "text" | "number" }
   | { type: "values"; values: readonly string[] }
+) & { description?: string }
+
+/**
+ * En del av et element, som kontrollen i `<fs-field>`. `selector` er den
+ * komponenten finner delen med, relativt til elementet. `content` er hva
+ * delen tar: `text` er tekst og frasering uten interaktive elementer, `free`
+ * fritt innhold, `parts` bare de andre delene, og `none` ingenting du
+ * skriver selv. Uten `multiple` gjelder den første. Uten `optional` trenger
+ * elementet delen.
+ */
+export type Part = {
+  selector: string
+  description: string
+  content: "text" | "free" | "parts" | "none"
+  multiple?: true
+  optional?: true
+}
 
 /**
  * En hendelse et element sender, som `dialog-toggle`. `detail` er feltene i
@@ -21,7 +38,10 @@ export type ElementEvent = {
 
 export type Element = {
   link: string
+  description?: string
   attributes: Record<string, Attribute>
+  /** Tom for elementene som lager alt innholdet sitt selv. */
+  parts?: Record<string, Part>
   events?: Record<string, ElementEvent>
 }
 

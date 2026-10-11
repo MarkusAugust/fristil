@@ -12,6 +12,16 @@ import {
 export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
 
 /**
+ * Delene feiloppsummeringen finner, som selektorer relativt til elementet. Komponenten
+ * finner delene med disse, og manifestet beskriver dem for den som setter
+ * sammen markupen selv, så de to ikke kan si noe ulikt.
+ */
+export const FS_ERROR_SUMMARY_PARTS = {
+  title: "h1, h2, h3, h4, h5, h6",
+  link: "li a[href^='#']",
+} as const
+
+/**
  * Sender brukeren fra en feil i oppsummeringen til feltet som feilet.
  *
  * Serveren skriver innholdet: overskriften og lista med lenker. Lages
@@ -120,7 +130,7 @@ export class FsErrorSummary extends HostElement {
     // komponenten forsvinner i stillhet.
     if (!this.hasAttribute("tabindex")) setAttr(this, "tabindex", "-1")
 
-    const title = this.querySelector("h1, h2, h3, h4, h5, h6")
+    const title = this.querySelector(FS_ERROR_SUMMARY_PARTS.title)
     if (title) addClass(title, ERROR_SUMMARY_TITLE_CLASS)
   }
 
@@ -128,7 +138,7 @@ export class FsErrorSummary extends HostElement {
     this.wire()
 
     const links = [
-      ...this.querySelectorAll<HTMLAnchorElement>("li a[href^='#']"),
+      ...this.querySelectorAll<HTMLAnchorElement>(FS_ERROR_SUMMARY_PARTS.link),
     ]
 
     // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
@@ -157,7 +167,7 @@ export class FsErrorSummary extends HostElement {
         // punkter, men uten lenker til feltene, er noe annet.
         () =>
           this.querySelector("li") !== null &&
-          this.querySelector("li a[href^='#']") === null,
+          this.querySelector(FS_ERROR_SUMMARY_PARTS.link) === null,
       )
       return
     }
@@ -229,7 +239,9 @@ export class FsErrorSummary extends HostElement {
   }
 
   private handleLinkClick = (event: Event): void => {
-    const link = (event.target as Element | null)?.closest?.("li a[href^='#']")
+    const link = (event.target as Element | null)?.closest?.(
+      FS_ERROR_SUMMARY_PARTS.link,
+    )
     if (!link || !this.contains(link)) return
     const id = link.getAttribute("href")?.slice(1)
     if (!id) return

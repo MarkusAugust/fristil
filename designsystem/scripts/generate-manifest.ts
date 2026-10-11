@@ -47,7 +47,13 @@ type Valgtype =
   | { kind: "number" }
   | { kind: "textList" }
 
-type Valg = { name: string; required: boolean; type: Valgtype }
+type Valg = {
+  name: string
+  required: boolean
+  type: Valgtype
+  /** JSDoc-en til valget i byggefunksjonens type, når den har en. */
+  description?: string
+}
 
 type Svar =
   | { kind: "attributes" }
@@ -190,12 +196,17 @@ for (const p of typer.getTypeAtLocation(fsNavn).getProperties()) {
   const options: Valg[] = []
   if (parameter) {
     const valgType = typer.getNonNullableType(typer.getTypeOfSymbol(parameter))
-    for (const v of valgType.getProperties())
+    for (const v of valgType.getProperties()) {
+      const description = ts
+        .displayPartsToString(v.getDocumentationComment(typer))
+        .trim()
       options.push({
         name: v.name,
         required: (v.flags & ts.SymbolFlags.Optional) === 0,
         type: valgtype(typer.getTypeOfSymbol(v), `fs.${p.name}({ ${v.name} })`),
+        ...(description ? { description } : {}),
       })
+    }
   }
   byggefunksjoner.push({
     name: p.name,
@@ -540,12 +551,52 @@ for (const b of byggefunksjoner) {
     }
   }
 }
+/*
+ * Beskrivelsen av et klasseattributt er beskrivelsen av valget som skriver
+ * det, funnet som flaggene over: et tilfelle med valget mot det samme uten.
+ * Skriver flere byggefunksjoner det samme attributtet, vinner den første i
+ * alfabetet.
+ */
+const beskrivelser = new Map<string, string>()
+for (const b of byggefunksjoner) {
+  const egne = tilfeller.filter((t) => t.builder === b.name && t.expected)
+  for (const valg of b.options) {
+    if (!valg.description) continue
+    for (const med of egne.filter((t) => t.options[valg.name] !== undefined)) {
+      const { [valg.name]: _, ...uten } = med.options
+      const av = egne.find((t) => likt(t.options, uten))
+      if (!av) continue
+      const før = new Map(settene(av.expected))
+      for (const [navn, sett] of settene(med.expected)) {
+        const klasser = String(sett.class ?? "")
+          .split(/\s+/)
+          .filter((k) => classes[k])
+        for (const [attributt, verdi] of Object.entries(sett))
+          if (
+            attributt.startsWith("data-") &&
+            !likt(verdi, før.get(navn)?.[attributt])
+          )
+            for (const klasse of klasser)
+              if (!beskrivelser.has(`${klasse} ${attributt}`))
+                beskrivelser.set(`${klasse} ${attributt}`, valg.description)
+      }
+    }
+  }
+}
+const medBeskrivelse = (klasse: string, attributter: Record<string, object>) =>
+  Object.fromEntries(
+    Object.entries(attributter).map(([attributt, verdi]) => {
+      const description = beskrivelser.get(`${klasse} ${attributt}`)
+      return [attributt, description ? { ...verdi, description } : verdi]
+    }),
+  )
+
 const klasser = Object.fromEntries(
   Object.entries(classes).map(([navn, klasse]) => [
     navn,
     {
       ...klasse,
-      attributes: {
+      attributes: medBeskrivelse(navn, {
         // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
         // derfra, men utledes på nytt under, ellers ble et flagg som er
         // borte fra byggefunksjonen stående i manifestet for alltid.
@@ -560,7 +611,7 @@ const klasser = Object.fromEntries(
             .sort()
             .map((a) => [a, { flag: true }]),
         ),
-      },
+      }),
     },
   ]),
 )

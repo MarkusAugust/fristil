@@ -18,19 +18,40 @@ import { FS_CONNECTION_STATUS_TAG } from "../src/components/frittstaende/connect
 import type { FsToast } from "../src/components/frittstaende/toast/fs-toast.js"
 import { FS_TOAST_TAG } from "../src/components/frittstaende/toast/fs-toast.js"
 import type { FsDialog } from "../src/components/ramme/dialog/fs-dialog.js"
-import { FS_DIALOG_TAG } from "../src/components/ramme/dialog/fs-dialog.js"
+import {
+  FS_DIALOG_PARTS,
+  FS_DIALOG_TAG,
+} from "../src/components/ramme/dialog/fs-dialog.js"
 import type { FsErrorSummary } from "../src/components/ramme/error-summary/fs-error-summary.js"
-import { FS_ERROR_SUMMARY_TAG } from "../src/components/ramme/error-summary/fs-error-summary.js"
+import {
+  FS_ERROR_SUMMARY_PARTS,
+  FS_ERROR_SUMMARY_TAG,
+} from "../src/components/ramme/error-summary/fs-error-summary.js"
 import type { FsField } from "../src/components/ramme/field/fs-field.js"
-import { FS_FIELD_TAG } from "../src/components/ramme/field/fs-field.js"
+import {
+  FS_FIELD_PARTS,
+  FS_FIELD_TAG,
+} from "../src/components/ramme/field/fs-field.js"
 import type { FsPopover } from "../src/components/ramme/popover/fs-popover.js"
-import { FS_POPOVER_TAG } from "../src/components/ramme/popover/fs-popover.js"
+import {
+  FS_POPOVER_PARTS,
+  FS_POPOVER_TAG,
+} from "../src/components/ramme/popover/fs-popover.js"
 import type { FsSessionTimeout } from "../src/components/ramme/session-timeout/fs-session-timeout.js"
-import { FS_SESSION_TIMEOUT_TAG } from "../src/components/ramme/session-timeout/fs-session-timeout.js"
+import {
+  FS_SESSION_TIMEOUT_PARTS,
+  FS_SESSION_TIMEOUT_TAG,
+} from "../src/components/ramme/session-timeout/fs-session-timeout.js"
 import type { FsSuggestion } from "../src/components/ramme/suggestion/fs-suggestion.js"
-import { FS_SUGGESTION_TAG } from "../src/components/ramme/suggestion/fs-suggestion.js"
+import {
+  FS_SUGGESTION_PARTS,
+  FS_SUGGESTION_TAG,
+} from "../src/components/ramme/suggestion/fs-suggestion.js"
 import type { FsTabs } from "../src/components/ramme/tabs/fs-tabs.js"
-import { FS_TABS_TAG } from "../src/components/ramme/tabs/fs-tabs.js"
+import {
+  FS_TABS_PARTS,
+  FS_TABS_TAG,
+} from "../src/components/ramme/tabs/fs-tabs.js"
 
 /** En lovlig verdi, med hva den betyr. */
 export type ValueDoc = { name: string; description: string }
@@ -62,6 +83,44 @@ export type EventDoc = {
   detail?: Record<string, DetailType>
 }
 
+/**
+ * Hva en del tar som innhold. `text` er tekst og frasering uten interaktive
+ * elementer, `free` er fritt innhold, `parts` er bare de andre delene, og
+ * `none` er ingenting du skriver selv: en kontroll, eller et element
+ * komponenten fyller.
+ */
+export type PartContent = "text" | "free" | "parts" | "none"
+
+/**
+ * En del av elementet, som kontrollen i `<fs-field>`. `selector` er den
+ * komponenten selv finner delen med, relativt til elementet.
+ */
+export type PartDoc = {
+  selector: string
+  description: string
+  content: PartContent
+  /** Delen kan stå flere ganger, som fanene. Ellers gjelder den første. */
+  multiple?: true
+  /** Elementet virker uten delen. */
+  optional?: true
+}
+
+/**
+ * Delene til et element, med én beskrivelse per selektor komponenten
+ * eksporterer, verken flere eller færre.
+ */
+function parts<P extends Record<string, string>>(
+  selectors: P,
+  docs: Record<keyof P, Omit<PartDoc, "selector">>,
+): Record<string, PartDoc> {
+  return Object.fromEntries(
+    Object.entries(docs).map(([name, doc]) => [
+      name,
+      { selector: selectors[name], ...(doc as Omit<PartDoc, "selector">) },
+    ]),
+  )
+}
+
 export type ElementDoc = {
   tag: string
   /** Siste ledd i adressen til komponentsiden, som `popover`. */
@@ -69,6 +128,8 @@ export type ElementDoc = {
   description: string
   attributes: Record<string, AttributeDoc>
   events: Record<string, EventDoc>
+  /** Tom for elementene som lager alt innholdet sitt selv. */
+  parts: Record<string, PartDoc>
 }
 
 /** Klassen til en komponent, slik generatoren ser den. */
@@ -87,7 +148,147 @@ function element<T extends Component>(
   attributes: Attributes<T>,
   events: Record<string, EventDoc> = {},
 ): ElementDoc {
-  return { tag, slug, description, attributes, events }
+  return { tag, slug, description, attributes, events, parts: PARTS[tag] ?? {} }
+}
+
+/** Delene til rammekomponentene, etter tagg. */
+const PARTS: Record<string, Record<string, PartDoc>> = {
+  [FS_FIELD_TAG]: parts(FS_FIELD_PARTS, {
+    label: {
+      description:
+        "Ledeteksten. Står den utenfor elementet, kobles den med `for` mot kontrollens id.",
+      content: "text",
+    },
+    control: {
+      description:
+        'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>`. `type="hidden"` teller ikke, og bare den første får koblingen.',
+      content: "none",
+    },
+    help: {
+      description: "Hjelpeteksten, som leses opp sammen med kontrollen.",
+      content: "text",
+      optional: true,
+    },
+    error: {
+      description:
+        "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
+      content: "text",
+      optional: true,
+    },
+  }),
+  [FS_TABS_TAG]: parts(FS_TABS_PARTS, {
+    list: { description: "Raden med fanene.", content: "parts" },
+    tab: {
+      description:
+        "En fane: en knapp i raden. Fane nummer n styrer panel nummer n.",
+      content: "text",
+      multiple: true,
+    },
+    panel: {
+      description: "Innholdet til én fane, i samme rekkefølge som fanene.",
+      content: "free",
+      multiple: true,
+    },
+  }),
+  [FS_ERROR_SUMMARY_TAG]: parts(FS_ERROR_SUMMARY_PARTS, {
+    title: {
+      description:
+        "Overskriften i boksen. Komponenten gir den klassen for tittelen.",
+      content: "text",
+    },
+    link: {
+      description:
+        "En lenke til et felt med feil, i et listepunkt. `href` er `#` og feltets id.",
+      content: "text",
+      multiple: true,
+    },
+  }),
+  [FS_POPOVER_TAG]: parts(FS_POPOVER_PARTS, {
+    trigger: {
+      description:
+        "Knappen som åpner og lukker panelet: den med `aria-controls` mot panelets id, ellers den første knappen utenfor panelet.",
+      content: "text",
+    },
+    panel: {
+      description: "Panelet som åpnes: elementet med `popover`, eller klassen.",
+      content: "free",
+    },
+  }),
+  [FS_SUGGESTION_TAG]: parts(FS_SUGGESTION_PARTS, {
+    control: {
+      description:
+        'Feltet brukeren skriver i: `role="combobox"`, ellers det første `<input>`.',
+      content: "none",
+    },
+    list: { description: "Lista med forslag.", content: "parts" },
+    option: {
+      description:
+        'Ett forslag i lista: `role="option"`, eller et `<li>` uten rolle.',
+      content: "text",
+      multiple: true,
+    },
+    empty: {
+      description: "Meldingen som vises når ingenting passer.",
+      content: "text",
+      optional: true,
+    },
+    status: {
+      description:
+        "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
+      content: "none",
+    },
+  }),
+  [FS_DIALOG_TAG]: parts(FS_DIALOG_PARTS, {
+    dialog: {
+      description: "`<dialog>`-elementet, som et direkte barn av verten.",
+      content: "free",
+    },
+    title: {
+      description:
+        "Tittelen: det `aria-labelledby` peker på, ellers den første overskriften utenfor kroppen. Med `aria-label` på `<dialog>` trengs den ikke.",
+      content: "text",
+      optional: true,
+    },
+    body: {
+      description:
+        "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
+      content: "free",
+      optional: true,
+    },
+  }),
+  [FS_SESSION_TIMEOUT_TAG]: parts(FS_SESSION_TIMEOUT_PARTS, {
+    dialog: {
+      description: "`<dialog>`-elementet med varselet.",
+      content: "free",
+    },
+    title: {
+      description:
+        "Overskriften i dialogen, som blir navnet dens når verken `aria-labelledby` eller `aria-label` står på `<dialog>`.",
+      content: "text",
+      optional: true,
+    },
+    text: {
+      description:
+        "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
+      content: "text",
+    },
+    count: {
+      description:
+        "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
+      content: "none",
+    },
+    status: {
+      description:
+        "Opplesningen. Elementet står tomt, og komponenten fyller det.",
+      content: "none",
+    },
+    button: {
+      description:
+        'Knappene i `<form method="dialog">`, som forlenger økten eller logger ut.',
+      content: "text",
+      multiple: true,
+    },
+  }),
 }
 
 const flag = (description: string): AttributeDoc => ({
