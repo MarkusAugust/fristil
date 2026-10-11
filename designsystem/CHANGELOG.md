@@ -126,6 +126,8 @@ egen overskrift «Brytende».
   annet språk kan dermed lese hva hvert element leter etter, uten å lese
   kildekoden.
   Feltene er nye og valgfrie i skjemaet, så `schemaVersion` er fortsatt 1.
+  Fragmentet fra `fristil overta` gir klassene nye navn også i selektorene
+  og beskrivelsene, så kopien beskrives med sine egne klasser.
   Selektorene eksporteres også, fra hovedinngangen og fra inngangen til
   hver av de sju web-komponentene som finner deler, som `FS_FIELD_PARTS`
   fra `@fristil/designsystem/field`.

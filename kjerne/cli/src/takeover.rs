@@ -436,8 +436,24 @@ pub fn rename(content: &str, names: &[String]) -> String {
     out
 }
 
+/// `value` med de nye navnene i hver streng og hver nøkkel. Selektorene i
+/// delene og beskrivelsene nevner klassene, og kopien har bare de nye.
+fn renamed_value(value: &Json, names: &[String]) -> Json {
+    match value {
+        Json::String(text) => Json::String(rename(text, names)),
+        Json::Array(items) => Json::Array(items.iter().map(|v| renamed_value(v, names)).collect()),
+        Json::Object(fields) => Json::Object(
+            fields
+                .iter()
+                .map(|(key, v)| (rename(key, names), renamed_value(v, names)))
+                .collect(),
+        ),
+        other => other.clone(),
+    }
+}
+
 /// Fragmentet av manifestet for kopien: elementene og klassene komponenten
-/// eier, med de nye navnene.
+/// eier, med de nye navnene, også inne i selektorene og beskrivelsene.
 pub fn fragment(manifest: &Json, component: &str, names: &[String]) -> Json {
     let owned = |name: &str| names.iter().any(|n| n == block(name) || n == name);
     let section = |key: &str| -> Json {
@@ -448,7 +464,7 @@ pub fn fragment(manifest: &Json, component: &str, names: &[String]) -> Json {
                 .unwrap_or(&[])
                 .iter()
                 .filter(|(name, _)| owned(name))
-                .map(|(name, value)| (rename(name, names), value.clone()))
+                .map(|(name, value)| (rename(name, names), renamed_value(value, names)))
                 .collect(),
         )
     };
