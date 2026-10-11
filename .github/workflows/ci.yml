@@ -190,7 +190,7 @@ jobs:
       # dist/, som npx kjører.
       - name: Bygg kjernen og pakken
         run: |
-          bun kjerne/scripts/bygg.ts
+          (cd designsystem && bun run kjerne)
           (cd designsystem && bun run bygg:nettleser)
           (cd editor && bun run build)
 
@@ -240,7 +240,7 @@ jobs:
         working-directory: kjerne
         run: |
           cargo fmt --all --check
-          cargo clippy --release --target wasm32-unknown-unknown -- -D warnings
+          cargo clippy --release --target wasm32-unknown-unknown -p fristil-tema -p fristil-kjerne -- -D warnings
           cargo clippy --release -p fristil --tests -- -D warnings
 
       - name: Enhetstester i Rust

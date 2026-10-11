@@ -17,7 +17,7 @@
  * 3. Ødelagt markup: hver fikstur, klipt, skjøtet og med tegn satt inn og tatt
  *    bort, med et fast frø, så et funn kan gjenskapes.
  *
- * Temaet har sin egen fasit i `tema/`: oppskrifter til `buildTheme`, og
+ * Temaet har sin egen fasit i `tema/fasit/`: oppskrifter til `buildTheme`, og
  * temaer skrevet som CSS til `inspectTheme`, med svaret ved siden av.
  *
  * I tillegg malene i `maler/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
@@ -39,10 +39,13 @@ import {
   type Finding,
   loadCore,
 } from "../../designsystem/src/diagnostics/core.js"
-import { MODUL } from "./bygg.js"
+import { MODUL, TEMA as TEMA_MODUL } from "./bygg.js"
 
 const ROT = fileURLToPath(new URL("../..", import.meta.url))
 const kjerne = loadCore(readFileSync(MODUL))
+/** Temaet alene, modulen pakken regner fargematrisen med. */
+const temaBytes = readFileSync(TEMA_MODUL)
+const temaet = loadCore(temaBytes)
 
 /**
  * Reglene kjernen har, lest fra `RULES` i `kjerne/src/types.rs`. Lista sto
@@ -179,9 +182,9 @@ function krevSammeNokler(navn: string, fasit: object, harCss: boolean) {
     feil.push(`${navn}: fasiten har ${nokler}, ventet ${ventet}`)
 }
 
-// Temaet: oppskriftene og temaene i `tema/` mot fasiten ved siden av. Fasiten
-// ble skrevet av TypeScript-utgaven av temaet før den ble slettet.
-const TEMA = join(ROT, "kjerne/tema")
+// Temaet: oppskriftene og temaene i `tema/fasit/` mot fasiten ved siden av.
+// Fasiten ble skrevet av TypeScript-utgaven av temaet før den ble slettet.
+const TEMA = join(ROT, "kjerne/tema/fasit")
 /** JSON med nøklene sortert: rekkefølgen i et objekt er ikke en del av svaret. */
 const sortert = (verdi: unknown): string =>
   JSON.stringify(verdi, (_, v) =>
@@ -191,6 +194,25 @@ const sortert = (verdi: unknown): string =>
         )
       : v,
   )
+/*
+ * Temaet alene skal være nettopp det: ingen sjekk og ikke noe manifest. Det
+ * er grunnen til at det er en egen crate, og det som gjør at pakken kan
+ * bygge matrisen før manifestet finnes. Bar modulen manifestet, var ringen
+ * tilbake uten at noe sa fra.
+ */
+antall += 1
+const temaEksporter = WebAssembly.Module.exports(
+  new WebAssembly.Module(temaBytes),
+).map((e) => e.name)
+for (const navn of ["diagnose_markup_raw", "load_manifest_raw", "version_raw"])
+  if (temaEksporter.includes(navn))
+    feil.push(`fristil-tema.wasm eksporterer ${navn}, og bærer dermed sjekken`)
+antall += 1
+if (new TextDecoder("latin1").decode(temaBytes).includes("schemaVersion"))
+  feil.push(
+    "fristil-tema.wasm bærer manifestet, og trenger det derfor før det er skrevet",
+  )
+
 const oppskrifter: Record<
   string,
   { oppskrift: unknown; tema?: unknown; feil?: string }
@@ -208,7 +230,21 @@ for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
   const ventet = ventetFeil === undefined ? { tema } : { feil: ventetFeil }
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `tema/oppskrifter.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `tema/fasit/oppskrifter.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+    )
+
+  // Temaet alene skal svare nøyaktig det kjernen svarer: det er den modulen
+  // matrisen regnes med, og kjernen den konsumenten får.
+  antall += 1
+  let alene: unknown
+  try {
+    alene = { tema: temaet.buildTheme(oppskrift) }
+  } catch (e) {
+    alene = { feil: e instanceof Error ? e.message : String(e) }
+  }
+  if (sortert(alene) !== sortert(svar))
+    feil.push(
+      `tema/fasit/oppskrifter.json, ${navn}: temaet alene svarer noe annet enn kjernen\n  Kjerne: ${sortert(svar).slice(0, 400)}\n  Tema:   ${sortert(alene).slice(0, 400)}`,
     )
 }
 const rapporter: Record<string, unknown> = JSON.parse(
@@ -221,7 +257,7 @@ for (const [navn, ventet] of Object.entries(rapporter)) {
   )
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `tema/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `tema/fasit/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
     )
 }
 

@@ -1,0 +1,18 @@
+[package]
+name = "fristil-tema"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Fristils temagenerator og kontrastkontroll, med grensesnittet mot verten, kompilert til WebAssembly."
+publish = false
+
+# Egen crate, så pakken kan bygge fargematrisen sin før manifestet finnes.
+# `fristil-kjerne` avhenger av denne og bærer manifestet; denne bærer bare
+# fargekontrakten. Se `src/lib.rs`.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# CSS-tokenizeren fra Servo, den Firefox bruker, etter CSS Syntax Level 3.
+# Kontrollen av et tema leser CSS med den.
+[dependencies]
+cssparser = "0.38"

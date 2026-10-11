@@ -92,7 +92,7 @@ pub struct Contract {
     pub promises: Vec<Promise>,
 }
 
-const SOURCE: &str = include_str!("../../../designsystem/src/tokens/fargekontrakt.json");
+const SOURCE: &str = include_str!("../../../../designsystem/src/tokens/fargekontrakt.json");
 
 /// Kontrakten, lest én gang.
 pub fn contract() -> &'static Contract {

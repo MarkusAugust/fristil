@@ -85,7 +85,7 @@ impl Json {
             Json::Null => out.push_str("null"),
             Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
             Json::Number(n) => out.push_str(&crate::theme::js_number(*n)),
-            Json::String(s) => out.push_str(&crate::json_string(s)),
+            Json::String(s) => out.push_str(&json_string(s)),
             Json::Array(items) if items.is_empty() => out.push_str("[]"),
             Json::Object(entries) if entries.is_empty() => out.push_str("{}"),
             Json::Array(items) => {
@@ -107,7 +107,7 @@ impl Json {
                         out.push(',');
                     }
                     indent(out, inner);
-                    out.push_str(&crate::json_string(key));
+                    out.push_str(&json_string(key));
                     out.push_str(colon);
                     value.write_with(out, inner);
                 }
@@ -375,4 +375,23 @@ mod tests {
         assert!(parse(r#""\u004""#).is_err());
         assert_eq!(parse(r#""\u0041""#).unwrap().as_str(), Some("A"));
     }
+}
+
+/// En streng som JSON, med anførselstegn og escaping slik `JSON.stringify` gjør det.
+pub fn json_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }

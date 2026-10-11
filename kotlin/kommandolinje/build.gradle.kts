@@ -47,8 +47,10 @@ val byggKommandolinje = tasks.register<Exec>("byggKommandolinje") {
     workingDir = kjerne
     commandLine("cargo", "build", "--release", "-p", "fristil", "--target", "wasm32-wasip1")
     inputs.dir(kjerne.resolve("src"))
+    inputs.dir(kjerne.resolve("tema/src"))
     inputs.dir(kjerne.resolve("cli/src"))
     inputs.file(kjerne.resolve("Cargo.toml"))
+    inputs.file(kjerne.resolve("tema/Cargo.toml"))
     inputs.file(kjerne.resolve("cli/Cargo.toml"))
     inputs.file(kjerne.resolve("cli/build.rs"))
     inputs.file(kjerne.resolve("Cargo.lock"))

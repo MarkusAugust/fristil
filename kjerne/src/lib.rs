@@ -26,17 +26,24 @@
 //! `line` og `column` begynner på 1, og kolonnen telles i UTF-16-enheter.
 
 pub mod diagnose;
-pub mod json;
 pub mod manifest;
 pub mod references;
 pub mod styles;
 pub mod suppress;
 pub mod text;
-pub mod theme;
 pub mod types;
 
-use std::cell::RefCell;
+/*
+ * JSON-leseren og temaet bor i `fristil-tema`, crate-en under denne, og
+ * eksporteres herfra under de samme navnene, så `fristil_kjerne::json` og
+ * `fristil_kjerne::theme` virker som før. Grensesnittet mot verten
+ * (`alloc`, `result_ptr`, `result_len`, `build_theme_raw` og
+ * `inspect_theme_raw`) ligger også der, og følger med inn i denne modulen.
+ */
+pub use fristil_tema::{json, theme};
 
+use fristil_tema::abi::{read_input, respond};
+use json::json_string;
 use text::{utf16, Utf16};
 use types::{Finding, Severity, Vocabulary};
 
@@ -157,56 +164,6 @@ pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
     out
 }
 
-pub(crate) fn json_string(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() + 2);
-    out.push('"');
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
-            c => out.push(c),
-        }
-    }
-    out.push('"');
-    out
-}
-
-thread_local! {
-    static RESPONSE: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
-}
-
-fn respond(json: String) {
-    RESPONSE.with(|s| *s.borrow_mut() = json.into_bytes());
-}
-
-/// Et område på `lengde` byte i modulens minne, som verten skriver HTML-en til.
-#[no_mangle]
-pub extern "C" fn alloc(length: usize) -> *mut u8 {
-    let mut buf = Vec::<u8>::with_capacity(length.max(1));
-    let ptr = buf.as_mut_ptr();
-    std::mem::forget(buf);
-    ptr
-}
-
-/// Frigjør et område fra `alloc`.
-///
-/// # Safety
-/// `peker` og `lengde` må komme fra ett og samme kall til `alloc`.
-#[no_mangle]
-pub unsafe extern "C" fn dealloc(ptr: *mut u8, length: usize) {
-    drop(Vec::from_raw_parts(ptr, 0, length.max(1)));
-}
-
-/// Leser inndataene, som `alloc` ga og verten fylte, og frigjør dem.
-unsafe fn read_input(ptr: *mut u8, length: usize) -> String {
-    let bytes = Vec::from_raw_parts(ptr, length, length.max(1));
-    String::from_utf8_lossy(&bytes).into_owned()
-}
-
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
 #[no_mangle]
@@ -242,81 +199,6 @@ pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
             1
         }
     }
-}
-
-fn json_object(entries: &[(String, String)]) -> String {
-    let fields: Vec<String> = entries
-        .iter()
-        .map(|(k, v)| format!("{}:{}", json_string(k), json_string(v)))
-        .collect();
-    format!("{{{}}}", fields.join(","))
-}
-
-/// Bygger et tema av oppskriften verten har skrevet inn, som JSON: de samme
-/// feltene som `ThemeInput` i TypeScript. Svarer 0 med temaet, eller 1 med
-/// `{"error": …}`, som `load_manifest_raw`.
-///
-/// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
-#[no_mangle]
-pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
-    let built = json::parse(&read_input(ptr, length)).and_then(|input| theme::build_theme(&input));
-    match built {
-        Ok(t) => {
-            let violations: Vec<String> = t
-                .violations
-                .iter()
-                .map(|v| {
-                    format!(
-                        "{{\"family\":{},\"promise\":{},\"ratio\":{},\"required\":{}}}",
-                        json_string(&v.family),
-                        json_string(&v.promise),
-                        theme::js_number(v.ratio),
-                        theme::js_number(v.required)
-                    )
-                })
-                .collect();
-            respond(format!(
-                "{{\"light\":{},\"dark\":{},\"violations\":[{}],\"css\":{}}}",
-                json_object(&t.light),
-                json_object(&t.dark),
-                violations.join(","),
-                json_string(&t.css)
-            ));
-            0
-        }
-        Err(error) => {
-            respond(format!("{{\"error\":{}}}", json_string(&error)));
-            1
-        }
-    }
-}
-
-/// Kontrollerer et tema verten har skrevet inn, som CSS-tekst.
-///
-/// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
-#[no_mangle]
-pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) {
-    let report = theme::check::inspect_theme(&read_input(ptr, length));
-    let problems: Vec<String> = report
-        .problems
-        .iter()
-        .map(|p| {
-            format!(
-                "{{\"selector\":{},\"message\":{}}}",
-                json_string(&p.selector),
-                json_string(&p.message)
-            )
-        })
-        .collect();
-    respond(format!(
-        "{{\"problems\":[{}],\"blocks\":{},\"declarations\":{},\"promises\":{}}}",
-        problems.join(","),
-        report.blocks,
-        report.declarations,
-        report.promises
-    ));
 }
 
 /// Det et stilark styler: klassene, attributtverdiene og `@import`-adressene.
@@ -421,18 +303,6 @@ pub extern "C" fn version_raw() {
         json_string(&vocabulary.version),
         manifest::SCHEMA_VERSION
     ));
-}
-
-/// Hvor svaret fra siste kall står.
-#[no_mangle]
-pub extern "C" fn result_ptr() -> *const u8 {
-    RESPONSE.with(|s| s.borrow().as_ptr())
-}
-
-/// Hvor langt svaret fra siste kall er, i byte.
-#[no_mangle]
-pub extern "C" fn result_len() -> usize {
-    RESPONSE.with(|s| s.borrow().len())
 }
 
 #[cfg(test)]

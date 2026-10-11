@@ -58,6 +58,14 @@ name = "fristil-kjerne"
 version = "0.1.0"
 dependencies = [
  "cssparser",
+ "fristil-tema",
+]
+
+[[package]]
+name = "fristil-tema"
+version = "0.1.0"
+dependencies = [
+ "cssparser",
 ]
 
 [[package]]

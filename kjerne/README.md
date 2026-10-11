@@ -10,8 +10,8 @@ VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
 Sjekken er det eneste som leser markup fra en servermal: Thymeleaf, JTE,
 kotlinx.html, Go-maler, Razor eller en streng. Skrevet i TypeScript var den
 bare tilgjengelig der det fantes en JavaScript-motor. I Rust er den én liten
-modul (rundt 245 kB, med manifestet innebygd) uten importer, og verten
-trenger bare en WebAssembly-runtime.
+modul (rundt 450 kB, med temaet, CSS-leseren og manifestet innebygd) uten
+importer, og verten trenger bare en WebAssembly-runtime.
 
 Den var skrevet i TypeScript først. Rust-utgaven ble oversatt funksjon for
 funksjon, og de to ble kjørt side om side, felt for felt, på over 4000 sider
@@ -41,8 +41,14 @@ rundt 40 linjer.
 
 ## Temaet
 
-`src/theme/` bygger et fargetema av merkefarger og kontrollerer et tema skrevet
-som CSS. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
+`tema/` er en egen crate, `fristil-tema`, som kjernen avhenger av. Den bygger
+et fargetema av merkefarger og kontrollerer et tema skrevet som CSS, og har
+JSON-leseren og grensesnittet mot verten (`alloc`, `result_ptr` og
+`result_len`). Den er egen av én grunn: pakken regner fargematrisen sin med
+den før manifestet finnes, og `tokens.css` kommer av matrisen. Bar kjernen
+både manifestet og fargeregningen, måtte den bygges to ganger per bygg av
+pakken. Nå bygges `fristil-tema.wasm` først, så skriver pakken matrisen,
+tokenene og manifestet, og så bygges kjernen og kommandolinja én gang. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
 `designsystem/src/tokens/fargekontrakt.json`, som kjernen bærer innebygd.
 `build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
 eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
@@ -87,10 +93,10 @@ Reglene står i `src/types.rs` (`RULES`).
 - `editor/scripts/sjekk-diagnostikk.ts`: 156 tilfeller som hver sier hvor
   mange funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
-- `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
+- `tema/src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
   aksentfarger, fra knallrød og neon til nesten svart, mot ti nøytrale, fra
   svart og hvitt til farget grått, i begge utseender: 240 kombinasjoner.
-- `tema/`: oppskrifter og temaer med svaret ved siden av, skrevet av
+- `tema/fasit/`: oppskrifter og temaer med svaret ved siden av, skrevet av
   TypeScript-utgaven av temaet før den ble slettet. `sjekk-kjerne.ts` krever
   det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
 - `../kotlin`: den samme fasiten fra JVM-en.
@@ -98,10 +104,14 @@ Reglene står i `src/types.rs` (`RULES`).
 ## Kjør
 
 ```bash
-bun kjerne/scripts/bygg.ts         # modulen, inn i designsystem/kjerne/
+bun kjerne/scripts/bygg.ts         # modulene, til kjerne/dist/
 bun kjerne/scripts/sjekk-kjerne.ts # fasiten og kravene
 cd kotlin && ./gradlew test        # Kotlin mot fasiten
 ```
+
+Pakken henter modulene fra `kjerne/dist/` med
+`bun --filter @fristil/designsystem kjerne`, og bare temaet med `kjerne:tema`,
+som er det `generate` trenger.
 
 Krever Rust. `rust-toolchain.toml` henter versjonen og målene
 `wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.

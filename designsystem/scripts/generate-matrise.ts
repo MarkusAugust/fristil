@@ -10,7 +10,9 @@
  * så en ny familie eller rolle i kontrakten blir med av seg selv.
  *
  * Kjør med: bun scripts/generate-matrise.ts, eller som en del av `generate`.
- * Krever kjernen, bygget med `bun run kjerne`.
+ * Krever temaet alene, `kjerne/fristil-tema.wasm`, hentet med
+ * `bun run kjerne:tema`: det er den ene modulen som ikke trenger manifestet,
+ * og manifestet skrives etter denne.
  */
 
 import { readFileSync, writeFileSync } from "node:fs"
@@ -29,7 +31,7 @@ const kontrakt: {
   ),
 )
 const kjerne = loadCore(
-  readFileSync(new URL("../kjerne/fristil-kjerne.wasm", import.meta.url)),
+  readFileSync(new URL("../kjerne/fristil-tema.wasm", import.meta.url)),
 )
 const { light, dark, violations } = kjerne.buildTheme(kontrakt.brands)
 
