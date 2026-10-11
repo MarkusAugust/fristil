@@ -76,7 +76,7 @@ avhengighetene i seg, ligger på Maven som `fristil-kommandolinje`, fordi
 Gradle-pluginen kjører den.
 
 ```bash
-cd kotlin && ./gradlew :kommandolinje:samletJar
+cd kotlin && ./gradlew :kommandolinje:samletJar -Pfristil.pakke=../designsystem
 java -jar kommandolinje/build/libs/fristil.jar --hjelp
 ```
 
@@ -90,7 +90,8 @@ lite prosjekt med Gradle TestKit, også med konfigurasjonsbufferen.
 ## Kjør
 
 ```bash
-cd kotlin && ./gradlew test
+bun --filter @fristil/designsystem pakk
+cd kotlin && ./gradlew test -Pfristil.pakke=../designsystem
 ```
 
 Bygget trenger bare Java. Alt pakken består av, kommer fra npm-pakken
@@ -102,15 +103,14 @@ samme versjon er altså bygd av de samme filene.
 Uten noe mer hentes versjonen fra npm, og fila sammenlignes med integriteten
 registeret oppgir. Mellom to utgivelser er koden her nyere enn det som ligger
 på npm, og da pakkes tarballen fra repoet og oppgis med `fristil.pakke`, slik
-CI gjør. Det krever Bun og Rust, men bare til pakkingen:
+kommandoene over og CI gjør. Pakkingen krever Bun og Rust, men Gradle gjør
+det ikke. Mot npm-utgaven gir testene feil svar: fasiten under er fra repoet,
+og kjernen fra forrige utgivelse.
 
-```bash
-bun --filter @fristil/designsystem pakk
-cd kotlin && ./gradlew test -Pfristil.pakke=../designsystem
-```
-
-`fristil.pakke` er tarballen eller mappa den ligger i. Er den en mappe, brukes
-`fristil-designsystem-<versjon>.tgz`. Bygget stopper hvis tarballen har en
+`fristil.pakke` er tarballen eller mappa den ligger i, regnet fra `kotlin/`,
+også når bygget tas inn med `includeBuild`. Er den en mappe, brukes
+`fristil-designsystem-<versjon>.tgz`. Pakk på nytt når pakken er endret:
+Gradle bruker tarballen som ligger der, også en gammel. Bygget stopper hvis tarballen har en
 annen versjon enn `gradle.properties`, og `bun run prepare-version` setter
 begge.
 

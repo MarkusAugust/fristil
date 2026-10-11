@@ -74,6 +74,8 @@ val pakkUt = tasks.register<Sync>("pakkUt") {
     includeEmptyDirs = false
     into(layout.buildDirectory.dir("fristil-pakke"))
     val forventet = version.toString()
+    // Ellers står oppgaven som oppdatert når bare versjonen er endret, og kontrollen hoppes over.
+    inputs.property("versjon", forventet)
     doLast {
         val pakke = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
         check(pakke["name"] == "@fristil/designsystem" && pakke["version"] == forventet) {
@@ -165,7 +167,8 @@ tasks.test {
  * Uten nøkkel signeres ingenting, så `publishToMavenLocal` virker på en
  * maskin uten den. Central avviser en usignert utgivelse uansett.
  */
-val signeringsnokkel = providers.gradleProperty("signingInMemoryKey").isPresent
+// En hemmelighet som mangler, kommer fra GitHub som en tom streng, ikke som ingenting.
+val signeringsnokkel = providers.gradleProperty("signingInMemoryKey").orNull?.isNotBlank() == true
 allprojects {
     pluginManager.apply("com.vanniktech.maven.publish")
     extensions.configure<MavenPublishBaseExtension> {

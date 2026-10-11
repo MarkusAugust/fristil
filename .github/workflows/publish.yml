@@ -5,6 +5,10 @@ name: Publiser
 # npm først, så kommandolinja på GitHub Releases og Kotlin-pakken på Maven
 # Central. De to siste bygges av npm-pakken som nettopp ble publisert, og
 # venter derfor på den.
+#
+# Startet for hånd publiserer den versjonen i package.json til npm hvis den
+# ikke er ute. Kommandolinja og Kotlin-pakken bygges da, men gis ikke ut:
+# det skjer bare for en tagg.
 on:
   push:
     tags: ["v*"]
@@ -218,17 +222,21 @@ jobs:
 
       # En versjon på Central kan aldri byttes ut, så en ny kjøring for samme
       # tagg skal ikke prøve igjen.
+      # En hemmelighet som ikke finnes, kommer hit som en tom streng.
       - name: Se om versjonen alt er ute
         id: central
         env:
           BRUKER: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          PASSORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          NOKKEL: ${{ secrets.MAVEN_SIGNING_KEY }}
+          NOKKELPASSORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
         run: |
           v="${{ steps.versjon.outputs.nummer }}"
           if curl -sfI "https://repo1.maven.org/maven2/io/github/markusaugust/fristil/$v/fristil-$v.pom" > /dev/null; then
             echo "io.github.markusaugust:fristil:$v ligger alt på Maven Central. Ingenting ble publisert."
             echo "publiser=nei" >> "$GITHUB_OUTPUT"
-          elif [ -z "$BRUKER" ]; then
-            echo "::warning::Hemmelighetene for Maven Central mangler, så Kotlin-pakken ble ikke publisert. Se kommentaren over jobben i publish.yml."
+          elif [ -z "$BRUKER" ] || [ -z "$PASSORD" ] || [ -z "$NOKKEL" ] || [ -z "$NOKKELPASSORD" ]; then
+            echo "::warning::En eller flere av hemmelighetene for Maven Central mangler, så Kotlin-pakken ble ikke publisert. Se kommentaren over jobben i publish.yml."
             echo "publiser=nei" >> "$GITHUB_OUTPUT"
           else
             echo "publiser=ja" >> "$GITHUB_OUTPUT"

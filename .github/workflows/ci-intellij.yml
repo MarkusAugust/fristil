@@ -22,6 +22,9 @@ on:
       - "kjerne/**"
       - "designsystem/manifest/**"
       - "designsystem/src/**"
+      - "designsystem/agent/**"
+      - "designsystem/scripts/**"
+      - "designsystem/package.json"
       - ".github/workflows/ci-intellij.yml"
   pull_request:
     paths:
@@ -30,6 +33,9 @@ on:
       - "kjerne/**"
       - "designsystem/manifest/**"
       - "designsystem/src/**"
+      - "designsystem/agent/**"
+      - "designsystem/scripts/**"
+      - "designsystem/package.json"
       - ".github/workflows/ci-intellij.yml"
   workflow_dispatch:
 

@@ -13,6 +13,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.security.MessageDigest
+import java.time.Duration
 import java.util.Base64
 
 /**
@@ -36,10 +37,16 @@ abstract class FetchPackage : DefaultTask() {
     @TaskAction
     fun fetch() {
         val version = packageVersion.get()
-        val client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()
+        // Uten frister låser et nett som henger jobben til GitHub stopper den etter seks timer.
+        val client =
+            HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(30))
+                .build()
+        fun get(url: String) = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofMinutes(2)).build()
         val registry = "https://registry.npmjs.org/@fristil/designsystem"
 
-        val metadata = client.send(HttpRequest.newBuilder(URI("$registry/$version")).build(), HttpResponse.BodyHandlers.ofString())
+        val metadata = client.send(get("$registry/$version"), HttpResponse.BodyHandlers.ofString())
         if (metadata.statusCode() != 200) {
             throw GradleException(
                 "@fristil/designsystem@$version finnes ikke på npm (svar ${metadata.statusCode()}). " +
@@ -51,7 +58,7 @@ abstract class FetchPackage : DefaultTask() {
         val integrity = dist["integrity"] as String
         check(integrity.startsWith("sha512-")) { "Registeret oppga en integritet som ikke er sha512: $integrity" }
 
-        val bytes = client.send(HttpRequest.newBuilder(URI(dist["tarball"] as String)).build(), HttpResponse.BodyHandlers.ofByteArray())
+        val bytes = client.send(get(dist["tarball"] as String), HttpResponse.BodyHandlers.ofByteArray())
         if (bytes.statusCode() != 200) throw GradleException("Fikk ${bytes.statusCode()} da tarballen for $version ble hentet.")
 
         val actual = "sha512-" + Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-512").digest(bytes.body()))

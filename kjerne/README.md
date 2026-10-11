@@ -101,15 +101,15 @@ Reglene står i `src/types.rs` (`RULES`).
 ```bash
 bun kjerne/scripts/bygg.ts         # modulene, til kjerne/dist/
 bun kjerne/scripts/sjekk-kjerne.ts # fasiten og kravene
-cd kotlin && ./gradlew test        # Kotlin mot fasiten
+bun --filter @fristil/designsystem pakk && (cd kotlin && ./gradlew test -Pfristil.pakke=../designsystem)
 ```
 
 Krever Rust. `rust-toolchain.toml` henter versjonen og målene
 `wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.
 
-Kjernen leser ingenting utenfor `kjerne/` når den bygges, så Gradle-bygget
-trenger bare Rust, ikke Bun. Pakken henter modulene med
-`bun --filter @fristil/designsystem kjerne`.
+Kjernen leser ingenting utenfor `kjerne/` når den bygges. Pakken henter
+modulene med `bun --filter @fristil/designsystem kjerne`, og Kotlin-pakken
+får dem fra npm-pakken, så Gradle-bygget trenger verken Rust eller Bun.
 
 ## Ytelse
 
