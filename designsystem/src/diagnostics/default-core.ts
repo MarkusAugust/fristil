@@ -45,9 +45,30 @@ export function defaultCore(): Core {
       `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run kjerne» i designsystem/, som krever Rust.`,
     )
   }
+  // Manifestet trengs bare av sjekken, og fargekontrakten bare av temaet.
+  // Hver av dem leses første gang et kall trenger den.
   const loaded = loadCore(bytes)
-  loaded.loadManifest(fs.readFileSync(MANIFEST, "utf8"))
-  loaded.loadContract(fs.readFileSync(CONTRACT, "utf8"))
-  core = loaded
+  let manifest = false
+  let contract = false
+  const withManifest = () => {
+    if (!manifest) loaded.loadManifest(fs.readFileSync(MANIFEST, "utf8"))
+    manifest = true
+    return loaded
+  }
+  const withContract = () => {
+    if (!contract) loaded.loadContract(fs.readFileSync(CONTRACT, "utf8"))
+    contract = true
+    return loaded
+  }
+  core = {
+    ...loaded,
+    diagnoseMarkup: (html) => withManifest().diagnoseMarkup(html),
+    diagnosePage: (html) => withManifest().diagnosePage(html),
+    diagnoseStyled: (html, css, page) =>
+      withManifest().diagnoseStyled(html, css, page),
+    version: () => withManifest().version(),
+    buildTheme: (recipe) => withContract().buildTheme(recipe),
+    inspectTheme: (css) => withContract().inspectTheme(css),
+  }
   return core
 }

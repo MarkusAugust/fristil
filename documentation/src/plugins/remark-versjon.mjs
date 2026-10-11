@@ -29,9 +29,16 @@ const { version } = JSON.parse(
 
 const MED_VERSJON = `@fristil/designsystem@${version}`
 
+// Tarballen i npm-registeret, for den som henter pakken uten npm.
+const TARBALL = "designsystem-VERSJON.tgz"
+
 const bytt = (tekst) =>
-  typeof tekst === "string" && tekst.includes(PLASSHOLDER)
-    ? tekst.split(PLASSHOLDER).join(MED_VERSJON)
+  typeof tekst === "string"
+    ? tekst
+        .split(PLASSHOLDER)
+        .join(MED_VERSJON)
+        .split(TARBALL)
+        .join(`designsystem-${version}.tgz`)
     : tekst
 
 export function remarkVersjon() {

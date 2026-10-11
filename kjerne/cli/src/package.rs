@@ -3,33 +3,40 @@
 //! `node_modules/@fristil/designsystem` i arbeidsmappa eller over den. Se
 //! `README.md`.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::output::{fail, shown};
 
 const INSTALLED: &str = "node_modules/@fristil/designsystem";
 
-/// Mappa med pakken, om den finnes.
-pub fn dir() -> Option<PathBuf> {
-    if let Ok(given) = std::env::var("FRISTIL_PACKAGE") {
-        return Some(PathBuf::from(given));
-    }
-    let start = std::env::current_dir().ok()?;
-    if let Some(found) = start
+/// Mappa verten har gitt i `FRISTIL_PACKAGE`, om den har gitt en. Testene
+/// leser pakken i repoet, som bygget aldri gjør.
+pub fn given() -> Option<PathBuf> {
+    let given = std::env::var_os("FRISTIL_PACKAGE").map(PathBuf::from);
+    #[cfg(test)]
+    let given = given.or_else(|| {
+        Some(PathBuf::from(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../designsystem"
+        )))
+    });
+    given
+}
+
+/// Den nærmeste `node_modules/@fristil/designsystem` fra `start` og oppover.
+fn installed_from(start: &Path) -> Option<PathBuf> {
+    start
         .ancestors()
         .map(|here| here.join(INSTALLED))
         .find(|candidate| candidate.is_dir())
-    {
-        return Some(found);
+}
+
+/// Mappa med pakken, om den finnes.
+pub fn dir() -> Option<PathBuf> {
+    if let Some(given) = given() {
+        return Some(given);
     }
-    // Testene leser pakken i repoet, som bygget aldri gjør.
-    #[cfg(test)]
-    return Some(PathBuf::from(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../../designsystem"
-    )));
-    #[cfg(not(test))]
-    None
+    installed_from(&std::env::current_dir().ok()?)
 }
 
 /// Mappa med pakken, eller en forklaring og feilkode.
@@ -63,5 +70,24 @@ pub fn load_contract() {
         fail(&format!(
             "Fargekontrakten i pakken kan ikke leses: {reason}\n"
         ));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn finds_the_nearest_installed_package_and_nothing_without_one() {
+        let root = std::env::temp_dir().join(format!("fristil-pakke-test-{}", std::process::id()));
+        let deep = root.join("apps/web/src");
+        std::fs::create_dir_all(&deep).unwrap();
+        assert_eq!(installed_from(&deep), None, "ingen pakke skal gi ingenting");
+
+        let package = root.join("apps/web").join(INSTALLED);
+        std::fs::create_dir_all(&package).unwrap();
+        std::fs::create_dir_all(root.join(INSTALLED)).unwrap();
+        assert_eq!(installed_from(&deep), Some(package), "den nærmeste vinner");
+        std::fs::remove_dir_all(&root).unwrap();
     }
 }

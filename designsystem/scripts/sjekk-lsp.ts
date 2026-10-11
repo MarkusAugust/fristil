@@ -19,7 +19,7 @@ const pakke = fileURLToPath(new URL("..", import.meta.url))
 
 // Pakken for den kjørbare fila, som ikke har noen vert som setter den.
 // Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
-const MILJØ = {
+const ENVIRONMENT = {
   ...process.env,
   FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
 }
@@ -45,7 +45,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 /** Én økt med serveren: send meldinger, og vent på det den svarer. */
 async function økt(arbeidsmappe: string) {
   const prosess = Bun.spawn([...KOMMANDO, "lsp"], {
-    env: MILJØ,
+    env: ENVIRONMENT,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",

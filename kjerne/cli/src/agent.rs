@@ -12,17 +12,16 @@ use crate::output::{error, fail, write};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
-/// Regelbøkene i pakken, som navn og tekst, sortert etter navn.
-fn rulebooks() -> Vec<(String, String)> {
+/// Navnene på regelbøkene i pakken, sortert. Teksten leses bare for den valgte.
+fn rulebooks() -> Vec<String> {
     let dir = crate::package::require();
-    let mut books: Vec<(String, String)> = std::fs::read_dir(dir.join("agent"))
+    let mut books: Vec<String> = std::fs::read_dir(dir.join("agent"))
         .into_iter()
         .flatten()
         .flatten()
         .filter_map(|entry| {
             let file = entry.file_name().to_string_lossy().into_owned();
-            let name = file.strip_suffix(".md")?.to_string();
-            Some((name, std::fs::read_to_string(entry.path()).ok()?))
+            Some(file.strip_suffix(".md")?.to_string())
         })
         .collect();
     books.sort();
@@ -110,13 +109,13 @@ pub fn run(arguments: &[String]) {
         None => detect_framework(),
     };
     let books = rulebooks();
-    let name = if books.iter().any(|(n, _)| *n == chosen) {
+    let name = if books.contains(&chosen) {
         Some(chosen.as_str())
     } else {
         ALIASES.iter().find(|(a, _)| *a == chosen).map(|(_, n)| *n)
     };
-    let Some((name, book)) = name.and_then(|n| books.iter().find(|(r, _)| r == n)) else {
-        let names: Vec<&str> = books.iter().map(|(n, _)| n.as_str()).collect();
+    let Some(name) = name.and_then(|n| books.iter().find(|r| *r == n)) else {
+        let names: Vec<&str> = books.iter().map(String::as_str).collect();
         fail(&format!(
             "Kjenner ikke «{chosen}».\n\nVelg mellom: {}\n\nVue, Svelte, Solid og Lit deler «bundles», siden de gjør det samme med\nstilarkene, attributtnavnene og registreringen.\n",
             names.join(", ")
@@ -130,5 +129,5 @@ pub fn run(arguments: &[String]) {
         format!(" via {chosen}")
     };
     error(&format!("Regelboka for {name}{via} ({reason})."));
-    write(book);
+    write(&crate::package::read(&format!("agent/{name}.md")));
 }

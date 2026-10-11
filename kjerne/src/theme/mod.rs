@@ -357,6 +357,9 @@ pub struct Theme {
 /// `input` er oppskriften: merkefargene per familie, og `typography` og
 /// `shape`. En familie som utelates, arver Fristils egen kulør.
 pub fn build_theme(input: &Json) -> Result<Theme, String> {
+    if !contract::loaded() {
+        return Err(contract::NOT_LOADED.into());
+    }
     let contract = contract();
     let given_families: Vec<(&str, String)> = contract
         .families

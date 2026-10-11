@@ -28,7 +28,7 @@ const pakke = fileURLToPath(new URL("../", import.meta.url))
 
 // Pakken for den kjørbare fila, som ikke har noen vert som setter den.
 // Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
-const MILJØ = {
+const ENVIRONMENT = {
   ...process.env,
   FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
 }
@@ -68,7 +68,7 @@ async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
 
   const start = (kommando: string[], med = argumenter) =>
     Bun.spawn([...kommando, ...med], {
-      env: MILJØ,
+      env: ENVIRONMENT,
       stdout: "pipe",
       stderr: "pipe",
       // `agent` leser package.json i arbeidsmappa. Uten dette ville hver
@@ -839,7 +839,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Fra standard inn, slik en test i en app sender HTML-en serveren lager
   const prosess = Bun.spawn([...KOMMANDO, "sjekk"], {
-    env: MILJØ,
+    env: ENVIRONMENT,
     stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
     stdout: "pipe",
     stderr: "pipe",
@@ -873,7 +873,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
   // test som glemte å sende noe skal ikke melde grønt.
   const tom = Bun.spawn([...KOMMANDO, "sjekk"], {
-    env: MILJØ,
+    env: ENVIRONMENT,
     stdin: new Blob([""]),
     stdout: "pipe",
     stderr: "pipe",
@@ -902,7 +902,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
   krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
   const treg = Bun.spawn([...KOMMANDO, "sjekk"], {
-    env: MILJØ,
+    env: ENVIRONMENT,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
@@ -1042,7 +1042,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
     for (const [nummer, blokk] of blokker.entries()) {
       const prøve = Bun.spawn([...KOMMANDO, "sjekk"], {
-        env: MILJØ,
+        env: ENVIRONMENT,
         stdin: new Blob([blokk[1]]),
         stdout: "pipe",
         stderr: "pipe",

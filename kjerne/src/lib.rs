@@ -225,8 +225,7 @@ fn refuse(error: &str) -> u32 {
 
 const NO_MANIFEST: &str =
     "Kjernen har ikke fått noe manifest. Gi den manifest.json fra pakken med load_manifest_raw først.";
-const NO_CONTRACT: &str =
-    "Kjernen har ikke fått noen fargekontrakt. Gi den fargekontrakt.json fra pakken med load_contract_raw først.";
+const NO_CONTRACT: &str = theme::contract::NOT_LOADED;
 
 /// # Safety
 /// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.

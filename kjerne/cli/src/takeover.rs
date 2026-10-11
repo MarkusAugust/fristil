@@ -30,8 +30,39 @@ use fristil_kjerne::json::{parse, Json};
 pub struct Component {
     pub category: String,
     pub name: String,
-    /// Filnavnet og innholdet, uten testene, sortert etter navn.
-    pub files: Vec<(String, String)>,
+    folder: std::path::PathBuf,
+}
+
+impl Component {
+    /// Filnavnet og innholdet, uten testene, sortert etter navn. Leses først
+    /// når komponenten er valgt.
+    pub fn files(&self) -> Vec<(String, String)> {
+        listed(&self.folder)
+            .into_iter()
+            .filter(|(file, path)| !file.contains(".test.") && path.is_file())
+            .map(|(file, path)| {
+                let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+                    fail(&format!(
+                        "Klarte ikke lese {}: {e}\n",
+                        shown(&path.to_string_lossy())
+                    ))
+                });
+                (file, text)
+            })
+            .collect()
+    }
+}
+
+/// Navnene og stiene i en mappe, sortert.
+fn listed(dir: &std::path::Path) -> Vec<(String, std::path::PathBuf)> {
+    let mut entries: Vec<(String, std::path::PathBuf)> = std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .map(|e| (e.file_name().to_string_lossy().into_owned(), e.path()))
+        .collect();
+    entries.sort();
+    entries
 }
 
 /// Kategoriene under `src/components/`, uten `å` i stien med vilje.
@@ -40,40 +71,16 @@ const CATEGORIES: [&str; 3] = ["css", "ramme", "frittstaende"];
 /// Komponentene i pakken, sortert etter navn.
 pub fn components() -> Vec<Component> {
     let root = crate::package::require().join("src/components");
-    let listed = |dir: &std::path::Path| -> Vec<(String, std::path::PathBuf)> {
-        let mut entries: Vec<(String, std::path::PathBuf)> = std::fs::read_dir(dir)
-            .into_iter()
-            .flatten()
-            .flatten()
-            .map(|e| (e.file_name().to_string_lossy().into_owned(), e.path()))
-            .collect();
-        entries.sort();
-        entries
-    };
     let mut out = Vec::new();
     for category in CATEGORIES {
         for (name, folder) in listed(&root.join(category)) {
-            if !folder.is_dir() {
-                continue;
+            if folder.is_dir() {
+                out.push(Component {
+                    category: category.into(),
+                    name,
+                    folder,
+                });
             }
-            let files: Vec<(String, String)> = listed(&folder)
-                .into_iter()
-                .filter(|(file, path)| !file.contains(".test.") && path.is_file())
-                .map(|(file, path)| {
-                    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
-                        fail(&format!(
-                            "Klarte ikke lese {}: {e}\n",
-                            shown(&path.to_string_lossy())
-                        ))
-                    });
-                    (file, text)
-                })
-                .collect();
-            out.push(Component {
-                category: category.into(),
-                name,
-                files,
-            });
         }
     }
     out.sort_by(|a, b| a.name.cmp(&b.name));
@@ -495,11 +502,11 @@ pub fn run(arguments: &[String]) {
 
     let folder = format!("src/components/{}/{}", component.category, component.name);
     let files: Vec<SourceFile> = component
-        .files
-        .iter()
+        .files()
+        .into_iter()
         .map(|(file, content)| SourceFile {
             path: format!("{folder}/{file}"),
-            content: content.clone(),
+            content,
         })
         .collect();
     let plan = plan_takeover(&files, &entries);
@@ -751,19 +758,12 @@ mod tests {
         let components = components();
         assert!(components.len() > 40);
         for component in &components {
-            assert!(
-                !component.files.is_empty(),
-                "{} har ingen filer",
-                component.name
-            );
-            assert!(component.files.iter().all(|(f, _)| !f.contains(".test.")));
+            let files = component.files();
+            assert!(!files.is_empty(), "{} har ingen filer", component.name);
+            assert!(files.iter().all(|(f, _)| !f.contains(".test.")));
             let names = own_names(&manifest, &component.name);
-            let copy: String = component
-                .files
-                .iter()
-                .map(|(_, c)| rename(c, &names))
-                .collect();
-            let original: String = component.files.iter().map(|(_, c)| c.as_str()).collect();
+            let copy: String = files.iter().map(|(_, c)| rename(c, &names)).collect();
+            let original: String = files.iter().map(|(_, c)| c.as_str()).collect();
             assert!(
                 names.iter().any(|n| original.contains(n.as_str())),
                 "{} nevner ikke {names:?}",

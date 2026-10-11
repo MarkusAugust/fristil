@@ -13,8 +13,8 @@
 //! 2. `node_modules/@fristil/designsystem/manifest/manifest.json`, den
 //!    installerte versjonen av pakken;
 //!
-//! og så manifestet i pakken kommandolinja leser fra (se `package.rs`), som
-//! VS Code-utvidelsen gir med `FRISTIL_PACKAGE`. Finnes ingen av dem, sjekkes
+//! og så manifestet i pakken verten har gitt med `FRISTIL_PACKAGE`, som
+//! VS Code-utvidelsen gjør. Finnes ingen av dem, sjekkes
 //! ingenting, og serveren sier fra én gang. Fila leses på nytt når den
 //! endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
 //!
@@ -69,6 +69,10 @@ pub struct Server {
     reloaded: bool,
     /// Om serveren har sagt fra om at et dokument ikke har noe manifest.
     warned: bool,
+    /// Manifestet i pakken verten har gitt i `FRISTIL_PACKAGE`, lest én gang.
+    /// Ikke `node_modules` over arbeidsmappa: en pakke over rota av
+    /// arbeidsområdet er ikke prosjektets, og den ved rota er alt med.
+    package_manifest: Option<String>,
     /// Endringer sjekkes først når det ikke ligger flere meldinger i kø, se
     /// [`Server::flush`]. Av i testene, der hver melding sjekkes med en gang.
     deferred: bool,
@@ -235,6 +239,11 @@ impl Server {
             outgoing: Vec::new(),
             reloaded: false,
             warned: false,
+            package_manifest: crate::package::given().map(|p| {
+                p.join("manifest/manifest.json")
+                    .to_string_lossy()
+                    .into_owned()
+            }),
             deferred: false,
             dirty: Vec::new(),
             can_watch: false,
@@ -294,15 +303,8 @@ impl Server {
                 candidates.push(format!("{}/{candidate}", root.trim_end_matches('/')));
             }
         }
-        // Til sist pakken kommandolinja selv leser fra, som utvidelsen peker på.
-        if let Some(package) = crate::package::dir() {
-            candidates.push(
-                package
-                    .join("manifest/manifest.json")
-                    .to_string_lossy()
-                    .into_owned(),
-            );
-        }
+        // Til sist pakken verten har gitt, som utvidelsen peker på.
+        candidates.extend(self.package_manifest.clone());
         let found = candidates.into_iter().find_map(|path| {
             let modified = std::fs::metadata(&path).ok()?.modified().ok();
             Some((path, modified))

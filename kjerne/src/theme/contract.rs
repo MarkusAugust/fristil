@@ -29,8 +29,7 @@
 //! nødvendig for å forstå siden, og WCAG 1.4.11 gjelder den ikke. Trenger
 //! kanten å bety noe, er `border` den riktige.
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use super::color::{contrast_ratio, oklch_to_rgb, parse_hex, rgb_to_oklch, to_hex, Oklch};
 use crate::json::{parse, Json};
@@ -94,33 +93,39 @@ pub struct Contract {
     pub promises: Vec<Promise>,
 }
 
-thread_local! {
-    static CONTRACT: RefCell<Option<Rc<Contract>>> = const { RefCell::new(None) };
-}
+/// Kontrakten verten har gitt, for hele prosessen og alle tråder.
+static CONTRACT: RwLock<Option<Arc<Contract>>> = RwLock::new(None);
+
+/// Svaret fra temaet når verten ikke har gitt noen kontrakt.
+pub const NOT_LOADED: &str =
+    "Kjernen har ikke fått noen fargekontrakt. Gi den fargekontrakt.json fra pakken med load_contract_raw først.";
 
 /// Leser kontrakten verten har gitt, og bruker den fra nå av.
 pub fn load(source: &str) -> Result<(), String> {
     let contract = read(source)?;
-    CONTRACT.with(|c| *c.borrow_mut() = Some(Rc::new(contract)));
+    *CONTRACT.write().unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(contract));
     Ok(())
 }
 
-/// Om verten har gitt en kontrakt. Hvert inngangspunkt spør først, så
-/// `contract()` aldri kalles uten.
+/// Om verten har gitt en kontrakt. `build_theme` og `inspect_theme` spør
+/// først, så `contract()` aldri kalles uten.
 pub fn loaded() -> bool {
-    CONTRACT.with(|c| c.borrow().is_some())
+    #[cfg(test)]
+    if CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_none() {
+        let _ = load(&crate::package_file("src/tokens/fargekontrakt.json"));
+    }
+    CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_some()
 }
 
 /// Kontrakten verten har gitt. I testene den i pakken.
-pub fn contract() -> Rc<Contract> {
+pub fn contract() -> Arc<Contract> {
     #[cfg(test)]
-    if !loaded() {
-        load(&crate::package_file("src/tokens/fargekontrakt.json"))
-            .expect("fargekontrakten i pakken skal kunne leses");
-    }
+    loaded();
     CONTRACT
-        .with(|c| c.borrow().clone())
-        .expect("fargekontrakten er ikke gitt")
+        .read()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone()
+        .expect(NOT_LOADED)
 }
 
 fn spec(value: &Json) -> Option<Spec> {
