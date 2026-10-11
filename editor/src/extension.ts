@@ -21,6 +21,7 @@
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
+import type { Manifest } from "@fristil/designsystem/diagnostics"
 import * as vscode from "vscode"
 import {
   LanguageClient,
@@ -28,36 +29,6 @@ import {
   type ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node"
-
-/**
- * Ordforrådet slik manifestet skriver det. Et flagg, som `data-interactive`
- * på `fs-card`, har ingen verdier.
- */
-type Vocabulary = {
-  elements: Record<
-    string,
-    {
-      link: string
-      attributes: Record<
-        string,
-        | { type: "flag" | "text" | "number" }
-        | { type: "values"; values: readonly string[] }
-      >
-    }
-  >
-  classes: Record<
-    string,
-    {
-      title: string
-      description: string
-      link: string
-      attributes: Record<
-        string,
-        { values?: readonly string[]; default?: string; flag?: true }
-      >
-    }
-  >
-}
 
 /** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
 const WINDOW = 4000
@@ -87,7 +58,7 @@ function tagEnd(text: string, from: number): number {
 export function activate(context: vscode.ExtensionContext) {
   // Ordforrådet er manifestet i pakken, det samme kjernen sjekker mot. Bygget
   // legger det i `dist/manifest/`, der språkserveren også leser det.
-  const { classes, elements }: Vocabulary = JSON.parse(
+  const { classes, elements }: Manifest = JSON.parse(
     readFileSync(
       join(context.extensionPath, "dist/manifest/manifest.json"),
       "utf8",

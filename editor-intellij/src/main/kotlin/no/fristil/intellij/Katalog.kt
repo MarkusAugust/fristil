@@ -1,6 +1,6 @@
 package no.fristil.intellij
 
-import com.google.gson.JsonParser
+import no.fristil.Fristil
 
 /**
  * En klasse fra Fristil, slik editoren viser den.
@@ -20,21 +20,13 @@ data class Klasse(
 /**
  * Klassene Fristil sender ut.
  *
- * Lista leses fra manifestet i Kotlin-pakken, `no/fristil/manifest.json` i
- * jar-en, det samme kjernen sjekker mot. Pluginen har derfor ingen egen
- * utgave som kan komme ut av takt med diagnostikken eller med
- * VS Code-utvidelsen. Gson følger med IntelliJ-plattformen.
+ * Lista er `Fristil.classes` i Kotlin-pakken, lest fra manifestet det samme
+ * kjernen sjekker mot. Pluginen har derfor ingen egen utgave som kan komme ut
+ * av takt med diagnostikken eller med VS Code-utvidelsen.
  */
 object Katalog {
     val klasser: List<Klasse> by lazy {
-        val tekst =
-            Katalog::class.java.getResourceAsStream("/no/fristil/manifest.json")?.use {
-                it.readBytes().toString(Charsets.UTF_8)
-            } ?: error("manifest.json mangler i Kotlin-pakken")
-        JsonParser.parseString(tekst).asJsonObject.getAsJsonObject("classes").entrySet().map { (navn, verdi) ->
-            val klasse = verdi.asJsonObject
-            Klasse(navn, klasse["title"].asString, klasse["description"].asString, klasse["link"].asString)
-        }
+        Fristil.classes.map { Klasse(it.name, it.title, it.description, it.link) }
     }
 
     private val etterNavn: Map<String, Klasse> by lazy {
