@@ -10,7 +10,8 @@
  * - åpner filsystemet for modulen, så både relative og absolutte stier virker;
  * - henter adressene `fristil sjekk` får, siden WASI ikke har nettverk, og
  *   gir siden til modulen som en fil (se `kjerne/cli/src/fetch.rs`);
- * - sier fra når standard inn er en terminal, som WASI ikke kan se.
+ * - sier fra når standard inn er en terminal, som WASI ikke kan se;
+ * - gir modulen pakkens filer, som ligger i jar-en (se `packageDir`).
  */
 package no.fristil.cli
 
@@ -26,6 +27,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -94,6 +96,31 @@ private class Flushing(private val out: OutputStream) : OutputStream() {
 
 /** Kommandolinja, kjørt i denne prosessen. */
 object CommandLine {
+    /*
+     * Pakken kommandolinja leser fra: manifestet, fargekontrakten,
+     * regelbøkene og komponentene. Modulen bærer ingen av dem, og jar-en har
+     * dem med under `fristil-pakke/`. WASI leser filer og ikke ressurser, så
+     * i en jar pakkes de ut én gang per prosess. Fra en mappe, som i testene,
+     * brukes mappa som den er.
+     */
+    private val packageDir: Path by lazy {
+        val uri = CommandLine::class.java.getResource("/fristil-pakke/manifest/manifest.json")?.toURI()
+            ?: error("fristil-pakke mangler i jar-en")
+        if (uri.scheme != "jar") return@lazy Path.of(uri).parent.parent
+        val target = Files.createTempDirectory("fristil-pakke-")
+        Runtime.getRuntime().addShutdownHook(Thread { target.toFile().deleteRecursively() })
+        FileSystems.newFileSystem(uri, emptyMap<String, Any>()).use { jar ->
+            val root = jar.getPath("/fristil-pakke")
+            Files.walk(root).use { paths ->
+                for (source in paths) {
+                    val copy = target.resolve(root.relativize(source).toString())
+                    if (Files.isDirectory(source)) Files.createDirectories(copy) else Files.copy(source, copy)
+                }
+            }
+        }
+        target
+    }
+
     /**
      * Kjører én kommando, som `listOf("sjekk", "skjema.html")`, og gir
      * feilkoden. Relative stier leses fra [workingDirectory]. [terminal] sier
@@ -132,6 +159,7 @@ object CommandLine {
                     .withStderr(err)
                     .withArguments(listOf("fristil") + moduleArgs)
                     .withEnvironment("FRISTIL_ARBEIDSMAPPE", forWasi(workingDirectory.absolutePath))
+                    .withEnvironment("FRISTIL_PACKAGE", forWasi(packageDir.toString()))
                     .apply {
                         if (terminal) withEnvironment("FRISTIL_TERMINAL", "1")
                         // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.

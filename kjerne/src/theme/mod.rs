@@ -357,7 +357,8 @@ pub struct Theme {
 /// `input` er oppskriften: merkefargene per familie, og `typography` og
 /// `shape`. En familie som utelates, arver Fristils egen kulør.
 pub fn build_theme(input: &Json) -> Result<Theme, String> {
-    let given_families: Vec<(&str, String)> = contract()
+    let contract = contract();
+    let given_families: Vec<(&str, String)> = contract
         .families
         .iter()
         .filter_map(|name| match input.get(name) {
@@ -387,7 +388,7 @@ pub fn build_theme(input: &Json) -> Result<Theme, String> {
         });
     }
 
-    let mut brands = contract().brands.clone();
+    let mut brands = contract.brands.clone();
     for (name, value) in given_families {
         if let Some(entry) = brands.iter_mut().find(|(n, _)| n == name) {
             entry.1 = value;

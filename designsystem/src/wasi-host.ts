@@ -25,6 +25,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isatty } from "node:tty"
+import { fileURLToPath } from "node:url"
 
 const windows = process.platform === "win32"
 
@@ -50,11 +51,14 @@ function toModule(part: string): string {
 
 /**
  * Kjører én kommando, som `["sjekk", "skjema.html"]`, og gir feilkoden.
- * `module` er stien til `fristil.wasm`.
+ * `module` er stien til `fristil.wasm`, og `packageDir` mappa med pakkens
+ * filer: manifestet, fargekontrakten, regelbøkene og komponentene.
+ * Kommandolinja bærer ingen av dem, og får mappa som `FRISTIL_PACKAGE`.
  */
 export async function runCommandLine(
   module: string | URL,
   args: string[],
+  packageDir: string | URL,
 ): Promise<number> {
   /*
    * Hele filsystemet åpnes, og modulen får vite hvor arbeidsmappa er og går dit
@@ -120,6 +124,9 @@ export async function runCommandLine(
       args: ["fristil", ...moduleArgs],
       env: {
         FRISTIL_ARBEIDSMAPPE: forWasi(process.cwd()),
+        FRISTIL_PACKAGE: forWasi(
+          packageDir instanceof URL ? fileURLToPath(packageDir) : packageDir,
+        ),
         // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
         ...(windows ? { FRISTIL_WINDOWS: "1" } : {}),
         // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter

@@ -31,6 +31,13 @@ import { classesData, diagnosticsData, snippets } from "./generate"
 const all: Elements = diagnosticsData()
 const classes: Classes = classesData()
 const core = loadCore(readFileSync(MODUL))
+// Kjernen bærer ingen data, og får pakkens manifest som hver vert gir den.
+core.loadManifest(
+  readFileSync(
+    new URL("../../designsystem/manifest/manifest.json", import.meta.url),
+    "utf8",
+  ),
+)
 const findings: string[] = []
 
 type Case = {

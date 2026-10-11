@@ -16,6 +16,18 @@ import { join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 const pakke = fileURLToPath(new URL("..", import.meta.url))
+
+/*
+ * Den kjørbare fila fra `cargo install` bærer ingen data, og finner pakken i
+ * `FRISTIL_PACKAGE` eller i `node_modules`. Her er skriptet verten, og pakken
+ * er den i repoet. npm-verten og jar-en gir modulen variabelen selv, og arver
+ * den ikke. Miljøet gis hver prosess eksplisitt: `Bun.spawn` arver ikke en
+ * variabel som er satt i `process.env` underveis.
+ */
+const MILJØ = {
+  ...process.env,
+  FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
+}
 const KOMMANDO: string[] = process.env.FRISTIL_CLI
   ? process.env.FRISTIL_CLI.startsWith("[")
     ? JSON.parse(process.env.FRISTIL_CLI)
@@ -38,6 +50,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 /** Én økt med serveren: send meldinger, og vent på det den svarer. */
 async function økt(arbeidsmappe: string) {
   const prosess = Bun.spawn([...KOMMANDO, "lsp"], {
+    env: MILJØ,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",

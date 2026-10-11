@@ -132,15 +132,25 @@ object Fristil {
     /** Hvor mange ledige instanser som er beholdt. For testene. */
     internal fun idleCores(): Int = idleCount.get()
 
-    private fun diagnose(entry: String, html: String, manifest: String?): List<Finding> =
-        (
-            Json.parse(
-                withCore {
-                    it.use(manifest)
-                    it.call(entry, html)
-                },
-            ) as List<*>
-        ).map { finding(it as Map<*, *>) }
+    private fun diagnose(entry: String, html: String, manifest: String?): List<Finding> {
+        val (status, answer) =
+            withCore {
+                it.use(manifest)
+                it.callWithStatus(entry, html)
+            }
+        if (status != 0L) throw IllegalStateException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
+    }
+
+    /**
+     * Manifestet i pakken, som ligger i jar-en. Kjernen bærer ingen data, så
+     * det er dette sjekken går mot når `manifest` ikke er gitt.
+     */
+    internal val PACKAGE_MANIFEST: String by lazy {
+        Fristil::class.java.getResourceAsStream("/no/fristil/manifest.json")?.use {
+            it.readBytes().toString(Charsets.UTF_8)
+        } ?: error("manifest.json mangler i jar-en")
+    }
 
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
@@ -183,34 +193,27 @@ internal class Core {
     private val resultLen: ExportFunction = instance.export("result_len")
 
     /*
-     * Manifestet instansen sjekker mot nå, `null` for det innebygde. En
+     * Manifestet instansen sjekker mot nå, `null` før det første er gitt. En
      * instans lånes ut igjen etter kallet, så den husker hva som er lastet,
      * og det samme manifestet leses bare én gang per instans.
      */
     private var manifest: String? = null
 
-    /** Bytter til [manifest], eller tilbake til det innebygde med `null`. */
+    /** Gir instansen [manifest], eller manifestet i pakken med `null`. */
     fun use(manifest: String?) {
-        if (manifest === this.manifest || manifest == this.manifest) return
-        if (manifest == null) {
-            instance.export("reset_manifest").apply()
-        } else {
-            val (status, answer) = callWithStatus("load_manifest_raw", manifest)
-            if (status != 0L) {
-                // Kjernen beholder det forrige ved en feil, men det er tryggest
-                // å vite hva som gjelder: det innebygde.
-                instance.export("reset_manifest").apply()
-                this.manifest = null
-                throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
-            }
+        val wanted = manifest ?: Fristil.PACKAGE_MANIFEST
+        if (wanted === this.manifest || wanted == this.manifest) return
+        val (status, answer) = callWithStatus("load_manifest_raw", wanted)
+        if (status != 0L) {
+            // Kjernen beholder det forrige ved en feil. Neste kall gir det
+            // ønskede på nytt, framfor å stole på hva som ligger der.
+            this.manifest = null
+            throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         }
-        this.manifest = manifest
+        this.manifest = wanted
     }
 
-    /** Kaller en av funksjonene som tar en tekst, og gir svaret som tekst. */
-    fun call(entry: String, text: String): String = callWithStatus(entry, text).second
-
-    /** Som [call], med tallet funksjonen gir tilbake: 0 er i orden. */
+    /** Kaller en av funksjonene som tar en tekst, og gir tallet den gir tilbake, der 0 er i orden, og svaret. */
     fun callWithStatus(entry: String, text: String): Pair<Long, String> {
         val bytes = text.toByteArray(Charsets.UTF_8)
         val pointer = alloc.apply(bytes.size.toLong())[0]

@@ -24,13 +24,16 @@ Den samme koden kjører på to måter:
   ikke nettverk, så der henter verten siden og gir den til modulen med
   `--hentet=<fil>`. Se `src/fetch.rs`.
 
-Regelbøkene for `agent`, manifestet sjekken leser og kildekoden til
-komponentene for `overta` er bygget inn (se `build.rs`), så programmet svarer
-for den versjonen av Fristil det er bygget fra.
+Programmet bærer ingen data. Manifestet, fargekontrakten, regelbøkene for
+`agent` og kildekoden til komponentene for `overta` leses fra
+`@fristil/designsystem`: fra mappa `FRISTIL_PACKAGE` peker på, som npm-pakken,
+jar-en og VS Code-utvidelsen setter selv, eller fra `node_modules` i
+arbeidsmappa eller en mappe over den. Svaret gjelder altså versjonen prosjektet
+har installert. Finnes ingen pakke, sier programmet fra og stopper. Se
+`src/package.rs`.
 
 Installert fra repoet: `cargo install --git https://github.com/MarkusAugust/fristil fristil`.
-Pakken kan ikke gis ut på crates.io slik den er, siden den bygger inn filer
-utenfor sin egen mappe.
+Crate-en leser ingenting utenfor sin egen mappe når den bygges.
 
 ## At den svarer det samme
 

@@ -38,7 +38,7 @@ pub fn run(arguments: &[String]) {
 
     let texts = read_fragments(&manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
-    let json = match merged(&all) {
+    let json = match merged(&crate::package::manifest(), &all) {
         // Skjemaet er oppgitt med en sti ved siden av manifestet i pakken,
         // og den finnes ikke der denne fila skrives.
         Ok(Json::Object(entries)) => format!(

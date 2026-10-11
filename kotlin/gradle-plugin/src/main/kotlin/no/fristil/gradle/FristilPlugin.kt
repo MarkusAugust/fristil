@@ -190,7 +190,7 @@ abstract class FristilTheme : DefaultTask() {
  * Fila skrives bare når prosjektet har fragmenter. Språkserveren og
  * IntelliJ-pluginen foretrekker `build/fristil/manifest.json` framfor
  * manifestet i npm-pakken, så en fil uten fragmenter ville bare vært en kopi
- * av det innebygde, og den ble stående når pakken ble oppdatert. Fjernes det
+ * av pakkens, og den ble stående når pakken ble oppdatert. Fjernes det
  * siste fragmentet, slettes fila, ellers ville editoren fortsatt godtatt
  * klassene fra en komponent som ikke finnes lenger.
  */

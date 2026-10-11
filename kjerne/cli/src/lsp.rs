@@ -13,9 +13,10 @@
 //! 2. `node_modules/@fristil/designsystem/manifest/manifest.json`, den
 //!    installerte versjonen av pakken;
 //!
-//! og bruker det innebygde når ingen av dem finnes. Fila leses på nytt når
-//! den endres, så et nytt bygg eller en oppgradering når editoren uten
-//! omstart.
+//! og så manifestet i pakken kommandolinja leser fra (se `package.rs`), som
+//! VS Code-utvidelsen gir med `FRISTIL_PACKAGE`. Finnes ingen av dem, sjekkes
+//! ingenting, og serveren sier fra én gang. Fila leses på nytt når den
+//! endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
 //!
 //! Posisjonene er UTF-16, som LSP krever som standard og kjernen regner i.
 //! Dokumentene sendes hele ved hver endring: kjernen bruker et par
@@ -50,7 +51,7 @@ struct Document {
 struct Source {
     path: Option<String>,
     modified: Option<SystemTime>,
-    vocabulary: Rc<Vocabulary>,
+    vocabulary: Option<Rc<Vocabulary>>,
 }
 
 pub struct Server {
@@ -257,9 +258,9 @@ impl Server {
     ///
     /// Det letes fra mappa til dokumentet og oppover, slik Node finner en
     /// pakke, og så ved rota av arbeidsområdene. Før ble bare rota sett på,
-    /// så en side i `apps/web/` i et monorepo ble sjekket mot det innebygde
+    /// så en side i `apps/web/` i et monorepo ble sjekket mot et annet
     /// manifestet, enda `apps/web/node_modules` hadde pakken.
-    fn vocabulary(&mut self, uri: Option<&str>) -> Rc<Vocabulary> {
+    fn vocabulary(&mut self, uri: Option<&str>) -> Option<Rc<Vocabulary>> {
         let mut candidates: Vec<String> = self.preferred.iter().cloned().collect();
         if let Some(file) = uri.and_then(path_of) {
             // Ikke over rota av arbeidsområdet fila ligger i: en pakke i
@@ -290,6 +291,15 @@ impl Server {
                 candidates.push(format!("{}/{candidate}", root.trim_end_matches('/')));
             }
         }
+        // Til sist pakken kommandolinja selv leser fra, som utvidelsen peker på.
+        if let Some(package) = crate::package::dir() {
+            candidates.push(
+                package
+                    .join("manifest/manifest.json")
+                    .to_string_lossy()
+                    .into_owned(),
+            );
+        }
         let found = candidates.into_iter().find_map(|path| {
             let modified = std::fs::metadata(&path).ok()?.modified().ok();
             Some((path, modified))
@@ -301,32 +311,38 @@ impl Server {
         let known = self.sources.iter().position(|s| s.path == path);
         if let Some(index) = known {
             if self.sources[index].modified == modified {
-                return Rc::clone(&self.sources[index].vocabulary);
+                return self.sources[index].vocabulary.clone();
             }
         }
         // Et manifest som er nytt eller endret, gjelder alle åpne dokumenter
         // som finner det. Det første som leses, er ingen endring.
         self.reloaded = !self.sources.is_empty();
         let vocabulary = match &path {
-            None => manifest::builtin(),
+            None => {
+                self.message(
+                    2,
+                    "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet.",
+                );
+                None
+            }
             Some(file) => match std::fs::read(file)
                 .map_err(|e| e.to_string())
                 .and_then(|bytes| manifest::from_json(&String::from_utf8_lossy(&bytes)))
             {
-                Ok(vocabulary) => Rc::new(vocabulary),
+                Ok(vocabulary) => Some(Rc::new(vocabulary)),
                 Err(reason) => {
                     self.message(
                         2,
-                        &format!("Fristil kunne ikke lese {file}, og sjekker mot det innebygde manifestet: {reason}"),
+                        &format!("Fristil kunne ikke lese {file}, og sjekker ingenting før det kan leses: {reason}"),
                     );
-                    manifest::builtin()
+                    None
                 }
             },
         };
         let source = Source {
             path,
             modified,
-            vocabulary: Rc::clone(&vocabulary),
+            vocabulary: vocabulary.clone(),
         };
         match known {
             Some(index) => self.sources[index] = source,
@@ -339,10 +355,10 @@ impl Server {
         let uri = self.documents[index].uri.clone();
         let vocabulary = self.vocabulary(Some(&uri));
         let document = &mut self.documents[index];
-        document.findings = if self.rendered {
-            diagnose_page(&document.text, &vocabulary)
-        } else {
-            diagnose_markup(&document.text, &vocabulary)
+        document.findings = match vocabulary {
+            None => Vec::new(),
+            Some(v) if self.rendered => diagnose_page(&document.text, &v),
+            Some(v) => diagnose_markup(&document.text, &v),
         };
         let lines = Lines::new(&document.text);
         let diagnostics = Json::Array(
@@ -443,7 +459,10 @@ impl Server {
                 .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
-        let version = self.vocabulary(None).version.clone();
+        let version = self.vocabulary(None).map_or_else(
+            || env!("CARGO_PKG_VERSION").to_string(),
+            |v| v.version.clone(),
+        );
         object(vec![
             (
                 "capabilities",
@@ -978,7 +997,9 @@ mod tests {
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
             folder.join("manifest.json"),
-            manifest::merged(&[fragment]).unwrap().to_pretty(),
+            manifest::merged(&crate::package::manifest(), &[fragment])
+                .unwrap()
+                .to_pretty(),
         )
         .unwrap();
         let mut server = Server::new();
@@ -1025,7 +1046,9 @@ mod tests {
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
             folder.join("manifest.json"),
-            manifest::merged(&[fragment]).unwrap().to_pretty(),
+            manifest::merged(&crate::package::manifest(), &[fragment])
+                .unwrap()
+                .to_pretty(),
         )
         .unwrap();
         let mut server = Server::new();
@@ -1151,7 +1174,9 @@ mod tests {
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
             root.join("build/fristil/manifest.json"),
-            manifest::merged(&[fragment]).unwrap().to_pretty(),
+            manifest::merged(&crate::package::manifest(), &[fragment])
+                .unwrap()
+                .to_pretty(),
         )
         .unwrap();
         server.handle(&notification(

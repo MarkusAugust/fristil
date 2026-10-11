@@ -19,9 +19,9 @@ import java.util.concurrent.ConcurrentHashMap
  * skriver når prosjektet har overtatt komponenter, så manifestet i
  * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
  * hjemmemappa er ikke prosjektets. En fil utenfor prosjektet, som en
- * kladdefil, sjekkes derfor mot det innebygde. Finnes ingen av dem, gjelder manifestet
- * som er bygget inn i kjernen. Språkserveren har i tillegg et valg for et
- * bestemt manifest, som pluginen ikke har.
+ * kladdefil, sjekkes derfor mot manifestet i Kotlin-pakken. Finnes ingen av
+ * dem, gjelder det samme. Språkserveren har i tillegg et valg for et bestemt
+ * manifest, som pluginen ikke har.
  *
  * For et injisert fragment letes det fra fila strengen står i.
  */
@@ -42,7 +42,7 @@ internal object ProjectManifest {
     /** Manifestene kjernen ikke kunne lese, så det sies fra én gang. */
     private val rejected = ConcurrentHashMap.newKeySet<String>()
 
-    /** Teksten i manifestet for [file], eller `null` for det innebygde. */
+    /** Teksten i manifestet for [file], eller `null` for manifestet i Kotlin-pakken. */
     fun forFile(file: PsiFile): String? {
         val project = file.project
         val host = InjectedLanguageManager.getInstance(project).getTopLevelFile(file) ?: file
@@ -76,7 +76,7 @@ internal object ProjectManifest {
             try {
                 VfsUtilCore.loadText(file)
             } catch (unreadable: java.io.IOException) {
-                log.warn("Fristil kunne ikke lese ${file.presentableUrl}, og sjekker mot det innebygde manifestet.", unreadable)
+                log.warn("Fristil kunne ikke lese ${file.presentableUrl}, og sjekker mot manifestet i Kotlin-pakken.", unreadable)
                 return null
             }
         read[file.url] = Read(stamp, text)
@@ -88,7 +88,7 @@ internal object ProjectManifest {
     fun rejectedBy(text: String, reason: String) {
         val url = read.entries.firstOrNull { it.value.text === text }?.key ?: return
         if (rejected.add(url)) {
-            log.warn("Fristil kunne ikke bruke $url, og sjekker mot det innebygde manifestet: $reason")
+            log.warn("Fristil kunne ikke bruke $url, og sjekker mot manifestet i Kotlin-pakken: $reason")
         }
     }
 }

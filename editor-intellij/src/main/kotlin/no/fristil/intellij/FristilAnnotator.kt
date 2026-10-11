@@ -56,9 +56,9 @@ class FristilAnnotator : Annotator {
     }
 
     /**
-     * Mot prosjektets manifest når det har et, ellers det innebygde. Et
-     * manifest kjernen ikke kan lese, gir en advarsel i loggen og sjekk mot
-     * det innebygde, som i språkserveren.
+     * Mot prosjektets manifest når det har et, ellers manifestet i
+     * Kotlin-pakken. Et manifest kjernen ikke kan lese, gir en advarsel i
+     * loggen og sjekk mot pakkens.
      */
     private fun diagnose(file: PsiFile, text: String): List<Finding> {
         val manifest = ProjectManifest.forFile(file) ?: return Fristil.diagnoseMarkup(text)

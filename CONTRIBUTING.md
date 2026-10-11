@@ -153,7 +153,9 @@ uten kode, og på `dist/extension.js`, som kobler sjekken til editoren med
 streker, lyspærer, fullføring og hover. Sjekken er Rust-kjernen i `kjerne/`,
 bygget til WebAssembly. Den samme modulen ligger i pakken, som
 `@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen har en
-kopi i `dist/`. Kjernen sjekker mot manifestet, som skrives fra
+kopi i `dist/`. Kjernen bærer ingen data: hver vert gir den manifestet fra
+pakken, og utvidelsen har en kopi av det i `dist/manifest/` som reserve.
+Manifestet skrives fra
 `designsystem/src/vocabulary/elements.ts` og `classes.ts`. `classes.ts` leses
 fra pakkens CSS og fra byggefunksjonene i `fs`, kalt én gang per variant, så
 en ny variant er med når `fs` gir den. Filene genereres fra

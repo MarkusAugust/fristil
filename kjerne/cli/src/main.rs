@@ -16,6 +16,7 @@ mod fetch;
 mod lsp;
 mod manifest;
 mod output;
+mod package;
 mod takeover;
 mod theme;
 
@@ -40,8 +41,8 @@ pub const HELP: &str = r#"fristil <kommando>
 
   agent                Skriver regelboka for kodeagenter til utdata. Ingen
     --rammeverk=<navn> fil skrives noe sted. Uten flagget leses miljøet av
-                       package.json. Navn: html, maler, bundles, react, astro,
-                       datastar. Vue, Svelte, Solid og Lit deler «bundles»
+                       package.json. Navn: astro, bundles, datastar, html,
+                       maler, react. Vue, Svelte, Solid og Lit deler «bundles»
 
   overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet,
                        med nytt navn (app-…), så den er din å endre
@@ -50,7 +51,7 @@ pub const HELP: &str = r#"fristil <kommando>
 
   lsp                  Språkserveren for editorer, over standard inn og ut.
                        Leser manifestet i build/fristil/ eller i
-                       node_modules, med det innebygde som reserve
+                       node_modules, med pakkens eget som reserve
 
   manifest             Skriver manifestet sjekken bruker, med fragmentene
     --manifest=<fil>   fra fristil overta lagt til
@@ -78,6 +79,9 @@ pub const HELP: &str = r#"fristil <kommando>
 
 Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
 fra en JSON-fil: fristil tema fristil.tema.json
+
+Manifestet, fargekontrakten, regelbøkene og komponentene leses fra
+@fristil/designsystem i node_modules, eller fra mappa FRISTIL_PACKAGE peker på.
 
 Eksempler:
   npx @fristil/designsystem sjekk maler/*.html

@@ -75,7 +75,7 @@ mod tests {
     use crate::{diagnose_page, manifest, text::utf16};
 
     fn rules(html: &str) -> Vec<&'static str> {
-        diagnose_page(&utf16(html), &manifest::builtin())
+        diagnose_page(&utf16(html), &manifest::for_tests())
             .iter()
             .map(|f| f.rule)
             .collect()

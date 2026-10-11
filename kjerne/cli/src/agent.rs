@@ -4,36 +4,33 @@
 //! `.github/copilot-instructions.md` er konsumentens egne filer. Vil noen ha
 //! regelboka på disk, er det ett rør unna, og da er det deres beslutning.
 //!
-//! Regelbøkene er bygget inn, så de følger versjonen av programmet. Valget av
-//! miljø skrives til feilkanalen, så utdata kan pipes rent.
+//! Regelbøkene leses fra pakken (se `package.rs`), så de følger versjonen
+//! prosjektet har installert. Valget av miljø skrives til feilkanalen, så
+//! utdata kan pipes rent.
 
 use crate::output::{error, fail, write};
 use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
-const RULEBOOKS: [(&str, &str); 6] = [
-    ("html", include_str!("../../../designsystem/agent/html.md")),
-    (
-        "maler",
-        include_str!("../../../designsystem/agent/maler.md"),
-    ),
-    (
-        "bundles",
-        include_str!("../../../designsystem/agent/bundles.md"),
-    ),
-    (
-        "react",
-        include_str!("../../../designsystem/agent/react.md"),
-    ),
-    (
-        "astro",
-        include_str!("../../../designsystem/agent/astro.md"),
-    ),
-    (
-        "datastar",
-        include_str!("../../../designsystem/agent/datastar.md"),
-    ),
-];
+/// Regelbøkene i pakken, som navn og tekst, sortert etter navn.
+fn rulebooks() -> Vec<(String, String)> {
+    let dir = crate::package::require();
+    let mut books: Vec<(String, String)> = std::fs::read_dir(dir.join("agent"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter_map(|entry| {
+            let file = entry.file_name().to_string_lossy().into_owned();
+            let name = file.strip_suffix(".md")?.to_string();
+            Some((name, std::fs::read_to_string(entry.path()).ok()?))
+        })
+        .collect();
+    books.sort();
+    if books.is_empty() {
+        fail("Fant ingen regelbøker i agent/ i pakken.\n");
+    }
+    books
+}
 
 /// Rammeverk som deler regelbok: Vue, Svelte, Solid og Lit gjør det samme med
 /// stilarkene, attributtnavnene og registreringen.
@@ -112,13 +109,14 @@ pub fn run(arguments: &[String]) {
         Some(requested) => (requested.to_string(), "oppgitt med --rammeverk".to_string()),
         None => detect_framework(),
     };
-    let name = if RULEBOOKS.iter().any(|(n, _)| *n == chosen) {
+    let books = rulebooks();
+    let name = if books.iter().any(|(n, _)| *n == chosen) {
         Some(chosen.as_str())
     } else {
         ALIASES.iter().find(|(a, _)| *a == chosen).map(|(_, n)| *n)
     };
-    let Some((name, book)) = name.and_then(|n| RULEBOOKS.iter().find(|(r, _)| *r == n)) else {
-        let names: Vec<&str> = RULEBOOKS.iter().map(|(n, _)| *n).collect();
+    let Some((name, book)) = name.and_then(|n| books.iter().find(|(r, _)| r == n)) else {
+        let names: Vec<&str> = books.iter().map(|(n, _)| n.as_str()).collect();
         fail(&format!(
             "Kjenner ikke «{chosen}».\n\nVelg mellom: {}\n\nVue, Svelte, Solid og Lit deler «bundles», siden de gjør det samme med\nstilarkene, attributtnavnene og registreringen.\n",
             names.join(", ")

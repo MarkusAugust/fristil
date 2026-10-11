@@ -8,8 +8,9 @@
 //! konstruksjonen framfor av en sjekk i etterkant.
 //!
 //! Tallene står i `designsystem/src/tokens/fargekontrakt.json`, ikke her, så
-//! skriptene i TypeScript og kjernen leser de samme. Tre valg i dem som ikke
-//! er åpenbare:
+//! skriptene i TypeScript og kjernen leser de samme. Kjernen bærer ikke fila:
+//! verten gir den med `load_contract_raw`, som den gir manifestet. Tre valg
+//! i tallene som ikke er åpenbare:
 //!
 //! - `fill` styres av at `content` skal kunne leses oppå den, ikke av
 //!   avstanden til siden. Velges den etter siden alene, blir den for lys til å
@@ -28,7 +29,8 @@
 //! nødvendig for å forstå siden, og WCAG 1.4.11 gjelder den ikke. Trenger
 //! kanten å bety noe, er `border` den riktige.
 
-use std::sync::OnceLock;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use super::color::{contrast_ratio, oklch_to_rgb, parse_hex, rgb_to_oklch, to_hex, Oklch};
 use crate::json::{parse, Json};
@@ -92,12 +94,39 @@ pub struct Contract {
     pub promises: Vec<Promise>,
 }
 
-const SOURCE: &str = include_str!("../../../designsystem/src/tokens/fargekontrakt.json");
+thread_local! {
+    static CONTRACT: RefCell<Option<Rc<Contract>>> = const { RefCell::new(None) };
+}
 
-/// Kontrakten, lest én gang.
-pub fn contract() -> &'static Contract {
-    static CONTRACT: OnceLock<Contract> = OnceLock::new();
-    CONTRACT.get_or_init(|| read(SOURCE).expect("fargekontrakt.json skal alltid kunne leses"))
+/// Leser kontrakten verten har gitt, og bruker den fra nå av.
+pub fn load(source: &str) -> Result<(), String> {
+    let contract = read(source)?;
+    CONTRACT.with(|c| *c.borrow_mut() = Some(Rc::new(contract)));
+    Ok(())
+}
+
+/// Om verten har gitt en kontrakt. Hvert inngangspunkt spør først, så
+/// `contract()` aldri kalles uten.
+pub fn loaded() -> bool {
+    CONTRACT.with(|c| c.borrow().is_some())
+}
+
+/// Kontrakten verten har gitt.
+///
+/// I testene leses den fra pakken, fra `FRISTIL_PACKAGE` eller
+/// `designsystem/` ved siden av, når ingen er gitt.
+pub fn contract() -> Rc<Contract> {
+    #[cfg(test)]
+    if !loaded() {
+        let package = std::env::var("FRISTIL_PACKAGE")
+            .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem").into());
+        let text = std::fs::read_to_string(format!("{package}/src/tokens/fargekontrakt.json"))
+            .expect("testene trenger fargekontrakten i pakken");
+        load(&text).expect("fargekontrakten i pakken skal kunne leses");
+    }
+    CONTRACT
+        .with(|c| c.borrow().clone())
+        .expect("fargekontrakten er ikke gitt")
 }
 
 fn spec(value: &Json) -> Option<Spec> {

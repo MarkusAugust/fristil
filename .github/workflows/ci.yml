@@ -190,7 +190,7 @@ jobs:
       # dist/, som npx kjører.
       - name: Bygg kjernen og pakken
         run: |
-          bun kjerne/scripts/bygg.ts
+          (cd designsystem && bun run kjerne)
           (cd designsystem && bun run bygg:nettleser)
           (cd editor && bun run build)
 

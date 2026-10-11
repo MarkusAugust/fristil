@@ -48,7 +48,7 @@ pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
             ));
         };
         let text = String::from_utf8_lossy(&bytes).into_owned();
-        if let Err(reason) = manifest::with_fragments(&[&text]) {
+        if let Err(reason) = manifest::with_fragments(&crate::package::manifest(), &[&text]) {
             fail(&format!(
                 "«{}» kan ikke leses som et manifest: {reason}\n",
                 shown(path)
@@ -59,14 +59,12 @@ pub fn read_fragments(manifests: &[&str]) -> Vec<String> {
     texts
 }
 
-/// Ordforrådet: Fristils eget, med fragmentene lagt til.
+/// Ordforrådet: manifestet i pakken, med fragmentene lagt til.
 fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
-    if manifests.is_empty() {
-        return manifest::current();
-    }
+    let base = crate::package::manifest();
     let texts = read_fragments(manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
-    match manifest::with_fragments(&all) {
+    match manifest::with_fragments(&base, &all) {
         Ok(vocabulary) => std::rc::Rc::new(vocabulary),
         Err(reason) => fail(&format!("Manifestene kan ikke leses sammen: {reason}\n")),
     }

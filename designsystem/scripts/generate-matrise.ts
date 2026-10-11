@@ -10,27 +10,28 @@
  * så en ny familie eller rolle i kontrakten blir med av seg selv.
  *
  * Kjør med: bun scripts/generate-matrise.ts, eller som en del av `generate`.
- * Krever kjernen, bygget med `bun run kjerne`.
+ * Krever kjernen, bygget med `bun run kjerne`. Kjernen bærer ingen data, så
+ * den får fargekontrakten her, og trenger ikke manifestet som skrives etter.
  */
 
 import { readFileSync, writeFileSync } from "node:fs"
 import { loadCore } from "../src/diagnostics/core.js"
 
+const kontraktTekst = readFileSync(
+  new URL("../src/tokens/fargekontrakt.json", import.meta.url),
+  "utf8",
+)
 const kontrakt: {
   families: string[]
   brands: Record<string, string>
   roles: Record<string, unknown>
   layers: Record<string, unknown>
   requirements: Record<string, number>
-} = JSON.parse(
-  readFileSync(
-    new URL("../src/tokens/fargekontrakt.json", import.meta.url),
-    "utf8",
-  ),
-)
+} = JSON.parse(kontraktTekst)
 const kjerne = loadCore(
   readFileSync(new URL("../kjerne/fristil-kjerne.wasm", import.meta.url)),
 )
+kjerne.loadContract(kontraktTekst)
 const { light, dark, violations } = kjerne.buildTheme(kontrakt.brands)
 
 if (violations.length > 0) {

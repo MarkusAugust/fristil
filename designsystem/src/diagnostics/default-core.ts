@@ -1,14 +1,19 @@
 /**
- * Kjernen fra pakken selv, lastet første gang den trengs.
+ * Kjernen fra pakken selv, lastet første gang den trengs, med pakkens eget
+ * manifest og fargekontrakt.
  *
  * Både sjekken (`@fristil/designsystem/diagnostics`) og temaet
  * (`@fristil/designsystem/tema` og `tema-sjekk`) bruker den samme instansen.
+ * Kjernen bærer ingen data, så det er denne fila som gir den dataene: de
+ * ligger i pakken ved siden av modulen.
  */
 
 import { type Core, loadCore } from "./core.js"
 
-/** Modulen i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
+/** Filene i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
 const MODULE = new URL("../../kjerne/fristil-kjerne.wasm", import.meta.url)
+const MANIFEST = new URL("../../manifest/manifest.json", import.meta.url)
+const CONTRACT = new URL("../../src/tokens/fargekontrakt.json", import.meta.url)
 
 let core: Core | undefined
 
@@ -42,6 +47,9 @@ export function defaultCore(): Core {
       `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run kjerne» i designsystem/, som krever Rust.`,
     )
   }
-  core = loadCore(bytes)
+  const loaded = loadCore(bytes)
+  loaded.loadManifest(fs.readFileSync(MANIFEST, "utf8"))
+  loaded.loadContract(fs.readFileSync(CONTRACT, "utf8"))
+  core = loaded
   return core
 }
