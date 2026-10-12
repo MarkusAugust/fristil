@@ -147,14 +147,11 @@ object Fristil {
     }
 
     /**
-     * Klassene i manifestet i pakken, i den rekkefølgen manifestet har dem:
-     * navnet, tittelen på komponenten, hva den er, og komponentsiden.
+     * Manifestet i pakken, det samme sjekken går mot: elementene med
+     * attributter, deler og hendelser, og klassene med attributtene og de
+     * lovlige verdiene. Et prosjekts eget manifest leses med [Manifest.parse].
      */
-    val classes: List<ManifestClass> by lazy {
-        @Suppress("UNCHECKED_CAST")
-        val classes = (Json.parse(PACKAGE_MANIFEST) as Map<String, Any?>)["classes"] as Map<String, Map<String, Any?>>
-        classes.map { (name, c) -> ManifestClass(name, c["title"] as String, c["description"] as String, c["link"] as String) }
-    }
+    val manifest: Manifest by lazy { Manifest.parse(PACKAGE_MANIFEST) }
 
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
@@ -247,12 +244,4 @@ data class Fix(
     val end: Int,
     val text: String,
     val preferred: Boolean? = null,
-)
-
-/** En klasse i manifestet, som `fs-button`, med komponenten den hører til. */
-data class ManifestClass(
-    val name: String,
-    val title: String,
-    val description: String,
-    val link: String,
 )

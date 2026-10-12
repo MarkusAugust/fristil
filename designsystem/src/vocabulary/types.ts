@@ -88,7 +88,12 @@ export type Manifest = {
     Omit<ClassInfo, "attributes"> & {
       attributes: Record<
         string,
-        { values?: readonly string[]; default?: string; flag?: true }
+        {
+          values?: readonly string[]
+          default?: string
+          flag?: true
+          description?: string
+        }
       >
     }
   >

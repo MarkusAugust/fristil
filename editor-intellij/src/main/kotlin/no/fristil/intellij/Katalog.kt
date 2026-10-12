@@ -20,13 +20,13 @@ data class Klasse(
 /**
  * Klassene Fristil sender ut.
  *
- * Lista er `Fristil.classes` i Kotlin-pakken, lest fra manifestet det samme
- * kjernen sjekker mot. Pluginen har derfor ingen egen utgave som kan komme ut
- * av takt med diagnostikken eller med VS Code-utvidelsen.
+ * Lista er klassene i `Fristil.manifest` i Kotlin-pakken, manifestet det
+ * samme kjernen sjekker mot. Pluginen har derfor ingen egen utgave som kan
+ * komme ut av takt med diagnostikken eller med VS Code-utvidelsen.
  */
 object Katalog {
     val klasser: List<Klasse> by lazy {
-        Fristil.classes.map { Klasse(it.name, it.title, it.description, it.link) }
+        Fristil.manifest.classes.values.map { Klasse(it.name, it.title, it.description, it.link) }
     }
 
     private val etterNavn: Map<String, Klasse> by lazy {
