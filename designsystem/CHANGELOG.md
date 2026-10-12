@@ -196,6 +196,9 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`fs.setAttributes` virker på en `<svg>`.** Klassen ble satt med
+  `className`, som er skrivebeskyttet på et svg-element, og kallet kastet
+  «Cannot set property className». Den settes nå med `setAttribute`.
 - **`<fs-field>` kobler bare sine egne deler.** Sto et felt inni et annet,
   som et søkefelt i et sprettoppvindu inni feltet, fant det ytre feltet det
   innerste feltets kontroll først og skrev `for`, `id` og

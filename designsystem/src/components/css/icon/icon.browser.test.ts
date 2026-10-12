@@ -1,7 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-
+import { fs } from "../../../fs"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -61,6 +61,23 @@ describe("fs-icon", () => {
       role: "img",
       "aria-label": "Advarsel",
     })
+  })
+
+  it("kan settes på en svg som står der fra før", () => {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    svg.setAttribute("class", "app-ikon")
+    document.body.append(svg)
+
+    fs.setAttributes(svg, fs.icon({ label: "Advarsel" }))
+    expect(svg.getAttribute("class")).toBe("fs-icon app-ikon")
+    expect(svg.getAttribute("role")).toBe("img")
+    expect(svg.getAttribute("aria-label")).toBe("Advarsel")
+
+    fs.setAttributes(svg, fs.icon())
+    expect(svg.getAttribute("aria-hidden")).toBe("true")
+    expect(svg.hasAttribute("role")).toBe(false)
+    expect(svg.hasAttribute("aria-label")).toBe(false)
+    svg.remove()
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

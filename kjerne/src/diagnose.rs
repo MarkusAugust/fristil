@@ -1218,7 +1218,7 @@ const INERT: &[&str] = &[
 /// `th:attr`, `@attributes`, `{title}`, `{...props}`. Lista over dem ble
 /// aldri ferdig, så regelen spør motsatt vei: er alt på taggen kjent HTML,
 /// kan den vite at navnet mangler.
-fn is_inert(a: &ReadAttribute) -> bool {
+fn is_inert(a: &ReadAttribute, own_data: &[&str]) -> bool {
     let name = lossy(&lowercase(&a.name));
     let plain_name = name
         .chars()
@@ -1230,10 +1230,11 @@ fn is_inert(a: &ReadAttribute) -> bool {
             || name == "title"
             || name.starts_with("aria-")
             || (name.starts_with("on") && name.len() > 2)
-            || (name.starts_with("data-")
-                && !name.starts_with("data-attr")
-                && !name.starts_with("data-bind")
-                && !name.starts_with("data-text")))
+            // Et `data-*` kan et hvilket som helst bibliotek fylle knappen
+            // fra, som `data-i18n`. Fristils egne, som `data-variant`, og
+            // `data-testid` gjør det ikke.
+            || name == "data-testid"
+            || own_data.contains(&name.as_str()))
 }
 
 /// Attributtene et barn kan ha uten å kunne få tekst fra noe annet.
@@ -1299,7 +1300,15 @@ fn only_icons(content: &[u16]) -> bool {
                     || has_text_value(&attributes, "aria-labelledby")
                     || has_text_value(&attributes, "title")
                     || (equals(&name, "img") && has_text_value(&attributes, "alt"));
+                let bound = attributes.iter().any(|a| {
+                    let n = lossy(&lowercase(&a.name));
+                    n.contains([':', '@', '[', '.', '#'])
+                        || ["v-", "x-", "ng-", "data-attr", "data-bind"]
+                            .iter()
+                            .any(|p| n.starts_with(p))
+                });
                 let filled_elsewhere = find_at(body, 0, "{").is_some()
+                    || (!in_svg && bound)
                     || (!in_svg
                         && !is_icon
                         && (written != name.as_slice()
@@ -1335,16 +1344,26 @@ fn only_icons(content: &[u16]) -> bool {
     icon
 }
 
-/// Om `at` står inni en `<label>` som ikke er lukket ennå.
-fn inside_label(source: &[u16], at: usize) -> bool {
-    let before = &source[..at];
-    let last = |pattern: &str| {
-        (0..before.len()).rev().find(|&k| {
-            starts_at_ci(before, k, pattern)
-                && before.get(k + pattern.len()).is_none_or(|&c| !is_word(c))
-        })
+/// Der hver `<label>` åpnes og lukkes på siden, i rekkefølge.
+///
+/// Leses én gang per side. Første utgave lette bakover fra hver knapp, og
+/// på en side uten `<label>` gikk hvert søk helt til starten.
+fn label_bounds(source: &[u16]) -> (Vec<usize>, Vec<usize>) {
+    let at = |pattern: &str| -> Vec<usize> {
+        (0..source.len())
+            .filter(|&k| {
+                starts_at_ci(source, k, pattern)
+                    && source.get(k + pattern.len()).is_none_or(|&c| !is_word(c))
+            })
+            .collect()
     };
-    match (last("<label"), last("</label")) {
+    (at("<label"), at("</label"))
+}
+
+/// Om `at` står inni en `<label>` som ikke er lukket ennå.
+fn inside_label((opens, closes): &(Vec<usize>, Vec<usize>), at: usize) -> bool {
+    let last = |v: &Vec<usize>| v.partition_point(|&k| k < at).checked_sub(1).map(|i| v[i]);
+    match (last(opens), last(closes)) {
         (Some(open), Some(close)) => open > close,
         (Some(_), None) => true,
         _ => false,
@@ -1352,9 +1371,16 @@ fn inside_label(source: &[u16], at: usize) -> bool {
 }
 
 /// En `<button>` eller `<a href>` med bare et ikon i, og ikke noe navn.
-fn check_icon_only(source: &[u16]) -> Vec<Finding> {
+fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
+    let mut bounds: Option<(Vec<usize>, Vec<usize>)> = None;
+    let own_data: Vec<&str> = vocabulary
+        .classes
+        .iter()
+        .flat_map(|c| c.attributes.iter().map(|(n, _)| n.as_str()))
+        .filter(|n| n.starts_with("data-"))
+        .collect();
     let mut i = 0;
     while i < source.len() {
         let Some(name_end) = tag_name_end(source, i) else {
@@ -1380,7 +1406,7 @@ fn check_icon_only(source: &[u16]) -> Vec<Finding> {
             || has_text_value(&attributes, "aria-label")
             || has_text_value(&attributes, "aria-labelledby")
             || has_text_value(&attributes, "title")
-            || !attributes.iter().all(is_inert)
+            || !attributes.iter().all(|a| is_inert(a, &own_data))
         {
             continue;
         }
@@ -1394,14 +1420,17 @@ fn check_icon_only(source: &[u16]) -> Vec<Finding> {
                 continue;
             }
         }
-        if inside_label(source, name_start - 1) {
-            continue;
-        }
         let Some(close) = closing_tag(source, end + 1, &name) else {
             continue;
         };
         let content = &source[end + 1..close];
         if is_templated_content(content) || !only_icons(content) {
+            continue;
+        }
+        if inside_label(
+            bounds.get_or_insert_with(|| label_bounds(source)),
+            name_start - 1,
+        ) {
             continue;
         }
         let kind = if name == "a" { "lenke" } else { "knapp" };
@@ -1582,7 +1611,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
             ));
         }
     }
-    findings.extend(check_icon_only(&source));
+    findings.extend(check_icon_only(&source, vocabulary));
     findings.sort_by_key(|f| f.start);
     findings
 }

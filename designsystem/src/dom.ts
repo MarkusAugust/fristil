@@ -128,9 +128,12 @@ export function setAttributes(
     const ownClasses = [...element.classList].filter(
       (klasse) => !IS_SYSTEM_CLASS.test(klasse),
     )
-    element.className = [...new Set([...classes, ...ownClasses])]
-      .filter(Boolean)
-      .join(" ")
+    // `setAttribute` og ikke `className`: på en `<svg>` er `className` et
+    // skrivebeskyttet `SVGAnimatedString`, og `fs.icon()` hører på en svg.
+    element.setAttribute(
+      "class",
+      [...new Set([...classes, ...ownClasses])].filter(Boolean).join(" "),
+    )
   }
 
   for (const name of removable) {

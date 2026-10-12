@@ -792,6 +792,7 @@ mod tests {
             format!(
                 r#"<button type="button" class="fs-button" data-variant="ghost" onclick="slett()">{svg}</button>"#
             ),
+            format!(r#"<button data-testid="slett">{svg}</button>"#),
         ] {
             assert_eq!(rules(&html), ["ikon-uten-navn"], "{html}");
         }
@@ -838,6 +839,9 @@ mod tests {
             format!(r#"<button>{svg}<span data-i18n="slett"></span></button>"#),
             format!(r#"<button>{svg}<span translate="slett"></span></button>"#),
             format!("<label>Slett <button>{svg}</button></label>"),
+            format!(r#"<button data-i18n="[aria-label]slett">{svg}</button>"#),
+            r#"<button><svg v-bind="ikon"></svg></button>"#.to_string(),
+            r#"<button><svg x-bind="ikon"></svg></button>"#.to_string(),
             r#"<button><svg><clipPath id="c"><rect /></clipPath><title>Slett</title></svg></button>"#.to_string(),
         ] {
             assert!(rules(&html).is_empty(), "{html}: {:?}", rules(&html));
