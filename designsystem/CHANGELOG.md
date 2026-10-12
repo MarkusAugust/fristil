@@ -111,6 +111,19 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`.fs-icon` og `fs.icon()`, for et ikon fra appens eget sett.** Klassen
+  går på en `<svg>` og gjør den like stor som teksten rundt. `fs.icon()` gir
+  `aria-hidden="true"`, og `fs.icon({ label })` gir `role="img"` og
+  `aria-label` for et ikon som betyr noe alene. Fristil sender ingen ikoner.
+  Stilarket er `@fristil/designsystem/icon.css`.
+- **Regelen `ikon-uten-navn`.** En `<button>` eller `<a href>` med bare et
+  ikon i seg og ikke noe navn er en feil i `fristil sjekk`, i editorene og
+  i `diagnoseMarkup`. Navnet kan komme fra tekst, også med `fs-sr-only`, fra
+  `aria-label`, `aria-labelledby` eller `title`, eller fra `alt` på et bilde.
+  Det som er skjult med `aria-hidden="true"` eller `hidden`, teller ikke.
+  Står det noe på knappen eller et barn som ikke er vanlig HTML, som
+  `:aria-label`, `v-bind`, `x-text` eller `{...props}`, kan navnet komme
+  derfra, og regelen tier.
 - **Typen `Manifest` fra `@fristil/designsystem/diagnostics`**, formen på
   `manifest.json` slik skjemaet beskriver den, for den som leser manifestet
   selv. Kotlin-pakken har det samme som `Fristil.manifest`, og leser et
@@ -183,6 +196,9 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`fs.setAttributes` virker på en `<svg>`.** Klassen ble satt med
+  `className`, som er skrivebeskyttet på et svg-element, og kallet kastet
+  «Cannot set property className». Den settes nå med `setAttribute`.
 - **`<fs-field>` kobler bare sine egne deler.** Sto et felt inni et annet,
   som et søkefelt i et sprettoppvindu inni feltet, fant det ytre feltet det
   innerste feltets kontroll først og skrev `for`, `id` og

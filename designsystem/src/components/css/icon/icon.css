@@ -1,0 +1,19 @@
+@layer fristil {
+  /* Ikonet er en svg fra appens eget sett. Det er like stort som teksten
+     rundt, og står midt på linja med den, litt under grunnlinja, slik
+     ikonsettene er tegnet for.
+
+     Størrelsen har ingen komponentvariabel. `--fs-icon-*` er tokenene for
+     ikonene i stilarkene, og `font-size` på ikonet gjør det samme.
+
+     Fargen kommer fra svg-en, og med `currentColor` følger den teksten, også
+     i høykontrast. Stilarket setter ikke `fill`, for et ikon tegnet med
+     strek har `fill="none"`, og en regel her ville fylt det. */
+  .fs-icon {
+    display: inline-block;
+    inline-size: 1em;
+    block-size: 1em;
+    flex-shrink: 0;
+    vertical-align: -0.125em;
+  }
+}

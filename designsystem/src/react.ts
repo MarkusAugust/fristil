@@ -12,6 +12,7 @@ import { fieldset, legend } from "./components/css/fieldset/fieldset.js"
 import { fileUpload } from "./components/css/file-upload/file-upload.js"
 import { heading } from "./components/css/heading/heading.js"
 import { helpText } from "./components/css/help-text/help-text.js"
+import { icon } from "./components/css/icon/icon.js"
 import { input } from "./components/css/input/input.js"
 import { label } from "./components/css/label/label.js"
 import { link } from "./components/css/link/link.js"
@@ -178,6 +179,7 @@ export const fs = {
   heading: forReact(heading),
   fileUpload: forReact(fileUpload),
   helpText: forReact(helpText),
+  icon: forReact(icon),
   input: forReact(input),
   label: forReact(label),
   legend: forReact(legend),

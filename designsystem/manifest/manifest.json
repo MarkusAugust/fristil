@@ -685,6 +685,13 @@
         }
       }
     },
+    "fs-icon": {
+      "component": "icon",
+      "title": "Icon",
+      "description": "Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
+      "link": "https://fristil.sobernetics.no/components/icon/",
+      "attributes": {}
+    },
     "fs-input": {
       "component": "input",
       "title": "Input",
@@ -2341,6 +2348,42 @@
                   "data-variant": "warning"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "icon",
+      "options": [
+        {
+          "name": "label",
+          "required": false,
+          "type": {
+            "kind": "text"
+          },
+          "description": "Hva ikonet betyr, når det står alene og betyr noe, som et varseltegn uten tekst ved siden av. Blir `aria-label` med `role=\"img\"`. Uten det er ikonet pynt, og skjules for skjermlesere."
+        }
+      ],
+      "returns": {
+        "kind": "attributes"
+      },
+      "table": {
+        "kind": "attributes",
+        "table": {
+          "base": {
+            "class": "fs-icon",
+            "aria-hidden": "true"
+          },
+          "options": {
+            "label": {
+              "cases": {},
+              "template": {
+                "aria-hidden": null,
+                "role": "img",
+                "aria-label": "{label}"
+              },
+              "empty": {}
             }
           }
         }

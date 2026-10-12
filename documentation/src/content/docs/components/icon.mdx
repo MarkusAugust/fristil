@@ -1,0 +1,89 @@
+---
+title: Icon
+description: Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.
+---
+
+import Eksempel from "../../../components/Eksempel.astro"
+
+Klassen går på en `<svg>`. Fristil sender ingen ikoner, så svg-en kommer fra settet appen alt bruker. Klassen gjør ikonet like stort som teksten rundt og midt på linja med den, og `fs.icon()` skjuler det for skjermlesere når det bare er pynt.
+
+## Slik tar du den i bruk
+
+<Eksempel importer={["tokens.css", "button.css", "icon.css"]}
+  stiler={["button", "icon"]} kode={`
+<button class="fs-button" type="button">
+  <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+  Ny søknad
+</button>
+
+<button class="fs-button" data-variant="ghost" type="button" aria-label="Slett søknaden">
+  <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2">
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+  </svg>
+</button>
+`}>
+<Fragment slot="ts">
+
+**Lager du markupen,** sprer du attributtene inn:
+
+```tsx
+import { fs } from "@fristil/designsystem/react"
+
+<button {...fs.button({ variant: "ghost" })} type="button" aria-label="Slett søknaden">
+  <svg {...fs.icon()} viewBox="0 0 24 24">…</svg>
+</button>
+```
+
+**Står elementet der fra før,** setter du dem på det:
+
+```ts
+import { fs } from "@fristil/designsystem"
+
+const ikon = document.querySelector<SVGSVGElement>("#varsel-ikon")
+
+fs.setAttributes(ikon, fs.icon({ label: "Advarsel" }))
+```
+
+Uten `label` gir `fs.icon()` `aria-hidden="true"`. Med `label` gir den `role="img"` og `aria-label` i stedet. Se [Typesikker bruk](../../typesikker-bruk/).
+
+</Fragment>
+</Eksempel>
+
+Den første knappen har tekst, og ikonet er pynt ved siden av den. Den andre har bare ikonet, og får navnet sitt fra `aria-label` på knappen.
+
+## Størrelse og farge
+
+Ikonet er `1em` bredt og høyt, så det følger skriftstørrelsen der det står. Vil du ha det større eller mindre enn teksten, setter du `font-size` på ikonet.
+
+Fargen kommer fra svg-en. Skriv `currentColor` i `fill` eller `stroke`, slik ikonsettene gjør, så får ikonet fargen til teksten rundt. Det følger også teksten i høykontrastmodus. Stilarket setter ikke `fill` selv: et ikon tegnet med strek har `fill="none"`, og en regel i stilarket ville fylt det.
+
+## Et ikon som betyr noe
+
+Står ikonet alene og sier noe leseren trenger, som et varseltegn uten tekst ved siden av, får det et navn:
+
+```html
+<svg class="fs-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M12 3l9 16H3zM12 10v4M12 17v.01" />
+</svg>
+```
+
+Er det tekst ved siden av som sier det samme, er ikonet pynt, og skal ha `aria-hidden="true"`. Ellers leses det samme opp to ganger.
+
+## Klasser du kan style
+
+| Klasse | Hva det er |
+| --- | --- |
+| `.fs-icon` | Ikonet, på en `<svg>`. |
+
+Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+
+## Tilgjengelighet
+
+- En knapp eller lenke med bare et ikon i seg må få et navn: `aria-label` på knappen, eller en tekst i et element med klassen `fs-sr-only`. `fristil sjekk` og editorene melder `ikon-uten-navn` når det mangler.
+- Skriv hva knappen gjør, ikke hva ikonet forestiller. «Slett søknaden» er bedre enn «Søppelkasse».
+- Et ikon alene er vanskelig å forstå for mange, også for dem som ser det. Har du plass, er tekst ved siden av bedre enn bare et navn for skjermleseren.

@@ -73,6 +73,36 @@ const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" na
 
 const cases: Case[] = [
   {
+    name: "en knapp med bare et ikon og ikke noe navn",
+    html: `<button class="fs-button"><svg class="fs-icon" aria-hidden="true"><path d="M0 0"/></svg><span aria-hidden="true">x</span></button>`,
+    count: 1,
+    mentions: ["<button> har bare et ikon", "aria-label", "fs-sr-only"],
+    severity: "error",
+    covers: "button",
+    coversAt: 1,
+  },
+  {
+    name: "en lenke med bare et bilde uten alt",
+    html: `<a href="/hjem"><img src="hus.svg" alt=""></a>`,
+    count: 1,
+    mentions: ["<a> har bare et ikon", "«lenke»"],
+    severity: "error",
+  },
+  {
+    name: "et ikon med navn fra tekst, aria-label, title, alt eller svg-tittel",
+    html: `<button><svg class="fs-icon" aria-hidden="true"></svg> Slett</button>
+<button aria-label="Slett"><svg class="fs-icon" aria-hidden="true"></svg></button>
+<button title="Slett"><svg class="fs-icon" aria-hidden="true"></svg></button>
+<button><svg class="fs-icon" aria-hidden="true"></svg><span class="fs-sr-only">Slett</span></button>
+<button><img src="x.svg" alt="Slett"></button>
+<button><svg><title>Slett</title></svg></button>
+<a><svg class="fs-icon" aria-hidden="true"></svg></a>
+<button hidden><svg class="fs-icon" aria-hidden="true"></svg></button>
+<button>{{ .Navn }}<svg class="fs-icon" aria-hidden="true"></svg></button>
+<button></button>`,
+    count: 0,
+  },
+  {
     name: "et element som ikke finnes",
     html: `<fs-dialog><fs-dialog-header>Tittel</fs-dialog-header></fs-dialog>`,
     count: 1,

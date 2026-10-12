@@ -146,6 +146,11 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
       markup: `<p class="fs-help-text">Elleve siffer. Du finner det på bankkortet eller i skattemeldingen.</p>`,
     },
   ],
+  icon: [
+    {
+      markup: `<button class="fs-button" type="button"><svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" /></svg>${LANG}</button>`,
+    },
+  ],
   input: [
     { markup: `<input class="fs-input" value="${LANG}" />` },
     { markup: `<input class="fs-input" type="date" data-variant="date" />` },

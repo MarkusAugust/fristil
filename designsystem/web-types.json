@@ -534,6 +534,11 @@
           "doc-url": "https://fristil.sobernetics.no/components/help-text/"
         },
         {
+          "name": "fs-icon",
+          "description": "**Icon**\n\nIkon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
+          "doc-url": "https://fristil.sobernetics.no/components/icon/"
+        },
+        {
           "name": "fs-input",
           "description": "**Input**\n\nTekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
           "doc-url": "https://fristil.sobernetics.no/components/input/"

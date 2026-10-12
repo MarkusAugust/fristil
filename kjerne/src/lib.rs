@@ -770,4 +770,81 @@ mod tests {
             assert!(check(html).is_empty(), "{html}: {:?}", check(html));
         }
     }
+
+    #[test]
+    fn an_icon_alone_needs_a_name() {
+        let rules = |html: &str| -> Vec<&str> {
+            diagnose_markup(&utf16(html), &manifest::for_tests())
+                .iter()
+                .map(|f| f.rule)
+                .filter(|r| *r == "ikon-uten-navn")
+                .collect()
+        };
+        let svg = r#"<svg class="fs-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
+        for html in [
+            format!("<button>{svg}</button>"),
+            format!(r#"<a href="/hjem"> {svg} </a>"#),
+            format!("<button>{svg}<span aria-hidden=\"true\">x</span></button>"),
+            r#"<button><img src="x.svg" alt=""></button>"#.to_string(),
+            r#"<button><svg><path d="M0 0"></path></svg></button>"#.to_string(),
+            format!("<button aria-label=\"  \">{svg}</button>"),
+            format!("<button>&nbsp;{svg}&#160;</button>"),
+            format!(
+                r#"<button type="button" class="fs-button" data-variant="ghost" onclick="slett()">{svg}</button>"#
+            ),
+            format!(r#"<button data-testid="slett">{svg}</button>"#),
+        ] {
+            assert_eq!(rules(&html), ["ikon-uten-navn"], "{html}");
+        }
+        for html in [
+            format!("<button>{svg} Slett</button>"),
+            format!("<button aria-label=\"Slett\">{svg}</button>"),
+            format!("<button aria-labelledby=\"t\">{svg}</button>"),
+            format!("<button title=\"Slett\">{svg}</button>"),
+            format!("<button>{svg}<span class=\"fs-sr-only\">Slett</span></button>"),
+            r#"<button><svg role="img" aria-label="Slett"></svg></button>"#.to_string(),
+            r#"<button><svg><title>Slett</title></svg></button>"#.to_string(),
+            r#"<button><img src="x.svg" alt="Slett"></button>"#.to_string(),
+            format!("<a>{svg}</a>"),
+            format!("<button hidden>{svg}</button>"),
+            "<button></button>".to_string(),
+            format!("<button>{{{{ .Navn }}}}{svg}</button>"),
+            format!("<button aria-label=\"{{{{ .Navn }}}}\">{svg}</button>"),
+            format!(r#"<button :aria-label="t('slett')">{svg}</button>"#),
+            format!(r#"<button v-bind:title="t('slett')">{svg}</button>"#),
+            format!(r#"<button x-bind:aria-label="name">{svg}</button>"#),
+            format!(r#"<button data-attr:aria-label="$navn">{svg}</button>"#),
+            format!(r#"<button [attr.aria-label]="name">{svg}</button>"#),
+            format!(r##"<button th:title="#{{slett}}">{svg}</button>"##),
+            format!("<BUTTON ARIA-LABEL=\"Slett\">{svg}</BUTTON>"),
+            r#"<button><IMG SRC="x.svg" ALT="Slett"></button>"#.to_string(),
+            format!("<button {{...props}}>{svg}</button>"),
+            format!("<button class=\"fs-button\">{svg}<slot /></button>"),
+            format!("<button>{svg}<span x-text=\"navn\"></span></button>"),
+            format!("<button>{svg}<span data-text=\"$navn\"></span></button>"),
+            format!("<button>{svg}<Trans id=\"slett\" /></button>"),
+            format!("<button>{svg}<app-tekst></app-tekst></button>"),
+            r#"<button><svg {...fs.icon({ label })}></svg></button>"#.to_string(),
+            format!("<label for=\"b\">Slett</label><button id=\"b\">{svg}</button>"),
+            format!(r#"<a :href="url">{svg}</a>"#),
+            format!("<button><span :hidden=\"x\"></span>{svg}</button>"),
+            format!(r#"<button v-bind="$attrs">{svg}</button>"#),
+            format!(r#"<button x-bind="trigger">{svg}</button>"#),
+            format!(r#"<button data-attr="{{'aria-label': $name}}">{svg}</button>"#),
+            format!(r#"<button th:attr="aria-label=${{label}}">{svg}</button>"#),
+            format!(r#"<button @attributes="Extra">{svg}</button>"#),
+            format!("<button {{title}}>{svg}</button>"),
+            format!(r#"<button title="" :title="t('slett')">{svg}</button>"#),
+            format!(r#"<button>{svg}<span v-t="'slett'"></span></button>"#),
+            format!(r#"<button>{svg}<span data-i18n="slett"></span></button>"#),
+            format!(r#"<button>{svg}<span translate="slett"></span></button>"#),
+            format!("<label>Slett <button>{svg}</button></label>"),
+            format!(r#"<button data-i18n="[aria-label]slett">{svg}</button>"#),
+            r#"<button><svg v-bind="ikon"></svg></button>"#.to_string(),
+            r#"<button><svg x-bind="ikon"></svg></button>"#.to_string(),
+            r#"<button><svg><clipPath id="c"><rect /></clipPath><title>Slett</title></svg></button>"#.to_string(),
+        ] {
+            assert!(rules(&html).is_empty(), "{html}: {:?}", rules(&html));
+        }
+    }
 }

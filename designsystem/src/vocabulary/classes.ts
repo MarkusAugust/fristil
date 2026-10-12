@@ -279,6 +279,13 @@ export const classes: Classes = {
       }
     }
   },
+  "fs-icon": {
+    "component": "icon",
+    "title": "Icon",
+    "description": "Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
+    "link": "https://fristil.sobernetics.no/components/icon/",
+    "attributes": {}
+  },
   "fs-input": {
     "component": "input",
     "title": "Input",

@@ -53,7 +53,7 @@ hører `tokens.css` der, én gang for hele siden.
 
 ## 2. Hva som finnes
 
-34 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+35 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
 `fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
 klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
@@ -76,6 +76,7 @@ Standardvarianten har ingen attributt.
 | `fs-file-upload`<br>`fs-file-upload-list` | `@fristil/designsystem/file-upload.css` | `data-state`: invalid, success |
 | `fs-heading` | `@fristil/designsystem/heading.css` | `data-size`: xs, s, m, xl, mega |
 | `fs-help-text` | `@fristil/designsystem/help-text.css` | `data-variant`: strong, success, warning |
+| `fs-icon` | `@fristil/designsystem/icon.css` | ingen |
 | `fs-input` | `@fristil/designsystem/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
 | `fs-label` | `@fristil/designsystem/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-link` | `@fristil/designsystem/link.css` | ingen |
@@ -290,16 +291,16 @@ Kjøres ved bygging. Ut kommer ren HTML:
 <span class="fs-badge" data-color="success">Innvilget</span>
 ```
 
-`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 45
+`fs` importeres fra hovedinngangen, som gir `class` og `for`. De 46
 byggefunksjonene:
 
 `fs.accordion()`, `fs.alert()`, `fs.avatar()`, `fs.badge()`,
 `fs.breadcrumbs()`, `fs.button()`, `fs.card()`, `fs.checkbox()`,
 `fs.connectionStatus()`, `fs.dialog()`, `fs.divider()`, `fs.errorSummary()`,
 `fs.errorText()`, `fs.field()`, `fs.fieldset()`, `fs.fileUpload()`,
-`fs.heading()`, `fs.helpText()`, `fs.input()`, `fs.label()`, `fs.legend()`,
-`fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`, `fs.popover()`,
-`fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
+`fs.heading()`, `fs.helpText()`, `fs.icon()`, `fs.input()`, `fs.label()`,
+`fs.legend()`, `fs.link()`, `fs.list()`, `fs.pagination()`, `fs.paragraph()`,
+`fs.popover()`, `fs.progress()`, `fs.radio()`, `fs.search()`, `fs.select()`,
 `fs.sessionTimeout()`, `fs.skeleton()`, `fs.skipLink()`, `fs.spinner()`,
 `fs.srOnly()`, `fs.suggestion()`, `fs.switch()`, `fs.table()`,
 `fs.tableSort()`, `fs.tabs()`, `fs.tag()`, `fs.textarea()`, `fs.toast()`,

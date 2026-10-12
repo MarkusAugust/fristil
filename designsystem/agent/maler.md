@@ -62,7 +62,7 @@ mal er én fil nesten alltid riktig valg.
 
 ## 2. Hva som finnes
 
-34 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
+35 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
 `fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
 klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
 Standardvarianten har ingen attributt.
@@ -85,6 +85,7 @@ Standardvarianten har ingen attributt.
 | `fs-file-upload`<br>`fs-file-upload-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/file-upload/file-upload.css` | `data-state`: invalid, success |
 | `fs-heading` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/heading/heading.css` | `data-size`: xs, s, m, xl, mega |
 | `fs-help-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/help-text/help-text.css` | `data-variant`: strong, success, warning |
+| `fs-icon` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/icon/icon.css` | ingen |
 | `fs-input` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/input/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
 | `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
 | `fs-link` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.32.1/src/components/css/link/link.css` | ingen |
