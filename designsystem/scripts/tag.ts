@@ -152,7 +152,9 @@ for (const { del, tagg } of skal) {
     console.log(`Ville tagget ${tagg} på ${her.slice(0, 7)}: ${del.gir}.`)
     continue
   }
-  git("tag", tagg, her)
+  // Med tag.gpgsign blir taggen annotert og trenger en melding. Uten -m
+  // åpner git en editor, og uten terminal stopper den med «no tag message?».
+  git("tag", "-m", `Gir ut ${tagg}`, tagg, her)
   git("push", "--quiet", "origin", tagg)
   console.log(`Tagget ${tagg} på ${her.slice(0, 7)}. Gir ut ${del.gir}.`)
 }
