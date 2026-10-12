@@ -1128,6 +1128,154 @@ fn collapse_spaces(t: &[u16]) -> String {
     lossy(&out)
 }
 
+/// Siden om ikoner, der regelen for en knapp med bare ikon er forklart.
+const ICON_LINK: &str = "https://fristil.sobernetics.no/components/icon/";
+
+/// Elementene som aldri har innhold, og derfor ingen lukketagg.
+const NO_CONTENT: &[&str] = &[
+    "area", "br", "col", "embed", "hr", "img", "input", "source", "track", "wbr",
+];
+
+fn attribute<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttribute> {
+    attributes.iter().find(|a| equals(&a.name, name))
+}
+
+/// Om attributtet står der med noe annet enn mellomrom i.
+fn has_text_value(attributes: &[ReadAttribute], name: &str) -> bool {
+    attribute(attributes, name)
+        .and_then(|a| a.value.as_deref())
+        .is_some_and(|v| !trimmed(v).is_empty())
+}
+
+/// Om noden selv er skjult for skjermleseren: `aria-hidden="true"` eller `hidden`.
+fn hides(attributes: &[ReadAttribute]) -> bool {
+    attribute(attributes, "hidden").is_some()
+        || attribute(attributes, "aria-hidden")
+            .and_then(|a| a.value.as_deref())
+            .is_some_and(|v| equals(&lowercase(trimmed(v)), "true"))
+}
+
+/// Om innholdet i en knapp eller lenke er ikoner og ingenting annet.
+///
+/// Det som står under `aria-hidden="true"` eller `hidden`, leser ikke
+/// skjermleseren, og teller ikke. Tekst ellers gir et navn, også i et
+/// `<title>` i en svg, og det gjør `alt`, `aria-label`, `aria-labelledby` og
+/// `title` på et barn som vises. Uten et ikon er svaret nei: en tom knapp er
+/// oftest et område serveren eller et skript fyller senere.
+fn only_icons(content: &[u16]) -> bool {
+    let mut open: Vec<(Utf16, bool)> = Vec::new();
+    let mut icon = false;
+    let mut i = 0;
+    while i < content.len() {
+        let hidden = open.last().is_some_and(|(_, h)| *h);
+        if content[i] == LT && content.get(i + 1) == Some(&SLASH) {
+            let mut j = i + 2;
+            while j < content.len() && is_name_char(content[j]) {
+                j += 1;
+            }
+            let name = lowercase(&content[i + 2..j]);
+            if let Some(at) = open.iter().rposition(|(n, _)| *n == name) {
+                open.truncate(at);
+            }
+            i = tag_end(content, j).map_or(content.len(), |e| e + 1);
+            continue;
+        }
+        if let Some(name_end) = tag_name_end(content, i) {
+            let Some(end) = tag_end(content, name_end) else {
+                break;
+            };
+            let name = lowercase(&content[i + 1..name_end]);
+            let attributes = read_attributes(tag_body(content, name_end, end), name_end);
+            let is_icon = equals(&name, "svg")
+                || equals(&name, "img")
+                || attribute(&attributes, "class")
+                    .and_then(|a| a.value.as_deref())
+                    .is_some_and(|v| words(v).iter().any(|(_, w)| equals(w, "fs-icon")));
+            icon |= is_icon;
+            let hidden_here = hidden || hides(&attributes);
+            if !hidden_here
+                && (has_text_value(&attributes, "aria-label")
+                    || has_text_value(&attributes, "aria-labelledby")
+                    || has_text_value(&attributes, "title")
+                    || (equals(&name, "img") && has_text_value(&attributes, "alt")))
+            {
+                return false;
+            }
+            let closes_itself = content[end - 1] == SLASH;
+            if !closes_itself && !NO_CONTENT.iter().any(|n| equals(&name, n)) {
+                open.push((name, hidden_here));
+            }
+            i = end + 1;
+            continue;
+        }
+        if !hidden && !is_space(content[i]) {
+            return false;
+        }
+        i += 1;
+    }
+    icon
+}
+
+/// En `<button>` eller `<a href>` med bare et ikon i, og ikke noe navn.
+fn check_icon_only(source: &[u16]) -> Vec<Finding> {
+    let mut findings = Vec::new();
+    let mut i = 0;
+    while i < source.len() {
+        let Some(name_end) = tag_name_end(source, i) else {
+            i += 1;
+            continue;
+        };
+        let name_start = i + 1;
+        i = name_end;
+        let name = lossy(&lowercase(&source[name_start..name_end]));
+        if name != "button" && name != "a" {
+            continue;
+        }
+        let Some(end) = tag_end(source, name_end) else {
+            continue;
+        };
+        let b = tag_body(source, name_end, end);
+        if is_templated(b) {
+            continue;
+        }
+        let attributes = read_attributes(b, name_end);
+        if (name == "a" && attribute(&attributes, "href").is_none())
+            || hides(&attributes)
+            || has_text_value(&attributes, "aria-label")
+            || has_text_value(&attributes, "aria-labelledby")
+            || has_text_value(&attributes, "title")
+        {
+            continue;
+        }
+        let Some(close) = closing_tag(source, end + 1, &name) else {
+            continue;
+        };
+        let content = &source[end + 1..close];
+        if is_templated_content(content) || !only_icons(content) {
+            continue;
+        }
+        let kind = if name == "a" { "lenke" } else { "knapp" };
+        findings.push(Finding {
+            start: name_start,
+            end: name_end,
+            severity: Severity::Error,
+            link: ICON_LINK.into(),
+            message: format!(
+                "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only."
+            ),
+            fix: Some(Fix {
+                title: "Gi den et navn med aria-label".into(),
+                start: name_end,
+                end: name_end,
+                text: " aria-label=\"Beskriv handlingen\"".into(),
+                preferred: true,
+            }),
+            rule: "ikon-uten-navn",
+        });
+    }
+    findings
+}
+
 /// `/<([a-z][a-z0-9-]*)(?=[\s/>])/gi` ved `i`: der navnet slutter.
 pub fn tag_name_end(t: &[u16], i: usize) -> Option<usize> {
     if t.get(i) != Some(&LT) || !t.get(i + 1).is_some_and(|&c| is_ascii_letter(c)) {
@@ -1284,6 +1432,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
             ));
         }
     }
+    findings.extend(check_icon_only(&source));
     findings.sort_by_key(|f| f.start);
     findings
 }

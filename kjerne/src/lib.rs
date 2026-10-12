@@ -770,4 +770,43 @@ mod tests {
             assert!(check(html).is_empty(), "{html}: {:?}", check(html));
         }
     }
+
+    #[test]
+    fn an_icon_alone_needs_a_name() {
+        let rules = |html: &str| -> Vec<&str> {
+            diagnose_markup(&utf16(html), &manifest::for_tests())
+                .iter()
+                .map(|f| f.rule)
+                .filter(|r| *r == "ikon-uten-navn")
+                .collect()
+        };
+        let svg = r#"<svg class="fs-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
+        for html in [
+            format!("<button>{svg}</button>"),
+            format!(r#"<a href="/hjem"> {svg} </a>"#),
+            format!("<button>{svg}<span aria-hidden=\"true\">x</span></button>"),
+            r#"<button><img src="x.svg" alt=""></button>"#.to_string(),
+            r#"<button><svg><path d="M0 0"></path></svg></button>"#.to_string(),
+            format!("<button aria-label=\"  \">{svg}</button>"),
+        ] {
+            assert_eq!(rules(&html), ["ikon-uten-navn"], "{html}");
+        }
+        for html in [
+            format!("<button>{svg} Slett</button>"),
+            format!("<button aria-label=\"Slett\">{svg}</button>"),
+            format!("<button aria-labelledby=\"t\">{svg}</button>"),
+            format!("<button title=\"Slett\">{svg}</button>"),
+            format!("<button>{svg}<span class=\"fs-sr-only\">Slett</span></button>"),
+            r#"<button><svg role="img" aria-label="Slett"></svg></button>"#.to_string(),
+            r#"<button><svg><title>Slett</title></svg></button>"#.to_string(),
+            r#"<button><img src="x.svg" alt="Slett"></button>"#.to_string(),
+            format!("<a>{svg}</a>"),
+            format!("<button hidden>{svg}</button>"),
+            "<button></button>".to_string(),
+            format!("<button>{{{{ .Navn }}}}{svg}</button>"),
+            format!("<button aria-label=\"{{{{ .Navn }}}}\">{svg}</button>"),
+        ] {
+            assert!(rules(&html).is_empty(), "{html}: {:?}", rules(&html));
+        }
+    }
 }

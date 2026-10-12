@@ -79,6 +79,11 @@ export type {
 } from "./components/css/help-text/help-text.js"
 export { helpText } from "./components/css/help-text/help-text.js"
 export type {
+  IconAttributes,
+  IconOptions,
+} from "./components/css/icon/icon.js"
+export { icon } from "./components/css/icon/icon.js"
+export type {
   InputAttributes,
   InputOptions,
   InputType,

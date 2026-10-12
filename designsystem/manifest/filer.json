@@ -122,6 +122,14 @@
     },
     {
       "category": "css",
+      "name": "icon",
+      "files": [
+        "icon.css",
+        "icon.ts"
+      ]
+    },
+    {
+      "category": "css",
       "name": "input",
       "files": [
         "input.css",

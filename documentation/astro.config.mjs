@@ -168,6 +168,7 @@ export default defineConfig({
                 { label: "File Upload", slug: "components/file-upload" },
                 { label: "Heading", slug: "components/heading" },
                 { label: "Help Text", slug: "components/help-text" },
+                { label: "Icon", slug: "components/icon" },
                 { label: "Input", slug: "components/input" },
                 { label: "Label", slug: "components/label" },
                 { label: "Link", slug: "components/link" },
