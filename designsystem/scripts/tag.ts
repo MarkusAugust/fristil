@@ -17,6 +17,10 @@
  * Skriptet nekter når master ikke er hentet, når arbeidstreet har endringer,
  * når taggen finnes fra før, og når versjonen mangler i versjonsloggen. Uten
  * argumenter tagger det ingenting: hva som skal ut, velges hver gang.
+ *
+ * Feilet pushen etter at taggen ble satt, står taggen igjen lokalt. Står den
+ * på samme commit, pusher skriptet den neste gang i stedet for å sette den
+ * på nytt.
  */
 
 import { readFileSync } from "node:fs"
@@ -87,6 +91,15 @@ function git(...argumenter: string[]): string {
   return svar.stdout.toString().trim()
 }
 
+/** Commiten en lokal tagg peker på, eller `undefined` om den ikke finnes. */
+function lokalTagg(tagg: string): string | undefined {
+  const svar = Bun.spawnSync(
+    ["git", "rev-parse", "--quiet", "--verify", `refs/tags/${tagg}^{commit}`],
+    { cwd: ROT },
+  )
+  return svar.exitCode === 0 ? svar.stdout.toString().trim() : undefined
+}
+
 const argumenter = process.argv.slice(2)
 const prøv = argumenter.includes("--prøv")
 const valgt = argumenter.filter((a) => a !== "--prøv")
@@ -138,6 +151,11 @@ for (const { del, versjon, tagg, finnes } of skal) {
     stopp(
       `${tagg} finnes fra før. En versjon gis bare ut én gang: sett en ny versjon for ${del.navn}.`,
     )
+  const lokal = lokalTagg(tagg)
+  if (lokal !== undefined && lokal !== her)
+    stopp(
+      `${tagg} finnes lokalt på ${lokal.slice(0, 7)}, men ikke på GitHub. Fjern den med git tag -d ${tagg} og kjør på nytt.`,
+    )
   if (del.logg) {
     const logg = readFileSync(join(ROT, del.logg.sti), "utf8")
     if (!del.logg.overskrift(versjon).test(logg))
@@ -154,7 +172,8 @@ for (const { del, tagg } of skal) {
   }
   // Med `tag.gpgsign` blir taggen signert og må ha en melding. Uten `-m`
   // åpner git en editor, og den finnes ikke når skriptet kjører.
-  git("tag", "-m", `Gir ut ${tagg}`, tagg, her)
+  if (lokalTagg(tagg) === undefined)
+    git("tag", "-m", `Gir ut ${tagg}`, tagg, her)
   git("push", "--quiet", "origin", tagg)
   console.log(`Tagget ${tagg} på ${her.slice(0, 7)}. Gir ut ${del.gir}.`)
 }
