@@ -21,6 +21,7 @@ val fristilVersion =
     Properties()
         .apply { rootDir.resolve("../kotlin/gradle.properties").reader().use { load(it) } }
         .getProperty("version")
+        ?: error("Fant ingen version i ../kotlin/gradle.properties.")
 
 repositories {
     mavenCentral()
