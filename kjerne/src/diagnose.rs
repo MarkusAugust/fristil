@@ -1157,11 +1157,12 @@ fn plain<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttr
         .find(|a| equals(&lowercase(&a.name), name))
 }
 
-/// Om attributtet står der med noe annet enn mellomrom i.
+/// Om attributtet står der med noe annet enn mellomrom i, i en av formene.
 fn has_text_value(attributes: &[ReadAttribute], name: &str) -> bool {
-    attribute(attributes, name)
-        .and_then(|a| a.value.as_deref())
-        .is_some_and(|v| !trimmed(v).is_empty())
+    attributes.iter().any(|a| {
+        attribute(std::slice::from_ref(a), name).is_some()
+            && a.value.as_deref().is_some_and(|v| !trimmed(v).is_empty())
+    })
 }
 
 /// Om noden selv er skjult for skjermleseren: `aria-hidden="true"` eller
@@ -1173,30 +1174,78 @@ fn hides(attributes: &[ReadAttribute]) -> bool {
             .is_some_and(|v| equals(&lowercase(trimmed(v)), "true"))
 }
 
-/// Attributtene som fyller et element med tekst fra et skript eller en mal.
-const TEXT_BINDINGS: &[&str] = &[
-    "x-text",
-    "x-html",
-    "v-text",
-    "v-html",
-    "data-text",
-    "ng-bind",
-    "ng-bind-html",
-    "th:text",
-    "th:utext",
-    "set:text",
-    "set:html",
-    "innerhtml",
-    "[innerhtml]",
-    "[innertext]",
-    "[textcontent]",
-    "dangerouslysetinnerhtml",
+/// Attributtene på en knapp eller lenke som ikke kan gi den et navn.
+const INERT: &[&str] = &[
+    "class",
+    "id",
+    "type",
+    "href",
+    "disabled",
+    "name",
+    "value",
+    "form",
+    "formaction",
+    "formenctype",
+    "formmethod",
+    "formnovalidate",
+    "formtarget",
+    "tabindex",
+    "target",
+    "rel",
+    "download",
+    "hreflang",
+    "ping",
+    "referrerpolicy",
+    "style",
+    "lang",
+    "dir",
+    "autofocus",
+    "accesskey",
+    "draggable",
+    "inert",
+    "role",
+    "popovertarget",
+    "popovertargetaction",
+    "command",
+    "commandfor",
 ];
 
-/// `{...props}` i en tagg: attributtene kommer fra noe regelen ikke ser.
-fn spreads(body: &[u16]) -> bool {
-    find_at(body, 0, "{...").is_some()
+/// Om attributtet er vanlig HTML som ikke gir et navn.
+///
+/// Regelen melder en feil, og må derfor bare melde det den kan se. Et
+/// navn kan komme fra en binding i hvert rammeverk, og formene er uten
+/// ende: `:aria-label`, `v-bind="$attrs"`, `x-bind`, `data-attr`,
+/// `th:attr`, `@attributes`, `{title}`, `{...props}`. Lista over dem ble
+/// aldri ferdig, så regelen spør motsatt vei: er alt på taggen kjent HTML,
+/// kan den vite at navnet mangler.
+fn is_inert(a: &ReadAttribute) -> bool {
+    let name = lossy(&lowercase(&a.name));
+    let plain_name = name
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
+    plain_name
+        && (INERT.contains(&name.as_str())
+            // Et navn i aria-label, aria-labelledby eller title sjekkes for
+            // seg. Står de tomme, gir de ikke noe navn.
+            || name == "title"
+            || name.starts_with("aria-")
+            || (name.starts_with("on") && name.len() > 2)
+            || (name.starts_with("data-")
+                && !name.starts_with("data-attr")
+                && !name.starts_with("data-bind")
+                && !name.starts_with("data-text")))
 }
+
+/// Attributtene et barn kan ha uten å kunne få tekst fra noe annet.
+const INERT_CHILD: &[&str] = &[
+    "class",
+    "id",
+    "style",
+    "aria-hidden",
+    "hidden",
+    "lang",
+    "dir",
+];
 
 /// Om innholdet i en knapp eller lenke er ikoner og ingenting annet.
 ///
@@ -1205,23 +1254,27 @@ fn spreads(body: &[u16]) -> bool {
 /// `<title>` i en svg, og det gjør `alt`, `aria-label`, `aria-labelledby` og
 /// `title` på et barn som vises. `&nbsp;` er mellomrom.
 ///
-/// Fyller noe annet innholdet, er svaret nei: en `<slot>`, en komponent med
-/// stor bokstav eller bindestrek i navnet, en tekstbinding som `x-text`, og
-/// en spredning, som kan gi barnet et navn. Uten et ikon er svaret også nei:
-/// en tom knapp er oftest et område serveren eller et skript fyller senere.
+/// Et barn utenfor svg-en som har noe annet på seg enn `class`, `id`,
+/// `style` og skjuling, kan få tekst fra noe regelen ikke ser, som
+/// `x-text`, `v-t` eller `data-i18n`. Det samme gjelder en `<slot>` og en
+/// komponent med stor bokstav eller bindestrek i navnet. Da er svaret nei.
+/// Uten et ikon er svaret også nei: en tom knapp er oftest et område
+/// serveren eller et skript fyller senere.
 fn only_icons(content: &[u16]) -> bool {
-    let mut open: Vec<(Utf16, bool)> = Vec::new();
+    // Navnet, om det er skjult, og om det står inni en svg.
+    let mut open: Vec<(Utf16, bool, bool)> = Vec::new();
     let mut icon = false;
     let mut i = 0;
     while i < content.len() {
-        let hidden = open.last().is_some_and(|(_, h)| *h);
+        let hidden = open.last().is_some_and(|(_, h, _)| *h);
+        let in_svg = open.last().is_some_and(|(_, _, s)| *s);
         if content[i] == LT && content.get(i + 1) == Some(&SLASH) {
             let mut j = i + 2;
             while j < content.len() && is_name_char(content[j]) {
                 j += 1;
             }
             let name = lowercase(&content[i + 2..j]);
-            if let Some(at) = open.iter().rposition(|(n, _)| *n == name) {
+            if let Some(at) = open.iter().rposition(|(n, _, _)| *n == name) {
                 open.truncate(at);
             }
             i = tag_end(content, j).map_or(content.len(), |e| e + 1);
@@ -1236,30 +1289,33 @@ fn only_icons(content: &[u16]) -> bool {
             let body = tag_body(content, name_end, end);
             let attributes = read_attributes(body, name_end);
             let hidden_here = hidden || hides(&attributes);
-            if !hidden_here {
-                let filled_elsewhere = written != name.as_slice()
-                    || name.contains(&(b'-' as u16))
-                    || equals(&name, "slot")
-                    || spreads(body)
-                    || attributes
-                        .iter()
-                        .any(|a| TEXT_BINDINGS.iter().any(|b| equals(&lowercase(&a.name), b)));
-                let named = has_text_value(&attributes, "aria-label")
-                    || has_text_value(&attributes, "aria-labelledby")
-                    || has_text_value(&attributes, "title")
-                    || (equals(&name, "img") && has_text_value(&attributes, "alt"));
-                if filled_elsewhere || named {
-                    return false;
-                }
-            }
-            icon |= equals(&name, "svg")
+            let is_icon = equals(&name, "svg")
                 || equals(&name, "img")
                 || plain(&attributes, "class")
                     .and_then(|a| a.value.as_deref())
                     .is_some_and(|v| words(v).iter().any(|(_, w)| equals(w, "fs-icon")));
+            if !hidden_here {
+                let named = has_text_value(&attributes, "aria-label")
+                    || has_text_value(&attributes, "aria-labelledby")
+                    || has_text_value(&attributes, "title")
+                    || (equals(&name, "img") && has_text_value(&attributes, "alt"));
+                let filled_elsewhere = find_at(body, 0, "{").is_some()
+                    || (!in_svg
+                        && !is_icon
+                        && (written != name.as_slice()
+                            || name.contains(&(b'-' as u16))
+                            || equals(&name, "slot")
+                            || attributes.iter().any(|a| {
+                                !INERT_CHILD.iter().any(|n| equals(&lowercase(&a.name), n))
+                            })));
+                if named || filled_elsewhere {
+                    return false;
+                }
+            }
+            icon |= is_icon;
             let closes_itself = content[end - 1] == SLASH;
             if !closes_itself && !NO_CONTENT.iter().any(|n| equals(&name, n)) {
-                open.push((name, hidden_here));
+                open.push((name, hidden_here, in_svg || is_icon));
             }
             i = end + 1;
             continue;
@@ -1277,6 +1333,22 @@ fn only_icons(content: &[u16]) -> bool {
         i += 1;
     }
     icon
+}
+
+/// Om `at` står inni en `<label>` som ikke er lukket ennå.
+fn inside_label(source: &[u16], at: usize) -> bool {
+    let before = &source[..at];
+    let last = |pattern: &str| {
+        (0..before.len()).rev().find(|&k| {
+            starts_at_ci(before, k, pattern)
+                && before.get(k + pattern.len()).is_none_or(|&c| !is_word(c))
+        })
+    };
+    match (last("<label"), last("</label")) {
+        (Some(open), Some(close)) => open > close,
+        (Some(_), None) => true,
+        _ => false,
+    }
 }
 
 /// En `<button>` eller `<a href>` med bare et ikon i, og ikke noe navn.
@@ -1299,20 +1371,21 @@ fn check_icon_only(source: &[u16]) -> Vec<Finding> {
             continue;
         };
         let b = tag_body(source, name_end, end);
-        if is_templated(b) || spreads(b) {
+        if is_templated(b) {
             continue;
         }
         let attributes = read_attributes(b, name_end);
-        if (name == "a" && attribute(&attributes, "href").is_none())
+        if (name == "a" && plain(&attributes, "href").is_none())
             || hides(&attributes)
-            || attribute(&attributes, "hidden").is_some()
             || has_text_value(&attributes, "aria-label")
             || has_text_value(&attributes, "aria-labelledby")
             || has_text_value(&attributes, "title")
+            || !attributes.iter().all(is_inert)
         {
             continue;
         }
-        // En `<label for>` kan gi en knapp navnet sitt.
+        // En `<label for>` som peker på knappen, eller en `<label>` rundt
+        // den, gir den navnet sitt.
         if let Some(id) = plain(&attributes, "id").and_then(|a| a.non_empty_value()) {
             if labels
                 .get_or_insert_with(|| label_targets(source))
@@ -1320,6 +1393,9 @@ fn check_icon_only(source: &[u16]) -> Vec<Finding> {
             {
                 continue;
             }
+        }
+        if inside_label(source, name_start - 1) {
+            continue;
         }
         let Some(close) = closing_tag(source, end + 1, &name) else {
             continue;

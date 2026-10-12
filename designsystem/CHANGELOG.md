@@ -121,6 +121,9 @@ egen overskrift «Brytende».
   i `diagnoseMarkup`. Navnet kan komme fra tekst, også med `fs-sr-only`, fra
   `aria-label`, `aria-labelledby` eller `title`, eller fra `alt` på et bilde.
   Det som er skjult med `aria-hidden="true"` eller `hidden`, teller ikke.
+  Står det noe på knappen eller et barn som ikke er vanlig HTML, som
+  `:aria-label`, `v-bind`, `x-text` eller `{...props}`, kan navnet komme
+  derfra, og regelen tier.
 - **Typen `Manifest` fra `@fristil/designsystem/diagnostics`**, formen på
   `manifest.json` slik skjemaet beskriver den, for den som leser manifestet
   selv. Kotlin-pakken har det samme som `Fristil.manifest`, og leser et
