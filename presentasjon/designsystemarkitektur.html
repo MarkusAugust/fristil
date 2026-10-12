@@ -706,7 +706,7 @@ tr:last-child td { border-block-end: none; }
   </div>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må ha en vaktpost for hver regel, ellers er den glemt om en måned.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Rundt 1 400 tester kjører i hver av de tre motorene. Den stylede nedtrekkslista slås på med <code>data-picker="styled"</code>.</span></p>
+    <p><span class="rolle rolle-fristil">I Fristil</span><span>Rundt 1 500 tester kjører i hver av de tre motorene. Den stylede nedtrekkslista slås på med <code>data-picker="styled"</code>.</span></p>
   </div>
 </section>
 
@@ -723,12 +723,12 @@ tr:last-child td { border-block-end: none; }
     <thead><tr><th>Det som må lastes</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
     <tbody>
       <tr><td>JavaScript</td><td><strong>0 kB</strong>, knappen er en klasse</td><td>119,0 kB</td></tr>
-      <tr><td>CSS</td><td>1,9 kB</td><td>4,3 kB</td></tr>
-      <tr><td>Til sammen</td><td><strong>1,9 kB</strong></td><td><strong>123,3 kB</strong></td></tr>
+      <tr><td>CSS</td><td>2,8 kB</td><td>4,3 kB</td></tr>
+      <tr><td>Til sammen</td><td><strong>2,8 kB</strong></td><td><strong>123,3 kB</strong></td></tr>
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Av de 119 kilobytene er 67 React selv. Har du React fra før, legger det systemet til rundt 51 kB for den ene knappen. Byggefunksjonene i <code>fs</code> koster 3,9 kB i tillegg i Fristil.</p>
+  <p style="margin-block-start: 1rem;">Av de 119 kilobytene er 67 React selv. Har du React fra før, legger det systemet til rundt 51 kB for den ene knappen. Byggefunksjonene i <code>fs</code> koster 4,8 kB i tillegg i Fristil.</p>
   <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>ingen avhengigheter</strong>, og ingen JavaScript-modul i den gjør noe bare ved å bli importert. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med serverrendring.</p>
 </section>
 
@@ -919,13 +919,13 @@ tr:last-child td { border-block-end: none; }
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
-  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 26. september 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 12. oktober 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
 
 <script>
 (() => {
   // Noder: [navn, versjon, type, utpakkede byte]. Kanter: [fra, til, 0 = vanlig, 1 = peer].
   // Typen «grunn» er det appen har fra før, og telles ikke.
-  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.7","annen",247667],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.2","annen",521383],["react-i18next","17.0.15","annen",955997],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.2","system",11135745],["@navikt/ds-css","8.17.2","system",1728064],["@navikt/ds-react","8.17.2","system",7480464],["@navikt/ds-tokens","8.17.2","system",439504],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.17.2","annen",11135745],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.3.3","annen",44851],["@tanstack/react-virtual","3.14.13","annen",60900],["@tanstack/virtual-core","3.17.11","annen",437568],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":1956,"n":[["appen din","","app",0],["@fristil/designsystem","0.15.0","system",1019433]],"e":[[0,1,0]]}}
+  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.10","annen",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.4","annen",524379],["react-i18next","17.0.16","annen",957407],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","annen",11147411],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.5.0","annen",49653],["@tanstack/react-virtual","3.14.16","annen",63728],["@tanstack/virtual-core","3.19.1","annen",478978],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":2838,"n":[["appen din","","app",0],["@fristil/designsystem","0.32.1","system",3278919]],"e":[[0,1,0]]}}
 
   const TYPENAVN = { system: "Designsystemets egen", annen: "Dratt inn", grunn: "Har appen fra før", app: "Appen" }
   const BREDDE = 1136 // fast, så alle grafene har samme målestokk
@@ -935,7 +935,7 @@ tr:last-child td { border-block-end: none; }
   const R = 6
   const NS = "http://www.w3.org/2000/svg"
 
-  // Alt deles på 1024, som forrige lysbilde: da er Fristils knapp 1,9 kB begge steder.
+  // Alt deles på 1024, som forrige lysbilde: da er Fristils knapp 2,8 kB begge steder.
   const mb = (b) => {
     if (b >= 1024 * 1024) return (b / 1024 / 1024).toFixed(1).replace(".", ",") + " MB"
     return Math.round(b / 1024) + " kB"
@@ -1697,7 +1697,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>Det avgjørende er om koden som lager markupen, <strong>kan kalle en funksjon</strong>. Hvor den kjører, spiller ingen rolle.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Koden kan kalle en funksjon: React, Astro, Node</p>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Koden kan kalle en funksjon: React, Astro, Node, Kotlin</p>
       <pre>const felt = fs.field({ id: useId(), help: true })
 
 &lt;div&gt;
@@ -1710,7 +1710,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 <i>// Web-komponenten trengs ikke.</i></pre>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen blir til uten JavaScript: Go, PHP, Kotlin, håndskrevet</p>
+      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen blir til uten JavaScript: Go, PHP, Python, håndskrevet</p>
       <pre>&lt;fs-field&gt;
   &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
   &lt;input class="fs-input" type="email"&gt;
@@ -1779,6 +1779,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Får den samme koblingen enten markupen lages i React, i en Go-mal eller for hånd.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må skrive kontrakten som en ren funksjon uten DOM, slik at både koden som rendrer, og en web component kan kalle den.</span></p>
+    <p><span class="rolle rolle-fristil">I Fristil</span><span>Kotlin har sin egen <code>Fs.field()</code>, skrevet for hånd. En test kjører den mot 237 kombinasjoner av valg med svaret fra TypeScript, og ett avvik stopper bygget.</span></p>
   </div>
 </section>
 
@@ -1964,7 +1965,7 @@ side.html:2:29: advarsel: data-variant kan ikke
   </div>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må generere regelbøkene fra koden og teste dem i hvert bygg. Nevner en bok en klasse, et element eller et token som ikke finnes, stopper bygget.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Indeksen over regelbøkene, én per miljø, står på <code>fristil.sobernetics.no/llms.txt</code>.</span></p>
+    <p><span class="rolle rolle-fristil">I Fristil</span><span>Sjekken står også i VS Code og IntelliJ, og i Kotlin sjekker <code>Fristil.diagnosePage()</code> siden serveren sender. Regelbøkene står på <code>fristil.sobernetics.no/llms.txt</code>.</span></p>
   </div>
 </section>
 
@@ -2041,7 +2042,7 @@ side.html:2:29: advarsel: data-variant kan ikke
   <p style="margin-block-start: 1rem;">Det som gjør kopien brukbar, er at henvisningene ut av komponenten peker på pakken etterpå, og ikke på filer som ikke finnes hos teamet.</p>
   <p class="kodetittel"><span class="fristil-merke">Fristil</span>Kildekoden til én komponent, inn i prosjektet ditt</p>
   <pre>npx @fristil/designsystem overta button --ut=src/ui</pre>
-  <p style="margin-block-start: 1rem;">Kommandoen skriver om henvisningene, slik at <code>../shared.js</code> blir <code>@fristil/designsystem/shared</code>. Oppslaget bygges av <code>exports</code> i pakken, slik at det som kopieres, faktisk virker der det lander.</p>
+  <p style="margin-block-start: 1rem;">Kommandoen skriver om henvisningene, slik at <code>../shared.js</code> blir <code>@fristil/designsystem/shared</code>. Oppslaget bygges av <code>exports</code> i pakken, slik at det som kopieres, faktisk virker der det lander. Ved siden av kopien skriver den et manifest, så <code>sjekk --manifest</code> kjenner klassene i kopien.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Kommer videre uten å vente på systemet.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må sørge for at alt en komponent importerer, finnes i <code>exports</code>, ellers peker kopien på noe teamet ikke har.</span></p>
