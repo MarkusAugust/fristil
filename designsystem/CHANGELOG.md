@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.33.0 (2026-10-12)
+
 ### Brytende
 
 - **Kjernen bærer ingen data.** `fristil-kjerne.wasm` hadde manifestet og
