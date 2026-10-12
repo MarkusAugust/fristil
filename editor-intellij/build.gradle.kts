@@ -1,5 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     kotlin("jvm") version "2.2.21"
@@ -10,12 +11,17 @@ group = "no.fristil"
 version = providers.gradleProperty("pluginVersion").get()
 
 /*
- * Fristil for Kotlin har samme versjon som npm-pakken. `includeBuild` bytter
- * inn bygget ved siden av uansett hvilken versjon som står her, men et
- * versjonskrav som ikke finnes, villedet den som leste fila.
+ * Versjonen av Fristil for Kotlin, fra `gradle.properties` i den pakken.
+ * `includeBuild` bytter inn bygget ved siden av uansett hvilken versjon som
+ * står her, men et versjonskrav som ikke finnes, villedet den som leste fila.
+ * Når pakken ligger på Maven Central, er det denne versjonen pluginen henter
+ * uten `includeBuild`.
  */
 val fristilVersion =
-    (groovy.json.JsonSlurper().parse(rootDir.resolve("../designsystem/package.json")) as Map<*, *>)["version"] as String
+    Properties()
+        .apply { rootDir.resolve("../kotlin/gradle.properties").reader().use { load(it) } }
+        .getProperty("version")
+        ?: error("Fant ingen version i ../kotlin/gradle.properties.")
 
 repositories {
     mavenCentral()
