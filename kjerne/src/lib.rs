@@ -788,6 +788,9 @@ mod tests {
             r#"<button><img src="x.svg" alt=""></button>"#.to_string(),
             r#"<button><svg><path d="M0 0"></path></svg></button>"#.to_string(),
             format!("<button aria-label=\"  \">{svg}</button>"),
+            format!("<button>&nbsp;{svg}&#160;</button>"),
+            format!(r#"<a :href="url">{svg}</a>"#),
+            format!("<button><span :hidden=\"x\"></span>{svg}</button>"),
         ] {
             assert_eq!(rules(&html), ["ikon-uten-navn"], "{html}");
         }
@@ -805,6 +808,22 @@ mod tests {
             "<button></button>".to_string(),
             format!("<button>{{{{ .Navn }}}}{svg}</button>"),
             format!("<button aria-label=\"{{{{ .Navn }}}}\">{svg}</button>"),
+            format!(r#"<button :aria-label="t('slett')">{svg}</button>"#),
+            format!(r#"<button v-bind:title="t('slett')">{svg}</button>"#),
+            format!(r#"<button x-bind:aria-label="name">{svg}</button>"#),
+            format!(r#"<button data-attr:aria-label="$navn">{svg}</button>"#),
+            format!(r#"<button [attr.aria-label]="name">{svg}</button>"#),
+            format!(r##"<button th:title="#{{slett}}">{svg}</button>"##),
+            format!("<BUTTON ARIA-LABEL=\"Slett\">{svg}</BUTTON>"),
+            r#"<button><IMG SRC="x.svg" ALT="Slett"></button>"#.to_string(),
+            format!("<button {{...props}}>{svg}</button>"),
+            format!("<button class=\"fs-button\">{svg}<slot /></button>"),
+            format!("<button>{svg}<span x-text=\"navn\"></span></button>"),
+            format!("<button>{svg}<span data-text=\"$navn\"></span></button>"),
+            format!("<button>{svg}<Trans id=\"slett\" /></button>"),
+            format!("<button>{svg}<app-tekst></app-tekst></button>"),
+            r#"<button><svg {...fs.icon({ label })}></svg></button>"#.to_string(),
+            format!("<label for=\"b\">Slett</label><button id=\"b\">{svg}</button>"),
         ] {
             assert!(rules(&html).is_empty(), "{html}: {:?}", rules(&html));
         }

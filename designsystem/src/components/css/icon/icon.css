@@ -1,6 +1,7 @@
 @layer fristil {
   /* Ikonet er en svg fra appens eget sett. Det er like stort som teksten
-     rundt, og står på grunnlinja som en bokstav.
+     rundt, og står midt på linja med den, litt under grunnlinja, slik
+     ikonsettene er tegnet for.
 
      Størrelsen har ingen komponentvariabel. `--fs-icon-*` er tokenene for
      ikonene i stilarkene, og `font-size` på ikonet gjør det samme.
