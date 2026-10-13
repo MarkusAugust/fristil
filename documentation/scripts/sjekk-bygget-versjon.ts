@@ -86,6 +86,30 @@ for (const filsti of iKilden) {
   }
 }
 
+/*
+ * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
+ * og `remark-versjon.mjs` bytter dem for seg. Regexen over ser bare
+ * npm-navnet, så uten dette kunne Gradle-eksempelet gå ut med ordet VERSJON
+ * i seg mens sjekken var grønn. Begge veier kontrolleres: at ingen av de tre
+ * formene står igjen, og at koordinaten med versjonen faktisk finnes.
+ */
+const MAVEN_IGJEN = [
+  "markusaugust:fristil:VERSJON",
+  "webjars/fristil/VERSJON",
+  'version "VERSJON"',
+]
+const MAVEN_MED_VERSJON = `io.github.markusaugust:fristil:${version}`
+if (!bygget.some((tekst) => tekst.includes(MAVEN_MED_VERSJON))) {
+  funn.push(
+    `${MAVEN_MED_VERSJON} finnes ikke i det bygde. Kotlin-siden skal ha koordinaten med versjonen satt inn.`,
+  )
+}
+for (const form of MAVEN_IGJEN) {
+  if (bygget.some((tekst) => tekst.includes(form))) {
+    funn.push(`«${form}» står igjen i det bygde uten at versjonen ble satt inn`)
+  }
+}
+
 if (leste === 0 || iKilden.size === 0) {
   funn.push(
     `Sjekken så ikke på noe: ${leste} bygde sider og ${iKilden.size} adresser med plassholder i kilden. Er dist bygd?`,

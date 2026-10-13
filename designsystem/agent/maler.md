@@ -378,10 +378,11 @@ til feilmeldingene og fullføring i HTML i en streng merket med
 På JVM-en uten Node finnes Fristil for Kotlin
 (https://fristil.sobernetics.no/kotlin/). `fristil.jar` er kommandolinja som
 `java -jar fristil.jar sjekk`, og ligger ved hver utgivelse på GitHub:
-https://github.com/MarkusAugust/fristil/releases/latest. Maven-pakken med
-`assertFristil(html)` og Gradle-pluginen `io.github.markusaugust.fristil` er
-ikke på Maven Central ennå, så begge må bygges fra kildekoden. Skriv ikke en
-`version` for dem som om de var utgitt.
+https://github.com/MarkusAugust/fristil/releases/latest. Maven-pakken
+`io.github.markusaugust:fristil` med `assertFristil(html)` og Gradle-pluginen
+`io.github.markusaugust.fristil` ligger på Maven Central, med samme versjon
+som npm-pakken. Ikke hver npm-versjon finnes på Maven: bruk den nyeste som
+finnes der, og skriv aldri en `version` du ikke har sett på Central.
 
 ## Kjente fallgruver
 

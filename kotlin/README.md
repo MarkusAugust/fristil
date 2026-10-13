@@ -1,4 +1,4 @@
-# Fristil for Kotlin (prototype)
+# Fristil for Kotlin
 
 Fristil i Kotlin og Java, uten Node og uten npm: byggefunksjonene,
 diagnostikken, og CSS-en og web-komponentene som WebJar.
