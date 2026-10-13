@@ -23,6 +23,15 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Endret
+
+- **Regelboka for maler sier at Kotlin-pakken ligger på Maven Central.**
+  `agent/maler.md` sa at `io.github.markusaugust:fristil` og Gradle-pluginen
+  måtte bygges fra kildekoden. Begge ligger på Central fra 0.33.0, med samme
+  versjon som npm-pakken, men ikke hver npm-versjon går dit. Regelboka ber
+  derfor agenten bruke den nyeste versjonen som finnes på Central, og aldri
+  skrive en den ikke har sett der.
+
 ## 0.33.0 (2026-10-12)
 
 ### Brytende

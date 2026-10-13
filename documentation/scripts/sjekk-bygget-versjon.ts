@@ -89,24 +89,33 @@ for (const filsti of iKilden) {
 /*
  * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
  * og `remark-versjon.mjs` bytter dem for seg. Regexen over ser bare
- * npm-navnet, så uten dette kunne Gradle-eksempelet gå ut med ordet VERSJON
- * i seg mens sjekken var grønn. Begge veier kontrolleres: at ingen av de tre
- * formene står igjen, og at koordinaten med versjonen faktisk finnes.
+ * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSJON
+ * i seg mens sjekken var grønn. Hver av de tre formene kontrolleres begge
+ * veier: at den står med versjonen i det bygde, og at plassholderen ikke
+ * står igjen.
+ *
+ * Plugin-linja leses fra kopieringsknappens `data-code`, ikke fra `<pre>`.
+ * Expressive Code deler kodeblokka i spenn per token, så i `<pre>` står
+ * `version ` og `"0.33.0"` i hvert sitt `<span>`, og en søkestreng med
+ * anførselstegnet rett etter ordet kan aldri treffe der, verken med versjon
+ * eller med plassholder. I `data-code` står linja samlet, med `"` som
+ * `&#x22;`. Første utgave lette etter `version "VERSJON"` og var død.
  */
-const MAVEN_IGJEN = [
-  "markusaugust:fristil:VERSJON",
-  "webjars/fristil/VERSJON",
-  'version "VERSJON"',
+const MAVEN = [
+  ["markusaugust:fristil:VERSJON", `markusaugust:fristil:${version}`],
+  ["version &#x22;VERSJON&#x22;", `version &#x22;${version}&#x22;`],
+  ["webjars/fristil/VERSJON/", `webjars/fristil/${version}/`],
 ]
-const MAVEN_MED_VERSJON = `io.github.markusaugust:fristil:${version}`
-if (!bygget.some((tekst) => tekst.includes(MAVEN_MED_VERSJON))) {
-  funn.push(
-    `${MAVEN_MED_VERSJON} finnes ikke i det bygde. Kotlin-siden skal ha koordinaten med versjonen satt inn.`,
-  )
-}
-for (const form of MAVEN_IGJEN) {
-  if (bygget.some((tekst) => tekst.includes(form))) {
-    funn.push(`«${form}» står igjen i det bygde uten at versjonen ble satt inn`)
+for (const [igjen, medVersjon] of MAVEN) {
+  if (!bygget.some((tekst) => tekst.includes(medVersjon))) {
+    funn.push(
+      `«${medVersjon}» finnes ikke i det bygde. Kotlin-siden skal ha den med versjonen satt inn.`,
+    )
+  }
+  if (bygget.some((tekst) => tekst.includes(igjen))) {
+    funn.push(
+      `«${igjen}» står igjen i det bygde uten at versjonen ble satt inn`,
+    )
   }
 }
 

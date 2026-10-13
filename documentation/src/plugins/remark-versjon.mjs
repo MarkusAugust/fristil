@@ -37,8 +37,9 @@ const TARBALL = "designsystem-VERSJON.tgz"
  * npm-pakken, og sto med `{versjon}` i kilden, som leseren fikk se
  * bokstavelig. Ordet VERSJON byttes der det står rett etter
  * `markusaugust:fristil:`, `markusaugust.fristil") version "` og
- * `webjars/fristil/`, og ingen andre steder: et løst VERSJON i brødtekst
- * skal fortsatt stå, så `sjekk-bygget-versjon.ts` kan si fra om det.
+ * `webjars/fristil/`, og ingen andre steder. `sjekk-bygget-versjon.ts`
+ * krever at hver av de tre står med versjonen i det bygde, og at ingen av
+ * dem står igjen med plassholderen.
  */
 const MAVEN = [
   [
