@@ -143,7 +143,15 @@ cd designsystem && npm publish --access public
 
 En versjon kan aldri publiseres på nytt eller overskrives, og `npm unpublish` er stengt etter 72 timer. Skal en versjon ut av sirkulasjon, er `npm deprecate` veien.
 
-Når npm-pakken er ute, kjører samme arbeidsflyt to jobber til, begge bygd av den publiserte tarballen: `fristil.wasm` og `fristil.jar` legges ved utgivelsen på GitHub, og Kotlin-pakken går til Maven Central som `io.github.markusaugust:fristil`, `fristil-kotlinx-html`, `fristil-kommandolinje` og `fristil-gradle-plugin`. Versjonen i `kotlin/gradle.properties` settes av `prepare-version`. Central krever et navnerom bekreftet på central.sonatype.com, et brukertoken og en GPG-nøkkel, og hemmelighetene står i kommentaren over jobben i `publish.yml`. Mangler de, publiseres ingenting til Central, og kjøringen får en advarsel. En versjon på Central kan heller aldri byttes ut.
+Når npm-pakken er ute, kjører samme arbeidsflyt en jobb til, bygd av den publiserte tarballen: `fristil.wasm` og `fristil.jar` legges ved utgivelsen på GitHub.
+
+Kotlin-pakken går til Maven Central som `io.github.markusaugust:fristil`, `fristil-kotlinx-html`, `fristil-kommandolinje` og `fristil-gradle-plugin`, men ikke av seg selv. Central har et månedlig tak på antall utgivelser og filer for en gratis organisasjon, og hver kjøring dit teller, så Maven-jobben kjører bare når du starter arbeidsflyten for hånd på taggen og ber om den:
+
+```bash
+gh workflow run publish.yml --ref v0.34.0 -f maven=true
+```
+
+Gjør det når en endring angår Kotlin-konsumentene, ikke for hver tagg. Maven-versjonen kan hoppe over npm-versjoner: hver Maven-versjon bygges av npm-pakken med samme nummer, så 0.34.3 på Central er den samme Fristil som 0.34.3 på npm, også når 0.34.1 og 0.34.2 aldri gikk dit. Versjonen i `kotlin/gradle.properties` settes av `prepare-version`. Central krever et navnerom bekreftet på central.sonatype.com, et brukertoken og en GPG-nøkkel, og hemmelighetene står i kommentaren over jobben i `publish.yml`. Mangler de, publiseres ingenting til Central, og kjøringen får en advarsel. En versjon på Central kan heller aldri byttes ut.
 
 Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
 

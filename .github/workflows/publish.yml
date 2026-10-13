@@ -2,17 +2,33 @@ name: Publiser
 
 # Kjører når en versjonstagg dyttes opp, og kan også startes for hånd.
 #
-# npm først, så kommandolinja på GitHub Releases og Kotlin-pakken på Maven
-# Central. De to siste bygges av npm-pakken som nettopp ble publisert, og
-# venter derfor på den.
+# En tagg gir npm og kommandolinja på GitHub Releases. Kommandolinja bygges
+# av npm-pakken som nettopp ble publisert, og venter derfor på den.
 #
-# Startet for hånd publiserer den versjonen i package.json til npm hvis den
-# ikke er ute. Kommandolinja bygges da av npm-pakken, men gis ikke ut, og
-# Kotlin-pakken verken testes eller publiseres: det skjer bare for en tagg.
+# Kotlin-pakken går til Maven Central bare når arbeidsflyten startes for
+# hånd på taggen med valget `maven` på:
+#
+#   gh workflow run publish.yml --ref v0.34.0 -f maven=true
+#
+# Central har et månedlig tak på antall utgivelser og filer for en gratis
+# organisasjon, og hver kjøring dit teller, uansett hvor lite som er
+# endret. npm har ikke noe slikt tak, og er hovedkanalen. Maven-versjonen
+# kan derfor hoppe over npm-versjoner: hver Maven-versjon bygges av
+# npm-pakken med samme nummer, så 0.34.3 på Central er den samme Fristil
+# som 0.34.3 på npm, også når 0.34.1 og 0.34.2 aldri gikk dit.
+#
+# Startet for hånd uten valget publiserer den versjonen i package.json til
+# npm hvis den ikke er ute. Kommandolinja bygges da av npm-pakken, men gis
+# ikke ut, og Maven-jobben kjører ikke.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      maven:
+        description: Publiser Kotlin-pakken til Maven Central (bare på en tagg)
+        type: boolean
+        default: false
 
 # `id-token` er hele poenget: GitHub lager et kortlevd OIDC-bevis som npm
 # stoler på, så det ligger ingen hemmelighet i repoet. npm signerer samtidig
@@ -186,6 +202,13 @@ jobs:
   # Kotlin-pakken, kotlinx.html-utvidelsen, kommandolinja og Gradle-pluginen,
   # alle som `io.github.markusaugust:…` med samme versjon som npm-pakken.
   #
+  # Bare når arbeidsflyten er startet for hånd med `maven` på, se øverst.
+  # En tagg alene starter aldri denne jobben. Stegene som tester og
+  # publiserer krever i tillegg at kjøringen står på en tagg, siden Gradle
+  # bygger av npm-tarballen for versjonen og testene leser fasiten fra den
+  # samme commiten; startet på en gren med valget på, kjører jobben og
+  # stopper uten å publisere.
+  #
   # Det krever en konto på central.sonatype.com med navnerommet
   # `io.github.markusaugust` bekreftet, et brukertoken derfra og en
   # GPG-nøkkel lastet opp til en nøkkeltjener. Hemmelighetene heter
@@ -194,6 +217,7 @@ jobs:
   # de, sier jobben fra og publiserer ingenting.
   maven:
     name: Maven Central
+    if: github.event_name == 'workflow_dispatch' && inputs.maven
     needs: publiser
     runs-on: ubuntu-latest
 
