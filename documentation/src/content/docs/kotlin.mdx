@@ -5,22 +5,18 @@ description: Byggefunksjonene med enum-er, og Fristils sjekk i vanlige tester, p
 
 Fristil for Kotlin gir deg tre ting: byggefunksjonene fra `fs`, der de lovlige verdiene er `enum`-er, den samme sjekken som `fristil sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
 
-:::caution[Ikke utgitt ennå]
-Pakken er ikke på Maven Central ennå. Den kommer som `io.github.markusaugust:fristil`, med samme versjon som `@fristil/designsystem`, og fram til da kan du bygge den fra [kildekoden](https://github.com/MarkusAugust/fristil/tree/master/kotlin). Se [Veikart](../veikart/).
-:::
-
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.markusaugust:fristil:{versjon}")
+    implementation("io.github.markusaugust:fristil:VERSJON")
 }
 ```
 
-Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme Fristil i Maven og på npm. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme Fristil i Maven og på npm. Men ikke hver npm-versjon går til Maven Central. Finnes ikke versjonen over [på Central](https://central.sonatype.com/artifact/io.github.markusaugust/fristil), bruk den nyeste som gjør det. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
 
 ## CSS-en og web-komponentene
 
-Pakken er også en [WebJar](https://www.webjars.org): `fristil.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/fristil/{versjon}/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
+Pakken er også en [WebJar](https://www.webjars.org): `fristil.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/fristil/VERSJON/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
 
 ```kotlin
 routing {
@@ -213,7 +209,7 @@ Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. P
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("io.github.markusaugust.fristil") version "{versjon}"
+    id("io.github.markusaugust.fristil") version "VERSJON"
 }
 
 fristil {
@@ -244,7 +240,7 @@ fristil {
 }
 ```
 
-Pluginen kommer på Maven Central sammen med pakken. Gradle finner den der uten en egen `pluginManagement`-blokk, siden Gradle Plugin Portal sender videre til Maven Central for det den ikke har selv. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
+Pluginen ligger på Maven Central sammen med pakken, med samme versjon. Gradle finner den der uten en egen `pluginManagement`-blokk, siden Gradle Plugin Portal sender videre til Maven Central for det den ikke har selv. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
 
 ## Hvordan det virker
 

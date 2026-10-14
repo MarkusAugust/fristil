@@ -86,6 +86,39 @@ for (const filsti of iKilden) {
   }
 }
 
+/*
+ * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
+ * og `remark-versjon.mjs` bytter dem for seg. Regexen over ser bare
+ * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSJON
+ * i seg mens sjekken var grønn. Hver av de tre formene kontrolleres begge
+ * veier: at den står med versjonen i det bygde, og at plassholderen ikke
+ * står igjen.
+ *
+ * Plugin-linja leses fra kopieringsknappens `data-code`, ikke fra `<pre>`.
+ * Expressive Code deler kodeblokka i spenn per token, så i `<pre>` står
+ * `version ` og `"0.33.0"` i hvert sitt `<span>`, og en søkestreng med
+ * anførselstegnet rett etter ordet kan aldri treffe der, verken med versjon
+ * eller med plassholder. I `data-code` står linja samlet, med `"` som
+ * `&#x22;`. Første utgave lette etter `version "VERSJON"` og var død.
+ */
+const MAVEN = [
+  ["markusaugust:fristil:VERSJON", `markusaugust:fristil:${version}`],
+  ["version &#x22;VERSJON&#x22;", `version &#x22;${version}&#x22;`],
+  ["webjars/fristil/VERSJON/", `webjars/fristil/${version}/`],
+]
+for (const [igjen, medVersjon] of MAVEN) {
+  if (!bygget.some((tekst) => tekst.includes(medVersjon))) {
+    funn.push(
+      `«${medVersjon}» finnes ikke i det bygde. Kotlin-siden skal ha den med versjonen satt inn.`,
+    )
+  }
+  if (bygget.some((tekst) => tekst.includes(igjen))) {
+    funn.push(
+      `«${igjen}» står igjen i det bygde uten at versjonen ble satt inn`,
+    )
+  }
+}
+
 if (leste === 0 || iKilden.size === 0) {
   funn.push(
     `Sjekken så ikke på noe: ${leste} bygde sider og ${iKilden.size} adresser med plassholder i kilden. Er dist bygd?`,
