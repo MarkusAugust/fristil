@@ -92,6 +92,8 @@ Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen
 
 Dette er den samme `<select>`-en som før. Den sendes inn med skjemaet, leses av skjermlesere og virker med tastatur på nøyaktig samme måte, og markupen er uendret bortsett fra attributtet.
 
+Et valg som er lengre enn feltet, brytes da over flere linjer, og feltet blir høyere. Skal det heller klippes med «…», legg `<button><selectedcontent></selectedcontent></button>` først i `<select>`-en. Nettleseren lager ikke `<selectedcontent>` selv, men fyller det med det valgte alternativet når det står der, og Fristil klipper det. Nettlesere uten støtte hopper over knappen.
+
 Grupper laget med `<optgroup label="…">` får overskriften i mindre og dempet tekst, så den skiller seg fra valgene.
 
 Støtten er ulik mellom nettleserne, og det er grunnen til at dette må slås på:

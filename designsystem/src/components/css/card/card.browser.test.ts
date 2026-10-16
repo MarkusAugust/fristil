@@ -12,6 +12,8 @@ import { card } from "./card"
 import "../../../tokens/tokens.css"
 import "./card.css"
 import "../link/link.css"
+import "../paragraph/paragraph.css"
+import "../help-text/help-text.css"
 
 describe("fs-card", () => {
   beforeEach(() => {
@@ -77,5 +79,24 @@ describe("fs-card som knapp", () => {
       getComputedStyle(document.getElementById(id) as HTMLElement).fontSize
 
     expect(skrift("i-knapp")).toBe(skrift("i-lenke"))
+  })
+})
+
+describe("avsnitt i fs-card", () => {
+  it("lar klassen på avsnittet vinne over kortet", () => {
+    // `.fs-card p` slo `.fs-paragraph` på spesifisitet, så
+    // `--fs-paragraph-line-height` virket overalt unntatt i et kort.
+    monter(`
+      <p class="fs-paragraph" id="utenfor" style="--fs-paragraph-line-height: 1.2">Tekst</p>
+      <div class="fs-card">
+        <p class="fs-paragraph" id="inni" style="--fs-paragraph-line-height: 1.2">Tekst</p>
+        <p class="fs-help-text" id="hjelp">Hjelp</p>
+      </div>
+    `)
+    const stil = (id: string) =>
+      getComputedStyle(document.getElementById(id) as HTMLElement)
+
+    expect(stil("inni").lineHeight).toBe(stil("utenfor").lineHeight)
+    expect(stil("hjelp").marginTop).not.toBe("0px")
   })
 })

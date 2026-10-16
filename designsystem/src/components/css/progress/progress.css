@@ -127,6 +127,20 @@
     }
 
     /*
+     * Variabelen over er ikke nok for den fylte delen. Den leser
+     * `currentColor`, og modusen tvinger bakgrunnen tilbake til `Canvas` når
+     * verdien ikke er en systemfarge, så stolpen så tom ut uansett `value`.
+     * Systemfargen må stå på selve pseudoelementet.
+     */
+    .fs-progress::-webkit-progress-value {
+      background: Highlight;
+    }
+
+    .fs-progress::-moz-progress-bar {
+      background: Highlight;
+    }
+
+    /*
      * Stripen i en ubestemt stolpe er en gradient, og modusen fjerner
      * gradienter. Uten unntaket sto en tom ramme igjen, og ingenting sa at
      * noe pågikk. Fargene er systemets egne, så brukerens valg gjelder

@@ -1,6 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
+import { server } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -59,13 +60,37 @@ describe("fs-accordion", () => {
     expect(lukket).not.toBe(apent)
   })
 
-  it("lar teksten i et lukket panel bli funnet av søk i siden", () => {
-    // <details> holder innholdet i DOM-en. Bygger du det samme av knapper og
-    // aria-expanded, forsvinner teksten, og nettleserens søk finner den ikke.
-    const skjult = document.querySelector("#forste p") as HTMLElement
+  /*
+   * <details> holder innholdet søkbart. Bygger du det samme av knapper og
+   * aria-expanded, skjules teksten med `hidden`, og nettleserens søk finner
+   * den ikke. Før sjekket testen bare `textContent`, og den er satt i begge
+   * tilfellene, så testen kunne ikke skille dem. `window.find` er søket i
+   * siden fra skript. Det er ikke standard, og om det finner tekst i et
+   * lukket <details> spriker mellom motorene, så testen kjøres der det er
+   * målt.
+   */
+  it.skipIf(server.browser !== "chromium")(
+    "lar teksten i et lukket panel bli funnet av søk i siden",
+    () => {
+      monter(`
+        <details class="fs-accordion" id="lukket">
+          <summary>Hvem kan søke om bostøtte?</summary>
+          <div class="fs-accordion__content"><p>Hybelkaninhabitat</p></div>
+        </details>
+        <button type="button" aria-expanded="false">Hvem kan søke?</button>
+        <div hidden><p>Kvistloftmotiv</p></div>
+      `)
+      const finn = (tekst: string) => {
+        getSelection()?.removeAllRanges()
+        return (window as unknown as { find(tekst: string): boolean }).find(
+          tekst,
+        )
+      }
 
-    expect(skjult.textContent).toContain("folkeregistrert")
-  })
+      expect(finn("Hybelkaninhabitat")).toBe(true)
+      expect(finn("Kvistloftmotiv")).toBe(false)
+    },
+  )
 
   it("gir en overskrift i summary samme størrelse som uten", () => {
     // Dokumentasjonen viser `<summary><h3>`. Før fikk overskriften

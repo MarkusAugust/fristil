@@ -11,6 +11,7 @@ import { alert } from "./alert"
 
 import "../../../tokens/tokens.css"
 import "./alert.css"
+import "../help-text/help-text.css"
 
 describe("fs-alert", () => {
   beforeEach(() => {
@@ -50,6 +51,21 @@ describe("fs-alert", () => {
 
     expect(feil.borderInlineStartWidth).not.toBe("0px")
     expect(feil.borderInlineStartColor).not.toBe(feil.backgroundColor)
+  })
+
+  it("lar marginen til en hjelpetekst i meldingen stå", () => {
+    // `.fs-alert p` nullet den, siden den slo `.fs-help-text` på spesifisitet.
+    monter(`
+      <div class="fs-alert">
+        <p>Du får svar innen tre uker.</p>
+        <p class="fs-help-text" id="hjelp">Saksnummeret står i kvitteringen.</p>
+      </div>
+    `)
+
+    expect(
+      getComputedStyle(document.getElementById("hjelp") as HTMLElement)
+        .marginTop,
+    ).not.toBe("0px")
   })
 
   it("setter attributtene fra byggefunksjonen", () => {

@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server, userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
+import { piksel } from "./testing/piksel"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
@@ -216,6 +217,26 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     expect(ubestemt.backgroundImage).toContain(stil("markering").color)
     expect(ubestemt.outlineStyle).toBe("solid")
     expect(ubestemt.outlineColor).toBe(stil("tekst").color)
+  })
+
+  it("viser hvor langt en bestemt fremdriftsindikator har kommet", async () => {
+    // Den fylte delen er et pseudoelement som leste `currentColor`, og
+    // modusen tvang bakgrunnen til `Canvas`. Stilen på verten så riktig ut,
+    // men stolpen var tom, så det er pikslene som må leses.
+    monter(`
+      <progress class="fs-progress" id="bestemt" value="50" max="100"
+        aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
+      <progress class="fs-progress" id="farget" value="50" max="100"
+        data-color="danger" aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
+    `)
+    await settHoeykontrast(true)
+
+    for (const id of ["bestemt", "farget"]) {
+      const stolpe = document.getElementById(id) as HTMLElement
+      const fylt = await piksel(stolpe, 0.25)
+      const tom = await piksel(stolpe, 0.75)
+      expect(fylt, id).not.toEqual(tom)
+    }
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {

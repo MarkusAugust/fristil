@@ -20,9 +20,11 @@
     animation: fs-skeleton-shimmer 1600ms ease-in-out infinite;
   }
 
+  /* Tekstlinjene er lave, så standardradien er mindre. Variabelen gjelder
+     her også. */
   .fs-skeleton[data-variant="text"] {
     block-size: var(--fs-font-size-m);
-    border-radius: var(--fs-spacing-0-5);
+    border-radius: var(--fs-skeleton-radius, var(--fs-spacing-0-5));
   }
 
   .fs-skeleton[data-variant="circle"] {

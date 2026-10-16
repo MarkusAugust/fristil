@@ -16,15 +16,15 @@ Samme utseende og tilstander som [Input](../input/), for svar som blir lengre en
   placeholder="Skriv en kort begrunnelse"></textarea>
 
 <label class="fs-label" for="melding">Melding til saksbehandler</label>
-<textarea class="fs-textarea" id="melding" rows="2"
+<textarea class="fs-textarea" id="melding"
   data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
 
 <label class="fs-label" for="svar">Utfyllende svar</label>
-<textarea class="fs-textarea" id="svar" rows="2"
+<textarea class="fs-textarea" id="svar"
   data-state="invalid" aria-invalid="true">For kort</textarea>
 
 <label class="fs-label" for="merknad">Merknad</label>
-<textarea class="fs-textarea" id="merknad" rows="2"
+<textarea class="fs-textarea" id="merknad"
   disabled>Saken er avsluttet og kan ikke endres.</textarea>
 `}>
 <Fragment slot="ts">
@@ -81,7 +81,7 @@ felt.addEventListener("blur", () => {
 | `--fs-textarea-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-textarea-radius` | `var(--fs-spacing-1)` |
 
-`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker som før, og brukeren kan fortsatt dra feltet høyere. Bredden er låst, siden klassen setter `resize: vertical`.
+`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker over den, og brukeren kan fortsatt dra feltet høyere. Med standard skrift og luft er minstehøyden litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet, og først `rows="3"` blir høyere. Skal `rows` bestemme høyden alene, sett `--fs-textarea-min-height: 0`. Bredden er låst, siden klassen setter `resize: vertical`.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 

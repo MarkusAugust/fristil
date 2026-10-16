@@ -60,6 +60,41 @@ egen overskrift «Brytende».
   et tema laget med `tema` holder kravene. Nå svarer sjekken at det ikke er
   noen kontrast å kontrollere, uten feilkode. En fil uten noen
   `--fs-*`-verdier gir fortsatt feilkode.
+- **En `fs-progress` med `value` viste ikke fyllet i høykontrastmodus.**
+  Den fylte delen leste `currentColor`, og modusen tvang bakgrunnen på
+  pseudoelementet tilbake til `Canvas`, så stolpen så tom ut uansett hvor
+  langt den hadde kommet. Fyllet tegnes nå i `Highlight` rett på
+  `::-webkit-progress-value` og `::-moz-progress-bar`.
+- **Klassen på et avsnitt i `fs-card` og `fs-alert` vinner over
+  komponenten.** `.fs-card p` og `.fs-alert p` slo klassene på avsnittet på
+  spesifisitet. I et kort virket ikke `--fs-paragraph-line-height`, en
+  `fs-card__title` som var en `<p>` fikk artikkelens linjehøyde, og
+  `fs-help-text` og `fs-error-text` mistet marginen i toppen, også i en
+  melding. Reglene teller nå bare elementet, så et avsnitt uten klasse ser
+  ut som før.
+- **En besøkt `fs-link` skifter farge under musa.** `:hover` sto før
+  `:visited` med samme spesifisitet, så besøktfargen vant og hover-fargen
+  kom aldri. Rekkefølgen er snudd.
+- **Ringen rundt `fs-avatar` vises over bildet.** Den var en `box-shadow`
+  innover, og en slik skygge males under innholdet, så et bilde dekket den
+  helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
+  også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene.
+  En slik `outline` slår nettleserens egen fokusmarkering, så en
+  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`.
+- **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
+  hadde en fast radius og leste ikke variabelen. Standarden der er
+  fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.
+- **Et langt valg i `fs-select` med `data-picker="styled"` ble ikke
+  klippet.** Regelen som klipper det, treffer `<selectedcontent>`, og
+  kommentaren sa at nettleseren lager elementet selv. Det gjør den ikke, så
+  med markupen på siden ble et langt valg brutt over flere linjer, og feltet
+  ble høyere. Komponentsiden sier nå at
+  `<button><selectedcontent></selectedcontent></button>` må stå først i
+  `<select>`-en for at valget skal klippes.
+- **Siden om `fs-textarea` sa at `rows` virker som før.** Minstehøyden er
+  litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet.
+  Siden sier nå hvor grensen går, og at `--fs-textarea-min-height: 0` lar
+  `rows` bestemme alene.
 
 ## 0.33.0 (2026-10-12)
 

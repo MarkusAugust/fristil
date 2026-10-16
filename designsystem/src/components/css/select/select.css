@@ -142,9 +142,16 @@
 
     /* Teksten i knappen er valget som står nå. Lange valg skal klippes, ikke
        skyve pila ut av feltet. Uten `min-inline-size: 0` krymper den ikke,
-       for flex gir den minstebredden til innholdet. */
+       for flex gir den minstebredden til innholdet.
+
+       Nettleseren lager ikke <selectedcontent> selv. Det finnes bare når
+       forfatteren skriver `<button><selectedcontent></selectedcontent></button>`
+       først i select-en. Uten det tegnes valget i nettleserens egen skygge-DOM,
+       som ingen regel når, og et langt valg brytes over flere linjer.
+       `white-space: nowrap` på select-en hjelper ikke: teksten krymper ikke
+       der, og pila blir skjøvet ut av feltet. */
     /* biome-ignore lint/correctness/noUnknownTypeSelector: <selectedcontent> er
-       elementet nettleseren lager for det valgte alternativet i en tilpassbar
+       elementet som viser det valgte alternativet i en tilpassbar
        nedtrekksliste. Biome kjenner det ennå ikke. */
     .fs-select[data-picker="styled"] selectedcontent {
       min-inline-size: 0;
