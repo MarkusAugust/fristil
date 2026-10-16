@@ -890,6 +890,31 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     `feilmeldingen sier ikke at fila ikke er JSON: ${ugyldig.feil.slice(0, 80)}`,
   )
 
+  // Fila leses som `JSON.parse` leser den, slik TypeScript-utgaven gjorde:
+  // tall og strenger som ikke er JSON avvises, også på et lavere nivå.
+  for (const [navn, tekst] of [
+    ["null foran", '{"typografi":{"weights":{"bold":0700}}}'],
+    ["punktum til slutt", '{"typografi":{"lineHeights":{"default":1.}}}'],
+    ["kontrolltegn", '{"aksent":"#7c3aed\u0001"}'],
+    ["dyp nesting", `{"form":${"[".repeat(100_000)}`],
+  ]) {
+    await writeFile(sti, tekst)
+    const svar = await kjør(["tema", sti])
+    krev(
+      svar.kode === 1 && svar.feil.includes("er ikke gyldig JSON"),
+      `en oppskrift med ${navn} skulle vært ugyldig JSON, ga ${svar.kode}: ${svar.feil.slice(0, 120)}`,
+    )
+  }
+
+  // Står en nøkkel to ganger, vinner den siste, som i `JSON.parse`.
+  await writeFile(sti, '{"aksent":"#ff0000","aksent":"#0000ff"}')
+  const dobbel = await kjør(["tema", sti])
+  const blå = await kjør(["tema", "--aksent=#0000ff"])
+  krev(
+    dobbel.kode === 0 && dobbel.ut === blå.ut,
+    "en nøkkel som står to ganger i oppskriften, fikk ikke den siste verdien",
+  )
+
   await rm(mappe, { recursive: true, force: true })
 }
 

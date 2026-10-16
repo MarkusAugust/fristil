@@ -109,6 +109,12 @@ egen overskrift «Brytende».
   tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
   filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
   glob, er fortsatt ikke en feil.
+- **`fristil tema` leser oppskriften som `JSON.parse`.** Sto en nøkkel to
+  ganger, vant den første, mens `JSON.parse` lar den siste vinne. Tall som
+  `0700` og `1.` og et rått kontrolltegn i en streng ble godtatt, og en fil
+  med svært dyp nesting stoppet den kjørbare fila med «stack overflow». Nå
+  vinner den siste verdien, slike tall og strenger gir «er ikke gyldig
+  JSON», og det gjør også mer enn 128 objekter og lister inni hverandre.
 
 ## 0.33.0 (2026-10-12)
 
