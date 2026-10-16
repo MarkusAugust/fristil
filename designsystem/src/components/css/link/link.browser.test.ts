@@ -1,7 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { userEvent } from "vitest/browser"
 import { setAttributes } from "../../../dom"
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -93,12 +92,14 @@ describe("fs-link besøkt", () => {
    * Nettleseren skjuler `:visited` for skript, så en lenke kan ikke gjøres
    * besøkt herfra. Testen bytter derfor `:visited` med et attributt i en kopi
    * av reglene, i samme rekkefølge. `:hover` sto før `:visited` med samme
-   * spesifisitet, og en besøkt lenke skiftet ikke farge under musa.
+   * spesifisitet, og en besøkt lenke skiftet ikke farge under musa. `:hover`
+   * byttes også, for nettlesersiden har én mus, og hover.browser.test.ts
+   * flytter den samtidig.
    */
-  it("skifter farge under musa også når lenken er besøkt", async () => {
+  it("skifter farge under musa også når lenken er besøkt", () => {
     monter(`
       <style>
-        ${linkCss.replaceAll(":visited", "[data-besokt]")}
+        ${linkCss.replaceAll(":visited", "[data-besokt]").replaceAll(":hover", "[data-mus]")}
         .fs-link { transition: none; }
       </style>
       <a id="besokt" class="fs-link" href="#" data-besokt>Søknaden din</a>
@@ -106,10 +107,9 @@ describe("fs-link besøkt", () => {
     const lenke = document.getElementById("besokt") as HTMLElement
     expect(getComputedStyle(lenke).color).toBe(farge("--fs-color-visited-text"))
 
-    await userEvent.hover(lenke)
+    lenke.setAttribute("data-mus", "")
     expect(getComputedStyle(lenke).color).toBe(
       farge("--fs-color-accent-text-strong"),
     )
-    await userEvent.unhover(lenke)
   })
 })
