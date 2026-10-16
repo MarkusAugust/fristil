@@ -39,6 +39,13 @@ egen overskrift «Brytende».
   pseudoelementet tilbake til `Canvas`, så stolpen så tom ut uansett hvor
   langt den hadde kommet. Fyllet tegnes nå i `Highlight` rett på
   `::-webkit-progress-value` og `::-moz-progress-bar`.
+- **Klassen på et avsnitt i `fs-card` og `fs-alert` vinner over
+  komponenten.** `.fs-card p` og `.fs-alert p` slo klassene på avsnittet på
+  spesifisitet. I et kort virket ikke `--fs-paragraph-line-height`, en
+  `fs-card__title` som var en `<p>` fikk artikkelens linjehøyde, og
+  `fs-help-text` og `fs-error-text` mistet marginen i toppen, også i en
+  melding. Reglene teller nå bare elementet, så et avsnitt uten klasse ser
+  ut som før.
 
 ## 0.33.0 (2026-10-12)
 
