@@ -1028,6 +1028,33 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     blandet.kode === 0,
     `én tom fil blant flere ga kode ${blandet.kode}: ${blandet.feil}`,
   )
+
+  // En BOM først teller ikke som en kolonne, slik editoren viser linja. Det
+  // gjelder en fil, standard inn og en side verten har hentet.
+  const bomFil = join(tomme, "bom.html")
+  const bomSide = '\uFEFF<span class="fs-buton">x</span>\n'
+  await writeFile(bomFil, bomSide)
+  const bom = await kjør(["sjekk", bomFil])
+  krev(
+    bom.ut.includes(`${bomFil}:1:14:`),
+    `en fil med BOM fikk feil kolonne: ${bom.ut}`,
+  )
+  const hentetFil = join(tomme, "hentet.txt")
+  await writeFile(
+    hentetFil,
+    `http://localhost:1/bom\n200\ntext/html\n${bomSide}`,
+  )
+  const hentet = await kjør(["sjekk", `--hentet=${hentetFil}`])
+  krev(
+    hentet.ut.includes("http://localhost:1/bom:1:14:"),
+    `en hentet side med BOM fikk feil kolonne: ${hentet.ut}`,
+  )
+  await writeFile(hentetFil, "http://localhost:1/bom\n200\ntext/html\n\uFEFF")
+  const bareBom = await kjør(["sjekk", `--hentet=${hentetFil}`])
+  krev(
+    bareBom.kode === 1 && bareBom.feil.includes("svarte med en tom side"),
+    `en hentet side med bare en BOM ble ikke meldt som tom: ${bareBom.feil}`,
+  )
   await rm(tomme, { recursive: true, force: true })
 
   // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
@@ -1233,12 +1260,17 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
         )
       if (sti === "/json") return Response.json({ ok: true })
       if (sti === "/tom") return new Response("", { headers: html })
+      if (sti === "/bom")
+        return new Response(
+          new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode(side)]),
+          { headers: html },
+        )
       return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
     },
   })
   const rot = `http://localhost:${tjener.port}`
 
-  for (const sti of ["/side", "/videre", "/biter"]) {
+  for (const sti of ["/side", "/videre", "/biter", "/bom"]) {
     const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
     krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
     krev(
@@ -1250,6 +1282,14 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
       `${sti}: siden ble ikke sjekket som hel side, for-koblingen mangler: ${ut.slice(0, 200)}`,
     )
   }
+
+  // BOM-en først gir ikke en kolonne mer: funnene er de samme som uten.
+  const utenBom = await kjør(["sjekk", `${rot}/side`])
+  const medBom = await kjør(["sjekk", `${rot}/bom`])
+  krev(
+    medBom.ut.replaceAll("/bom", "/side") === utenBom.ut,
+    `en side med BOM ga andre posisjoner enn uten: ${medBom.ut.slice(0, 200)}`,
+  )
 
   const json = await kjør(["sjekk", `${rot}/json`])
   krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")

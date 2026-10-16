@@ -19,6 +19,17 @@ use fristil_kjerne::{diagnose_markup, diagnose_page, diagnose_styled, manifest, 
 /// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
 /// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
 /// tilfeldigvis var kommet.
+/// Teksten uten en BOM (U+FEFF) først, slik nettleseren og editoren leser
+/// den. Med den ville linje 1 fått én kolonne mer enn editoren viser, og
+/// Node-verten, der `response.text()` fjerner den, svart annerledes enn den
+/// kjørbare fila og JVM-en.
+pub fn without_bom(text: String) -> String {
+    match text.strip_prefix('\u{feff}') {
+        Some(rest) => rest.to_string(),
+        None => text,
+    }
+}
+
 fn read_all_input() -> Vec<u8> {
     let mut bytes = Vec::new();
     let mut buffer = [0u8; 64 * 1024];
@@ -271,7 +282,7 @@ pub fn run(arguments: &[String]) {
             error("Leser markup fra standard inn. Avslutt med Ctrl-D.");
         }
         let bytes = read_all_input();
-        let text = String::from_utf8_lossy(&bytes).into_owned();
+        let text = without_bom(String::from_utf8_lossy(&bytes).into_owned());
         // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
         // ville ellers meldt grønt uten å ha sett på noe.
         if text.trim().is_empty() {
@@ -304,7 +315,7 @@ pub fn run(arguments: &[String]) {
             None => match std::fs::read(input) {
                 Ok(bytes) => sources.push(Source {
                     name: input.clone(),
-                    text: String::from_utf8_lossy(&bytes).into_owned(),
+                    text: without_bom(String::from_utf8_lossy(&bytes).into_owned()),
                     page: rendered,
                 }),
                 Err(_) => missing.push(input.clone()),

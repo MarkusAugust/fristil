@@ -124,6 +124,11 @@ egen overskrift «Brytende».
   ikke lenger med et mellomrom.** Det sto igjen etter «styrer.», i
   `fristil sjekk`, i editoren og som to mellomrom før regelnavnet i
   `assertFristil`.
+- **En BOM først i en fil eller side gir ikke lenger en kolonne for mye.**
+  `fristil sjekk` talte U+FEFF som et tegn på linje 1, så kolonnen var én
+  mer enn editoren viser. For en adresse svarte `npx` riktig, fordi Node
+  fjerner BOM-en, mens den kjørbare fila og `java -jar` ga én kolonne mer.
+  Nå fjernes den for filer, standard inn og adresser i alle verter.
 
 ## 0.33.0 (2026-10-12)
 

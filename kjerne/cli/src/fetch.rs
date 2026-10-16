@@ -40,6 +40,7 @@ fn judge(
         };
         return Err(format!("{address} svarte med {shown}, ikke HTML."));
     }
+    let body = crate::check::without_bom(body);
     // En side som rendret tomt, er nesten alltid en feil i appen, og en
     // CI-linje mot den skal ikke bli grønn uten å ha sjekket noe.
     if body.trim().is_empty() {
@@ -329,6 +330,14 @@ mod tests {
         assert!(judge("u", 200, "text/html", " \n".into())
             .unwrap_err()
             .contains("tom side"));
+        // BOM-en fjernes, som `response.text()` gjør i Node.
+        assert_eq!(
+            judge("u", 200, "text/html", "\u{feff}<p>".into())
+                .unwrap()
+                .1,
+            "<p>"
+        );
+        assert!(judge("u", 200, "text/html", "\u{feff}\n".into()).is_err());
     }
 
     #[test]
