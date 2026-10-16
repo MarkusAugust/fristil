@@ -751,3 +751,35 @@ fn dark_inside_not_does_not_make_a_dark_block() {
         parse_blocks(".kort:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
     assert_eq!(blocks[0].appearance, Appearance::Light);
 }
+
+#[test]
+fn media_not_dark_is_light_and_only_light() {
+    // `not` snur mediespørringen. Blokka gjelder i lyst tema, og bare der, så
+    // den kontrolleres heller ikke mot de mørke standardverdiene.
+    for media in [
+        "not (prefers-color-scheme: dark)",
+        "not all and (prefers-color-scheme: dark)",
+        "NOT (Prefers-Color-Scheme:dark)",
+    ] {
+        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        assert_eq!(
+            parse_blocks(&css)[0].appearance,
+            Appearance::Light,
+            "{media}"
+        );
+        let report = inspect_theme(&css);
+        assert!(
+            report.problems.is_empty(),
+            "{media}: {:?}",
+            messages(&report)
+        );
+    }
+}
+
+#[test]
+fn media_not_light_is_dark() {
+    let css =
+        "@media not (prefers-color-scheme: light) { :root { --fs-color-danger-text: #f1a7ab } }";
+    assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
+    assert!(inspect_theme(css).problems.is_empty());
+}

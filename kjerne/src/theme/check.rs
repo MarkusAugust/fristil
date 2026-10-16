@@ -303,10 +303,11 @@ fn without_important(value: &str) -> &str {
 }
 
 /// Om blokka bare gjelder i lyst tema: selektoren har `light` som eget ord
-/// utenfor en `:not()`, eller den står i en `@media` for `print`, som
-/// skrives ut lyst. `.highlight` og `.lightbox` er ikke lyst tema.
+/// utenfor en `:not()`, den står i `@media not (prefers-color-scheme: dark)`,
+/// eller den står i en `@media` for `print`, som skrives ut lyst.
+/// `.highlight` og `.lightbox` er ikke lyst tema.
 fn only_light(selector: &str) -> bool {
-    let s = without_not(selector).to_ascii_lowercase();
+    let s = flip_negated_scheme(&without_not(selector)).to_ascii_lowercase();
     let words: Vec<&str> = s
         .split(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
         .collect();
@@ -348,6 +349,60 @@ fn without_not(selector: &str) -> String {
     out
 }
 
+/// Hver negerte mediespørring om fargeskjema, `not (prefers-color-scheme: dark)`
+/// eller `not all and (prefers-color-scheme: dark)`, skrevet som det den
+/// gjelder: det motsatte skjemaet. Ellers leses `dark` i den som mørkt tema.
+fn flip_negated_scheme(selector: &str) -> String {
+    let lower = selector.to_ascii_lowercase();
+    // Teksten etter nøkkelordet, når det står som eget ord.
+    fn after<'a>(rest: &'a str, keyword: &str) -> Option<&'a str> {
+        rest.strip_prefix(keyword)
+            .filter(|r| r.starts_with(is_js_space) || r.starts_with('('))
+            .map(|r| r.trim_start_matches(is_js_space))
+    }
+    let word = |c: u8| c.is_ascii_alphanumeric() || c == b'-' || c == b'_';
+    let mut out = String::new();
+    let mut copied = 0;
+    let mut from = 0;
+    while let Some(found) = lower[from..].find("not") {
+        let at = from + found;
+        from = at + 3;
+        if at > 0 && word(lower.as_bytes()[at - 1]) {
+            continue;
+        }
+        let Some(mut rest) = after(&lower[at..], "not") else {
+            continue;
+        };
+        if let Some(r) = after(rest, "all").and_then(|r| after(r, "and")) {
+            rest = r;
+        }
+        let scheme = rest
+            .strip_prefix('(')
+            .map(|r| r.trim_start_matches(is_js_space))
+            .and_then(|r| r.strip_prefix("prefers-color-scheme"))
+            .map(|r| r.trim_start_matches(is_js_space))
+            .and_then(|r| r.strip_prefix(':'))
+            .map(|r| r.trim_start_matches(is_js_space));
+        let Some((opposite, r)) = scheme.and_then(|r| {
+            r.strip_prefix("dark")
+                .map(|r| ("light", r))
+                .or_else(|| r.strip_prefix("light").map(|r| ("dark", r)))
+        }) else {
+            continue;
+        };
+        let Some(r) = r.trim_start_matches(is_js_space).strip_prefix(')') else {
+            continue;
+        };
+        let end = lower.len() - r.len();
+        out.push_str(&selector[copied..at]);
+        out.push_str(&format!("(prefers-color-scheme: {opposite})"));
+        copied = end;
+        from = end;
+    }
+    out.push_str(&selector[copied..]);
+    out
+}
+
 /// Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
 ///
 /// `scheme` er verdien i blokkas siste `color-scheme`, som vinner i kaskaden.
@@ -374,8 +429,8 @@ fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
         }
     }
     // `dark` må stå som eget ord: `.darkmode-toggle` er ikke et mørkt tema.
-    // Det som står i `:not(…)` sier hva blokka ikke er.
-    let selector = without_not(selector);
+    // Det som står i `:not(…)` og etter `@media not` sier hva blokka ikke er.
+    let selector = flip_negated_scheme(&without_not(selector));
     let s: Vec<char> = selector.chars().collect();
     let letter = |c: Option<&char>| c.is_some_and(|c| c.is_ascii_alphabetic());
     for k in 0..s.len() {

@@ -40,6 +40,10 @@ egen overskrift «Brytende».
   blokk ble lest som deklarasjonen `html`, og den slukte alt fram til neste
   semikolon, blokkene etter den med. Et tema med et brudd der fikk «Temaet
   holder hvert løfte». Nå leses blokka som en regel, slik nettleseren gjør.
+- **`fristil sjekk-tema` leste `@media not (prefers-color-scheme: dark)` som
+  mørkt tema.** Blokka gjelder i lyst tema, og Fristils egne lyse verdier
+  ga brudd. `not` snur nå mediespørringen, også skrevet
+  `not all and (…)`, og blokka kontrolleres bare som lys.
 
 ## 0.33.0 (2026-10-12)
 
