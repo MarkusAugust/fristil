@@ -9,6 +9,7 @@ import {
 } from "../../../testing/a11y"
 import { piksel } from "../../../testing/piksel"
 import { avatar } from "./avatar"
+import avatarCss from "./avatar.css?inline"
 
 import "../../../tokens/tokens.css"
 import "./avatar.css"
@@ -61,20 +62,23 @@ describe("fs-avatar", () => {
 })
 
 describe("fs-avatar som knapp", () => {
+  /*
+   * Ringen rundt bildet er en `outline` i laget, og den slo nettleserens egen
+   * fokusmarkering. En avatar som er en knapp fikk da bare den tynne ringen
+   * innenfor kanten når den hadde fokus. Om `:focus-visible` treffer etter et
+   * programmert `focus()`, avgjør nettleseren selv, så testen bytter det med
+   * et attributt i en kopi av reglene, slik testen for besøkte lenker gjør.
+   */
   it("viser fokusringen og ikke ringen rundt bildet", () => {
-    // Ringen rundt bildet er en `outline` i laget, og den slo nettleserens
-    // egen fokusmarkering. En avatar som er en knapp fikk da bare den tynne
-    // ringen innenfor kanten når den hadde fokus.
-    monter(
-      `<button class="fs-avatar" id="profil" aria-label="Profil">ON</button>`,
-    )
+    monter(`
+      <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
+      <button class="fs-avatar" id="profil" aria-label="Profil">ON</button>
+    `)
     const knapp = document.getElementById("profil") as HTMLButtonElement
-    const utenFokus = getComputedStyle(knapp).outlineWidth
+    expect(getComputedStyle(knapp).outlineWidth).toBe("1px")
 
-    knapp.focus()
-    expect(knapp.matches(":focus-visible")).toBe(true)
+    knapp.setAttribute("data-fokus", "")
     const stil = getComputedStyle(knapp)
-    expect(utenFokus).toBe("1px")
     expect(stil.outlineWidth).toBe("2px")
     expect(stil.outlineOffset).toBe("2px")
   })
