@@ -115,10 +115,12 @@ impl<'i> DeclarationParser<'i> for Reader {
         }
         input.reset(&state);
         let value = rest_as_text(input);
-        // Bare det sjekken bruker: fargene, og `color-scheme`, som sier om
-        // blokka er lys eller mørk. Navnet på en egendefinert variabel skiller
-        // mellom store og små bokstaver, navnet på en egenskap gjør det ikke.
-        if name.starts_with("--fs-color-") || name.eq_ignore_ascii_case("color-scheme") {
+        // Bare det sjekken bruker: Fristils tokens, og `color-scheme`, som sier
+        // om blokka er lys eller mørk. Skriften og formen kontrolleres ikke,
+        // men skiller et tema uten farger fra en fil som ikke er et tema.
+        // Navnet på en egendefinert variabel skiller mellom store og små
+        // bokstaver, navnet på en egenskap gjør det ikke.
+        if name.starts_with("--fs-") || name.eq_ignore_ascii_case("color-scheme") {
             let name = if name.starts_with("--") {
                 name.to_string()
             } else {
@@ -208,11 +210,12 @@ const SYSTEM_COLORS: [&str; 3] = [
 ];
 
 /// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
-/// over seg som sti. Systemfargene er ikke med.
-fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
+/// over seg som sti. Systemfargene er ikke med, de telles i `others` sammen
+/// med de andre tokenene uten et kontrastløfte.
+fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, others: &mut usize) {
     path.push(node.selector);
     for child in node.children {
-        flatten(child, path, out);
+        flatten(child, path, out, others);
     }
     let colors: Vec<(String, String)> = node
         .declarations
@@ -220,6 +223,12 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
         .filter(|(n, _)| n.starts_with("--fs-color-") && !SYSTEM_COLORS.contains(&n.as_str()))
         .map(|(n, v)| (n.clone(), without_important(v).to_string()))
         .collect();
+    *others += node
+        .declarations
+        .iter()
+        .filter(|(n, _)| n.starts_with("--fs-"))
+        .count()
+        - colors.len();
     if !colors.is_empty() {
         let scheme = node
             .declarations
@@ -254,15 +263,21 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
 /// som ikke er lukket, leses som om den slutter der fila slutter, slik
 /// nettleseren gjør.
 pub fn parse_blocks(css: &str) -> Vec<ParsedBlock> {
+    read_blocks(css).0
+}
+
+/// Blokkene, og hvor mange andre `--fs-*`-tokens fila setter.
+fn read_blocks(css: &str) -> (Vec<ParsedBlock>, usize) {
     let mut parser = Parser::new(css);
     let mut reader = Reader;
     let mut blocks = Vec::new();
+    let mut others = 0;
     for item in StyleSheetParser::new(&mut parser, &mut reader).flatten() {
         if let Item::Block(node) = item {
-            flatten(node, &mut Vec::new(), &mut blocks);
+            flatten(node, &mut Vec::new(), &mut blocks, &mut others);
         }
     }
-    blocks
+    (blocks, others)
 }
 
 /// Klammene i teksten, `{` og `}`, utenom dem i strenger, kommentarer og
@@ -511,6 +526,10 @@ pub struct Report {
     pub declarations: usize,
     /// Løfter som faktisk ble kontrollert.
     pub promises: usize,
+    /// Andre `--fs-*`-tokens fila setter, uten et kontrastløfte: skriften,
+    /// formen og systemfargene. Med dem og ingen farger er fila et tema uten
+    /// farger, ikke en fil uten tema.
+    pub others: usize,
 }
 
 /// Leser et tema og kontrollerer hvert løfte i hver blokk.
@@ -528,10 +547,11 @@ pub fn inspect_theme(css: &str) -> Report {
             blocks: 0,
             declarations: 0,
             promises: 0,
+            others: 0,
         };
     }
     let mut problems = Vec::new();
-    let blocks = parse_blocks(css);
+    let (blocks, others) = read_blocks(css);
     let mut checked_promises = 0;
     let mut understood = 0;
 
@@ -545,16 +565,21 @@ pub fn inspect_theme(css: &str) -> Report {
         });
     }
 
+    // Et tema uten farger, bare skrift og form, har ingen kontrast å
+    // kontrollere, og det er ikke et problem.
     if blocks.is_empty() {
-        problems.push(Problem {
-            selector: "(hele fila)".into(),
-            message: "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?".into(),
-        });
+        if others == 0 {
+            problems.push(Problem {
+                selector: "(hele fila)".into(),
+                message: "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?".into(),
+            });
+        }
         return Report {
             problems,
             blocks: 0,
             declarations: 0,
             promises: 0,
+            others,
         };
     }
 
@@ -704,5 +729,6 @@ pub fn inspect_theme(css: &str) -> Report {
         blocks: blocks.len(),
         declarations: understood,
         promises: checked_promises,
+        others,
     }
 }

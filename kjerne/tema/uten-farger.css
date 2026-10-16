@@ -1,0 +1,16 @@
+/* Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila. */
+
+@layer fristil, fristil-tema;
+
+@layer fristil-tema {
+  :root {
+    --fs-font-family-base: Helvetica, Arial, sans-serif;
+    --fs-button-radius: 2.75rem;
+    --fs-pagination-radius: 2.75rem;
+    --fs-skip-link-radius: 2.75rem;
+  }
+
+  :root {
+    font-family: var(--fs-font-family-base);
+  }
+}

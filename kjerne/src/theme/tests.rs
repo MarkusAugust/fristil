@@ -285,9 +285,30 @@ fn reports_an_incomplete_family() {
 
 #[test]
 fn says_so_when_the_file_has_no_theme() {
-    assert!(inspect_theme("body { color: red }").problems[0]
-        .message
-        .contains("Fant ingen"));
+    for css in [
+        "body { color: red }",
+        "body { color: var(--fs-color-neutral-text) }",
+    ] {
+        let report = inspect_theme(css);
+        assert!(report.problems[0].message.contains("Fant ingen"), "{css}");
+        assert_eq!(report.others, 0, "{css}");
+    }
+}
+
+#[test]
+fn a_theme_with_only_shape_and_system_colors_is_not_a_missing_theme() {
+    // Skriften, formen og systemfargene lover ingen kontrast. En fil med bare
+    // dem er et tema uten farger, også inni et `@layer` og en `@media`.
+    for css in [
+        ":root { --fs-button-radius: 2.75rem }",
+        "@layer fristil-tema { :root { --fs-font-family-base: Georgia, serif } }",
+        "@media (prefers-color-scheme: dark) { :root { --fs-color-overlay: rgba(0, 0, 0, 0.72) } }",
+    ] {
+        let report = inspect_theme(css);
+        assert!(report.problems.is_empty(), "{css}: {:?}", messages(&report));
+        assert_eq!(report.blocks, 0, "{css}");
+        assert_eq!(report.others, 1, "{css}");
+    }
 }
 
 #[test]

@@ -175,5 +175,11 @@
     "blocks": 1,
     "declarations": 1,
     "promises": 153
+  },
+  "uten-farger": {
+    "problems": [],
+    "blocks": 0,
+    "declarations": 0,
+    "promises": 0
   }
 }

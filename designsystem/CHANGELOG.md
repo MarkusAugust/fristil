@@ -51,6 +51,12 @@ egen overskrift «Brytende».
   skrevet på hver temagrense, slik dokumentasjonen ber om, ga feilkode, og
   det gjorde Fristils egen `tokens.css` også, med tolv problemer. Nå hopper
   sjekken over dem: de lover ingen kontrast.
+- **Et tema uten farger fra `fristil tema` ga feilkode i `fristil sjekk-tema`.**
+  Et tema med bare skrift og form fikk «Fant ingen --fs-color-*-verdier»,
+  og `inspectTheme` meldte det som et problem, enda dokumentasjonen sier at
+  et tema laget med `tema` holder kravene. Nå svarer sjekken at det ikke er
+  noen kontrast å kontrollere, uten feilkode. En fil uten noen
+  `--fs-*`-verdier gir fortsatt feilkode.
 
 ## 0.33.0 (2026-10-12)
 
