@@ -85,8 +85,8 @@ Reglene står i `src/types.rs` (`RULES`).
   ødelagte varianter av fiksturene, med et fast frø, mot kravene et svar må
   holde: ingen unntak, hvert funn innenfor teksten, riktig linje og kolonne,
   og en regel som finnes.
-- `scripts/sjekk-diagnostikk.ts`: 156 tilfeller som hver sier hvor
-  mange funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
+- `scripts/sjekk-diagnostikk.ts`: tilfeller som hver sier hvor mange
+  funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
 - `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
   aksentfarger, fra knallrød og neon til nesten svart, mot ti nøytrale, fra
