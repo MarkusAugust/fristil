@@ -487,6 +487,21 @@ mod recipe_tests {
     }
 
     #[test]
+    fn a_theme_without_colors_passes_the_check() {
+        // Et tema laget med `tema` holder kravene, også et med bare skrift og
+        // form. Det har ingen kontrast å kontrollere, og det er ikke et brudd.
+        let css = theme(
+            r#"{"typography": {"fontFamily": "Georgia, serif"}, "shape": {"buttonRadius": "1rem"}}"#,
+        )
+        .unwrap()
+        .css;
+        let report = check::inspect_theme(&css);
+        assert!(report.problems.is_empty(), "{}", css);
+        assert_eq!(report.blocks, 0);
+        assert!(report.others > 0);
+    }
+
+    #[test]
     fn the_check_finds_a_broken_promise() {
         let report = check::inspect_theme(":root { --fs-color-accent-text: #ffffff; }");
         assert_eq!(report.blocks, 1);

@@ -221,6 +221,26 @@ function krev(påstand: boolean, beskrivelse: string): void {
     `meldingen nevner ikke familien: ${felt.feil.slice(0, 80)}`,
   )
 
+  // Et tema uten farger fra `tema` har ingen kontrast å kontrollere, og det
+  // er ikke et brudd. En fil uten tema er det fortsatt.
+  const fargelost = join(mappe, "fargelost.css")
+  const laget = await kjør([
+    "tema",
+    "--skrift=Helvetica, Arial, sans-serif",
+    "--knapp-hjorner=2.75rem",
+    `--ut=${fargelost}`,
+  ])
+  krev(laget.kode === 0, `tema uten farger avsluttet med ${laget.kode}`)
+  const utenFarger = await kjør(["sjekk-tema", fargelost])
+  krev(
+    utenFarger.kode === 0,
+    `et tema uten farger avsluttet med ${utenFarger.kode}: ${utenFarger.feil.slice(0, 120)}`,
+  )
+  const ingenTema = join(mappe, "ingen-tema.css")
+  await writeFile(ingenTema, "body { color: red }")
+  const ingen = await kjør(["sjekk-tema", ingenTema])
+  krev(ingen.kode !== 0, "en fil uten tema skulle gitt feilkode")
+
   // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne
   const flagg = await kjør(["sjekk-tema", godt, "--noe"])
   krev(flagg.kode !== 0, "et ukjent flagg skulle gitt feilkode")
