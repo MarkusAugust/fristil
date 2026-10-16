@@ -40,6 +40,11 @@ fn judge(
         };
         return Err(format!("{address} svarte med {shown}, ikke HTML."));
     }
+    // En side som rendret tomt, er nesten alltid en feil i appen, og en
+    // CI-linje mot den skal ikke bli grønn uten å ha sjekket noe.
+    if body.trim().is_empty() {
+        return Err(format!("{address} svarte med en tom side."));
+    }
     Ok((address.to_string(), body))
 }
 
@@ -321,6 +326,9 @@ mod tests {
             .unwrap_err()
             .contains("ingen innholdstype"));
         assert!(judge("u", 200, "Text/HTML; charset=utf-8", "x".into()).is_ok());
+        assert!(judge("u", 200, "text/html", " \n".into())
+            .unwrap_err()
+            .contains("tom side"));
     }
 
     #[test]

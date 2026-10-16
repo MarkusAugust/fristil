@@ -322,6 +322,22 @@ pub fn run(arguments: &[String]) {
         std::process::exit(1);
     }
 
+    // Som for standard inn: er hver fil tom, er det ingenting å sjekke. Én
+    // tom fil blant flere, som en tom partial i et glob, er ikke en feil.
+    if !sources.is_empty() && sources.iter().all(|s| s.text.trim().is_empty()) {
+        fail(&if sources.len() == 1 {
+            format!(
+                "Ingen markup å sjekke: «{}» er tom.",
+                shown(&sources[0].name)
+            )
+        } else {
+            format!(
+                "Ingen markup å sjekke: alle de {} filene er tomme.",
+                sources.len()
+            )
+        });
+    }
+
     let mut found = 0;
     for source in &sources {
         let text = utf16(&source.text);

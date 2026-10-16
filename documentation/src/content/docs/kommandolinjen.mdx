@@ -128,8 +128,10 @@ skjema.html:5:13: advarsel: Klassen «fs-modal» finnes ikke i Fristil.
 | `--manifest=<fil>` | sjekk også en komponent du har tatt over. Se [overta](#overta) |
 
 Exit-koden er 0 når det ikke er noen funn, og 1 ellers, også når alle funnene er
-advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom inndata,
-en fil som ikke finnes, og en adresse som ikke svarer, gir også 1.
+advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom standard
+inn, filer som alle er tomme, en fil som ikke finnes, og en adresse som ikke
+svarer eller svarer med en tom side, gir også 1. Én tom fil blant flere, som en
+tom partial i et glob, er ikke en feil.
 
 ### Maler og hele sider
 

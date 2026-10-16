@@ -103,6 +103,12 @@ egen overskrift «Brytende».
   oppskriftsfil gir også feilkode. `overta` og `agent` stopper dessuten på et
   ukjent flagg med likhetstegn, som `--utt=src/ui` eller `--rammverk=react`,
   i stedet for å bruke standarden.
+- **`fristil sjekk` meldte grønt for en tom fil og en tom side.** Bare tom
+  standard inn ga feilkode. En tom fil, og en adresse som svarte 200 med tom
+  HTML, ga «Markupen stemmer» og 0, så en CI-linje mot en side som rendret
+  tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
+  filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
+  glob, er fortsatt ikke en feil.
 
 ## 0.33.0 (2026-10-12)
 

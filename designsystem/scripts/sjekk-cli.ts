@@ -978,6 +978,33 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     "feilmeldingen sier ikke at inndata var tom",
   )
 
+  // Det samme gjelder filer: er hver fil tom, er det ingenting å sjekke.
+  // Én tom fil blant flere, som en tom partial i et glob, er ikke en feil.
+  const tomme = await mkdtemp(join(tmpdir(), "fristil-tom-"))
+  const tomFil = join(tomme, "tom.html")
+  const blankFil = join(tomme, "blank.html")
+  const fullFil = join(tomme, "full.html")
+  await writeFile(tomFil, "")
+  await writeFile(blankFil, " \n\t\n")
+  await writeFile(fullFil, '<button class="fs-button">Lagre</button>')
+  for (const filer of [[tomFil], [blankFil], [tomFil, blankFil]]) {
+    const { kode, feil: melding } = await kjør(["sjekk", ...filer])
+    krev(
+      kode === 1,
+      `sjekk av bare tomme filer avsluttet med kode ${kode}: ${filer.join(" ")}`,
+    )
+    krev(
+      melding.includes("Ingen markup å sjekke"),
+      `sjekk av bare tomme filer sa ikke at det var ingenting å sjekke: ${melding}`,
+    )
+  }
+  const blandet = await kjør(["sjekk", tomFil, fullFil])
+  krev(
+    blandet.kode === 0,
+    `én tom fil blant flere ga kode ${blandet.kode}: ${blandet.feil}`,
+  )
+  await rm(tomme, { recursive: true, force: true })
+
   // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
   // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
   // rørt, siden strømmen da setter røret i ikke-blokkerende modus. Bitene
@@ -1180,6 +1207,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
           { headers: html },
         )
       if (sti === "/json") return Response.json({ ok: true })
+      if (sti === "/tom") return new Response("", { headers: html })
       return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
     },
   })
@@ -1201,6 +1229,14 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const json = await kjør(["sjekk", `${rot}/json`])
   krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")
   krev(json.feil.includes("ikke HTML"), `JSON ble ikke avvist: ${json.feil}`)
+
+  // En side som rendret tomt, skal ikke bli grønn uten å ha sjekket noe.
+  const tom = await kjør(["sjekk", `${rot}/tom`])
+  krev(tom.kode === 1, `en tom side skulle gitt feilkode, ga ${tom.kode}`)
+  krev(
+    tom.feil.includes(`${rot}/tom svarte med en tom side.`),
+    `en tom side ble ikke meldt: ${tom.feil}`,
+  )
 
   const borte = await kjør(["sjekk", `${rot}/borte`])
   krev(borte.kode === 1, "en 404 skulle gitt feilkode")
