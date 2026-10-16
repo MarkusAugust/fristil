@@ -809,6 +809,8 @@ fn media_not_dark_is_light_and_only_light() {
     for media in [
         "not (prefers-color-scheme: dark)",
         "not all and (prefers-color-scheme: dark)",
+        "not screen and (prefers-color-scheme: dark)",
+        "not print and (prefers-color-scheme: dark)",
         "NOT (Prefers-Color-Scheme:dark)",
     ] {
         let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
@@ -824,6 +826,14 @@ fn media_not_dark_is_light_and_only_light() {
             messages(&report)
         );
     }
+}
+
+#[test]
+fn media_not_type_without_and_stays_dark() {
+    // En medietype uten `and` foran skjemaet er ikke en negert spørring om
+    // fargeskjema, og `dark` leses som før.
+    let css = "@media not screen, (prefers-color-scheme: dark) { :root { --fs-color-danger-text: #f1a7ab } }";
+    assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
 }
 
 #[test]

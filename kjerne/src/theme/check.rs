@@ -375,8 +375,8 @@ fn without_not(selector: &str) -> String {
 }
 
 /// Hver negerte mediespørring om fargeskjema, `not (prefers-color-scheme: dark)`
-/// eller `not all and (prefers-color-scheme: dark)`, skrevet som det den
-/// gjelder: det motsatte skjemaet. Ellers leses `dark` i den som mørkt tema.
+/// eller `not <medietype> and (prefers-color-scheme: dark)` (`all`, `screen`,
+/// `print` …), skrevet som det den gjelder: det motsatte skjemaet. Ellers leses `dark` i den som mørkt tema.
 fn flip_negated_scheme(selector: &str) -> String {
     let lower = selector.to_ascii_lowercase();
     // Teksten etter nøkkelordet, når det står som eget ord.
@@ -398,8 +398,16 @@ fn flip_negated_scheme(selector: &str) -> String {
         let Some(mut rest) = after(&lower[at..], "not") else {
             continue;
         };
-        if let Some(r) = after(rest, "all").and_then(|r| after(r, "and")) {
-            rest = r;
+        // `not <medietype> and (…)` negerer hele spørringen: blokka gjelder
+        // da det motsatte skjemaet og andre medier, som utskrift, og det
+        // leses som det motsatte skjemaet.
+        let media_type = rest
+            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+            .map_or(rest, |end| &rest[..end]);
+        if !media_type.is_empty() && !matches!(media_type, "and" | "not" | "only" | "or") {
+            if let Some(r) = after(rest, media_type).and_then(|r| after(r, "and")) {
+                rest = r;
+            }
         }
         let scheme = rest
             .strip_prefix('(')
