@@ -33,14 +33,51 @@ pub fn is_js_space(c: char) -> bool {
     )
 }
 
-/// Et tall skrevet slik `String(tall)` gjør det i JavaScript: `600`, ikke `600.0`.
+/// Et tall skrevet slik `String(tall)` gjør det i JavaScript: `600`, ikke
+/// `600.0`, `1e-7` og `1e+21` med eksponent, og `Infinity` og `NaN`.
+///
+/// Reglene er Number::toString i ECMA-262: de korteste sifrene som leses
+/// tilbake til samme tall, som Rust også finner, med eksponent når tallet er
+/// under 1e-6 eller minst 1e21.
 pub fn js_number(n: f64) -> String {
+    if n.is_nan() {
+        return "NaN".into();
+    }
+    if n.is_infinite() {
+        return if n > 0.0 { "Infinity" } else { "-Infinity" }.into();
+    }
+    // `-0` skrives `0` i JavaScript.
     if n == 0.0 {
-        "0".into()
-    } else if n.fract() == 0.0 && n.abs() < 1e21 {
-        format!("{}", n as i128)
+        return "0".into();
+    }
+    // `{:e}` gir de korteste sifrene, som `1.2345e-7`.
+    let scientific = format!("{:e}", n.abs());
+    let (mantissa, exponent) = scientific.split_once('e').unwrap_or((&scientific, "0"));
+    let digits = mantissa.replace('.', "");
+    let k = digits.len() as i32;
+    // Tallet er 0,`digits` ganger 10 opphøyd i `point`.
+    let point = exponent.parse::<i32>().unwrap_or(0) + 1;
+    let text = if (k..=21).contains(&point) {
+        format!("{digits}{}", "0".repeat((point - k) as usize))
+    } else if (1..=21).contains(&point) {
+        let (whole, fraction) = digits.split_at(point as usize);
+        format!("{whole}.{fraction}")
+    } else if (-5..=0).contains(&point) {
+        format!("0.{}{digits}", "0".repeat(-point as usize))
     } else {
-        format!("{n}")
+        let exponent = point - 1;
+        let sign = if exponent >= 0 { '+' } else { '-' };
+        let mantissa = if k == 1 {
+            digits
+        } else {
+            format!("{}.{}", &digits[..1], &digits[1..])
+        };
+        format!("{mantissa}e{sign}{}", exponent.abs())
+    };
+    if n < 0.0 {
+        format!("-{text}")
+    } else {
+        text
     }
 }
 

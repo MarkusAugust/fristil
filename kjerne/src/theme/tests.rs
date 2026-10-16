@@ -863,3 +863,32 @@ fn media_not_light_is_dark() {
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
     assert!(inspect_theme(css).problems.is_empty());
 }
+
+#[test]
+fn writes_numbers_like_string_in_javascript() {
+    // Fasiten er `String(tall)` i Node.
+    for (n, expected) in [
+        (600.0, "600"),
+        (2.5, "2.5"),
+        (0.1, "0.1"),
+        (-0.5, "-0.5"),
+        (1.0 / 3.0, "0.3333333333333333"),
+        (1e-6, "0.000001"),
+        (0.000001234, "0.000001234"),
+        (1e-7, "1e-7"),
+        (1.5e-7, "1.5e-7"),
+        (1e20, "100000000000000000000"),
+        (123456789012345680000.0, "123456789012345680000"),
+        (1e21, "1e+21"),
+        (1.2345e21, "1.2345e+21"),
+        (-1e21, "-1e+21"),
+        (5e-324, "5e-324"),
+        (f64::MAX, "1.7976931348623157e+308"),
+        (-0.0, "0"),
+        (f64::INFINITY, "Infinity"),
+        (f64::NEG_INFINITY, "-Infinity"),
+        (f64::NAN, "NaN"),
+    ] {
+        assert_eq!(super::js_number(n), expected, "{n:?}");
+    }
+}

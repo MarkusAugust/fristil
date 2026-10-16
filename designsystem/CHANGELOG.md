@@ -115,6 +115,11 @@ egen overskrift «Brytende».
   med svært dyp nesting stoppet den kjørbare fila med «stack overflow». Nå
   vinner den siste verdien, slike tall og strenger gir «er ikke gyldig
   JSON», og det gjør også mer enn 128 objekter og lister inni hverandre.
+- **Tall i temaet og manifestet skrives som `String(tall)` i JavaScript.**
+  `1e-7` ble `0.0000001` og `1e21` ble `1000000000000000000000`, og et
+  uendelig tall ble `inf`. Nå får de eksponent, som `1e-7` og `1e+21`, og
+  `Infinity` heter `Infinity`. I manifestet blir et uendelig tall `null`,
+  som i `JSON.stringify`. Vanlige tall skrives som før.
 
 ## 0.33.0 (2026-10-12)
 

@@ -94,6 +94,9 @@ impl Json {
         match self {
             Json::Null => out.push_str("null"),
             Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+            // `JSON.stringify` skriver `Infinity` og `NaN` som `null`. Et tall
+            // som `1e400` leses som uendelig, som i `JSON.parse`.
+            Json::Number(n) if !n.is_finite() => out.push_str("null"),
             Json::Number(n) => out.push_str(&crate::theme::js_number(*n)),
             Json::String(s) => out.push_str(&crate::json_string(s)),
             Json::Array(items) if items.is_empty() => out.push_str("[]"),
@@ -420,6 +423,10 @@ mod tests {
         assert_eq!(
             v.to_compact(),
             r#"{"a":[1,2.5,"x\"y"],"b":{},"c":[],"d":{"e":null,"f":true}}"#
+        );
+        assert_eq!(
+            parse("[1e-7, 1e21, 1e400, -1e400]").unwrap().to_compact(),
+            "[1e-7,1e+21,null,null]"
         );
     }
 
