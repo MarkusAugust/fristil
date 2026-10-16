@@ -53,6 +53,9 @@ egen overskrift «Brytende».
   innover, og en slik skygge males under innholdet, så et bilde dekket den
   helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
   også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene.
+- **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
+  hadde en fast radius og leste ikke variabelen. Standarden der er
+  fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.
 
 ## 0.33.0 (2026-10-12)
 

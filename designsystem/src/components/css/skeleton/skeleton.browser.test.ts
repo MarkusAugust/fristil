@@ -30,6 +30,15 @@ describe("fs-skeleton", () => {
     expect(sirkel.borderRadius).toMatch(/50%|9999px/)
   })
 
+  it("lar --fs-skeleton-radius gjelde tekstlinjene også", () => {
+    // Tekstvarianten hadde en fast radius og leste ikke variabelen.
+    for (const id of ["tekst", "blokk"]) {
+      const element = document.getElementById(id) as HTMLElement
+      element.style.setProperty("--fs-skeleton-radius", "20px")
+      expect(getComputedStyle(element).borderTopLeftRadius, id).toBe("20px")
+    }
+  })
+
   it("holdes utenfor tilgjengelighetstreet", () => {
     // En rekke tomme bokser som leses opp er verre enn stillhet. Ventingen
     // meldes ett sted, i elementet med role="status".
