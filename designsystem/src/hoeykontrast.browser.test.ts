@@ -4,7 +4,7 @@
 /// <reference types="@vitest/browser-playwright" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { cdp, server, userEvent } from "vitest/browser"
+import { cdp, page, server, userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
 
@@ -50,6 +50,31 @@ function stil(id: string) {
   const element = document.getElementById(id)
   if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
   return getComputedStyle(element)
+}
+
+/**
+ * Fargen på én piksel midt i høyden, `andel` av bredden inn. For det
+ * computed style ikke kan svare på: et pseudoelement som `::-webkit-progress-value`.
+ */
+async function piksel(id: string, andel: number): Promise<number[]> {
+  const element = document.getElementById(id)
+  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  const bilde = new Image()
+  bilde.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`
+  await bilde.decode()
+  const lerret = document.createElement("canvas")
+  lerret.width = bilde.width
+  lerret.height = bilde.height
+  const tegning = lerret.getContext("2d")
+  if (tegning === null) throw new Error("Fikk ikke tegne på lerretet")
+  tegning.drawImage(bilde, 0, 0)
+  const [r, g, b] = tegning.getImageData(
+    Math.floor(bilde.width * andel),
+    Math.floor(bilde.height / 2),
+    1,
+    1,
+  ).data
+  return [r, g, b]
 }
 
 describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
@@ -216,6 +241,25 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     expect(ubestemt.backgroundImage).toContain(stil("markering").color)
     expect(ubestemt.outlineStyle).toBe("solid")
     expect(ubestemt.outlineColor).toBe(stil("tekst").color)
+  })
+
+  it("viser hvor langt en bestemt fremdriftsindikator har kommet", async () => {
+    // Den fylte delen er et pseudoelement som leste `currentColor`, og
+    // modusen tvang bakgrunnen til `Canvas`. Stilen på verten så riktig ut,
+    // men stolpen var tom, så det er pikslene som må leses.
+    monter(`
+      <progress class="fs-progress" id="bestemt" value="50" max="100"
+        aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
+      <progress class="fs-progress" id="farget" value="50" max="100"
+        data-color="danger" aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
+    `)
+    await settHoeykontrast(true)
+
+    for (const id of ["bestemt", "farget"]) {
+      const fylt = await piksel(id, 0.25)
+      const tom = await piksel(id, 0.75)
+      expect(fylt, id).not.toEqual(tom)
+    }
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {

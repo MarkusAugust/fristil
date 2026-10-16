@@ -32,6 +32,14 @@ egen overskrift «Brytende».
   derfor agenten bruke den nyeste versjonen som finnes på Central, og aldri
   skrive en den ikke har sett der.
 
+### Rettet
+
+- **En `fs-progress` med `value` viste ikke fyllet i høykontrastmodus.**
+  Den fylte delen leste `currentColor`, og modusen tvang bakgrunnen på
+  pseudoelementet tilbake til `Canvas`, så stolpen så tom ut uansett hvor
+  langt den hadde kommet. Fyllet tegnes nå i `Highlight` rett på
+  `::-webkit-progress-value` og `::-moz-progress-bar`.
+
 ## 0.33.0 (2026-10-12)
 
 ### Brytende
