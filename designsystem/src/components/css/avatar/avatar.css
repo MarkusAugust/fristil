@@ -25,6 +25,14 @@
     outline-offset: -1px;
   }
 
+  /* Ringen over er en `outline` i laget, og den slår nettleserens egen
+     fokusmarkering. En avatar som er en knapp, for eksempel til en
+     profilmeny, får derfor fokusringen herfra. */
+  .fs-avatar:focus-visible {
+    outline: var(--fs-focus-ring);
+    outline-offset: 2px;
+  }
+
   .fs-avatar img {
     inline-size: 100%;
     block-size: 100%;

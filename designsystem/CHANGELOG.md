@@ -79,6 +79,8 @@ egen overskrift «Brytende».
   innover, og en slik skygge males under innholdet, så et bilde dekket den
   helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
   også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene.
+  En slik `outline` slår nettleserens egen fokusmarkering, så en
+  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`.
 - **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
   hadde en fast radius og leste ikke variabelen. Standarden der er
   fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.

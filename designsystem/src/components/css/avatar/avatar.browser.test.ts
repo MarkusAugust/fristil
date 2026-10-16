@@ -60,6 +60,26 @@ describe("fs-avatar", () => {
   })
 })
 
+describe("fs-avatar som knapp", () => {
+  it("viser fokusringen og ikke ringen rundt bildet", () => {
+    // Ringen rundt bildet er en `outline` i laget, og den slo nettleserens
+    // egen fokusmarkering. En avatar som er en knapp fikk da bare den tynne
+    // ringen innenfor kanten når den hadde fokus.
+    monter(
+      `<button class="fs-avatar" id="profil" aria-label="Profil">ON</button>`,
+    )
+    const knapp = document.getElementById("profil") as HTMLButtonElement
+    const utenFokus = getComputedStyle(knapp).outlineWidth
+
+    knapp.focus()
+    expect(knapp.matches(":focus-visible")).toBe(true)
+    const stil = getComputedStyle(knapp)
+    expect(utenFokus).toBe("1px")
+    expect(stil.outlineWidth).toBe("2px")
+    expect(stil.outlineOffset).toBe("2px")
+  })
+})
+
 describe("fs-avatar med bilde", () => {
   it("tegner ringen over et lyst bilde", async () => {
     // Ringen var en skygge innover, og den males under innholdet. Et bilde
