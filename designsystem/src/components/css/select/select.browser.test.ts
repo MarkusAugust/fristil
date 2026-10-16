@@ -299,6 +299,37 @@ describe('fs-select med data-picker="styled"', () => {
 
     await lukk(element)
   })
+
+  it("klipper et langt valg når <selectedcontent> står i knappen", async () => {
+    // <selectedcontent> er et element forfatteren skriver selv. Nettleseren
+    // lager det ikke, så regelen traff ingenting med vanlig markup, og et
+    // langt valg ble brutt over to linjer.
+    if (!harBaseSelect || !("HTMLSelectedContentElement" in window)) return
+
+    const langt = "Søknad om dispensasjon fra reguleringsplanen for området"
+    document.body.innerHTML = `
+      <div style="inline-size: 260px">
+        <select id="langt" class="fs-select" data-picker="styled">
+          <button><selectedcontent></selectedcontent></button>
+          <option>${langt}</option>
+        </select>
+        <select id="kort" class="fs-select" data-picker="styled">
+          <button><selectedcontent></selectedcontent></button>
+          <option>Byggesak</option>
+        </select>
+      </div>
+    `
+    const element = document.getElementById("langt") as HTMLElement
+    await ventPaTegning(element)
+
+    const innhold = element.querySelector("selectedcontent") as HTMLElement
+    expect(innhold.textContent).toBe(langt)
+    expect(innhold.scrollWidth).toBeGreaterThan(innhold.clientWidth)
+    expect(element.getBoundingClientRect().height).toBe(
+      (document.getElementById("kort") as HTMLElement).getBoundingClientRect()
+        .height,
+    )
+  })
 })
 
 describe("fs-select med lista i siden, tilgjengelighet", () => {
