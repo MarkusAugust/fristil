@@ -895,6 +895,43 @@ mod tests {
     }
 
     #[test]
+    fn counts_carriage_returns_as_line_breaks_like_lsp() {
+        // LSP deler linjer på `\n`, `\r\n` og `\r`. En klient som sender
+        // bufferen slik den er, som Neovim med fileformat=mac, sender `\r`.
+        for (text, line, character) in [
+            (
+                r#"<div>\r<div>\r<span class=\"fs-buton\">x</span>"#,
+                2.0,
+                13.0,
+            ),
+            (
+                r#"<div>\r\n<div>\r\n<span class=\"fs-buton\">x</span>"#,
+                2.0,
+                13.0,
+            ),
+            (r#"<div>\n\r<span class=\"fs-buton\">x</span>"#, 2.0, 13.0),
+        ] {
+            let mut server = started();
+            server.handle(&notification(
+                "textDocument/didOpen",
+                &format!(
+                    r#"{{"textDocument":{{"uri":"file:///a.html","languageId":"html","version":1,"text":"{text}"}}}}"#
+                ),
+            ));
+            let sent = server.take();
+            let params = sent[0].get("params").unwrap();
+            let diagnostic = &params.get("diagnostics").unwrap().as_array().unwrap()[0];
+            let start = diagnostic.get("range").unwrap().get("start").unwrap();
+            assert_eq!(start.get("line").unwrap().as_f64(), Some(line), "{text}");
+            assert_eq!(
+                start.get("character").unwrap().as_f64(),
+                Some(character),
+                "{text}"
+            );
+        }
+    }
+
+    #[test]
     fn offers_the_fix_as_a_quick_fix() {
         let mut server = started();
         server.handle(&notification(

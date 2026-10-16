@@ -129,6 +129,12 @@ egen overskrift «Brytende».
   mer enn editoren viser. For en adresse svarte `npx` riktig, fordi Node
   fjerner BOM-en, mens den kjørbare fila og `java -jar` ga én kolonne mer.
   Nå fjernes den for filer, standard inn og adresser i alle verter.
+- **Språkserveren og `fristil sjekk` regner `\r` som linjeskift.** Bare
+  `\n` delte linjer, så et dokument med `\r`-linjeskift ble én lang linje,
+  og en editor som sender bufferen slik den er, som Neovim med
+  `fileformat=mac`, fikk funnene og hurtigrettelsene på feil sted. Nå er
+  `\n`, `\r\n` og `\r` alene linjeskift, som LSP krever. Linje og kolonne i
+  `diagnosePage`, `assertFristil` og `fristil sjekk` følger samme regel.
 
 ## 0.33.0 (2026-10-12)
 
