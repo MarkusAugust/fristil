@@ -810,7 +810,6 @@ fn media_not_dark_is_light_and_only_light() {
         "not (prefers-color-scheme: dark)",
         "not all and (prefers-color-scheme: dark)",
         "not screen and (prefers-color-scheme: dark)",
-        "not print and (prefers-color-scheme: dark)",
         "NOT (Prefers-Color-Scheme:dark)",
     ] {
         let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
@@ -825,6 +824,27 @@ fn media_not_dark_is_light_and_only_light() {
             "{media}: {:?}",
             messages(&report)
         );
+    }
+}
+
+#[test]
+fn media_not_print_and_dark_applies_in_both_schemes() {
+    // `not print and (dark)` er not(print og mørkt): sann på hver skjerm, i
+    // lyst og i mørkt tema. Blokka er ikke bundet til lyst tema, og en lys
+    // verdi kontrolleres også mot de mørke standardverdiene.
+    for media in [
+        "not print and (prefers-color-scheme: dark)",
+        "not tv and (prefers-color-scheme: dark)",
+        "not print and (prefers-color-scheme: light)",
+    ] {
+        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        let blocks = parse_blocks(&css);
+        assert_eq!(blocks[0].appearance, Appearance::Light, "{media}");
+        let bare = inspect_theme(":root { --fs-color-accent-text: #0d4e8c }");
+        let report = inspect_theme(&css);
+        assert!(!report.problems.is_empty(), "{media}");
+        assert_eq!(messages(&report).len(), messages(&bare).len(), "{media}");
+        assert_eq!(report.promises, bare.promises, "{media}");
     }
 }
 

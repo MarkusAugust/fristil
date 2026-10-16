@@ -44,7 +44,9 @@ egen overskrift «Brytende».
   `@media not (prefers-color-scheme: dark)` som mørkt tema.** Blokka gjelder
   i lyst tema, og Fristils egne lyse verdier ga brudd. `not` snur nå
   mediespørringen, også skrevet med en medietype, som `not all and (…)` eller
-  `not screen and (…)`, og blokka kontrolleres bare som lys.
+  `not screen and (…)`, og blokka kontrolleres bare som lys. Med en annen
+  medietype, som `not print and (…)`, gjelder blokka skjermen i både lyst og
+  mørkt tema, og den kontrolleres som en blokk uten betingelse.
 - **`fristil sjekk-tema` og `inspectTheme` meldte systemfargene som feil.**
   `--fs-color-disabled-surface`, `--fs-color-disabled-text` og
   `--fs-color-overlay` er ingen celle, men ble lest som familien `disabled`

@@ -212,6 +212,12 @@ const SYSTEM_COLORS: [&str; 3] = [
 /// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
 /// over seg som sti. Systemfargene er ikke med, de telles i `others` sammen
 /// med de andre tokenene uten et kontrastløfte.
+///
+/// `others` teller hvert `--fs-*`-navn som ikke er en farge med løfte, også
+/// et feilstavet. Komponentene har egne tokens, som `--fs-label-required-text`
+/// og `--fs-progress-height`, og en liste over kjente navn ville gitt feilkode
+/// for et tema som bare setter et av dem. Antallet står i svaret, så et
+/// feilstavet fargenavn synes der.
 fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, others: &mut usize) {
     path.push(node.selector);
     for child in node.children {
@@ -374,9 +380,13 @@ fn without_not(selector: &str) -> String {
     out
 }
 
-/// Hver negerte mediespørring om fargeskjema, `not (prefers-color-scheme: dark)`
-/// eller `not <medietype> and (prefers-color-scheme: dark)` (`all`, `screen`,
-/// `print` …), skrevet som det den gjelder: det motsatte skjemaet. Ellers leses `dark` i den som mørkt tema.
+/// Hver negerte mediespørring om fargeskjema skrevet som det den gjelder.
+///
+/// `not (prefers-color-scheme: dark)`, `not all and (…)` og `not screen and
+/// (…)` gjelder det motsatte skjemaet, og skrives som det. Ellers leses `dark`
+/// i dem som mørkt tema. Med en annen medietype, som i `not print and (…)`,
+/// gjelder blokka skjermen i begge skjemaer, og spørringen tas bort, så
+/// blokka leses som en blokk uten betingelse.
 fn flip_negated_scheme(selector: &str) -> String {
     let lower = selector.to_ascii_lowercase();
     // Teksten etter nøkkelordet, når det står som eget ord.
@@ -398,15 +408,18 @@ fn flip_negated_scheme(selector: &str) -> String {
         let Some(mut rest) = after(&lower[at..], "not") else {
             continue;
         };
-        // `not <medietype> and (…)` negerer hele spørringen: blokka gjelder
-        // da det motsatte skjemaet og andre medier, som utskrift, og det
-        // leses som det motsatte skjemaet.
+        // `not <medietype> and (…)` negerer hele spørringen, medietypen med.
+        // For `all` og `screen` gjelder blokka da det motsatte skjemaet på
+        // skjerm. For `print`, `tv` og de andre er `not` sann på hver skjerm,
+        // i lyst og i mørkt tema, og spørringen sier ingenting om skjema.
         let media_type = rest
             .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
             .map_or(rest, |end| &rest[..end]);
+        let mut any_scheme = false;
         if !media_type.is_empty() && !matches!(media_type, "and" | "not" | "only" | "or") {
             if let Some(r) = after(rest, media_type).and_then(|r| after(r, "and")) {
                 rest = r;
+                any_scheme = !matches!(media_type, "all" | "screen");
             }
         }
         let scheme = rest
@@ -428,7 +441,9 @@ fn flip_negated_scheme(selector: &str) -> String {
         };
         let end = lower.len() - r.len();
         out.push_str(&selector[copied..at]);
-        out.push_str(&format!("(prefers-color-scheme: {opposite})"));
+        if !any_scheme {
+            out.push_str(&format!("(prefers-color-scheme: {opposite})"));
+        }
         copied = end;
         from = end;
     }
