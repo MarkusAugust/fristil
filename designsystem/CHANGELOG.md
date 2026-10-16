@@ -32,6 +32,35 @@ egen overskrift «Brytende».
   derfor agenten bruke den nyeste versjonen som finnes på Central, og aldri
   skrive en den ikke har sett der.
 
+### Rettet
+
+- **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
+  begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
+  eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen
+  blokk ble lest som deklarasjonen `html`, og den slukte alt fram til neste
+  semikolon, blokkene etter den med. Et tema med et brudd der fikk «Temaet
+  holder hvert løfte». Nå leses blokka som en regel, slik nettleseren gjør.
+- **`fristil sjekk-tema` og `inspectTheme` leste
+  `@media not (prefers-color-scheme: dark)` som mørkt tema.** Blokka gjelder
+  i lyst tema, og Fristils egne lyse verdier ga brudd. `not` snur nå
+  mediespørringen, også skrevet med en medietype, som `not all and (…)` eller
+  `not screen and (…)`, og blokka kontrolleres bare som lys. Med en annen
+  medietype, som `not print and (…)`, gjelder blokka skjermen i både lyst og
+  mørkt tema, og den kontrolleres som en blokk uten betingelse.
+- **`fristil sjekk-tema` og `inspectTheme` meldte systemfargene som feil.**
+  `--fs-color-disabled-surface`, `--fs-color-disabled-text` og
+  `--fs-color-overlay` er ingen celle, men ble lest som familien `disabled`
+  med roller som manglet, og som et token systemet ikke har. En overstyring
+  skrevet på hver temagrense, slik dokumentasjonen ber om, ga feilkode, og
+  det gjorde Fristils egen `tokens.css` også, med tolv problemer. Nå hopper
+  sjekken over dem: de lover ingen kontrast.
+- **Et tema uten farger fra `fristil tema` ga feilkode i `fristil sjekk-tema`.**
+  Et tema med bare skrift og form fikk «Fant ingen --fs-color-*-verdier»,
+  og `inspectTheme` meldte det som et problem, enda dokumentasjonen sier at
+  et tema laget med `tema` holder kravene. Nå svarer sjekken at det ikke er
+  noen kontrast å kontrollere, uten feilkode. En fil uten noen
+  `--fs-*`-verdier gir fortsatt feilkode.
+
 ## 0.33.0 (2026-10-12)
 
 ### Brytende

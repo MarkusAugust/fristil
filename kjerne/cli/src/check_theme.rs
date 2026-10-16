@@ -59,7 +59,7 @@ pub fn run(arguments: &[String]) {
     }
 
     crate::package::load_contract();
-    let (mut problems, mut blocks, mut declarations, mut promises) = (0, 0, 0, 0);
+    let (mut problems, mut blocks, mut declarations, mut promises, mut others) = (0, 0, 0, 0, 0);
     for (path, css) in &sources {
         let report = inspect_theme(css);
         for problem in &report.problems {
@@ -74,6 +74,7 @@ pub fn run(arguments: &[String]) {
         blocks += report.blocks;
         declarations += report.declarations;
         promises += report.promises;
+        others += report.others;
     }
 
     // Tellingen står sist, og teller konsumentens egne verdier: standardverdiene
@@ -85,6 +86,15 @@ pub fn run(arguments: &[String]) {
         count(blocks, "blokk", "blokker"),
         count(promises, "løfte", "løfter"),
     );
+    // Et tema uten farger, bare skrift og form, har ingen kontrast å
+    // kontrollere. Det er ikke det samme som en fil uten tema.
+    if declarations == 0 && problems == 0 && others > 0 {
+        log(&format!(
+            "Ingen kontrast å kontrollere: {files} setter bare {} uten kontrastløfte, som skrift, form og systemfargene.",
+            count(others, "token", "tokens")
+        ));
+        return;
+    }
     if declarations == 0 && problems == 0 {
         fail(&format!(
             "Fant ingen --fs-color-*-verdier i {files}. Sjekken har ikke sett på noe."
