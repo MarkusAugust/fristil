@@ -44,6 +44,13 @@ egen overskrift «Brytende».
   mørkt tema.** Blokka gjelder i lyst tema, og Fristils egne lyse verdier
   ga brudd. `not` snur nå mediespørringen, også skrevet
   `not all and (…)`, og blokka kontrolleres bare som lys.
+- **`fristil sjekk-tema` meldte systemfargene som feil.**
+  `--fs-color-disabled-surface`, `--fs-color-disabled-text` og
+  `--fs-color-overlay` er ingen celle, men ble lest som familien `disabled`
+  med roller som manglet, og som et token systemet ikke har. En overstyring
+  skrevet på hver temagrense, slik dokumentasjonen ber om, ga feilkode, og
+  det gjorde Fristils egen `tokens.css` også, med tolv problemer. Nå hopper
+  sjekken over dem: de lover ingen kontrast.
 
 ## 0.33.0 (2026-10-12)
 

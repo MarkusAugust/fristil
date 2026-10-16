@@ -169,5 +169,11 @@
         "message": "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?"
       }
     ]
+  },
+  "systemfarger": {
+    "problems": [],
+    "blocks": 1,
+    "declarations": 1,
+    "promises": 153
   }
 }

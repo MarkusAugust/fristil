@@ -752,6 +752,35 @@ fn dark_inside_not_does_not_make_a_dark_block() {
     assert_eq!(blocks[0].appearance, Appearance::Light);
 }
 
+// Systemfargene er ingen celle, og lover ingen kontrast.
+
+#[test]
+fn fristils_own_tokens_css_has_no_problems() {
+    let report = inspect_theme(&crate::package_file("src/tokens/tokens.css"));
+    assert!(report.problems.is_empty(), "{:?}", messages(&report));
+    assert!(report.promises > 0);
+}
+
+#[test]
+fn the_system_colors_are_not_cells() {
+    // Slik design-tokens.mdx ber om: overstyringen skrives på hver temagrense.
+    let css = "[data-theme=\"light\"] {
+            --fs-color-disabled-surface: #e4e4e5;
+            --fs-color-disabled-text: #8a8d91;
+            --fs-color-overlay: #000000;
+            --fs-color-danger-text: #7a1f28;
+        }
+        [data-theme=\"dark\"] {
+            --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+            --fs-color-disabled-text: #5c5f63;
+            --fs-color-overlay: rgba(0, 0, 0, 0.72);
+        }";
+    let report = inspect_theme(css);
+    assert!(report.problems.is_empty(), "{:?}", messages(&report));
+    assert_eq!(report.blocks, 1);
+    assert_eq!(report.declarations, 1);
+}
+
 #[test]
 fn media_not_dark_is_light_and_only_light() {
     // `not` snur mediespørringen. Blokka gjelder i lyst tema, og bare der, så

@@ -197,8 +197,18 @@ impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
     }
 }
 
+/// Fargene utenfor matrisen: avslått tilstand og flaten bak en modal. De er
+/// ingen celle, har ingen familie og ingen rolle, og lover ingen kontrast. En
+/// kontroll som er av, er unntatt kravet i WCAG 1.4.3. De samme som
+/// `SystemColorToken` i `designsystem/src/tokens/tokens.ts`, uten skyggen.
+const SYSTEM_COLORS: [&str; 3] = [
+    "--fs-color-disabled-surface",
+    "--fs-color-disabled-text",
+    "--fs-color-overlay",
+];
+
 /// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
-/// over seg som sti.
+/// over seg som sti. Systemfargene er ikke med.
 fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
     path.push(node.selector);
     for child in node.children {
@@ -207,7 +217,7 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
     let colors: Vec<(String, String)> = node
         .declarations
         .iter()
-        .filter(|(n, _)| n.starts_with("--fs-color-"))
+        .filter(|(n, _)| n.starts_with("--fs-color-") && !SYSTEM_COLORS.contains(&n.as_str()))
         .map(|(n, v)| (n.clone(), without_important(v).to_string()))
         .collect();
     if !colors.is_empty() {
