@@ -40,11 +40,12 @@ egen overskrift «Brytende».
   blokk ble lest som deklarasjonen `html`, og den slukte alt fram til neste
   semikolon, blokkene etter den med. Et tema med et brudd der fikk «Temaet
   holder hvert løfte». Nå leses blokka som en regel, slik nettleseren gjør.
-- **`fristil sjekk-tema` leste `@media not (prefers-color-scheme: dark)` som
-  mørkt tema.** Blokka gjelder i lyst tema, og Fristils egne lyse verdier
-  ga brudd. `not` snur nå mediespørringen, også skrevet
-  `not all and (…)`, og blokka kontrolleres bare som lys.
-- **`fristil sjekk-tema` meldte systemfargene som feil.**
+- **`fristil sjekk-tema` og `inspectTheme` leste
+  `@media not (prefers-color-scheme: dark)` som mørkt tema.** Blokka gjelder
+  i lyst tema, og Fristils egne lyse verdier ga brudd. `not` snur nå
+  mediespørringen, også skrevet med en medietype, som `not all and (…)` eller
+  `not screen and (…)`, og blokka kontrolleres bare som lys.
+- **`fristil sjekk-tema` og `inspectTheme` meldte systemfargene som feil.**
   `--fs-color-disabled-surface`, `--fs-color-disabled-text` og
   `--fs-color-overlay` er ingen celle, men ble lest som familien `disabled`
   med roller som manglet, og som et token systemet ikke har. En overstyring
