@@ -22,7 +22,7 @@
   }
 
   /* Bare elementet teller, så en klasse på avsnittet vinner: `fs-paragraph`
-     med `--fs-paragraph-line-height`, `fs-help-text`, `fs-error-text` og en
+     med sin egen linjehøyde, `fs-help-text`, `fs-error-text` og en
      `fs-card__title` som er en <p>. Med `.fs-card p` slo kortet dem. */
   :where(.fs-card) p {
     margin: 0;
