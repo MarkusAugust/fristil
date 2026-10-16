@@ -95,6 +95,14 @@ egen overskrift «Brytende».
   litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet.
   Siden sier nå hvor grensen går, og at `--fs-textarea-min-height: 0` lar
   `rows` bestemme alene.
+- **`fristil tema oppskrift.json --ut tema.css` skrev ingen fil.** Uten
+  likhetstegn ble `--ut` og `tema.css` lest som to filnavn etter
+  oppskriften og ignorert. Temaet gikk til utdata, og kjøringen avsluttet
+  med 0. På samme måte forsvant `--aksent #f00` bak fargen i fila. Nå stopper
+  `tema` og ber om likhetstegn, slik `overta` og `agent` gjør, og mer enn én
+  oppskriftsfil gir også feilkode. `overta` og `agent` stopper dessuten på et
+  ukjent flagg med likhetstegn, som `--utt=src/ui` eller `--rammverk=react`,
+  i stedet for å bruke standarden.
 
 ## 0.33.0 (2026-10-12)
 

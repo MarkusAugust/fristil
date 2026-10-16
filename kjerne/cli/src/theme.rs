@@ -11,7 +11,7 @@
 //! skrivefeil skal ikke se ut som om kommandoen gjorde det du ba om.
 
 use crate::output::{error, fail, log, shown};
-use crate::Arguments;
+use crate::{refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 use fristil_kjerne::theme::{build_theme, js_number, to_fixed2};
 
@@ -118,6 +118,21 @@ fn read_recipe(file: &str) -> Object {
 
 pub fn run(arguments: &[String]) {
     let arguments = Arguments::read(arguments);
+    // `--ut tema.css` uten likhetstegn ble lest som to filnavn etter
+    // oppskriften. Temaet gikk da til utdata, og ingen fil ble skrevet.
+    refuse_without_value(&arguments);
+    if arguments.files.len() > 1 {
+        let files: Vec<String> = arguments
+            .files
+            .iter()
+            .map(|f| format!("«{}»", shown(f)))
+            .collect();
+        fail(&format!(
+            "Temaet lages av én oppskrift, men fikk {} filer: {}.\n\nSlå dem sammen til én JSON-fil, eller sett resten som flagg. Se `fristil --hjelp`.\n",
+            files.len(),
+            files.join(", ")
+        ));
+    }
     let recipe: Object = match arguments.files.first() {
         Some(path) => read_recipe(path),
         None => Vec::new(),

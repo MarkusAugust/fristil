@@ -763,6 +763,75 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// Det samme gjelder tema etter en oppskriftsfil. `--ut tema.css` ble lest
+// som to filnavn til, temaet gikk til utdata og ingen fil ble skrevet, og
+// `--aksent #f00` ble stille borte bak fargen i fila.
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const oppskrift = join(mappe, "oppskrift.json")
+  await writeFile(oppskrift, JSON.stringify({ aksent: "#7c3aed" }))
+  const tema = join(mappe, "tema.css")
+
+  for (const [flagg, verdi] of [
+    ["--ut", tema],
+    ["--aksent", "#ff0000"],
+  ] as const) {
+    const {
+      kode,
+      ut,
+      feil: melding,
+    } = await kjør(["tema", oppskrift, flagg, verdi])
+    krev(
+      kode === 1,
+      `tema med ${flagg} uten likhetstegn skulle gitt feilkode, ga ${kode}`,
+    )
+    krev(ut === "", `tema med ${flagg} uten likhetstegn skrev et tema likevel`)
+    krev(
+      melding.includes(`«${flagg}» mangler en verdi`),
+      `feilmeldingen sier ikke at ${flagg} mangler en verdi: ${melding}`,
+    )
+  }
+  krev(
+    !(await readFile(tema).then(
+      () => true,
+      () => false,
+    )),
+    "tema skrev en fil selv om --ut manglet likhetstegn",
+  )
+
+  const to = await kjør(["tema", oppskrift, oppskrift])
+  krev(to.kode === 1, `tema med to oppskrifter skulle gitt feilkode`)
+  krev(
+    to.feil.includes("én oppskrift"),
+    `tema med to oppskrifter sa ikke hva som var galt: ${to.feil}`,
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Et ukjent flagg med likhetstegn stopper også overta og agent. `--utt=`
+// la kopien stille i standardmappa, og `--rammverk=` ga regelboka for maler.
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const overta = await kjør(["overta", "button", "--utt=src/ui"], mappe)
+  krev(overta.kode === 1, `overta med --utt skulle gitt feilkode`)
+  krev(
+    overta.feil.includes("Ukjent flagg: --utt"),
+    `overta med --utt sa ikke at flagget er ukjent: ${overta.feil}`,
+  )
+  krev(
+    (await readdir(mappe)).length === 0,
+    "overta med et ukjent flagg skrev en kopi likevel",
+  )
+
+  const agent = await kjør(["agent", "--rammverk=react"], mappe)
+  krev(agent.kode === 1, `agent med --rammverk skulle gitt feilkode`)
+  krev(
+    agent.ut === "" && agent.feil.includes("Ukjent flagg: --rammverk"),
+    `agent med --rammverk sa ikke at flagget er ukjent: ${agent.feil}`,
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // Sier hvilke komponenter som finnes når navnet er ukjent
 {
   const { kode, feil: melding } = await kjør(["overta", "knapp"])
