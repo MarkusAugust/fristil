@@ -81,7 +81,7 @@ felt.addEventListener("blur", () => {
 | `--fs-textarea-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
 | `--fs-textarea-radius` | `var(--fs-spacing-1)` |
 
-`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker som før, og brukeren kan fortsatt dra feltet høyere. Bredden er låst, siden klassen setter `resize: vertical`.
+`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker over den, og brukeren kan fortsatt dra feltet høyere. Med standard skrift og luft er minstehøyden litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet, og først `rows="3"` blir høyere. Skal `rows` bestemme høyden alene, sett `--fs-textarea-min-height: 0`. Bredden er låst, siden klassen setter `resize: vertical`.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 
