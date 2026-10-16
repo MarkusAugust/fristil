@@ -32,6 +32,15 @@ egen overskrift «Brytende».
   derfor agenten bruke den nyeste versjonen som finnes på Central, og aldri
   skrive en den ikke har sett der.
 
+### Rettet
+
+- **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
+  begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
+  eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen
+  blokk ble lest som deklarasjonen `html`, og den slukte alt fram til neste
+  semikolon, blokkene etter den med. Et tema med et brudd der fikk «Temaet
+  holder hvert løfte». Nå leses blokka som en regel, slik nettleseren gjør.
+
 ## 0.33.0 (2026-10-12)
 
 ### Brytende

@@ -377,6 +377,56 @@ fn reads_media_inside_root_as_its_own_block() {
 }
 
 #[test]
+fn reads_a_nested_rule_that_starts_with_an_element_and_a_colon() {
+    // `html:not(…)` begynner som deklarasjonen `html` med verdien `not(…) {…}`.
+    // Ble den lest slik, forsvant blokka, og blokkene etter den med.
+    for outer in [
+        "@media (prefers-color-scheme: dark)",
+        "@layer brand",
+        ".kort",
+    ] {
+        for selector in [
+            "html:not([data-theme=\"light\"])",
+            "body:has(.x)",
+            "a:hover",
+        ] {
+            let css = format!(
+                "{outer} {{ {selector} {{ --fs-color-accent-text: #fdfdfd; --fs-color-accent-surface: #ffffff }} :root {{ --fs-color-danger-text: #ff9999 }} }}"
+            );
+            let blocks = parse_blocks(&css);
+            assert_eq!(blocks.len(), 2, "{css}");
+            assert_eq!(
+                declared(&blocks[0], "--fs-color-accent-text"),
+                Some("#fdfdfd"),
+                "{css}"
+            );
+            assert_eq!(
+                declared(&blocks[1], "--fs-color-danger-text"),
+                Some("#ff9999"),
+                "{css}"
+            );
+            let report = inspect_theme(&css);
+            assert!(
+                messages(&report).iter().any(|m| m.contains("accent: text")),
+                "{css}: {:?}",
+                messages(&report)
+            );
+        }
+    }
+}
+
+#[test]
+fn a_custom_property_may_hold_a_block() {
+    let css = ":root { --noe: { a: b }; --fs-color-danger-text: #ff9999 }";
+    let blocks = parse_blocks(css);
+    assert_eq!(blocks.len(), 1);
+    assert_eq!(
+        declared(&blocks[0], "--fs-color-danger-text"),
+        Some("#ff9999")
+    );
+}
+
+#[test]
 fn reads_light_dark_as_not_given() {
     let css = "[data-theme=\"dark\"] { color-scheme: light dark; --fs-color-danger-text: #ff9999 }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);

@@ -15,7 +15,7 @@ use super::contract::{
 use super::{is_js_space, js_number, js_trim};
 use cssparser::{
     AtRuleParser, CowRcStr, DeclarationParser, ParseError, Parser, ParserState,
-    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, StyleSheetParser,
+    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, StyleSheetParser, Token,
 };
 
 pub struct ParsedBlock {
@@ -100,6 +100,20 @@ impl<'i> DeclarationParser<'i> for Reader {
         input: &mut Parser<'i>,
         _start: &ParserState,
     ) -> Result<Item, ParseError<()>> {
+        // En verdi med en `{}`-blokk er ingen deklarasjon, men en nøstet regel
+        // som `html:not(…) { … }` eller `a:hover { … }`. CSS Syntax kaster den
+        // som deklarasjon, og først da leser cssparser den på nytt som regel.
+        // Svarte vi `Ok`, slukte den alt fram til neste semikolon, blokkene
+        // etter den med. En egendefinert variabel kan ha en blokk i verdien.
+        let state = input.state();
+        let mut block = false;
+        while let Ok(token) = input.next() {
+            block |= matches!(token, Token::CurlyBracketBlock);
+        }
+        if block && !name.starts_with("--") {
+            return Err(ParseError::custom(()));
+        }
+        input.reset(&state);
         let value = rest_as_text(input);
         // Bare det sjekken bruker: fargene, og `color-scheme`, som sier om
         // blokka er lys eller mørk. Navnet på en egendefinert variabel skiller
