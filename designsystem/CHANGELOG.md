@@ -46,6 +46,9 @@ egen overskrift «Brytende».
   `fs-help-text` og `fs-error-text` mistet marginen i toppen, også i en
   melding. Reglene teller nå bare elementet, så et avsnitt uten klasse ser
   ut som før.
+- **En besøkt `fs-link` skifter farge under musa.** `:hover` sto før
+  `:visited` med samme spesifisitet, så besøktfargen vant og hover-fargen
+  kom aldri. Rekkefølgen er snudd.
 
 ## 0.33.0 (2026-10-12)
 
