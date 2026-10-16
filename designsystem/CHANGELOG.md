@@ -82,6 +82,17 @@ egen overskrift «Brytende».
 - **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
   hadde en fast radius og leste ikke variabelen. Standarden der er
   fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.
+- **Et langt valg i `fs-select` med `data-picker="styled"` ble ikke
+  klippet.** Regelen som klipper det, treffer `<selectedcontent>`, og
+  kommentaren sa at nettleseren lager elementet selv. Det gjør den ikke, så
+  med markupen på siden ble et langt valg brutt over flere linjer, og feltet
+  ble høyere. Komponentsiden sier nå at
+  `<button><selectedcontent></selectedcontent></button>` må stå først i
+  `<select>`-en for at valget skal klippes.
+- **Siden om `fs-textarea` sa at `rows` virker som før.** Minstehøyden er
+  litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet.
+  Siden sier nå hvor grensen går, og at `--fs-textarea-min-height: 0` lar
+  `rows` bestemme alene.
 
 ## 0.33.0 (2026-10-12)
 
