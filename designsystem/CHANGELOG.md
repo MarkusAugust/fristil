@@ -49,6 +49,10 @@ egen overskrift «Brytende».
 - **En besøkt `fs-link` skifter farge under musa.** `:hover` sto før
   `:visited` med samme spesifisitet, så besøktfargen vant og hover-fargen
   kom aldri. Rekkefølgen er snudd.
+- **Ringen rundt `fs-avatar` vises over bildet.** Den var en `box-shadow`
+  innover, og en slik skygge males under innholdet, så et bilde dekket den
+  helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
+  også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene.
 
 ## 0.33.0 (2026-10-12)
 

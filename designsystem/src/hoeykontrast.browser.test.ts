@@ -4,9 +4,10 @@
 /// <reference types="@vitest/browser-playwright" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { cdp, page, server, userEvent } from "vitest/browser"
+import { cdp, server, userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
+import { piksel } from "./testing/piksel"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
@@ -50,31 +51,6 @@ function stil(id: string) {
   const element = document.getElementById(id)
   if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
   return getComputedStyle(element)
-}
-
-/**
- * Fargen på én piksel midt i høyden, `andel` av bredden inn. For det
- * computed style ikke kan svare på: et pseudoelement som `::-webkit-progress-value`.
- */
-async function piksel(id: string, andel: number): Promise<number[]> {
-  const element = document.getElementById(id)
-  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
-  const bilde = new Image()
-  bilde.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`
-  await bilde.decode()
-  const lerret = document.createElement("canvas")
-  lerret.width = bilde.width
-  lerret.height = bilde.height
-  const tegning = lerret.getContext("2d")
-  if (tegning === null) throw new Error("Fikk ikke tegne på lerretet")
-  tegning.drawImage(bilde, 0, 0)
-  const [r, g, b] = tegning.getImageData(
-    Math.floor(bilde.width * andel),
-    Math.floor(bilde.height / 2),
-    1,
-    1,
-  ).data
-  return [r, g, b]
 }
 
 describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
@@ -256,8 +232,9 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     await settHoeykontrast(true)
 
     for (const id of ["bestemt", "farget"]) {
-      const fylt = await piksel(id, 0.25)
-      const tom = await piksel(id, 0.75)
+      const stolpe = document.getElementById(id) as HTMLElement
+      const fylt = await piksel(stolpe, 0.25)
+      const tom = await piksel(stolpe, 0.75)
       expect(fylt, id).not.toEqual(tom)
     }
   })

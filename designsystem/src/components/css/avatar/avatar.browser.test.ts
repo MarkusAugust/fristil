@@ -7,6 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { piksel } from "../../../testing/piksel"
 import { avatar } from "./avatar"
 
 import "../../../tokens/tokens.css"
@@ -56,5 +57,37 @@ describe("fs-avatar", () => {
   it("har ingen tilgjengelighetsbrudd", async () => {
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("fs-avatar med bilde", () => {
+  it("tegner ringen over et lyst bilde", async () => {
+    // Ringen var en skygge innover, og den males under innholdet. Et bilde
+    // som fylte flaten dekket den, så ringen fantes bare med initialer. Ringen
+    // får en farge her som ikke finnes ellers, så den ikke kan forveksles med
+    // bakgrunnen som skinner gjennom i kanten av en avrundet flate.
+    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
+    )}`
+    const stil =
+      "--fs-avatar-size: 96px; --fs-color-neutral-border-subtle: rgb(255, 0, 0)"
+    monter(`
+      <span class="fs-avatar" id="rund" style="${stil}"><img src="${hvitt}" alt="" /></span>
+      <span class="fs-avatar" data-variant="square" id="firkant" style="${stil}"><img src="${hvitt}" alt="" /></span>
+    `)
+    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    await ventPaTegning()
+
+    for (const id of ["rund", "firkant"]) {
+      const element = document.getElementById(id) as HTMLElement
+      expect(await piksel(element, 0.5), id).toEqual([255, 255, 255])
+      // De ytterste pikslene, siden kanten av en sirkel er utjevnet mot siden.
+      let rødest = 0
+      for (const x of [0, 0.01, 0.02, 0.03]) {
+        const [r, g, b] = await piksel(element, x)
+        rødest = Math.max(rødest, r - Math.max(g, b))
+      }
+      expect(rødest, id).toBeGreaterThan(60)
+    }
   })
 })
