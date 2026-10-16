@@ -1039,6 +1039,21 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     bom.ut.includes(`${bomFil}:1:14:`),
     `en fil med BOM fikk feil kolonne: ${bom.ut}`,
   )
+  const bomInn = Bun.spawn([...KOMMANDO, "sjekk"], {
+    env: ENVIRONMENT,
+    stdin: new Blob([bomSide]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [bomInnUt] = await Promise.all([
+    new Response(bomInn.stdout).text(),
+    bomInn.exited,
+  ])
+  krev(
+    bomInnUt.includes("stdin:1:14:"),
+    `standard inn med BOM fikk feil kolonne: ${bomInnUt}`,
+  )
   const hentetFil = join(tomme, "hentet.txt")
   await writeFile(
     hentetFil,
