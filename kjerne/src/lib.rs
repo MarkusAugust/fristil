@@ -554,6 +554,34 @@ mod tests {
     }
 
     #[test]
+    fn a_missing_id_gives_a_message_without_trailing_space() {
+        for (attribute, ends) in [
+            ("for", "<fs-field>, som setter den i nettleseren."),
+            (
+                "aria-describedby",
+                "<fs-field>, som setter den i nettleseren.",
+            ),
+            (
+                "aria-labelledby",
+                "<fs-field>, som setter den i nettleseren.",
+            ),
+            ("aria-controls", "koblingen til det elementet styrer."),
+        ] {
+            let html = format!(r#"<label class="fs-label" {attribute}="borte">x</label>"#);
+            let findings = check(&html);
+            let found = findings
+                .iter()
+                .find(|f| f.rule == "id-finnes-ikke")
+                .unwrap_or_else(|| panic!("{attribute}: {findings:?}"));
+            assert!(
+                found.message.ends_with(ends),
+                "{attribute}: «{}»",
+                found.message
+            );
+        }
+    }
+
+    #[test]
     fn names_the_rule() {
         let findings = check(r#"<button class="fs-buton">Send</button>"#);
         assert_eq!(findings[0].rule, "ukjent-klasse");

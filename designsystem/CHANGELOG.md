@@ -120,6 +120,10 @@ egen overskrift «Brytende».
   uendelig tall ble `inf`. Nå får de eksponent, som `1e-7` og `1e+21`, og
   `Infinity` heter `Infinity`. I manifestet blir et uendelig tall `null`,
   som i `JSON.stringify`. Vanlige tall skrives som før.
+- **Meldingen for `aria-controls` som peker på en id som ikke finnes, slutter
+  ikke lenger med et mellomrom.** Det sto igjen etter «styrer.», i
+  `fristil sjekk`, i editoren og som to mellomrom før regelnavnet i
+  `assertFristil`.
 
 ## 0.33.0 (2026-10-12)
 
