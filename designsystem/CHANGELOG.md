@@ -135,6 +135,8 @@ egen overskrift «Brytende».
   `fileformat=mac`, fikk funnene og hurtigrettelsene på feil sted. Nå er
   `\n`, `\r\n` og `\r` alene linjeskift, som LSP krever. Linje og kolonne i
   `diagnosePage`, `assertFristil` og `fristil sjekk` følger samme regel.
+  Hurtigrettelsen «Sett inn en ledetekst» gir også `<label>` sin egen linje
+  med samme innrykk når linjeskiftene er `\r`.
 - **Eksempelet på siden om Kotlin viste feil regelnavn.** Funnet for en
   `for` som peker på en id som ikke finnes, sto med `[for-peker-feil]`, men
   regelen heter `id-finnes-ikke`. `for-peker-feil` gjelder en `for` som

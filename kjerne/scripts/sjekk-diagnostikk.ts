@@ -530,6 +530,12 @@ const cases: Case[] = [
     fixed: `<fs-field>\n  <label>Ledetekst</label>\n  <input class="fs-input">\n</fs-field>`,
   },
   {
+    name: "ledeteksten får sin egen linje også med \\r-linjeskift",
+    html: `<fs-field>\r  <input class="fs-input">\r</fs-field>`,
+    count: 1,
+    fixed: `<fs-field>\r  <label>Ledetekst</label>\r  <input class="fs-input">\r</fs-field>`,
+  },
+  {
     name: "data-required på ledetekst og legend",
     html: `<label class="fs-label" data-required="stjerne">N</label><legend class="fs-legend" data-required="text">G</legend>`,
     count: 1,
