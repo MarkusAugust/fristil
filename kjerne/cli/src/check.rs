@@ -16,9 +16,6 @@ use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::Severity;
 use fristil_kjerne::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
 
-/// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
-/// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
-/// tilfeldigvis var kommet.
 /// Teksten uten en BOM (U+FEFF) først, slik nettleseren og editoren leser
 /// den. Med den ville linje 1 fått én kolonne mer enn editoren viser, og
 /// Node-verten, der `response.text()` fjerner den, svart annerledes enn den
@@ -30,6 +27,9 @@ pub fn without_bom(text: String) -> String {
     }
 }
 
+/// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
+/// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
+/// tilfeldigvis var kommet.
 fn read_all_input() -> Vec<u8> {
     let mut bytes = Vec::new();
     let mut buffer = [0u8; 64 * 1024];
