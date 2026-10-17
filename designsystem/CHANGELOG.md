@@ -53,15 +53,16 @@ egen overskrift «Brytende».
   det skal hete», men stilarkene til `<fs-field>`, `<fs-tabs>`,
   `<fs-popover>`, `<fs-dialog>` og `<fs-suggestion>` er skrevet for
   `fs-*`-navnene, så en komponent under et annet navn mistet `display`-regelen
-  på verten. README sier nå at oppførselen følger med navnet, men ikke
-  stilen, og hvilke tre komponenter som setter klassen sin selv.
+  på verten, og `<fs-dialog>` også plasseringen av en dialog som står åpen
+  før den er modal. README sier nå at oppførselen følger med navnet, men
+  ikke stilen, og hvilke fire komponenter som setter klassen sin selv.
 - **`popover-toggle` er beskrevet slik den sendes.** Beskrivelsen i
-  `events.ts` og `web-types.json` sa «Panelet
-  åpnet eller lukket seg», men hendelsen kommer bare når brukeren åpner eller
-  lukker panelet, og fra `show()`, `hide()` og `toggle()`. Settes `open` som
-  egenskap eller attributt, som React 19 og Datastars `data-attr:open` gjør,
-  kommer ingen hendelse, ellers hadde Datastar-oppskriften fått sitt eget
-  signal i retur. Popover-siden skiller nå `meny.open = false` fra `hide()`.
+  `events.ts` og `web-types.json` sa «Panelet åpnet eller lukket seg», men
+  hendelsen kommer bare når brukeren åpner eller lukker panelet, og fra
+  `show()`, `hide()` og `toggle()`. Settes `open` som egenskap eller
+  attributt, som React 19 og Datastars `data-attr:open` gjør, kommer ingen
+  hendelse, ellers hadde Datastar-oppskriften fått sitt eget signal i retur.
+  Popover-siden skiller nå `meny.open = false` fra `hide()`.
 - **Regelboka for maler lovet at `<fs-tabs>` husker fanevalget etter enhver
   patch.** Den nevnte `innerHTML`, htmx og Turbo, men valget er knyttet til
   selve knappen og overlever bare en morfing som beholder elementene, som
