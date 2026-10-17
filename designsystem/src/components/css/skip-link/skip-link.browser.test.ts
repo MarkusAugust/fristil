@@ -111,6 +111,9 @@ describe("fs-skip-link", () => {
     lenke.focus()
     lenke.click()
     expect(document.activeElement).toBe(document.body)
+
+    await userEvent.tab()
+    expect(document.activeElement?.id).toBe("inne")
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
