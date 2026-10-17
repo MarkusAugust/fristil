@@ -1,5 +1,5 @@
 /**
- * Kontrollerer at versjonsloggen følger pakken.
+ * Kontrollerer at versjonsloggen følger pakken, og at `engines` sier sant.
  *
  * En versjonslogg som ikke stemmer er verre enn ingen: den som leser den tror
  * den er ajour. Sjekken er derfor en del av byggesteget, ikke noe man husker.
@@ -163,6 +163,31 @@ for (const mappe of rotpakke.workspaces as string[]) {
 if (workspaces === 0)
   feil.push("Fant ingen workspace med versjon å sjekke mot bun.lock.")
 
+/*
+ * Kjernen lastes med `process.getBuiltinModule`, som kom i Node 20.16 og
+ * 22.3. Versjonene er ikke ordnet i én rekke: Node 21 og 22.0–22.2 er nyere
+ * enn 20.16 og mangler den likevel. `>=20.16` slapp dem inn, og den som
+ * kjørte Node 22.1 fikk høre at versjonen var eldre enn 20.16. Intervallet må
+ * derfor ha to grenser, og det kontrolleres med versjoner på hver side av dem.
+ */
+const motor = pakke.engines?.node as string | undefined
+if (!motor) {
+  feil.push("package.json mangler engines.node.")
+} else {
+  const skalInn = ["20.16.0", "20.19.5", "22.3.0", "22.22.0", "24.0.0"]
+  const skalUt = ["18.20.0", "20.15.1", "21.0.0", "21.7.3", "22.0.0", "22.2.0"]
+  for (const versjon of skalInn)
+    if (!Bun.semver.satisfies(versjon, motor))
+      feil.push(
+        `engines.node er «${motor}», og slipper ikke inn Node ${versjon}, som har process.getBuiltinModule.`,
+      )
+  for (const versjon of skalUt)
+    if (Bun.semver.satisfies(versjon, motor))
+      feil.push(
+        `engines.node er «${motor}», og slipper inn Node ${versjon}, som mangler process.getBuiltinModule.`,
+      )
+}
+
 if (feil.length > 0) {
   console.error(
     `Versjonsloggen stemmer ikke:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
@@ -171,5 +196,5 @@ if (feil.length > 0) {
 }
 
 console.log(
-  `Versjonsloggen stemmer: ${pakke.version} er beskrevet, «Ikke utgitt» står øverst, presentasjonen står på ${iDekket?.[1]} datert ${iDekket?.[2].trim()}, og avhengighetsgrafen er ${maalt?.[1]}.`,
+  `Versjonsloggen stemmer: ${pakke.version} er beskrevet, «Ikke utgitt» står øverst, presentasjonen står på ${iDekket?.[1]} datert ${iDekket?.[2].trim()}, avhengighetsgrafen er ${maalt?.[1]}, og engines «${motor}» holder Node uten getBuiltinModule ute.`,
 )

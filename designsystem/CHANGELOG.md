@@ -60,6 +60,12 @@ egen overskrift «Brytende».
   etter at feltet var rettet, uten advarsel. Nå oversettes navnene tilbake
   før de settes, `tabIndex` blir `tabindex`, og settet rydder det samme som
   fra hovedinngangen.
+- **`engines` slipper ikke lenger inn Node 21 og 22.0–22.2.** Kjernen lastes
+  med `process.getBuiltinModule`, som kom i Node 20.16 og 22.3, men
+  `>=20.16` tok med versjonene mellom, og der sa feilmeldingen at Node 22.1
+  var eldre enn 20.16. Kravet er nå `^20.16.0 || >=22.3.0`, og meldingen
+  nevner begge grensene. Oppføringen under 0.32.1 som sier «20.16 eller
+  nyere», gjelder med dette unntaket.
 - **`defineFs*` kaster ikke når klassen alt er registrert under et eget
   navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
   NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i

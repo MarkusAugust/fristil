@@ -28,12 +28,15 @@ export function defaultCore(): Core {
     | typeof import("node:fs")
     | undefined
   if (!fs) {
-    // `getBuiltinModule` kom i Node 20.16 og 22.3. En eldre Node er Node,
-    // og skal få vite at det er versjonen som er feil.
+    // `getBuiltinModule` kom i Node 20.16 og 22.3, så Node 21 og 22.0–22.2
+    // er utenfor selv om de er nyere enn 20.16. `engines` i package.json
+    // sier det samme. En Node uten den er Node, og skal få vite at det er
+    // versjonen som er feil, med begge grensene, så Node 22.1 ikke får høre
+    // at den er eldre enn 20.16.
     const node = globalThis.process?.versions?.node
     throw new Error(
       node
-        ? `Fristil krever Node 20.16 eller nyere, og dette er Node ${node}.`
+        ? `Fristil krever Node 20.16 eller nyere i 20-serien, eller Node 22.3 eller nyere, og dette er Node ${node}.`
         : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og fargekontrakt.json med loadContract.",
     )
   }
