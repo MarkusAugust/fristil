@@ -41,6 +41,15 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`fristil lsp` leter ikke over arbeidsområdet for en fil utenfor det.**
+  Letingen etter manifestet stoppet ved rota av arbeidsområdet fila lå
+  under, men for en fil utenfor det, som en kladdefil, og for hver fil når
+  editoren ikke ga noe arbeidsområde, som Neovim uten treff på
+  `root_markers`, fantes ingen rot å stoppe ved, så den gikk helt til rota
+  av filsystemet og tok en pakke i hjemmemappa som prosjektets. Nå letes det
+  ikke fra en slik fil: den sjekkes mot manifestet ved rota av
+  arbeidsområdet, om det har et, ellers mot pakkens, slik Editoren-siden og
+  IntelliJ-pluginen alt sa.
 - **Tagnavnene er typet fra `/register` og `/react-jsx` alene.** Typesikker
   bruk-siden sa at hendelsestypene følger med hver inngang til
   web-komponentene, men `HTMLElementTagNameMap` ble bare utvidet i

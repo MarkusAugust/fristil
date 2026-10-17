@@ -36,8 +36,9 @@ use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::{Finding, Severity, Vocabulary};
 use fristil_kjerne::{diagnose_markup, diagnose_page, manifest, Lines};
 
-/// Stedene manifestet letes etter: i mappa til fila og hver mappe over den,
-/// og så ved rota av hvert arbeidsområde.
+/// Stedene manifestet letes etter: i mappa til fila og hver mappe over den
+/// til og med rota av arbeidsområdet fila ligger i, og så ved rota av hvert
+/// arbeidsområde.
 const CANDIDATES: [&str; 2] = [
     "build/fristil/manifest.json",
     "node_modules/@fristil/designsystem/manifest/manifest.json",
@@ -288,7 +289,14 @@ impl Server {
                 .map(|r| r.replace('\\', "/").trim_end_matches('/').to_string())
                 .filter(|r| file.starts_with(&format!("{r}/")))
                 .max_by_key(String::len);
-            let mut dir = std::path::Path::new(&file).parent();
+            // Ligger fila ikke under noen rot, som en kladdefil utenfor
+            // arbeidsområdet, eller når editoren ikke ga noe arbeidsområde,
+            // er det ingen rot å stoppe ved. Da letes det ikke fra fila i det
+            // hele tatt, som IntelliJ-pluginen gjør: før gikk letingen helt
+            // til rota av filsystemet, og tok pakken i hjemmemappa.
+            let mut dir = root
+                .as_ref()
+                .and_then(|_| std::path::Path::new(&file).parent());
             while let Some(here) = dir {
                 let here_text = here.to_string_lossy().replace('\\', "/");
                 for candidate in CANDIDATES {
@@ -1161,6 +1169,80 @@ mod tests {
             count(&mut narrow, &inside),
             0,
             "pakken over rota gjelder ikke"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn does_not_look_above_the_workspace_for_a_file_outside_it() {
+        // Pakken står over arbeidsområdet, som i hjemmemappa, og
+        // arbeidsområdet selv har ingen. Før stoppet letingen bare ved en rot
+        // fila lå under, så en fil utenfor roten, og hver fil når editoren
+        // ikke ga noen rot, gikk helt til rota av filsystemet og fant den.
+        let root = std::env::temp_dir().join(format!("fristil-lsp-utenfor-{}", std::process::id()));
+        let folder = root.join("node_modules/@fristil/designsystem/manifest");
+        std::fs::create_dir_all(&folder).unwrap();
+        std::fs::create_dir_all(root.join("proj")).unwrap();
+        std::fs::create_dir_all(root.join("notes")).unwrap();
+        let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
+        std::fs::write(
+            folder.join("manifest.json"),
+            manifest::merged(&crate::package::manifest(), &[fragment])
+                .unwrap()
+                .to_pretty(),
+        )
+        .unwrap();
+        let count = |server: &mut Server, uri: &str| {
+            server.handle(&notification(
+                "textDocument/didOpen",
+                &format!(r#"{{"textDocument":{{"uri":"{uri}","languageId":"html","version":1,"text":"<b class=\"app-button__x\"></b>"}}}}"#),
+            ));
+            server
+                .take()
+                .iter()
+                .find(|m| {
+                    m.get("method").and_then(Json::as_str)
+                        == Some("textDocument/publishDiagnostics")
+                })
+                .and_then(|m| {
+                    m.get("params")?
+                        .get("diagnostics")?
+                        .as_array()
+                        .map(<[Json]>::len)
+                })
+                .unwrap()
+        };
+
+        let mut server = Server::new();
+        server.handle(&request(
+            1,
+            "initialize",
+            &format!(
+                r#"{{"rootUri":"file://{}/proj","capabilities":{{}}}}"#,
+                root.display()
+            ),
+        ));
+        server.take();
+        let outside = format!("file://{}/notes/a.html", root.display());
+        assert_eq!(
+            count(&mut server, &outside),
+            0,
+            "en fil utenfor arbeidsområdet ser ikke pakken over det"
+        );
+
+        // Uten arbeidsområde, som Neovim uten treff på `root_markers`.
+        let mut rootless = Server::new();
+        rootless.handle(&request(
+            1,
+            "initialize",
+            r#"{"rootUri":null,"capabilities":{}}"#,
+        ));
+        rootless.take();
+        let inside = format!("file://{}/proj/side.html", root.display());
+        assert_eq!(
+            count(&mut rootless, &inside),
+            0,
+            "uten rot letes det ikke oppover fra fila"
         );
         std::fs::remove_dir_all(root).unwrap();
     }
