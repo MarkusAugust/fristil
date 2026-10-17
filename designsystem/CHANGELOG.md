@@ -49,6 +49,12 @@ egen overskrift «Brytende».
   Enter, falt fokus til `body` i stedet for til meldingen ved siden av eller
   dit det kom fra, og det samme skjedde ved `clear()`. Fokus leses nå fra
   komponentens egen rot.
+- **README sier hva et eget tagnavn gir.** Den lovet at du bestemmer «hva
+  det skal hete», men stilarkene til `<fs-field>`, `<fs-tabs>`,
+  `<fs-popover>`, `<fs-dialog>` og `<fs-suggestion>` er skrevet for
+  `fs-*`-navnene, så en komponent under et annet navn mistet `display`-regelen
+  på verten. README sier nå at oppførselen følger med navnet, men ikke
+  stilen, og hvilke tre komponenter som setter klassen sin selv.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen
