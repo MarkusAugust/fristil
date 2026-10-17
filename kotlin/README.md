@@ -51,6 +51,16 @@ kilden. Et kall låner en instans fra en pool og gir den tilbake etterpå, så
 kall fra flere tråder venter ikke på hverandre. Poolen holder høyst like mange
 ledige instanser som maskinen har prosessorer.
 
+## Temaet
+
+`Fristil.buildTheme(oppskrift)` bygger fargetemaet av JSON-teksten i en
+oppskrift, med norske eller engelske nøkler som `fristil tema`, og
+`Fristil.inspectTheme(css)` kontrollerer et håndskrevet tema. Svarene,
+`Theme` og `ThemeReport`, har de samme feltene som `CoreTheme` og
+`CoreThemeReport` i TypeScript. Fargekontrakten ligger i jar-en som
+manifestet gjør, og `ThemeParityTest` krever det samme svaret som fasiten i
+`kjerne/tema/` for hver oppskrift og hvert tema.
+
 ## Manifestet
 
 `Fristil.manifest` er manifestet i pakken, det samme sjekken går mot, med

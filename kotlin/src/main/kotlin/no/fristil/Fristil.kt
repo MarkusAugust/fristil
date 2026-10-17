@@ -93,6 +93,66 @@ object Fristil {
             page = true,
         )
 
+    /**
+     * Bygger et fargetema av oppskriften, slik `fristil tema` gjør.
+     *
+     * [recipe] er JSON-teksten i en oppskriftsfil: de ni fargene med norske
+     * eller engelske nøkler (`aksent` eller `accent`, `fare` eller `danger`,
+     * og så videre), `typografi` eller `typography`, og `form` eller `shape`.
+     * En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster
+     * [IllegalArgumentException] med forklaringen. Løftene holder av
+     * konstruksjon, så [Theme.violations] er tom for en oppskrift med gyldige
+     * farger. Sjekk den likevel før du skriver [Theme.css] til en fil:
+     * `fristil tema` nekter å skrive når den ikke er tom, mens denne gir
+     * temaet tilbake med lista, som `buildTheme` i TypeScript.
+     * Mangler fargekontrakten i jar-en, kastes [IllegalStateException].
+     */
+    fun buildTheme(recipe: String): Theme {
+        val input = Json.write(ThemeRecipe.toCore(recipe))
+        val (status, answer) = withCore { it.useContract(); it.callWithStatus(BUILD_THEME, input) }
+        if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        val theme = Json.parse(answer) as Map<*, *>
+        return Theme(
+            light = theme["light"].texts(),
+            dark = theme["dark"].texts(),
+            violations =
+                (theme["violations"] as List<*>).map { v ->
+                    val m = v as Map<*, *>
+                    ThemeViolation(
+                        family = m["family"] as String,
+                        promise = m["promise"] as String,
+                        ratio = m["ratio"] as Double,
+                        required = m["required"] as Double,
+                    )
+                },
+            css = theme["css"] as String,
+        )
+    }
+
+    /**
+     * Kontrollerer hvert løfte i et tema skrevet som CSS, slik
+     * `fristil sjekk-tema` gjør. [ThemeReport.problems] er tom når temaet
+     * holder; tallene sier hvor mye som faktisk ble lest, så et tomt svar
+     * ikke kan forveksles med et tema uten tokens.
+     */
+    fun inspectTheme(css: String): ThemeReport {
+        val (status, answer) = withCore { it.useContract(); it.callWithStatus(INSPECT_THEME, css) }
+        if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        val report = Json.parse(answer) as Map<*, *>
+        return ThemeReport(
+            problems =
+                (report["problems"] as List<*>).map { p ->
+                    val m = p as Map<*, *>
+                    ThemeProblem(selector = m["selector"] as String, message = m["message"] as String)
+                },
+            blocks = (report["blocks"] as Double).toInt(),
+            declarations = (report["declarations"] as Double).toInt(),
+            promises = (report["promises"] as Double).toInt(),
+        )
+    }
+
+    private fun Any?.texts(): Map<String, String> = (this as Map<*, *>).entries.associate { (k, v) -> k as String to v as String }
+
     private fun diagnoseStyled(html: String, css: List<String>, page: Boolean, manifest: String? = null): List<Finding> {
         val input = "{\"html\":${Json.string(html)},\"css\":[${css.joinToString(",") { Json.string(it) }}],\"page\":$page}"
         return diagnose(STYLED, input, manifest)
@@ -146,6 +206,13 @@ object Fristil {
         } ?: error("manifest.json mangler i jar-en")
     }
 
+    /** Fargekontrakten i pakken, som ligger i jar-en. Temaet regnes av den. */
+    internal val PACKAGE_CONTRACT: String by lazy {
+        Fristil::class.java.getResourceAsStream("/no/fristil/fargekontrakt.json")?.use {
+            it.readBytes().toString(Charsets.UTF_8)
+        } ?: error("fargekontrakt.json mangler i jar-en")
+    }
+
     /**
      * Manifestet i pakken, det samme sjekken går mot: elementene med
      * attributter, deler og hendelser, og klassene med attributtene og de
@@ -156,6 +223,8 @@ object Fristil {
     private const val MARKUP = "diagnose_markup_raw"
     private const val PAGE = "diagnose_page_raw"
     private const val STYLED = "diagnose_styled_raw"
+    private const val BUILD_THEME = "build_theme_raw"
+    private const val INSPECT_THEME = "inspect_theme_raw"
 
     private fun finding(f: Map<*, *>): Finding =
         Finding(
@@ -214,6 +283,17 @@ internal class Core {
         this.manifest = wanted
     }
 
+    /** Om fargekontrakten er gitt. Det er alltid pakkens, så én gang per instans holder. */
+    private var contractLoaded = false
+
+    /** Gir instansen fargekontrakten i pakken, første gang den trengs. */
+    fun useContract() {
+        if (contractLoaded) return
+        val (status, answer) = callWithStatus("load_contract_raw", Fristil.PACKAGE_CONTRACT)
+        if (status != 0L) throw IllegalStateException((Json.parse(answer) as Map<*, *>)["error"] as String)
+        contractLoaded = true
+    }
+
     /** Kaller en av funksjonene som tar en tekst, og gir tallet den gir tilbake, der 0 er i orden, og svaret. */
     fun callWithStatus(entry: String, text: String): Pair<Long, String> {
         val bytes = text.toByteArray(Charsets.UTF_8)
@@ -236,6 +316,113 @@ data class Finding(
     val link: String,
     val fix: Fix? = null,
 )
+
+/**
+ * Et tema bygd av [Fristil.buildTheme]: tokenene per utseende, løftene som
+ * ryker, og CSS-en, de samme feltene som `CoreTheme` i TypeScript.
+ */
+data class Theme(
+    /** Hvert `--fs-color-*`-token med verdien i lyst utseende. */
+    val light: Map<String, String>,
+    val dark: Map<String, String>,
+    /** Løfter som ikke holder. Tom når temaet er i orden. */
+    val violations: List<ThemeViolation>,
+    /** Temaet som CSS, klart til å lenkes etter `tokens.css`. */
+    val css: String,
+)
+
+/** Et løfte som ryker: kontrasten [ratio] mot kravet [required], for [promise] i [family]. */
+data class ThemeViolation(
+    val family: String,
+    val promise: String,
+    val ratio: Double,
+    val required: Double,
+)
+
+/** Det [Fristil.inspectTheme] fant, de samme feltene som `CoreThemeReport` i TypeScript. */
+data class ThemeReport(
+    val problems: List<ThemeProblem>,
+    /** Blokker som faktisk ble lest. */
+    val blocks: Int,
+    /** Verdier konsumenten selv skrev, og som ble forstått. */
+    val declarations: Int,
+    /** Løfter som faktisk ble kontrollert. */
+    val promises: Int,
+)
+
+/** Et løfte som ikke holder i et håndskrevet tema, med selektoren det står i. */
+data class ThemeProblem(
+    val selector: String,
+    val message: String,
+)
+
+/**
+ * Oppskriften slik `fristil tema` leser den, oversatt til det kjernen tar.
+ *
+ * Fila kan skrive fargene, skriften og formen på norsk eller engelsk, og
+ * kjernen tar bare engelsk. Nøklene er de samme som i `kjerne/cli/src/theme.rs`,
+ * og en nøkkel som ikke står der kaster, siden en skrivefeil ellers ville
+ * sett ut som en oppskrift som virket.
+ */
+internal object ThemeRecipe {
+    private val COLORS =
+        listOf(
+            "aksent" to "accent",
+            "fare" to "danger",
+            "suksess" to "success",
+            "advarsel" to "warning",
+            "noytral" to "neutral",
+            "besokt" to "visited",
+            "merke1" to "brand1",
+            "merke2" to "brand2",
+            "merke3" to "brand3",
+        )
+    private val TYPOGRAPHY_KEYS = listOf("fontFamily", "weights", "lineHeights")
+    private val WEIGHT_KEYS = listOf("regular", "medium", "semibold", "bold")
+    private val LINE_KEYS = listOf("default", "heading", "article", "compact")
+    private val SHAPE_KEYS = listOf("buttonRadius", "fieldRadius", "surfaceRadius", "buttonBorderWidth", "buttonFontWeight")
+
+    fun toCore(recipe: String): Map<String, Any?> {
+        val parsed = Json.parse(recipe)
+        val file =
+            parsed as? Map<*, *>
+                ?: throw IllegalArgumentException("Oppskriften er gyldig JSON, men ikke et objekt med fargene i seg.")
+        val topLevel = COLORS.flatMap { (n, e) -> listOf(n, e) } + listOf("typografi", "typography", "form", "shape", "\$schema")
+        val unknown = file.keys.map { it.toString() }.filter { it !in topLevel }.toMutableList()
+        val typography = spread(file["typography"] ?: file["typografi"])
+        val shape = spread(file["shape"] ?: file["form"])
+        unknown += unknownKeys(typography, TYPOGRAPHY_KEYS, "typografi")
+        unknown += unknownKeys(spread(typography["weights"]), WEIGHT_KEYS, "typografi.weights")
+        unknown += unknownKeys(spread(typography["lineHeights"]), LINE_KEYS, "typografi.lineHeights")
+        unknown += unknownKeys(shape, SHAPE_KEYS, "form")
+        if (unknown.isNotEmpty()) throw IllegalArgumentException("Ukjent nøkkel i oppskriften: ${unknown.joinToString(", ")}")
+
+        val input = linkedMapOf<String, Any?>()
+        for ((norwegian, english) in COLORS) {
+            val value = file[norwegian] ?: file[english]
+            if (value is String && value.isNotEmpty()) input[english] = value
+        }
+        if (typography.isNotEmpty()) input["typography"] = typography
+        if (shape.isNotEmpty()) input["shape"] = shape
+        return input
+    }
+
+    /**
+     * `{ ...verdi }` slik JavaScript sprer den, som `spread` i `theme.rs`: en
+     * liste får indeksene som nøkler og en streng ett tegn per nøkkel, så
+     * `"typografi": "Inter"` meldes som ukjente nøkler framfor å forsvinne.
+     */
+    private fun spread(value: Any?): Map<String, Any?> =
+        when (value) {
+            is Map<*, *> -> value.entries.associate { (k, v) -> k.toString() to v }
+            is List<*> -> value.withIndex().associate { (i, v) -> i.toString() to v }
+            is String -> value.withIndex().associate { (i, c) -> i.toString() to c.toString() }
+            else -> emptyMap()
+        }
+
+    private fun unknownKeys(value: Map<String, Any?>, allowed: List<String>, path: String): List<String> =
+        value.keys.filter { it !in allowed }.map { "$path.$it" }
+}
 
 /** En rettelse: bytt ut teksten fra `start` til `end` med `text`. */
 data class Fix(

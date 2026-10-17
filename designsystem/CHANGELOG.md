@@ -25,6 +25,13 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`Fristil.buildTheme(oppskrift)` og `Fristil.inspectTheme(css)` i
+  Kotlin-pakken.** Temaet kunne før bare bygges med `fristil tema` og
+  Gradle-oppgaven `fristilTema`. Oppskriften er JSON-teksten `fristil tema`
+  leser, med norske eller engelske nøkler, og svarene `Theme` og
+  `ThemeReport` har de samme feltene som `CoreTheme` og `CoreThemeReport`
+  i TypeScript. Fargekontrakten ligger nå i jar-en, som manifestet.
+
 - **Manifestet har en `tokens`-seksjon.** Avstandsskalaen, brekkpunktene
   og containerbreddene fra `tokens.ts`, fargefamiliene, rollene og lagene
   med hva hver er til, hvert `--fs-color-*`-navn, og komponentvariablene
