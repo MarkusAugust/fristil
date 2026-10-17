@@ -8,9 +8,11 @@
        `list-style: none` på alle lister. Uten denne regelen sa `fristil`
        ingenting om punktene, og Preflight vant. `revert` går tilbake til
        nettleserens stilark, så <ul> får punkter, <ol> tall, og en nøstet
-       liste ring og firkant, som uten Tailwind. Variantene under setter
-       `none` selv, med høyere spesifisitet. */
-    list-style: revert;
+       liste ring og firkant, som uten Tailwind. Bare typen, for det er
+       typen Preflight tar; en `list-style-position` konsumenten har satt
+       i et lag foran går fortsatt gjennom. Variantene under setter `none`
+       selv, med høyere spesifisitet. */
+    list-style-type: revert;
     font-family: inherit;
     font-size: var(--fs-font-size-m);
     line-height: var(--fs-line-height-article);

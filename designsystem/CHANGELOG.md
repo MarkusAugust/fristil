@@ -243,9 +243,12 @@ egen overskrift «Brytende».
   mens Preflight setter `list-style: none` på hver `<ul>` og `<ol>`. Med
   oppsettet Tailwind-siden anbefaler, `@import "tailwindcss"` og `base` før
   `fristil`, mistet lista punktene og nummereringen, og det gjorde lista i
-  `fs-error-summary` også. Klassen setter nå `list-style: revert`, som går
-  tilbake til nettleserens eget stilark, så listene ser ut som uten Tailwind.
-  Variantene `plain` og `divided` er fortsatt uten punkter. Testen bygger
+  `fs-error-summary` også. Klassen setter nå `list-style-type: revert`, som
+  går tilbake til nettleserens eget stilark, så listene ser ut som uten
+  Tailwind. Variantene `plain` og `divided` er fortsatt uten punkter. Vil du
+  ha et annet punkt på alle `.fs-list`, sett det selv, i CSS uten lag eller
+  i et lag etter `fristil`: en `list-style` på `ul` i et lag foran, som
+  `base`, når ikke lenger fram til klassen. Testen bygger
   oppsettet med Tailwinds egen `preflight.css`, ikke en håndskrevet utgave
   med bare knappereglene.
 - **Lagrekkefølgen for Tailwind tar med `fristil-tema`.** Et generert tema
