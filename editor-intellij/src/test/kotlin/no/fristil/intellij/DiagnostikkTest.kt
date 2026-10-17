@@ -26,6 +26,15 @@ class DiagnostikkTest : BasePlatformTestCase() {
         assertEquals("fs-buton", ut.single().first)
     }
 
+    fun `test melder en ikonknapp uten navn i en fil uten fs-`() {
+        // Regelen ikon-uten-navn trenger ingen Fristil-klasse. Annotatoren
+        // hoppet før over hver fil uten «fs-» i teksten, så `fristil sjekk`
+        // og VS Code meldte knappen mens IntelliJ tidde.
+        val ut = funn("test.html", """<button><svg aria-hidden="true"></svg></button>""")
+        assertEquals("ett funn, fikk $ut", 1, ut.size)
+        assertEquals("button", ut.single().first)
+    }
+
     fun `test tier om riktig markup`() {
         val ut = funn("test.html", """<button class="fs-button" data-variant="secondary">Lagre</button>""")
         assertTrue("ingen funn, fikk $ut", ut.isEmpty())

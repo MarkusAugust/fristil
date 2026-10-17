@@ -38,6 +38,11 @@ kjernen ikke lese manifestet, gjelder manifestet i Kotlin-pakken, og det
 siste står i IDE-ens logg. Se `ProjectManifest.kt`. Kommer, endres eller forsvinner
 manifestet, sjekkes de åpne filene på nytt (`ManifestListener.kt`).
 
+Annotatoren kjører kjernen på hver fil, også en uten en eneste `fs-`-klasse:
+regelen `ikon-uten-navn` gjelder vanlig HTML, og `fristil sjekk` og VS Code
+melder en ikonknapp uten navn uansett. En snarvei som hoppet over filer uten
+«fs-» i teksten, gjorde at IntelliJ tidde om den.
+
 Gradle bygger `../kotlin` med `includeBuild`, og Kotlin-pakken bygges av
 npm-pakken med samme versjon. Mellom to utgivelser er den på npm for gammel,
 så pakk den fra repoet først, som i `kotlin/README.md`:
