@@ -134,14 +134,17 @@ const LAGLINJE =
   "@layer theme, base, fristil, fristil-tema, components, utilities;"
 
 /**
- * Det `fristil tema` skriver, med skrift og form og uten farger. Temaet
- * erklærer bare sitt eget lag etter `fristil`, og kan ikke vite hvilke lag
- * appen har erklært fra før.
+ * Et utdrag av det `fristil tema` skriver: en farge, skriften og formen, i
+ * `:root` i temaets eget lag. Fargen er med fordi tokens.css setter den i
+ * `:root` i `fristil`; bare et token som finnes der kan vise at temaet
+ * slår det. Temaet erklærer bare sitt eget lag etter `fristil`, og kan ikke
+ * vite hvilke lag appen har erklært fra før.
  */
 const TEMA = `
   @layer fristil, fristil-tema;
   @layer fristil-tema {
     :root {
+      --fs-color-accent-fill: rgb(0, 100, 0);
       --fs-font-family-base: Georgia, serif;
       --fs-button-radius: 2.75rem;
     }
@@ -223,6 +226,21 @@ describe("sammen med Tailwind", () => {
     expect(stil(dok, "knapp").padding).toBe("24px")
   })
 
+  it("lar komponenten slå utility-klassen når fristil står etter utilities, og det er derfor linja står i dokumentasjonen", async () => {
+    const dok = await medStilark(`
+      @layer utilities { .p-6 { padding: 1.5rem; } }
+      ${tokenKilde}
+      ${knappeKilde}
+    `)
+
+    const knapp = dok.getElementById("knapp") as HTMLElement
+    knapp.classList.add("p-6")
+
+    // `utilities` nevnes her før `fristil`, så komponentens egen padding
+    // vinner, og klassen gjør ingenting.
+    expect(stil(dok, "knapp").padding).toBe("8px 16px")
+  })
+
   it("lar et generert tema vinne over tokens.css, og en utility vinne over temaet", async () => {
     const dok = await medStilark(`
       ${LAGLINJE}
@@ -233,10 +251,10 @@ describe("sammen med Tailwind", () => {
     `)
     dok.documentElement.classList.add("font-mono")
 
-    // Temaet står etter `fristil` og slår standardverdien på 0,25rem.
-    expect(
-      stil(dok, "knapp").getPropertyValue("--fs-button-radius").trim(),
-    ).toBe("2.75rem")
+    // Temaet står etter `fristil` og slår fargen tokens.css setter i
+    // `:root`. Formen er ingen prøve på det: tokens.css setter ingen
+    // `--fs-button-radius`, så den hadde vunnet uansett rekkefølge.
+    expect(stil(dok, "knapp").backgroundColor).toBe("rgb(0, 100, 0)")
     // `fristil-tema` står foran `utilities`, så klassen slår temaets regel.
     expect(
       dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,

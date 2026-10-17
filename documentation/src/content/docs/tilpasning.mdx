@@ -395,7 +395,7 @@ Uten den linja får du ett av to problemer, avhengig av hvilken import som komme
 | `fristil-tema` etter `utilities` | Et [generert tema](../eget-tema/) slår Tailwind-klassene dine. Laget må stå i linja selv om du ikke har noe tema ennå. |
 | `base`, `fristil`, `fristil-tema`, `utilities` | Alt virker |
 
-Det første er testet, ikke antatt: `tilpasning.browser.test.ts` bygger det i sitt eget dokument og kontrollerer hva knappen faktisk får.
+Feiltilfellene er testet, ikke antatt: `tilpasning.browser.test.ts` bygger hvert av dem i sitt eget dokument og kontrollerer hva knappen og rotelementet faktisk får.
 
 Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 
