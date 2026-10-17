@@ -69,7 +69,8 @@ describe("fs-accordion", () => {
     // byttes når panelet er åpent, så en snutt som bare overstyrte `content`
     // og `border` ga et «+» på skrå, og et «×» når panelet var åpent. Tegnet
     // må også ha tom alternativ tekst, ellers blir det en del av navnet på
-    // overskriften. Snutten leses fra siden, så den kan ikke drive fra koden.
+    // knappen: skjermleseren sier «Hvem kan søke? +» når `<summary>` får
+    // fokus. Snutten leses fra siden, så den kan ikke drive fra koden.
     const snutt = /```css\n([\s\S]*?)```/.exec(side)?.[1]
     if (snutt === undefined) throw new Error("Fant ingen CSS-snutt på siden")
     const stil = document.createElement("style")

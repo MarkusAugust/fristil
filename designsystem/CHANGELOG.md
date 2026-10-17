@@ -201,8 +201,9 @@ egen overskrift «Brytende».
   sa at `content` og `border` var nok, men pseudoelementet har fast størrelse
   og `transform`, og vinkelen byttes når panelet er åpent, så et «+» sto på
   skrå og ble et «×» i åpen tilstand. Et synlig tegn uten alternativ tekst
-  ble dessuten en del av navnet på overskriften. Snutten nullstiller nå
-  begge og gir tegnet tom alternativ tekst.
+  ble dessuten en del av navnet på knappen, det skjermleseren sier når
+  `<summary>` får fokus. Snutten nullstiller nå begge og gir tegnet tom
+  alternativ tekst.
 - **JSDoc-eksempelet for `alert` spredte `alert.title`.** `alert.title` er
   klassenavnet, en streng, og `<p {...alert.title}>` gir tegnene som
   attributter og ikke klassen. Eksempelet skriver `class={alert.title}`,
