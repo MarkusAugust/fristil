@@ -259,7 +259,9 @@ egen overskrift «Brytende».
   samme elementene, enda Tilpasning- og Eget tema-sidene sa at din egen CSS
   fortsatt vinner. Linja i dokumentasjonen og i kommentaren i `tailwind.css`
   er nå `@layer theme, base, fristil, fristil-tema, components, utilities;`,
-  og Eget tema-siden sier at laget må stå der når Tailwind brukes. Temaet
+  og Eget tema-siden sier at laget må stå der når Tailwind brukes, og at
+  linja må stå i `<head>` når temaet lastes som en `<link>` før den
+  bundlede CSS-en, for da har temaet alt erklært lagene sine. Temaet
   `fristil tema` skriver, er uendret.
 - **Tailwind-siden og Design tokens-siden sa at skalaen følger med når du
   setter `--fs-spacing-1`.** `p-4` er `calc(var(--fs-spacing-1) * 4)`, men

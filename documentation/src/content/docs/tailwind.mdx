@@ -40,7 +40,7 @@ Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det in
 </head>
 ```
 
-En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe, og da er det likegyldig hvilket av de to stilarkene som lastes først.
+En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe, og da er det likegyldig hvilket av de to stilarkene som lastes først. Et [generert tema](../eget-tema/) du laster som en `<link>` er et slikt stilark: det erklærer `@layer fristil, fristil-tema;` selv, så ligger det før den bundlede CSS-en, hører linja i `<head>` også der.
 
 Temaet med `fs-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får du komponentene og tokenene, men ikke `text-fs-l` og `bg-fs-neutral-canvas`.
 
