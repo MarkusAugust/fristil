@@ -71,11 +71,17 @@ Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere
 | --- | --- |
 | `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
 
-Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan byttes:
+Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan byttes. Ta med den tomme alternativteksten etter tegnet: generert innhold leses opp, og uten den sier skjermleseren det nye tegnet mellom hvert steg, slik den sa «skråstrek» før. Den første regelen er reserven for nettlesere som ikke kjenner formen og ellers forkaster hele deklarasjonen, som i stilarket selv:
 
 ```css
 .fs-breadcrumbs li + li::before {
 	content: "›";
+}
+
+@supports (content: "/" / "") {
+	.fs-breadcrumbs li + li::before {
+		content: "›" / "";
+	}
 }
 ```
 

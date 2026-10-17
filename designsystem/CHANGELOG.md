@@ -191,6 +191,12 @@ egen overskrift «Brytende».
   regelen heter `id-finnes-ikke`. `for-peker-feil` gjelder en `for` som
   peker på et element som ikke kan ha ledetekst. Den som kopierte navnet
   til `<!-- fristil-ignore-next … -->`, fikk funnet likevel.
+- **Oppskriften for å bytte skilletegn i `fs-breadcrumbs` tok ikke med
+  alternativteksten.** Siden viste `content: "›"`, og en regel utenfor laget
+  slår stilarket, så den som fulgte rådet fikk tilbake feilen 0.33.0 rettet:
+  skjermleseren sa «›» mellom hvert steg. Snutten har nå `content: "›" / ""`
+  bak samme `@supports` som stilarket, og siden sier hvorfor. En test kjører
+  snutten fra siden mot stilarket.
 
 ## 0.33.0 (2026-10-12)
 

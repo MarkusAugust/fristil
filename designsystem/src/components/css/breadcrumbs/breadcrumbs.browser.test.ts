@@ -1,7 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeEach, describe, expect, it } from "vitest"
-
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import side from "../../../../../documentation/src/content/docs/components/breadcrumbs.mdx?raw"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -13,6 +13,10 @@ import "../../../tokens/tokens.css"
 import "./breadcrumbs.css"
 
 describe("fs-breadcrumbs", () => {
+  afterEach(() => {
+    document.getElementById("oppskrift")?.remove()
+  })
+
   beforeEach(() => {
     monter(`
       <nav aria-label="Du er her">
@@ -35,6 +39,30 @@ describe("fs-breadcrumbs", () => {
       expect(innhold).toBe('"/" / ""')
     } else {
       expect(innhold).toBe('"/"')
+    }
+  })
+
+  it("lar oppskriften på siden bytte tegn uten at det leses opp", () => {
+    // Siden viser hvordan skilletegnet byttes. Snutten står utenfor laget
+    // og slår stilarket, så glemmer den alternativteksten, er «›» tilbake i
+    // tilgjengelighetstreet, og skjermleseren leser det opp mellom hvert
+    // steg igjen. Snutten leses fra siden, så den kan ikke drive fra koden.
+    const snutt = /```css\n([\s\S]*?)```/.exec(side)?.[1]
+    if (snutt === undefined) throw new Error("Fant ingen CSS-snutt på siden")
+    const stil = document.createElement("style")
+    stil.id = "oppskrift"
+    stil.textContent = snutt
+    document.head.append(stil)
+
+    const ledd = document.querySelectorAll(".fs-breadcrumbs li")[1] as Element
+    const innhold = getComputedStyle(ledd, "::before").content
+
+    // Tegnet er byttet, og alternativteksten står der nettleseren kan den.
+    expect(/^"(.)"/.exec(innhold)?.[1]).not.toBe("/")
+    if (CSS.supports("content", '"/" / ""')) {
+      expect(innhold).toMatch(/^"."\s*\/\s*""$/)
+    } else {
+      expect(innhold).toMatch(/^"."$/)
     }
   })
 
