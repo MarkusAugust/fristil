@@ -930,26 +930,41 @@ describe("fs-tabs når en patch bytter ut et panel", () => {
     /*
      * Valget er knyttet til selve knappen og overlever bare en morfing som
      * beholder nodene. `innerHTML`, htmx' vanlige bytte og Turbo uten
-     * morfing lager nye noder, og da gjelder det markupen sier: ingen fane
-     * markert, så den første. Regelboka for maler lovet at valget ble satt
-     * tilbake også da. Markupen er den serveren sendte først, før valget.
+     * morfing lager nye noder, og da gjelder det markupen sier. Regelboka
+     * for maler lovet at valget ble satt tilbake også da. Markupen er den
+     * bare, slik serveren sendte den, uten attributtene komponenten skrev.
      */
+    const bar = BAR.slice(BAR.indexOf(">") + 1, BAR.lastIndexOf("<"))
     monter(BAR)
     await customElements.whenDefined("fs-tabs")
     await ventPaTegning()
     const vert = document.querySelector("fs-tabs") as FsTabs
-    const markup = vert.innerHTML
     ;(document.querySelectorAll("fs-tabs button")[1] as HTMLElement).click()
     await ventPaTegning()
     expect(vert.selected).toBe(1)
 
-    vert.innerHTML = markup
+    // Ingen fane markert, så den første.
+    vert.innerHTML = bar
     await ventPaTegning()
-
     expect(vert.selected).toBe(0)
     expect(
       document
         .querySelectorAll("fs-tabs button")[0]
+        .getAttribute("aria-selected"),
+    ).toBe("true")
+
+    // Serveren markerer en fane selv, og den vinner over det som sto før.
+    vert.innerHTML = bar
+      .replace("<button>Vedlegg", '<button aria-selected="true">Vedlegg')
+      .replace(
+        '<div class="fs-tabs__panel">Søknaden',
+        '<div class="fs-tabs__panel" hidden>Søknaden',
+      )
+    await ventPaTegning()
+    expect(vert.selected).toBe(1)
+    expect(
+      document
+        .querySelectorAll("fs-tabs button")[1]
         .getAttribute("aria-selected"),
     ).toBe("true")
   })
