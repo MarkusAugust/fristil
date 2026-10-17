@@ -13,6 +13,9 @@ import { skipLink } from "./skip-link"
 import "../../../tokens/tokens.css"
 import "./skip-link.css"
 
+/** `transform` når lenken står på plass: identitetsmatrisen, eller `none`. */
+const SYNLIG = /matrix\(1, 0, 0, 1, 0, 0\)|none/
+
 describe("fs-skip-link", () => {
   beforeEach(() => {
     monter(`
@@ -37,20 +40,18 @@ describe("fs-skip-link", () => {
     const lenke = document.getElementById("hopp") as HTMLElement
     const skjult = getComputedStyle(lenke).transform
 
-    // Lenken glir på plass, så verdien måles når overgangen er ferdig, og
-    // ikke etter en fast pause: 250 millisekunder holdt ikke alltid i
-    // Firefox, og testen feilet på en verdi midt i bevegelsen.
-    const ferdig = new Promise<void>((resolve) => {
-      lenke.addEventListener("transitionend", () => resolve(), { once: true })
-      setTimeout(resolve, 2000)
-    })
-
+    // Lenken glir på plass, så verdien leses til den står der, og ikke
+    // etter en fast pause eller på `transitionend`: 250 millisekunder holdt
+    // ikke alltid i Firefox, og hendelsen kom ikke alltid fram der heller.
     lenke.focus()
-    await ferdig
-    const synlig = getComputedStyle(lenke).transform
+    await vi.waitFor(
+      () => expect(getComputedStyle(lenke).transform).toMatch(SYNLIG),
+      {
+        timeout: 3000,
+      },
+    )
 
-    expect(skjult).not.toBe(synlig)
-    expect(synlig).toMatch(/matrix\(1, 0, 0, 1, 0, 0\)|none/)
+    expect(skjult).not.toMatch(SYNLIG)
     expect(document.activeElement).toBe(lenke)
   })
 
@@ -69,19 +70,17 @@ describe("fs-skip-link", () => {
     const lenke = document.getElementById("hopp") as HTMLElement
     const knapp = document.getElementById("topp") as HTMLElement
     knapp.addEventListener("click", () => lenke.focus())
-    const ferdig = new Promise<void>((resolve) => {
-      lenke.addEventListener("transitionend", () => resolve(), { once: true })
-      setTimeout(resolve, 2000)
-    })
 
     await userEvent.click(knapp)
-    await ferdig
+    await vi.waitFor(
+      () => expect(getComputedStyle(lenke).transform).toMatch(SYNLIG),
+      {
+        timeout: 3000,
+      },
+    )
 
     expect(document.activeElement).toBe(lenke)
     expect(lenke.matches(":focus-visible")).toBe(false)
-    expect(getComputedStyle(lenke).transform).toMatch(
-      /matrix\(1, 0, 0, 1, 0, 0\)|none/,
-    )
   })
 
   it("flytter fokus til målet når det har tabindex", async () => {
