@@ -478,3 +478,37 @@ describe("fs-error-summary og en prosentkodet lenke", () => {
     }
   })
 })
+
+describe("fs-error-summary under et annet tagnavn", () => {
+  it("skjules fortsatt av hidden", async () => {
+    /*
+     * README fører `<fs-error-summary>` blant dem som ser like ut under et
+     * annet navn. `fs-error-summary[hidden]` i error-summary.css følger
+     * ikke med, men `display: block` står på klassen komponenten setter
+     * selv, og `[hidden]`-regelen i tokens.css er skrevet på den samme
+     * klassen, så boksen skjules likevel.
+     */
+    defineFsErrorSummary("annen-oppsummering")
+    monter(`
+      <annen-oppsummering ${attr(FEIL.host)} hidden>
+        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
+        <ul>
+          <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
+          <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+        </ul>
+      </annen-oppsummering>
+      <input id="epost" />
+    `)
+    await customElements.whenDefined("annen-oppsummering")
+    await ventPaTegning()
+    const boks = document.querySelector("annen-oppsummering") as HTMLElement
+
+    expect(boks.classList.contains("fs-error-summary")).toBe(true)
+    expect(getComputedStyle(boks).display).toBe("none")
+
+    boks.hidden = false
+    await ventPaTegning()
+    expect(getComputedStyle(boks).display).toBe("block")
+    expect(document.activeElement).toBe(boks)
+  })
+})

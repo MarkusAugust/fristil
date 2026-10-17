@@ -76,7 +76,7 @@ defineFsToast()
           aria-label="Varsler" data-ignore-morph></fs-toast>
 ```
 
-Hver `defineFs*` tar også et eget tagnavn, som `defineFsToast("app-toast")`, og flere kall er ufarlige, også ved siden av `defineFs()`. Stilarkene er likevel skrevet for `fs-*`-navnene: en `<fs-field>` registrert som `<min-felt>` kobler fortsatt ledeteksten til feltet, men `display`-regelen på elementnavnet følger ikke med, og `<fs-tabs>` og `<fs-suggestion>` skjuler ikke innholdet før registreringen. De tre som setter klassen sin selv, `<fs-toast>`, `<fs-session-timeout>` og `<fs-connection-status>`, ser like ut under et annet navn.
+Hver `defineFs*` tar også et eget tagnavn, som `defineFsToast("app-toast")`, og flere kall er ufarlige, også ved siden av `defineFs()`. Stilarkene er likevel skrevet for `fs-*`-navnene: en `<fs-field>` registrert som `<min-felt>` kobler fortsatt ledeteksten til feltet, men `display`-regelen på elementnavnet følger ikke med, `<fs-tabs>` og `<fs-suggestion>` skjuler ikke innholdet før registreringen, og `<fs-dialog>` plasserer ikke lenger en dialog som står åpen før den er modal. De fire som setter klassen sin selv, `<fs-toast>`, `<fs-session-timeout>`, `<fs-connection-status>` og `<fs-error-summary>`, ser like ut under et annet navn.
 
 ## Serveren skriver markupen
 
