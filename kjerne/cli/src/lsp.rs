@@ -292,8 +292,9 @@ impl Server {
             // Ligger fila ikke under noen rot, som en kladdefil utenfor
             // arbeidsområdet, eller når editoren ikke ga noe arbeidsområde,
             // er det ingen rot å stoppe ved. Da letes det ikke fra fila i det
-            // hele tatt, som IntelliJ-pluginen gjør: før gikk letingen helt
-            // til rota av filsystemet, og tok pakken i hjemmemappa.
+            // hele tatt, som i IntelliJ-pluginen; rota av hvert arbeidsområde
+            // prøves fortsatt, under. Før gikk letingen helt til rota av
+            // filsystemet, og tok pakken i hjemmemappa.
             let mut dir = root
                 .as_ref()
                 .and_then(|_| std::path::Path::new(&file).parent());
@@ -369,7 +370,7 @@ impl Server {
             self.warned = true;
             self.message(
                 2,
-                "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet.",
+                "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet, og åpne fila i et arbeidsområde som har den.",
             );
         }
         let document = &mut self.documents[index];

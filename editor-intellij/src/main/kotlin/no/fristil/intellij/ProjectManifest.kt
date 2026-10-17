@@ -22,8 +22,9 @@ import java.util.concurrent.ConcurrentHashMap
  * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
  * hjemmemappa er ikke prosjektets. En fil utenfor prosjektet, som en
  * kladdefil, sjekkes derfor mot manifestet i Kotlin-pakken. Finnes ingen av
- * dem, gjelder det samme. Språkserveren har i tillegg et valg for et bestemt
- * manifest, som pluginen ikke har.
+ * dem, gjelder det samme. Språkserveren prøver i tillegg rota av hvert
+ * arbeidsområde for en slik fil, og har et valg for et bestemt manifest, som
+ * pluginen ikke har.
  *
  * For et injisert fragment letes det fra fila strengen står i.
  */
