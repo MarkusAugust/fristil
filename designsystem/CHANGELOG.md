@@ -203,6 +203,10 @@ egen overskrift «Brytende».
   skrå og ble et «×» i åpen tilstand. Et synlig tegn uten alternativ tekst
   ble dessuten en del av navnet på overskriften. Snutten nullstiller nå
   begge og gir tegnet tom alternativ tekst.
+- **JSDoc-eksempelet for `alert` spredte `alert.title`.** `alert.title` er
+  klassenavnet, en streng, og `<p {...alert.title}>` gir tegnene som
+  attributter og ikke klassen. Eksempelet skriver `class={alert.title}`,
+  som accordion og card.
 
 ## 0.33.0 (2026-10-12)
 
