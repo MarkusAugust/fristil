@@ -7,7 +7,9 @@ package no.fristil
  * aldri ute av takt med diagnostikken.
  *
  * Klassene har innholdet og delene sine, så et verktøy kan sette sammen
- * markupen av dem. [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
+ * markupen av dem, og [Manifest.tokens] har avstandene, brekkpunktene,
+ * containerbreddene, fargeaksene og komponentvariablene det kan style med.
+ * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
  * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
  * prosjekt som har overtatt komponenter. Byggefunksjonene i manifestet er
  * utelatt: de er for generatoren som skriver `Fs`, og `Fs` er API-et for dem.
@@ -21,6 +23,8 @@ data class Manifest(
     val elements: Map<String, ManifestElement>,
     /** Hver `fs-`-klasse, etter navnet. */
     val classes: Map<String, ManifestClass>,
+    /** Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene og komponentvariablene. */
+    val tokens: ManifestTokens,
 ) {
     companion object {
         /** Skjemaversjonen denne leseren forstår. */
@@ -42,6 +46,26 @@ data class Manifest(
                 version = root["version"].str("version"),
                 elements = root["elements"].obj("elements").mapValues { (tag, e) -> element(tag, e.obj("elements.$tag"), "elements.$tag") },
                 classes = root["classes"].obj("classes").mapValues { (name, c) -> klass(name, c.obj("classes.$name"), "classes.$name") },
+                tokens = tokens(root["tokens"].obj("tokens"), "tokens"),
+            )
+        }
+
+        private fun Any?.texts(at: String): Map<String, String> = obj(at).mapValues { (key, v) -> v.str("$at.$key") }
+
+        private fun tokens(t: Map<String, Any?>, at: String): ManifestTokens {
+            val colors = t["colors"].obj("$at.colors")
+            return ManifestTokens(
+                spacing = t["spacing"].texts("$at.spacing"),
+                breakpoints = t["breakpoints"].texts("$at.breakpoints"),
+                containers = t["containers"].texts("$at.containers"),
+                colors =
+                    ManifestColors(
+                        families = colors["families"].texts("$at.colors.families"),
+                        roles = colors["roles"].texts("$at.colors.roles"),
+                        layers = colors["layers"].texts("$at.colors.layers"),
+                        tokens = colors["tokens"].strings("$at.colors.tokens"),
+                    ),
+                components = t["components"].obj("$at.components").mapValues { (component, v) -> v.texts("$at.components.$component") },
             )
         }
 
@@ -175,6 +199,35 @@ enum class PartContent { TEXT, FREE, PARTS, NONE }
 /** En hendelse et element sender. [detail] er feltene i `event.detail` med typen sin: `boolean`, `string` eller `number`. */
 data class ElementEvent(
     val detail: Map<String, String>,
+)
+
+/**
+ * Tokenene: det et stilark utenfor pakken kan bygge på. Fargene står som akser
+ * med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn
+ * Fristils egne.
+ */
+data class ManifestTokens(
+    /** Avstandsskalaen, navn til verdi, som `--fs-spacing-4` til `1rem`. */
+    val spacing: Map<String, String>,
+    /** Brekkpunktene, navn til bredde, som `md` til `768px`. */
+    val breakpoints: Map<String, String>,
+    /** Containerbreddene, navn til bredde, som `aside` til `384px`. */
+    val containers: Map<String, String>,
+    val colors: ManifestColors,
+    /** Komponentvariablene per komponent, som `--fs-button-padding` under `button`, med standardverdien. */
+    val components: Map<String, Map<String, String>>,
+)
+
+/** Fargeaksene. Et fargetoken heter `--fs-color-<familie>-<rolle>`. */
+data class ManifestColors(
+    /** Familiene, med hva hver er til. */
+    val families: Map<String, String>,
+    /** Rollene slik de skrives i CSS, med hva hver er til. */
+    val roles: Map<String, String>,
+    /** Lagene bare den nøytrale familien har, som `canvas`. */
+    val layers: Map<String, String>,
+    /** Hvert `--fs-color-*`-navn pakken sender ut. */
+    val tokens: List<String>,
 )
 
 /**

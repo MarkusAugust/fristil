@@ -84,6 +84,31 @@ export type ClassInfo = {
 export type Classes = Record<string, ClassInfo>
 
 /**
+ * Tokenene i manifestet: det et stilark utenfor pakken kan bygge på.
+ * Fargene står som akser med hva de er til, ikke som verdier, siden et tema
+ * kan ha andre verdier enn Fristils egne. `components` er komponentvariablene
+ * per komponent, med reserven i stilarket som verdi.
+ */
+export type ManifestTokens = {
+  /** Avstandsskalaen, navn til verdi. */
+  spacing: Record<string, string>
+  breakpoints: Record<string, string>
+  containers: Record<string, string>
+  colors: {
+    /** Familiene, med hva hver er til. */
+    families: Record<string, string>
+    /** Rollene slik de skrives i CSS, med hva hver er til. */
+    roles: Record<string, string>
+    /** Lagene bare den nøytrale familien har. */
+    layers: Record<string, string>
+    /** Hvert `--fs-color-*`-navn pakken sender ut. */
+    tokens: readonly string[]
+  }
+  /** Komponent til variabelnavn til standardverdien. */
+  components: Record<string, Record<string, string>>
+}
+
+/**
  * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
  * Elementene er de samme som i `elements.ts`. Et klasseattributt i
  * manifestet er enten en verdiliste eller et flagg, og et flagg har ingen
@@ -93,6 +118,7 @@ export type Manifest = {
   schemaVersion: number
   version: string
   elements: Elements
+  tokens: ManifestTokens
   classes: Record<
     string,
     Omit<ClassInfo, "attributes"> & {

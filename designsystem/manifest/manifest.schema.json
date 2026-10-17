@@ -2,9 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://fristil.sobernetics.no/manifest.schema.json",
   "title": "Fristils manifest",
-  "description": "Det Fristil lover: elementene, klassene med innholdet og delene sine, og byggefunksjonene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "description": "Det Fristil lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
   "type": "object",
-  "required": ["schemaVersion", "version", "elements", "classes", "builders"],
+  "required": [
+    "schemaVersion",
+    "version",
+    "elements",
+    "classes",
+    "builders",
+    "tokens"
+  ],
   "properties": {
     "$schema": {
       "type": "string"
@@ -219,6 +226,87 @@
           }
         }
       }
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Tokenene et stilark utenfor pakken kan bygge på. Fargene står som akser med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn Fristils egne.",
+      "required": [
+        "spacing",
+        "breakpoints",
+        "containers",
+        "colors",
+        "components"
+      ],
+      "properties": {
+        "spacing": {
+          "type": "object",
+          "description": "Avstandsskalaen, navn til verdi.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "breakpoints": {
+          "type": "object",
+          "description": "Brekkpunktene, navn til bredde.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "containers": {
+          "type": "object",
+          "description": "Containerbreddene, navn til bredde.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "colors": {
+          "type": "object",
+          "required": ["families", "roles", "layers", "tokens"],
+          "properties": {
+            "families": {
+              "type": "object",
+              "description": "Familiene, med hva hver er til.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "roles": {
+              "type": "object",
+              "description": "Rollene slik de skrives i CSS, med hva hver er til. Et fargetoken heter --fs-color-<familie>-<rolle>.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "layers": {
+              "type": "object",
+              "description": "Lagene bare den nøytrale familien har, som --fs-color-neutral-canvas.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "tokens": {
+              "type": "array",
+              "description": "Hvert --fs-color-*-navn pakken sender ut.",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "components": {
+          "type": "object",
+          "description": "Komponentvariablene per komponent, som --fs-button-padding under button, med standardverdien, altså reserven i stilarket.",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Variabelnavn til standardverdi.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "$defs": {
