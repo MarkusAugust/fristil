@@ -33,7 +33,7 @@ describe("fs-card", () => {
     `)
   })
 
-  it("lar et merke og en knapp ha sin egen bredde, og strekker avsnittet", () => {
+  it("lar et merke, en knapp og en lenke ha sin egen bredde, og strekker avsnittet", () => {
     monter(`
       <div class="fs-card" id="med-merke" style="width: 400px">
         <p>Sendt 4. mars.</p>

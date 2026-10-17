@@ -128,8 +128,6 @@ defineFsErrorSummary()
       )
     }
     ```
-
-    Boksen tar fokus når den kobles til, og når `hidden` tas bort. Feiler skjemaet en gang til mens den står, endrer React ingen av delene, og fokus blir stående. Gi den en `key` som skifter for hver innsending, så lager React den på nytt: `<Feiloppsummering key={innsending} feilene={feilene} />`.
   </TabItem>
   <TabItem label="Astro">
     ```astro
