@@ -75,7 +75,7 @@ import { switchControl } from "@fristil/designsystem"
 
 ## Lagring med en gang
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. Et nytt trykk mens lagringen pågår sperres uten `disabled`, som ville tatt fokuset fra bryteren. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
+Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. I «Ren HTML», Astro og React sperres et nytt trykk mens lagringen pågår uten `disabled`, som ville tatt fokuset fra bryteren; i Datastar sender et nytt trykk en ny `@put`, og serveren avgjør. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
 
 <Tabs>
   <TabItem label="Ren HTML">
@@ -191,7 +191,7 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     <p class="fs-help-text" role="status" data-text="$status"></p>
     ```
 
-    Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer.
+    Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer. Et nytt trykk mens lagringen pågår sender en ny `@put`, og serveren avgjør den også; en `disabled`-vakt i siden ville tatt fokuset fra bryteren.
   </TabItem>
 </Tabs>
 

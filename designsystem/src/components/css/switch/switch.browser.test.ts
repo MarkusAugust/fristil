@@ -87,6 +87,7 @@ describe("lagringseksempelet på siden", () => {
     bryter.click()
     expect(bryter.checked).toBe(false)
     expect(kall()).toBe(2)
+    await vi.waitFor(() => expect(melding.textContent).toBe("Varsler er av."))
   })
 })
 
