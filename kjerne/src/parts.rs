@@ -599,9 +599,9 @@ mod tests {
     fn braces_and_words_that_are_not_templates_do_not_silence_it() {
         // `{n}` i en attributtverdi på verten, `nav-form` som ligner `v-for`,
         // en e-postadresse som ligner `@if`, og et uttrykk etter sluttaggen.
-        let html = r#"<fs-suggestion count-one="{n} treff"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></fs-suggestion>
+        let html = r#"<fs-suggestion count-one="{n} hits"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></fs-suggestion>
 <fs-field><label>A</label><input><input></fs-field>
-{feil && <p>Feil</p>}"#;
+{error && <p>Error</p>}"#;
         assert_eq!(rules(html).len(), 2, "{:?}", rules(html));
     }
 
