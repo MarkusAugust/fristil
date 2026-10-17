@@ -8,7 +8,8 @@
 git checkout master && git pull
 git checkout -b det-du-jobber-med
 
-# arbeid, og kjør det CI kjører før du sender noe fra deg
+# arbeid og commit, og kjør så det CI kjører før du sender noe fra deg
+git commit -am "Rett …"
 bun run sjekk
 
 git push -u origin det-du-jobber-med
@@ -107,12 +108,14 @@ Når en versjon skal ut:
 
 ```bash
 bun run prepare-version 0.4.0
-bun run sjekk
 git checkout -b slipp-0.4.0 && git commit -am "Versjon 0.4.0"
+bun run sjekk
 git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
-`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt».
+Commiten står før `sjekk`, ikke etter: «Ingenting er ugenerert» spør git om bygget endret noe, og `prepare-version` har nettopp skrevet seks sporede filer, så kjørt før commiten stopper `sjekk` på dem flere minutter ut i kjøringen.
+
+`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` og presentasjonen. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt», og alle kontrollene står før den skriver noe, så et stoppet forsøk etterlater ingen halvferdige filer.
 
 Taggen settes først når versjonen ligger på master:
 

@@ -209,11 +209,12 @@ console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
 
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
-Slik gir du den ut:
+Slik gir du den ut. Commit først: «Ingenting er ugenerert» i sjekk spør git
+om bygget endret noe, og ville ellers stoppet på filene som nettopp ble skrevet.
 
-  bun run sjekk
   git checkout -b slipp-${nyVersjon}
   git commit -am "Slipp ${nyVersjon}"
+  bun run sjekk
   git push -u origin slipp-${nyVersjon} && gh pr create --fill
 
 Når grenen er slått sammen, og først da:
