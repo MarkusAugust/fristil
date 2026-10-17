@@ -114,4 +114,42 @@ describe("fs-avatar med bilde", () => {
       expect(rødest, id).toBeGreaterThan(60)
     }
   })
+  it("lar avataren foran dekke ringen til den bak i en stabel", async () => {
+    // Ringen er en `outline`, og en slik males etter alt innholdet i
+    // stablingskonteksten. Uten en egen kontekst per avatar lå ringen til
+    // avataren bak som en bue over bildet til den foran. Den bak får en rød
+    // ring og den foran et hvitt bilde med hvit ring, så hver rød piksel inne
+    // i den foran er ringen bak som skinner gjennom.
+    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
+    )}`
+    monter(`
+      <ul class="fs-avatar-stack" style="--fs-avatar-size: 96px; --fs-avatar-stack-overlap: -24px">
+        <li><span class="fs-avatar" id="bak" style="--fs-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${hvitt}" alt="" /></span></li>
+        <li><span class="fs-avatar" id="foran" style="--fs-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${hvitt}" alt="" /></span></li>
+      </ul>
+    `)
+    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    await ventPaTegning()
+
+    // Stabelen snur rekkefølgen: den første i markupen står lengst til
+    // høyre, og den andre ligger over venstre kant av den, 24 px inn.
+    const bak = document.getElementById("bak") as HTMLElement
+    const foran = document.getElementById("foran") as HTMLElement
+    // Ringen bak finnes: rød i den ytterste kanten på siden som ikke er dekket.
+    let rødest = 0
+    for (const x of [0.97, 0.98, 0.99, 1]) {
+      const [r, g, b] = await piksel(bak, x)
+      rødest = Math.max(rødest, r - Math.max(g, b))
+    }
+    expect(rødest, "ringen bak").toBeGreaterThan(60)
+    // Der venstre kant av den bak, med ringen, ligger under den foran, er det
+    // bare det hvite bildet foran å se. Kanten står 72 px inn i den foran, og
+    // leses over en bredde på noen piksler og i tre høyder.
+    for (const x of [0.73, 0.75, 0.77, 0.79])
+      for (const y of [0.3, 0.5, 0.7]) {
+        const [r, g, b] = await piksel(foran, x, y)
+        expect(r - Math.max(g, b), `foran ved ${x},${y}`).toBeLessThan(40)
+      }
+  })
 })
