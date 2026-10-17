@@ -219,7 +219,10 @@ egen overskrift «Brytende».
 - **Skip Link-siden begrunnet `tabindex="-1"` med at neste Tab fortsatte i
   menyen.** Nettleseren fortsetter fra målet etter hoppet også uten
   attributtet. Det som mangler uten det, er fokuset og skjermleserens
-  opplesning, og det sier siden og mønstersiden «Sideskjelett» nå. Siden og
+  opplesning, og det sier siden og mønstersiden «Sideskjelett» nå. Error
+  Summary-siden og JSDoc-en til `fs-error-summary` sa det samme om en vanlig
+  ankerlenke, at neste tastetrykk fortsatte i oppsummeringen, og sier nå at
+  nettleseren bare gir fokus til et mål som kan få det. Siden og
   stilarket sa også at fokus satt fra kode aldri regnes som synlig fokus.
   Det gjelder bare etter et museklikk, og det er det tilfellet `:focus` er
   valgt for.

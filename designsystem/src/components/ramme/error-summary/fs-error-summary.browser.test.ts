@@ -93,8 +93,9 @@ describe("fs-error-summary", () => {
     const lenke = document.getElementById("lenke-epost") as HTMLElement
     lenke.click()
 
-    // En vanlig ankerlenke ruller bare dit. Da fortsetter neste tastetrykk
-    // der fokus sto før, altså i oppsummeringen.
+    // Komponenten gir feltet fokus selv, så det ikke avhenger av om målet
+    // kan få fokus fra nettleserens eget hopp. Tab fortsetter fra målet
+    // uansett; det er fokuset og opplesningen som mangler uten.
     expect(document.activeElement?.id).toBe("epost")
   })
 
