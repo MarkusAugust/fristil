@@ -25,6 +25,14 @@ egen overskrift «Brytende».
 
 ### Endret
 
+- **Pakken sender med kildene kartene peker på.** `dist` har kildekart og
+  deklarasjonskart, og de for `fs`, `/react`, `/register`, `/dom`,
+  `/diagnostics` og kommandolinja pekte på fjorten filer i `src` som ikke var
+  med i tarballen, så «gå til definisjon» og et stakkspor derfra landet i en
+  fil som ikke fantes. `src/*.ts`, `src/diagnostics`, `src/jsx` og
+  `src/vocabulary` følger nå med, som `src/components` alt gjorde, og
+  byggesteget krever at hvert medsendt kart peker på en fil i pakken.
+
 - **Regelboka for maler sier at Kotlin-pakken ligger på Maven Central.**
   `agent/maler.md` sa at `io.github.markusaugust:fristil` og Gradle-pluginen
   måtte bygges fra kildekoden. Begge ligger på Central fra 0.33.0, med samme
