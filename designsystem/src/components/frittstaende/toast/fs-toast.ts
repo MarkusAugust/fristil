@@ -121,6 +121,18 @@ export class FsToast extends HostElement {
     if (to instanceof Node && !this.contains(to)) this.focusOrigin = null
   }
 
+  /**
+   * Om fokus står i elementet. Lest fra komponentens egen rot, ikke fra
+   * `document`: står regionen i en skyggerot, som hver forhåndsvisning i
+   * dokumentasjonen, peker `document.activeElement` på skyggeverten. Da så
+   * det ut som om ingen melding hadde fokus, og fokus falt til `body` i
+   * stedet for til nabomeldingen eller dit det kom fra.
+   */
+  private holdsFocus(element: Element): boolean {
+    const root = this.getRootNode() as Document | ShadowRoot
+    return element.contains(root.activeElement)
+  }
+
   private restoreFocus(): void {
     const origin = this.focusOrigin
     this.focusOrigin = null
@@ -238,7 +250,7 @@ export class FsToast extends HostElement {
      * siden av er det nærmeste stedet å fortsette fra: den under, ellers den
      * over.
      */
-    const hadFocus = toast.contains(document.activeElement)
+    const hadFocus = this.holdsFocus(toast)
     const neighbour = toast.nextElementSibling ?? toast.previousElementSibling
     toast.remove()
     if (hadFocus) {
@@ -256,8 +268,7 @@ export class FsToast extends HostElement {
 
   /** Fjerner alle meldingene. */
   clear(): void {
-    const hadFocus = this.contains(document.activeElement)
-    if (hadFocus) this.restoreFocus()
+    if (this.holdsFocus(this)) this.restoreFocus()
     for (const toast of this.querySelectorAll(`.${TOAST_MESSAGE_CLASS}`)) {
       toast.remove()
     }

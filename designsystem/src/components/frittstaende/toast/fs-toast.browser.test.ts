@@ -311,3 +311,59 @@ describe("fs-toast og fokus og navn", () => {
   })
 })
 
+/*
+ * Regionen i en skyggerot, som hver forhåndsvisning i dokumentasjonen.
+ * `document.activeElement` peker da på skyggeverten, ikke på lukkeknappen,
+ * og komponenten trodde ingen melding hadde fokus: fokus falt til `body`
+ * i stedet for til nabomeldingen eller dit det kom fra.
+ */
+describe("fs-toast i en skyggerot", () => {
+  beforeAll(() => {
+    defineFsToast()
+  })
+
+  function monterISkygge() {
+    monter(`<button id="ute">Lagre</button><div id="vert"></div>`)
+    const vert = document.getElementById("vert") as HTMLElement
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `<fs-toast duration="0"></fs-toast>`
+    const region = rot.querySelector("fs-toast") as FsToast
+    const ute = document.getElementById("ute") as HTMLButtonElement
+    return { rot, region, ute }
+  }
+
+  it("flytter fokus til meldingen ved siden av", () => {
+    const { rot, region } = monterISkygge()
+    const eldste = region.show("Første")
+    const nyeste = region.show("Andre")
+    const lukk = nyeste.querySelector("button") as HTMLButtonElement
+
+    lukk.focus()
+    lukk.click()
+
+    expect(rot.activeElement).toBe(eldste.querySelector("button"))
+  })
+
+  it("sender fokus tilbake når den siste meldingen lukkes", () => {
+    const { region, ute } = monterISkygge()
+    const melding = region.show("Lagret")
+    const lukk = melding.querySelector("button") as HTMLButtonElement
+    ute.focus()
+    lukk.focus()
+
+    lukk.click()
+
+    expect(document.activeElement).toBe(ute)
+  })
+
+  it("sender fokus tilbake når alle meldingene fjernes", () => {
+    const { region, ute } = monterISkygge()
+    const melding = region.show("Lagret")
+    ute.focus()
+    ;(melding.querySelector("button") as HTMLButtonElement).focus()
+
+    region.clear()
+
+    expect(document.activeElement).toBe(ute)
+  })
+})

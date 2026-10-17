@@ -42,6 +42,13 @@ egen overskrift «Brytende».
   så begge navnene virker og flere kall er ufarlige, slik dokumentasjonen
   sier. `tagName` er dessuten typet som `string`. Før var typen standardnavnet,
   så TypeScript avviste `defineFsToast("app-toast")` før det kom så langt.
+- **`<fs-toast>` flytter fokus riktig også i en skyggerot.** Komponenten
+  leste `document.activeElement`, som peker på skyggeverten når regionen
+  står i en skyggerot, slik hver forhåndsvisning i dokumentasjonen gjør. Da
+  så det ut som om ingen melding hadde fokus: lukket brukeren meldingen med
+  Enter, falt fokus til `body` i stedet for til meldingen ved siden av eller
+  dit det kom fra, og det samme skjedde ved `clear()`. Fokus leses nå fra
+  komponentens egen rot.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen
