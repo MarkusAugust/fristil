@@ -44,6 +44,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Hele historikken, så steget «Se at taggen står på master» kan
+          # spørre om commiten er en forfar til master.
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -89,6 +93,20 @@ jobs:
           tagg="${GITHUB_REF_NAME#v}"
           if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
             echo "Taggen $GITHUB_REF_NAME sier $tagg, mens package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
+            exit 1
+          fi
+
+      # Taggen skal stå på master. `bun run tag` nekter ellers, men en tagg
+      # satt med `git tag` på commiten i slipp-grenen har alt det nye
+      # nummeret, så kontrollen over slipper den gjennom, og npm ville fått
+      # en versjon fra en commit som ennå ikke er slått sammen, og kanskje
+      # aldri blir det slik den er. CONTRIBUTING.md lover at en tagg satt for
+      # tidlig stopper her.
+      - name: Se at taggen står på master
+        if: github.ref_type == 'tag'
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/master; then
+            echo "Taggen $GITHUB_REF_NAME står på $(git rev-parse --short HEAD), som ikke er på master. Slå grenen sammen først, fjern taggen og sett den på nytt fra master." >&2
             exit 1
           fi
 
