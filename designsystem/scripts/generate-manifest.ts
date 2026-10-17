@@ -1,7 +1,7 @@
 /**
  * Skriver manifestet: det Fristil lover, som data alle verktøy leser.
  *
- * To filer, begge generert og sjekket inn:
+ * Tre filer, alle generert og sjekket inn:
  *
  *   - `manifest/manifest.json`: ordforrådet (elementene og klassene, de samme
  *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `fs` med
@@ -10,12 +10,17 @@
  *   - `manifest/byggetilfeller.json`: hver byggefunksjon kalt med mange
  *     kombinasjoner av valgene, med svaret TypeScript gir. En utgave i et annet
  *     språk skal svare nøyaktig det samme på hvert tilfelle.
+ *   - `manifest/filer.json`: regelbøkene og komponentfilene kommandolinja
+ *     leser fra pakken.
  *
  * Ingenting her er skrevet for hånd. Valgene og typene deres leses av
- * TypeScript-kompilatoren fra signaturene i `src/fs.ts`, og svarene kommer
- * fra å kalle funksjonene. En ny byggefunksjon, et nytt valg eller en ny
- * variant havner i manifestet ved neste bygg, og CI feiler hvis fila på disk
- * ikke er den generatoren ville skrevet.
+ * TypeScript-kompilatoren fra signaturene i `src/fs.ts`, i
+ * `byggefunksjoner.ts`, og svarene kommer fra å kalle funksjonene. En ny
+ * byggefunksjon, et nytt valg eller en ny variant havner i manifestet ved
+ * neste bygg. `bun run build` skriver filene på nytt før det sjekker noe, så
+ * en utdatert fil på disk stopper ikke bygget; det er steget «Ingenting er
+ * ugenerert» i CI som feller en endring der filene ikke er regenerert og
+ * committet.
  *
  * Kjør med: bun scripts/generate-manifest.ts, eller som en del av `generate`.
  */
@@ -28,10 +33,16 @@ import {
   writeFileSync,
 } from "node:fs"
 import { fileURLToPath } from "node:url"
-import ts from "typescript"
 import { fs } from "../src/fs.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
+import {
+  type Byggefunksjon as Lest,
+  lesByggefunksjoner,
+  settene,
+  type Valg,
+  type Valgtype,
+} from "./byggefunksjoner.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 const UT = `${PAKKE}manifest/`
@@ -40,185 +51,9 @@ const versjon: string = JSON.parse(
   readFileSync(`${PAKKE}package.json`, "utf8"),
 ).version
 
-type Valgtype =
-  | { kind: "values"; values: string[] }
-  | { kind: "flag" }
-  | { kind: "text" }
-  | { kind: "number" }
-  | { kind: "textList" }
+type Byggefunksjon = Lest & { table?: Tabeller }
 
-type Valg = {
-  name: string
-  required: boolean
-  type: Valgtype
-  /** JSDoc-en til valget i byggefunksjonens type, når den har en. */
-  description?: string
-}
-
-type Svar =
-  | { kind: "attributes" }
-  | { kind: "text" }
-  | { kind: "values"; values: string[] }
-  | { kind: "list"; of: Svar }
-  | { kind: "group"; fields: Record<string, Svar & { optional?: boolean }> }
-
-type Byggefunksjon = {
-  name: string
-  options: Valg[]
-  returns: Svar
-  table?: Tabeller
-}
-
-/*
- * Rekkefølgen på lovlige verdier. TypeScript gir en union i den rekkefølgen
- * typene ble laget, ikke den de står i, så rekkefølgen hentes fra listene
- * byggefunksjonene selv reklamerer med (`fs.button.variants` og slike) når
- * en av dem har nøyaktig de samme verdiene.
- */
-const lister: string[][] = []
-for (const verdi of Object.values(fs)) {
-  if (Array.isArray(verdi)) lister.push([...verdi])
-  if (typeof verdi !== "function") continue
-  for (const egen of Object.values(verdi))
-    if (Array.isArray(egen) && egen.every((x) => typeof x === "string"))
-      lister.push([...egen])
-}
-function ordnet(verdier: string[]): string[] {
-  const sett = [...verdier].sort().join("\u0000")
-  return lister.find((l) => [...l].sort().join("\u0000") === sett) ?? verdier
-}
-
-const konfig = ts.getParsedCommandLineOfConfigFile(
-  `${PAKKE}tsconfig.json`,
-  {},
-  { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} },
-)
-if (!konfig) throw new Error("Fant ikke tsconfig.json")
-const program = ts.createProgram(konfig.fileNames, konfig.options)
-const typer = program.getTypeChecker()
-const kilde = program.getSourceFile(`${PAKKE}src/fs.ts`)
-if (!kilde) throw new Error("Fant ikke src/fs.ts i programmet")
-
-let fsNavn: ts.Identifier | undefined
-kilde.forEachChild((node) => {
-  if (!ts.isVariableStatement(node)) return
-  for (const d of node.declarationList.declarations)
-    if (ts.isIdentifier(d.name) && d.name.text === "fs") fsNavn = d.name
-})
-if (!fsNavn) throw new Error("Fant ikke `export const fs` i src/fs.ts")
-
-const vis = (t: ts.Type) => typer.typeToString(t)
-const deler = (t: ts.Type) =>
-  (t.isUnion() ? t.types : [t]).filter(
-    (d) => !(d.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)),
-  )
-
-function valgtype(t: ts.Type, hvor: string): Valgtype {
-  const d = deler(t)
-  if (d.every((x) => x.isStringLiteral()))
-    return {
-      kind: "values",
-      values: ordnet(d.map((x) => (x as ts.StringLiteralType).value)),
-    }
-  if (d.every((x) => x.flags & ts.TypeFlags.BooleanLike))
-    return { kind: "flag" }
-  if (d.length === 1 && d[0].flags & ts.TypeFlags.String)
-    return { kind: "text" }
-  if (d.length === 1 && d[0].flags & ts.TypeFlags.Number)
-    return { kind: "number" }
-  if (
-    d.length === 1 &&
-    typer.isArrayType(d[0]) &&
-    typer.getTypeArguments(d[0] as ts.TypeReference)[0].flags &
-      ts.TypeFlags.String
-  )
-    return { kind: "textList" }
-  throw new Error(
-    `${hvor} har en type manifestet ikke kjenner: ${vis(t)}. Legg den til i valgtype().`,
-  )
-}
-
-/** Om typen er et attributtsett: hver verdi er tekst, eller `true` for et flagg. */
-function erAttributter(t: ts.Type): boolean {
-  const props = t.getProperties()
-  return (
-    props.length > 0 &&
-    props.every((p) =>
-      deler(typer.getTypeOfSymbol(p)).every(
-        (d) =>
-          d.flags & ts.TypeFlags.StringLike ||
-          (d.flags & ts.TypeFlags.BooleanLiteral && vis(d) === "true"),
-      ),
-    )
-  )
-}
-
-function svar(t: ts.Type, hvor: string): Svar {
-  const d = deler(t)
-  if (d.length === 1 && typer.isArrayType(d[0]))
-    return {
-      kind: "list",
-      of: svar(typer.getTypeArguments(d[0] as ts.TypeReference)[0], hvor),
-    }
-  if (d.every((x) => x.isStringLiteral()))
-    return {
-      kind: "values",
-      values: ordnet(d.map((x) => (x as ts.StringLiteralType).value)),
-    }
-  if (d.length === 1 && d[0].flags & ts.TypeFlags.String)
-    return { kind: "text" }
-  if (d.length === 1 && erAttributter(d[0])) return { kind: "attributes" }
-  if (d.length === 1 && d[0].flags & ts.TypeFlags.Object) {
-    const fields: Record<string, Svar & { optional?: boolean }> = {}
-    for (const p of d[0].getProperties()) {
-      const valgfri = (p.flags & ts.SymbolFlags.Optional) !== 0
-      fields[p.name] = {
-        ...svar(typer.getTypeOfSymbol(p), `${hvor}.${p.name}`),
-        ...(valgfri ? { optional: true } : {}),
-      }
-    }
-    return { kind: "group", fields }
-  }
-  throw new Error(
-    `${hvor} returnerer en form manifestet ikke kjenner: ${vis(t)}`,
-  )
-}
-
-const byggefunksjoner: Byggefunksjon[] = []
-for (const p of typer.getTypeAtLocation(fsNavn).getProperties()) {
-  const signatur = typer.getTypeOfSymbol(p).getCallSignatures()[0]
-  // Lister som `fs.states` og vakter som `fs.isState` er ikke byggefunksjoner.
-  // `setAttributes` legger et sett på et DOM-element og har ingen motpart
-  // utenfor nettleseren.
-  if (!signatur || p.name.startsWith("is") || p.name === "setAttributes")
-    continue
-  const parameter = signatur.getParameters()[0]
-  const options: Valg[] = []
-  if (parameter) {
-    const valgType = typer.getNonNullableType(typer.getTypeOfSymbol(parameter))
-    for (const v of valgType.getProperties()) {
-      // Bare første avsnitt: resten er notater til den som vedlikeholder
-      // typen, med React-råd og historikk, og hører ikke i kontrakten.
-      const description = ts
-        .displayPartsToString(v.getDocumentationComment(typer))
-        .trim()
-        .split(/\n\s*\n/)[0]
-        .replace(/\s*\n\s*/g, " ")
-      options.push({
-        name: v.name,
-        required: (v.flags & ts.SymbolFlags.Optional) === 0,
-        type: valgtype(typer.getTypeOfSymbol(v), `fs.${p.name}({ ${v.name} })`),
-        ...(description ? { description } : {}),
-      })
-    }
-  }
-  byggefunksjoner.push({
-    name: p.name,
-    options,
-    returns: svar(signatur.getReturnType(), `fs.${p.name}()`),
-  })
-}
-byggefunksjoner.sort((a, b) => a.name.localeCompare(b.name))
+const byggefunksjoner: Byggefunksjon[] = lesByggefunksjoner()
 
 /*
  * Tilfellene. Hvert valg prøves alene, og så alle kombinasjonene når de er
@@ -512,50 +347,6 @@ for (const b of byggefunksjoner) {
 }
 
 /*
- * Flaggene på klassene: `data-optional` på `fs-label`, `data-interactive` på
- * `fs-card`. Et flagg er på når det står der, og stilarket spør bare om det
- * finnes, så det har ingen liste over verdier. `classes.ts` leser dem herfra.
- *
- * Det leses av byggetilfellene: står et `data-*`-attributt som flagg i svaret
- * med et boolsk valg på, men ikke uten, hører det til klassen i det samme
- * settet.
- */
-type Sett = Record<string, unknown>
-const settene = (svar: unknown): [string, Sett][] => {
-  if (typeof svar !== "object" || svar === null) return []
-  const verdier = Object.entries(svar)
-  return verdier.some(([, v]) => typeof v === "object" && v !== null)
-    ? (verdier.filter(
-        ([, v]) => typeof v === "object" && v !== null && !Array.isArray(v),
-      ) as [string, Sett][])
-    : [["", svar as Sett]]
-}
-const flagg = new Map<string, Set<string>>()
-for (const b of byggefunksjoner) {
-  const egne = tilfeller.filter((t) => t.builder === b.name && t.expected)
-  for (const valg of b.options.filter((o) => o.type.kind === "flag")) {
-    for (const på of egne.filter((t) => t.options[valg.name] === true)) {
-      const { [valg.name]: _, ...uten } = på.options
-      const av = egne.find((t) => likt(t.options, uten))
-      if (!av) continue
-      const før = new Map(settene(av.expected))
-      for (const [navn, sett] of settene(på.expected)) {
-        const klasser = String(sett.class ?? "")
-          .split(/\s+/)
-          .filter((k) => classes[k])
-        for (const [attributt, verdi] of Object.entries(sett))
-          if (
-            attributt.startsWith("data-") &&
-            (verdi === true || verdi === "") &&
-            før.get(navn)?.[attributt] === undefined
-          )
-            for (const klasse of klasser)
-              flagg.set(klasse, (flagg.get(klasse) ?? new Set()).add(attributt))
-      }
-    }
-  }
-}
-/*
  * Beskrivelsen av et klasseattributt er beskrivelsen av valget med samme
  * navn, `variant` for `data-variant`, og klassen finnes som flaggene over:
  * et tilfelle med valget mot det samme uten. Et valg med et annet navn kan
@@ -604,22 +395,20 @@ const klasser = Object.fromEntries(
     navn,
     {
       ...klasse,
-      attributes: withDescriptions(navn, {
-        // Flaggene står i `classes.ts` også, lest herfra. De tas ikke med
-        // derfra, men utledes på nytt under, ellers ble et flagg som er
-        // borte fra byggefunksjonen stående i manifestet for alltid.
-        ...Object.fromEntries(
-          Object.entries(klasse.attributes).filter(([, verdi]) => !verdi.flag),
+      attributes: withDescriptions(
+        navn,
+        // Flaggene, som `data-interactive` på `fs-card`, står i `classes.ts`
+        // med en tom verdiliste, siden editorene leser den fila. Her har et
+        // flagg ingen verdier, se `types.ts`. De utledes av byggefunksjonen
+        // hver gang ordforrådet skrives, se `flaggFor` i byggefunksjoner.ts,
+        // så et flagg som er borte fra funksjonen er borte her også.
+        Object.fromEntries(
+          Object.entries(klasse.attributes).map(([attributt, verdi]) => [
+            attributt,
+            verdi.flag ? { flag: true } : verdi,
+          ]),
         ),
-        ...Object.fromEntries(
-          [...(flagg.get(navn) ?? [])]
-            .filter(
-              (a) => !(a in klasse.attributes) || klasse.attributes[a].flag,
-            )
-            .sort()
-            .map((a) => [a, { flag: true }]),
-        ),
-      }),
+      ),
     },
   ]),
 )

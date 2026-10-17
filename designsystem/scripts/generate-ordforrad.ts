@@ -32,6 +32,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fs } from "../src/index.js"
 import type { Attribute, Classes, Elements } from "../src/vocabulary/types.js"
+import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner.js"
 import { type AttributeDoc, type ElementDoc, elements } from "./metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
@@ -280,8 +281,6 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
 
-const MANIFEST = join(ROOT, "designsystem/manifest/manifest.json")
-
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
   sizes: "size",
@@ -433,18 +432,35 @@ export function classesData(): Classes {
 
   /*
    * Flaggene, som `data-interactive` på `fs-card` og `data-optional` på
-   * `fs-label`, fra manifestet. Det finner dem i byggetilfellene: et
-   * `data-*`-attributt som kommer når et boolsk valg slås på. Uten dette
-   * manglet de i editoren og i regelbøkene, mens `fristil sjekk` kjente dem.
+   * `fs-label`: et `data-*`-attributt som kommer når et boolsk valg slås på.
+   * Uten dem manglet de i editoren og i regelbøkene, mens `fristil sjekk`
+   * kjente dem.
+   *
+   * De leses av byggefunksjonen selv, med valgene TypeScript ser i
+   * `src/fs.ts`, ikke fra `manifest.json` på disk. Lest derfra lå de en runde
+   * bak: `generate` skriver denne fila før manifestet, så et nytt flagg kom
+   * inn i manifestet ved første bygg, men hit først ved det neste, og
+   * `sjekk:ordforrad` felte bygget i mellomtiden.
    */
-  const manifest: {
-    classes: Record<string, { attributes: Record<string, { flag?: true }> }>
-  } = JSON.parse(readFileSync(MANIFEST, "utf8"))
-  for (const [name, info] of Object.entries(out))
-    for (const [attribute, takes] of Object.entries(
-      manifest.classes[name]?.attributes ?? {},
-    ))
-      if (takes.flag) info.attributes[attribute] ??= { values: [], flag: true }
+  const flags = new Map<string, Set<string>>()
+  for (const builder of lesByggefunksjoner()) {
+    const build = (fs as Record<string, unknown>)[builder.name]
+    if (typeof build !== "function") continue
+    // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
+    // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
+    const found = flaggFor(
+      builder,
+      build as (options: Record<string, unknown>) => unknown,
+      { id: "x", titleId: "x" },
+      (name) => name in out,
+    )
+    for (const [name, attributes] of found)
+      for (const attribute of attributes)
+        flags.set(name, (flags.get(name) ?? new Set()).add(attribute))
+  }
+  for (const [name, attributes] of flags)
+    for (const attribute of [...attributes].sort())
+      out[name].attributes[attribute] ??= { values: [], flag: true }
   return out
 }
 

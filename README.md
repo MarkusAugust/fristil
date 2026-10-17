@@ -37,7 +37,7 @@ Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier 
 - `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
 - `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-connection-status>`.
 
-Ingen komponent bruker shadow DOM. Kategorien sier hvem som lager nodene: den som rendrer, eller web-komponenten selv. Se `.claude/CLAUDE.md`.
+Ingen komponent bruker shadow DOM. Kategorien sier hvem som lager nodene: den som rendrer, eller web-komponenten selv. Mer om hvordan en ny komponent legges til står under [Ny komponent](#ny-komponent), og om arbeidsflyten i [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Lokal utvikling
 

@@ -35,8 +35,47 @@ if (logg.exitCode !== 0) {
 const agent = (navn: string, adresse: string) =>
   /@anthropic\.com$/i.test(adresse) || /^claude$/i.test(navn.trim())
 
+/*
+ * Hakeparentesene er valgfrie. Mønsteret krevde markdown-lenken
+ * «[Claude Code](…)», slik verktøyet skriver den i en PR-beskrivelse, og
+ * slapp den rene teksten CONTRIBUTING.md forbyr forbi.
+ */
 const ÆRESLINJE =
-  /^(co-authored-by:.*(claude|anthropic)|claude-session:|.*generated with \[claude code\])/im
+  /^(co-authored-by:.*(claude|anthropic)|claude-session:|.*generated with \[?claude code\]?)/im
+
+/*
+ * Mønsteret prøves mot seg selv før historikken, så en innstramming eller en
+ * ny skrivemåte ikke blir stående uprøvd. Meldingene under finnes ikke i
+ * historikken; de er det sjekken skal felle, og det den skal la gå.
+ */
+const SKAL_FELLES = [
+  "Co-Authored-By: Claude <noreply@anthropic.com>",
+  "Co-authored-by: Claude Opus <claude@anthropic.com>",
+  "Claude-Session: https://claude.ai/code/session_x",
+  "🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+  "Generated with Claude Code",
+  "🤖 Generated with Claude Code (https://claude.com/claude-code)",
+]
+const SKAL_SLIPPE = [
+  "Rett fokus i feiloppsummeringen",
+  "Co-Authored-By: Kari Nordmann <kari@example.com>",
+  "Regelboka sier at agenten skal lese manifestet, ikke gjette",
+  "Sjekken ble generert med en mal, ikke skrevet for hånd",
+]
+const selvtest = [
+  ...SKAL_FELLES.filter((m) => !ÆRESLINJE.test(`Tittel\n\n${m}`)).map(
+    (m) => `slipper «${m}» gjennom`,
+  ),
+  ...SKAL_SLIPPE.filter((m) => ÆRESLINJE.test(`Tittel\n\n${m}`)).map(
+    (m) => `feller «${m}»`,
+  ),
+]
+if (selvtest.length > 0) {
+  console.error(
+    `✗ Mønsteret i sjekk-forfattere.ts ${selvtest.join(", og ")}. Rett mønsteret før historikken sjekkes.`,
+  )
+  process.exit(1)
+}
 
 const funn: string[] = []
 let antall = 0

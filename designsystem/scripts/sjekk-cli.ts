@@ -419,7 +419,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
  * Omskrivingen bytter en relativ sti med inngangspunktet i `exports`, men
  * bare når inngangspunktet finnes. Gjør det ikke det, blir stien stående som
  * den er, og kopien peker på en mappe som ikke finnes hos konsumenten. Det
- * er skrevet ned som en fare i CLAUDE.md, uten at noe har sjekket det.
+ * sto lenge skrevet ned som en fare, uten at noe sjekket det.
  *
  * Her overtas hver komponent verktøyet selv lister opp, og hver henvisning
  * ut av mappa kontrolleres mot `exports` i pakken.

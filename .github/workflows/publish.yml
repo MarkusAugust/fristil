@@ -44,6 +44,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Hele historikken, så steget «Se at taggen står på master» kan
+          # spørre om commiten er en forfar til master.
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -53,6 +57,40 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+
+      # Kontrollene som bare leser package.json og git står først, så en
+      # tagg satt feil blir avvist før bygget, ikke flere minutter etter.
+      - name: Les versjonen
+        id: versjon
+        working-directory: designsystem
+        run: echo "nummer=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # Taggen og versjonen i package.json må si det samme. En tagg v0.3.0 på
+      # en commit som fortsatt sier 0.2.0 ville ellers publisert 0.2.0, eller
+      # hoppet over den, og taggen i historikken ville pekt på noe annet enn
+      # det som ligger på npm.
+      - name: Se at taggen og versjonen stemmer
+        if: github.ref_type == 'tag'
+        run: |
+          tagg="${GITHUB_REF_NAME#v}"
+          if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
+            echo "Taggen $GITHUB_REF_NAME sier $tagg, mens package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
+            exit 1
+          fi
+
+      # Taggen skal stå på master. `bun run tag` nekter ellers, men en tagg
+      # satt med `git tag` på commiten i slipp-grenen har alt det nye
+      # nummeret, så kontrollen over slipper den gjennom, og npm ville fått
+      # en versjon fra en commit som ennå ikke er slått sammen, og kanskje
+      # aldri blir det slik den er. CONTRIBUTING.md lover at en tagg satt for
+      # tidlig stopper her.
+      - name: Se at taggen står på master
+        if: github.ref_type == 'tag'
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/master; then
+            echo "Taggen $GITHUB_REF_NAME står på $(git rev-parse --short HEAD), som ikke er på master. Slå grenen sammen først, fjern taggen og sett den på nytt fra master." >&2
+            exit 1
+          fi
 
       # npm må være 11.5.1 eller nyere for å kunne hente legitimasjon fra
       # OIDC-beviset.
@@ -73,24 +111,6 @@ jobs:
 
       - name: Bygg pakken
         run: bun --filter @fristil/designsystem build
-
-      - name: Les versjonen
-        id: versjon
-        working-directory: designsystem
-        run: echo "nummer=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
-      # Taggen og versjonen i package.json må si det samme. En tagg v0.3.0 på
-      # en commit som fortsatt sier 0.2.0 ville ellers publisert 0.2.0, eller
-      # hoppet over den, og taggen i historikken ville pekt på noe annet enn
-      # det som ligger på npm.
-      - name: Se at taggen og versjonen stemmer
-        if: github.ref_type == 'tag'
-        run: |
-          tagg="${GITHUB_REF_NAME#v}"
-          if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
-            echo "Taggen $GITHUB_REF_NAME sier $tagg, mens package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
-            exit 1
-          fi
 
       # Den første utgivelsen gjøres fra maskinen, siden npm bare lar deg
       # koble en utgiver til en pakke som allerede finnes. Taggen for den

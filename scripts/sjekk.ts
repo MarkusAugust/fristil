@@ -66,6 +66,11 @@ const WORKFLOW_KEYS = new Set([
   "permissions",
 ])
 
+/** Om maskinen har en skjerm VS Code kan åpnes på. Se bruken under. */
+const HAR_SKJERM =
+  process.platform !== "linux" ||
+  Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY)
+
 const workflow = Bun.YAML.parse(
   await Bun.file(`${ROOT}.github/workflows/ci.yml`).text(),
 ) as { jobs: Record<string, Job> }
@@ -99,12 +104,12 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
       used.add(key)
       continue
     }
-    // VS Code trenger en skjerm. På Linux uten skjerm gir xvfb-run den, her
-    // har maskinen sin egen.
-    const run =
-      process.platform === "linux"
-        ? step.run
-        : step.run.replace(/^xvfb-run -a /gm, "")
+    // VS Code trenger en skjerm. På Linux uten skjerm, som i CI, gir xvfb-run
+    // den. Har maskinen sin egen, på macOS eller på Linux med `DISPLAY` eller
+    // `WAYLAND_DISPLAY` satt, tas xvfb-run bort: den kjørte før på all Linux,
+    // og en maskin med skjerm, men uten xvfb installert, stoppet på
+    // «xvfb-run: command not found».
+    const run = HAR_SKJERM ? step.run.replace(/^xvfb-run -a /gm, "") : step.run
     steps.push({
       key,
       run,
