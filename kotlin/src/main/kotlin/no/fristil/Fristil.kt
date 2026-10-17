@@ -102,7 +102,10 @@ object Fristil {
      * En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster
      * [IllegalArgumentException] med forklaringen. Løftene holder av
      * konstruksjon, så [Theme.violations] er tom for en oppskrift med gyldige
-     * farger; står det noe der, er det kjernen som sier fra.
+     * farger. Sjekk den likevel før du skriver [Theme.css] til en fil:
+     * `fristil tema` nekter å skrive når den ikke er tom, mens denne gir
+     * temaet tilbake med lista, som `buildTheme` i TypeScript.
+     * Mangler fargekontrakten i jar-en, kastes [IllegalStateException].
      */
     fun buildTheme(recipe: String): Theme {
         val input = Json.write(ThemeRecipe.toCore(recipe))
@@ -386,11 +389,11 @@ internal object ThemeRecipe {
                 ?: throw IllegalArgumentException("Oppskriften er gyldig JSON, men ikke et objekt med fargene i seg.")
         val topLevel = COLORS.flatMap { (n, e) -> listOf(n, e) } + listOf("typografi", "typography", "form", "shape", "\$schema")
         val unknown = file.keys.map { it.toString() }.filter { it !in topLevel }.toMutableList()
-        val typography = (file["typography"] ?: file["typografi"]) as? Map<*, *> ?: emptyMap<String, Any?>()
-        val shape = (file["shape"] ?: file["form"]) as? Map<*, *> ?: emptyMap<String, Any?>()
+        val typography = spread(file["typography"] ?: file["typografi"])
+        val shape = spread(file["shape"] ?: file["form"])
         unknown += unknownKeys(typography, TYPOGRAPHY_KEYS, "typografi")
-        unknown += unknownKeys(typography["weights"] as? Map<*, *>, WEIGHT_KEYS, "typografi.weights")
-        unknown += unknownKeys(typography["lineHeights"] as? Map<*, *>, LINE_KEYS, "typografi.lineHeights")
+        unknown += unknownKeys(spread(typography["weights"]), WEIGHT_KEYS, "typografi.weights")
+        unknown += unknownKeys(spread(typography["lineHeights"]), LINE_KEYS, "typografi.lineHeights")
         unknown += unknownKeys(shape, SHAPE_KEYS, "form")
         if (unknown.isNotEmpty()) throw IllegalArgumentException("Ukjent nøkkel i oppskriften: ${unknown.joinToString(", ")}")
 
@@ -404,8 +407,21 @@ internal object ThemeRecipe {
         return input
     }
 
-    private fun unknownKeys(value: Map<*, *>?, allowed: List<String>, path: String): List<String> =
-        (value ?: emptyMap<String, Any?>()).keys.map { it.toString() }.filter { it !in allowed }.map { "$path.$it" }
+    /**
+     * `{ ...verdi }` slik JavaScript sprer den, som `spread` i `theme.rs`: en
+     * liste får indeksene som nøkler og en streng ett tegn per nøkkel, så
+     * `"typografi": "Inter"` meldes som ukjente nøkler framfor å forsvinne.
+     */
+    private fun spread(value: Any?): Map<String, Any?> =
+        when (value) {
+            is Map<*, *> -> value.entries.associate { (k, v) -> k.toString() to v }
+            is List<*> -> value.withIndex().associate { (i, v) -> i.toString() to v }
+            is String -> value.withIndex().associate { (i, c) -> i.toString() to c.toString() }
+            else -> emptyMap()
+        }
+
+    private fun unknownKeys(value: Map<String, Any?>, allowed: List<String>, path: String): List<String> =
+        value.keys.filter { it !in allowed }.map { "$path.$it" }
 }
 
 /** En rettelse: bytt ut teksten fra `start` til `end` med `text`. */

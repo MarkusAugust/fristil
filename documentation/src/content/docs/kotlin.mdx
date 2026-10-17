@@ -211,7 +211,7 @@ val tema = Fristil.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e"}""")
 File("build/fristil/tema.css").writeText(tema.css)
 ```
 
-Svaret har `light` og `dark`, hvert `--fs-color-*`-token med verdien sin, `violations`, som er tom når løftene holder, og `css`. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Begge svarer nøyaktig det TypeScript-utgaven svarer, og testes mot den samme fasiten.
+Svaret har `light` og `dark`, hvert `--fs-color-*`-token med verdien sin, `violations` og `css`. Løftene holder av konstruksjon, så `violations` er tom for gyldige farger, men sjekk den før du skriver fila: `fristil tema` nekter å skrive når den ikke er tom, mens `buildTheme` gir temaet tilbake med lista, som i TypeScript. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Oppskriften leses som `fristil tema` leser den, og begge svarer det kjernen svarer i TypeScript, testet mot den samme fasiten.
 
 ## Gradle-pluginen
 

@@ -17,6 +17,11 @@ import org.junit.jupiter.params.provider.MethodSource
  * har svaret `inspectTheme` skal gi for hvert tema skrevet som CSS ved siden
  * av. Det som testes her er det som ligger rundt modulen: oversettelsen av
  * oppskriften, JSON-en og feltene i [Theme] og [ThemeReport].
+ *
+ * Ingen oppskrift i fasiten gir en `violations` som ikke er tom, og det er
+ * ikke en mangel i fasiten: løftene holder av konstruksjon, så kjernen gir
+ * ingen for en oppskrift den godtar. Feltene i [ThemeViolation] er lest mot
+ * `build_theme_raw` i `kjerne/src/lib.rs`, ikke mot et tilfelle.
  */
 class ThemeParityTest {
     @ParameterizedTest(name = "{0}")
@@ -30,6 +35,7 @@ class ThemeParityTest {
             return
         }
         val expected = case["tema"] as Map<*, *>
+        assertEquals(setOf("light", "dark", "violations", "css"), expected.keys, "fasiten har et felt leseren ikke sammenligner")
         val theme = Fristil.buildTheme(recipe)
         assertEquals(expected["light"], theme.light, "light")
         assertEquals(expected["dark"], theme.dark, "dark")
@@ -45,6 +51,7 @@ class ThemeParityTest {
     @MethodSource("themes")
     fun `inspectTheme svarer det samme som TypeScript`(name: String) {
         val expected = REPORTS.getValue(name) as Map<*, *>
+        assertEquals(setOf("problems", "blocks", "declarations", "promises"), expected.keys, "fasiten har et felt leseren ikke sammenligner")
         val report = Fristil.inspectTheme(File(DIR, "$name.css").readText())
         assertEquals(
             expected["problems"],
@@ -70,6 +77,11 @@ class ThemeParityTest {
     fun `en oppskrift med en ukjent nøkkel kaster før kjernen ser den`() {
         val error = assertFailsWith<IllegalArgumentException> { Fristil.buildTheme("""{"aksent": "#7c3aed", "acent": "#000", "form": {"radius": "0"}}""") }
         assertEquals("Ukjent nøkkel i oppskriften: acent, form.radius", error.message)
+        // En streng eller liste der det skulle stått et objekt, slik `fristil tema` melder den.
+        val text = assertFailsWith<IllegalArgumentException> { Fristil.buildTheme("""{"aksent": "#7c3aed", "typografi": "Inter"}""") }
+        assertEquals("Ukjent nøkkel i oppskriften: typografi.0, typografi.1, typografi.2, typografi.3, typografi.4", text.message)
+        val list = assertFailsWith<IllegalArgumentException> { Fristil.buildTheme("""{"typografi": {"weights": [400]}}""") }
+        assertEquals("Ukjent nøkkel i oppskriften: typografi.weights.0", list.message)
         assertFailsWith<IllegalArgumentException> { Fristil.buildTheme("[]") }
     }
 
@@ -92,7 +104,9 @@ class ThemeParityTest {
         fun themes(): List<String> {
             val names = REPORTS.keys.sorted()
             assertTrue(names.isNotEmpty(), "Ingen temaer i $DIR")
-            for (name in names) assertTrue(File(DIR, "$name.css").exists(), "$name.css mangler ved siden av rapporten")
+            // Begge veier: et tema uten rapport ville ellers aldri blitt inspisert.
+            val css = DIR.listFiles { f -> f.name.endsWith(".css") }!!.map { it.nameWithoutExtension }.sorted()
+            assertEquals(css, names, "temaene i $DIR og rapportene i rapporter.json skal være de samme")
             return names
         }
     }
