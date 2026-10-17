@@ -3,7 +3,7 @@
  * fullføring og forklaring oppå.
  *
  * Funnene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den
- * samme som Neovim, Zed og Helix bruker, skrevet i Rust og kjørt som
+ * samme som Neovim og Helix bruker, skrevet i Rust og kjørt som
  * WASI-modul (se `server.ts`). Den leser manifestet prosjektet faktisk har,
  * også med komponenter tatt over med `fristil overta`. Her er resten:
  *

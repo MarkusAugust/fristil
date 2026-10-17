@@ -1,9 +1,11 @@
 //! `fristil lsp`: språkserveren, over standard inn og ut.
 //!
 //! Den samme sjekken som `fristil sjekk`, mens du skriver, i hver editor som
-//! snakker LSP: VS Code, Neovim, Zed, Helix og IntelliJ. Funnene blir
-//! diagnostikk, med regelnavnet som kode og komponentsiden som lenke, og en
-//! rettelse blir en hurtigrettelse.
+//! snakker LSP: VS Code, Neovim og Helix. Funnene blir diagnostikk, med
+//! regelnavnet som kode og komponentsiden som lenke, og en rettelse blir en
+//! hurtigrettelse. IntelliJ-pluginen bruker ikke serveren: den kjører kjernen
+//! selv, gjennom Kotlin-pakken. Zed starter bare servere en Zed-utvidelse har
+//! meldt inn, og en slik finnes ikke ennå.
 //!
 //! Ordforrådet er det prosjektet faktisk har. Serveren leter i
 //! arbeidsområdet etter
