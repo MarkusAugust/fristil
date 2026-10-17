@@ -132,7 +132,10 @@ med ID-en `no.fristil`. Tre ting er verdt å vite:
 
 ## Hvorfor den ikke er i `bun run sjekk`
 
-Hovedrekka tar tre minutter og kjøres før hver push. Et Gradle-bygg som
-laster ned en IDE hører ikke hjemme der. `.github/workflows/ci-intellij.yml`
-kjører derfor for seg, og bare når `editor-intellij/**` eller arbeidsflyten
-selv er endret, eller du starter den for hånd.
+Hovedrekka kjøres før hver push, og tar alt noen minutter, se
+`CONTRIBUTING.md`. Et Gradle-bygg som laster ned en IDE hører ikke hjemme
+der. `.github/workflows/ci-intellij.yml` kjører derfor for seg, og bare når
+noe pluginen bygges av er endret: pluginen selv, Kotlin-pakken, kjernen,
+manifestet, pakkens kildekode, regelbøkene, skriptene som skriver dem eller
+`designsystem/package.json`. Stiene står i `paths` øverst i arbeidsflyten,
+med grunnen, og den kan også startes for hånd.
