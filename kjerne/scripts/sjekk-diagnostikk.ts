@@ -106,7 +106,10 @@ const cases: Case[] = [
     name: "et felt med to kontroller",
     html: `<fs-field><label>Telefon</label><input name="a"><select name="b"></select></fs-field>`,
     count: 1,
-    mentions: ["<fs-field> har delen «control» mer enn én gang", "bare den første"],
+    mentions: [
+      "<fs-field> har delen «control» mer enn én gang",
+      "bare den første",
+    ],
     severity: "warning",
     covers: "select",
   },
