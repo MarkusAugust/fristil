@@ -48,7 +48,8 @@ egen overskrift «Brytende».
   så det ut som om ingen melding hadde fokus: lukket brukeren meldingen med
   Enter, falt fokus til `body` i stedet for til meldingen ved siden av eller
   dit det kom fra, og det samme skjedde ved `clear()`. Fokus leses nå fra
-  komponentens egen rot.
+  komponentens egen rot, og `<fs-session-timeout>` husker på samme måte
+  hvor fokus sto før varselet.
 - **README sier hva et eget tagnavn gir.** Den lovet at du bestemmer «hva
   det skal hete», men stilarkene til `<fs-field>`, `<fs-tabs>`,
   `<fs-popover>`, `<fs-dialog>` og `<fs-suggestion>` er skrevet for

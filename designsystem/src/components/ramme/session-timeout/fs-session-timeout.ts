@@ -571,8 +571,11 @@ export class FsSessionTimeout extends HostElement {
     // Da så `validate()` den aldri.
     this.validateParts()
     // Fokus skal tilbake dit brukeren var. Uten dette starter neste
-    // tastetrykk på toppen av siden, midt i et skjema.
-    this.previousFocus = document.activeElement as HTMLElement | null
+    // tastetrykk på toppen av siden, midt i et skjema. Lest fra komponentens
+    // egen rot, som i `<fs-toast>`: i en skyggerot peker
+    // `document.activeElement` på skyggeverten, ikke på feltet.
+    const root = this.getRootNode() as Document | ShadowRoot
+    this.previousFocus = root.activeElement as HTMLElement | null
     /*
      * Teksten skal stå før dialogen åpnes, siden `alertdialog` leses opp i
      * det den kommer. Tallet i avsnittet er `aria-hidden`, så uten
