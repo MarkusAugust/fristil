@@ -77,8 +77,9 @@ egen overskrift «Brytende».
   web-komponentene, og ingen av dem har en variant. Det er
   `fs.button({ variant })` som gjør en ukjent variant til en kompileringsfeil,
   med eller uten `react-jsx`, og en håndskrevet `className` eller
-  `data-variant` ser ingen av dem. Begge tekstene sier nå hva som fanger hva,
-  og at det håndskrevne går gjennom `fristil sjekk`.
+  `data-variant` ser ingen av dem, og heller ikke `fristil sjekk`, som leser
+  `class`, ikke `className`. Begge tekstene sier nå hva som fanger hva, og
+  at det håndskrevne skal erstattes av byggefunksjonene.
 - **`defineFs*` kaster ikke når klassen alt er registrert under et eget
   navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
   NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i

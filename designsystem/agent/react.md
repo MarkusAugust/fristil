@@ -29,8 +29,9 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    `@fristil/designsystem/react` gjør en variant som ikke finnes til en
    kompileringsfeil, og `@fristil/designsystem/react-jsx`, importert én gang i
    en `.d.ts`-fil, gjør det samme for attributtene på web-komponentene. Kjør
-   `tsc`. En håndskrevet `className` eller `data-variant` ser ingen av dem;
-   den og eventuell HTML eller maler sjekkes med
+   `tsc`. En håndskrevet `className` eller `data-variant` ser ingen av dem, og
+   heller ikke `npx @fristil/designsystem sjekk`, som leser `class`, ikke
+   `className`, så bruk byggefunksjonene. HTML og maler sjekkes med
    `npx @fristil/designsystem sjekk <fil>`.
 
 ## 1. Stilarkene

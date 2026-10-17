@@ -775,8 +775,10 @@ element. Derfor har pakken en egen React-inngang.`,
    kompileringsfeil, og \`@fristil/designsystem/react-jsx\`, importert én
    gang i en \`.d.ts\`-fil, gjør det samme for attributtene på
    web-komponentene. Kjør \`tsc\`. En håndskrevet \`className\` eller
-   \`data-variant\` ser ingen av dem; den og eventuell HTML eller maler
-   sjekkes med \`npx @fristil/designsystem sjekk <fil>\`.`,
+   \`data-variant\` ser ingen av dem, og heller ikke
+   \`npx @fristil/designsystem sjekk\`, som leser \`class\`, ikke
+   \`className\`, så bruk byggefunksjonene. HTML og maler sjekkes med
+   \`npx @fristil/designsystem sjekk <fil>\`.`,
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Deretter ett per komponent du bruker:
