@@ -18,7 +18,8 @@ export type Attribute = (
  * delen tar: `text` er tekst og frasering uten interaktive elementer, `free`
  * fritt innhold, `parts` bare de andre delene, og `none` ingen tekst: delen
  * er en kontroll, som et `<select>` med sine `<option>`, eller et element
- * komponenten fyller. Uten `multiple` gjelder den første. Uten `optional` trenger
+ * komponenten fyller. Uten `multiple` gjelder den første, og med `unique` er en
+ * del til av samme slag en feil, ikke vanlig innhold. Uten `optional` trenger
  * elementet delen.
  */
 export type Part = {
@@ -26,6 +27,8 @@ export type Part = {
   description: string
   content: "text" | "free" | "parts" | "none"
   multiple?: true
+  /** En del til av samme slag er en feil, ikke vanlig innhold. */
+  unique?: true
   optional?: true
 }
 

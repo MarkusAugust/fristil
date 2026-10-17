@@ -138,6 +138,27 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "to dialoger rett under <fs-dialog>, men ikke en nøstet",
+    html: `<fs-dialog><dialog></dialog><dialog></dialog></fs-dialog>
+<fs-dialog><dialog></dialog><div><dialog></dialog></div></fs-dialog>`,
+    count: 1,
+    mentions: ["«dialog»"],
+  },
+  {
+    name: "en skjult verdi er ikke en kontroll til, og en delt knapp er ikke to utløsere",
+    html: `<fs-field><input type="hidden" name="x"><input type="checkbox" name="y"><label>Jeg godtar</label></fs-field>
+<fs-popover><button type="button">Lagre</button><button type="button" aria-controls="m">Flere valg</button><ul class="fs-popover" id="m"><li><button type="button">Lagre som</button></li></ul></fs-popover>
+<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><p class="fs-help-text">Der du bor</p><fs-field><label>Gate</label><input name="g"><p class="fs-help-text">Med nummer</p></fs-field></fieldset>
+<table class="fs-table"><caption>A</caption><thead></thead><tbody></tbody><tbody></tbody></table>`,
+    count: 0,
+  },
+  {
+    name: "del-flere-ganger på en stor liste går fort",
+    html: `<ul class="fs-list">${"<li>x</li>".repeat(5000)}</ul><fs-field><label>A</label>${'<input name="a">'.repeat(2000)}</fs-field>`,
+    count: 1999,
+    maxMs: 200,
+  },
+  {
     name: "to deler bak et vilkår i en mal er ikke to deler",
     html: `<fs-field><label>Svar</label>{{if .Lang}}<textarea name="s"></textarea>{{else}}<input name="s">{{end}}</fs-field>`,
     count: 0,

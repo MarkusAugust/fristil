@@ -5,7 +5,7 @@
       "end": 103,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "<fs-field> har delen «control» mer enn én gang. Komponenten bruker bare den første, og denne gjør ingenting. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+      "message": "<fs-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
     },
     {
       "start": 757,
@@ -21,7 +21,7 @@
       "end": 103,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "<fs-field> har delen «control» mer enn én gang. Komponenten bruker bare den første, og denne gjør ingenting. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+      "message": "<fs-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
     },
     {
       "start": 757,

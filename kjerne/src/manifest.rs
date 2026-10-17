@@ -88,6 +88,7 @@ fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
                     .unwrap_or("")
                     .to_string(),
                 multiple: matches!(part.get("multiple"), Some(Json::Bool(true))),
+                unique: matches!(part.get("unique"), Some(Json::Bool(true))),
             })
         })
         .collect()

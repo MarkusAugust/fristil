@@ -101,6 +101,13 @@ export type PartDoc = {
   content: PartContent
   /** Delen kan stå flere ganger, som fanene. Ellers gjelder den første. */
   multiple?: true
+  /**
+   * En del til av samme slag er en feil, ikke vanlig innhold: et felt med
+   * to kontroller kobler bare den første. Uten feltet kan resten være
+   * innhold, som knappene i panelet til `<fs-popover>`. `fristil sjekk`
+   * melder en del med `unique` som står mer enn én gang.
+   */
+  unique?: true
   /** Elementet virker uten delen. */
   optional?: true
 }
@@ -163,16 +170,19 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type="hidden"` teller ikke, og bare den første får koblingen.',
       content: "none",
+      unique: true,
     },
     help: {
       description: "Hjelpeteksten, som leses opp sammen med kontrollen.",
       content: "text",
+      unique: true,
       optional: true,
     },
     error: {
       description:
         "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
       content: "text",
+      unique: true,
       optional: true,
     },
   }),
@@ -181,6 +191,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         'Raden med fanene. Har en fane `role="tab"`, kan raden også ha andre knapper, som en lukkeknapp.',
       content: "free",
+      unique: true,
     },
     tab: {
       description:
@@ -216,6 +227,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     panel: {
       description: "Panelet som åpnes: elementet med `popover`, eller klassen.",
       content: "free",
+      unique: true,
     },
   }),
   [FS_SUGGESTION_TAG]: parts(FS_SUGGESTION_PARTS, {
@@ -223,8 +235,9 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         'Feltet brukeren skriver i: `role="combobox"`, ellers det første `<input>`.',
       content: "none",
+      unique: true,
     },
-    list: { description: "Lista med forslag.", content: "parts" },
+    list: { description: "Lista med forslag.", content: "parts", unique: true },
     option: {
       description:
         'Ett forslag i lista: `role="option"`, eller et `<li>` uten rolle.',
@@ -234,18 +247,21 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     empty: {
       description: "Meldingen som vises når ingenting passer.",
       content: "text",
+      unique: true,
       optional: true,
     },
     status: {
       description:
         "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
       content: "none",
+      unique: true,
     },
   }),
   [FS_DIALOG_TAG]: parts(FS_DIALOG_PARTS, {
     dialog: {
       description: "`<dialog>`-elementet, som et direkte barn av verten.",
       content: "free",
+      unique: true,
     },
     title: {
       description:
@@ -257,6 +273,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
       content: "free",
+      unique: true,
       optional: true,
     },
   }),
@@ -264,6 +281,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     dialog: {
       description: "`<dialog>`-elementet med varselet.",
       content: "free",
+      unique: true,
     },
     title: {
       description:
@@ -275,16 +293,19 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
       content: "text",
+      unique: true,
     },
     count: {
       description:
         "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
       content: "none",
+      unique: true,
     },
     status: {
       description:
         "Opplesningen. Elementet står tomt, og komponenten fyller det.",
       content: "none",
+      unique: true,
     },
     button: {
       description:
@@ -591,6 +612,7 @@ const row = (control: string, what: string): ClassDoc => ({
       selector: control,
       description: `${what}, med klassen sin.`,
       content: "none",
+      unique: true,
     },
     label: {
       selector: "label",
@@ -702,6 +724,7 @@ export const classDocs: Record<string, ClassDoc> = {
         selector: ".fs-legend",
         description: "Ledeteksten til gruppen, en `<legend>` med klassen.",
         content: "text",
+        unique: true,
       },
       help: {
         selector: ".fs-help-text",
@@ -800,6 +823,7 @@ export const classDocs: Record<string, ClassDoc> = {
         selector: "input[type='search']",
         description: "Søkefeltet, med klassene `fs-input fs-search`.",
         content: "none",
+        unique: true,
       },
       button: {
         selector: "button",
@@ -823,18 +847,21 @@ export const classDocs: Record<string, ClassDoc> = {
         selector: "caption",
         description: "Tabellens navn.",
         content: "text",
+        unique: true,
         optional: true,
       },
       head: {
         selector: "thead",
         description: 'Overskriftsraden, med `<th scope="col">` per kolonne.',
         content: "free",
+        unique: true,
       },
       body: {
         selector: "tbody",
         description:
-          'Radene. En `<th scope="row">` først i raden gir raden et navn.',
+          'Radene, i én eller flere grupper. En `<th scope="row">` først i raden gir raden et navn.',
         content: "free",
+        multiple: true,
       },
       sort: {
         selector: "th > .fs-table__sort",
@@ -867,6 +894,7 @@ export const classDocs: Record<string, ClassDoc> = {
         description:
           "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
         content: "text",
+        unique: true,
       },
       option: {
         selector: ".fs-toggle-group__option",

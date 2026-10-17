@@ -1,28 +1,25 @@
-//! `del-flere-ganger`: en del uten `multiple` som står mer enn én gang.
+//! `del-flere-ganger`: en del med `unique` som står mer enn én gang.
 //!
 //! Regelen er drevet av `parts` i manifestet, både for elementene og for
-//! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. En
-//! komponent bruker den første delen den finner, og en del til av samme
-//! slag gjør ingenting: et `<fs-field>` med to kontroller kobler bare den
-//! første, og den andre står uten ledetekst.
-//!
-//! «Den første» er ikke alltid den første i teksten. `<fs-popover>` finner
-//! knappen sin utenfor panelet, og knappene i panelet er menyens, ikke
-//! utløsere. `<fs-dialog>` finner tittelen utenfor kroppen. Regelen er derfor
-//! at et treff inni en annen del av samme vert hører til den delen: av
-//! treffene for en del teller bare de som står inni færrest andre deler.
-//! En overskrift i `.fs-dialog__body` står inni både `<dialog>` og kroppen,
-//! tittelen bare inni `<dialog>`, så bare tittelen teller.
+//! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. Den
+//! melder bare delene med `unique`: der en del til av samme slag er en feil,
+//! som et `<fs-field>` med to kontroller, der bare den første blir koblet.
+//! En del uten `unique` kan stå flere ganger og være vanlig innhold.
+//! `<fs-popover>` finner knappen sin utenfor panelet, eller den med
+//! `aria-controls`, og knappene i panelet er menyens. Hver komponents egen
+//! regel for hvilken som er den riktige, står i komponenten og ikke her.
 //!
 //! Et treff hører til den nærmeste verten: et felt inni et felt er det indre
-//! feltets, som `part.closest(host.localName) === host` i komponentene.
-//! Står det malsyntaks i verten, sier regelen ingenting: en løkke eller et
-//! `if`/`else` kan gi to deler i kilden og én på siden.
+//! feltets, som `part.closest(host.localName) === host` i komponentene. Det
+//! som står i en `<template>`, er ikke i dokumentet og teller ikke. Står det
+//! malsyntaks i verten, sier regelen ingenting: en løkke, et `if`/`else`, et
+//! `v-if` eller et uttrykk i `{…}` kan gi to deler i kilden og én på siden.
 //!
-//! Selektorene leses av en liten matcher med akkurat det manifestet bruker:
-//! tagg, klasse, attributt med `=`, `^=` og flagget `i`, `:not()` med en
-//! enkel selektor, `:scope`, barn (`>`), etterkommer og komma. En selektor
-//! den ikke forstår, hoppes over framfor å gi et funn den ikke kan stå for.
+//! Selektorene leses av en liten selektorleser med akkurat det manifestet
+//! bruker: tagg, klasse, attributt med `=`, `^=` og flagget `i`, `:not()`
+//! med en enkel selektor, `:scope`, barn (`>`), etterkommer og komma. En
+//! selektor den ikke forstår, hoppes over framfor å gi et funn den ikke kan
+//! stå for.
 
 use crate::diagnose::is_templated_content;
 use crate::references::{tree, value, Node};
@@ -63,18 +60,16 @@ fn is_ident(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '-' || c == '_'
 }
 
-struct Reader<'a> {
+struct Reader {
     chars: Vec<char>,
     i: usize,
-    _text: &'a str,
 }
 
-impl<'a> Reader<'a> {
-    fn new(text: &'a str) -> Self {
+impl Reader {
+    fn new(text: &str) -> Self {
         Reader {
             chars: text.chars().collect(),
             i: 0,
-            _text: text,
         }
     }
     fn peek(&self) -> Option<char> {
@@ -257,7 +252,10 @@ fn test(nodes: &[Node], n: usize, host: usize, t: &Test) -> bool {
                 return true;
             };
             let have = a.value.clone().unwrap_or_default();
-            let (have, wanted) = if *insensitive {
+            // HTML sammenligner noen verdier uten hensyn til store og små
+            // bokstaver, så `type="HIDDEN"` er skjult for nettleseren også.
+            let insensitive = *insensitive || name == "type" || name == "method";
+            let (have, wanted) = if insensitive {
                 (lowercase(&have), utf16(&wanted.to_ascii_lowercase()))
             } else {
                 (have, utf16(wanted))
@@ -316,6 +314,46 @@ fn is_ancestor(nodes: &[Node], a: usize, n: usize) -> bool {
     false
 }
 
+/// Malsyntaks som kan gi en annen markup på siden enn i kilden: det
+/// `is_templated_content` kjenner, uttrykk i `{…}` utenfor taggene, som i
+/// Astro og JSX, og attributtene som tar bort eller gjentar et element i
+/// Vue, Alpine, Angular og Svelte.
+fn decides_markup(content: &[u16]) -> bool {
+    if is_templated_content(content) {
+        return true;
+    }
+    const DIRECTIVES: &[&str] = &[
+        "v-if", "v-else", "v-for", "x-if", "x-for", "*ngif", "*ngfor", "{#if", "{#each", "@if",
+        "@for",
+    ];
+    let lower = lowercase(content);
+    if DIRECTIVES.iter().any(|d| contains_str(&lower, d)) {
+        return true;
+    }
+    // `{` i teksten utenfor taggene.
+    let mut in_tag = false;
+    content.iter().any(|&c| {
+        if c == LT {
+            in_tag = true;
+        } else if c == GT {
+            in_tag = false;
+        }
+        !in_tag && c == b'{' as u16
+    })
+}
+
+/// Om noden står i en `<template>`.
+fn in_template(nodes: &[Node], n: usize) -> bool {
+    let mut p = nodes[n].parent;
+    while let Some(i) = p {
+        if nodes[i].name == "template" {
+            return true;
+        }
+        p = nodes[i].parent;
+    }
+    false
+}
+
 /// En vert: et element eller en klasse med deler.
 struct Host<'a> {
     name: String,
@@ -361,6 +399,7 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     }
 
     let mut out = Vec::new();
+    let mut reported = std::collections::HashSet::new();
     for host in &hosts {
         let parsed: Vec<Option<Vec<Complex>>> =
             host.parts.iter().map(|p| parse(&p.selector)).collect();
@@ -383,7 +422,7 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
                     }
                     p = nodes[i].parent;
                 }
-                if nearest == Some(h) {
+                if nearest == Some(h) && !in_template(&nodes, n) {
                     own.push(n);
                 }
             }
@@ -393,44 +432,29 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             let content_end = nodes
                 .get(last + 1)
                 .map_or(source.len(), |n| n.name_start.saturating_sub(1));
-            if is_templated_content(&source[nodes[h].name_end..content_end.max(nodes[h].name_end)])
-            {
+            if decides_markup(&source[nodes[h].name_end..content_end.max(nodes[h].name_end)]) {
                 continue;
             }
-            let hits: Vec<Vec<usize>> = parsed
-                .iter()
-                .map(|list| match list {
-                    Some(list) => own
-                        .iter()
-                        .copied()
-                        .filter(|&n| matches(&nodes, n, h, list))
-                        .collect(),
-                    None => Vec::new(),
-                })
-                .collect();
             for (k, part) in host.parts.iter().enumerate() {
-                if part.multiple || hits[k].len() < 2 {
+                if !part.unique {
                     continue;
                 }
-                // Hvor mange andre deler hvert treff står inni.
-                let depth = |n: usize| {
-                    hits.iter()
-                        .enumerate()
-                        .filter(|&(q, _)| q != k)
-                        .flat_map(|(_, list)| list.iter())
-                        .filter(|&&a| is_ancestor(&nodes, a, n))
-                        .count()
+                let Some(list) = &parsed[k] else {
+                    continue;
                 };
-                let depths: Vec<usize> = hits[k].iter().map(|&n| depth(n)).collect();
-                let least = *depths.iter().min().unwrap();
-                let counted: Vec<usize> = hits[k]
+                let hits: Vec<usize> = own
                     .iter()
-                    .zip(&depths)
-                    .filter(|&(_, &d)| d == least)
-                    .map(|(&n, _)| n)
+                    .copied()
+                    .filter(|&n| matches(&nodes, n, h, list))
                     .collect();
-                for &n in counted.iter().skip(1) {
+                for &n in hits.iter().skip(1) {
                     let node = &nodes[n];
+                    // Nøstede verter med den samme delen, som klassen og
+                    // elementet i `<fs-session-timeout>`, melder den samme
+                    // noden bare én gang.
+                    if !reported.insert(node.name_start) {
+                        continue;
+                    }
                     out.push(Finding {
                         start: node.name_start,
                         end: node.name_end,
@@ -441,7 +465,7 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
                             host.name,
                             part.name,
                             if host.element {
-                                "Komponenten bruker bare den første, og denne gjør ingenting."
+                                "Web-komponenten bruker bare den første, og denne blir stående utenfor."
                             } else {
                                 "Den skal stå én gang."
                             },
@@ -511,18 +535,54 @@ mod tests {
     }
 
     #[test]
-    fn a_part_inside_another_part_belongs_to_it() {
-        // Knappene i panelet er menyens, ikke utløsere.
-        assert!(rules(r#"<fs-popover><button>Meny</button><ul class="fs-popover"><li><button>A</button></li><li><button>B</button></li></ul></fs-popover>"#).is_empty());
-        // En overskrift i kroppen er innholdets, ikke en tittel til.
-        assert!(rules(r#"<fs-dialog><dialog><h2>Tittel</h2><div class="fs-dialog__body"><h3>Del</h3></div></dialog></fs-dialog>"#).is_empty());
+    fn only_unique_parts_are_reported() {
+        // Knappene i panelet er menyens, og en delt knapp er riktig.
+        assert!(rules(r#"<fs-popover><button>Lagre</button><button aria-controls="m">v</button><ul class="fs-popover" id="m"><li><button>A</button></li></ul></fs-popover>"#).is_empty());
+        // Flere overskrifter i en dialog er innhold.
+        assert!(rules(r#"<fs-dialog><dialog aria-label="Innstillinger"><h2>Lyd</h2><h2>Bilde</h2></dialog></fs-dialog>"#).is_empty());
+        // Hver hjelpetekst i hvert sitt felt i et feltsett.
+        assert!(rules(r#"<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><label>Gate</label><input><p class="fs-help-text">A</p><label>Postnummer</label><input><p class="fs-help-text">B</p></fieldset>"#).is_empty());
         assert_eq!(
-            rules(
-                r#"<fs-dialog><dialog><h2>Tittel</h2><h2>Tittel igjen</h2></dialog></fs-dialog>"#
-            )
-            .len(),
+            rules(r#"<fs-dialog><dialog></dialog><dialog></dialog></fs-dialog>"#).len(),
             1
         );
+    }
+
+    #[test]
+    fn a_nested_host_reports_a_node_once() {
+        // I manifestet har ingen to nøstede verter den samme delen med
+        // `unique`. Her får klassen i dialogen det også, så de to overlapper.
+        let mut v = (*crate::manifest::for_tests()).clone();
+        for c in v
+            .classes
+            .iter_mut()
+            .filter(|c| c.name == "fs-session-timeout__dialog")
+        {
+            for p in c.parts.iter_mut().filter(|p| p.name == "text") {
+                p.unique = true;
+            }
+        }
+        let html = r#"<fs-session-timeout class="fs-session-timeout"><dialog class="fs-session-timeout__dialog"><p class="fs-session-timeout__text">A</p><p class="fs-session-timeout__text">B</p></dialog></fs-session-timeout>"#;
+        let found = check_parts(&utf16(html), &v);
+        assert_eq!(found.len(), 1, "{found:?}");
+    }
+
+    #[test]
+    fn what_a_template_hides_or_decides_does_not_count() {
+        assert!(rules(
+            r#"<fs-field><label>A</label><input><template><input></template></fs-field>"#
+        )
+        .is_empty());
+        assert!(
+            rules(r#"<fs-field><label>A</label>{lang ? <textarea /> : <input />}</fs-field>"#)
+                .is_empty()
+        );
+        assert!(rules(r#"<fs-field><label>A</label><input v-if="kort"><textarea v-else></textarea></fs-field>"#).is_empty());
+    }
+
+    #[test]
+    fn type_is_compared_without_case() {
+        assert!(rules(r#"<fs-field><input type="HIDDEN" name="x"><input type="checkbox" name="y"><label>A</label></fs-field>"#).is_empty());
     }
 
     #[test]

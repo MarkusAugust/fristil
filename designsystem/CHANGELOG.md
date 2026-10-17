@@ -26,13 +26,17 @@ egen overskrift «Brytende».
 ### Lagt til
 
 - **Regelen `del-flere-ganger` i `fristil sjekk`, editoren og
-  `diagnoseMarkup`.** En del uten `multiple` i manifestet som står mer enn
-  én gang, gir en advarsel: et `<fs-field>` med to kontroller, to
-  hjelpetekster i ett felt, en `fs-table` med to `<caption>`. Regelen leser
-  `parts` på elementene og klassene i manifestet, så hver del som får en
-  selektor der, sjekkes uten en egen regel. Et treff inni en annen del av
-  samme vert hører til den delen, et treff inni en nøstet vert av samme slag
-  hører til den, og står det malsyntaks i verten, sier regelen ingenting.
+  `diagnoseMarkup`.** En del med det nye feltet `unique` i manifestet som
+  står mer enn én gang, gir en advarsel: et `<fs-field>` med to kontroller,
+  to hjelpetekster i ett felt, en `fs-table` med to `<caption>`. `unique`
+  står på delene der en til er en feil og ikke vanlig innhold, og leses av
+  `Part` i Kotlin og `Part` i TypeScript. Regelen leser `parts` på
+  elementene og klassene i manifestet, så en ny del med `unique` sjekkes
+  uten en egen regel. Et treff inni en nøstet vert av samme slag hører til
+  den, det som står i en `<template>` teller ikke, og står det malsyntaks i
+  verten, sier regelen ingenting.
+- **`tbody` i `fs-table` kan stå flere ganger** i manifestet, som HTML
+  tillater.
 
 - **`Fristil.manifest.builders` i Kotlin-pakken.** Hver byggefunksjon med
   valgene (`name`, `required`, `type` som `values`, `flag`, `text`,

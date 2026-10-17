@@ -139,10 +139,11 @@ står der verdien kommer senere. Uten flagg sjekker `sjekk` derfor bare det som
 kan avgjøres i én fil: elementer, klasser, attributter, verdier, at hvert
 `<fs-field>` har en ledetekst, og at en del som skal stå én gang, ikke står
 flere ganger. Et `<fs-field>` med to kontroller kobler bare den første, og
-en `fs-table` med to `<caption>` har to navn. En del inni en annen del
-hører til den: knappene i panelet til `<fs-popover>` er menyens, ikke flere
-utløsere. Står det malsyntaks i komponenten, sier regelen ingenting, siden
-et vilkår kan gi to deler i malen og én på siden.
+en `fs-table` med to `<caption>` får navnet sitt fra den første. Hvilke
+deler det gjelder, står i manifestet som `unique`. Andre deler kan stå
+flere ganger, som knappene i panelet til `<fs-popover>`. Står det
+malsyntaks i komponenten, også `v-if` eller et uttrykk i `{…}`, sier
+regelen ingenting, siden et vilkår kan gi to deler i malen og én på siden.
 
 En side slik serveren sender den, er hel. Da kan `sjekk` også kreve at
 koblingen stemmer:

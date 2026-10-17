@@ -15,13 +15,15 @@ pub enum Attribute {
 }
 
 /// En del av et element eller en klasse, som kontrollen i `<fs-field>`, med
-/// selektoren komponenten finner den med. Uten `multiple` gjelder den første.
+/// selektoren komponenten finner den med. Uten `multiple` gjelder den første,
+/// og med `unique` er en del til av samme slag en feil.
 #[derive(Clone, Debug)]
 pub struct Part {
     pub name: String,
     pub selector: String,
     pub description: String,
     pub multiple: bool,
+    pub unique: bool,
 }
 
 #[derive(Clone, Debug)]

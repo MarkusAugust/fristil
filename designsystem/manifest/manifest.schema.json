@@ -29,7 +29,10 @@
       "description": "Hvert <fs-…>-element, med attributtene komponenten leser.",
       "additionalProperties": {
         "type": "object",
-        "required": ["link", "attributes"],
+        "required": [
+          "link",
+          "attributes"
+        ],
         "properties": {
           "link": {
             "type": "string"
@@ -61,7 +64,11 @@
                   "type": "object",
                   "description": "Feltene i event.detail med typen sin. Mangler når hendelsen ikke har noe.",
                   "additionalProperties": {
-                    "enum": ["boolean", "string", "number"]
+                    "enum": [
+                      "boolean",
+                      "string",
+                      "number"
+                    ]
                   }
                 }
               }
@@ -98,7 +105,12 @@
           },
           "content": {
             "description": "Hva elementet med klassen tar som innhold, med samme ord som delene: «text» er tekst, «free» er hva som helst, «parts» er bare delene, og «none» er ingen tekst, som en kontroll.",
-            "enum": ["text", "free", "parts", "none"]
+            "enum": [
+              "text",
+              "free",
+              "parts",
+              "none"
+            ]
           },
           "partOf": {
             "type": "string",
@@ -118,7 +130,9 @@
               "oneOf": [
                 {
                   "type": "object",
-                  "required": ["values"],
+                  "required": [
+                    "values"
+                  ],
                   "properties": {
                     "values": {
                       "type": "array",
@@ -139,7 +153,9 @@
                 },
                 {
                   "type": "object",
-                  "required": ["flag"],
+                  "required": [
+                    "flag"
+                  ],
                   "properties": {
                     "flag": {
                       "const": true
@@ -162,7 +178,11 @@
       "description": "Hver byggefunksjon i fs, med valgene og formen på svaret.",
       "items": {
         "type": "object",
-        "required": ["name", "options", "returns"],
+        "required": [
+          "name",
+          "options",
+          "returns"
+        ],
         "properties": {
           "name": {
             "type": "string"
@@ -171,7 +191,11 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "required", "type"],
+              "required": [
+                "name",
+                "required",
+                "type"
+              ],
               "properties": {
                 "name": {
                   "type": "string"
@@ -197,7 +221,10 @@
             "oneOf": [
               {
                 "type": "object",
-                "required": ["kind", "table"],
+                "required": [
+                  "kind",
+                  "table"
+                ],
                 "properties": {
                   "kind": {
                     "const": "attributes"
@@ -209,7 +236,10 @@
               },
               {
                 "type": "object",
-                "required": ["kind", "fields"],
+                "required": [
+                  "kind",
+                  "fields"
+                ],
                 "properties": {
                   "kind": {
                     "const": "group"
@@ -261,7 +291,12 @@
         },
         "colors": {
           "type": "object",
-          "required": ["families", "roles", "layers", "tokens"],
+          "required": [
+            "families",
+            "roles",
+            "layers",
+            "tokens"
+          ],
           "properties": {
             "families": {
               "type": "object",
@@ -314,10 +349,16 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
-              "enum": ["flag", "text", "number"]
+              "enum": [
+                "flag",
+                "text",
+                "number"
+              ]
             },
             "description": {
               "type": "string",
@@ -327,7 +368,10 @@
         },
         {
           "type": "object",
-          "required": ["type", "values"],
+          "required": [
+            "type",
+            "values"
+          ],
           "properties": {
             "type": {
               "const": "values"
@@ -350,16 +394,26 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
             "kind": {
-              "enum": ["flag", "text", "number", "textList"]
+              "enum": [
+                "flag",
+                "text",
+                "number",
+                "textList"
+              ]
             }
           }
         },
         {
           "type": "object",
-          "required": ["kind", "values"],
+          "required": [
+            "kind",
+            "values"
+          ],
           "properties": {
             "kind": {
               "const": "values"
@@ -378,10 +432,15 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
             "kind": {
-              "enum": ["attributes", "text"]
+              "enum": [
+                "attributes",
+                "text"
+              ]
             },
             "optional": {
               "type": "boolean"
@@ -390,7 +449,10 @@
         },
         {
           "type": "object",
-          "required": ["kind", "values"],
+          "required": [
+            "kind",
+            "values"
+          ],
           "properties": {
             "kind": {
               "const": "values"
@@ -408,7 +470,10 @@
         },
         {
           "type": "object",
-          "required": ["kind", "of"],
+          "required": [
+            "kind",
+            "of"
+          ],
           "properties": {
             "kind": {
               "const": "list"
@@ -423,7 +488,10 @@
         },
         {
           "type": "object",
-          "required": ["kind", "fields"],
+          "required": [
+            "kind",
+            "fields"
+          ],
           "properties": {
             "kind": {
               "const": "group"
@@ -445,12 +513,18 @@
       "type": "object",
       "description": "Attributtnavn til verdi. Tom tekst er et boolsk attributt som er på, null fjerner attributtet, og {navn} er verdien av valget med det navnet.",
       "additionalProperties": {
-        "type": ["string", "null"]
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "table": {
       "type": "object",
-      "required": ["base", "options"],
+      "required": [
+        "base",
+        "options"
+      ],
       "properties": {
         "base": {
           "$ref": "#/$defs/attributes"
@@ -459,7 +533,9 @@
           "type": "object",
           "additionalProperties": {
             "type": "object",
-            "required": ["cases"],
+            "required": [
+              "cases"
+            ],
             "properties": {
               "cases": {
                 "type": "object",
@@ -480,7 +556,11 @@
     },
     "part": {
       "type": "object",
-      "required": ["selector", "description", "content"],
+      "required": [
+        "selector",
+        "description",
+        "content"
+      ],
       "properties": {
         "selector": {
           "type": "string",
@@ -492,11 +572,20 @@
         },
         "content": {
           "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
-          "enum": ["text", "free", "parts", "none"]
+          "enum": [
+            "text",
+            "free",
+            "parts",
+            "none"
+          ]
         },
         "multiple": {
           "const": true,
           "description": "Delen kan stå flere ganger."
+        },
+        "unique": {
+          "const": true,
+          "description": "En del til av samme slag er en feil, ikke vanlig innhold. Uten feltet kan resten være innhold, som knappene i et panel. fristil sjekk melder en slik del som står mer enn én gang."
         },
         "optional": {
           "const": true,
