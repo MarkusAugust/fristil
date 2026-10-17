@@ -72,18 +72,18 @@ Playwrights egne bygg.
 
 ## Genererte filer
 
-Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. De kommer fra to kommandoer.
-
-`bun --filter @fristil/designsystem generate` skriver åtte:
+Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @fristil/designsystem generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` som første steg.
 
 | Fil | Kilde |
 | --- | --- |
+| `designsystem/src/tokens/matrise.ts` | `src/tokens/fargekontrakt.json` og merkefargene, regnet av kjernen i `scripts/generate-matrise.ts` |
 | `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` og fargematrisen |
 | `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
-| `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
+| ordforrådet, tabellen under | `scripts/generate-ordforrad.ts` |
+| `designsystem/agent/*.md`, regelbøkene for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
 | `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
 
-`bun --filter @fristil/designsystem ordforrad` skriver seks, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
+Ordforrådet har i tillegg sin egen kommando, `bun --filter @fristil/designsystem ordforrad`, som skriver bare disse, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
 
 | Fil | Hva den er |
 | --- | --- |
@@ -98,7 +98,7 @@ Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-
 
 I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
 
-Glemmer du å regenerere, sier CI fra. Steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
+Bygget stopper ikke på en utdatert fil: `generate` skriver dem på nytt før noen sjekk leser dem, så `sjekk:ordforrad` og `sjekk:agent` sammenligner alltid med det som nettopp ble skrevet. Glemmer du å regenerere, eller å committe det som ble generert, sier CI fra: steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
 
 ## Versjonslogg og utgivelser
 
@@ -175,7 +175,9 @@ en ny variant er med når `fs` gir den. Filene genereres fra
 `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
 sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
-setning om det, og `bun run build` stopper til filene er generert på nytt:
+setning om det. `bun run build` skriver filene på nytt som første steg, og
+feller ikke en utdatert fil; glemmer du å committe det bygget skrev, gjør
+steget «Ingenting er ugenerert» i CI det. Filene kan også skrives alene:
 
 ```bash
 bun --filter @fristil/designsystem ordforrad
