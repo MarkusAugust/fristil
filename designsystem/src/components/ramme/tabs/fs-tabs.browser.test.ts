@@ -926,6 +926,34 @@ describe("fs-tabs når en patch bytter ut et panel", () => {
     expect(nytt.getAttribute("aria-labelledby")).toBe(fane.id)
   })
 
+  it("følger markupen når patchen bytter ut knappene", async () => {
+    /*
+     * Valget er knyttet til selve knappen og overlever bare en morfing som
+     * beholder nodene. `innerHTML`, htmx' vanlige bytte og Turbo uten
+     * morfing lager nye noder, og da gjelder det markupen sier: ingen fane
+     * markert, så den første. Regelboka for maler lovet at valget ble satt
+     * tilbake også da. Markupen er den serveren sendte først, før valget.
+     */
+    monter(BAR)
+    await customElements.whenDefined("fs-tabs")
+    await ventPaTegning()
+    const vert = document.querySelector("fs-tabs") as FsTabs
+    const markup = vert.innerHTML
+    ;(document.querySelectorAll("fs-tabs button")[1] as HTMLElement).click()
+    await ventPaTegning()
+    expect(vert.selected).toBe(1)
+
+    vert.innerHTML = markup
+    await ventPaTegning()
+
+    expect(vert.selected).toBe(0)
+    expect(
+      document
+        .querySelectorAll("fs-tabs button")[0]
+        .getAttribute("aria-selected"),
+    ).toBe("true")
+  })
+
   it("gjetter ikke når et panel er fjernet og de andre har rykket fram", async () => {
     // Plassen er da en annen fanes. To faner på samme panel var verre enn
     // en fane uten: begge pekte dit, og advarselen kom aldri.

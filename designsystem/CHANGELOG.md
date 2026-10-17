@@ -62,6 +62,13 @@ egen overskrift «Brytende».
   egenskap eller attributt, som React 19 og Datastars `data-attr:open` gjør,
   kommer ingen hendelse, ellers hadde Datastar-oppskriften fått sitt eget
   signal i retur. Popover-siden skiller nå `meny.open = false` fra `hide()`.
+- **Regelboka for maler lovet at `<fs-tabs>` husker fanevalget etter enhver
+  patch.** Den nevnte `innerHTML`, htmx og Turbo, men valget er knyttet til
+  selve knappen og overlever bare en morfing som beholder elementene, som
+  Datastars `outer`, htmx med idiomorph og Turbo 8 med morfing. Bytter
+  patchen ut nodene, følger komponenten markupen. Regelboka sier nå hvilke
+  patcher som beholder valget, og at serveren ellers må skrive det selv
+  eller bruke `server-controlled`.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

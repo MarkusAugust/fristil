@@ -305,8 +305,16 @@ Registreringen, én gang i sidemalen:
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
 `innerHTML`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
 standard gjør web-komponenten det: `<fs-tabs>` husker fanen brukeren valgte,
-og setter den tilbake når en patch river den bort. Malen trenger ingenting for
-det.
+og setter den tilbake når en patch river markeringen bort. Malen trenger
+ingenting for det.
+
+Det forutsetter at patchen beholder elementene og bare endrer attributtene,
+slik en morfing gjør: Datastars `outer`, htmx med idiomorph-utvidelsen og
+Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
+nodene, som `innerHTML`, htmx' vanlige `innerHTML`- og `outerHTML`-bytte og
+Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
+må serveren skrive valget selv, med `aria-selected` og `hidden` på den riktige
+fanen og de andre panelene, eller eie tilstanden med `server-controlled`.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å
