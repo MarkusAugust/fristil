@@ -1,6 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 
 import {
@@ -99,9 +99,12 @@ describe("fs-skip-link", () => {
     const lenke = document.getElementById("hopp") as HTMLAnchorElement
     const maal = document.getElementById("hovedinnhold") as HTMLElement
 
+    // Hoppet til fragmentet skjer ikke i samme omgang som klikket i alle
+    // motorer: Chromium flytter fokus med en gang, Firefox i en senere
+    // oppgave. Derfor ventes det på fokuset, ikke på klikket.
     lenke.focus()
     lenke.click()
-    expect(document.activeElement).toBe(maal)
+    await vi.waitFor(() => expect(document.activeElement).toBe(maal))
 
     await userEvent.tab()
     expect(document.activeElement?.id).toBe("inne")
@@ -110,7 +113,7 @@ describe("fs-skip-link", () => {
     location.hash = ""
     lenke.focus()
     lenke.click()
-    expect(document.activeElement).toBe(document.body)
+    await vi.waitFor(() => expect(document.activeElement).toBe(document.body))
 
     await userEvent.tab()
     expect(document.activeElement?.id).toBe("inne")
