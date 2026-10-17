@@ -1,6 +1,8 @@
 package no.fristil.intellij
 
+import com.intellij.psi.PsiFile
 import no.fristil.Fristil
+import no.fristil.Manifest
 
 /**
  * En klasse fra Fristil, slik editoren viser den.
@@ -20,14 +22,24 @@ data class Klasse(
 /**
  * Klassene Fristil sender ut.
  *
- * Lista er klassene i `Fristil.manifest` i Kotlin-pakken, manifestet det
- * samme kjernen sjekker mot. Pluginen har derfor ingen egen utgave som kan
- * komme ut av takt med diagnostikken eller med VS Code-utvidelsen.
+ * [klasserFor] er klassene i manifestet fila sjekkes mot: prosjektets når det
+ * har et, ellers [klasser], manifestet i Kotlin-pakken. Det er det samme
+ * manifestet [FristilAnnotator] gir kjernen, funnet av [ProjectManifest], så
+ * fullføringen foreslår aldri en klasse diagnostikken avviser, og den
+ * foreslår klassene i komponenter prosjektet har overtatt. Før leste
+ * fullføringen alltid pakkens manifest, mens annotatoren leste prosjektets,
+ * og med en eldre pakke installert ble en klasse foreslått og streket under
+ * rett etterpå.
  */
 object Katalog {
-    val klasser: List<Klasse> by lazy {
-        Fristil.manifest.classes.values.map { Klasse(it.name, it.title, it.description, it.link) }
-    }
+    /** Klassene i manifestet i Kotlin-pakken. */
+    val klasser: List<Klasse> by lazy { fra(Fristil.manifest) }
+
+    /** Klassene i manifestet [file] sjekkes mot, se [ProjectManifest]. */
+    fun klasserFor(file: PsiFile): List<Klasse> = ProjectManifest.classesFor(file) ?: klasser
+
+    internal fun fra(manifest: Manifest): List<Klasse> =
+        manifest.classes.values.map { Klasse(it.name, it.title, it.description, it.link) }
 
     private val etterNavn: Map<String, Klasse> by lazy {
         klasser.associateBy { it.navn }

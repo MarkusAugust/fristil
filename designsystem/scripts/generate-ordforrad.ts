@@ -3,7 +3,8 @@
  *
  * Filene kommer ut i pakken, og ingen av dem skrives for hånd. Editorene
  * leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og
- * IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
+ * IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet
+ * i Kotlin-pakken som reserve.
  *
  *   - `html-data.json`: VS Codes eget format for tagger og
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.

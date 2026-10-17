@@ -63,9 +63,10 @@ intellijPlatform {
             Rust and runs inside the IDE as WebAssembly, without Node.js. It checks
             against the project's own manifest when it finds one, as the language
             server does, so components taken over with <code>fristil overta</code>
-            are known. Files without a Fristil class are checked as well, for the
-            rules that apply to plain HTML, such as an icon button without a
-            name.<br>
+            are known. Completion reads the same manifest, so it suggests those
+            components too and never a class the checker rejects. Files without a
+            Fristil class are checked as well, for the rules that apply to plain
+            HTML, such as an icon button without a name.<br>
             <b>0.2.0</b>: Completion for <code>fs-table__sort</code>, the sort button
             in a table header. The session timeout is now described as a frame
             component, and the plugin has the new Fristil icon.<br>

@@ -82,7 +82,7 @@ Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved
 | `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
 | `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
 
-`bun --filter @fristil/designsystem ordforrad` skriver seks, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
+`bun --filter @fristil/designsystem ordforrad` skriver seks, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
 
 | Fil | Hva den er |
 | --- | --- |

@@ -146,6 +146,42 @@ class FullforingTest : BasePlatformTestCase() {
         assertTrue("fs-table skal være med i en injisert streng, fikk $ut", ut.contains("fs-table"))
     }
 
+    /** Manifestet i pakken med `fs-card` byttet ut med `fs-kort`, som etter `fristil overta`. */
+    private val overtatt =
+        java.io.File(System.getProperty("manifest")).readText().replace("\"fs-card\": {", "\"fs-kort\": {")
+
+    fun `test foreslår klassene i prosjektets manifest`() {
+        // Det samme manifestet som sjekken går mot (DiagnostikkTest), så
+        // fullføringen ikke foreslår fs-card rett før annotatoren streker den
+        // under. Før leste den alltid pakkens manifest.
+        myFixture.addFileToProject("build/fristil/manifest.json", overtatt)
+        val ut = forslag("test.html", """<div class="fs-<caret>">""")
+        assertTrue("fs-kort skal være med, fikk $ut", ut.contains("fs-kort"))
+        assertFalse("fs-card skal ikke være med, fikk $ut", ut.contains("fs-card"))
+    }
+
+    fun `test foreslår fra prosjektets manifest i et injisert fragment`() {
+        myFixture.addFileToProject("node_modules/@fristil/designsystem/manifest/manifest.json", overtatt)
+        val ut =
+            forslag(
+                "Visning.kt",
+                """
+                // language=HTML
+                val kort = ""${'"'}
+                    <div class="fs-<caret>">
+                ""${'"'}
+                """.trimIndent(),
+            )
+        assertTrue("fs-kort skal være med i en injisert streng, fikk $ut", ut.contains("fs-kort"))
+        assertFalse("fs-card skal ikke være med, fikk $ut", ut.contains("fs-card"))
+    }
+
+    fun `test et manifest kjernen ikke kan lese gir pakkens klasser`() {
+        myFixture.addFileToProject("build/fristil/manifest.json", "{}")
+        val ut = forslag("test.html", """<div class="fs-<caret>">""")
+        assertTrue("fs-button skal være med, fikk $ut", ut.contains("fs-button"))
+    }
+
     fun `test katalogen har klassene fra pakken`() {
         assertTrue("katalogen skal ikke være tom", Katalog.klasser.isNotEmpty())
         assertNotNull("fs-button skal finnes", Katalog.finn("fs-button"))

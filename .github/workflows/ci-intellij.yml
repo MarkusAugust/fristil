@@ -6,8 +6,9 @@
 # det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
 # kjører når pluginen eller dataene den leser faktisk er endret.
 #
-# Klassene leses fra manifestet i `../kotlin`, og feilmeldingene kommer fra
-# Rust-kjernen gjennom den samme pakken, som bygges med pluginen. Derfor står
+# Klassene leses fra prosjektets manifest, med manifestet i `../kotlin` som
+# reserve, og feilmeldingene kommer fra Rust-kjernen gjennom den samme
+# pakken, som bygges med pluginen. Derfor står
 # `kjerne/**`, `kotlin/**` og manifestet også i `paths`: endrer noen
 # klasselista, skal pluginen bygges på nytt selv om ingen rørte Kotlin-koden.
 #
