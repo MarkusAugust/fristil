@@ -74,8 +74,21 @@
   }
 
   /* Ringen innover kommer fra `outline` over. Skyggen utenfor skiller de
-     overlappende bildene fra hverandre. */
+     overlappende bildene fra hverandre. En `outline` males etter alt
+     innholdet i stablingskonteksten, så uten en egen kontekst per avatar lå
+     ringen til den bak oppå bildet til den foran, som en bue gjennom det.
+     Med `isolation` males hver avatar for seg, i rekkefølge, og den foran
+     dekker den bak, ring og alt. */
   .fs-avatar-stack .fs-avatar {
     box-shadow: 0 0 0 2px var(--fs-color-neutral-canvas);
+    isolation: isolate;
+  }
+
+  /* Den egne konteksten gjelder også fokusringen: en avatar som er en knapp
+     og ligger bak en annen, fikk ringen dekket der naboen overlapper. Den
+     som har fokus, løftes over naboene så ringen vises hel. */
+  .fs-avatar-stack .fs-avatar:focus-visible {
+    position: relative;
+    z-index: 1;
   }
 }
