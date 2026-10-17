@@ -519,6 +519,42 @@ describe("fs-popover når React skriver egenskapen", () => {
       false,
     )
   })
+
+  it("sender ingen popover-toggle når open settes som egenskap eller attributt", async () => {
+    /*
+     * Hendelsen er brukerens og metodenes. Kom den også fra egenskapen og
+     * attributtet, ville Datastar-oppskriften med `data-attr:open` og
+     * `data-on:popover-toggle` fått sitt eget signal i retur.
+     */
+    monter(
+      `<fs-popover ${attr(BOKS.host)}>
+        <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
+        <div ${attr(BOKS.panel)}>Innhold</div>
+      </fs-popover>`,
+    )
+    await customElements.whenDefined("fs-popover")
+    await ventPaTegning()
+    const vert = document.querySelector("fs-popover") as FsPopover
+    const panel = document.getElementById("panel") as HTMLElement
+    const logg: boolean[] = []
+    vert.addEventListener("popover-toggle", (e) => logg.push(e.detail.open))
+
+    vert.open = true
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(true)
+    vert.open = false
+    await ventPaTegning()
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(false)
+    expect(logg).toEqual([])
+
+    vert.show()
+    vert.hide()
+    expect(logg).toEqual([true, false])
+  })
 })
 
 describe("fs-popover inne i en modal dialog", () => {

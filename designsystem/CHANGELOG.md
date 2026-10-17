@@ -55,6 +55,13 @@ egen overskrift «Brytende».
   `fs-*`-navnene, så en komponent under et annet navn mistet `display`-regelen
   på verten. README sier nå at oppførselen følger med navnet, men ikke
   stilen, og hvilke tre komponenter som setter klassen sin selv.
+- **`popover-toggle` er beskrevet slik den sendes.** Beskrivelsen i
+  `events.ts` og `web-types.json` sa «Panelet
+  åpnet eller lukket seg», men hendelsen kommer bare når brukeren åpner eller
+  lukker panelet, og fra `show()`, `hide()` og `toggle()`. Settes `open` som
+  egenskap eller attributt, som React 19 og Datastars `data-attr:open` gjør,
+  kommer ingen hendelse, ellers hadde Datastar-oppskriften fått sitt eget
+  signal i retur. Popover-siden skiller nå `meny.open = false` fra `hide()`.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

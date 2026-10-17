@@ -218,7 +218,7 @@ Lages markupen med JavaScript, skriver `fs.popover()` koblingen, id-en, klassen 
 
 Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
 
-Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Forskjellen mellom dem er hendelsen: `hide()` og `toggle()` sender `popover-toggle`, egenskapen gjør det ikke. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
 ## Attributter
 
@@ -232,7 +232,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
 
 | Navn | Hva det er |
 | --- | --- |
-| `popover-toggle` | Hendelse med `{ open: boolean }` i `detail` |
+| `popover-toggle` | Hendelse med `{ open: boolean }` i `detail`. Sendes når brukeren åpner eller lukker panelet, og fra `show()`, `hide()` og `toggle()`, ikke når `open` settes som egenskap eller attributt |
 | `show()`, `hide()`, `toggle()` | Metoder på elementet |
 
 ```js
