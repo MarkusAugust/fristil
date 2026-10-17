@@ -221,6 +221,17 @@ egen overskrift «Brytende».
   opplesning, og det sier siden nå. Siden og stilarket sa også at fokus satt
   fra kode aldri regnes som synlig fokus. Det gjelder bare etter et
   museklikk, og det er det tilfellet `:focus` er valgt for.
+- **Lagringseksempelet på Switch-siden rullet ikke tilbake ved et feilsvar,
+  og tok fokuset fra bryteren.** `fetch` avviser bare ved nettverksfeil, så
+  et 500-svar ble meldt som «Varsler er på.» med bryteren stående i ny
+  stilling. Eksemplet slo dessuten av bryteren mens den lagret, og
+  `disabled` tar fokuset fra en bryter som har det uten å gi det tilbake, så
+  et nytt mellomromstrykk gjorde ingenting. «Ren HTML» og React sjekker nå
+  `svar.ok` og sperrer et nytt trykk uten `disabled`, Datastar-fanen og
+  eksemplet med `fs.setAttributes` slår ikke lenger av bryteren, og
+  JSDoc-en til `disabled` i `switchControl` advarer mot bruken. Det korte
+  eksemplet på Connection Status-siden sjekker også `svar.ok`. En test
+  kjører «Ren HTML»-eksemplet fra siden mot en server som svarer 500.
 
 ## 0.33.0 (2026-10-12)
 

@@ -156,7 +156,8 @@ const samband = document.querySelector("fs-connection-status")
 if (!samband) throw new Error("fant ikke elementet")
 
 try {
-  await fetch("/api/lagre", { method: "POST", body })
+  const svar = await fetch("/api/lagre", { method: "POST", body })
+  if (!svar.ok) throw new Error(svar.statusText)
   samband.reportSuccess()
 } catch {
   samband.reportFailure()
