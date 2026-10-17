@@ -5,7 +5,7 @@ description: Punktliste, nummerert liste og lister uten punkter. CSS-komponent m
 
 import Eksempel from "../../../components/Eksempel.astro"
 
-Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen. Safari er unntaket: der tar VoiceOver bort listesemantikken når punktene er fjernet med CSS. Skal skjermleseren si hvor mange elementer lista har også der, sett `role="list"` på `<ul>` eller `<ol>`.
+Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen. Unntaket er Safari, som kan ta bort listesemantikken for en `<ul>` uten synlige punkter, også for VoiceOver. En `<ol>` og en liste i `<nav>` beholder den. Er antallet viktig for den som hører siden, sett `role="list"` på `<ul>`.
 
 ## Slik tar du den i bruk
 

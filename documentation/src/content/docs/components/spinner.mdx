@@ -39,7 +39,7 @@ const ring = document.querySelector<HTMLElement>("#venter")
 fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
 ```
 
-`label` gir både `role="status"` og `aria-label`, siden ringen ikke sier noe uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
+`label` gir både `role="status"` og `aria-label`, siden ringen ikke har noe navn uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
 
 </Fragment>
 </Eksempel>
@@ -65,13 +65,13 @@ Er teksten synlig, sett `aria-hidden="true"` på ringen. Ellers leses ventingen 
 
 Ringen er `inline-block`, så den står på linje med teksten av seg selv. Vil du ha dem på samme grunnlinje med en fast avstand, er det appens oppsett: `display: flex`, `align-items: center` og `gap` på avsnittet.
 
-Står ringen alene, snur det:
+Står ringen alene, får den rollen og navnet selv:
 
 ```html
 <span class="fs-spinner" role="status" aria-label="Laster søknader"></span>
 ```
 
-En region med `role="status"` leser opp endringer i innholdet sitt, og ringen har ikke noe innhold. Settes ringen inn i det ventingen starter, er det derfor ikke sikkert at noe leses opp. Skal ventingen meldes, legg teksten i et statusfelt som alt står i siden, som i eksempelet over.
+Det gir ringen et navn når noen leter den opp, men det er ikke sikkert at den leses opp av seg selv. En region med `role="status"` leser opp endringer i innholdet sitt, og ringen har ikke noe innhold. Er det viktig at ventingen meldes, la et element med `role="status"` stå i siden før ventingen starter, og skriv teksten inn i det når den begynner, som avsnittet under «Med tekst ved siden av».
 
 ## Inne i en knapp
 
