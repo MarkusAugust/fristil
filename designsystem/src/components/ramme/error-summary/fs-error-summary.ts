@@ -215,7 +215,12 @@ export class FsErrorSummary extends HostElement {
       this.focusAttempted = true
       this.focus()
       this.hasFocused = root.activeElement === this
-      if (this.hasFocused && active && active !== document.body)
+      if (
+        this.hasFocused &&
+        root === document &&
+        active &&
+        active !== document.body
+      )
         this.reclaimFocusFrom(active)
     }
   }
@@ -225,11 +230,16 @@ export class FsErrorSummary extends HostElement {
    *
    * React gir fokus tilbake til elementet som hadde det før en commit, rett
    * etter at DOM-en er endret. Boksen flytter fokus i det `hidden` tas bort
-   * eller den kobles til, altså inne i den samme commiten, så i Chromium og
-   * Firefox endte fokus på innsendingsknappen igjen. En mikrotask kjører
-   * etter commiten. Står fokus da på det samme elementet som før, er det
-   * rammeverket som tok det, og boksen tar det igjen. Har brukeren flyttet
-   * fokus til noe annet, står det.
+   * eller den kobles til, altså inne i den samme commiten, så fokus endte på
+   * innsendingsknappen igjen, eller på feltet når skjemaet ble sendt med
+   * Enter. En mikrotask kjører etter commiten. Står fokus da på det samme
+   * elementet som før, er det rammeverket som tok det, og boksen tar det
+   * igjen. Har et skript flyttet fokus til noe annet, står det.
+   *
+   * Bare når boksen står rett i dokumentet. React går ikke inn i en
+   * skyggerot når det gjenoppretter fokus, og der er `document.activeElement`
+   * skyggeverten både før og etter, så sammenligningen ville tatt fokus fra
+   * et felt i den samme rota.
    */
   private reclaimFocusFrom(previous: Element): void {
     queueMicrotask(() => {

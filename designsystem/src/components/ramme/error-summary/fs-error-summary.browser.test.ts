@@ -531,7 +531,26 @@ describe("fs-error-summary når et rammeverk gir fokus tilbake", () => {
     expect(document.activeElement).toBe(feil)
   })
 
-  it("lar fokus stå når brukeren har flyttet det til noe annet", async () => {
+  it("tar ikke fokus fra et felt i den samme skyggerota", async () => {
+    const vert = document.createElement("div")
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button>`
+    await tegn()
+    const send = rot.getElementById("send-r") as HTMLButtonElement
+    const epost = rot.getElementById("epost-r") as HTMLInputElement
+    const feil = rot.getElementById("feil-r") as HTMLElement
+    send.focus()
+
+    feil.hidden = false
+    epost.focus()
+    await ventPaTegning()
+
+    expect(rot.activeElement).toBe(epost)
+    vert.remove()
+  })
+
+  it("lar fokus stå når et skript har flyttet det til noe annet", async () => {
     monter(
       `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
     )
