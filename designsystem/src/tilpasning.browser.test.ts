@@ -309,9 +309,16 @@ describe("sammen med Tailwind", () => {
     `,
       markup,
     )
-    expect(stil(hele, "klasse").padding).toBe("19.2px")
-    expect(stil(hele, "trinn").padding).toBe("19.2px")
-    expect(stil(hele, "knapp").padding).toBe("9.6px 19.2px")
+    // Tallene, ikke strengene: WebKit regner `calc(0.3rem * 4)` i enkel
+    // presisjon og svarer «19.200001px» der de andre svarer «19.2px».
+    const padding = (dok: Document, id: string, ...ventet: number[]) => {
+      const tall = stil(dok, id).padding.split(" ").map(Number.parseFloat)
+      expect(tall).toHaveLength(ventet.length)
+      tall.forEach((verdi, i) => expect(verdi).toBeCloseTo(ventet[i], 3))
+    }
+    padding(hele, "klasse", 19.2)
+    padding(hele, "trinn", 19.2)
+    padding(hele, "knapp", 9.6, 19.2)
 
     // Skrives bare enheten om, følger klassene med, men ikke trinnene, og
     // dermed ikke komponentene. Det er derfor dokumentasjonen ber om hele
@@ -326,8 +333,8 @@ describe("sammen med Tailwind", () => {
     `,
       markup,
     )
-    expect(stil(bare, "klasse").padding).toBe("19.2px")
-    expect(stil(bare, "trinn").padding).toBe("16px")
-    expect(stil(bare, "knapp").padding).toBe("8px 16px")
+    padding(bare, "klasse", 19.2)
+    padding(bare, "trinn", 16)
+    padding(bare, "knapp", 8, 16)
   })
 })
