@@ -202,6 +202,17 @@ Fila skrives av `fristilManifest`, som kjøres av `assemble` og ikke av `test`.
 Skal testene lese den, må de vente på oppgaven:
 `tasks.test { dependsOn("fristilManifest") }`.
 
+## Temaet
+
+`Fristil.buildTheme(oppskrift)` bygger det samme fargetemaet som [`fristil tema`](../kommandolinjen/#tema), fra JSON-teksten i en oppskriftsfil, og `Fristil.inspectTheme(css)` kontrollerer et tema du har skrevet selv, som `fristil sjekk-tema`. Oppskriften har de ni fargene med norske eller engelske nøkler, `typografi` og `form`:
+
+```kotlin
+val tema = Fristil.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e"}""")
+File("build/fristil/tema.css").writeText(tema.css)
+```
+
+Svaret har `light` og `dark`, hvert `--fs-color-*`-token med verdien sin, `violations`, som er tom når løftene holder, og `css`. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Begge svarer nøyaktig det TypeScript-utgaven svarer, og testes mot den samme fasiten.
+
 ## Gradle-pluginen
 
 Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:

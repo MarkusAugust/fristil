@@ -87,6 +87,7 @@ val pakkUt = tasks.register<Sync>("pakkUt") {
 
 val pakke = pakkUt.map { it.destinationDir }
 val manifestFil = pakke.map { layout.projectDirectory.file(it.resolve("manifest/manifest.json").absolutePath) }
+val kontraktFil = pakke.map { layout.projectDirectory.file(it.resolve("src/tokens/fargekontrakt.json").absolutePath) }
 
 // Modulen gjøres om til JVM-bytekode her, ikke når den lastes. Se `buildSrc/`.
 val kompilerKjerne = tasks.register<no.fristil.build.CompileCore>("kompilerKjerne") {
@@ -121,8 +122,12 @@ val webjar = tasks.register<Sync>("webjar") {
     }
 }
 
-// Manifestet i pakken, som `Fristil` gir kjernen når en konsument ikke oppgir sitt eget.
-tasks.processResources { from(manifestFil) { into("no/fristil") } }
+// Manifestet og fargekontrakten i pakken. `Fristil` gir kjernen manifestet
+// når en konsument ikke oppgir sitt eget, og kontrakten når temaet bygges.
+tasks.processResources {
+    from(manifestFil) { into("no/fristil") }
+    from(kontraktFil) { into("no/fristil") }
+}
 
 sourceSets.main {
     resources.srcDir(webjar)
@@ -146,6 +151,8 @@ tasks.test {
     val kjerne = rootDir.resolve("../kjerne")
     val designsystem = rootDir.resolve("../designsystem")
     systemProperty("paritet", kjerne.resolve("paritet").absolutePath)
+    systemProperty("tema", kjerne.resolve("tema").absolutePath)
+    inputs.dir(kjerne.resolve("tema")).withPathSensitivity(PathSensitivity.RELATIVE)
     // Fiksturene og byggetilfellene leses gjennom en sti, så Gradle ser dem
     // ikke uten dette, og en ny fikstur ville latt testen stå som oppdatert.
     inputs.dir(kjerne.resolve("paritet")).withPathSensitivity(PathSensitivity.RELATIVE)
