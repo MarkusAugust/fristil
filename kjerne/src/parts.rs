@@ -1,0 +1,538 @@
+//! `del-flere-ganger`: en del uten `multiple` som står mer enn én gang.
+//!
+//! Regelen er drevet av `parts` i manifestet, både for elementene og for
+//! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. En
+//! komponent bruker den første delen den finner, og en del til av samme
+//! slag gjør ingenting: et `<fs-field>` med to kontroller kobler bare den
+//! første, og den andre står uten ledetekst.
+//!
+//! «Den første» er ikke alltid den første i teksten. `<fs-popover>` finner
+//! knappen sin utenfor panelet, og knappene i panelet er menyens, ikke
+//! utløsere. `<fs-dialog>` finner tittelen utenfor kroppen. Regelen er derfor
+//! at et treff inni en annen del av samme vert hører til den delen: av
+//! treffene for en del teller bare de som står inni færrest andre deler.
+//! En overskrift i `.fs-dialog__body` står inni både `<dialog>` og kroppen,
+//! tittelen bare inni `<dialog>`, så bare tittelen teller.
+//!
+//! Et treff hører til den nærmeste verten: et felt inni et felt er det indre
+//! feltets, som `part.closest(host.localName) === host` i komponentene.
+//! Står det malsyntaks i verten, sier regelen ingenting: en løkke eller et
+//! `if`/`else` kan gi to deler i kilden og én på siden.
+//!
+//! Selektorene leses av en liten matcher med akkurat det manifestet bruker:
+//! tagg, klasse, attributt med `=`, `^=` og flagget `i`, `:not()` med en
+//! enkel selektor, `:scope`, barn (`>`), etterkommer og komma. En selektor
+//! den ikke forstår, hoppes over framfor å gi et funn den ikke kan stå for.
+
+use crate::diagnose::is_templated_content;
+use crate::references::{tree, value, Node};
+use crate::text::*;
+use crate::types::*;
+
+#[derive(Debug, PartialEq)]
+enum Test {
+    Tag(String),
+    Class(String),
+    /// Navnet, og verdien med operator og om den sammenlignes uten store bokstaver.
+    Attribute(String, Option<(Operator, String, bool)>),
+    Not(Vec<Test>),
+    Scope,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+enum Operator {
+    Equals,
+    Prefix,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+enum Combinator {
+    Descendant,
+    Child,
+}
+
+/// En selektor uten komma: de enkle selektorene fra venstre, og
+/// kombinatoren foran hver av dem etter den første.
+#[derive(Debug, PartialEq)]
+struct Complex {
+    compounds: Vec<Vec<Test>>,
+    combinators: Vec<Combinator>,
+}
+
+fn is_ident(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '-' || c == '_'
+}
+
+struct Reader<'a> {
+    chars: Vec<char>,
+    i: usize,
+    _text: &'a str,
+}
+
+impl<'a> Reader<'a> {
+    fn new(text: &'a str) -> Self {
+        Reader {
+            chars: text.chars().collect(),
+            i: 0,
+            _text: text,
+        }
+    }
+    fn peek(&self) -> Option<char> {
+        self.chars.get(self.i).copied()
+    }
+    fn eat(&mut self, c: char) -> bool {
+        if self.peek() == Some(c) {
+            self.i += 1;
+            true
+        } else {
+            false
+        }
+    }
+    fn spaces(&mut self) -> bool {
+        let from = self.i;
+        while self.peek().is_some_and(char::is_whitespace) {
+            self.i += 1;
+        }
+        self.i > from
+    }
+    fn ident(&mut self) -> Option<String> {
+        let from = self.i;
+        while self.peek().is_some_and(is_ident) {
+            self.i += 1;
+        }
+        (self.i > from).then(|| self.chars[from..self.i].iter().collect())
+    }
+    fn starts(&self, word: &str) -> bool {
+        word.chars()
+            .enumerate()
+            .all(|(k, c)| self.chars.get(self.i + k) == Some(&c))
+    }
+    fn quoted(&mut self) -> Option<String> {
+        let quote = self.peek().filter(|&c| c == '"' || c == '\'')?;
+        self.i += 1;
+        let from = self.i;
+        while self.peek().is_some_and(|c| c != quote) {
+            self.i += 1;
+        }
+        let value: String = self.chars[from..self.i].iter().collect();
+        self.eat(quote).then_some(value)
+    }
+
+    /// `[navn]`, `[navn='v']`, `[navn^='v']` og `[navn="v" i]`.
+    fn attribute(&mut self) -> Option<Test> {
+        self.spaces();
+        let name = self.ident()?.to_ascii_lowercase();
+        self.spaces();
+        if self.eat(']') {
+            return Some(Test::Attribute(name, None));
+        }
+        let operator = if self.eat('=') {
+            Operator::Equals
+        } else if self.eat('^') && self.eat('=') {
+            Operator::Prefix
+        } else {
+            return None;
+        };
+        self.spaces();
+        let wanted = match self.quoted() {
+            Some(v) => v,
+            None => self.ident()?,
+        };
+        self.spaces();
+        let insensitive = self.eat('i') || self.eat('I');
+        self.spaces();
+        self.eat(']')
+            .then_some(Test::Attribute(name, Some((operator, wanted, insensitive))))
+    }
+
+    /// En enkel selektor: alt fram til et mellomrom, `>`, `,` eller `)`.
+    fn compound(&mut self) -> Option<Vec<Test>> {
+        let mut tests = Vec::new();
+        loop {
+            match self.peek() {
+                Some('.') => {
+                    self.i += 1;
+                    tests.push(Test::Class(self.ident()?));
+                }
+                Some('[') => {
+                    self.i += 1;
+                    tests.push(self.attribute()?);
+                }
+                Some(':') if self.starts(":scope") => {
+                    self.i += ":scope".len();
+                    tests.push(Test::Scope);
+                }
+                Some(':') if self.starts(":not(") => {
+                    self.i += ":not(".len();
+                    self.spaces();
+                    let inner = self.compound()?;
+                    self.spaces();
+                    if !self.eat(')') || inner.is_empty() {
+                        return None;
+                    }
+                    tests.push(Test::Not(inner));
+                }
+                Some(c) if is_ident(c) && tests.is_empty() => {
+                    tests.push(Test::Tag(self.ident()?.to_ascii_lowercase()));
+                }
+                _ => break,
+            }
+        }
+        Some(tests)
+    }
+
+    fn complex(&mut self) -> Option<Complex> {
+        let mut compounds = Vec::new();
+        let mut combinators = Vec::new();
+        self.spaces();
+        // `> li` er relativ til verten, som `:scope > li`.
+        if self.eat('>') {
+            compounds.push(vec![Test::Scope]);
+            combinators.push(Combinator::Child);
+            self.spaces();
+        }
+        loop {
+            let compound = self.compound()?;
+            if compound.is_empty() {
+                return None;
+            }
+            compounds.push(compound);
+            let spaced = self.spaces();
+            match self.peek() {
+                None | Some(',') => break,
+                Some('>') => {
+                    self.i += 1;
+                    self.spaces();
+                    combinators.push(Combinator::Child);
+                }
+                Some(_) if spaced => combinators.push(Combinator::Descendant),
+                Some(_) => return None,
+            }
+        }
+        Some(Complex {
+            compounds,
+            combinators,
+        })
+    }
+}
+
+/// Selektorlista, eller `None` når den har noe matcheren ikke kjenner.
+fn parse(selector: &str) -> Option<Vec<Complex>> {
+    let mut reader = Reader::new(selector);
+    let mut out = Vec::new();
+    loop {
+        out.push(reader.complex()?);
+        reader.spaces();
+        if reader.peek().is_none() {
+            return Some(out);
+        }
+        if !reader.eat(',') {
+            return None;
+        }
+    }
+}
+
+fn has_word(node: &Node, attribute: &str, word: &str) -> bool {
+    value(node, attribute)
+        .and_then(|a| a.value.as_deref())
+        .is_some_and(|v| words(v).iter().any(|(_, w)| equals_exact(w, word)))
+}
+
+fn equals_exact(t: &[u16], s: &str) -> bool {
+    t.iter().copied().eq(s.encode_utf16())
+}
+
+fn test(nodes: &[Node], n: usize, host: usize, t: &Test) -> bool {
+    let node = &nodes[n];
+    match t {
+        Test::Tag(name) => node.name == *name,
+        Test::Class(name) => has_word(node, "class", name),
+        Test::Scope => n == host,
+        Test::Not(inner) => !inner.iter().all(|t| test(nodes, n, host, t)),
+        Test::Attribute(name, wanted) => {
+            let Some(a) = value(node, name) else {
+                return false;
+            };
+            let Some((operator, wanted, insensitive)) = wanted else {
+                return true;
+            };
+            let have = a.value.clone().unwrap_or_default();
+            let (have, wanted) = if *insensitive {
+                (lowercase(&have), utf16(&wanted.to_ascii_lowercase()))
+            } else {
+                (have, utf16(wanted))
+            };
+            match operator {
+                Operator::Equals => have == wanted,
+                Operator::Prefix => have.starts_with(&wanted),
+            }
+        }
+    }
+}
+
+fn compound_matches(nodes: &[Node], n: usize, host: usize, tests: &[Test]) -> bool {
+    tests.iter().all(|t| test(nodes, n, host, t))
+}
+
+/// Om noden `n` treffer de `k` første enkle selektorene, med den siste på `n`.
+fn matches_at(nodes: &[Node], n: usize, host: usize, c: &Complex, k: usize) -> bool {
+    if !compound_matches(nodes, n, host, &c.compounds[k]) {
+        return false;
+    }
+    if k == 0 {
+        return true;
+    }
+    match c.combinators[k - 1] {
+        Combinator::Child => nodes[n]
+            .parent
+            .is_some_and(|p| matches_at(nodes, p, host, c, k - 1)),
+        Combinator::Descendant => {
+            let mut a = nodes[n].parent;
+            while let Some(p) = a {
+                if matches_at(nodes, p, host, c, k - 1) {
+                    return true;
+                }
+                a = nodes[p].parent;
+            }
+            false
+        }
+    }
+}
+
+fn matches(nodes: &[Node], n: usize, host: usize, list: &[Complex]) -> bool {
+    list.iter()
+        .any(|c| matches_at(nodes, n, host, c, c.compounds.len() - 1))
+}
+
+/// Om `a` er en forfar til `n`.
+fn is_ancestor(nodes: &[Node], a: usize, n: usize) -> bool {
+    let mut p = nodes[n].parent;
+    while let Some(i) = p {
+        if i == a {
+            return true;
+        }
+        p = nodes[i].parent;
+    }
+    false
+}
+
+/// En vert: et element eller en klasse med deler.
+struct Host<'a> {
+    name: String,
+    /// Om verten er en web-komponent, som bruker den første delen, eller en klasse.
+    element: bool,
+    link: &'a str,
+    parts: &'a [Part],
+    /// Om en node er en vert av samme slag.
+    is: Box<dyn Fn(&Node) -> bool + 'a>,
+}
+
+/// Første setning av beskrivelsen, uten kodemerkene.
+fn first_sentence(description: &str) -> String {
+    let plain = description.replace('`', "");
+    match plain.find(". ") {
+        Some(end) => plain[..=end].to_string(),
+        None => plain,
+    }
+}
+
+pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
+    let nodes = tree(source);
+    let mut hosts: Vec<Host> = Vec::new();
+    for e in vocabulary.elements.iter().filter(|e| !e.parts.is_empty()) {
+        let tag = e.tag.clone();
+        hosts.push(Host {
+            name: format!("<{}>", e.tag),
+            element: true,
+            link: &e.link,
+            parts: &e.parts,
+            is: Box::new(move |n: &Node| n.name == tag),
+        });
+    }
+    for c in vocabulary.classes.iter().filter(|c| !c.parts.is_empty()) {
+        let name = c.name.clone();
+        hosts.push(Host {
+            name: c.name.clone(),
+            element: false,
+            link: &c.link,
+            parts: &c.parts,
+            is: Box::new(move |n: &Node| has_word(n, "class", &name)),
+        });
+    }
+
+    let mut out = Vec::new();
+    for host in &hosts {
+        let parsed: Vec<Option<Vec<Complex>>> =
+            host.parts.iter().map(|p| parse(&p.selector)).collect();
+        for h in (0..nodes.len()).filter(|&h| (host.is)(&nodes[h])) {
+            // Nodene som hører til denne verten: etterkommerne der den
+            // nærmeste verten av samme slag er denne.
+            let mut own = Vec::new();
+            let mut last = h;
+            for n in h + 1..nodes.len() {
+                if !is_ancestor(&nodes, h, n) {
+                    break;
+                }
+                last = n;
+                let mut p = nodes[n].parent;
+                let mut nearest = None;
+                while let Some(i) = p {
+                    if (host.is)(&nodes[i]) {
+                        nearest = Some(i);
+                        break;
+                    }
+                    p = nodes[i].parent;
+                }
+                if nearest == Some(h) {
+                    own.push(n);
+                }
+            }
+            if own.is_empty() {
+                continue;
+            }
+            let content_end = nodes
+                .get(last + 1)
+                .map_or(source.len(), |n| n.name_start.saturating_sub(1));
+            if is_templated_content(&source[nodes[h].name_end..content_end.max(nodes[h].name_end)])
+            {
+                continue;
+            }
+            let hits: Vec<Vec<usize>> = parsed
+                .iter()
+                .map(|list| match list {
+                    Some(list) => own
+                        .iter()
+                        .copied()
+                        .filter(|&n| matches(&nodes, n, h, list))
+                        .collect(),
+                    None => Vec::new(),
+                })
+                .collect();
+            for (k, part) in host.parts.iter().enumerate() {
+                if part.multiple || hits[k].len() < 2 {
+                    continue;
+                }
+                // Hvor mange andre deler hvert treff står inni.
+                let depth = |n: usize| {
+                    hits.iter()
+                        .enumerate()
+                        .filter(|&(q, _)| q != k)
+                        .flat_map(|(_, list)| list.iter())
+                        .filter(|&&a| is_ancestor(&nodes, a, n))
+                        .count()
+                };
+                let depths: Vec<usize> = hits[k].iter().map(|&n| depth(n)).collect();
+                let least = *depths.iter().min().unwrap();
+                let counted: Vec<usize> = hits[k]
+                    .iter()
+                    .zip(&depths)
+                    .filter(|&(_, &d)| d == least)
+                    .map(|(&n, _)| n)
+                    .collect();
+                for &n in counted.iter().skip(1) {
+                    let node = &nodes[n];
+                    out.push(Finding {
+                        start: node.name_start,
+                        end: node.name_end,
+                        severity: Severity::Warning,
+                        link: host.link.to_string(),
+                        message: format!(
+                            "{} har delen «{}» mer enn én gang. {} {}",
+                            host.name,
+                            part.name,
+                            if host.element {
+                                "Komponenten bruker bare den første, og denne gjør ingenting."
+                            } else {
+                                "Den skal stå én gang."
+                            },
+                            first_sentence(&part.description)
+                        )
+                        .trim_end()
+                        .to_string(),
+                        fix: None,
+                        rule: "del-flere-ganger",
+                    });
+                }
+            }
+        }
+    }
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reads_every_selector_in_the_manifest() {
+        let v = crate::manifest::for_tests();
+        let selectors: Vec<&str> = v
+            .elements
+            .iter()
+            .flat_map(|e| e.parts.iter())
+            .chain(v.classes.iter().flat_map(|c| c.parts.iter()))
+            .map(|p| p.selector.as_str())
+            .collect();
+        assert!(
+            selectors.len() > 50,
+            "fant bare {} selektorer",
+            selectors.len()
+        );
+        for s in selectors {
+            assert!(parse(s).is_some(), "forstår ikke «{s}»");
+        }
+    }
+
+    #[test]
+    fn refuses_what_it_does_not_know() {
+        for s in ["a ~ b", "a + b", "a:hover", "[a$='x']", ":is(a)", "a >", ""] {
+            assert!(parse(s).is_none(), "skulle avvist «{s}»");
+        }
+    }
+
+    fn rules(html: &str) -> Vec<String> {
+        let v = crate::manifest::for_tests();
+        check_parts(&utf16(html), &v)
+            .into_iter()
+            .map(|f| f.message)
+            .collect()
+    }
+
+    #[test]
+    fn two_controls_in_a_field() {
+        let found = rules(r#"<fs-field><label>Navn</label><input><input></fs-field>"#);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].starts_with("<fs-field> har delen «control»"));
+    }
+
+    #[test]
+    fn a_field_inside_a_field_is_its_own() {
+        assert!(rules(r#"<fs-field><label>A</label><input><fs-field><label>B</label><input></fs-field></fs-field>"#).is_empty());
+    }
+
+    #[test]
+    fn a_part_inside_another_part_belongs_to_it() {
+        // Knappene i panelet er menyens, ikke utløsere.
+        assert!(rules(r#"<fs-popover><button>Meny</button><ul class="fs-popover"><li><button>A</button></li><li><button>B</button></li></ul></fs-popover>"#).is_empty());
+        // En overskrift i kroppen er innholdets, ikke en tittel til.
+        assert!(rules(r#"<fs-dialog><dialog><h2>Tittel</h2><div class="fs-dialog__body"><h3>Del</h3></div></dialog></fs-dialog>"#).is_empty());
+        assert_eq!(
+            rules(
+                r#"<fs-dialog><dialog><h2>Tittel</h2><h2>Tittel igjen</h2></dialog></fs-dialog>"#
+            )
+            .len(),
+            1
+        );
+    }
+
+    #[test]
+    fn says_nothing_when_a_template_decides() {
+        assert!(rules("<fs-field><label>A</label>{{if .Lang}}<textarea></textarea>{{else}}<input>{{end}}</fs-field>").is_empty());
+    }
+
+    #[test]
+    fn classes_have_parts_too() {
+        assert_eq!(rules(r#"<table class="fs-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>"#).len(), 1);
+        assert!(rules(r#"<div class="fs-card"><h3 class="fs-card__title">A</h3><div class="fs-card"><h3 class="fs-card__title">B</h3></div></div>"#).is_empty());
+    }
+}

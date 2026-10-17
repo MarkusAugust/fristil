@@ -136,8 +136,13 @@ en fil som ikke finnes, og en adresse som ikke svarer, gir også 1.
 En mal er ofte delt i biter. En ledetekst kan stå i én fil og feltet i en
 annen, og malsyntaks som `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>`
 står der verdien kommer senere. Uten flagg sjekker `sjekk` derfor bare det som
-kan avgjøres i én fil: elementer, klasser, attributter, verdier og at hvert
-`<fs-field>` har en ledetekst.
+kan avgjøres i én fil: elementer, klasser, attributter, verdier, at hvert
+`<fs-field>` har en ledetekst, og at en del som skal stå én gang, ikke står
+flere ganger. Et `<fs-field>` med to kontroller kobler bare den første, og
+en `fs-table` med to `<caption>` har to navn. En del inni en annen del
+hører til den: knappene i panelet til `<fs-popover>` er menyens, ikke flere
+utløsere. Står det malsyntaks i komponenten, sier regelen ingenting, siden
+et vilkår kan gi to deler i malen og én på siden.
 
 En side slik serveren sender den, er hel. Da kan `sjekk` også kreve at
 koblingen stemmer:

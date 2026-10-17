@@ -122,7 +122,7 @@ pub fn is_templated_value(t: &[u16]) -> bool {
 }
 
 /// Razor i innholdet, utenfor taggene.
-fn is_templated_content(t: &[u16]) -> bool {
+pub(crate) fn is_templated_content(t: &[u16]) -> bool {
     if is_templated(t) {
         return true;
     }
@@ -1612,6 +1612,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         }
     }
     findings.extend(check_icon_only(&source, vocabulary));
+    findings.extend(crate::parts::check_parts(&source, vocabulary));
     findings.sort_by_key(|f| f.start);
     findings
 }
