@@ -331,8 +331,11 @@ vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
 bestemmer den. Som standard gjør web-komponenten det: `<fs-tabs>` husker fanen
-brukeren valgte, og setter den tilbake når en patch river den bort. Skal
-serveren kunne flytte den, sier du det med `server-controlled`:
+brukeren valgte, og setter den tilbake når en patch med `outer` river den
+bort: `outer` morfer, og valget er knyttet til selve knappen. `inner` og
+`replace` bytter ut nodene, og da følger komponenten markupen, så serveren må
+skrive `aria-selected` og `hidden` selv. Skal serveren kunne flytte den, sier
+du det med `server-controlled`:
 
 ```html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
