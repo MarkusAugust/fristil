@@ -12,7 +12,7 @@ export const classes: Classes = {
       "summary": {
         "selector": "summary",
         "description": "Overskriften brukeren trykker på for å åpne og lukke. En `<h2>` til `<h6>` inni gir den et nivå i dokumentet.",
-        "content": "text"
+        "content": "free"
       },
       "content": {
         "selector": ".fs-accordion__content",
@@ -1001,6 +1001,19 @@ export const classes: Classes = {
     "link": "https://fristil.sobernetics.no/components/dialog/",
     "content": "parts",
     "partOf": "fs-dialog",
+    "parts": {
+      "title": {
+        "selector": ".fs-dialog__title",
+        "description": "Overskriften.",
+        "content": "text"
+      },
+      "subtitle": {
+        "selector": ".fs-dialog__subtitle",
+        "description": "Linja under overskriften.",
+        "content": "text",
+        "optional": true
+      }
+    },
     "attributes": {}
   },
   "fs-dialog__subtitle": {
@@ -1109,6 +1122,29 @@ export const classes: Classes = {
     "link": "https://fristil.sobernetics.no/components/session-timeout/",
     "content": "parts",
     "partOf": "fs-session-timeout",
+    "parts": {
+      "title": {
+        "selector": ".fs-session-timeout__title",
+        "description": "Overskriften.",
+        "content": "text",
+        "optional": true
+      },
+      "text": {
+        "selector": ".fs-session-timeout__text",
+        "description": "Avsnittet med tiden som er igjen.",
+        "content": "text"
+      },
+      "status": {
+        "selector": "[role='status']",
+        "description": "Opplesningen, som komponenten fyller.",
+        "content": "none"
+      },
+      "actions": {
+        "selector": ".fs-session-timeout__actions",
+        "description": "Knapperaden.",
+        "content": "parts"
+      }
+    },
     "attributes": {}
   },
   "fs-session-timeout__title": {
@@ -1145,6 +1181,14 @@ export const classes: Classes = {
     "link": "https://fristil.sobernetics.no/components/session-timeout/",
     "content": "parts",
     "partOf": "fs-session-timeout",
+    "parts": {
+      "button": {
+        "selector": "button",
+        "description": "Knappene som forlenger økten eller logger ut.",
+        "content": "text",
+        "multiple": true
+      }
+    },
     "attributes": {}
   },
   "fs-suggestion__field": {
@@ -1187,10 +1231,11 @@ export const classes: Classes = {
     "partOf": "fs-suggestion__field",
     "parts": {
       "option": {
-        "selector": "li",
-        "description": "Ett forslag. Komponenten gir det klassen `fs-suggestion__option` og rollen.",
+        "selector": ".fs-suggestion__option, li:not([role])",
+        "description": "Ett forslag: klassen når den står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
         "content": "text",
-        "multiple": true
+        "multiple": true,
+        "optional": true
       }
     },
     "attributes": {}
@@ -1201,6 +1246,7 @@ export const classes: Classes = {
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/suggestion/",
     "content": "text",
+    "partOf": "fs-suggestion__list",
     "attributes": {}
   },
   "fs-suggestion__empty": {
@@ -1217,11 +1263,11 @@ export const classes: Classes = {
     "title": "Tabs",
     "description": "Fanerad koblet til panelene sine. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/tabs/",
-    "content": "parts",
+    "content": "free",
     "parts": {
       "tab": {
-        "selector": "button",
-        "description": "En fane. Fane nummer n styrer panel nummer n.",
+        "selector": "[role='tab'], button:not([role])",
+        "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.",
         "content": "text",
         "multiple": true
       }
@@ -1265,7 +1311,7 @@ export const classes: Classes = {
     "title": "Toast",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
     "link": "https://fristil.sobernetics.no/components/toast/",
-    "content": "text",
+    "content": "free",
     "attributes": {}
   },
   "fs-toast__close": {

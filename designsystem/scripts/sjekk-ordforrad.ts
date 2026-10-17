@@ -255,7 +255,8 @@ for (const [name, info] of Object.entries(classes)) {
       )
     else if (
       !Object.values(parent.parts ?? {}).some((part) =>
-        part.selector.includes(`.${name}`),
+        // Hele navnet: `.fs-dialog` skal ikke telle som `.fs-dialog__title`.
+        new RegExp(`\\.${name}(?![\\w-])`).test(part.selector),
       )
     )
       findings.push(

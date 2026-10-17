@@ -608,7 +608,7 @@ export const classDocs: Record<string, ClassDoc> = {
         selector: "summary",
         description:
           "Overskriften brukeren trykker på for å åpne og lukke. En `<h2>` til `<h6>` inni gir den et nivå i dokumentet.",
-        content: "text",
+        content: "free",
       },
       content: {
         selector: ".fs-accordion__content",
@@ -940,7 +940,23 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-dialog__header": { content: "parts", partOf: "fs-dialog" },
+  "fs-dialog__header": {
+    content: "parts",
+    partOf: "fs-dialog",
+    parts: {
+      title: {
+        selector: ".fs-dialog__title",
+        description: "Overskriften.",
+        content: "text",
+      },
+      subtitle: {
+        selector: ".fs-dialog__subtitle",
+        description: "Linja under overskriften.",
+        content: "text",
+        optional: true,
+      },
+    },
+  },
   "fs-dialog__title": { content: "text", partOf: "fs-dialog" },
   "fs-dialog__subtitle": { content: "text", partOf: "fs-dialog" },
   "fs-dialog__body": { content: "free", partOf: "fs-dialog" },
@@ -1015,6 +1031,29 @@ export const classDocs: Record<string, ClassDoc> = {
   "fs-session-timeout__dialog": {
     content: "parts",
     partOf: "fs-session-timeout",
+    parts: {
+      title: {
+        selector: ".fs-session-timeout__title",
+        description: "Overskriften.",
+        content: "text",
+        optional: true,
+      },
+      text: {
+        selector: ".fs-session-timeout__text",
+        description: "Avsnittet med tiden som er igjen.",
+        content: "text",
+      },
+      status: {
+        selector: "[role='status']",
+        description: "Opplesningen, som komponenten fyller.",
+        content: "none",
+      },
+      actions: {
+        selector: ".fs-session-timeout__actions",
+        description: "Knapperaden.",
+        content: "parts",
+      },
+    },
   },
   "fs-session-timeout__title": {
     content: "text",
@@ -1028,6 +1067,14 @@ export const classDocs: Record<string, ClassDoc> = {
   "fs-session-timeout__actions": {
     content: "parts",
     partOf: "fs-session-timeout",
+    parts: {
+      button: {
+        selector: "button",
+        description: "Knappene som forlenger økten eller logger ut.",
+        content: "text",
+        multiple: true,
+      },
+    },
   },
   "fs-suggestion__field": {
     content: "parts",
@@ -1061,22 +1108,24 @@ export const classDocs: Record<string, ClassDoc> = {
     partOf: "fs-suggestion__field",
     parts: {
       option: {
-        selector: "li",
+        selector: ".fs-suggestion__option, li:not([role])",
         description:
-          "Ett forslag. Komponenten gir det klassen `fs-suggestion__option` og rollen.",
+          "Ett forslag: klassen når den står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
         content: "text",
         multiple: true,
+        optional: true,
       },
     },
   },
-  "fs-suggestion__option": { content: "text" },
+  "fs-suggestion__option": { content: "text", partOf: "fs-suggestion__list" },
   "fs-suggestion__empty": { content: "text", partOf: "fs-suggestion__field" },
   "fs-tabs__list": {
-    content: "parts",
+    content: "free",
     parts: {
       tab: {
-        selector: "button",
-        description: "En fane. Fane nummer n styrer panel nummer n.",
+        selector: "[role='tab'], button:not([role])",
+        description:
+          'En fane: `role="tab"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.',
         content: "text",
         multiple: true,
       },
@@ -1089,7 +1138,7 @@ export const classDocs: Record<string, ClassDoc> = {
   "fs-connection-status": { content: "none" },
   "fs-connection-status__bar": { content: "text" },
   "fs-toast": { content: "none" },
-  "fs-toast__message": { content: "text" },
+  "fs-toast__message": { content: "free" },
   "fs-toast__close": { content: "text" },
   "fs-theme-control": { content: "none" },
 }
