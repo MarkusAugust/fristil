@@ -629,8 +629,9 @@ describe("fs-session-timeout rører ikke markupen fra byggefunksjonen", () => {
 })
 
 /*
- * Et sent registrert tagnavn, som en underklasse: konstruktøren til
- * `fs-session-timeout` kan ikke registreres én gang til.
+ * Et sent registrert tagnavn. `fs-session-timeout` har alt tatt
+ * konstruktøren, så `defineFsSessionTimeout("fs-session-timeout-sen")`
+ * registrerer en underklasse av den.
  */
 describe("extendSession() og resetSession() venter på registreringen", () => {
   it("sender session-extend først når elementet er oppgradert", async () => {
@@ -649,10 +650,7 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(forlenget).toHaveLength(0)
 
-    customElements.define(
-      "fs-session-timeout-sen",
-      class extends FsSessionTimeout {},
-    )
+    defineFsSessionTimeout("fs-session-timeout-sen")
 
     await løfte
     expect(forlenget).toHaveLength(1)
