@@ -284,8 +284,8 @@ describe("sammen med Tailwind", () => {
       <div style="padding: var(--fs-spacing-4)" id="trinn"></div>
       <button class="fs-button" id="knapp">Send søknad</button>`
 
-    // Slik dokumentasjonen viser det: hvert trinn skrives om, for trinnene
-    // er egne verdier og regnes ikke av enheten.
+    // Hele skalaen, slik dokumentasjonen viser det: hvert trinn skrives om,
+    // for trinnene er egne verdier og regnes ikke av enheten.
     const hele = await medStilark(
       `
       ${LAGLINJE}
@@ -293,9 +293,18 @@ describe("sammen med Tailwind", () => {
       ${knappeKilde}
       ${P4}
       :root {
+        --fs-spacing-0-5: 0.15rem;
         --fs-spacing-1: 0.3rem;
         --fs-spacing-2: 0.6rem;
+        --fs-spacing-3: 0.9rem;
         --fs-spacing-4: 1.2rem;
+        --fs-spacing-5: 1.5rem;
+        --fs-spacing-6: 1.8rem;
+        --fs-spacing-7: 2.1rem;
+        --fs-spacing-8: 2.4rem;
+        --fs-spacing-10: 3rem;
+        --fs-spacing-12: 3.6rem;
+        --fs-spacing-16: 4.8rem;
       }
     `,
       markup,

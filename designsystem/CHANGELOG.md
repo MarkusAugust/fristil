@@ -248,9 +248,9 @@ egen overskrift «Brytende».
   Tailwind. Variantene `plain` og `divided` er fortsatt uten punkter. Vil du
   ha et annet punkt på alle `.fs-list`, sett det selv, i CSS uten lag eller
   i et lag etter `fristil`: en `list-style` på `ul` i et lag foran, som
-  `base`, når ikke lenger fram til klassen. Testen bygger
-  oppsettet med Tailwinds egen `preflight.css`, ikke en håndskrevet utgave
-  med bare knappereglene.
+  `base`, når ikke lenger fram til klassen. Testen bygger oppsettet med
+  Tailwinds egen `preflight.css`, ikke en håndskrevet utgave med bare
+  knappereglene.
 - **Lagrekkefølgen for Tailwind tar med `fristil-tema`.** Et generert tema
   erklærer `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter
   ikke lag som alt er erklært. Med den anbefalte linja

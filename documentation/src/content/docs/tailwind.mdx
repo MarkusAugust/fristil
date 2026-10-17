@@ -135,7 +135,7 @@ Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uanse
 
 `fristil-tema` står i linja selv om du ikke har noe tema. Et generert tema erklærer bare `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter ikke lag som alt er erklært. Uten en plass i linja havner temaet derfor sist, etter `utilities`, den dagen du legger det til.
 
-Feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger hvert av dem i et eget dokument, knappe- og listetestene med Tailwinds egen Preflight, og leser av hva knappen, lista og rotelementet faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i laget `starlight`, og siden laster bare `theme.css` og `utilities.css` fra Tailwind.
+Feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger hvert av dem i et eget dokument, det første og listetesten med Tailwinds egen Preflight, og leser av hva knappen, lista og rotelementet faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i laget `starlight`, og siden laster bare `theme.css` og `utilities.css` fra Tailwind.
 
 ## Tre ting som er greie å vite
 
