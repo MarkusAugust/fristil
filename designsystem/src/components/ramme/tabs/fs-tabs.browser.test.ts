@@ -957,8 +957,8 @@ describe("fs-tabs når en patch bytter ut et panel", () => {
     vert.innerHTML = bar
       .replace("<button>Vedlegg", '<button aria-selected="true">Vedlegg')
       .replace(
-        '<div class="fs-tabs__panel">Søknaden',
-        '<div class="fs-tabs__panel" hidden>Søknaden',
+        '<div class="fs-tabs__panel"><p>Søknaden',
+        '<div class="fs-tabs__panel" hidden><p>Søknaden',
       )
     await ventPaTegning()
     expect(vert.selected).toBe(1)
