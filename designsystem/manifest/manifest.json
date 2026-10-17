@@ -3978,7 +3978,7 @@
           "type": {
             "kind": "text"
           },
-          "description": "Hva som lastes. Blir `aria-label`, så ventingen kan leses opp."
+          "description": "Hva som lastes. Blir `aria-label`, så ringen har et navn for skjermlesere."
         }
       ],
       "returns": {

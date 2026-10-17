@@ -95,6 +95,6 @@ Bekreftelse er feil når handlingen bare er upraktisk å gjøre om igjen. Da lag
 
 ## Det systemet ikke gjør
 
-- **Å hindre dobbeltklikk.** Slå av knappen mens handlingen pågår.
+- **Å hindre dobbeltklikk.** Avvis et nytt trykk mens handlingen pågår, og vis det med `aria-disabled="true"`. Slår du av knappen med `disabled`, mister den fokuset nettleseren nettopp ga den tilbake da dialogen lukket seg, og fokus havner på `<body>`.
 - **Å huske valget.** «Ikke spør meg igjen» er en innstilling du eier.
 - **Å avgjøre hva som er farlig.** `data-variant="danger"` er en farge. Hva som fortjener den, er en vurdering.

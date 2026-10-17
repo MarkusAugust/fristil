@@ -167,13 +167,13 @@ defineFsSuggestion()
       <label class="fs-label">Kommune</label>
       <div class="fs-suggestion__field">
         <input class="fs-input" name="kommune" type="text">
-        <ul class="fs-suggestion__list"></ul>
+        <ul class="fs-suggestion__list" id="kommuner"></ul>
         <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
       </div>
     </fs-suggestion>
     ```
 
-    Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
+    Serveren svarer med lista, `<ul class="fs-suggestion__list" id="kommuner">` med de nye `<li>`-ene, og Datastar morfer den på id-en. Id-en er serverens, og komponenten lar den stå. Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
   </TabItem>
 </Tabs>
 
@@ -255,7 +255,7 @@ Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele l
 
 Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
 
-**Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer når lista faktisk har endret seg, ikke ved tastetrykket. Med `prefiltered` betyr det: når du har rendret på nytt. Det første antallet leses ikke opp, siden det er utgangspunktet og ikke en endring.
+**Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer bare når antallet er et annet enn sist. Med `prefiltered` kommer den når du har rendret lista på nytt, ikke ved tastetrykket, og det første antallet leses ikke opp, siden det er utgangspunktet. Uten `prefiltered` filtrerer komponenten selv ved hvert tastetrykk, når feltet får fokus, og når en oppdatering endrer en åpen liste, og antallet leses opp da.
 
 Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, altså det verken React eller serveren gjør.
 

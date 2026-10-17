@@ -18,7 +18,8 @@
   }
 
   /* Uten punkter og innrykk, for lister som bærer sin egen struktur, som
-     rader med kort. Listen blir værende en liste for skjermlesere. */
+     rader med kort. Listen blir værende en liste for skjermlesere, utenom
+     en <ul> i Safari, som kan trenge role="list". Se komponentsiden. */
   .fs-list[data-variant="plain"] {
     list-style: none;
     padding-inline-start: 0;
