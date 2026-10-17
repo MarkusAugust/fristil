@@ -69,9 +69,22 @@ describe("fs-skip-link", () => {
     `)
     const lenke = document.getElementById("hopp") as HTMLElement
     const knapp = document.getElementById("topp") as HTMLElement
-    knapp.addEventListener("click", () => lenke.focus())
+    let klikk = 0
+    knapp.addEventListener("click", () => {
+      klikk += 1
+      lenke.focus()
+    })
 
-    await userEvent.click(knapp)
+    // Klikket må være ekte, fra pekeren, for at nettleseren skal regne det
+    // neste fokuset som satt etter et museklikk. I Firefox i CI kommer
+    // pekerklikket fra Playwright ikke alltid fram til siden, så det gjentas
+    // til lytteren har kjørt, før det som skal prøves leses.
+    for (let forsøk = 0; forsøk < 5 && klikk === 0; forsøk++) {
+      await userEvent.click(knapp)
+      await new Promise((ferdig) => setTimeout(ferdig, 100))
+    }
+    expect(klikk, "pekerklikket kom ikke fram til knappen").toBeGreaterThan(0)
+
     await vi.waitFor(
       () => expect(getComputedStyle(lenke).transform).toMatch(SYNLIG),
       {
