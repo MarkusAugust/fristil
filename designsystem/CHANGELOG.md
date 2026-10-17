@@ -211,6 +211,10 @@ egen overskrift «Brytende».
   Nettleserne bruker den første `<legend>`-en som navn og tegnet ledetekst
   uansett hvor den står. Regelen om at den skal stå først gjelder fortsatt,
   men begrunnelsen er at HTML krever det, og at markupen ellers er ugyldig.
+- **Select-siden sa at listen tegnes i siden fra Chromium 148.** Det eneste
+  stilarket spør om, er `@supports (appearance: base-select)`, og den slår
+  til i eldre Chromium også; 148 er versjonen Fristil er testet i. Tabellen
+  sier nå hva som avgjør, og hvilke versjoner som er testet.
 
 ## 0.33.0 (2026-10-12)
 
