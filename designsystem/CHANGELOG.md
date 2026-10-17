@@ -45,6 +45,13 @@ egen overskrift «Brytende».
   inngangene, også hver komponentinngang for de andre komponentene. Bygget
   kompilerer en fil per inngang, med bare den importen, så det ikke kan gli
   tilbake.
+- **`fs.setAttributes` fra `/react` skriver `class` og `for`, og rydder.**
+  Funksjonen var hovedinngangens, mens settene fra `/react` har `className`
+  og `htmlFor`, så den skrev attributtene `classname` og `htmlfor`, og fant
+  ikke byggefunksjonen bak det omdøpte settet: `aria-invalid` ble stående
+  etter at feltet var rettet, uten advarsel. Nå oversettes navnene tilbake
+  før de settes, `tabIndex` blir `tabindex`, og settet rydder det samme som
+  fra hovedinngangen.
 - **`defineFs*` kaster ikke når klassen alt er registrert under et eget
   navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
   NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i

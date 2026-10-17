@@ -27,6 +27,8 @@ import {
   fieldStates,
   isFieldState,
   isRequiredMarker,
+  managedNames,
+  rememberManaged,
   requiredMarkers,
 } from "./components/css/shared.js"
 import { skeleton } from "./components/css/skeleton/skeleton.js"
@@ -52,7 +54,7 @@ import { popover } from "./components/ramme/popover/popover.js"
 import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
 import { suggestion } from "./components/ramme/suggestion/suggestion.js"
 import { tabs } from "./components/ramme/tabs/tabs.js"
-import { setAttributes } from "./dom.js"
+import { type Attributes, setAttributes as setHtmlAttributes } from "./dom.js"
 
 // Typene til hendelsene, så `addEventListener` er typet også for den som
 // bare importerer denne inngangen. Uten linja forsvant importen fra
@@ -136,7 +138,64 @@ export function toReactAttributes<T extends Record<string, unknown>>(
     result[REACT_NAMES[name] ?? name] =
       name === "tabindex" ? Number(value) : value
   }
+  // Det nye objektet forvalter det samme som det gamle, under de nye navnene,
+  // så `setAttributes` under kan rydde like mye som hovedinngangen.
+  const names = managedNames(attributes)
+  if (names)
+    rememberManaged(
+      result,
+      names.map((name) => REACT_NAMES[name] ?? name),
+    )
   return result as ReactAttributes<T>
+}
+
+/** Navnene tilbake til HTML, for `setAttributes`. */
+const HTML_NAMES: Record<string, string> = Object.fromEntries(
+  Object.entries(REACT_NAMES).map(([html, react]) => [react, html]),
+)
+
+/**
+ * Et sett slik byggefunksjonene her gir det, med `className`, `htmlFor` og
+ * `tabIndex` som tall.
+ */
+export type ReactSet = Record<string, string | number | boolean | undefined>
+
+/**
+ * Skriver et sett fra denne inngangen tilbake til HTML-navnene.
+ *
+ * `setAttribute` skriver navnet slik det står, og i et HTML-dokument blir det
+ * små bokstaver: `className` ble attributtet `classname`, og `htmlFor` ble
+ * `htmlfor`. Det nye objektet forvalter det samme som settet det kom fra, så
+ * det som er borte i neste kall blir ryddet.
+ */
+export function toHtmlAttributes(set: ReactSet): Attributes {
+  const result: Attributes = {}
+  for (const [name, value] of Object.entries(set)) {
+    result[HTML_NAMES[name] ?? name] =
+      typeof value === "number" ? String(value) : value
+  }
+  const names = managedNames(set)
+  if (names)
+    rememberManaged(
+      result,
+      names.map((name) => HTML_NAMES[name] ?? name),
+    )
+  return result
+}
+
+/**
+ * Som `fs.setAttributes` i hovedinngangen, for settene herfra.
+ *
+ * En React-app når DOM-en gjennom en `ref`, og bruker da naturlig `fs` fra
+ * denne inngangen. Sendt rett til hovedinngangens `setAttributes` ble
+ * `className` til attributtet `classname`, og oppryddingen fant ikke
+ * byggefunksjonen bak settet. Her oversettes navnene tilbake først.
+ */
+export function setAttributes(
+  element: Element | null | undefined,
+  ...sets: ReactSet[]
+): void {
+  setHtmlAttributes(element, ...sets.map((set) => toHtmlAttributes(set)))
 }
 
 /**
