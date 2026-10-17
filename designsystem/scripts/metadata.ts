@@ -1043,6 +1043,11 @@ export const classDocs: Record<string, ClassDoc> = {
         description: "Avsnittet med tiden som er igjen.",
         content: "text",
       },
+      count: {
+        selector: ".fs-session-timeout__count",
+        description: "Tallet som telles ned, inne i avsnittet.",
+        content: "none",
+      },
       status: {
         selector: "[role='status']",
         description: "Opplesningen, som komponenten fyller.",
@@ -1050,7 +1055,7 @@ export const classDocs: Record<string, ClassDoc> = {
       },
       actions: {
         selector: ".fs-session-timeout__actions",
-        description: "Knapperaden.",
+        description: 'Knapperaden, et `<form method="dialog">`.',
         content: "parts",
       },
     },
@@ -1108,9 +1113,9 @@ export const classDocs: Record<string, ClassDoc> = {
     partOf: "fs-suggestion__field",
     parts: {
       option: {
-        selector: ".fs-suggestion__option, li:not([role])",
+        selector: "[role='option'], .fs-suggestion__option, > li:not([role])",
         description:
-          "Ett forslag: klassen når den står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
+          "Ett forslag: rollen eller klassen når de står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
         content: "text",
         multiple: true,
         optional: true,
@@ -1123,7 +1128,7 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "free",
     parts: {
       tab: {
-        selector: "[role='tab'], button:not([role])",
+        selector: "[role='tab'], > button:not([role])",
         description:
           'En fane: `role="tab"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.',
         content: "text",
