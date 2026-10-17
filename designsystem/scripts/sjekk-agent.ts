@@ -84,8 +84,8 @@ function krev(påstand: boolean, beskrivelse: string): void {
  *
  * Alt annet i denne vakten kommer fra `OPPSKRIFTER`: køen, det forventede
  * antallet, og innholdet det sammenlignes med. Den spør altså generatoren om
- * generatoren, og CLAUDE.md er kategorisk om at det forventede ikke skal komme
- * fra samme kilde som køen.
+ * generatoren, og CONTRIBUTING.md er kategorisk om at det forventede ikke skal
+ * komme fra samme kilde som køen.
  *
  * Feilsituasjonen er konkret: døp om en oppskrift, og generatoren skriver den
  * nye fila uten å slette den gamle. Den gamle blir liggende, foreldet, og den

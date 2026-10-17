@@ -224,6 +224,18 @@ Levende eksempler går gjennom `Preview.astro`, som legger innholdet i en
 shadow root. Uten isolasjonen treffer dokumentasjonssidens egen CSS
 eksempelet, og du ser ikke lenger det en konsument får.
 
+## Navn i koden
+
+Funksjoner, variabler, typer og konstanter navngis på engelsk, også lokale
+variabler, og aldri blandet i ett navn. Kommentarene er på norsk.
+`sjekk-identifikatorer.ts` feller et norsk navn i koden som sendes ut;
+testfiler og `src/testing/` er unntatt.
+
+En sjekk skal ikke spørre kilden om kilden. Det forventede, antallet eller
+innholdet, skal komme fra et annet sted enn køen sjekken går gjennom, ellers
+etterprøver vakten bare seg selv. `sjekk-agent.ts` leser derfor mappa på
+disk, og `sjekk-ordforrad.ts` leser `exports` i pakken, ikke metadataen.
+
 ## Commit-meldinger
 
 På norsk, i imperativ, uten prefiks: «Rett fokus i feiloppsummeringen», ikke «fix: …». Brødteksten forklarer hvorfor, ikke hva diffen allerede viser.
