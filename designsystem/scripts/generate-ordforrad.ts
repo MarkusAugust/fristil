@@ -490,10 +490,19 @@ export function files(): Record<string, string> {
  *
  * Sender to elementer en hendelse med samme navn, må `detail` være den
  * samme, ellers kunne bare én av dem få en type. Da stopper generatoren.
+ *
+ * Fila utvider også `HTMLElementTagNameMap`, så `querySelector("fs-dialog")`
+ * gir `FsDialog` og ikke `Element`. Kartet sto i hver `fs-*.ts`, men en
+ * inngang som `/register` importerer dem bare i koden, og i `.d.ts`-fila
+ * forsvinner importen. Da var `querySelector("fs-dialog")` et `Element`, og
+ * `addEventListener` på det ga `Event` uten `detail`, mens siden lovet det
+ * motsatte. Hver inngang til web-komponentene tar med denne fila, gjennom
+ * `host-element.ts` eller en egen re-eksport, så kartet følger med dem alle.
  */
 function eventTypes(): string {
   const seen = new Map<string, { type: string; tag: string }>()
   const lines: string[] = []
+  const hosts = hostClasses()
   for (const element of elements) {
     for (const [name, doc] of Object.entries(element.events)) {
       const fields = Object.entries(doc.detail ?? {})
@@ -514,7 +523,22 @@ function eventTypes(): string {
       )
     }
   }
+  const imports = elements
+    .map((element) => {
+      const host = hosts.get(element.tag)
+      if (!host)
+        throw new Error(
+          `Fant ingen klasse for <${element.tag}> under src/components`,
+        )
+      return host
+    })
+    .sort((a, b) => a.module.localeCompare(b.module))
+  const tags = elements
+    .map((element) => `    "${element.tag}": ${hosts.get(element.tag)?.name}`)
+    .sort()
   return `// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
+
+${imports.map((host) => `import type { ${host.name} } from "./${host.module}.js"`).join("\n")}
 
 /**
  * Hendelsene web-komponentene sender, med \`detail\` slik komponenten sender
@@ -522,6 +546,12 @@ function eventTypes(): string {
  * \`DocumentEventMap\` utvides med dem, så \`addEventListener("dialog-toggle",
  * …)\` gir \`event.detail.open\` som \`boolean\` på ethvert element og på
  * \`document\`.
+ *
+ * \`HTMLElementTagNameMap\` utvides med elementene, så
+ * \`querySelector("fs-dialog")\` gir \`FsDialog | null\`. Kartet står her, og
+ * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
+ * denne fila: fra \`/register\` alene var \`querySelector("fs-dialog")\` ellers
+ * et \`Element\`, og lytteren på det fikk \`Event\` uten \`detail\`.
  */
 export interface FsEventMap {
 ${lines.join("\n")}
@@ -530,8 +560,38 @@ ${lines.join("\n")}
 declare global {
   interface HTMLElementEventMap extends FsEventMap {}
   interface DocumentEventMap extends FsEventMap {}
+  interface HTMLElementTagNameMap {
+${tags.join("\n")}
+  }
 }
 `
+}
+
+/**
+ * Klassen bak hvert element, lest fra kilden.
+ *
+ * Fila heter det samme som taggen, som `ramme/dialog/fs-dialog.ts` for
+ * `<fs-dialog>`, og klassen står som `export class FsDialog`. Navnet leses
+ * derfra, ikke fra en liste her, så et element som bytter mappe eller navn
+ * stopper generatoren i stedet for å gi et kart som peker feil.
+ */
+function hostClasses(): Map<string, { name: string; module: string }> {
+  const components = join(ROOT, "designsystem/src/components")
+  const hosts = new Map<string, { name: string; module: string }>()
+  for (const element of elements) {
+    const file = [...new Bun.Glob(`**/${element.tag}.ts`).scanSync(components)]
+    if (file.length !== 1)
+      throw new Error(
+        `Ventet én fil ${element.tag}.ts under src/components, fant ${file.length}`,
+      )
+    const module = (file[0] as string).replace(/\.ts$/, "")
+    const source = readFileSync(join(components, file[0] as string), "utf8")
+    const name = /^export class (Fs\w+) extends /m.exec(source)?.[1]
+    if (!name)
+      throw new Error(`Fant ingen «export class Fs… extends» i ${file[0]}`)
+    hosts.set(element.tag, { name, module })
+  }
+  return hosts
 }
 
 if (import.meta.main) {

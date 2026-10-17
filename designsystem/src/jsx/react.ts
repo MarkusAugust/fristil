@@ -1,8 +1,9 @@
 import type { HTMLAttributes, RefAttributes } from "react"
 
-// Typene til hendelsene, så `addEventListener` er typet også for den som
-// bare importerer denne inngangen. Uten linja forsvant importen fra
-// `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
+// Typene til hendelsene og tagnavnene, så `querySelector("fs-dialog")` og
+// `addEventListener` er typet også for den som bare importerer denne
+// inngangen. Fila har ingen annen import fra komponentene, så uten linja ble
+// verken `HTMLElementEventMap` eller `HTMLElementTagNameMap` utvidet.
 export type { FsEventMap } from "../components/events.js"
 
 /**

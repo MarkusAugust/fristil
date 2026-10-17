@@ -145,7 +145,7 @@ Ren HTML, Astro og Datastar trenger ikke dette. Der er `<fs-field>` bare en HTML
 
 ### Hendelsene
 
-Hendelsene web-komponentene sender, som `dialog-toggle` og `tab-select`, har typet `detail` i `addEventListener`. Typene følger med hver inngang til web-komponentene, også `@fristil/designsystem/register`, `/react` og `/react-jsx`, så det du alt importerer, er nok. De utvider DOM-typene `HTMLElementEventMap` og `DocumentEventMap`, og har ingenting med React å gjøre: det samme gjelder i et TypeScript-skript i Astro eller i en Datastar-app, og i React gjennom en `ref`. Siden hendelsene bobler, er også en lytter på `document` typet.
+Hendelsene web-komponentene sender, som `dialog-toggle` og `tab-select`, har typet `detail` i `addEventListener`. Typene følger med hver inngang til web-komponentene, også `@fristil/designsystem/register`, `/react` og `/react-jsx`, så det du alt importerer, er nok. Det samme gjelder tagnavnene: `document.querySelector("fs-dialog")` gir `FsDialog | null`, ikke `Element | null`. De utvider DOM-typene `HTMLElementEventMap` og `DocumentEventMap`, og har ingenting med React å gjøre: det samme gjelder i et TypeScript-skript i Astro eller i en Datastar-app, og i React gjennom en `ref`. Siden hendelsene bobler, er også en lytter på `document` typet.
 
 ```ts
 import { defineFsDialog } from "@fristil/designsystem/dialog"

@@ -491,12 +491,6 @@ export class FsDialog extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-dialog": FsDialog
-  }
-}
-
 export function defineFsDialog(tagName: string = FS_DIALOG_TAG): void {
   defineElement(tagName, FsDialog)
 }

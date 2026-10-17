@@ -275,12 +275,6 @@ export class FsToast extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-toast": FsToast
-  }
-}
-
 export function defineFsToast(tagName: string = FS_TOAST_TAG): void {
   defineElement(tagName, FsToast)
 }

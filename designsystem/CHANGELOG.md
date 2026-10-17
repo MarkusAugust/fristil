@@ -34,6 +34,17 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Tagnavnene er typet fra `/register` og `/react-jsx` alene.** Typesikker
+  bruk-siden sa at hendelsestypene følger med hver inngang til
+  web-komponentene, men `HTMLElementTagNameMap` ble bare utvidet i
+  komponentfilene, og `/register` og `/react-jsx` tar dem ikke med i typene.
+  Da var `document.querySelector("fs-dialog")` et `Element`, og lytteren på
+  det fikk `Event` uten `detail`, så mønsteret på siden var en typefeil. Kartet
+  over tagnavnene står nå i `events.ts`, som hver inngang alt tar med, så
+  `querySelector("fs-dialog")` gir `FsDialog | null` fra alle tretten
+  inngangene, også hver komponentinngang for de andre komponentene. Bygget
+  kompilerer en fil per inngang, med bare den importen, så det ikke kan gli
+  tilbake.
 - **`defineFs*` kaster ikke når klassen alt er registrert under et eget
   navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
   NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i
