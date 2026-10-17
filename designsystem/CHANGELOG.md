@@ -197,6 +197,12 @@ egen overskrift «Brytende».
   skjermleseren sa «›» mellom hvert steg. Snutten har nå `content: "›" / ""`
   bak samme `@supports` som stilarket, og siden sier hvorfor. En test kjører
   snutten fra siden mot stilarket.
+- **Oppskriften for å bytte pila i `fs-accordion` lot rotasjonen stå.** Siden
+  sa at `content` og `border` var nok, men pseudoelementet har fast størrelse
+  og `transform`, og vinkelen byttes når panelet er åpent, så et «+» sto på
+  skrå og ble et «×» i åpen tilstand. Et synlig tegn uten alternativ tekst
+  ble dessuten en del av navnet på overskriften. Snutten nullstiller nå
+  begge og gir tegnet tom alternativ tekst.
 
 ## 0.33.0 (2026-10-12)
 
