@@ -780,6 +780,70 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
     expect(opplest()).toBe("1 minutt og 30 sekunder")
   })
 
+  /**
+   * Komponenten i en skyggerot, slik et skall med skygge-DOM eller en
+   * forhåndsvisning setter den. Feltet brukeren sto i kan være i siden eller
+   * i samme skyggerot, og begge skal få fokus tilbake.
+   *
+   * Nettleseren setter selv fokus tilbake inne i `close()`, før
+   * `close`-hendelsen komponenten lytter på. Fokus flyttes derfor vekk igjen
+   * etter `close()`, så det er komponentens eget minne som vises når
+   * hendelsen kommer. Står minnet tomt, eller peker det på skyggeverten,
+   * blir fokus stående på knappen.
+   */
+  async function husketFokus(
+    rot: ShadowRoot,
+    felt: HTMLInputElement,
+    annet: HTMLButtonElement,
+  ) {
+    felt.focus()
+    await gaFram(1)
+    const varselet = rot.querySelector("dialog") as HTMLDialogElement
+    expect(varselet.open).toBe(true)
+    const lukket = new Promise((r) =>
+      varselet.addEventListener("close", r, { once: true }),
+    )
+    varselet.close("extend")
+    annet.focus()
+    await lukket
+    const rotenTilFeltet = felt.getRootNode() as Document | ShadowRoot
+    return rotenTilFeltet.activeElement
+  }
+
+  it("gir fokus tilbake til et felt i siden når komponenten står i en skyggerot", async () => {
+    // Komponentens egen rot har ingen `activeElement` når fokus står
+    // utenfor den, så lest derfra husket komponenten ingenting.
+    const flate = monter(
+      `<div lang="nb"><input id="felt"><button id="annet">Annet</button><div id="vert"></div></div>`,
+    )
+    const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
+      mode: "open",
+    })
+    rot.innerHTML = varsel({ warnAt: 1, expiresAt: 91 })
+    await customElements.whenDefined("fs-session-timeout")
+    const felt = flate.querySelector("#felt") as HTMLInputElement
+    const annet = flate.querySelector("#annet") as HTMLButtonElement
+
+    expect(await husketFokus(rot, felt, annet)).toBe(felt)
+  })
+
+  it("gir fokus tilbake til et felt i samme skyggerot", async () => {
+    // `document.activeElement` er skyggeverten her, og `focus()` på den
+    // gjorde ingenting.
+    const flate = monter(
+      `<div lang="nb"><button id="annet">Annet</button><div id="vert"></div></div>`,
+    )
+    const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
+      mode: "open",
+    })
+    rot.innerHTML = `<input id="felt">${varsel({ warnAt: 1, expiresAt: 91 })}`
+    await customElements.whenDefined("fs-session-timeout")
+    const felt = rot.querySelector("#felt") as HTMLInputElement
+    const annet = flate.querySelector("#annet") as HTMLButtonElement
+
+    expect(await husketFokus(rot, felt, annet)).toBe(felt)
+  })
+
   it("er fortsatt modal etter at elementet er flyttet mens varselet står", async () => {
     const flate = monter(`${varsel()}<div id="annet"></div>`)
     await customElements.whenDefined("fs-session-timeout")
