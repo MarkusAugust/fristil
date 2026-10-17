@@ -4617,5 +4617,334 @@
         }
       }
     }
-  ]
+  ],
+  "tokens": {
+    "spacing": {
+      "--fs-spacing-px": "1px",
+      "--fs-spacing-0-5": "0.125rem",
+      "--fs-spacing-1": "0.25rem",
+      "--fs-spacing-2": "0.5rem",
+      "--fs-spacing-3": "0.75rem",
+      "--fs-spacing-4": "1rem",
+      "--fs-spacing-5": "1.25rem",
+      "--fs-spacing-6": "1.5rem",
+      "--fs-spacing-7": "1.75rem",
+      "--fs-spacing-8": "2rem",
+      "--fs-spacing-10": "2.5rem",
+      "--fs-spacing-12": "3rem",
+      "--fs-spacing-16": "4rem"
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    },
+    "containers": {
+      "xs": "100%",
+      "sm": "576px",
+      "md": "960px",
+      "lg": "1152px",
+      "xl": "1536px",
+      "aside": "384px",
+      "asideNarrow": "288px",
+      "wideContent": "768px"
+    },
+    "colors": {
+      "families": {
+        "accent": "Lenker, primærknapp, fokus, valgt tilstand",
+        "visited": "Besøkte lenker",
+        "brand1": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand2": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand3": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "neutral": "Siden, brødteksten, kantene",
+        "danger": "Feil, sletting, avslag",
+        "warning": "Krever oppmerksomhet",
+        "success": "Fullført, godkjent"
+      },
+      "roles": {
+        "surface": "Tonet flate: et merke, et varsel, en seksjon",
+        "border-subtle": "Dekorativ strek, som mellom to rader",
+        "border": "Rammen rundt et felt eller en flate",
+        "border-strong": "Feltrammen når musa er over, og en tabellstrek",
+        "fill": "Fylt flate: en knapp, en avkryssingsboks som er huket av",
+        "text": "Familiens farge som tekst, og knappen ved hover",
+        "text-strong": "Brødtekst, overskrifter og lenka ved hover",
+        "text-subtle": "Dempet tekst: hjelpetekst, plassholdere",
+        "content": "Teksten oppå fill, og oppå text på en knapp ved hover"
+      },
+      "layers": {
+        "canvas": "Siden",
+        "raised": "En flate som ligger over et kort"
+      },
+      "tokens": [
+        "--fs-color-accent-surface",
+        "--fs-color-accent-border-subtle",
+        "--fs-color-accent-border",
+        "--fs-color-accent-border-strong",
+        "--fs-color-accent-fill",
+        "--fs-color-accent-text",
+        "--fs-color-accent-text-strong",
+        "--fs-color-accent-text-subtle",
+        "--fs-color-accent-content",
+        "--fs-color-visited-surface",
+        "--fs-color-visited-border-subtle",
+        "--fs-color-visited-border",
+        "--fs-color-visited-border-strong",
+        "--fs-color-visited-fill",
+        "--fs-color-visited-text",
+        "--fs-color-visited-text-strong",
+        "--fs-color-visited-text-subtle",
+        "--fs-color-visited-content",
+        "--fs-color-brand1-surface",
+        "--fs-color-brand1-border-subtle",
+        "--fs-color-brand1-border",
+        "--fs-color-brand1-border-strong",
+        "--fs-color-brand1-fill",
+        "--fs-color-brand1-text",
+        "--fs-color-brand1-text-strong",
+        "--fs-color-brand1-text-subtle",
+        "--fs-color-brand1-content",
+        "--fs-color-brand2-surface",
+        "--fs-color-brand2-border-subtle",
+        "--fs-color-brand2-border",
+        "--fs-color-brand2-border-strong",
+        "--fs-color-brand2-fill",
+        "--fs-color-brand2-text",
+        "--fs-color-brand2-text-strong",
+        "--fs-color-brand2-text-subtle",
+        "--fs-color-brand2-content",
+        "--fs-color-brand3-surface",
+        "--fs-color-brand3-border-subtle",
+        "--fs-color-brand3-border",
+        "--fs-color-brand3-border-strong",
+        "--fs-color-brand3-fill",
+        "--fs-color-brand3-text",
+        "--fs-color-brand3-text-strong",
+        "--fs-color-brand3-text-subtle",
+        "--fs-color-brand3-content",
+        "--fs-color-neutral-surface",
+        "--fs-color-neutral-border-subtle",
+        "--fs-color-neutral-border",
+        "--fs-color-neutral-border-strong",
+        "--fs-color-neutral-fill",
+        "--fs-color-neutral-text",
+        "--fs-color-neutral-text-strong",
+        "--fs-color-neutral-text-subtle",
+        "--fs-color-neutral-content",
+        "--fs-color-danger-surface",
+        "--fs-color-danger-border-subtle",
+        "--fs-color-danger-border",
+        "--fs-color-danger-border-strong",
+        "--fs-color-danger-fill",
+        "--fs-color-danger-text",
+        "--fs-color-danger-text-strong",
+        "--fs-color-danger-text-subtle",
+        "--fs-color-danger-content",
+        "--fs-color-warning-surface",
+        "--fs-color-warning-border-subtle",
+        "--fs-color-warning-border",
+        "--fs-color-warning-border-strong",
+        "--fs-color-warning-fill",
+        "--fs-color-warning-text",
+        "--fs-color-warning-text-strong",
+        "--fs-color-warning-text-subtle",
+        "--fs-color-warning-content",
+        "--fs-color-success-surface",
+        "--fs-color-success-border-subtle",
+        "--fs-color-success-border",
+        "--fs-color-success-border-strong",
+        "--fs-color-success-fill",
+        "--fs-color-success-text",
+        "--fs-color-success-text-strong",
+        "--fs-color-success-text-subtle",
+        "--fs-color-success-content",
+        "--fs-color-neutral-canvas",
+        "--fs-color-neutral-raised",
+        "--fs-color-disabled-surface",
+        "--fs-color-disabled-text",
+        "--fs-color-overlay"
+      ]
+    },
+    "components": {
+      "accordion": {
+        "--fs-accordion-radius": "var(--fs-spacing-1)",
+        "--fs-accordion-padding": "var(--fs-spacing-3) var(--fs-accordion-padding-inline, var(--fs-spacing-4))",
+        "--fs-accordion-padding-inline": "var(--fs-spacing-4)"
+      },
+      "alert": {
+        "--fs-alert-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
+        "--fs-alert-radius": "var(--fs-spacing-1)",
+        "--fs-alert-accent": "var(--fs-spacing-1)"
+      },
+      "avatar": {
+        "--fs-avatar-size": "var(--fs-spacing-10)",
+        "--fs-avatar-radius": "var(--fs-spacing-1)",
+        "--fs-avatar-stack-overlap": "calc(var(--fs-spacing-2) * -1)"
+      },
+      "badge": {
+        "--fs-badge-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
+        "--fs-badge-radius": "var(--fs-spacing-4)"
+      },
+      "breadcrumbs": {
+        "--fs-breadcrumbs-gap": "var(--fs-spacing-2)"
+      },
+      "button": {
+        "--fs-button-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-button-font-weight": "var(--fs-font-weight-medium)",
+        "--fs-button-line-height": "var(--fs-line-height-default)",
+        "--fs-button-border-width": "1px",
+        "--fs-button-radius": "var(--fs-spacing-1)"
+      },
+      "card": {
+        "--fs-card-padding": "var(--fs-spacing-4)",
+        "--fs-card-radius": "var(--fs-spacing-2)"
+      },
+      "checkbox": {
+        "--fs-checkbox-size": "var(--fs-spacing-5)",
+        "--fs-checkbox-radius": "var(--fs-spacing-1)"
+      },
+      "connection-status": {
+        "--fs-connection-status-layer": "1000",
+        "--fs-connection-status-padding": "var(--fs-spacing-2) var(--fs-spacing-4)"
+      },
+      "dialog": {
+        "--fs-dialog-width": "min(32rem, 100%, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-dialog-padding": "var(--fs-spacing-5)",
+        "--fs-dialog-radius": "var(--fs-spacing-2)",
+        "--fs-dialog-layer": "40"
+      },
+      "divider": {
+        "--fs-divider-space": "var(--fs-spacing-4)"
+      },
+      "error-summary": {
+        "--fs-error-summary-padding": "var(--fs-spacing-4)",
+        "--fs-error-summary-radius": "var(--fs-spacing-1)"
+      },
+      "fieldset": {
+        "--fs-fieldset-gap": "var(--fs-spacing-2)"
+      },
+      "file-upload": {
+        "--fs-file-upload-padding": "var(--fs-spacing-2)",
+        "--fs-file-upload-radius": "var(--fs-spacing-1)"
+      },
+      "heading": {
+        "--fs-heading-font-weight": "var(--fs-font-weight-bold)",
+        "--fs-heading-line-height": "var(--fs-line-height-heading)"
+      },
+      "input": {
+        "--fs-input-width": "100%",
+        "--fs-input-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-input-radius": "var(--fs-spacing-1)"
+      },
+      "label": {
+        "--fs-label-required-symbol": "\" *\"",
+        "--fs-label-required-text": "\" (p\\e5 krevd)\"",
+        "--fs-label-optional-text": "\" (valgfri)\""
+      },
+      "list": {
+        "--fs-list-gap": "var(--fs-spacing-1)"
+      },
+      "pagination": {
+        "--fs-pagination-gap": "var(--fs-spacing-1)",
+        "--fs-pagination-size": "var(--fs-spacing-10)",
+        "--fs-pagination-radius": "var(--fs-spacing-1)"
+      },
+      "paragraph": {
+        "--fs-paragraph-line-height": "var(--fs-line-height-article)",
+        "--fs-paragraph-width": "70ch",
+        "--fs-paragraph-gap": "var(--fs-spacing-3)"
+      },
+      "popover": {
+        "--fs-popover-top": "0",
+        "--fs-popover-left": "0",
+        "--fs-popover-width": "min(20rem, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-popover-padding": "var(--fs-spacing-3)",
+        "--fs-popover-radius": "var(--fs-spacing-1)"
+      },
+      "progress": {
+        "--fs-progress-height": "var(--fs-spacing-2)",
+        "--fs-progress-border": "var(--fs-color-neutral-border)",
+        "--fs-progress-radius": "var(--fs-spacing-1)",
+        "--fs-progress-track": "var(--fs-color-neutral-surface)",
+        "--fs-progress-fill": "var(--fs-color-accent-fill)"
+      },
+      "radio": {
+        "--fs-radio-size": "var(--fs-spacing-5)"
+      },
+      "search": {
+        "--fs-search-icon-space": "var(--fs-spacing-10)",
+        "--fs-search-icon-size": "var(--fs-spacing-5)"
+      },
+      "select": {
+        "--fs-select-width": "100%",
+        "--fs-select-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-select-radius": "var(--fs-spacing-1)",
+        "--fs-select-viewport-margin": "var(--fs-spacing-2)",
+        "--fs-select-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "session-timeout": {
+        "--fs-session-timeout-width": "26rem",
+        "--fs-session-timeout-padding": "var(--fs-spacing-5)",
+        "--fs-session-timeout-radius": "var(--fs-spacing-1)"
+      },
+      "skeleton": {
+        "--fs-skeleton-height": "var(--fs-spacing-4)",
+        "--fs-skeleton-radius": "var(--fs-spacing-1)"
+      },
+      "skip-link": {
+        "--fs-skip-link-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-skip-link-radius": "var(--fs-spacing-1)"
+      },
+      "spinner": {
+        "--fs-spinner-size": "var(--fs-spacing-6)",
+        "--fs-spinner-thickness": "2px"
+      },
+      "suggestion": {
+        "--fs-suggestion-layer": "30",
+        "--fs-suggestion-max-height": "calc(var(--fs-spacing-10) * 4)",
+        "--fs-suggestion-radius": "var(--fs-spacing-1)",
+        "--fs-suggestion-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "switch": {
+        "--fs-switch-width": "var(--fs-spacing-10)",
+        "--fs-switch-height": "var(--fs-spacing-6)"
+      },
+      "table": {
+        "--fs-table-cell-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "tabs": {
+        "--fs-tabs-gap": "var(--fs-spacing-1)",
+        "--fs-tabs-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-tabs-panel-space": "var(--fs-spacing-4)"
+      },
+      "tag": {
+        "--fs-tag-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
+        "--fs-tag-radius": "var(--fs-spacing-1)"
+      },
+      "textarea": {
+        "--fs-textarea-min-height": "calc(var(--fs-spacing-4) * 5)",
+        "--fs-textarea-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-textarea-radius": "var(--fs-spacing-1)"
+      },
+      "toast": {
+        "--fs-toast-space": "var(--fs-spacing-4)",
+        "--fs-toast-layer": "60",
+        "--fs-toast-width": "min(24rem, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-toast-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
+        "--fs-toast-radius": "var(--fs-spacing-1)"
+      },
+      "toggle-group": {
+        "--fs-toggle-group-radius": "var(--fs-spacing-1)",
+        "--fs-toggle-group-height": "var(--fs-spacing-10)",
+        "--fs-toggle-group-padding": "0 var(--fs-spacing-4)"
+      },
+      "tooltip": {
+        "--fs-tooltip-width": "16rem",
+        "--fs-tooltip-padding": "var(--fs-spacing-1) var(--fs-spacing-2)",
+        "--fs-tooltip-radius": "var(--fs-spacing-1)"
+      }
+    }
+  }
 }

@@ -25,6 +25,14 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **Manifestet har en `tokens`-seksjon.** Avstandsskalaen, brekkpunktene
+  og containerbreddene fra `tokens.ts`, fargefamiliene, rollene og lagene
+  med hva hver er til, hvert `--fs-color-*`-navn, og komponentvariablene
+  per komponent med standardverdien stilarket faller tilbake på. Fargene
+  står som akser og navn, ikke som verdier, siden et tema kan ha andre
+  verdier enn Fristils egne. `ManifestTokens` i Kotlin leser det samme.
+  `schemaVersion` er fortsatt 1.
+
 - **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
   består av.** Hver klasse i `classes` har `content`, med samme ord som
   delene til elementene: `text`, `free`, `parts` eller `none`. Klassene med

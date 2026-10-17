@@ -32,7 +32,7 @@ class ManifestReaderTest {
     @Test
     fun `the package manifest is the one in the jar`() {
         // `builders` er med vilje utelatt, se Manifest.
-        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", at = "manifestet")
+        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", "tokens", at = "manifestet")
         assertEquals(Manifest.parse(text), Fristil.manifest)
         assertEquals(raw["version"], Fristil.manifest.version)
     }
@@ -121,6 +121,36 @@ class ManifestReaderTest {
     }
 
     @Test
+    fun `the tokens keep every scale, axis and component variable`() {
+        val tokens = raw["tokens"].map()
+        val read = Fristil.manifest.tokens
+        known(tokens, "spacing", "breakpoints", "containers", "colors", "components", at = "tokens")
+        assertEquals(tokens["spacing"], read.spacing)
+        assertEquals(tokens["breakpoints"], read.breakpoints)
+        assertEquals(tokens["containers"], read.containers)
+        val colors = tokens["colors"].map()
+        known(colors, "families", "roles", "layers", "tokens", at = "tokens.colors")
+        assertEquals(colors["families"], read.colors.families)
+        assertEquals(colors["roles"], read.colors.roles)
+        assertEquals(colors["layers"], read.colors.layers)
+        assertEquals(colors["tokens"], read.colors.tokens)
+        val components = tokens["components"].map()
+        assertEquals(components.keys.toList(), read.components.keys.toList())
+        var variables = 0
+        for ((component, v) in components) {
+            assertEquals(v, read.components.getValue(component), component)
+            variables += v.map().size
+        }
+        assertTrue(
+            read.spacing.size > 0 && read.breakpoints.size > 0 && read.containers.size > 0 && read.colors.families.size > 0 && read.colors.roles.size > 0 && read.colors.tokens.size > 0 && variables > 0,
+            "En av listene var tom, så sammenligningen sa ingenting.",
+        )
+        assertEquals("768px", read.breakpoints["md"])
+        assertEquals("var(--fs-spacing-2) var(--fs-spacing-4)", read.components.getValue("button").getValue("--fs-button-padding"))
+        assertTrue("text-subtle" in read.colors.roles && "--fs-color-accent-surface" in read.colors.tokens)
+    }
+
+    @Test
     fun `known entries read as expected`() {
         val tabs = Fristil.manifest.elements.getValue("fs-tabs")
         assertEquals(listOf("list", "tab", "panel"), tabs.parts.keys.toList())
@@ -159,5 +189,6 @@ class ManifestReaderTest {
         )
         assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "«tekst»")
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes skulle vært et objekt")
+        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}}"""), "tokens skulle vært et objekt")
     }
 }

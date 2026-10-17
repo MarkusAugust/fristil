@@ -89,37 +89,18 @@ function klasser(css: string): string[] {
 /**
  * Komponentvariablene, altså det konsumenten kan sette på én komponent.
  *
- * Tokens heter også `--fs-*` nå, og de hører på tokensiden framfor på hver
- * komponentside. Slaget i navnet skiller dem: `--fs-color-danger-fill` er et
- * token, `--fs-button-padding` er en komponentvariabel.
- *
- * Slagene leses ut av `tokens.css` framfor å stå skrevet her. Sto de skrevet,
- * ville et nytt slag gjort hvert navn i det til en komponentvariabel, og
- * tokensiden hadde sluttet å kreve dem uten at noe sa fra.
- *
- * Slaget er første ledd etter `--fs-`, så `--fs-line-height-default` gir
- * `line`. Det er grovere enn navnet, og med vilje: en komponentvariabel som
- * heter `--fs-line-noe` ville da bli krevd i `tokens.css`, og det er riktig,
- * for navnet ville lest som et token.
+ * Lista leses fra manifestet, som `generate-manifest.ts` skriver fra
+ * stilarkene: hver `var(--fs-<komponent>-…, <reserve>)`, ført til komponenten
+ * navnet begynner med. Før leste denne sjekken stilarkene selv, med sin egen
+ * regel for hva som er et token og hva som er en komponentvariabel, og da
+ * fantes lista to steder. Nå er manifestet det ene, og en variabel som ikke
+ * står der, finnes ikke for dokumentasjonen heller. At manifestet er
+ * generert på nytt, vokter CI-steget «Ingenting er ugenerert».
  */
-const TOKENSLAG = [
-  ...new Set(
-    [
-      ...les(`${ROT}designsystem/src/tokens/tokens.css`).matchAll(
-        /^\s*--fs-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm,
-      ),
-    ].map((treff) => treff[1]),
-  ),
-]
-
-function variabler(css: string): string[] {
-  return [...new Set(css.match(/--fs-[\w-]+/g) ?? [])].filter(
-    (navn) =>
-      !TOKENSLAG.some(
-        (slag) => navn === `--fs-${slag}` || navn.startsWith(`--fs-${slag}-`),
-      ),
-  )
-}
+const MANIFEST: {
+  tokens: { components: Record<string, Record<string, string>> }
+} = JSON.parse(les(`${ROT}designsystem/manifest/manifest.json`))
+const KOMPONENTVARIABLER = MANIFEST.tokens.components
 
 /**
  * Eksempler skal kunne kopieres rett inn.
@@ -374,7 +355,7 @@ for (const { navn, sti } of komponentmapper()) {
   }
 
   const css = kilde(sti, ".css")
-  const ts = kilde(sti, ".ts")
+  const variabler = Object.keys(KOMPONENTVARIABLER[navn] ?? {})
   const hvor = `components/${navn}.mdx`
 
   if (!/^## .*[Tt]ilgjengelighet/m.test(tekst)) {
@@ -422,7 +403,7 @@ for (const { navn, sti } of komponentmapper()) {
 
   // Komponenter som ikke rendrer noe selv, som <fs-field>, har ingenting å
   // eksponere og trenger derfor ingen slik seksjon.
-  const eksponerer = klasser(css).length > 0 || variabler(css + ts).length > 0
+  const eksponerer = klasser(css).length > 0 || variabler.length > 0
   const stylbare = /## (Klasser|Deler) du kan style/.test(tekst)
   if (eksponerer && !stylbare) {
     avvik.push({
@@ -437,7 +418,7 @@ for (const { navn, sti } of komponentmapper()) {
     }
   }
 
-  for (const variabel of variabler(css + ts)) {
+  for (const variabel of variabler) {
     alleVariabler.add(variabel)
     if (!nevnt(tekst, variabel)) {
       avvik.push({
@@ -448,8 +429,32 @@ for (const { navn, sti } of komponentmapper()) {
   }
 }
 
+/*
+ * Hver variabel i manifestet, også dem en komponent uten side skulle hatt:
+ * oversikten skal ha alle, og tellingen skal være større enn null, ellers har
+ * manifestet ingen komponentvariabler og sjekken over sa ingenting.
+ */
+for (const variabler of Object.values(KOMPONENTVARIABLER))
+  for (const variabel of Object.keys(variabler)) alleVariabler.add(variabel)
+if (alleVariabler.size === 0) {
+  avvik.push({
+    hvor: "manifest.json",
+    hva: "har ingen komponentvariabler, så ingen variabel ble sjekket",
+  })
+}
+/*
+ * Som første celle i en tabellrad, ikke bare nevnt: `--fs-card-padding` står
+ * i prosaen om rekkevidde lenger opp, og raden kunne tas ut av oversikten
+ * uten at noe sa fra.
+ */
+const oppfortITilpasning = new Set(
+  tilpasning
+    .split("\n")
+    .filter((linje) => linje.startsWith("| `--fs-"))
+    .map((linje) => linje.split("|")[1]?.trim().replace(/`/g, "") ?? ""),
+)
 for (const variabel of [...alleVariabler].sort()) {
-  if (!nevnt(tilpasning, variabel)) {
+  if (!oppfortITilpasning.has(variabel)) {
     avvik.push({
       hvor: "tilpasning.mdx",
       hva: `variabelen \`${variabel}\` mangler i oversikten`,
