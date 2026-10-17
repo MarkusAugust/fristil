@@ -238,6 +238,38 @@ egen overskrift «Brytende».
   eksemplet på Connection Status-siden og i JSDoc-en til
   `FsConnectionStatus` sjekker også `svar.ok`. En test kjører «Ren
   HTML»-eksemplet fra siden mot en server som svarer 500.
+- **`fs-list` beholder punktene og tallene sammen med Tailwinds Preflight.**
+  Standardvarianten sa ingenting om `list-style` og lente seg på nettleseren,
+  mens Preflight setter `list-style: none` på hver `<ul>` og `<ol>`. Med
+  oppsettet Tailwind-siden anbefaler, `@import "tailwindcss"` og `base` før
+  `fristil`, mistet lista punktene og nummereringen, og det gjorde lista i
+  `fs-error-summary` også. Klassen setter nå `list-style-type: revert`, som
+  går tilbake til nettleserens eget stilark, så listene ser ut som uten
+  Tailwind. Variantene `plain` og `divided` er fortsatt uten punkter. Vil du
+  ha et annet punkt på alle `.fs-list`, sett det selv, i CSS uten lag eller
+  i et lag etter `fristil`: en `list-style` på `ul` i et lag foran, som
+  `base`, når ikke lenger fram til klassen. Testen bygger oppsettet med
+  Tailwinds egen `preflight.css`, ikke en håndskrevet utgave med bare
+  knappereglene.
+- **Lagrekkefølgen for Tailwind tar med `fristil-tema`.** Et generert tema
+  erklærer `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter
+  ikke lag som alt er erklært. Med den anbefalte linja
+  `@layer theme, base, fristil, components, utilities;` havnet temaet derfor
+  sist, etter `utilities`, og slo Tailwind-klassene og `@layer base` på de
+  samme elementene, enda Tilpasning- og Eget tema-sidene sa at din egen CSS
+  fortsatt vinner. Linja i dokumentasjonen og i kommentaren i `tailwind.css`
+  er nå `@layer theme, base, fristil, fristil-tema, components, utilities;`,
+  og Eget tema-siden sier at laget må stå der når Tailwind brukes, og at
+  linja må stå i `<head>` når temaet lastes som en `<link>` før den
+  bundlede CSS-en, for da har temaet alt erklært lagene sine. Temaet
+  `fristil tema` skriver, er uendret.
+- **Tailwind-siden og Design tokens-siden sa at skalaen følger med når du
+  setter `--fs-spacing-1`.** `p-4` er `calc(var(--fs-spacing-1) * 4)`, men
+  `--fs-spacing-4` og de andre trinnene er egne verdier, så eksempelet
+  `--fs-spacing-1: 0.3rem` ga `p-4` 1,2rem mens komponentene sto på 1rem.
+  Sidene og kommentaren i `tailwind.css` sier nå at trinnene må skrives om
+  hver for seg, og eksempelet gjør det. Tabellen over skalaen oppgir også
+  `px` som Tailwind-motstykket til `--fs-spacing-px`, der det sto «ingen».
 
 ## 0.33.0 (2026-10-12)
 

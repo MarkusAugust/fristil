@@ -64,6 +64,9 @@ const fargeklasser: [klasse: string, inneholder: string][] = Object.keys(
 const forventet: [klasse: string, inneholder: string][] = [
   ["p-4", "calc(var(--fs-spacing-1) * 4)"],
   ["gap-2", "calc(var(--fs-spacing-1) * 2)"],
+  // Tailwinds egen `px` er den faste pikselen, som `--fs-spacing-px`. Tabellen
+  // på Design tokens-siden oppgir den som motstykket, og det må være sant.
+  ["p-px", "1px"],
   ...fargeklasser,
   // Én farge også som tekst, så navnerommet ikke bare virker for bakgrunn.
   ["text-fs-accent-text", "var(--fs-color-accent-text)"],
