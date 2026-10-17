@@ -96,7 +96,7 @@ komponentene og komponentsidene i
 `designsystem/scripts/metadata.ts`, klassene fra pakkens CSS, og hva hver klasse tar leses ved å
 kalle byggefunksjonene i `fs`, så `data-variant="ghost"` er lovlig fordi
 `fs.button({ variant: "ghost" })` gir det. `bun run build` i pakken skriver
-filene på nytt som første steg, og CI feller en endring der det bygget skrev
+filene på nytt før noen sjekk leser dem, og CI feller en endring der det bygget skrev
 ikke er committet. Diagnostikken er
 en ren funksjon uten VS Code i seg, og `kjerne/scripts/sjekk-diagnostikk.ts` kjører
 den over hver feiltype den skal fange. Se `CONTRIBUTING.md` i repoet.

@@ -58,26 +58,8 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      # npm må være 11.5.1 eller nyere for å kunne hente legitimasjon fra
-      # OIDC-beviset.
-      - name: Oppdater npm
-        run: npm install --global npm@latest
-
-      - name: Installer avhengigheter
-        run: bun install --frozen-lockfile
-
-      # Bygger bare pakken. Dokumentasjonen har ingenting med utgivelsen å
-      # gjøre, og bygget kontrollerer selv at pakken inneholder det `exports`
-      # lover, at kommandolinja virker, og at versjonen står i loggen.
-      # Pakken har kjernen med seg, bygget fra Rust i samme jobb som den
-      # publiseres fra. rustup henter versjonen i `kjerne/rust-toolchain.toml`.
-      - name: Rust-versjon
-        working-directory: kjerne
-        run: rustc --version
-
-      - name: Bygg pakken
-        run: bun --filter @fristil/designsystem build
-
+      # Kontrollene som bare leser package.json og git står først, så en
+      # tagg satt feil blir avvist før bygget, ikke flere minutter etter.
       - name: Les versjonen
         id: versjon
         working-directory: designsystem
@@ -109,6 +91,26 @@ jobs:
             echo "Taggen $GITHUB_REF_NAME står på $(git rev-parse --short HEAD), som ikke er på master. Slå grenen sammen først, fjern taggen og sett den på nytt fra master." >&2
             exit 1
           fi
+
+      # npm må være 11.5.1 eller nyere for å kunne hente legitimasjon fra
+      # OIDC-beviset.
+      - name: Oppdater npm
+        run: npm install --global npm@latest
+
+      - name: Installer avhengigheter
+        run: bun install --frozen-lockfile
+
+      # Bygger bare pakken. Dokumentasjonen har ingenting med utgivelsen å
+      # gjøre, og bygget kontrollerer selv at pakken inneholder det `exports`
+      # lover, at kommandolinja virker, og at versjonen står i loggen.
+      # Pakken har kjernen med seg, bygget fra Rust i samme jobb som den
+      # publiseres fra. rustup henter versjonen i `kjerne/rust-toolchain.toml`.
+      - name: Rust-versjon
+        working-directory: kjerne
+        run: rustc --version
+
+      - name: Bygg pakken
+        run: bun --filter @fristil/designsystem build
 
       # Den første utgivelsen gjøres fra maskinen, siden npm bare lar deg
       # koble en utgiver til en pakke som allerede finnes. Taggen for den

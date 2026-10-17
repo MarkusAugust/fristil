@@ -74,7 +74,7 @@ Playwrights egne bygg.
 
 ## Genererte filer
 
-Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @fristil/designsystem generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` som første steg.
+Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @fristil/designsystem generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` rett etter kjernen, før noen sjekk leser filene.
 
 | Fil | Kilde |
 | --- | --- |
@@ -177,8 +177,8 @@ en ny variant er med når `fs` gir den. Filene genereres fra
 `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
 sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
-setning om det. `bun run build` skriver filene på nytt som første steg, og
-feller ikke en utdatert fil; glemmer du å committe det bygget skrev, gjør
+setning om det. `bun run build` skriver filene på nytt før noen sjekk leser
+dem, og feller ikke en utdatert fil; glemmer du å committe det bygget skrev, gjør
 steget «Ingenting er ugenerert» i CI det. Filene kan også skrives alene:
 
 ```bash
@@ -231,7 +231,7 @@ eksempelet, og du ser ikke lenger det en konsument får.
 Funksjoner, variabler, typer og konstanter navngis på engelsk, også lokale
 variabler, og aldri blandet i ett navn. Kommentarene er på norsk.
 `sjekk-identifikatorer.ts` feller et norsk navn i koden som sendes ut;
-testfiler og `src/testing/` er unntatt.
+testfiler, `src/testing/`, `src/types/` og skriptene i `scripts/` er unntatt.
 
 En sjekk skal ikke spørre kilden om kilden. Det forventede, antallet eller
 innholdet, skal komme fra et annet sted enn køen sjekken går gjennom, ellers

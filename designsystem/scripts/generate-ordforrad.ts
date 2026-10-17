@@ -446,17 +446,14 @@ export function classesData(): Classes {
   for (const builder of lesByggefunksjoner()) {
     const build = (fs as Record<string, unknown>)[builder.name]
     if (typeof build !== "function") continue
-    let found: Map<string, Set<string>>
-    try {
-      found = flaggFor(
-        builder,
-        build as (options: Record<string, unknown>) => unknown,
-        { id: "x", titleId: "x" },
-        (name) => name in out,
-      )
-    } catch {
-      continue
-    }
+    // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
+    // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
+    const found = flaggFor(
+      builder,
+      build as (options: Record<string, unknown>) => unknown,
+      { id: "x", titleId: "x" },
+      (name) => name in out,
+    )
     for (const [name, attributes] of found)
       for (const attribute of attributes)
         flags.set(name, (flags.get(name) ?? new Set()).add(attribute))
