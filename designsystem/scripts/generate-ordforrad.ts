@@ -32,7 +32,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fs } from "../src/index.js"
 import type { Attribute, Classes, Elements } from "../src/vocabulary/types.js"
-import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner"
+import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner.js"
 import { type AttributeDoc, type ElementDoc, elements } from "./metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))

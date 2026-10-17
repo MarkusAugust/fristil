@@ -42,7 +42,7 @@ import {
   settene,
   type Valg,
   type Valgtype,
-} from "./byggefunksjoner"
+} from "./byggefunksjoner.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 const UT = `${PAKKE}manifest/`
