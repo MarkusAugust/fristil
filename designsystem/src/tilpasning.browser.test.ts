@@ -314,7 +314,9 @@ describe("sammen med Tailwind", () => {
     const padding = (dok: Document, id: string, ...ventet: number[]) => {
       const tall = stil(dok, id).padding.split(" ").map(Number.parseFloat)
       expect(tall).toHaveLength(ventet.length)
-      tall.forEach((verdi, i) => expect(verdi).toBeCloseTo(ventet[i], 3))
+      for (const [i, verdi] of tall.entries()) {
+        expect(verdi).toBeCloseTo(ventet[i], 3)
+      }
     }
     padding(hele, "klasse", 19.2)
     padding(hele, "trinn", 19.2)
