@@ -45,7 +45,9 @@ at endringen er committet. Steget feiler ellers på dine egne endringer.
 
 Det krever i tillegg til Bun: Rust, siden sjekken i pakken bygges fra
 `kjerne/`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
-gang, når VS Code lastes ned. På Linux uten skjerm trengs også `xvfb-run`.
+gang, når VS Code lastes ned. På Linux uten skjerm, altså uten `DISPLAY` og
+`WAYLAND_DISPLAY` satt, trengs også `xvfb-run`; har maskinen skjerm, kjøres
+VS Code på den.
 Installer [rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter
 riktig versjon og målene ved første kall.
 
