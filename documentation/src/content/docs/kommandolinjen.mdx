@@ -190,17 +190,20 @@ npx @fristil/designsystem sjekk --css=public/app.css --manifest=src/ui/button/fr
 ```
 
 ```text
-maler/kort.html:3:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
 maler/knapp.html:1:28: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
+maler/kort.html:1:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
+
+2 funn i 2 filer.
 ```
 
-Den andre meldingen kommer for en verdi manifestet kjenner, men som ingen av
+Den første meldingen kommer for en verdi manifestet kjenner, men som ingen av
 stilarkene styler. En verdi Fristil ikke har, som `data-variant="glass"` på
 `fs-button`, avvises før stilarkene leses, med beskjed om de lovlige
 verdiene. Meldingen er nyttigst for en komponent du har [tatt over](#overta):
 legger du til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig
-og ser ut som standard. Utdataene over er fra en slik kopi, med `glass` lagt
-til i fragmentet. `@import` følges til filer ved siden av og til pakker i
+og ser ut som standard. Utdataene over er fra en slik kopi: `knapp.html` er
+`<button class="app-button" data-variant="glass">`, med `glass` lagt til i
+fragmentet. `@import` følges til filer ved siden av og til pakker i
 `node_modules`, som `@fristil/designsystem/fristil.css`. `--css` kan gis flere
 ganger. Stilarkene leses med en ekte CSS-leser, så nesting, `:is()`,
 `:where()`, `@layer` og `@media` forstås som nettleseren forstår dem.
