@@ -18,11 +18,16 @@
  * Kjøres av `bun run build`, etter at `dist` er bygd.
  */
 
-import { join } from "node:path"
+import { join } from "node:path/posix"
 import { fileURLToPath } from "node:url"
 import ts from "typescript"
 
-const pakke = fileURLToPath(new URL("../", import.meta.url))
+/*
+ * Med skråstrek også på Windows: TypeScript normaliserer rotfilene til
+ * skråstrek før den spør verten om dem, så den virtuelle fila må ligge under
+ * samme stavemåte for at oppslaget skal treffe.
+ */
+const pakke = fileURLToPath(new URL("../", import.meta.url)).replace(/\\/g, "/")
 const manifest = (await Bun.file(join(pakke, "package.json")).json()) as {
   name: string
   exports: Record<string, string | { types?: string }>
