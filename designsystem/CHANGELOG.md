@@ -25,6 +25,13 @@ egen overskrift «Brytende».
 
 ### Lagt til
 
+- **`Fristil.manifest.builders` i Kotlin-pakken.** Hver byggefunksjon med
+  valgene (`name`, `required`, `type` som `values`, `flag`, `text`,
+  `number` eller `textList`, og `description`) og formen på svaret
+  (`attributes`, `text`, `values`, `list` eller `group`). Tabellen
+  generatoren bak `Fs` bruker er fortsatt utelatt. TypeScript-typen
+  `Manifest` har fått `builders` med samme form.
+
 - **`Fristil.buildTheme(oppskrift)` og `Fristil.inspectTheme(css)` i
   Kotlin-pakken.** Temaet kunne før bare bygges med `fristil tema` og
   Gradle-oppgaven `fristilTema`. Oppskriften er JSON-teksten `fristil tema`

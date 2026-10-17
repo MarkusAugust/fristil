@@ -31,7 +31,6 @@ class ManifestReaderTest {
 
     @Test
     fun `the package manifest is the one in the jar`() {
-        // `builders` er med vilje utelatt, se Manifest.
         known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", "tokens", at = "manifestet")
         assertEquals(Manifest.parse(text), Fristil.manifest)
         assertEquals(raw["version"], Fristil.manifest.version)
@@ -120,6 +119,81 @@ class ManifestReaderTest {
         assertTrue(parts > 0 && events > 0, "Fant $parts deler og $events hendelser, så sammenligningen sa ingenting.")
     }
 
+    /** Formen på et svar slik rå-JSON-en skriver den, med `optional` bare når den står der. */
+    private fun returnsJson(r: Returns): Map<String, Any?> =
+        buildMap {
+            when (r) {
+                is Returns.Attributes -> put("kind", "attributes")
+                is Returns.Text -> put("kind", "text")
+                is Returns.Values -> {
+                    put("kind", "values")
+                    put("values", r.values)
+                }
+                is Returns.ListOf -> {
+                    put("kind", "list")
+                    put("of", returnsJson(r.of))
+                }
+                is Returns.Group -> {
+                    put("kind", "group")
+                    put("fields", r.fields.mapValues { (_, f) -> returnsJson(f) })
+                }
+            }
+            if (r.optional) put("optional", true)
+        }
+
+    private fun typeJson(t: OptionType): Map<String, Any?> =
+        when (t) {
+            is OptionType.Values -> mapOf("kind" to "values", "values" to t.values)
+            OptionType.Flag -> mapOf("kind" to "flag")
+            OptionType.Text -> mapOf("kind" to "text")
+            OptionType.Number -> mapOf("kind" to "number")
+            OptionType.TextList -> mapOf("kind" to "textList")
+        }
+
+    @Test
+    fun `every builder keeps its options and the shape of its answer, in order`() {
+        val builders = raw["builders"] as List<*>
+        assertEquals(builders.map { it.map()["name"] }, Fristil.manifest.builders.map { it.name })
+        var options = 0
+        val kinds = mutableSetOf<String>()
+        val shapes = mutableSetOf<String>()
+        fun shapesIn(r: Any?) {
+            val m = r.map()
+            known(r, "kind", "values", "of", "fields", "optional", at = "returns")
+            shapes += m["kind"] as String
+            m["of"]?.let { shapesIn(it) }
+            m["fields"]?.map()?.values?.forEach { shapesIn(it) }
+        }
+        for ((i, b) in builders.withIndex()) {
+            val expected = b.map()
+            val read = Fristil.manifest.builders[i]
+            known(b, "name", "options", "returns", "table", at = read.name)
+            val rawOptions = expected["options"] as List<*>
+            assertEquals(rawOptions.size, read.options.size, read.name)
+            for ((j, o) in rawOptions.withIndex()) {
+                val e = o.map()
+                val r = read.options[j]
+                known(o, "name", "required", "type", "description", at = "${read.name} ${e["name"]}")
+                known(e["type"], "kind", "values", at = "${read.name} ${e["name"]} type")
+                assertEquals(listOf(e["name"], e["required"], e["type"], e["description"]), listOf(r.name, r.required, typeJson(r.type), r.description), "${read.name} ${e["name"]}")
+                kinds += e["type"].map()["kind"] as String
+                options += 1
+            }
+            shapesIn(expected["returns"])
+            assertEquals(expected["returns"], returnsJson(read.returns), "${read.name} returns")
+        }
+        assertTrue(options > 0, "Ingen byggefunksjon hadde valg, så sammenligningen sa ingenting.")
+        assertEquals(setOf("values", "flag", "text", "number", "textList"), kinds, "hver type valg skal finnes i manifestet, ellers er en gren i leseren uprøvd")
+        // Ingen byggefunksjon gir en ren tekst i dag, så den grenen prøves under, med et manifest skrevet om.
+        assertTrue(shapes.containsAll(setOf("attributes", "values", "list", "group")), "formene i manifestet var $shapes, så en gren i leseren er uprøvd")
+        val asText = Manifest.parse(text.replaceFirst("\"returns\": {\n        \"kind\": \"attributes\"", "\"returns\": {\n        \"kind\": \"text\""))
+        assertEquals(Returns.Text(), asText.builders.first().returns)
+        // Heller ikke et valgfritt felt i en gruppe finnes i dag; `host` i den første gruppen gjøres valgfri.
+        val withOptional = Manifest.parse(text.replaceFirst("\"host\": {\n            \"kind\": \"attributes\"", "\"host\": {\n            \"kind\": \"attributes\", \"optional\": true"))
+        val group = withOptional.builders.first { it.returns is Returns.Group }.returns as Returns.Group
+        assertEquals(Returns.Attributes(optional = true), group.fields.getValue("host"))
+    }
+
     @Test
     fun `the tokens keep every scale, axis and component variable`() {
         val tokens = raw["tokens"].map()
@@ -164,6 +238,15 @@ class ManifestReaderTest {
         assertEquals("primary", variant.default)
         assertTrue(Fristil.manifest.classes.values.any { c -> c.attributes.values.any { it.flag && it.values.isEmpty() } })
 
+        val button = Fristil.manifest.builders.single { it.name == "button" }
+        val variantOption = button.options.single { it.name == "variant" }
+        assertEquals(false, variantOption.required)
+        assertTrue(variantOption.type is OptionType.Values && "secondary" in variantOption.type.values)
+        assertEquals(Returns.Attributes(), button.returns)
+        val dialog = Fristil.manifest.builders.single { it.name == "dialog" }
+        assertTrue(dialog.options.single { it.name == "titleId" }.required)
+        assertTrue(dialog.returns is Returns.Group && "host" in dialog.returns.fields)
+
         val table = Fristil.manifest.classes.getValue("fs-table")
         assertEquals(PartContent.PARTS, table.content)
         assertEquals(listOf("caption", "head", "body", "sort"), table.parts.keys.toList())
@@ -190,5 +273,6 @@ class ManifestReaderTest {
         assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "«tekst»")
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes skulle vært et objekt")
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}}"""), "tokens skulle vært et objekt")
+        assertContains(error(text.replaceFirst("\"kind\": \"flag\"", "\"kind\": \"flagg\"")), "«flagg»")
     }
 }
