@@ -30,6 +30,9 @@ export function managedNames(set: object): readonly string[] | undefined {
  * objektet sto ikke i kartet. `fs.setAttributes` derfra ryddet da bare
  * `data-*`, og `aria-invalid` ble stående etter at feltet var rettet.
  * Navnene gis slik de heter i det nye settet.
+ *
+ * For `/react` og andre innganger som skriver settene om, ikke for apper:
+ * et sett fra `fs.*` er allerede forvaltet.
  */
 export function rememberManaged(set: object, names: readonly string[]): void {
   managed.set(set, names)

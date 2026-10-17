@@ -209,7 +209,8 @@ egen overskrift «Brytende».
   hver avatar i stabelen males for seg, så ringen til den bak ikke skinner
   gjennom bildet til den foran.
   En slik `outline` slår nettleserens egen fokusmarkering, så en
-  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`.
+  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`, og
+  i en stabel løftes den med fokus over naboene så fokusringen vises hel.
 - **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
   hadde en fast radius og leste ikke variabelen. Standarden der er
   fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.

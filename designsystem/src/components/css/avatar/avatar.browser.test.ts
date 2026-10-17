@@ -152,4 +152,35 @@ describe("fs-avatar med bilde", () => {
         expect(r - Math.max(g, b), `foran ved ${x},${y}`).toBeLessThan(40)
       }
   })
+  it("viser hele fokusringen til en avatar bak en annen i en stabel", async () => {
+    // Hver avatar i stabelen males for seg, og det gjelder fokusringen også:
+    // den bak fikk ringen dekket der den foran overlapper. Den som har fokus,
+    // løftes over naboene. Ringen får en rød farge som ikke finnes ellers, og
+    // `:focus-visible` byttes med et attributt i en kopi av reglene, som i
+    // testen for knappen. Skjermbildet tas av stabelen, siden ringen ligger
+    // utenfor avatarens egen boks.
+    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
+    )}`
+    monter(`
+      <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
+      <ul class="fs-avatar-stack" id="stabel" style="--fs-avatar-size: 96px; --fs-avatar-stack-overlap: -24px; --fs-focus-ring: 2px solid rgb(255, 0, 0)">
+        <li><button class="fs-avatar" id="bak" data-fokus aria-label="Bak"><img src="${hvitt}" alt="" /></button></li>
+        <li><button class="fs-avatar" id="foran" aria-label="Foran"><img src="${hvitt}" alt="" /></button></li>
+      </ul>
+    `)
+    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    await ventPaTegning()
+
+    // Stabelen er 168 px bred. Den bak begynner 72 px inn, og fokusringen
+    // ligger 2 til 4 px utenfor venstre kant, under den foran uten løftet.
+    const stabel = document.getElementById("stabel") as HTMLElement
+    expect(stabel.getBoundingClientRect().width).toBeCloseTo(168, 0)
+    let rødest = 0
+    for (const x of [0.4, 0.405, 0.41, 0.415]) {
+      const [r, g, b] = await piksel(stabel, x)
+      rødest = Math.max(rødest, r - Math.max(g, b))
+    }
+    expect(rødest, "fokusringen bak").toBeGreaterThan(60)
+  })
 })

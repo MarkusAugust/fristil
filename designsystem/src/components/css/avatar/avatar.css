@@ -83,4 +83,12 @@
     box-shadow: 0 0 0 2px var(--fs-color-neutral-canvas);
     isolation: isolate;
   }
+
+  /* Den egne konteksten gjelder også fokusringen: en avatar som er en knapp
+     og ligger bak en annen, fikk ringen dekket der naboen overlapper. Den
+     som har fokus, løftes over naboene så ringen vises hel. */
+  .fs-avatar-stack .fs-avatar:focus-visible {
+    position: relative;
+    z-index: 1;
+  }
 }
