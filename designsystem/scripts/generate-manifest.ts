@@ -673,6 +673,21 @@ const TOKEN_KINDS = new Set(
     (navn) => navn.split("-")[3],
   ),
 )
+/*
+ * Variablene en web-komponent skriver selv, som `--fs-popover-top`, er ikke
+ * noe konsumenten overstyrer: inline-stilen slår et stilark. De leses med
+ * reserve i CSS-en som alle andre, og kjennes igjen på `setProperty` i
+ * komponentens egen kilde.
+ */
+const setByComponent = new Set<string>()
+for (const { sti } of COMPONENT_DIRS)
+  for (const fil of readdirSync(sti).filter(
+    (f) => f.endsWith(".ts") && !f.includes(".test."),
+  ))
+    for (const m of readFileSync(`${sti}/${fil}`, "utf8").matchAll(
+      /setProperty\(\s*["'](--fs-[a-z0-9-]+)["']/g,
+    ))
+      setByComponent.add(m[1])
 const componentVariables: Record<string, Record<string, string>> = {}
 for (const { navn, sti } of COMPONENT_DIRS) {
   for (const fil of readdirSync(sti)
@@ -693,9 +708,11 @@ for (const { navn, sti } of COMPONENT_DIRS) {
         else if (css[i] === ")") dybde--
       }
       const variabel = m[1]
-      // Et token leses med reserve også, som fargene i `progress.css`, og
-      // hører på tokensiden, ikke her.
+      // Et token hører på tokensiden, ikke her. I dag leser ingen komponent
+      // et token med reserve, men gjorde en det, ville det sett ut som en
+      // komponentvariabel uten dette.
       if (TOKEN_KINDS.has(variabel.split("-")[3])) continue
+      if (setByComponent.has(variabel)) continue
       const reserve = css
         .slice(lesing.lastIndex, i - 1)
         .trim()

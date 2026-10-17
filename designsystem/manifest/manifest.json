@@ -4655,9 +4655,9 @@
       "families": {
         "accent": "Lenker, primærknapp, fokus, valgt tilstand",
         "visited": "Besøkte lenker",
-        "brand1": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
-        "brand2": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
-        "brand3": "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand1": "Første merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand2": "Andre merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand3": "Tredje merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
         "neutral": "Siden, brødteksten, kantene",
         "danger": "Feil, sletting, avslag",
         "warning": "Krever oppmerksomhet",
@@ -4857,8 +4857,6 @@
         "--fs-paragraph-gap": "var(--fs-spacing-3)"
       },
       "popover": {
-        "--fs-popover-top": "0",
-        "--fs-popover-left": "0",
         "--fs-popover-width": "min(20rem, calc(100vw - var(--fs-spacing-8)))",
         "--fs-popover-padding": "var(--fs-spacing-3)",
         "--fs-popover-radius": "var(--fs-spacing-1)"

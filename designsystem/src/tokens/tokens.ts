@@ -37,9 +37,12 @@ export type Container = keyof typeof Containers
 export const FAMILY_DESCRIPTIONS: Record<Family, string> = {
   accent: "Lenker, primærknapp, fokus, valgt tilstand",
   visited: "Besøkte lenker",
-  brand1: "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
-  brand2: "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
-  brand3: "Flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  brand1:
+    "Første merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  brand2:
+    "Andre merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  brand3:
+    "Tredje merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
   neutral: "Siden, brødteksten, kantene",
   danger: "Feil, sletting, avslag",
   warning: "Krever oppmerksomhet",

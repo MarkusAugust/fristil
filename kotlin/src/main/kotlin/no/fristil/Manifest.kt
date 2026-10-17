@@ -8,7 +8,7 @@ package no.fristil
  *
  * Klassene har innholdet og delene sine, så et verktøy kan sette sammen
  * markupen av dem, og [Manifest.tokens] har avstandene, brekkpunktene,
- * fargeaksene og komponentvariablene det kan style med.
+ * containerbreddene, fargeaksene og komponentvariablene det kan style med.
  * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
  * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
  * prosjekt som har overtatt komponenter. Byggefunksjonene i manifestet er
