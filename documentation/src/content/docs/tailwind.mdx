@@ -99,7 +99,7 @@ Breddene er unntaket. `max-w-fs-aside`, `max-w-fs-wide-content` og de andre bred
 
 Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--fs-spacing-1`. `p-4` er dermed fire ganger grunnenheten, som er `--fs-spacing-4`, den samme verdien komponentene bruker.
 
-Trinnene i skalaen er egne verdier, ikke regnet av enheten. Setter du bare `--fs-spacing-1`, følger Tailwind-klassene med, men `--fs-spacing-4` og komponentene står der de sto, og `p-4` er ikke lenger det samme som en knapps padding. Skal du endre skalaen, skriv om hele:
+Trinnene i skalaen er egne verdier, ikke regnet av enheten. Setter du bare `--fs-spacing-1`, følger Tailwind-klassene med, og det i komponentene som bruker enheten direkte, som luften mellom listepunkter, mens `--fs-spacing-4` og resten av komponentene står der de sto. Da er `p-4` ikke lenger det samme som en knapps padding, og komponentene spriker innbyrdes. Skal du endre skalaen, skriv om hele:
 
 ```css
 :root {

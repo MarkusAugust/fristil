@@ -236,7 +236,7 @@ Hver celle i matrisen blir en klasse, med samme navn: `bg-fs-accent-fill` leser 
 | `max-w-fs-aside` | 384px |
 | `shadow-fs-overlay` | `--fs-shadow-overlay` |
 
-Avstandene er koblet til grunnenheten: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--fs-spacing-1`. `p-4` er dermed fire ganger enheten, som er `--fs-spacing-4`. Trinnene er egne verdier og regnes ikke av enheten, så skal du endre skalaen, skriv om alle trinnene og ikke bare `--fs-spacing-1`. Ellers følger Tailwind-klassene med, men ikke komponentene. [Tailwind](../tailwind/#avstandene-er-de-samme) viser hvordan.
+Avstandene er koblet til grunnenheten: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--fs-spacing-1`. `p-4` er dermed fire ganger enheten, som er `--fs-spacing-4`. Trinnene er egne verdier og regnes ikke av enheten, så skal du endre skalaen, skriv om alle trinnene og ikke bare `--fs-spacing-1`. Ellers følger Tailwind-klassene og det i komponentene som bruker enheten direkte med, mens resten av komponentene står der de sto. [Tailwind](../tailwind/#avstandene-er-de-samme) viser hvordan.
 
 Brekkpunktene er utelatt med vilje. Fristils `sm` til `2xl` har de samme verdiene som Tailwind allerede bruker, så `md:` virker som før.
 
