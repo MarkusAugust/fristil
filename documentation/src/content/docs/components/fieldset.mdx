@@ -79,12 +79,12 @@ Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skje
   <p class="fs-help-text" id="levering-hjelp">Vi sender innen tre virkedager.</p>
 
   <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" />
+    <input class="fs-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" aria-invalid="true" />
     <label class="fs-label" for="lev-post">Vanlig post</label>
   </div>
 
   <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" />
+    <input class="fs-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" aria-invalid="true" />
     <label class="fs-label" for="lev-hentes">Hentes på kontoret</label>
   </div>
 
@@ -92,7 +92,7 @@ Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skje
 </fieldset>
 `} />
 
-`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser.
+`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser, og `aria-invalid` for skjermleseren. `fs.radio({ state: "invalid" })` gir begge.
 
 `data-state="success"` farger ledeteksten grønn på samme måte, og brukes når gruppen er ferdig utfylt og godkjent. Fargen er det eneste som skiller de to, så den kan ikke stå alene: si i teksten hva som er galt eller hva som er i orden.
 

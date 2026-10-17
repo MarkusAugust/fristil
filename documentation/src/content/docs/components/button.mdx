@@ -67,10 +67,19 @@ type Props = ComponentProps<"button"> & {
   variant?: ButtonVariant
 }
 
-export function Knapp({ variant, ...rest }: Props) {
-  return <button {...fs.button({ variant })} {...rest} />
+export function Knapp({ variant, className, ...rest }: Props) {
+  const knapp = fs.button({ variant })
+  return (
+    <button
+      {...knapp}
+      {...rest}
+      className={className ? `${knapp.className} ${className}` : knapp.className}
+    />
+  )
 }
 ```
+
+`className` slås sammen med systemets klasse. Spres den bare inn etter `fs.button()`, erstatter den `fs-button`, og knappen mister stilen uten at noe sier fra.
 
 Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke designsystemet.
 

@@ -23,6 +23,14 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Rettet
+
+- **Et merke, en etikett, en knapp eller en lenke i et kort strekkes ikke
+  lenger til hele bredden.** `.fs-card` er en flekskolonne, så
+  `<span class="fs-badge">Innvilget</span>` ble et bånd tvers over kortet,
+  slik eksempelet på komponentsiden viste. Avsnitt, lister og bilder
+  strekkes som før.
+
 ### Lagt til
 
 - **Regelen `del-flere-ganger` i `fristil sjekk`, editoren og

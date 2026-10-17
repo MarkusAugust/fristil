@@ -72,6 +72,9 @@ defineFsErrorSummary()
           boks.querySelector("h2").textContent =
             feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`
         }
+        // Skjult og vist igjen, så fokus flyttes også når skjemaet feiler en
+        // gang til mens boksen alt står synlig.
+        boks.hidden = true
         boks.hidden = feilene.length === 0
       }
 
@@ -134,6 +137,7 @@ defineFsErrorSummary()
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/error-summary.css"
 
+    const { feilene } = Astro.props
     const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
     ---
 
