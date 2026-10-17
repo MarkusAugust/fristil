@@ -69,6 +69,10 @@ egen overskrift «Brytende».
   patchen ut nodene, følger komponenten markupen. Regelboka sier nå hvilke
   patcher som beholder valget, og at serveren ellers må skrive det selv
   eller bruke `server-controlled`.
+- **Regelbøkene sa at markupen i en `ramme`-komponent står der uansett.**
+  «Kom i gang» og «Rammeverk» ble rettet i 0.33.0, men ikke teksten i
+  generatoren, så alle seks regelbøkene manglet unntaket: Tabs viser bare det
+  første panelet og Suggestion skjuler lista til de er registrert.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

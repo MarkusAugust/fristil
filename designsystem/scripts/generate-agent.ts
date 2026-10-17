@@ -324,7 +324,7 @@ const STILER_MANGLER: [string, string] = [
 ]
 const INGEN_DEFINE: [string, string] = [
   "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett",
+  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert",
 ]
 const NORSK_TEKST: [string, string] = [
   "En komponent snakker norsk på en side på et annet språk",
