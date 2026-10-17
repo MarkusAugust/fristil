@@ -73,6 +73,12 @@ egen overskrift «Brytende».
   «Kom i gang» og «Rammeverk» ble rettet i 0.33.0, men ikke teksten i
   generatoren, så alle seks regelbøkene manglet unntaket: Tabs viser bare det
   første panelet og Suggestion skjuler lista til de er registrert.
+- **React-oppskriften på Dialog-siden og mønsteret «Bekreft en handling»
+  tømmer `returnValue` før `showModal()`.** «Ren HTML»- og Astro-fanene
+  fikk tømmingen i 0.33.0, men React-fanen, mønstersiden og demoen åpnet
+  dialogen med den gamle verdien stående. Ble dialogen åpnet igjen etter en
+  «Slett» og lukket uten knapp, fikk `close`-lytteren «slett» på nytt og
+  slettet igjen.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

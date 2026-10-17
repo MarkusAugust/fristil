@@ -41,6 +41,8 @@ En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, 
   const meldinger = document.getElementById("meldinger")
 
   document.getElementById("slett").addEventListener("click", () => {
+    // Escape og close() uten verdi lar forrige verdi stå.
+    dialog.returnValue = ""
     dialog.showModal()
   })
 

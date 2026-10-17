@@ -88,7 +88,12 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er den samme dialogen skr
           <button
             {...fs.button({ variant: "danger" })}
             type="button"
-            onClick={() => dialog.current?.showModal()}
+            onClick={() => {
+              if (!dialog.current) return
+              // Escape og close() uten verdi lar forrige verdi stå.
+              dialog.current.returnValue = ""
+              dialog.current.showModal()
+            }}
           >
             Slett søknaden
           </button>
