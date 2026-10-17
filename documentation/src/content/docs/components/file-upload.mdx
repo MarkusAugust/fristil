@@ -79,7 +79,7 @@ Feltet husker bare det siste utvalget: velger brukeren to filer til, erstatter d
 
 ```js
 const felt = document.getElementById("vedlegg")
-const skjema = felt.form
+const skjema = felt.form // feltet står i et <form>
 let filer = []
 
 felt.addEventListener("change", () => {
@@ -91,12 +91,14 @@ felt.addEventListener("change", () => {
 skjema.addEventListener("submit", async (hendelse) => {
   hendelse.preventDefault()
   const data = new FormData(skjema)
+  // Det tomme feltet sender ellers en tom fil når det har et name.
+  data.delete("vedlegg")
   for (const fil of filer) data.append("vedlegg", fil)
   await fetch(skjema.action, { method: "POST", body: data })
 })
 ```
 
-Feltet er tømt etter hvert valg, så en vanlig innsending tar ikke med noen av filene. Det er derfor skjemaet sendes med `fetch`, med filene lagt til i `FormData`.
+Feltet må stå i et `<form>`. Det er tømt etter hvert valg, så en vanlig innsending tar ikke med noen av filene. Derfor sendes skjemaet med `fetch`, med filene lagt til i `FormData`.
 
 ## Klasser du kan style
 

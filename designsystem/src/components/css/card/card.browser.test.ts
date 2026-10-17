@@ -39,6 +39,7 @@ describe("fs-card", () => {
         <p>Sendt 4. mars.</p>
         <span class="fs-badge" data-color="success">Innvilget</span>
         <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
+        <a class="fs-link" href="#">Se vedtaket</a>
       </div>
     `)
     const kort = document.getElementById("med-merke") as HTMLElement
@@ -50,6 +51,7 @@ describe("fs-card", () => {
 
     expect(bredde(".fs-badge")).toBeLessThan(innside / 2)
     expect(bredde(".fs-button")).toBeLessThan(innside)
+    expect(bredde(".fs-link")).toBeLessThan(innside / 2)
     expect(bredde("p")).toBeCloseTo(innside, 0)
   })
 
