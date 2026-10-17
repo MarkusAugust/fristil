@@ -219,7 +219,7 @@ declare global {
 }
 
 export function defineFsConnectionStatus(
-  tagName = FS_CONNECTION_STATUS_TAG,
+  tagName: string = FS_CONNECTION_STATUS_TAG,
 ): void {
   defineElement(tagName, FsConnectionStatus)
 }

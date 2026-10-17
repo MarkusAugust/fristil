@@ -34,6 +34,14 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`defineFs*` kaster ikke når klassen alt er registrert under et eget
+  navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
+  NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i
+  registeret én gang, og `<fs-session-timeout>` og `<fs-connection-status>`
+  ble aldri registrert. Nå registreres en underklasse under det andre navnet,
+  så begge navnene virker og flere kall er ufarlige, slik dokumentasjonen
+  sier. `tagName` er dessuten typet som `string`. Før var typen standardnavnet,
+  så TypeScript avviste `defineFsToast("app-toast")` før det kom så langt.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

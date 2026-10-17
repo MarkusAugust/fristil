@@ -7,7 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { defineFsToast, FsToast, showToast } from "./fs-toast"
+import { defineFsToast, type FsToast, showToast } from "./fs-toast"
 import { toast as fsToast } from "./toast"
 
 import "../../../tokens/tokens.css"
@@ -181,9 +181,8 @@ describe("fs-toast holder pausen og fokus", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `defineFsToast("fs-toast-sen")` går ikke: en
- * konstruktør kan bare registreres én gang, og `fs-toast` har alt tatt den.
- * En underklasse er en ny konstruktør med samme oppførsel.
+ * Et sent registrert tagnavn. `fs-toast` har alt tatt konstruktøren, så
+ * `defineFsToast("fs-toast-sen")` registrerer en underklasse av den.
  */
 describe("showToast() venter på registreringen", () => {
   it("viser meldingen først når elementet er oppgradert", async () => {
@@ -201,7 +200,7 @@ describe("showToast() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(element.querySelector(".fs-toast__message")).toBeNull()
 
-    customElements.define("fs-toast-sen", class extends FsToast {})
+    defineFsToast("fs-toast-sen")
 
     const melding = await løfte
     expect(element.contains(melding)).toBe(true)
@@ -215,11 +214,9 @@ describe("fs-toast under et annet tagnavn", () => {
     /*
      * Plasseringen sto på elementnavnet, så en region registrert som noe
      * annet enn `fs-toast` havnet i vanlig flyt. Den står nå på klassen, som
-     * komponenten setter selv. En underklasse, siden en konstruktør bare
-     * kan stå i registeret én gang.
+     * komponenten setter selv.
      */
-    class AnnenToast extends FsToast {}
-    customElements.define("annen-toast", AnnenToast)
+    defineFsToast("annen-toast")
     monter("<annen-toast></annen-toast>")
     await customElements.whenDefined("annen-toast")
     const region = document.querySelector("annen-toast") as FsToast
@@ -313,3 +310,4 @@ describe("fs-toast og fokus og navn", () => {
     expect(region.getAttribute("aria-label")).toBe("Forfatter")
   })
 })
+

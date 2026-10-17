@@ -632,7 +632,9 @@ declare global {
   }
 }
 
-export function defineFsSessionTimeout(tagName = FS_SESSION_TIMEOUT_TAG): void {
+export function defineFsSessionTimeout(
+  tagName: string = FS_SESSION_TIMEOUT_TAG,
+): void {
   defineElement(tagName, FsSessionTimeout)
 }
 

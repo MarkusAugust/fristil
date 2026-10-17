@@ -296,6 +296,8 @@ declare global {
   }
 }
 
-export function defineFsErrorSummary(tagName = FS_ERROR_SUMMARY_TAG): void {
+export function defineFsErrorSummary(
+  tagName: string = FS_ERROR_SUMMARY_TAG,
+): void {
   defineElement(tagName, FsErrorSummary)
 }

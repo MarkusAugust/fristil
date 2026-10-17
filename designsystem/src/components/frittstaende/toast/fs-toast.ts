@@ -270,7 +270,7 @@ declare global {
   }
 }
 
-export function defineFsToast(tagName = FS_TOAST_TAG): void {
+export function defineFsToast(tagName: string = FS_TOAST_TAG): void {
   defineElement(tagName, FsToast)
 }
 
