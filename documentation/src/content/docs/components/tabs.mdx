@@ -147,7 +147,7 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
     </fs-tabs>
     ```
 
-    `server-controlled` hører med når et signal styrer hvilken fane som vises. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
+    Signalet `$valgtFane` følger med hver forespørsel, så serveren vet hvilken fane brukeren valgte og rendrer `hidden` og `aria-selected` etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
   </TabItem>
 </Tabs>
 

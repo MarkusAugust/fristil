@@ -2,11 +2,12 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-dato" stiler={["field", "button"]} maxWidth="26rem" layout="kolonne">
+<Preview id="demo-dato" stiler={["field", "button", "paragraph"]} maxWidth="26rem" layout="kolonne">
 	<fs-field>
 		<label class="fs-label" for="demo-dato-fodt">Fødselsdato</label>
 		<input
 			class="fs-input"
+			data-variant="date"
 			id="demo-dato-fodt"
 			name="fodselsdato"
 			type="date"

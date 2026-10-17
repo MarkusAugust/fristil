@@ -37,6 +37,7 @@ Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `clas
 import { fs } from "@fristil/designsystem"
 
 const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
+const klar = await harArsoppgave() // appens egen sjekk
 
 fs.setAttributes(lenke, fs.link({ disabled: !klar }))
 if (klar) lenke?.setAttribute("href", "/arsoppgave")
