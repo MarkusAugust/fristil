@@ -181,6 +181,9 @@ class ManifestReaderTest {
             }
             shapesIn(expected["returns"])
             assertEquals(expected["returns"], returnsJson(read.returns), "${read.name} returns")
+            // Kartene har manifestets rekkefølge, og `Map.equals` over ser ikke den.
+            val group = expected["returns"].map()["fields"]?.map()
+            if (group != null) assertEquals(group.keys.toList(), (read.returns as Returns.Group).fields.keys.toList(), "${read.name} rekkefølgen på feltene")
         }
         assertTrue(options > 0, "Ingen byggefunksjon hadde valg, så sammenligningen sa ingenting.")
         assertEquals(setOf("values", "flag", "text", "number", "textList"), kinds, "hver type valg skal finnes i manifestet, ellers er en gren i leseren uprøvd")
@@ -192,6 +195,14 @@ class ManifestReaderTest {
         val withOptional = Manifest.parse(text.replaceFirst("\"host\": {\n            \"kind\": \"attributes\"", "\"host\": {\n            \"kind\": \"attributes\", \"optional\": true"))
         val group = withOptional.builders.first { it.returns is Returns.Group }.returns as Returns.Group
         assertEquals(Returns.Attributes(optional = true), group.fields.getValue("host"))
+        // Hvert valg har en beskrivelse i dag, så et valg uten prøves ved å ta den første bort.
+        // Beskrivelsen står sist i valget, så kommaet foran må med, ellers blir JSON-en ugyldig.
+        // Den samme setningen står på klasseattributtet lenger opp, så byttet gjøres fra «builders» og utover.
+        val buildersAt = text.indexOf("\"builders\"")
+        val firstDescription = Regex(",\\n\\s*\"description\": \"(?:[^\"\\\\]|\\\\.)*\"").find(text, buildersAt)!!
+        val withoutDescription = Manifest.parse(text.substring(0, buildersAt) + text.substring(buildersAt).replaceFirst(firstDescription.value, ""))
+        assertEquals(null, withoutDescription.builders.first().options.first().description)
+        assertTrue(Fristil.manifest.builders.first().options.first().description != null, "omskrivingen skal ha tatt bort en beskrivelse som finnes")
     }
 
     @Test

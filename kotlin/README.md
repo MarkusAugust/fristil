@@ -67,7 +67,8 @@ manifestet gjør, og `ThemeParityTest` krever det samme svaret som fasiten i
 typer: elementene med attributter, deler og hendelser, og klassene med
 attributtene, de lovlige verdiene, innholdet og delene, tokenene med
 avstandene, brekkpunktene, containerbreddene, fargeaksene og
-komponentvariablene, og byggefunksjonene med valgene og formen på svaret. `Manifest.parse` leser et annet, som
+komponentvariablene, og byggefunksjonene med valgene og formen på
+svaret. `Manifest.parse` leser et annet, som
 det `fristilManifest` skriver for et prosjekt som har overtatt komponenter.
 IntelliJ-pluginen henter klassene til fullføringen herfra.
 `ManifestReaderTest` krever at ingenting fra JSON-en blir borte på veien.

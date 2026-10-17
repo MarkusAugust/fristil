@@ -215,8 +215,10 @@ object Fristil {
 
     /**
      * Manifestet i pakken, det samme sjekken går mot: elementene med
-     * attributter, deler og hendelser, og klassene med attributtene og de
-     * lovlige verdiene. Et prosjekts eget manifest leses med [Manifest.parse].
+     * attributter, deler og hendelser, klassene med attributtene, de lovlige
+     * verdiene, innholdet og delene, tokenene, og byggefunksjonene med
+     * valgene og formen på svaret. Et prosjekts eget manifest leses med
+     * [Manifest.parse].
      */
     val manifest: Manifest by lazy { Manifest.parse(PACKAGE_MANIFEST) }
 

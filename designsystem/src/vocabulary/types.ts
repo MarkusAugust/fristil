@@ -108,12 +108,6 @@ export type ManifestTokens = {
   components: Record<string, Record<string, string>>
 }
 
-/**
- * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
- * Elementene er de samme som i `elements.ts`. Et klasseattributt i
- * manifestet er enten en verdiliste eller et flagg, og et flagg har ingen
- * verdier, ulikt `classes.ts`, der flagget har en tom liste.
- */
 /** Hva et valg i en byggefunksjon tar. */
 export type BuilderOptionType =
   | { kind: "values"; values: readonly string[] }
@@ -142,6 +136,12 @@ export type Builder = {
   returns: BuilderReturns
 }
 
+/**
+ * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
+ * Elementene er de samme som i `elements.ts`. Et klasseattributt i
+ * manifestet er enten en verdiliste eller et flagg, og et flagg har ingen
+ * verdier, ulikt `classes.ts`, der flagget har en tom liste.
+ */
 export type Manifest = {
   schemaVersion: number
   version: string

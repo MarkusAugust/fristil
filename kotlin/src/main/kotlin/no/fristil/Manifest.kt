@@ -12,8 +12,8 @@ package no.fristil
  * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
  * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
  * prosjekt som har overtatt komponenter. Byggefunksjonene står i [builders]
- * med valgene og formen på svaret, så et verktøy kan lage et panel av dem;
- * tabellen generatoren bak `Fs` bruker er utelatt, `Fs` er API-et for den.
+ * med valgene og formen på svaret, så et verktøy kan lage et panel av dem.
+ * Tabellen generatoren bak `Fs` bruker, er utelatt: den er for generatoren.
  *
  * Kartene har nøklene i den rekkefølgen manifestet har dem.
  */
