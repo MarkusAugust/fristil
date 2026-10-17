@@ -1,7 +1,7 @@
 /// <reference path="./types/css.d.ts" />
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
-import { page } from "vitest/browser"
+import { page, userEvent } from "vitest/browser"
 
 import { defineFs } from "./register"
 import { monter, ventPaTegning } from "./testing/a11y"
@@ -214,8 +214,13 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   "skip-link": [
     {
       markup: `<a class="fs-skip-link" href="#hoved">Hopp til hovedinnholdet på siden om bostøtte</a>`,
-      // Lenken står utenfor synet til den får fokus.
-      aapne: () => element<HTMLAnchorElement>(".fs-skip-link").focus(),
+      // Lenken står utenfor synet til den får fokus. Ett ekte tastetrykk
+      // først: i Firefox treffer `:focus` bare når vinduet selv har fokus,
+      // og et programmert `focus()` alene feilet av og til i CI.
+      aapne: async () => {
+        await userEvent.tab()
+        element<HTMLAnchorElement>(".fs-skip-link").focus()
+      },
       apen: ".fs-skip-link:focus",
     },
   ],

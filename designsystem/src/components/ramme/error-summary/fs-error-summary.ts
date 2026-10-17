@@ -215,7 +215,31 @@ export class FsErrorSummary extends HostElement {
       this.focusAttempted = true
       this.focus()
       this.hasFocused = root.activeElement === this
+      if (this.hasFocused && active && active !== document.body)
+        this.reclaimFocusFrom(active)
     }
+  }
+
+  /**
+   * Tar fokus tilbake én gang, hvis det gikk tilbake dit det var.
+   *
+   * React gir fokus tilbake til elementet som hadde det før en commit, rett
+   * etter at DOM-en er endret. Boksen flytter fokus i det `hidden` tas bort
+   * eller den kobles til, altså inne i den samme commiten, så i Chromium og
+   * Firefox endte fokus på innsendingsknappen igjen. En mikrotask kjører
+   * etter commiten. Står fokus da på det samme elementet som før, er det
+   * rammeverket som tok det, og boksen tar det igjen. Har brukeren flyttet
+   * fokus til noe annet, står det.
+   */
+  private reclaimFocusFrom(previous: Element): void {
+    queueMicrotask(() => {
+      if (
+        this.isConnected &&
+        !this.hidden &&
+        document.activeElement === previous
+      )
+        this.focus()
+    })
   }
 
   /**
