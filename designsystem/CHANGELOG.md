@@ -23,6 +23,36 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`hidden` på `<fs-error-summary>` er et flagg i JSX-typene.** `hidden`
+  kom fra `HTMLAttributes` som `boolean`, så `hidden={false}` kompilerte,
+  mens React 18 skriver det som `hidden="false"` på en web component, som er
+  sant: boksen ble aldri vist. Typen er nå `true | undefined`, som `open` på
+  `<fs-dialog>`, slik regelboka for React sier om hvert boolske attributt på
+  en web component. `fs.errorSummary().host` sendte alt `true` eller
+  ingenting.
+  Det er brytende for den som skrev `hidden={!harFeil}` eller
+  `hidden={false}`: det kompilerte, og i React 19 virket det, siden React 19
+  setter egenskapen `hidden` i stedet for attributtet. Skriv
+  `hidden={harFeil ? undefined : true}`, eller bruk
+  `fs.errorSummary({ count }).host`, som sender det riktig.
+- **`fristil sjekk` meldte grønt for en tom fil og en tom side.** Bare tom
+  standard inn ga feilkode. En tom fil, og en adresse som svarte 200 med tom
+  HTML, ga «Markupen stemmer» og 0, så en CI-linje mot en side som rendret
+  tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
+  filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
+  glob, er fortsatt ikke en feil.
+  En CI-linje som var grønn mot en tom side, blir rød med denne versjonen.
+
+### Lagt til
+
+- **`setAttributes` og typen `ReactSet` fra `/react`.** `fs.setAttributes`
+  derfra er den samme funksjonen, for sett med `className`, `htmlFor` og
+  `tabIndex` som tall. Hovedinngangen eksporterer `rememberManaged`, som
+  `/react` bruker for å gi et omdøpt sett de samme forvaltede navnene; den
+  er ikke ment for apper.
+
 ### Endret
 
 - **Pakken sender med kildene kartene peker på.** `dist` har kildekart og
@@ -72,15 +102,8 @@ egen overskrift «Brytende».
   med `process.getBuiltinModule`, som kom i Node 20.16 og 22.3, men
   `>=20.16` tok med versjonene mellom, og der sa feilmeldingen at Node 22.1
   var eldre enn 20.16. Kravet er nå `^20.16.0 || >=22.3.0`, og meldingen
-  nevner begge grensene. Oppføringen under 0.32.1 som sier «20.16 eller
+  nevner begge grensene. Oppføringen under 0.32.0 som sier «20.16 eller
   nyere», gjelder med dette unntaket.
-- **`hidden` på `<fs-error-summary>` er et flagg i JSX-typene.** `hidden`
-  kom fra `HTMLAttributes` som `boolean`, så `hidden={false}` kompilerte,
-  mens React 18 skriver det som `hidden="false"` på en web component, som er
-  sant: boksen ble aldri vist. Typen er nå `true | undefined`, som `open` på
-  `<fs-dialog>`, slik regelboka for React sier om hvert boolske attributt på
-  en web component. `fs.errorSummary().host` sendte alt `true` eller
-  ingenting.
 - **Regelboka for React og Kodeagenter-siden sa at `react-jsx` stopper en
   variant som ikke finnes.** `react-jsx` typer attributtene på
   web-komponentene, og ingen av dem har en variant. Det er
@@ -182,9 +205,12 @@ egen overskrift «Brytende».
 - **Ringen rundt `fs-avatar` vises over bildet.** Den var en `box-shadow`
   innover, og en slik skygge males under innholdet, så et bilde dekket den
   helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
-  også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene.
+  også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene, og
+  hver avatar i stabelen males for seg, så ringen til den bak ikke skinner
+  gjennom bildet til den foran.
   En slik `outline` slår nettleserens egen fokusmarkering, så en
-  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`.
+  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`, og
+  i en stabel løftes den med fokus over naboene så fokusringen vises hel.
 - **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
   hadde en fast radius og leste ikke variabelen. Standarden der er
   fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.
@@ -207,12 +233,6 @@ egen overskrift «Brytende».
   oppskriftsfil gir også feilkode. `overta` og `agent` stopper dessuten på et
   ukjent flagg med likhetstegn, som `--utt=src/ui` eller `--rammverk=react`,
   i stedet for å bruke standarden.
-- **`fristil sjekk` meldte grønt for en tom fil og en tom side.** Bare tom
-  standard inn ga feilkode. En tom fil, og en adresse som svarte 200 med tom
-  HTML, ga «Markupen stemmer» og 0, så en CI-linje mot en side som rendret
-  tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
-  filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
-  glob, er fortsatt ikke en feil.
 - **`fristil tema` leser oppskriften som `JSON.parse`.** Sto en nøkkel to
   ganger, vant den første, mens `JSON.parse` lar den siste vinne. Tall som
   `0700` og `1.` og et rått kontrolltegn i en streng ble godtatt, og en fil
