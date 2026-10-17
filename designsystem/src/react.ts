@@ -168,7 +168,7 @@ export type ReactSet = Record<string, string | number | boolean | undefined>
  * `htmlfor`. Det nye objektet forvalter det samme som settet det kom fra, så
  * det som er borte i neste kall blir ryddet.
  */
-export function toHtmlAttributes(set: ReactSet): Attributes {
+function toHtmlAttributes(set: ReactSet): Attributes {
   const result: Attributes = {}
   for (const [name, value] of Object.entries(set)) {
     result[HTML_NAMES[name] ?? name] =
