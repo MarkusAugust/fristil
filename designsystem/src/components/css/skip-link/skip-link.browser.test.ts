@@ -9,6 +9,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { skipLink } from "./skip-link"
+import skipLinkCss from "./skip-link.css?inline"
 
 import "../../../tokens/tokens.css"
 import "./skip-link.css"
@@ -55,11 +56,32 @@ describe("fs-skip-link", () => {
     expect(document.activeElement).toBe(lenke)
   })
 
-  it("kommer til syne når fokus settes fra kode etter et museklikk", async () => {
-    // `:focus-visible` treffer ikke et fokus satt fra kode etter et
-    // museklikk. Hadde lenken brukt det, sto den skjult for den som hopper
-    // dit fra en knapp. Derfor `:focus`. Etter et tastetrykk treffer
-    // `:focus-visible` også fra kode, så det er museklikket som avgjør.
+  it("kommer til syne på :focus, ikke på :focus-visible", () => {
+    // Hadde lenken brukt `:focus-visible`, sto den skjult for den som
+    // hopper dit fra et skript etter et museklikk. Regelen leses fra
+    // stilarket, og prøves med et attributt i stedet for pseudoklassen, så
+    // svaret ikke avhenger av om vinduet har fokus i motoren testen kjører i.
+    expect(skipLinkCss).toContain(".fs-skip-link:focus {")
+    expect(skipLinkCss).not.toMatch(/\.fs-skip-link:focus-visible/)
+    monter(`
+      <style>
+        ${skipLinkCss.replaceAll(":focus", "[data-fokus]")}
+        .fs-skip-link { transition: none; }
+      </style>
+      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <main id="hovedinnhold" tabindex="-1"><p>Innholdet på siden.</p></main>
+    `)
+    const lenke = document.getElementById("hopp") as HTMLElement
+    expect(getComputedStyle(lenke).transform).not.toMatch(SYNLIG)
+
+    lenke.setAttribute("data-fokus", "")
+    expect(getComputedStyle(lenke).transform).toMatch(SYNLIG)
+  })
+
+  it("regner ikke fokus satt fra kode etter et museklikk som synlig fokus", async () => {
+    // Det er derfor stilarket bruker `:focus`. Etter et tastetrykk treffer
+    // `:focus-visible` også fra kode, så det er museklikket som avgjør, og
+    // klikket må være ekte, fra pekeren.
     monter(`
       <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1">
@@ -75,25 +97,21 @@ describe("fs-skip-link", () => {
       lenke.focus()
     })
 
-    // Klikket må være ekte, fra pekeren, for at nettleseren skal regne det
-    // neste fokuset som satt etter et museklikk. I Firefox i CI kommer
-    // pekerklikket fra Playwright ikke alltid fram til siden, så det gjentas
-    // til lytteren har kjørt, før det som skal prøves leses.
+    // I Firefox i CI kommer pekerklikket fra Playwright ikke alltid fram til
+    // siden, så det gjentas til lytteren har kjørt.
     for (let forsøk = 0; forsøk < 5 && klikk === 0; forsøk++) {
       await userEvent.click(knapp)
       await new Promise((ferdig) => setTimeout(ferdig, 100))
     }
     expect(klikk, "pekerklikket kom ikke fram til knappen").toBeGreaterThan(0)
 
+    const tilstand = () =>
+      `activeElement=${document.activeElement?.id ?? document.activeElement?.tagName}, hasFocus=${document.hasFocus()}, :focus=${lenke.matches(":focus")}`
     await vi.waitFor(
-      () => expect(getComputedStyle(lenke).transform).toMatch(SYNLIG),
-      {
-        timeout: 3000,
-      },
+      () => expect(document.activeElement, tilstand()).toBe(lenke),
+      { timeout: 3000 },
     )
-
-    expect(document.activeElement).toBe(lenke)
-    expect(lenke.matches(":focus-visible")).toBe(false)
+    expect(lenke.matches(":focus-visible"), tilstand()).toBe(false)
   })
 
   it("flytter fokus til målet når det har tabindex", async () => {
