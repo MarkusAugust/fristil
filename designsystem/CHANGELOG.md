@@ -207,6 +207,10 @@ egen overskrift «Brytende».
   klassenavnet, en streng, og `<p {...alert.title}>` gir tegnene som
   attributter og ikke klassen. Eksempelet skriver `class={alert.title}`,
   som accordion og card.
+- **Fieldset-siden sa at en `<legend>` lenger ned ikke kobles til gruppen.**
+  Nettleserne bruker den første `<legend>`-en som navn og tegnet ledetekst
+  uansett hvor den står. Regelen om at den skal stå først gjelder fortsatt,
+  men begrunnelsen er at HTML krever det, og at markupen ellers er ugyldig.
 
 ## 0.33.0 (2026-10-12)
 
