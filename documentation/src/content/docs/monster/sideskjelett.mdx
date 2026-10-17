@@ -48,7 +48,7 @@ En komponent kan ikke vite hvor den står på siden. Den vet ikke om overskrifte
 | Hopplenken først | Den skal være det første som får fokus. Står den etter menyen, hjelper den ingen. |
 | `<header>`, `<main>`, `<footer>` | Skjermlesere kan hoppe mellom landemerker. Uten dem er siden én lang strøm. |
 | `aria-label` på hver `<nav>` | Siden har to. Uten tekst heter begge «navigasjon». |
-| `tabindex="-1"` på `<main>` | Uten den flytter nettleseren visningen, men ikke fokus, og neste tabbetrykk fortsetter i menyen brukeren nettopp hoppet over. |
+| `tabindex="-1"` på `<main>` | Uten den flytter nettleseren visningen, men ikke fokus: `document.activeElement` blir `<body>`, og skjermleseren får ikke beskjed om at brukeren er framme. Tab fortsetter fra målet uansett; det er fokuset og opplesningen som mangler. |
 | `<h1>` inne i `<main>` | Én per side, og den sier hva siden handler om. |
 
 ## Overskriftsnivåene
@@ -103,4 +103,4 @@ Uten det blir en skjermleserbruker stående på den gamle siden uten å vite at 
 
 ## Prøv den
 
-Åpne demoen i egen fane, og trykk Tab som det aller første. Da skal hopplenken komme til syne. Trykker du Enter, havner fokus i hovedinnholdet, og neste Tab går til den første lenken der, ikke tilbake til menyen.
+Åpne demoen i egen fane, og trykk Tab som det aller første. Da skal hopplenken komme til syne. Trykker du Enter, havner fokus i hovedinnholdet, en skjermleser leser opp hvor du er, og neste Tab går til den første lenken der.

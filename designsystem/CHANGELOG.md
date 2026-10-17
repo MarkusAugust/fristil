@@ -191,6 +191,53 @@ egen overskrift «Brytende».
   regelen heter `id-finnes-ikke`. `for-peker-feil` gjelder en `for` som
   peker på et element som ikke kan ha ledetekst. Den som kopierte navnet
   til `<!-- fristil-ignore-next … -->`, fikk funnet likevel.
+- **Oppskriften for å bytte skilletegn i `fs-breadcrumbs` tok ikke med
+  alternativteksten.** Siden viste `content: "›"`, og en regel utenfor laget
+  slår stilarket, så den som fulgte rådet fikk tilbake feilen 0.33.0 rettet:
+  skjermleseren sa «›» mellom hvert steg. Snutten har nå `content: "›" / ""`
+  bak samme `@supports` som stilarket, og siden sier hvorfor. En test kjører
+  snutten fra siden mot stilarket.
+- **Oppskriften for å bytte pila i `fs-accordion` lot rotasjonen stå.** Siden
+  sa at `content` og `border` var nok, men pseudoelementet har fast størrelse
+  og `transform`, og vinkelen byttes når panelet er åpent, så et «+» sto på
+  skrå og ble et «×» i åpen tilstand. Et synlig tegn uten alternativ tekst
+  ble dessuten en del av navnet på knappen, det skjermleseren sier når
+  `<summary>` får fokus. Snutten nullstiller nå begge og gir tegnet tom
+  alternativ tekst.
+- **JSDoc-eksempelet for `alert` spredte `alert.title`.** `alert.title` er
+  klassenavnet, en streng, og `<p {...alert.title}>` gir tegnene som
+  attributter og ikke klassen. Eksempelet skriver `class={alert.title}`,
+  som accordion og card.
+- **Fieldset-siden sa at en `<legend>` lenger ned ikke kobles til gruppen.**
+  Nettleserne bruker den første `<legend>`-en som navn og tegnet ledetekst
+  uansett hvor den står. Regelen om at den skal stå først gjelder fortsatt,
+  men begrunnelsen er at HTML krever det, og at markupen ellers er ugyldig.
+- **Select-siden sa at listen tegnes i siden fra Chromium 148.** Det eneste
+  stilarket spør om, er `@supports (appearance: base-select)`, og den slår
+  til i eldre Chromium også; 148 er versjonen Fristil er testet i. Tabellen
+  sier nå hva som avgjør, og hvilke versjoner som er testet.
+- **Skip Link-siden begrunnet `tabindex="-1"` med at neste Tab fortsatte i
+  menyen.** Nettleseren fortsetter fra målet etter hoppet også uten
+  attributtet. Det som mangler uten det, er fokuset og skjermleserens
+  opplesning, og det sier siden og mønstersiden «Sideskjelett» nå. Error
+  Summary-siden og JSDoc-en til `fs-error-summary` sa det samme om en vanlig
+  ankerlenke, at neste tastetrykk fortsatte i oppsummeringen, og sier nå at
+  nettleseren bare gir fokus til et mål som kan få det. Siden og
+  stilarket sa også at fokus satt fra kode aldri regnes som synlig fokus.
+  Det gjelder bare etter et museklikk, og det er det tilfellet `:focus` er
+  valgt for.
+- **Lagringseksempelet på Switch-siden rullet ikke tilbake ved et feilsvar,
+  og tok fokuset fra bryteren.** `fetch` avviser bare ved nettverksfeil, så
+  et 500-svar ble meldt som «Varsler er på.» med bryteren stående i ny
+  stilling. Eksemplet slo dessuten av bryteren mens den lagret, og
+  `disabled` tar fokuset fra en bryter som har det uten å gi det tilbake, så
+  et nytt mellomromstrykk gjorde ingenting. «Ren HTML» og React sjekker nå
+  `svar.ok` og sperrer et nytt trykk uten `disabled`, Datastar-fanen og
+  eksemplet med `fs.setAttributes` slår ikke lenger av bryteren, og
+  JSDoc-en til `disabled` i `switchControl` advarer mot bruken. Det korte
+  eksemplet på Connection Status-siden og i JSDoc-en til
+  `FsConnectionStatus` sjekker også `svar.ok`. En test kjører «Ren
+  HTML»-eksemplet fra siden mot en server som svarer 500.
 
 ## 0.33.0 (2026-10-12)
 

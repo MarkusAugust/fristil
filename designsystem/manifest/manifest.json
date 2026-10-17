@@ -3663,7 +3663,7 @@
           "type": {
             "kind": "flag"
           },
-          "description": "Kontrollen er slått av."
+          "description": "Kontrollen er slått av. Ikke bruk det til å sperre bryteren mens en lagring pågår: `disabled` tar fokuset fra den, og det kommer ikke tilbake."
         }
       ],
       "returns": {

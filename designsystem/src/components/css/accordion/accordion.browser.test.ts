@@ -1,8 +1,8 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { server } from "vitest/browser"
-
+import side from "../../../../../documentation/src/content/docs/components/accordion.mdx?raw"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -14,6 +14,10 @@ import "../../../tokens/tokens.css"
 import "./accordion.css"
 
 describe("fs-accordion", () => {
+  afterEach(() => {
+    document.getElementById("oppskrift")?.remove()
+  })
+
   beforeEach(() => {
     monter(`
       <details class="fs-accordion" id="forste">
@@ -58,6 +62,37 @@ describe("fs-accordion", () => {
     ).transform
 
     expect(lukket).not.toBe(apent)
+  })
+
+  it("lar oppskriften på siden bytte pila uten at den står snudd", () => {
+    // Siden viser hvordan pila byttes. Rotasjonen ligger i `transform` og
+    // byttes når panelet er åpent, så en snutt som bare overstyrte `content`
+    // og `border` ga et «+» på skrå, og et «×» når panelet var åpent. Tegnet
+    // må også ha tom alternativ tekst, ellers blir det en del av navnet på
+    // knappen: skjermleseren sier «Hvem kan søke? +» når `<summary>` får
+    // fokus. Snutten leses fra siden, så den kan ikke drive fra koden.
+    const snutt = /```css\n([\s\S]*?)```/.exec(side)?.[1]
+    if (snutt === undefined) throw new Error("Fant ingen CSS-snutt på siden")
+    const stil = document.createElement("style")
+    stil.id = "oppskrift"
+    stil.textContent = snutt
+    document.head.append(stil)
+
+    const lukket = getComputedStyle(
+      document.querySelector("#forste summary") as Element,
+      "::after",
+    )
+    const apent = getComputedStyle(
+      document.querySelector("#andre summary") as Element,
+      "::after",
+    )
+
+    expect(lukket.transform).toBe("none")
+    expect(apent.transform).toBe("none")
+    expect(lukket.content).not.toBe('""')
+    if (CSS.supports("content", '"/" / ""')) {
+      expect(lukket.content).toMatch(/\/\s*""$/)
+    }
   })
 
   /*

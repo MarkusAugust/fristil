@@ -66,13 +66,13 @@ Plasseringen er det eneste som kommer i tillegg. Lenken skal være det første i
 </body>
 ```
 
-`tabindex="-1"` på målet er nødvendig. Uten det flytter nettleseren visningen dit, men ikke fokus, og neste tabbetrykk fortsetter i menyen brukeren nettopp hoppet over.
+`tabindex="-1"` på målet er nødvendig. Uten det flytter nettleseren visningen dit, men ikke fokus: `document.activeElement` blir `<body>`, og skjermleseren får ikke beskjed om at brukeren er kommet fram til innholdet. Med attributtet får `<main>` fokus, og hjelpemiddelet leser opp hvor brukeren er. Tastaturrekkefølgen er ikke problemet, for nettleseren fortsetter fra målet etter hoppet uansett. Det er fokuset og opplesningen som mangler uten attributtet.
 
 ## Hvorfor den ikke kan skjules
 
 Lenken flyttes utenfor skjermen med `transform`, ikke med `display: none` eller `visibility: hidden`. De to siste tar elementet ut av tastaturrekkefølgen, og da finnes lenken ikke for den som trenger den.
 
-Den kommer til syne på `:focus`, ikke `:focus-visible`. Nettleseren regner ikke fokus satt fra kode som synlig fokus, og lenken ville da blitt stående skjult for den som hopper dit fra et skript.
+Den kommer til syne på `:focus`, ikke `:focus-visible`. Fokus satt fra kode etter et museklikk regnes ikke som synlig fokus, og lenken ville da blitt stående skjult for den som hopper dit fra et skript, for eksempel fra en knapp. Etter et tastetrykk, og rett etter at siden er lastet, regnes det som synlig, men det er museklikket som avgjør valget.
 
 ## Klasser du kan style
 

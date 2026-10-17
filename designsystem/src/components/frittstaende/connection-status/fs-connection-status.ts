@@ -32,7 +32,8 @@ const RECEIPT_MS = 4000
  * ```ts
  * const status = document.querySelector("fs-connection-status")
  * try {
- *   await fetch("/api/lagre", { method: "POST", body })
+ *   const svar = await fetch("/api/lagre", { method: "POST", body })
+ *   if (!svar.ok) throw new Error(svar.statusText)
  *   status.reportSuccess()
  * } catch {
  *   status.reportFailure()
