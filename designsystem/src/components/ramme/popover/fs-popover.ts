@@ -494,6 +494,6 @@ declare global {
   }
 }
 
-export function defineFsPopover(tagName = FS_POPOVER_TAG): void {
+export function defineFsPopover(tagName: string = FS_POPOVER_TAG): void {
   defineElement(tagName, FsPopover)
 }

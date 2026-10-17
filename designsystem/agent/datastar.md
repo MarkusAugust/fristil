@@ -331,8 +331,11 @@ vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
 bestemmer den. Som standard gjør web-komponenten det: `<fs-tabs>` husker fanen
-brukeren valgte, og setter den tilbake når en patch river den bort. Skal
-serveren kunne flytte den, sier du det med `server-controlled`:
+brukeren valgte, og setter den tilbake når en patch med `outer` river den
+bort: `outer` morfer, og valget er knyttet til selve knappen. `inner` og
+`replace` bytter ut nodene, og da følger komponenten markupen, så serveren må
+skrive `aria-selected` og `hidden` selv. Skal serveren kunne flytte den, sier
+du det med `server-controlled`:
 
 ```html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
@@ -357,7 +360,7 @@ nettleseren.
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |

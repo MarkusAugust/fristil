@@ -10,7 +10,7 @@
 export interface FsEventMap {
   /** `<fs-tabs>`: Brukeren valgte en fane. `index` teller fra 0. */
   "tab-select": CustomEvent<{ index: number }>
-  /** `<fs-popover>`: Panelet åpnet eller lukket seg. */
+  /** `<fs-popover>`: Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse. */
   "popover-toggle": CustomEvent<{ open: boolean }>
   /** `<fs-suggestion>`: Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det. */
   "suggestion-select": CustomEvent<{ value: string }>

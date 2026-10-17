@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { whenUpgraded } from "./components/host-element"
+import {
+  defineFsToast,
+  FsToast,
+} from "./components/frittstaende/toast/fs-toast"
+import { defineElement, whenUpgraded } from "./components/host-element"
 import * as pakke from "./index"
 import { defineFs } from "./register"
 
@@ -14,6 +18,24 @@ const tagger = Object.entries(pakke)
   .map(([, verdi]) => verdi as string)
 
 describe("defineFs()", () => {
+  it("tåler at en komponent alt er registrert under et eget navn", () => {
+    /*
+     * En konstruktør kan bare stå i registeret én gang. Var klassen alt
+     * registrert under et annet navn, kastet `customElements.define`
+     * NotSupportedError, og komponentene etter den i lista ble aldri
+     * registrert.
+     */
+    defineFsToast("app-toast")
+
+    expect(() => defineFs()).not.toThrow()
+
+    for (const tag of tagger) {
+      expect(customElements.get(tag), tag).toBeDefined()
+    }
+    expect(document.createElement("app-toast")).toBeInstanceOf(FsToast)
+    expect(document.createElement("fs-toast")).toBeInstanceOf(FsToast)
+  })
+
   it("registrerer hver web component pakken har", () => {
     expect(tagger.length).toBeGreaterThanOrEqual(9)
 
@@ -27,6 +49,38 @@ describe("defineFs()", () => {
   it("tåler å bli kalt to ganger", () => {
     defineFs()
     expect(() => defineFs()).not.toThrow()
+  })
+})
+
+describe("defineElement()", () => {
+  it("registrerer samme klasse under to navn", () => {
+    class Egen extends HTMLElement {}
+    defineElement("fs-egen-første", Egen)
+
+    expect(() => defineElement("fs-egen-andre", Egen)).not.toThrow()
+
+    expect(customElements.get("fs-egen-andre")).toBeDefined()
+    expect(document.createElement("fs-egen-andre")).toBeInstanceOf(Egen)
+  })
+
+  it("klarer seg uten customElements.getName", () => {
+    // Chrome før 117, Firefox før 116 og Safari før 17 har ikke `getName`.
+    class Egen extends HTMLElement {}
+    defineElement("fs-egen-uten-getname", Egen)
+    Object.defineProperty(customElements, "getName", {
+      value: undefined,
+      configurable: true,
+    })
+
+    try {
+      expect(() => defineElement("fs-egen-uten-getname-to", Egen)).not.toThrow()
+    } finally {
+      Reflect.deleteProperty(customElements, "getName")
+    }
+
+    expect(document.createElement("fs-egen-uten-getname-to")).toBeInstanceOf(
+      Egen,
+    )
   })
 })
 

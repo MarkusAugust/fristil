@@ -44,7 +44,10 @@ import Preview from "./Preview.astro"
 		| null
 
 	flate?.getElementById("demo-slett")?.addEventListener("click", () => {
-		dialog?.showModal()
+		if (!dialog) return
+		// Escape og close() uten verdi lar forrige verdi stå.
+		dialog.returnValue = ""
+		dialog.showModal()
 	})
 
 	dialog?.addEventListener("close", () => {

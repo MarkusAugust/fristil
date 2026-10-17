@@ -497,6 +497,6 @@ declare global {
   }
 }
 
-export function defineFsDialog(tagName = FS_DIALOG_TAG): void {
+export function defineFsDialog(tagName: string = FS_DIALOG_TAG): void {
   defineElement(tagName, FsDialog)
 }

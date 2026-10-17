@@ -637,6 +637,6 @@ declare global {
   }
 }
 
-export function defineFsField(tagName = FS_FIELD_TAG): void {
+export function defineFsField(tagName: string = FS_FIELD_TAG): void {
   defineElement(tagName, FsField)
 }

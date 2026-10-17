@@ -11,7 +11,7 @@ import { attr } from "../../../testing/markup"
 import { connectionStatus } from "./connection-status"
 import {
   defineFsConnectionStatus,
-  FsConnectionStatus,
+  type FsConnectionStatus,
   reportFailure,
   reportSuccess,
 } from "./fs-connection-status"
@@ -217,8 +217,9 @@ describe("fs-connection-status sier fra én gang og kommer tilbake", () => {
 })
 
 /*
- * Et sent registrert tagnavn, som en underklasse: konstruktøren til
- * `fs-connection-status` kan ikke registreres én gang til.
+ * Et sent registrert tagnavn. `fs-connection-status` har alt tatt
+ * konstruktøren, så `defineFsConnectionStatus("fs-connection-status-sen")`
+ * registrerer en underklasse av den.
  */
 describe("reportFailure() og reportSuccess() venter på registreringen", () => {
   it("gjør kallene i rekkefølge når elementet er oppgradert", async () => {
@@ -237,10 +238,7 @@ describe("reportFailure() og reportSuccess() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(linje()).toBeNull()
 
-    customElements.define(
-      "fs-connection-status-sen",
-      class extends FsConnectionStatus {},
-    )
+    defineFsConnectionStatus("fs-connection-status-sen")
 
     await løfte
     expect(linje()?.dataset.state).toBe("offline")

@@ -305,8 +305,16 @@ Registreringen, én gang i sidemalen:
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
 `innerHTML`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
 standard gjør web-komponenten det: `<fs-tabs>` husker fanen brukeren valgte,
-og setter den tilbake når en patch river den bort. Malen trenger ingenting for
-det.
+og setter den tilbake når en patch river markeringen bort. Malen trenger
+ingenting for det.
+
+Det forutsetter at patchen beholder elementene og bare endrer attributtene,
+slik en morfing gjør: Datastars `outer`, htmx med idiomorph-utvidelsen og
+Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
+nodene, som `innerHTML`, htmx' vanlige `innerHTML`- og `outerHTML`-bytte og
+Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
+må serveren skrive valget selv, med `aria-selected` og `hidden` på den riktige
+fanen og de andre panelene, eller eie tilstanden med `server-controlled`.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å
@@ -389,7 +397,7 @@ finnes der, og skriv aldri en `version` du ikke har sett på Central.
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | Komponenten gjør ingenting, og ingenting sier fra | Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren |

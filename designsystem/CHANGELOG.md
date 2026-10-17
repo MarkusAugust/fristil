@@ -34,6 +34,55 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`defineFs*` kaster ikke når klassen alt er registrert under et eget
+  navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
+  NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i
+  registeret én gang, og `<fs-session-timeout>` og `<fs-connection-status>`
+  ble aldri registrert. Nå registreres en underklasse under det andre navnet,
+  så begge navnene virker og flere kall er ufarlige, slik dokumentasjonen
+  sier. `tagName` er dessuten typet som `string`. Før var typen standardnavnet,
+  så TypeScript avviste `defineFsToast("app-toast")` før det kom så langt.
+- **`<fs-toast>` flytter fokus riktig også i en skyggerot.** Komponenten
+  leste `document.activeElement`, som peker på skyggeverten når regionen
+  står i en skyggerot, slik hver forhåndsvisning i dokumentasjonen gjør. Da
+  så det ut som om ingen melding hadde fokus: lukket brukeren meldingen med
+  Enter, falt fokus til `body` i stedet for til meldingen ved siden av eller
+  dit det kom fra, og det samme skjedde ved `clear()`. Fokus leses nå fra
+  komponentens egen rot. `<fs-session-timeout>` husker hvor fokus sto før
+  varselet enten feltet står i siden eller i samme skyggerot som
+  komponenten, så det får fokus tilbake også når nettleseren ikke setter det
+  dit selv.
+- **README sier hva et eget tagnavn gir.** Den lovet at du bestemmer «hva
+  det skal hete», men stilarkene til `<fs-field>`, `<fs-tabs>`,
+  `<fs-popover>`, `<fs-dialog>` og `<fs-suggestion>` er skrevet for
+  `fs-*`-navnene, så en komponent under et annet navn mistet `display`-regelen
+  på verten, og `<fs-dialog>` også plasseringen av en dialog som står åpen
+  før den er modal. README sier nå at oppførselen følger med navnet, men
+  ikke stilen, og hvilke fire komponenter som setter klassen sin selv.
+- **`popover-toggle` er beskrevet slik den sendes.** Beskrivelsen i
+  `events.ts` og `web-types.json` sa «Panelet åpnet eller lukket seg», men
+  hendelsen kommer bare når brukeren åpner eller lukker panelet, og fra
+  `show()`, `hide()` og `toggle()`. Settes `open` som egenskap eller
+  attributt, som React 19 og Datastars `data-attr:open` gjør, kommer ingen
+  hendelse, ellers hadde Datastar-oppskriften fått sitt eget signal i retur.
+  Popover-siden skiller nå `meny.open = false` fra `hide()`.
+- **Regelboka for maler lovet at `<fs-tabs>` husker fanevalget etter enhver
+  patch.** Den nevnte `innerHTML`, htmx og Turbo, men valget er knyttet til
+  selve knappen og overlever bare en morfing som beholder elementene, som
+  Datastars `outer`, htmx med idiomorph og Turbo 8 med morfing. Bytter
+  patchen ut nodene, følger komponenten markupen. Regelboka sier nå hvilke
+  patcher som beholder valget, og at serveren ellers må skrive det selv
+  eller bruke `server-controlled`.
+- **Regelbøkene sa at markupen i en `ramme`-komponent står der uansett.**
+  «Kom i gang» og «Rammeverk» ble rettet i 0.33.0, men ikke teksten i
+  generatoren, så alle seks regelbøkene manglet unntaket: Tabs viser bare det
+  første panelet og Suggestion skjuler lista til de er registrert.
+- **React-oppskriften på Dialog-siden og mønsteret «Bekreft en handling»
+  tømmer `returnValue` før `showModal()`.** «Ren HTML»- og Astro-fanene
+  fikk tømmingen i 0.33.0, men React-fanen, mønstersiden og demoen åpnet
+  dialogen med den gamle verdien stående. Ble dialogen åpnet igjen etter en
+  «Slett» og lukket uten knapp, fikk `close`-lytteren «slett» på nytt og
+  slettet igjen.
 - **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
   begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
   eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen

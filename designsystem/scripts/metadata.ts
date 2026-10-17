@@ -429,7 +429,8 @@ export const elements: readonly ElementDoc[] = [
     },
     {
       "popover-toggle": {
-        description: "Panelet åpnet eller lukket seg.",
+        description:
+          "Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse.",
         detail: { open: "boolean" },
       },
     },
