@@ -55,7 +55,7 @@ ledige instanser som maskinen har prosessorer.
 
 `Fristil.manifest` er manifestet i pakken, det samme sjekken går mot, med
 typer: elementene med attributter, deler og hendelser, og klassene med
-attributtene og de lovlige verdiene. `Manifest.parse` leser et annet, som
+attributtene, de lovlige verdiene, innholdet og delene. `Manifest.parse` leser et annet, som
 det `fristilManifest` skriver for et prosjekt som har overtatt komponenter.
 IntelliJ-pluginen henter klassene til fullføringen herfra.
 `ManifestReaderTest` krever at ingenting fra JSON-en blir borte på veien.

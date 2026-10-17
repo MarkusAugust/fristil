@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://fristil.sobernetics.no/manifest.schema.json",
   "title": "Fristils manifest",
-  "description": "Det Fristil lover: elementene, klassene og byggefunksjonene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "description": "Det Fristil lover: elementene, klassene med innholdet og delene sine, og byggefunksjonene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
   "type": "object",
   "required": ["schemaVersion", "version", "elements", "classes", "builders"],
   "properties": {
@@ -41,31 +41,7 @@
             "type": "object",
             "description": "Delene elementet finner i markupen den som rendrer skriver, med selektoren det leter etter. Et tomt objekt når elementet lager sine egne noder.",
             "additionalProperties": {
-              "type": "object",
-              "required": ["selector", "description", "content"],
-              "properties": {
-                "selector": {
-                  "type": "string",
-                  "description": "CSS-selektoren elementet finner delen med, slik den står i koden."
-                },
-                "description": {
-                  "type": "string",
-                  "description": "Hva delen er, og hvordan elementet kjenner den igjen."
-                },
-                "content": {
-                  "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
-                  "enum": ["text", "free", "parts", "none"]
-                },
-                "multiple": {
-                  "const": true,
-                  "description": "Delen kan stå flere ganger."
-                },
-                "optional": {
-                  "const": true,
-                  "description": "Elementet virker uten delen."
-                }
-              },
-              "additionalProperties": false
+              "$ref": "#/$defs/part"
             }
           },
           "events": {
@@ -92,7 +68,14 @@
       "description": "Hver fs-klasse, med komponenten den hører til og attributtene den tar.",
       "additionalProperties": {
         "type": "object",
-        "required": ["component", "title", "description", "link", "attributes"],
+        "required": [
+          "component",
+          "title",
+          "description",
+          "link",
+          "content",
+          "attributes"
+        ],
         "properties": {
           "component": {
             "type": "string"
@@ -105,6 +88,21 @@
           },
           "link": {
             "type": "string"
+          },
+          "content": {
+            "description": "Hva elementet med klassen tar som innhold, med samme ord som delene: «text» er tekst, «free» er hva som helst, «parts» er bare delene, og «none» er ingen tekst, som en kontroll.",
+            "enum": ["text", "free", "parts", "none"]
+          },
+          "partOf": {
+            "type": "string",
+            "description": "Klassen denne er en del av, når den bare er en del av en annen komponents markup, som fs-card__title i fs-card. Forelderen har en del som treffer den."
+          },
+          "parts": {
+            "type": "object",
+            "description": "Delene markupen består av, for klassene med en fast struktur, med selektoren relativt til elementet med klassen. Mangler for klassene uten.",
+            "additionalProperties": {
+              "$ref": "#/$defs/part"
+            }
           },
           "attributes": {
             "type": "object",
@@ -391,6 +389,33 @@
           }
         }
       }
+    },
+    "part": {
+      "type": "object",
+      "required": ["selector", "description", "content"],
+      "properties": {
+        "selector": {
+          "type": "string",
+          "description": "CSS-selektoren elementet finner delen med, slik den står i koden."
+        },
+        "description": {
+          "type": "string",
+          "description": "Hva delen er, og hvordan elementet kjenner den igjen."
+        },
+        "content": {
+          "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
+          "enum": ["text", "free", "parts", "none"]
+        },
+        "multiple": {
+          "const": true,
+          "description": "Delen kan stå flere ganger."
+        },
+        "optional": {
+          "const": true,
+          "description": "Elementet virker uten delen."
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

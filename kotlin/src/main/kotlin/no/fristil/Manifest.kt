@@ -6,7 +6,8 @@ package no.fristil
  * mot, så et verktøy som viser fullføring eller dokumentasjon fra det, er
  * aldri ute av takt med diagnostikken.
  *
- * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
+ * Klassene har innholdet og delene sine, så et verktøy kan sette sammen
+ * markupen av dem. [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
  * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
  * prosjekt som har overtatt komponenter. Byggefunksjonene i manifestet er
  * utelatt: de er for generatoren som skriver `Fs`, og `Fs` er API-et for dem.
@@ -60,18 +61,7 @@ data class Manifest(
                             description = attribute["description"]?.str("$path.description"),
                         )
                     },
-                parts =
-                    (e["parts"]?.obj("$at.parts") ?: emptyMap()).mapValues { (name, p) ->
-                        val path = "$at.parts.$name"
-                        val part = p.obj(path)
-                        Part(
-                            selector = part["selector"].str("$path.selector"),
-                            description = part["description"].str("$path.description"),
-                            content = enumOf<PartContent>(part["content"].str("$path.content"), "$path.content"),
-                            multiple = part["multiple"] == true,
-                            optional = part["optional"] == true,
-                        )
-                    },
+                parts = parts(e["parts"], "$at.parts"),
                 events =
                     (e["events"]?.obj("$at.events") ?: emptyMap()).mapValues { (name, ev) ->
                         val path = "$at.events.$name"
@@ -81,6 +71,19 @@ data class Manifest(
                     },
             )
 
+        private fun parts(value: Any?, at: String): Map<String, Part> =
+            (value?.obj(at) ?: emptyMap()).mapValues { (name, p) ->
+                val path = "$at.$name"
+                val part = p.obj(path)
+                Part(
+                    selector = part["selector"].str("$path.selector"),
+                    description = part["description"].str("$path.description"),
+                    content = enumOf<PartContent>(part["content"].str("$path.content"), "$path.content"),
+                    multiple = part["multiple"] == true,
+                    optional = part["optional"] == true,
+                )
+            }
+
         private fun klass(name: String, c: Map<String, Any?>, at: String) =
             ManifestClass(
                 name = name,
@@ -88,6 +91,9 @@ data class Manifest(
                 title = c["title"].str("$at.title"),
                 description = c["description"].str("$at.description"),
                 link = c["link"].str("$at.link"),
+                content = enumOf<PartContent>(c["content"].str("$at.content"), "$at.content"),
+                partOf = c["partOf"]?.str("$at.partOf"),
+                parts = parts(c["parts"], "$at.parts"),
                 attributes =
                     c["attributes"].obj("$at.attributes").mapValues { (attr, a) ->
                         val path = "$at.attributes.$attr"
@@ -171,7 +177,10 @@ data class ElementEvent(
     val detail: Map<String, String>,
 )
 
-/** En klasse i manifestet, som `fs-button`, med komponenten den hører til. */
+/**
+ * En klasse i manifestet, som `fs-button`, med komponenten den hører til,
+ * hva elementet med klassen tar som innhold, og delene markupen består av.
+ */
 data class ManifestClass(
     val name: String,
     /** Adressen til komponentsiden, relativt, som `button`. */
@@ -179,6 +188,12 @@ data class ManifestClass(
     val title: String,
     val description: String,
     val link: String,
+    /** Hva elementet med klassen tar som innhold, med samme ord som delene. */
+    val content: PartContent,
+    /** Klassen denne er en del av, som `fs-card` for `fs-card__title`. Forelderen har en del som treffer den. */
+    val partOf: String?,
+    /** Delene markupen består av, med selektoren relativt til elementet med klassen. Tom for klassene uten en fast struktur. */
+    val parts: Map<String, Part>,
     val attributes: Map<String, ClassAttribute>,
 )
 

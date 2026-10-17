@@ -553,3 +553,543 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 ]
+
+/**
+ * Hva hver klasse tar som innhold, og delene den består av.
+ *
+ * Elementene over sier hva web-komponentene leter etter. Klassene sa
+ * ingenting: manifestet visste ikke at `fs-button` tar tekst, at `fs-list`
+ * består av `<li>`, eller at `fs-table` har `<thead>` og `<tbody>` med en
+ * `fs-table__sort` i en `<th>`. Et verktøy som setter sammen markup av
+ * klassene måtte holde det i en egen liste.
+ *
+ * `content` bruker det samme ordforrådet som delene. `parts` står på
+ * klassene med en fast struktur, og selektorene er relative til elementet
+ * med klassen, som for elementene. En klasse som bare er en del av en annen
+ * komponents markup, som `fs-card__title` og `fs-table__sort`, peker på
+ * forelderen med `partOf` i stedet for å ha egne deler, og forelderen har en
+ * del som treffer den.
+ *
+ * Tabellen holdes i takt med pakken av `generate-ordforrad.ts`, som stopper
+ * på en klasse i CSS-en som mangler her og på en oppføring uten klasse, og
+ * av `sjekk-ordforrad.ts`, som krever at hver selektor treffer markupen på
+ * komponentsiden, og at `partOf` peker på en klasse med en del som treffer
+ * denne.
+ */
+export type ClassDoc = {
+  content: PartContent
+  parts?: Record<string, PartDoc>
+  /** Klassen denne er en del av. */
+  partOf?: string
+}
+
+/** En rad i et skjema: kontrollen og ledeteksten side om side. */
+const row = (control: string, what: string): ClassDoc => ({
+  content: "parts",
+  parts: {
+    control: {
+      selector: control,
+      description: `${what}, med klassen sin.`,
+      content: "none",
+    },
+    label: {
+      selector: "label",
+      description: "Ledeteksten, koblet til kontrollen med `for`.",
+      content: "text",
+    },
+  },
+})
+
+export const classDocs: Record<string, ClassDoc> = {
+  "fs-accordion": {
+    content: "parts",
+    parts: {
+      summary: {
+        selector: "summary",
+        description:
+          "Overskriften brukeren trykker på for å åpne og lukke. En `<h2>` til `<h6>` inni gir den et nivå i dokumentet.",
+        content: "text",
+      },
+      content: {
+        selector: ".fs-accordion__content",
+        description: "Innholdet som vises når panelet er åpent.",
+        content: "free",
+      },
+    },
+  },
+  "fs-accordion__content": { content: "free", partOf: "fs-accordion" },
+  "fs-alert": {
+    content: "free",
+    parts: {
+      title: {
+        selector: ".fs-alert__title",
+        description: "Overskriften i meldingen.",
+        content: "text",
+        optional: true,
+      },
+    },
+  },
+  "fs-alert__title": { content: "text", partOf: "fs-alert" },
+  "fs-avatar": {
+    content: "free",
+    parts: {
+      image: {
+        selector: "img",
+        description:
+          "Bildet, med navnet i `alt`. Uten bilde står initialene som tekst, og elementet har `aria-hidden` når navnet står ved siden av.",
+        content: "none",
+        optional: true,
+      },
+    },
+  },
+  "fs-avatar-stack": {
+    content: "parts",
+    parts: {
+      item: {
+        selector: "li",
+        description: "Ett listepunkt per person.",
+        content: "parts",
+        multiple: true,
+      },
+      avatar: {
+        selector: "li > .fs-avatar",
+        description: "Avataren i hvert listepunkt.",
+        content: "free",
+        multiple: true,
+      },
+    },
+  },
+  "fs-badge": { content: "text" },
+  "fs-breadcrumbs": {
+    content: "parts",
+    parts: {
+      item: {
+        selector: "li",
+        description: "Ett steg i stien.",
+        content: "parts",
+        multiple: true,
+      },
+      link: {
+        selector: "li > a",
+        description:
+          'Lenken til steget. Det siste, siden leseren står på, har `aria-current="page"`.',
+        content: "text",
+        multiple: true,
+      },
+    },
+  },
+  "fs-button": { content: "text" },
+  "fs-card": {
+    content: "free",
+    parts: {
+      title: {
+        selector: ".fs-card__title",
+        description: "Overskriften i kortet.",
+        content: "text",
+        optional: true,
+      },
+    },
+  },
+  "fs-card__title": { content: "text", partOf: "fs-card" },
+  "fs-checkbox": { content: "none" },
+  "fs-checkbox-row": row("input[type='checkbox']", "Avkryssingsboksen"),
+  "fs-divider": { content: "none" },
+  "fs-error-text": { content: "text" },
+  "fs-fieldset": {
+    content: "free",
+    parts: {
+      legend: {
+        selector: ".fs-legend",
+        description: "Ledeteksten til gruppen, en `<legend>` med klassen.",
+        content: "text",
+      },
+      help: {
+        selector: ".fs-help-text",
+        description:
+          "Hjelpeteksten til gruppen, koblet med `aria-describedby` på feltsettet.",
+        content: "text",
+        optional: true,
+      },
+      error: {
+        selector: ".fs-error-text",
+        description:
+          "Feilmeldingen til gruppen, koblet med `aria-describedby` på feltsettet.",
+        content: "text",
+        optional: true,
+      },
+    },
+  },
+  "fs-legend": { content: "text", partOf: "fs-fieldset" },
+  "fs-file-upload": { content: "none" },
+  "fs-file-upload-list": {
+    content: "parts",
+    parts: {
+      item: {
+        selector: "li",
+        description: "Én valgt fil, med navnet.",
+        content: "free",
+        multiple: true,
+      },
+      remove: {
+        selector: "li > button",
+        description: "Knappen som fjerner fila, med filnavnet i teksten.",
+        content: "text",
+        multiple: true,
+        optional: true,
+      },
+    },
+  },
+  "fs-heading": { content: "text" },
+  "fs-help-text": { content: "text" },
+  "fs-icon": { content: "none" },
+  "fs-input": { content: "none" },
+  "fs-label": { content: "text" },
+  "fs-link": { content: "text" },
+  "fs-list": {
+    content: "parts",
+    parts: {
+      item: {
+        selector: "li",
+        description: "Ett punkt i lista.",
+        content: "free",
+        multiple: true,
+      },
+    },
+  },
+  "fs-pagination": {
+    content: "parts",
+    parts: {
+      item: {
+        selector: "li",
+        description: "Ett listepunkt per side, pil og hull.",
+        content: "parts",
+        multiple: true,
+      },
+      link: {
+        selector: "li > a, li > button",
+        description:
+          'Lenken eller knappen til en side, med sidetallet som tekst og `aria-label` som sier hva det er. Den gjeldende har `aria-current="page"`.',
+        content: "text",
+        multiple: true,
+      },
+      gap: {
+        selector: ".fs-pagination__gap",
+        description: "Hullet der sider er utelatt.",
+        content: "text",
+        multiple: true,
+        optional: true,
+      },
+    },
+  },
+  "fs-pagination__gap": { content: "text", partOf: "fs-pagination" },
+  "fs-paragraph": { content: "text" },
+  "fs-progress": { content: "none" },
+  "fs-radio": { content: "none" },
+  "fs-radio-row": row("input[type='radio']", "Radioknappen"),
+  "fs-search": { content: "none" },
+  "fs-search-row": {
+    content: "parts",
+    parts: {
+      label: {
+        selector: "label",
+        description:
+          "Ledeteksten, koblet med `for`. Gjerne skjult med `fs-sr-only`.",
+        content: "text",
+      },
+      control: {
+        selector: "input[type='search']",
+        description: "Søkefeltet, med klassene `fs-input fs-search`.",
+        content: "none",
+      },
+      button: {
+        selector: "button",
+        description: "Søkeknappen.",
+        content: "text",
+        optional: true,
+      },
+    },
+  },
+  "fs-select": { content: "none" },
+  "fs-skeleton": { content: "none" },
+  "fs-skip-link": { content: "text" },
+  "fs-spinner": { content: "none" },
+  "fs-sr-only": { content: "text" },
+  "fs-switch": { content: "none" },
+  "fs-switch-row": row("input[role='switch']", "Bryteren"),
+  "fs-table": {
+    content: "parts",
+    parts: {
+      caption: {
+        selector: "caption",
+        description: "Tabellens navn.",
+        content: "text",
+        optional: true,
+      },
+      head: {
+        selector: "thead",
+        description: 'Overskriftsraden, med `<th scope="col">` per kolonne.',
+        content: "free",
+      },
+      body: {
+        selector: "tbody",
+        description:
+          'Radene. En `<th scope="row">` først i raden gir raden et navn.',
+        content: "free",
+      },
+      sort: {
+        selector: "th > .fs-table__sort",
+        description:
+          "Knappen i en overskrift som kan sorteres. `aria-sort` på cellen sier hvilken vei.",
+        content: "text",
+        multiple: true,
+        optional: true,
+      },
+    },
+  },
+  "fs-table__sort": { content: "text", partOf: "fs-table" },
+  "fs-table-scroll": {
+    content: "parts",
+    parts: {
+      table: {
+        selector: ".fs-table",
+        description: "Tabellen som kan rulles sidelengs.",
+        content: "free",
+      },
+    },
+  },
+  "fs-tag": { content: "text" },
+  "fs-textarea": { content: "none" },
+  "fs-toggle-group": {
+    content: "parts",
+    parts: {
+      legend: {
+        selector: "legend",
+        description:
+          "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
+        content: "text",
+      },
+      option: {
+        selector: ".fs-toggle-group__option",
+        description:
+          "Ett alternativ: en `<label>` med radioknappen og teksten.",
+        content: "free",
+        multiple: true,
+      },
+      radio: {
+        selector: ".fs-toggle-group__option > input[type='radio']",
+        description: "Radioknappen i hvert alternativ, med samme `name`.",
+        content: "none",
+        multiple: true,
+      },
+    },
+  },
+  "fs-toggle-group__option": { content: "free", partOf: "fs-toggle-group" },
+  "fs-tooltip": {
+    content: "parts",
+    parts: {
+      trigger: {
+        selector: "[aria-describedby]",
+        description:
+          "Elementet boblen beskriver, med `aria-describedby` mot boblens id.",
+        content: "text",
+      },
+      bubble: {
+        selector: ".fs-tooltip__bubble",
+        description: 'Boblen, med `role="tooltip"` og id-en.',
+        content: "text",
+      },
+    },
+  },
+  "fs-tooltip__bubble": { content: "text", partOf: "fs-tooltip" },
+
+  "fs-dialog": {
+    content: "free",
+    parts: {
+      header: {
+        selector: ".fs-dialog__header",
+        description:
+          "Toppen, med overskriften og underteksten. `data-color` på dialogen farger den.",
+        content: "parts",
+        optional: true,
+      },
+      title: {
+        selector: ".fs-dialog__title",
+        description: "Overskriften, som `aria-labelledby` peker på.",
+        content: "text",
+        optional: true,
+      },
+      subtitle: {
+        selector: ".fs-dialog__subtitle",
+        description: "Linja under overskriften, inne i toppen.",
+        content: "text",
+        optional: true,
+      },
+      body: {
+        selector: ".fs-dialog__body",
+        description:
+          "Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn.",
+        content: "free",
+        optional: true,
+      },
+      footer: {
+        selector: ".fs-dialog__footer",
+        description:
+          'Raden med knapper nederst, gjerne et `<form method="dialog">`.',
+        content: "free",
+        optional: true,
+      },
+    },
+  },
+  "fs-dialog__header": { content: "parts", partOf: "fs-dialog" },
+  "fs-dialog__title": { content: "text", partOf: "fs-dialog" },
+  "fs-dialog__subtitle": { content: "text", partOf: "fs-dialog" },
+  "fs-dialog__body": { content: "free", partOf: "fs-dialog" },
+  "fs-dialog__footer": { content: "free", partOf: "fs-dialog" },
+  "fs-error-summary": {
+    content: "parts",
+    parts: {
+      title: {
+        selector: ".fs-error-summary__title",
+        description: "Overskriften, som sier hvor mange feil skjemaet har.",
+        content: "text",
+      },
+      list: {
+        selector: "ul",
+        description: "Lista med én lenke per feil.",
+        content: "parts",
+      },
+      link: {
+        selector: "li a[href^='#']",
+        description:
+          "Lenken til et felt med feil, med feilmeldingen som tekst og feltets id etter `#`.",
+        content: "text",
+        multiple: true,
+      },
+    },
+  },
+  "fs-error-summary__title": { content: "text", partOf: "fs-error-summary" },
+  "fs-popover": { content: "free" },
+  "fs-session-timeout": {
+    content: "parts",
+    parts: {
+      dialog: {
+        selector: ".fs-session-timeout__dialog",
+        description: 'Dialogen med varselet, med `role="alertdialog"`.',
+        content: "parts",
+      },
+      title: {
+        selector: ".fs-session-timeout__title",
+        description: "Overskriften i dialogen.",
+        content: "text",
+        optional: true,
+      },
+      text: {
+        selector: ".fs-session-timeout__text",
+        description: "Avsnittet med tiden som er igjen.",
+        content: "text",
+      },
+      count: {
+        selector: ".fs-session-timeout__count",
+        description:
+          "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
+        content: "none",
+      },
+      status: {
+        selector: "[role='status']",
+        description: "Opplesningen. Står tomt, og komponenten fyller det.",
+        content: "none",
+      },
+      actions: {
+        selector: ".fs-session-timeout__actions",
+        description: 'Knapperaden, et `<form method="dialog">`.',
+        content: "parts",
+      },
+      button: {
+        selector: ".fs-session-timeout__actions button",
+        description: "Knappene som forlenger økten eller logger ut.",
+        content: "text",
+        multiple: true,
+      },
+    },
+  },
+  "fs-session-timeout__dialog": {
+    content: "parts",
+    partOf: "fs-session-timeout",
+  },
+  "fs-session-timeout__title": {
+    content: "text",
+    partOf: "fs-session-timeout",
+  },
+  "fs-session-timeout__text": { content: "text", partOf: "fs-session-timeout" },
+  "fs-session-timeout__count": {
+    content: "none",
+    partOf: "fs-session-timeout",
+  },
+  "fs-session-timeout__actions": {
+    content: "parts",
+    partOf: "fs-session-timeout",
+  },
+  "fs-suggestion__field": {
+    content: "parts",
+    parts: {
+      control: {
+        selector: "input",
+        description: "Feltet brukeren skriver i.",
+        content: "none",
+      },
+      list: {
+        selector: ".fs-suggestion__list",
+        description: "Lista med forslag.",
+        content: "parts",
+      },
+      empty: {
+        selector: ".fs-suggestion__empty",
+        description: "Meldingen som vises når ingenting passer.",
+        content: "text",
+        optional: true,
+      },
+      status: {
+        selector: "[role='status']",
+        description:
+          "Opplesningen av antall treff. Står tomt, og komponenten fyller det.",
+        content: "none",
+      },
+    },
+  },
+  "fs-suggestion__list": {
+    content: "parts",
+    partOf: "fs-suggestion__field",
+    parts: {
+      option: {
+        selector: "li",
+        description:
+          "Ett forslag. Komponenten gir det klassen `fs-suggestion__option` og rollen.",
+        content: "text",
+        multiple: true,
+      },
+    },
+  },
+  "fs-suggestion__option": { content: "text" },
+  "fs-suggestion__empty": { content: "text", partOf: "fs-suggestion__field" },
+  "fs-tabs__list": {
+    content: "parts",
+    parts: {
+      tab: {
+        selector: "button",
+        description: "En fane. Fane nummer n styrer panel nummer n.",
+        content: "text",
+        multiple: true,
+      },
+    },
+  },
+  "fs-tabs__panel": { content: "free" },
+
+  // Klassene komponentene setter på nodene de lager selv, har innhold men
+  // ingen forelder: ingen skriver dem i markupen, så ingen del treffer dem.
+  "fs-connection-status": { content: "none" },
+  "fs-connection-status__bar": { content: "text" },
+  "fs-toast": { content: "none" },
+  "fs-toast__message": { content: "text" },
+  "fs-toast__close": { content: "text" },
+  "fs-theme-control": { content: "none" },
+}

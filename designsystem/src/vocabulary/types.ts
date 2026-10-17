@@ -67,6 +67,16 @@ export type ClassInfo = {
   title: string
   description: string
   link: string
+  /** Hva elementet med klassen tar som innhold, med samme ord som delene. */
+  content: Part["content"]
+  /**
+   * Klassen denne er en del av, når den bare er en del av en annen
+   * komponents markup, som `fs-card__title` i `fs-card`. Forelderen har en
+   * del som treffer den.
+   */
+  partOf?: string
+  /** Delene markupen består av, for klassene med en fast struktur. */
+  parts?: Record<string, Part>
   attributes: Record<string, ClassAttribute>
 }
 

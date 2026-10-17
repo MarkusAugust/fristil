@@ -360,6 +360,19 @@ const boks = fs.dialog({ titleId: "resultat-tittel", color: "success" })
 </dialog>
 ```
 
+Uten byggefunksjonen er det de samme klassene, skrevet ut:
+
+```html
+<dialog class="fs-dialog" data-color="success" aria-labelledby="resultat-tittel">
+  <div class="fs-dialog__header">
+    <h2 class="fs-dialog__title" id="resultat-tittel">Full pott</h2>
+    <p class="fs-dialog__subtitle">25 av 25 poeng</p>
+  </div>
+  <div class="fs-dialog__body">…</div>
+  <form method="dialog" class="fs-dialog__footer">…</form>
+</dialog>
+```
+
 Toppen er valgfri, og uten den står dialogen som før. Fargen gjelder toppen, så uten `header` i markupen har den ingenting å farge. En topp uten farge er heller ingen stripe: da slipper den bunnluften, og avstanden ned til teksten er den samme som ellers.
 
 ## Klasser du kan style
