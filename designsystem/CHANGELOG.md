@@ -258,6 +258,13 @@ egen overskrift «Brytende».
   er nå `@layer theme, base, fristil, fristil-tema, components, utilities;`,
   og Eget tema-siden sier at laget må stå der når Tailwind brukes. Den
   genererte fila er uendret.
+- **Tailwind-siden og Design tokens-siden sa at skalaen følger med når du
+  setter `--fs-spacing-1`.** `p-4` er `calc(var(--fs-spacing-1) * 4)`, men
+  `--fs-spacing-4` og de andre trinnene er egne verdier, så eksempelet
+  `--fs-spacing-1: 0.3rem` ga `p-4` 1,2rem mens komponentene sto på 1rem.
+  Sidene og kommentaren i `tailwind.css` sier nå at trinnene må skrives om
+  hver for seg, og eksempelet gjør det. Tabellen over skalaen oppgir også
+  `px` som Tailwind-motstykket til `--fs-spacing-px`, der det sto «ingen».
 
 ## 0.33.0 (2026-10-12)
 

@@ -97,13 +97,28 @@ Breddene er unntaket. `max-w-fs-aside`, `max-w-fs-wide-content` og de andre bred
 
 ### Avstandene er de samme
 
-Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--fs-spacing-1`. `p-4` er dermed nøyaktig `--fs-spacing-4`, den samme verdien komponentene bruker. Endrer du skalaen, følger både komponentene og Tailwind-klassene med:
+Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--fs-spacing-1`. `p-4` er dermed fire ganger grunnenheten, som er `--fs-spacing-4`, den samme verdien komponentene bruker.
+
+Trinnene i skalaen er egne verdier, ikke regnet av enheten. Setter du bare `--fs-spacing-1`, følger Tailwind-klassene med, men `--fs-spacing-4` og komponentene står der de sto, og `p-4` er ikke lenger det samme som en knapps padding. Skal du endre skalaen, skriv om hele:
 
 ```css
 :root {
+	--fs-spacing-0-5: 0.15rem;
 	--fs-spacing-1: 0.3rem;
+	--fs-spacing-2: 0.6rem;
+	--fs-spacing-3: 0.9rem;
+	--fs-spacing-4: 1.2rem;
+	--fs-spacing-5: 1.5rem;
+	--fs-spacing-6: 1.8rem;
+	--fs-spacing-7: 2.1rem;
+	--fs-spacing-8: 2.4rem;
+	--fs-spacing-10: 3rem;
+	--fs-spacing-12: 3.6rem;
+	--fs-spacing-16: 4.8rem;
 }
 ```
+
+Da følger både komponentene og Tailwind-klassene med. `--fs-spacing-px` er den faste pikselen og står utenfor skalaen.
 
 Brekkpunktene er med vilje utelatt fra temaet. Fristils `sm` til `2xl` har allerede Tailwinds verdier, så `md:` virker som før.
 

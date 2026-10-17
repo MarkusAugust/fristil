@@ -150,6 +150,14 @@ const TEMA = `
     }
   }`
 
+/**
+ * Det Tailwind lager av `p-4` med temaet vårt: `--spacing` er
+ * `--fs-spacing-1`, og `sjekk-tailwind.ts` kontrollerer med en ekte Tailwind
+ * at klassen inneholder nettopp dette regnestykket.
+ */
+const P4 =
+  "@layer utilities { .p-4 { padding: calc(var(--fs-spacing-1) * 4); } }"
+
 describe("sammen med Tailwind", () => {
   afterEach(() => {
     // Rammene må bort. Blir de stående, kan fokus havne i dem, og testene
@@ -250,5 +258,49 @@ describe("sammen med Tailwind", () => {
     expect(
       dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
     ).toBe("Georgia, serif")
+  })
+
+  it("gir p-4 den samme avstanden som --fs-spacing-4 når hele skalaen skrives om", async () => {
+    const markup = `
+      <div class="p-4" id="klasse"></div>
+      <div style="padding: var(--fs-spacing-4)" id="trinn"></div>
+      <button class="fs-button" id="knapp">Send søknad</button>`
+
+    // Slik dokumentasjonen viser det: hvert trinn skrives om, for trinnene
+    // er egne verdier og regnes ikke av enheten.
+    const hele = await medStilark(
+      `
+      ${LAGLINJE}
+      ${tokenKilde}
+      ${knappeKilde}
+      ${P4}
+      :root {
+        --fs-spacing-1: 0.3rem;
+        --fs-spacing-2: 0.6rem;
+        --fs-spacing-4: 1.2rem;
+      }
+    `,
+      markup,
+    )
+    expect(stil(hele, "klasse").padding).toBe("19.2px")
+    expect(stil(hele, "trinn").padding).toBe("19.2px")
+    expect(stil(hele, "knapp").padding).toBe("9.6px 19.2px")
+
+    // Skrives bare enheten om, følger klassene med, men ikke trinnene, og
+    // dermed ikke komponentene. Det er derfor dokumentasjonen ber om hele
+    // skalaen.
+    const bare = await medStilark(
+      `
+      ${LAGLINJE}
+      ${tokenKilde}
+      ${knappeKilde}
+      ${P4}
+      :root { --fs-spacing-1: 0.3rem; }
+    `,
+      markup,
+    )
+    expect(stil(bare, "klasse").padding).toBe("19.2px")
+    expect(stil(bare, "trinn").padding).toBe("16px")
+    expect(stil(bare, "knapp").padding).toBe("8px 16px")
   })
 })
