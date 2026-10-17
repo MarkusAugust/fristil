@@ -293,7 +293,7 @@ export const classes: Classes = {
     "content": "free",
     "parts": {
       "legend": {
-        "selector": ".fs-legend",
+        "selector": "> .fs-legend",
         "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
         "content": "text",
         "unique": true
@@ -761,14 +761,14 @@ export const classes: Classes = {
     "content": "parts",
     "parts": {
       "caption": {
-        "selector": "caption",
+        "selector": "> caption",
         "description": "Tabellens navn.",
         "content": "text",
         "unique": true,
         "optional": true
       },
       "head": {
-        "selector": "thead",
+        "selector": "> thead",
         "description": "Overskriftsraden, med `<th scope=\"col\">` per kolonne.",
         "content": "free",
         "unique": true
@@ -867,7 +867,7 @@ export const classes: Classes = {
     "content": "parts",
     "parts": {
       "legend": {
-        "selector": "legend",
+        "selector": "> legend",
         "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
         "content": "text",
         "unique": true

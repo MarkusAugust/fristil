@@ -153,10 +153,10 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "del-flere-ganger på en stor liste går fort",
-    html: `<ul class="fs-list">${"<li>x</li>".repeat(5000)}</ul><fs-field><label>A</label>${'<input name="a">'.repeat(2000)}</fs-field>`,
+    name: "en dyp nøsting og et felt med mange kontroller går fort",
+    html: `<ul class="fs-list">${"<li>x".repeat(3000)}</ul><fs-field><label>A</label>${'<input name="a">'.repeat(2000)}</fs-field>`,
     count: 1999,
-    maxMs: 200,
+    maxMs: 500,
   },
   {
     name: "to deler bak et vilkår i en mal er ikke to deler",

@@ -227,7 +227,6 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     panel: {
       description: "Panelet som åpnes: elementet med `popover`, eller klassen.",
       content: "free",
-      unique: true,
     },
   }),
   [FS_SUGGESTION_TAG]: parts(FS_SUGGESTION_PARTS, {
@@ -254,7 +253,6 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
       content: "none",
-      unique: true,
     },
   }),
   [FS_DIALOG_TAG]: parts(FS_DIALOG_PARTS, {
@@ -305,7 +303,6 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description:
         "Opplesningen. Elementet står tomt, og komponenten fyller det.",
       content: "none",
-      unique: true,
     },
     button: {
       description:
@@ -721,7 +718,7 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "free",
     parts: {
       legend: {
-        selector: ".fs-legend",
+        selector: "> .fs-legend",
         description: "Ledeteksten til gruppen, en `<legend>` med klassen.",
         content: "text",
         unique: true,
@@ -844,14 +841,14 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "parts",
     parts: {
       caption: {
-        selector: "caption",
+        selector: "> caption",
         description: "Tabellens navn.",
         content: "text",
         unique: true,
         optional: true,
       },
       head: {
-        selector: "thead",
+        selector: "> thead",
         description: 'Overskriftsraden, med `<th scope="col">` per kolonne.',
         content: "free",
         unique: true,
@@ -890,7 +887,7 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "parts",
     parts: {
       legend: {
-        selector: "legend",
+        selector: "> legend",
         description:
           "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
         content: "text",

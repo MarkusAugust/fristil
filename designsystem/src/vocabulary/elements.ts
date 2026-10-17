@@ -164,8 +164,7 @@ export const elements: Elements = {
       "panel": {
         "selector": "[popover], .fs-popover",
         "description": "Panelet som åpnes: elementet med `popover`, eller klassen.",
-        "content": "free",
-        "unique": true
+        "content": "free"
       }
     },
     "events": {
@@ -246,8 +245,7 @@ export const elements: Elements = {
       "status": {
         "selector": "[role='status']",
         "description": "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
-        "content": "none",
-        "unique": true
+        "content": "none"
       }
     },
     "events": {
@@ -368,8 +366,7 @@ export const elements: Elements = {
       "status": {
         "selector": "[role='status']",
         "description": "Opplesningen. Elementet står tomt, og komponenten fyller det.",
-        "content": "none",
-        "unique": true
+        "content": "none"
       },
       "button": {
         "selector": "form[method=\"dialog\" i] button",

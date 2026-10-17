@@ -165,8 +165,7 @@
         "panel": {
           "selector": "[popover], .fs-popover",
           "description": "Panelet som åpnes: elementet med `popover`, eller klassen.",
-          "content": "free",
-          "unique": true
+          "content": "free"
         }
       },
       "events": {
@@ -247,8 +246,7 @@
         "status": {
           "selector": "[role='status']",
           "description": "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
-          "content": "none",
-          "unique": true
+          "content": "none"
         }
       },
       "events": {
@@ -369,8 +367,7 @@
         "status": {
           "selector": "[role='status']",
           "description": "Opplesningen. Elementet står tomt, og komponenten fyller det.",
-          "content": "none",
-          "unique": true
+          "content": "none"
         },
         "button": {
           "selector": "form[method=\"dialog\" i] button",
@@ -709,7 +706,7 @@
       "content": "free",
       "parts": {
         "legend": {
-          "selector": ".fs-legend",
+          "selector": "> .fs-legend",
           "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
           "content": "text",
           "unique": true
@@ -1194,14 +1191,14 @@
       "content": "parts",
       "parts": {
         "caption": {
-          "selector": "caption",
+          "selector": "> caption",
           "description": "Tabellens navn.",
           "content": "text",
           "unique": true,
           "optional": true
         },
         "head": {
-          "selector": "thead",
+          "selector": "> thead",
           "description": "Overskriftsraden, med `<th scope=\"col\">` per kolonne.",
           "content": "free",
           "unique": true
@@ -1303,7 +1300,7 @@
       "content": "parts",
       "parts": {
         "legend": {
-          "selector": "legend",
+          "selector": "> legend",
           "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
           "content": "text",
           "unique": true

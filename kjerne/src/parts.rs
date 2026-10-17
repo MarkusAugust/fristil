@@ -5,8 +5,8 @@
 //! melder bare delene med `unique`: der en del til av samme slag er en feil,
 //! som et `<fs-field>` med to kontroller, der bare den første blir koblet.
 //! En del uten `unique` kan stå flere ganger og være vanlig innhold.
-//! `<fs-popover>` finner knappen sin utenfor panelet, eller den med
-//! `aria-controls`, og knappene i panelet er menyens. Hver komponents egen
+//! `<fs-popover>` finner knappen med `aria-controls` mot panelet, ellers den
+//! første utenfor panelet, og knappene i panelet er menyens. Hver komponents egen
 //! regel for hvilken som er den riktige, står i komponenten og ikke her.
 //!
 //! Et treff hører til den nærmeste verten: et felt inni et felt er det indre
@@ -21,7 +21,7 @@
 //! selektor den ikke forstår, hoppes over framfor å gi et funn den ikke kan
 //! stå for.
 
-use crate::diagnose::is_templated_content;
+use crate::diagnose::{is_templated_content, tag_end};
 use crate::references::{tree, value, Node};
 use crate::text::*;
 use crate::types::*;
@@ -314,32 +314,38 @@ fn is_ancestor(nodes: &[Node], a: usize, n: usize) -> bool {
     false
 }
 
-/// Malsyntaks som kan gi en annen markup på siden enn i kilden: det
-/// `is_templated_content` kjenner, uttrykk i `{…}` utenfor taggene, som i
-/// Astro og JSX, og attributtene som tar bort eller gjentar et element i
-/// Vue, Alpine, Angular og Svelte.
+/// Malsyntaks i innholdet som kan gi en annen markup på siden enn i kilden:
+/// det `is_templated_content` kjenner, og et uttrykk i `{…}` i teksten
+/// utenfor taggene, som i Astro og JSX. En `{` i en attributtverdi, som
+/// `count-one="{n} treff"` eller `data-signals="{…}"`, er ikke et uttrykk.
 fn decides_markup(content: &[u16]) -> bool {
     if is_templated_content(content) {
         return true;
     }
-    const DIRECTIVES: &[&str] = &[
-        "v-if", "v-else", "v-for", "x-if", "x-for", "*ngif", "*ngfor", "{#if", "{#each", "@if",
-        "@for",
-    ];
-    let lower = lowercase(content);
-    if DIRECTIVES.iter().any(|d| contains_str(&lower, d)) {
-        return true;
-    }
-    // `{` i teksten utenfor taggene.
     let mut in_tag = false;
-    content.iter().any(|&c| {
-        if c == LT {
-            in_tag = true;
-        } else if c == GT {
-            in_tag = false;
+    let mut quote: Option<u16> = None;
+    for &c in content {
+        match quote {
+            Some(q) if c == q => quote = None,
+            Some(_) => {}
+            None if in_tag && (c == DOUBLE_QUOTE || c == SINGLE_QUOTE) => quote = Some(c),
+            None if c == LT => in_tag = true,
+            None if c == GT => in_tag = false,
+            None if !in_tag && c == b'{' as u16 => return true,
+            None => {}
         }
-        !in_tag && c == b'{' as u16
-    })
+    }
+    false
+}
+
+/// Attributtene som tar bort eller gjentar et element i Vue og Angular.
+/// Alpine sine `x-if` og `x-for` står på en `<template>`, som ikke teller.
+const DIRECTIVES: &[&str] = &["v-if", "v-else", "v-else-if", "v-for", "*ngif", "*ngfor"];
+
+fn has_directive(node: &Node) -> bool {
+    node.attributes
+        .iter()
+        .any(|a| DIRECTIVES.iter().any(|d| equals(&a.name, d)))
 }
 
 /// Om noden står i en `<template>`.
@@ -429,10 +435,19 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             if own.is_empty() {
                 continue;
             }
-            let content_end = nodes
+            // Innholdet er fra slutten av åpningstaggen til sluttaggen, ikke
+            // vertens egne attributter og ikke teksten etter den.
+            let from = tag_end(source, nodes[h].name_end).map_or(nodes[h].name_end, |e| e + 1);
+            let next = nodes
                 .get(last + 1)
                 .map_or(source.len(), |n| n.name_start.saturating_sub(1));
-            if decides_markup(&source[nodes[h].name_end..content_end.max(nodes[h].name_end)]) {
+            let close = format!("</{}", nodes[h].name);
+            let to = (from..next.max(from))
+                .rev()
+                .find(|&i| starts_at_ci(source, i, &close))
+                .unwrap_or(next.max(from));
+            if decides_markup(&source[from..to]) || (h + 1..=last).any(|n| has_directive(&nodes[n]))
+            {
                 continue;
             }
             for (k, part) in host.parts.iter().enumerate() {
@@ -578,6 +593,21 @@ mod tests {
                 .is_empty()
         );
         assert!(rules(r#"<fs-field><label>A</label><input v-if="kort"><textarea v-else></textarea></fs-field>"#).is_empty());
+    }
+
+    #[test]
+    fn braces_and_words_that_are_not_templates_do_not_silence_it() {
+        // `{n}` i en attributtverdi på verten, `nav-form` som ligner `v-for`,
+        // en e-postadresse som ligner `@if`, og et uttrykk etter sluttaggen.
+        let html = r#"<fs-suggestion count-one="{n} treff"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></fs-suggestion>
+<fs-field><label>A</label><input><input></fs-field>
+{feil && <p>Feil</p>}"#;
+        assert_eq!(rules(html).len(), 2, "{:?}", rules(html));
+    }
+
+    #[test]
+    fn a_spinner_is_not_a_second_status() {
+        assert!(rules(r#"<fs-suggestion><label>A</label><div class="fs-suggestion__field"><input><ul class="fs-suggestion__list"></ul><span role="status"></span><span class="fs-spinner" role="status" aria-label="Henter"></span></div></fs-suggestion>"#).is_empty());
     }
 
     #[test]
