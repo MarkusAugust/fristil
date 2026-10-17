@@ -1,7 +1,8 @@
 /**
  * At ordforrådet og editorfilene på disk er de `generate-ordforrad.ts` ville
  * skrevet nå, og at
- * `metadata.ts` dekker hvert element pakken registrerer.
+ * `metadata.ts` dekker hvert element pakken registrerer og hver klasse i
+ * CSS-en, med deler som treffer markupen på komponentsidene.
  *
  * Typesjekken tar attributtene: `metadata.ts` skriver dem som `Record` over
  * komponentens `observedAttributes`, så et attributt som mangler eller er
@@ -15,15 +16,22 @@
  * Krever at `designsystem/dist` er bygd.
  */
 
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { files, ROOT } from "./generate-ordforrad"
+import { classesData, files, ROOT } from "./generate-ordforrad"
 import { elements } from "./metadata"
 
 const findings: string[] = []
 
-// 1. Filene på disk er ferske.
-const generated = files()
+// 1. Filene på disk er ferske. Generatoren stopper på en klasse uten
+// innhold i `classDocs`, og på en rad uten klasse, og da står meldingen her.
+let generated: Record<string, string>
+try {
+  generated = files()
+} catch (error) {
+  console.error(`  - ${error instanceof Error ? error.message : error}`)
+  process.exit(1)
+}
 for (const [path, expected] of Object.entries(generated)) {
   let actual: string | null = null
   try {
@@ -177,6 +185,98 @@ for (const element of elements) {
       )
 }
 
+// 2c. Hver del en klasse har, treffer markupen på komponentsiden, og
+// `partOf` peker på en klasse med en del som treffer denne. Selektorene er
+// relative til elementet med klassen, som for elementene, så hver av dem
+// settes bak `.klassen` før den prøves. Sidene leses som tekst, og det som
+// prøves er hver `kode={…}` og hver ```html-blokk, altså alt leseren ser.
+// Treffer en del ingenting der, viser siden ikke delen, eller selektoren
+// er skrevet for noe annet enn det siden viser.
+const classes = classesData()
+const PAGES = join(ROOT, "documentation/src/content/docs")
+const markupByPage = new Map<string, string>()
+function pageMarkup(component: string): string {
+  const path = [
+    join(PAGES, "components", `${component}.mdx`),
+    join(PAGES, `${component}.mdx`),
+  ].find((p) => existsSync(p))
+  if (!path) {
+    findings.push(`Fant ingen side for komponenten «${component}»`)
+    return ""
+  }
+  let markup = markupByPage.get(path)
+  if (markup === undefined) {
+    const page = readFileSync(path, "utf8")
+    markup = [
+      ...[...page.matchAll(/kode=\{`([\s\S]*?)`\}/g)].map((m) => m[1]),
+      ...[...page.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1]),
+    ].join("\n")
+    markupByPage.set(path, markup)
+  }
+  return markup
+}
+/** Alternativene i en selektorliste, delt på komma utenfor klammer. */
+function alternatives(selector: string): string[] {
+  const out: string[] = []
+  let depth = 0
+  let start = 0
+  for (let i = 0; i < selector.length; i++) {
+    const c = selector[i]
+    if (c === "(" || c === "[") depth++
+    else if (c === ")" || c === "]") depth--
+    else if (c === "," && depth === 0) {
+      out.push(selector.slice(start, i).trim())
+      start = i + 1
+    }
+  }
+  out.push(selector.slice(start).trim())
+  return out
+}
+/** Antall treff for en selektor i markupen, med Buns innebygde parser. */
+async function matches(selector: string, markup: string): Promise<number> {
+  let count = 0
+  await new HTMLRewriter()
+    .on(selector, {
+      element() {
+        count++
+      },
+    })
+    .transform(new Response(markup))
+    .text()
+  return count
+}
+let classParts = 0
+for (const [name, info] of Object.entries(classes)) {
+  if (info.partOf !== undefined) {
+    const parent = classes[info.partOf]
+    if (!parent)
+      findings.push(
+        `${name} har partOf «${info.partOf}», som ikke er en klasse`,
+      )
+    else if (
+      !Object.values(parent.parts ?? {}).some((part) =>
+        // Hele navnet: `.fs-dialog` skal ikke telle som `.fs-dialog__title`.
+        new RegExp(`\\.${name}(?![\\w-])`).test(part.selector),
+      )
+    )
+      findings.push(
+        `${name} har partOf «${info.partOf}», men ${info.partOf} har ingen del som treffer .${name}`,
+      )
+  }
+  if (!info.parts) continue
+  const markup = pageMarkup(info.component)
+  for (const [part, { selector }] of Object.entries(info.parts)) {
+    classParts++
+    const absolute = alternatives(selector)
+      .map((s) => `.${name} ${s}`)
+      .join(", ")
+    if ((await matches(absolute, markup)) === 0)
+      findings.push(
+        `${name}: delen «${part}» (${selector}) treffer ikke markupen på siden til ${info.component}`,
+      )
+  }
+}
+
 // 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
 // snippet hadde en `<dialog>` og ikke noe `<fs-dialog>`.
 const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
@@ -192,11 +292,13 @@ for (const element of elements) {
 // 4. Tell, sist. Både likt det forventede og større enn null.
 const counted = registered.size
 console.log(
-  `Sjekket ${counted} elementer i pakken mot ${documented.size} i metadata.ts, ${exportedParts.size} med deler, ${Object.keys(snippets).length} snippets og ${Object.keys(generated).length} filer`,
+  `Sjekket ${counted} elementer i pakken mot ${documented.size} i metadata.ts, ${exportedParts.size} med deler, ${Object.keys(classes).length} klasser med ${classParts} deler, ${Object.keys(snippets).length} snippets og ${Object.keys(generated).length} filer`,
 )
 if (counted === 0) findings.push("Fant ingen elementer i pakken. Er dist bygd?")
 if (exportedParts.size === 0)
   findings.push("Fant ingen deler i pakken. Er dist bygd?")
+if (classParts === 0)
+  findings.push("Ingen klasse hadde deler, så ingen selektor ble prøvd.")
 
 if (findings.length) {
   console.error(findings.map((f) => `  - ${f}`).join("\n"))

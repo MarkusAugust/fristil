@@ -42,12 +42,26 @@ class ManifestReaderTest {
         val classes = raw["classes"].map()
         assertEquals(classes.keys.toList(), Fristil.manifest.classes.keys.toList())
         var attributes = 0
+        var parts = 0
+        var partOf = 0
         for ((name, c) in classes) {
             val read = Fristil.manifest.classes.getValue(name)
             val expected = c.map()
-            known(c, "component", "title", "description", "link", "attributes", at = name)
+            known(c, "component", "title", "description", "link", "content", "partOf", "parts", "attributes", at = name)
             assertEquals(name, read.name)
             assertEquals(listOf(expected["component"], expected["title"], expected["description"], expected["link"]), listOf(read.component, read.title, read.description, read.link), name)
+            assertEquals(expected["content"], read.content.name.lowercase(), name)
+            assertEquals(expected["partOf"], read.partOf, name)
+            if (read.partOf != null) partOf += 1
+            val rawParts = expected["parts"]?.map() ?: emptyMap()
+            assertEquals(rawParts.keys.toList(), read.parts.keys.toList(), name)
+            for ((part, p) in rawParts) {
+                val r = read.parts.getValue(part)
+                val pm = p.map()
+                known(p, "selector", "description", "content", "multiple", "optional", at = "$name $part")
+                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.optional), "$name $part")
+                parts += 1
+            }
             val attrs = expected["attributes"].map()
             assertEquals(attrs.keys.toList(), read.attributes.keys.toList(), name)
             for ((attr, a) in attrs) {
@@ -62,6 +76,7 @@ class ManifestReaderTest {
             }
         }
         assertTrue(attributes > 0, "Ingen klasse hadde attributter, så sammenligningen sa ingenting.")
+        assertTrue(parts > 0 && partOf > 0, "Fant $parts deler og $partOf klasser med partOf, så sammenligningen sa ingenting.")
     }
 
     @Test
@@ -118,6 +133,13 @@ class ManifestReaderTest {
         assertContains(variant.values, "secondary")
         assertEquals("primary", variant.default)
         assertTrue(Fristil.manifest.classes.values.any { c -> c.attributes.values.any { it.flag && it.values.isEmpty() } })
+
+        val table = Fristil.manifest.classes.getValue("fs-table")
+        assertEquals(PartContent.PARTS, table.content)
+        assertEquals(listOf("caption", "head", "body", "sort"), table.parts.keys.toList())
+        assertTrue(table.parts.getValue("caption").optional)
+        assertEquals("fs-table", Fristil.manifest.classes.getValue("fs-table__sort").partOf)
+        assertEquals(PartContent.TEXT, Fristil.manifest.classes.getValue("fs-button").content)
     }
 
     @Test

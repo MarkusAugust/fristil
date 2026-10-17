@@ -23,6 +23,18 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
+  består av.** Hver klasse i `classes` har `content`, med samme ord som
+  delene til elementene: `text`, `free`, `parts` eller `none`. Klassene med
+  en fast struktur, som `fs-table`, `fs-list` og `fs-toggle-group`, har
+  `parts` med `selector`, `description`, `content`, `multiple` og
+  `optional`, og en klasse som bare er en del av en annen komponents
+  markup, som `fs-card__title`, peker på forelderen med `partOf`.
+  `schemaVersion` er fortsatt 1. I Kotlin har `ManifestClass` fått
+  `content`, `partOf` og `parts`.
+
 ### Endret
 
 - **Regelboka for maler sier at Kotlin-pakken ligger på Maven Central.**
