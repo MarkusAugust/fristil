@@ -243,7 +243,8 @@ export const classes: Classes = {
       "control": {
         "selector": "input[type='checkbox']",
         "description": "Avkryssingsboksen, med klassen sin.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "label": {
         "selector": "label",
@@ -292,9 +293,10 @@ export const classes: Classes = {
     "content": "free",
     "parts": {
       "legend": {
-        "selector": ".fs-legend",
+        "selector": "> .fs-legend",
         "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
-        "content": "text"
+        "content": "text",
+        "unique": true
       },
       "help": {
         "selector": ".fs-help-text",
@@ -598,7 +600,8 @@ export const classes: Classes = {
       "control": {
         "selector": "input[type='radio']",
         "description": "Radioknappen, med klassen sin.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "label": {
         "selector": "label",
@@ -639,7 +642,8 @@ export const classes: Classes = {
       "control": {
         "selector": "input[type='search']",
         "description": "Søkefeltet, med klassene `fs-input fs-search`.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "button": {
         "selector": "button",
@@ -738,7 +742,8 @@ export const classes: Classes = {
       "control": {
         "selector": "input[role='switch']",
         "description": "Bryteren, med klassen sin.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "label": {
         "selector": "label",
@@ -756,20 +761,23 @@ export const classes: Classes = {
     "content": "parts",
     "parts": {
       "caption": {
-        "selector": "caption",
+        "selector": "> caption",
         "description": "Tabellens navn.",
         "content": "text",
+        "unique": true,
         "optional": true
       },
       "head": {
-        "selector": "thead",
+        "selector": "> thead",
         "description": "Overskriftsraden, med `<th scope=\"col\">` per kolonne.",
-        "content": "free"
+        "content": "free",
+        "unique": true
       },
       "body": {
         "selector": "tbody",
-        "description": "Radene. En `<th scope=\"row\">` først i raden gir raden et navn.",
-        "content": "free"
+        "description": "Radene, i én eller flere grupper. En `<th scope=\"row\">` først i raden gir raden et navn.",
+        "content": "free",
+        "multiple": true
       },
       "sort": {
         "selector": "th > .fs-table__sort",
@@ -859,9 +867,10 @@ export const classes: Classes = {
     "content": "parts",
     "parts": {
       "legend": {
-        "selector": "legend",
+        "selector": "> legend",
         "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
-        "content": "text"
+        "content": "text",
+        "unique": true
       },
       "option": {
         "selector": ".fs-toggle-group__option",

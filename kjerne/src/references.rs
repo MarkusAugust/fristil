@@ -36,15 +36,15 @@ const VOID: &[&str] = &[
 
 const RAW_TEXT: &[&str] = &["script", "style", "textarea", "template"];
 
-struct Node {
-    name: String,
-    name_start: usize,
-    name_end: usize,
-    attributes: Vec<ReadAttribute>,
-    parent: Option<usize>,
+pub(crate) struct Node {
+    pub(crate) name: String,
+    pub(crate) name_start: usize,
+    pub(crate) name_end: usize,
+    pub(crate) attributes: Vec<ReadAttribute>,
+    pub(crate) parent: Option<usize>,
 }
 
-fn value<'a>(node: &'a Node, name: &str) -> Option<&'a ReadAttribute> {
+pub(crate) fn value<'a>(node: &'a Node, name: &str) -> Option<&'a ReadAttribute> {
     node.attributes.iter().find(|a| equals(&a.name, name))
 }
 
@@ -353,7 +353,7 @@ fn self_closing(b: &[u16]) -> bool {
 }
 
 /// Elementene på siden som et tre, i den rekkefølgen de står.
-fn tree(source: &[u16]) -> Vec<Node> {
+pub(crate) fn tree(source: &[u16]) -> Vec<Node> {
     let mut nodes: Vec<Node> = Vec::new();
     let mut stabel: Vec<usize> = Vec::new();
     let mut i = 0;

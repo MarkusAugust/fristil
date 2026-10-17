@@ -150,6 +150,7 @@ data class Manifest(
                     description = part["description"].str("$path.description"),
                     content = enumOf<PartContent>(part["content"].str("$path.content"), "$path.content"),
                     multiple = part["multiple"] == true,
+                    unique = part["unique"] == true,
                     optional = part["optional"] == true,
                 )
             }
@@ -225,13 +226,15 @@ enum class AttributeType { FLAG, TEXT, NUMBER, VALUES }
 /**
  * En del av et element, som kontrollen i `<fs-field>`. [selector] er den
  * komponenten finner delen med, relativt til elementet. Uten [multiple]
- * gjelder den første, og uten [optional] trenger elementet delen.
+ * gjelder den første, og med [unique] er en del til av samme slag en feil,
+ * ikke vanlig innhold. Uten [optional] trenger elementet delen.
  */
 data class Part(
     val selector: String,
     val description: String,
     val content: PartContent,
     val multiple: Boolean,
+    val unique: Boolean,
     val optional: Boolean,
 )
 

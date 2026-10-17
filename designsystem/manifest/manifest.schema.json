@@ -498,6 +498,10 @@
           "const": true,
           "description": "Delen kan stå flere ganger."
         },
+        "unique": {
+          "const": true,
+          "description": "En del til av samme slag er en feil, ikke vanlig innhold. Uten feltet kan resten være innhold, som knappene i et panel. fristil sjekk melder en slik del som står mer enn én gang."
+        },
         "optional": {
           "const": true,
           "description": "Elementet virker uten delen."

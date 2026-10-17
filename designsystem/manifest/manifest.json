@@ -46,18 +46,21 @@
         "control": {
           "selector": "input:not([type='hidden']), textarea, select",
           "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "help": {
           "selector": ".fs-help-text",
           "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
           "content": "text",
+          "unique": true,
           "optional": true
         },
         "error": {
           "selector": ".fs-error-text",
           "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
           "content": "text",
+          "unique": true,
           "optional": true
         }
       }
@@ -75,7 +78,8 @@
         "list": {
           "selector": "[role='tablist'], .fs-tabs__list",
           "description": "Raden med fanene. Har en fane `role=\"tab\"`, kan raden også ha andre knapper, som en lukkeknapp.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "tab": {
           "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
@@ -217,12 +221,14 @@
         "control": {
           "selector": "[role='combobox'], input:not([type='hidden'])",
           "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "list": {
           "selector": "[role='listbox'], .fs-suggestion__list",
           "description": "Lista med forslag.",
-          "content": "parts"
+          "content": "parts",
+          "unique": true
         },
         "option": {
           "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
@@ -234,6 +240,7 @@
           "selector": ".fs-suggestion__empty",
           "description": "Meldingen som vises når ingenting passer.",
           "content": "text",
+          "unique": true,
           "optional": true
         },
         "status": {
@@ -267,7 +274,8 @@
         "dialog": {
           "selector": ":scope > dialog",
           "description": "`<dialog>`-elementet, som et direkte barn av verten.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
@@ -279,6 +287,7 @@
           "selector": ".fs-dialog__body",
           "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
           "content": "free",
+          "unique": true,
           "optional": true
         }
       },
@@ -334,7 +343,8 @@
         "dialog": {
           "selector": "dialog",
           "description": "`<dialog>`-elementet med varselet.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
@@ -345,12 +355,14 @@
         "text": {
           "selector": ".fs-session-timeout__text",
           "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
-          "content": "text"
+          "content": "text",
+          "unique": true
         },
         "count": {
           "selector": ".fs-session-timeout__count",
           "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "status": {
           "selector": "[role='status']",
@@ -642,7 +654,8 @@
         "control": {
           "selector": "input[type='checkbox']",
           "description": "Avkryssingsboksen, med klassen sin.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "label": {
           "selector": "label",
@@ -693,9 +706,10 @@
       "content": "free",
       "parts": {
         "legend": {
-          "selector": ".fs-legend",
+          "selector": "> .fs-legend",
           "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
-          "content": "text"
+          "content": "text",
+          "unique": true
         },
         "help": {
           "selector": ".fs-help-text",
@@ -1011,7 +1025,8 @@
         "control": {
           "selector": "input[type='radio']",
           "description": "Radioknappen, med klassen sin.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "label": {
           "selector": "label",
@@ -1053,7 +1068,8 @@
         "control": {
           "selector": "input[type='search']",
           "description": "Søkefeltet, med klassene `fs-input fs-search`.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "button": {
           "selector": "button",
@@ -1156,7 +1172,8 @@
         "control": {
           "selector": "input[role='switch']",
           "description": "Bryteren, med klassen sin.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "label": {
           "selector": "label",
@@ -1174,20 +1191,23 @@
       "content": "parts",
       "parts": {
         "caption": {
-          "selector": "caption",
+          "selector": "> caption",
           "description": "Tabellens navn.",
           "content": "text",
+          "unique": true,
           "optional": true
         },
         "head": {
-          "selector": "thead",
+          "selector": "> thead",
           "description": "Overskriftsraden, med `<th scope=\"col\">` per kolonne.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "body": {
           "selector": "tbody",
-          "description": "Radene. En `<th scope=\"row\">` først i raden gir raden et navn.",
-          "content": "free"
+          "description": "Radene, i én eller flere grupper. En `<th scope=\"row\">` først i raden gir raden et navn.",
+          "content": "free",
+          "multiple": true
         },
         "sort": {
           "selector": "th > .fs-table__sort",
@@ -1280,9 +1300,10 @@
       "content": "parts",
       "parts": {
         "legend": {
-          "selector": "legend",
+          "selector": "> legend",
           "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
-          "content": "text"
+          "content": "text",
+          "unique": true
         },
         "option": {
           "selector": ".fs-toggle-group__option",

@@ -57,8 +57,8 @@ class ManifestReaderTest {
             for ((part, p) in rawParts) {
                 val r = read.parts.getValue(part)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "optional", at = "$name $part")
-                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.optional), "$name $part")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", at = "$name $part")
+                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional), "$name $part")
                 parts += 1
             }
             val attrs = expected["attributes"].map()
@@ -104,8 +104,8 @@ class ManifestReaderTest {
             for ((name, p) in rawParts) {
                 val r = read.parts.getValue(name)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "optional", at = "$tag $name")
-                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.optional), "$tag $name")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", at = "$tag $name")
+                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional), "$tag $name")
                 parts += 1
             }
             val rawEvents = e["events"]?.map() ?: emptyMap()
@@ -241,6 +241,8 @@ class ManifestReaderTest {
         assertEquals(listOf("list", "tab", "panel"), tabs.parts.keys.toList())
         assertTrue(tabs.parts.getValue("tab").multiple)
         assertEquals(PartContent.TEXT, tabs.parts.getValue("tab").content)
+        val field = Fristil.manifest.elements.getValue("fs-field")
+        assertTrue(field.parts.getValue("control").unique && !field.parts.getValue("label").unique)
         assertEquals(AttributeType.FLAG, tabs.attributes.getValue("server-controlled").type)
         assertEquals(mapOf("index" to "number"), tabs.events.getValue("tab-select").detail)
 
