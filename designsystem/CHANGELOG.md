@@ -58,7 +58,9 @@ egen overskrift «Brytende».
   per komponent med standardverdien stilarket faller tilbake på. Fargene
   står som akser og navn, ikke som verdier, siden et tema kan ha andre
   verdier enn Fristils egne. `ManifestTokens` i Kotlin leser det samme.
-  `schemaVersion` er fortsatt 1.
+  `schemaVersion` er fortsatt 1. Beskrivelsene av familiene, rollene og
+  lagene eksporteres også fra `@fristil/designsystem/tokens`, som
+  `FAMILY_DESCRIPTIONS`, `ROLE_DESCRIPTIONS` og `LAYER_DESCRIPTIONS`.
 
 - **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
   består av.** Hver klasse i `classes` har `content`, med samme ord som
