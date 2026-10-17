@@ -37,6 +37,29 @@ describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
   })
 
   /**
+   * `hidden` er `boolean` i `HTMLAttributes`, og `hidden={false}` kompilerte
+   * på `<fs-error-summary>`. React 18 skriver det som `hidden="false"`, som
+   * er sant, så boksen var alltid skjult. Deklarasjonen sier nå `Flag`, som
+   * for `open`, og byggefunksjonen sender `true` eller ingenting.
+   */
+  it("feiloppsummeringens vert, der hidden er et flagg", () => {
+    const tom: JSX.IntrinsicElements["fs-error-summary"] = fs.errorSummary({
+      count: 0,
+    }).host
+    const medFeil: JSX.IntrinsicElements["fs-error-summary"] = fs.errorSummary({
+      count: 2,
+    }).host
+    const skjult: JSX.IntrinsicElements["fs-error-summary"] = {
+      // @ts-expect-error `false` blir `hidden="false"` i React 18, og er sant.
+      hidden: false,
+    }
+
+    expect(tom.hidden).toBe(true)
+    expect(medFeil.hidden).toBeUndefined()
+    expect(skjult.hidden).toBe(false)
+  })
+
+  /**
    * At `server-controlled` er deklarert på hver komponent som har det.
    *
    * Vakten i `react.browser.test.ts` leser kilden som tekst, og den kan ikke

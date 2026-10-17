@@ -770,10 +770,13 @@ element. Derfor har pakken en egen React-inngang.`,
    \`createRoot\`, ikke i en \`useEffect\`.`,
     adresse: PAKKENAVN,
     sjekk: "npx @fristil/designsystem sjekk src/*.tsx",
-    punktFem: `**Typene er sjekken din.** Importer
-   \`@fristil/designsystem/react-jsx\` én gang i en \`.d.ts\`-fil, og en variant
-   som ikke finnes stopper bygget. Kjør \`tsc\`. Har prosjektet også HTML eller
-   maler, sjekkes de med \`npx @fristil/designsystem sjekk <fil>\`.`,
+    punktFem: `**Typene er sjekken din.** \`fs.button({ variant })\` fra
+   \`@fristil/designsystem/react\` gjør en variant som ikke finnes til en
+   kompileringsfeil, og \`@fristil/designsystem/react-jsx\`, importert én
+   gang i en \`.d.ts\`-fil, gjør det samme for attributtene på
+   web-komponentene. Kjør \`tsc\`. En håndskrevet \`className\` eller
+   \`data-variant\` ser ingen av dem; den og eventuell HTML eller maler
+   sjekkes med \`npx @fristil/designsystem sjekk <fil>\`.`,
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Deretter ett per komponent du bruker:

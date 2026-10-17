@@ -97,6 +97,16 @@ type FsTabsAttributes = Host & ServerControlled
 
 type FsErrorSummaryAttributes = Host & {
   /**
+   * Boksen er skjult til det finnes feil å vise.
+   *
+   * `HTMLAttributes` har alt `hidden` som `boolean`, men på en web component
+   * gjelder regelen for `open`: React 18 skriver `hidden={false}` som
+   * attributtet `hidden="false"`, og boksen er da alltid skjult. Typen er
+   * derfor `Flag` også her, så `hidden={harFeil ? undefined : true}` er det
+   * som kompilerer. `fs.errorSummary().host` sender det slik.
+   */
+  hidden?: Flag
+  /**
    * Flytt fokus hit når boksen kommer til syne. Standard: på.
    * Sett `"false"` for å la være.
    */
