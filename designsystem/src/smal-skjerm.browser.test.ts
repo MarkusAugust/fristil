@@ -215,8 +215,8 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
     {
       markup: `<a class="fs-skip-link" href="#hoved">Hopp til hovedinnholdet på siden om bostøtte</a>`,
       // Lenken står utenfor synet til den får fokus. Ett ekte tastetrykk
-      // først, som i fokustesten: et programmert `focus()` alene ga av og
-      // til ingen `:focus` i Firefox i CI.
+      // først: et programmert `focus()` alene ga av og til ingen `:focus` i
+      // Firefox i CI.
       aapne: async () => {
         await userEvent.tab()
         element<HTMLAnchorElement>(".fs-skip-link").focus()

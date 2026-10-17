@@ -27,9 +27,9 @@ egen overskrift «Brytende».
 
 - **`<fs-error-summary>` tar fokus også i React.** React gir fokus tilbake
   til elementet som hadde det før en commit, og boksen flyttet fokus inne i
-  den samme commiten. Fokus endte derfor på innsendingsknappen, eller på
-  feltet når skjemaet ble sendt med Enter, både når boksen ble satt inn og
-  når `hidden` ble tatt bort. Boksen tar nå fokus én gang til etter
+  den samme commiten. Fokus endte derfor på innsendingsknappen i Chromium og
+  Firefox, og på feltet i alle tre motorene når skjemaet ble sendt med Enter,
+  både når boksen ble satt inn og når `hidden` ble tatt bort. Boksen tar nå fokus én gang til etter
   commiten, hvis det gikk tilbake dit det var. Har et skript flyttet fokus
   til noe annet, står det. En React-app som viser boksen mens brukeren står
   i et felt, for eksempel ved `blur`, merker at fokus nå flyttes dit, slik

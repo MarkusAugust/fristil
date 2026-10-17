@@ -543,6 +543,8 @@ describe("fs-error-summary når et rammeverk gir fokus tilbake", () => {
     send.focus()
 
     feil.hidden = false
+    // Boksen fikk fokus, ellers sier testen ingenting om vilkåret.
+    expect(rot.activeElement).toBe(feil)
     epost.focus()
     await ventPaTegning()
 
@@ -561,6 +563,7 @@ describe("fs-error-summary når et rammeverk gir fokus tilbake", () => {
     send.focus()
 
     feil.hidden = false
+    expect(document.activeElement).toBe(feil)
     epost.focus()
     await ventPaTegning()
 
