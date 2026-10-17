@@ -90,12 +90,15 @@ let antall = 0
 let funnTotalt = 0
 const feil: string[] = []
 
-/** Linja og kolonnen `start` har i teksten, fra 1. */
+/**
+ * Linja og kolonnen `start` har i teksten, fra 1. Et linjeskift er `\n`,
+ * `\r\n` eller `\r` alene, som i LSP.
+ */
 function plass(html: string, start: number): [number, number] {
   let linje = 1
   let linjestart = 0
   for (let i = 0; i < start; i++)
-    if (html[i] === "\n") {
+    if (html[i] === "\n" || (html[i] === "\r" && html[i + 1] !== "\n")) {
       linje += 1
       linjestart = i + 1
     }

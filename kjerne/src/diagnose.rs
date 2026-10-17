@@ -822,7 +822,11 @@ fn check_field(
         return vec![];
     }
     let leading = &content[..indent];
-    let newline = leading.contains(&(b'\n' as u16));
+    // `\r` alene er også et linjeskift, som i `Lines`. Ellers havnet
+    // ledeteksten på linja til `<fs-field>` i et dokument med `\r`-linjeskift.
+    let newline = leading
+        .iter()
+        .any(|&c| c == b'\n' as u16 || c == b'\r' as u16);
     vec![findings(
         "felt-uten-ledetekst",
         format!(

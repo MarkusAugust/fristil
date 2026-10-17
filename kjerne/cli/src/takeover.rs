@@ -24,7 +24,7 @@
 //! så kopien er av den versjonen prosjektet bruker.
 
 use crate::output::{error, fail, shown};
-use crate::{refuse_without_value, Arguments};
+use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
 pub struct Component {
@@ -483,6 +483,7 @@ pub fn run(arguments: &[String]) {
     // Som i `agent`: `--ut src/ui` uten likhetstegn ble lest som to filnavn,
     // og kopien havnet stille i standardmappa.
     refuse_without_value(&parsed);
+    refuse_unknown_flags(&parsed, &["ut", "overskriv"]);
 
     let name = parsed.files.first().map(String::as_str);
     let all_components = components();

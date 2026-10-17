@@ -16,6 +16,17 @@ use fristil_kjerne::text::utf16;
 use fristil_kjerne::types::Severity;
 use fristil_kjerne::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
 
+/// Teksten uten en BOM (U+FEFF) først, slik nettleseren og editoren leser
+/// den. Med den ville linje 1 fått én kolonne mer enn editoren viser, og
+/// Node-verten, der `response.text()` fjerner den, svart annerledes enn den
+/// kjørbare fila og JVM-en.
+pub fn without_bom(text: String) -> String {
+    match text.strip_prefix('\u{feff}') {
+        Some(rest) => rest.to_string(),
+        None => text,
+    }
+}
+
 /// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
 /// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
 /// tilfeldigvis var kommet.
@@ -271,7 +282,7 @@ pub fn run(arguments: &[String]) {
             error("Leser markup fra standard inn. Avslutt med Ctrl-D.");
         }
         let bytes = read_all_input();
-        let text = String::from_utf8_lossy(&bytes).into_owned();
+        let text = without_bom(String::from_utf8_lossy(&bytes).into_owned());
         // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
         // ville ellers meldt grønt uten å ha sett på noe.
         if text.trim().is_empty() {
@@ -304,7 +315,7 @@ pub fn run(arguments: &[String]) {
             None => match std::fs::read(input) {
                 Ok(bytes) => sources.push(Source {
                     name: input.clone(),
-                    text: String::from_utf8_lossy(&bytes).into_owned(),
+                    text: without_bom(String::from_utf8_lossy(&bytes).into_owned()),
                     page: rendered,
                 }),
                 Err(_) => missing.push(input.clone()),
@@ -320,6 +331,22 @@ pub fn run(arguments: &[String]) {
             error(reason);
         }
         std::process::exit(1);
+    }
+
+    // Som for standard inn: er hver fil tom, er det ingenting å sjekke. Én
+    // tom fil blant flere, som en tom partial i et glob, er ikke en feil.
+    if !sources.is_empty() && sources.iter().all(|s| s.text.trim().is_empty()) {
+        fail(&if sources.len() == 1 {
+            format!(
+                "Ingen markup å sjekke: «{}» er tom.",
+                shown(&sources[0].name)
+            )
+        } else {
+            format!(
+                "Ingen markup å sjekke: alle de {} filene er tomme.",
+                sources.len()
+            )
+        });
     }
 
     let mut found = 0;

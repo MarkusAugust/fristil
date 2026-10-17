@@ -1,10 +1,20 @@
 //! En liten JSON-leser, uten avhengigheter.
 //!
-//! Kjernen leser bare manifestet, som Fristil selv skriver, så leseren trenger
-//! ikke være rask eller tilgivende. Den må være riktig: et objekt beholder
-//! rekkefølgen på nøklene, fordi rekkefølgen i manifestet er den meldingene
-//! lister verdiene i, og den som avgjør hvilket forslag som vinner ved lik
-//! avstand.
+//! Den leser manifestet, som Fristil selv skriver, men også filer brukeren har
+//! skrevet: oppskriften til `fristil tema`, package.json og meldingene fra
+//! editoren. Den trenger ikke være rask eller tilgivende, men den må svare som
+//! `JSON.parse`, som kommandolinja brukte da den var skrevet i TypeScript. Et
+//! objekt beholder rekkefølgen på nøklene, fordi rekkefølgen i manifestet er
+//! den meldingene lister verdiene i, og den som avgjør hvilket forslag som
+//! vinner ved lik avstand. En nøkkel som står to ganger, får den siste verdien
+//! på den første plassen, som i `JSON.parse`. Tall og strenger følger
+//! grammatikken i RFC 8259, så `0700`, `1.` og et rått linjeskift i en streng
+//! er feil, ikke tall og tekst.
+
+/// Så mange objekter og lister inni hverandre leses det. Leseren går ned i
+/// dybden rekursivt, og en fil med hundretusen `[` ville ellers sprengt
+/// stakken i stedet for å gi en feilmelding.
+const MAX_DEPTH: usize = 128;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Json {
@@ -84,6 +94,9 @@ impl Json {
         match self {
             Json::Null => out.push_str("null"),
             Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+            // `JSON.stringify` skriver `Infinity` og `NaN` som `null`. Et tall
+            // som `1e400` leses som uendelig, som i `JSON.parse`.
+            Json::Number(n) if !n.is_finite() => out.push_str("null"),
             Json::Number(n) => out.push_str(&crate::theme::js_number(*n)),
             Json::String(s) => out.push_str(&crate::json_string(s)),
             Json::Array(items) if items.is_empty() => out.push_str("[]"),
@@ -123,6 +136,7 @@ pub fn parse(text: &str) -> Result<Json, String> {
     let mut parser = Parser {
         bytes: text.as_bytes(),
         at: 0,
+        depth: 0,
     };
     parser.skip_space();
     let value = parser.value()?;
@@ -136,6 +150,7 @@ pub fn parse(text: &str) -> Result<Json, String> {
 struct Parser<'a> {
     bytes: &'a [u8],
     at: usize,
+    depth: usize,
 }
 
 impl Parser<'_> {
@@ -164,8 +179,21 @@ impl Parser<'_> {
 
     fn value(&mut self) -> Result<Json, String> {
         match self.peek() {
-            Some(b'{') => self.object(),
-            Some(b'[') => self.array(),
+            Some(b'{' | b'[') => {
+                if self.depth == MAX_DEPTH {
+                    return Err(self.error(&format!(
+                        "mer enn {MAX_DEPTH} objekter og lister inni hverandre"
+                    )));
+                }
+                self.depth += 1;
+                let value = if self.peek() == Some(b'{') {
+                    self.object()
+                } else {
+                    self.array()
+                };
+                self.depth -= 1;
+                value
+            }
             Some(b'"') => Ok(Json::String(self.string()?)),
             Some(b't') => self.expect("true").map(|_| Json::Bool(true)),
             Some(b'f') => self.expect("false").map(|_| Json::Bool(false)),
@@ -192,7 +220,13 @@ impl Parser<'_> {
             self.skip_space();
             self.expect(":")?;
             self.skip_space();
-            entries.push((key, self.value()?));
+            let value = self.value()?;
+            // `JSON.parse` lar den siste verdien vinne, på plassen til den
+            // første.
+            match entries.iter_mut().find(|entry| entry.0 == key) {
+                Some(existing) => existing.1 = value,
+                None => entries.push((key, value)),
+            }
             self.skip_space();
             match self.peek() {
                 Some(b',') => self.at += 1,
@@ -247,7 +281,7 @@ impl Parser<'_> {
         let mut out = String::new();
         loop {
             let start = self.at;
-            while !matches!(self.peek(), Some(b'"' | b'\\') | None) {
+            while !matches!(self.peek(), Some(b'"' | b'\\' | 0..=0x1f) | None) {
                 self.at += 1;
             }
             out.push_str(
@@ -295,18 +329,52 @@ impl Parser<'_> {
                         _ => return Err(self.error("ukjent escape")),
                     }
                 }
+                Some(0..=0x1f) => return Err(self.error("kontrolltegn i en streng")),
                 _ => return Err(self.error("strengen slutter")),
             }
         }
     }
 
+    fn digits(&mut self) -> usize {
+        let start = self.at;
+        while matches!(self.peek(), Some(b'0'..=b'9')) {
+            self.at += 1;
+        }
+        self.at - start
+    }
+
+    /// `-? (0 | [1-9][0-9]*) (. [0-9]+)? ([eE] [+-]? [0-9]+)?`
     fn number(&mut self) -> Result<Json, String> {
         let start = self.at;
-        while matches!(
-            self.peek(),
-            Some(b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9')
-        ) {
+        if self.peek() == Some(b'-') {
             self.at += 1;
+        }
+        match self.peek() {
+            Some(b'0') => {
+                self.at += 1;
+                if matches!(self.peek(), Some(b'0'..=b'9')) {
+                    return Err(self.error("et tall kan ikke begynne med 0"));
+                }
+            }
+            Some(b'1'..=b'9') => {
+                self.digits();
+            }
+            _ => return Err(self.error("ugyldig tall")),
+        }
+        if self.peek() == Some(b'.') {
+            self.at += 1;
+            if self.digits() == 0 {
+                return Err(self.error("ugyldig tall"));
+            }
+        }
+        if matches!(self.peek(), Some(b'e' | b'E')) {
+            self.at += 1;
+            if matches!(self.peek(), Some(b'+' | b'-')) {
+                self.at += 1;
+            }
+            if self.digits() == 0 {
+                return Err(self.error("ugyldig tall"));
+            }
         }
         std::str::from_utf8(&self.bytes[start..self.at])
             .ok()
@@ -356,6 +424,10 @@ mod tests {
             v.to_compact(),
             r#"{"a":[1,2.5,"x\"y"],"b":{},"c":[],"d":{"e":null,"f":true}}"#
         );
+        assert_eq!(
+            parse("[1e-7, 1e21, 1e400, -1e400]").unwrap().to_compact(),
+            "[1e-7,1e+21,null,null]"
+        );
     }
 
     #[test]
@@ -367,6 +439,51 @@ mod tests {
         assert_eq!(utf16_len(parse(r#""\uD800\n""#).unwrap()), 2);
         assert_eq!(utf16_len(parse(r#""\uDC00x""#).unwrap()), 2);
         assert_eq!(parse(r#""\uD83E\uDDFE""#).unwrap().as_str(), Some("🧾"));
+    }
+
+    #[test]
+    fn lets_the_last_duplicate_win_in_the_first_place_like_json_parse() {
+        let v = parse(r#"{"a": 1, "b": 2, "a": 3}"#).unwrap();
+        assert_eq!(v.to_compact(), r#"{"a":3,"b":2}"#);
+        assert_eq!(v.get("a").unwrap().as_f64(), Some(3.0));
+    }
+
+    #[test]
+    fn refuses_numbers_json_parse_refuses() {
+        for bad in [
+            "0700", "01", "-01", "1.", "-.5", ".5", "+1", "1e", "1e+", "-", "1.e3", "--1",
+        ] {
+            assert!(parse(bad).is_err(), "{bad} skulle vært ugyldig");
+        }
+        for (good, value) in [
+            ("0", 0.0),
+            ("-0.5", -0.5),
+            ("10", 10.0),
+            ("1e3", 1000.0),
+            ("1E-2", 0.01),
+            ("2.5e+1", 25.0),
+        ] {
+            assert_eq!(parse(good).unwrap().as_f64(), Some(value), "{good}");
+        }
+    }
+
+    #[test]
+    fn refuses_raw_control_characters_in_strings() {
+        assert!(parse("\"a\u{1}b\"").is_err());
+        assert!(parse("{\"a\nb\": 1}").is_err());
+        assert!(parse("\"a\tb\"").is_err());
+        assert_eq!(parse(r#""a\tb""#).unwrap().as_str(), Some("a\tb"));
+    }
+
+    #[test]
+    fn refuses_deep_nesting_with_a_message_instead_of_overflowing() {
+        let deep = |n: usize| format!("{}{}", "[".repeat(n), "]".repeat(n));
+        assert!(parse(&deep(MAX_DEPTH)).is_ok());
+        assert!(parse(&deep(MAX_DEPTH + 1))
+            .unwrap_err()
+            .contains("inni hverandre"));
+        assert!(parse(&"[".repeat(200_000)).is_err());
+        assert!(parse(&format!("{}{}", "{\"a\":".repeat(MAX_DEPTH + 1), "1")).is_err());
     }
 
     #[test]

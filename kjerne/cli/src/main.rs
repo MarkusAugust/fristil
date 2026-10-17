@@ -168,6 +168,26 @@ pub fn refuse_without_value(arguments: &Arguments) {
     }
 }
 
+/// Melder flagg kommandoen ikke kjenner, og avslutter. En skrivefeil som
+/// `--utt=src/ui` skal ikke se ut som om kommandoen gjorde det du ba om.
+pub fn refuse_unknown_flags(arguments: &Arguments, known: &[&str]) {
+    let unknown: Vec<String> = arguments
+        .flags
+        .iter()
+        .map(|(n, _)| n.as_str())
+        .filter(|n| !known.contains(n))
+        .map(|n| format!("--{n}"))
+        .collect();
+    if !unknown.is_empty() {
+        let all: Vec<String> = known.iter().map(|n| format!("--{n}")).collect();
+        fail(&format!(
+            "Ukjent flagg: {}\n\nKjente flagg: {}\n\nHele oversikten: fristil --hjelp\n",
+            unknown.join(", "),
+            all.join(", ")
+        ));
+    }
+}
+
 fn main() {
     // En WASI-modul begynner i mappa `/`, så en relativ sti som
     // `package.json` ville blitt lest fra rota. Verten sier hvor

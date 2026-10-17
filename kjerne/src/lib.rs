@@ -99,17 +99,25 @@ pub fn diagnose_styled(
 /// Telte hvert funn linjeskiftene fra starten av teksten, vokste tiden med
 /// kvadratet av sidens lengde: 6000 funn på en side med 3000 linjer tok en
 /// kvart sekund.
+///
+/// Et linjeskift er `\n`, `\r\n` eller `\r` alene, som LSP krever. Med bare
+/// `\n` ble et dokument med `\r`-linjeskift én lang linje, og en klient som
+/// sender bufferen slik den er, fikk funnene på feil sted.
 pub struct Lines {
     starts: Vec<usize>,
 }
 
 impl Lines {
     pub fn new(text: &[u16]) -> Self {
+        const CR: u16 = b'\r' as u16;
+        const LF: u16 = b'\n' as u16;
         let mut starts = vec![0];
         starts.extend(
             text.iter()
                 .enumerate()
-                .filter(|&(_, &c)| c == b'\n' as u16)
+                // `\r` foran `\n` er samme linjeskift, og linja begynner
+                // etter `\n`.
+                .filter(|&(i, &c)| c == LF || (c == CR && text.get(i + 1) != Some(&LF)))
                 .map(|(i, _)| i + 1),
         );
         Lines { starts }
@@ -125,7 +133,9 @@ impl Lines {
 
 /// Linje og kolonne for én UTF-16-posisjon, begge fra 1.
 pub fn line_and_column(text: &[u16], at: usize) -> (usize, usize) {
-    Lines::new(&text[..at.min(text.len())]).line_and_column(at)
+    // Teksten tas med ett tegn forbi `at`: en `\r` rett før skal ikke telle
+    // som et linjeskift når den står foran `\n`.
+    Lines::new(&text[..(at + 1).min(text.len())]).line_and_column(at)
 }
 
 /// Funnene som JSON, i samme form som `JSON.stringify` av `Finding[]`, med
@@ -550,6 +560,64 @@ mod tests {
                 None => at + 1,
             };
             assert_eq!(lines.line_and_column(at), (line, column), "ved {at}");
+        }
+    }
+
+    #[test]
+    fn counts_every_line_break_lsp_knows() {
+        // `\r\n` er ett linjeskift, og `\r` alene er ett.
+        let text = utf16("a\r\nb\rc\nd\r\re");
+        let lines = Lines::new(&text);
+        let expected = [
+            (1, 1),
+            (1, 2),
+            (1, 3),
+            (2, 1),
+            (2, 2),
+            (3, 1),
+            (3, 2),
+            (4, 1),
+            (4, 2),
+            (5, 1),
+            (6, 1),
+        ];
+        for (at, want) in expected.iter().enumerate() {
+            assert_eq!(lines.line_and_column(at), *want, "ved {at}");
+            assert_eq!(line_and_column(&text, at), *want, "ved {at}, alene");
+        }
+        let found = check("<div>\r<div>\r<span class=\"fs-buton\">x</span></div></div>");
+        let (line, column) = line_and_column(
+            &utf16("<div>\r<div>\r<span class=\"fs-buton\">x</span></div></div>"),
+            found[0].start,
+        );
+        assert_eq!((line, column), (3, 14));
+    }
+
+    #[test]
+    fn a_missing_id_gives_a_message_without_trailing_space() {
+        for (attribute, ends) in [
+            ("for", "<fs-field>, som setter den i nettleseren."),
+            (
+                "aria-describedby",
+                "<fs-field>, som setter den i nettleseren.",
+            ),
+            (
+                "aria-labelledby",
+                "<fs-field>, som setter den i nettleseren.",
+            ),
+            ("aria-controls", "koblingen til det elementet styrer."),
+        ] {
+            let html = format!(r#"<label class="fs-label" {attribute}="borte">x</label>"#);
+            let findings = check(&html);
+            let found = findings
+                .iter()
+                .find(|f| f.rule == "id-finnes-ikke")
+                .unwrap_or_else(|| panic!("{attribute}: {findings:?}"));
+            assert!(
+                found.message.ends_with(ends),
+                "{attribute}: «{}»",
+                found.message
+            );
         }
     }
 

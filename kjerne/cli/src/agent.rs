@@ -9,7 +9,7 @@
 //! utdata kan pipes rent.
 
 use crate::output::{error, fail, write};
-use crate::{refuse_without_value, Arguments};
+use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 
 /// Navnene på regelbøkene i pakken, sortert. Teksten leses bare for den valgte.
@@ -99,6 +99,7 @@ fn detect_framework() -> (String, String) {
 pub fn run(arguments: &[String]) {
     let arguments = Arguments::read(arguments);
     refuse_without_value(&arguments);
+    refuse_unknown_flags(&arguments, &["rammeverk"]);
 
     let (chosen, reason) = match arguments.flag("rammeverk") {
         Some(requested) => (requested.to_string(), "oppgitt med --rammeverk".to_string()),

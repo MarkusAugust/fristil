@@ -95,6 +95,53 @@ egen overskrift «Brytende».
   litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet.
   Siden sier nå hvor grensen går, og at `--fs-textarea-min-height: 0` lar
   `rows` bestemme alene.
+- **`fristil tema oppskrift.json --ut tema.css` skrev ingen fil.** Uten
+  likhetstegn ble `--ut` og `tema.css` lest som to filnavn etter
+  oppskriften og ignorert. Temaet gikk til utdata, og kjøringen avsluttet
+  med 0. På samme måte forsvant `--aksent #f00` bak fargen i fila. Nå stopper
+  `tema` og ber om likhetstegn, slik `overta` og `agent` gjør, og mer enn én
+  oppskriftsfil gir også feilkode. `overta` og `agent` stopper dessuten på et
+  ukjent flagg med likhetstegn, som `--utt=src/ui` eller `--rammverk=react`,
+  i stedet for å bruke standarden.
+- **`fristil sjekk` meldte grønt for en tom fil og en tom side.** Bare tom
+  standard inn ga feilkode. En tom fil, og en adresse som svarte 200 med tom
+  HTML, ga «Markupen stemmer» og 0, så en CI-linje mot en side som rendret
+  tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
+  filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
+  glob, er fortsatt ikke en feil.
+- **`fristil tema` leser oppskriften som `JSON.parse`.** Sto en nøkkel to
+  ganger, vant den første, mens `JSON.parse` lar den siste vinne. Tall som
+  `0700` og `1.` og et rått kontrolltegn i en streng ble godtatt, og en fil
+  med svært dyp nesting stoppet den kjørbare fila med «stack overflow». Nå
+  vinner den siste verdien, slike tall og strenger gir «er ikke gyldig
+  JSON», og det gjør også mer enn 128 objekter og lister inni hverandre.
+- **Tall i temaet og manifestet skrives som `String(tall)` i JavaScript.**
+  `1e-7` ble `0.0000001` og `1e21` ble `1000000000000000000000`, og et
+  uendelig tall ble `inf`. Nå får de eksponent, som `1e-7` og `1e+21`, og
+  `Infinity` heter `Infinity`. I manifestet blir et uendelig tall `null`,
+  som i `JSON.stringify`. Vanlige tall skrives som før.
+- **Meldingen for `aria-controls` som peker på en id som ikke finnes, slutter
+  ikke lenger med et mellomrom.** Det sto igjen etter «styrer.», i
+  `fristil sjekk`, i editoren og som to mellomrom før regelnavnet i
+  `assertFristil`.
+- **En BOM først i en fil eller side gir ikke lenger en kolonne for mye.**
+  `fristil sjekk` talte U+FEFF som et tegn på linje 1, så kolonnen var én
+  mer enn editoren viser. For en adresse svarte `npx` riktig, fordi Node
+  fjerner BOM-en, mens den kjørbare fila og `java -jar` ga én kolonne mer.
+  Nå fjernes den for filer, standard inn og adresser i alle verter.
+- **Språkserveren og `fristil sjekk` regner `\r` som linjeskift.** Bare
+  `\n` delte linjer, så et dokument med `\r`-linjeskift ble én lang linje,
+  og en editor som sender bufferen slik den er, som Neovim med
+  `fileformat=mac`, fikk funnene og hurtigrettelsene på feil sted. Nå er
+  `\n`, `\r\n` og `\r` alene linjeskift, som LSP krever. Linje og kolonne i
+  `diagnosePage`, `assertFristil` og `fristil sjekk` følger samme regel.
+  Hurtigrettelsen «Sett inn en ledetekst» gir også `<label>` sin egen linje
+  med samme innrykk når linjeskiftene er `\r`.
+- **Eksempelet på siden om Kotlin viste feil regelnavn.** Funnet for en
+  `for` som peker på en id som ikke finnes, sto med `[for-peker-feil]`, men
+  regelen heter `id-finnes-ikke`. `for-peker-feil` gjelder en `for` som
+  peker på et element som ikke kan ha ledetekst. Den som kopierte navnet
+  til `<!-- fristil-ignore-next … -->`, fikk funnet likevel.
 
 ## 0.33.0 (2026-10-12)
 

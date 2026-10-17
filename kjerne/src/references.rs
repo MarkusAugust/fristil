@@ -473,10 +473,13 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                         Severity::Error,
                         LINK,
                         format!(
-                            "{name}=\"{}\" peker på id-en «{}», som ikke finnes på siden. Skjermleseren mister {loses}. {}",
+                            "{name}=\"{}\" peker på id-en «{}», som ikke finnes på siden. Skjermleseren mister {loses}.{}",
                             lossy(v),
                             lossy(target),
-                            if *name == "aria-controls" { "" } else { HOW }
+                            // Oppskriften gjelder et felt, ikke det
+                            // aria-controls styrer, og mellomrommet står
+                            // bare sammen med den.
+                            if *name == "aria-controls" { String::new() } else { format!(" {HOW}") }
                         ),
                     )),
                     Some(&found) => {
