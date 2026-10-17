@@ -108,6 +108,34 @@ export type ManifestTokens = {
   components: Record<string, Record<string, string>>
 }
 
+/** Hva et valg i en byggefunksjon tar. */
+export type BuilderOptionType =
+  | { kind: "values"; values: readonly string[] }
+  | { kind: "flag" | "text" | "number" | "textList" }
+
+/** Formen på det en byggefunksjon gir. */
+export type BuilderReturns = { optional?: boolean } & (
+  | { kind: "attributes" | "text" }
+  | { kind: "values"; values: readonly string[] }
+  | { kind: "list"; of: BuilderReturns }
+  | { kind: "group"; fields: Record<string, BuilderReturns> }
+)
+
+/**
+ * En byggefunksjon i `fs`, som `button`, med valgene og formen på svaret.
+ * `table`, som generatoren bak Kotlin-utgaven bruker, er utelatt her.
+ */
+export type Builder = {
+  name: string
+  options: {
+    name: string
+    required: boolean
+    type: BuilderOptionType
+    description?: string
+  }[]
+  returns: BuilderReturns
+}
+
 /**
  * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
  * Elementene er de samme som i `elements.ts`. Et klasseattributt i
@@ -119,6 +147,7 @@ export type Manifest = {
   version: string
   elements: Elements
   tokens: ManifestTokens
+  builders: Builder[]
   classes: Record<
     string,
     Omit<ClassInfo, "attributes"> & {

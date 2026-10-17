@@ -11,8 +11,9 @@ package no.fristil
  * containerbreddene, fargeaksene og komponentvariablene det kan style med.
  * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
  * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
- * prosjekt som har overtatt komponenter. Byggefunksjonene i manifestet er
- * utelatt: de er for generatoren som skriver `Fs`, og `Fs` er API-et for dem.
+ * prosjekt som har overtatt komponenter. Byggefunksjonene står i [builders]
+ * med valgene og formen på svaret, så et verktøy kan lage et panel av dem.
+ * Tabellen generatoren bak `Fs` bruker, er utelatt: den er for generatoren.
  *
  * Kartene har nøklene i den rekkefølgen manifestet har dem.
  */
@@ -25,6 +26,8 @@ data class Manifest(
     val classes: Map<String, ManifestClass>,
     /** Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene og komponentvariablene. */
     val tokens: ManifestTokens,
+    /** Hver byggefunksjon i `fs`, i manifestets rekkefølge, med valgene og formen på svaret. */
+    val builders: List<Builder>,
 ) {
     companion object {
         /** Skjemaversjonen denne leseren forstår. */
@@ -47,7 +50,50 @@ data class Manifest(
                 elements = root["elements"].obj("elements").mapValues { (tag, e) -> element(tag, e.obj("elements.$tag"), "elements.$tag") },
                 classes = root["classes"].obj("classes").mapValues { (name, c) -> klass(name, c.obj("classes.$name"), "classes.$name") },
                 tokens = tokens(root["tokens"].obj("tokens"), "tokens"),
+                builders =
+                    (root["builders"] as? List<*> ?: wrong("builders", "en liste")).mapIndexed { i, b ->
+                        builder(b.obj("builders[$i]"), "builders[$i]")
+                    },
             )
+        }
+
+        private fun builder(b: Map<String, Any?>, at: String) =
+            Builder(
+                name = b["name"].str("$at.name"),
+                options =
+                    (b["options"] as? List<*> ?: wrong("$at.options", "en liste")).mapIndexed { i, o ->
+                        val path = "$at.options[$i]"
+                        val option = o.obj(path)
+                        BuilderOption(
+                            name = option["name"].str("$path.name"),
+                            required = option["required"] as? Boolean ?: wrong("$path.required", "sant eller usant"),
+                            type = optionType(option["type"].obj("$path.type"), "$path.type"),
+                            description = option["description"]?.str("$path.description"),
+                        )
+                    },
+                returns = returns(b["returns"].obj("$at.returns"), "$at.returns"),
+            )
+
+        private fun optionType(t: Map<String, Any?>, at: String): OptionType =
+            when (val kind = t["kind"].str("$at.kind")) {
+                "values" -> OptionType.Values(t["values"].strings("$at.values"))
+                "flag" -> OptionType.Flag
+                "text" -> OptionType.Text
+                "number" -> OptionType.Number
+                "textList" -> OptionType.TextList
+                else -> wrong("$at.kind", "en av «values», «flag», «text», «number», «textList», ikke «$kind»")
+            }
+
+        private fun returns(r: Map<String, Any?>, at: String): Returns {
+            val optional = r["optional"] == true
+            return when (val kind = r["kind"].str("$at.kind")) {
+                "attributes" -> Returns.Attributes(optional)
+                "text" -> Returns.Text(optional)
+                "values" -> Returns.Values(r["values"].strings("$at.values"), optional)
+                "list" -> Returns.ListOf(returns(r["of"].obj("$at.of"), "$at.of"), optional)
+                "group" -> Returns.Group(r["fields"].obj("$at.fields").mapValues { (field, f) -> returns(f.obj("$at.fields.$field"), "$at.fields.$field") }, optional)
+                else -> wrong("$at.kind", "en av «attributes», «text», «values», «list», «group», ikke «$kind»")
+            }
         }
 
         private fun Any?.texts(at: String): Map<String, String> = obj(at).mapValues { (key, v) -> v.str("$at.$key") }
@@ -200,6 +246,55 @@ enum class PartContent { TEXT, FREE, PARTS, NONE }
 data class ElementEvent(
     val detail: Map<String, String>,
 )
+
+/** En byggefunksjon i `fs`, som `button`, med valgene den tar og formen på det den gir. */
+data class Builder(
+    val name: String,
+    /** Valgene i manifestets rekkefølge. */
+    val options: List<BuilderOption>,
+    val returns: Returns,
+)
+
+/** Ett valg, som `variant` i `fs.button()`. [description] er første avsnitt av kommentaren på valget i typen. */
+data class BuilderOption(
+    val name: String,
+    val required: Boolean,
+    val type: OptionType,
+    val description: String?,
+)
+
+/** Hva et valg tar: en lukket liste, et flagg, tekst, et tall eller en liste med tekst. */
+sealed interface OptionType {
+    data class Values(val values: List<String>) : OptionType
+
+    data object Flag : OptionType
+
+    data object Text : OptionType
+
+    data object Number : OptionType
+
+    data object TextList : OptionType
+}
+
+/**
+ * Formen på det en byggefunksjon gir: et attributtsett, en tekst, en av noen
+ * verdier, en liste av en form, eller en gruppe av navngitte former, som
+ * `dialog` med `host`, `dialog` og `title`. [optional] gjelder et felt i en
+ * gruppe som kan mangle.
+ */
+sealed interface Returns {
+    val optional: Boolean
+
+    data class Attributes(override val optional: Boolean = false) : Returns
+
+    data class Text(override val optional: Boolean = false) : Returns
+
+    data class Values(val values: List<String>, override val optional: Boolean = false) : Returns
+
+    data class ListOf(val of: Returns, override val optional: Boolean = false) : Returns
+
+    data class Group(val fields: Map<String, Returns>, override val optional: Boolean = false) : Returns
+}
 
 /**
  * Tokenene: det et stilark utenfor pakken kan bygge på. Fargene står som akser
