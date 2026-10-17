@@ -22,9 +22,10 @@
     text-decoration: underline;
   }
 
-  /* `:focus` og ikke `:focus-visible`. Nettleseren regner ikke fokus satt
-     fra kode som «synlig fokus», og lenken ville da blitt stående skjult for
-     den som hopper dit fra et skript. */
+  /* `:focus` og ikke `:focus-visible`. Fokus satt fra kode etter et
+     museklikk regnes ikke som «synlig fokus», og lenken ville da blitt
+     stående skjult for den som hopper dit fra et skript. Etter et tastetrykk
+     regnes det som synlig, men det er museklikket som avgjør valget. */
   .fs-skip-link:focus {
     transform: translateY(0);
     outline: var(--fs-focus-ring);

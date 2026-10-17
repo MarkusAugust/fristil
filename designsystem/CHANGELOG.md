@@ -215,6 +215,12 @@ egen overskrift «Brytende».
   stilarket spør om, er `@supports (appearance: base-select)`, og den slår
   til i eldre Chromium også; 148 er versjonen Fristil er testet i. Tabellen
   sier nå hva som avgjør, og hvilke versjoner som er testet.
+- **Skip Link-siden begrunnet `tabindex="-1"` med at neste Tab fortsatte i
+  menyen.** Nettleseren fortsetter fra målet etter hoppet også uten
+  attributtet. Det som mangler uten det, er fokuset og skjermleserens
+  opplesning, og det sier siden nå. Siden og stilarket sa også at fokus satt
+  fra kode aldri regnes som synlig fokus. Det gjelder bare etter et
+  museklikk, og det er det tilfellet `:focus` er valgt for.
 
 ## 0.33.0 (2026-10-12)
 

@@ -1,6 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -51,6 +52,65 @@ describe("fs-skip-link", () => {
     expect(skjult).not.toBe(synlig)
     expect(synlig).toMatch(/matrix\(1, 0, 0, 1, 0, 0\)|none/)
     expect(document.activeElement).toBe(lenke)
+  })
+
+  it("kommer til syne når fokus settes fra kode etter et museklikk", async () => {
+    // `:focus-visible` treffer ikke et fokus satt fra kode etter et
+    // museklikk. Hadde lenken brukt det, sto den skjult for den som hopper
+    // dit fra en knapp. Derfor `:focus`. Etter et tastetrykk treffer
+    // `:focus-visible` også fra kode, så det er museklikket som avgjør.
+    monter(`
+      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <main id="hovedinnhold" tabindex="-1">
+        <p>Innholdet på siden.</p>
+        <button type="button" id="topp">Til toppen</button>
+      </main>
+    `)
+    const lenke = document.getElementById("hopp") as HTMLElement
+    const knapp = document.getElementById("topp") as HTMLElement
+    knapp.addEventListener("click", () => lenke.focus())
+    const ferdig = new Promise<void>((resolve) => {
+      lenke.addEventListener("transitionend", () => resolve(), { once: true })
+      setTimeout(resolve, 2000)
+    })
+
+    await userEvent.click(knapp)
+    await ferdig
+
+    expect(document.activeElement).toBe(lenke)
+    expect(lenke.matches(":focus-visible")).toBe(false)
+    expect(getComputedStyle(lenke).transform).toMatch(
+      /matrix\(1, 0, 0, 1, 0, 0\)|none/,
+    )
+  })
+
+  it("flytter fokus til målet når det har tabindex", async () => {
+    // Uten `tabindex="-1"` flytter nettleseren visningen til målet, men
+    // ikke fokus, så skjermleseren får ikke beskjed om at brukeren er
+    // framme. Siden sa at neste Tab da fortsatte i menyen, men nettleseren
+    // fortsetter fra målet uansett: det er fokuset som mangler.
+    monter(`
+      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <header><a href="#meny" id="meny">Meny</a></header>
+      <main id="hovedinnhold" tabindex="-1">
+        <a href="#inne" id="inne">Første lenke i innholdet</a>
+      </main>
+    `)
+    const lenke = document.getElementById("hopp") as HTMLAnchorElement
+    const maal = document.getElementById("hovedinnhold") as HTMLElement
+
+    lenke.focus()
+    lenke.click()
+    expect(document.activeElement).toBe(maal)
+
+    await userEvent.tab()
+    expect(document.activeElement?.id).toBe("inne")
+
+    maal.removeAttribute("tabindex")
+    location.hash = ""
+    lenke.focus()
+    lenke.click()
+    expect(document.activeElement).toBe(document.body)
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
