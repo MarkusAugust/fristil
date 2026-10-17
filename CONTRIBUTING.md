@@ -197,6 +197,17 @@ token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
 som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
 opprettes der før første utgivelse.
 
+IntelliJ-pluginen har sitt nummer i `editor-intellij/gradle.properties` og
+`changeNotes` i `build.gradle.kts`, og gis ut med `bun run tag intellij`. Se
+`editor-intellij/README.md`.
+
+**Også utvidelsen og pluginen tagges med én gang grenen er slått sammen,**
+av samme grunn som pakken: Editoren-siden i dokumentasjonen beskriver det
+den nyeste versjonen av hver gjør, og rulles ut i det master endrer seg. Står
+versjonen i `editor/package.json` eller `pluginVersion` uten tagg, lover
+siden noe Marketplace ikke har. `bun run tag` uten argumenter viser hva som
+står utagget, og `bun run tag` med en del minner om de andre.
+
 ## Dokumentasjonen
 
 Teksten er på norsk bokmål og skal lese som om en norsk utvikler har skrevet

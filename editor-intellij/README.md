@@ -121,9 +121,11 @@ med ID-en `no.fristil`. Tre ting er verdt å vite:
   engelsk.** Marketplace krever engelsk som hovedspråk.
 - **En ny versjon** får nytt nummer i `pluginVersion` i `gradle.properties` og
   en linje i `changeNotes`. Når den ligger på master, dyttes taggen opp
-  med `bun run tag intellij`. Da bygger,
-  tester og laster `publiser-intellij.yml` opp pluginen med tokenet i
-  hemmeligheten `JETBRAINS_MARKETPLACE_TOKEN`. Taggen må stemme med
+  med `bun run tag intellij`, med én gang: Editoren-siden i dokumentasjonen
+  beskriver det den nyeste versjonen gjør, og rulles ut i det master
+  endrer seg, så en utagget versjon lover noe Marketplace ikke har. Da
+  bygger, tester og laster `publiser-intellij.yml` opp pluginen med tokenet
+  i hemmeligheten `JETBRAINS_MARKETPLACE_TOKEN`. Taggen må stemme med
   `pluginVersion`. JetBrains godkjenner hver versjon før den blir synlig.
 - **Pluginen signeres ikke med eget sertifikat.** Det er valgfritt, Gradle
   hopper over `signPlugin` uten sertifikat, og Marketplace signerer den selv.
