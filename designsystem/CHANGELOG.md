@@ -238,6 +238,16 @@ egen overskrift «Brytende».
   eksemplet på Connection Status-siden og i JSDoc-en til
   `FsConnectionStatus` sjekker også `svar.ok`. En test kjører «Ren
   HTML»-eksemplet fra siden mot en server som svarer 500.
+- **`fs-list` beholder punktene og tallene sammen med Tailwinds Preflight.**
+  Standardvarianten sa ingenting om `list-style` og lente seg på nettleseren,
+  mens Preflight setter `list-style: none` på hver `<ul>` og `<ol>`. Med
+  oppsettet Tailwind-siden anbefaler, `@import "tailwindcss"` og `base` før
+  `fristil`, mistet lista punktene og nummereringen, og det gjorde lista i
+  `fs-error-summary` også. Klassen setter nå `list-style: revert`, som går
+  tilbake til nettleserens eget stilark, så listene ser ut som uten Tailwind.
+  Variantene `plain` og `divided` er fortsatt uten punkter. Testen bygger
+  oppsettet med Tailwinds egen `preflight.css`, ikke en håndskrevet utgave
+  med bare knappereglene.
 
 ## 0.33.0 (2026-10-12)
 

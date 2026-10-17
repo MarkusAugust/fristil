@@ -1,7 +1,9 @@
 /// <reference path="./types/css.d.ts" />
 
+import preflightKilde from "tailwindcss/preflight.css?inline"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import knappeKilde from "./components/css/button/button.css?inline"
+import listeKilde from "./components/css/list/list.css?inline"
 import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
@@ -85,13 +87,17 @@ describe("en konsument kan tilpasse systemet", () => {
  *
  * Lagene teller i den rekkefølgen de først blir nevnt, og det siste laget
  * vinner uansett spesifisitet. Tailwinds Preflight ligger i `base`, og
- * nullstiller blant annet bakgrunnen på `button`. Havner `base` etter
- * `fristil`, forsvinner knappefargen vår, uten at noe sier fra.
+ * nullstiller blant annet bakgrunnen på `button` og punktene på `ul` og
+ * `ol`. Havner `base` etter `fristil`, forsvinner knappefargen vår, uten at
+ * noe sier fra.
  *
  * Rekkefølgen kan ikke endres etter at et lag er nevnt, så hver variant måles
  * i sitt eget dokument.
  */
-async function medStilark(css: string): Promise<Document> {
+async function medStilark(
+  css: string,
+  markup = '<button class="fs-button" id="knapp">Send søknad</button>',
+): Promise<Document> {
   const ramme = document.createElement("iframe")
   ramme.style.width = "400px"
   ramme.style.height = "200px"
@@ -100,15 +106,28 @@ async function medStilark(css: string): Promise<Document> {
   const dok = ramme.contentDocument as Document
   dok.open()
   dok.write(`<!doctype html><html><head><style>${css}</style></head>
-    <body><button class="fs-button" id="knapp">Send søknad</button></body></html>`)
+    <body>${markup}</body></html>`)
   dok.close()
 
   await new Promise((resolve) => requestAnimationFrame(resolve))
   return dok
 }
 
-/** Det Preflight gjør med en knapp, i sitt eget lag. */
-const PREFLIGHT = `@layer base { button { background-color: transparent; border: 0; } }`
+/** Den stilen et element i dokumentet faktisk får. */
+function stil(dok: Document, id: string): CSSStyleDeclaration {
+  const element = dok.getElementById(id) as HTMLElement
+  return (dok.defaultView as Window).getComputedStyle(element)
+}
+
+/**
+ * Tailwinds egen Preflight, i laget `@import "tailwindcss"` legger den i.
+ *
+ * Testen hadde en håndskrevet utgave med bare knappereglene, og da så den
+ * aldri at Preflight også setter `list-style: none` på hver liste, som tok
+ * punktene fra `.fs-list`. Hele fila, så det som nullstilles er det
+ * konsumenten får.
+ */
+const PREFLIGHT = `@layer base { ${preflightKilde} }`
 
 describe("sammen med Tailwind", () => {
   afterEach(() => {
@@ -125,10 +144,7 @@ describe("sammen med Tailwind", () => {
       ${PREFLIGHT}
     `)
 
-    const knapp = dok.getElementById("knapp") as HTMLElement
-    const bakgrunn = dok.defaultView?.getComputedStyle(knapp).backgroundColor
-
-    expect(bakgrunn).not.toBe("rgba(0, 0, 0, 0)")
+    expect(stil(dok, "knapp").backgroundColor).not.toBe("rgba(0, 0, 0, 0)")
   })
 
   it("mister knappefargen uten rekkefølgen, og det er derfor linja står i dokumentasjonen", async () => {
@@ -138,11 +154,30 @@ describe("sammen med Tailwind", () => {
       ${PREFLIGHT}
     `)
 
-    const knapp = dok.getElementById("knapp") as HTMLElement
-    const bakgrunn = dok.defaultView?.getComputedStyle(knapp).backgroundColor
-
     // `base` nevnes her etter `fristil`, og vinner derfor.
-    expect(bakgrunn).toBe("rgba(0, 0, 0, 0)")
+    expect(stil(dok, "knapp").backgroundColor).toBe("rgba(0, 0, 0, 0)")
+  })
+
+  it("beholder punktene og tallene i lista når Preflight står i base", async () => {
+    // Preflight setter `list-style: none` på hver liste. Standardvarianten
+    // sa ingenting om punktene og lente seg på nettleseren, så Preflight
+    // vant selv om `base` sto foran `fristil`, og lista mistet punktene og
+    // nummereringen. Variantene uten punkter skal fortsatt være uten.
+    const dok = await medStilark(
+      `
+      @layer theme, base, fristil, components, utilities;
+      ${tokenKilde}
+      ${listeKilde}
+      ${PREFLIGHT}
+    `,
+      `<ul class="fs-list" id="punkter"><li>Fødselsattest</li></ul>
+       <ol class="fs-list" id="tall"><li>Fyll ut skjemaet</li></ol>
+       <ul class="fs-list" data-variant="plain" id="ren"><li>Sendt</li></ul>`,
+    )
+
+    expect(stil(dok, "punkter").listStyleType).toBe("disc")
+    expect(stil(dok, "tall").listStyleType).toBe("decimal")
+    expect(stil(dok, "ren").listStyleType).toBe("none")
   })
 
   it("lar en Tailwind-utility slå komponentens egen verdi", async () => {
@@ -156,6 +191,6 @@ describe("sammen med Tailwind", () => {
     const knapp = dok.getElementById("knapp") as HTMLElement
     knapp.classList.add("p-6")
 
-    expect(dok.defaultView?.getComputedStyle(knapp).padding).toBe("24px")
+    expect(stil(dok, "knapp").padding).toBe("24px")
   })
 })
