@@ -91,7 +91,7 @@ Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved
 | `designsystem/src/vocabulary/elements.ts` | elementene og attributtene, som manifestet skrives fra |
 | `designsystem/src/vocabulary/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
-| `designsystem/src/components/events.ts` | typene til hendelsene, som utvider `HTMLElementEventMap` |
+| `designsystem/src/components/events.ts` | typene til hendelsene og tagnavnene, som utvider `HTMLElementEventMap` og `HTMLElementTagNameMap` |
 
 Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene, gjennom `scripts/generate-ordforrad.ts`. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
 

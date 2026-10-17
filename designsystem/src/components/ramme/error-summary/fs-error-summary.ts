@@ -293,12 +293,6 @@ function isFocusable(element: Element): boolean {
   )
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-error-summary": FsErrorSummary
-  }
-}
-
 export function defineFsErrorSummary(
   tagName: string = FS_ERROR_SUMMARY_TAG,
 ): void {

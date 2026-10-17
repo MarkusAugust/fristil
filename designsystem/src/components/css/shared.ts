@@ -24,6 +24,18 @@ export function managedNames(set: object): readonly string[] | undefined {
 }
 
 /**
+ * Gir et sett som er skrevet om fra et annet, de samme forvaltede navnene.
+ *
+ * `/react` døper `class` om til `className` i et nytt objekt, og det nye
+ * objektet sto ikke i kartet. `fs.setAttributes` derfra ryddet da bare
+ * `data-*`, og `aria-invalid` ble stående etter at feltet var rettet.
+ * Navnene gis slik de heter i det nye settet.
+ */
+export function rememberManaged(set: object, names: readonly string[]): void {
+  managed.set(set, names)
+}
+
+/**
  * Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt.
  *
  * Bygger settet på et annet, som `fs.search()` på `fs.input()`, sendes det

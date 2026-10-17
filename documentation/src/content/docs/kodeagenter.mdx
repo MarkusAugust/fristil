@@ -151,6 +151,9 @@ finnes, og at hvert felt har en ledetekst. Det virker likt i alle språk, siden
 det er HTML-en som sjekkes. Flagg og eksempler for tester står på
 [Kommandolinjen](../kommandolinjen/).
 
-I et typet prosjekt er typene den første sjekken: importerer du
-`@fristil/designsystem/react-jsx`, blir en variant som ikke finnes en
-kompileringsfeil. Se [Typesikker bruk](../typesikker-bruk/).
+I et typet prosjekt er typene den første sjekken: `fs.button({ variant })`
+gjør en variant som ikke finnes til en kompileringsfeil, og importerer du
+`@fristil/designsystem/react-jsx`, gjelder det samme for attributtene på
+web-komponentene. En håndskrevet `className` eller `data-variant` ser ingen
+av dem, og heller ikke `fristil sjekk`, som leser `class`, ikke `className`,
+så bruk byggefunksjonene. Se [Typesikker bruk](../typesikker-bruk/).

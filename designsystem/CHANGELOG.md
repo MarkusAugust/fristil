@@ -25,6 +25,13 @@ egen overskrift «Brytende».
 
 ### Endret
 
+- **Pakken sender med kildene kartene peker på.** `dist` har kildekart og
+  deklarasjonskart, og de for `fs`, `/react`, `/register`, `/dom`,
+  `/diagnostics` og kommandolinja pekte på fjorten filer i `src` som ikke var
+  med i tarballen, så «gå til definisjon» og et stakkspor derfra landet i en
+  fil som ikke fantes. `src/*.ts`, `src/diagnostics`, `src/jsx` og
+  `src/vocabulary` følger nå med, som `src/components` alt gjorde, og
+  byggesteget krever at hvert medsendt kart peker på en fil i pakken.
 - **Regelboka for maler sier at Kotlin-pakken ligger på Maven Central.**
   `agent/maler.md` sa at `io.github.markusaugust:fristil` og Gradle-pluginen
   måtte bygges fra kildekoden. Begge ligger på Central fra 0.33.0, med samme
@@ -34,6 +41,45 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Tagnavnene er typet fra `/register` og `/react-jsx` alene.** Typesikker
+  bruk-siden sa at hendelsestypene følger med hver inngang til
+  web-komponentene, men `HTMLElementTagNameMap` ble bare utvidet i
+  komponentfilene, og `/register` og `/react-jsx` tar dem ikke med i typene.
+  Da var `document.querySelector("fs-dialog")` et `Element`, og lytteren på
+  det fikk `Event` uten `detail`, så mønsteret på siden var en typefeil. Kartet
+  over tagnavnene står nå i `events.ts`, som hver inngang alt tar med, så
+  `querySelector("fs-dialog")` gir `FsDialog | null` fra alle tretten
+  inngangene, også hver komponentinngang for de andre komponentene. Bygget
+  kompilerer en fil per inngang, med bare den importen, så det ikke kan gli
+  tilbake.
+- **`fs.setAttributes` fra `/react` skriver `class` og `for`, og rydder.**
+  Funksjonen var hovedinngangens, mens settene fra `/react` har `className`
+  og `htmlFor`, så den skrev attributtene `classname` og `htmlfor`, og fant
+  ikke byggefunksjonen bak det omdøpte settet: `aria-invalid` ble stående
+  etter at feltet var rettet, uten advarsel. Nå oversettes navnene tilbake
+  før de settes, `tabIndex` blir `tabindex`, og settet rydder det samme som
+  fra hovedinngangen.
+- **`engines` slipper ikke lenger inn Node 21 og 22.0–22.2.** Kjernen lastes
+  med `process.getBuiltinModule`, som kom i Node 20.16 og 22.3, men
+  `>=20.16` tok med versjonene mellom, og der sa feilmeldingen at Node 22.1
+  var eldre enn 20.16. Kravet er nå `^20.16.0 || >=22.3.0`, og meldingen
+  nevner begge grensene. Oppføringen under 0.32.1 som sier «20.16 eller
+  nyere», gjelder med dette unntaket.
+- **`hidden` på `<fs-error-summary>` er et flagg i JSX-typene.** `hidden`
+  kom fra `HTMLAttributes` som `boolean`, så `hidden={false}` kompilerte,
+  mens React 18 skriver det som `hidden="false"` på en web component, som er
+  sant: boksen ble aldri vist. Typen er nå `true | undefined`, som `open` på
+  `<fs-dialog>`, slik regelboka for React sier om hvert boolske attributt på
+  en web component. `fs.errorSummary().host` sendte alt `true` eller
+  ingenting.
+- **Regelboka for React og Kodeagenter-siden sa at `react-jsx` stopper en
+  variant som ikke finnes.** `react-jsx` typer attributtene på
+  web-komponentene, og ingen av dem har en variant. Det er
+  `fs.button({ variant })` som gjør en ukjent variant til en kompileringsfeil,
+  med eller uten `react-jsx`, og en håndskrevet `className` eller
+  `data-variant` ser ingen av dem, og heller ikke `fristil sjekk`, som leser
+  `class`, ikke `className`. Begge tekstene sier nå hva som fanger hva, og
+  at det håndskrevne skal erstattes av byggefunksjonene.
 - **`defineFs*` kaster ikke når klassen alt er registrert under et eget
   navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
   NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i

@@ -213,12 +213,6 @@ export class FsConnectionStatus extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-connection-status": FsConnectionStatus
-  }
-}
-
 export function defineFsConnectionStatus(
   tagName: string = FS_CONNECTION_STATUS_TAG,
 ): void {

@@ -631,12 +631,6 @@ export class FsField extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-field": FsField
-  }
-}
-
 export function defineFsField(tagName: string = FS_FIELD_TAG): void {
   defineElement(tagName, FsField)
 }

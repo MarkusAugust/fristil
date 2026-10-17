@@ -78,13 +78,14 @@ Nettleserne hentes med `bun --filter @fristil/designsystem nettlesere`.
 
 Steg 4 og 5 er ikke valgfrie: `react.browser.test.ts` krever at hver funksjon i `fs` finnes i `/react`, og en test leser `static observedAttributes` fra komponentene og krever at hvert attributt er deklarert for JSX.
 
-Sju sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
+Åtte sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
 
 | Sjekk | Hva den krever |
 | --- | --- |
 | `pakke-css.browser.test.ts` | Alt utenom grensen mot en vertsside ligger i `@layer fristil`, ingenting står etter laget, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
 | `fs.browser.test.ts` | Hver byggefunksjon i `fs` gir en klasse og ingen `undefined`-attributter |
-| `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, og ingen testfiler gjør det |
+| `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, ingen testfiler gjør det, og hvert kart i pakken peker på en fil som er med |
+| `sjekk-typer.ts` | Hver inngang til web-komponentene typer `querySelector` og `addEventListener` alene, også `/register` og `/react-jsx` |
 | `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse og hver `--fs-`-variabel den har, som hele ord |
 | `sjekk-testfiler.ts` | Komponentmappa har minst én `*.browser.test.ts` |
 | `react.browser.test.ts` | Hver byggefunksjon finnes i `/react`, og ingen sender ut et attributt React staver annerledes |

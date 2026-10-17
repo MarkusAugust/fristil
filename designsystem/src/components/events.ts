@@ -1,11 +1,27 @@
 // Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
 
+import type { FsConnectionStatus } from "./frittstaende/connection-status/fs-connection-status.js"
+import type { FsToast } from "./frittstaende/toast/fs-toast.js"
+import type { FsDialog } from "./ramme/dialog/fs-dialog.js"
+import type { FsErrorSummary } from "./ramme/error-summary/fs-error-summary.js"
+import type { FsField } from "./ramme/field/fs-field.js"
+import type { FsPopover } from "./ramme/popover/fs-popover.js"
+import type { FsSessionTimeout } from "./ramme/session-timeout/fs-session-timeout.js"
+import type { FsSuggestion } from "./ramme/suggestion/fs-suggestion.js"
+import type { FsTabs } from "./ramme/tabs/fs-tabs.js"
+
 /**
  * Hendelsene web-komponentene sender, med `detail` slik komponenten sender
  * den. Alle bobler, og kommer ut av en skyggerot. `HTMLElementEventMap` og
  * `DocumentEventMap` utvides med dem, så `addEventListener("dialog-toggle",
  * …)` gir `event.detail.open` som `boolean` på ethvert element og på
  * `document`.
+ *
+ * `HTMLElementTagNameMap` utvides med elementene, så
+ * `querySelector("fs-dialog")` gir `FsDialog | null`. Kartet står her, og
+ * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
+ * denne fila: fra `/register` alene var `querySelector("fs-dialog")` ellers
+ * et `Element`, og lytteren på det fikk `Event` uten `detail`.
  */
 export interface FsEventMap {
   /** `<fs-tabs>`: Brukeren valgte en fane. `index` teller fra 0. */
@@ -37,4 +53,15 @@ export interface FsEventMap {
 declare global {
   interface HTMLElementEventMap extends FsEventMap {}
   interface DocumentEventMap extends FsEventMap {}
+  interface HTMLElementTagNameMap {
+    "fs-connection-status": FsConnectionStatus
+    "fs-dialog": FsDialog
+    "fs-error-summary": FsErrorSummary
+    "fs-field": FsField
+    "fs-popover": FsPopover
+    "fs-session-timeout": FsSessionTimeout
+    "fs-suggestion": FsSuggestion
+    "fs-tabs": FsTabs
+    "fs-toast": FsToast
+  }
 }

@@ -646,12 +646,6 @@ export class FsSessionTimeout extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-session-timeout": FsSessionTimeout
-  }
-}
-
 export function defineFsSessionTimeout(
   tagName: string = FS_SESSION_TIMEOUT_TAG,
 ): void {
