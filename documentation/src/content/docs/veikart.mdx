@@ -1,10 +1,10 @@
 ---
 title: Veikart
-description: Det som er planlagt for Fristil, i den rekkefølgen det kommer, og hvorfor rekkefølgen er slik.
+description: Det som står igjen å lage i Fristil, og hva som alt er levert av planen siden startet med.
 ---
 
 Fristil er før 1.0. Denne siden viser hva som står igjen, og hva som alt er
-levert av planen den startet med. Endringer en konsument merker, står som før i
+levert av planen siden startet med. Endringer en konsument merker, står som før i
 [versjonsloggen](/versjonslogg/), med brytende endringer under «Brytende».
 
 ## Retningen
@@ -15,11 +15,13 @@ levert av planen den startet med. Endringer en konsument merker, står som før 
 Stavekontrollen, det som leser markupen din og sier fra om klasser som ikke
 finnes, felt uten ledetekst og id-er som ikke peker på noe, er én kjerne
 skrevet i Rust og bygget til WebAssembly. Den samme fila kjører i Node, på
-JVM-en og i hvert språk som har en WebAssembly-runtime, og gir det samme
+JVM-en og i hvert språk som har en kjøretid for WebAssembly, og gir det samme
 svaret overalt.
 
 Alt leveres gjennom kanalene språket ditt allerede bruker: npm og Maven
-Central, og kildekoden for `cargo install`. Ingenting krever at du stoler på en
+Central, og kildekoden for `cargo install`. Utvidelsene ligger på
+editorenes egne markedsplasser, og `fristil.jar` og `fristil.wasm` ved hver
+utgivelse på GitHub. Ingenting krever at du stoler på en
 tredjeparts pakkekilde, og ingenting du laster ned, krever et sertifikat for å
 kjøre.
 
@@ -27,8 +29,8 @@ kjøre.
 
 - **Fullføring og forklaring i språkserveren.** `fristil lsp` gir i dag funn
   og rettelser. Fullføringen og forklaringen kommer fortsatt fra utvidelsen
-  for VS Code og pluginen for IntelliJ, og flyttes til serveren, så de blir
-  enda tynnere og de andre editorene får det samme.
+  for VS Code og fra `web-types.json` i JetBrains, og flyttes til serveren, så
+  de andre editorene får det samme.
 - **En utvidelse for Zed.** Zed starter bare språkservere en Zed-utvidelse har
   meldt inn.
 - **Kommandolinja på crates.io.** I dag installeres den med
@@ -39,19 +41,23 @@ kjøre.
 
 ## Det som er levert
 
-Planen hadde seks faser. Alle er levert, de fleste i 0.32.0:
+Planen hadde seks faser. De fleste ble gitt ut i 0.32.0, og det som står
+«klart» under, ligger på master og kommer med i neste versjon:
 
 - **Kontrakten** er én fil, `manifest.json`, skrevet av Fristil fra koden:
-  klassene og elementene med innholdet og delene sine, de lovlige verdiene,
-  tokenene, og hva hver byggefunksjon svarer. Alle verktøyene leser den.
-- **Fristil for Kotlin** på Maven Central, med byggefunksjonene som `enum`-er,
-  `assertFristil(html)` i vanlige tester, temaet og manifestet med typer,
-  utvidelser for kotlinx.html og CSS-en som WebJar. Se [Kotlin og Java](../kotlin/).
+  klassene og elementene, de lovlige verdiene og hva hver byggefunksjon
+  svarer. Alle verktøyene leser den. Klart: hva hver klasse tar som innhold
+  og hvilke deler den består av, og tokenene.
+- **Fristil for Kotlin** på Maven Central fra 0.33.0, med byggefunksjonene som
+  `enum`-er, `assertFristil(html)` i vanlige tester, manifestet med typer,
+  utvidelser for kotlinx.html og CSS-en som WebJar. Klart: temaet som
+  funksjoner, og byggefunksjonene i manifestet. Se [Kotlin og Java](../kotlin/).
 - **Én stavekontroll** i Rust for `fristil sjekk`,
-  `@fristil/designsystem/diagnostics`, VS Code og IntelliJ, med linje,
-  kolonne, regelnavn og undertrykking med en kommentar.
-- **Temaene** bygges og sjekkes av den samme kjernen, fra npm, fra
-  Maven-pakken og fra en Gradle-oppgave.
+  `@fristil/designsystem/diagnostics` og VS Code, med linje, kolonne,
+  regelnavn og undertrykking med en kommentar. Klart: den samme sjekken i
+  IntelliJ-pluginen, og regelen for en del som står to ganger.
+- **Temaene** bygges og sjekkes av den samme kjernen, fra npm og fra en
+  Gradle-oppgave. Klart: fra Maven-pakken.
 - **Kommandolinja** kjører med `npx`, `java -jar fristil.jar`, wasmtime og
   `cargo install`. `fristil overta` gir kopien et eget navn, og
   Gradle-pluginen sjekker maler som en del av bygget. Se
