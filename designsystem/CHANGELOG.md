@@ -248,6 +248,16 @@ egen overskrift «Brytende».
   Variantene `plain` og `divided` er fortsatt uten punkter. Testen bygger
   oppsettet med Tailwinds egen `preflight.css`, ikke en håndskrevet utgave
   med bare knappereglene.
+- **Lagrekkefølgen for Tailwind tar med `fristil-tema`.** Et generert tema
+  erklærer `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter
+  ikke lag som alt er erklært. Med den anbefalte linja
+  `@layer theme, base, fristil, components, utilities;` havnet temaet derfor
+  sist, etter `utilities`, og slo Tailwind-klassene og `@layer base` på de
+  samme elementene, enda Tilpasning- og Eget tema-sidene sa at din egen CSS
+  fortsatt vinner. Linja i dokumentasjonen og i kommentaren i `tailwind.css`
+  er nå `@layer theme, base, fristil, fristil-tema, components, utilities;`,
+  og Eget tema-siden sier at laget må stå der når Tailwind brukes. Den
+  genererte fila er uendret.
 
 ## 0.33.0 (2026-10-12)
 

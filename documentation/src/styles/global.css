@@ -3,9 +3,13 @@
  * de først blir nevnt, og det siste vinner uansett spesifisitet. `fristil` må
  * ligge etter Starlights og Tailwinds grunnlag, så komponentene ikke blir
  * nullstilt, og før `utilities`, så en Tailwind-klasse fortsatt kan overstyre
- * en komponent. Dette er det samme rådet dokumentasjonen gir konsumentene.
+ * en komponent. `fristil-tema` er laget et generert tema ligger i, og står
+ * her selv om siden ikke har noe tema: temaets egen `@layer fristil,
+ * fristil-tema;` flytter ikke lag som alt er erklært, så uten plassen ville
+ * et tema havnet sist, etter `utilities`. Dette er det samme rådet
+ * dokumentasjonen gir konsumentene.
  */
-@layer theme, base, starlight, fristil, components, utilities;
+@layer theme, base, starlight, fristil, fristil-tema, components, utilities;
 
 @import "@astrojs/starlight-tailwind";
 @import "tailwindcss/theme.css" layer(theme);

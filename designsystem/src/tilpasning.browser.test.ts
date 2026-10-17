@@ -129,6 +129,27 @@ function stil(dok: Document, id: string): CSSStyleDeclaration {
  */
 const PREFLIGHT = `@layer base { ${preflightKilde} }`
 
+/** Rekkefølgen dokumentasjonen ber konsumenten sette på første linje. */
+const LAGLINJE =
+  "@layer theme, base, fristil, fristil-tema, components, utilities;"
+
+/**
+ * Det `fristil tema` skriver, med skrift og form og uten farger. Temaet
+ * erklærer bare sitt eget lag etter `fristil`, og kan ikke vite hvilke lag
+ * appen har erklært fra før.
+ */
+const TEMA = `
+  @layer fristil, fristil-tema;
+  @layer fristil-tema {
+    :root {
+      --fs-font-family-base: Georgia, serif;
+      --fs-button-radius: 2.75rem;
+    }
+    :root {
+      font-family: var(--fs-font-family-base);
+    }
+  }`
+
 describe("sammen med Tailwind", () => {
   afterEach(() => {
     // Rammene må bort. Blir de stående, kan fokus havne i dem, og testene
@@ -138,7 +159,7 @@ describe("sammen med Tailwind", () => {
 
   it("beholder knappefargen når fristil står etter base", async () => {
     const dok = await medStilark(`
-      @layer theme, base, fristil, components, utilities;
+      ${LAGLINJE}
       ${tokenKilde}
       ${knappeKilde}
       ${PREFLIGHT}
@@ -165,7 +186,7 @@ describe("sammen med Tailwind", () => {
     // nummereringen. Variantene uten punkter skal fortsatt være uten.
     const dok = await medStilark(
       `
-      @layer theme, base, fristil, components, utilities;
+      ${LAGLINJE}
       ${tokenKilde}
       ${listeKilde}
       ${PREFLIGHT}
@@ -182,7 +203,7 @@ describe("sammen med Tailwind", () => {
 
   it("lar en Tailwind-utility slå komponentens egen verdi", async () => {
     const dok = await medStilark(`
-      @layer theme, base, fristil, components, utilities;
+      ${LAGLINJE}
       ${tokenKilde}
       ${knappeKilde}
       @layer utilities { .p-6 { padding: 1.5rem; } }
@@ -192,5 +213,42 @@ describe("sammen med Tailwind", () => {
     knapp.classList.add("p-6")
 
     expect(stil(dok, "knapp").padding).toBe("24px")
+  })
+
+  it("lar et generert tema vinne over tokens.css, og en utility vinne over temaet", async () => {
+    const dok = await medStilark(`
+      ${LAGLINJE}
+      ${tokenKilde}
+      ${knappeKilde}
+      ${TEMA}
+      @layer utilities { .font-mono { font-family: monospace; } }
+    `)
+    dok.documentElement.classList.add("font-mono")
+
+    // Temaet står etter `fristil` og slår standardverdien på 0,25rem.
+    expect(
+      stil(dok, "knapp").getPropertyValue("--fs-button-radius").trim(),
+    ).toBe("2.75rem")
+    // `fristil-tema` står foran `utilities`, så klassen slår temaets regel.
+    expect(
+      dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
+    ).toBe("monospace")
+  })
+
+  it("lar temaet slå utility-klassene når tema-laget mangler i linja, og det er derfor det står der", async () => {
+    const dok = await medStilark(`
+      @layer theme, base, fristil, components, utilities;
+      ${tokenKilde}
+      ${knappeKilde}
+      ${TEMA}
+      @layer utilities { .font-mono { font-family: monospace; } }
+    `)
+    dok.documentElement.classList.add("font-mono")
+
+    // Temaets `@layer fristil, fristil-tema;` oppretter bare lag som ikke
+    // finnes, så `fristil-tema` havner sist, etter `utilities`.
+    expect(
+      dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
+    ).toBe("Georgia, serif")
   })
 })

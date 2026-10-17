@@ -13,7 +13,7 @@ Pakken har ingen avhengighet til Tailwind. Temaet er en vanlig CSS-fil, så det 
 
 ```css
 /* app.css */
-@layer theme, base, fristil, components, utilities;
+@layer theme, base, fristil, fristil-tema, components, utilities;
 
 @import "tailwindcss";
 @import "@fristil/designsystem/tokens.css";
@@ -23,7 +23,7 @@ Pakken har ingen avhengighet til Tailwind. Temaet er en vanlig CSS-fil, så det 
 @import "@fristil/designsystem/button.css";
 ```
 
-Den første linja er det eneste du må huske. Uten den nullstiller Tailwinds Preflight komponentene, eller komponentene slår klassene dine. [Lagrekkefølgen](#lagrekkefølgen) forklarer hvorfor.
+Den første linja er det eneste du må huske. Uten den nullstiller Tailwinds Preflight komponentene, eller komponentene slår klassene dine. `fristil-tema` er laget et [generert tema](../eget-tema/) ligger i, og skal stå der selv om du ikke har noe tema ennå. [Lagrekkefølgen](#lagrekkefølgen) forklarer hvorfor.
 
 Det er alt. Ingen `tailwind.config.ts`, ingen forhåndsinnstilling som skal importeres i JavaScript.
 
@@ -33,7 +33,7 @@ Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det in
 
 ```html
 <head>
-  <style>@layer theme, base, fristil, components, utilities;</style>
+  <style>@layer theme, base, fristil, fristil-tema, components, utilities;</style>
 
   <link rel="stylesheet" href="/statisk/tailwind-bygget.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css" />
@@ -115,9 +115,12 @@ Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uanse
 | --- | --- |
 | `fristil` før `base` | Preflight nullstiller komponentene. Knappen mister bakgrunnen. |
 | `fristil` etter `utilities` | Komponentene slår klassene dine. `p-6` gjør ingenting. |
-| `base`, `fristil`, `utilities` | Begge deler virker |
+| `fristil-tema` etter `utilities` | Et generert tema slår klassene dine. `font-mono` på `<html>` gjør ingenting. |
+| `base`, `fristil`, `fristil-tema`, `utilities` | Alt virker |
 
-Feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger hvert av dem i et eget dokument med Tailwinds egen Preflight og leser av hva knappen og lista faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i `base`.
+`fristil-tema` står i linja selv om du ikke har noe tema. Et generert tema erklærer bare `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter ikke lag som alt er erklært. Uten en plass i linja havner temaet derfor sist, etter `utilities`, den dagen du legger det til.
+
+Feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger hvert av dem i et eget dokument med Tailwinds egen Preflight og leser av hva knappen, lista og rotelementet faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i `base`.
 
 ## Tre ting som er greie å vite
 
