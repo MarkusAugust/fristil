@@ -165,7 +165,7 @@ if (workspaces === 0)
 
 /*
  * Kjernen lastes med `process.getBuiltinModule`, som kom i Node 20.16 og
- * 22.3. Versjonene er ikke ordnet i én rekke: Node 21 og 22.0–22.2 er nyere
+ * 22.3. Versjonene er ikke ordnet i én rekke: Node 21 og 22.0 til 22.2 er nyere
  * enn 20.16 og mangler den likevel. `>=20.16` slapp dem inn, og den som
  * kjørte Node 22.1 fikk høre at versjonen var eldre enn 20.16. Intervallet må
  * derfor ha to grenser, og det kontrolleres med versjoner på hver side av dem.

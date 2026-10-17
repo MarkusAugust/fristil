@@ -28,7 +28,7 @@ export function defaultCore(): Core {
     | typeof import("node:fs")
     | undefined
   if (!fs) {
-    // `getBuiltinModule` kom i Node 20.16 og 22.3, så Node 21 og 22.0–22.2
+    // `getBuiltinModule` kom i Node 20.16 og 22.3, så Node 21 og 22.0 til 22.2
     // er utenfor selv om de er nyere enn 20.16. `engines` i package.json
     // sier det samme. En Node uten den er Node, og skal få vite at det er
     // versjonen som er feil, med begge grensene, så Node 22.1 ikke får høre
