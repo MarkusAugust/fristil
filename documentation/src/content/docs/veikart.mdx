@@ -41,25 +41,23 @@ kjøre.
 
 ## Det som er levert
 
-Det meste ble gitt ut i 0.32.0. Det som står «klart» under, ligger på master
-og kommer med i neste versjon av pakken. Det som gjelder Kotlin, kommer på
-Maven Central når den versjonen gis ut der, og IntelliJ-pluginen har sine egne
-versjoner:
+Det meste ble gitt ut i 0.32.0, og resten i 0.34.0, på npm og på Maven
+Central, og i IntelliJ-pluginen 0.3.0:
 
 - **Kontrakten** er én fil, `manifest.json`, skrevet av Fristil fra koden:
   klassene og elementene, de lovlige verdiene og hva hver byggefunksjon
-  svarer. Alle verktøyene leser den. Klart: hva hver klasse tar som innhold
-  og hvilke deler den består av, og tokenene.
+  svarer, og fra 0.34.0 hva hver klasse tar som innhold, hvilke deler den
+  består av, og tokenene. Alle verktøyene leser den.
 - **Fristil for Kotlin** på Maven Central fra 0.33.0, med byggefunksjonene som
   `enum`-er, `assertFristil(html)` i vanlige tester, manifestet med typer,
-  utvidelser for kotlinx.html og CSS-en som WebJar. Klart: temaet som
-  funksjoner, og byggefunksjonene i manifestet. Se [Kotlin og Java](../kotlin/).
+  utvidelser for kotlinx.html og CSS-en som WebJar, og fra 0.34.0 temaet som
+  funksjoner og byggefunksjonene i manifestet. Se [Kotlin og Java](../kotlin/).
 - **Én stavekontroll** i Rust for `fristil sjekk`,
-  `@fristil/designsystem/diagnostics` og VS Code, med linje, kolonne,
-  regelnavn og undertrykking med en kommentar. Klart: den samme sjekken i
-  IntelliJ-pluginen, og regelen for en del som står to ganger.
+  `@fristil/designsystem/diagnostics`, VS Code og IntelliJ-pluginen fra 0.3.0,
+  med linje, kolonne, regelnavn og undertrykking med en kommentar. Regelen
+  for en del som står to ganger kom i 0.34.0.
 - **Temaene** bygges og sjekkes av den samme kjernen, fra npm og fra en
-  Gradle-oppgave. Klart: fra Maven-pakken.
+  Gradle-oppgave, og fra 0.34.0 fra Maven-pakken.
 - **Kommandolinja** kjører med `npx`, `java -jar fristil.jar`, wasmtime og
   `cargo install`. `fristil overta` gir kopien et eget navn, og
   Gradle-pluginen sjekker maler som en del av bygget. Se
