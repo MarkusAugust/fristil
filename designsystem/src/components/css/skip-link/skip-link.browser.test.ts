@@ -123,9 +123,13 @@ describe("fs-skip-link", () => {
       <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <header><a href="#meny" id="meny">Meny</a></header>
       <main id="hovedinnhold" tabindex="-1">
-        <a href="#inne" id="inne">Første lenke i innholdet</a>
+        <input id="inne" aria-label="Søk i innholdet" />
       </main>
     `)
+    // Et tekstfelt og ikke en lenke først i innholdet: WebKit på macOS
+    // hopper som Safari over lenker og knapper med Tab, men stopper i et
+    // tekstfelt. Det testen spør om, hvor neste Tab fortsetter fra, er det
+    // samme.
     const lenke = document.getElementById("hopp") as HTMLAnchorElement
     const maal = document.getElementById("hovedinnhold") as HTMLElement
 
