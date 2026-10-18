@@ -24,8 +24,12 @@ data class Manifest(
     val elements: Map<String, ManifestElement>,
     /** Hver `fs-`-klasse, etter navnet. */
     val classes: Map<String, ManifestClass>,
-    /** Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene og komponentvariablene. */
-    val tokens: ManifestTokens,
+    /**
+     * Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene
+     * og komponentvariablene. `null` i et manifest fra før 0.34, som ikke har
+     * dem; `schemaVersion` er den samme, så leseren tåler at de mangler.
+     */
+    val tokens: ManifestTokens?,
     /** Hver byggefunksjon i `fs`, i manifestets rekkefølge, med valgene og formen på svaret. */
     val builders: List<Builder>,
 ) {
@@ -49,7 +53,7 @@ data class Manifest(
                 version = root["version"].str("version"),
                 elements = root["elements"].obj("elements").mapValues { (tag, e) -> element(tag, e.obj("elements.$tag"), "elements.$tag") },
                 classes = root["classes"].obj("classes").mapValues { (name, c) -> klass(name, c.obj("classes.$name"), "classes.$name") },
-                tokens = tokens(root["tokens"].obj("tokens"), "tokens"),
+                tokens = root["tokens"]?.let { tokens(it.obj("tokens"), "tokens") },
                 builders =
                     (root["builders"] as? List<*> ?: wrong("builders", "en liste")).mapIndexed { i, b ->
                         builder(b.obj("builders[$i]"), "builders[$i]")
@@ -162,7 +166,7 @@ data class Manifest(
                 title = c["title"].str("$at.title"),
                 description = c["description"].str("$at.description"),
                 link = c["link"].str("$at.link"),
-                content = enumOf<PartContent>(c["content"].str("$at.content"), "$at.content"),
+                content = c["content"]?.let { enumOf<PartContent>(it.str("$at.content"), "$at.content") },
                 partOf = c["partOf"]?.str("$at.partOf"),
                 parts = parts(c["parts"], "$at.parts"),
                 attributes =
@@ -339,8 +343,8 @@ data class ManifestClass(
     val title: String,
     val description: String,
     val link: String,
-    /** Hva elementet med klassen tar som innhold, med samme ord som delene. */
-    val content: PartContent,
+    /** Hva elementet med klassen tar som innhold, med samme ord som delene. `null` i et manifest fra før 0.34. */
+    val content: PartContent?,
     /** Klassen denne er en del av, som `fs-card` for `fs-card__title`. Forelderen har en del som treffer den. */
     val partOf: String?,
     /** Delene markupen består av, med selektoren relativt til elementet med klassen. Tom for klassene uten en fast struktur. */

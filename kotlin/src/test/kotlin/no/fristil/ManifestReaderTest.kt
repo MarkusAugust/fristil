@@ -49,7 +49,7 @@ class ManifestReaderTest {
             known(c, "component", "title", "description", "link", "content", "partOf", "parts", "attributes", at = name)
             assertEquals(name, read.name)
             assertEquals(listOf(expected["component"], expected["title"], expected["description"], expected["link"]), listOf(read.component, read.title, read.description, read.link), name)
-            assertEquals(expected["content"], read.content.name.lowercase(), name)
+            assertEquals(expected["content"], read.content?.name?.lowercase(), name)
             assertEquals(expected["partOf"], read.partOf, name)
             if (read.partOf != null) partOf += 1
             val rawParts = expected["parts"]?.map() ?: emptyMap()
@@ -208,7 +208,7 @@ class ManifestReaderTest {
     @Test
     fun `the tokens keep every scale, axis and component variable`() {
         val tokens = raw["tokens"].map()
-        val read = Fristil.manifest.tokens
+        val read = Fristil.manifest.tokens!!
         known(tokens, "spacing", "breakpoints", "containers", "colors", "components", at = "tokens")
         assertEquals(tokens["spacing"], read.spacing)
         assertEquals(tokens["breakpoints"], read.breakpoints)
@@ -269,6 +269,23 @@ class ManifestReaderTest {
     }
 
     @Test
+    fun `a manifest from before 0_34 is read without tokens and contents`() {
+        // Slik et manifest fra 0.33.0 ser ut: samme schemaVersion, uten
+        // tokens og uten innhold og deler på klassene. IntelliJ leser
+        // prosjektets eget manifest, og det kan være fra en eldre pakke.
+        @Suppress("UNCHECKED_CAST")
+        val old = (Json.parse(text) as Map<String, Any?>).toMutableMap()
+        old.remove("tokens")
+        old["classes"] = (old["classes"] as Map<String, Any?>).mapValues { (_, c) ->
+            (c as Map<String, Any?>) - setOf("content", "parts", "partOf")
+        }
+        val read = Manifest.parse(Json.write(old))
+        assertEquals(null, read.tokens)
+        assertEquals(null, read.classes.getValue("fs-button").content)
+        assertEquals(Fristil.manifest.classes.keys, read.classes.keys)
+    }
+
+    @Test
     fun `a project manifest is read as well`() {
         val takenOver = Manifest.parse(text.replace("\"fs-card\": {", "\"fs-kort\": {"))
         assertTrue("fs-kort" in takenOver.classes && "fs-card" !in takenOver.classes)
@@ -285,7 +302,8 @@ class ManifestReaderTest {
         )
         assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "«tekst»")
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes skulle vært et objekt")
-        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}}"""), "tokens skulle vært et objekt")
+        // Uten tokens er manifestet fra før 0.34 og leses; med feil form kaster det.
+        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}, "builders": [], "tokens": 3}"""), "tokens skulle vært et objekt")
         assertContains(error(text.replaceFirst("\"kind\": \"flag\"", "\"kind\": \"flagg\"")), "«flagg»")
     }
 }

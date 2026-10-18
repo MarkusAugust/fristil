@@ -82,7 +82,8 @@ egen overskrift «Brytende».
   per komponent med standardverdien stilarket faller tilbake på. Fargene
   står som akser og navn, ikke som verdier, siden et tema kan ha andre
   verdier enn Fristils egne. `ManifestTokens` i Kotlin leser det samme.
-  `schemaVersion` er fortsatt 1. Beskrivelsene av familiene, rollene og
+  `schemaVersion` er fortsatt 1, og `tokens` i Kotlin er `null` i et manifest
+  fra før denne versjonen. Beskrivelsene av familiene, rollene og
   lagene eksporteres også fra `@fristil/designsystem/tokens`, som
   `FAMILY_DESCRIPTIONS`, `ROLE_DESCRIPTIONS` og `LAYER_DESCRIPTIONS`.
 - **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
@@ -93,8 +94,8 @@ egen overskrift «Brytende».
   `optional`, og en klasse som bare er en del av en annen komponents
   markup, som `fs-card__title`, peker på forelderen med `partOf`.
   `schemaVersion` er fortsatt 1. I Kotlin har `ManifestClass` fått
-  `content`, `partOf` og `parts`.
-
+  `content`, `partOf` og `parts`, og `content` er `null` i et manifest fra
+  før denne versjonen, så IntelliJ kan lese manifestet til en eldre pakke.
 
 ### Endret
 
