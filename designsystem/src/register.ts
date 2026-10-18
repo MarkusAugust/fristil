@@ -21,9 +21,10 @@ import { defineFsSessionTimeout } from "./components/ramme/session-timeout/fs-se
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion.js"
 import { defineFsTabs } from "./components/ramme/tabs/fs-tabs.js"
 
-// Typene til hendelsene, så `addEventListener` er typet også for den som
-// bare importerer denne inngangen. Uten linja forsvant importen fra
-// `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
+// Typene til hendelsene og tagnavnene, så `querySelector("fs-dialog")` og
+// `addEventListener` er typet også for den som bare importerer denne
+// inngangen. Uten linja forsvant importene over fra `.d.ts`-fila, og verken
+// `HTMLElementEventMap` eller `HTMLElementTagNameMap` ble utvidet.
 export type { FsEventMap } from "./components/events.js"
 
 export function defineFs(): void {

@@ -23,26 +23,35 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
-### Rettet
+### Brytende
 
-- **`<fs-error-summary>` tar fokus også i React.** React gir fokus tilbake
-  til elementet som hadde det før en commit, og boksen flyttet fokus inne i
-  den samme commiten. Fokus endte derfor på innsendingsknappen i Chromium og
-  Firefox, og på feltet i alle tre motorene når skjemaet ble sendt med Enter,
-  både når boksen ble satt inn og når `hidden` ble tatt bort. Boksen tar nå fokus én gang til etter
-  commiten, hvis det gikk tilbake dit det var. Har et skript flyttet fokus
-  til noe annet, står det. En React-app som viser boksen mens brukeren står
-  i et felt, for eksempel ved `blur`, merker at fokus nå flyttes dit, slik
-  det alltid har gjort uten React.
-
-- **Et merke, en etikett, en knapp eller en lenke i et kort strekkes ikke
-  lenger til hele bredden.** `.fs-card` er en flekskolonne, så
-  `<span class="fs-badge">Innvilget</span>` ble et bånd tvers over kortet,
-  slik eksempelet på komponentsiden viste. Avsnitt, lister og bilder
-  strekkes som før.
+- **`hidden` på `<fs-error-summary>` er et flagg i JSX-typene.** `hidden`
+  kom fra `HTMLAttributes` som `boolean`, så `hidden={false}` kompilerte,
+  mens React 18 skriver det som `hidden="false"` på en web component, som er
+  sant: boksen ble aldri vist. Typen er nå `true | undefined`, som `open` på
+  `<fs-dialog>`, slik regelboka for React sier om hvert boolske attributt på
+  en web component. `fs.errorSummary().host` sendte alt `true` eller
+  ingenting.
+  Det er brytende for den som skrev `hidden={!harFeil}` eller
+  `hidden={false}`: det kompilerte, og i React 19 virket det, siden React 19
+  setter egenskapen `hidden` i stedet for attributtet. Skriv
+  `hidden={harFeil ? undefined : true}`, eller bruk
+  `fs.errorSummary({ count }).host`, som sender det riktig.
+- **`fristil sjekk` meldte grønt for en tom fil og en tom side.** Bare tom
+  standard inn ga feilkode. En tom fil, og en adresse som svarte 200 med tom
+  HTML, ga «Markupen stemmer» og 0, så en CI-linje mot en side som rendret
+  tomt ble grønn. Nå gir en adresse med tom side feilkode, og det gjør også
+  filer som alle er tomme. Én tom fil blant flere, som en tom partial i et
+  glob, er fortsatt ikke en feil.
+  En CI-linje som var grønn mot en tom side, blir rød med denne versjonen.
 
 ### Lagt til
 
+- **`setAttributes` og typen `ReactSet` fra `/react`.** `fs.setAttributes`
+  derfra er den samme funksjonen, for sett med `className`, `htmlFor` og
+  `tabIndex` som tall. Hovedinngangen eksporterer `rememberManaged`, som
+  `/react` bruker for å gi et omdøpt sett de samme forvaltede navnene; den
+  er ikke ment for apper.
 - **Regelen `del-flere-ganger` i `fristil sjekk`, editoren og
   `diagnoseMarkup`.** En del med det nye feltet `unique` i manifestet som
   står mer enn én gang, gir en advarsel: et `<fs-field>` med to kontroller,
@@ -55,31 +64,28 @@ egen overskrift «Brytende».
   verten, sier regelen ingenting.
 - **`tbody` i `fs-table` kan stå flere ganger** i manifestet, som HTML
   tillater.
-
 - **`Fristil.manifest.builders` i Kotlin-pakken.** Hver byggefunksjon med
   valgene (`name`, `required`, `type` som `values`, `flag`, `text`,
   `number` eller `textList`, og `description`) og formen på svaret
   (`attributes`, `text`, `values`, `list` eller `group`). Tabellen
   generatoren bak `Fs` bruker er fortsatt utelatt. TypeScript-typen
   `Manifest` har fått `builders` med samme form.
-
 - **`Fristil.buildTheme(oppskrift)` og `Fristil.inspectTheme(css)` i
   Kotlin-pakken.** Temaet kunne før bare bygges med `fristil tema` og
   Gradle-oppgaven `fristilTema`. Oppskriften er JSON-teksten `fristil tema`
   leser, med norske eller engelske nøkler, og svarene `Theme` og
   `ThemeReport` har de samme feltene som `CoreTheme` og `CoreThemeReport`
   i TypeScript. Fargekontrakten ligger nå i jar-en, som manifestet.
-
 - **Manifestet har en `tokens`-seksjon.** Avstandsskalaen, brekkpunktene
   og containerbreddene fra `tokens.ts`, fargefamiliene, rollene og lagene
   med hva hver er til, hvert `--fs-color-*`-navn, og komponentvariablene
   per komponent med standardverdien stilarket faller tilbake på. Fargene
   står som akser og navn, ikke som verdier, siden et tema kan ha andre
   verdier enn Fristils egne. `ManifestTokens` i Kotlin leser det samme.
-  `schemaVersion` er fortsatt 1. Beskrivelsene av familiene, rollene og
+  `schemaVersion` er fortsatt 1, og `tokens` i Kotlin er `null` i et manifest
+  fra før denne versjonen. Beskrivelsene av familiene, rollene og
   lagene eksporteres også fra `@fristil/designsystem/tokens`, som
   `FAMILY_DESCRIPTIONS`, `ROLE_DESCRIPTIONS` og `LAYER_DESCRIPTIONS`.
-
 - **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
   består av.** Hver klasse i `classes` har `content`, med samme ord som
   delene til elementene: `text`, `free`, `parts` eller `none`. Klassene med
@@ -88,16 +94,315 @@ egen overskrift «Brytende».
   `optional`, og en klasse som bare er en del av en annen komponents
   markup, som `fs-card__title`, peker på forelderen med `partOf`.
   `schemaVersion` er fortsatt 1. I Kotlin har `ManifestClass` fått
-  `content`, `partOf` og `parts`.
+  `content`, `partOf` og `parts`, og `content` er `null` i et manifest fra
+  før denne versjonen, så IntelliJ kan lese manifestet til en eldre pakke.
 
 ### Endret
 
+- **Pakken sender med kildene kartene peker på.** `dist` har kildekart og
+  deklarasjonskart, og de for `fs`, `/react`, `/register`, `/dom`,
+  `/diagnostics` og kommandolinja pekte på fjorten filer i `src` som ikke var
+  med i tarballen, så «gå til definisjon» og et stakkspor derfra landet i en
+  fil som ikke fantes. `src/*.ts`, `src/diagnostics`, `src/jsx` og
+  `src/vocabulary` følger nå med, som `src/components` alt gjorde, og
+  byggesteget krever at hvert medsendt kart peker på en fil i pakken.
 - **Regelboka for maler sier at Kotlin-pakken ligger på Maven Central.**
   `agent/maler.md` sa at `io.github.markusaugust:fristil` og Gradle-pluginen
   måtte bygges fra kildekoden. Begge ligger på Central fra 0.33.0, med samme
   versjon som npm-pakken, men ikke hver npm-versjon går dit. Regelboka ber
   derfor agenten bruke den nyeste versjonen som finnes på Central, og aldri
   skrive en den ikke har sett der.
+
+### Rettet
+
+- **`<fs-error-summary>` tar fokus også i React.** React gir fokus tilbake
+  til elementet som hadde det før en commit, og boksen flyttet fokus inne i
+  den samme commiten. Fokus endte derfor på innsendingsknappen i Chromium og
+  Firefox, og på feltet i alle tre motorene når skjemaet ble sendt med Enter,
+  både når boksen ble satt inn og når `hidden` ble tatt bort. Boksen tar nå
+  fokus én gang til etter commiten, hvis det gikk tilbake dit det var. Har et skript flyttet fokus
+  til noe annet, står det. En React-app som viser boksen mens brukeren står
+  i et felt, for eksempel ved `blur`, merker at fokus nå flyttes dit, slik
+  det alltid har gjort uten React.
+- **Et merke, en etikett, en knapp eller en lenke i et kort strekkes ikke
+  lenger til hele bredden.** `.fs-card` er en flekskolonne, så
+  `<span class="fs-badge">Innvilget</span>` ble et bånd tvers over kortet,
+  slik eksempelet på komponentsiden viste. Avsnitt, lister og bilder
+  strekkes som før.
+- **`fristil lsp` leter ikke over arbeidsområdet for en fil utenfor det.**
+  Letingen etter manifestet stoppet ved rota av arbeidsområdet fila lå
+  under, men for en fil utenfor det, som en kladdefil, og for hver fil når
+  editoren ikke ga noe arbeidsområde, som Neovim uten treff på
+  `root_markers`, fantes ingen rot å stoppe ved, så den gikk helt til rota
+  av filsystemet og tok en pakke i hjemmemappa som prosjektets. Nå letes det
+  ikke fra en slik fil: den sjekkes mot manifestet ved rota av
+  arbeidsområdet, om det har et, ellers mot pakkens, slik Editoren-siden og
+  IntelliJ-pluginen alt sa.
+- **Tagnavnene er typet fra `/register` og `/react-jsx` alene.** Typesikker
+  bruk-siden sa at hendelsestypene følger med hver inngang til
+  web-komponentene, men `HTMLElementTagNameMap` ble bare utvidet i
+  komponentfilene, og `/register` og `/react-jsx` tar dem ikke med i typene.
+  Da var `document.querySelector("fs-dialog")` et `Element`, og lytteren på
+  det fikk `Event` uten `detail`, så mønsteret på siden var en typefeil. Kartet
+  over tagnavnene står nå i `events.ts`, som hver inngang alt tar med, så
+  `querySelector("fs-dialog")` gir `FsDialog | null` fra alle tretten
+  inngangene, også hver komponentinngang for de andre komponentene. Bygget
+  kompilerer en fil per inngang, med bare den importen, så det ikke kan gli
+  tilbake.
+- **`fs.setAttributes` fra `/react` skriver `class` og `for`, og rydder.**
+  Funksjonen var hovedinngangens, mens settene fra `/react` har `className`
+  og `htmlFor`, så den skrev attributtene `classname` og `htmlfor`, og fant
+  ikke byggefunksjonen bak det omdøpte settet: `aria-invalid` ble stående
+  etter at feltet var rettet, uten advarsel. Nå oversettes navnene tilbake
+  før de settes, `tabIndex` blir `tabindex`, og settet rydder det samme som
+  fra hovedinngangen.
+- **`engines` slipper ikke lenger inn Node 21 og 22.0–22.2.** Kjernen lastes
+  med `process.getBuiltinModule`, som kom i Node 20.16 og 22.3, men
+  `>=20.16` tok med versjonene mellom, og der sa feilmeldingen at Node 22.1
+  var eldre enn 20.16. Kravet er nå `^20.16.0 || >=22.3.0`, og meldingen
+  nevner begge grensene. Oppføringen under 0.32.0 som sier «20.16 eller
+  nyere», gjelder med dette unntaket.
+- **Regelboka for React og Kodeagenter-siden sa at `react-jsx` stopper en
+  variant som ikke finnes.** `react-jsx` typer attributtene på
+  web-komponentene, og ingen av dem har en variant. Det er
+  `fs.button({ variant })` som gjør en ukjent variant til en kompileringsfeil,
+  med eller uten `react-jsx`, og en håndskrevet `className` eller
+  `data-variant` ser ingen av dem, og heller ikke `fristil sjekk`, som leser
+  `class`, ikke `className`. Begge tekstene sier nå hva som fanger hva, og
+  at det håndskrevne skal erstattes av byggefunksjonene.
+- **`defineFs*` kaster ikke når klassen alt er registrert under et eget
+  navn.** `defineFsToast("app-toast")` fulgt av `defineFs()` ga
+  NotSupportedError på `fs-toast`, siden en konstruktør bare kan stå i
+  registeret én gang, og `<fs-session-timeout>` og `<fs-connection-status>`
+  ble aldri registrert. Nå registreres en underklasse under det andre navnet,
+  så begge navnene virker og flere kall er ufarlige, slik dokumentasjonen
+  sier. `tagName` er dessuten typet som `string`. Før var typen standardnavnet,
+  så TypeScript avviste `defineFsToast("app-toast")` før det kom så langt.
+- **`<fs-toast>` flytter fokus riktig også i en skyggerot.** Komponenten
+  leste `document.activeElement`, som peker på skyggeverten når regionen
+  står i en skyggerot, slik hver forhåndsvisning i dokumentasjonen gjør. Da
+  så det ut som om ingen melding hadde fokus: lukket brukeren meldingen med
+  Enter, falt fokus til `body` i stedet for til meldingen ved siden av eller
+  dit det kom fra, og det samme skjedde ved `clear()`. Fokus leses nå fra
+  komponentens egen rot. `<fs-session-timeout>` husker hvor fokus sto før
+  varselet enten feltet står i siden eller i samme skyggerot som
+  komponenten, så det får fokus tilbake også når nettleseren ikke setter det
+  dit selv.
+- **README sier hva et eget tagnavn gir.** Den lovet at du bestemmer «hva
+  det skal hete», men stilarkene til `<fs-field>`, `<fs-tabs>`,
+  `<fs-popover>`, `<fs-dialog>` og `<fs-suggestion>` er skrevet for
+  `fs-*`-navnene, så en komponent under et annet navn mistet `display`-regelen
+  på verten, og `<fs-dialog>` også plasseringen av en dialog som står åpen
+  før den er modal. README sier nå at oppførselen følger med navnet, men
+  ikke stilen, og hvilke fire komponenter som setter klassen sin selv.
+- **`popover-toggle` er beskrevet slik den sendes.** Beskrivelsen i
+  `events.ts` og `web-types.json` sa «Panelet åpnet eller lukket seg», men
+  hendelsen kommer bare når brukeren åpner eller lukker panelet, og fra
+  `show()`, `hide()` og `toggle()`. Settes `open` som egenskap eller
+  attributt, som React 19 og Datastars `data-attr:open` gjør, kommer ingen
+  hendelse, ellers hadde Datastar-oppskriften fått sitt eget signal i retur.
+  Popover-siden skiller nå `meny.open = false` fra `hide()`.
+- **Regelboka for maler lovet at `<fs-tabs>` husker fanevalget etter enhver
+  patch.** Den nevnte `innerHTML`, htmx og Turbo, men valget er knyttet til
+  selve knappen og overlever bare en morfing som beholder elementene, som
+  Datastars `outer`, htmx med idiomorph og Turbo 8 med morfing. Bytter
+  patchen ut nodene, følger komponenten markupen. Regelboka sier nå hvilke
+  patcher som beholder valget, og at serveren ellers må skrive det selv
+  eller bruke `server-controlled`.
+- **Regelbøkene sa at markupen i en `ramme`-komponent står der uansett.**
+  «Kom i gang» og «Rammeverk» ble rettet i 0.33.0, men ikke teksten i
+  generatoren, så alle seks regelbøkene manglet unntaket: Tabs viser bare det
+  første panelet og Suggestion skjuler lista til de er registrert.
+- **React-oppskriften på Dialog-siden og mønsteret «Bekreft en handling»
+  tømmer `returnValue` før `showModal()`.** «Ren HTML»- og Astro-fanene
+  fikk tømmingen i 0.33.0, men React-fanen, mønstersiden og demoen åpnet
+  dialogen med den gamle verdien stående. Ble dialogen åpnet igjen etter en
+  «Slett» og lukket uten knapp, fikk `close`-lytteren «slett» på nytt og
+  slettet igjen.
+- **`fristil sjekk-tema` og `inspectTheme` hoppet over en nøstet blokk som
+  begynner med et element og et kolon.** `html:not([data-theme="light"]) { … }`
+  eller `body:has(…) { … }` inni en `@media`, et `@layer` eller en annen
+  blokk ble lest som deklarasjonen `html`, og den slukte alt fram til neste
+  semikolon, blokkene etter den med. Et tema med et brudd der fikk «Temaet
+  holder hvert løfte». Nå leses blokka som en regel, slik nettleseren gjør.
+- **`fristil sjekk-tema` og `inspectTheme` leste
+  `@media not (prefers-color-scheme: dark)` som mørkt tema.** Blokka gjelder
+  i lyst tema, og Fristils egne lyse verdier ga brudd. `not` snur nå
+  mediespørringen, også skrevet med en medietype, som `not all and (…)` eller
+  `not screen and (…)`, og blokka kontrolleres bare som lys. Med en annen
+  medietype, som `not print and (…)`, gjelder blokka skjermen i både lyst og
+  mørkt tema, og den kontrolleres som en blokk uten betingelse.
+- **`fristil sjekk-tema` og `inspectTheme` meldte systemfargene som feil.**
+  `--fs-color-disabled-surface`, `--fs-color-disabled-text` og
+  `--fs-color-overlay` er ingen celle, men ble lest som familien `disabled`
+  med roller som manglet, og som et token systemet ikke har. En overstyring
+  skrevet på hver temagrense, slik dokumentasjonen ber om, ga feilkode, og
+  det gjorde Fristils egen `tokens.css` også, med tolv problemer. Nå hopper
+  sjekken over dem: de lover ingen kontrast.
+- **Et tema uten farger fra `fristil tema` ga feilkode i `fristil sjekk-tema`.**
+  Et tema med bare skrift og form fikk «Fant ingen --fs-color-*-verdier»,
+  og `inspectTheme` meldte det som et problem, enda dokumentasjonen sier at
+  et tema laget med `tema` holder kravene. Nå svarer sjekken at det ikke er
+  noen kontrast å kontrollere, uten feilkode. En fil uten noen
+  `--fs-*`-verdier gir fortsatt feilkode.
+- **En `fs-progress` med `value` viste ikke fyllet i høykontrastmodus.**
+  Den fylte delen leste `currentColor`, og modusen tvang bakgrunnen på
+  pseudoelementet tilbake til `Canvas`, så stolpen så tom ut uansett hvor
+  langt den hadde kommet. Fyllet tegnes nå i `Highlight` rett på
+  `::-webkit-progress-value` og `::-moz-progress-bar`.
+- **Klassen på et avsnitt i `fs-card` og `fs-alert` vinner over
+  komponenten.** `.fs-card p` og `.fs-alert p` slo klassene på avsnittet på
+  spesifisitet. I et kort virket ikke `--fs-paragraph-line-height`, en
+  `fs-card__title` som var en `<p>` fikk artikkelens linjehøyde, og
+  `fs-help-text` og `fs-error-text` mistet marginen i toppen, også i en
+  melding. Reglene teller nå bare elementet, så et avsnitt uten klasse ser
+  ut som før.
+- **En besøkt `fs-link` skifter farge under musa.** `:hover` sto før
+  `:visited` med samme spesifisitet, så besøktfargen vant og hover-fargen
+  kom aldri. Rekkefølgen er snudd.
+- **Ringen rundt `fs-avatar` vises over bildet.** Den var en `box-shadow`
+  innover, og en slik skygge males under innholdet, så et bilde dekket den
+  helt og ringen fantes bare med initialer. Den er nå en `outline` innover,
+  også i `fs-avatar-stack`, der skyggen utenfor fortsatt skiller bildene, og
+  hver avatar i stabelen males for seg, så ringen til den bak ikke skinner
+  gjennom bildet til den foran.
+  En slik `outline` slår nettleserens egen fokusmarkering, så en
+  `fs-avatar` som er en knapp får `--fs-focus-ring` på `:focus-visible`, og
+  i en stabel løftes den med fokus over naboene så fokusringen vises hel.
+- **`--fs-skeleton-radius` virker på `data-variant="text"`.** Tekstlinjene
+  hadde en fast radius og leste ikke variabelen. Standarden der er
+  fortsatt `var(--fs-spacing-0-5)`, og tabellen på siden sier det.
+- **Et langt valg i `fs-select` med `data-picker="styled"` ble ikke
+  klippet.** Regelen som klipper det, treffer `<selectedcontent>`, og
+  kommentaren sa at nettleseren lager elementet selv. Det gjør den ikke, så
+  med markupen på siden ble et langt valg brutt over flere linjer, og feltet
+  ble høyere. Komponentsiden sier nå at
+  `<button><selectedcontent></selectedcontent></button>` må stå først i
+  `<select>`-en for at valget skal klippes.
+- **Siden om `fs-textarea` sa at `rows` virker som før.** Minstehøyden er
+  litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet.
+  Siden sier nå hvor grensen går, og at `--fs-textarea-min-height: 0` lar
+  `rows` bestemme alene.
+- **`fristil tema oppskrift.json --ut tema.css` skrev ingen fil.** Uten
+  likhetstegn ble `--ut` og `tema.css` lest som to filnavn etter
+  oppskriften og ignorert. Temaet gikk til utdata, og kjøringen avsluttet
+  med 0. På samme måte forsvant `--aksent #f00` bak fargen i fila. Nå stopper
+  `tema` og ber om likhetstegn, slik `overta` og `agent` gjør, og mer enn én
+  oppskriftsfil gir også feilkode. `overta` og `agent` stopper dessuten på et
+  ukjent flagg med likhetstegn, som `--utt=src/ui` eller `--rammverk=react`,
+  i stedet for å bruke standarden.
+- **`fristil tema` leser oppskriften som `JSON.parse`.** Sto en nøkkel to
+  ganger, vant den første, mens `JSON.parse` lar den siste vinne. Tall som
+  `0700` og `1.` og et rått kontrolltegn i en streng ble godtatt, og en fil
+  med svært dyp nesting stoppet den kjørbare fila med «stack overflow». Nå
+  vinner den siste verdien, slike tall og strenger gir «er ikke gyldig
+  JSON», og det gjør også mer enn 128 objekter og lister inni hverandre.
+- **Tall i temaet og manifestet skrives som `String(tall)` i JavaScript.**
+  `1e-7` ble `0.0000001` og `1e21` ble `1000000000000000000000`, og et
+  uendelig tall ble `inf`. Nå får de eksponent, som `1e-7` og `1e+21`, og
+  `Infinity` heter `Infinity`. I manifestet blir et uendelig tall `null`,
+  som i `JSON.stringify`. Vanlige tall skrives som før.
+- **Meldingen for `aria-controls` som peker på en id som ikke finnes, slutter
+  ikke lenger med et mellomrom.** Det sto igjen etter «styrer.», i
+  `fristil sjekk`, i editoren og som to mellomrom før regelnavnet i
+  `assertFristil`.
+- **En BOM først i en fil eller side gir ikke lenger en kolonne for mye.**
+  `fristil sjekk` talte U+FEFF som et tegn på linje 1, så kolonnen var én
+  mer enn editoren viser. For en adresse svarte `npx` riktig, fordi Node
+  fjerner BOM-en, mens den kjørbare fila og `java -jar` ga én kolonne mer.
+  Nå fjernes den for filer, standard inn og adresser i alle verter.
+- **Språkserveren og `fristil sjekk` regner `\r` som linjeskift.** Bare
+  `\n` delte linjer, så et dokument med `\r`-linjeskift ble én lang linje,
+  og en editor som sender bufferen slik den er, som Neovim med
+  `fileformat=mac`, fikk funnene og hurtigrettelsene på feil sted. Nå er
+  `\n`, `\r\n` og `\r` alene linjeskift, som LSP krever. Linje og kolonne i
+  `diagnosePage`, `assertFristil` og `fristil sjekk` følger samme regel.
+  Hurtigrettelsen «Sett inn en ledetekst» gir også `<label>` sin egen linje
+  med samme innrykk når linjeskiftene er `\r`.
+- **Eksempelet på siden om Kotlin viste feil regelnavn.** Funnet for en
+  `for` som peker på en id som ikke finnes, sto med `[for-peker-feil]`, men
+  regelen heter `id-finnes-ikke`. `for-peker-feil` gjelder en `for` som
+  peker på et element som ikke kan ha ledetekst. Den som kopierte navnet
+  til `<!-- fristil-ignore-next … -->`, fikk funnet likevel.
+- **Oppskriften for å bytte skilletegn i `fs-breadcrumbs` tok ikke med
+  alternativteksten.** Siden viste `content: "›"`, og en regel utenfor laget
+  slår stilarket, så den som fulgte rådet fikk tilbake feilen 0.33.0 rettet:
+  skjermleseren sa «›» mellom hvert steg. Snutten har nå `content: "›" / ""`
+  bak samme `@supports` som stilarket, og siden sier hvorfor. En test kjører
+  snutten fra siden mot stilarket.
+- **Oppskriften for å bytte pila i `fs-accordion` lot rotasjonen stå.** Siden
+  sa at `content` og `border` var nok, men pseudoelementet har fast størrelse
+  og `transform`, og vinkelen byttes når panelet er åpent, så et «+» sto på
+  skrå og ble et «×» i åpen tilstand. Et synlig tegn uten alternativ tekst
+  ble dessuten en del av navnet på knappen, det skjermleseren sier når
+  `<summary>` får fokus. Snutten nullstiller nå begge og gir tegnet tom
+  alternativ tekst.
+- **JSDoc-eksempelet for `alert` spredte `alert.title`.** `alert.title` er
+  klassenavnet, en streng, og `<p {...alert.title}>` gir tegnene som
+  attributter og ikke klassen. Eksempelet skriver `class={alert.title}`,
+  som accordion og card.
+- **Fieldset-siden sa at en `<legend>` lenger ned ikke kobles til gruppen.**
+  Nettleserne bruker den første `<legend>`-en som navn og tegnet ledetekst
+  uansett hvor den står. Regelen om at den skal stå først gjelder fortsatt,
+  men begrunnelsen er at HTML krever det, og at markupen ellers er ugyldig.
+- **Select-siden sa at listen tegnes i siden fra Chromium 148.** Det eneste
+  stilarket spør om, er `@supports (appearance: base-select)`, og den slår
+  til i eldre Chromium også; 148 er versjonen Fristil er testet i. Tabellen
+  sier nå hva som avgjør, og hvilke versjoner som er testet.
+- **Skip Link-siden begrunnet `tabindex="-1"` med at neste Tab fortsatte i
+  menyen.** Nettleseren fortsetter fra målet etter hoppet også uten
+  attributtet. Det som mangler uten det, er fokuset og skjermleserens
+  opplesning, og det sier siden og mønstersiden «Sideskjelett» nå. Error
+  Summary-siden og JSDoc-en til `fs-error-summary` sa det samme om en vanlig
+  ankerlenke, at neste tastetrykk fortsatte i oppsummeringen, og sier nå at
+  nettleseren bare gir fokus til et mål som kan få det. Siden og
+  stilarket sa også at fokus satt fra kode aldri regnes som synlig fokus.
+  Det gjelder bare etter et museklikk, og det er det tilfellet `:focus` er
+  valgt for.
+- **Lagringseksempelet på Switch-siden rullet ikke tilbake ved et feilsvar,
+  og tok fokuset fra bryteren.** `fetch` avviser bare ved nettverksfeil, så
+  et 500-svar ble meldt som «Varsler er på.» med bryteren stående i ny
+  stilling. Eksemplet slo dessuten av bryteren mens den lagret, og
+  `disabled` tar fokuset fra en bryter som har det uten å gi det tilbake, så
+  et nytt mellomromstrykk gjorde ingenting. «Ren HTML» og React sjekker nå
+  `svar.ok` og sperrer et nytt trykk uten `disabled`, Datastar-fanen og
+  eksemplet med `fs.setAttributes` slår ikke lenger av bryteren, og
+  JSDoc-en til `disabled` i `switchControl` advarer mot bruken. Det korte
+  eksemplet på Connection Status-siden og i JSDoc-en til
+  `FsConnectionStatus` sjekker også `svar.ok`. En test kjører «Ren
+  HTML»-eksemplet fra siden mot en server som svarer 500.
+- **`fs-list` beholder punktene og tallene sammen med Tailwinds Preflight.**
+  Standardvarianten sa ingenting om `list-style` og lente seg på nettleseren,
+  mens Preflight setter `list-style: none` på hver `<ul>` og `<ol>`. Med
+  oppsettet Tailwind-siden anbefaler, `@import "tailwindcss"` og `base` før
+  `fristil`, mistet lista punktene og nummereringen, og det gjorde lista i
+  `fs-error-summary` også. Klassen setter nå `list-style-type: revert`, som
+  går tilbake til nettleserens eget stilark, så listene ser ut som uten
+  Tailwind. Variantene `plain` og `divided` er fortsatt uten punkter. Vil du
+  ha et annet punkt på alle `.fs-list`, sett det selv, i CSS uten lag eller
+  i et lag etter `fristil`: en `list-style` på `ul` i et lag foran, som
+  `base`, når ikke lenger fram til klassen. Testen bygger oppsettet med
+  Tailwinds egen `preflight.css`, ikke en håndskrevet utgave med bare
+  knappereglene.
+- **Lagrekkefølgen for Tailwind tar med `fristil-tema`.** Et generert tema
+  erklærer `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter
+  ikke lag som alt er erklært. Med den anbefalte linja
+  `@layer theme, base, fristil, components, utilities;` havnet temaet derfor
+  sist, etter `utilities`, og slo Tailwind-klassene og `@layer base` på de
+  samme elementene, enda Tilpasning- og Eget tema-sidene sa at din egen CSS
+  fortsatt vinner. Linja i dokumentasjonen og i kommentaren i `tailwind.css`
+  er nå `@layer theme, base, fristil, fristil-tema, components, utilities;`,
+  og Eget tema-siden sier at laget må stå der når Tailwind brukes, og at
+  linja må stå i `<head>` når temaet lastes som en `<link>` før den
+  bundlede CSS-en, for da har temaet alt erklært lagene sine. Temaet
+  `fristil tema` skriver, er uendret.
+- **Tailwind-siden og Design tokens-siden sa at skalaen følger med når du
+  setter `--fs-spacing-1`.** `p-4` er `calc(var(--fs-spacing-1) * 4)`, men
+  `--fs-spacing-4` og de andre trinnene er egne verdier, så eksempelet
+  `--fs-spacing-1: 0.3rem` ga `p-4` 1,2rem mens komponentene sto på 1rem.
+  Sidene og kommentaren i `tailwind.css` sier nå at trinnene må skrives om
+  hver for seg, og eksempelet gjør det. Tabellen over skalaen oppgir også
+  `px` som Tailwind-motstykket til `--fs-spacing-px`, der det sto «ingen».
 
 ## 0.33.0 (2026-10-12)
 

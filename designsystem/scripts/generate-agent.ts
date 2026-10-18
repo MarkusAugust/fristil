@@ -324,7 +324,7 @@ const STILER_MANGLER: [string, string] = [
 ]
 const INGEN_DEFINE: [string, string] = [
   "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett",
+  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert",
 ]
 const NORSK_TEKST: [string, string] = [
   "En komponent snakker norsk på en side på et annet språk",
@@ -535,7 +535,16 @@ Registreringen, én gang i sidemalen:
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
 \`innerHTML\`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
 standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren valgte, og setter den
-tilbake når en patch river den bort. Malen trenger ingenting for det.
+tilbake når en patch river markeringen bort. Malen trenger ingenting for det.
+
+Det forutsetter at patchen beholder elementene og bare endrer attributtene,
+slik en morfing gjør: Datastars \`outer\`, htmx med idiomorph-utvidelsen og
+Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
+nodene, som \`innerHTML\`, htmx' vanlige \`innerHTML\`- og \`outerHTML\`-bytte og
+Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
+må serveren skrive valget selv, med \`aria-selected\` og \`hidden\` på den
+riktige fanen og de andre panelene, eller eie tilstanden med
+\`server-controlled\`.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
@@ -761,10 +770,15 @@ element. Derfor har pakken en egen React-inngang.`,
    \`createRoot\`, ikke i en \`useEffect\`.`,
     adresse: PAKKENAVN,
     sjekk: "npx @fristil/designsystem sjekk src/*.tsx",
-    punktFem: `**Typene er sjekken din.** Importer
-   \`@fristil/designsystem/react-jsx\` én gang i en \`.d.ts\`-fil, og en variant
-   som ikke finnes stopper bygget. Kjør \`tsc\`. Har prosjektet også HTML eller
-   maler, sjekkes de med \`npx @fristil/designsystem sjekk <fil>\`.`,
+    punktFem: `**Typene er sjekken din.** \`fs.button({ variant })\` fra
+   \`@fristil/designsystem/react\` gjør en variant som ikke finnes til en
+   kompileringsfeil, og \`@fristil/designsystem/react-jsx\`, importert én
+   gang i en \`.d.ts\`-fil, gjør det samme for attributtene på
+   web-komponentene. Kjør \`tsc\`. En håndskrevet \`className\` eller
+   \`data-variant\` ser ingen av dem, og heller ikke
+   \`npx @fristil/designsystem sjekk\`, som leser \`class\`, ikke
+   \`className\`, så bruk byggefunksjonene. HTML og maler sjekkes med
+   \`npx @fristil/designsystem sjekk <fil>\`.`,
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Deretter ett per komponent du bruker:
@@ -1119,8 +1133,11 @@ vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
 bestemmer den. Som standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren
-valgte, og setter den tilbake når en patch river den bort. Skal serveren kunne
-flytte den, sier du det med \`server-controlled\`:
+valgte, og setter den tilbake når en patch med \`outer\` river den bort: \`outer\`
+morfer, og valget er knyttet til selve knappen. \`inner\` og \`replace\` bytter
+ut nodene, og da følger komponenten markupen, så serveren må skrive
+\`aria-selected\` og \`hidden\` selv. Skal serveren kunne flytte den, sier du
+det med \`server-controlled\`:
 
 \`\`\`html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">

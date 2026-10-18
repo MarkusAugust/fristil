@@ -14,6 +14,12 @@
  *
  * Kjør med: bun scripts/sjekk-ordforrad.ts, eller som en del av `bun run build`.
  * Krever at `designsystem/dist` er bygd.
+ *
+ * I bygget har `generate` nettopp skrevet filene, så del 1 sammenligner med
+ * det som ble skrevet og finner ingenting; det er steget «Ingenting er
+ * ugenerert» i CI som feller en endring der filene ikke er committet. Kjørt
+ * alene sier del 1 om filene på disk er utdaterte. Del 2 gjelder i begge
+ * tilfeller.
  */
 
 import { existsSync, readFileSync } from "node:fs"

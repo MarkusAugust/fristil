@@ -33,7 +33,7 @@ TypeScript for hver kombinasjon av valg før den skrives. De seks der valgene
 virker sammen (`field`, `label`, `legend`, `suggestion`, `tabs` og
 `errorSummary`) står skrevet for hånd i `Handwritten.kt`.
 
-`ContractTest` kjører alle mot de 1353 byggetilfellene i
+`ContractTest` kjører alle mot hvert byggetilfelle i
 `../designsystem/manifest/byggetilfeller.json`, som har svaret fra TypeScript.
 Én forskjell i ett attributt, og testen feiler.
 

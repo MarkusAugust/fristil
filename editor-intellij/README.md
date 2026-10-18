@@ -37,6 +37,12 @@ fragment letes det fra fila strengen står i. Finnes ingen av dem, eller kan
 kjernen ikke lese manifestet, gjelder manifestet i Kotlin-pakken, og det
 siste står i IDE-ens logg. Se `ProjectManifest.kt`. Kommer, endres eller forsvinner
 manifestet, sjekkes de åpne filene på nytt (`ManifestListener.kt`).
+Fullføringen leser klassene fra det samme manifestet, se [Dataene](#dataene).
+
+Annotatoren kjører kjernen på hver fil, også en uten en eneste `fs-`-klasse:
+regelen `ikon-uten-navn` gjelder vanlig HTML, og `fristil sjekk` og VS Code
+melder en ikonknapp uten navn uansett. En snarvei som hoppet over filer uten
+«fs-» i teksten, gjorde at IntelliJ tidde om den.
 
 Gradle bygger `../kotlin` med `includeBuild`, og Kotlin-pakken bygges av
 npm-pakken med samme versjon. Mellom to utgivelser er den på npm for gammel,
@@ -81,10 +87,15 @@ svarer «No suggestions» selv med pluginen på. `⌥↩` inne i strengen viser
 
 ## Dataene
 
-Klassene leses fra manifestet i Kotlin-pakken, `no/fristil/manifest.json` i
-jar-en, det samme kjernen sjekker mot. Pluginen kan derfor ikke foreslå en
-klasse diagnostikken avviser. Manifestet leses med Gson, som følger med
-IntelliJ-plattformen. Se `Katalog.kt`.
+Klassene leses fra manifestet fila sjekkes mot: prosjektets når
+`ProjectManifest` finner et, ellers manifestet i Kotlin-pakken,
+`no/fristil/manifest.json` i jar-en. Det er det samme manifestet kjernen
+sjekker mot, så pluginen kan ikke foreslå en klasse diagnostikken avviser, og
+den foreslår klassene i komponenter prosjektet har overtatt. Før leste
+fullføringen alltid pakkens manifest, mens sjekken leste prosjektets, og med
+en eldre pakke installert ble en klasse foreslått og streket under rett
+etterpå. Manifestet leses med `Manifest.parse` i Kotlin-pakken. Se
+`Katalog.kt`.
 
 ## Bygge og teste
 
@@ -110,16 +121,21 @@ med ID-en `no.fristil`. Tre ting er verdt å vite:
   engelsk.** Marketplace krever engelsk som hovedspråk.
 - **En ny versjon** får nytt nummer i `pluginVersion` i `gradle.properties` og
   en linje i `changeNotes`. Når den ligger på master, dyttes taggen opp
-  med `bun run tag intellij`. Da bygger,
-  tester og laster `publiser-intellij.yml` opp pluginen med tokenet i
-  hemmeligheten `JETBRAINS_MARKETPLACE_TOKEN`. Taggen må stemme med
+  med `bun run tag intellij`, med én gang: Editoren-siden i dokumentasjonen
+  beskriver det den nyeste versjonen gjør, og rulles ut i det master
+  endrer seg, så en utagget versjon lover noe Marketplace ikke har. Da
+  bygger, tester og laster `publiser-intellij.yml` opp pluginen med tokenet
+  i hemmeligheten `JETBRAINS_MARKETPLACE_TOKEN`. Taggen må stemme med
   `pluginVersion`. JetBrains godkjenner hver versjon før den blir synlig.
 - **Pluginen signeres ikke med eget sertifikat.** Det er valgfritt, Gradle
   hopper over `signPlugin` uten sertifikat, og Marketplace signerer den selv.
 
 ## Hvorfor den ikke er i `bun run sjekk`
 
-Hovedrekka tar tre minutter og kjøres før hver push. Et Gradle-bygg som
-laster ned en IDE hører ikke hjemme der. `.github/workflows/ci-intellij.yml`
-kjører derfor for seg, og bare når `editor-intellij/**` eller arbeidsflyten
-selv er endret, eller du starter den for hånd.
+Hovedrekka kjøres før hver push, og tar alt noen minutter, se
+`CONTRIBUTING.md`. Et Gradle-bygg som laster ned en IDE hører ikke hjemme
+der. `.github/workflows/ci-intellij.yml` kjører derfor for seg, og bare når
+noe pluginen bygges av er endret: pluginen selv, Kotlin-pakken, kjernen,
+manifestet, pakkens kildekode, regelbøkene, skriptene som skriver dem eller
+`designsystem/package.json`. Stiene står i `paths` øverst i arbeidsflyten,
+med grunnen, og den kan også startes for hånd.

@@ -15,8 +15,22 @@
     background: var(--fs-color-accent-surface);
     border-radius: 50%;
     /* Bildet kan være hva som helst. Ringen holder formen tydelig også mot en
-       lys flate i bildet. */
-    box-shadow: inset 0 0 0 1px var(--fs-color-neutral-border-subtle);
+       lys flate i bildet. En `outline` innover og ikke en `box-shadow`: en
+       skygge innover males under innholdet, og bildet dekket den helt.
+       Langformene, siden kortformen med `solid` er forbeholdt
+       `--fs-focus-ring`. */
+    outline-width: 1px;
+    outline-style: solid;
+    outline-color: var(--fs-color-neutral-border-subtle);
+    outline-offset: -1px;
+  }
+
+  /* Ringen over er en `outline` i laget, og den slår nettleserens egen
+     fokusmarkering. En avatar som er en knapp, for eksempel til en
+     profilmeny, får derfor fokusringen herfra. */
+  .fs-avatar:focus-visible {
+    outline: var(--fs-focus-ring);
+    outline-offset: 2px;
   }
 
   .fs-avatar img {
@@ -59,9 +73,22 @@
     );
   }
 
+  /* Ringen innover kommer fra `outline` over. Skyggen utenfor skiller de
+     overlappende bildene fra hverandre. En `outline` males etter alt
+     innholdet i stablingskonteksten, så uten en egen kontekst per avatar lå
+     ringen til den bak oppå bildet til den foran, som en bue gjennom det.
+     Med `isolation` males hver avatar for seg, i rekkefølge, og den foran
+     dekker den bak, ring og alt. */
   .fs-avatar-stack .fs-avatar {
-    box-shadow:
-      inset 0 0 0 1px var(--fs-color-neutral-border-subtle),
-      0 0 0 2px var(--fs-color-neutral-canvas);
+    box-shadow: 0 0 0 2px var(--fs-color-neutral-canvas);
+    isolation: isolate;
+  }
+
+  /* Den egne konteksten gjelder også fokusringen: en avatar som er en knapp
+     og ligger bak en annen, fikk ringen dekket der naboen overlapper. Den
+     som har fokus, løftes over naboene så ringen vises hel. */
+  .fs-avatar-stack .fs-avatar:focus-visible {
+    position: relative;
+    z-index: 1;
   }
 }

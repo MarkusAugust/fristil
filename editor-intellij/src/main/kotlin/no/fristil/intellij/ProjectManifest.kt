@@ -7,11 +7,13 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import no.fristil.Manifest
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Manifestet prosjektet sjekkes mot, funnet slik språkserveren finner det
- * (`vocabulary()` i `kjerne/cli/src/lsp.rs`).
+ * Manifestet prosjektet sjekkes mot, og fullføringen leser klassene fra,
+ * funnet slik språkserveren finner det (`vocabulary()` i
+ * `kjerne/cli/src/lsp.rs`).
  *
  * Fra mappa fila ligger i og oppover, til og med prosjektmappa, eller
  * innholdsrota fila hører til når den ligger utenfor prosjektmappa:
@@ -20,8 +22,9 @@ import java.util.concurrent.ConcurrentHashMap
  * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
  * hjemmemappa er ikke prosjektets. En fil utenfor prosjektet, som en
  * kladdefil, sjekkes derfor mot manifestet i Kotlin-pakken. Finnes ingen av
- * dem, gjelder det samme. Språkserveren har i tillegg et valg for et bestemt
- * manifest, som pluginen ikke har.
+ * dem, gjelder det samme. Språkserveren prøver i tillegg rota av hvert
+ * arbeidsområde for en slik fil, og har et valg for et bestemt manifest, som
+ * pluginen ikke har.
  *
  * For et injisert fragment letes det fra fila strengen står i.
  */
@@ -34,8 +37,23 @@ internal object ProjectManifest {
 
     private val log = Logger.getInstance(ProjectManifest::class.java)
 
-    /** Teksten i et manifest, og hvilken utgave av fila den ble lest fra. */
-    private class Read(val stamp: Long, val text: String)
+    /** Teksten i et manifest, hvilken utgave av fila den ble lest fra, og klassene i den. */
+    private class Read(val stamp: Long, val text: String) {
+        /**
+         * Klassene i manifestet, for fullføringen, lest første gang den spør
+         * og så lenge denne utgaven av fila gjelder. `null` når manifestet
+         * ikke lar seg lese: da gjelder pakkens, som for sjekken, og det er
+         * sagt fra i loggen.
+         */
+        val classes: List<Klasse>? by lazy {
+            try {
+                Katalog.fra(Manifest.parse(text))
+            } catch (unreadable: IllegalArgumentException) {
+                ProjectManifest.rejectedBy(text, unreadable.message.orEmpty())
+                null
+            }
+        }
+    }
 
     private val read = ConcurrentHashMap<String, Read>()
 
@@ -43,7 +61,12 @@ internal object ProjectManifest {
     private val rejected = ConcurrentHashMap.newKeySet<String>()
 
     /** Teksten i manifestet for [file], eller `null` for manifestet i Kotlin-pakken. */
-    fun forFile(file: PsiFile): String? {
+    fun forFile(file: PsiFile): String? = readFor(file)?.text
+
+    /** Klassene i manifestet for [file], eller `null` for klassene i Kotlin-pakken. */
+    fun classesFor(file: PsiFile): List<Klasse>? = readFor(file)?.classes
+
+    private fun readFor(file: PsiFile): Read? {
         val project = file.project
         val host = InjectedLanguageManager.getInstance(project).getTopLevelFile(file) ?: file
         val virtualFile = host.originalFile.virtualFile ?: return null
@@ -61,7 +84,7 @@ internal object ProjectManifest {
         while (dir != null) {
             for (candidate in CANDIDATES) {
                 val found = dir.findFileByRelativePath(candidate)
-                if (found != null && !found.isDirectory) return text(found)
+                if (found != null && !found.isDirectory) return load(found)
             }
             if (dir == root) break
             dir = dir.parent
@@ -69,9 +92,9 @@ internal object ProjectManifest {
         return null
     }
 
-    private fun text(file: VirtualFile): String? {
+    private fun load(file: VirtualFile): Read? {
         val stamp = file.modificationStamp
-        read[file.url]?.let { if (it.stamp == stamp) return it.text }
+        read[file.url]?.let { if (it.stamp == stamp) return it }
         val text =
             try {
                 VfsUtilCore.loadText(file)
@@ -79,9 +102,10 @@ internal object ProjectManifest {
                 log.warn("Fristil kunne ikke lese ${file.presentableUrl}, og sjekker mot manifestet i Kotlin-pakken.", unreadable)
                 return null
             }
-        read[file.url] = Read(stamp, text)
+        val fresh = Read(stamp, text)
+        read[file.url] = fresh
         rejected.remove(file.url)
-        return text
+        return fresh
     }
 
     /** At kjernen avviste manifestet: én advarsel i loggen per utgave av fila. */

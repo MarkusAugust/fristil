@@ -285,9 +285,30 @@ fn reports_an_incomplete_family() {
 
 #[test]
 fn says_so_when_the_file_has_no_theme() {
-    assert!(inspect_theme("body { color: red }").problems[0]
-        .message
-        .contains("Fant ingen"));
+    for css in [
+        "body { color: red }",
+        "body { color: var(--fs-color-neutral-text) }",
+    ] {
+        let report = inspect_theme(css);
+        assert!(report.problems[0].message.contains("Fant ingen"), "{css}");
+        assert_eq!(report.others, 0, "{css}");
+    }
+}
+
+#[test]
+fn a_theme_with_only_shape_and_system_colors_is_not_a_missing_theme() {
+    // Skriften, formen og systemfargene lover ingen kontrast. En fil med bare
+    // dem er et tema uten farger, også inni et `@layer` og en `@media`.
+    for css in [
+        ":root { --fs-button-radius: 2.75rem }",
+        "@layer fristil-tema { :root { --fs-font-family-base: Georgia, serif } }",
+        "@media (prefers-color-scheme: dark) { :root { --fs-color-overlay: rgba(0, 0, 0, 0.72) } }",
+    ] {
+        let report = inspect_theme(css);
+        assert!(report.problems.is_empty(), "{css}: {:?}", messages(&report));
+        assert_eq!(report.blocks, 0, "{css}");
+        assert_eq!(report.others, 1, "{css}");
+    }
 }
 
 #[test]
@@ -374,6 +395,56 @@ fn keeps_a_value_before_a_nested_rule() {
 fn reads_media_inside_root_as_its_own_block() {
     let css = ":root { --fs-color-danger-text: #ff9999; @media print { --fs-color-accent-fill: #123456 } }";
     assert_eq!(parse_blocks(css).len(), 2);
+}
+
+#[test]
+fn reads_a_nested_rule_that_starts_with_an_element_and_a_colon() {
+    // `html:not(…)` begynner som deklarasjonen `html` med verdien `not(…) {…}`.
+    // Ble den lest slik, forsvant blokka, og blokkene etter den med.
+    for outer in [
+        "@media (prefers-color-scheme: dark)",
+        "@layer brand",
+        ".kort",
+    ] {
+        for selector in [
+            "html:not([data-theme=\"light\"])",
+            "body:has(.x)",
+            "a:hover",
+        ] {
+            let css = format!(
+                "{outer} {{ {selector} {{ --fs-color-accent-text: #fdfdfd; --fs-color-accent-surface: #ffffff }} :root {{ --fs-color-danger-text: #ff9999 }} }}"
+            );
+            let blocks = parse_blocks(&css);
+            assert_eq!(blocks.len(), 2, "{css}");
+            assert_eq!(
+                declared(&blocks[0], "--fs-color-accent-text"),
+                Some("#fdfdfd"),
+                "{css}"
+            );
+            assert_eq!(
+                declared(&blocks[1], "--fs-color-danger-text"),
+                Some("#ff9999"),
+                "{css}"
+            );
+            let report = inspect_theme(&css);
+            assert!(
+                messages(&report).iter().any(|m| m.contains("accent: text")),
+                "{css}: {:?}",
+                messages(&report)
+            );
+        }
+    }
+}
+
+#[test]
+fn a_custom_property_may_hold_a_block() {
+    let css = ":root { --noe: { a: b }; --fs-color-danger-text: #ff9999 }";
+    let blocks = parse_blocks(css);
+    assert_eq!(blocks.len(), 1);
+    assert_eq!(
+        declared(&blocks[0], "--fs-color-danger-text"),
+        Some("#ff9999")
+    );
 }
 
 #[test]
@@ -700,4 +771,124 @@ fn dark_inside_not_does_not_make_a_dark_block() {
     let blocks =
         parse_blocks(".kort:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
     assert_eq!(blocks[0].appearance, Appearance::Light);
+}
+
+// Systemfargene er ingen celle, og lover ingen kontrast.
+
+#[test]
+fn fristils_own_tokens_css_has_no_problems() {
+    let report = inspect_theme(&crate::package_file("src/tokens/tokens.css"));
+    assert!(report.problems.is_empty(), "{:?}", messages(&report));
+    assert!(report.promises > 0);
+}
+
+#[test]
+fn the_system_colors_are_not_cells() {
+    // Slik design-tokens.mdx ber om: overstyringen skrives på hver temagrense.
+    let css = "[data-theme=\"light\"] {
+            --fs-color-disabled-surface: #e4e4e5;
+            --fs-color-disabled-text: #8a8d91;
+            --fs-color-overlay: #000000;
+            --fs-color-danger-text: #7a1f28;
+        }
+        [data-theme=\"dark\"] {
+            --fs-color-disabled-surface: var(--fs-color-neutral-raised);
+            --fs-color-disabled-text: #5c5f63;
+            --fs-color-overlay: rgba(0, 0, 0, 0.72);
+        }";
+    let report = inspect_theme(css);
+    assert!(report.problems.is_empty(), "{:?}", messages(&report));
+    assert_eq!(report.blocks, 1);
+    assert_eq!(report.declarations, 1);
+}
+
+#[test]
+fn media_not_dark_is_light_and_only_light() {
+    // `not` snur mediespørringen. Blokka gjelder i lyst tema, og bare der, så
+    // den kontrolleres heller ikke mot de mørke standardverdiene.
+    for media in [
+        "not (prefers-color-scheme: dark)",
+        "not all and (prefers-color-scheme: dark)",
+        "not screen and (prefers-color-scheme: dark)",
+        "NOT (Prefers-Color-Scheme:dark)",
+    ] {
+        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        assert_eq!(
+            parse_blocks(&css)[0].appearance,
+            Appearance::Light,
+            "{media}"
+        );
+        let report = inspect_theme(&css);
+        assert!(
+            report.problems.is_empty(),
+            "{media}: {:?}",
+            messages(&report)
+        );
+    }
+}
+
+#[test]
+fn media_not_print_and_dark_applies_in_both_schemes() {
+    // `not print and (dark)` er not(print og mørkt): sann på hver skjerm, i
+    // lyst og i mørkt tema. Blokka er ikke bundet til lyst tema, og en lys
+    // verdi kontrolleres også mot de mørke standardverdiene.
+    for media in [
+        "not print and (prefers-color-scheme: dark)",
+        "not tv and (prefers-color-scheme: dark)",
+        "not print and (prefers-color-scheme: light)",
+    ] {
+        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        let blocks = parse_blocks(&css);
+        assert_eq!(blocks[0].appearance, Appearance::Light, "{media}");
+        let bare = inspect_theme(":root { --fs-color-accent-text: #0d4e8c }");
+        let report = inspect_theme(&css);
+        assert!(!report.problems.is_empty(), "{media}");
+        assert_eq!(messages(&report).len(), messages(&bare).len(), "{media}");
+        assert_eq!(report.promises, bare.promises, "{media}");
+    }
+}
+
+#[test]
+fn media_not_type_without_and_stays_dark() {
+    // En medietype uten `and` foran skjemaet er ikke en negert spørring om
+    // fargeskjema, og `dark` leses som før.
+    let css = "@media not screen, (prefers-color-scheme: dark) { :root { --fs-color-danger-text: #f1a7ab } }";
+    assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
+}
+
+#[test]
+fn media_not_light_is_dark() {
+    let css =
+        "@media not (prefers-color-scheme: light) { :root { --fs-color-danger-text: #f1a7ab } }";
+    assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
+    assert!(inspect_theme(css).problems.is_empty());
+}
+
+#[test]
+fn writes_numbers_like_string_in_javascript() {
+    // Fasiten er `String(tall)` i Node.
+    for (n, expected) in [
+        (600.0, "600"),
+        (2.5, "2.5"),
+        (0.1, "0.1"),
+        (-0.5, "-0.5"),
+        (1.0 / 3.0, "0.3333333333333333"),
+        (1e-6, "0.000001"),
+        (0.000001234, "0.000001234"),
+        (1e-7, "1e-7"),
+        (1.5e-7, "1.5e-7"),
+        (1e20, "100000000000000000000"),
+        (123456789012345680000.0, "123456789012345680000"),
+        (1e21, "1e+21"),
+        (1.2345e21, "1.2345e+21"),
+        (-1e21, "-1e+21"),
+        (5e-324, "5e-324"),
+        (f64::MAX, "1.7976931348623157e+308"),
+        (-0.0, "0"),
+        (f64::INFINITY, "Infinity"),
+        (f64::NEG_INFINITY, "-Infinity"),
+        (f64::NAN, "NaN"),
+    ] {
+        assert_eq!(super::js_number(n), expected, "{n:?}");
+    }
 }

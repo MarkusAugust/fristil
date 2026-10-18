@@ -164,6 +164,16 @@ Den genererte fila legger seg i sitt eget lag, erklært etter pakkens eget:
 
 Erklæringen avgjør rekkefølgen uavhengig av når stilarkene lastes, og det er ikke en detalj: både Astro og TanStack Start legger sin bundlede CSS inn rett før `</head>`, altså etter en `<link>` du selv har skrevet. Lå temaet i det samme laget som pakken, ville det tapt mot standardverdiene i de to. Begge lagene ligger fortsatt foran usortert CSS, så dine egne regler vinner som før.
 
+Bruker du Tailwind, må `fristil-tema` stå i lagrekkefølgen på første linje i CSS-en din, mellom `fristil` og `components`:
+
+```css
+@layer theme, base, fristil, fristil-tema, components, utilities;
+```
+
+En `@layer`-setning oppretter bare lag som ikke finnes fra før. Står `utilities` alt i rekkefølgen når temaet erklærer sitt lag, havner `fristil-tema` sist, etter `utilities`, og temaet slår Tailwind-klassene dine. Se [Lagrekkefølgen](../tailwind/#lagrekkefølgen).
+
+Det gjelder begge veier. Lastes temaet som en `<link>` før den bundlede CSS-en, kommer linja i CSS-en din for sent: temaet har alt erklært `fristil` og `fristil-tema`, så `base` havner etter dem, og Preflight nullstiller komponentene. Da må linja stå i et `<style>` først i `<head>`, før temaet, se [Når Fristil og Tailwind er to stilark](../tailwind/#når-fristil-og-tailwind-er-to-stilark).
+
 ### Skriften settes som en regel
 
 Fristil arver skrift med vilje, så et token alene ville ikke endret én eneste bokstav. Oppgir du `fontFamily`, skriver generatoren derfor både tokenet og regelen som tar det i bruk:
@@ -174,7 +184,7 @@ Fristil arver skrift med vilje, så et token alene ville ikke endret én eneste 
 }
 ```
 
-Regelen står i `@layer fristil-tema`, som resten av temaet, så din egen CSS vinner fortsatt over den.
+Regelen står i `@layer fristil-tema`, som resten av temaet, så din egen CSS uten lag vinner fortsatt over den, og det gjør også et lag erklært etter, som `utilities` i rekkefølgen over.
 
 ## Programmatisk
 

@@ -53,14 +53,16 @@ import { fs } from "@fristil/designsystem"
 
 const bryter = document.querySelector<HTMLInputElement>("#varsler")
 
-// Slå av mens lagringen går, så brukeren ikke rekker å trykke to ganger.
-fs.setAttributes(bryter, fs.switch({ disabled: true }))
-
-// Og på igjen når svaret er inne.
+// Serveren sendte en avkryssingsboks. Nå er den en bryter.
 fs.setAttributes(bryter, fs.switch())
+
+// En innstilling brukeren ikke får endre.
+fs.setAttributes(bryter, fs.switch({ disabled: true }))
 ```
 
 Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `fs.switch.row` gir klassen på raden rundt.
+
+Ikke slå av bryteren for å hindre et nytt trykk mens en lagring pågår. `disabled` tar fokuset fra en bryter som har det, fokuset kommer ikke tilbake når den slås på igjen, og et nytt mellomromstrykk gjør ingenting. Se [Lagring med en gang](#lagring-med-en-gang) for hvordan et nytt trykk sperres uten.
 
 Importerer du den direkte i stedet for gjennom `fs`, heter den `switchControl`, siden `switch` er et reservert ord i JavaScript:
 
@@ -73,7 +75,7 @@ import { switchControl } from "@fristil/designsystem"
 
 ## Lagring med en gang
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
+Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. I «Ren HTML», Astro og React sperres et nytt trykk mens lagringen pågår uten `disabled`, som ville tatt fokuset fra bryteren; i Datastar sender et nytt trykk en ny `@put`, og serveren avgjør. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
 
 <Tabs>
   <TabItem label="Ren HTML">
@@ -87,23 +89,31 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     <script type="module">
       const bryter = document.getElementById("varsler")
       const status = document.getElementById("varsler-status")
+      let lagrer = false
+
+      // Et nytt trykk mens lagringen pågår skal ikke slå bryteren. `disabled`
+      // ville sperret på samme måte, men tatt fokuset fra den.
+      bryter.addEventListener("click", (hendelse) => {
+        if (lagrer) hendelse.preventDefault()
+      })
 
       bryter.addEventListener("change", async () => {
         const pa = bryter.checked
-        bryter.disabled = true
+        lagrer = true
 
         try {
-          await fetch("/api/varsler", {
+          const svar = await fetch("/api/varsler", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ epost: pa }),
           })
+          if (!svar.ok) throw new Error(svar.statusText)
           status.textContent = pa ? "Varsler er på." : "Varsler er av."
         } catch {
           bryter.checked = !pa
           status.textContent = "Klarte ikke å lagre. Prøv igjen."
         } finally {
-          bryter.disabled = false
+          lagrer = false
         }
       })
     </script>
@@ -120,17 +130,22 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
       const [status, settStatus] = useState("")
 
       async function endret(nyVerdi: boolean) {
-        // Slå av med en gang, så bryteren ikke henger etter fingeren.
+        // Pågår en lagring, blir bryteren stående der tilstanden sier.
+        // `disabled` ville sperret på samme måte, men tatt fokuset fra den.
+        if (lagrer) return
+
+        // Slå om med en gang, så bryteren ikke henger etter fingeren.
         settPa(nyVerdi)
         settLagrer(true)
         settStatus("")
 
         try {
-          await fetch("/api/varsler", {
+          const svar = await fetch("/api/varsler", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ epost: nyVerdi }),
           })
+          if (!svar.ok) throw new Error(svar.statusText)
           settStatus(nyVerdi ? "Varsler er på." : "Varsler er av.")
         } catch {
           // Tilbake dit den var. Bryteren lovet noe den ikke holdt.
@@ -148,7 +163,6 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
               {...fs.switch()}
               id="varsler"
               checked={pa}
-              disabled={lagrer}
               onChange={(e) => endret(e.currentTarget.checked)}
             />
             <label {...fs.label()} htmlFor="varsler">Varsle meg på e-post</label>
@@ -159,7 +173,7 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     }
     ```
 
-    `checked` og `onChange` sammen gjør feltet kontrollert, og det er nettopp det som gjør tilbakerullingen mulig: React tegner bryteren etter tilstanden din, ikke etter det brukeren klikket.
+    `checked` og `onChange` sammen gjør feltet kontrollert, og det er nettopp det som gjør tilbakerullingen mulig: React tegner bryteren etter tilstanden din, ikke etter det brukeren klikket. Det er også det som holder bryteren på plass under lagringen: når `endret` ikke endrer tilstanden, tegner React den tilbake.
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -168,17 +182,16 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
     <div class="fs-switch-row"
-         data-signals="{varsler: false, lagrer: false, status: ''}">
+         data-signals="{varsler: false, status: ''}">
       <input class="fs-switch" type="checkbox" role="switch" id="varsler"
              data-bind:varsler
-             data-attr:disabled="$lagrer"
              data-on:change="@put('/api/varsler')" />
       <label class="fs-label" for="varsler">Varsle meg på e-post</label>
     </div>
     <p class="fs-help-text" role="status" data-text="$status"></p>
     ```
 
-    Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer.
+    Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer. Et nytt trykk mens lagringen pågår sender en ny `@put`, og serveren avgjør den også; en `disabled`-vakt i siden ville tatt fokuset fra bryteren.
   </TabItem>
 </Tabs>
 

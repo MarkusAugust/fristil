@@ -103,7 +103,25 @@ Da kan skjermlesere hoppe mellom spørsmålene med overskriftsnavigasjon. Nivåe
 | `--fs-accordion-padding` | `var(--fs-spacing-3) var(--fs-accordion-padding-inline)`, luften i overskriften |
 | `--fs-accordion-padding-inline` | `var(--fs-spacing-4)`, luften til sidene, i overskriften og innholdet |
 
-Pilen er tegnet med `::after` på `<summary>`, fordi nettleserens egen trekant ser ulik ut i hver nettleser. Skal du bytte den ut, overstyr `content` og `border` i den regelen.
+Pilen er tegnet med `::after` på `<summary>`, fordi nettleserens egen trekant ser ulik ut i hver nettleser. Skal du bytte den ut, holder det ikke å overstyre `content` og `border`: pseudoelementet har fast bredde og høyde og er snudd med `transform`, og vinkelen byttes når panelet er åpent og i høyre-til-venstre. Nullstill dem i samme regel. Gi et synlig tegn en tom alternativ tekst, ellers blir det en del av navnet på knappen: skjermleseren sier «Hvem kan søke? +» når `<summary>` får fokus. Overskriften beholder navnet sitt, så den som navigerer på overskrifter hører ikke tegnet. Regelen står utenfor laget og vinner derfor over alle variantene i stilarket:
+
+```css
+.fs-accordion summary::after {
+	content: "+";
+	inline-size: auto;
+	block-size: auto;
+	border: 0;
+	transform: none;
+}
+
+@supports (content: "/" / "") {
+	.fs-accordion summary::after {
+		content: "+" / "";
+	}
+}
+```
+
+Skal tegnet bytte når panelet er åpent, sett det på `.fs-accordion[open] summary::after` på samme måte.
 
 Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
 

@@ -3,7 +3,7 @@
  * fullføring og forklaring oppå.
  *
  * Funnene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den
- * samme som Neovim, Zed og Helix bruker, skrevet i Rust og kjørt som
+ * samme som Neovim og Helix bruker, skrevet i Rust og kjørt som
  * WASI-modul (se `server.ts`). Den leser manifestet prosjektet faktisk har,
  * også med komponenter tatt over med `fristil overta`. Her er resten:
  *
@@ -56,8 +56,13 @@ function tagEnd(text: string, from: number): number {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // Ordforrådet er manifestet i pakken, det samme kjernen sjekker mot. Bygget
-  // legger det i `dist/manifest/`, der språkserveren også leser det.
+  // Ordforrådet for fullføringen og forklaringen er manifestet utvidelsen er
+  // bygget fra, som bygget legger i `dist/manifest/`. Språkserveren sjekker
+  // derimot mot prosjektets manifest når det har et, og mot dette bare som
+  // reserve. Har prosjektet en eldre pakke installert, kan fullføringen
+  // derfor foreslå en klasse serveren streker under, og en komponent tatt
+  // over med `fristil overta` foreslås ikke. Fullføring fra serveren står
+  // på veikartet.
   const { classes, elements }: Manifest = JSON.parse(
     readFileSync(
       join(context.extensionPath, "dist/manifest/manifest.json"),

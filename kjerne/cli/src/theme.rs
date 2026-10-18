@@ -11,7 +11,7 @@
 //! skrivefeil skal ikke se ut som om kommandoen gjorde det du ba om.
 
 use crate::output::{error, fail, log, shown};
-use crate::Arguments;
+use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
 use fristil_kjerne::json::{parse, Json};
 use fristil_kjerne::theme::{build_theme, js_number, to_fixed2};
 
@@ -118,6 +118,21 @@ fn read_recipe(file: &str) -> Object {
 
 pub fn run(arguments: &[String]) {
     let arguments = Arguments::read(arguments);
+    // `--ut tema.css` uten likhetstegn ble lest som to filnavn etter
+    // oppskriften. Temaet gikk da til utdata, og ingen fil ble skrevet.
+    refuse_without_value(&arguments);
+    if arguments.files.len() > 1 {
+        let files: Vec<String> = arguments
+            .files
+            .iter()
+            .map(|f| format!("«{}»", shown(f)))
+            .collect();
+        fail(&format!(
+            "Temaet lages av én oppskrift, men fikk {} filer: {}.\n\nSlå dem sammen til én JSON-fil, eller sett resten som flagg. Se `fristil --hjelp`.\n",
+            files.len(),
+            files.join(", ")
+        ));
+    }
     let recipe: Object = match arguments.files.first() {
         Some(path) => read_recipe(path),
         None => Vec::new(),
@@ -170,12 +185,6 @@ pub fn run(arguments: &[String]) {
         .chain(SHAPE_FLAGS.iter().map(|(n, _)| *n))
         .chain(["ut"])
         .collect();
-    let unknown_flags: Vec<&str> = arguments
-        .flags
-        .iter()
-        .map(|(n, _)| n.as_str())
-        .filter(|n| !known.contains(n))
-        .collect();
 
     // Nøklene i oppskriftsfila, som kan komme fra et annet repo, der en
     // skrivefeil er vanskeligere å oppdage enn en på kommandolinja.
@@ -212,15 +221,8 @@ pub fn run(arguments: &[String]) {
             unknown.join(", ")
         ));
     }
-    if !unknown_flags.is_empty() {
-        let shown: Vec<String> = unknown_flags.iter().map(|n| format!("--{n}")).collect();
-        let all: Vec<String> = known.iter().map(|n| format!("--{n}")).collect();
-        fail(&format!(
-            "Ukjent flagg: {}\n\nKjente flagg: {}\n\nHele oversikten: fristil --hjelp\n",
-            shown.join(", "),
-            all.join(", ")
-        ));
-    }
+    // Etter nøklene, så en feil i oppskriften meldes før et ukjent flagg.
+    refuse_unknown_flags(&arguments, &known);
 
     crate::package::load_contract();
     let theme = match build_theme(&Json::Object(input)) {

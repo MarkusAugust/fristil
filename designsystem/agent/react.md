@@ -25,9 +25,13 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 4. **`defineFs*()` kjøres øverst i `main.tsx`,** ikke i en `useEffect`, og et
    boolsk attributt på en web component settes som `open={åpen || undefined}`.
    De to andre skrivemåtene er feil i én av React-versjonene hver.
-5. **Typene er sjekken din.** Importer `@fristil/designsystem/react-jsx` én
-   gang i en `.d.ts`-fil, og en variant som ikke finnes stopper bygget. Kjør
-   `tsc`. Har prosjektet også HTML eller maler, sjekkes de med
+5. **Typene er sjekken din.** `fs.button({ variant })` fra
+   `@fristil/designsystem/react` gjør en variant som ikke finnes til en
+   kompileringsfeil, og `@fristil/designsystem/react-jsx`, importert én gang i
+   en `.d.ts`-fil, gjør det samme for attributtene på web-komponentene. Kjør
+   `tsc`. En håndskrevet `className` eller `data-variant` ser ingen av dem, og
+   heller ikke `npx @fristil/designsystem sjekk`, som leser `class`, ikke
+   `className`, så bruk byggefunksjonene. HTML og maler sjekkes med
    `npx @fristil/designsystem sjekk <fil>`.
 
 ## 1. Stilarkene
@@ -394,7 +398,7 @@ elementene forblir ukjente. Kjør `npm ls @types/react` hvis noe ser rart ut.
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
 | Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
 | Komponenten gjør ingenting, og ingenting sier fra | Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren |

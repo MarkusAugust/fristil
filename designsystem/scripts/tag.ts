@@ -181,3 +181,14 @@ if (!prøv)
   console.log(
     "\nFølg med under Actions på GitHub. Arbeidsflytene kontrollerer selv at taggen og versjonen stemmer.",
   )
+
+/*
+ * De andre delene står med en versjon som ikke er tagget? Dokumentasjonen
+ * beskriver det den nyeste versjonen av hver gjør, så en utgivelse som bare
+ * tagger pakken, lar Editoren-siden love noe Marketplace ikke har.
+ */
+const glemt = status.filter((s) => !s.finnes && !skal.includes(s))
+if (glemt.length > 0)
+  console.log(
+    `\nIkke tagget ennå: ${glemt.map((s) => `${s.tagg} (bun run tag ${s.del.navn})`).join(", ")}. Står versjonen på master, skal taggen settes nå.`,
+  )

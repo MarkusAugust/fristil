@@ -9,6 +9,7 @@ import {
 } from "../../../testing/a11y"
 import { farge } from "../../../testing/farge"
 import { link } from "./link"
+import linkCss from "./link.css?inline"
 
 import "../../../tokens/tokens.css"
 import "./link.css"
@@ -83,5 +84,32 @@ describe("fs.link({ disabled })", () => {
     expect(lenke.hasAttribute("role")).toBe(false)
     expect(lenke.hasAttribute("tabindex")).toBe(false)
     expect(lenke.hasAttribute("aria-disabled")).toBe(false)
+  })
+})
+
+describe("fs-link besøkt", () => {
+  /*
+   * Nettleseren skjuler `:visited` for skript, så en lenke kan ikke gjøres
+   * besøkt herfra. Testen bytter derfor `:visited` med et attributt i en kopi
+   * av reglene, i samme rekkefølge. `:hover` sto før `:visited` med samme
+   * spesifisitet, og en besøkt lenke skiftet ikke farge under musa. `:hover`
+   * byttes også, for nettlesersiden har én mus, og hover.browser.test.ts
+   * flytter den samtidig.
+   */
+  it("skifter farge under musa også når lenken er besøkt", () => {
+    monter(`
+      <style>
+        ${linkCss.replaceAll(":visited", "[data-besokt]").replaceAll(":hover", "[data-mus]")}
+        .fs-link { transition: none; }
+      </style>
+      <a id="besokt" class="fs-link" href="#" data-besokt>Søknaden din</a>
+    `)
+    const lenke = document.getElementById("besokt") as HTMLElement
+    expect(getComputedStyle(lenke).color).toBe(farge("--fs-color-visited-text"))
+
+    lenke.setAttribute("data-mus", "")
+    expect(getComputedStyle(lenke).color).toBe(
+      farge("--fs-color-accent-text-strong"),
+    )
   })
 })

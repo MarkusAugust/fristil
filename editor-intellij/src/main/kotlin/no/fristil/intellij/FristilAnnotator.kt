@@ -37,8 +37,11 @@ class FristilAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is XmlDocument) return
         val file = element.containingFile ?: return
+        // Ingen snarvei på «fs-» i teksten: regelen ikon-uten-navn gjelder
+        // markup uten en eneste Fristil-klasse, og kjernen bruker
+        // millisekunder på en fil. Med snarveien tidde IntelliJ om en
+        // ikonknapp uten navn som `fristil sjekk` og VS Code meldte.
         val text = file.text
-        if (!text.contains("fs-")) return
 
         val bounds = element.textRange
         for (finding in diagnose(file, text)) {

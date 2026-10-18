@@ -742,12 +742,6 @@ export class FsTabs extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-tabs": FsTabs
-  }
-}
-
-export function defineFsTabs(tagName = FS_TABS_TAG): void {
+export function defineFsTabs(tagName: string = FS_TABS_TAG): void {
   defineElement(tagName, FsTabs)
 }

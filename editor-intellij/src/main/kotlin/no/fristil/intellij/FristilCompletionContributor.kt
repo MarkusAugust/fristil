@@ -17,6 +17,8 @@ import com.intellij.icons.AllIcons
  *
  * Det er nettopp hullet pluginen finnes for: `web-types.json` gir fullføring
  * i HTML-filer uten noe plugin, men leses ikke inn i injiserte fragmenter.
+ *
+ * Klassene er de i manifestet fila sjekkes mot, se [Katalog.klasserFor].
  */
 class FristilCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(
@@ -39,7 +41,7 @@ class FristilCompletionContributor : CompletionContributor() {
          * `fs-button`, med og uten matcheren. Koden gjorde altså ingenting,
          * og er borte.
          */
-        for (klasse in Katalog.klasser) {
+        for (klasse in Katalog.klasserFor(parameters.originalFile)) {
             result.addElement(
                 LookupElementBuilder.create(klasse.navn)
                     .withIcon(AllIcons.Xml.Css_class)

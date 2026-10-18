@@ -13,12 +13,14 @@
       text-decoration-color 120ms ease;
   }
 
-  .fs-link:hover {
-    color: var(--fs-color-accent-text-strong);
-  }
-
+  /* Før `:hover`, med samme spesifisitet: den som står sist vinner, og en
+     besøkt lenke skal også skifte farge under musa. */
   .fs-link:visited {
     color: var(--fs-color-visited-text);
+  }
+
+  .fs-link:hover {
+    color: var(--fs-color-accent-text-strong);
   }
 
   .fs-link:focus-visible {

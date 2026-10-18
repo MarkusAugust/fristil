@@ -7,7 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { defineFsToast, FsToast, showToast } from "./fs-toast"
+import { defineFsToast, type FsToast, showToast } from "./fs-toast"
 import { toast as fsToast } from "./toast"
 
 import "../../../tokens/tokens.css"
@@ -181,9 +181,8 @@ describe("fs-toast holder pausen og fokus", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `defineFsToast("fs-toast-sen")` går ikke: en
- * konstruktør kan bare registreres én gang, og `fs-toast` har alt tatt den.
- * En underklasse er en ny konstruktør med samme oppførsel.
+ * Et sent registrert tagnavn. `fs-toast` har alt tatt konstruktøren, så
+ * `defineFsToast("fs-toast-sen")` registrerer en underklasse av den.
  */
 describe("showToast() venter på registreringen", () => {
   it("viser meldingen først når elementet er oppgradert", async () => {
@@ -201,7 +200,7 @@ describe("showToast() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(element.querySelector(".fs-toast__message")).toBeNull()
 
-    customElements.define("fs-toast-sen", class extends FsToast {})
+    defineFsToast("fs-toast-sen")
 
     const melding = await løfte
     expect(element.contains(melding)).toBe(true)
@@ -215,11 +214,9 @@ describe("fs-toast under et annet tagnavn", () => {
     /*
      * Plasseringen sto på elementnavnet, så en region registrert som noe
      * annet enn `fs-toast` havnet i vanlig flyt. Den står nå på klassen, som
-     * komponenten setter selv. En underklasse, siden en konstruktør bare
-     * kan stå i registeret én gang.
+     * komponenten setter selv.
      */
-    class AnnenToast extends FsToast {}
-    customElements.define("annen-toast", AnnenToast)
+    defineFsToast("annen-toast")
     monter("<annen-toast></annen-toast>")
     await customElements.whenDefined("annen-toast")
     const region = document.querySelector("annen-toast") as FsToast
@@ -311,5 +308,62 @@ describe("fs-toast og fokus og navn", () => {
     expect(region.getAttribute("aria-label")).toBe("Forfatter")
     region.removeAttribute("label")
     expect(region.getAttribute("aria-label")).toBe("Forfatter")
+  })
+})
+
+/*
+ * Regionen i en skyggerot, som hver forhåndsvisning i dokumentasjonen.
+ * `document.activeElement` peker da på skyggeverten, ikke på lukkeknappen,
+ * og komponenten trodde ingen melding hadde fokus: fokus falt til `body`
+ * i stedet for til nabomeldingen eller dit det kom fra.
+ */
+describe("fs-toast i en skyggerot", () => {
+  beforeAll(() => {
+    defineFsToast()
+  })
+
+  function monterISkygge() {
+    monter(`<button id="ute">Lagre</button><div id="vert"></div>`)
+    const vert = document.getElementById("vert") as HTMLElement
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `<fs-toast duration="0"></fs-toast>`
+    const region = rot.querySelector("fs-toast") as FsToast
+    const ute = document.getElementById("ute") as HTMLButtonElement
+    return { rot, region, ute }
+  }
+
+  it("flytter fokus til meldingen ved siden av", () => {
+    const { rot, region } = monterISkygge()
+    const eldste = region.show("Første")
+    const nyeste = region.show("Andre")
+    const lukk = nyeste.querySelector("button") as HTMLButtonElement
+
+    lukk.focus()
+    lukk.click()
+
+    expect(rot.activeElement).toBe(eldste.querySelector("button"))
+  })
+
+  it("sender fokus tilbake når den siste meldingen lukkes", () => {
+    const { region, ute } = monterISkygge()
+    const melding = region.show("Lagret")
+    const lukk = melding.querySelector("button") as HTMLButtonElement
+    ute.focus()
+    lukk.focus()
+
+    lukk.click()
+
+    expect(document.activeElement).toBe(ute)
+  })
+
+  it("sender fokus tilbake når alle meldingene fjernes", () => {
+    const { region, ute } = monterISkygge()
+    const melding = region.show("Lagret")
+    ute.focus()
+    ;(melding.querySelector("button") as HTMLButtonElement).focus()
+
+    region.clear()
+
+    expect(document.activeElement).toBe(ute)
   })
 })

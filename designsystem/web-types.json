@@ -176,7 +176,7 @@
             "events": [
               {
                 "name": "popover-toggle",
-                "description": "Panelet åpnet eller lukket seg.\n\n`detail`: `{ open: boolean }`"
+                "description": "Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse.\n\n`detail`: `{ open: boolean }`"
               }
             ]
           }

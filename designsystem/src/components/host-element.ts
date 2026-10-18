@@ -32,13 +32,42 @@ export type { FsEventMap } from "./events.js"
  * Kalles `defineFs*` fra en modul som også kjøres på serveren, som i
  * TanStack Start eller en React-app med server-rendring, skal det ikke skje
  * noe. Der finnes det ingen `customElements` å registrere i.
+ *
+ * En konstruktør kan bare stå i registeret én gang. Står klassen der alt,
+ * under et annet navn, registreres en underklasse: `defineFsToast("app-toast")`
+ * fulgt av `defineFs()` kastet ellers NotSupportedError på `fs-toast`, og
+ * komponentene etter den i lista ble aldri registrert. Med underklassen
+ * virker begge navnene, og `instanceof` holder for begge.
  */
 export function defineElement(
   tagName: string,
   element: CustomElementConstructor,
 ): void {
   if (typeof customElements === "undefined") return
-  if (!customElements.get(tagName)) customElements.define(tagName, element)
+  if (customElements.get(tagName)) return
+  if (isRegistered(element)) {
+    customElements.define(tagName, class extends element {})
+    return
+  }
+  try {
+    customElements.define(tagName, element)
+  } catch (error) {
+    // Reserven for nettlesere uten `getName`: navnet er ledig, så en
+    // NotSupportedError herfra betyr at konstruktøren alt er i bruk.
+    if (!(error instanceof DOMException && error.name === "NotSupportedError"))
+      throw error
+    customElements.define(tagName, class extends element {})
+  }
+}
+
+/**
+ * Om konstruktøren alt står i registeret, under et hvilket som helst navn.
+ * `getName` kom i Chrome 117, Firefox 116 og Safari 17; uten den svares
+ * `false`, og `define` får si fra selv.
+ */
+function isRegistered(element: CustomElementConstructor): boolean {
+  if (typeof customElements.getName !== "function") return false
+  return customElements.getName(element) !== null
 }
 
 /**

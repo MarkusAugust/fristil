@@ -488,12 +488,6 @@ export class FsPopover extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-popover": FsPopover
-  }
-}
-
-export function defineFsPopover(tagName = FS_POPOVER_TAG): void {
+export function defineFsPopover(tagName: string = FS_POPOVER_TAG): void {
   defineElement(tagName, FsPopover)
 }

@@ -120,6 +120,21 @@ function isSeconds(raw: string | null): boolean {
 }
 
 /**
+ * Elementet som har fokus, uansett hvilken skyggerot det står i.
+ *
+ * `document.activeElement` stopper ved skyggeverten, og en skyggerots
+ * `activeElement` er null når fokus står utenfor den. Nedstigningen går fra
+ * dokumentet og inn gjennom hver åpne skyggerot til elementet selv.
+ */
+function deepActiveElement(): HTMLElement | null {
+  let active = document.activeElement
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement
+  }
+  return active instanceof HTMLElement ? active : null
+}
+
+/**
  * Varsler før en innlogget økt går ut.
  *
  * Dette er tingen hver store organisasjon bygger selv og gjør feil. Enten
@@ -571,8 +586,13 @@ export class FsSessionTimeout extends HostElement {
     // Da så `validate()` den aldri.
     this.validateParts()
     // Fokus skal tilbake dit brukeren var. Uten dette starter neste
-    // tastetrykk på toppen av siden, midt i et skjema.
-    this.previousFocus = document.activeElement as HTMLElement | null
+    // tastetrykk på toppen av siden, midt i et skjema. Hentet fra dokumentet
+    // og nedover gjennom skyggerøttene, ikke fra én rot: `document` peker på
+    // skyggeverten når feltet står i et skyggetre, og komponentens egen rot
+    // er null når komponenten står i en skyggerot og feltet i siden, slik
+    // `<fs-error-summary>` også advarer om. Feltet kan stå på begge sider av
+    // skyggegrensen fra komponenten, så bare nedstigningen treffer det.
+    this.previousFocus = deepActiveElement()
     /*
      * Teksten skal stå før dialogen åpnes, siden `alertdialog` leses opp i
      * det den kommer. Tallet i avsnittet er `aria-hidden`, så uten
@@ -626,13 +646,9 @@ export class FsSessionTimeout extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-session-timeout": FsSessionTimeout
-  }
-}
-
-export function defineFsSessionTimeout(tagName = FS_SESSION_TIMEOUT_TAG): void {
+export function defineFsSessionTimeout(
+  tagName: string = FS_SESSION_TIMEOUT_TAG,
+): void {
   defineElement(tagName, FsSessionTimeout)
 }
 

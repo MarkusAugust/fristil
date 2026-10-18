@@ -1,7 +1,7 @@
 /**
  * At identifikatorene i koden som sendes ut er engelske.
  *
- * Regelen står i CLAUDE.md: funksjoner, variabler, typer og konstanter
+ * Regelen står i CONTRIBUTING.md: funksjoner, variabler, typer og konstanter
  * navngis på engelsk, også lokale variabler, og aldri blandet i ett navn.
  * Kommentarene er på norsk. Regelen sto lenge uten vaktpost, og en
  * gjennomgang fant ni norske navn i tre komponenter som ingen hadde sett,

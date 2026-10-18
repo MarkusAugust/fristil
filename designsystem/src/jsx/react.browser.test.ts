@@ -25,19 +25,13 @@ import kilde from "./react?raw"
 /**
  * Attributter React allerede kjenner gjennom `HTMLAttributes`.
  *
- * `<fs-error-summary>` observerer `hidden`, fordi serveren kan ta det bort
- * for å vise boksen. Det er ikke et attributt vi har funnet på, og å
- * deklarere det på nytt ville vært å gjenta nettleseren.
+ * `hidden` står ikke her, selv om `<fs-error-summary>` bare observerer det
+ * fordi serveren kan ta det bort for å vise boksen. `HTMLAttributes` typer det
+ * som `boolean`, og `hidden={false}` kompilerte, mens React 18 skriver det
+ * som `hidden="false"` på en web component, som er sant. Deklarasjonen
+ * strammer det til `Flag`, og testen under krever at den gjør det.
  */
-const STANDARD = new Set([
-  "hidden",
-  "id",
-  "class",
-  "title",
-  "lang",
-  "dir",
-  "slot",
-])
+const STANDARD = new Set(["id", "class", "title", "lang", "dir", "slot"])
 
 /** Attributtene komponenten faktisk lytter på, utenom de standardiserte. */
 function attributtnavn(klasse: { observedAttributes?: unknown }): string[] {

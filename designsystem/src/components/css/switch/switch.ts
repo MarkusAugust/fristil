@@ -5,7 +5,10 @@ export const SWITCH_CLASS = "fs-switch" as const
 export const SWITCH_ROW_CLASS = "fs-switch-row" as const
 
 export type SwitchOptions = {
-  /** Kontrollen er slått av. */
+  /**
+   * Kontrollen er slått av. Ikke bruk det til å sperre bryteren mens en
+   * lagring pågår: `disabled` tar fokuset fra den, og det kommer ikke tilbake.
+   */
   disabled?: boolean
 }
 

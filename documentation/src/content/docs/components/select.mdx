@@ -92,16 +92,18 @@ Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen
 
 Dette er den samme `<select>`-en som før. Den sendes inn med skjemaet, leses av skjermlesere og virker med tastatur på nøyaktig samme måte, og markupen er uendret bortsett fra attributtet.
 
+Et valg som er lengre enn feltet, brytes da over flere linjer, og feltet blir høyere. Skal det heller klippes med «…», legg `<button><selectedcontent></selectedcontent></button>` først i `<select>`-en. Nettleseren lager ikke `<selectedcontent>` selv, men fyller det med det valgte alternativet når det står der, og Fristil klipper det. Nettlesere uten støtte hopper over knappen.
+
 Grupper laget med `<optgroup label="…">` får overskriften i mindre og dempet tekst, så den skiller seg fra valgene.
 
 Støtten er ulik mellom nettleserne, og det er grunnen til at dette må slås på:
 
 | Nettleser | Hva brukeren ser |
 | --- | --- |
-| Chromium 148 og nyere, Safari 26.4 og nyere | Listen tegnes i siden, med Fristils farger |
+| Chromium og Safari som støtter `appearance: base-select` | Listen tegnes i siden, med Fristils farger |
 | Firefox | Nettleserens egen liste, som uten attributtet |
 
-Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
+Det er den ene betingelsen stilarket spør om, så hver versjon som har `appearance: base-select` tegner listen i siden. Fristil er testet i Chromium 148 og WebKit 26.4. Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
 
 I høykontrastmodus faller feltet tilbake til nettleserens egen liste i alle nettlesere. Systemfargene er de eneste som er garantert lesbare der.
 

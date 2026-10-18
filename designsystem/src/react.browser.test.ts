@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
+import type { Attributes } from "./dom"
 import { fs } from "./fs"
-import { fs as fsReact } from "./react"
+import { fs as fsReact, type ReactSet } from "./react"
 
 describe("fs fra /react", () => {
   it("gir className i stedet for class", () => {
@@ -203,5 +204,76 @@ describe("tabIndex kommer ut som et tall", () => {
     expect(typeof fsReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
       "number",
     )
+  })
+})
+
+/**
+ * `setAttributes` herfra får sett med React-navnene, og må oversette dem
+ * tilbake. Sendt rett til hovedinngangens funksjon ble `className` til
+ * attributtet `classname` og `htmlFor` til `htmlfor`, og det nye objektet
+ * fra omdøpingen sto ikke i kartet over hva settet forvalter, så
+ * `aria-invalid` ble stående etter at feltet var rettet. Funnet med et
+ * falskt element i et skript, ikke i en app, men en `ref` i React er nettopp
+ * et element å kalle den på.
+ */
+describe("fs.setAttributes fra /react", () => {
+  it("skriver class og for, ikke className og htmlFor", () => {
+    const ledetekst = document.createElement("label")
+
+    fsReact.setAttributes(
+      ledetekst,
+      fsReact.label(),
+      fsReact.field({ id: "epost" }).label,
+    )
+
+    expect(ledetekst.getAttribute("class")).toBe("fs-label")
+    expect(ledetekst.getAttribute("for")).toBe("epost")
+    expect(ledetekst.hasAttribute("classname")).toBe(false)
+    expect(ledetekst.hasAttribute("htmlfor")).toBe(false)
+  })
+
+  it("rydder det byggefunksjonen forvalter, som hovedinngangen", () => {
+    const felt = document.createElement("input")
+
+    fsReact.setAttributes(felt, fsReact.input({ state: "invalid" }))
+    expect(felt.getAttribute("aria-invalid")).toBe("true")
+    expect(felt.getAttribute("data-state")).toBe("invalid")
+
+    fsReact.setAttributes(felt, fsReact.input())
+    expect(felt.hasAttribute("aria-invalid")).toBe(false)
+    expect(felt.hasAttribute("data-state")).toBe(false)
+    expect(felt.className).toBe("fs-input")
+  })
+
+  it("skriver tabIndex som tabindex", () => {
+    const fane = document.createElement("button")
+    const [forste] = fsReact.tabs({ id: "sak", count: 2 }).tabs
+
+    fsReact.setAttributes(fane, forste)
+
+    expect(fane.getAttribute("tabindex")).toBe("0")
+  })
+
+  it("gir det samme elementet som hovedinngangen", () => {
+    const par: [Attributes, ReactSet][] = [
+      [fs.button({ variant: "danger" }), fsReact.button({ variant: "danger" })],
+      [
+        fs.input({ type: "date", state: "invalid" }),
+        fsReact.input({ type: "date", state: "invalid" }),
+      ],
+      [fs.field({ id: "a" }).label, fsReact.field({ id: "a" }).label],
+      [
+        fs.errorSummary({ count: 1 }).host,
+        fsReact.errorSummary({ count: 1 }).host,
+      ],
+      [fs.suggestion({ id: "s" }).list, fsReact.suggestion({ id: "s" }).list],
+    ]
+    for (const [vanlig, forReact] of par) {
+      const a = document.createElement("div")
+      const b = document.createElement("div")
+      fs.setAttributes(a, vanlig)
+      fsReact.setAttributes(b, forReact)
+      expect(b.outerHTML).toBe(a.outerHTML)
+    }
   })
 })

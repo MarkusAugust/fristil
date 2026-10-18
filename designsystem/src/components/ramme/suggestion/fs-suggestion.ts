@@ -824,12 +824,6 @@ export class FsSuggestion extends HostElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-suggestion": FsSuggestion
-  }
-}
-
-export function defineFsSuggestion(tagName = FS_SUGGESTION_TAG): void {
+export function defineFsSuggestion(tagName: string = FS_SUGGESTION_TAG): void {
   defineElement(tagName, FsSuggestion)
 }

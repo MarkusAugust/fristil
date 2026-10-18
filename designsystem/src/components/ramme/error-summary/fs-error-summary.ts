@@ -37,7 +37,10 @@ export const FS_ERROR_SUMMARY_PARTS = {
  * 1. Fokus flyttes til boksen når den kommer til syne, så den som hører siden
  *    får vite at innsendingen stoppet.
  * 2. Fokus gis til selve kontrollen når en lenke følges. En vanlig ankerlenke
- *    ruller bare dit, og neste tastetrykk fortsetter der fokus sto før.
+ *    gir bare fokus til et mål som kan få det; peker den på en ledetekst
+ *    eller en overskrift, blir `document.activeElement` `<body>`, og
+ *    skjermleseren får ikke beskjed om hvor brukeren er. Tab fortsetter fra
+ *    målet uansett.
  *
  * ```html
  * <fs-error-summary>
@@ -325,12 +328,8 @@ function isFocusable(element: Element): boolean {
   )
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "fs-error-summary": FsErrorSummary
-  }
-}
-
-export function defineFsErrorSummary(tagName = FS_ERROR_SUMMARY_TAG): void {
+export function defineFsErrorSummary(
+  tagName: string = FS_ERROR_SUMMARY_TAG,
+): void {
   defineElement(tagName, FsErrorSummary)
 }

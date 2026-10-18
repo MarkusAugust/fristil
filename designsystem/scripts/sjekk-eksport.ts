@@ -12,11 +12,19 @@
  * Og `files` i package.json tar med hele mapper. Testfilene lå ved siden av
  * komponentene og ble med i tarballen, 43 av dem.
  *
+ * Kartene har samme problem andre veien. `tsconfig.json` skriver kildekart og
+ * deklarasjonskart, og hvert kart peker på en kildefil i `src`. `files` tok
+ * med `src/components`, så kartene til komponentene traff, men ikke
+ * `src/index.ts`, `react.ts` eller `register.ts`: «gå til definisjon» på `fs`
+ * og et stakkspor fra `/diagnostics` landet i en fil som ikke var med. Hver
+ * kilde et medsendt kart peker på, må derfor også være med.
+ *
  * Kjør med: bun scripts/sjekk-eksport.ts, eller som en del av `bun run build`.
  */
 
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+import { dirname, join as joinPosix, normalize } from "node:path/posix"
 import { fileURLToPath } from "node:url"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
@@ -96,6 +104,30 @@ for (const [navn, verdi] of Object.entries(manifest.exports)) {
   }
 }
 
+/**
+ * Kildene kartene peker på, som ikke er med. Stiene fra `npm pack` har
+ * skråstrek, også på Windows, så de løses som POSIX-stier.
+ */
+const kilderUtenfor = new Map<string, string>()
+for (const sti of filer) {
+  if (!sti.endsWith(".map")) continue
+  const kart = JSON.parse(readFileSync(join(pakke, sti), "utf8")) as {
+    sources?: string[]
+  }
+  for (const kilde of kart.sources ?? []) {
+    const relativ = normalize(joinPosix(dirname(sti), kilde))
+    if (!filer.has(relativ) && !kilderUtenfor.has(relativ))
+      kilderUtenfor.set(relativ, sti)
+  }
+}
+
+if (kilderUtenfor.size > 0) {
+  const [kilde, kart] = [...kilderUtenfor][0] as [string, string]
+  feil.push(
+    `${kilderUtenfor.size} kildefiler som kartene i pakken peker på, er ikke med, blant annet ${kilde} fra ${kart}. Legg mappa inn i «files» i package.json.`,
+  )
+}
+
 const testfiler = [...filer].filter((sti) => sti.includes(".test."))
 
 if (testfiler.length > 0) {
@@ -116,5 +148,5 @@ if (feil.length > 0) {
 
 console.log(
   `Pakken leverer alle ${Object.keys(manifest.exports).length} inngangspunktene,` +
-    ` i ${filer.size} filer, uten tester.`,
+    ` i ${filer.size} filer, uten tester, og hvert kart peker på en fil som er med.`,
 )

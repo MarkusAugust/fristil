@@ -24,7 +24,9 @@
     line-height: var(--fs-line-height-default);
   }
 
-  .fs-alert p {
+  /* Bare elementet teller, så marginen til en `fs-help-text` eller
+     `fs-error-text` i meldingen vinner, som i kortet. */
+  :where(.fs-alert) p {
     margin: 0;
   }
 

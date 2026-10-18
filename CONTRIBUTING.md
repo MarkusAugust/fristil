@@ -8,7 +8,8 @@
 git checkout master && git pull
 git checkout -b det-du-jobber-med
 
-# arbeid, og kjør det CI kjører før du sender noe fra deg
+# arbeid og commit, og kjør så det CI kjører før du sender noe fra deg
+git commit -am "Rett …"
 bun run sjekk
 
 git push -u origin det-du-jobber-med
@@ -44,7 +45,9 @@ at endringen er committet. Steget feiler ellers på dine egne endringer.
 
 Det krever i tillegg til Bun: Rust, siden sjekken i pakken bygges fra
 `kjerne/`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
-gang, når VS Code lastes ned. På Linux uten skjerm trengs også `xvfb-run`.
+gang, når VS Code lastes ned. På Linux uten skjerm, altså uten `DISPLAY` og
+`WAYLAND_DISPLAY` satt, trengs også `xvfb-run`; har maskinen skjerm, kjøres
+VS Code på den.
 Installer [rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter
 riktig versjon og målene ved første kall.
 
@@ -71,18 +74,18 @@ Playwrights egne bygg.
 
 ## Genererte filer
 
-Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. De kommer fra to kommandoer.
-
-`bun --filter @fristil/designsystem generate` skriver åtte:
+Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @fristil/designsystem generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` rett etter kjernen, før noen sjekk leser filene.
 
 | Fil | Kilde |
 | --- | --- |
+| `designsystem/src/tokens/matrise.ts` | `src/tokens/fargekontrakt.json` og merkefargene, regnet av kjernen i `scripts/generate-matrise.ts` |
 | `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` og fargematrisen |
 | `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
-| `designsystem/agent/*.md`, seks regelbøker for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
+| ordforrådet, tabellen under | `scripts/generate-ordforrad.ts` |
+| `designsystem/agent/*.md`, regelbøkene for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
 | `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
 
-`bun --filter @fristil/designsystem ordforrad` skriver seks, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
+Ordforrådet har i tillegg sin egen kommando, `bun --filter @fristil/designsystem ordforrad`, som skriver bare disse, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
 
 | Fil | Hva den er |
 | --- | --- |
@@ -91,13 +94,13 @@ Femten filer skrives av et skript, og en endring rett i dem blir overskrevet ved
 | `designsystem/src/vocabulary/elements.ts` | elementene og attributtene, som manifestet skrives fra |
 | `designsystem/src/vocabulary/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
-| `designsystem/src/components/events.ts` | typene til hendelsene, som utvider `HTMLElementEventMap` |
+| `designsystem/src/components/events.ts` | typene til hendelsene og tagnavnene, som utvider `HTMLElementEventMap` og `HTMLElementTagNameMap` |
 
 Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene, gjennom `scripts/generate-ordforrad.ts`. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
 
 I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
 
-Glemmer du å regenerere, sier CI fra. Steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
+Bygget stopper ikke på en utdatert fil: `generate` skriver dem på nytt før noen sjekk leser dem, så `sjekk:ordforrad` og `sjekk:agent` sammenligner alltid med det som nettopp ble skrevet. Glemmer du å regenerere, eller å committe det som ble generert, sier CI fra: steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
 
 ## Versjonslogg og utgivelser
 
@@ -107,12 +110,14 @@ Når en versjon skal ut:
 
 ```bash
 bun run prepare-version 0.4.0
-bun run sjekk
 git checkout -b slipp-0.4.0 && git commit -am "Versjon 0.4.0"
+bun run sjekk
 git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
-`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt».
+Commiten står før `sjekk`, ikke etter: «Ingenting er ugenerert» spør git om bygget endret noe, og `prepare-version` har nettopp skrevet seks sporede filer, så kjørt før commiten stopper `sjekk` på dem flere minutter ut i kjøringen.
+
+`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` og presentasjonen. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt», og alle kontrollene står før den skriver noe, så et stoppet forsøk etterlater ingen halvferdige filer.
 
 Taggen settes først når versjonen ligger på master:
 
@@ -131,7 +136,7 @@ Netlify i det master endrer seg, og oppskriftene der peker på
 på tolv sider og peker på en pakke som ikke er der ennå. Begge byggene tar et par
 minutter, så tagger du med det samme, er vinduet i praksis lukket.
 
-Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollen i `publish.yml` kjøringen, og taggen må fjernes med `git push origin :refs/tags/v0.4.0` og `git tag -d v0.4.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
+Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollene i `publish.yml` kjøringen: taggen må si det samme som `package.json`, og commiten den står på må være på master. Taggen må da fjernes med `git push origin :refs/tags/v0.4.0` og `git tag -d v0.4.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
 
 Taggen starter `.github/workflows/publish.yml`, som bygger pakken og legger den ut på npm. Arbeidsflyten har ingen hemmeligheter i seg: den ber npm om en kortlevd legitimasjon gjennom GitHubs OIDC, og det virker bare så lenge pakken har en utgiver registrert under Settings på npmjs.com (GitHub Actions, `MarkusAugust`, `fristil`, `publish.yml`). npm signerer samtidig en attestasjon som viser hvilken commit versjonen kom fra.
 
@@ -172,7 +177,9 @@ en ny variant er med når `fs` gir den. Filene genereres fra
 `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
 sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
-setning om det, og `bun run build` stopper til filene er generert på nytt:
+setning om det. `bun run build` skriver filene på nytt før noen sjekk leser
+dem, og feller ikke en utdatert fil; glemmer du å committe det bygget skrev, gjør
+steget «Ingenting er ugenerert» i CI det. Filene kan også skrives alene:
 
 ```bash
 bun --filter @fristil/designsystem ordforrad
@@ -197,6 +204,17 @@ token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
 som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
 opprettes der før første utgivelse.
 
+IntelliJ-pluginen har sitt nummer i `editor-intellij/gradle.properties` og
+`changeNotes` i `build.gradle.kts`, og gis ut med `bun run tag intellij`. Se
+`editor-intellij/README.md`.
+
+**Også utvidelsen og pluginen tagges med én gang grenen er slått sammen,**
+av samme grunn som pakken: Editoren-siden i dokumentasjonen beskriver det
+den nyeste versjonen av hver gjør, og rulles ut i det master endrer seg. Står
+versjonen i `editor/package.json` eller `pluginVersion` uten tagg, lover
+siden noe Marketplace ikke har. `bun run tag` uten argumenter viser hva som
+står utagget, og `bun run tag` med en del minner om de andre.
+
 ## Dokumentasjonen
 
 Teksten er på norsk bokmål og skal lese som om en norsk utvikler har skrevet
@@ -207,6 +225,18 @@ bruk, med import, registrering og realistiske verdier.
 Levende eksempler går gjennom `Preview.astro`, som legger innholdet i en
 shadow root. Uten isolasjonen treffer dokumentasjonssidens egen CSS
 eksempelet, og du ser ikke lenger det en konsument får.
+
+## Navn i koden
+
+Funksjoner, variabler, typer og konstanter navngis på engelsk, også lokale
+variabler, og aldri blandet i ett navn. Kommentarene er på norsk.
+`sjekk-identifikatorer.ts` feller et norsk navn i koden som sendes ut;
+testfiler, `src/testing/`, `src/types/` og skriptene i `scripts/` er unntatt.
+
+En sjekk skal ikke spørre kilden om kilden. Det forventede, antallet eller
+innholdet, skal komme fra et annet sted enn køen sjekken går gjennom, ellers
+etterprøver vakten bare seg selv. `sjekk-agent.ts` leser derfor mappa på
+disk, og `sjekk-ordforrad.ts` leser `exports` i pakken, ikke metadataen.
 
 ## Commit-meldinger
 

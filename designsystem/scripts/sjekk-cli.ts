@@ -221,6 +221,26 @@ function krev(påstand: boolean, beskrivelse: string): void {
     `meldingen nevner ikke familien: ${felt.feil.slice(0, 80)}`,
   )
 
+  // Et tema uten farger fra `tema` har ingen kontrast å kontrollere, og det
+  // er ikke et brudd. En fil uten tema er det fortsatt.
+  const fargelost = join(mappe, "fargelost.css")
+  const laget = await kjør([
+    "tema",
+    "--skrift=Helvetica, Arial, sans-serif",
+    "--knapp-hjorner=2.75rem",
+    `--ut=${fargelost}`,
+  ])
+  krev(laget.kode === 0, `tema uten farger avsluttet med ${laget.kode}`)
+  const utenFarger = await kjør(["sjekk-tema", fargelost])
+  krev(
+    utenFarger.kode === 0,
+    `et tema uten farger avsluttet med ${utenFarger.kode}: ${utenFarger.feil.slice(0, 120)}`,
+  )
+  const ingenTema = join(mappe, "ingen-tema.css")
+  await writeFile(ingenTema, "body { color: red }")
+  const ingen = await kjør(["sjekk-tema", ingenTema])
+  krev(ingen.kode !== 0, "en fil uten tema skulle gitt feilkode")
+
   // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne
   const flagg = await kjør(["sjekk-tema", godt, "--noe"])
   krev(flagg.kode !== 0, "et ukjent flagg skulle gitt feilkode")
@@ -399,7 +419,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
  * Omskrivingen bytter en relativ sti med inngangspunktet i `exports`, men
  * bare når inngangspunktet finnes. Gjør det ikke det, blir stien stående som
  * den er, og kopien peker på en mappe som ikke finnes hos konsumenten. Det
- * er skrevet ned som en fare i CLAUDE.md, uten at noe har sjekket det.
+ * sto lenge skrevet ned som en fare, uten at noe sjekket det.
  *
  * Her overtas hver komponent verktøyet selv lister opp, og hver henvisning
  * ut av mappa kontrolleres mot `exports` i pakken.
@@ -743,6 +763,75 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
+// Det samme gjelder tema etter en oppskriftsfil. `--ut tema.css` ble lest
+// som to filnavn til, temaet gikk til utdata og ingen fil ble skrevet, og
+// `--aksent #f00` ble stille borte bak fargen i fila.
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const oppskrift = join(mappe, "oppskrift.json")
+  await writeFile(oppskrift, JSON.stringify({ aksent: "#7c3aed" }))
+  const tema = join(mappe, "tema.css")
+
+  for (const [flagg, verdi] of [
+    ["--ut", tema],
+    ["--aksent", "#ff0000"],
+  ] as const) {
+    const {
+      kode,
+      ut,
+      feil: melding,
+    } = await kjør(["tema", oppskrift, flagg, verdi])
+    krev(
+      kode === 1,
+      `tema med ${flagg} uten likhetstegn skulle gitt feilkode, ga ${kode}`,
+    )
+    krev(ut === "", `tema med ${flagg} uten likhetstegn skrev et tema likevel`)
+    krev(
+      melding.includes(`«${flagg}» mangler en verdi`),
+      `feilmeldingen sier ikke at ${flagg} mangler en verdi: ${melding}`,
+    )
+  }
+  krev(
+    !(await readFile(tema).then(
+      () => true,
+      () => false,
+    )),
+    "tema skrev en fil selv om --ut manglet likhetstegn",
+  )
+
+  const to = await kjør(["tema", oppskrift, oppskrift])
+  krev(to.kode === 1, `tema med to oppskrifter skulle gitt feilkode`)
+  krev(
+    to.feil.includes("én oppskrift"),
+    `tema med to oppskrifter sa ikke hva som var galt: ${to.feil}`,
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
+// Et ukjent flagg med likhetstegn stopper også overta og agent. `--utt=`
+// la kopien stille i standardmappa, og `--rammverk=` ga regelboka for maler.
+{
+  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const overta = await kjør(["overta", "button", "--utt=src/ui"], mappe)
+  krev(overta.kode === 1, `overta med --utt skulle gitt feilkode`)
+  krev(
+    overta.feil.includes("Ukjent flagg: --utt"),
+    `overta med --utt sa ikke at flagget er ukjent: ${overta.feil}`,
+  )
+  krev(
+    (await readdir(mappe)).length === 0,
+    "overta med et ukjent flagg skrev en kopi likevel",
+  )
+
+  const agent = await kjør(["agent", "--rammverk=react"], mappe)
+  krev(agent.kode === 1, `agent med --rammverk skulle gitt feilkode`)
+  krev(
+    agent.ut === "" && agent.feil.includes("Ukjent flagg: --rammverk"),
+    `agent med --rammverk sa ikke at flagget er ukjent: ${agent.feil}`,
+  )
+  await rm(mappe, { recursive: true, force: true })
+}
+
 // Sier hvilke komponenter som finnes når navnet er ukjent
 {
   const { kode, feil: melding } = await kjør(["overta", "knapp"])
@@ -799,6 +888,31 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(
     ugyldig.feil.includes("JSON"),
     `feilmeldingen sier ikke at fila ikke er JSON: ${ugyldig.feil.slice(0, 80)}`,
+  )
+
+  // Fila leses som `JSON.parse` leser den, slik TypeScript-utgaven gjorde:
+  // tall og strenger som ikke er JSON avvises, også på et lavere nivå.
+  for (const [navn, tekst] of [
+    ["null foran", '{"typografi":{"weights":{"bold":0700}}}'],
+    ["punktum til slutt", '{"typografi":{"lineHeights":{"default":1.}}}'],
+    ["kontrolltegn", '{"aksent":"#7c3aed\u0001"}'],
+    ["dyp nesting", `{"form":${"[".repeat(100_000)}`],
+  ]) {
+    await writeFile(sti, tekst)
+    const svar = await kjør(["tema", sti])
+    krev(
+      svar.kode === 1 && svar.feil.includes("er ikke gyldig JSON"),
+      `en oppskrift med ${navn} skulle vært ugyldig JSON, ga ${svar.kode}: ${svar.feil.slice(0, 120)}`,
+    )
+  }
+
+  // Står en nøkkel to ganger, vinner den siste, som i `JSON.parse`.
+  await writeFile(sti, '{"aksent":"#ff0000","aksent":"#0000ff"}')
+  const dobbel = await kjør(["tema", sti])
+  const blå = await kjør(["tema", "--aksent=#0000ff"])
+  krev(
+    dobbel.kode === 0 && dobbel.ut === blå.ut,
+    "en nøkkel som står to ganger i oppskriften, fikk ikke den siste verdien",
   )
 
   await rm(mappe, { recursive: true, force: true })
@@ -888,6 +1002,75 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     tomFeil.includes("standard inn var tom"),
     "feilmeldingen sier ikke at inndata var tom",
   )
+
+  // Det samme gjelder filer: er hver fil tom, er det ingenting å sjekke.
+  // Én tom fil blant flere, som en tom partial i et glob, er ikke en feil.
+  const tomme = await mkdtemp(join(tmpdir(), "fristil-tom-"))
+  const tomFil = join(tomme, "tom.html")
+  const blankFil = join(tomme, "blank.html")
+  const fullFil = join(tomme, "full.html")
+  await writeFile(tomFil, "")
+  await writeFile(blankFil, " \n\t\n")
+  await writeFile(fullFil, '<button class="fs-button">Lagre</button>')
+  for (const filer of [[tomFil], [blankFil], [tomFil, blankFil]]) {
+    const { kode, feil: melding } = await kjør(["sjekk", ...filer])
+    krev(
+      kode === 1,
+      `sjekk av bare tomme filer avsluttet med kode ${kode}: ${filer.join(" ")}`,
+    )
+    krev(
+      melding.includes("Ingen markup å sjekke"),
+      `sjekk av bare tomme filer sa ikke at det var ingenting å sjekke: ${melding}`,
+    )
+  }
+  const blandet = await kjør(["sjekk", tomFil, fullFil])
+  krev(
+    blandet.kode === 0,
+    `én tom fil blant flere ga kode ${blandet.kode}: ${blandet.feil}`,
+  )
+
+  // En BOM først teller ikke som en kolonne, slik editoren viser linja. Det
+  // gjelder en fil, standard inn og en side verten har hentet.
+  const bomFil = join(tomme, "bom.html")
+  const bomSide = '\uFEFF<span class="fs-buton">x</span>\n'
+  await writeFile(bomFil, bomSide)
+  const bom = await kjør(["sjekk", bomFil])
+  krev(
+    bom.ut.includes(`${bomFil}:1:14:`),
+    `en fil med BOM fikk feil kolonne: ${bom.ut}`,
+  )
+  const bomInn = Bun.spawn([...KOMMANDO, "sjekk"], {
+    env: ENVIRONMENT,
+    stdin: new Blob([bomSide]),
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  antallKjøringer += 1
+  const [bomInnUt] = await Promise.all([
+    new Response(bomInn.stdout).text(),
+    bomInn.exited,
+  ])
+  krev(
+    bomInnUt.includes("stdin:1:14:"),
+    `standard inn med BOM fikk feil kolonne: ${bomInnUt}`,
+  )
+  const hentetFil = join(tomme, "hentet.txt")
+  await writeFile(
+    hentetFil,
+    `http://localhost:1/bom\n200\ntext/html\n${bomSide}`,
+  )
+  const hentet = await kjør(["sjekk", `--hentet=${hentetFil}`])
+  krev(
+    hentet.ut.includes("http://localhost:1/bom:1:14:"),
+    `en hentet side med BOM fikk feil kolonne: ${hentet.ut}`,
+  )
+  await writeFile(hentetFil, "http://localhost:1/bom\n200\ntext/html\n\uFEFF")
+  const bareBom = await kjør(["sjekk", `--hentet=${hentetFil}`])
+  krev(
+    bareBom.kode === 1 && bareBom.feil.includes("svarte med en tom side"),
+    `en hentet side med bare en BOM ble ikke meldt som tom: ${bareBom.feil}`,
+  )
+  await rm(tomme, { recursive: true, force: true })
 
   // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
   // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
@@ -1091,12 +1274,18 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
           { headers: html },
         )
       if (sti === "/json") return Response.json({ ok: true })
+      if (sti === "/tom") return new Response("", { headers: html })
+      if (sti === "/bom")
+        return new Response(
+          new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode(side)]),
+          { headers: html },
+        )
       return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
     },
   })
   const rot = `http://localhost:${tjener.port}`
 
-  for (const sti of ["/side", "/videre", "/biter"]) {
+  for (const sti of ["/side", "/videre", "/biter", "/bom"]) {
     const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
     krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
     krev(
@@ -1109,9 +1298,25 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     )
   }
 
+  // BOM-en først gir ikke en kolonne mer: funnene er de samme som uten.
+  const utenBom = await kjør(["sjekk", `${rot}/side`])
+  const medBom = await kjør(["sjekk", `${rot}/bom`])
+  krev(
+    medBom.ut.replaceAll("/bom", "/side") === utenBom.ut,
+    `en side med BOM ga andre posisjoner enn uten: ${medBom.ut.slice(0, 200)}`,
+  )
+
   const json = await kjør(["sjekk", `${rot}/json`])
   krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")
   krev(json.feil.includes("ikke HTML"), `JSON ble ikke avvist: ${json.feil}`)
+
+  // En side som rendret tomt, skal ikke bli grønn uten å ha sjekket noe.
+  const tom = await kjør(["sjekk", `${rot}/tom`])
+  krev(tom.kode === 1, `en tom side skulle gitt feilkode, ga ${tom.kode}`)
+  krev(
+    tom.feil.includes(`${rot}/tom svarte med en tom side.`),
+    `en tom side ble ikke meldt: ${tom.feil}`,
+  )
 
   const borte = await kjør(["sjekk", `${rot}/borte`])
   krev(borte.kode === 1, "en 404 skulle gitt feilkode")

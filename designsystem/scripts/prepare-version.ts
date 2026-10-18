@@ -152,27 +152,26 @@ if (!kotlin.includes(kotlinFør)) {
   stopp(`Fant ikke version=${naavaerende} i ${kotlinSti}.`)
 }
 
-await Bun.write(
-  loggSti,
-  logg.replace(UUTGITT, `${UUTGITT}\n\n## ${nyVersjon} (${dato})`),
-)
-await Bun.write(
-  manifestSti,
-  manifest.replace(`"version": "${naavaerende}"`, `"version": "${nyVersjon}"`),
-)
-
-// `bun.lock` har også versjonen til hvert workspace i seg, og den blir
-// hengende igjen på forrige nummer. Testet med bun 1.3.14: dette stopper
-// ikke `--frozen-lockfile`, som bare sammenligner oppløsningene av
-// avhengigheter. Publiseringen går altså gjennom uansett.
-//
-// Den skrives likevel her, fordi en lockfil som oppgir feil versjon er
-// villedende for den som leser den, og avviket bare vokser for hver utgivelse.
-//
-// Verdien må settes for hånd. Verken `bun install`, `--lockfile-only` eller
-// `--force` oppdaterer den når det bare er versjonen som har endret seg. Bare
-// en full regenerering gjør det, og å slette lockfila i et slipp ville rørt
-// oppløsninger som ikke har noe med saken å gjøre.
+/*
+ * `bun.lock` har også versjonen til hvert workspace i seg, og den blir
+ * hengende igjen på forrige nummer. Testet med bun 1.3.14: dette stopper
+ * ikke `--frozen-lockfile`, som bare sammenligner oppløsningene av
+ * avhengigheter. Publiseringen går altså gjennom uansett.
+ *
+ * Den skrives likevel, fordi en lockfil som oppgir feil versjon er
+ * villedende for den som leser den, og avviket bare vokser for hver utgivelse.
+ *
+ * Verdien må settes for hånd. Verken `bun install`, `--lockfile-only` eller
+ * `--force` oppdaterer den når det bare er versjonen som har endret seg. Bare
+ * en full regenerering gjør det, og å slette lockfila i et slipp ville rørt
+ * oppløsninger som ikke har noe med saken å gjøre.
+ *
+ * Kontrollen av formatet står her, før første skriving, som de andre. Den
+ * sto etter at loggen og `package.json` var skrevet, og en ny versjon av Bun
+ * som skriver lockfila annerledes ville da stoppet skriptet med de to filene
+ * alt endret, og neste forsøk nektet fordi `package.json` sa at versjonen
+ * var tatt.
+ */
 const lockSti = join(monorepoRot, "bun.lock")
 const lock = await Bun.file(lockSti).text()
 const lockMonster = new RegExp(
@@ -184,6 +183,15 @@ if (!lockMonster.test(lock)) {
     `Fant ikke versjonen til ${pakkenavn} i bun.lock. Sjekk formatet før du gir ut.`,
   )
 }
+
+await Bun.write(
+  loggSti,
+  logg.replace(UUTGITT, `${UUTGITT}\n\n## ${nyVersjon} (${dato})`),
+)
+await Bun.write(
+  manifestSti,
+  manifest.replace(`"version": "${naavaerende}"`, `"version": "${nyVersjon}"`),
+)
 
 await Bun.write(lockSti, lock.replace(lockMonster, `$1${nyVersjon}$2`))
 
@@ -201,11 +209,12 @@ console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
 
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
-Slik gir du den ut:
+Slik gir du den ut. Commit først: «Ingenting er ugenerert» i sjekk spør git
+om bygget endret noe, og ville ellers stoppet på filene som nettopp ble skrevet.
 
-  bun run sjekk
   git checkout -b slipp-${nyVersjon}
   git commit -am "Slipp ${nyVersjon}"
+  bun run sjekk
   git push -u origin slipp-${nyVersjon} && gh pr create --fill
 
 Når grenen er slått sammen, og først da:

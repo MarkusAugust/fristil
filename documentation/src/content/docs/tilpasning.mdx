@@ -27,7 +27,7 @@ Standarden er å la være: Fristils egne farger er kontrollert mot WCAG AA i beg
 | Endre en hel familie | De ni rollene, `--fs-color-accent-surface` til `--fs-color-accent-content` |
 | Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../eget-tema/), så skrives fila for deg |
 
-Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `fristil-tema`, slik at din egen CSS fortsatt vinner over temaet.
+Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `fristil-tema`, erklært etter `fristil`, så din egen CSS uten lag vinner fortsatt over temaet. Bruker du Tailwind, må laget stå i [lagrekkefølgen](#tailwind-og-lagrekkefølgen), ellers havner det etter `utilities` og slår klassene dine.
 
 Skriver du celler selv, er kontrastløftene dine å holde. `fristil sjekk-tema tema.css` sier hvilken celle som ryker og hvorfor.
 
@@ -265,7 +265,7 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-avatar-size` | `var(--fs-spacing-10)` |
 | `--fs-avatar-radius` | `var(--fs-spacing-1)` |
 | `--fs-skeleton-height` | `var(--fs-spacing-4)`, men `var(--fs-spacing-10)` i `circle` |
-| `--fs-skeleton-radius` | `var(--fs-spacing-1)` |
+| `--fs-skeleton-radius` | `var(--fs-spacing-1)`, men `var(--fs-spacing-0-5)` i `text` |
 | `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
 | `--fs-pagination-gap` | `var(--fs-spacing-1)` |
 | `--fs-pagination-size` | `var(--fs-spacing-10)` |
@@ -342,7 +342,7 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--fs-connection-status-layer` | `1000` |
 | `--fs-connection-status-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
 
-Standardverdiene peker på `--fs-spacing-*`-skalaen. Endrer du skalaen, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
+Standardverdiene peker på `--fs-spacing-*`-skalaen. Skriver du om skalaen, trinn for trinn, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
 
 ## Når variabelen ikke rekker
 
@@ -379,22 +379,23 @@ Fristil setter selv `display: flex` når `.fs-dialog__body` er et direkte barn, 
 Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
 
 ```css
-@layer theme, base, fristil, components, utilities;
+@layer theme, base, fristil, fristil-tema, components, utilities;
 
 @import "tailwindcss";
 @import "@fristil/designsystem/tokens.css";
 @import "@fristil/designsystem/tailwind.css";
 ```
 
-Uten den linja får du ett av to problemer, avhengig av hvilken import som kommer først:
+Uten den linja får du ett av problemene i tabellen. De to første avhenger av hvilken import som kommer først, det tredje kommer den dagen du legger til et generert tema:
 
 | Rekkefølge | Hva som skjer |
 | --- | --- |
 | `fristil` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
 | `fristil` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.fs-button` gjør ingenting. |
-| `base`, `fristil`, `utilities` | Begge deler virker |
+| `fristil-tema` etter `utilities` | Et [generert tema](../eget-tema/) slår Tailwind-klassene dine. Laget må stå i linja selv om du ikke har noe tema ennå. |
+| `base`, `fristil`, `fristil-tema`, `utilities` | Alt virker |
 
-Det første er testet, ikke antatt: `tilpasning.browser.test.ts` bygger det i sitt eget dokument og kontrollerer hva knappen faktisk får.
+Feiltilfellene er testet, ikke antatt: `tilpasning.browser.test.ts` bygger hvert av dem i sitt eget dokument og kontrollerer hva knappen og rotelementet faktisk får.
 
 Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 

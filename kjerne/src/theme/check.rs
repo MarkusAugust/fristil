@@ -15,7 +15,7 @@ use super::contract::{
 use super::{is_js_space, js_number, js_trim};
 use cssparser::{
     AtRuleParser, CowRcStr, DeclarationParser, ParseError, Parser, ParserState,
-    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, StyleSheetParser,
+    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, StyleSheetParser, Token,
 };
 
 pub struct ParsedBlock {
@@ -100,11 +100,27 @@ impl<'i> DeclarationParser<'i> for Reader {
         input: &mut Parser<'i>,
         _start: &ParserState,
     ) -> Result<Item, ParseError<()>> {
+        // En verdi med en `{}`-blokk er ingen deklarasjon, men en nøstet regel
+        // som `html:not(…) { … }` eller `a:hover { … }`. CSS Syntax kaster den
+        // som deklarasjon, og først da leser cssparser den på nytt som regel.
+        // Svarte vi `Ok`, slukte den alt fram til neste semikolon, blokkene
+        // etter den med. En egendefinert variabel kan ha en blokk i verdien.
+        let state = input.state();
+        let mut block = false;
+        while let Ok(token) = input.next() {
+            block |= matches!(token, Token::CurlyBracketBlock);
+        }
+        if block && !name.starts_with("--") {
+            return Err(ParseError::custom(()));
+        }
+        input.reset(&state);
         let value = rest_as_text(input);
-        // Bare det sjekken bruker: fargene, og `color-scheme`, som sier om
-        // blokka er lys eller mørk. Navnet på en egendefinert variabel skiller
-        // mellom store og små bokstaver, navnet på en egenskap gjør det ikke.
-        if name.starts_with("--fs-color-") || name.eq_ignore_ascii_case("color-scheme") {
+        // Bare det sjekken bruker: Fristils tokens, og `color-scheme`, som sier
+        // om blokka er lys eller mørk. Skriften og formen kontrolleres ikke,
+        // men skiller et tema uten farger fra en fil som ikke er et tema.
+        // Navnet på en egendefinert variabel skiller mellom store og små
+        // bokstaver, navnet på en egenskap gjør det ikke.
+        if name.starts_with("--fs-") || name.eq_ignore_ascii_case("color-scheme") {
             let name = if name.starts_with("--") {
                 name.to_string()
             } else {
@@ -183,19 +199,42 @@ impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
     }
 }
 
+/// Fargene utenfor matrisen: avslått tilstand og flaten bak en modal. De er
+/// ingen celle, har ingen familie og ingen rolle, og lover ingen kontrast. En
+/// kontroll som er av, er unntatt kravet i WCAG 1.4.3. De samme som
+/// `SystemColorToken` i `designsystem/src/tokens/tokens.ts`, uten skyggen.
+const SYSTEM_COLORS: [&str; 3] = [
+    "--fs-color-disabled-surface",
+    "--fs-color-disabled-text",
+    "--fs-color-overlay",
+];
+
 /// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
-/// over seg som sti.
-fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
+/// over seg som sti. Systemfargene er ikke med, de telles i `others` sammen
+/// med de andre tokenene uten et kontrastløfte.
+///
+/// `others` teller hvert `--fs-*`-navn som ikke er en farge med løfte, også
+/// et feilstavet. Komponentene har egne tokens, som `--fs-label-required-text`
+/// og `--fs-progress-height`, og en liste over kjente navn ville gitt feilkode
+/// for et tema som bare setter et av dem. Antallet står i svaret, så et
+/// feilstavet fargenavn synes der.
+fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, others: &mut usize) {
     path.push(node.selector);
     for child in node.children {
-        flatten(child, path, out);
+        flatten(child, path, out, others);
     }
     let colors: Vec<(String, String)> = node
         .declarations
         .iter()
-        .filter(|(n, _)| n.starts_with("--fs-color-"))
+        .filter(|(n, _)| n.starts_with("--fs-color-") && !SYSTEM_COLORS.contains(&n.as_str()))
         .map(|(n, v)| (n.clone(), without_important(v).to_string()))
         .collect();
+    *others += node
+        .declarations
+        .iter()
+        .filter(|(n, _)| n.starts_with("--fs-"))
+        .count()
+        - colors.len();
     if !colors.is_empty() {
         let scheme = node
             .declarations
@@ -230,15 +269,21 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>) {
 /// som ikke er lukket, leses som om den slutter der fila slutter, slik
 /// nettleseren gjør.
 pub fn parse_blocks(css: &str) -> Vec<ParsedBlock> {
+    read_blocks(css).0
+}
+
+/// Blokkene, og hvor mange andre `--fs-*`-tokens fila setter.
+fn read_blocks(css: &str) -> (Vec<ParsedBlock>, usize) {
     let mut parser = Parser::new(css);
     let mut reader = Reader;
     let mut blocks = Vec::new();
+    let mut others = 0;
     for item in StyleSheetParser::new(&mut parser, &mut reader).flatten() {
         if let Item::Block(node) = item {
-            flatten(node, &mut Vec::new(), &mut blocks);
+            flatten(node, &mut Vec::new(), &mut blocks, &mut others);
         }
     }
-    blocks
+    (blocks, others)
 }
 
 /// Klammene i teksten, `{` og `}`, utenom dem i strenger, kommentarer og
@@ -289,10 +334,11 @@ fn without_important(value: &str) -> &str {
 }
 
 /// Om blokka bare gjelder i lyst tema: selektoren har `light` som eget ord
-/// utenfor en `:not()`, eller den står i en `@media` for `print`, som
-/// skrives ut lyst. `.highlight` og `.lightbox` er ikke lyst tema.
+/// utenfor en `:not()`, den står i `@media not (prefers-color-scheme: dark)`,
+/// eller den står i en `@media` for `print`, som skrives ut lyst.
+/// `.highlight` og `.lightbox` er ikke lyst tema.
 fn only_light(selector: &str) -> bool {
-    let s = without_not(selector).to_ascii_lowercase();
+    let s = flip_negated_scheme(&without_not(selector)).to_ascii_lowercase();
     let words: Vec<&str> = s
         .split(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
         .collect();
@@ -334,6 +380,77 @@ fn without_not(selector: &str) -> String {
     out
 }
 
+/// Hver negerte mediespørring om fargeskjema skrevet som det den gjelder.
+///
+/// `not (prefers-color-scheme: dark)`, `not all and (…)` og `not screen and
+/// (…)` gjelder det motsatte skjemaet, og skrives som det. Ellers leses `dark`
+/// i dem som mørkt tema. Med en annen medietype, som i `not print and (…)`,
+/// gjelder blokka skjermen i begge skjemaer, og spørringen tas bort, så
+/// blokka leses som en blokk uten betingelse.
+fn flip_negated_scheme(selector: &str) -> String {
+    let lower = selector.to_ascii_lowercase();
+    // Teksten etter nøkkelordet, når det står som eget ord.
+    fn after<'a>(rest: &'a str, keyword: &str) -> Option<&'a str> {
+        rest.strip_prefix(keyword)
+            .filter(|r| r.starts_with(is_js_space) || r.starts_with('('))
+            .map(|r| r.trim_start_matches(is_js_space))
+    }
+    let word = |c: u8| c.is_ascii_alphanumeric() || c == b'-' || c == b'_';
+    let mut out = String::new();
+    let mut copied = 0;
+    let mut from = 0;
+    while let Some(found) = lower[from..].find("not") {
+        let at = from + found;
+        from = at + 3;
+        if at > 0 && word(lower.as_bytes()[at - 1]) {
+            continue;
+        }
+        let Some(mut rest) = after(&lower[at..], "not") else {
+            continue;
+        };
+        // `not <medietype> and (…)` negerer hele spørringen, medietypen med.
+        // For `all` og `screen` gjelder blokka da det motsatte skjemaet på
+        // skjerm. For `print`, `tv` og de andre er `not` sann på hver skjerm,
+        // i lyst og i mørkt tema, og spørringen sier ingenting om skjema.
+        let media_type = rest
+            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+            .map_or(rest, |end| &rest[..end]);
+        let mut any_scheme = false;
+        if !media_type.is_empty() && !matches!(media_type, "and" | "not" | "only" | "or") {
+            if let Some(r) = after(rest, media_type).and_then(|r| after(r, "and")) {
+                rest = r;
+                any_scheme = !matches!(media_type, "all" | "screen");
+            }
+        }
+        let scheme = rest
+            .strip_prefix('(')
+            .map(|r| r.trim_start_matches(is_js_space))
+            .and_then(|r| r.strip_prefix("prefers-color-scheme"))
+            .map(|r| r.trim_start_matches(is_js_space))
+            .and_then(|r| r.strip_prefix(':'))
+            .map(|r| r.trim_start_matches(is_js_space));
+        let Some((opposite, r)) = scheme.and_then(|r| {
+            r.strip_prefix("dark")
+                .map(|r| ("light", r))
+                .or_else(|| r.strip_prefix("light").map(|r| ("dark", r)))
+        }) else {
+            continue;
+        };
+        let Some(r) = r.trim_start_matches(is_js_space).strip_prefix(')') else {
+            continue;
+        };
+        let end = lower.len() - r.len();
+        out.push_str(&selector[copied..at]);
+        if !any_scheme {
+            out.push_str(&format!("(prefers-color-scheme: {opposite})"));
+        }
+        copied = end;
+        from = end;
+    }
+    out.push_str(&selector[copied..]);
+    out
+}
+
 /// Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
 ///
 /// `scheme` er verdien i blokkas siste `color-scheme`, som vinner i kaskaden.
@@ -360,8 +477,8 @@ fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
         }
     }
     // `dark` må stå som eget ord: `.darkmode-toggle` er ikke et mørkt tema.
-    // Det som står i `:not(…)` sier hva blokka ikke er.
-    let selector = without_not(selector);
+    // Det som står i `:not(…)` og etter `@media not` sier hva blokka ikke er.
+    let selector = flip_negated_scheme(&without_not(selector));
     let s: Vec<char> = selector.chars().collect();
     let letter = |c: Option<&char>| c.is_some_and(|c| c.is_ascii_alphabetic());
     for k in 0..s.len() {
@@ -432,6 +549,10 @@ pub struct Report {
     pub declarations: usize,
     /// Løfter som faktisk ble kontrollert.
     pub promises: usize,
+    /// Andre `--fs-*`-tokens fila setter, uten et kontrastløfte: skriften,
+    /// formen og systemfargene. Med dem og ingen farger er fila et tema uten
+    /// farger, ikke en fil uten tema.
+    pub others: usize,
 }
 
 /// Leser et tema og kontrollerer hvert løfte i hver blokk.
@@ -449,10 +570,11 @@ pub fn inspect_theme(css: &str) -> Report {
             blocks: 0,
             declarations: 0,
             promises: 0,
+            others: 0,
         };
     }
     let mut problems = Vec::new();
-    let blocks = parse_blocks(css);
+    let (blocks, others) = read_blocks(css);
     let mut checked_promises = 0;
     let mut understood = 0;
 
@@ -466,16 +588,21 @@ pub fn inspect_theme(css: &str) -> Report {
         });
     }
 
+    // Et tema uten farger, bare skrift og form, har ingen kontrast å
+    // kontrollere, og det er ikke et problem.
     if blocks.is_empty() {
-        problems.push(Problem {
-            selector: "(hele fila)".into(),
-            message: "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?".into(),
-        });
+        if others == 0 {
+            problems.push(Problem {
+                selector: "(hele fila)".into(),
+                message: "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?".into(),
+            });
+        }
         return Report {
             problems,
             blocks: 0,
             declarations: 0,
             promises: 0,
+            others,
         };
     }
 
@@ -625,5 +752,6 @@ pub fn inspect_theme(css: &str) -> Report {
         blocks: blocks.len(),
         declarations: understood,
         promises: checked_promises,
+        others,
     }
 }

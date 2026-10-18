@@ -3,7 +3,8 @@
  *
  * Filene kommer ut i pakken, og ingen av dem skrives for hånd. Editorene
  * leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og
- * IntelliJ-pluginen leser klassene fra manifestet i Kotlin-pakken.
+ * IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet
+ * i Kotlin-pakken som reserve.
  *
  *   - `html-data.json`: VS Codes eget format for tagger og
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
@@ -36,6 +37,7 @@ import type {
   ClassInfo,
   Elements,
 } from "../src/vocabulary/types.js"
+import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner.js"
 import {
   type AttributeDoc,
   type ClassDoc,
@@ -290,8 +292,6 @@ const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
 
-const MANIFEST = join(ROOT, "designsystem/manifest/manifest.json")
-
 const OPTION_LISTS: Record<string, string> = {
   variants: "variant",
   sizes: "size",
@@ -448,18 +448,35 @@ export function classesData(): Classes {
 
   /*
    * Flaggene, som `data-interactive` på `fs-card` og `data-optional` på
-   * `fs-label`, fra manifestet. Det finner dem i byggetilfellene: et
-   * `data-*`-attributt som kommer når et boolsk valg slås på. Uten dette
-   * manglet de i editoren og i regelbøkene, mens `fristil sjekk` kjente dem.
+   * `fs-label`: et `data-*`-attributt som kommer når et boolsk valg slås på.
+   * Uten dem manglet de i editoren og i regelbøkene, mens `fristil sjekk`
+   * kjente dem.
+   *
+   * De leses av byggefunksjonen selv, med valgene TypeScript ser i
+   * `src/fs.ts`, ikke fra `manifest.json` på disk. Lest derfra lå de en runde
+   * bak: `generate` skriver denne fila før manifestet, så et nytt flagg kom
+   * inn i manifestet ved første bygg, men hit først ved det neste, og
+   * `sjekk:ordforrad` felte bygget i mellomtiden.
    */
-  const manifest: {
-    classes: Record<string, { attributes: Record<string, { flag?: true }> }>
-  } = JSON.parse(readFileSync(MANIFEST, "utf8"))
-  for (const [name, info] of Object.entries(found))
-    for (const [attribute, takes] of Object.entries(
-      manifest.classes[name]?.attributes ?? {},
-    ))
-      if (takes.flag) info.attributes[attribute] ??= { values: [], flag: true }
+  const flags = new Map<string, Set<string>>()
+  for (const builder of lesByggefunksjoner()) {
+    const build = (fs as Record<string, unknown>)[builder.name]
+    if (typeof build !== "function") continue
+    // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
+    // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
+    const flagged = flaggFor(
+      builder,
+      build as (options: Record<string, unknown>) => unknown,
+      { id: "x", titleId: "x" },
+      (name) => name in found,
+    )
+    for (const [name, attributes] of flagged)
+      for (const attribute of attributes)
+        flags.set(name, (flags.get(name) ?? new Set()).add(attribute))
+  }
+  for (const [name, attributes] of flags)
+    for (const attribute of [...attributes].sort())
+      found[name].attributes[attribute] ??= { values: [], flag: true }
 
   /*
    * Innholdet og delene, fra tabellen i `metadata.ts`. Hver klasse i CSS-en
@@ -540,10 +557,19 @@ export function files(): Record<string, string> {
  *
  * Sender to elementer en hendelse med samme navn, må `detail` være den
  * samme, ellers kunne bare én av dem få en type. Da stopper generatoren.
+ *
+ * Fila utvider også `HTMLElementTagNameMap`, så `querySelector("fs-dialog")`
+ * gir `FsDialog` og ikke `Element`. Kartet sto i hver `fs-*.ts`, men en
+ * inngang som `/register` importerer dem bare i koden, og i `.d.ts`-fila
+ * forsvinner importen. Da var `querySelector("fs-dialog")` et `Element`, og
+ * `addEventListener` på det ga `Event` uten `detail`, mens siden lovet det
+ * motsatte. Hver inngang til web-komponentene tar med denne fila, gjennom
+ * `host-element.ts` eller en egen re-eksport, så kartet følger med dem alle.
  */
 function eventTypes(): string {
   const seen = new Map<string, { type: string; tag: string }>()
   const lines: string[] = []
+  const hosts = hostClasses()
   for (const element of elements) {
     for (const [name, doc] of Object.entries(element.events)) {
       const fields = Object.entries(doc.detail ?? {})
@@ -564,7 +590,22 @@ function eventTypes(): string {
       )
     }
   }
+  const imports = elements
+    .map((element) => {
+      const host = hosts.get(element.tag)
+      if (!host)
+        throw new Error(
+          `Fant ingen klasse for <${element.tag}> under src/components`,
+        )
+      return host
+    })
+    .sort((a, b) => a.module.localeCompare(b.module))
+  const tags = elements
+    .map((element) => `    "${element.tag}": ${hosts.get(element.tag)?.name}`)
+    .sort()
   return `// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
+
+${imports.map((host) => `import type { ${host.name} } from "./${host.module}.js"`).join("\n")}
 
 /**
  * Hendelsene web-komponentene sender, med \`detail\` slik komponenten sender
@@ -572,6 +613,12 @@ function eventTypes(): string {
  * \`DocumentEventMap\` utvides med dem, så \`addEventListener("dialog-toggle",
  * …)\` gir \`event.detail.open\` som \`boolean\` på ethvert element og på
  * \`document\`.
+ *
+ * \`HTMLElementTagNameMap\` utvides med elementene, så
+ * \`querySelector("fs-dialog")\` gir \`FsDialog | null\`. Kartet står her, og
+ * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
+ * denne fila: fra \`/register\` alene var \`querySelector("fs-dialog")\` ellers
+ * et \`Element\`, og lytteren på det fikk \`Event\` uten \`detail\`.
  */
 export interface FsEventMap {
 ${lines.join("\n")}
@@ -580,8 +627,38 @@ ${lines.join("\n")}
 declare global {
   interface HTMLElementEventMap extends FsEventMap {}
   interface DocumentEventMap extends FsEventMap {}
+  interface HTMLElementTagNameMap {
+${tags.join("\n")}
+  }
 }
 `
+}
+
+/**
+ * Klassen bak hvert element, lest fra kilden.
+ *
+ * Fila heter det samme som taggen, som `ramme/dialog/fs-dialog.ts` for
+ * `<fs-dialog>`, og klassen står som `export class FsDialog`. Navnet leses
+ * derfra, ikke fra en liste her, så et element som bytter mappe eller navn
+ * stopper generatoren i stedet for å gi et kart som peker feil.
+ */
+function hostClasses(): Map<string, { name: string; module: string }> {
+  const components = join(ROOT, "designsystem/src/components")
+  const hosts = new Map<string, { name: string; module: string }>()
+  for (const element of elements) {
+    const file = [...new Bun.Glob(`**/${element.tag}.ts`).scanSync(components)]
+    if (file.length !== 1)
+      throw new Error(
+        `Ventet én fil ${element.tag}.ts under src/components, fant ${file.length}`,
+      )
+    const module = (file[0] as string).replace(/\.ts$/, "")
+    const source = readFileSync(join(components, file[0] as string), "utf8")
+    const name = /^export class (Fs\w+) extends /m.exec(source)?.[1]
+    if (!name)
+      throw new Error(`Fant ingen «export class Fs… extends» i ${file[0]}`)
+    hosts.set(element.tag, { name, module })
+  }
+  return hosts
 }
 
 if (import.meta.main) {
