@@ -45,18 +45,21 @@ export const elements: Elements = {
       "control": {
         "selector": "input:not([type='hidden']), textarea, select",
         "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "help": {
         "selector": ".fs-help-text",
         "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
         "content": "text",
+        "unique": true,
         "optional": true
       },
       "error": {
         "selector": ".fs-error-text",
         "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
         "content": "text",
+        "unique": true,
         "optional": true
       }
     }
@@ -74,7 +77,8 @@ export const elements: Elements = {
       "list": {
         "selector": "[role='tablist'], .fs-tabs__list",
         "description": "Raden med fanene. Har en fane `role=\"tab\"`, kan raden også ha andre knapper, som en lukkeknapp.",
-        "content": "free"
+        "content": "free",
+        "unique": true
       },
       "tab": {
         "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
@@ -216,12 +220,14 @@ export const elements: Elements = {
       "control": {
         "selector": "[role='combobox'], input:not([type='hidden'])",
         "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "list": {
         "selector": "[role='listbox'], .fs-suggestion__list",
         "description": "Lista med forslag.",
-        "content": "parts"
+        "content": "parts",
+        "unique": true
       },
       "option": {
         "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
@@ -233,6 +239,7 @@ export const elements: Elements = {
         "selector": ".fs-suggestion__empty",
         "description": "Meldingen som vises når ingenting passer.",
         "content": "text",
+        "unique": true,
         "optional": true
       },
       "status": {
@@ -266,7 +273,8 @@ export const elements: Elements = {
       "dialog": {
         "selector": ":scope > dialog",
         "description": "`<dialog>`-elementet, som et direkte barn av verten.",
-        "content": "free"
+        "content": "free",
+        "unique": true
       },
       "title": {
         "selector": "h1, h2, h3, h4, h5, h6",
@@ -278,6 +286,7 @@ export const elements: Elements = {
         "selector": ".fs-dialog__body",
         "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
         "content": "free",
+        "unique": true,
         "optional": true
       }
     },
@@ -333,7 +342,8 @@ export const elements: Elements = {
       "dialog": {
         "selector": "dialog",
         "description": "`<dialog>`-elementet med varselet.",
-        "content": "free"
+        "content": "free",
+        "unique": true
       },
       "title": {
         "selector": "h1, h2, h3, h4, h5, h6",
@@ -344,12 +354,14 @@ export const elements: Elements = {
       "text": {
         "selector": ".fs-session-timeout__text",
         "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
-        "content": "text"
+        "content": "text",
+        "unique": true
       },
       "count": {
         "selector": ".fs-session-timeout__count",
         "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
-        "content": "none"
+        "content": "none",
+        "unique": true
       },
       "status": {
         "selector": "[role='status']",

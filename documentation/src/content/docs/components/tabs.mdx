@@ -137,7 +137,7 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
       defineFsTabs()
     </script>
 
-    <fs-tabs server-controlled data-on:tab-select="$valgtFane = evt.detail.index">
+    <fs-tabs server-controlled data-signals__ifmissing="{valgtFane: 0}" data-on:tab-select="$valgtFane = evt.detail.index">
       <div class="fs-tabs__list" aria-label="Deler av saken">
         <button>Søknaden</button>
         <button>Vedlegg</button>
@@ -147,7 +147,7 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
     </fs-tabs>
     ```
 
-    `server-controlled` hører med når et signal styrer hvilken fane som vises. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
+    Signalet `$valgtFane` sendes med neste handling Datastar gjør mot serveren, som `@get` eller `@post`, så serveren vet hvilken fane brukeren valgte og rendrer `hidden` på panelene etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
   </TabItem>
 </Tabs>
 

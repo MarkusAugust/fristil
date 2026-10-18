@@ -112,7 +112,13 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
       })
 
       return (
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault()
+            setBerørt(true)
+          }}
+        >
           <label {...felt.label}>Fullt navn</label>
           <input
             {...fs.input({ type: "text" })}
@@ -213,8 +219,10 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 
     ```html
     <form
+      novalidate
       data-signals="{navn: '', beroert: false}"
       data-computed:ugyldig="$beroert && $navn.trim() === ''"
+      data-on:submit__prevent="$beroert = true; !$ugyldig && @post('/kontakt')"
     >
       <fs-field required-marker="symbol" data-attr:invalid="$ugyldig">
         <label>Fullt navn</label>
@@ -222,6 +230,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
           class="fs-input"
           type="text"
           name="navn"
+          required
           data-bind:navn
           data-on:blur="$beroert = true"
         />

@@ -46,18 +46,21 @@
         "control": {
           "selector": "input:not([type='hidden']), textarea, select",
           "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "help": {
           "selector": ".fs-help-text",
           "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
           "content": "text",
+          "unique": true,
           "optional": true
         },
         "error": {
           "selector": ".fs-error-text",
           "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
           "content": "text",
+          "unique": true,
           "optional": true
         }
       }
@@ -75,7 +78,8 @@
         "list": {
           "selector": "[role='tablist'], .fs-tabs__list",
           "description": "Raden med fanene. Har en fane `role=\"tab\"`, kan raden også ha andre knapper, som en lukkeknapp.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "tab": {
           "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
@@ -217,12 +221,14 @@
         "control": {
           "selector": "[role='combobox'], input:not([type='hidden'])",
           "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "list": {
           "selector": "[role='listbox'], .fs-suggestion__list",
           "description": "Lista med forslag.",
-          "content": "parts"
+          "content": "parts",
+          "unique": true
         },
         "option": {
           "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
@@ -234,6 +240,7 @@
           "selector": ".fs-suggestion__empty",
           "description": "Meldingen som vises når ingenting passer.",
           "content": "text",
+          "unique": true,
           "optional": true
         },
         "status": {
@@ -267,7 +274,8 @@
         "dialog": {
           "selector": ":scope > dialog",
           "description": "`<dialog>`-elementet, som et direkte barn av verten.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
@@ -279,6 +287,7 @@
           "selector": ".fs-dialog__body",
           "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
           "content": "free",
+          "unique": true,
           "optional": true
         }
       },
@@ -334,7 +343,8 @@
         "dialog": {
           "selector": "dialog",
           "description": "`<dialog>`-elementet med varselet.",
-          "content": "free"
+          "content": "free",
+          "unique": true
         },
         "title": {
           "selector": "h1, h2, h3, h4, h5, h6",
@@ -345,12 +355,14 @@
         "text": {
           "selector": ".fs-session-timeout__text",
           "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
-          "content": "text"
+          "content": "text",
+          "unique": true
         },
         "count": {
           "selector": ".fs-session-timeout__count",
           "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
-          "content": "none"
+          "content": "none",
+          "unique": true
         },
         "status": {
           "selector": "[role='status']",
@@ -398,6 +410,19 @@
       "title": "Accordion",
       "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/accordion/",
+      "content": "parts",
+      "parts": {
+        "summary": {
+          "selector": "summary",
+          "description": "Overskriften brukeren trykker på for å åpne og lukke. En `<h2>` til `<h6>` inni gir den et nivå i dokumentet.",
+          "content": "free"
+        },
+        "content": {
+          "selector": ".fs-accordion__content",
+          "description": "Innholdet som vises når panelet er åpent.",
+          "content": "free"
+        }
+      },
       "attributes": {
         "data-variant": {
           "values": [
@@ -413,6 +438,8 @@
       "title": "Accordion",
       "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/accordion/",
+      "content": "free",
+      "partOf": "fs-accordion",
       "attributes": {}
     },
     "fs-alert": {
@@ -420,6 +447,15 @@
       "title": "Alert",
       "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/alert/",
+      "content": "free",
+      "parts": {
+        "title": {
+          "selector": ".fs-alert__title",
+          "description": "Overskriften i meldingen.",
+          "content": "text",
+          "optional": true
+        }
+      },
       "attributes": {
         "data-color": {
           "values": [
@@ -437,6 +473,8 @@
       "title": "Alert",
       "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/alert/",
+      "content": "text",
+      "partOf": "fs-alert",
       "attributes": {}
     },
     "fs-avatar": {
@@ -444,6 +482,15 @@
       "title": "Avatar",
       "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/avatar/",
+      "content": "free",
+      "parts": {
+        "image": {
+          "selector": "img",
+          "description": "Bildet, med navnet i `alt`. Uten bilde står initialene som tekst, og elementet har `aria-hidden` når navnet står ved siden av.",
+          "content": "none",
+          "optional": true
+        }
+      },
       "attributes": {
         "data-variant": {
           "values": [
@@ -467,6 +514,21 @@
       "title": "Avatar",
       "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/avatar/",
+      "content": "parts",
+      "parts": {
+        "item": {
+          "selector": "li",
+          "description": "Ett listepunkt per person.",
+          "content": "parts",
+          "multiple": true
+        },
+        "avatar": {
+          "selector": "li > .fs-avatar",
+          "description": "Avataren i hvert listepunkt.",
+          "content": "free",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-badge": {
@@ -474,6 +536,7 @@
       "title": "Badge",
       "description": "Kompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/badge/",
+      "content": "text",
       "attributes": {
         "data-color": {
           "values": [
@@ -492,6 +555,21 @@
       "title": "Breadcrumbs",
       "description": "Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/breadcrumbs/",
+      "content": "parts",
+      "parts": {
+        "item": {
+          "selector": "li",
+          "description": "Ett steg i stien.",
+          "content": "parts",
+          "multiple": true
+        },
+        "link": {
+          "selector": "li > a",
+          "description": "Lenken til steget. Det siste, siden leseren står på, har `aria-current=\"page\"`.",
+          "content": "text",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-button": {
@@ -499,6 +577,7 @@
       "title": "Button",
       "description": "Knapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/button/",
+      "content": "text",
       "attributes": {
         "data-variant": {
           "values": [
@@ -516,6 +595,15 @@
       "title": "Card",
       "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/card/",
+      "content": "free",
+      "parts": {
+        "title": {
+          "selector": ".fs-card__title",
+          "description": "Overskriften i kortet.",
+          "content": "text",
+          "optional": true
+        }
+      },
       "attributes": {
         "data-variant": {
           "values": [
@@ -535,6 +623,8 @@
       "title": "Card",
       "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/card/",
+      "content": "text",
+      "partOf": "fs-card",
       "attributes": {}
     },
     "fs-checkbox": {
@@ -542,6 +632,7 @@
       "title": "Checkbox",
       "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/checkbox/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -558,6 +649,20 @@
       "title": "Checkbox",
       "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/checkbox/",
+      "content": "parts",
+      "parts": {
+        "control": {
+          "selector": "input[type='checkbox']",
+          "description": "Avkryssingsboksen, med klassen sin.",
+          "content": "none",
+          "unique": true
+        },
+        "label": {
+          "selector": "label",
+          "description": "Ledeteksten, koblet til kontrollen med `for`.",
+          "content": "text"
+        }
+      },
       "attributes": {}
     },
     "fs-divider": {
@@ -565,6 +670,7 @@
       "title": "Divider",
       "description": "Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/divider/",
+      "content": "none",
       "attributes": {
         "data-variant": {
           "values": [
@@ -581,6 +687,7 @@
       "title": "Error Text",
       "description": "Feilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/error-text/",
+      "content": "text",
       "attributes": {
         "data-variant": {
           "values": [
@@ -596,6 +703,27 @@
       "title": "Fieldset",
       "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/fieldset/",
+      "content": "free",
+      "parts": {
+        "legend": {
+          "selector": "> .fs-legend",
+          "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
+          "content": "text",
+          "unique": true
+        },
+        "help": {
+          "selector": ".fs-help-text",
+          "description": "Hjelpeteksten til gruppen, koblet med `aria-describedby` på feltsettet.",
+          "content": "text",
+          "optional": true
+        },
+        "error": {
+          "selector": ".fs-error-text",
+          "description": "Feilmeldingen til gruppen, koblet med `aria-describedby` på feltsettet.",
+          "content": "text",
+          "optional": true
+        }
+      },
       "attributes": {
         "data-state": {
           "values": [
@@ -612,6 +740,8 @@
       "title": "Fieldset",
       "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/fieldset/",
+      "content": "text",
+      "partOf": "fs-fieldset",
       "attributes": {
         "data-required": {
           "values": [
@@ -631,6 +761,7 @@
       "title": "File Upload",
       "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/file-upload/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -647,6 +778,22 @@
       "title": "File Upload",
       "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/file-upload/",
+      "content": "parts",
+      "parts": {
+        "item": {
+          "selector": "li",
+          "description": "Én valgt fil, med navnet.",
+          "content": "free",
+          "multiple": true
+        },
+        "remove": {
+          "selector": "li > button",
+          "description": "Knappen som fjerner fila, med filnavnet i teksten.",
+          "content": "text",
+          "multiple": true,
+          "optional": true
+        }
+      },
       "attributes": {}
     },
     "fs-heading": {
@@ -654,6 +801,7 @@
       "title": "Heading",
       "description": "Overskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/heading/",
+      "content": "text",
       "attributes": {
         "data-size": {
           "values": [
@@ -673,6 +821,7 @@
       "title": "Help Text",
       "description": "Forklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/help-text/",
+      "content": "text",
       "attributes": {
         "data-variant": {
           "values": [
@@ -690,6 +839,7 @@
       "title": "Icon",
       "description": "Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/icon/",
+      "content": "none",
       "attributes": {}
     },
     "fs-input": {
@@ -697,6 +847,7 @@
       "title": "Input",
       "description": "Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
       "link": "https://fristil.sobernetics.no/components/input/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -720,6 +871,7 @@
       "title": "Label",
       "description": "Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
       "link": "https://fristil.sobernetics.no/components/label/",
+      "content": "text",
       "attributes": {
         "data-required": {
           "values": [
@@ -739,6 +891,7 @@
       "title": "Link",
       "description": "Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/link/",
+      "content": "text",
       "attributes": {}
     },
     "fs-list": {
@@ -746,6 +899,15 @@
       "title": "List",
       "description": "Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/list/",
+      "content": "parts",
+      "parts": {
+        "item": {
+          "selector": "li",
+          "description": "Ett punkt i lista.",
+          "content": "free",
+          "multiple": true
+        }
+      },
       "attributes": {
         "data-variant": {
           "values": [
@@ -762,6 +924,28 @@
       "title": "Pagination",
       "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/pagination/",
+      "content": "parts",
+      "parts": {
+        "item": {
+          "selector": "li",
+          "description": "Ett listepunkt per side, pil og hull.",
+          "content": "parts",
+          "multiple": true
+        },
+        "link": {
+          "selector": "li > a, li > button",
+          "description": "Lenken eller knappen til en side, med sidetallet som tekst og `aria-label` som sier hva det er. Den gjeldende har `aria-current=\"page\"`.",
+          "content": "text",
+          "multiple": true
+        },
+        "gap": {
+          "selector": ".fs-pagination__gap",
+          "description": "Hullet der sider er utelatt.",
+          "content": "text",
+          "multiple": true,
+          "optional": true
+        }
+      },
       "attributes": {}
     },
     "fs-pagination__gap": {
@@ -769,6 +953,8 @@
       "title": "Pagination",
       "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/pagination/",
+      "content": "text",
+      "partOf": "fs-pagination",
       "attributes": {}
     },
     "fs-paragraph": {
@@ -776,6 +962,7 @@
       "title": "Paragraph",
       "description": "Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/paragraph/",
+      "content": "text",
       "attributes": {
         "data-variant": {
           "values": [
@@ -799,6 +986,7 @@
       "title": "Progress",
       "description": "Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/progress/",
+      "content": "none",
       "attributes": {
         "data-color": {
           "values": [
@@ -815,6 +1003,7 @@
       "title": "Radio",
       "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/radio/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -831,6 +1020,20 @@
       "title": "Radio",
       "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/radio/",
+      "content": "parts",
+      "parts": {
+        "control": {
+          "selector": "input[type='radio']",
+          "description": "Radioknappen, med klassen sin.",
+          "content": "none",
+          "unique": true
+        },
+        "label": {
+          "selector": "label",
+          "description": "Ledeteksten, koblet til kontrollen med `for`.",
+          "content": "text"
+        }
+      },
       "attributes": {}
     },
     "fs-search": {
@@ -838,6 +1041,7 @@
       "title": "Search",
       "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/search/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -854,6 +1058,26 @@
       "title": "Search",
       "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/search/",
+      "content": "parts",
+      "parts": {
+        "label": {
+          "selector": "label",
+          "description": "Ledeteksten, koblet med `for`. Gjerne skjult med `fs-sr-only`.",
+          "content": "text"
+        },
+        "control": {
+          "selector": "input[type='search']",
+          "description": "Søkefeltet, med klassene `fs-input fs-search`.",
+          "content": "none",
+          "unique": true
+        },
+        "button": {
+          "selector": "button",
+          "description": "Søkeknappen.",
+          "content": "text",
+          "optional": true
+        }
+      },
       "attributes": {}
     },
     "fs-select": {
@@ -861,6 +1085,7 @@
       "title": "Select",
       "description": "Nedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/select/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -884,6 +1109,7 @@
       "title": "Skeleton",
       "description": "Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/skeleton/",
+      "content": "none",
       "attributes": {
         "data-variant": {
           "values": [
@@ -900,6 +1126,7 @@
       "title": "Skip Link",
       "description": "Lenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/skip-link/",
+      "content": "text",
       "attributes": {}
     },
     "fs-spinner": {
@@ -907,6 +1134,7 @@
       "title": "Spinner",
       "description": "Venteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/spinner/",
+      "content": "none",
       "attributes": {
         "data-size": {
           "values": [
@@ -923,6 +1151,7 @@
       "title": "Sr Only",
       "description": "Tekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/sr-only/",
+      "content": "text",
       "attributes": {}
     },
     "fs-switch": {
@@ -930,6 +1159,7 @@
       "title": "Switch",
       "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/switch/",
+      "content": "none",
       "attributes": {}
     },
     "fs-switch-row": {
@@ -937,6 +1167,20 @@
       "title": "Switch",
       "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/switch/",
+      "content": "parts",
+      "parts": {
+        "control": {
+          "selector": "input[role='switch']",
+          "description": "Bryteren, med klassen sin.",
+          "content": "none",
+          "unique": true
+        },
+        "label": {
+          "selector": "label",
+          "description": "Ledeteksten, koblet til kontrollen med `for`.",
+          "content": "text"
+        }
+      },
       "attributes": {}
     },
     "fs-table": {
@@ -944,6 +1188,35 @@
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/table/",
+      "content": "parts",
+      "parts": {
+        "caption": {
+          "selector": "> caption",
+          "description": "Tabellens navn.",
+          "content": "text",
+          "unique": true,
+          "optional": true
+        },
+        "head": {
+          "selector": "> thead",
+          "description": "Overskriftsraden, med `<th scope=\"col\">` per kolonne.",
+          "content": "free",
+          "unique": true
+        },
+        "body": {
+          "selector": "tbody",
+          "description": "Radene, i én eller flere grupper. En `<th scope=\"row\">` først i raden gir raden et navn.",
+          "content": "free",
+          "multiple": true
+        },
+        "sort": {
+          "selector": "th > .fs-table__sort",
+          "description": "Knappen i en overskrift som kan sorteres. `aria-sort` på cellen sier hvilken vei.",
+          "content": "text",
+          "multiple": true,
+          "optional": true
+        }
+      },
       "attributes": {
         "data-variant": {
           "values": [
@@ -963,6 +1236,8 @@
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/table/",
+      "content": "text",
+      "partOf": "fs-table",
       "attributes": {}
     },
     "fs-table-scroll": {
@@ -970,6 +1245,14 @@
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/table/",
+      "content": "parts",
+      "parts": {
+        "table": {
+          "selector": ".fs-table",
+          "description": "Tabellen som kan rulles sidelengs.",
+          "content": "free"
+        }
+      },
       "attributes": {}
     },
     "fs-tag": {
@@ -977,6 +1260,7 @@
       "title": "Tag",
       "description": "Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/tag/",
+      "content": "text",
       "attributes": {
         "data-variant": {
           "values": [
@@ -996,6 +1280,7 @@
       "title": "Textarea",
       "description": "Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/textarea/",
+      "content": "none",
       "attributes": {
         "data-state": {
           "values": [
@@ -1012,6 +1297,27 @@
       "title": "Toggle Group",
       "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/toggle-group/",
+      "content": "parts",
+      "parts": {
+        "legend": {
+          "selector": "> legend",
+          "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
+          "content": "text",
+          "unique": true
+        },
+        "option": {
+          "selector": ".fs-toggle-group__option",
+          "description": "Ett alternativ: en `<label>` med radioknappen og teksten.",
+          "content": "free",
+          "multiple": true
+        },
+        "radio": {
+          "selector": ".fs-toggle-group__option > input[type='radio']",
+          "description": "Radioknappen i hvert alternativ, med samme `name`.",
+          "content": "none",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-toggle-group__option": {
@@ -1019,6 +1325,8 @@
       "title": "Toggle Group",
       "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/toggle-group/",
+      "content": "free",
+      "partOf": "fs-toggle-group",
       "attributes": {}
     },
     "fs-tooltip": {
@@ -1026,6 +1334,19 @@
       "title": "Tooltip",
       "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/tooltip/",
+      "content": "parts",
+      "parts": {
+        "trigger": {
+          "selector": "[aria-describedby]",
+          "description": "Elementet boblen beskriver, med `aria-describedby` mot boblens id.",
+          "content": "text"
+        },
+        "bubble": {
+          "selector": ".fs-tooltip__bubble",
+          "description": "Boblen, med `role=\"tooltip\"` og id-en.",
+          "content": "text"
+        }
+      },
       "attributes": {}
     },
     "fs-tooltip__bubble": {
@@ -1033,6 +1354,8 @@
       "title": "Tooltip",
       "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
       "link": "https://fristil.sobernetics.no/components/tooltip/",
+      "content": "text",
+      "partOf": "fs-tooltip",
       "attributes": {}
     },
     "fs-dialog": {
@@ -1040,6 +1363,39 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "free",
+      "parts": {
+        "header": {
+          "selector": ".fs-dialog__header",
+          "description": "Toppen, med overskriften og underteksten. `data-color` på dialogen farger den.",
+          "content": "parts",
+          "optional": true
+        },
+        "title": {
+          "selector": ".fs-dialog__title",
+          "description": "Overskriften, som `aria-labelledby` peker på.",
+          "content": "text",
+          "optional": true
+        },
+        "subtitle": {
+          "selector": ".fs-dialog__subtitle",
+          "description": "Linja under overskriften, inne i toppen.",
+          "content": "text",
+          "optional": true
+        },
+        "body": {
+          "selector": ".fs-dialog__body",
+          "description": "Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn.",
+          "content": "free",
+          "optional": true
+        },
+        "footer": {
+          "selector": ".fs-dialog__footer",
+          "description": "Raden med knapper nederst, gjerne et `<form method=\"dialog\">`.",
+          "content": "free",
+          "optional": true
+        }
+      },
       "attributes": {
         "data-color": {
           "values": [
@@ -1059,6 +1415,8 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "free",
+      "partOf": "fs-dialog",
       "attributes": {}
     },
     "fs-dialog__title": {
@@ -1066,6 +1424,8 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "text",
+      "partOf": "fs-dialog",
       "attributes": {}
     },
     "fs-dialog__footer": {
@@ -1073,6 +1433,8 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "free",
+      "partOf": "fs-dialog",
       "attributes": {}
     },
     "fs-dialog__header": {
@@ -1080,6 +1442,21 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "parts",
+      "partOf": "fs-dialog",
+      "parts": {
+        "title": {
+          "selector": ".fs-dialog__title",
+          "description": "Overskriften.",
+          "content": "text"
+        },
+        "subtitle": {
+          "selector": ".fs-dialog__subtitle",
+          "description": "Linja under overskriften.",
+          "content": "text",
+          "optional": true
+        }
+      },
       "attributes": {}
     },
     "fs-dialog__subtitle": {
@@ -1087,6 +1464,8 @@
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
       "link": "https://fristil.sobernetics.no/components/dialog/",
+      "content": "text",
+      "partOf": "fs-dialog",
       "attributes": {}
     },
     "fs-error-summary": {
@@ -1094,6 +1473,25 @@
       "title": "Error Summary",
       "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "content": "parts",
+      "parts": {
+        "title": {
+          "selector": ".fs-error-summary__title",
+          "description": "Overskriften, som sier hvor mange feil skjemaet har.",
+          "content": "text"
+        },
+        "list": {
+          "selector": "ul",
+          "description": "Lista med én lenke per feil.",
+          "content": "parts"
+        },
+        "link": {
+          "selector": "li a[href^='#']",
+          "description": "Lenken til et felt med feil, med feilmeldingen som tekst og feltets id etter `#`.",
+          "content": "text",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-error-summary__title": {
@@ -1101,6 +1499,8 @@
       "title": "Error Summary",
       "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "content": "text",
+      "partOf": "fs-error-summary",
       "attributes": {}
     },
     "fs-popover": {
@@ -1108,6 +1508,7 @@
       "title": "Popover",
       "description": "Panel som henger under en knapp og lukker seg selv. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/popover/",
+      "content": "free",
       "attributes": {}
     },
     "fs-session-timeout": {
@@ -1115,6 +1516,46 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "parts",
+      "parts": {
+        "dialog": {
+          "selector": ".fs-session-timeout__dialog",
+          "description": "Dialogen med varselet, med `role=\"alertdialog\"`.",
+          "content": "parts"
+        },
+        "title": {
+          "selector": ".fs-session-timeout__title",
+          "description": "Overskriften i dialogen.",
+          "content": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ".fs-session-timeout__text",
+          "description": "Avsnittet med tiden som er igjen.",
+          "content": "text"
+        },
+        "count": {
+          "selector": ".fs-session-timeout__count",
+          "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
+          "content": "none"
+        },
+        "status": {
+          "selector": "[role='status']",
+          "description": "Opplesningen. Står tomt, og komponenten fyller det.",
+          "content": "none"
+        },
+        "actions": {
+          "selector": ".fs-session-timeout__actions",
+          "description": "Knapperaden, et `<form method=\"dialog\">`.",
+          "content": "parts"
+        },
+        "button": {
+          "selector": ".fs-session-timeout__actions button",
+          "description": "Knappene som forlenger økten eller logger ut.",
+          "content": "text",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-session-timeout__dialog": {
@@ -1122,6 +1563,36 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "parts",
+      "partOf": "fs-session-timeout",
+      "parts": {
+        "title": {
+          "selector": ".fs-session-timeout__title",
+          "description": "Overskriften.",
+          "content": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ".fs-session-timeout__text",
+          "description": "Avsnittet med tiden som er igjen.",
+          "content": "text"
+        },
+        "count": {
+          "selector": ".fs-session-timeout__count",
+          "description": "Tallet som telles ned, inne i avsnittet.",
+          "content": "none"
+        },
+        "status": {
+          "selector": "[role='status']",
+          "description": "Opplesningen, som komponenten fyller.",
+          "content": "none"
+        },
+        "actions": {
+          "selector": ".fs-session-timeout__actions",
+          "description": "Knapperaden, et `<form method=\"dialog\">`.",
+          "content": "parts"
+        }
+      },
       "attributes": {}
     },
     "fs-session-timeout__title": {
@@ -1129,6 +1600,8 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "text",
+      "partOf": "fs-session-timeout",
       "attributes": {}
     },
     "fs-session-timeout__text": {
@@ -1136,6 +1609,8 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "text",
+      "partOf": "fs-session-timeout",
       "attributes": {}
     },
     "fs-session-timeout__count": {
@@ -1143,6 +1618,8 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "none",
+      "partOf": "fs-session-timeout",
       "attributes": {}
     },
     "fs-session-timeout__actions": {
@@ -1150,6 +1627,16 @@
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
       "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "content": "parts",
+      "partOf": "fs-session-timeout",
+      "parts": {
+        "button": {
+          "selector": "button",
+          "description": "Knappene som forlenger økten eller logger ut.",
+          "content": "text",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-suggestion__field": {
@@ -1157,6 +1644,30 @@
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "content": "parts",
+      "parts": {
+        "control": {
+          "selector": "input",
+          "description": "Feltet brukeren skriver i.",
+          "content": "none"
+        },
+        "list": {
+          "selector": ".fs-suggestion__list",
+          "description": "Lista med forslag.",
+          "content": "parts"
+        },
+        "empty": {
+          "selector": ".fs-suggestion__empty",
+          "description": "Meldingen som vises når ingenting passer.",
+          "content": "text",
+          "optional": true
+        },
+        "status": {
+          "selector": "[role='status']",
+          "description": "Opplesningen av antall treff. Står tomt, og komponenten fyller det.",
+          "content": "none"
+        }
+      },
       "attributes": {}
     },
     "fs-suggestion__list": {
@@ -1164,6 +1675,17 @@
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "content": "parts",
+      "partOf": "fs-suggestion__field",
+      "parts": {
+        "option": {
+          "selector": "[role='option'], .fs-suggestion__option, > li:not([role])",
+          "description": "Ett forslag: rollen eller klassen når de står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
+          "content": "text",
+          "multiple": true,
+          "optional": true
+        }
+      },
       "attributes": {}
     },
     "fs-suggestion__option": {
@@ -1171,6 +1693,8 @@
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "content": "text",
+      "partOf": "fs-suggestion__list",
       "attributes": {}
     },
     "fs-suggestion__empty": {
@@ -1178,6 +1702,8 @@
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "content": "text",
+      "partOf": "fs-suggestion__field",
       "attributes": {}
     },
     "fs-tabs__list": {
@@ -1185,6 +1711,15 @@
       "title": "Tabs",
       "description": "Fanerad koblet til panelene sine. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/tabs/",
+      "content": "free",
+      "parts": {
+        "tab": {
+          "selector": "[role='tab'], > button:not([role])",
+          "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.",
+          "content": "text",
+          "multiple": true
+        }
+      },
       "attributes": {}
     },
     "fs-tabs__panel": {
@@ -1192,6 +1727,7 @@
       "title": "Tabs",
       "description": "Fanerad koblet til panelene sine. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/tabs/",
+      "content": "free",
       "attributes": {}
     },
     "fs-connection-status": {
@@ -1199,6 +1735,7 @@
       "title": "Connection Status",
       "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
       "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "content": "none",
       "attributes": {}
     },
     "fs-connection-status__bar": {
@@ -1206,6 +1743,7 @@
       "title": "Connection Status",
       "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
       "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "content": "text",
       "attributes": {}
     },
     "fs-toast": {
@@ -1213,6 +1751,7 @@
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
       "link": "https://fristil.sobernetics.no/components/toast/",
+      "content": "none",
       "attributes": {}
     },
     "fs-toast__message": {
@@ -1220,6 +1759,7 @@
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
       "link": "https://fristil.sobernetics.no/components/toast/",
+      "content": "free",
       "attributes": {}
     },
     "fs-toast__close": {
@@ -1227,6 +1767,7 @@
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
       "link": "https://fristil.sobernetics.no/components/toast/",
+      "content": "text",
       "attributes": {}
     },
     "fs-theme-control": {
@@ -1234,6 +1775,7 @@
       "title": "Tilpasning",
       "description": "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
       "link": "https://fristil.sobernetics.no/tilpasning/",
+      "content": "none",
       "attributes": {}
     }
   },
@@ -3436,7 +3978,7 @@
           "type": {
             "kind": "text"
           },
-          "description": "Hva som lastes. Blir `aria-label`, så ventingen kan leses opp."
+          "description": "Hva som lastes. Blir `aria-label`, så ringen har et navn for skjermlesere."
         }
       ],
       "returns": {
@@ -4096,5 +4638,332 @@
         }
       }
     }
-  ]
+  ],
+  "tokens": {
+    "spacing": {
+      "--fs-spacing-px": "1px",
+      "--fs-spacing-0-5": "0.125rem",
+      "--fs-spacing-1": "0.25rem",
+      "--fs-spacing-2": "0.5rem",
+      "--fs-spacing-3": "0.75rem",
+      "--fs-spacing-4": "1rem",
+      "--fs-spacing-5": "1.25rem",
+      "--fs-spacing-6": "1.5rem",
+      "--fs-spacing-7": "1.75rem",
+      "--fs-spacing-8": "2rem",
+      "--fs-spacing-10": "2.5rem",
+      "--fs-spacing-12": "3rem",
+      "--fs-spacing-16": "4rem"
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    },
+    "containers": {
+      "xs": "100%",
+      "sm": "576px",
+      "md": "960px",
+      "lg": "1152px",
+      "xl": "1536px",
+      "aside": "384px",
+      "asideNarrow": "288px",
+      "wideContent": "768px"
+    },
+    "colors": {
+      "families": {
+        "accent": "Lenker, primærknapp, fokus, valgt tilstand",
+        "visited": "Besøkte lenker",
+        "brand1": "Første merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand2": "Andre merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "brand3": "Tredje merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+        "neutral": "Siden, brødteksten, kantene",
+        "danger": "Feil, sletting, avslag",
+        "warning": "Krever oppmerksomhet",
+        "success": "Fullført, godkjent"
+      },
+      "roles": {
+        "surface": "Tonet flate: et merke, et varsel, en seksjon",
+        "border-subtle": "Dekorativ strek, som mellom to rader",
+        "border": "Rammen rundt et felt eller en flate",
+        "border-strong": "Feltrammen når musa er over, og en tabellstrek",
+        "fill": "Fylt flate: en knapp, en avkryssingsboks som er huket av",
+        "text": "Familiens farge som tekst, og knappen ved hover",
+        "text-strong": "Brødtekst, overskrifter og lenka ved hover",
+        "text-subtle": "Dempet tekst: hjelpetekst, plassholdere",
+        "content": "Teksten oppå fill, og oppå text på en knapp ved hover"
+      },
+      "layers": {
+        "canvas": "Siden",
+        "raised": "En flate som ligger over et kort"
+      },
+      "tokens": [
+        "--fs-color-accent-surface",
+        "--fs-color-accent-border-subtle",
+        "--fs-color-accent-border",
+        "--fs-color-accent-border-strong",
+        "--fs-color-accent-fill",
+        "--fs-color-accent-text",
+        "--fs-color-accent-text-strong",
+        "--fs-color-accent-text-subtle",
+        "--fs-color-accent-content",
+        "--fs-color-visited-surface",
+        "--fs-color-visited-border-subtle",
+        "--fs-color-visited-border",
+        "--fs-color-visited-border-strong",
+        "--fs-color-visited-fill",
+        "--fs-color-visited-text",
+        "--fs-color-visited-text-strong",
+        "--fs-color-visited-text-subtle",
+        "--fs-color-visited-content",
+        "--fs-color-brand1-surface",
+        "--fs-color-brand1-border-subtle",
+        "--fs-color-brand1-border",
+        "--fs-color-brand1-border-strong",
+        "--fs-color-brand1-fill",
+        "--fs-color-brand1-text",
+        "--fs-color-brand1-text-strong",
+        "--fs-color-brand1-text-subtle",
+        "--fs-color-brand1-content",
+        "--fs-color-brand2-surface",
+        "--fs-color-brand2-border-subtle",
+        "--fs-color-brand2-border",
+        "--fs-color-brand2-border-strong",
+        "--fs-color-brand2-fill",
+        "--fs-color-brand2-text",
+        "--fs-color-brand2-text-strong",
+        "--fs-color-brand2-text-subtle",
+        "--fs-color-brand2-content",
+        "--fs-color-brand3-surface",
+        "--fs-color-brand3-border-subtle",
+        "--fs-color-brand3-border",
+        "--fs-color-brand3-border-strong",
+        "--fs-color-brand3-fill",
+        "--fs-color-brand3-text",
+        "--fs-color-brand3-text-strong",
+        "--fs-color-brand3-text-subtle",
+        "--fs-color-brand3-content",
+        "--fs-color-neutral-surface",
+        "--fs-color-neutral-border-subtle",
+        "--fs-color-neutral-border",
+        "--fs-color-neutral-border-strong",
+        "--fs-color-neutral-fill",
+        "--fs-color-neutral-text",
+        "--fs-color-neutral-text-strong",
+        "--fs-color-neutral-text-subtle",
+        "--fs-color-neutral-content",
+        "--fs-color-danger-surface",
+        "--fs-color-danger-border-subtle",
+        "--fs-color-danger-border",
+        "--fs-color-danger-border-strong",
+        "--fs-color-danger-fill",
+        "--fs-color-danger-text",
+        "--fs-color-danger-text-strong",
+        "--fs-color-danger-text-subtle",
+        "--fs-color-danger-content",
+        "--fs-color-warning-surface",
+        "--fs-color-warning-border-subtle",
+        "--fs-color-warning-border",
+        "--fs-color-warning-border-strong",
+        "--fs-color-warning-fill",
+        "--fs-color-warning-text",
+        "--fs-color-warning-text-strong",
+        "--fs-color-warning-text-subtle",
+        "--fs-color-warning-content",
+        "--fs-color-success-surface",
+        "--fs-color-success-border-subtle",
+        "--fs-color-success-border",
+        "--fs-color-success-border-strong",
+        "--fs-color-success-fill",
+        "--fs-color-success-text",
+        "--fs-color-success-text-strong",
+        "--fs-color-success-text-subtle",
+        "--fs-color-success-content",
+        "--fs-color-neutral-canvas",
+        "--fs-color-neutral-raised",
+        "--fs-color-disabled-surface",
+        "--fs-color-disabled-text",
+        "--fs-color-overlay"
+      ]
+    },
+    "components": {
+      "accordion": {
+        "--fs-accordion-radius": "var(--fs-spacing-1)",
+        "--fs-accordion-padding": "var(--fs-spacing-3) var(--fs-accordion-padding-inline, var(--fs-spacing-4))",
+        "--fs-accordion-padding-inline": "var(--fs-spacing-4)"
+      },
+      "alert": {
+        "--fs-alert-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
+        "--fs-alert-radius": "var(--fs-spacing-1)",
+        "--fs-alert-accent": "var(--fs-spacing-1)"
+      },
+      "avatar": {
+        "--fs-avatar-size": "var(--fs-spacing-10)",
+        "--fs-avatar-radius": "var(--fs-spacing-1)",
+        "--fs-avatar-stack-overlap": "calc(var(--fs-spacing-2) * -1)"
+      },
+      "badge": {
+        "--fs-badge-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
+        "--fs-badge-radius": "var(--fs-spacing-4)"
+      },
+      "breadcrumbs": {
+        "--fs-breadcrumbs-gap": "var(--fs-spacing-2)"
+      },
+      "button": {
+        "--fs-button-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-button-font-weight": "var(--fs-font-weight-medium)",
+        "--fs-button-line-height": "var(--fs-line-height-default)",
+        "--fs-button-border-width": "1px",
+        "--fs-button-radius": "var(--fs-spacing-1)"
+      },
+      "card": {
+        "--fs-card-padding": "var(--fs-spacing-4)",
+        "--fs-card-radius": "var(--fs-spacing-2)"
+      },
+      "checkbox": {
+        "--fs-checkbox-size": "var(--fs-spacing-5)",
+        "--fs-checkbox-radius": "var(--fs-spacing-1)"
+      },
+      "connection-status": {
+        "--fs-connection-status-layer": "1000",
+        "--fs-connection-status-padding": "var(--fs-spacing-2) var(--fs-spacing-4)"
+      },
+      "dialog": {
+        "--fs-dialog-width": "min(32rem, 100%, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-dialog-padding": "var(--fs-spacing-5)",
+        "--fs-dialog-radius": "var(--fs-spacing-2)",
+        "--fs-dialog-layer": "40"
+      },
+      "divider": {
+        "--fs-divider-space": "var(--fs-spacing-4)"
+      },
+      "error-summary": {
+        "--fs-error-summary-padding": "var(--fs-spacing-4)",
+        "--fs-error-summary-radius": "var(--fs-spacing-1)"
+      },
+      "fieldset": {
+        "--fs-fieldset-gap": "var(--fs-spacing-2)"
+      },
+      "file-upload": {
+        "--fs-file-upload-padding": "var(--fs-spacing-2)",
+        "--fs-file-upload-radius": "var(--fs-spacing-1)"
+      },
+      "heading": {
+        "--fs-heading-font-weight": "var(--fs-font-weight-bold)",
+        "--fs-heading-line-height": "var(--fs-line-height-heading)"
+      },
+      "input": {
+        "--fs-input-width": "100%",
+        "--fs-input-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-input-radius": "var(--fs-spacing-1)"
+      },
+      "label": {
+        "--fs-label-required-symbol": "\" *\"",
+        "--fs-label-required-text": "\" (p\\e5 krevd)\"",
+        "--fs-label-optional-text": "\" (valgfri)\""
+      },
+      "list": {
+        "--fs-list-gap": "var(--fs-spacing-1)"
+      },
+      "pagination": {
+        "--fs-pagination-gap": "var(--fs-spacing-1)",
+        "--fs-pagination-size": "var(--fs-spacing-10)",
+        "--fs-pagination-radius": "var(--fs-spacing-1)"
+      },
+      "paragraph": {
+        "--fs-paragraph-line-height": "var(--fs-line-height-article)",
+        "--fs-paragraph-width": "70ch",
+        "--fs-paragraph-gap": "var(--fs-spacing-3)"
+      },
+      "popover": {
+        "--fs-popover-width": "min(20rem, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-popover-padding": "var(--fs-spacing-3)",
+        "--fs-popover-radius": "var(--fs-spacing-1)"
+      },
+      "progress": {
+        "--fs-progress-height": "var(--fs-spacing-2)",
+        "--fs-progress-border": "var(--fs-color-neutral-border)",
+        "--fs-progress-radius": "var(--fs-spacing-1)",
+        "--fs-progress-track": "var(--fs-color-neutral-surface)",
+        "--fs-progress-fill": "var(--fs-color-accent-fill)"
+      },
+      "radio": {
+        "--fs-radio-size": "var(--fs-spacing-5)"
+      },
+      "search": {
+        "--fs-search-icon-space": "var(--fs-spacing-10)",
+        "--fs-search-icon-size": "var(--fs-spacing-5)"
+      },
+      "select": {
+        "--fs-select-width": "100%",
+        "--fs-select-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-select-radius": "var(--fs-spacing-1)",
+        "--fs-select-viewport-margin": "var(--fs-spacing-2)",
+        "--fs-select-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "session-timeout": {
+        "--fs-session-timeout-width": "26rem",
+        "--fs-session-timeout-padding": "var(--fs-spacing-5)",
+        "--fs-session-timeout-radius": "var(--fs-spacing-1)"
+      },
+      "skeleton": {
+        "--fs-skeleton-height": "var(--fs-spacing-4)",
+        "--fs-skeleton-radius": "var(--fs-spacing-1)"
+      },
+      "skip-link": {
+        "--fs-skip-link-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-skip-link-radius": "var(--fs-spacing-1)"
+      },
+      "spinner": {
+        "--fs-spinner-size": "var(--fs-spacing-6)",
+        "--fs-spinner-thickness": "2px"
+      },
+      "suggestion": {
+        "--fs-suggestion-layer": "30",
+        "--fs-suggestion-max-height": "calc(var(--fs-spacing-10) * 4)",
+        "--fs-suggestion-radius": "var(--fs-spacing-1)",
+        "--fs-suggestion-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "switch": {
+        "--fs-switch-width": "var(--fs-spacing-10)",
+        "--fs-switch-height": "var(--fs-spacing-6)"
+      },
+      "table": {
+        "--fs-table-cell-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+      },
+      "tabs": {
+        "--fs-tabs-gap": "var(--fs-spacing-1)",
+        "--fs-tabs-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
+        "--fs-tabs-panel-space": "var(--fs-spacing-4)"
+      },
+      "tag": {
+        "--fs-tag-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
+        "--fs-tag-radius": "var(--fs-spacing-1)"
+      },
+      "textarea": {
+        "--fs-textarea-min-height": "calc(var(--fs-spacing-4) * 5)",
+        "--fs-textarea-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
+        "--fs-textarea-radius": "var(--fs-spacing-1)"
+      },
+      "toast": {
+        "--fs-toast-space": "var(--fs-spacing-4)",
+        "--fs-toast-layer": "60",
+        "--fs-toast-width": "min(24rem, calc(100vw - var(--fs-spacing-8)))",
+        "--fs-toast-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
+        "--fs-toast-radius": "var(--fs-spacing-1)"
+      },
+      "toggle-group": {
+        "--fs-toggle-group-radius": "var(--fs-spacing-1)",
+        "--fs-toggle-group-height": "var(--fs-spacing-10)",
+        "--fs-toggle-group-padding": "0 var(--fs-spacing-4)"
+      },
+      "tooltip": {
+        "--fs-tooltip-width": "16rem",
+        "--fs-tooltip-padding": "var(--fs-spacing-1) var(--fs-spacing-2)",
+        "--fs-tooltip-radius": "var(--fs-spacing-1)"
+      }
+    }
+  }
 }

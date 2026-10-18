@@ -34,6 +34,16 @@ import {
 } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { fs } from "../src/fs.js"
+import { FAMILIES, NEUTRAL_LAYERS, ROLES } from "../src/tokens/matrise.js"
+import {
+  Breakpoints,
+  Containers,
+  colorTokens,
+  cssTokens,
+  FAMILY_DESCRIPTIONS,
+  LAYER_DESCRIPTIONS,
+  ROLE_DESCRIPTIONS,
+} from "../src/tokens/tokens.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
 import {
@@ -413,6 +423,127 @@ const klasser = Object.fromEntries(
   ]),
 )
 
+/*
+ * Tokenene: det et stilark utenfor pakken kan bygge på uten å finne på egne
+ * verdier. Avstandsskalaen, brekkpunktene og containerbreddene leses fra
+ * `tokens.ts`, der brekkpunktene og breddene ellers bare finnes i TypeScript.
+ * Fargene står som akser med hva de er til, ikke som hex: kuløren er
+ * konsumentens, og et tema kan ha andre verdier enn Fristils egne.
+ *
+ * Komponentvariablene leses fra stilarkene. En variabel er det første leddet
+ * i `var(--fs-<komponent>-…, <reserve>)`, og reserven er standardverdien
+ * konsumenten overstyrer. Står den samme variabelen med to reserver, som
+ * `--fs-list-gap` i en delt liste, er det den første i stilarket som gjelder.
+ * Hver hører til komponenten navnet begynner med, ikke til stilarket den
+ * leses i: `fieldset.css` leser `--fs-label-required-symbol`, og den er
+ * ledetekstens.
+ */
+const roleToCss = (role: string) =>
+  role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].flatMap((kategori) =>
+  readdirSync(`${PAKKE}src/components/${kategori}`)
+    .filter((navn) =>
+      statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
+    )
+    .sort()
+    .map((navn) => ({
+      navn,
+      sti: `${PAKKE}src/components/${kategori}/${navn}`,
+    })),
+)
+const componentNames = COMPONENT_DIRS.map((d) => d.navn)
+/** Komponenten en variabel hører til: det lengste navnet den begynner med. */
+const ownerOf = (variable: string, fallback: string) =>
+  componentNames
+    .filter((navn) => variable.startsWith(`--fs-${navn}-`))
+    .sort((a, b) => b.length - a.length)[0] ?? fallback
+const TOKEN_KINDS = new Set(
+  Object.keys({ ...cssTokens, ...colorTokens }).map(
+    (navn) => navn.split("-")[3],
+  ),
+)
+/*
+ * Variablene en web-komponent skriver selv, som `--fs-popover-top`, er ikke
+ * noe konsumenten overstyrer: inline-stilen slår et stilark. De leses med
+ * reserve i CSS-en som alle andre, og kjennes igjen på `setProperty` i
+ * komponentens egen kilde.
+ */
+const setByComponent = new Set<string>()
+for (const { sti } of COMPONENT_DIRS)
+  for (const fil of readdirSync(sti).filter(
+    (f) => f.endsWith(".ts") && !f.includes(".test."),
+  ))
+    for (const m of readFileSync(`${sti}/${fil}`, "utf8").matchAll(
+      /setProperty\(\s*["'](--fs-[a-z0-9-]+)["']/g,
+    ))
+      setByComponent.add(m[1])
+const componentVariables: Record<string, Record<string, string>> = {}
+for (const { navn, sti } of COMPONENT_DIRS) {
+  for (const fil of readdirSync(sti)
+    .filter((f) => f.endsWith(".css"))
+    .sort()) {
+    const css = readFileSync(`${sti}/${fil}`, "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
+    )
+    const lesing = /var\(\s*(--fs-[a-z0-9-]+)\s*,/g
+    for (let m = lesing.exec(css); m; m = lesing.exec(css)) {
+      // Reserven går til parentesen som lukker `var(`, også når den har
+      // `calc()` eller en annen `var()` i seg.
+      let dybde = 1
+      let i = lesing.lastIndex
+      for (; i < css.length && dybde > 0; i++) {
+        if (css[i] === "(") dybde++
+        else if (css[i] === ")") dybde--
+      }
+      const variabel = m[1]
+      // Et token hører på tokensiden, ikke her. I dag leser ingen komponent
+      // et token med reserve, men gjorde en det, ville det sett ut som en
+      // komponentvariabel uten dette.
+      if (TOKEN_KINDS.has(variabel.split("-")[3])) continue
+      if (setByComponent.has(variabel)) continue
+      const reserve = css
+        .slice(lesing.lastIndex, i - 1)
+        .trim()
+        .replace(/\s+/g, " ")
+      const eier = ownerOf(variabel, navn)
+      componentVariables[eier] ??= {}
+      componentVariables[eier][variabel] ??= reserve
+    }
+  }
+}
+const tokens = {
+  spacing: Object.fromEntries(
+    Object.entries(cssTokens).filter(([navn]) =>
+      navn.startsWith("--fs-spacing-"),
+    ),
+  ),
+  breakpoints: Breakpoints,
+  containers: Containers,
+  colors: {
+    families: Object.fromEntries(
+      FAMILIES.map((familie) => [familie, FAMILY_DESCRIPTIONS[familie]]),
+    ),
+    roles: Object.fromEntries(
+      (Object.keys(ROLES) as (keyof typeof ROLES)[]).map((rolle) => [
+        roleToCss(rolle),
+        ROLE_DESCRIPTIONS[rolle],
+      ]),
+    ),
+    layers: Object.fromEntries(
+      (Object.keys(NEUTRAL_LAYERS) as (keyof typeof NEUTRAL_LAYERS)[]).map(
+        (lag) => [lag, LAYER_DESCRIPTIONS[lag]],
+      ),
+    ),
+    tokens: Object.keys(colorTokens).filter((navn) =>
+      navn.startsWith("--fs-color-"),
+    ),
+  },
+  components: Object.fromEntries(
+    Object.entries(componentVariables).sort(([a], [b]) => a.localeCompare(b)),
+  ),
+}
+
 const manifest = {
   $schema: "./manifest.schema.json",
   schemaVersion: SKJEMAVERSJON,
@@ -420,6 +551,7 @@ const manifest = {
   elements,
   classes: klasser,
   builders: byggefunksjoner,
+  tokens,
 }
 
 mkdirSync(UT, { recursive: true })
@@ -457,5 +589,5 @@ const filer = {
 writeFileSync(`${UT}filer.json`, `${JSON.stringify(filer, null, 2)}\n`)
 
 console.log(
-  `✓ Manifestet: ${byggefunksjoner.length} byggefunksjoner, ${Object.keys(elements).length} elementer, ${Object.keys(classes).length} klasser, ${tilfeller.length} byggetilfeller.`,
+  `✓ Manifestet: ${byggefunksjoner.length} byggefunksjoner, ${Object.keys(elements).length} elementer, ${Object.keys(classes).length} klasser, ${tilfeller.length} byggetilfeller, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} komponentvariabler.`,
 )

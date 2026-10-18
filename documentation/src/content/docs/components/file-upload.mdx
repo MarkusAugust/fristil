@@ -75,18 +75,39 @@ Lista skriver du selv, siden bare du vet hva som skal skje når en fil fjernes.
 
 Knappeteksten skal si hvilken fil som fjernes. «Fjern» alene gir like knapper for den som hører siden.
 
-Feltet husker bare det siste utvalget: velger brukeren to filer til, erstatter de forrige. Skal filene samles opp, og kunne fjernes én og én, må du holde lista selv:
+Feltet husker bare det siste utvalget: velger brukeren to filer til, erstatter de forrige. Skal filene samles opp, og kunne fjernes én og én, må du holde lista selv, og sende den selv:
+
+```html
+<form action="/soknad/vedlegg">
+  <label class="fs-label" for="vedlegg">Last opp vedlegg</label>
+  <input class="fs-file-upload" type="file" id="vedlegg" name="vedlegg" multiple />
+  <ul class="fs-file-upload-list"></ul>
+  <button class="fs-button" type="submit">Send</button>
+</form>
+```
 
 ```js
 const felt = document.getElementById("vedlegg")
+const skjema = felt.form
 let filer = []
 
 felt.addEventListener("change", () => {
   filer = [...filer, ...felt.files]
-  tegnListe()
+  // Tegn lista over filene her, med en «Fjern»-knapp per fil.
   felt.value = ""
 })
+
+skjema.addEventListener("submit", async (hendelse) => {
+  hendelse.preventDefault()
+  const data = new FormData(skjema)
+  // Det tomme feltet ville ellers sendt en tom fil under sitt eget navn.
+  data.delete(felt.name)
+  for (const fil of filer) data.append(felt.name, fil)
+  await fetch(skjema.action, { method: "POST", body: data })
+})
 ```
+
+Feltet må stå i et `<form>` og ha et `name`. Det er tømt etter hvert valg, så en vanlig innsending tar ikke med noen av filene. Derfor sendes skjemaet med `fetch`, med filene lagt til i `FormData`.
 
 ## Klasser du kan style
 

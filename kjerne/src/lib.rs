@@ -27,6 +27,7 @@
 pub mod diagnose;
 pub mod json;
 pub mod manifest;
+pub mod parts;
 pub mod references;
 pub mod styles;
 pub mod suppress;
@@ -657,6 +658,7 @@ mod tests {
             tag: "fs-kart".into(),
             link: String::new(),
             attributes: vec![("sone".into(), types::Attribute::Text)],
+            parts: Vec::new(),
         });
         assert!(diagnose_markup(&html, &vocabulary).is_empty());
     }

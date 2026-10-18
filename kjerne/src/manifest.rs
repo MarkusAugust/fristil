@@ -68,6 +68,32 @@ fn entries<'a>(value: &'a Json, path: &str) -> Result<&'a [(String, Json)], Stri
         .ok_or_else(|| format!("{path} skal være et objekt."))
 }
 
+/// Delene i `parts`, når de står der. Et manifest uten, som et eldre
+/// fragment fra `fristil overta`, har ingen.
+fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
+    let Some(parts) = value.get("parts") else {
+        return Ok(Vec::new());
+    };
+    let path = format!("{path}.parts");
+    entries(parts, &path)?
+        .iter()
+        .map(|(name, part)| {
+            let at = format!("{path}.{name}");
+            Ok(Part {
+                name: name.clone(),
+                selector: text(field(part, "selector", &at)?, &at)?,
+                description: part
+                    .get("description")
+                    .and_then(Json::as_str)
+                    .unwrap_or("")
+                    .to_string(),
+                multiple: matches!(part.get("multiple"), Some(Json::Bool(true))),
+                unique: matches!(part.get("unique"), Some(Json::Bool(true))),
+            })
+        })
+        .collect()
+}
+
 /// Leser et manifest. Feilmeldingen sier hva som er galt og hvor.
 pub fn from_json(source: &str) -> Result<Vocabulary, String> {
     from_value(&parse(source)?)
@@ -156,6 +182,7 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
             tag: tag.clone(),
             link: text(field(element, "link", &path)?, &path)?,
             attributes,
+            parts: parts(element, &path)?,
         });
     }
 
@@ -193,6 +220,7 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
             title: text(field(class, "title", &path)?, &path)?,
             link: text(field(class, "link", &path)?, &path)?,
             attributes,
+            parts: parts(class, &path)?,
         });
     }
 

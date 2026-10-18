@@ -1,4 +1,10 @@
-import { darkCells, lightCells, type MatrixToken } from "./matrise.js"
+import {
+  darkCells,
+  type Family,
+  lightCells,
+  type MatrixToken,
+  type Role,
+} from "./matrise.js"
 
 export const Breakpoints = {
   sm: "640px",
@@ -21,6 +27,45 @@ export const Containers = {
 
 export type Breakpoint = keyof typeof Breakpoints
 export type Container = keyof typeof Containers
+
+/*
+ * Hva hver familie, rolle og hvert lag er til, med samme ord som
+ * `design-tokens.mdx`. Manifestet skriver dem ut, så et verktøy kan velge en
+ * farge etter hva den betyr framfor etter navnet. Typet mot aksene i
+ * matrisen: en ny familie eller rolle krever en setning her.
+ */
+export const FAMILY_DESCRIPTIONS: Record<Family, string> = {
+  accent: "Lenker, primærknapp, fokus, valgt tilstand",
+  visited: "Besøkte lenker",
+  brand1:
+    "Første merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  brand2:
+    "Andre merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  brand3:
+    "Tredje merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+  neutral: "Siden, brødteksten, kantene",
+  danger: "Feil, sletting, avslag",
+  warning: "Krever oppmerksomhet",
+  success: "Fullført, godkjent",
+}
+
+export const ROLE_DESCRIPTIONS: Record<Role, string> = {
+  surface: "Tonet flate: et merke, et varsel, en seksjon",
+  borderSubtle: "Dekorativ strek, som mellom to rader",
+  border: "Rammen rundt et felt eller en flate",
+  borderStrong: "Feltrammen når musa er over, og en tabellstrek",
+  fill: "Fylt flate: en knapp, en avkryssingsboks som er huket av",
+  content: "Teksten oppå fill, og oppå text på en knapp ved hover",
+  textSubtle: "Dempet tekst: hjelpetekst, plassholdere",
+  text: "Familiens farge som tekst, og knappen ved hover",
+  textStrong: "Brødtekst, overskrifter og lenka ved hover",
+}
+
+/** Lagene bare den nøytrale familien har, fordi den bærer siden selv. */
+export const LAYER_DESCRIPTIONS: Record<"canvas" | "raised", string> = {
+  canvas: "Siden",
+  raised: "En flate som ligger over et kort",
+}
 
 /**
  * Alt som ikke er farge.

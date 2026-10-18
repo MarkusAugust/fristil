@@ -23,7 +23,9 @@ export type ListAttributes = {
  * Klassen hører på `<ul>` eller `<ol>`. `plain` og `divided` fjerner punktene
  * visuelt, men listen blir værende en liste, så skjermleseren sier fortsatt
  * hvor mange elementer den har. Det er grunnen til at varianten finnes: uten
- * den ville folk brukt `<div>` for å bli kvitt punktene.
+ * den ville folk brukt `<div>` for å bli kvitt punktene. Unntaket er Safari,
+ * der en `<ul>` uten synlige punkter kan trenge `role="list"`. Se
+ * komponentsiden.
  *
  * ```ts
  * <ul {...list({ variant: "divided" })}>…</ul>

@@ -74,7 +74,7 @@ boks.addEventListener("change", () => {
 | `invalid` | Valideringen har feilet |
 | `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
 
-`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
+`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg. `fs.checkbox({ state: "invalid" })` og [Field](../field/) setter begge.
 
 ## Delvis avkrysset
 
@@ -84,6 +84,14 @@ boks.addEventListener("change", () => {
 <div class="fs-checkbox-row">
   <input class="fs-checkbox" type="checkbox" id="alle" />
   <label class="fs-label" for="alle">Velg alle vedlegg</label>
+</div>
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox vedlegg" type="checkbox" id="vedlegg-attest" name="vedlegg" value="attest" checked />
+  <label class="fs-label" for="vedlegg-attest">Fødselsattest</label>
+</div>
+<div class="fs-checkbox-row">
+  <input class="fs-checkbox vedlegg" type="checkbox" id="vedlegg-kontrakt" name="vedlegg" value="kontrakt" />
+  <label class="fs-label" for="vedlegg-kontrakt">Leiekontrakt</label>
 </div>
 
 <script type="module">
@@ -97,7 +105,13 @@ boks.addEventListener("change", () => {
     alle.indeterminate = antall > 0 && antall < valg.length
   }
 
+  // «Velg alle» krysser av eller fjerner alle under.
+  alle.addEventListener("change", () => {
+    for (const boks of valg) boks.checked = alle.checked
+    oppdater()
+  })
   for (const boks of valg) boks.addEventListener("change", oppdater)
+  oppdater()
 </script>
 ```
 

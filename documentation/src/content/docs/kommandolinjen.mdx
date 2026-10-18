@@ -138,8 +138,14 @@ tom partial i et glob, er ikke en feil.
 En mal er ofte delt i biter. En ledetekst kan stå i én fil og feltet i en
 annen, og malsyntaks som `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>`
 står der verdien kommer senere. Uten flagg sjekker `sjekk` derfor bare det som
-kan avgjøres i én fil: elementer, klasser, attributter, verdier og at hvert
-`<fs-field>` har en ledetekst.
+kan avgjøres i én fil: elementer, klasser, attributter, verdier, at hvert
+`<fs-field>` har en ledetekst, og at en del som skal stå én gang, ikke står
+flere ganger. Et `<fs-field>` med to kontroller kobler bare den første, og
+en `fs-table` med to `<caption>` får navnet sitt fra den første. Hvilke
+deler det gjelder, står i manifestet som `unique`. Andre deler kan stå
+flere ganger, som knappene i panelet til `<fs-popover>`. Står det
+malsyntaks i komponenten, også `v-if` eller et uttrykk i `{…}`, sier
+regelen ingenting, siden et vilkår kan gi to deler i malen og én på siden.
 
 En side slik serveren sender den, er hel. Da kan `sjekk` også kreve at
 koblingen stemmer:
@@ -182,17 +188,24 @@ ikke lastet, eller en variant har ingen regel. Med `--css` leser `sjekk`
 stilarkene siden laster, med det de importerer, og sier fra om begge deler:
 
 ```bash
-npx @fristil/designsystem sjekk --css=public/app.css maler/*.html
+npx @fristil/designsystem sjekk --css=public/app.css --manifest=src/ui/button/fristil-manifest.json maler/*.html
 ```
 
 ```text
-maler/kort.html:3:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
-maler/knapp.html:1:27: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
+maler/knapp.html:1:28: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
+maler/kort.html:1:13: advarsel: Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?
+
+2 funn i 2 filer.
 ```
 
-Det siste er nyttigst for en komponent du har [tatt over](#overta): legger du
-til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig og ser ut
-som standard. `@import` følges til filer ved siden av og til pakker i
+Den første meldingen kommer for en verdi manifestet kjenner, men som ingen av
+stilarkene styler. En verdi Fristil ikke har, som `data-variant="glass"` på
+`fs-button`, avvises før stilarkene leses, med beskjed om de lovlige
+verdiene. Meldingen er nyttigst for en komponent du har [tatt over](#overta):
+legger du til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig
+og ser ut som standard. Utdataene over er fra en slik kopi: `knapp.html` er
+`<button class="app-button" data-variant="glass">`, med `glass` lagt til i
+fragmentet. `@import` følges til filer ved siden av og til pakker i
 `node_modules`, som `@fristil/designsystem/fristil.css`. `--css` kan gis flere
 ganger. Stilarkene leses med en ekte CSS-leser, så nesting, `:is()`,
 `:where()`, `@layer` og `@media` forstås som nettleseren forstår dem.

@@ -14,6 +14,17 @@
     border-radius: var(--fs-card-radius, var(--fs-spacing-2));
   }
 
+  /*
+   * Kortet er en flekskolonne, og et barn strekkes da til hele bredden.
+   * Et merke, en etikett, en knapp eller en lenke skal ha sin egen bredde,
+   * ellers ble «Innvilget» et bånd tvers over kortet. Regelen spør etter
+   * elementtypen og ikke klassen: står andre komponenters klasser her, regnes
+   * de som kortets i ordforrådet. Avsnitt, lister og bilder strekkes som før.
+   */
+  .fs-card > :where(span, a, button) {
+    align-self: flex-start;
+  }
+
   .fs-card__title {
     margin: 0;
     font-size: var(--fs-font-size-l);

@@ -10,7 +10,7 @@ export type NonDefaultSpinnerSize = Exclude<SpinnerSize, "medium">
 export type SpinnerOptions = {
   /** Størrelse. Standard: `medium`. */
   size?: SpinnerSize
-  /** Hva som lastes. Blir `aria-label`, så ventingen kan leses opp. */
+  /** Hva som lastes. Blir `aria-label`, så ringen har et navn for skjermlesere. */
   label?: string
 }
 

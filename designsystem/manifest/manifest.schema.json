@@ -2,9 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://fristil.sobernetics.no/manifest.schema.json",
   "title": "Fristils manifest",
-  "description": "Det Fristil lover: elementene, klassene og byggefunksjonene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "description": "Det Fristil lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
   "type": "object",
-  "required": ["schemaVersion", "version", "elements", "classes", "builders"],
+  "required": [
+    "schemaVersion",
+    "version",
+    "elements",
+    "classes",
+    "builders",
+    "tokens"
+  ],
   "properties": {
     "$schema": {
       "type": "string"
@@ -41,31 +48,7 @@
             "type": "object",
             "description": "Delene elementet finner i markupen den som rendrer skriver, med selektoren det leter etter. Et tomt objekt når elementet lager sine egne noder.",
             "additionalProperties": {
-              "type": "object",
-              "required": ["selector", "description", "content"],
-              "properties": {
-                "selector": {
-                  "type": "string",
-                  "description": "CSS-selektoren elementet finner delen med, slik den står i koden."
-                },
-                "description": {
-                  "type": "string",
-                  "description": "Hva delen er, og hvordan elementet kjenner den igjen."
-                },
-                "content": {
-                  "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
-                  "enum": ["text", "free", "parts", "none"]
-                },
-                "multiple": {
-                  "const": true,
-                  "description": "Delen kan stå flere ganger."
-                },
-                "optional": {
-                  "const": true,
-                  "description": "Elementet virker uten delen."
-                }
-              },
-              "additionalProperties": false
+              "$ref": "#/$defs/part"
             }
           },
           "events": {
@@ -92,7 +75,14 @@
       "description": "Hver fs-klasse, med komponenten den hører til og attributtene den tar.",
       "additionalProperties": {
         "type": "object",
-        "required": ["component", "title", "description", "link", "attributes"],
+        "required": [
+          "component",
+          "title",
+          "description",
+          "link",
+          "content",
+          "attributes"
+        ],
         "properties": {
           "component": {
             "type": "string"
@@ -105,6 +95,21 @@
           },
           "link": {
             "type": "string"
+          },
+          "content": {
+            "description": "Hva elementet med klassen tar som innhold, med samme ord som delene: «text» er tekst, «free» er hva som helst, «parts» er bare delene, og «none» er ingen tekst, som en kontroll.",
+            "enum": ["text", "free", "parts", "none"]
+          },
+          "partOf": {
+            "type": "string",
+            "description": "Klassen denne er en del av, når den bare er en del av en annen komponents markup, som fs-card__title i fs-card. Forelderen har en del som treffer den."
+          },
+          "parts": {
+            "type": "object",
+            "description": "Delene markupen består av, for klassene med en fast struktur, med selektoren relativt til elementet med klassen. Mangler for klassene uten.",
+            "additionalProperties": {
+              "$ref": "#/$defs/part"
+            }
           },
           "attributes": {
             "type": "object",
@@ -221,6 +226,87 @@
           }
         }
       }
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Tokenene et stilark utenfor pakken kan bygge på. Fargene står som akser med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn Fristils egne.",
+      "required": [
+        "spacing",
+        "breakpoints",
+        "containers",
+        "colors",
+        "components"
+      ],
+      "properties": {
+        "spacing": {
+          "type": "object",
+          "description": "Avstandsskalaen, navn til verdi.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "breakpoints": {
+          "type": "object",
+          "description": "Brekkpunktene, navn til bredde.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "containers": {
+          "type": "object",
+          "description": "Containerbreddene, navn til bredde.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "colors": {
+          "type": "object",
+          "required": ["families", "roles", "layers", "tokens"],
+          "properties": {
+            "families": {
+              "type": "object",
+              "description": "Familiene, med hva hver er til.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "roles": {
+              "type": "object",
+              "description": "Rollene slik de skrives i CSS, med hva hver er til. Et fargetoken heter --fs-color-<familie>-<rolle>.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "layers": {
+              "type": "object",
+              "description": "Lagene bare den nøytrale familien har, som --fs-color-neutral-canvas.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "tokens": {
+              "type": "array",
+              "description": "Hvert --fs-color-*-navn pakken sender ut.",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "components": {
+          "type": "object",
+          "description": "Komponentvariablene per komponent, som --fs-button-padding under button, med standardverdien, altså reserven i stilarket.",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Variabelnavn til standardverdi.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "$defs": {
@@ -391,6 +477,37 @@
           }
         }
       }
+    },
+    "part": {
+      "type": "object",
+      "required": ["selector", "description", "content"],
+      "properties": {
+        "selector": {
+          "type": "string",
+          "description": "CSS-selektoren elementet finner delen med, slik den står i koden."
+        },
+        "description": {
+          "type": "string",
+          "description": "Hva delen er, og hvordan elementet kjenner den igjen."
+        },
+        "content": {
+          "description": "Hva delen skal inneholde: «text» er tekst, «free» er hva som helst, «parts» er andre deler i lista, og «none» er ingen tekst: en kontroll, som et <select> med sine <option>, eller et element komponenten fyller.",
+          "enum": ["text", "free", "parts", "none"]
+        },
+        "multiple": {
+          "const": true,
+          "description": "Delen kan stå flere ganger."
+        },
+        "unique": {
+          "const": true,
+          "description": "En del til av samme slag er en feil, ikke vanlig innhold. Uten feltet kan resten være innhold, som knappene i et panel. fristil sjekk melder en slik del som står mer enn én gang."
+        },
+        "optional": {
+          "const": true,
+          "description": "Elementet virker uten delen."
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

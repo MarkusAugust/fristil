@@ -52,6 +52,49 @@ egen overskrift «Brytende».
   `tabIndex` som tall. Hovedinngangen eksporterer `rememberManaged`, som
   `/react` bruker for å gi et omdøpt sett de samme forvaltede navnene; den
   er ikke ment for apper.
+- **Regelen `del-flere-ganger` i `fristil sjekk`, editoren og
+  `diagnoseMarkup`.** En del med det nye feltet `unique` i manifestet som
+  står mer enn én gang, gir en advarsel: et `<fs-field>` med to kontroller,
+  to hjelpetekster i ett felt, en `fs-table` med to `<caption>`. `unique`
+  står på delene der en til er en feil og ikke vanlig innhold, og leses av
+  `Part` i Kotlin og `Part` i TypeScript. Regelen leser `parts` på
+  elementene og klassene i manifestet, så en ny del med `unique` sjekkes
+  uten en egen regel. Et treff inni en nøstet vert av samme slag hører til
+  den, det som står i en `<template>` teller ikke, og står det malsyntaks i
+  verten, sier regelen ingenting.
+- **`tbody` i `fs-table` kan stå flere ganger** i manifestet, som HTML
+  tillater.
+- **`Fristil.manifest.builders` i Kotlin-pakken.** Hver byggefunksjon med
+  valgene (`name`, `required`, `type` som `values`, `flag`, `text`,
+  `number` eller `textList`, og `description`) og formen på svaret
+  (`attributes`, `text`, `values`, `list` eller `group`). Tabellen
+  generatoren bak `Fs` bruker er fortsatt utelatt. TypeScript-typen
+  `Manifest` har fått `builders` med samme form.
+- **`Fristil.buildTheme(oppskrift)` og `Fristil.inspectTheme(css)` i
+  Kotlin-pakken.** Temaet kunne før bare bygges med `fristil tema` og
+  Gradle-oppgaven `fristilTema`. Oppskriften er JSON-teksten `fristil tema`
+  leser, med norske eller engelske nøkler, og svarene `Theme` og
+  `ThemeReport` har de samme feltene som `CoreTheme` og `CoreThemeReport`
+  i TypeScript. Fargekontrakten ligger nå i jar-en, som manifestet.
+- **Manifestet har en `tokens`-seksjon.** Avstandsskalaen, brekkpunktene
+  og containerbreddene fra `tokens.ts`, fargefamiliene, rollene og lagene
+  med hva hver er til, hvert `--fs-color-*`-navn, og komponentvariablene
+  per komponent med standardverdien stilarket faller tilbake på. Fargene
+  står som akser og navn, ikke som verdier, siden et tema kan ha andre
+  verdier enn Fristils egne. `ManifestTokens` i Kotlin leser det samme.
+  `schemaVersion` er fortsatt 1. Beskrivelsene av familiene, rollene og
+  lagene eksporteres også fra `@fristil/designsystem/tokens`, som
+  `FAMILY_DESCRIPTIONS`, `ROLE_DESCRIPTIONS` og `LAYER_DESCRIPTIONS`.
+- **Manifestet sier hva hver klasse tar som innhold, og hvilke deler den
+  består av.** Hver klasse i `classes` har `content`, med samme ord som
+  delene til elementene: `text`, `free`, `parts` eller `none`. Klassene med
+  en fast struktur, som `fs-table`, `fs-list` og `fs-toggle-group`, har
+  `parts` med `selector`, `description`, `content`, `multiple` og
+  `optional`, og en klasse som bare er en del av en annen komponents
+  markup, som `fs-card__title`, peker på forelderen med `partOf`.
+  `schemaVersion` er fortsatt 1. I Kotlin har `ManifestClass` fått
+  `content`, `partOf` og `parts`.
+
 
 ### Endret
 
@@ -71,6 +114,20 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-error-summary>` tar fokus også i React.** React gir fokus tilbake
+  til elementet som hadde det før en commit, og boksen flyttet fokus inne i
+  den samme commiten. Fokus endte derfor på innsendingsknappen i Chromium og
+  Firefox, og på feltet i alle tre motorene når skjemaet ble sendt med Enter,
+  både når boksen ble satt inn og når `hidden` ble tatt bort. Boksen tar nå
+  fokus én gang til etter commiten, hvis det gikk tilbake dit det var. Har et skript flyttet fokus
+  til noe annet, står det. En React-app som viser boksen mens brukeren står
+  i et felt, for eksempel ved `blur`, merker at fokus nå flyttes dit, slik
+  det alltid har gjort uten React.
+- **Et merke, en etikett, en knapp eller en lenke i et kort strekkes ikke
+  lenger til hele bredden.** `.fs-card` er en flekskolonne, så
+  `<span class="fs-badge">Innvilget</span>` ble et bånd tvers over kortet,
+  slik eksempelet på komponentsiden viste. Avsnitt, lister og bilder
+  strekkes som før.
 - **`fristil lsp` leter ikke over arbeidsområdet for en fil utenfor det.**
   Letingen etter manifestet stoppet ved rota av arbeidsområdet fila lå
   under, men for en fil utenfor det, som en kladdefil, og for hver fil når

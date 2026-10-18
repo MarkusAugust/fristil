@@ -14,11 +14,24 @@ pub enum Attribute {
     Values(Vec<String>),
 }
 
+/// En del av et element eller en klasse, som kontrollen i `<fs-field>`, med
+/// selektoren komponenten finner den med. Uten `multiple` gjelder den første,
+/// og med `unique` er en del til av samme slag en feil.
+#[derive(Clone, Debug)]
+pub struct Part {
+    pub name: String,
+    pub selector: String,
+    pub description: String,
+    pub multiple: bool,
+    pub unique: bool,
+}
+
 #[derive(Clone, Debug)]
 pub struct Element {
     pub tag: String,
     pub link: String,
     pub attributes: Vec<(String, Attribute)>,
+    pub parts: Vec<Part>,
 }
 
 /// Et attributt en klasse tar, som `data-variant` på `fs-button`, eller et
@@ -36,6 +49,7 @@ pub struct Class {
     pub title: String,
     pub link: String,
     pub attributes: Vec<(String, ClassAttribute)>,
+    pub parts: Vec<Part>,
 }
 
 /// Alt stavekontrollen sjekker mot, lest fra ett manifest.
@@ -90,6 +104,7 @@ pub const RULES: &[&str] = &[
     "deaktivert-med-href",
     "ikon-uten-navn",
     "felt-uten-kontroll",
+    "del-flere-ganger",
     "felt-uten-ledetekst",
     "tidsavbrudd-uten-dialog",
     "duplikat-id",
