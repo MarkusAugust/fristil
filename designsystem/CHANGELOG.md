@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.34.0 (2026-10-18)
+
 ### Brytende
 
 - **`hidden` på `<fs-error-summary>` er et flagg i JSX-typene.** `hidden`

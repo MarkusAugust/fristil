@@ -12,7 +12,7 @@
     },
     "designsystem": {
       "name": "@fristil/designsystem",
-      "version": "0.33.0",
+      "version": "0.34.0",
       "bin": {
         "fristil": "dist/cli.js",
       },
