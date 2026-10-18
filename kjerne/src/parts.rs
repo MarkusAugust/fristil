@@ -381,9 +381,27 @@ fn first_sentence(description: &str) -> String {
 }
 
 pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
+    // Bare vertene som har en del med `unique` kan gi et funn, og bare dem
+    // som står i teksten. Står ingen, bygges ikke treet: det kostet mer enn
+    // resten av sjekken på en side med tusenvis av tagger uten en eneste vert.
+    let unique = |parts: &[Part]| parts.iter().any(|p| p.unique);
+    let present = |name: &str| contains_str(source, name);
+    let elements: Vec<&Element> = vocabulary
+        .elements
+        .iter()
+        .filter(|e| unique(&e.parts) && present(&e.tag))
+        .collect();
+    let classes: Vec<&Class> = vocabulary
+        .classes
+        .iter()
+        .filter(|c| unique(&c.parts) && present(&c.name))
+        .collect();
+    if elements.is_empty() && classes.is_empty() {
+        return Vec::new();
+    }
     let nodes = tree(source);
     let mut hosts: Vec<Host> = Vec::new();
-    for e in vocabulary.elements.iter().filter(|e| !e.parts.is_empty()) {
+    for e in elements {
         let tag = e.tag.clone();
         hosts.push(Host {
             name: format!("<{}>", e.tag),
@@ -393,7 +411,7 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             is: Box::new(move |n: &Node| n.name == tag),
         });
     }
-    for c in vocabulary.classes.iter().filter(|c| !c.parts.is_empty()) {
+    for c in classes {
         let name = c.name.clone();
         hosts.push(Host {
             name: c.name.clone(),

@@ -25,6 +25,16 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-error-summary>` tar fokus også i React.** React gir fokus tilbake
+  til elementet som hadde det før en commit, og boksen flyttet fokus inne i
+  den samme commiten. Fokus endte derfor på innsendingsknappen i Chromium og
+  Firefox, og på feltet i alle tre motorene når skjemaet ble sendt med Enter,
+  både når boksen ble satt inn og når `hidden` ble tatt bort. Boksen tar nå fokus én gang til etter
+  commiten, hvis det gikk tilbake dit det var. Har et skript flyttet fokus
+  til noe annet, står det. En React-app som viser boksen mens brukeren står
+  i et felt, for eksempel ved `blur`, merker at fokus nå flyttes dit, slik
+  det alltid har gjort uten React.
+
 - **Et merke, en etikett, en knapp eller en lenke i et kort strekkes ikke
   lenger til hele bredden.** `.fs-card` er en flekskolonne, så
   `<span class="fs-badge">Innvilget</span>` ble et bånd tvers over kortet,

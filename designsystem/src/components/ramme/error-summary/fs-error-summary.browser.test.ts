@@ -478,3 +478,95 @@ describe("fs-error-summary og en prosentkodet lenke", () => {
     }
   })
 })
+
+/*
+ * React gir fokus tilbake til elementet som hadde det før en commit, rett
+ * etter at DOM-en er endret. Komponenten flytter fokus i det `hidden` tas
+ * bort eller den kobles til, altså inne i den samme commiten, så React tok
+ * det tilbake til innsendingsknappen. Testene gjør det samme som React, uten
+ * React: endrer DOM-en og gir knappen fokus igjen i samme omgang.
+ */
+describe("fs-error-summary når et rammeverk gir fokus tilbake", () => {
+  beforeAll(() => {
+    defineFsErrorSummary()
+  })
+
+  const boks = () => `
+    <fs-error-summary ${attr(FEIL.host)} id="feil-r" hidden>
+      <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
+      <ul><li><a href="#epost-r">Skriv e-postadressen</a></li></ul>
+    </fs-error-summary>`
+
+  it("tar fokus tilbake når boksen vises", async () => {
+    monter(
+      `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+    )
+    await tegn()
+    const send = document.getElementById("send-r") as HTMLButtonElement
+    const feil = document.getElementById("feil-r") as HTMLElement
+    send.focus()
+
+    feil.hidden = false
+    send.focus()
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(feil)
+  })
+
+  it("tar fokus tilbake når boksen settes inn", async () => {
+    monter(
+      `<form id="skjema-r"><input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+    )
+    await tegn()
+    const send = document.getElementById("send-r") as HTMLButtonElement
+    send.focus()
+
+    const mal = document.createElement("template")
+    mal.innerHTML = boks().replace(" hidden>", ">")
+    const feil = mal.content.firstElementChild as HTMLElement
+    document.getElementById("skjema-r")?.prepend(feil)
+    send.focus()
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(feil)
+  })
+
+  it("tar ikke fokus fra et felt i den samme skyggerota", async () => {
+    const vert = document.createElement("div")
+    document.body.append(vert)
+    const rot = vert.attachShadow({ mode: "open" })
+    rot.innerHTML = `${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button>`
+    await tegn()
+    const send = rot.getElementById("send-r") as HTMLButtonElement
+    const epost = rot.getElementById("epost-r") as HTMLInputElement
+    const feil = rot.getElementById("feil-r") as HTMLElement
+    send.focus()
+
+    feil.hidden = false
+    // Boksen fikk fokus, ellers sier testen ingenting om vilkåret.
+    expect(rot.activeElement).toBe(feil)
+    epost.focus()
+    await ventPaTegning()
+
+    expect(rot.activeElement).toBe(epost)
+    vert.remove()
+  })
+
+  it("lar fokus stå når et skript har flyttet det til noe annet", async () => {
+    monter(
+      `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+    )
+    await tegn()
+    const send = document.getElementById("send-r") as HTMLButtonElement
+    const epost = document.getElementById("epost-r") as HTMLInputElement
+    const feil = document.getElementById("feil-r") as HTMLElement
+    send.focus()
+
+    feil.hidden = false
+    expect(document.activeElement).toBe(feil)
+    epost.focus()
+    await ventPaTegning()
+
+    expect(document.activeElement).toBe(epost)
+  })
+})
