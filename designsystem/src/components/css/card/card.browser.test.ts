@@ -14,6 +14,8 @@ import "./card.css"
 import "../link/link.css"
 import "../paragraph/paragraph.css"
 import "../help-text/help-text.css"
+import "../badge/badge.css"
+import "../button/button.css"
 
 describe("fs-card", () => {
   beforeEach(() => {
@@ -31,6 +33,28 @@ describe("fs-card", () => {
         <p>Alle dokumenter og meldinger.</p>
       </a>
     `)
+  })
+
+  it("lar et merke, en knapp og en lenke ha sin egen bredde, og strekker avsnittet", () => {
+    monter(`
+      <div class="fs-card" id="med-merke" style="width: 400px">
+        <p>Sendt 4. mars.</p>
+        <span class="fs-badge" data-color="success">Innvilget</span>
+        <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
+        <a class="fs-link" href="#">Se vedtaket</a>
+      </div>
+    `)
+    const kort = document.getElementById("med-merke") as HTMLElement
+    const bredde = (s: string) =>
+      (kort.querySelector(s) as HTMLElement).getBoundingClientRect().width
+    const innside =
+      kort.clientWidth -
+      2 * Number.parseFloat(getComputedStyle(kort).paddingLeft)
+
+    expect(bredde(".fs-badge")).toBeLessThan(innside / 2)
+    expect(bredde(".fs-button")).toBeLessThan(innside)
+    expect(bredde(".fs-link")).toBeLessThan(innside / 2)
+    expect(bredde("p")).toBeCloseTo(innside, 0)
   })
 
   it("skiller fylt fra omriss", () => {

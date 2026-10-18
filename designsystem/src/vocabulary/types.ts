@@ -18,7 +18,8 @@ export type Attribute = (
  * delen tar: `text` er tekst og frasering uten interaktive elementer, `free`
  * fritt innhold, `parts` bare de andre delene, og `none` ingen tekst: delen
  * er en kontroll, som et `<select>` med sine `<option>`, eller et element
- * komponenten fyller. Uten `multiple` gjelder den første. Uten `optional` trenger
+ * komponenten fyller. Uten `multiple` gjelder den første, og med `unique` er en
+ * del til av samme slag en feil, ikke vanlig innhold. Uten `optional` trenger
  * elementet delen.
  */
 export type Part = {
@@ -26,6 +27,8 @@ export type Part = {
   description: string
   content: "text" | "free" | "parts" | "none"
   multiple?: true
+  /** En del til av samme slag er en feil, ikke vanlig innhold. */
+  unique?: true
   optional?: true
 }
 
@@ -67,11 +70,74 @@ export type ClassInfo = {
   title: string
   description: string
   link: string
+  /** Hva elementet med klassen tar som innhold, med samme ord som delene. */
+  content: Part["content"]
+  /**
+   * Klassen denne er en del av, når den bare er en del av en annen
+   * komponents markup, som `fs-card__title` i `fs-card`. Forelderen har en
+   * del som treffer den.
+   */
+  partOf?: string
+  /** Delene markupen består av, for klassene med en fast struktur. */
+  parts?: Record<string, Part>
   attributes: Record<string, ClassAttribute>
 }
 
 /** Innholdet i `classes.ts`: klassenavn til klasse. */
 export type Classes = Record<string, ClassInfo>
+
+/**
+ * Tokenene i manifestet: det et stilark utenfor pakken kan bygge på.
+ * Fargene står som akser med hva de er til, ikke som verdier, siden et tema
+ * kan ha andre verdier enn Fristils egne. `components` er komponentvariablene
+ * per komponent, med reserven i stilarket som verdi.
+ */
+export type ManifestTokens = {
+  /** Avstandsskalaen, navn til verdi. */
+  spacing: Record<string, string>
+  breakpoints: Record<string, string>
+  containers: Record<string, string>
+  colors: {
+    /** Familiene, med hva hver er til. */
+    families: Record<string, string>
+    /** Rollene slik de skrives i CSS, med hva hver er til. */
+    roles: Record<string, string>
+    /** Lagene bare den nøytrale familien har. */
+    layers: Record<string, string>
+    /** Hvert `--fs-color-*`-navn pakken sender ut. */
+    tokens: readonly string[]
+  }
+  /** Komponent til variabelnavn til standardverdien. */
+  components: Record<string, Record<string, string>>
+}
+
+/** Hva et valg i en byggefunksjon tar. */
+export type BuilderOptionType =
+  | { kind: "values"; values: readonly string[] }
+  | { kind: "flag" | "text" | "number" | "textList" }
+
+/** Formen på det en byggefunksjon gir. */
+export type BuilderReturns = { optional?: boolean } & (
+  | { kind: "attributes" | "text" }
+  | { kind: "values"; values: readonly string[] }
+  | { kind: "list"; of: BuilderReturns }
+  | { kind: "group"; fields: Record<string, BuilderReturns> }
+)
+
+/**
+ * En byggefunksjon i `fs`, som `button`, med valgene og formen på svaret.
+ * `table`, som generatoren bak Kotlin-utgaven bruker, er utelatt her.
+ */
+export type Builder = {
+  name: string
+  options: {
+    name: string
+    required: boolean
+    type: BuilderOptionType
+    description?: string
+  }[]
+  returns: BuilderReturns
+}
 
 /**
  * Formen på `manifest.json`, slik `manifest.schema.json` beskriver den.
@@ -83,6 +149,8 @@ export type Manifest = {
   schemaVersion: number
   version: string
   elements: Elements
+  tokens: ManifestTokens
+  builders: Builder[]
   classes: Record<
     string,
     Omit<ClassInfo, "attributes"> & {

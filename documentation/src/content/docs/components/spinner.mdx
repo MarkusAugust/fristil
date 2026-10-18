@@ -39,7 +39,7 @@ const ring = document.querySelector<HTMLElement>("#venter")
 fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
 ```
 
-`label` gir både `role="status"` og `aria-label`, siden ringen ikke sier noe uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
+`label` gir både `role="status"` og `aria-label`, siden ringen ikke har noe navn uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../typesikker-bruk/).
 
 </Fragment>
 </Eksempel>
@@ -52,7 +52,7 @@ fs.setAttributes(ring, fs.spinner({ size: "small", label: "Laster søknader" }))
 
 ## Med tekst ved siden av
 
-Den som hører siden får ingenting av en ring. Enten bærer en synlig tekst beskjeden, eller så gjør ringen det selv med `aria-label`.
+Den som hører siden får ingenting av en ring. La en synlig tekst bære beskjeden. Ringen kan få et navn med `aria-label`, men det er ikke sikkert at den leses opp av seg selv, se under.
 
 <Eksempel stiler={["spinner"]} kode={`
 <p role="status">
@@ -61,15 +61,19 @@ Den som hører siden får ingenting av en ring. Enten bærer en synlig tekst bes
 </p>
 `} />
 
-Er teksten synlig, sett `aria-hidden="true"` på ringen. Ellers leses ventingen opp to ganger.
+Er teksten synlig, sett `aria-hidden="true"` på ringen. Har ringen også et navn, leses ventingen ellers opp to ganger.
+
+Avsnittet leses opp når teksten kommer inn i det. La derfor `<p role="status">` stå tomt i siden fra før, og skriv ringen og teksten inn i det når ventingen begynner.
 
 Ringen er `inline-block`, så den står på linje med teksten av seg selv. Vil du ha dem på samme grunnlinje med en fast avstand, er det appens oppsett: `display: flex`, `align-items: center` og `gap` på avsnittet.
 
-Står ringen alene, snur det:
+Står ringen alene, får den rollen og navnet selv:
 
 ```html
 <span class="fs-spinner" role="status" aria-label="Laster søknader"></span>
 ```
+
+Det gir ringen et navn når noen leter den opp, men det er ikke sikkert at den leses opp av seg selv. En region med `role="status"` leser opp endringer i innholdet sitt, og ringen har ikke noe innhold. Er det viktig at ventingen meldes, bruk avsnittet med tekst over, i et statusfelt som står i siden før ventingen starter.
 
 ## Inne i en knapp
 

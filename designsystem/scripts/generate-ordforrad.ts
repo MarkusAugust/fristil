@@ -31,9 +31,20 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fs } from "../src/index.js"
-import type { Attribute, Classes, Elements } from "../src/vocabulary/types.js"
+import type {
+  Attribute,
+  Classes,
+  ClassInfo,
+  Elements,
+} from "../src/vocabulary/types.js"
 import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner.js"
-import { type AttributeDoc, type ElementDoc, elements } from "./metadata"
+import {
+  type AttributeDoc,
+  type ClassDoc,
+  classDocs,
+  type ElementDoc,
+  elements,
+} from "./metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://fristil.sobernetics.no/components/"
@@ -324,7 +335,12 @@ function classesIn(value: unknown): string[] {
 }
 
 export function classesData(): Classes {
-  const out: Classes = {}
+  /*
+   * Klassene fra CSS-en, før innholdet og delene fra `classDocs` legges på.
+   * De to settes sammen til slutt, så en klasse som mangler i tabellen kan
+   * meldes med navn framfor å få et innhold ingen har skrevet.
+   */
+  const found: Record<string, Omit<ClassInfo, keyof ClassDoc>> = {}
   for (const dir of COMPONENT_DIRS) {
     for (const slug of readdirSync(dir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
@@ -342,7 +358,7 @@ export function classesData(): Classes {
         for (const name of classesInCss(
           readFileSync(join(dir, slug, file), "utf8"),
         ))
-          out[name] ??= {
+          found[name] ??= {
             component: slug,
             title,
             description,
@@ -354,7 +370,7 @@ export function classesData(): Classes {
   }
 
   for (const name of classesInCss(readFileSync(TOKEN_CSS, "utf8")))
-    out[name] ??= { ...TOKEN_PAGE, attributes: {} }
+    found[name] ??= { ...TOKEN_PAGE, attributes: {} }
 
   for (const builder of Object.values(fs as Record<string, unknown>)) {
     if (typeof builder !== "function") continue
@@ -384,7 +400,7 @@ export function classesData(): Classes {
     }
     const baseParts = new Map(parts(base))
     for (const [part, basePart] of baseParts) {
-      const targets = [...new Set(classesIn(basePart))].filter((c) => out[c])
+      const targets = [...new Set(classesIn(basePart))].filter((c) => found[c])
       if (!targets.length) continue
       for (const [list, option] of Object.entries(OPTION_LISTS)) {
         const values = (builder as unknown as Record<string, unknown>)[list]
@@ -417,7 +433,7 @@ export function classesData(): Classes {
         }
         for (const [attribute, list] of emitted)
           for (const target of targets)
-            out[target].attributes[attribute] = {
+            found[target].attributes[attribute] = {
               values: list,
               // Standardverdien er den ene verdien som ikke gir noe attributt,
               // som `primary` for `data-variant`. Gir flere ingenting, som de
@@ -448,19 +464,53 @@ export function classesData(): Classes {
     if (typeof build !== "function") continue
     // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
     // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
-    const found = flaggFor(
+    const flagged = flaggFor(
       builder,
       build as (options: Record<string, unknown>) => unknown,
       { id: "x", titleId: "x" },
-      (name) => name in out,
+      (name) => name in found,
     )
-    for (const [name, attributes] of found)
+    for (const [name, attributes] of flagged)
       for (const attribute of attributes)
         flags.set(name, (flags.get(name) ?? new Set()).add(attribute))
   }
   for (const [name, attributes] of flags)
     for (const attribute of [...attributes].sort())
-      out[name].attributes[attribute] ??= { values: [], flag: true }
+      found[name].attributes[attribute] ??= { values: [], flag: true }
+
+  /*
+   * Innholdet og delene, fra tabellen i `metadata.ts`. Hver klasse i CSS-en
+   * skal stå der, og ingen andre: en ny klasse uten en rad stopper
+   * generatoren med navnet, og en rad for en klasse som er borte fra CSS-en
+   * stopper den også, ellers ble den stående og love noe som ikke finnes.
+   */
+  const missing = Object.keys(found).filter((name) => !(name in classDocs))
+  const stale = Object.keys(classDocs).filter((name) => !(name in found))
+  if (missing.length || stale.length)
+    throw new Error(
+      [
+        missing.length &&
+          `classDocs i metadata.ts mangler ${missing.join(", ")}.`,
+        stale.length &&
+          `classDocs i metadata.ts har klasser som ikke finnes i CSS-en: ${stale.join(", ")}.`,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    )
+  const out: Classes = {}
+  for (const [name, info] of Object.entries(found)) {
+    const { content, partOf, parts } = classDocs[name]
+    out[name] = {
+      component: info.component,
+      title: info.title,
+      description: info.description,
+      link: info.link,
+      content,
+      ...(partOf ? { partOf } : {}),
+      ...(parts ? { parts } : {}),
+      attributes: info.attributes,
+    }
+  }
   return out
 }
 

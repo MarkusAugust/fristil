@@ -27,6 +27,22 @@ internal object Json {
             append('"')
         }
 
+    /**
+     * Det motsatte av [parse]: `Map`, `List`, `String`, tall, `Boolean` og
+     * `null` som JSON. Et heltall skrives uten desimaler, som JavaScript.
+     */
+    fun write(value: Any?): String =
+        when (value) {
+            null -> "null"
+            is String -> string(value)
+            is Boolean -> value.toString()
+            is Int, is Long -> value.toString()
+            is Number -> value.toDouble().let { if (it % 1.0 == 0.0 && !it.isInfinite()) it.toLong().toString() else it.toString() }
+            is Map<*, *> -> value.entries.joinToString(",", "{", "}") { (k, v) -> "${string(k.toString())}:${write(v)}" }
+            is List<*> -> value.joinToString(",", "[", "]") { write(it) }
+            else -> throw IllegalArgumentException("Kan ikke skrive ${value::class.simpleName} som JSON.")
+        }
+
     fun parse(text: String): Any? {
         val reader = Reader(text)
         val value = reader.value()

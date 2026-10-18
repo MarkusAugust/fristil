@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 98,
+      "end": 103,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "<fs-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+    },
+    {
+      "start": 757,
+      "end": 764,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/table/",
+      "message": "fs-table har delen «caption» mer enn én gang. Den skal stå én gang. Tabellens navn."
+    }
+  ],
+  "side": [
+    {
+      "start": 98,
+      "end": 103,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "<fs-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+    },
+    {
+      "start": 757,
+      "end": 764,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/table/",
+      "message": "fs-table har delen «caption» mer enn én gang. Den skal stå én gang. Tabellens navn."
+    }
+  ]
+}

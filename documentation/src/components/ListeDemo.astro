@@ -143,7 +143,9 @@ import Preview from "./Preview.astro"
 				<p class="fs-alert__title">Klarte ikke å hente sakene</p>
 				<p>Nettverket svarte ikke. Prøv igjen.</p>
 			</div>`
-		if (treff) treff.textContent = "Klarte ikke å hente sakene"
+		// Varselet har role="alert" og leses opp selv. Statusfeltet tømmes, så
+		// beskjeden ikke kommer to ganger.
+		if (treff) treff.textContent = ""
 	}
 
 	function visTomt(sokeord: string) {

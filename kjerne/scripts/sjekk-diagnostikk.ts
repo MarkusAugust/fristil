@@ -103,6 +103,72 @@ const cases: Case[] = [
     count: 0,
   },
   {
+    name: "et felt med to kontroller",
+    html: `<fs-field><label>Telefon</label><input name="a"><select name="b"></select></fs-field>`,
+    count: 1,
+    mentions: [
+      "<fs-field> har delen «control» mer enn én gang",
+      "bare den første",
+    ],
+    severity: "warning",
+    covers: "select",
+  },
+  {
+    name: "to hjelpetekster i et felt, der bare den første kobles",
+    html: `<fs-field><label>Navn</label><input name="n"><p class="fs-help-text">A</p><p class="fs-help-text">B</p></fs-field>`,
+    count: 1,
+    mentions: ["«help»"],
+    coversAt: 75,
+  },
+  {
+    name: "en klasse med to av en del som skal stå én gang",
+    html: `<table class="fs-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>`,
+    count: 1,
+    mentions: ["fs-table har delen «caption»", "skal stå én gang"],
+    coversAt: 45,
+  },
+  {
+    name: "deler som står flere ganger der det er lov, eller hører til noe annet",
+    html: `<fs-popover><button>Meny</button><ul class="fs-popover"><li><button>A</button></li><li><button>B</button></li></ul></fs-popover>
+<fs-dialog><dialog><h2>Tittel</h2><div class="fs-dialog__body"><h3>Del</h3></div></dialog></fs-dialog>
+<fs-field><label>A</label><input name="a"><fs-field><label>B</label><input name="b"></fs-field></fs-field>
+<fs-tabs><div class="fs-tabs__list"><button>A</button><button>B</button></div><div class="fs-tabs__panel">A</div><div class="fs-tabs__panel">B</div></fs-tabs>
+<div class="fs-card"><h3 class="fs-card__title">A</h3><div class="fs-card"><h3 class="fs-card__title">B</h3></div></div>
+<ul class="fs-list"><li>A</li><li>B</li></ul>`,
+    count: 0,
+  },
+  {
+    name: "to dialoger rett under <fs-dialog>, men ikke en nøstet",
+    html: `<fs-dialog><dialog></dialog><dialog></dialog></fs-dialog>
+<fs-dialog><dialog></dialog><div><dialog></dialog></div></fs-dialog>`,
+    count: 1,
+    mentions: ["«dialog»"],
+  },
+  {
+    name: "en skjult verdi er ikke en kontroll til, og en delt knapp er ikke to utløsere",
+    html: `<fs-field><input type="hidden" name="x"><input type="checkbox" name="y"><label>Jeg godtar</label></fs-field>
+<fs-popover><button type="button">Lagre</button><button type="button" aria-controls="m">Flere valg</button><ul class="fs-popover" id="m"><li><button type="button">Lagre som</button></li></ul></fs-popover>
+<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><p class="fs-help-text">Der du bor</p><fs-field><label>Gate</label><input name="g"><p class="fs-help-text">Med nummer</p></fs-field></fieldset>
+<table class="fs-table"><caption>A</caption><thead></thead><tbody></tbody><tbody></tbody></table>`,
+    count: 0,
+  },
+  {
+    name: "en dyp nøsting og et felt med mange kontroller går fort",
+    html: `<ul class="fs-list">${"<li>x".repeat(3000)}</ul><fs-field><label>A</label>${'<input name="a">'.repeat(2000)}</fs-field>`,
+    count: 1999,
+    maxMs: 500,
+  },
+  {
+    name: "to deler bak et vilkår i en mal er ikke to deler",
+    html: `<fs-field><label>Svar</label>{{if .Lang}}<textarea name="s"></textarea>{{else}}<input name="s">{{end}}</fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en del til kan undertrykkes",
+    html: `<fs-field><label>A</label><input name="a"><!-- fristil-ignore-next del-flere-ganger --><input name="b"></fs-field>`,
+    count: 0,
+  },
+  {
     name: "et element som ikke finnes",
     html: `<fs-dialog><fs-dialog-header>Tittel</fs-dialog-header></fs-dialog>`,
     count: 1,

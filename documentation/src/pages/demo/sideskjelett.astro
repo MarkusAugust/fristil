@@ -142,15 +142,18 @@ const { class: listeKlasse, ...liste } = fs.list({ variant: "plain" })
 			 * mellom delene og fargen på topp og bunn hører til siden, og står
 			 * derfor her. Alle verdiene er tokens, så siden følger temaet.
 			 */
+			/* Sida følger systemet gjennom tokenene, så rullefelt og
+			   skjemakontroller må følge med. Fristil setter ikke denne på
+			   `:root`, fordi en verdi der ville gjeldt hele dokumentet også
+			   der pakken bare er en gjest. Den står på <html>, siden
+			   rullefeltet i vinduet følger rotelementet. */
+			html {
+				color-scheme: light dark;
+			}
+
 			body {
 				margin: 0;
 				background: var(--fs-color-neutral-canvas);
-
-				/* Sida følger systemet gjennom tokenene, så rullefelt og
-				   skjemakontroller må følge med. Fristil setter ikke denne på
-				   `:root`, fordi en verdi der ville gjeldt hele dokumentet også
-				   der pakken bare er en gjest. */
-				color-scheme: light dark;
 				color: var(--fs-color-neutral-text-strong);
 				font-family:
 					system-ui,
