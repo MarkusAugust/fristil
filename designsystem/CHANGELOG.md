@@ -40,6 +40,15 @@ egen overskrift «Brytende».
 - **`idOrFallback` sier også at en ny id per rendring bytter ut
   elementene** ved neste patch.
 
+### Rettet
+
+- **`<fs-popover>` lukket vinduet etter en patch fra en mal uten
+  `popover`.** Morfingen tok `open` på verten og `popover` på panelet i
+  samme omgang. Komponenten lukket panelet, gjenåpnet det i neste mikrotask,
+  og først etterpå kom `toggle` med «closed» fra lukkingen, som en egen
+  oppgave. Den ble tatt som brukerens lukking. Nå gjelder `toggle` bare når
+  den stemmer med panelets faktiske tilstand.
+
 ### Endret
 
 - **«Markup og oppførsel» sier at reparasjonen forutsetter id fra

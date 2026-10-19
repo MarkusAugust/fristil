@@ -365,6 +365,34 @@ describe("fs-popover kobler fra bar struktur", () => {
     ;(document.querySelector("fs-popover") as FsPopover).hide()
   })
 
+  it("holder vinduet åpent når en patch tar både open og popover", async () => {
+    /*
+     * En morfing fra en mal uten `popover` tar `open` på verten og `popover`
+     * på panelet i samme omgang. Komponenten lukker, gjenåpner i neste
+     * mikrotask, og først etterpå kommer `toggle` med «closed» fra
+     * lukkingen, som en egen oppgave. Den ble tatt som brukerens lukking, og
+     * vinduet sto lukket etter en patch som ikke sa noe om det.
+     */
+    monter(BAR)
+    await tegn()
+    const { knapp, panel } = deler()
+    const vert = document.querySelector("fs-popover") as FsPopover
+    knapp.click()
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(true)
+
+    vert.removeAttribute("open")
+    panel.removeAttribute("popover")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(vert.open).toBe(true)
+    expect(panel.getAttribute("popover")).toBe("manual")
+    expect(panel.matches(":popover-open")).toBe(true)
+    expect(knapp.getAttribute("aria-expanded")).toBe("true")
+    vert.hide()
+  })
+
   it("lar det serveren skrev stå", async () => {
     // `popover` uten verdi er `auto`, og det er en annen verdi enn
     // komponentens `manual`. Id-en er også serverens.

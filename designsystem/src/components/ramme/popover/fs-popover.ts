@@ -390,10 +390,21 @@ export class FsPopover extends HostElement {
 
   private handlePanelToggle = (event: Event): void => {
     const state = (event as ToggleEvent).newState
-    // Komponentens egne `showPopover()` og `hidePopover()` gir også
-    // hendelsen, men da stemmer `open` alt, og ingenting skjer.
-    if (state === "closed" && this.open) this.hide()
-    else if (state === "open" && !this.open) this.show()
+    /*
+     * Hendelsen gjelder bare når den stemmer med panelet. `toggle` leveres
+     * som en egen oppgave, etter alt som skjedde i samme omgang, og kan
+     * beskrive en tilstand som alt er endret. En patch som tar `open` på
+     * verten og `popover` på panelet i samme morfing, lukker panelet her i
+     * `sync()`, gjenåpner det i mikrotasken etterpå, og først da kommer
+     * «closed» fra lukkingen. Før ble den tatt som brukerens, og vinduet
+     * brukeren hadde åpent sto lukket etter en patch som ikke sa noe om det.
+     *
+     * Komponentens egne `showPopover()` og `hidePopover()` gir også
+     * hendelsen, men da stemmer `open` alt, og ingenting skjer.
+     */
+    const showing = (event.currentTarget as Element).matches(":popover-open")
+    if (state === "closed" && this.open && !showing) this.hide()
+    else if (state === "open" && !this.open && showing) this.show()
   }
 
   private handleOutsideClick = (event: Event): void => {

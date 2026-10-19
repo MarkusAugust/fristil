@@ -395,19 +395,19 @@ describe("fs-popover gjennom Datastars morfing", () => {
     })
   })
 
-  it("id fra serveren uten popover: panelet morfes, men lukkes", async () => {
+  it("id fra serveren uten popover: panelet morfes og står åpent", async () => {
     /*
-     * En egen feil, ved siden av id-ene. Panelet beholdes, men serveren
-     * sendte ikke `popover`, så morfingen fjerner det. Nettleseren lukker
-     * et panel som mister `popover`, `toggle` sier «closed», og
-     * komponenten tar det som at brukeren lukket.
+     * Serveren sendte ikke `popover`, så morfingen tar det sammen med `open`
+     * på verten. Komponenten lukker, gjenåpner i neste mikrotask, og så
+     * kommer «closed» fra lukkingen som en egen oppgave. Den ble tatt som
+     * brukerens lukking, og vinduet sto lukket etter patchen.
      */
     const r = await åpneOgPatch(MENY_MED_ID)
     expect(r).toEqual({
       sammeKnapp: true,
       sammePanel: true,
-      åpent: false,
-      fokusIPanelet: false,
+      åpent: true,
+      fokusIPanelet: true,
     })
   })
 
