@@ -48,7 +48,12 @@ export const FS_POPOVER_PARTS = {
  * så det serveren skrev står. Komponenten setter `open` på verten,
  * `aria-expanded` på knappen og posisjonen på panelet, og setter alt den
  * har skrevet tilbake når en patch river det bort. Malen trenger ingen
- * `data-preserve-attr`.
+ * `data-preserve-attr`. Men en morfing beholder panelet bare når id-en
+ * stemmer: Datastar og idiomorph morfer ikke et element med id inn i et
+ * uten. Lager komponenten id-en selv, byttes panelet ut ved neste patch fra
+ * en mal uten id, og fokus og det brukeren gjorde i det er borte. Skal det
+ * overleve, må serveren skrive id på panelet, slik `fs.popover()` gjør.
+ * Komponenten sier fra i konsollen første gang det går galt.
  *
  * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
  * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
@@ -293,6 +298,7 @@ export class FsPopover extends HostElement {
       this.triggerElement = trigger
     }
     if (this.panel !== panel) {
+      if (this.panel) this.warnAboutReplacedPanel(this.panel, panel)
       /*
        * Tilstanden står i markupen som `:popover-open`, og skal leses derfra.
        * Lukker nettleseren et `popover="auto"` selv, fordi et annet åpnes
@@ -318,6 +324,41 @@ export class FsPopover extends HostElement {
       document.removeEventListener("click", this.handleOutsideClick, true)
       document.removeEventListener("keydown", this.handleKeydown)
     }
+  }
+
+  /**
+   * Sier fra når en patch byttet ut panelet fordi serveren ikke skrev id.
+   *
+   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
+   * gamle fjernes, og serverens settes inn. Lager komponenten id-en selv,
+   * får hver patch fra en mal uten id dermed et nytt panel. Komponenten
+   * åpner det igjen, men fokus, og det brukeren skrev i et felt i det, er
+   * borte.
+   *
+   * Beskjeden kommer når det skjer, og bare når vinduet sto åpent: det gamle
+   * panelet er ute av treet, id-en på det var komponentens, og det nye fikk
+   * den samme fra komponenten. En advarsel om hvert bart panel ville truffet
+   * alle som aldri patcher, eller patcher smalt slik dokumentasjonen
+   * anbefaler, og de har ingenting å rette.
+   */
+  private warnAboutReplacedPanel(lost: HTMLElement, panel: HTMLElement): void {
+    if (lost.isConnected || !this.wantsOpen) return
+    if (!this.panelId || lost.id !== this.panelId || panel.id !== this.panelId)
+      return
+
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
+    warnAboutMarkup(
+      this,
+      "en patch byttet ut panelet mens det sto åpent. Det åpnes igjen, men " +
+        "fokus og det brukeren gjorde i det er borte. Panelet hadde en id " +
+        "komponenten laget selv, og serverens markup har ingen. En morfing " +
+        "kjenner da ikke panelet igjen og setter inn et nytt: skriv id på " +
+        "panelet i malen, som fs.popover() gjør, så beholdes det. Bytter " +
+        "patchen ut elementene uansett, med inner, replace eller innerHTML, " +
+        "må serveren patche utenom panelet.",
+      () => this.findPanel()?.id === this.panelId,
+    )
   }
 
   /** Panelet: det som har `popover`, ellers det med klassen. */
@@ -352,10 +393,21 @@ export class FsPopover extends HostElement {
 
   private handlePanelToggle = (event: Event): void => {
     const state = (event as ToggleEvent).newState
-    // Komponentens egne `showPopover()` og `hidePopover()` gir også
-    // hendelsen, men da stemmer `open` alt, og ingenting skjer.
-    if (state === "closed" && this.open) this.hide()
-    else if (state === "open" && !this.open) this.show()
+    /*
+     * Hendelsen gjelder bare når den stemmer med panelet. `toggle` leveres
+     * som en egen oppgave, etter alt som skjedde i samme omgang, og kan
+     * beskrive en tilstand som alt er endret. En patch som tar `open` på
+     * verten og `popover` på panelet i samme morfing, lukker panelet her i
+     * `sync()`, gjenåpner det i mikrotasken etterpå, og først da kommer
+     * «closed» fra lukkingen. Før ble den tatt som brukerens, og vinduet
+     * brukeren hadde åpent sto lukket etter en patch som ikke sa noe om det.
+     *
+     * Komponentens egne `showPopover()` og `hidePopover()` gir også
+     * hendelsen, men da stemmer `open` alt, og ingenting skjer.
+     */
+    const showing = (event.currentTarget as Element).matches(":popover-open")
+    if (state === "closed" && this.open && !showing) this.hide()
+    else if (state === "open" && !this.open && showing) this.show()
   }
 
   private handleOutsideClick = (event: Event): void => {

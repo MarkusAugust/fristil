@@ -121,7 +121,8 @@ export class FsSuggestion extends HostElement {
    * Ingenting av det står i HTML-en serveren sendte, så en morfing river det
    * bort. Før måtte malen liste opp `aria-expanded`,
    * `aria-activedescendant` og `hidden` i `data-preserve-attr`. Nå setter
-   * komponenten det tilbake.
+   * komponenten det tilbake, så lenge morfingen beholder feltet. Det gjør
+   * den bare når id-en stemmer, se `warnAboutReplacedControl`.
    */
   private wantOpen?: boolean
   /**
@@ -439,6 +440,49 @@ export class FsSuggestion extends HostElement {
     this.empty = undefined
   }
 
+  /**
+   * Sier fra når en patch byttet ut feltet fordi serveren ikke skrev id.
+   *
+   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
+   * gamle fjernes, og serverens settes inn. Lager komponenten id-en selv,
+   * får hver patch fra en mal uten id dermed et nytt felt, og det brukeren
+   * skrev, fokus og lista er borte. Serveren ser bare et felt som ble tomt.
+   *
+   * Beskjeden kommer når det skjer, og bare når brukeren mistet noe: det
+   * gamle feltet er ute av treet, id-en var komponentens, det nye kom uten,
+   * og det sto noe annet i det gamle feltet enn i det nye. En server som
+   * sender teksten tilbake har ikke mistet den. En advarsel om hvert bart
+   * felt ville truffet alle som aldri patcher, eller patcher smalt slik
+   * dokumentasjonen anbefaler. `wire()` har alt gitt det nye feltet en id,
+   * så det er minnet som sier om den er komponentens.
+   */
+  private warnAboutReplacedControl(
+    lost: HTMLInputElement,
+    control: HTMLInputElement,
+  ): void {
+    if (lost.isConnected || !this.ids.has(lost) || !this.ids.has(control)) {
+      return
+    }
+    if (lost.value === control.value) return
+
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
+    warnAboutMarkup(
+      this,
+      "en patch byttet ut feltet, og det brukeren hadde skrevet gikk tapt, " +
+        "sammen med fokus og lista. Feltet hadde en id komponenten laget " +
+        "selv, og serverens markup har ingen. En morfing kjenner da ikke " +
+        "feltet igjen og setter inn et nytt: skriv id på feltet, lista og " +
+        "alternativene i malen, som fs.suggestion() gjør, så beholdes de. " +
+        "Bytter patchen ut elementene uansett, med inner, replace eller " +
+        "innerHTML, må serveren patche utenom feltet.",
+      () => {
+        const now = this.querySelector(CONTROL_SELECTOR)
+        return now !== null && this.ids.has(now)
+      },
+    )
+  }
+
   private bind(): void {
     const control = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
     if (!control) {
@@ -479,6 +523,7 @@ export class FsSuggestion extends HostElement {
     )
 
     if (control !== this.control) {
+      if (this.control) this.warnAboutReplacedControl(this.control, control)
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)

@@ -546,6 +546,16 @@ må serveren skrive valget selv, med \`aria-selected\` og \`hidden\` på den
 riktige fanen og de andre panelene, eller eie tilstanden med
 \`server-controlled\`.
 
+En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
+morfer ikke et element med id inn i et uten, de bytter det ut. Skriver malen
+bar markup, lager komponenten id-ene selv, og da byttes fanene, panelene,
+feltet og lista ut ved neste patch som sender området på nytt, og det
+brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
+\`<fs-tabs>\`, på kontrollen i \`<fs-field>\`, på feltet, lista og alternativene
+i \`<fs-suggestion>\` og på panelet i \`<fs-popover>\`, de samme ved hver
+rendring. Komponenten sier fra i konsollen første gang en patch bytter ut
+noe brukeren hadde rørt.
+
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
 sette brukerens valg tilbake:
@@ -1136,8 +1146,13 @@ bestemmer den. Som standard gjør web-komponenten det: \`<fs-tabs>\` husker fane
 valgte, og setter den tilbake når en patch med \`outer\` river den bort: \`outer\`
 morfer, og valget er knyttet til selve knappen. \`inner\` og \`replace\` bytter
 ut nodene, og da følger komponenten markupen, så serveren må skrive
-\`aria-selected\` og \`hidden\` selv. Skal serveren kunne flytte den, sier du
-det med \`server-controlled\`:
+\`aria-selected\` og \`hidden\` selv. Og \`outer\` morfer bare når id-ene stemmer:
+et element med en id serveren ikke sendte byttes ut. Skriv derfor id på
+fanene og panelene selv, de samme ved hver rendring, som \`fs.tabs()\` gjør.
+Det samme gjelder kontrollen i \`<fs-field>\`, feltet, lista og alternativene i
+\`<fs-suggestion>\` og panelet i \`<fs-popover>\`. Komponenten sier fra i
+konsollen første gang en patch bytter ut noe brukeren hadde rørt. Skal
+serveren kunne flytte fanen, sier du det med \`server-controlled\`:
 
 \`\`\`html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">

@@ -66,8 +66,15 @@ type Word = { written: string | null; server: string | null }
  * sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
  *
  * Fanevalget er brukerens, og komponenten setter det tilbake når en patch
- * river det bort. Malen trenger derfor ingen `data-preserve-attr`. Skal
- * serveren kunne flytte fanen, som i «gå videre til steg 2», settes
+ * river det bort. Malen trenger derfor ingen `data-preserve-attr`. Det
+ * forutsetter at patchen beholder knappene, og det gjør en morfing bare når
+ * id-ene stemmer: Datastar og idiomorph morfer ikke et element med id inn
+ * i et uten, de bytter det ut. Lager komponenten id-ene selv, er det
+ * nettopp det som skjer ved neste patch fra en mal uten id-er, og da er
+ * fanen en annen. Skal valget overleve en patch som sender raden på nytt,
+ * må serveren skrive id på fanene og panelene, slik `fs.tabs()` gjør.
+ * Komponenten sier fra i konsollen første gang det går galt. Skal serveren
+ * kunne flytte fanen, som i «gå videre til steg 2», settes
  * `server-controlled` på verten, og da bestemmer hver patch.
  *
  * ```html
@@ -103,16 +110,19 @@ export class FsTabs extends HostElement {
    *
    * En attributtmorfing beholder nodene, så referansen overlever den. Bytter
    * patchen ut selve knappen, er fanen en annen, og da glemmer komponenten
-   * valget framfor å gjette.
+   * valget framfor å gjette. Det skjer også i en morfing når knappen har en
+   * id serveren ikke sendte, se `warnAboutReplacedTabs`.
    *
    * `undefined` betyr at brukeren ikke har valgt noe ennå, og da er det
    * serverens markup som gjelder.
    */
   private chosenTab?: HTMLButtonElement
   /**
-   * Id-ene komponenten selv har laget, per node. En morfing river dem bort
-   * og beholder noden, og da skal den samme id-en tilbake: en skjermleser
-   * midt i en opplesning skal ikke følge en peker som skifter under den.
+   * Id-ene komponenten selv har laget, per node. River en patch dem bort
+   * og beholder noden, skal den samme id-en tilbake: en skjermleser midt i
+   * en opplesning skal ikke følge en peker som skifter under den. Minnet
+   * sier også hvilke noder som har en id serveren ikke kjenner, og det er
+   * dem en morfing bytter ut.
    */
   private readonly ids = new WeakMap<Element, string>()
   /**
@@ -552,7 +562,9 @@ export class FsTabs extends HostElement {
        * Uten hendelsen ville en app som laster innholdet i panelet eller
        * skriver valget i adressen aldri fått vite at det flyttet seg.
        */
+      const lost = this.chosenTab
       this.chosenTab = undefined
+      this.warnAboutReplacedTabs(lost)
       if (this.markedIndex < 0 && this.tabs.length > 0) {
         this.apply(0)
         this.notify(0)
@@ -561,6 +573,53 @@ export class FsTabs extends HostElement {
     }
 
     this.apply(index)
+  }
+
+  /**
+   * Sier fra når en patch byttet ut fanene fordi serveren ikke skrev id.
+   *
+   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
+   * gamle fjernes, og serverens settes inn. Lager komponenten id-ene selv,
+   * får hver patch fra en mal uten id-er dermed nye knapper, og valget
+   * brukeren gjorde er borte. Markupen ser riktig ut etterpå, så uten
+   * beskjed sto utvikleren og lette i sin egen kode.
+   *
+   * Beskjeden kommer når det skjer, og bare da. En advarsel om hver bar rad
+   * ville truffet alle som aldri patcher, eller patcher smalt slik
+   * dokumentasjonen anbefaler, og de har ingenting å rette. Her er fanen
+   * brukeren valgte borte, den hadde en id komponenten laget, og det står en
+   * ny fane uten id fra serveren med den samme teksten der nå. Tvillingen
+   * skiller dette fra en rad serveren byttet ut med vilje, der tapet er
+   * riktig. Prisen er at en patch som også endrer teksten på fanen, som
+   * «Vedlegg (2)» til «Vedlegg (3)», ikke gir advarsel den gangen; neste
+   * patch som lar teksten stå gjør det. Antallet faner var alternativet, og
+   * det ville gitt feil diagnose på en ny rad med like mange faner.
+   * Vilkåret sjekkes på nytt når siden har falt til ro, så en server som
+   * sender id-er i mellomtiden får ingen advarsel.
+   */
+  private warnAboutReplacedTabs(lost: HTMLButtonElement): void {
+    // Står fanen i treet fortsatt, er den ikke byttet ut, bare ikke en
+    // fane lenger, som når en patch skrev `role` på raden.
+    if (lost.isConnected || !this.ids.has(lost)) return
+    const text = (lost.textContent ?? "").trim()
+    const twin = this.tabs.some(
+      (tab) => this.ids.has(tab) && (tab.textContent ?? "").trim() === text,
+    )
+    if (!twin) return
+
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
+    warnAboutMarkup(
+      this,
+      "en patch byttet ut fanene, og fanen brukeren hadde valgt gikk tapt. " +
+        "Fanene hadde id-er komponenten laget selv, og serverens markup har " +
+        "ingen. En morfing kjenner da ikke fanene igjen og setter inn nye: " +
+        "skriv id på fanene og panelene i malen, som fs.tabs() gjør, så " +
+        "beholdes de. Bytter patchen ut elementene uansett, med inner, " +
+        "replace eller innerHTML, må serveren skrive aria-selected og " +
+        "hidden selv, eller eie valget med server-controlled.",
+      () => this.tabs.some((tab) => this.ids.has(tab)),
+    )
   }
 
   private bind(): void {

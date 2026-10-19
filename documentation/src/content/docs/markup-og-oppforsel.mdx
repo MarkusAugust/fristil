@@ -181,6 +181,12 @@ endrer elementene som allerede står der slik at de blir like den nye
 versjonen. Elementene beholdes, bare det som er ulikt endres. Det er derfor
 tekst du har skrevet i et felt ikke forsvinner.
 
+Morfingen kjenner et element igjen på tagnavnet og på id-en. Har elementet i
+siden en id, og serverens element har ingen eller en annen, morfes det ikke:
+det gamle fjernes, og serverens settes inn, som om du hadde brukt `replace`.
+Det får følger for alt komponentene lager id på selv, og det kommer vi
+tilbake til.
+
 (Det finnes også `replace`, som bytter ut elementet i stedet. Da mister du
 alt nettleseren har lagt til, så den er ingen vei utenom det som står under.)
 
@@ -259,6 +265,9 @@ sendte. Komponenten ser at den er borte, og setter den tilbake. Id-ene blir
 de samme som før: komponenten husker dem, slik at en skjermleser midt i en
 opplesning ikke følger en peker som skifter under den.
 
+Det gjelder koblingen. Det brukeren gjorde er en annen sak, og der kommer
+id-ene inn igjen, se neste avsnitt.
+
 #### Komponenten setter tilbake det brukeren gjorde
 
 Noe kan serveren umulig vite: hvilken fane brukeren valgte, og om
@@ -285,6 +294,40 @@ Fredningen har en svakhet til. `data-preserve-attr` er et `data-*`-attributt,
 og et slikt attributt betyr bare noe for koden som leser det. Fredning virker
 altså fordi morferen leser lista. Reparasjon virker fordi komponenten leser
 markupen, og det avhenger ikke av hvem som morfer.
+
+#### Skriv id der komponenten ellers lager den
+
+Reparasjonen forutsetter én ting: at morfingen beholder elementene. Fanevalget
+er knyttet til selve knappen, og teksten brukeren skrev står i selve feltet.
+Byttes elementet ut, er det borte, og ingen komponent kan hente det tilbake.
+
+Og det er nettopp det som skjer med bar markup. Komponenten lager id-er på
+fanene og panelene, på feltet og lista, og på panelet i sprettoppvinduet, fordi
+koblingen trenger dem. Serveren kjenner ikke de id-ene. Neste gang den sender
+området, står det et element med id i siden og et uten i patchen, og morfingen
+kjenner dem ikke igjen: den fjerner det gamle og setter inn det nye. Fanen
+brukeren valgte faller tilbake til serverens, og feltet blir tomt. Datastar og
+idiomorph gjør begge dette, med vilje.
+
+Løsningen er at serveren skriver id på de elementene selv. Da stemmer id-ene
+på begge sider, elementene beholdes, og komponenten setter resten tilbake:
+
+| Komponent | Skriv id på |
+| --- | --- |
+| `<fs-tabs>` | hver fane og hvert panel |
+| `<fs-field>` | kontrollen |
+| `<fs-suggestion>` | feltet, lista og hvert alternativ |
+| `<fs-popover>` | panelet |
+
+Byggefunksjonene gjør det alt: `fs.tabs({ id })` skriver `sak-tab-0` og
+`sak-panel-0`, og Kotlin-bindingen det samme. Skriver du malen for hånd,
+skriver du id-ene selv, og de må være de samme ved hver rendring. En id som
+lages på nytt per rendring er like fremmed for morfingen som ingen.
+
+Går det galt likevel, sier komponenten fra i konsollen, én gang, i det
+øyeblikket patchen byttet ut elementene og noe gikk tapt. En side som aldri
+patcher, eller patcher smalt, får ingen advarsel: der er bar markup fortsatt
+nok.
 
 #### Når serveren alene skal bestemme tilstanden
 
@@ -336,8 +379,10 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
 1. **Send bare det som har endret seg.** Da oppstår ikke problemet.
 2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
    `aria-describedby` selv, i hvilket som helst språk.
-3. **Det brukeren gjorde setter komponenten tilbake.** Du trenger ikke gjøre
-   noe. Skal serveren alene bestemme tilstanden, sier du det med `server-controlled`.
+3. **Det brukeren gjorde setter komponenten tilbake,** så lenge patchen
+   beholder elementene. Sender du hele området på nytt, må serveren skrive id
+   på fanene, panelene, feltet og lista, ellers byttes de ut. Skal serveren
+   alene bestemme tilstanden, sier du det med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
 fyller det ut, kan serveren skrive hele koblingen selv. Da har komponenten
