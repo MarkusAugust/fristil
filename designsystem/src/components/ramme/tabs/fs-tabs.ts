@@ -594,20 +594,26 @@ export class FsTabs extends HostElement {
    * som sender id-er i mellomtiden får ingen advarsel.
    */
   private warnAboutReplacedTabs(lost: HTMLButtonElement): void {
-    if (!this.ids.has(lost)) return
+    // Står fanen i treet fortsatt, er den ikke byttet ut, bare ikke en
+    // fane lenger, som når en patch skrev `role` på raden.
+    if (lost.isConnected || !this.ids.has(lost)) return
     const text = (lost.textContent ?? "").trim()
     const twin = this.tabs.some(
       (tab) => this.ids.has(tab) && (tab.textContent ?? "").trim() === text,
     )
     if (!twin) return
 
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
       "en patch byttet ut fanene, og fanen brukeren hadde valgt gikk tapt. " +
         "Fanene hadde id-er komponenten laget selv, og serverens markup har " +
-        "ingen, så morfingen kjente dem ikke igjen og satte inn nye " +
-        "elementer. Skriv id på fanene og panelene i malen, som fs.tabs() " +
-        "gjør, så beholdes elementene og valget.",
+        "ingen. En morfing kjenner da ikke fanene igjen og setter inn nye: " +
+        "skriv id på fanene og panelene i malen, som fs.tabs() gjør, så " +
+        "beholdes de. Bytter patchen ut elementene uansett, med inner, " +
+        "replace eller innerHTML, må serveren skrive aria-selected og " +
+        "hidden selv, eller eie valget med server-controlled.",
       () => this.tabs.some((tab) => this.ids.has(tab)),
     )
   }

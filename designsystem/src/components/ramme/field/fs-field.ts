@@ -422,7 +422,9 @@ export class FsField extends HostElement {
    * En advarsel om hvert bart felt ville truffet alle som aldri patcher,
    * eller patcher smalt slik dokumentasjonen anbefaler, og de har ingenting
    * å rette. Et `<select>` har ingen `defaultValue`, så der sammenlignes
-   * hvert alternativ med det serveren valgte.
+   * hvert alternativ med det serveren valgte, og en avkrysningsboks og en
+   * radioknapp har alltid samme `value` som `defaultValue`, så der er det
+   * `checked` som teller.
    */
   private warnAboutReplacedControl(
     lost: HTMLElement,
@@ -430,25 +432,39 @@ export class FsField extends HostElement {
   ): void {
     if (lost.isConnected || !this.idByMe.has(lost) || !this.idByMe.has(control))
       return
-    const changed =
-      lost instanceof HTMLSelectElement
-        ? [...lost.options].some((o) => o.selected !== o.defaultSelected)
-        : (lost as HTMLInputElement).value !==
-          (lost as HTMLInputElement).defaultValue
-    if (!changed) return
+    if (!this.changedByUser(lost)) return
 
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
       "en patch byttet ut kontrollen, og det brukeren hadde skrevet i den " +
         "gikk tapt. Kontrollen hadde en id komponenten hadde skrevet, og " +
-        "serverens markup har ingen, så morfingen kjente den ikke igjen og " +
-        "satte inn et nytt element. Skriv id på kontrollen i malen, som " +
-        "fs.field() gjør, så beholdes elementet.",
+        "serverens markup har ingen. En morfing kjenner da ikke kontrollen " +
+        "igjen og setter inn en ny: skriv id på kontrollen i malen, som " +
+        "fs.field() gjør, så beholdes den. Bytter patchen ut elementene " +
+        "uansett, med inner, replace eller innerHTML, må serveren sende det " +
+        "brukeren har skrevet tilbake, eller patche utenom feltet.",
       () => {
         const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         return now !== null && this.idByMe.has(now)
       },
     )
+  }
+
+  /** Står det noe annet i kontrollen enn det serveren sendte? */
+  private changedByUser(control: HTMLElement): boolean {
+    if (control instanceof HTMLSelectElement) {
+      return [...control.options].some((o) => o.selected !== o.defaultSelected)
+    }
+    if (
+      control instanceof HTMLInputElement &&
+      (control.type === "checkbox" || control.type === "radio")
+    ) {
+      return control.checked !== control.defaultChecked
+    }
+    const field = control as HTMLInputElement | HTMLTextAreaElement
+    return field.value !== field.defaultValue
   }
 
   private sync(): void {

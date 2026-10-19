@@ -22,7 +22,9 @@
  * `727844adfc825ee651fb93c544a2a739986f9a21820a94524b35f0cac470cf91`), med
  * den siste linja, `//# sourceMappingURL=datastar.js.map`, fjernet så Vite
  * ikke leter etter et kart som ikke er med. Det er versjonen
- * `agent/datastar.md` peker på. Patchen sendes som den samme
+ * `agent/datastar.md` peker på. Fila ligger her fordi pakken på npm,
+ * `@starfederation/datastar`, stopper på 1.0.0-beta.11: 1.0.x finnes bare
+ * som fil i Git-repoet og på CDN. Patchen sendes som den samme
  * `datastar-fetch`-hendelsen SSE-leseren selv sender når den har tolket en
  * `datastar-patch-elements`, og én test går hele veien gjennom `@get` og en
  * strøm, så vi vet at snarveien er den samme.
@@ -115,11 +117,15 @@ async function klikkOgPatch(markup: string) {
   expect(valgt()).toEqual(["false", "true", "false"])
 
   const meldt: number[] = []
-  document.addEventListener("tab-select", (e) =>
-    meldt.push((e as CustomEvent<{ index: number }>).detail.index),
+  const lytter = new AbortController()
+  document.addEventListener(
+    "tab-select",
+    (e) => meldt.push((e as CustomEvent<{ index: number }>).detail.index),
+    { signal: lytter.signal },
   )
   patch(markup)
   await ventPaTegning()
+  lytter.abort()
 
   return {
     faner: sammeNoder(faneFør, faner()),
@@ -231,25 +237,30 @@ describe("fs-tabs gjennom Datastars morfing", () => {
         }),
     )
 
-    document.body.innerHTML = `${BAR}
-      <button id="oppdater" data-on:click="@get('/saken')">Oppdater</button>`
-    await ventPaTegning()
-    // Datastar leser `data-*` i en `setTimeout` etter at noden kom.
-    await new Promise((ferdig) => setTimeout(ferdig, 20))
+    try {
+      document.body.innerHTML = `${BAR}
+        <button id="oppdater" data-on:click="@get('/saken')">Oppdater</button>`
+      await ventPaTegning()
+      // Datastar leser `data-*` i en `setTimeout` etter at noden kom.
+      await new Promise((ferdig) => setTimeout(ferdig, 20))
 
-    const før = faner()
-    før[1].click()
-    await ventPaTegning()
-    expect(valgt()).toEqual(["false", "true", "false"])
+      const før = faner()
+      før[1].click()
+      await ventPaTegning()
+      expect(valgt()).toEqual(["false", "true", "false"])
 
-    document.getElementById("oppdater")?.click()
-    await vi.waitFor(() => expect(faner()[0]).not.toBe(før[0]))
-    await ventPaTegning()
+      document.getElementById("oppdater")?.click()
+      await vi.waitFor(() => expect(faner()[0]).not.toBe(før[0]))
+      await ventPaTegning()
 
-    expect(hent).toHaveBeenCalledOnce()
-    expect(sammeNoder(før, faner())).toEqual([false, false, false])
-    expect(valgt()).toEqual(["true", "false", "false"])
-    hent.mockRestore()
+      expect(hent).toHaveBeenCalledOnce()
+      expect(sammeNoder(før, faner())).toEqual([false, false, false])
+      expect(valgt()).toEqual(["true", "false", "false"])
+    } finally {
+      // Ellers svarte `fetch` med denne strømmen i resten av fila etter en
+      // feil her.
+      hent.mockRestore()
+    }
   })
 })
 
@@ -479,9 +490,13 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()[0]).toContain("fs-tabs: en patch byttet ut fanene")
     expect(meldinger()[0]).toContain("fs.tabs()")
 
-    // Ikke én gang til for neste patch.
+    // Ikke én gang til når brukeren velger på nytt og patchen kommer igjen.
+    // Uten klikket er det ingenting å miste, og dedupliseringen prøves ikke.
+    faner()[1].click()
+    await ventPaTegning()
     patch(BAR)
     await roSeg()
+    expect(valgt()).toEqual(["true", "false", "false"])
     expect(meldinger()).toHaveLength(1)
   })
 
@@ -593,6 +608,25 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
   it("fs-field: ikke når brukeren ikke hadde skrevet noe", async () => {
     await skrivOgPatchFelt(FELT(""), "")
     expect(meldinger()).toEqual([])
+  })
+
+  it("fs-field: når en avkrysset boks byttes ut", async () => {
+    // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
+    // en sammenligning av dem så aldri at krysset var borte.
+    const boks = `<fs-field id="samtykke-vert">
+  <label>Samtykke</label>
+  <input class="fs-checkbox" type="checkbox">
+</fs-field>`
+    document.body.innerHTML = boks
+    await ventPaTegning()
+    ;(document.querySelector("input") as HTMLInputElement).checked = true
+    patch(boks)
+    await roSeg()
+    expect((document.querySelector("input") as HTMLInputElement).checked).toBe(
+      false,
+    )
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain("fs-field: en patch byttet ut kontrollen")
   })
 
   const MENY = (id: string) => `<fs-popover id="meny-vert">

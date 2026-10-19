@@ -464,14 +464,17 @@ export class FsSuggestion extends HostElement {
     }
     if (lost.value === "" && !this.wantOpen) return
 
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
       "en patch byttet ut feltet, og det brukeren hadde skrevet gikk tapt, " +
         "sammen med fokus og lista. Feltet hadde en id komponenten laget " +
-        "selv, og serverens markup har ingen, så morfingen kjente det ikke " +
-        "igjen og satte inn et nytt element. Skriv id på feltet, lista og " +
-        "alternativene i malen, som fs.suggestion() gjør, så beholdes " +
-        "elementene.",
+        "selv, og serverens markup har ingen. En morfing kjenner da ikke " +
+        "feltet igjen og setter inn et nytt: skriv id på feltet, lista og " +
+        "alternativene i malen, som fs.suggestion() gjør, så beholdes de. " +
+        "Bytter patchen ut elementene uansett, med inner, replace eller " +
+        "innerHTML, må serveren patche utenom feltet.",
       () => {
         const now = this.querySelector(CONTROL_SELECTOR)
         return now !== null && this.ids.has(now)

@@ -346,14 +346,17 @@ export class FsPopover extends HostElement {
     if (!this.panelId || lost.id !== this.panelId || panel.id !== this.panelId)
       return
 
+    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
+    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
       "en patch byttet ut panelet mens det sto åpent. Det åpnes igjen, men " +
         "fokus og det brukeren gjorde i det er borte. Panelet hadde en id " +
-        "komponenten laget selv, og serverens markup har ingen, så " +
-        "morfingen kjente det ikke igjen og satte inn et nytt element. " +
-        "Skriv id på panelet i malen, som fs.popover() gjør, så beholdes " +
-        "det.",
+        "komponenten laget selv, og serverens markup har ingen. En morfing " +
+        "kjenner da ikke panelet igjen og setter inn et nytt: skriv id på " +
+        "panelet i malen, som fs.popover() gjør, så beholdes det. Bytter " +
+        "patchen ut elementene uansett, med inner, replace eller innerHTML, " +
+        "må serveren patche utenom panelet.",
       () => this.findPanel()?.id === this.panelId,
     )
   }
