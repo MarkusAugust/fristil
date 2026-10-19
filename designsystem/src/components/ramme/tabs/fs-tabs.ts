@@ -590,8 +590,12 @@ export class FsTabs extends HostElement {
    * brukeren valgte borte, den hadde en id komponenten laget, og det står en
    * ny fane uten id fra serveren med den samme teksten der nå. Tvillingen
    * skiller dette fra en rad serveren byttet ut med vilje, der tapet er
-   * riktig. Vilkåret sjekkes på nytt når siden har falt til ro, så en server
-   * som sender id-er i mellomtiden får ingen advarsel.
+   * riktig. Prisen er at en patch som også endrer teksten på fanen, som
+   * «Vedlegg (2)» til «Vedlegg (3)», ikke gir advarsel den gangen; neste
+   * patch som lar teksten stå gjør det. Antallet faner var alternativet, og
+   * det ville gitt feil diagnose på en ny rad med like mange faner.
+   * Vilkåret sjekkes på nytt når siden har falt til ro, så en server som
+   * sender id-er i mellomtiden får ingen advarsel.
    */
   private warnAboutReplacedTabs(lost: HTMLButtonElement): void {
     // Står fanen i treet fortsatt, er den ikke byttet ut, bare ikke en

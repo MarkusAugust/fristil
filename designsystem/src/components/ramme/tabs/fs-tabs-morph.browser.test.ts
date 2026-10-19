@@ -610,6 +610,35 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
+  it("fs-field: ikke når serveren sender teksten tilbake", async () => {
+    // Serveren gjorde det meldingen ber om. Da er ingenting mistet, selv om
+    // noden er ny.
+    document.body.innerHTML = FELT("")
+    await ventPaTegning()
+    ;(document.querySelector("input") as HTMLInputElement).value = "Kari"
+    patch(FELT(' value="Kari"'))
+    await roSeg()
+    expect((document.querySelector("input") as HTMLInputElement).value).toBe(
+      "Kari",
+    )
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-field: ikke for en bar <select> brukeren lot stå", async () => {
+    // Nettleseren velger det første alternativet uten at noe er
+    // `defaultSelected`, så en sammenligning med det så et valg brukeren
+    // aldri gjorde.
+    const valg = `<fs-field id="land-vert">
+  <label>Land</label>
+  <select class="fs-select"><option>Norge</option><option>Sverige</option></select>
+</fs-field>`
+    document.body.innerHTML = valg
+    await ventPaTegning()
+    patch(valg)
+    await roSeg()
+    expect(meldinger()).toEqual([])
+  })
+
   it("fs-field: når en avkrysset boks byttes ut", async () => {
     // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
     // en sammenligning av dem så aldri at krysset var borte.

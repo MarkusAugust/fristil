@@ -448,12 +448,13 @@ export class FsSuggestion extends HostElement {
    * får hver patch fra en mal uten id dermed et nytt felt, og det brukeren
    * skrev, fokus og lista er borte. Serveren ser bare et felt som ble tomt.
    *
-   * Beskjeden kommer når det skjer, og bare når brukeren hadde noe å miste:
-   * det gamle feltet er ute av treet, id-en var komponentens, det nye kom
-   * uten, og brukeren hadde skrevet noe eller åpnet lista. En advarsel om
-   * hvert bart felt ville truffet alle som aldri patcher, eller patcher
-   * smalt slik dokumentasjonen anbefaler. `wire()` har alt gitt det nye
-   * feltet en id, så det er minnet som sier om den er komponentens.
+   * Beskjeden kommer når det skjer, og bare når brukeren mistet noe: det
+   * gamle feltet er ute av treet, id-en var komponentens, det nye kom uten,
+   * og det sto noe annet i det gamle feltet enn i det nye. En server som
+   * sender teksten tilbake har ikke mistet den. En advarsel om hvert bart
+   * felt ville truffet alle som aldri patcher, eller patcher smalt slik
+   * dokumentasjonen anbefaler. `wire()` har alt gitt det nye feltet en id,
+   * så det er minnet som sier om den er komponentens.
    */
   private warnAboutReplacedControl(
     lost: HTMLInputElement,
@@ -462,7 +463,7 @@ export class FsSuggestion extends HostElement {
     if (lost.isConnected || !this.ids.has(lost) || !this.ids.has(control)) {
       return
     }
-    if (lost.value === "" && !this.wantOpen) return
+    if (lost.value === control.value) return
 
     // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
     // meldingen sier hva som gjelder i hvert av tilfellene.

@@ -180,6 +180,11 @@ export class FsField extends HostElement {
    * komponenten, eller fra ledetekstens `for` fordi kontrollen selv ikke
    * hadde noen, kjenner morfingen ikke serverens kontroll igjen, og setter
    * inn en ny. Det brukeren skrev er da borte.
+   *
+   * En referanse, ikke bare et minne i `memory`: byttet ses ved å
+   * sammenligne den med kontrollen som står der nå, og det den gamle
+   * inneholdt må kunne leses etter at den er ute av treet. Den holder én
+   * løsrevet node i live til neste `sync()`, og det er med vilje.
    */
   private lastControl?: HTMLElement
   private readonly idByMe = new WeakSet<Element>()
@@ -421,10 +426,10 @@ export class FsField extends HostElement {
    * nye kom uten, og det sto noe annet i den gamle enn det serveren sendte.
    * En advarsel om hvert bart felt ville truffet alle som aldri patcher,
    * eller patcher smalt slik dokumentasjonen anbefaler, og de har ingenting
-   * å rette. Et `<select>` har ingen `defaultValue`, så der sammenlignes
-   * hvert alternativ med det serveren valgte, og en avkrysningsboks og en
-   * radioknapp har alltid samme `value` som `defaultValue`, så der er det
-   * `checked` som teller.
+   * å rette. Det sammenlignes med den nye kontrollen, ikke med den gamles
+   * `defaultValue`: en bar `<select>` har alltid et valgt alternativ uten at
+   * noe er `defaultSelected`, og en server som sender teksten brukeren skrev
+   * tilbake, slik meldingen ber om, har ikke mistet noe.
    */
   private warnAboutReplacedControl(
     lost: HTMLElement,
@@ -432,7 +437,7 @@ export class FsField extends HostElement {
   ): void {
     if (lost.isConnected || !this.idByMe.has(lost) || !this.idByMe.has(control))
       return
-    if (!this.changedByUser(lost)) return
+    if (!this.differs(lost, control)) return
 
     // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
     // meldingen sier hva som gjelder i hvert av tilfellene.
@@ -452,19 +457,32 @@ export class FsField extends HostElement {
     )
   }
 
-  /** Står det noe annet i kontrollen enn det serveren sendte? */
-  private changedByUser(control: HTMLElement): boolean {
-    if (control instanceof HTMLSelectElement) {
-      return [...control.options].some((o) => o.selected !== o.defaultSelected)
+  /**
+   * Sto det noe annet i den gamle kontrollen enn i den nye?
+   *
+   * En avkrysningsboks og en radioknapp har samme `value` uansett, så der
+   * er det krysset som teller. Et `<select>` sammenlignes på de valgte
+   * alternativene, siden `value` bare er det første av dem.
+   */
+  private differs(lost: HTMLElement, control: HTMLElement): boolean {
+    if (
+      lost instanceof HTMLSelectElement &&
+      control instanceof HTMLSelectElement
+    ) {
+      const chosen = (select: HTMLSelectElement) =>
+        [...select.selectedOptions].map((o) => o.value).join("\n")
+      return chosen(lost) !== chosen(control)
     }
     if (
+      lost instanceof HTMLInputElement &&
       control instanceof HTMLInputElement &&
-      (control.type === "checkbox" || control.type === "radio")
+      (lost.type === "checkbox" || lost.type === "radio")
     ) {
-      return control.checked !== control.defaultChecked
+      return lost.checked !== control.checked
     }
-    const field = control as HTMLInputElement | HTMLTextAreaElement
-    return field.value !== field.defaultValue
+    return (
+      (lost as HTMLInputElement).value !== (control as HTMLInputElement).value
+    )
   }
 
   private sync(): void {
