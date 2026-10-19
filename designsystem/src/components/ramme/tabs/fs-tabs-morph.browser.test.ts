@@ -322,13 +322,19 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
   }
 
   it("bar markup: feltet byttes ut, og det brukeren skrev og fokus er borte", async () => {
-    const r = await skrivOgPatch(FORSLAG_BAR)
+    /*
+     * Om lista står åpen etterpå er opp til nettleseren, og påstås ikke.
+     * Chromium sender `focusout` når det fokuserte feltet fjernes, og da
+     * lukker komponenten lista. Firefox og WebKit sender ingenting, så
+     * komponenten tror lista fortsatt skal stå åpen, og åpner den på det nye
+     * feltet.
+     */
+    const { åpen: _, ...r } = await skrivOgPatch(FORSLAG_BAR)
     expect(r).toEqual({
       sammeFelt: false,
       sammeListe: false,
       verdi: "",
       fokus: false,
-      åpen: "false",
     })
   })
 
