@@ -22,7 +22,8 @@
       "!kjerne/tema",
       "!designsystem/manifest/manifest.json",
       "!designsystem/manifest/filer.json",
-      "!designsystem/manifest/byggetilfeller.json"
+      "!designsystem/manifest/byggetilfeller.json",
+      "!designsystem/src/testing/datastar"
     ]
   },
   "formatter": {
