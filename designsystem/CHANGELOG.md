@@ -23,6 +23,31 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Lagt til
+
+- **`<fs-tabs>`, `<fs-field>`, `<fs-suggestion>` og `<fs-popover>` sier fra
+  når en patch byttet ut elementene fordi serveren ikke skrev id.** Datastar
+  og idiomorph morfer ikke et element med id inn i et uten: det gamle fjernes
+  og serverens settes inn. Lager komponenten id-ene selv, som den gjør for
+  bar markup, byttes fanene, kontrollen, feltet og panelet ut ved neste
+  patch som sender området på nytt, og fanevalget, teksten brukeren skrev
+  og fokus er borte. Dokumentasjonen lovet at komponenten setter det
+  tilbake, og det gjør den bare når elementene beholdes. Nå kommer det én
+  advarsel i konsollen i det øyeblikket det skjer, med beskjed om å skrive
+  id i malen. Sider som aldri patcher, eller patcher smalt, får ingen
+  advarsel. Reprodusert mot Datastar v1.0.4 i
+  `fs-tabs-morph.browser.test.ts`, som kjører den ekte bundlen.
+- **`idOrFallback` sier også at en ny id per rendring bytter ut
+  elementene** ved neste patch.
+
+### Endret
+
+- **«Markup og oppførsel» sier at reparasjonen forutsetter id fra
+  serveren** når hele området sendes på nytt, med en tabell over hva hver
+  komponent trenger id på. Regelbøkene i `agent/` og sidene for faner og
+  felt sier det samme. Før sto det at `outer` morfer og at malen ikke
+  trenger gjøre noe, og det holdt bare for markup fra byggefunksjonene.
+
 ## 0.34.0 (2026-10-18)
 
 ### Brytende

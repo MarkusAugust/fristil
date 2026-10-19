@@ -172,6 +172,17 @@ export class FsField extends HostElement {
    */
   private readonly memory = new WeakMap<Element, ControlMemory>()
   private readonly labelMemory = new WeakMap<Element, LabelMemory>()
+  /**
+   * Kontrollen sist, og om id-en på den var komponentens.
+   *
+   * Nok til å se at en patch byttet den ut, og hvorfor: Datastar og
+   * idiomorph morfer ikke et element med id inn i et uten. Kom id-en fra
+   * komponenten, eller fra ledetekstens `for` fordi kontrollen selv ikke
+   * hadde noen, kjenner morfingen ikke serverens kontroll igjen, og setter
+   * inn en ny. Det brukeren skrev er da borte.
+   */
+  private lastControl?: HTMLElement
+  private readonly idByMe = new WeakSet<Element>()
   /** Kontrollene der `data-state` er komponentens egen. */
   private readonly stateByMe = new WeakSet<Element>()
 
@@ -402,6 +413,44 @@ export class FsField extends HostElement {
     return this.ownParts<T>(selector)[0] ?? null
   }
 
+  /**
+   * Sier fra når en patch byttet ut kontrollen fordi serveren ikke skrev id.
+   *
+   * Beskjeden kommer når det skjer, og bare når brukeren hadde noe å miste:
+   * den gamle kontrollen er ute av treet, id-en på den var komponentens, den
+   * nye kom uten, og det sto noe annet i den gamle enn det serveren sendte.
+   * En advarsel om hvert bart felt ville truffet alle som aldri patcher,
+   * eller patcher smalt slik dokumentasjonen anbefaler, og de har ingenting
+   * å rette. Et `<select>` har ingen `defaultValue`, så der sammenlignes
+   * hvert alternativ med det serveren valgte.
+   */
+  private warnAboutReplacedControl(
+    lost: HTMLElement,
+    control: HTMLElement,
+  ): void {
+    if (lost.isConnected || !this.idByMe.has(lost) || !this.idByMe.has(control))
+      return
+    const changed =
+      lost instanceof HTMLSelectElement
+        ? [...lost.options].some((o) => o.selected !== o.defaultSelected)
+        : (lost as HTMLInputElement).value !==
+          (lost as HTMLInputElement).defaultValue
+    if (!changed) return
+
+    warnAboutMarkup(
+      this,
+      "en patch byttet ut kontrollen, og det brukeren hadde skrevet i den " +
+        "gikk tapt. Kontrollen hadde en id komponenten hadde skrevet, og " +
+        "serverens markup har ingen, så morfingen kjente den ikke igjen og " +
+        "satte inn et nytt element. Skriv id på kontrollen i malen, som " +
+        "fs.field() gjør, så beholdes elementet.",
+      () => {
+        const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
+        return now !== null && this.idByMe.has(now)
+      },
+    )
+  }
+
   private sync(): void {
     const control = this.ownPart<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -550,7 +599,12 @@ export class FsField extends HostElement {
       describedBy: [...serverExtras, this.getAttribute("described-by") ?? ""],
     })
 
+    if (!control.id) this.idByMe.add(control)
     setAttr(control, "id", computed.control.id)
+    if (this.lastControl && this.lastControl !== control) {
+      this.warnAboutReplacedControl(this.lastControl, control)
+    }
+    this.lastControl = control
 
     if (label) {
       addClass(label, computed.label.class)

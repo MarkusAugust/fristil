@@ -13,6 +13,11 @@
  * Setter en komponent et attributt som ikke står der, forsvinner det ved
  * hver patch. Testen her kjører nøyaktig den løkka mot ekte markup, etter at
  * komponenten har gjort jobben sin, og krever at tilstanden står igjen.
+ *
+ * Løkka forutsetter at nodene er de samme, og det er de ikke alltid. Datastar
+ * morfer ikke et element med id inn i et uten, det byttes ut, og det rammer
+ * bar markup der komponenten har laget id-ene selv. Det testes mot den ekte
+ * bundlen i `components/ramme/tabs/fs-tabs-morph.browser.test.ts`.
  */
 
 import { beforeEach, describe, expect, it } from "vitest"

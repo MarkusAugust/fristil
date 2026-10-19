@@ -27,13 +27,25 @@
  * `datastar-patch-elements`, og én test går hele veien gjennom `@get` og en
  * strøm, så vi vet at snarveien er den samme.
  *
- * Påstandene beskriver det som skjer i dag, også der det bryter med løftet i
- * dokumentasjonen. Rettes det, skal testen som sier at valget tapes snu.
+ * Påstandene om nodene beskriver det Datastar gjør, og det lar seg ikke
+ * endre fra komponentene: uten id finnes det ingen identitet, verken for
+ * morfingen eller for komponenten. Det komponentene gjør er å si fra i
+ * konsollen når det skjer, og bare da, se den siste gruppa.
  */
 
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest"
 
 import { ventPaTegning } from "../../../testing/a11y"
+import { defineFsField } from "../field/fs-field"
 import { defineFsPopover } from "../popover/fs-popover"
 import { defineFsSuggestion } from "../suggestion/fs-suggestion"
 import { defineFsTabs } from "./fs-tabs"
@@ -407,5 +419,211 @@ describe("fs-popover gjennom Datastars morfing", () => {
       åpent: true,
       fokusIPanelet: true,
     })
+  })
+})
+
+describe("komponentene sier fra når en patch byttet ut elementene", () => {
+  let advarsel: MockInstance<typeof console.warn>
+
+  beforeAll(() => {
+    defineFsTabs()
+    defineFsSuggestion()
+    defineFsField()
+    defineFsPopover()
+  })
+
+  beforeEach(() => {
+    document.body.innerHTML = ""
+    advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    advarsel.mockRestore()
+  })
+
+  /** Advarslene som nevner at noe ble byttet ut. */
+  function meldinger(): string[] {
+    return advarsel.mock.calls
+      .map((call) => String(call[0]))
+      .filter((m) => m.includes("byttet ut"))
+  }
+
+  /**
+   * Venter til `warnAboutMarkup` har sjekket vilkåret sitt.
+   *
+   * Den venter to tegninger etter at patchen landet, og dens to er
+   * registrert etter testens to, så én `ventPaTegning` er for lite.
+   */
+  async function roSeg() {
+    await ventPaTegning()
+    await ventPaTegning()
+  }
+
+  /** Patcher som en `datastar-patch-elements` med selektor og modus. */
+  function patchInni(selector: string, elements: string): void {
+    document.dispatchEvent(
+      new CustomEvent("datastar-fetch", {
+        detail: {
+          type: "datastar-patch-elements",
+          el: document.body,
+          argsRaw: { selector, mode: "inner", elements },
+        },
+      }),
+    )
+  }
+
+  it("fs-tabs: én gang, når bar markup patches med den samme raden", async () => {
+    await klikkOgPatch(BAR)
+    await roSeg()
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain("fs-tabs: en patch byttet ut fanene")
+    expect(meldinger()[0]).toContain("fs.tabs()")
+
+    // Ikke én gang til for neste patch.
+    patch(BAR)
+    await roSeg()
+    expect(meldinger()).toHaveLength(1)
+  })
+
+  it("fs-tabs: ikke når serveren skrev id", async () => {
+    await klikkOgPatch(MED_ID)
+    await roSeg()
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-tabs: ikke uten en patch", async () => {
+    document.body.innerHTML = BAR
+    await ventPaTegning()
+    faner()[1].click()
+    await roSeg()
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-tabs: ikke når serveren sendte en annen rad med vilje", async () => {
+    /*
+     * Tapet er da riktig: fanene er andre, og ingen av dem er den brukeren
+     * valgte. Tvillingen med samme tekst er det som skiller dette fra en rad
+     * som bare ble byttet ut.
+     */
+    document.body.innerHTML = BAR
+    await ventPaTegning()
+    faner()[1].click()
+    await ventPaTegning()
+
+    patch(
+      BAR.replace("Søknaden", "Vedtaket")
+        .replace("Vedlegg", "Klagen")
+        .replace("Meldinger", "Loggen"),
+    )
+    await roSeg()
+    expect(valgt()).toEqual(["true", "false", "false"])
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-tabs: ikke ved en smal patch, der valget står", async () => {
+    document.body.innerHTML = BAR
+    await ventPaTegning()
+    faner()[1].click()
+    await ventPaTegning()
+
+    patchInni("#saken > div:last-child", "Tre nye meldinger.")
+    await roSeg()
+    expect(valgt()).toEqual(["false", "true", "false"])
+    expect(paneler()[2].textContent).toBe("Tre nye meldinger.")
+    expect(meldinger()).toEqual([])
+  })
+
+  const FORSLAG = (id: string) => `<fs-suggestion id="kommune-vert">
+  <label${id && ' for="kommune"'}>Kommune</label>
+  <div class="fs-suggestion__field">
+    <input class="fs-input"${id}>
+    <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
+    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+  </div>
+</fs-suggestion>`
+
+  async function skrivOgPatchForslag(markup: string, tekst: string) {
+    document.body.innerHTML = markup
+    await ventPaTegning()
+    const felt = document.querySelector("input") as HTMLInputElement
+    felt.focus()
+    felt.value = tekst
+    felt.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    patch(markup)
+    await roSeg()
+  }
+
+  it("fs-suggestion: når feltet med tekst i byttes ut", async () => {
+    await skrivOgPatchForslag(FORSLAG(""), "B")
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain("fs-suggestion: en patch byttet ut feltet")
+  })
+
+  it("fs-suggestion: ikke når serveren skrev id", async () => {
+    await skrivOgPatchForslag(FORSLAG(' id="kommune"'), "B")
+    expect(meldinger()).toEqual([])
+  })
+
+  const FELT = (id: string) => `<fs-field id="navn-vert">
+  <label>Navn</label>
+  <input class="fs-input"${id}>
+</fs-field>`
+
+  async function skrivOgPatchFelt(markup: string, tekst: string) {
+    document.body.innerHTML = markup
+    await ventPaTegning()
+    const felt = document.querySelector("input") as HTMLInputElement
+    felt.value = tekst
+    patch(markup)
+    await roSeg()
+  }
+
+  it("fs-field: når kontrollen med tekst i byttes ut", async () => {
+    await skrivOgPatchFelt(FELT(""), "Kari")
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain("fs-field: en patch byttet ut kontrollen")
+  })
+
+  it("fs-field: ikke når serveren skrev id", async () => {
+    await skrivOgPatchFelt(FELT(' id="navn"'), "Kari")
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-field: ikke når brukeren ikke hadde skrevet noe", async () => {
+    await skrivOgPatchFelt(FELT(""), "")
+    expect(meldinger()).toEqual([])
+  })
+
+  const MENY = (id: string) => `<fs-popover id="meny-vert">
+  <button class="fs-button"${id && ' aria-controls="meny"'}>Handlinger</button>
+  <div class="fs-popover"${id} popover="manual"><button>Slett</button></div>
+</fs-popover>`
+
+  async function apneOgPatchMeny(markup: string, apne: boolean) {
+    document.body.innerHTML = markup
+    await ventPaTegning()
+    if (apne) {
+      ;(document.querySelector("fs-popover > button") as HTMLElement).click()
+      await ventPaTegning()
+    }
+    patch(markup)
+    await roSeg()
+  }
+
+  it("fs-popover: når det åpne panelet byttes ut", async () => {
+    await apneOgPatchMeny(MENY(""), true)
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain("fs-popover: en patch byttet ut panelet")
+  })
+
+  it("fs-popover: ikke når serveren skrev id", async () => {
+    await apneOgPatchMeny(MENY(' id="meny"'), true)
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-popover: ikke når vinduet var lukket", async () => {
+    await apneOgPatchMeny(MENY(""), false)
+    expect(meldinger()).toEqual([])
   })
 })

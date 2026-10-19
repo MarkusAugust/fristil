@@ -311,6 +311,8 @@ Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>
 
 Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, med de samme id-ene som før, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
 
+Det brukeren har skrevet i feltet er en annen sak. Morfingen kjenner ikke igjen en kontroll som har en id serveren ikke sendte, og bytter den ut, og da er teksten borte. Skal den overleve en patch som sender feltet på nytt, må serveren skrive `id` på kontrollen selv, slik `fs.field()` gjør. Komponenten sier fra i konsollen første gang det går galt. Se [Skriv id der komponenten ellers lager den](/markup-og-oppforsel/#skriv-id-der-komponenten-ellers-lager-den).
+
 Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon. Og et felt med mer enn én kontroll gir en advarsel, siden bare den første får koblingen.
 
 ## Automatisk kobling

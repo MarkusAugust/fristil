@@ -11,7 +11,7 @@ Komponenten tar piltastene, og kobler fanene til panelene når markupen kommer u
 I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Ett unntak: sender serveren raden på nytt i en patch, må den skrive id på fanene og panelene, ellers byttes de ut og fanevalget går tapt. Se [Markup og oppførsel](/markup-og-oppforsel/#skriv-id-der-komponenten-ellers-lager-den).
 :::
 
 ## Slik tar du den i bruk
@@ -176,7 +176,7 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
 faner.selected = 2 // det samme som select(2)
 ```
 
-Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Markup uten `aria-controls` kobles etter rekkefølgen, og komponenten skriver da koblingen inn, med id-er den lager selv og husker: en patch som river dem bort får de samme tilbake.
+Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Markup uten `aria-controls` kobles etter rekkefølgen, og komponenten skriver da koblingen inn, med id-er den lager selv og husker: en patch som river dem bort får de samme tilbake. Men en morfing kjenner ikke igjen et element som har en id serveren ikke sendte, og bytter det ut. Skal fanevalget overleve en patch som sender raden på nytt, må serveren skrive id på fanene og panelene selv, slik `fs.tabs()` gjør. Komponenten sier fra i konsollen første gang det går galt.
 
 ## Før komponenten er registrert
 

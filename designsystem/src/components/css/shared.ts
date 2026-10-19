@@ -141,7 +141,9 @@ export function idOrFallback(
   warnOnce(
     `${builder}: ingen ${option} oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
       "da to ulike, og rendres markupen både på en server og i nettleseren, " +
-      `peker koblingen på noe som ikke finnes. Oppgi ${option}, i React fra useId().`,
+      "peker koblingen på noe som ikke finnes. Sender serveren området på " +
+      "nytt med en ny id, kjenner morfingen ikke elementene igjen og bytter " +
+      `dem ut, og det brukeren gjorde i dem er borte. Oppgi ${option}, i React fra useId().`,
   )
   return createFieldId()
 }

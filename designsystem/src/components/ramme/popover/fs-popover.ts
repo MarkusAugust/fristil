@@ -48,7 +48,12 @@ export const FS_POPOVER_PARTS = {
  * så det serveren skrev står. Komponenten setter `open` på verten,
  * `aria-expanded` på knappen og posisjonen på panelet, og setter alt den
  * har skrevet tilbake når en patch river det bort. Malen trenger ingen
- * `data-preserve-attr`.
+ * `data-preserve-attr`. Men en morfing beholder panelet bare når id-en
+ * stemmer: Datastar og idiomorph morfer ikke et element med id inn i et
+ * uten. Lager komponenten id-en selv, byttes panelet ut ved neste patch fra
+ * en mal uten id, og fokus og det brukeren gjorde i det er borte. Skal det
+ * overleve, må serveren skrive id på panelet, slik `fs.popover()` gjør.
+ * Komponenten sier fra i konsollen første gang det går galt.
  *
  * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
  * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
@@ -293,6 +298,7 @@ export class FsPopover extends HostElement {
       this.triggerElement = trigger
     }
     if (this.panel !== panel) {
+      if (this.panel) this.warnAboutReplacedPanel(this.panel, panel)
       /*
        * Tilstanden står i markupen som `:popover-open`, og skal leses derfra.
        * Lukker nettleseren et `popover="auto"` selv, fordi et annet åpnes
@@ -318,6 +324,38 @@ export class FsPopover extends HostElement {
       document.removeEventListener("click", this.handleOutsideClick, true)
       document.removeEventListener("keydown", this.handleKeydown)
     }
+  }
+
+  /**
+   * Sier fra når en patch byttet ut panelet fordi serveren ikke skrev id.
+   *
+   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
+   * gamle fjernes, og serverens settes inn. Lager komponenten id-en selv,
+   * får hver patch fra en mal uten id dermed et nytt panel. Komponenten
+   * åpner det igjen, men fokus, og det brukeren skrev i et felt i det, er
+   * borte.
+   *
+   * Beskjeden kommer når det skjer, og bare når vinduet sto åpent: det gamle
+   * panelet er ute av treet, id-en på det var komponentens, og det nye fikk
+   * den samme fra komponenten. En advarsel om hvert bart panel ville truffet
+   * alle som aldri patcher, eller patcher smalt slik dokumentasjonen
+   * anbefaler, og de har ingenting å rette.
+   */
+  private warnAboutReplacedPanel(lost: HTMLElement, panel: HTMLElement): void {
+    if (lost.isConnected || !this.wantsOpen) return
+    if (!this.panelId || lost.id !== this.panelId || panel.id !== this.panelId)
+      return
+
+    warnAboutMarkup(
+      this,
+      "en patch byttet ut panelet mens det sto åpent. Det åpnes igjen, men " +
+        "fokus og det brukeren gjorde i det er borte. Panelet hadde en id " +
+        "komponenten laget selv, og serverens markup har ingen, så " +
+        "morfingen kjente det ikke igjen og satte inn et nytt element. " +
+        "Skriv id på panelet i malen, som fs.popover() gjør, så beholdes " +
+        "det.",
+      () => this.findPanel()?.id === this.panelId,
+    )
   }
 
   /** Panelet: det som har `popover`, ellers det med klassen. */
