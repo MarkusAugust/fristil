@@ -329,7 +329,9 @@ begge dette, med vilje. Derfor skriver komponentene aldri id på feltet i
 krever for at feltet skal ha et navn før skriptet har kjørt, eller så står
 ledeteksten rundt feltet og ingen id trengs. Det siste har en pris: uten id
 får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som
-finner det igjen på id.
+finner det igjen på id, og en morfing kjenner feltet igjen på plassen sin.
+Setter serveren inn et felt av samme slag foran, kan teksten brukeren skrev
+havne i det.
 
 Fanene og sprettoppvinduet trenger id for koblingen, og der skriver serveren
 dem:

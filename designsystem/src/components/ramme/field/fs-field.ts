@@ -6,15 +6,12 @@ import {
   HostElement,
   setAttr,
   setFlag,
+  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
 
 export const FS_FIELD_TAG = "fs-field" as const
-
-function uniqueId(prefix: string): string {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
-}
 
 /**
  * Delene feltet finner, som selektorer relativt til elementet. Komponenten
