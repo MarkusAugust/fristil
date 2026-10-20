@@ -5,14 +5,7 @@
       "end": 9,
       "link": "https://fristil.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn.",
-      "fix": {
-        "title": "Sett inn en ledetekst",
-        "start": 13,
-        "end": 13,
-        "text": "<label>Ledetekst</label>\n  ",
-        "preferred": true
-      }
+      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
     },
     {
       "start": 63,
@@ -28,14 +21,7 @@
       "end": 9,
       "link": "https://fristil.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn.",
-      "fix": {
-        "title": "Sett inn en ledetekst",
-        "start": 13,
-        "end": 13,
-        "text": "<label>Ledetekst</label>\n  ",
-        "preferred": true
-      }
+      "message": "<fs-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
     },
     {
       "start": 63,
