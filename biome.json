@@ -23,7 +23,8 @@
       "!designsystem/manifest/manifest.json",
       "!designsystem/manifest/filer.json",
       "!designsystem/manifest/byggetilfeller.json",
-      "!designsystem/src/testing/datastar"
+      "!designsystem/src/testing/datastar",
+      "!designsystem/src/testing/idiomorph/idiomorph-v0.8.0.js"
     ]
   },
   "formatter": {

@@ -3,8 +3,8 @@
     {
       "start": 22,
       "end": 32,
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
       "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/connection-status/",
       "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
@@ -16,14 +16,14 @@
     },
     {
       "start": 79,
-      "end": 86,
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "end": 87,
       "severity": "warning",
-      "message": "invalid er et boolsk attributt: det står der eller ikke. invalid=\"false\" betyr det samme som invalid. Ta det bort for å slå det av.",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
-        "title": "Ta bort invalid",
+        "title": "Ta bort optional",
         "start": 78,
-        "end": 94,
+        "end": 95,
         "text": "",
         "preferred": true
       }
@@ -33,8 +33,8 @@
     {
       "start": 22,
       "end": 32,
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
       "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/connection-status/",
       "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
@@ -46,14 +46,14 @@
     },
     {
       "start": 79,
-      "end": 86,
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "end": 87,
       "severity": "warning",
-      "message": "invalid er et boolsk attributt: det står der eller ikke. invalid=\"false\" betyr det samme som invalid. Ta det bort for å slå det av.",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
-        "title": "Ta bort invalid",
+        "title": "Ta bort optional",
         "start": 78,
-        "end": 94,
+        "end": 95,
         "text": "",
         "preferred": true
       }

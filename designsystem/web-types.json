@@ -8,16 +8,9 @@
       "elements": [
         {
           "name": "fs-field",
-          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
           "doc-url": "https://fristil.sobernetics.no/components/field/",
           "attributes": [
-            {
-              "name": "invalid",
-              "description": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`.",
-              "value": {
-                "kind": "no-value"
-              }
-            },
             {
               "name": "disabled",
               "description": "Kontrollen er slått av.",
@@ -30,36 +23,6 @@
               "description": "Feltet er valgfritt, og ledeteksten sier det.",
               "value": {
                 "kind": "no-value"
-              }
-            },
-            {
-              "name": "required-marker",
-              "description": "Hvordan ledeteksten viser at feltet er påkrevd.",
-              "value": {
-                "kind": "plain",
-                "type": "enum"
-              },
-              "values": [
-                {
-                  "name": "symbol",
-                  "description": "En stjerne etter ledeteksten."
-                },
-                {
-                  "name": "text",
-                  "description": "Teksten «(påkrevd)» etter ledeteksten."
-                },
-                {
-                  "name": "none",
-                  "description": "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier."
-                }
-              ]
-            },
-            {
-              "name": "control-id",
-              "description": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`.",
-              "value": {
-                "kind": "plain",
-                "type": "text"
               }
             },
             {
@@ -183,7 +146,7 @@
         },
         {
           "name": "fs-suggestion",
-          "description": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+          "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
           "doc-url": "https://fristil.sobernetics.no/components/suggestion/",
           "attributes": [
             {
@@ -261,7 +224,7 @@
             "events": [
               {
                 "name": "suggestion-select",
-                "description": "Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.\n\n`detail`: `{ value: string }`"
+                "description": "Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.\n\n`detail`: `{ value: string, label: string }`"
               }
             ]
           }
@@ -754,17 +717,17 @@
           "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-suggestion__field",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
-        },
-        {
           "name": "fs-suggestion__list",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },
         {
           "name": "fs-suggestion__option",
+          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
+        },
+        {
+          "name": "fs-suggestion__value",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
         },

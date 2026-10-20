@@ -1205,44 +1205,12 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-suggestion__field": {
-    "component": "suggestion",
-    "title": "Suggestion",
-    "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
-    "content": "parts",
-    "parts": {
-      "control": {
-        "selector": "input",
-        "description": "Feltet brukeren skriver i.",
-        "content": "none"
-      },
-      "list": {
-        "selector": ".fs-suggestion__list",
-        "description": "Lista med forslag.",
-        "content": "parts"
-      },
-      "empty": {
-        "selector": ".fs-suggestion__empty",
-        "description": "Meldingen som vises når ingenting passer.",
-        "content": "text",
-        "optional": true
-      },
-      "status": {
-        "selector": "[role='status']",
-        "description": "Opplesningen av antall treff. Står tomt, og komponenten fyller det.",
-        "content": "none"
-      }
-    },
-    "attributes": {}
-  },
   "fs-suggestion__list": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/suggestion/",
     "content": "parts",
-    "partOf": "fs-suggestion__field",
     "parts": {
       "option": {
         "selector": "[role='option'], .fs-suggestion__option, > li:not([role])",
@@ -1263,13 +1231,20 @@ export const classes: Classes = {
     "partOf": "fs-suggestion__list",
     "attributes": {}
   },
+  "fs-suggestion__value": {
+    "component": "suggestion",
+    "title": "Suggestion",
+    "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "content": "none",
+    "attributes": {}
+  },
   "fs-suggestion__empty": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/suggestion/",
     "content": "text",
-    "partOf": "fs-suggestion__field",
     "attributes": {}
   },
   "fs-tabs__list": {

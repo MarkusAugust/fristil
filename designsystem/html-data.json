@@ -5,17 +5,9 @@
       "name": "fs-field",
       "description": {
         "kind": "markdown",
-        "value": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
+        "value": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
       },
       "attributes": [
-        {
-          "name": "invalid",
-          "description": {
-            "kind": "markdown",
-            "value": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`."
-          },
-          "valueSet": "v"
-        },
         {
           "name": "disabled",
           "description": {
@@ -31,43 +23,6 @@
             "value": "Feltet er valgfritt, og ledeteksten sier det."
           },
           "valueSet": "v"
-        },
-        {
-          "name": "required-marker",
-          "description": {
-            "kind": "markdown",
-            "value": "Hvordan ledeteksten viser at feltet er påkrevd."
-          },
-          "values": [
-            {
-              "name": "symbol",
-              "description": {
-                "kind": "markdown",
-                "value": "En stjerne etter ledeteksten."
-              }
-            },
-            {
-              "name": "text",
-              "description": {
-                "kind": "markdown",
-                "value": "Teksten «(påkrevd)» etter ledeteksten."
-              }
-            },
-            {
-              "name": "none",
-              "description": {
-                "kind": "markdown",
-                "value": "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier."
-              }
-            }
-          ]
-        },
-        {
-          "name": "control-id",
-          "description": {
-            "kind": "markdown",
-            "value": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`."
-          }
         },
         {
           "name": "described-by",
@@ -225,7 +180,7 @@
       "name": "fs-suggestion",
       "description": {
         "kind": "markdown",
-        "value": "Felt med forslagsliste. En `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene, id-ene og koblingen der markupen kom uten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+        "value": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
       },
       "attributes": [
         {

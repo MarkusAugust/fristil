@@ -289,13 +289,17 @@ Tre regler gjelder alle sammen:
 
 1. ${oppskrift.registreringRegel} Importen har ingen bivirkning alene; det er
    \`define\`-kallet som registrerer elementet.
-2. **Boolske attributter er sanne så lenge de finnes.** \`invalid="false"\`,
+2. **Boolske attributter er sanne så lenge de finnes.** \`hidden="false"\`,
    \`disabled="false"\` og \`open="false"\` slår *på*. Skal noe av det bort, må
    attributtet fjernes helt.
 3. **Du skriver markupen, komponenten fester oppførselen.** \`<fs-field>\`
-   lager ikke ledeteksten eller kontrollen din. Den kobler sammen dem du har
-   lagt inn, med \`id\`, \`for\` og \`aria-describedby\`. Et \`<fs-field>\`
-   uten kontroll, eller uten ledetekst, er en feil komponenten melder fra om.
+   lager ikke ledeteksten eller kontrollen din. Du skriver \`for\` på
+   ledeteksten og \`id\` på kontrollen, eller legger \`<label>\` rundt den, så
+   feltet har navn også uten JavaScript. Komponenten kobler hjelpeteksten og
+   feilmeldingen med \`aria-describedby\` og \`aria-invalid\`, og skriver aldri
+   id på kontrollen: en id serveren ikke sendte, gjør at en oppdatering fra
+   serveren bytter ut feltet, med fokus og det brukeren har skrevet. Feltet er
+   ugyldig når feilmeldingen står uten \`hidden\`.
 
 ${webTabell(oppskrift.adresse, oppskrift.stilarkAdresse)}
 
@@ -330,9 +334,9 @@ const NORSK_TEKST: [string, string] = [
   "En komponent snakker norsk på en side på et annet språk",
   "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/",
 ]
-const ALLTID_UGYLDIG: [string, string] = [
-  "Feltet er alltid ugyldig",
-  '`invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false`',
+const ALDRI_UGYLDIG: [string, string] = [
+  "Feilmeldingen vises aldri, og feltet regnes som gyldig",
+  '`hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false`',
 ]
 const SERVERRENDERING: [string, string] = [
   "Komponenten gjør ingenting, og ingenting sier fra",
@@ -379,7 +383,7 @@ i denne mappa som gjelder.`,
    aldri å skrive egen CSS for å få dem til å se riktige ut.`,
     punktFire: `**Web components registreres én gang med \`defineFs*()\`** i en
    \`<script type="module">\`, og et boolsk attributt er sant så lenge det står
-   der: \`invalid="false"\` gjør feltet ugyldig.`,
+   der: \`hidden="false"\` skjuler feilmeldingen likevel.`,
     registreringRegel: `**\`defineFs*()\` kjøres én gang** i en
    \`<script type="module">\` i sidemalen, før elementet brukes, ikke én gang
    per komponent.`,
@@ -417,10 +421,10 @@ ser når fila er lastet. \`dist/fristil.css\` har alt flatet ut, uten
 <link rel="stylesheet" href="${cdnTil("fristil.css")}">
 
 <form id="kontaktskjema" novalidate>
-  <fs-field id="navn-felt" required-marker="symbol">
-    <label>Fullt navn</label>
-    <input class="fs-input" type="text" name="navn" required />
-    <p class="fs-error-text">Fyll inn navnet ditt.</p>
+  <fs-field>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+    <input class="fs-input" id="navn" type="text" name="navn" required />
+    <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -434,13 +438,13 @@ ser når fila er lastet. \`dist/fristil.css\` har alt flatet ut, uten
 </script>
 \`\`\`
 
-Feltet slås ugyldig ved å sette attributtet, ikke ved å bytte klasse:
+Feltet blir ugyldig når feilmeldingen vises, ikke ved å bytte klasse:
 
 \`\`\`js
-const felt = document.getElementById("navn-felt")
-const verdi = felt.querySelector("input").value
+const navn = document.getElementById("navn")
+const feil = navn.closest("fs-field").querySelector(".fs-error-text")
 
-felt.toggleAttribute("invalid", verdi.trim() === "")
+feil.hidden = navn.value.trim() !== ""
 \`\`\`
 
 TypeScript hører ikke hjemme i en \`<script type="module">\`. Taggen kjøres av
@@ -463,7 +467,7 @@ ${SJEKK_I_TESTER}`,
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],
   },
@@ -489,7 +493,7 @@ leser markupen din.`,
     punktFire: `**Web components registreres én gang med \`defineFs*()\`** i
    sidemalen, og et boolsk attributt er sant så lenge det står der. I en mal
    betyr det en betingelse rundt hele attributtet,
-   \`{{if .Ugyldig}}invalid{{end}}\`, ikke \`invalid="{{.Ugyldig}}"\`.`,
+   \`{{if .Laast}}disabled{{end}}\`, ikke \`disabled="{{.Laast}}"\`.`,
     registreringRegel: `**\`defineFs*()\` kjøres én gang** i sidemalen, ikke én
    gang per komponent.`,
     adresse: URL_TIL,
@@ -513,11 +517,27 @@ er én fil nesten alltid riktig valg.`,
     markup: `## 5. Et felt i en mal
 
 \`\`\`html
-<fs-field {{if .Feil}}invalid{{end}} required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" value="{{.Navn}}" required />
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" value="{{.Navn}}" required />
   {{if .Feil}}<p class="fs-error-text">{{.Feil}}</p>{{end}}
 </fs-field>
+\`\`\`
+
+Feilmeldingen rendres bare når feltet er ugyldig, og det er nok: komponenten
+regner feltet som ugyldig når feilmeldingen synes. \`value\` skrives alltid,
+så det brukeren skrev står igjen når serveren sender skjemaet tilbake.
+
+I en løkke kommer id-en fra en nøkkel i dataene, aldri fra indeksen eller en
+teller:
+
+\`\`\`html
+{{range .Kommuner}}
+<fs-field>
+  <label for="merknad-{{.Kode}}">{{.Navn}}</label>
+  <input class="fs-input" id="merknad-{{.Kode}}" name="merknad-{{.Kode}}" value="{{.Merknad}}" />
+</fs-field>
+{{end}}
 \`\`\`
 
 Registreringen, én gang i sidemalen:
@@ -543,18 +563,20 @@ Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
 nodene, som \`innerHTML\`, htmx' vanlige \`innerHTML\`- og \`outerHTML\`-bytte og
 Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
 må serveren skrive valget selv, med \`aria-selected\` og \`hidden\` på den
-riktige fanen og de andre panelene, eller eie tilstanden med
+riktige fanen og de andre panelene, eller bestemme tilstanden alene med
 \`server-controlled\`.
 
 En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
-morfer ikke et element med id inn i et uten, de bytter det ut. Skriver malen
-bar markup, lager komponenten id-ene selv, og da byttes fanene, panelene,
-feltet og lista ut ved neste patch som sender området på nytt, og det
-brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
-\`<fs-tabs>\`, på kontrollen i \`<fs-field>\`, på feltet, lista og alternativene
-i \`<fs-suggestion>\` og på panelet i \`<fs-popover>\`, de samme ved hver
-rendring. Komponenten sier fra i konsollen første gang en patch bytter ut
-noe brukeren hadde rørt.
+morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
+\`<fs-field>\` og \`<fs-suggestion>\` får aldri id av komponenten: skriv \`for\`
+på ledeteksten og \`id\` på feltet, eller legg ledeteksten rundt feltet.
+Fanene, panelene og panelet i sprettoppvinduet får id av komponenten når de
+mangler, og da byttes de ut ved neste patch som sender området på nytt, og
+det brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
+\`<fs-tabs>\` og på panelet i \`<fs-popover>\`, de samme ved hver rendring.
+Lista og alternativene i \`<fs-suggestion>\` kan byttes ut; komponenten kobler
+dem på nytt og finner det markerte alternativet igjen på teksten. Komponenten
+sier fra i konsollen første gang en patch bytter ut noe brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
@@ -620,7 +642,7 @@ finnes der, og skriv aldri en \`version\` du ikke har sett på Central.`,
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       SERVERRENDERING,
       TYPESCRIPT_I_SKRIPT,
     ],
@@ -643,7 +665,7 @@ stilarkene i frontmatteret og \`astro.md\` gjelder.`,
    importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
     punktFire: `**\`defineFs*()\` kjøres øverst i \`main.ts\`,** ikke i en
    livsløpskrok, og et boolsk attributt er sant så lenge det står der. Sjekk at
-   det som havner i DOM-en ikke er \`invalid="false"\`: attributtet må fjernes,
+   det som havner i DOM-en ikke er \`hidden="false"\`: attributtet må fjernes,
    ikke settes til \`false\`.`,
     registreringRegel: `**\`defineFs*()\` kjøres én gang** øverst i
    inngangsmodulen, før appen monteres.`,
@@ -687,10 +709,10 @@ kjører etter første tegning, og elementene i markupen er da vanlige
 Markupen er vanlig HTML, i malen rammeverket ditt bruker:
 
 \`\`\`html
-<fs-field required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" required />
-  <p class="fs-error-text">Fyll inn navnet ditt.</p>
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" required />
+  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
 
 <button class="fs-button" type="submit">Send</button>
@@ -754,7 +776,7 @@ ${SJEKK_I_TESTER}`,
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       SERVERRENDERING,
     ],
   },
@@ -904,7 +926,7 @@ det hele tatt, og du får \`Property 'fs-field' does not exist on type
 'JSX.IntrinsicElements'\`. Med den får du autofullføring og feil på attributtene:
 
 \`\`\`tsx
-<fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
+<fs-field describedBy="vilkar" />       // feil: attributtet heter described-by
 <fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 \`\`\`
@@ -917,7 +939,7 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       SERVERRENDERING,
       [
         "«Invalid DOM property `class`»",
@@ -1014,7 +1036,7 @@ Ingen \`<fs-field>\`, ingen kjøretid.
 ## 7. Web components i Astro
 
 Skal feltet kunne bli ugyldig mens brukeren står i det, må komponenten
-registreres:
+registreres. Den kobler feilmeldingen til feltet når den vises:
 
 \`\`\`astro
 ---
@@ -1022,10 +1044,10 @@ import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
 ---
 
-<fs-field required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" required />
-  <p class="fs-error-text">Fyll inn navnet ditt.</p>
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" required />
+  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
 
 <script>
@@ -1042,7 +1064,7 @@ vanlige web components, og trenger verken en Astro-integrasjon eller et
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       [
         "Komponenten gjør ingenting, og ingenting sier fra",
         "Registreringen står i frontmatteret, som bare kjører på serveren. Den hører i en `<script>` i malen",
@@ -1065,7 +1087,7 @@ nøyaktig det \`ramme\`-komponentene forventer.`,
    skrive egen CSS for å få dem til å se riktige ut.`,
     punktFire: `**\`defineFs*()\` kjøres én gang i en \`<script type="module">\`
    med hele URL-en,** og tilstanden settes med \`data-attr:\`, som legger på og
-   fjerner attributtet. \`invalid="false"\` ville gjort feltet ugyldig.`,
+   fjerner attributtet. \`hidden="false"\` ville skjult feilmeldingen likevel.`,
     registreringRegel: `**\`defineFs*()\` kjøres én gang** i en
    \`<script type="module">\` i sidemalen.`,
     adresse: URL_TIL,
@@ -1089,16 +1111,17 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
   data-signals="{navn: '', beroert: false}"
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
-  <fs-field required-marker="symbol" data-attr:invalid="$ugyldig">
-    <label>Fullt navn</label>
+  <fs-field>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input
       class="fs-input"
+      id="navn"
       type="text"
       name="navn"
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text">Fyll inn navnet ditt.</p>
+    <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -1116,9 +1139,9 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
 valideringen av den, \`data-bind:navn\` binder feltet begge veier, og
 \`data-on:blur\` markerer at brukeren har forlatt det.
 
-\`data-attr:invalid\` er koblingen til komponenten: den setter attributtet når
-uttrykket er sant og fjerner det når det er usant, nøyaktig slik \`<fs-field>\`
-forventer. Ingen av React-fellene finnes her. Datastar jobber direkte på
+\`data-attr:hidden\` på feilmeldingen er koblingen til komponenten: den setter
+\`hidden\` når feltet er gyldig og fjerner det når det er ugyldig, og
+\`<fs-field>\` regner feltet som ugyldig når feilmeldingen synes. Ingen av React-fellene finnes her. Datastar jobber direkte på
 attributtene.`,
     ekstra: `## 6. HTML fra serveren
 
@@ -1128,16 +1151,17 @@ lenge \`defineFsField()\` har kjørt én gang. Serveren kan derfor sende dette s
 ren HTML:
 
 \`\`\`html
-<fs-field required-marker="text" invalid>
-  <label>E-postadresse</label>
-  <input class="fs-input" type="email" value="ola@" />
+<fs-field>
+  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
+  <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering hit.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>
 </fs-field>
 \`\`\`
 
-Komponenten kobler da \`for\` og \`id\`, setter \`fs-label\`, legger på
-\`aria-invalid\` og bygger \`aria-describedby\`, uten at det sendes JavaScript
+Komponenten setter da \`fs-label\`, gir hjelpeteksten og feilmeldingen id,
+legger på \`aria-invalid\` fordi feilmeldingen synes, og bygger
+\`aria-describedby\`, uten at det sendes JavaScript
 med for akkurat dette feltet. Det er poenget med at \`ramme\`-komponentene bor i
 vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
@@ -1149,8 +1173,10 @@ ut nodene, og da følger komponenten markupen, så serveren må skrive
 \`aria-selected\` og \`hidden\` selv. Og \`outer\` morfer bare når id-ene stemmer:
 et element med en id serveren ikke sendte byttes ut. Skriv derfor id på
 fanene og panelene selv, de samme ved hver rendring, som \`fs.tabs()\` gjør.
-Det samme gjelder kontrollen i \`<fs-field>\`, feltet, lista og alternativene i
-\`<fs-suggestion>\` og panelet i \`<fs-popover>\`. Komponenten sier fra i
+Det samme gjelder panelet i \`<fs-popover>\`. Kontrollen i \`<fs-field>\` og
+feltet i \`<fs-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
+skriver malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller
+så står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i
 konsollen første gang en patch bytter ut noe brukeren hadde rørt. Skal
 serveren kunne flytte fanen, sier du det med \`server-controlled\`:
 
@@ -1175,7 +1201,7 @@ nettleseren.`,
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
-      ALLTID_UGYLDIG,
+      ALDRI_UGYLDIG,
       TYPESCRIPT_I_SKRIPT,
     ],
   },

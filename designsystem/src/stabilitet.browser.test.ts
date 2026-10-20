@@ -65,9 +65,9 @@ describe("komponentene faller til ro", () => {
 
   it("feltet, etter at koblingen er satt", async () => {
     const flate = monter(`
-      <fs-field invalid required-marker="symbol">
-        <label class="fs-label">E-post</label>
-        <input class="fs-input" type="email" />
+      <fs-field>
+        <label class="fs-label" for="ro-epost" data-required="symbol">E-post</label>
+        <input class="fs-input" id="ro-epost" type="email" />
         <p class="fs-help-text">Vi sender aldri spam.</p>
         <p class="fs-error-text">Skriv en gyldig adresse.</p>
       </fs-field>
@@ -119,7 +119,7 @@ describe("komponentene faller til ro", () => {
     const flate = monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune" />
           <ul ${attr(FORSLAG.list)}>
             <li ${attr(FORSLAG.options[0])}>Bergen</li>

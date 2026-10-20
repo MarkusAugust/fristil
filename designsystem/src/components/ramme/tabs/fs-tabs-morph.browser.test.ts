@@ -273,22 +273,21 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
     document.body.innerHTML = ""
   })
 
-  /** Bar markup fra en mal: ingen id-er, ingen roller. */
+  /** Bar markup fra en mal: ledeteksten rundt feltet, ingen id-er, ingen roller. */
   const FORSLAG_BAR = `<fs-suggestion id="kommune-vert">
-  <label>Kommune</label>
-  <div class="fs-suggestion__field">
-    <input class="fs-input">
+  <div>
+    <label>Kommune <input class="fs-input"></label>
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 
   const FORSLAG_MED_ID = `<fs-suggestion id="kommune-vert">
   <label for="kommune">Kommune</label>
-  <div class="fs-suggestion__field">
+  <div>
     <input class="fs-input" id="kommune">
     <ul class="fs-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 
@@ -321,20 +320,19 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
     }
   }
 
-  it("bar markup: feltet byttes ut, og det brukeren skrev og fokus er borte", async () => {
+  it("bar markup: feltet morfes, og det brukeren skrev og fokus står", async () => {
     /*
-     * Om lista står åpen etterpå er opp til nettleseren, og påstås ikke.
-     * Chromium sender `focusout` når det fokuserte feltet fjernes, og da
-     * lukker komponenten lista. Firefox og WebKit sender ingenting, så
-     * komponenten tror lista fortsatt skal stå åpen, og åpner den på det nye
-     * feltet.
+     * Komponenten skriver ingen id på feltet, så Datastar har ingenting å
+     * kjenne det igjen på og morfer det. Lista får id fra komponenten og
+     * byttes ut, men den har ingen tilstand brukeren mister: komponenten
+     * kobler den nye og åpner den igjen.
      */
-    const { åpen: _, ...r } = await skrivOgPatch(FORSLAG_BAR)
+    const { sammeListe: _, ...r } = await skrivOgPatch(FORSLAG_BAR)
     expect(r).toEqual({
-      sammeFelt: false,
-      sammeListe: false,
-      verdi: "",
-      fokus: false,
+      sammeFelt: true,
+      verdi: "B",
+      fokus: true,
+      åpen: "true",
     })
   })
 
@@ -555,11 +553,11 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
   })
 
   const FORSLAG = (id: string) => `<fs-suggestion id="kommune-vert">
-  <label${id && ' for="kommune"'}>Kommune</label>
-  <div class="fs-suggestion__field">
-    <input class="fs-input"${id}>
+  <label for="${id}">Kommune</label>
+  <div>
+    <input class="fs-input" name="kommune" id="${id}">
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 
@@ -575,55 +573,87 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
   }
 
-  it("fs-suggestion: når feltet med tekst i byttes ut", async () => {
-    await skrivOgPatchForslag(FORSLAG(""), "B")
+  it("fs-suggestion: når id-en fra serveren endret seg mellom to rendringer", async () => {
+    document.body.innerHTML = FORSLAG("kommune-1")
+    await ventPaTegning()
+    const felt = document.querySelector("input") as HTMLInputElement
+    felt.focus()
+    felt.value = "B"
+    felt.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    patch(FORSLAG("kommune-2"))
+    await roSeg()
     expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain("fs-suggestion: en patch byttet ut feltet")
+    expect(meldinger()[0]).toContain(
+      "fs-suggestion: en oppdatering fra serveren byttet ut feltet",
+    )
   })
 
-  it("fs-suggestion: ikke når serveren skrev id", async () => {
-    await skrivOgPatchForslag(FORSLAG(' id="kommune"'), "B")
+  it("fs-suggestion: ikke når serveren skrev den samme id-en", async () => {
+    await skrivOgPatchForslag(FORSLAG("kommune"), "B")
     expect(meldinger()).toEqual([])
   })
 
-  const FELT = (id: string) => `<fs-field id="navn-vert">
-  <label>Navn</label>
-  <input class="fs-input"${id}>
+  /** Et felt med ledeteksten rundt seg, og eventuelt en id fra serveren. */
+  const FELT = (id: string, verdi = "") => `<fs-field id="navn-vert">
+  <label>Navn <input class="fs-input" name="navn"${id}${verdi}></label>
 </fs-field>`
 
-  async function skrivOgPatchFelt(markup: string, tekst: string) {
-    document.body.innerHTML = markup
+  async function skrivOgPatchFelt(foer: string, etter: string, tekst: string) {
+    document.body.innerHTML = foer
     await ventPaTegning()
     const felt = document.querySelector("input") as HTMLInputElement
     felt.value = tekst
-    patch(markup)
+    patch(etter)
     await roSeg()
+    return felt
   }
 
-  it("fs-field: når kontrollen med tekst i byttes ut", async () => {
-    await skrivOgPatchFelt(FELT(""), "Kari")
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain("fs-field: en patch byttet ut kontrollen")
+  it("fs-field: bar markup beholder feltet og teksten, uten advarsel", async () => {
+    /*
+     * Komponenten skriver ingen id på kontrollen, så Datastar har ingenting å
+     * kjenne den igjen på og morfer den. Noden, og teksten brukeren skrev,
+     * står. Før skrev komponenten en id, og nettopp den gjorde at feltet ble
+     * byttet ut.
+     */
+    const gammel = await skrivOgPatchFelt(FELT(""), FELT(""), "Kari")
+    const felt = document.querySelector("input") as HTMLInputElement
+    expect(felt).toBe(gammel)
+    expect(felt.value).toBe("Kari")
+    expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: ikke når serveren skrev id", async () => {
-    await skrivOgPatchFelt(FELT(' id="navn"'), "Kari")
+  it("fs-field: når id-en fra serveren endret seg mellom to rendringer", async () => {
+    await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "Kari")
+    expect(meldinger()).toHaveLength(1)
+    expect(meldinger()[0]).toContain(
+      "fs-field: en oppdatering fra serveren byttet ut kontrollen",
+    )
+  })
+
+  it("fs-field: ikke når serveren skrev den samme id-en", async () => {
+    const gammel = await skrivOgPatchFelt(
+      FELT(' id="navn"'),
+      FELT(' id="navn"'),
+      "Kari",
+    )
+    expect(document.querySelector("input")).toBe(gammel)
     expect(meldinger()).toEqual([])
   })
 
   it("fs-field: ikke når brukeren ikke hadde skrevet noe", async () => {
-    await skrivOgPatchFelt(FELT(""), "")
+    await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "")
     expect(meldinger()).toEqual([])
   })
 
   it("fs-field: ikke når serveren sender teksten tilbake", async () => {
     // Serveren gjorde det meldingen ber om. Da er ingenting mistet, selv om
     // noden er ny.
-    document.body.innerHTML = FELT("")
-    await ventPaTegning()
-    ;(document.querySelector("input") as HTMLInputElement).value = "Kari"
-    patch(FELT(' value="Kari"'))
-    await roSeg()
+    await skrivOgPatchFelt(
+      FELT(' id="navn-1"'),
+      FELT(' id="navn-2"', ' value="Kari"'),
+      "Kari",
+    )
     expect((document.querySelector("input") as HTMLInputElement).value).toBe(
       "Kari",
     )
@@ -635,8 +665,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     // `defaultSelected`, så en sammenligning med det så et valg brukeren
     // aldri gjorde.
     const valg = `<fs-field id="land-vert">
-  <label>Land</label>
-  <select class="fs-select"><option>Norge</option><option>Sverige</option></select>
+  <label>Land <select class="fs-select"><option>Norge</option><option>Sverige</option></select></label>
 </fs-field>`
     document.body.innerHTML = valg
     await ventPaTegning()
@@ -645,23 +674,40 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: når en avkrysset boks byttes ut", async () => {
-    // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
-    // en sammenligning av dem så aldri at krysset var borte.
+  it("fs-field: en avkrysset boks uten id står etter patchen", async () => {
     const boks = `<fs-field id="samtykke-vert">
-  <label>Samtykke</label>
-  <input class="fs-checkbox" type="checkbox">
+  <label><input class="fs-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
 </fs-field>`
     document.body.innerHTML = boks
     await ventPaTegning()
-    ;(document.querySelector("input") as HTMLInputElement).checked = true
+    const gammel = document.querySelector("input") as HTMLInputElement
+    gammel.checked = true
     patch(boks)
+    await roSeg()
+    const ny = document.querySelector("input") as HTMLInputElement
+    expect(ny).toBe(gammel)
+    expect(ny.checked).toBe(true)
+    expect(meldinger()).toEqual([])
+  })
+
+  it("fs-field: når en avkrysset boks byttes ut fordi id-en endret seg", async () => {
+    // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
+    // en sammenligning av dem så aldri at krysset var borte.
+    const boks = (id: string) => `<fs-field id="samtykke-vert">
+  <label><input class="fs-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
+</fs-field>`
+    document.body.innerHTML = boks("samtykke-1")
+    await ventPaTegning()
+    ;(document.querySelector("input") as HTMLInputElement).checked = true
+    patch(boks("samtykke-2"))
     await roSeg()
     expect((document.querySelector("input") as HTMLInputElement).checked).toBe(
       false,
     )
     expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain("fs-field: en patch byttet ut kontrollen")
+    expect(meldinger()[0]).toContain(
+      "fs-field: en oppdatering fra serveren byttet ut kontrollen",
+    )
   })
 
   const MENY = (id: string) => `<fs-popover id="meny-vert">

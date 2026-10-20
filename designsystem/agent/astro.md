@@ -247,21 +247,25 @@ Tre regler gjelder alle sammen:
 1. **`defineFs*()` kjøres én gang** i en `<script>` i malen. Astro pakker
    `<script>`-tagger og kjører dem på klienten. Importen har ingen bivirkning
    alene; det er `define`-kallet som registrerer elementet.
-2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"`,
+2. **Boolske attributter er sanne så lenge de finnes.** `hidden="false"`,
    `disabled="false"` og `open="false"` slår *på*. Skal noe av det bort, må
    attributtet fjernes helt.
 3. **Du skriver markupen, komponenten fester oppførselen.** `<fs-field>` lager
-   ikke ledeteksten eller kontrollen din. Den kobler sammen dem du har lagt
-   inn, med `id`, `for` og `aria-describedby`. Et `<fs-field>` uten kontroll,
-   eller uten ledetekst, er en feil komponenten melder fra om.
+   ikke ledeteksten eller kontrollen din. Du skriver `for` på ledeteksten og
+   `id` på kontrollen, eller legger `<label>` rundt den, så feltet har navn
+   også uten JavaScript. Komponenten kobler hjelpeteksten og feilmeldingen med
+   `aria-describedby` og `aria-invalid`, og skriver aldri id på kontrollen: en
+   id serveren ikke sendte, gjør at en oppdatering fra serveren bytter ut
+   feltet, med fokus og det brukeren har skrevet. Feltet er ugyldig når
+   feilmeldingen står uten `hidden`.
 
 | Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<fs-field>` | ramme | `@fristil/designsystem/field.css` | `defineFsField()` fra `@fristil/designsystem/field` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen | ingen |
+| `<fs-field>` | ramme | `@fristil/designsystem/field.css` | `defineFsField()` fra `@fristil/designsystem/field` | `disabled` (flag)<br>`optional` (flag)<br>`described-by` (text) | ingen | ingen |
 | `<fs-tabs>` | ramme | `@fristil/designsystem/tabs.css` | `defineFsTabs()` fra `@fristil/designsystem/tabs` | `server-controlled` (flag) | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
 | `<fs-error-summary>` | ramme | `@fristil/designsystem/error-summary.css` | `defineFsErrorSummary()` fra `@fristil/designsystem/error-summary` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
 | `<fs-popover>` | ramme | `@fristil/designsystem/popover.css` | `defineFsPopover()` fra `@fristil/designsystem/popover` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `@fristil/designsystem/suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-suggestion>` | ramme | `@fristil/designsystem/suggestion.css` | `defineFsSuggestion()` fra `@fristil/designsystem/suggestion` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value, label) | `fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
 | `<fs-dialog>` | ramme | `@fristil/designsystem/dialog.css` | `defineFsDialog()` fra `@fristil/designsystem/dialog` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `fs-dialog` (`data-color`: brand, info, success, warning, danger)<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
 | `<fs-toast>` | frittstaende | `@fristil/designsystem/toast.css` | `defineFsToast()` fra `@fristil/designsystem/toast` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
 | `<fs-session-timeout>` | ramme | `@fristil/designsystem/session-timeout.css` | `defineFsSessionTimeout()` fra `@fristil/designsystem/session-timeout` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
@@ -331,7 +335,7 @@ Ingen `<fs-field>`, ingen kjøretid.
 ## 7. Web components i Astro
 
 Skal feltet kunne bli ugyldig mens brukeren står i det, må komponenten
-registreres:
+registreres. Den kobler feilmeldingen til feltet når den vises:
 
 ```astro
 ---
@@ -339,10 +343,10 @@ import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
 ---
 
-<fs-field required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" required />
-  <p class="fs-error-text">Fyll inn navnet ditt.</p>
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" required />
+  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
 
 <script>
@@ -363,7 +367,7 @@ vanlige web components, og trenger verken en Astro-integrasjon eller et
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
 | En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
-| Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
+| Feilmeldingen vises aldri, og feltet regnes som gyldig | `hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false` |
 | Komponenten gjør ingenting, og ingenting sier fra | Registreringen står i frontmatteret, som bare kjører på serveren. Den hører i en `<script>` i malen |
 
 ## Når CSS ikke strekker til

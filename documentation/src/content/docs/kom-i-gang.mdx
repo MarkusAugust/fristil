@@ -109,13 +109,14 @@ Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect
 Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
 
 ```html
-<fs-field required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" required />
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" required />
+  <p class="fs-help-text">Slik det står i passet.</p>
 </fs-field>
 ```
 
-Står ledeteksten og feltet der, men uten kobling og uten stjerne, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<fs-toast>` og `<fs-connection-status>`, som er tomme til de er registrert. Et `<fs-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
+Står ledeteksten, feltet og hjelpeteksten der, men hjelpeteksten er ikke koblet til feltet med `aria-describedby`, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<fs-toast>` og `<fs-connection-status>`, som er tomme til de er registrert. Et `<fs-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
 
 ## Inngangspunkter
 

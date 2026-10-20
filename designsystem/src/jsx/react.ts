@@ -11,8 +11,8 @@ export type { FsEventMap } from "../components/events.js"
  *
  * Uten disse kjenner ikke TypeScript `<fs-field>` i det hele tatt, men sier
  * «Property 'fs-field' does not exist on type JSX.IntrinsicElements». Og
- * attributtene er bindestreksstrenger uten autofullføring, så `required-marker`
- * og `help-text` er nettopp der en skrivefeil er lett å gjøre og vanskelig å
+ * attributtene er bindestreksstrenger uten autofullføring, så `described-by`
+ * og `server-controlled` er nettopp der en skrivefeil er lett å gjøre og vanskelig å
  * få øye på.
  *
  * Importer én gang i prosjektet, helst fra en `.d.ts`-fil så det ikke havner
@@ -77,11 +77,8 @@ type ServerControlled = {
 type Host = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
 
 type FsFieldAttributes = Host & {
-  invalid?: Flag
   disabled?: Flag
   optional?: Flag
-  "required-marker"?: "none" | "symbol" | "text"
-  "control-id"?: string
   "described-by"?: string
 }
 

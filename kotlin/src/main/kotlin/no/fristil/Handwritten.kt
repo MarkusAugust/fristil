@@ -201,7 +201,6 @@ fun Fs.suggestion(
 
     return SuggestionParts(
         label = field.label,
-        field = Attributes(mapOf("class" to "fs-suggestion__field")),
         control = Attributes(control),
         list = Attributes(list),
         options = (0 until arrayLength(n)).map { index ->
@@ -220,10 +219,9 @@ fun Fs.suggestion(
                 "class" to "fs-sr-only",
                 "id" to statusId,
                 "role" to "status",
-                "aria-live" to "polite",
-                "data-ignore-morph" to "",
             ),
         ),
+        value = Attributes(mapOf("class" to "fs-suggestion__value", "type" to "hidden")),
         help = field.help,
         error = field.error,
         state = field.state,

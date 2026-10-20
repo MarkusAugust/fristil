@@ -101,7 +101,7 @@ const TILFELLER: Tilfelle[] = [
   },
   {
     regel: ".fs-suggestion__option:hover",
-    markup: `<div class="fs-suggestion__field"><input class="fs-input" /><ul class="fs-suggestion__list"><li class="fs-suggestion__option">Bergen</li></ul></div>`,
+    markup: `<div><input class="fs-input" /><ul class="fs-suggestion__list"><li class="fs-suggestion__option">Bergen</li></ul></div>`,
     velger: ".fs-suggestion__option",
   },
   {

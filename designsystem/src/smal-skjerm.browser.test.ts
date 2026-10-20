@@ -335,9 +335,9 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   field: [
     {
-      markup: `<fs-field invalid>
-        <label class="fs-label">E-postadressen vi skal sende vedtaket til</label>
-        <input class="fs-input" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
+      markup: `<fs-field>
+        <label class="fs-label" for="smal-epost">E-postadressen vi skal sende vedtaket til</label>
+        <input class="fs-input" id="smal-epost" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
         <p class="fs-help-text">Vi sender aldri reklame eller nyhetsbrev.</p>
         <p class="fs-error-text">Skriv en e-postadresse med @ og et domene</p>
       </fs-field>`,
@@ -376,13 +376,13 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
     {
       markup: `<fs-suggestion>
         <label class="fs-label">Kommune</label>
-        <div class="fs-suggestion__field">
+        <div>
           <input class="fs-input" name="kommune" type="text" />
           <ul class="fs-suggestion__list">
             <li>Bergen</li>
             <li>Bjørnafjorden og omegn interkommunale bostøttekontor</li>
           </ul>
-          <span class="fs-sr-only" role="status" aria-live="polite"></span>
+          <span class="fs-sr-only" role="status"></span>
         </div>
       </fs-suggestion>`,
       aapne: () => {

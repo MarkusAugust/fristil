@@ -15,14 +15,12 @@ const forslag = fs.suggestion({
 <Preview id="demo-suggestion" stiler={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
 	<fs-suggestion>
 		<label {...forslag.label}>Kommune</label>
-		<div {...forslag.field}>
-			<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
-			<ul {...forslag.list}>
-				{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
-			</ul>
-			<p class="fs-suggestion__empty" hidden>Ingen treff</p>
-			<span {...forslag.status}></span>
-		</div>
+		<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
+		<ul {...forslag.list}>
+			{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+		</ul>
+		<p class="fs-suggestion__empty">Ingen treff</p>
+		<span {...forslag.status}></span>
 		<p class="fs-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
 	</fs-suggestion>
 </Preview>

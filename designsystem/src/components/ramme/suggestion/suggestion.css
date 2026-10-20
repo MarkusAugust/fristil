@@ -5,21 +5,20 @@
 @import "../../css/sr-only/sr-only.css";
 
 @layer fristil {
+  /* Lista legger seg under feltet, og det er verten som gir den plassen. */
   fs-suggestion {
-    display: block;
-  }
-
-  .fs-suggestion__field {
     position: relative;
     display: block;
   }
 
+  /* Lista står ute av flyten, men uten `inset-block-start`: da får den
+     sin statiske plass, altså rett under feltet den følger etter i markupen,
+     også når en hjelpetekst eller feilmelding kommer etter den i verten. */
   .fs-suggestion__list {
     position: absolute;
     inset-inline: 0;
-    inset-block-start: calc(100% + var(--fs-spacing-1));
     z-index: var(--fs-suggestion-layer, 30);
-    margin: 0;
+    margin: var(--fs-spacing-1) 0 0;
     padding: 0;
     list-style: none;
     max-block-size: var(
@@ -68,6 +67,12 @@
     color: var(--fs-color-accent-content);
   }
 
+  /* Det skjulte feltet for koden. Et `type="hidden"` vises aldri; regelen
+     står for at klassen skal finnes også når noen gir feltet en annen type. */
+  .fs-suggestion__value {
+    display: none;
+  }
+
   .fs-suggestion__empty {
     padding: var(
       --fs-suggestion-option-padding,
@@ -78,7 +83,7 @@
   }
 
   /* Tommeldingen følger lista: er lista lukket, vises den ikke. Regelen står
-     i stilarket og ikke i komponenten, fordi appen eier tommeldingen når den
+     i stilarket og ikke i komponenten, fordi appen styrer tommeldingen når den
      filtrerer selv, og ikke vet om lista er åpen. Den vet bare om søket ga
      noe. Tommeldingen må stå etter lista, som søsken. */
   .fs-suggestion__list[hidden] ~ .fs-suggestion__empty {

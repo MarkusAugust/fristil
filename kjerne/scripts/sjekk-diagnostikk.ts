@@ -63,6 +63,8 @@ type Case = {
   fixed?: string
   fixTitle?: string
   fixPreferred?: boolean
+  /** Funnet skal ikke ha noen rettelse. */
+  noFix?: boolean
   /** Hvor lang tid tilfellet får, når farten er poenget. */
   maxMs?: number
   /** Sjekk som en hel side, med reglene for koblingen. */
@@ -205,11 +207,6 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "ledetekst via kontrollens id når control-id peker et annet sted",
-    html: `<label for="epost">E-post</label><fs-field control-id="x"><input id="epost"></fs-field>`,
-    count: 0,
-  },
-  {
     name: "en web component som begynner på select er ingen kontroll",
     html: `<fs-field><label-x>N</label-x><select-all></select-all></fs-field>`,
     count: 1,
@@ -228,29 +225,29 @@ const cases: Case[] = [
   },
   {
     name: "en verdi utenfor lista",
-    html: `<fs-field required-marker="stjerne"><label>N</label><input></fs-field>`,
+    html: `<fs-popover placement="midt"></fs-popover>`,
     count: 1,
-    mentions: ["«stjerne»", "Lovlige verdier"],
+    mentions: ["«midt»", "Lovlige verdier"],
     severity: "error",
-    covers: "required-marker",
+    covers: "placement",
   },
   {
     name: "et listeattributt uten verdi",
-    html: `<fs-field required-marker><label>N</label><input></fs-field>`,
+    html: `<fs-popover placement></fs-popover>`,
     count: 1,
     mentions: ["Lovlige verdier"],
     severity: "error",
   },
   {
     name: "et boolsk attributt med «false»",
-    html: `<fs-field invalid="false"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="false"><label>N</label><input></fs-field>`,
     count: 1,
-    mentions: ["boolsk", 'invalid="false" betyr det samme som invalid'],
+    mentions: ["boolsk", 'disabled="false" betyr det samme som disabled'],
     severity: "warning",
   },
   {
     name: "et boolsk attributt med sitt eget navn eller tom verdi er greit",
-    html: `<fs-field invalid="invalid" disabled=""><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="disabled" optional=""><label>N</label><input></fs-field>`,
     count: 0,
   },
   {
@@ -335,11 +332,6 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "ledetekst utenfor via control-id",
-    html: `<label for="epost">E-post</label><fs-field control-id="epost"><input></fs-field>`,
-    count: 0,
-  },
-  {
     name: "en id med klammer og parenteser kaster ikke",
     html: `<label for="a[0].x(1)">X</label><fs-field><input id="a[0].x(1)"></fs-field>`,
     count: 0,
@@ -362,7 +354,7 @@ const cases: Case[] = [
   },
   {
     name: "Go-mal i taggen",
-    html: `<fs-field {{ if .Feil }}invalid{{ end }}><label>N</label><input></fs-field>`,
+    html: `<fs-field {{ if .Av }}disabled{{ end }}><label>N</label><input></fs-field>`,
     count: 0,
   },
   {
@@ -372,12 +364,12 @@ const cases: Case[] = [
   },
   {
     name: "PHP i taggen",
-    html: `<fs-field <?= $invalid ? 'invalid' : '' ?>><label>N</label><input></fs-field>`,
+    html: `<fs-field <?= $av ? 'disabled' : '' ?>><label>N</label><input></fs-field>`,
     count: 0,
   },
   {
     name: "Razor i verdien",
-    html: `<fs-field invalid="@Model.Invalid"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="@Model.Disabled"><label>N</label><input></fs-field>`,
     count: 0,
   },
   {
@@ -387,7 +379,7 @@ const cases: Case[] = [
   },
   {
     name: "et ukjent element meldes også i en mal",
-    html: `<fs-feild {{ if .X }}invalid{{ end }}></fs-feild>`,
+    html: `<fs-feild {{ if .X }}disabled{{ end }}></fs-feild>`,
     count: 1,
     mentions: ["finnes ikke"],
   },
@@ -473,9 +465,9 @@ const cases: Case[] = [
   },
   {
     name: "en skrivefeil uten bindestrek",
-    html: `<fs-field requiredMarker="symbol"><label>N</label><input></fs-field>`,
+    html: `<fs-field describedBy="vilkar"><label>N</label><input></fs-field>`,
     count: 1,
-    mentions: ["Mente du required-marker?"],
+    mentions: ["Mente du described-by?"],
   },
   {
     name: "en uavsluttet kontroll leser ikke resten som sine attributter",
@@ -496,9 +488,9 @@ const cases: Case[] = [
   },
   {
     name: "PHP i taggen avslutter den ikke, og feilen etter felles",
-    html: `<fs-field <?= $x ?> required-marker="stjerne"><label>N</label><input></fs-field>`,
+    html: `<fs-popover <?= $x ?> placement="midt"></fs-popover>`,
     count: 1,
-    mentions: ["«stjerne»"],
+    mentions: ["«midt»"],
   },
   {
     name: "en klasse som ikke finnes, med forslag og rettelse",
@@ -570,36 +562,45 @@ const cases: Case[] = [
   },
   {
     name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
-    html: `<fs-field invalid="false" id="x"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="false" id="x"><label>N</label><input></fs-field>`,
     count: 1,
     fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
-    fixTitle: "Ta bort invalid",
+    fixTitle: "Ta bort disabled",
     fixPreferred: true,
   },
   {
     name: "rettelsen for et boolsk attributt sist i taggen",
-    html: `<fs-field id="x" invalid="false"><label>N</label><input></fs-field>`,
+    html: `<fs-field id="x" disabled="false"><label>N</label><input></fs-field>`,
     count: 1,
     fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
   },
   {
     name: "rettelsen for et felt uten ledetekst",
-    html: `<fs-field><input class="fs-input"></fs-field>`,
+    html: `<fs-field><input class="fs-input" id="navn"></fs-field>`,
     count: 1,
-    fixed: `<fs-field><label>Ledetekst</label><input class="fs-input"></fs-field>`,
+    fixed: `<fs-field><label for="navn">Ledetekst</label><input class="fs-input" id="navn"></fs-field>`,
     fixTitle: "Sett inn en ledetekst",
   },
   {
-    name: "ledeteksten får sin egen linje med samme innrykk",
-    html: `<fs-field>\n  <input class="fs-input">\n</fs-field>`,
+    // En `<label>` uten `for` ved siden av feltet er ikke koblet til det.
+    // Uten id finnes ingen rettelse som er én innsetting.
+    name: "et felt uten ledetekst og uten id får ingen rettelse",
+    html: `<fs-field><input class="fs-input"></fs-field>`,
     count: 1,
-    fixed: `<fs-field>\n  <label>Ledetekst</label>\n  <input class="fs-input">\n</fs-field>`,
+    mentions: ["legg <label> rundt feltet"],
+    noFix: true,
+  },
+  {
+    name: "ledeteksten får sin egen linje med samme innrykk",
+    html: `<fs-field>\n  <input class="fs-input" id="navn">\n</fs-field>`,
+    count: 1,
+    fixed: `<fs-field>\n  <label for="navn">Ledetekst</label>\n  <input class="fs-input" id="navn">\n</fs-field>`,
   },
   {
     name: "ledeteksten får sin egen linje også med \\r-linjeskift",
-    html: `<fs-field>\r  <input class="fs-input">\r</fs-field>`,
+    html: `<fs-field>\r  <input class="fs-input" id="navn">\r</fs-field>`,
     count: 1,
-    fixed: `<fs-field>\r  <label>Ledetekst</label>\r  <input class="fs-input">\r</fs-field>`,
+    fixed: `<fs-field>\r  <label for="navn">Ledetekst</label>\r  <input class="fs-input" id="navn">\r</fs-field>`,
   },
   {
     name: "data-required på ledetekst og legend",
@@ -662,7 +663,7 @@ const cases: Case[] = [
   },
   {
     name: "«Ta bort» over flere linjer",
-    html: `<fs-field\n  invalid="false"\n  id="x"><label>N</label><input></fs-field>`,
+    html: `<fs-field\n  disabled="false"\n  id="x"><label>N</label><input></fs-field>`,
     count: 1,
     fixed: `<fs-field\n  id="x"><label>N</label><input></fs-field>`,
   },
@@ -1100,6 +1101,8 @@ for (const c of cases) {
     fail(`funnet begynner på ${first.start}, ikke på ${c.coversAt}`)
   if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
+  if (c.noFix && first.fix)
+    fail(`funnet har en rettelse, «${first.fix.text}», og skulle ikke hatt det`)
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")
     else {

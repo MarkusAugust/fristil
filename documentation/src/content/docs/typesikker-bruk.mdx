@@ -135,8 +135,8 @@ import "@fristil/designsystem/react-jsx"
 Da får attributtene autofullføring og sjekk:
 
 ```tsx
-<fs-field required-marker="text" />      // ok
-<fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
+<fs-field described-by="vilkar" />      // ok
+<fs-field describedBy="vilkar" />       // feil: attributtet heter described-by
 <fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
 <fs-connection-status offline="Nede" />  // feil: ukjent attributt
 ```

@@ -33,10 +33,10 @@ Ingen byggverktøy, ingen pakkebehandler i nettleseren.
   </head>
   <body>
     <form id="skjema">
-      <fs-field required-marker="symbol">
-        <label>Fullt navn</label>
-        <input class="fs-input" type="text" name="navn" required />
-        <p class="fs-error-text">Fyll inn navnet ditt.</p>
+      <fs-field>
+        <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+        <input class="fs-input" id="navn" type="text" name="navn" required />
+        <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
       </fs-field>
 
       <button class="fs-button" type="submit">Send</button>
@@ -117,7 +117,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     Med den får du autofullføring og feilmelding på attributtene:
 
     ```tsx
-    <fs-field required-marker="tekst" />     // feil: "none" | "symbol" | "text"
+    <fs-field describedBy="vilkar" />       // feil: attributtet heter described-by
     <fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
     <fs-connection-status offline="Nede" />  // feil: ukjent attributt
     ```
@@ -169,7 +169,7 @@ En `<script>`-tagg i en HTML-fil kjøres av nettleseren som vanlig JavaScript. S
     Id-en kommer fra `useId()`, så serveren og nettleseren lager den samme.
 
     :::caution[Bruk ikke web componenten for felt i React med server-rendring]
-    Komponenten skriver koblingen på elementene før React hydrerer, og React melder avvik på ledeteksten, feltet og feilmeldingen. Se [Field](../components/field/) for når `<fs-field>` er riktig vei, og for hvordan `invalid` må skrives i React uten server.
+    Komponenten skriver koblingen på elementene før React hydrerer, og React melder avvik på ledeteksten, feltet og feilmeldingen. Se [Field](../components/field/) for når `<fs-field>` er riktig vei.
     :::
 
     De andre web-komponentene bruker du sammen med byggefunksjonen, som `fs.tabs()` i `<fs-tabs>`. Boolske attributter på dem skrives `open={åpen || undefined}`, aldri `open=""` eller `open={åpen}`: React 18 skriver `false` som attributtet `open="false"`, som er sant. React 19 setter egenskapen til `""`, og komponenten leser den som usann.
@@ -232,10 +232,10 @@ import "@fristil/designsystem/tokens.css"
 import "@fristil/designsystem/field.css"
 ---
 
-<fs-field required-marker="symbol">
-  <label>Fullt navn</label>
-  <input class="fs-input" type="text" name="navn" required />
-  <p class="fs-error-text">Fyll inn navnet ditt.</p>
+<fs-field>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="fs-input" id="navn" type="text" name="navn" required />
+  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
 
 <script>
@@ -275,16 +275,17 @@ Stilarkene lenkes, siden en nettleser ikke slår opp et pakkenavn:
   data-signals="{navn: '', beroert: false}"
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
-  <fs-field required-marker="symbol" data-attr:invalid="$ugyldig">
-    <label>Fullt navn</label>
+  <fs-field>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input
       class="fs-input"
+      id="navn"
       type="text"
       name="navn"
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text">Fyll inn navnet ditt.</p>
+    <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -304,11 +305,7 @@ Tre attributter gjør hele jobben:
 - `data-computed:ugyldig` utleder valideringen av den.
 - `data-bind:navn` binder feltet begge veier, og `data-on:blur` markerer at brukeren har forlatt det.
 
-`data-attr:invalid` knytter Datastar til komponenten: den **setter attributtet når uttrykket er sant og fjerner det når det er usant**, nøyaktig slik `<fs-field>` forventer.
-
-:::note[Ingen av React-fellene her]
-React krever `invalid={ugyldig || undefined}` fordi versjonene håndterer web components ulikt. Datastar jobber direkte på attributtene.
-:::
+`data-attr:hidden` på feilmeldingen knytter Datastar til komponenten: den **skjuler feilmeldingen når feltet er gyldig og viser den når det er ugyldig**, og `<fs-field>` regner feltet som ugyldig når feilmeldingen synes.
 
 `fs` brukes eventuelt på serveren eller i byggesteget. Datastar trenger den ikke i nettleseren.
 
@@ -319,15 +316,15 @@ Datastar kan la serveren sende HTML underveis, over Server-Sent Events. Se [`@st
 En web component oppgraderer seg selv når den settes inn i dokumentet, så lenge `defineFsField()` har kjørt én gang. Serveren kan derfor sende dette som ren HTML:
 
 ```html
-<fs-field required-marker="text" invalid>
-  <label>E-postadresse</label>
-  <input class="fs-input" type="email" value="ola@" />
+<fs-field>
+  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
+  <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering hit.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>
 </fs-field>
 ```
 
-Komponenten kobler da `for` og `id`, setter `fs-label`, legger på `aria-invalid` og bygger `aria-describedby`, uten at det sendes JavaScript med for akkurat dette feltet.
+Komponenten setter da `fs-label`, gir hjelpeteksten og feilmeldingen id, legger på `aria-invalid` fordi feilmeldingen synes, og bygger `aria-describedby`, uten at det sendes JavaScript med for akkurat dette feltet. Feltet har ingen id komponenten har laget, så neste oppdatering fra serveren kjenner det igjen.
 
 Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
@@ -336,7 +333,7 @@ Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen er dataen,
 | Symptom | Årsak |
 | --- | --- |
 | En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, eller et `<fs-session-timeout>` varsler aldri | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv, så uten registrering er elementet tomt, og `<fs-session-timeout>` teller ikke tiden. En `ramme`-komponents markup er din og står der uansett, bortsett fra at Tabs bare viser det første panelet og Suggestion skjuler lista til de er registrert |
-| Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
+| Feilmeldingen vises aldri, og feltet regnes som gyldig | `hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 | Stilene mangler | `tokens.css` er ikke importert |
 | React: «Invalid DOM property `class`» | Importer `fs` fra `@fristil/designsystem/react` |

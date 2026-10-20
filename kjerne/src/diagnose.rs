@@ -773,7 +773,6 @@ fn check_field(
     name_end: usize,
     content: &[u16],
     content_start: usize,
-    attributes: &[ReadAttribute],
     link: &str,
 ) -> Vec<Finding> {
     let has_element = (0..content.len())
@@ -807,17 +806,12 @@ fn check_field(
     if has("aria-label").is_some() || has("aria-labelledby").is_some() {
         return vec![];
     }
-    let ids = [
-        attributes
-            .iter()
-            .find(|a| equals(&a.name, "control-id"))
-            .and_then(|a| a.value.clone()),
-        has("id").and_then(|a| a.value.clone()),
-    ];
-    if ids
-        .iter()
-        .flatten()
-        .any(|id| !id.is_empty() && labels.contains(id))
+    // Bare kontrollens egen id. `<fs-field>` skriver ikke id på kontrollen,
+    // så en `<label for>` utenfor kan bare peke på en id malen har skrevet.
+    let id = has("id").and_then(|a| a.value.clone());
+    if id
+        .as_ref()
+        .is_some_and(|id| !id.is_empty() && labels.contains(id))
     {
         return vec![];
     }
@@ -827,6 +821,19 @@ fn check_field(
     let newline = leading
         .iter()
         .any(|&c| c == b'\n' as u16 || c == b'\r' as u16);
+    // Rettingen settes bare inn når kontrollen har id. En `<label>` uten `for`
+    // ved siden av feltet er ikke koblet til det, og `<fs-field>` sier fra om
+    // nettopp den; å legge ledeteksten rundt feltet eller skrive id på det er
+    // mer enn én innsetting, så da står bare meldingen.
+    let Some(id) = id.filter(|id| !id.is_empty()) else {
+        return vec![findings(
+            "felt-uten-ledetekst",
+            format!(
+                "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
+            ),
+            None,
+        )];
+    };
     vec![findings(
         "felt-uten-ledetekst",
         format!(
@@ -836,7 +843,13 @@ fn check_field(
             title: "Sett inn en ledetekst".into(),
             start: content_start + indent,
             end: content_start + indent,
-            text: format!("<label>Ledetekst</label>{}", if newline { lossy(leading) } else { String::new() }),
+            // Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
+            // ledetekst før JavaScript har kjørt.
+            text: format!(
+                "<label for=\"{}\">Ledetekst</label>{}",
+                lossy(&id),
+                if newline { lossy(leading) } else { String::new() }
+            ),
             preferred: true,
         }),
     )]
@@ -1610,7 +1623,6 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
                 name_end,
                 content,
                 end + 1,
-                &attributes,
                 &element.link,
             ));
         }

@@ -11,7 +11,7 @@ Komponenten tar piltastene, og kobler fanene til panelene når markupen kommer u
 I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Ett unntak: sender serveren raden på nytt i en patch, må den skrive id på fanene og panelene, ellers byttes de ut og fanevalget går tapt. Se [Markup og oppførsel](/markup-og-oppforsel/#skriv-id-der-komponenten-ellers-lager-den).
+Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Ett unntak: sender serveren raden på nytt i en patch, må den skrive id på fanene og panelene, ellers byttes de ut og fanevalget går tapt. Se [Markup og oppførsel](/markup-og-oppforsel/#id-er-som-overlever-en-oppdatering).
 :::
 
 ## Slik tar du den i bruk

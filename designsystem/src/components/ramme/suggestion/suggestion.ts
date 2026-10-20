@@ -5,10 +5,10 @@ import {
 } from "../field/field-core.js"
 
 export const SUGGESTION_CLASS = "fs-suggestion" as const
-export const SUGGESTION_FIELD_CLASS = "fs-suggestion__field" as const
 export const SUGGESTION_LIST_CLASS = "fs-suggestion__list" as const
 export const SUGGESTION_OPTION_CLASS = "fs-suggestion__option" as const
 export const SUGGESTION_EMPTY_CLASS = "fs-suggestion__empty" as const
+export const SUGGESTION_VALUE_CLASS = "fs-suggestion__value" as const
 export const SUGGESTION_STATUS_CLASS = "fs-sr-only" as const
 
 export type SuggestionOptions = Omit<FieldOptions, "id"> & {
@@ -40,7 +40,7 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  * komponentens egne, og den setter dem tilbake når en patch river dem bort.
  * Har noen andre alt filtrert, settes `prefiltered` på `<fs-suggestion>`, og
  * komponenten lar både alternativene og tommeldingen være i fred. Skal
- * serveren i tillegg eie om lista er utvidet og hvilket alternativ som er
+ * serveren i tillegg bestemme om lista er utvidet og hvilket alternativ som er
  * markert, settes `server-controlled` ved siden av.
  */
 export const suggestion = ({
@@ -64,7 +64,6 @@ export const suggestion = ({
 
   return {
     label: computed.label,
-    field: attributes({ class: SUGGESTION_FIELD_CLASS }),
     control: attributes(
       {
         ...computed.control,
@@ -105,7 +104,7 @@ export const suggestion = ({
      * lukket, tar stilarket seg av, med en regel som skjuler tommeldingen
      * etter en liste med `hidden`. Byggefunksjonen sier derfor bare om det
      * finnes treff, og om svaret er kommet (`pending`). Den leste `open`
-     * før, og med `prefiltered` eier appen tommeldingen uten å vite om lista
+     * før, og med `prefiltered` styrer appen tommeldingen uten å vite om lista
      * er åpen: den tilstanden er komponentens, så meldingen kunne aldri
      * vises.
      */
@@ -117,16 +116,28 @@ export const suggestion = ({
      * Området som melder antall treff til skjermlesere.
      *
      * Teksten skrives av komponenten mens brukeren taster, så den finnes ikke
-     * i serverens utgave. `data-ignore-morph` hindrer at neste patch tømmer
-     * den. Elementet må likevel stå i markupen serveren sender, ellers finnes
-     * det ikke noe å melde i før skriptet har kjørt.
+     * i serverens utgave. Tømmer en oppdatering elementet, skriver
+     * komponenten teksten på nytt. Elementet må likevel stå i markupen
+     * serveren sender, ellers finnes det ikke noe å melde i før skriptet har
+     * kjørt. `role="status"` gir `aria-live="polite"` av seg selv.
      */
     status: attributes({
       class: SUGGESTION_STATUS_CLASS,
       id: statusId,
       role: "status" as const,
-      "aria-live": "polite" as const,
-      "data-ignore-morph": "" as const,
+    }),
+    /**
+     * Det skjulte feltet som får koden til alternativet brukeren valgte.
+     *
+     * Feltet viser teksten, og uten JavaScript er det teksten som sendes.
+     * Med JavaScript skriver komponenten `data-value` fra alternativet hit,
+     * eller teksten når alternativet ikke har `data-value`, og tømmer det når
+     * brukeren endrer teksten. `name` skriver du selv; det
+     * hører til skjemaet ditt.
+     */
+    value: attributes({
+      class: SUGGESTION_VALUE_CLASS,
+      type: "hidden" as const,
     }),
     help: computed.help,
     error: computed.error,
