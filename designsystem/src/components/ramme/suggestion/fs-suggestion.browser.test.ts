@@ -1571,4 +1571,35 @@ describe("fs-suggestion velger riktig", () => {
     expect(advarsel).not.toHaveBeenCalled()
     advarsel.mockRestore()
   })
+
+  it("følger skjemaet når form på feltet peker på et annet", async () => {
+    // Lytteren på `reset` hører til skjemaet feltet tilhører nå. `form` på
+    // feltet kan peke på et annet skjema uten at noe flyttes, og en patch
+    // kan endre det.
+    monter(`<form id="a">${MED_KODE}</form><form id="b"></form>`)
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+    expect(kode.value).toBe("4601")
+
+    input.setAttribute("form", "b")
+    await ventPaTegning()
+    await ventPaTegning()
+    input.value = "Berg"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    expect(kode.value).toBe("")
+    input.value = "Bergen"
+    kode.setAttribute("value", "4601")
+    await ventPaTegning()
+    ;(document.getElementById("b") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+
+    // Teksten går tilbake til tom, og koden følger.
+    expect(input.value).toBe("")
+    expect(kode.value).toBe("")
+  })
 })

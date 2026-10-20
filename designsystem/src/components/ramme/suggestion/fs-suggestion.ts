@@ -143,6 +143,8 @@ export class FsSuggestion extends HostElement {
   private serverChoice?: { label: string; value: string }
   /** Koden komponenten selv skrev sist. Står noe annet der, var det serveren. */
   private writtenCode?: string
+  /** Skjemaet `reset` lyttes på. Følger feltet, som en patch kan flytte. */
+  private boundForm?: HTMLFormElement | null
   /** `for` komponenten selv skrev på ledeteksten. */
   private readonly forByMe = new WeakMap<Element, string>()
   /**
@@ -213,6 +215,8 @@ export class FsSuggestion extends HostElement {
         // Verdifeltets `value` er et attributt, og en morfing kan skrive
         // serverens tomme verdi over koden brukeren valgte.
         "value",
+        // `form` på feltet velger hvilket skjema tilbakestillingen hører til.
+        "form",
         // Et felt som blir `readonly` eller `disabled` skal lukke lista.
         "readonly",
         "disabled",
@@ -615,9 +619,10 @@ export class FsSuggestion extends HostElement {
       control.removeEventListener("input", this.handleInput)
       control.removeEventListener("keydown", this.handleKeydown)
       control.removeEventListener("focus", this.handleFocus)
-      control.form?.removeEventListener("reset", this.handleReset)
       this.control = undefined
     }
+    this.boundForm?.removeEventListener("reset", this.handleReset)
+    this.boundForm = undefined
     this.list?.removeEventListener("mousedown", this.handleListMouseDown)
     this.list = undefined
     this.empty?.removeEventListener("mousedown", this.handleListMouseDown)
@@ -718,12 +723,18 @@ export class FsSuggestion extends HostElement {
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)
-      this.control?.form?.removeEventListener("reset", this.handleReset)
       control.addEventListener("input", this.handleInput)
       control.addEventListener("keydown", this.handleKeydown)
       control.addEventListener("focus", this.handleFocus)
-      control.form?.addEventListener("reset", this.handleReset)
       this.control = control
+    }
+    // Skjemaet leses hver gang: `form` på feltet kan peke på et annet uten
+    // at noe flyttes.
+    const form = control.form
+    if (form !== this.boundForm) {
+      this.boundForm?.removeEventListener("reset", this.handleReset)
+      form?.addEventListener("reset", this.handleReset)
+      this.boundForm = form
     }
     const code = this.valueField?.value ?? ""
     if (

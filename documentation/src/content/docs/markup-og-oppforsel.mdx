@@ -182,7 +182,8 @@ versjonen. Elementene beholdes, bare det som er ulikt endres. Det er derfor
 tekst du har skrevet i et felt blir stående med Datastar. idiomorph, som htmx
 kan morfe med, setter verdien fra serverens HTML, så der må serveren sende
 teksten tilbake for at den skal stå. Unntaket er feltet som har fokus når
-`ignoreActiveValue` er slått på i idiomorph.
+`ignoreActiveValue` er slått på i idiomorph, med
+`hx-swap="morph:{ignoreActiveValue:true}"`; den er av fra før.
 
 Morfingen kjenner et element igjen på tagnavnet og på id-en. Har elementet i
 siden en id, og serverens element har ingen eller en annen, morfes det ikke:

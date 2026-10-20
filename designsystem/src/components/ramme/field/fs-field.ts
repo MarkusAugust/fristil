@@ -607,8 +607,9 @@ export class FsField extends HostElement {
     const errorShown =
       error !== null &&
       !error.hasAttribute("hidden") &&
-      getComputedStyle(error).display !== "none" &&
-      (error.textContent ?? "").trim() !== ""
+      (error.textContent ?? "").trim() !== "" &&
+      // Sist, siden den tvinger fram en stilberegning.
+      getComputedStyle(error).display !== "none"
     const invalid = serverInvalid || errorShown
     const disabled = this.hasAttribute("disabled") || server.disabled
 

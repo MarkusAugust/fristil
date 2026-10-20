@@ -64,8 +64,9 @@ egen overskrift «Brytende».
   statuselementet står rett i `<fs-suggestion>`, som selv gir lista plassen
   under feltet. `role="status"` gir `aria-live="polite"` av seg selv, og
   tømmer en oppdatering statuselementet, skriver komponenten antallet på
-  nytt, så Datastars `data-ignore-morph` trengs ikke, og det samme gjelder
-  med htmx. Tommeldingen trenger ikke `hidden`: stilarket skjuler den sammen
+  nytt (ikke under `prefiltered`, der det nye antallet kommer rett etter),
+  så Datastars `data-ignore-morph` trengs ikke, og det samme gjelder med
+  htmx. Tommeldingen trenger ikke `hidden`: stilarket skjuler den sammen
   med lista. `fs.suggestion()` gir ikke lenger `field`. **Slik oppdaterer
   du:** ta bort `<div class="fs-suggestion__field">` og `{...forslag.field}`
   rundt feltet, og `aria-live`, `data-ignore-morph` og `hidden` på de to

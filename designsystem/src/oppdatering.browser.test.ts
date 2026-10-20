@@ -14,8 +14,9 @@
  * - Datastar beholder feltet, fokus og teksten.
  * - idiomorph beholder feltet og fokus, men setter teksten og `checked` fra
  *   serverens HTML. Unntaket er feltet med fokus når `ignoreActiveValue` er
- *   på, slik htmx-brukere setter den. Serveren må altså sende verdiene
- *   tilbake.
+ *   slått på, som htmx-brukere gjør med
+ *   `hx-swap="morph:{ignoreActiveValue:true}"`; den er av fra før. Serveren
+ *   må altså sende verdiene tilbake.
  * - `innerHTML` bytter ut alt. Det nye feltet skal være koblet på nytt.
  * - Uten JavaScript finnes ingen oppdatering, og markupen må stå på egne
  *   bein: hvert felt har et navn, påkrevd-merket og feilmeldingen fra
@@ -262,6 +263,23 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       })
     }
   }
+
+  it("idiomorph uten ignoreActiveValue setter også feltet med fokus fra serveren", async () => {
+    // Standarden i idiomorph, og dermed i htmx uten eget valg i `hx-swap`.
+    await monter(FELT)
+    const input = felt()
+    input.focus()
+    input.value = "Kari"
+    Idiomorph.morph(
+      document.getElementById("omraade") as HTMLElement,
+      omraade(FELT, true),
+      { morphStyle: "outerHTML" },
+    )
+    await roSeg()
+    expect(felt()).toBe(input)
+    expect(document.activeElement).toBe(input)
+    expect(input.value).toBe("")
+  })
 
   for (const maate of ["Datastar", "idiomorph"] as const) {
     it(`et felt uten fokus: ${maate} og det serveren sender tilbake`, async () => {
