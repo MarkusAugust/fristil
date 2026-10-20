@@ -327,7 +327,9 @@ element med en id serveren ikke sendte, byttes ut: Datastar og idiomorph gjør
 begge dette, med vilje. Derfor skriver komponentene aldri id på feltet i
 `<fs-field>` og `<fs-suggestion>`. `for` og `id` skriver malen, som HTML uansett
 krever for at feltet skal ha et navn før skriptet har kjørt, eller så står
-ledeteksten rundt feltet og ingen id trengs.
+ledeteksten rundt feltet og ingen id trengs. Det siste har en pris: uten id
+får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som
+finner det igjen på id.
 
 Fanene og sprettoppvinduet trenger id for koblingen, og der skriver serveren
 dem:

@@ -40,7 +40,7 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  * komponentens egne, og den setter dem tilbake når en patch river dem bort.
  * Har noen andre alt filtrert, settes `prefiltered` på `<fs-suggestion>`, og
  * komponenten lar både alternativene og tommeldingen være i fred. Skal
- * serveren i tillegg eie om lista er utvidet og hvilket alternativ som er
+ * serveren i tillegg bestemme om lista er utvidet og hvilket alternativ som er
  * markert, settes `server-controlled` ved siden av.
  */
 export const suggestion = ({
@@ -104,7 +104,7 @@ export const suggestion = ({
      * lukket, tar stilarket seg av, med en regel som skjuler tommeldingen
      * etter en liste med `hidden`. Byggefunksjonen sier derfor bare om det
      * finnes treff, og om svaret er kommet (`pending`). Den leste `open`
-     * før, og med `prefiltered` eier appen tommeldingen uten å vite om lista
+     * før, og med `prefiltered` styrer appen tommeldingen uten å vite om lista
      * er åpen: den tilstanden er komponentens, så meldingen kunne aldri
      * vises.
      */

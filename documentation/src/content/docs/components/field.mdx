@@ -341,7 +341,7 @@ Det finnes ikke noe `invalid`-attributt. Feltet er ugyldig når feilmeldingen sy
 ## Tilgjengelighet
 
 - Komponenten gjør koblingen, ikke innholdet. Ledeteksten og feilmeldingen må du fortsatt skrive godt.
-- Skriv `for` på ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Uten det har feltet ikke noe navn før skriptet har kjørt.
+- Skriv `for` på ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Uten det har feltet ikke noe navn før skriptet har kjørt. Uten id får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som finner det igjen på id, og stemmestyring på Windows er ikke etterprøvd med ledeteksten rundt feltet.
 - Sett `required` på `<input>` i tillegg til `data-required` på ledeteksten.
 - Vis feilmeldingen når brukeren har forlatt feltet, ikke for hvert tastetrykk. Meldingen leses opp hver gang den dukker opp.
 - Én kontroll per `<fs-field>`. Komponenten kobler seg til den første den finner. Grupper hører hjemme i en `<fieldset>` med `<legend>`.

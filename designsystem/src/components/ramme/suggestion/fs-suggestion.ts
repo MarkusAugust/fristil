@@ -340,7 +340,9 @@ export class FsSuggestion extends HostElement {
             now !== null &&
             labelNow !== null &&
             !now.id &&
-            !labelNow.contains(now)
+            !labelNow.contains(now) &&
+            !now.hasAttribute("aria-label") &&
+            !now.hasAttribute("aria-labelledby")
           )
         },
       )
@@ -440,16 +442,18 @@ export class FsSuggestion extends HostElement {
       this.writeCode(valueField, this.chosen.value)
     }
 
-    // Et tømt statuselement får teksten tilbake. Ikke når noen andre
-    // filtrerer: da er en patch svaret på et tastetrykk, og
-    // `announceFiltered` leser det nye antallet rett etter. Å skrive det
-    // gamle først ville lest to tall opp.
+    // Et tømt statuselement får teksten tilbake mens lista står åpen, der
+    // antallet er det brukeren holder på med. Ikke ellers: hver patch av
+    // området ville ellers lest det gamle antallet opp på nytt. Og ikke når
+    // noen andre filtrerer: da er en patch svaret på et tastetrykk, og
+    // `announceFiltered` leser det nye antallet rett etter.
     const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
     if (
       status &&
+      this.wantOpen === true &&
       !this.prefiltered &&
       this.announcedText !== undefined &&
-      status.textContent === ""
+      (status.textContent ?? "").trim() === ""
     ) {
       setText(status, this.announcedText)
     }
@@ -817,7 +821,7 @@ export class FsSuggestion extends HostElement {
    *
    * Den er søsken til lista og ikke barn, så `hidden` på lista skjulte den
    * ikke, og «Ingen treff» ble stående under et lukket felt etter Escape.
-   * Har noen andre filtrert, eier de også tommeldingen.
+   * Har noen andre filtrert, styrer de også tommeldingen.
    */
   private syncEmpty(): void {
     if (this.prefiltered) return
@@ -836,7 +840,7 @@ export class FsSuggestion extends HostElement {
    */
   private filter(): void {
     /*
-     * Har noen andre filtrert, eier de hva lista viser, og tommeldingen er
+     * Har noen andre filtrert, bestemmer de hva lista viser, og tommeldingen er
      * en del av det. Komponenten rører derfor ingenting her, og opplesningen
      * kommer fra `announceFiltered` i stedet.
      *
@@ -1084,14 +1088,16 @@ export class FsSuggestion extends HostElement {
   private handleInput = (): void => {
     if (this.choosing) return
     // Brukeren endret teksten etter et valg. Koden gjelder ikke lenger.
+    // Skriver brukeren det valgte på nytt, etter at en oppdatering tømte
+    // begge, kommer koden tilbake med en gang.
     const valueField = this.valueField
-    if (
-      valueField &&
-      this.chosen &&
-      this.control?.value !== this.chosen.label
-    ) {
-      this.writeCode(valueField, "")
-      this.chosen = undefined
+    if (valueField && this.chosen) {
+      if (this.control?.value !== this.chosen.label) {
+        this.writeCode(valueField, "")
+        this.chosen = undefined
+      } else if (valueField.value === "") {
+        this.writeCode(valueField, this.chosen.value)
+      }
     }
     if (this.locked) return
     this.filter()

@@ -492,7 +492,9 @@ export class FsField extends HostElement {
           now !== null &&
           labelNow !== null &&
           !now.id &&
-          !labelNow.contains(now)
+          !labelNow.contains(now) &&
+          !now.hasAttribute("aria-label") &&
+          !now.hasAttribute("aria-labelledby")
         )
       },
     )

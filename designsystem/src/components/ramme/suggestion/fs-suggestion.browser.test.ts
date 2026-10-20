@@ -1602,4 +1602,57 @@ describe("fs-suggestion velger riktig", () => {
     expect(input.value).toBe("")
     expect(kode.value).toBe("")
   })
+
+  it("skriver ikke antallet tilbake når lista er lukket", async () => {
+    // Hver patch av området ville ellers lest det gamle antallet opp igjen.
+    monter(MED_KODE)
+    await tegn()
+    const { input } = deler()
+    const status = document.querySelector("[role='status']") as HTMLElement
+    input.focus()
+    input.value = "B"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    expect(status.textContent).not.toBe("")
+    tast(input, "Escape")
+    await ventPaTegning()
+
+    status.textContent = ""
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(status.textContent).toBe("")
+  })
+
+  it("gir koden tilbake i det brukeren skriver det valgte på nytt", async () => {
+    // Etter at en morfing tømte både tekst og kode, som idiomorph gjør uten
+    // ignoreActiveValue, skal ikke koden vente på en tilfeldig neste patch.
+    monter(MED_KODE)
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+    input.value = ""
+    kode.setAttribute("value", "")
+    await ventPaTegning()
+    await ventPaTegning()
+    expect(kode.value).toBe("")
+
+    input.value = "Bergen"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(kode.value).toBe("4601")
+  })
+
+  it("sier ingenting om et felt uten id som har navn fra aria-labelledby", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    monter(
+      `<fs-suggestion><label id="l">Kommune</label><input class="fs-input" name="kommune" aria-labelledby="l"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    )
+    await tegn()
+    await new Promise((r) => setTimeout(r, 300))
+    expect(advarsel).not.toHaveBeenCalled()
+    advarsel.mockRestore()
+  })
 })

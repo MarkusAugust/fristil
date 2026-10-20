@@ -1028,4 +1028,13 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(String(advarsel.mock.calls[0][0])).toContain("pekte på en annen id")
     advarsel.mockRestore()
   })
+
+  it("sier ingenting om en kontroll uten id som har navn fra aria-labelledby", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<fs-field><label id="l">Navn</label><input class="fs-input" name="navn" aria-labelledby="l"></fs-field>`
+    await ventPaTegning()
+    await new Promise((r) => setTimeout(r, 300))
+    expect(advarsel).not.toHaveBeenCalled()
+    advarsel.mockRestore()
+  })
 })
