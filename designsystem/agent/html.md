@@ -291,7 +291,7 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 
 <form id="kontaktskjema" novalidate>
   <fs-field>
-    <label for="navn" data-required="symbol">Fullt navn</label>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input class="fs-input" id="navn" type="text" name="navn" required />
     <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
   </fs-field>

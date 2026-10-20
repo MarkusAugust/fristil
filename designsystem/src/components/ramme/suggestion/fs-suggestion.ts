@@ -75,9 +75,9 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  * en node på id, og et felt med en id serveren ikke sendte, blir byttet ut ved
  * neste oppdatering, med fokus og det brukeren har skrevet.
  *
- * Feltet viser alltid teksten til alternativet. Har alternativene
- * `data-value`, og serveren har skrevet et skjult `.fs-suggestion__value`,
- * får det skjulte feltet koden. Uten JavaScript sendes teksten, og serveren
+ * Feltet viser alltid teksten til alternativet. Har serveren skrevet et
+ * skjult `.fs-suggestion__value`, får det koden fra `data-value`, eller
+ * teksten når alternativet ikke har noen. Uten JavaScript sendes teksten, og serveren
  * slår opp. Komponenten rendrer ingenting. Den lagde tidligere
  * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
  * skriptet hadde kjørt, og ingenting ble med i innsendingen.
@@ -280,10 +280,11 @@ export class FsSuggestion extends HostElement {
       }
       warnAboutMarkup(
         this,
-        "<label> er ikke koblet til feltet: den har ingen for, og står ikke " +
-          "rundt feltet. Uten JavaScript har feltet da ingen ledetekst, og en " +
-          "skjermleser leser det opp uten navn. Skriv for på ledeteksten og id " +
-          "på feltet, eller legg <label> rundt feltet. Komponenten lager ikke " +
+        "<label> er ikke koblet til feltet: feltet har ingen id, og " +
+          "ledeteksten står ikke rundt det. Uten JavaScript har feltet da " +
+          "ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv " +
+          "id på feltet og samme for på ledeteksten, eller legg <label> rundt " +
+          "feltet. Komponenten lager ikke " +
           "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
           "serveren til å bytte ut feltet.",
         () => {
@@ -294,6 +295,44 @@ export class FsSuggestion extends HostElement {
             labelNow !== null &&
             !now.id &&
             !labelNow.contains(now)
+          )
+        },
+      )
+      // `for` går foran det at ledeteksten står rundt feltet. Peker den på en
+      // annen id, har feltet ingen ledetekst, også med JavaScript.
+      warnAboutMarkup(
+        this,
+        "<label> står rundt feltet, men for på ledeteksten peker på en annen " +
+          "id enn feltets. for går foran, så feltet har ingen ledetekst, og en " +
+          "skjermleser leser det opp uten navn. Ta bort for, eller gi feltet " +
+          "den samme id-en.",
+        () => {
+          const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
+          const labelNow = this.querySelector("label")
+          if (!now || !labelNow?.contains(now)) return false
+          const target = labelNow.getAttribute("for")
+          return target !== null && target !== now.id
+        },
+      )
+    } else {
+      // Uten ledetekst inni kan den stå utenfor, med `for` på feltets id.
+      warnAboutMarkup(
+        this,
+        "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
+          "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
+          "<fs-suggestion>, må for på den peke på id-en til feltet.",
+        () => {
+          const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
+          if (!now || this.querySelector("label")) return false
+          if (
+            now.hasAttribute("aria-label") ||
+            now.hasAttribute("aria-labelledby")
+          )
+            return false
+          const rootNow = this.getRootNode() as Document | ShadowRoot
+          return !(
+            now.id &&
+            rootNow.querySelector?.(`label[for="${CSS.escape(now.id)}"]`)
           )
         },
       )
@@ -339,8 +378,10 @@ export class FsSuggestion extends HostElement {
    * ingen hukommelse. Det lista viser og hva som er markert gjør det.
    */
   private repair(): void {
-    if (isServerControlled(this) || !this.control) return
+    if (!this.control) return
 
+    // Koden settes tilbake også under `server-controlled`. Attributtet gjelder
+    // om lista står åpen og hva som er markert, ikke hva brukeren valgte.
     const valueField = this.valueField
     if (
       valueField &&
@@ -350,6 +391,8 @@ export class FsSuggestion extends HostElement {
     ) {
       this.writeCode(valueField, this.chosen.value)
     }
+
+    if (isServerControlled(this)) return
 
     // Et felt som ble `readonly` eller `disabled` mens lista sto åpen, lukker
     // den. Ellers holdt reparasjonen den åpen, og Escape gjør ingenting i et
@@ -562,6 +605,12 @@ export class FsSuggestion extends HostElement {
           this.childElementCount > 0 &&
           this.querySelector(CONTROL_SELECTOR) === null,
       )
+      // Feltet er borte. Firefox sender ingen `focusout` når noden med fokus
+      // fjernes, så lista ville ellers stått åpen uten et felt.
+      this.wantOpen = undefined
+      this.active = undefined
+      const orphan = this.listElement
+      if (orphan) setFlag(orphan, "hidden", true)
       return
     }
 
@@ -589,6 +638,10 @@ export class FsSuggestion extends HostElement {
 
     if (control !== this.control) {
       if (this.control) this.warnAboutReplacedControl(this.control, control)
+      // Det nye feltet har ikke fokus. Åpen liste og markering hørte til det
+      // gamle.
+      this.wantOpen = undefined
+      this.active = undefined
       // Et verdifelt serveren fylte, gjelder teksten som står i feltet nå.
       const valueField = this.valueField
       this.chosen =
@@ -602,6 +655,10 @@ export class FsSuggestion extends HostElement {
       control.addEventListener("keydown", this.handleKeydown)
       control.addEventListener("focus", this.handleFocus)
       this.control = control
+    }
+    const serverCode = this.valueField?.value ?? ""
+    if (serverCode !== "" && serverCode !== this.chosen?.value) {
+      this.chosen = { label: control.value, value: serverCode }
     }
 
     /*
@@ -889,8 +946,8 @@ export class FsSuggestion extends HostElement {
 
   /**
    * Skriver koden i verdifeltet og sender `input` og `change` på det, slik et
-   * felt brukeren skrev i ville gjort. Uten hendelsene så verken `data-bind` i
-   * Datastar eller tilstanden i en React-app koden.
+   * felt brukeren skrev i ville gjort. Uten hendelsene så ikke `data-bind` i
+   * Datastar koden.
    */
   private writeCode(valueField: HTMLInputElement, code: string): void {
     if (valueField.value === code) return

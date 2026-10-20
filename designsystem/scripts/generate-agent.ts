@@ -422,7 +422,7 @@ ser når fila er lastet. \`dist/fristil.css\` har alt flatet ut, uten
 
 <form id="kontaktskjema" novalidate>
   <fs-field>
-    <label for="navn" data-required="symbol">Fullt navn</label>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input class="fs-input" id="navn" type="text" name="navn" required />
     <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
   </fs-field>
@@ -518,7 +518,7 @@ er én fil nesten alltid riktig valg.`,
 
 \`\`\`html
 <fs-field>
-  <label for="navn" data-required="symbol">Fullt navn</label>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
   <input class="fs-input" id="navn" type="text" name="navn" value="{{.Navn}}" required />
   {{if .Feil}}<p class="fs-error-text">{{.Feil}}</p>{{end}}
 </fs-field>
@@ -563,18 +563,19 @@ Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
 nodene, som \`innerHTML\`, htmx' vanlige \`innerHTML\`- og \`outerHTML\`-bytte og
 Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
 må serveren skrive valget selv, med \`aria-selected\` og \`hidden\` på den
-riktige fanen og de andre panelene, eller eie tilstanden med
+riktige fanen og de andre panelene, eller bestemme tilstanden alene med
 \`server-controlled\`.
 
 En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
-morfer ikke et element med id inn i et uten, de bytter det ut. Skriver malen
-bar markup, lager komponenten id-ene selv, og da byttes fanene, panelene,
-feltet og lista ut ved neste patch som sender området på nytt, og det
-brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
-\`<fs-tabs>\`, på kontrollen i \`<fs-field>\`, på feltet, lista og alternativene
-i \`<fs-suggestion>\` og på panelet i \`<fs-popover>\`, de samme ved hver
-rendring. Komponenten sier fra i konsollen første gang en patch bytter ut
-noe brukeren hadde rørt.
+morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
+\`<fs-field>\` og \`<fs-suggestion>\` får aldri id av komponenten: skriv \`for\`
+på ledeteksten og \`id\` på feltet, eller legg ledeteksten rundt feltet.
+Fanene, panelene, lista, alternativene og panelet i sprettoppvinduet får id
+av komponenten når de mangler, og da byttes de ut ved neste patch som sender
+området på nytt, og det brukeren gjorde er borte. Skriv derfor id på fanene
+og panelene i \`<fs-tabs>\`, på lista og alternativene i \`<fs-suggestion>\` og
+på panelet i \`<fs-popover>\`, de samme ved hver rendring. Komponenten sier
+fra i konsollen første gang en patch bytter ut noe brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
@@ -708,7 +709,7 @@ Markupen er vanlig HTML, i malen rammeverket ditt bruker:
 
 \`\`\`html
 <fs-field>
-  <label for="navn" data-required="symbol">Fullt navn</label>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
   <input class="fs-input" id="navn" type="text" name="navn" required />
   <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
@@ -1043,7 +1044,7 @@ import "@fristil/designsystem/field.css"
 ---
 
 <fs-field>
-  <label for="navn" data-required="symbol">Fullt navn</label>
+  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
   <input class="fs-input" id="navn" type="text" name="navn" required />
   <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
 </fs-field>
@@ -1110,7 +1111,7 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
   <fs-field>
-    <label for="navn" data-required="symbol">Fullt navn</label>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input
       class="fs-input"
       id="navn"
@@ -1119,7 +1120,7 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text" data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+    <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -1150,7 +1151,7 @@ ren HTML:
 
 \`\`\`html
 <fs-field>
-  <label for="epost" data-required="text">E-postadresse</label>
+  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
   <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering hit.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>

@@ -134,7 +134,8 @@ export const suggestion = ({
      *
      * Feltet viser teksten, og uten JavaScript er det teksten som sendes.
      * Med JavaScript skriver komponenten `data-value` fra alternativet hit,
-     * og tømmer det når brukeren endrer teksten. `name` skriver du selv; det
+     * eller teksten når alternativet ikke har `data-value`, og tømmer det når
+     * brukeren endrer teksten. `name` skriver du selv; det
      * hører til skjemaet ditt.
      */
     value: attributes({

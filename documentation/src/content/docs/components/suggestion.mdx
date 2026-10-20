@@ -211,7 +211,7 @@ Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skr
 
 Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene har ikke noe brukeren kan miste, og får id av komponenten når de mangler.
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, skriver malen id på dem også, av samme grunn: ellers byttes alternativene ut, og det markerte alternativet er borte.
 
 ### Tekst og kode
 

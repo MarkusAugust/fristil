@@ -33,11 +33,13 @@ egen overskrift «Brytende».
   skriptet har kjørt, eller som legger ledeteksten rundt feltet. Komponenten
   skriver `for` fra feltets id når ledeteksten ikke står rundt feltet. Et felt uten id med
   ledeteksten ved siden av gir en advarsel i konsollen. Hjelpeteksten,
-  feilmeldingen, lista og alternativene får fortsatt id av komponenten: de har
-  ikke noe brukeren kan miste. **Slik oppdaterer du:** skriv `for` og `id` i
+  feilmeldingen, lista og alternativene får fortsatt id av komponenten når de
+  mangler. Sender serveren hele lista på nytt, skal malen skrive id på lista og
+  alternativene også, ellers byttes de ut og markeringen er borte. **Slik oppdaterer du:** skriv `for` og `id` i
   malen, eller legg `<label>` rundt feltet.
 - **`invalid`, `required-marker` og `control-id` er tatt ut av `<fs-field>`.**
-  Feltet er ugyldig når feilmeldingen synes, altså står uten `hidden`, eller
+  Feltet er ugyldig når feilmeldingen synes, altså har tekst og står uten
+  `hidden` og uten `display: none` (som `data-show` i Datastar setter), eller
   når serveren har skrevet `aria-invalid` på feltet. Komponenten rører aldri
   `hidden` på feilmeldingen; før skjulte den en feilmelding serveren hadde
   rendret synlig, fordi verten manglet `invalid`. Påkrevd-merket står som
@@ -75,7 +77,7 @@ egen overskrift «Brytende».
 - **`fs.suggestion()` gir det skjulte feltet for koden som `value`**, og
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
-  tømmer koden, så `data-bind` i Datastar og tilstanden i React ser den.
+  tømmer koden, så `data-bind` i Datastar ser den.
 - **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
   Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut

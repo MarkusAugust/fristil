@@ -39,8 +39,9 @@ function readMarker(value: string | null | undefined): Marker | undefined {
 }
 
 /**
- * Attributtene `<fs-field>` regner ut selv, og setter tilbake om de blir
- * borte.
+ * Attributtene `<fs-field>` observerer. De fleste regner den ut selv, og
+ * setter tilbake om de blir borte. `id` på kontrollen, og `hidden` og `style`
+ * på feilmeldingen, leser den bare: de er malens.
  *
  * Det samme sto en gang i `FIELD_PRESERVED_ATTRIBUTES`, som malen måtte
  * skrive av inn i `data-preserve-attr`. Den lista finnes ikke lenger:
@@ -58,6 +59,8 @@ const DERIVED_ATTRIBUTES = [
   "data-optional",
   "disabled",
   "hidden",
+  // `data-show` i Datastar skjuler feilmeldingen med `display: none`.
+  "style",
 ]
 
 /**
@@ -235,6 +238,8 @@ export class FsField extends HostElement {
       subtree: true,
       attributes: true,
       attributeFilter: DERIVED_ATTRIBUTES,
+      // En morfing kan bytte teksten i feilmeldingen uten å bytte noden.
+      characterData: true,
     })
     this.sync()
   }
@@ -440,10 +445,11 @@ export class FsField extends HostElement {
 
     warnAboutMarkup(
       this,
-      "<label> er ikke koblet til feltet: den har ingen for, og står ikke " +
-        "rundt feltet. Uten JavaScript har feltet da ingen ledetekst, og en " +
-        "skjermleser leser det opp uten navn. Skriv for på ledeteksten og id " +
-        "på feltet, eller legg <label> rundt feltet. Komponenten lager ikke " +
+      "<label> er ikke koblet til feltet: feltet har ingen id, og " +
+        "ledeteksten står ikke rundt det. Uten JavaScript har feltet da ingen " +
+        "ledetekst, og en skjermleser leser det opp uten navn. Skriv id på " +
+        "feltet og samme for på ledeteksten, eller legg <label> rundt feltet. " +
+        "Komponenten lager ikke " +
         "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
         "serveren til å bytte ut feltet.",
       () => {
@@ -458,10 +464,28 @@ export class FsField extends HostElement {
       },
     )
 
+    // `for` går foran det at ledeteksten står rundt feltet. Peker den på en
+    // annen id, har feltet ingen ledetekst, også med JavaScript.
+    warnAboutMarkup(
+      this,
+      "<label> står rundt feltet, men for på ledeteksten peker på en annen " +
+        "id enn feltets. for går foran, så feltet har ingen ledetekst, og en " +
+        "skjermleser leser det opp uten navn. Ta bort for, eller gi feltet " +
+        "den samme id-en.",
+      () => {
+        const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
+        const labelNow = this.ownPart<HTMLLabelElement>(FS_FIELD_PARTS.label)
+        if (!now || !labelNow?.contains(now)) return false
+        const target = labelNow.getAttribute("for")
+        return target !== null && target !== now.id
+      },
+    )
+
     warnAboutMarkup(
       this,
       "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
-        "skjermleser leser det opp uten navn.",
+        "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
+        "<fs-field>, må for på den peke på id-en til feltet.",
       /*
        * Tre lovlige måter å gi feltet et navn på, og ingen av dem skal gi en
        * advarsel: en `<label>` inni, en `<label for>` utenfor, eller
@@ -529,8 +553,14 @@ export class FsField extends HostElement {
       server.invalid !== ""
     // En feilmelding som synes, betyr at feltet er ugyldig. Den er ikke
     // komponentens å skjule: malen rendrer den når feltet er ugyldig, og
-    // klientkode slår `hidden` av og på.
-    const errorShown = error !== null && !error.hasAttribute("hidden")
+    // klientkode slår `hidden` av og på, eller `display: none` som
+    // `data-show` i Datastar. En tom feilmelding sier ingenting, som en
+    // beholder `data-text` fyller.
+    const errorShown =
+      error !== null &&
+      !error.hasAttribute("hidden") &&
+      error.style.display !== "none" &&
+      (error.textContent ?? "").trim() !== ""
     const invalid = serverInvalid || errorShown
     const disabled = this.hasAttribute("disabled") || server.disabled
 

@@ -44,7 +44,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
          submit-hendelsen, og feilmeldingen under blir aldri vist. -->
     <form id="kontaktskjema" novalidate>
       <fs-field>
-        <label for="navn" data-required="symbol">Fullt navn</label>
+        <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
         <input class="fs-input" id="navn" type="text" name="navn" required />
         <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
       </fs-field>
@@ -177,7 +177,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ---
 
     <fs-field>
-      <label for="navn" data-required="symbol">Fullt navn</label>
+      <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
       <input {...fs.input({ type: "text" })} id="navn" name="navn" required />
       <p {...fs.errorText()} hidden>Fyll inn navnet ditt.</p>
     </fs-field>
@@ -217,7 +217,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
       data-on:submit__prevent="$beroert = true; !$ugyldig && @post('/kontakt')"
     >
       <fs-field>
-        <label for="navn" data-required="symbol">Fullt navn</label>
+        <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
         <input
           class="fs-input"
           id="navn"
@@ -227,7 +227,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
           data-bind:navn
           data-on:blur="$beroert = true"
         />
-        <p class="fs-error-text" data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+        <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
       </fs-field>
 
       <button class="fs-button" type="submit">Send</button>
@@ -254,7 +254,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 
 ```html
 <fs-field>
-  <label for="epost" data-required="text">E-postadresse</label>
+  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
   <input class="fs-input" id="epost" type="email" required />
 </fs-field>
 
@@ -317,12 +317,12 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 1. Setter `label[for]` til kontrollens `id` når kontrollen har en, og ledeteksten ikke står rundt kontrollen. Kontrollen får aldri en id fra komponenten.
 2. Gir hjelpetekst og feilmelding `id` ved behov.
 3. Setter `aria-describedby` på kontrollen: hjelpeteksten alltid, og feilmeldingen i tillegg når den synes. En skjult feilmelding skal ikke leses opp.
-4. Setter `aria-invalid="true"` på kontrollen når feilmeldingen synes, altså står uten `hidden`.
+4. Setter `aria-invalid="true"` på kontrollen når feilmeldingen synes, altså har tekst og står uten `hidden` og uten `display: none`. `data-show` i Datastar og `data-text` i en beholder som står tom, virker derfor også.
 5. Setter `data-optional` på ledeteksten når `<fs-field>` har `optional`.
 
 Feilmeldingen kan ligge i markupen hele tiden med `hidden`, eller rendres av malen bare når feltet er ugyldig. Komponenten rører aldri `hidden` på den.
 
-Komponenten krever to klassenavn av deg: `fs-help-text` på hjelpeteksten og `fs-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet, eller på en `<label for>` utenfor som peker på kontrollens `id`. Har ledeteksten verken `for` eller står rundt kontrollen, sier komponenten fra: feltet har da ikke noe navn uten JavaScript.
+Komponenten krever to klassenavn av deg: `fs-help-text` på hjelpeteksten og `fs-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet, eller på en `<label for>` utenfor som peker på kontrollens `id`. Har kontrollen ingen `id`, og ledeteksten står ikke rundt den, sier komponenten fra: feltet har da ikke noe navn uten JavaScript. Har kontrollen `id` og ledeteksten mangler `for`, skriver komponenten `for` uten å si fra, så skriv den i malen også: uten JavaScript er det den som gir feltet et navn.
 
 Delene er bare dem som hører til dette feltet. Står et `<fs-field>` inni et annet, som et søkefelt i et sprettoppvindu inni feltet, ser det ytre feltet bare sin egen kontroll, ledetekst, hjelpetekst og feilmelding, og det indre sine.
 

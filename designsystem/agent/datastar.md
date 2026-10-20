@@ -281,7 +281,7 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
   <fs-field>
-    <label for="navn" data-required="symbol">Fullt navn</label>
+    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
     <input
       class="fs-input"
       id="navn"
@@ -290,7 +290,7 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text" data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+    <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -322,7 +322,7 @@ HTML:
 
 ```html
 <fs-field>
-  <label for="epost" data-required="text">E-postadresse</label>
+  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
   <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering hit.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>

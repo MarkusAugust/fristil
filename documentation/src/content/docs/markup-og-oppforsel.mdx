@@ -236,7 +236,7 @@ Resten skriver komponenten. Dette er alt serveren sender:
 
 ```html
 <fs-field>
-  <label for="epost" data-required="symbol">E-post</label>
+  <label class="fs-label" for="epost" data-required="symbol">E-post</label>
   <input class="fs-input" id="epost" type="email">
   <p class="fs-help-text">Vi sender aldri spam.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>
@@ -318,7 +318,7 @@ dem:
 | --- | --- |
 | `<fs-tabs>` | hver fane og hvert panel |
 | `<fs-field>` | kontrollen, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
-| `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
+| `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet), og lista og hvert alternativ |
 | `<fs-popover>` | panelet |
 
 Byggefunksjonene gjør det alt: `fs.tabs({ id })` skriver `sak-tab-0` og
@@ -397,8 +397,9 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
    språk.
 3. **Det brukeren gjorde setter komponenten tilbake,** så lenge patchen
    beholder elementene. Sender du hele området på nytt, må serveren skrive id
-   på fanene og panelene, ellers byttes de ut, og id-ene i en løkke kommer fra
-   en nøkkel i dataene. Skal serveren alene bestemme tilstanden, sier du det
+   på fanene, panelene, lista og alternativene i forslagsfeltet og panelet i
+   sprettoppvinduet, ellers byttes de ut, og id-ene i en løkke kommer fra en
+   nøkkel i dataene. Skal serveren alene bestemme tilstanden, sier du det
    med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
