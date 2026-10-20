@@ -1366,4 +1366,55 @@ describe("fs-suggestion velger riktig", () => {
 
     expect(status.textContent).toBe(lest)
   })
+
+  it("legger lista rett under feltet også når hjelpeteksten står etter", async () => {
+    // Verten er posisjonsboksen. Uten egen `inset-block-start` får lista sin
+    // statiske plass, rett etter feltet i flyten, og ikke under hjelpeteksten.
+    monter(
+      MED_KODE.replace(
+        "</fs-suggestion>",
+        '<p class="fs-help-text">Vi fyller ut resten av adressen for deg.</p></fs-suggestion>',
+      ),
+    )
+    await tegn()
+    const { input, liste } = deler()
+    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
+    input.focus()
+    tast(input, "ArrowDown")
+    await ventPaTegning()
+
+    const felt = input.getBoundingClientRect()
+    const boks = liste.getBoundingClientRect()
+    expect(liste.hidden).toBe(false)
+    expect(boks.top).toBeGreaterThanOrEqual(felt.bottom)
+    expect(boks.top - felt.bottom).toBeLessThan(12)
+    expect(hjelp.getBoundingClientRect().top).toBeLessThan(boks.bottom)
+  })
+
+  it("skiller to alternativer med samme tekst på koden når lista byttes ut", async () => {
+    monter(
+      MED_KODE.replace(
+        '<li data-value="0301">Oslo</li>',
+        '<li data-value="3018">Våler</li><li data-value="3419">Våler</li>',
+      ),
+    )
+    await tegn()
+    const { input, liste } = deler()
+    input.focus()
+    for (let i = 0; i < 4; i += 1) tast(input, "ArrowDown")
+    await ventPaTegning()
+    expect(deler().valg[3].getAttribute("aria-selected")).toBe("true")
+
+    const ny = liste.cloneNode(true) as HTMLElement
+    for (const li of ny.querySelectorAll("li")) {
+      li.removeAttribute("id")
+      li.removeAttribute("aria-selected")
+    }
+    liste.replaceWith(ny)
+    await ventPaTegning()
+    await ventPaTegning()
+
+    const valgt = ny.querySelector('[aria-selected="true"]') as HTMLElement
+    expect(valgt.getAttribute("data-value")).toBe("3419")
+  })
 })

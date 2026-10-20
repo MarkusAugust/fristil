@@ -154,7 +154,7 @@ export class FsSuggestion extends HostElement {
    * kommune brukeren aldri navigerte til. Teksten er identiteten; id-en er
    * bare der `aria-activedescendant` skal peke.
    */
-  private active?: { id: string; label: string }
+  private active?: { id: string; label: string; value: string | null }
   /**
    * Antallet som sist ble lest opp, når noen andre filtrerer.
    *
@@ -431,10 +431,12 @@ export class FsSuggestion extends HostElement {
        * markerte komponenten noe serveren nettopp hadde filtrert bort, og
        * `aria-activedescendant` pekte på et skjult element. Id-en er en
        * reserve: sender serveren lista på nytt, byttes alternativene ut og
-       * får nye id-er, og markeringen gjenfinnes på teksten.
+       * får nye id-er, og markeringen gjenfinnes på teksten. Koden teller
+       * med, siden to kommuner kan hete det samme.
        */
       const sameText = (o: HTMLElement) =>
-        (o.textContent ?? "").trim() === this.active?.label
+        (o.textContent ?? "").trim() === this.active?.label &&
+        o.getAttribute("data-value") === this.active?.value
       const option =
         this.visible.find((o) => o.id === this.active?.id && sameText(o)) ??
         this.visible.find(sameText)
@@ -899,7 +901,11 @@ export class FsSuggestion extends HostElement {
       setAttr(other, "aria-selected", other === option ? "true" : "false")
     }
 
-    this.active = { id: option.id, label: (option.textContent ?? "").trim() }
+    this.active = {
+      id: option.id,
+      label: (option.textContent ?? "").trim(),
+      value: option.getAttribute("data-value"),
+    }
     // aria-activedescendant flytter skjermleserens lesepunkt uten at fokus
     // forlater feltet. Uten den leses alternativet aldri opp.
     setAttr(this.control, "aria-activedescendant", option.id)

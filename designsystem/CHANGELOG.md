@@ -89,10 +89,6 @@ egen overskrift «Brytende».
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
   tømmer koden, så `data-bind` i Datastar ser den.
-- **Påkrevd-merket vises også fra `required` på kontrollen.** Står
-  kontrollen rett etter `.fs-label` eller inni den, tegner stilarket
-  symbolet uten `data-required`, så en mal som bare skriver det HTML krever
-  får merket. `data-required` og `data-optional` på ledeteksten går foran.
 - **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
   Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut

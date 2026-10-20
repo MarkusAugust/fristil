@@ -319,6 +319,7 @@ describe("oppskriftene uten JavaScript", () => {
       suggestionCss.replace(/@import[^;]*;/g, ""),
     ].join("\n")
     iframe.srcdoc = `<!doctype html><meta charset="utf-8"><style>${stil}</style>
+      <script>document.documentElement.dataset.skript = "kjorte"</script>
       ${FELT}
       <div id="ugyldig">${FELT.replace(" hidden>", ">").replaceAll('"navn"', '"navn-ugyldig"')}</div>
       ${FORSLAG}
@@ -331,6 +332,8 @@ describe("oppskriftene uten JavaScript", () => {
   })
 
   it("kjører ingen skript", () => {
+    // Skriptet i sandkassen ville satt et merke. Det står ikke der.
+    expect(dokument.documentElement.dataset.skript).toBeUndefined()
     expect(dokument.defaultView?.customElements.get("fs-field")).toBeUndefined()
   })
 

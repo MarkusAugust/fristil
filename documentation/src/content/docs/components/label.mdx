@@ -82,8 +82,6 @@ if (input) input.required = true
 
 Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjemaet. Setter du begge, viser systemet bare den ene: det er det samme `::after`, og byggefunksjonen dropper `data-optional` når feltet er påkrevd.
 
-Har kontrollen `required`, og står den rett etter ledeteksten eller inni den, vises symbolet også uten `data-required`. Da får en mal som bare skriver det HTML krever, merket likevel. `data-required` og `data-optional` på ledeteksten går foran.
-
 ## Sammen med et felt
 
 `for` må matche `id` på feltet. Uten koblingen leses ikke ledeteksten opp når feltet får fokus, og et klikk på teksten flytter ikke fokus dit.

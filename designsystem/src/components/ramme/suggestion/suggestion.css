@@ -11,12 +11,14 @@
     display: block;
   }
 
+  /* Lista står ute av flyten, men uten `inset-block-start`: da får den
+     sin statiske plass, altså rett under feltet den følger etter i markupen,
+     også når en hjelpetekst eller feilmelding kommer etter den i verten. */
   .fs-suggestion__list {
     position: absolute;
     inset-inline: 0;
-    inset-block-start: calc(100% + var(--fs-spacing-1));
     z-index: var(--fs-suggestion-layer, 30);
-    margin: 0;
+    margin: var(--fs-spacing-1) 0 0;
     padding: 0;
     list-style: none;
     max-block-size: var(

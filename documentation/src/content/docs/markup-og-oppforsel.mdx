@@ -194,12 +194,14 @@ tilbake til.
 alt nettleseren har lagt til, så den er ingen vei utenom det som står under.)
 
 Dette er de fire måtene en side kan bli oppdatert på, og hva som skjer med
-et felt brukeren står i. Alle fire er etterprøvd i Chromium, Firefox og
-WebKit, mot markupen oppskriftene viser:
+et felt brukeren står i. Morfingene og `innerHTML` er etterprøvd i Chromium,
+Firefox og WebKit mot markupen oppskriftene viser, med ekte Datastar og
+idiomorph; htmx' egen fokusflytting og siden uten JavaScript mot en ekte
+side med htmx 2:
 
 | Måte | Elementene | Fokus | Teksten i feltet | Det komponenten skrev |
 | --- | --- | --- | --- | --- |
-| Datastar, `outer` | beholdes | blir stående | blir stående | settes tilbake |
+| Datastar, `outer` | beholdes | blir stående | blir stående, så lenge serveren ikke sender en annen `value` | settes tilbake |
 | htmx med idiomorph | beholdes | blir stående | settes fra serverens HTML, utenom feltet med fokus når `ignoreActiveValue` er på | settes tilbake |
 | htmx med `innerHTML` (standarden) | byttes ut | htmx flytter det tilbake til elementet med samme id | settes fra serverens HTML | skrives på nytt på de nye elementene |
 | Uten JavaScript | siden lastes på nytt | nettleseren bestemmer | settes fra serverens HTML | finnes ikke; `for`, `id` og feilmeldingen fra serveren gjør jobben |
