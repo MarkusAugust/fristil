@@ -49,8 +49,7 @@ egen overskrift «Brytende».
   `.fs-error-text` (i Datastar `data-attr:hidden="!$ugyldig"` på
   feilmeldingen framfor `data-attr:invalid` på verten), `required-marker="x"`
   blir `data-required="x"` på `<label>`, og `control-id` blir `id` på feltet.
-  Egenskapene `invalid`, `requiredMarker` og `controlId` er borte, og React-
-  typene i `react-jsx` er oppdatert.
+  Egenskapene `invalid`, `requiredMarker` og `controlId` er borte, og React-typene i `react-jsx` er oppdatert.
 - **`<fs-suggestion>` viser alltid teksten i feltet.** Før skrev den
   `data-value` inn i det synlige feltet, så brukeren som valgte Bergen, så
   «4601», og skjemaet sendte koden under feltets `name`. Nå får et skjult
@@ -89,7 +88,8 @@ egen overskrift «Brytende».
 - **`fs.suggestion()` gir det skjulte feltet for koden som `value`**, og
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
-  tømmer koden, så `data-bind` i Datastar ser den.
+  tømmer koden, så `data-bind` i Datastar ser den; de bobler ikke, så en
+  `data-on:input` på verten fyrer ikke på dem.
 - **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
   Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut

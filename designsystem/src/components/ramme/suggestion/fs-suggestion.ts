@@ -605,8 +605,11 @@ export class FsSuggestion extends HostElement {
         "annen enn sist, og da kjenner oppdateringen ikke feltet igjen. Lag " +
         "id-en av noe som er det samme hver gang, som navnet på feltet eller en " +
         "nøkkel i dataene, ikke av et tilfeldig tall eller en teller.",
-      // Byttet har skjedd og kan ikke gå over av seg selv.
-      () => this.isConnected,
+      // Byttet har skjedd og kan ikke gå over av seg selv, med mindre en ny
+      // oppdatering alt har byttet feltet igjen.
+      () =>
+        !lost.isConnected &&
+        this.querySelector<HTMLInputElement>(CONTROL_SELECTOR) === control,
     )
   }
 
@@ -974,15 +977,16 @@ export class FsSuggestion extends HostElement {
   }
 
   /**
-   * Skriver koden i verdifeltet og sender `input` og `change` på det, slik et
-   * felt brukeren skrev i ville gjort. Uten hendelsene så ikke `data-bind` i
-   * Datastar koden.
+   * Skriver koden i verdifeltet og sender `input` og `change` på det, så
+   * `data-bind` i Datastar ser koden. Hendelsene bobler ikke: en
+   * `data-on:input` på verten, som oppskriften bruker til å hente forslag,
+   * skal ikke fyre et søk på koden hver gang brukeren velger.
    */
   private writeCode(valueField: HTMLInputElement, code: string): void {
     if (valueField.value === code) return
     setAttr(valueField, "value", code)
-    valueField.dispatchEvent(new Event("input", { bubbles: true }))
-    valueField.dispatchEvent(new Event("change", { bubbles: true }))
+    valueField.dispatchEvent(new Event("input"))
+    valueField.dispatchEvent(new Event("change"))
   }
 
   /**

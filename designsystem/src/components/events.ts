@@ -28,8 +28,8 @@ export interface FsEventMap {
   "tab-select": CustomEvent<{ index: number }>
   /** `<fs-popover>`: Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse. */
   "popover-toggle": CustomEvent<{ open: boolean }>
-  /** `<fs-suggestion>`: Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det. */
-  "suggestion-select": CustomEvent<{ value: string }>
+  /** `<fs-suggestion>`: Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det. */
+  "suggestion-select": CustomEvent<{ value: string; label: string }>
   /** `<fs-dialog>`: Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng. */
   "dialog-toggle": CustomEvent<{ open: boolean; returnValue: string }>
   /** `<fs-toast>`: En melding ble lukket, av brukeren, fordi tiden gikk ut, eller med `dismiss()`. `clear()` sender ingen. */

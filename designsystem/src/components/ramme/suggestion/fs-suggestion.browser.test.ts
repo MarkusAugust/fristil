@@ -675,7 +675,7 @@ const BAR = `
         ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
       </ul>
       <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-      <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
+      <span class="fs-sr-only" role="status"></span>
     </div>
   </fs-suggestion>`
 
@@ -1461,5 +1461,26 @@ describe("fs-suggestion velger riktig", () => {
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
       "kommune",
     )
+  })
+
+  it("lar ikke hendelsene på verdifeltet boble til verten", async () => {
+    // Oppskriften henter forslag med `data-on:input` på <fs-suggestion>.
+    // Fyrte koden den, ble det et søk på «4601» ved hvert valg.
+    monter(MED_KODE)
+    const vert = await tegn()
+    const { input, valg } = deler()
+    const paaVerten: string[] = []
+    vert.addEventListener("input", (e) =>
+      paaVerten.push((e.target as HTMLInputElement).name),
+    )
+    vert.addEventListener("change", (e) =>
+      paaVerten.push((e.target as HTMLInputElement).name),
+    )
+
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+
+    expect(paaVerten).toEqual(["kommune-tekst", "kommune-tekst"])
   })
 })

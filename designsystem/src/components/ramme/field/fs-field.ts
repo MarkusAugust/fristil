@@ -232,7 +232,18 @@ export class FsField extends HostElement {
      * Hver skriving i `sync()` sammenligner først. Uten det ville
      * observatøren utløst seg selv i det uendelige.
      */
-    this.observer = new MutationObserver(() => this.sync())
+    this.observer = new MutationObserver((records) => {
+      // `style` observeres for `display: none` på feilmeldingen. En
+      // stilskriving et annet sted i feltet, som et sprettoppvindu som
+      // plasserer panelet sitt, angår ikke koblingen.
+      const onlyForeignStyle = records.every(
+        (r) =>
+          r.type === "attributes" &&
+          r.attributeName === "style" &&
+          !(r.target as Element).matches?.(FS_FIELD_PARTS.error),
+      )
+      if (!onlyForeignStyle) this.sync()
+    })
     this.observer.observe(this, {
       childList: true,
       subtree: true,
@@ -371,9 +382,11 @@ export class FsField extends HostElement {
         "sist, og da kjenner oppdateringen ikke kontrollen igjen. Lag id-en av " +
         "noe som er det samme hver gang, som navnet på feltet eller en nøkkel " +
         "i dataene, ikke av et tilfeldig tall eller en teller.",
-      // Byttet har skjedd og kan ikke gå over av seg selv. Det som teller er
-      // at feltet fortsatt står i siden når beskjeden skrives.
-      () => this.isConnected,
+      // Byttet har skjedd og kan ikke gå over av seg selv, med mindre en ny
+      // oppdatering alt har byttet kontrollen igjen.
+      () =>
+        !lost.isConnected &&
+        this.ownPart<HTMLElement>(CONTROL_SELECTOR) === control,
     )
   }
 

@@ -62,6 +62,8 @@ function oppskrift(side: string, tag: string): string {
 
 const FELT = oppskrift(feltSide, "fs-field")
 const FORSLAG = oppskrift(forslagSide, "fs-suggestion")
+/** Oppskriften «Tekst og kode», med det skjulte feltet for koden. */
+const KODE = oppskrift(forslagSide, 'input class="fs-suggestion__value"')
 
 /** Oppskriften med ledeteksten rundt feltet, og ingen id. */
 const FELT_RUNDT = `
@@ -83,11 +85,18 @@ const AVKRYSSING = (checked: boolean) => `
     <label class="fs-label" for="vilkar">Jeg godtar vilkårene</label>
   </div>`
 
-/** Området serveren sender, med id så Datastar finner det. */
-const omraade = (innhold: string) => `<div id="omraade">${innhold}</div>`
+/**
+ * Området serveren sender, med id så Datastar finner det. En oppdatering
+ * har et merke i seg, så hvert tilfelle kan se at patchen faktisk kom fram
+ * og ikke bare at ingenting skjedde.
+ */
+const omraade = (innhold: string, oppdatert = false) =>
+  `<div id="omraade">${oppdatert ? "<span hidden data-oppdatert></span>" : ""}${innhold}</div>`
 
-function oppdater(maate: Maate, innhold: string): void {
+async function oppdater(maate: Maate, innhold: string): Promise<void> {
   const rot = document.getElementById("omraade") as HTMLElement
+  // Merket fra forrige oppdatering tas bort, så det er denne som må bringe det.
+  rot.querySelector("[data-oppdatert]")?.remove()
   if (maate === "Datastar") {
     // Som en `datastar-patch-elements` uten selektor: `outer` på id-en.
     document.dispatchEvent(
@@ -95,18 +104,23 @@ function oppdater(maate: Maate, innhold: string): void {
         detail: {
           type: "datastar-patch-elements",
           el: document.body,
-          argsRaw: { elements: omraade(innhold) },
+          argsRaw: { elements: omraade(innhold, true) },
         },
       }),
     )
   } else if (maate === "idiomorph") {
-    Idiomorph.morph(rot, omraade(innhold), {
+    Idiomorph.morph(rot, omraade(innhold, true), {
       morphStyle: "outerHTML",
       ignoreActiveValue: true,
     })
   } else {
-    rot.innerHTML = innhold
+    rot.innerHTML = `<span hidden data-oppdatert></span>${innhold}`
   }
+  await roSeg()
+  expect(
+    document.querySelector("#omraade [data-oppdatert]"),
+    `oppdateringen med ${maate} kom ikke fram`,
+  ).not.toBeNull()
 }
 
 /** Venter til observatørene har kjørt. */
@@ -142,7 +156,40 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
     expect(FELT).toContain('id="navn"')
     expect(FORSLAG).toContain('for="kommune"')
     expect(FORSLAG).toContain('id="kommune"')
+    expect(KODE).toContain('data-value="4601"')
   })
+
+  for (const maate of MAATER) {
+    it(`et valgt forslag med kode: ${maate}`, async () => {
+      // Planens 6.1: velg et forslag, så oppdatering. Serveren sender
+      // verdifeltet tomt; med `innerHTML` må den sende begge verdiene tilbake.
+      const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+      await monter(KODE)
+      const input = felt()
+      input.focus()
+      ;(document.querySelector("li") as HTMLElement).click()
+      await roSeg()
+      const kode = () =>
+        document.querySelector(".fs-suggestion__value") as HTMLInputElement
+      expect(input.value).toBe("Bergen")
+      expect(kode().value).toBe("4601")
+
+      await oppdater(
+        maate,
+        maate === "innerHTML"
+          ? KODE.replace('type="text"', 'type="text" value="Bergen"').replace(
+              'type="hidden"',
+              'type="hidden" value="4601"',
+            )
+          : KODE,
+      )
+
+      expect(felt().value).toBe("Bergen")
+      expect(kode().value).toBe("4601")
+      await stille()
+      expect(advarsel).not.toHaveBeenCalled()
+    })
+  }
 
   const TILFELLER = [
     {
@@ -182,8 +229,7 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
         foer.dispatchEvent(new Event("input", { bubbles: true }))
         await roSeg()
 
-        oppdater(maate, t.markup)
-        await roSeg()
+        await oppdater(maate, t.markup)
 
         const etter = felt()
         if (maate === "innerHTML") {
@@ -221,13 +267,11 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       felt().value = "Kari"
       felt().blur()
 
-      oppdater(maate, FELT)
-      await roSeg()
+      await oppdater(maate, FELT)
       expect(felt().value).toBe(maate === "Datastar" ? "Kari" : "")
 
       felt().value = "Kari"
-      oppdater(maate, FELT.replace('id="navn"', 'id="navn" value="Kari"'))
-      await roSeg()
+      await oppdater(maate, FELT.replace('id="navn"', 'id="navn" value="Kari"'))
       expect(felt().value).toBe("Kari")
     })
 
@@ -237,14 +281,12 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       boks.click()
       expect(boks.checked).toBe(true)
 
-      oppdater(maate, AVKRYSSING(false))
-      await roSeg()
+      await oppdater(maate, AVKRYSSING(false))
       expect(document.getElementById("vilkar")).toBe(boks)
       expect(boks.checked).toBe(maate === "Datastar")
 
       boks.checked = true
-      oppdater(maate, AVKRYSSING(true))
-      await roSeg()
+      await oppdater(maate, AVKRYSSING(true))
       expect(boks.checked).toBe(true)
     })
 
@@ -271,8 +313,7 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       bergen.focus()
       bergen.value = "Vestland"
 
-      oppdater(maate, liste(["Arendal", "Bergen", "Oslo"]))
-      await roSeg()
+      await oppdater(maate, liste(["Arendal", "Bergen", "Oslo"]))
 
       expect(
         (document.getElementById("merknad-arendal") as HTMLInputElement).value,

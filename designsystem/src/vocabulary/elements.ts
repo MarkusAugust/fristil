@@ -241,7 +241,8 @@ export const elements: Elements = {
     "events": {
       "suggestion-select": {
         "detail": {
-          "value": "string"
+          "value": "string",
+          "label": "string"
         }
       }
     }

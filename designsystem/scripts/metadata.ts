@@ -470,8 +470,8 @@ export const elements: readonly ElementDoc[] = [
     {
       "suggestion-select": {
         description:
-          "Brukeren valgte et forslag. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.",
-        detail: { value: "string" },
+          "Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.",
+        detail: { value: "string", label: "string" },
       },
     },
   ),
