@@ -641,7 +641,9 @@ export class FsField extends HostElement {
       // skriver id på kontrollen eller `for` ut fra den.
       id: control.id || "fs-field",
       help: Boolean(help),
-      error: Boolean(error),
+      // Bare en synlig feilmelding beskriver feltet. Sier serveren ugyldig
+      // mens meldingen er skjult, skal ikke pekeren gå til noe skjult.
+      error: errorShown,
       helpId: help?.id,
       errorId: error?.id,
       required: marker === "symbol" || marker === "text" ? marker : undefined,

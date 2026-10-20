@@ -1687,4 +1687,14 @@ describe("fs-suggestion velger riktig", () => {
     expect(input.value).toBe("Våler")
     expect(kode.value).toBe("3419")
   })
+
+  it("gir en ledetekst utenfor elementet klassen, som fs-field gjør", async () => {
+    monter(
+      `<label for="kommune">Kommune</label><fs-suggestion><input class="fs-input" id="kommune"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    )
+    await tegn()
+    expect(
+      document.querySelector("label")?.classList.contains("fs-label"),
+    ).toBe(true)
+  })
 })

@@ -364,6 +364,14 @@ export class FsSuggestion extends HostElement {
       )
     } else {
       // Uten ledetekst inni kan den stå utenfor, med `for` på feltets id.
+      // Den får klassen, som i `<fs-field>`; en patch av dette området
+      // rører den ikke, så den trenger ingen reparasjon.
+      if (control.id) {
+        const outside = (
+          this.getRootNode() as Document | ShadowRoot
+        ).querySelector?.(`label[for="${CSS.escape(control.id)}"]`)
+        if (outside) addClass(outside, LABEL_CLASS)
+      }
       warnAboutMarkup(
         this,
         "fant ingen <label>. Feltet får da ingen ledetekst, og en " +

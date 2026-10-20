@@ -1041,4 +1041,16 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(advarsel).not.toHaveBeenCalled()
     advarsel.mockRestore()
   })
+
+  it("peker ikke aria-describedby på en skjult feilmelding selv om serveren sier ugyldig", async () => {
+    document.body.innerHTML = `<fs-field>
+      <label class="fs-label" for="e">E-post</label>
+      <input class="fs-input" id="e" aria-invalid="true">
+      <p class="fs-error-text" hidden>Skriv en gyldig adresse.</p>
+    </fs-field>`
+    await ventPaTegning()
+    const input = document.getElementById("e") as HTMLInputElement
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+    expect(input.getAttribute("aria-describedby")).toBeNull()
+  })
 })
