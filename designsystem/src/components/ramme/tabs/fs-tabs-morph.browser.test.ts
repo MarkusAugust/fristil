@@ -275,7 +275,7 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
 
   /** Bar markup fra en mal: ledeteksten rundt feltet, ingen id-er, ingen roller. */
   const FORSLAG_BAR = `<fs-suggestion id="kommune-vert">
-  <div class="fs-suggestion__field">
+  <div>
     <label>Kommune <input class="fs-input"></label>
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
     <span class="fs-sr-only" role="status" aria-live="polite"></span>
@@ -284,7 +284,7 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
 
   const FORSLAG_MED_ID = `<fs-suggestion id="kommune-vert">
   <label for="kommune">Kommune</label>
-  <div class="fs-suggestion__field">
+  <div>
     <input class="fs-input" id="kommune">
     <ul class="fs-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
     <span class="fs-sr-only" role="status" aria-live="polite"></span>
@@ -554,7 +554,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
 
   const FORSLAG = (id: string) => `<fs-suggestion id="kommune-vert">
   <label for="${id}">Kommune</label>
-  <div class="fs-suggestion__field">
+  <div>
     <input class="fs-input" name="kommune" id="${id}">
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
     <span class="fs-sr-only" role="status" aria-live="polite"></span>

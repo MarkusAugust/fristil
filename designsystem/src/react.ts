@@ -346,7 +346,6 @@ export const fs = {
     return {
       ...forslag,
       label: toReactAttributes(forslag.label),
-      field: toReactAttributes(forslag.field),
       control: toReactAttributes(forslag.control),
       list: toReactAttributes(forslag.list),
       options: forslag.options.map(toReactAttributes),

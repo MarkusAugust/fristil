@@ -274,7 +274,7 @@ Tre regler gjelder alle sammen:
 | `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
 | `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
 | `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
+| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
 | `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `fs-dialog` (`data-color`: brand, info, success, warning, danger)<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
 | `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
 | `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
@@ -341,12 +341,13 @@ En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
 morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
 `<fs-field>` og `<fs-suggestion>` får aldri id av komponenten: skriv `for` på
 ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Fanene,
-panelene, lista, alternativene og panelet i sprettoppvinduet får id av
-komponenten når de mangler, og da byttes de ut ved neste patch som sender
-området på nytt, og det brukeren gjorde er borte. Skriv derfor id på fanene og
-panelene i `<fs-tabs>`, på lista og alternativene i `<fs-suggestion>` og på
-panelet i `<fs-popover>`, de samme ved hver rendring. Komponenten sier fra i
-konsollen første gang en patch bytter ut noe brukeren hadde rørt.
+panelene og panelet i sprettoppvinduet får id av komponenten når de mangler,
+og da byttes de ut ved neste patch som sender området på nytt, og det brukeren
+gjorde er borte. Skriv derfor id på fanene og panelene i `<fs-tabs>` og på
+panelet i `<fs-popover>`, de samme ved hver rendring. Lista og alternativene i
+`<fs-suggestion>` kan byttes ut; komponenten kobler dem på nytt og finner det
+markerte alternativet igjen på teksten. Komponenten sier fra i konsollen
+første gang en patch bytter ut noe brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å

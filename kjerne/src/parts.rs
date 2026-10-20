@@ -625,7 +625,7 @@ mod tests {
 
     #[test]
     fn a_spinner_is_not_a_second_status() {
-        assert!(rules(r#"<fs-suggestion><label>A</label><div class="fs-suggestion__field"><input><ul class="fs-suggestion__list"></ul><span role="status"></span><span class="fs-spinner" role="status" aria-label="Henter"></span></div></fs-suggestion>"#).is_empty());
+        assert!(rules(r#"<fs-suggestion><label>A</label><input><ul class="fs-suggestion__list"></ul><span role="status"></span><span class="fs-spinner" role="status" aria-label="Henter"></span></fs-suggestion>"#).is_empty());
     }
 
     #[test]

@@ -119,7 +119,7 @@ describe("komponentene faller til ro", () => {
     const flate = monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune" />
           <ul ${attr(FORSLAG.list)}>
             <li ${attr(FORSLAG.options[0])}>Bergen</li>

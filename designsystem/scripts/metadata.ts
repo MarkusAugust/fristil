@@ -1091,43 +1091,8 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-suggestion__field": {
-    content: "parts",
-    parts: {
-      control: {
-        selector: "input:not([type='hidden'])",
-        description: "Feltet brukeren skriver i.",
-        content: "none",
-      },
-      value: {
-        selector: ".fs-suggestion__value",
-        description:
-          "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte.",
-        content: "none",
-        optional: true,
-      },
-      list: {
-        selector: ".fs-suggestion__list",
-        description: "Lista med forslag.",
-        content: "parts",
-      },
-      empty: {
-        selector: ".fs-suggestion__empty",
-        description: "Meldingen som vises når ingenting passer.",
-        content: "text",
-        optional: true,
-      },
-      status: {
-        selector: "[role='status']",
-        description:
-          "Opplesningen av antall treff. Står tomt, og komponenten fyller det.",
-        content: "none",
-      },
-    },
-  },
   "fs-suggestion__list": {
     content: "parts",
-    partOf: "fs-suggestion__field",
     parts: {
       option: {
         selector: "[role='option'], .fs-suggestion__option, > li:not([role])",
@@ -1140,8 +1105,8 @@ export const classDocs: Record<string, ClassDoc> = {
     },
   },
   "fs-suggestion__option": { content: "text", partOf: "fs-suggestion__list" },
-  "fs-suggestion__empty": { content: "text", partOf: "fs-suggestion__field" },
-  "fs-suggestion__value": { content: "none", partOf: "fs-suggestion__field" },
+  "fs-suggestion__empty": { content: "text" },
+  "fs-suggestion__value": { content: "none" },
   "fs-tabs__list": {
     content: "free",
     parts: {

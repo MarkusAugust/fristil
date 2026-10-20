@@ -34,9 +34,9 @@ egen overskrift «Brytende».
   skriver `for` fra feltets id når ledeteksten ikke står rundt feltet. Et felt uten id med
   ledeteksten ved siden av gir en advarsel i konsollen. Hjelpeteksten,
   feilmeldingen, lista og alternativene får fortsatt id av komponenten når de
-  mangler. Sender serveren hele lista på nytt, skal malen skrive id på lista og
-  alternativene også, ellers byttes de ut og markeringen er borte. **Slik oppdaterer du:** skriv `for` og `id` i
-  malen, eller legg `<label>` rundt feltet.
+  mangler: byttes de ut, kobler komponenten dem på nytt, og det markerte
+  alternativet gjenfinnes på teksten. **Slik oppdaterer du:** skriv `for` og
+  `id` i malen, eller legg `<label>` rundt feltet.
 - **`invalid`, `required-marker` og `control-id` er tatt ut av `<fs-field>`.**
   Feltet er ugyldig når feilmeldingen synes, altså har tekst og står uten
   `hidden` og uten `display: none` (som `data-show` i Datastar setter), eller
@@ -58,6 +58,17 @@ egen overskrift «Brytende».
   `suggestion-select` har både `value` og `label`. **Slik oppdaterer du:**
   skal skjemaet sende koden, legg inn `<input class="fs-suggestion__value"
   type="hidden" name="…">`, eller les `evt.detail.value`.
+- **`.fs-suggestion__field` er borte, og statuselementet har verken
+  `aria-live` eller `data-ignore-morph`.** Feltet, lista, tommeldingen og
+  statuselementet står rett i `<fs-suggestion>`, som selv gir lista plassen
+  under feltet. `role="status"` gir `aria-live="polite"` av seg selv, og
+  tømmer en oppdatering statuselementet, skriver komponenten antallet på
+  nytt, så Datastars `data-ignore-morph` trengs ikke, og det samme gjelder
+  med htmx. Tommeldingen trenger ikke `hidden`: stilarket skjuler den sammen
+  med lista. `fs.suggestion()` gir ikke lenger `field`. **Slik oppdaterer
+  du:** ta bort `<div class="fs-suggestion__field">` og `{...forslag.field}`
+  rundt feltet, og `aria-live`, `data-ignore-morph` og `hidden` på de to
+  elementene.
 
 ### Lagt til
 
@@ -78,6 +89,10 @@ egen overskrift «Brytende».
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
   tømmer koden, så `data-bind` i Datastar ser den.
+- **Påkrevd-merket vises også fra `required` på kontrollen.** Står
+  kontrollen rett etter `.fs-label` eller inni den, tegner stilarket
+  symbolet uten `data-required`, så en mal som bare skriver det HTML krever
+  får merket. `data-required` og `data-optional` på ledeteksten går foran.
 - **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
   Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut
@@ -85,6 +100,9 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-suggestion>` mistet markeringen når serveren sendte lista på
+  nytt.** Alternativene får id av komponenten, og en oppdatering bytter dem
+  ut med nye id-er. Markeringen gjenfinnes nå på teksten.
 - **`<fs-suggestion>` valgte bare på `mousedown`.** Hjelpemidler som
   aktiverer et element, sender `click`, og den valgte da ingenting. Nå skjer
   valget på `click`, og `mousedown` holder bare fokus i feltet.

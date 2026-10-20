@@ -94,17 +94,14 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  * ```html
  * <fs-suggestion>
  *   <label class="fs-label" for="kommune">Kommune</label>
- *   <div class="fs-suggestion__field">
- *     <input class="fs-input" id="kommune" role="combobox" aria-controls="kommune-list"
- *            aria-expanded="false" aria-autocomplete="list" autocomplete="off"
- *            aria-describedby="kommune-status">
- *     <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
- *       <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
- *     </ul>
- *     <p class="fs-suggestion__empty" hidden>Ingen treff</p>
- *     <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
- *           data-ignore-morph></span>
- *   </div>
+ *   <input class="fs-input" id="kommune" role="combobox" aria-controls="kommune-list"
+ *          aria-expanded="false" aria-autocomplete="list" autocomplete="off"
+ *          aria-describedby="kommune-status">
+ *   <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
+ *     <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+ *   </ul>
+ *   <p class="fs-suggestion__empty">Ingen treff</p>
+ *   <span class="fs-sr-only" id="kommune-status" role="status"></span>
  * </fs-suggestion>
  * ```
  */
@@ -165,6 +162,13 @@ export class FsSuggestion extends HostElement {
    * utgangspunktet og ikke en nyhet. Se `announceFiltered`.
    */
   private announcedCount?: number
+  /**
+   * Teksten som sist ble skrevet i statuselementet.
+   *
+   * Teksten finnes ikke i serverens utgave, så en oppdatering som sender
+   * området på nytt tømmer elementet. `repair()` skriver den tilbake.
+   */
+  private announcedText?: string
 
   connectedCallback(): void {
     /*
@@ -392,6 +396,11 @@ export class FsSuggestion extends HostElement {
       this.writeCode(valueField, this.chosen.value)
     }
 
+    const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
+    if (status && this.announcedText !== undefined) {
+      setText(status, this.announcedText)
+    }
+
     if (isServerControlled(this)) return
 
     // Et felt som ble `readonly` eller `disabled` mens lista sto åpen, lukker
@@ -418,15 +427,17 @@ export class FsSuggestion extends HostElement {
 
     if (this.active) {
       /*
-       * Teksten må stemme, ikke bare id-en, og alternativet må være synlig.
-       * Ellers markerte komponenten noe serveren nettopp hadde filtrert bort,
-       * og `aria-activedescendant` pekte på et skjult element.
+       * Teksten er det som gjelder, og alternativet må være synlig. Ellers
+       * markerte komponenten noe serveren nettopp hadde filtrert bort, og
+       * `aria-activedescendant` pekte på et skjult element. Id-en er en
+       * reserve: sender serveren lista på nytt, byttes alternativene ut og
+       * får nye id-er, og markeringen gjenfinnes på teksten.
        */
-      const option = this.visible.find(
-        (o) =>
-          o.id === this.active?.id &&
-          (o.textContent ?? "").trim() === this.active?.label,
-      )
+      const sameText = (o: HTMLElement) =>
+        (o.textContent ?? "").trim() === this.active?.label
+      const option =
+        this.visible.find((o) => o.id === this.active?.id && sameText(o)) ??
+        this.visible.find(sameText)
       if (!option) {
         // Pekeren må bort sammen med markeringen. Uten dette pekte
         // `aria-activedescendant` på et alternativ som nå heter noe annet, og
@@ -628,8 +639,8 @@ export class FsSuggestion extends HostElement {
     warnAboutMarkup(
       this,
       'fant ingen [role="status"]. Antall treff leses da ikke opp for den ' +
-        "som ikke ser skjermen. `fs.suggestion()` skriver elementet, med " +
-        "data-ignore-morph så teksten overlever en patch.",
+        "som ikke ser skjermen. Skriv et tomt element med rollen, som " +
+        "`fs.suggestion()` gjør.",
       () =>
         this.querySelector(CONTROL_SELECTOR) !== null &&
         this.listElement !== null &&
@@ -831,15 +842,16 @@ export class FsSuggestion extends HostElement {
    * Melder antall treff.
    *
    * Uten dette får den som ikke ser skjermen ingen beskjed om at lista
-   * snevret seg inn mens hun skrev. Teksten er klientgenerert, så elementet
-   * har `data-ignore-morph` fra byggefunksjonen. Mangler elementet, har `bind()`
-   * alt sagt fra.
+   * snevret seg inn mens hun skrev. Teksten er klientgenerert, og
+   * `repair()` skriver den tilbake når en oppdatering tømmer elementet.
+   * Mangler elementet, har `bind()` alt sagt fra.
    */
   private announce(hits: number): void {
     const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
     if (!status) return
 
-    setText(status, this.countText(hits))
+    this.announcedText = this.countText(hits)
+    setText(status, this.announcedText)
   }
 
   /**

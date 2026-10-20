@@ -19,7 +19,7 @@ describe("suggestion.css før komponenten er registrert", () => {
     monter(`
       <fs-suggestion>
         <label>Kommune</label>
-        <div class="fs-suggestion__field">
+        <div>
           <input class="fs-input" name="kommune">
           <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
         </div>

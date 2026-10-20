@@ -376,7 +376,7 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
     {
       markup: `<fs-suggestion>
         <label class="fs-label">Kommune</label>
-        <div class="fs-suggestion__field">
+        <div>
           <input class="fs-input" name="kommune" type="text" />
           <ul class="fs-suggestion__list">
             <li>Bergen</li>

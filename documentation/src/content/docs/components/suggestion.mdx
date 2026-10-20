@@ -44,15 +44,13 @@ defineFsSuggestion()
          du: det er der antall treff leses opp. -->
     <fs-suggestion id="kommunesok">
       <label class="fs-label" for="kommune">Kommune</label>
-      <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text">
-        <ul class="fs-suggestion__list">
-          <li>Bergen</li>
-          <li>Bodø</li>
-        </ul>
-        <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-        <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
-      </div>
+      <input class="fs-input" id="kommune" name="kommune" type="text">
+      <ul class="fs-suggestion__list">
+        <li>Bergen</li>
+        <li>Bodø</li>
+      </ul>
+      <p class="fs-suggestion__empty">Ingen treff</p>
+      <span class="fs-sr-only" role="status"></span>
     </fs-suggestion>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
@@ -92,16 +90,14 @@ defineFsSuggestion()
       return (
         <fs-suggestion>
           <label {...forslag.label}>Kommune</label>
-          <div {...forslag.field}>
-            <input {...forslag.control} name="kommune" />
-            <ul {...forslag.list}>
-              {forslag.options.map((valg, i) => (
-                <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
-              ))}
-            </ul>
-            <p {...forslag.empty}>Ingen treff</p>
-            <span {...forslag.status} />
-          </div>
+          <input {...forslag.control} name="kommune" />
+          <ul {...forslag.list}>
+            {forslag.options.map((valg, i) => (
+              <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
+            ))}
+          </ul>
+          <p {...forslag.empty}>Ingen treff</p>
+          <span {...forslag.status} />
         </fs-suggestion>
       )
     }
@@ -123,14 +119,12 @@ defineFsSuggestion()
 
     <fs-suggestion>
       <label {...forslag.label}>Kommune</label>
-      <div {...forslag.field}>
-        <input {...forslag.control} name="kommune" />
-        <ul {...forslag.list}>
-          {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
-        </ul>
-        <p {...forslag.empty}>Ingen treff</p>
-        <span {...forslag.status}></span>
-      </div>
+      <input {...forslag.control} name="kommune" />
+      <ul {...forslag.list}>
+        {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+      </ul>
+      <p {...forslag.empty}>Ingen treff</p>
+      <span {...forslag.status}></span>
     </fs-suggestion>
 
     <script>
@@ -166,11 +160,9 @@ defineFsSuggestion()
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
       <label class="fs-label" for="kommune">Kommune</label>
-      <div class="fs-suggestion__field">
-        <input class="fs-input" id="kommune" name="kommune" type="text">
-        <ul class="fs-suggestion__list" id="kommuner"></ul>
-        <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
-      </div>
+      <input class="fs-input" id="kommune" name="kommune" type="text">
+      <ul class="fs-suggestion__list" id="kommuner"></ul>
+      <span class="fs-sr-only" role="status"></span>
     </fs-suggestion>
     ```
 
@@ -187,22 +179,19 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
 ```html
 <fs-suggestion>
   <label class="fs-label" for="kommune">Kommune</label>
-  <div class="fs-suggestion__field">
-    <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
-           autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-           aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
+  <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+         autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
+         aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
 
-    <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
-      <li class="fs-suggestion__option" id="kommune-option-0" role="option"
-          aria-selected="false">Bergen</li>
-      <li class="fs-suggestion__option" id="kommune-option-1" role="option"
-          aria-selected="false">Bodø</li>
-    </ul>
+  <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
+    <li class="fs-suggestion__option" id="kommune-option-0" role="option"
+        aria-selected="false">Bergen</li>
+    <li class="fs-suggestion__option" id="kommune-option-1" role="option"
+        aria-selected="false">Bodø</li>
+  </ul>
 
-    <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-    <span class="fs-sr-only" id="kommune-status" role="status" aria-live="polite"
-          data-ignore-morph></span>
-  </div>
+  <p class="fs-suggestion__empty" hidden>Ingen treff</p>
+  <span class="fs-sr-only" id="kommune-status" role="status"></span>
   <p class="fs-help-text" id="kommune-help">Vi fyller ut resten av adressen for deg.</p>
 </fs-suggestion>
 ```
@@ -211,7 +200,7 @@ Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skr
 
 Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, skriver malen id på dem også, av samme grunn: ellers byttes alternativene ut, og det markerte alternativet er borte.
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
 
 ### Tekst og kode
 
@@ -220,15 +209,13 @@ Feltet viser alltid teksten til alternativet brukeren valgte. Skal skjemaet send
 ```html
 <fs-suggestion>
   <label class="fs-label" for="kommune">Kommune</label>
-  <div class="fs-suggestion__field">
-    <input class="fs-input" id="kommune" name="kommune-tekst" type="text">
-    <input class="fs-suggestion__value" type="hidden" name="kommune">
-    <ul class="fs-suggestion__list">
-      <li data-value="4601">Bergen</li>
-      <li data-value="1804">Bodø</li>
-    </ul>
-    <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
-  </div>
+  <input class="fs-input" id="kommune" name="kommune-tekst" type="text">
+  <input class="fs-suggestion__value" type="hidden" name="kommune">
+  <ul class="fs-suggestion__list">
+    <li data-value="4601">Bergen</li>
+    <li data-value="1804">Bodø</li>
+  </ul>
+  <span class="fs-sr-only" role="status"></span>
 </fs-suggestion>
 ```
 
@@ -308,7 +295,6 @@ Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registr
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-suggestion__field` | Feltet og lista, som ligger under det |
 | `.fs-suggestion__list` | Selve lista. `hidden` når den er lukket |
 | `.fs-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
 | `.fs-suggestion__empty` | Teksten som vises når ingenting passer |
@@ -331,7 +317,7 @@ Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registr
 Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `fs.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
 
 - **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
-- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.
+- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og tømmer en oppdatering fra serveren elementet, skriver komponenten den på nytt.
 - **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
 - **Et alternativ med `aria-disabled="true"`** vises, men hoppes over av piltastene og kan ikke velges.
 - **Et felt med `readonly` eller `disabled`** åpner ikke lista.

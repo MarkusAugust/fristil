@@ -45,7 +45,7 @@ describe("fs-suggestion", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <ul ${attr(FORSLAG.list)}>
             ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
@@ -284,7 +284,7 @@ describe("fs-suggestion som venter på det første svaret", () => {
     monter(`
       <fs-suggestion prefiltered>
         <label ${attr(tomt.label)}>Kommune</label>
-        <div ${attr(tomt.field)}>
+        <div>
           <input ${attr(tomt.control)} name="kommune">
           <ul ${attr(tomt.list)}></ul>
           <p ${attr(tomt.empty)}>Ingen treff</p>
@@ -356,7 +356,7 @@ describe("fs-suggestion med markeringen fra serveren", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(fra.label)}>Kommune</label>
-        <div ${attr(fra.field)}>
+        <div>
           <input ${attr(fra.control)} name="kommune">
           <ul ${attr(fra.list)}>
             ${fra.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
@@ -398,7 +398,7 @@ describe("fs-suggestion med pil opp", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <ul ${attr(FORSLAG.list)}>
             ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
@@ -445,7 +445,7 @@ describe("fs-suggestion lukker og rydder", () => {
     return `
       <fs-suggestion ${ekstraVert}>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <ul ${attr(FORSLAG.list)}>
             ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
@@ -485,7 +485,7 @@ describe("fs-suggestion lukker og rydder", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <button type="button" id="tom-knapp">Tøm</button>
           <ul ${attr(FORSLAG.list)}>
@@ -573,7 +573,7 @@ describe("fs-suggestion lukker og rydder", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <ul ${attr(FORSLAG.list)}>
             <li id="egen-0" role="option">Bergen</li>
@@ -608,7 +608,7 @@ describe("fs-suggestion lukker og rydder", () => {
     monter(`
       <fs-suggestion>
         <label ${attr(smalt.label)}>Sted</label>
-        <div ${attr(smalt.field)}>
+        <div>
           <input ${attr(smalt.control)} value="o">
           <ul ${attr(smalt.list)}>
             <li ${attr(smalt.options[0])}>Oslo</li>
@@ -669,7 +669,7 @@ describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
 const BAR = `
   <fs-suggestion>
     <label for="kommune">Kommune</label>
-    <div class="fs-suggestion__field">
+    <div>
       <input class="fs-input" id="kommune" name="kommune">
       <ul class="fs-suggestion__list">
         ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
@@ -789,7 +789,7 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     omslag.innerHTML = `
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
-        <div ${attr(FORSLAG.field)}>
+        <div>
           <input ${attr(FORSLAG.control)} name="kommune">
           <ul ${attr(FORSLAG.list)}>
             ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
@@ -828,7 +828,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
     monter(`
       <fs-suggestion prefiltered>
         <label ${attr(forslag.label)}>Kommune</label>
-        <div ${attr(forslag.field)}>
+        <div>
           <input ${attr(forslag.control)} name="kommune">
           <ul ${attr(forslag.list)}>${forslag.options
             .map((valg, i) => `<li ${attr(valg)}>Treff ${i}</li>`)
@@ -906,7 +906,7 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
         <label>Kommune
           <input class="fs-input">
         </label>
-        <div class="fs-suggestion__field">
+        <div>
           <ul class="fs-suggestion__list"><li>Oslo</li></ul>
           <p class="fs-suggestion__empty">Ingen treff</p>
           <span class="fs-suggestion__status" role="status"></span>
@@ -944,7 +944,7 @@ describe("fs-suggestion leser opp antallet på sidens språk", () => {
       <div lang="${lang}">
         <fs-suggestion ${attributter}>
           <label ${attr(FORSLAG.label)}>Municipality</label>
-          <div ${attr(FORSLAG.field)}>
+          <div>
             <input ${attr(FORSLAG.control)} name="kommune">
             <ul ${attr(FORSLAG.list)}>
               ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n")}
@@ -1049,7 +1049,7 @@ describe("fs-suggestion med et felt React styrer", () => {
       monter(`
         <fs-suggestion>
           <label for="kommune">Kommune</label>
-          <div class="fs-suggestion__field">
+          <div>
             ${kontroll}
             <ul class="fs-suggestion__list" role="listbox" id="kommune-liste" hidden>
               <li role="option" id="kommune-0">Bergen</li>
@@ -1086,7 +1086,7 @@ describe("fs-suggestion med et felt React styrer", () => {
 const MED_KODE = `
   <fs-suggestion>
     <label for="kommune">Kommune</label>
-    <div class="fs-suggestion__field">
+    <div>
       <input class="fs-input" id="kommune" name="kommune-tekst">
       <input type="hidden" class="fs-suggestion__value" name="kommune">
       <ul class="fs-suggestion__list">
@@ -1317,5 +1317,53 @@ describe("fs-suggestion velger riktig", () => {
     // Home og End flytter markøren i teksten. Komponenten tar dem ikke.
     expect(tast(input, "Home").defaultPrevented).toBe(false)
     expect(tast(input, "End").defaultPrevented).toBe(false)
+  })
+
+  it("finner det markerte alternativet igjen på teksten når lista byttes ut", async () => {
+    // Lista og alternativene får id av komponenten, og en oppdatering som
+    // sender lista på nytt bytter dem ut. Markeringen følger teksten.
+    monter(MED_KODE)
+    await tegn()
+    const { input, liste } = deler()
+    input.focus()
+    tast(input, "ArrowDown")
+    tast(input, "ArrowDown")
+    await ventPaTegning()
+    expect(deler().valg[1].getAttribute("aria-selected")).toBe("true")
+
+    const ny = document.createElement("ul")
+    ny.className = "fs-suggestion__list"
+    ny.innerHTML = `<li data-value="4601">Bergen</li><li data-value="1804">Bodø</li><li data-value="0301">Oslo</li>`
+    liste.replaceWith(ny)
+    await ventPaTegning()
+    await ventPaTegning()
+
+    const bodoe = [...ny.querySelectorAll("li")].find(
+      (li) => li.textContent === "Bodø",
+    ) as HTMLElement
+    expect(bodoe.getAttribute("aria-selected")).toBe("true")
+    expect(bodoe.id).not.toBe("")
+    expect(input.getAttribute("aria-activedescendant")).toBe(bodoe.id)
+  })
+
+  it("skriver antall treff på nytt når en oppdatering tømmer statuselementet", async () => {
+    // Teksten finnes ikke i serverens utgave, så uten dette måtte malen
+    // skrive Datastars `data-ignore-morph`, som ikke betyr noe for htmx.
+    monter(MED_KODE)
+    await tegn()
+    const { input } = deler()
+    const status = document.querySelector("[role='status']") as HTMLElement
+    input.focus()
+    input.value = "B"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    const lest = status.textContent
+    expect(lest).not.toBe("")
+
+    status.textContent = ""
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(status.textContent).toBe(lest)
   })
 })

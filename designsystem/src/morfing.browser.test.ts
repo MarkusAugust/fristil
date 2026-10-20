@@ -305,7 +305,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
   const FELT_MED_FORSLAG = `
     <fs-suggestion>
       <label ${attr(FORSLAG.label)}>Kommune</label>
-      <div ${attr(FORSLAG.field)}>
+      <div>
         <input ${attr(FORSLAG.control)} name="kommune">
         <ul ${attr(FORSLAG.list)}>
           <li ${attr(FORSLAG.options[0])}>Bergen</li>

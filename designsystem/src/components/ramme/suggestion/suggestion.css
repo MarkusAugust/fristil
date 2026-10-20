@@ -5,11 +5,8 @@
 @import "../../css/sr-only/sr-only.css";
 
 @layer fristil {
+  /* Lista legger seg under feltet, og det er verten som gir den plassen. */
   fs-suggestion {
-    display: block;
-  }
-
-  .fs-suggestion__field {
     position: relative;
     display: block;
   }

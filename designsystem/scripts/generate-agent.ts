@@ -570,12 +570,13 @@ En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
 morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
 \`<fs-field>\` og \`<fs-suggestion>\` får aldri id av komponenten: skriv \`for\`
 på ledeteksten og \`id\` på feltet, eller legg ledeteksten rundt feltet.
-Fanene, panelene, lista, alternativene og panelet i sprettoppvinduet får id
-av komponenten når de mangler, og da byttes de ut ved neste patch som sender
-området på nytt, og det brukeren gjorde er borte. Skriv derfor id på fanene
-og panelene i \`<fs-tabs>\`, på lista og alternativene i \`<fs-suggestion>\` og
-på panelet i \`<fs-popover>\`, de samme ved hver rendring. Komponenten sier
-fra i konsollen første gang en patch bytter ut noe brukeren hadde rørt.
+Fanene, panelene og panelet i sprettoppvinduet får id av komponenten når de
+mangler, og da byttes de ut ved neste patch som sender området på nytt, og
+det brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
+\`<fs-tabs>\` og på panelet i \`<fs-popover>\`, de samme ved hver rendring.
+Lista og alternativene i \`<fs-suggestion>\` kan byttes ut; komponenten kobler
+dem på nytt og finner det markerte alternativet igjen på teksten. Komponenten
+sier fra i konsollen første gang en patch bytter ut noe brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å

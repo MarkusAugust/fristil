@@ -193,6 +193,21 @@ tilbake til.
 (Det finnes også `replace`, som bytter ut elementet i stedet. Da mister du
 alt nettleseren har lagt til, så den er ingen vei utenom det som står under.)
 
+Dette er de fire måtene en side kan bli oppdatert på, og hva som skjer med
+et felt brukeren står i. Alle fire er etterprøvd i Chromium, Firefox og
+WebKit, mot markupen oppskriftene viser:
+
+| Måte | Elementene | Fokus | Teksten i feltet | Det komponenten skrev |
+| --- | --- | --- | --- | --- |
+| Datastar, `outer` | beholdes | blir stående | blir stående | settes tilbake |
+| htmx med idiomorph | beholdes | blir stående | settes fra serverens HTML, utenom feltet med fokus når `ignoreActiveValue` er på | settes tilbake |
+| htmx med `innerHTML` (standarden) | byttes ut | htmx flytter det tilbake til elementet med samme id | settes fra serverens HTML | skrives på nytt på de nye elementene |
+| Uten JavaScript | siden lastes på nytt | nettleseren bestemmer | settes fra serverens HTML | finnes ikke; `for`, `id` og feilmeldingen fra serveren gjør jobben |
+
+Den ene setningen for htmx er derfor: serveren sender verdiene tilbake. Det
+samme gjelder `checked` på en avkryssingsboks. Ingen klientkode kan bevare
+det brukeren skrev når elementet byttes ut eller verdien settes på nytt.
+
 Men morfingen fjerner også alt den nye versjonen ikke har:
 
 ```
@@ -318,7 +333,7 @@ dem:
 | --- | --- |
 | `<fs-tabs>` | hver fane og hvert panel |
 | `<fs-field>` | kontrollen, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
-| `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet), og lista og hvert alternativ |
+| `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
 | `<fs-popover>` | panelet |
 
 Byggefunksjonene gjør det alt: `fs.tabs({ id })` skriver `sak-tab-0` og
@@ -397,9 +412,9 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
    språk.
 3. **Det brukeren gjorde setter komponenten tilbake,** så lenge patchen
    beholder elementene. Sender du hele området på nytt, må serveren skrive id
-   på fanene, panelene, lista og alternativene i forslagsfeltet og panelet i
-   sprettoppvinduet, ellers byttes de ut, og id-ene i en løkke kommer fra en
-   nøkkel i dataene. Skal serveren alene bestemme tilstanden, sier du det
+   på fanene, panelene og panelet i sprettoppvinduet, ellers byttes de ut, og
+   id-ene i en løkke kommer fra en nøkkel i dataene. Lista og alternativene i
+   forslagsfeltet kan byttes ut; komponenten kobler dem på nytt. Skal serveren alene bestemme tilstanden, sier du det
    med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og

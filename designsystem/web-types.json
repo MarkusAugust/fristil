@@ -717,11 +717,6 @@
           "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-suggestion__field",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
-        },
-        {
           "name": "fs-suggestion__list",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/suggestion/"

@@ -432,7 +432,7 @@ describe("attributter bare morferen leser", () => {
     }
   })
 
-  it("sender dem ut fra nøyaktig de fire som eier innholdet sitt", () => {
+  it("sender dem ut fra nøyaktig de tre som lager innholdet sitt selv", () => {
     const funn: Record<string, string[]> = {}
     let kalt = 0
 
@@ -448,10 +448,11 @@ describe("attributter bare morferen leser", () => {
     }
 
     expect(kalt).toBe(ANTALL_BYGGEFUNKSJONER)
+    // Forslagsfeltet er ikke med: statuselementet står i serverens markup,
+    // og komponenten skriver antallet på nytt når en oppdatering tømmer det.
     expect(funn).toEqual({
       connectionStatus: ["data-ignore-morph"],
       sessionTimeout: ["data-ignore-morph"],
-      suggestion: ["data-ignore-morph"],
       toast: ["data-ignore-morph"],
     })
   })

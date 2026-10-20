@@ -5,7 +5,6 @@ import {
 } from "../field/field-core.js"
 
 export const SUGGESTION_CLASS = "fs-suggestion" as const
-export const SUGGESTION_FIELD_CLASS = "fs-suggestion__field" as const
 export const SUGGESTION_LIST_CLASS = "fs-suggestion__list" as const
 export const SUGGESTION_OPTION_CLASS = "fs-suggestion__option" as const
 export const SUGGESTION_EMPTY_CLASS = "fs-suggestion__empty" as const
@@ -65,7 +64,6 @@ export const suggestion = ({
 
   return {
     label: computed.label,
-    field: attributes({ class: SUGGESTION_FIELD_CLASS }),
     control: attributes(
       {
         ...computed.control,
@@ -118,16 +116,15 @@ export const suggestion = ({
      * Området som melder antall treff til skjermlesere.
      *
      * Teksten skrives av komponenten mens brukeren taster, så den finnes ikke
-     * i serverens utgave. `data-ignore-morph` hindrer at neste patch tømmer
-     * den. Elementet må likevel stå i markupen serveren sender, ellers finnes
-     * det ikke noe å melde i før skriptet har kjørt.
+     * i serverens utgave. Tømmer en oppdatering elementet, skriver
+     * komponenten teksten på nytt. Elementet må likevel stå i markupen
+     * serveren sender, ellers finnes det ikke noe å melde i før skriptet har
+     * kjørt. `role="status"` gir `aria-live="polite"` av seg selv.
      */
     status: attributes({
       class: SUGGESTION_STATUS_CLASS,
       id: statusId,
       role: "status" as const,
-      "aria-live": "polite" as const,
-      "data-ignore-morph": "" as const,
     }),
     /**
      * Det skjulte feltet som får koden til alternativet brukeren valgte.
