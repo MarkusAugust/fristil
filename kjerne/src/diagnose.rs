@@ -809,7 +809,10 @@ fn check_field(
     // Bare kontrollens egen id. `<fs-field>` skriver ikke id på kontrollen,
     // så en `<label for>` utenfor kan bare peke på en id malen har skrevet.
     let id = has("id").and_then(|a| a.value.clone());
-    if id.as_ref().is_some_and(|id| !id.is_empty() && labels.contains(id)) {
+    if id
+        .as_ref()
+        .is_some_and(|id| !id.is_empty() && labels.contains(id))
+    {
         return vec![];
     }
     let leading = &content[..indent];
