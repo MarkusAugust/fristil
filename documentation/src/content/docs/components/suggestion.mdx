@@ -200,7 +200,7 @@ Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skr
 
 Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<fs-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
 
 ### Tekst og kode
 
@@ -219,7 +219,7 @@ Feltet viser alltid teksten til alternativet brukeren valgte. Skal skjemaet send
 </fs-suggestion>
 ```
 
-Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
+Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. Tilbakestilles skjemaet, får feltet koden serveren sendte, slik teksten får sin. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
 
 Uten JavaScript sendes teksten med et tomt felt for koden, og serveren slår opp koden selv. Er teksten tvetydig, som Våler og Herøy, som finnes i to fylker, svarer serveren med en side der brukeren velger. Koden står da to steder, i `data-value` og i det skjulte feltet, og det er et bevisst valg: HTML har ikke noe element som viser én tekst og sender en annen verdi når brukeren også kan skrive fritt. `fs.suggestion()` gir det skjulte feltet som `forslag.value`; `name` skriver du selv.
 

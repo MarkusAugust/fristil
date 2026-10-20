@@ -1417,4 +1417,49 @@ describe("fs-suggestion velger riktig", () => {
     const valgt = ny.querySelector('[aria-selected="true"]') as HTMLElement
     expect(valgt.getAttribute("data-value")).toBe("3419")
   })
+
+  it("setter koden tilbake til serverens når skjemaet tilbakestilles", async () => {
+    // Et skjult felt har ingen standardverdi å gå tilbake til, siden koden
+    // skrives som attributt. Uten dette sendte skjemaet koden for Bodø med
+    // tom tekst etter en tilbakestilling.
+    monter(
+      `<form>${MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" value="Bergen"').replace('class="fs-suggestion__value" name="kommune"', 'class="fs-suggestion__value" name="kommune" value="4601"')}</form>`,
+    )
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[1].click()
+    await ventPaTegning()
+    expect(input.value).toBe("Bodø")
+    expect(kode.value).toBe("1804")
+
+    ;(document.querySelector("form") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+
+    expect(input.value).toBe("Bergen")
+    expect(kode.value).toBe("4601")
+
+    // Og uten kode fra serveren: tomt.
+    monter(`<form>${MED_KODE}</form>`)
+    await tegn()
+    const andre = deler()
+    andre.input.focus()
+    andre.valg[0].click()
+    await ventPaTegning()
+    ;(document.querySelector("form") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+    expect(andre.input.value).toBe("")
+    expect(andre.kode.value).toBe("")
+  })
+
+  it("skriver for fra feltets id, også når ledeteksten peker et annet sted", async () => {
+    // Samme regel som i <fs-field>: `for` og `id` er den samme opplysningen.
+    monter(MED_KODE.replace('for="kommune"', 'for="feil"'))
+    await tegn()
+    expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
+      "kommune",
+    )
+  })
 })

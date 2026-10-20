@@ -135,6 +135,13 @@ export class FsSuggestion extends HostElement {
    */
   private chosen?: { label: string; value: string }
   /**
+   * Koden serveren sendte i verdifeltet. Tilbakestilles skjemaet, går
+   * teksten tilbake til serverens, og koden skal følge med: et skjult felt
+   * har ingen egen standardverdi å gå tilbake til, siden komponenten
+   * skriver koden som attributt.
+   */
+  private serverCode = ""
+  /**
    * Om lista står åpen, og hvilket alternativ som er markert.
    *
    * Begge deler er brukerens: hun skrev noe, og hun blar med piltastene.
@@ -273,13 +280,11 @@ export class FsSuggestion extends HostElement {
 
     if (label) {
       addClass(label, LABEL_CLASS)
-      // `for` fra feltets id, aldri motsatt: komponenten skriver ikke id på
-      // feltet. Står ledeteksten rundt feltet, er koblingen implisitt.
-      if (
-        control.id &&
-        !label.contains(control) &&
-        !label.hasAttribute("for")
-      ) {
+      // `for` og `id` er den samme opplysningen, og skrives fra feltets id,
+      // aldri motsatt: komponenten skriver ikke id på feltet. Står
+      // ledeteksten rundt feltet, er koblingen implisitt. Samme regel som i
+      // `<fs-field>`.
+      if (control.id && !label.contains(control)) {
         setAttr(label, "for", control.id)
       }
       warnAboutMarkup(
@@ -566,6 +571,7 @@ export class FsSuggestion extends HostElement {
       control.removeEventListener("input", this.handleInput)
       control.removeEventListener("keydown", this.handleKeydown)
       control.removeEventListener("focus", this.handleFocus)
+      control.form?.removeEventListener("reset", this.handleReset)
       this.control = undefined
     }
     this.list?.removeEventListener("mousedown", this.handleListMouseDown)
@@ -657,6 +663,7 @@ export class FsSuggestion extends HostElement {
       this.active = undefined
       // Et verdifelt serveren fylte, gjelder teksten som står i feltet nå.
       const valueField = this.valueField
+      this.serverCode = valueField?.value ?? ""
       this.chosen =
         valueField && valueField.value !== ""
           ? { label: control.value, value: valueField.value }
@@ -664,13 +671,17 @@ export class FsSuggestion extends HostElement {
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)
+      this.control?.form?.removeEventListener("reset", this.handleReset)
       control.addEventListener("input", this.handleInput)
       control.addEventListener("keydown", this.handleKeydown)
       control.addEventListener("focus", this.handleFocus)
+      control.form?.addEventListener("reset", this.handleReset)
       this.control = control
     }
     const serverCode = this.valueField?.value ?? ""
     if (serverCode !== "" && serverCode !== this.chosen?.value) {
+      // Noen andre enn komponenten skrev koden: serverens ord.
+      this.serverCode = serverCode
       this.chosen = { label: control.value, value: serverCode }
     }
 
@@ -972,6 +983,23 @@ export class FsSuggestion extends HostElement {
     setAttr(valueField, "value", code)
     valueField.dispatchEvent(new Event("input", { bubbles: true }))
     valueField.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
+  /**
+   * Skjemaet tilbakestilles. Nettleseren setter teksten tilbake til
+   * serverens etter at hendelsen er sendt, så koden settes tilbake i neste
+   * omgang, etter at tilbakestillingen er gjort.
+   */
+  private handleReset = (): void => {
+    setTimeout(() => {
+      const valueField = this.valueField
+      if (!valueField || !this.control) return
+      this.writeCode(valueField, this.serverCode)
+      this.chosen =
+        this.serverCode !== ""
+          ? { label: this.control.value, value: this.serverCode }
+          : undefined
+    }, 0)
   }
 
   private handleInput = (): void => {

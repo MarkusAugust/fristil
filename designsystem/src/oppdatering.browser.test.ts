@@ -259,13 +259,15 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
         navn
           .map((n) => {
             const k = n.toLowerCase()
-            return `<fs-field><label class="fs-label" for="merknad-${k}">${n}</label><input class="fs-input" id="merknad-${k}" name="merknad-${k}"></fs-field>`
+            // Id på raden også, slik `hx-target` og `hx-swap-oob` trenger den.
+            return `<fs-field id="rad-${k}"><label class="fs-label" for="merknad-${k}">${n}</label><input class="fs-input" id="merknad-${k}" name="merknad-${k}"></fs-field>`
           })
           .join("")
       await monter(liste(["Bergen", "Oslo"]))
       const bergen = document.getElementById(
         "merknad-bergen",
       ) as HTMLInputElement
+      const rad = document.getElementById("rad-bergen")
       bergen.focus()
       bergen.value = "Vestland"
 
@@ -276,6 +278,7 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
         (document.getElementById("merknad-arendal") as HTMLInputElement).value,
       ).toBe("")
       expect(document.getElementById("merknad-bergen")).toBe(bergen)
+      expect(document.getElementById("rad-bergen")).toBe(rad)
       expect(bergen.value).toBe("Vestland")
     })
   }
