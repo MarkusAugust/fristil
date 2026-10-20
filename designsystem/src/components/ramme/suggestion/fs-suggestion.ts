@@ -143,6 +143,14 @@ export class FsSuggestion extends HostElement {
   private serverChoice?: { label: string; value: string }
   /** Koden komponenten selv skrev sist. Står noe annet der, var det serveren. */
   private writtenCode?: string
+  /** `for` komponenten selv skrev på ledeteksten. */
+  private readonly forByMe = new WeakMap<Element, string>()
+  /**
+   * Ledetekster der serveren skrev en `for` som pekte på en annen id. Sies
+   * fra om én gang; minnet nullstilles ikke, siden den omskrevne `for` ikke
+   * kan skilles fra en server som rettet seg.
+   */
+  private readonly wrongFor = new WeakSet<Element>()
   /**
    * Om lista står åpen, og hvilket alternativ som er markert.
    *
@@ -287,8 +295,31 @@ export class FsSuggestion extends HostElement {
       // ledeteksten rundt feltet, er koblingen implisitt. Samme regel som i
       // `<fs-field>`.
       if (control.id && !label.contains(control)) {
+        const current = label.getAttribute("for")
+        if (
+          current !== null &&
+          current !== control.id &&
+          current !== this.forByMe.get(label)
+        ) {
+          this.wrongFor.add(label)
+        }
         setAttr(label, "for", control.id)
+        this.forByMe.set(label, control.id)
       }
+      warnAboutMarkup(
+        this,
+        "for på ledeteksten pekte på en annen id enn feltets. Komponenten " +
+          "skrev den om, men uten JavaScript hadde feltet da ingen ledetekst, " +
+          "og en skjermleser leste det opp uten navn. Gi ledeteksten feltets " +
+          "id i malen.",
+        () => {
+          const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
+          const labelNow = this.querySelector("label")
+          return (
+            now !== null && labelNow !== null && this.wrongFor.has(labelNow)
+          )
+        },
+      )
       warnAboutMarkup(
         this,
         "<label> er ikke koblet til feltet: feltet har ingen id, og " +
@@ -1003,6 +1034,9 @@ export class FsSuggestion extends HostElement {
     if (valueField.value === code) return
     this.writtenCode = code
     setAttr(valueField, "value", code)
+    // Et skjult felt leser attributtet. Har feltet en annen type, og en
+    // morfing alt har satt egenskapen, teller ikke attributtet lenger.
+    if (valueField.value !== code) valueField.value = code
     valueField.dispatchEvent(new Event("input"))
     valueField.dispatchEvent(new Event("change"))
   }

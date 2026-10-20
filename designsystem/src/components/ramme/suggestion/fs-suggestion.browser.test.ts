@@ -1454,13 +1454,19 @@ describe("fs-suggestion velger riktig", () => {
     expect(andre.kode.value).toBe("")
   })
 
-  it("skriver for fra feltets id, også når ledeteksten peker et annet sted", async () => {
+  it("skriver for fra feltets id, og sier fra, når ledeteksten pekte et annet sted", async () => {
     // Samme regel som i <fs-field>: `for` og `id` er den samme opplysningen.
+    // Men uten JavaScript sto feltet uten ledetekst, så det skal sies fra.
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(MED_KODE.replace('for="kommune"', 'for="feil"'))
     await tegn()
+    await new Promise((r) => setTimeout(r, 300))
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
       "kommune",
     )
+    expect(advarsel).toHaveBeenCalledTimes(1)
+    expect(String(advarsel.mock.calls[0][0])).toContain("pekte på en annen id")
+    advarsel.mockRestore()
   })
 
   it("lar ikke hendelsene på verdifeltet boble til verten", async () => {

@@ -166,6 +166,16 @@ export class FsField extends HostElement {
    */
   private readonly memory = new WeakMap<Element, ControlMemory>()
   private readonly labelMemory = new WeakMap<Element, LabelMemory>()
+  /** `for` komponenten selv skrev på ledeteksten. */
+  private readonly forByMe = new WeakMap<Element, string>()
+  /**
+   * Ledetekster der serveren skrev en `for` som pekte på en annen id enn
+   * kontrollens. Komponenten skriver den om, men uten JavaScript sto feltet
+   * uten ledetekst, så det skal sies fra, én gang. Minnet nullstilles ikke:
+   * etter omskrivingen står den riktige der, og den kan ikke skilles fra en
+   * server som rettet seg.
+   */
+  private readonly wrongFor = new WeakSet<Element>()
   /**
    * Kontrollen sist.
    *
@@ -273,6 +283,16 @@ export class FsField extends HostElement {
    * ikke i det komponenten observerer, så river en patch klassen av den,
    * kommer den ikke tilbake av seg selv.
    */
+  /**
+   * Husker om serveren skrev en `for` som ikke var kontrollens id. Det
+   * komponenten selv skrev sist teller ikke.
+   */
+  private noteFor(label: Element, id: string): void {
+    const current = label.getAttribute("for")
+    if (current === null || current === id) return
+    if (current !== this.forByMe.get(label)) this.wrongFor.add(label)
+  }
+
   private resolveLabel(control: HTMLElement | null): HTMLLabelElement | null {
     const inside = this.ownPart<HTMLLabelElement>(FS_FIELD_PARTS.label)
     if (inside || !control?.id) return inside
@@ -496,6 +516,19 @@ export class FsField extends HostElement {
 
     warnAboutMarkup(
       this,
+      "for på ledeteksten pekte på en annen id enn feltets. Komponenten " +
+        "skrev den om, men uten JavaScript hadde feltet da ingen ledetekst, " +
+        "og en skjermleser leste det opp uten navn. Gi ledeteksten feltets " +
+        "id i malen.",
+      () => {
+        const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
+        const labelNow = this.resolveLabel(now)
+        return now !== null && labelNow !== null && this.wrongFor.has(labelNow)
+      },
+    )
+
+    warnAboutMarkup(
+      this,
       "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
         "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
         "<fs-field>, må for på den peke på id-en til feltet.",
@@ -629,7 +662,9 @@ export class FsField extends HostElement {
       // å si hver sin ting. Den skrives fra kontrollens id, aldri motsatt, og
       // ikke når ledeteksten står rundt kontrollen, der koblingen er implisitt.
       if (control.id && !label.contains(control)) {
+        this.noteFor(label, control.id)
         setAttr(label, "for", control.id)
+        this.forByMe.set(label, control.id)
       }
       setAttr(label, "data-required", computed.label["data-required"])
       setAttr(label, "data-optional", computed.label["data-optional"])

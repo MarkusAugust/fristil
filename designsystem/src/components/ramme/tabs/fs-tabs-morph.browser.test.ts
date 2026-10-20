@@ -278,7 +278,7 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
   <div>
     <label>Kommune <input class="fs-input"></label>
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 
@@ -287,7 +287,7 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
   <div>
     <input class="fs-input" id="kommune">
     <ul class="fs-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 
@@ -557,7 +557,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
   <div>
     <input class="fs-input" name="kommune" id="${id}">
     <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
-    <span class="fs-sr-only" role="status" aria-live="polite"></span>
+    <span class="fs-sr-only" role="status"></span>
   </div>
 </fs-suggestion>`
 

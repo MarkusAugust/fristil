@@ -655,7 +655,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
             <li class="fs-suggestion__option" id="kommune-0" role="option"
                 aria-selected="false">Bergen</li>
           </ul>
-          <span class="fs-sr-only" role="status" aria-live="polite"></span>
+          <span class="fs-sr-only" role="status"></span>
         </fs-suggestion>
 
         <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1"

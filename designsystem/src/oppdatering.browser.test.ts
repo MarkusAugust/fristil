@@ -130,6 +130,13 @@ async function roSeg() {
 }
 
 /** Venter til `warnAboutMarkup` har sett siden falle til ro. */
+/*
+ * 300 ms holder når tegningene kommer. I en skjult fane faller
+ * `whenSettled` tilbake på ett sekund, og en stillhetstest ville da bestått
+ * uten å ha sett noe; men «sier fra én gang når oppskriften mangler id»
+ * venter like lenge og ville feilet, så kjøringen som helhet kan ikke bestå
+ * tomt.
+ */
 const stille = () => new Promise((r) => setTimeout(r, 300))
 
 async function monter(innhold: string) {
@@ -270,7 +277,10 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       await oppdater(maate, FELT)
       expect(felt().value).toBe(maate === "Datastar" ? "Kari" : "")
 
-      felt().value = "Kari"
+      // Serveren sender en annen tekst enn den som står der. Begge morferne
+      // setter egenskapen når attributtet er et annet: Datastar i
+      // patchElements.ts (`oldElt.value = newValue`), idiomorph alltid.
+      felt().value = "Ola"
       await oppdater(maate, FELT.replace('id="navn"', 'id="navn" value="Kari"'))
       expect(felt().value).toBe("Kari")
     })
@@ -285,7 +295,9 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       expect(document.getElementById("vilkar")).toBe(boks)
       expect(boks.checked).toBe(maate === "Datastar")
 
-      boks.checked = true
+      // Serveren sender `checked` mens boksen står tom etter at brukeren
+      // rørte den. Begge morferne setter krysset fra serverens HTML.
+      boks.checked = false
       await oppdater(maate, AVKRYSSING(true))
       expect(boks.checked).toBe(true)
     })

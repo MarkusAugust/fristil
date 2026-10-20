@@ -382,7 +382,7 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
             <li>Bergen</li>
             <li>Bjørnafjorden og omegn interkommunale bostøttekontor</li>
           </ul>
-          <span class="fs-sr-only" role="status" aria-live="polite"></span>
+          <span class="fs-sr-only" role="status"></span>
         </div>
       </fs-suggestion>`,
       aapne: () => {

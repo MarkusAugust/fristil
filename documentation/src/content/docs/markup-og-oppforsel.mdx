@@ -303,7 +303,7 @@ attributter det gjelder:
 | `<fs-field>` | `aria-describedby`, `aria-invalid` og id-ene på hjelpeteksten og feilmeldingen, de samme som før |
 | `<fs-tabs>` | fanevalget: `aria-selected` og `tabindex` på fanene, `hidden` på panelene |
 | `<fs-popover>` | `open` på verten, `aria-expanded` på knappen, posisjonen på panelet |
-| `<fs-suggestion>` | om lista står åpen, hva som er markert, og hva filtreringen skjuler |
+| `<fs-suggestion>` | om lista står åpen, hva som er markert, hva filtreringen skjuler, koden i verdifeltet og antall treff i statuselementet |
 | `<fs-dialog>` | `open` på selve `<dialog>`, som nettleseren setter i `showModal()` |
 
 Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene på
@@ -468,7 +468,7 @@ To komponenter kan ikke følge regelen, og de er beskrevet i [arkitekturen](/int
 
 [`<fs-toast>`](/components/toast/) viser meldinger appen lager mens siden står. Serveren har ingen utgave av dem å sende.
 
-Begge skal ha `data-ignore-morph`, som ber morfingen la innholdet stå. Det bør [`<fs-session-timeout>`](/components/session-timeout/) også: dialogen er markupen din, men tallet skrives av komponenten, og en morfing ville tømt det til neste tikk. `open`, som `showModal()` setter, tar komponenten tilbake selv. Det skal også området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff til skjermlesere: teksten der skrives av komponenten, selv om resten av feltet er serverens. Byggefunksjonene skriver attributtet ut. Skriver du markupen for hånd, i en Go- eller Kotlin-mal, må du skrive det selv: komponentene setter det ikke.
+Begge skal ha `data-ignore-morph`, som ber morfingen la innholdet stå. Det bør [`<fs-session-timeout>`](/components/session-timeout/) også: dialogen er markupen din, men tallet skrives av komponenten, og en morfing ville tømt det til neste tikk. `open`, som `showModal()` setter, tar komponenten tilbake selv. Området i [`<fs-suggestion>`](/components/suggestion/) som melder antall treff trenger det ikke: tømmer en patch det, skriver komponenten antallet på nytt. Byggefunksjonene skriver attributtet ut der det trengs. Skriver du markupen for hånd, i en Go- eller Kotlin-mal, må du skrive det selv: komponentene setter det ikke.
 
 Her holder ikke reparasjon. Et attributt komponenten selv satte, kan den sette tilbake. En melding den lagde, og som en patch tømte, er borte. Navnet `data-ignore-morph` er morferens eget og ikke Fristils.
 

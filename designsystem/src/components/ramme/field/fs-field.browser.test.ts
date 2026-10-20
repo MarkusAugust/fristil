@@ -1015,4 +1015,17 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(advarsel).not.toHaveBeenCalled()
     advarsel.mockRestore()
   })
+
+  it("skriver for om, og sier fra, når ledeteksten pekte på en annen id", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<fs-field><label class="fs-label" for="feil">Navn</label><input class="fs-input" id="navn"></fs-field>`
+    await ventPaTegning()
+    await new Promise((r) => setTimeout(r, 300))
+    expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
+      "navn",
+    )
+    expect(advarsel).toHaveBeenCalledTimes(1)
+    expect(String(advarsel.mock.calls[0][0])).toContain("pekte på en annen id")
+    advarsel.mockRestore()
+  })
 })

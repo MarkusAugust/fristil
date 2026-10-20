@@ -86,6 +86,9 @@ egen overskrift «Brytende».
   feltet fordi id-en fra serveren endret seg** mellom to rendringer, som når
   malen lager id-en av et tilfeldig tall eller en teller, og det brukeren
   hadde skrevet, gikk tapt.
+- **`<fs-field>` og `<fs-suggestion>` sier fra når `for` på ledeteksten
+  pekte på en annen id enn feltets.** Komponenten skriver den om, men uten
+  JavaScript hadde feltet da ingen ledetekst.
 - **`fs.suggestion()` gir det skjulte feltet for koden som `value`**, og
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
