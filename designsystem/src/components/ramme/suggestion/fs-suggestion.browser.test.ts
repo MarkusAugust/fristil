@@ -1,6 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   forventIngenTilgjengelighetsbrudd,
@@ -1482,5 +1482,87 @@ describe("fs-suggestion velger riktig", () => {
     await ventPaTegning()
 
     expect(paaVerten).toEqual(["kommune-tekst", "kommune-tekst"])
+  })
+
+  it("beholder koden ved tilbakestilling når serveren har sendt valget tilbake", async () => {
+    // Med htmx sender serveren teksten og koden tilbake. Da er det valgte
+    // også skjemaets standardverdi, og en tilbakestilling skal lande der.
+    monter(`<form>${MED_KODE}</form>`)
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+    // Serverens svar: begge verdiene som attributter, slik en morfing skriver.
+    input.setAttribute("value", "Bergen")
+    kode.setAttribute("value", "4601")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    ;(document.querySelector("form") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+
+    expect(input.value).toBe("Bergen")
+    expect(kode.value).toBe("4601")
+  })
+
+  it("finner koden fra alternativet når teksten etter tilbakestilling er et annet valg", async () => {
+    // Serveren sendte Bodø tilbake etter at brukeren valgte det, og brukeren
+    // skrev videre. Tilbakestillingen gir «Bodø», og koden følger alternativet.
+    monter(`<form>${MED_KODE}</form>`)
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[1].click()
+    await ventPaTegning()
+    input.setAttribute("value", "Bodø")
+    kode.setAttribute("value", "1804")
+    await ventPaTegning()
+    input.value = "Bod"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+    expect(kode.value).toBe("")
+
+    ;(document.querySelector("form") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+
+    expect(input.value).toBe("Bodø")
+    expect(kode.value).toBe("1804")
+  })
+
+  it("skriver ikke antallet tilbake når noen andre filtrerer", async () => {
+    // En patch er da svaret på et tastetrykk, og det nye antallet leses
+    // opp av `announceFiltered` rett etter. To tall på rad er støy.
+    monter(MED_KODE.replace("<fs-suggestion>", "<fs-suggestion prefiltered>"))
+    await tegn()
+    const { input, liste } = deler()
+    const status = document.querySelector("[role='status']") as HTMLElement
+    input.focus()
+    liste.removeChild(liste.children[2])
+    await ventPaTegning()
+    await ventPaTegning()
+    expect(status.textContent).not.toBe("")
+
+    status.textContent = ""
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(status.textContent).toBe("")
+  })
+
+  it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    monter(
+      `<label>Kommune <fs-suggestion><input class="fs-input" name="kommune"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion></label>`,
+    )
+    await tegn()
+    await new Promise((r) => setTimeout(r, 300))
+    expect(
+      (document.querySelector("input") as HTMLInputElement).labels?.length,
+    ).toBe(1)
+    expect(advarsel).not.toHaveBeenCalled()
+    advarsel.mockRestore()
   })
 })

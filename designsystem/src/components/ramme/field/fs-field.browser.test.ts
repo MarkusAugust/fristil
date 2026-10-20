@@ -1,6 +1,6 @@
 /// <reference path="../../../types/css.d.ts" />
 
-import { beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -981,5 +981,38 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
       "indre-help indre-error",
     )
     expect(indreInput.getAttribute("aria-invalid")).toBe("true")
+  })
+
+  it("regner en feilmelding skjult med en klasse som skjult", async () => {
+    // `display: none` fra en klasse, som en hjelpeklasse i appen, er like
+    // skjult som `hidden`. Bare inline-stilen ble lest før.
+    document.body.innerHTML = `
+      <style>.borte { display: none }</style>
+      <fs-field>
+        <label class="fs-label" for="e">E-post</label>
+        <input class="fs-input" id="e">
+        <p class="fs-error-text borte">Skriv en gyldig adresse.</p>
+      </fs-field>`
+    await ventPaTegning()
+    const input = document.getElementById("e") as HTMLInputElement
+    expect(input.hasAttribute("aria-invalid")).toBe(false)
+
+    ;(document.querySelector(".fs-error-text") as HTMLElement).classList.remove(
+      "borte",
+    )
+    await ventPaTegning()
+    expect(input.getAttribute("aria-invalid")).toBe("true")
+  })
+
+  it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<label>Navn <fs-field><input class="fs-input" name="navn"></fs-field></label>`
+    await ventPaTegning()
+    await new Promise((r) => setTimeout(r, 300))
+    expect(
+      (document.querySelector("input") as HTMLInputElement).labels?.length,
+    ).toBe(1)
+    expect(advarsel).not.toHaveBeenCalled()
+    advarsel.mockRestore()
   })
 })

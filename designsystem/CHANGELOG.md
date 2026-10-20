@@ -27,12 +27,12 @@ egen overskrift «Brytende».
 
 - **`<fs-field>` og `<fs-suggestion>` skriver aldri id på feltet.** Datastar
   og idiomorph kjenner igjen et element på id, og et felt med en id serveren
-  ikke sendte, ble byttet ut ved neste oppdatering, med fokus og det
-  brukeren hadde skrevet. Nå er det malen som skriver `for` på ledeteksten og
-  `id` på feltet, som HTML uansett krever for at feltet skal ha et navn før
-  skriptet har kjørt, eller som legger ledeteksten rundt feltet. Komponenten
-  skriver `for` fra feltets id når ledeteksten ikke står rundt feltet. Et felt uten id med
-  ledeteksten ved siden av gir en advarsel i konsollen. Hjelpeteksten,
+  ikke sendte, ble byttet ut ved neste oppdatering, med fokus og det brukeren
+  hadde skrevet. Nå er det malen som skriver `for` på ledeteksten og `id` på
+  feltet, som HTML uansett krever for at feltet skal ha et navn før skriptet
+  har kjørt, eller som legger ledeteksten rundt feltet. Komponenten skriver
+  `for` fra feltets id når ledeteksten ikke står rundt feltet. Et felt uten id
+  med ledeteksten ved siden av gir en advarsel i konsollen. Hjelpeteksten,
   feilmeldingen, lista og alternativene får fortsatt id av komponenten når de
   mangler: byttes de ut, kobler komponenten dem på nytt, og det markerte
   alternativet gjenfinnes på teksten. **Slik oppdaterer du:** skriv `for` og
@@ -45,11 +45,12 @@ egen overskrift «Brytende».
   rendret synlig, fordi verten manglet `invalid`. Påkrevd-merket står som
   `data-required` på ledeteksten, og vises da også uten JavaScript.
   `control-id` fikk komponenten til å skrive en id serveren ikke sendte.
-  **Slik oppdaterer du:** `<fs-field invalid>` blir en synlig
-  `.fs-error-text` (i Datastar `data-attr:hidden="!$ugyldig"` på
-  feilmeldingen framfor `data-attr:invalid` på verten), `required-marker="x"`
-  blir `data-required="x"` på `<label>`, og `control-id` blir `id` på feltet.
-  Egenskapene `invalid`, `requiredMarker` og `controlId` er borte, og React-typene i `react-jsx` er oppdatert.
+  **Slik oppdaterer du:** `<fs-field invalid>` blir en synlig `.fs-error-text`
+  (i Datastar `data-attr:hidden="!$ugyldig"` på feilmeldingen framfor
+  `data-attr:invalid` på verten), `required-marker="x"` blir
+  `data-required="x"` på `<label>`, og `control-id` blir `id` på feltet.
+  Egenskapene `invalid`, `requiredMarker` og `controlId` er borte, og
+  React-typene i `react-jsx` er oppdatert.
 - **`<fs-suggestion>` viser alltid teksten i feltet.** Før skrev den
   `data-value` inn i det synlige feltet, så brukeren som valgte Bergen, så
   «4601», og skjemaet sendte koden under feltets `name`. Nå får et skjult
@@ -89,7 +90,7 @@ egen overskrift «Brytende».
   `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
   Komponenten sender `input` og `change` på feltet når den skriver eller
   tømmer koden, så `data-bind` i Datastar ser den; de bobler ikke, så en
-  `data-on:input` på verten fyrer ikke på dem.
+  `data-on:input` på verten utløses ikke av dem.
 - **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
   Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut

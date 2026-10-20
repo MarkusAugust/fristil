@@ -508,6 +508,8 @@ export class FsField extends HostElement {
       () => {
         const named = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         if (!named || this.resolveLabel(named)) return false
+        // En <label> rundt hele <fs-field> gir også kontrollen et navn.
+        if ((named.labels?.length ?? 0) > 0) return false
         return (
           !named.hasAttribute("aria-label") &&
           !named.hasAttribute("aria-labelledby")
@@ -572,7 +574,7 @@ export class FsField extends HostElement {
     const errorShown =
       error !== null &&
       !error.hasAttribute("hidden") &&
-      error.style.display !== "none" &&
+      getComputedStyle(error).display !== "none" &&
       (error.textContent ?? "").trim() !== ""
     const invalid = serverInvalid || errorShown
     const disabled = this.hasAttribute("disabled") || server.disabled

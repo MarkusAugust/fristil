@@ -135,12 +135,14 @@ export class FsSuggestion extends HostElement {
    */
   private chosen?: { label: string; value: string }
   /**
-   * Koden serveren sendte i verdifeltet. Tilbakestilles skjemaet, går
-   * teksten tilbake til serverens, og koden skal følge med: et skjult felt
-   * har ingen egen standardverdi å gå tilbake til, siden komponenten
-   * skriver koden som attributt.
+   * Det serveren sendte som tekst og kode, sist noen andre enn komponenten
+   * skrev koden. Tilbakestilles skjemaet, går teksten tilbake til serverens,
+   * og koden skal følge med: et skjult felt har ingen egen standardverdi å
+   * gå tilbake til, siden komponenten skriver koden som attributt.
    */
-  private serverCode = ""
+  private serverChoice?: { label: string; value: string }
+  /** Koden komponenten selv skrev sist. Står noe annet der, var det serveren. */
+  private writtenCode?: string
   /**
    * Om lista står åpen, og hvilket alternativ som er markert.
    *
@@ -333,6 +335,8 @@ export class FsSuggestion extends HostElement {
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           if (!now || this.querySelector("label")) return false
+          // En <label> rundt hele <fs-suggestion> gir også feltet et navn.
+          if ((now.labels?.length ?? 0) > 0) return false
           if (
             now.hasAttribute("aria-label") ||
             now.hasAttribute("aria-labelledby")
@@ -401,8 +405,17 @@ export class FsSuggestion extends HostElement {
       this.writeCode(valueField, this.chosen.value)
     }
 
+    // Et tømt statuselement får teksten tilbake. Ikke når noen andre
+    // filtrerer: da er en patch svaret på et tastetrykk, og
+    // `announceFiltered` leser det nye antallet rett etter. Å skrive det
+    // gamle først ville lest to tall opp.
     const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
-    if (status && this.announcedText !== undefined) {
+    if (
+      status &&
+      !this.prefiltered &&
+      this.announcedText !== undefined &&
+      status.textContent === ""
+    ) {
       setText(status, this.announcedText)
     }
 
@@ -666,11 +679,11 @@ export class FsSuggestion extends HostElement {
       this.active = undefined
       // Et verdifelt serveren fylte, gjelder teksten som står i feltet nå.
       const valueField = this.valueField
-      this.serverCode = valueField?.value ?? ""
-      this.chosen =
+      this.serverChoice =
         valueField && valueField.value !== ""
           ? { label: control.value, value: valueField.value }
           : undefined
+      this.chosen = this.serverChoice
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)
@@ -681,11 +694,15 @@ export class FsSuggestion extends HostElement {
       control.form?.addEventListener("reset", this.handleReset)
       this.control = control
     }
-    const serverCode = this.valueField?.value ?? ""
-    if (serverCode !== "" && serverCode !== this.chosen?.value) {
+    const code = this.valueField?.value ?? ""
+    if (
+      code !== "" &&
+      code !== this.writtenCode &&
+      code !== this.chosen?.value
+    ) {
       // Noen andre enn komponenten skrev koden: serverens ord.
-      this.serverCode = serverCode
-      this.chosen = { label: control.value, value: serverCode }
+      this.serverChoice = { label: control.value, value: code }
+      this.chosen = this.serverChoice
     }
 
     /*
@@ -980,10 +997,11 @@ export class FsSuggestion extends HostElement {
    * Skriver koden i verdifeltet og sender `input` og `change` på det, så
    * `data-bind` i Datastar ser koden. Hendelsene bobler ikke: en
    * `data-on:input` på verten, som oppskriften bruker til å hente forslag,
-   * skal ikke fyre et søk på koden hver gang brukeren velger.
+   * skal ikke utløse et søk på koden hver gang brukeren velger.
    */
   private writeCode(valueField: HTMLInputElement, code: string): void {
     if (valueField.value === code) return
+    this.writtenCode = code
     setAttr(valueField, "value", code)
     valueField.dispatchEvent(new Event("input"))
     valueField.dispatchEvent(new Event("change"))
@@ -991,18 +1009,30 @@ export class FsSuggestion extends HostElement {
 
   /**
    * Skjemaet tilbakestilles. Nettleseren setter teksten tilbake til
-   * serverens etter at hendelsen er sendt, så koden settes tilbake i neste
-   * omgang, etter at tilbakestillingen er gjort.
+   * serverens etter at hendelsen er sendt, så koden settes i neste omgang,
+   * etter at tilbakestillingen er gjort. Teksten som står der da avgjør:
+   * er den det valgte, står koden; ellers koden til alternativet med den
+   * teksten, ellers serverens, ellers ingen. Serveren kan ha sendt det
+   * valgte tilbake, og da er det serverens ord like mye som brukerens.
    */
   private handleReset = (): void => {
     setTimeout(() => {
       const valueField = this.valueField
       if (!valueField || !this.control) return
-      this.writeCode(valueField, this.serverCode)
-      this.chosen =
-        this.serverCode !== ""
-          ? { label: this.control.value, value: this.serverCode }
-          : undefined
+      const text = this.control.value
+      const option = this.options.find(
+        (o) => (o.textContent ?? "").trim() === text,
+      )
+      const code =
+        this.chosen && text === this.chosen.label
+          ? this.chosen.value
+          : option
+            ? (option.getAttribute("data-value") ?? text)
+            : this.serverChoice && text === this.serverChoice.label
+              ? this.serverChoice.value
+              : ""
+      this.writeCode(valueField, code)
+      this.chosen = code !== "" ? { label: text, value: code } : undefined
     }, 0)
   }
 
