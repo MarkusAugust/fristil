@@ -56,7 +56,9 @@ egen overskrift «Brytende».
   «4601», og skjemaet sendte koden under feltets `name`. Nå får et skjult
   `.fs-suggestion__value` koden når serveren har skrevet det, og
   `suggestion-select` har både `value` og `label`. Tilbakestilles skjemaet,
-  får verdifeltet koden serveren sendte. **Slik oppdaterer du:**
+  følger koden teksten: serverens når teksten er serverens, ellers det
+  valgte, ellers alternativet med den teksten, ellers ingen. **Slik
+  oppdaterer du:**
   skal skjemaet sende koden, legg inn `<input class="fs-suggestion__value"
   type="hidden" name="…">`, eller les `evt.detail.value`.
 - **`.fs-suggestion__field` er borte, og statuselementet har verken

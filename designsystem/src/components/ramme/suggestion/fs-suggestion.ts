@@ -1060,9 +1060,12 @@ export class FsSuggestion extends HostElement {
    * Skjemaet tilbakestilles. Nettleseren setter teksten tilbake til
    * serverens etter at hendelsen er sendt, så koden settes i neste omgang,
    * etter at tilbakestillingen er gjort. Teksten som står der da avgjør:
-   * er den det valgte, står koden; ellers koden til alternativet med den
-   * teksten, ellers serverens, ellers ingen. Serveren kan ha sendt det
-   * valgte tilbake, og da er det serverens ord like mye som brukerens.
+   * er den serverens, gjelder serverens kode; er den det valgte, står koden;
+   * ellers koden til alternativet med den teksten, ellers ingen. Serverens
+   * står først fordi to alternativer kan hete det samme: valgte brukeren det
+   * andre Våler, går tilbakestillingen til serverens. Serveren kan også ha
+   * sendt det valgte tilbake, og da er det serverens ord like mye som
+   * brukerens.
    */
   private handleReset = (): void => {
     setTimeout(() => {
@@ -1073,12 +1076,12 @@ export class FsSuggestion extends HostElement {
         (o) => (o.textContent ?? "").trim() === text,
       )
       const code =
-        this.chosen && text === this.chosen.label
-          ? this.chosen.value
-          : option
-            ? (option.getAttribute("data-value") ?? text)
-            : this.serverChoice && text === this.serverChoice.label
-              ? this.serverChoice.value
+        this.serverChoice && text === this.serverChoice.label
+          ? this.serverChoice.value
+          : this.chosen && text === this.chosen.label
+            ? this.chosen.value
+            : option
+              ? (option.getAttribute("data-value") ?? text)
               : ""
       this.writeCode(valueField, code)
       this.chosen = code !== "" ? { label: text, value: code } : undefined

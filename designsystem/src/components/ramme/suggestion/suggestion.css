@@ -83,7 +83,7 @@
   }
 
   /* Tommeldingen følger lista: er lista lukket, vises den ikke. Regelen står
-     i stilarket og ikke i komponenten, fordi appen eier tommeldingen når den
+     i stilarket og ikke i komponenten, fordi appen styrer tommeldingen når den
      filtrerer selv, og ikke vet om lista er åpen. Den vet bare om søket ga
      noe. Tommeldingen må stå etter lista, som søsken. */
   .fs-suggestion__list[hidden] ~ .fs-suggestion__empty {

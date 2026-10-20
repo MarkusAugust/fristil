@@ -206,6 +206,9 @@ describe("fs-field", () => {
   })
 
   it("skriver aldri id på kontrollen, heller ikke når en patch bytter den ut", async () => {
+    // Markupen i testen mangler ledetekst med vilje, og advarselen om det
+    // er ventet. Den skal ikke stå som støy i kjøringen.
+    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     /*
      * Datastar og idiomorph kjenner igjen en node på id, og en kontroll med en
      * id serveren ikke sendte, blir byttet ut ved neste oppdatering, med fokus
@@ -232,6 +235,7 @@ describe("fs-field", () => {
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(ny.hasAttribute("id")).toBe(false)
+    advarsel.mockRestore()
   })
 
   it("skriver verken id eller for når ledeteksten står rundt kontrollen", async () => {
@@ -509,7 +513,7 @@ describe("fs-field er et blokkelement", () => {
 })
 
 /**
- * Komponenten eier bare det den selv skrev.
+ * Komponenten rår bare over det den selv skrev.
  *
  * Tre attributter leses fra kontrollen og skrives dit igjen: `aria-invalid`,
  * `aria-describedby` og `disabled`. For hvert av dem må komponenten vite hva
@@ -517,7 +521,7 @@ describe("fs-field er et blokkelement", () => {
  * løst for `aria-invalid` alene, og de to andre hadde nøyaktig samme feil:
  * `aria-describedby` krympet aldri, og `disabled` lot seg ikke slå av igjen.
  */
-describe("fs-field eier bare det den selv skrev", () => {
+describe("fs-field rår bare over det den selv skrev", () => {
   beforeAll(() => {
     defineFsField()
   })
@@ -810,7 +814,7 @@ describe("fs-field eier bare det den selv skrev", () => {
 
   it("lar en id stå når serveren flytter hjelpeteksten ut og beholder den", async () => {
     // Id-en har vært komponentens å forvalte. Peker den fortsatt på et
-    // element, er den serverens: eierskapet avgjøres av DOM-en, ikke av
+    // element, er den serverens: det avgjøres av DOM-en, ikke av
     // hva komponenten har vært borti før.
     document.body.innerHTML = `
       <div id="ramme">

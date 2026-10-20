@@ -233,7 +233,7 @@ describe("fs-suggestion", () => {
 
   it("lar tommeldingen være i fred når noen andre filtrerte", async () => {
     /*
-     * Tommeldingen er en del av det lista viser, og det eier den som
+     * Tommeldingen er en del av det lista viser, og det bestemmer den som
      * filtrerte. Komponenten kan ikke se forskjell på «søket ga ingenting» og
      * «svaret er ikke kommet ennå», og satte derfor meldingen synlig igjen
      * midt i et asynkront søk, uten at det fantes en vei utenom.
@@ -1654,5 +1654,37 @@ describe("fs-suggestion velger riktig", () => {
     await new Promise((r) => setTimeout(r, 300))
     expect(advarsel).not.toHaveBeenCalled()
     advarsel.mockRestore()
+  })
+
+  it("går tilbake til serverens Våler når brukeren hadde valgt det andre", async () => {
+    // To alternativer med samme tekst: ved tilbakestilling er teksten
+    // serverens, og da gjelder serverens kode, ikke det brukeren valgte.
+    monter(
+      `<form>${MED_KODE.replace(
+        'name="kommune-tekst"',
+        'name="kommune-tekst" value="Våler"',
+      )
+        .replace(
+          'class="fs-suggestion__value" name="kommune"',
+          'class="fs-suggestion__value" name="kommune" value="3419"',
+        )
+        .replace(
+          '<li data-value="0301">Oslo</li>',
+          '<li data-value="3018">Våler</li><li data-value="3419">Våler</li>',
+        )}</form>`,
+    )
+    await tegn()
+    const { input, kode, valg } = deler()
+    input.focus()
+    valg[2].click()
+    await ventPaTegning()
+    expect(kode.value).toBe("3018")
+
+    ;(document.querySelector("form") as HTMLFormElement).reset()
+    await new Promise((r) => setTimeout(r, 20))
+    await ventPaTegning()
+
+    expect(input.value).toBe("Våler")
+    expect(kode.value).toBe("3419")
   })
 })
