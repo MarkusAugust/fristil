@@ -224,6 +224,7 @@ fun Fs.suggestion(
                 "data-ignore-morph" to "",
             ),
         ),
+        value = Attributes(mapOf("class" to "fs-suggestion__value", "type" to "hidden")),
         help = field.help,
         error = field.error,
         state = field.state,

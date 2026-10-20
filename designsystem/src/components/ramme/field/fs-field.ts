@@ -89,7 +89,7 @@ type ControlMemory = {
 /**
  * Det samme minnet for markeringene på ledeteksten. Komponenten både leser
  * og skriver `data-required` og `data-optional`, og uten å vite hva den selv
- * skrev, leste den sitt eget svar tilbake: `optional` og `required-marker`
+ * skrev, leste den sitt eget svar tilbake: `optional` og påkrevd-markeringen
  * lot seg ikke slå av igjen.
  */
 type LabelWord = { required: string | null; optional: boolean }
@@ -121,20 +121,23 @@ function readControlWord(control: Element): ControlWord {
  * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
  * det ved hver patch.
  *
- * Malen trenger ingenting ekstra. River en morfing bort koblingen, ser
- * komponenten det og setter den tilbake. Feltet har ingen tilstand brukeren
- * lager selv, så det finnes heller ingenting `server-controlled` kunne slått
- * av her: alt komponenten skriver er utledet av markupen serveren sendte.
+ * Malen skriver det HTML krever for at feltet skal virke uten JavaScript:
+ * `for` på ledeteksten og `id` på kontrollen, eller ledeteksten rundt
+ * kontrollen. Komponenten skriver resten: id på hjelpeteksten og
+ * feilmeldingen, `aria-describedby`, `aria-invalid` og klassene. River en
+ * morfing det bort, ser komponenten det og setter det tilbake.
+ *
+ * Komponenten skriver aldri id på kontrollen. Datastar og idiomorph kjenner
+ * igjen en node på id, og en kontroll med en id serveren ikke sendte, blir
+ * byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet.
+ *
+ * Feltet er ugyldig når feilmeldingen synes, altså når den står uten
+ * `hidden`, eller når serveren har skrevet `aria-invalid` på kontrollen. Det
+ * er ingen egen tilstand på verten: en mal rendrer feilmeldingen når feltet
+ * er ugyldig, og klientkode slår `hidden` av og på.
  */
 export class FsField extends HostElement {
-  static observedAttributes = [
-    "invalid",
-    "disabled",
-    "optional",
-    "required-marker",
-    "control-id",
-    "described-by",
-  ] as const
+  static observedAttributes = ["disabled", "optional", "described-by"] as const
 
   private observer?: MutationObserver
   /**
@@ -147,18 +150,6 @@ export class FsField extends HostElement {
   private lastHelpId?: string
   private lastErrorId?: string
   private readonly managedIds = new Set<string>()
-  private generatedControlId?: string
-  /**
-   * Id-en kontrollen hadde sist, enten den kom fra markupen eller herfra.
-   *
-   * Bytter en patch ut kontrollen med en uten id, finner komponenten id-en
-   * igjen i ledetekstens `for`, så lenge ledeteksten står inni elementet.
-   * Står den utenfor, finner komponenten den ikke: oppslaget etter en
-   * ledetekst utenfor går gjennom kontrollens id, og den er nettopp borte.
-   * Uten dette minnet laget komponenten da en ny id, og `for` pekte på et
-   * element som ikke fantes.
-   */
-  private lastId?: string
   /**
    * Hva komponenten skrev på hver kontroll, nøklet på selve kontrollen.
    *
@@ -173,13 +164,13 @@ export class FsField extends HostElement {
   private readonly memory = new WeakMap<Element, ControlMemory>()
   private readonly labelMemory = new WeakMap<Element, LabelMemory>()
   /**
-   * Kontrollen sist, og om id-en på den var komponentens.
+   * Kontrollen sist.
    *
-   * Nok til å se at en patch byttet den ut, og hvorfor: Datastar og
-   * idiomorph morfer ikke et element med id inn i et uten. Kom id-en fra
-   * komponenten, eller fra ledetekstens `for` fordi kontrollen selv ikke
-   * hadde noen, kjenner morfingen ikke serverens kontroll igjen, og setter
-   * inn en ny. Det brukeren skrev er da borte.
+   * Nok til å se at en oppdatering fra serveren byttet den ut fordi id-en
+   * endret seg: Datastar og idiomorph kjenner igjen en node på id, og en ny
+   * id fra serveren er en ny node for dem. Det skjer når malen lager id-en
+   * av noe som skifter mellom rendringene, som et tilfeldig tall eller en
+   * teller.
    *
    * En referanse, ikke bare et minne i `memory`: byttet ses ved å
    * sammenligne den med kontrollen som står der nå, og det den gamle
@@ -187,7 +178,6 @@ export class FsField extends HostElement {
    * løsrevet node i live til neste `sync()`, og det er med vilje.
    */
   private lastControl?: HTMLElement
-  private readonly idByMe = new WeakSet<Element>()
   /** Kontrollene der `data-state` er komponentens egen. */
   private readonly stateByMe = new WeakSet<Element>()
 
@@ -195,17 +185,8 @@ export class FsField extends HostElement {
    * Egenskapene speiler attributtene.
    *
    * Tilstanden bor i attributtet og ikke i et felt på klassen, slik at det
-   * serveren sendte og det komponenten mener alltid er det samme. En egen
-   * `invalid`-variabel ville kunne si noe annet enn markupen etter en morfing.
+   * serveren sendte og det komponenten mener alltid er det samme.
    */
-  get invalid(): boolean {
-    return this.hasAttribute("invalid")
-  }
-
-  set invalid(value: boolean) {
-    setFlag(this, "invalid", value)
-  }
-
   get disabled(): boolean {
     return this.hasAttribute("disabled")
   }
@@ -220,40 +201,6 @@ export class FsField extends HostElement {
 
   set optional(value: boolean) {
     setFlag(this, "optional", value)
-  }
-
-  /**
-   * Markeringen ledeteksten faktisk har.
-   *
-   * Leses fra markupen: først attributtet på verten, så `data-required` på
-   * ledeteksten, som serveren skriver med `fs.field()`. En getter som bare så
-   * på sitt eget attributt svarte «none» mens ledeteksten viste en stjerne.
-   *
-   * `none` er en egen verdi og ikke fraværet av en: står den på verten,
-   * overstyrer den det serveren skrev på ledeteksten. Setteren skriver den
-   * derfor bokstavelig. En setter som oversatte `none` til «fjern
-   * attributtet» ga `felt.requiredMarker = "none"` en annen betydning enn
-   * `required-marker="none"`, og markeringen serveren skrev kom tilbake.
-   */
-  get requiredMarker(): Marker {
-    const control = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
-    return (
-      readMarker(this.getAttribute("required-marker")) ??
-      readMarker(this.resolveLabel(control)?.getAttribute("data-required")) ??
-      "none"
-    )
-  }
-
-  set requiredMarker(value: Marker) {
-    setAttr(this, "required-marker", value)
-  }
-
-  get controlId(): string | undefined {
-    return this.getAttribute("control-id") ?? undefined
-  }
-
-  set controlId(value: string | undefined) {
-    setAttr(this, "control-id", value ?? null)
   }
 
   get describedBy(): string | undefined {
@@ -299,34 +246,6 @@ export class FsField extends HostElement {
 
   attributeChangedCallback(): void {
     if (this.isConnected) this.sync()
-  }
-
-  /**
-   * Id-en kontrollen skal ha, lest fra markupen når den står der.
-   *
-   * Ledetekstens `for` er med som kilde, og uten den mistet feltet koblingen
-   * ved første patch: morfingen kan erstatte kontrollen med serverens node,
-   * som ikke har noen id, mens ledeteksten beholder sin `for`. Da fant
-   * komponenten ingen id, fant opp en ny, og skrev den bare på kontrollen, og
-   * `for` pekte etter det på et element som ikke fantes. Funnet i
-   * spilldemoen, i appen som sender HTML-biter fra en Kotlin-server.
-   *
-   * Lager komponenten id-en selv, huskes den. En ny id per patch ville gitt
-   * en skjermleser en peker som skiftet under opplesningen.
-   */
-  private resolveControlId(
-    control: HTMLElement,
-    label: HTMLLabelElement | null,
-  ): string {
-    const fromMarkup =
-      this.getAttribute("control-id") || control.id || label?.htmlFor
-
-    if (!fromMarkup && !this.lastId) {
-      this.generatedControlId ??= uniqueId("fs-field-control")
-    }
-
-    this.lastId = fromMarkup || this.lastId || this.generatedControlId
-    return this.lastId as string
   }
 
   /**
@@ -419,41 +338,37 @@ export class FsField extends HostElement {
   }
 
   /**
-   * Sier fra når en patch byttet ut kontrollen fordi serveren ikke skrev id.
+   * Sier fra når en oppdatering byttet ut kontrollen fordi id-en fra serveren
+   * endret seg.
    *
-   * Beskjeden kommer når det skjer, og bare når brukeren hadde noe å miste:
-   * den gamle kontrollen er ute av treet, id-en på den var komponentens, den
-   * nye kom uten, og det sto noe annet i den gamle enn det serveren sendte.
-   * En advarsel om hvert bart felt ville truffet alle som aldri patcher,
-   * eller patcher smalt slik dokumentasjonen anbefaler, og de har ingenting
-   * å rette. Det sammenlignes med den nye kontrollen, ikke med den gamles
-   * `defaultValue`: en bar `<select>` har alltid et valgt alternativ uten at
-   * noe er `defaultSelected`, og en server som sender teksten brukeren skrev
-   * tilbake, slik meldingen ber om, har ikke mistet noe.
+   * Beskjeden kommer bare når brukeren hadde noe å miste: den gamle
+   * kontrollen er ute av treet, begge hadde en id fra serveren, id-ene er
+   * ulike, og det sto noe annet i den gamle enn i den nye. En server som med
+   * vilje sender et annet felt, har som regel også en annen ledetekst eller et
+   * annet `name`; da tier den. Det sammenlignes med den nye kontrollen, ikke
+   * med den gamles `defaultValue`: en `<select>` har alltid et valgt
+   * alternativ uten at noe er `defaultSelected`, og en server som sender
+   * teksten brukeren skrev tilbake, har ikke mistet noe.
    */
   private warnAboutReplacedControl(
     lost: HTMLElement,
     control: HTMLElement,
   ): void {
-    if (lost.isConnected || !this.idByMe.has(lost) || !this.idByMe.has(control))
+    if (lost.isConnected || !lost.id || !control.id || lost.id === control.id)
       return
+    if (lost.getAttribute("name") !== control.getAttribute("name")) return
     if (!this.differs(lost, control)) return
 
-    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
-    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
-      "en patch byttet ut kontrollen, og det brukeren hadde skrevet i den " +
-        "gikk tapt. Kontrollen hadde en id komponenten hadde skrevet, og " +
-        "serverens markup har ingen. En morfing kjenner da ikke kontrollen " +
-        "igjen og setter inn en ny: skriv id på kontrollen i malen, som " +
-        "fs.field() gjør, så beholdes den. Bytter patchen ut elementene " +
-        "uansett, med inner, replace eller innerHTML, må serveren sende det " +
-        "brukeren har skrevet tilbake, eller patche utenom feltet.",
-      () => {
-        const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
-        return now !== null && this.idByMe.has(now)
-      },
+      "en oppdatering fra serveren byttet ut kontrollen, og det brukeren " +
+        "hadde skrevet i den gikk tapt. Id-en på kontrollen var en annen enn " +
+        "sist, og da kjenner oppdateringen ikke kontrollen igjen. Lag id-en av " +
+        "noe som er det samme hver gang, som navnet på feltet eller en nøkkel " +
+        "i dataene, ikke av et tilfeldig tall eller en teller.",
+      // Byttet har skjedd og kan ikke gå over av seg selv. Det som teller er
+      // at feltet fortsatt står i siden når beskjeden skrives.
+      () => this.isConnected,
     )
   }
 
@@ -525,6 +440,26 @@ export class FsField extends HostElement {
 
     warnAboutMarkup(
       this,
+      "<label> er ikke koblet til feltet: den har ingen for, og står ikke " +
+        "rundt feltet. Uten JavaScript har feltet da ingen ledetekst, og en " +
+        "skjermleser leser det opp uten navn. Skriv for på ledeteksten og id " +
+        "på feltet, eller legg <label> rundt feltet. Komponenten lager ikke " +
+        "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
+        "serveren til å bytte ut feltet.",
+      () => {
+        const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
+        const labelNow = this.resolveLabel(now)
+        return (
+          now !== null &&
+          labelNow !== null &&
+          !now.id &&
+          !labelNow.contains(now)
+        )
+      },
+    )
+
+    warnAboutMarkup(
+      this,
       "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
         "skjermleser leser det opp uten navn.",
       /*
@@ -575,9 +510,7 @@ export class FsField extends HostElement {
     // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
     // tok det bort, og så mente React at HTML-en ikke stemte.
     const serverLabel = this.serverLabelWord(label)
-    const marker =
-      readMarker(this.getAttribute("required-marker")) ??
-      readMarker(serverLabel.required)
+    const marker = readMarker(serverLabel.required)
 
     // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
     // Skrev serveren feltet med `fs.field()`, står svaret allerede på
@@ -594,7 +527,11 @@ export class FsField extends HostElement {
       server.invalid !== null &&
       server.invalid !== "false" &&
       server.invalid !== ""
-    const invalid = this.hasAttribute("invalid") || serverInvalid
+    // En feilmelding som synes, betyr at feltet er ugyldig. Den er ikke
+    // komponentens å skjule: malen rendrer den når feltet er ugyldig, og
+    // klientkode slår `hidden` av og på.
+    const errorShown = error !== null && !error.hasAttribute("hidden")
+    const invalid = serverInvalid || errorShown
     const disabled = this.hasAttribute("disabled") || server.disabled
 
     /*
@@ -621,7 +558,10 @@ export class FsField extends HostElement {
       .filter((id) => id && !managedNow(id))
 
     const computed = computeFieldAttributes({
-      id: this.resolveControlId(control, label),
+      // `computeFieldAttributes` krever en id. Kontrollens egen brukes når den
+      // finnes; ellers en stamme som aldri skrives, siden komponenten verken
+      // skriver id på kontrollen eller `for` ut fra den.
+      id: control.id || "fs-field",
       help: Boolean(help),
       error: Boolean(error),
       helpId: help?.id,
@@ -633,8 +573,6 @@ export class FsField extends HostElement {
       describedBy: [...serverExtras, this.getAttribute("described-by") ?? ""],
     })
 
-    if (!control.id) this.idByMe.add(control)
-    setAttr(control, "id", computed.control.id)
     if (this.lastControl && this.lastControl !== control) {
       this.warnAboutReplacedControl(this.lastControl, control)
     }
@@ -642,9 +580,12 @@ export class FsField extends HostElement {
 
     if (label) {
       addClass(label, computed.label.class)
-      // Alltid, ikke bare når den mangler: `for` og `id` er den samme
-      // opplysningen, og de to kan ikke få lov til å si hver sin ting.
-      setAttr(label, "for", computed.label.for)
+      // `for` og `id` er den samme opplysningen, og de to kan ikke få lov til
+      // å si hver sin ting. Den skrives fra kontrollens id, aldri motsatt, og
+      // ikke når ledeteksten står rundt kontrollen, der koblingen er implisitt.
+      if (control.id && !label.contains(control)) {
+        setAttr(label, "for", control.id)
+      }
       setAttr(label, "data-required", computed.label["data-required"])
       setAttr(label, "data-optional", computed.label["data-optional"])
       this.labelMemory.set(label, {
@@ -655,13 +596,6 @@ export class FsField extends HostElement {
         server: serverLabel,
       })
       setAttr(label, "aria-disabled", computed.label["aria-disabled"])
-    }
-
-    if (error) {
-      // Bare `hidden`. Et skjult element er allerede ute av
-      // tilgjengelighetstreet, så `aria-hidden` var overflødig, og ga en
-      // hydreringsfeil i React fordi serveren ikke skriver det.
-      setFlag(error, "hidden", Boolean(computed.error.hidden))
     }
 
     // Serverens ord står ordrett når det er serveren som sier feltet er

@@ -24,7 +24,7 @@ versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
    `var(--fs-spacing-…)`.
 4. **`defineFs*()` kjøres én gang i en `<script type="module">` med hele
    URL-en,** og tilstanden settes med `data-attr:`, som legger på og fjerner
-   attributtet. `invalid="false"` ville gjort feltet ugyldig.
+   attributtet. `hidden="false"` ville skjult feilmeldingen likevel.
 5. **Kjør sjekken på det du har skrevet:**
    `npx @fristil/designsystem sjekk side.html`. Den kjenner hver klasse, hvert
    element, hvert attributt og hver lovlige verdi, skriver
@@ -246,21 +246,25 @@ Tre regler gjelder alle sammen:
 1. **`defineFs*()` kjøres én gang** i en `<script type="module">` i sidemalen.
    Importen har ingen bivirkning alene; det er `define`-kallet som registrerer
    elementet.
-2. **Boolske attributter er sanne så lenge de finnes.** `invalid="false"`,
+2. **Boolske attributter er sanne så lenge de finnes.** `hidden="false"`,
    `disabled="false"` og `open="false"` slår *på*. Skal noe av det bort, må
    attributtet fjernes helt.
 3. **Du skriver markupen, komponenten fester oppførselen.** `<fs-field>` lager
-   ikke ledeteksten eller kontrollen din. Den kobler sammen dem du har lagt
-   inn, med `id`, `for` og `aria-describedby`. Et `<fs-field>` uten kontroll,
-   eller uten ledetekst, er en feil komponenten melder fra om.
+   ikke ledeteksten eller kontrollen din. Du skriver `for` på ledeteksten og
+   `id` på kontrollen, eller legger `<label>` rundt den, så feltet har navn
+   også uten JavaScript. Komponenten kobler hjelpeteksten og feilmeldingen med
+   `aria-describedby` og `aria-invalid`, og skriver aldri id på kontrollen: en
+   id serveren ikke sendte, gjør at en oppdatering fra serveren bytter ut
+   feltet, med fokus og det brukeren har skrevet. Feltet er ugyldig når
+   feilmeldingen står uten `hidden`.
 
 | Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/field/fs-field.js` | `invalid` (flag)<br>`disabled` (flag)<br>`optional` (flag)<br>`required-marker`: symbol, text, none<br>`control-id` (text)<br>`described-by` (text) | ingen | ingen |
+| `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/field/fs-field.js` | `disabled` (flag)<br>`optional` (flag)<br>`described-by` (text) | ingen | ingen |
 | `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
 | `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
 | `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__empty` |
+| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value) | `fs-suggestion__field`<br>`fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
 | `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `fs-dialog` (`data-color`: brand, info, success, warning, danger)<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
 | `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
 | `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.34.0/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
@@ -276,16 +280,17 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
   data-signals="{navn: '', beroert: false}"
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
-  <fs-field required-marker="symbol" data-attr:invalid="$ugyldig">
-    <label>Fullt navn</label>
+  <fs-field>
+    <label for="navn" data-required="symbol">Fullt navn</label>
     <input
       class="fs-input"
+      id="navn"
       type="text"
       name="navn"
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text">Fyll inn navnet ditt.</p>
+    <p class="fs-error-text" data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
   </fs-field>
 
   <button class="fs-button" type="submit">Send</button>
@@ -303,10 +308,10 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 valideringen av den, `data-bind:navn` binder feltet begge veier, og
 `data-on:blur` markerer at brukeren har forlatt det.
 
-`data-attr:invalid` er koblingen til komponenten: den setter attributtet når
-uttrykket er sant og fjerner det når det er usant, nøyaktig slik `<fs-field>`
-forventer. Ingen av React-fellene finnes her. Datastar jobber direkte på
-attributtene.
+`data-attr:hidden` på feilmeldingen er koblingen til komponenten: den setter
+`hidden` når feltet er gyldig og fjerner det når det er ugyldig, og
+`<fs-field>` regner feltet som ugyldig når feilmeldingen synes. Ingen av
+React-fellene finnes her. Datastar jobber direkte på attributtene.
 
 ## 6. HTML fra serveren
 
@@ -316,18 +321,19 @@ component oppgraderer seg selv når den settes inn i dokumentet, så lenge
 HTML:
 
 ```html
-<fs-field required-marker="text" invalid>
-  <label>E-postadresse</label>
-  <input class="fs-input" type="email" value="ola@" />
+<fs-field>
+  <label for="epost" data-required="text">E-postadresse</label>
+  <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering hit.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>
 </fs-field>
 ```
 
-Komponenten kobler da `for` og `id`, setter `fs-label`, legger på
-`aria-invalid` og bygger `aria-describedby`, uten at det sendes JavaScript med
-for akkurat dette feltet. Det er poenget med at `ramme`-komponentene bor i
-vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
+Komponenten setter da `fs-label`, gir hjelpeteksten og feilmeldingen id,
+legger på `aria-invalid` fordi feilmeldingen synes, og bygger
+`aria-describedby`, uten at det sendes JavaScript med for akkurat dette
+feltet. Det er poenget med at `ramme`-komponentene bor i vanlig DOM: markupen
+er dataen, og tilgjengeligheten kobles der den lander.
 
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
 bestemmer den. Som standard gjør web-komponenten det: `<fs-tabs>` husker fanen
@@ -337,8 +343,10 @@ bort: `outer` morfer, og valget er knyttet til selve knappen. `inner` og
 skrive `aria-selected` og `hidden` selv. Og `outer` morfer bare når id-ene
 stemmer: et element med en id serveren ikke sendte byttes ut. Skriv derfor id
 på fanene og panelene selv, de samme ved hver rendring, som `fs.tabs()` gjør.
-Det samme gjelder kontrollen i `<fs-field>`, feltet, lista og alternativene i
-`<fs-suggestion>` og panelet i `<fs-popover>`. Komponenten sier fra i
+Det samme gjelder panelet i `<fs-popover>`. Kontrollen i `<fs-field>` og
+feltet i `<fs-suggestion>` får aldri id fra komponenten: `for` og `id` skriver
+malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller så
+står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i
 konsollen første gang en patch bytter ut noe brukeren hadde rørt. Skal
 serveren kunne flytte fanen, sier du det med `server-controlled`:
 
@@ -367,7 +375,7 @@ nettleseren.
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
 | En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
-| Feltet er alltid ugyldig | `invalid="false"` er satt. Attributtet må fjernes, ikke settes til `false` |
+| Feilmeldingen vises aldri, og feltet regnes som gyldig | `hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 
 ## Når CSS ikke strekker til

@@ -26,15 +26,15 @@ Varianter styres med `data-`-attributter. Dette er den største gruppen, og dekk
 En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men setter attributtene som kobler dem sammen.
 
 ```html
-<fs-field required-marker="symbol" invalid>
-  <label>E-postadresse</label>
-  <input class="fs-input" type="email" value="ola@" />
+<fs-field>
+  <label for="epost" data-required="symbol">E-postadresse</label>
+  <input class="fs-input" id="epost" type="email" value="ola@" />
   <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
   <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
 </fs-field>
 ```
 
-Koblingen mellom de fire elementene, altså `for`, `id`, `aria-describedby` og `aria-invalid`, skrives av serveren med `fs.field()`. Komponenten finnes for servere som ikke kan kalle den. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
+`for` og `id` står i markupen, som HTML krever for at feltet skal ha et navn uten JavaScript. Resten av koblingen, `aria-describedby` og `aria-invalid`, skriver serveren med `fs.field()`. Komponenten finnes for servere som ikke kan kalle den, og regner feltet som ugyldig fordi feilmeldingen synes. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
 
 ### frittstående
 

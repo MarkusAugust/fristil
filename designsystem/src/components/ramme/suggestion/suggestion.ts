@@ -9,6 +9,7 @@ export const SUGGESTION_FIELD_CLASS = "fs-suggestion__field" as const
 export const SUGGESTION_LIST_CLASS = "fs-suggestion__list" as const
 export const SUGGESTION_OPTION_CLASS = "fs-suggestion__option" as const
 export const SUGGESTION_EMPTY_CLASS = "fs-suggestion__empty" as const
+export const SUGGESTION_VALUE_CLASS = "fs-suggestion__value" as const
 export const SUGGESTION_STATUS_CLASS = "fs-sr-only" as const
 
 export type SuggestionOptions = Omit<FieldOptions, "id"> & {
@@ -127,6 +128,18 @@ export const suggestion = ({
       role: "status" as const,
       "aria-live": "polite" as const,
       "data-ignore-morph": "" as const,
+    }),
+    /**
+     * Det skjulte feltet som får koden til alternativet brukeren valgte.
+     *
+     * Feltet viser teksten, og uten JavaScript er det teksten som sendes.
+     * Med JavaScript skriver komponenten `data-value` fra alternativet hit,
+     * og tømmer det når brukeren endrer teksten. `name` skriver du selv; det
+     * hører til skjemaet ditt.
+     */
+    value: attributes({
+      class: SUGGESTION_VALUE_CLASS,
+      type: "hidden" as const,
     }),
     help: computed.help,
     error: computed.error,

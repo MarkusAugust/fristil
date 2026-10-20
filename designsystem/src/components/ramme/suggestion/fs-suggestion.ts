@@ -18,6 +18,7 @@ import {
   SUGGESTION_EMPTY_CLASS,
   SUGGESTION_LIST_CLASS,
   SUGGESTION_OPTION_CLASS,
+  SUGGESTION_VALUE_CLASS,
 } from "./suggestion.js"
 
 /**
@@ -50,6 +51,8 @@ export const FS_SUGGESTION_PARTS = {
   option: `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([role])`,
   empty: `.${SUGGESTION_EMPTY_CLASS}`,
   status: "[role='status']",
+  /** Det skjulte feltet som får koden til alternativet brukeren valgte. */
+  value: `input.${SUGGESTION_VALUE_CLASS}`,
 } as const
 
 const CONTROL_SELECTOR = FS_SUGGESTION_PARTS.control
@@ -61,11 +64,21 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  *
  * Serveren skriver feltet og lista. Lages markupen med JavaScript, skriver
  * `fs.suggestion()` rollene, id-ene og koblingen. Kommer den fra en mal uten
- * JavaScript, holder det med en `<label>`, et `<input>`, en
- * `.fs-suggestion__list` med `<li>` og et `[role="status"]`: komponenten
- * setter rollene, lager id-ene, kobler ledeteksten og lista til feltet, og
- * lukker lista til brukeren rører feltet. Bare det som mangler, så det
- * serveren skrev står. Komponenten rendrer ingenting. Den lagde tidligere
+ * JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, eller
+ * legger ledeteksten rundt feltet, som HTML krever for at feltet skal ha navn
+ * uten JavaScript. Resten holder det med: en `.fs-suggestion__list` med `<li>`
+ * og et `[role="status"]`. Komponenten setter rollene, gir lista og
+ * alternativene id, kobler lista til feltet, og lukker lista til brukeren
+ * rører feltet. Bare det som mangler, så det serveren skrev står.
+ *
+ * Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen
+ * en node på id, og et felt med en id serveren ikke sendte, blir byttet ut ved
+ * neste oppdatering, med fokus og det brukeren har skrevet.
+ *
+ * Feltet viser alltid teksten til alternativet. Har alternativene
+ * `data-value`, og serveren har skrevet et skjult `.fs-suggestion__value`,
+ * får det skjulte feltet koden. Uten JavaScript sendes teksten, og serveren
+ * slår opp. Komponenten rendrer ingenting. Den lagde tidligere
  * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
  * skriptet hadde kjørt, og ingenting ble med i innsendingen.
  *
@@ -114,6 +127,16 @@ export class FsSuggestion extends HostElement {
   private readonly roledByMe = new WeakSet<Element>()
   /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
   private choosing = false
+  /**
+   * Teksten og koden til valget som står i feltet, når verdifeltet er i bruk.
+   *
+   * Paret er det koden i verdifeltet gjelder for. Endrer brukeren teksten,
+   * gjelder koden ikke lenger, og verdifeltet tømmes; ellers ville skjemaet
+   * sendt koden for Bergen med teksten «Bodø» i feltet. Står teksten igjen
+   * etter en oppdatering, settes koden tilbake: verdifeltets `value` er et
+   * attributt, og en morfing skriver serverens over det komponenten satte.
+   */
+  private chosen?: { label: string; value: string }
   /**
    * Om lista står åpen, og hvilket alternativ som er markert.
    *
@@ -166,6 +189,13 @@ export class FsSuggestion extends HostElement {
         "autocomplete",
         "aria-autocomplete",
         "class",
+        // Verdifeltets `value` er et attributt, og en morfing kan skrive
+        // serverens tomme verdi over koden brukeren valgte.
+        "value",
+        // Et felt som blir `readonly` eller `disabled` skal lukke lista.
+        "readonly",
+        "disabled",
+        "aria-disabled",
       ],
     })
     this.sync()
@@ -236,24 +266,37 @@ export class FsSuggestion extends HostElement {
     }
     const label = this.querySelector("label")
     const root = this.getRootNode() as Document | ShadowRoot
-    /*
-     * `for` og `id` er den samme opplysningen. Byttet en patch ut feltet,
-     * kom det nye uten id mens ledeteksten beholdt sin `for`, og en ny,
-     * tilfeldig id på feltet rev koblingen. Peker `for` på ingenting, er det
-     * den id-en feltet skal ha.
-     */
-    if (!control.id) {
-      const wanted = label?.getAttribute("for")
-      const free = wanted && !root.getElementById?.(wanted)
-      // Husket på noden, så en senere morfing som river både `id` og `for`
-      // gir den samme tilbake.
-      if (free) this.ids.set(control, wanted)
-      setAttr(control, "id", this.rememberedId(control, "fs-suggestion"))
-    }
 
     if (label) {
       addClass(label, LABEL_CLASS)
-      if (!label.hasAttribute("for")) setAttr(label, "for", control.id)
+      // `for` fra feltets id, aldri motsatt: komponenten skriver ikke id på
+      // feltet. Står ledeteksten rundt feltet, er koblingen implisitt.
+      if (
+        control.id &&
+        !label.contains(control) &&
+        !label.hasAttribute("for")
+      ) {
+        setAttr(label, "for", control.id)
+      }
+      warnAboutMarkup(
+        this,
+        "<label> er ikke koblet til feltet: den har ingen for, og står ikke " +
+          "rundt feltet. Uten JavaScript har feltet da ingen ledetekst, og en " +
+          "skjermleser leser det opp uten navn. Skriv for på ledeteksten og id " +
+          "på feltet, eller legg <label> rundt feltet. Komponenten lager ikke " +
+          "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
+          "serveren til å bytte ut feltet.",
+        () => {
+          const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
+          const labelNow = this.querySelector("label")
+          return (
+            now !== null &&
+            labelNow !== null &&
+            !now.id &&
+            !labelNow.contains(now)
+          )
+        },
+      )
     }
 
     const list = this.listElement
@@ -297,6 +340,21 @@ export class FsSuggestion extends HostElement {
    */
   private repair(): void {
     if (isServerControlled(this) || !this.control) return
+
+    const valueField = this.valueField
+    if (
+      valueField &&
+      this.chosen &&
+      this.control.value === this.chosen.label &&
+      valueField.value === ""
+    ) {
+      this.writeCode(valueField, this.chosen.value)
+    }
+
+    // Et felt som ble `readonly` eller `disabled` mens lista sto åpen, lukker
+    // den. Ellers holdt reparasjonen den åpen, og Escape gjør ingenting i et
+    // låst felt.
+    if (this.locked && this.wantOpen) this.setOpen(false)
 
     if (this.wantOpen !== undefined) {
       /*
@@ -389,6 +447,15 @@ export class FsSuggestion extends HostElement {
     return this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.empty)
   }
 
+  private get valueField(): HTMLInputElement | null {
+    return this.querySelector<HTMLInputElement>(FS_SUGGESTION_PARTS.value)
+  }
+
+  /** Feltet tar ikke imot noe: `readonly` eller `disabled`. */
+  private get locked(): boolean {
+    return Boolean(this.control?.readOnly || this.control?.disabled)
+  }
+
   /**
    * Alternativene, kjent igjen på rollen og ikke på klassen.
    *
@@ -416,7 +483,7 @@ export class FsSuggestion extends HostElement {
    * oppslaget riktig av seg selv.
    */
   private get activeIndex(): number {
-    return this.visible.findIndex(
+    return this.selectable.findIndex(
       (option) => option.getAttribute("aria-selected") === "true",
     )
   }
@@ -424,6 +491,17 @@ export class FsSuggestion extends HostElement {
   /** Alternativene som er synlige nå. */
   private get visible(): HTMLElement[] {
     return this.options.filter((option) => !option.hidden)
+  }
+
+  /**
+   * De synlige alternativene som kan velges. Et alternativ med
+   * `aria-disabled="true"` vises, men hoppes over av piltastene og kan ikke
+   * velges, verken med tastatur eller mus.
+   */
+  private get selectable(): HTMLElement[] {
+    return this.visible.filter(
+      (option) => option.getAttribute("aria-disabled") !== "true",
+    )
   }
 
   private unbind(): void {
@@ -441,45 +519,32 @@ export class FsSuggestion extends HostElement {
   }
 
   /**
-   * Sier fra når en patch byttet ut feltet fordi serveren ikke skrev id.
+   * Sier fra når en oppdatering byttet ut feltet fordi id-en fra serveren
+   * endret seg.
    *
-   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
-   * gamle fjernes, og serverens settes inn. Lager komponenten id-en selv,
-   * får hver patch fra en mal uten id dermed et nytt felt, og det brukeren
-   * skrev, fokus og lista er borte. Serveren ser bare et felt som ble tomt.
-   *
-   * Beskjeden kommer når det skjer, og bare når brukeren mistet noe: det
-   * gamle feltet er ute av treet, id-en var komponentens, det nye kom uten,
-   * og det sto noe annet i det gamle feltet enn i det nye. En server som
-   * sender teksten tilbake har ikke mistet den. En advarsel om hvert bart
-   * felt ville truffet alle som aldri patcher, eller patcher smalt slik
-   * dokumentasjonen anbefaler. `wire()` har alt gitt det nye feltet en id,
-   * så det er minnet som sier om den er komponentens.
+   * Beskjeden kommer bare når brukeren hadde noe å miste: det gamle feltet er
+   * ute av treet, begge hadde en id fra serveren, id-ene er ulike, `name` er
+   * det samme, og det sto noe annet i det gamle feltet enn i det nye. En
+   * server som sender teksten tilbake, har ikke mistet den.
    */
   private warnAboutReplacedControl(
     lost: HTMLInputElement,
     control: HTMLInputElement,
   ): void {
-    if (lost.isConnected || !this.ids.has(lost) || !this.ids.has(control)) {
+    if (lost.isConnected || !lost.id || !control.id || lost.id === control.id)
       return
-    }
+    if (lost.getAttribute("name") !== control.getAttribute("name")) return
     if (lost.value === control.value) return
 
-    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
-    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
-      "en patch byttet ut feltet, og det brukeren hadde skrevet gikk tapt, " +
-        "sammen med fokus og lista. Feltet hadde en id komponenten laget " +
-        "selv, og serverens markup har ingen. En morfing kjenner da ikke " +
-        "feltet igjen og setter inn et nytt: skriv id på feltet, lista og " +
-        "alternativene i malen, som fs.suggestion() gjør, så beholdes de. " +
-        "Bytter patchen ut elementene uansett, med inner, replace eller " +
-        "innerHTML, må serveren patche utenom feltet.",
-      () => {
-        const now = this.querySelector(CONTROL_SELECTOR)
-        return now !== null && this.ids.has(now)
-      },
+      "en oppdatering fra serveren byttet ut feltet, og det brukeren hadde " +
+        "skrevet gikk tapt, sammen med fokus og lista. Id-en på feltet var en " +
+        "annen enn sist, og da kjenner oppdateringen ikke feltet igjen. Lag " +
+        "id-en av noe som er det samme hver gang, som navnet på feltet eller en " +
+        "nøkkel i dataene, ikke av et tilfeldig tall eller en teller.",
+      // Byttet har skjedd og kan ikke gå over av seg selv.
+      () => this.isConnected,
     )
   }
 
@@ -524,6 +589,12 @@ export class FsSuggestion extends HostElement {
 
     if (control !== this.control) {
       if (this.control) this.warnAboutReplacedControl(this.control, control)
+      // Et verdifelt serveren fylte, gjelder teksten som står i feltet nå.
+      const valueField = this.valueField
+      this.chosen =
+        valueField && valueField.value !== ""
+          ? { label: control.value, value: valueField.value }
+          : undefined
       this.control?.removeEventListener("input", this.handleInput)
       this.control?.removeEventListener("keydown", this.handleKeydown)
       this.control?.removeEventListener("focus", this.handleFocus)
@@ -559,6 +630,7 @@ export class FsSuggestion extends HostElement {
     for (const option of this.options) {
       if (this.bound.has(option)) continue
       option.addEventListener("mousedown", this.handleOptionMouseDown)
+      option.addEventListener("click", this.handleOptionClick)
       this.bound.add(option)
     }
   }
@@ -741,7 +813,7 @@ export class FsSuggestion extends HostElement {
   }
 
   private markActive(index: number): void {
-    const shown = this.visible
+    const shown = this.selectable
     if (shown.length === 0 || !this.control) return
 
     const next = (index + shown.length) % shown.length
@@ -765,10 +837,11 @@ export class FsSuggestion extends HostElement {
   }
 
   private choose(option: HTMLElement): void {
-    if (!this.control) return
+    if (!this.control || this.locked) return
+    if (option.getAttribute("aria-disabled") === "true") return
 
-    const value =
-      option.getAttribute("data-value") ?? (option.textContent ?? "").trim()
+    const label = (option.textContent ?? "").trim()
+    const value = option.getAttribute("data-value") ?? label
     /*
      * Setteren fra prototypekjeden, forbi en `value` React har lagt på selve
      * noden for å følge med. Satt rett på noden så React ingen endring,
@@ -784,8 +857,17 @@ export class FsSuggestion extends HostElement {
     ) {
       setter = Object.getOwnPropertyDescriptor(proto, "value")?.set
     }
-    if (setter) setter.call(this.control, value)
-    else this.control.value = value
+    // Feltet viser teksten. Koden går til verdifeltet, når serveren har
+    // skrevet et, og i hendelsen. Før havnet `data-value` i feltet, og
+    // brukeren som valgte Bergen, så «4601».
+    if (setter) setter.call(this.control, label)
+    else this.control.value = label
+
+    const valueField = this.valueField
+    if (valueField) {
+      this.writeCode(valueField, value)
+      this.chosen = { label, value }
+    }
 
     // Flagget må stå før hendelsene sendes. `input` er den samme hendelsen
     // komponenten selv lytter på, så uten dette åpner lista seg igjen i det
@@ -798,20 +880,44 @@ export class FsSuggestion extends HostElement {
     this.setOpen(false)
     this.dispatchEvent(
       new CustomEvent("suggestion-select", {
-        detail: { value },
+        detail: { value, label },
         bubbles: true,
         composed: true,
       }),
     )
   }
 
+  /**
+   * Skriver koden i verdifeltet og sender `input` og `change` på det, slik et
+   * felt brukeren skrev i ville gjort. Uten hendelsene så verken `data-bind` i
+   * Datastar eller tilstanden i en React-app koden.
+   */
+  private writeCode(valueField: HTMLInputElement, code: string): void {
+    if (valueField.value === code) return
+    setAttr(valueField, "value", code)
+    valueField.dispatchEvent(new Event("input", { bubbles: true }))
+    valueField.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
   private handleInput = (): void => {
     if (this.choosing) return
+    // Brukeren endret teksten etter et valg. Koden gjelder ikke lenger.
+    const valueField = this.valueField
+    if (
+      valueField &&
+      this.chosen &&
+      this.control?.value !== this.chosen.label
+    ) {
+      this.writeCode(valueField, "")
+      this.chosen = undefined
+    }
+    if (this.locked) return
     this.filter()
     this.setOpen(true)
   }
 
   private handleFocus = (): void => {
+    if (this.locked) return
     this.filter()
     this.setOpen(true)
   }
@@ -825,6 +931,10 @@ export class FsSuggestion extends HostElement {
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
+    // Under en IME-komposisjon hører tastene til komposisjonen. Enter
+    // bekrefter tegnene, og skal ikke velge det markerte alternativet.
+    if (event.isComposing || event.keyCode === 229) return
+    if (this.locked) return
     const open = this.listElement?.hidden === false
 
     if (event.key === "ArrowDown") {
@@ -847,9 +957,18 @@ export class FsSuggestion extends HostElement {
       // Er ingenting markert, går pil opp til det siste. `activeIndex - 1`
       // ville gitt det nest siste, siden ingenting markert er -1.
       this.markActive(this.activeIndex < 0 ? -1 : this.activeIndex - 1)
+    } else if (
+      (event.key === "PageUp" || event.key === "PageDown") &&
+      open &&
+      this.selectable.length > 0
+    ) {
+      // Home og End flytter markøren i teksten, og røres ikke. PgUp og PgDn
+      // går til første og siste alternativ.
+      event.preventDefault()
+      this.markActive(event.key === "PageUp" ? 0 : this.selectable.length - 1)
     } else if (event.key === "Enter" && open && this.activeIndex >= 0) {
       event.preventDefault()
-      const chosen = this.visible[this.activeIndex]
+      const chosen = this.selectable[this.activeIndex]
       if (chosen) this.choose(chosen)
     } else if (event.key === "Escape" && open) {
       event.preventDefault()
@@ -862,9 +981,15 @@ export class FsSuggestion extends HostElement {
   }
 
   private handleOptionMouseDown = (event: Event): void => {
-    // mousedown og ikke click: feltet mister ellers fokus før valget rekker
-    // å skje, og lista lukker seg først.
+    // Holder fokus i feltet. Uten dette mistet feltet fokus før `click`, og
+    // `focusout` lukket lista før valget rakk å skje.
     event.preventDefault()
+  }
+
+  private handleOptionClick = (event: Event): void => {
+    // Valget skjer på `click`, som hjelpemidler også sender når de aktiverer
+    // et element. Før skjedde det på `mousedown`, og en `click` alene valgte
+    // ingenting.
     this.choose(event.currentTarget as HTMLElement)
   }
 }

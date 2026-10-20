@@ -335,9 +335,9 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   field: [
     {
-      markup: `<fs-field invalid>
-        <label class="fs-label">E-postadressen vi skal sende vedtaket til</label>
-        <input class="fs-input" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
+      markup: `<fs-field>
+        <label class="fs-label" for="smal-epost">E-postadressen vi skal sende vedtaket til</label>
+        <input class="fs-input" id="smal-epost" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
         <p class="fs-help-text">Vi sender aldri reklame eller nyhetsbrev.</p>
         <p class="fs-error-text">Skriv en e-postadresse med @ og et domene</p>
       </fs-field>`,

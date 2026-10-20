@@ -179,7 +179,10 @@ Datastar kan oppdatere på flere måter. Standarden, og den anbefalte, heter
 `outer`, og den *morfer*: serveren sender ny HTML for et område, og Datastar
 endrer elementene som allerede står der slik at de blir like den nye
 versjonen. Elementene beholdes, bare det som er ulikt endres. Det er derfor
-tekst du har skrevet i et felt ikke forsvinner.
+tekst du har skrevet i et felt blir stående med Datastar. idiomorph, som htmx
+kan morfe med, setter verdien fra serverens HTML, så der må serveren sende
+teksten tilbake for at den skal stå. Unntaket er feltet som har fokus når
+`ignoreActiveValue` er slått på i idiomorph.
 
 Morfingen kjenner et element igjen på tagnavnet og på id-en. Har elementet i
 siden en id, og serverens element har ingen eller en annen, morfes det ikke:
@@ -225,48 +228,48 @@ problemet.
 Resten av kapittelet gjelder når du likevel må sende et større område på
 nytt.
 
-#### Skriv struktur, og la komponenten koble
+#### Skriv det HTML krever, og la komponenten koble resten
 
-Med smale oppdateringer trenger serveren ikke skrive koblingen i det hele
-tatt. Dette er alt den sender:
+Serveren skriver det som må stå der for at feltet skal virke uten JavaScript:
+`for` på ledeteksten og `id` på feltet, eller ledeteksten rundt feltet.
+Resten skriver komponenten. Dette er alt serveren sender:
 
 ```html
-<fs-field invalid required-marker="symbol">
-  <label>E-post</label>
-  <input class="fs-input" type="email">
+<fs-field>
+  <label for="epost" data-required="symbol">E-post</label>
+  <input class="fs-input" id="epost" type="email">
   <p class="fs-help-text">Vi sender aldri spam.</p>
   <p class="fs-error-text">Skriv en gyldig adresse.</p>
 </fs-field>
 ```
 
-Ingen id-er, ingen `for`, ingen `aria-describedby`. Klassene sier hvilket
-element som er hva, og `invalid` sier at feltet er ugyldig. Resten gjør
-komponenten, og dette står i siden etterpå:
+Ingen `aria-describedby` og ingen `aria-invalid`. Klassene sier hvilket
+element som er hva, og at feilmeldingen synes, sier at feltet er ugyldig.
+Resten gjør komponenten, og dette står i siden etterpå:
 
 ```
 label.class         fs-label
-label.for           fs-field-control-hzhptny
-label.data-required symbol
-input.id            fs-field-control-hzhptny
+label.for           epost
+input.id            epost
 aria-describedby    fs-field-help-1k0quej fs-field-error-dibhi29
 aria-invalid        true
 data-state          invalid
 ```
 
-Feilmeldingen vises, og blir med i `aria-describedby`. Er feltet gyldig,
-skjules den og tas ut av koblingen igjen.
+Id-en på feltet er serverens. Komponenten skriver aldri id på feltet, bare på
+hjelpeteksten og feilmeldingen, som ikke har noe brukeren kan miste. Rendrer
+malen feilmeldingen bare når feltet er ugyldig, er feltet gyldig når den ikke
+står der.
 
 Dette gjelder uansett hvilket språk serveren er skrevet i. En Go-mal, en
 PHP-fil eller en Ktor-app skriver det samme, og ingen av dem trenger å
 kjenne reglene. Det er hele poenget med at koblingen bor i komponenten.
 
 Patchen river koblingen bort, siden ingenting av den sto i HTML-en serveren
-sendte. Komponenten ser at den er borte, og setter den tilbake. Id-ene blir
-de samme som før: komponenten husker dem, slik at en skjermleser midt i en
-opplesning ikke følger en peker som skifter under den.
-
-Det gjelder koblingen. Det brukeren gjorde er en annen sak, og der kommer
-id-ene inn igjen, se neste avsnitt.
+sendte. Komponenten ser at den er borte, og setter den tilbake. Id-ene på
+hjelpeteksten og feilmeldingen blir de samme som før: komponenten husker dem,
+slik at en skjermleser midt i en opplesning ikke følger en peker som skifter
+under den.
 
 #### Komponenten setter tilbake det brukeren gjorde
 
@@ -280,7 +283,7 @@ attributter det gjelder:
 
 | Komponent | Hva den setter tilbake |
 | --- | --- |
-| `<fs-field>` | `id`, `for`, `aria-describedby` og resten av koblingen, med de samme id-ene som før |
+| `<fs-field>` | `aria-describedby`, `aria-invalid` og id-ene på hjelpeteksten og feilmeldingen, de samme som før |
 | `<fs-tabs>` | fanevalget: `aria-selected` og `tabindex` på fanene, `hidden` på panelene |
 | `<fs-popover>` | `open` på verten, `aria-expanded` på knappen, posisjonen på panelet |
 | `<fs-suggestion>` | om lista står åpen, hva som er markert, og hva filtreringen skjuler |
@@ -295,34 +298,45 @@ og et slikt attributt betyr bare noe for koden som leser det. Fredning virker
 altså fordi morferen leser lista. Reparasjon virker fordi komponenten leser
 markupen, og det avhenger ikke av hvem som morfer.
 
-#### Skriv id der komponenten ellers lager den
+#### Id-er som overlever en oppdatering
 
 Reparasjonen forutsetter én ting: at morfingen beholder elementene. Fanevalget
 er knyttet til selve knappen, og teksten brukeren skrev står i selve feltet.
 Byttes elementet ut, er det borte, og ingen komponent kan hente det tilbake.
 
-Og det er nettopp det som skjer med bar markup. Komponenten lager id-er på
-fanene og panelene, på feltet og lista, og på panelet i sprettoppvinduet, fordi
-koblingen trenger dem. Serveren kjenner ikke de id-ene. Neste gang den sender
-området, står det et element med id i siden og et uten i patchen, og morfingen
-kjenner dem ikke igjen: den fjerner det gamle og setter inn det nye. Fanen
-brukeren valgte faller tilbake til serverens, og feltet blir tomt. Datastar og
-idiomorph gjør begge dette, med vilje.
+Morfingen kjenner et element igjen på id. Et element uten id beholdes. Et
+element med en id serveren ikke sendte, byttes ut: Datastar og idiomorph gjør
+begge dette, med vilje. Derfor skriver komponentene aldri id på feltet i
+`<fs-field>` og `<fs-suggestion>`. `for` og `id` skriver malen, som HTML uansett
+krever for at feltet skal ha et navn før skriptet har kjørt, eller så står
+ledeteksten rundt feltet og ingen id trengs.
 
-Løsningen er at serveren skriver id på de elementene selv. Da stemmer id-ene
-på begge sider, elementene beholdes, og komponenten setter resten tilbake:
+Fanene og sprettoppvinduet trenger id for koblingen, og der skriver serveren
+dem:
 
 | Komponent | Skriv id på |
 | --- | --- |
 | `<fs-tabs>` | hver fane og hvert panel |
-| `<fs-field>` | kontrollen |
-| `<fs-suggestion>` | feltet, lista og hvert alternativ |
+| `<fs-field>` | kontrollen, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
+| `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
 | `<fs-popover>` | panelet |
 
 Byggefunksjonene gjør det alt: `fs.tabs({ id })` skriver `sak-tab-0` og
 `sak-panel-0`, og Kotlin-bindingen det samme. Skriver du malen for hånd,
-skriver du id-ene selv, og de må være de samme ved hver rendring. En id som
-lages på nytt per rendring er like fremmed for morfingen som ingen.
+skriver du id-ene selv, og de må være de samme ved hver rendring.
+
+I en løkke lager du id-en av en nøkkel i dataene, aldri av noe som følger
+rendringen:
+
+| Id-en lages av | Ved en oppdatering |
+| --- | --- |
+| et tilfeldig tall | ny id hver gang, elementet byttes ut |
+| en teller | blir en annen når serveren sender bare et utsnitt, elementet byttes ut |
+| indeksen i lista | elementet beholdes, men står nå for en annen rad: det brukeren skrev, havner i feil rad |
+| en nøkkel i dataene (`merknad-{{.Kode}}`) | riktig rad, også når serveren setter inn en ny |
+
+Det er den samme regelen som `key` i React: bare dataene vet at raden er den
+samme som sist.
 
 Går det galt likevel, sier komponenten fra i konsollen, én gang, i det
 øyeblikket patchen byttet ut elementene og noe gikk tapt. En side som aldri
@@ -377,12 +391,15 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
 #### Kort oppsummert
 
 1. **Send bare det som har endret seg.** Da oppstår ikke problemet.
-2. **Skriv struktur, ikke kobling.** Komponenten setter id-er, `for` og
-   `aria-describedby` selv, i hvilket som helst språk.
+2. **Skriv det HTML krever, og la komponenten koble resten.** `for` og `id`
+   på feltet skriver malen; `aria-describedby`, `aria-invalid` og id-ene på
+   hjelpeteksten og feilmeldingen skriver komponenten, i hvilket som helst
+   språk.
 3. **Det brukeren gjorde setter komponenten tilbake,** så lenge patchen
    beholder elementene. Sender du hele området på nytt, må serveren skrive id
-   på fanene, panelene, feltet og lista, ellers byttes de ut. Skal serveren
-   alene bestemme tilstanden, sier du det med `server-controlled`.
+   på fanene og panelene, ellers byttes de ut, og id-ene i en løkke kommer fra
+   en nøkkel i dataene. Skal serveren alene bestemme tilstanden, sier du det
+   med `server-controlled`.
 
 Ett unntak finnes. Må du sende et stort område på nytt mens brukeren står og
 fyller det ut, kan serveren skrive hele koblingen selv. Da har komponenten

@@ -1213,9 +1213,15 @@ export const classes: Classes = {
     "content": "parts",
     "parts": {
       "control": {
-        "selector": "input",
+        "selector": "input:not([type='hidden'])",
         "description": "Feltet brukeren skriver i.",
         "content": "none"
+      },
+      "value": {
+        "selector": ".fs-suggestion__value",
+        "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte.",
+        "content": "none",
+        "optional": true
       },
       "list": {
         "selector": ".fs-suggestion__list",
@@ -1261,6 +1267,15 @@ export const classes: Classes = {
     "link": "https://fristil.sobernetics.no/components/suggestion/",
     "content": "text",
     "partOf": "fs-suggestion__list",
+    "attributes": {}
+  },
+  "fs-suggestion__value": {
+    "component": "suggestion",
+    "title": "Suggestion",
+    "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "content": "none",
+    "partOf": "fs-suggestion__field",
     "attributes": {}
   },
   "fs-suggestion__empty": {

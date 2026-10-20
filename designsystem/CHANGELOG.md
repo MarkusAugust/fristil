@@ -23,25 +23,75 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **`<fs-field>` og `<fs-suggestion>` skriver aldri id på feltet.** Datastar
+  og idiomorph kjenner igjen et element på id, og et felt med en id serveren
+  ikke sendte, ble byttet ut ved neste oppdatering, med fokus og det
+  brukeren hadde skrevet. Nå er det malen som skriver `for` på ledeteksten og
+  `id` på feltet, som HTML uansett krever for at feltet skal ha et navn før
+  skriptet har kjørt, eller som legger ledeteksten rundt feltet. Komponenten
+  skriver `for` fra feltets id når ledeteksten ikke står rundt feltet. Et felt uten id med
+  ledeteksten ved siden av gir en advarsel i konsollen. Hjelpeteksten,
+  feilmeldingen, lista og alternativene får fortsatt id av komponenten: de har
+  ikke noe brukeren kan miste. **Slik oppdaterer du:** skriv `for` og `id` i
+  malen, eller legg `<label>` rundt feltet.
+- **`invalid`, `required-marker` og `control-id` er tatt ut av `<fs-field>`.**
+  Feltet er ugyldig når feilmeldingen synes, altså står uten `hidden`, eller
+  når serveren har skrevet `aria-invalid` på feltet. Komponenten rører aldri
+  `hidden` på feilmeldingen; før skjulte den en feilmelding serveren hadde
+  rendret synlig, fordi verten manglet `invalid`. Påkrevd-merket står som
+  `data-required` på ledeteksten, og vises da også uten JavaScript.
+  `control-id` fikk komponenten til å skrive en id serveren ikke sendte.
+  **Slik oppdaterer du:** `<fs-field invalid>` blir en synlig
+  `.fs-error-text` (i Datastar `data-attr:hidden="!$ugyldig"` på
+  feilmeldingen framfor `data-attr:invalid` på verten), `required-marker="x"`
+  blir `data-required="x"` på `<label>`, og `control-id` blir `id` på feltet.
+  Egenskapene `invalid`, `requiredMarker` og `controlId` er borte, og React-
+  typene i `react-jsx` er oppdatert.
+- **`<fs-suggestion>` viser alltid teksten i feltet.** Før skrev den
+  `data-value` inn i det synlige feltet, så brukeren som valgte Bergen, så
+  «4601», og skjemaet sendte koden under feltets `name`. Nå får et skjult
+  `.fs-suggestion__value` koden når serveren har skrevet det, og
+  `suggestion-select` har både `value` og `label`. **Slik oppdaterer du:**
+  skal skjemaet sende koden, legg inn `<input class="fs-suggestion__value"
+  type="hidden" name="…">`, eller les `evt.detail.value`.
+
 ### Lagt til
 
-- **`<fs-tabs>`, `<fs-field>`, `<fs-suggestion>` og `<fs-popover>` sier fra
-  når en patch byttet ut elementene fordi serveren ikke skrev id.** Datastar
-  og idiomorph morfer ikke et element med id inn i et uten: det gamle fjernes
-  og serverens settes inn. Lager komponenten id-ene selv, som den gjør for
-  bar markup, byttes fanene, kontrollen, feltet og panelet ut ved neste
-  patch som sender området på nytt, og fanevalget, teksten brukeren skrev
-  og fokus er borte. Dokumentasjonen lovet at komponenten setter det
-  tilbake, og det gjør den bare når elementene beholdes. Nå kommer det én
-  advarsel i konsollen i det øyeblikket det skjer, med beskjed om å skrive
-  id i malen. Sider som aldri patcher, eller patcher smalt, får ingen
-  advarsel. Reprodusert mot Datastar v1.0.4 i
-  `fs-tabs-morph.browser.test.ts`, som kjører den ekte bundlen.
+- **`<fs-tabs>` og `<fs-popover>` sier fra når en patch byttet ut
+  elementene fordi serveren ikke skrev id.** Datastar og idiomorph morfer
+  ikke et element med id inn i et uten: det gamle fjernes og serverens
+  settes inn. Lager komponenten id-ene selv, som den gjør for bar markup,
+  byttes fanene og panelet ut ved neste patch som sender området på nytt, og
+  fanevalget og fokus er borte. Nå kommer det én advarsel i konsollen i det
+  øyeblikket det skjer, med beskjed om å skrive id i malen. Sider som aldri
+  patcher, eller patcher smalt, får ingen advarsel. Reprodusert mot Datastar
+  v1.0.4 i `fs-tabs-morph.browser.test.ts`, som kjører den ekte bundlen.
+- **`<fs-field>` og `<fs-suggestion>` sier fra når en oppdatering byttet ut
+  feltet fordi id-en fra serveren endret seg** mellom to rendringer, som når
+  malen lager id-en av et tilfeldig tall eller en teller, og det brukeren
+  hadde skrevet, gikk tapt.
+- **`fs.suggestion()` gir det skjulte feltet for koden som `value`**, og
+  `.fs-suggestion__value` er en ny del i manifestet og i begge editorene.
+  Komponenten sender `input` og `change` på feltet når den skriver eller
+  tømmer koden, så `data-bind` i Datastar og tilstanden i React ser den.
+- **`<fs-suggestion>` går til første og siste alternativ med PgUp og PgDn.**
+  Home og End røres ikke; de flytter markøren i teksten.
 - **`idOrFallback` sier også at en ny id per rendring bytter ut
   elementene** ved neste patch.
 
 ### Rettet
 
+- **`<fs-suggestion>` valgte bare på `mousedown`.** Hjelpemidler som
+  aktiverer et element, sender `click`, og den valgte da ingenting. Nå skjer
+  valget på `click`, og `mousedown` holder bare fokus i feltet.
+- **`<fs-suggestion>` åpnet lista og endret verdien i et felt med
+  `readonly`.** Nå åpner et felt med `readonly` eller `disabled` ikke lista.
+- **Et alternativ med `aria-disabled="true"` kunne velges.** Nå vises det,
+  men hoppes over av piltastene og kan ikke velges med mus.
+- **Enter under en IME-komposisjon valgte det markerte alternativet.** Nå
+  hører tastene til komposisjonen.
 - **`<fs-popover>` lukket vinduet etter en patch fra en mal uten
   `popover`.** Morfingen tok `open` på verten og `popover` på panelet i
   samme omgang. Komponenten lukket panelet, gjenåpnet det i neste mikrotask,
@@ -51,11 +101,13 @@ egen overskrift «Brytende».
 
 ### Endret
 
-- **«Markup og oppførsel» sier at reparasjonen forutsetter id fra
-  serveren** når hele området sendes på nytt, med en tabell over hva hver
-  komponent trenger id på. Regelbøkene i `agent/` og sidene for faner og
-  felt sier det samme. Før sto det at `outer` morfer og at malen ikke
-  trenger gjøre noe, og det holdt bare for markup fra byggefunksjonene.
+- **«Markup og oppførsel» sier hvilke id-er som overlever en oppdatering.**
+  Felt og forslagsfelt får `for` og `id` fra malen, fanene og
+  sprettoppvinduet trenger id fra serveren når hele området sendes på nytt,
+  og id-er i en løkke lages av en nøkkel i dataene, aldri av indeksen eller en
+  teller. Regelbøkene i `agent/` og sidene for felt, forslagsfelt og faner
+  sier det samme. Før sto det at `outer` morfer og at malen ikke trenger gjøre
+  noe, og det holdt bare for markup fra byggefunksjonene.
 
 ## 0.34.0 (2026-10-18)
 

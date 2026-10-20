@@ -68,6 +68,12 @@
     color: var(--fs-color-accent-content);
   }
 
+  /* Det skjulte feltet for koden. Et `type="hidden"` vises aldri; regelen
+     står for at klassen skal finnes også når noen gir feltet en annen type. */
+  .fs-suggestion__value {
+    display: none;
+  }
+
   .fs-suggestion__empty {
     padding: var(
       --fs-suggestion-option-padding,

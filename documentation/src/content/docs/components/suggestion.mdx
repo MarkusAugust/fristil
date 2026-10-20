@@ -11,7 +11,7 @@ Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, t
 Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en `<label>`, et `<input>`, en `.fs-suggestion__list` med `<li>` og et statuselement: komponenten setter rollene, lager id-ene, kobler delene og holder lista lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `fs.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Resten holder det med: en `.fs-suggestion__list` med `<li>` og et statuselement. Komponenten setter rollene, gir lista og alternativene id, kobler lista til feltet og holder den lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
@@ -39,12 +39,13 @@ defineFsSuggestion()
     ```
 
     ```html
-    <!-- Rollene, id-ene og koblingen setter komponenten. Statuselementet
-         skriver du: det er der antall treff leses opp. -->
+    <!-- for og id skriver du, så feltet har et navn uten JavaScript. Rollene
+         og koblingen til lista setter komponenten. Statuselementet skriver
+         du: det er der antall treff leses opp. -->
     <fs-suggestion id="kommunesok">
-      <label class="fs-label">Kommune</label>
+      <label class="fs-label" for="kommune">Kommune</label>
       <div class="fs-suggestion__field">
-        <input class="fs-input" name="kommune" type="text">
+        <input class="fs-input" id="kommune" name="kommune" type="text">
         <ul class="fs-suggestion__list">
           <li>Bergen</li>
           <li>Bodø</li>
@@ -64,7 +65,7 @@ defineFsSuggestion()
 
     <script type="module">
       document.getElementById("kommunesok").addEventListener("suggestion-select", (evt) => {
-        console.log("valgte", evt.detail.value)
+        console.log("valgte", evt.detail.label, evt.detail.value)
       })
     </script>
     ```
@@ -164,9 +165,9 @@ defineFsSuggestion()
     <fs-suggestion prefiltered
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
-      <label class="fs-label">Kommune</label>
+      <label class="fs-label" for="kommune">Kommune</label>
       <div class="fs-suggestion__field">
-        <input class="fs-input" name="kommune" type="text">
+        <input class="fs-input" id="kommune" name="kommune" type="text">
         <ul class="fs-suggestion__list" id="kommuner"></ul>
         <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
       </div>
@@ -208,13 +209,32 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
 
 Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-og-oppforsel/).
 
-Kommer markupen fra en mal uten JavaScript, er strukturen nok, slik «Ren HTML»-oppskriften viser. Komponenten setter rollene, lager id-ene, skriver `for` på ledeteksten og `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
+Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Alternativet kan bære en annen verdi enn teksten sin med `data-value`:
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Lista og alternativene har ikke noe brukeren kan miste, og får id av komponenten når de mangler.
+
+### Tekst og kode
+
+Feltet viser alltid teksten til alternativet brukeren valgte. Skal skjemaet sende en kode, som kommunenummeret, gir du alternativene `data-value` og skriver et skjult felt for koden:
 
 ```html
-<li class="fs-suggestion__option" id="kommune-option-0" role="option" data-value="4601">Bergen</li>
+<fs-suggestion>
+  <label class="fs-label" for="kommune">Kommune</label>
+  <div class="fs-suggestion__field">
+    <input class="fs-input" id="kommune" name="kommune-tekst" type="text">
+    <input class="fs-suggestion__value" type="hidden" name="kommune">
+    <ul class="fs-suggestion__list">
+      <li data-value="4601">Bergen</li>
+      <li data-value="1804">Bodø</li>
+    </ul>
+    <span class="fs-sr-only" role="status" aria-live="polite" data-ignore-morph></span>
+  </div>
+</fs-suggestion>
 ```
+
+Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
+
+Uten JavaScript sendes teksten med et tomt felt for koden, og serveren slår opp koden selv. Er teksten tvetydig, som Våler og Herøy, som finnes i to fylker, svarer serveren med en side der brukeren velger. Koden står da to steder, i `data-value` og i det skjulte feltet, og det er et bevisst valg: HTML har ikke noe element som viser én tekst og sender en annen verdi når brukeren også kan skrive fritt. `fs.suggestion()` gir det skjulte feltet som `forslag.value`; `name` skriver du selv.
 
 ## Når noen andre filtrerer
 
@@ -292,6 +312,7 @@ Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registr
 | `.fs-suggestion__list` | Selve lista. `hidden` når den er lukket |
 | `.fs-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
 | `.fs-suggestion__empty` | Teksten som vises når ingenting passer |
+| `.fs-suggestion__value` | Det skjulte feltet som får koden til alternativet brukeren valgte |
 
 | Variabel | Reserve |
 | --- | --- |
@@ -312,11 +333,18 @@ Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role
 - **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
 - **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og området har derfor `data-ignore-morph`.
 - **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
+- **Et alternativ med `aria-disabled="true"`** vises, men hoppes over av piltastene og kan ikke velges.
+- **Et felt med `readonly` eller `disabled`** åpner ikke lista.
+- **Valget skjer på `click`**, som hjelpemidler også sender når de aktiverer et element.
+- **Under en IME-komposisjon** hører tastene til komposisjonen, og Enter velger ikke noe.
 
 | Tast | Gjør |
 | --- | --- |
 | Pil ned | Åpner lista, eller flytter til neste alternativ |
 | Pil opp | Åpner lista på det siste alternativet, eller flytter til forrige |
+| PgUp, PgDn | Flytter til første eller siste alternativ |
 | Enter | Velger det markerte |
 | Escape | Lukker lista |
+
+Home og End flytter markøren i teksten, som i et vanlig felt.
 

@@ -107,8 +107,8 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     const flate = monter(`
       <div>
-        <label class="fs-label" for="epost">E-post</label>
-        <fs-field required-marker="symbol">
+        <label class="fs-label" for="epost" data-required="symbol">E-post</label>
+        <fs-field>
           <input class="fs-input" id="epost" type="email" />
         </fs-field>
       </div>
@@ -139,6 +139,102 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toHaveLength(1)
   })
 
+  it("ledeteksten som verken har for eller står rundt feltet", async () => {
+    /*
+     * Uten JavaScript har feltet da ingen ledetekst. Komponenten lager ikke
+     * id-en selv: en id serveren ikke sendte, får en oppdatering fra serveren
+     * til å bytte ut feltet, med fokus og det brukeren har skrevet.
+     */
+    const advarsel = lytt()
+
+    const flate = monter(`
+      <fs-field>
+        <label class="fs-label">E-post</label>
+        <input class="fs-input" type="email" />
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    expect(
+      meldinger(advarsel).filter((m) =>
+        m.includes("er ikke koblet til feltet"),
+      ),
+    ).toHaveLength(1)
+    expect(flate.querySelector("input")?.hasAttribute("id")).toBe(false)
+  })
+
+  it("men ikke når ledeteksten står rundt feltet", async () => {
+    const advarsel = lytt()
+
+    monter(`
+      <fs-field>
+        <label class="fs-label">E-post <input class="fs-input" type="email" /></label>
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    expect(advarsel).not.toHaveBeenCalled()
+  })
+
+  it("feltet som ble byttet ut fordi id-en fra serveren endret seg", async () => {
+    /*
+     * En mal som lager id-en av et tilfeldig tall eller en teller, gir en ny
+     * id ved hver rendring, og en oppdatering fra serveren kjenner da ikke
+     * feltet igjen. Det brukeren skrev, går tapt.
+     */
+    const advarsel = lytt()
+
+    const flate = monter(`
+      <fs-field>
+        <label class="fs-label" for="navn-1">Navn</label>
+        <input class="fs-input" id="navn-1" name="navn" />
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    const gammel = flate.querySelector("input") as HTMLInputElement
+    gammel.value = "Kari"
+    const ny = document.createElement("input")
+    ny.className = "fs-input"
+    ny.id = "navn-2"
+    ny.name = "navn"
+    const label = flate.querySelector("label") as HTMLLabelElement
+    label.htmlFor = "navn-2"
+    gammel.replaceWith(ny)
+    await ventTilRo()
+
+    expect(
+      meldinger(advarsel).filter((m) =>
+        m.includes("Id-en på kontrollen var en annen enn sist"),
+      ),
+    ).toHaveLength(1)
+  })
+
+  it("men ikke når serveren sendte et annet felt med vilje", async () => {
+    const advarsel = lytt()
+
+    const flate = monter(`
+      <fs-field>
+        <label class="fs-label" for="navn">Navn</label>
+        <input class="fs-input" id="navn" name="navn" />
+      </fs-field>
+    `)
+    await ventTilRo()
+
+    const gammel = flate.querySelector("input") as HTMLInputElement
+    gammel.value = "Kari"
+    const ny = document.createElement("input")
+    ny.className = "fs-input"
+    ny.id = "epost"
+    ny.name = "epost"
+    const label = flate.querySelector("label") as HTMLLabelElement
+    label.htmlFor = "epost"
+    gammel.replaceWith(ny)
+    await ventTilRo()
+
+    expect(advarsel).not.toHaveBeenCalled()
+  })
+
   it("men ikke når den andre kontrollen står i et felt inni", async () => {
     // Et felt i et felt er vanlig markup: et søkefelt i et sprettoppvindu
     // inni feltet. Hvert felt har da sin egen kontroll.
@@ -146,12 +242,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     monter(`
       <fs-field>
-        <label class="fs-label">Kommune</label>
-        <input class="fs-input" type="text" />
+        <label class="fs-label" for="kommune">Kommune</label>
+        <input class="fs-input" id="kommune" type="text" />
         <div popover>
           <fs-field>
-            <label class="fs-label">Søk i lista</label>
-            <input class="fs-input" type="search" />
+            <label class="fs-label">Søk i lista <input class="fs-input" type="search" /></label>
           </fs-field>
         </div>
       </fs-field>
@@ -475,11 +570,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     const flate = monter(`
       <fs-field>
-        <label class="fs-label">E-post</label>
+        <label class="fs-label" for="epost">E-post</label>
       </fs-field>
     `)
     const kontroll = document.createElement("input")
     kontroll.className = "fs-input"
+    kontroll.id = "epost"
     flate.querySelector("fs-field")?.append(kontroll)
 
     await ventTilRo()
@@ -512,9 +608,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     monter(`
       <div>
         <fs-field>
-          <label class="fs-label">E-post</label>
-          <input class="fs-input" />
+          <label class="fs-label" for="epost">E-post</label>
+          <input class="fs-input" id="epost" />
           <p class="fs-help-text">Vi sender aldri spam.</p>
+        </fs-field>
+
+        <fs-field>
+          <label class="fs-label">Telefon <input class="fs-input" type="tel" /></label>
         </fs-field>
 
         <fs-tabs>

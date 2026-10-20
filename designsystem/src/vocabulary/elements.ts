@@ -4,12 +4,8 @@ import type { Elements } from "./types.js"
 export const elements: Elements = {
   "fs-field": {
     "link": "https://fristil.sobernetics.no/components/field/",
-    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
     "attributes": {
-      "invalid": {
-        "type": "flag",
-        "description": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`."
-      },
       "disabled": {
         "type": "flag",
         "description": "Kontrollen er slått av."
@@ -17,19 +13,6 @@ export const elements: Elements = {
       "optional": {
         "type": "flag",
         "description": "Feltet er valgfritt, og ledeteksten sier det."
-      },
-      "required-marker": {
-        "type": "values",
-        "values": [
-          "symbol",
-          "text",
-          "none"
-        ],
-        "description": "Hvordan ledeteksten viser at feltet er påkrevd."
-      },
-      "control-id": {
-        "type": "text",
-        "description": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`."
       },
       "described-by": {
         "type": "text",
@@ -246,6 +229,13 @@ export const elements: Elements = {
         "selector": "[role='status']",
         "description": "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
         "content": "none"
+      },
+      "value": {
+        "selector": "input.fs-suggestion__value",
+        "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte. Uten det sendes bare teksten i feltet.",
+        "content": "none",
+        "unique": true,
+        "optional": true
       }
     },
     "events": {

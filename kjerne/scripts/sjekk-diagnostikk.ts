@@ -63,6 +63,8 @@ type Case = {
   fixed?: string
   fixTitle?: string
   fixPreferred?: boolean
+  /** Funnet skal ikke ha noen rettelse. */
+  noFix?: boolean
   /** Hvor lang tid tilfellet får, når farten er poenget. */
   maxMs?: number
   /** Sjekk som en hel side, med reglene for koblingen. */
@@ -584,22 +586,31 @@ const cases: Case[] = [
   },
   {
     name: "rettelsen for et felt uten ledetekst",
-    html: `<fs-field><input class="fs-input"></fs-field>`,
+    html: `<fs-field><input class="fs-input" id="navn"></fs-field>`,
     count: 1,
-    fixed: `<fs-field><label>Ledetekst</label><input class="fs-input"></fs-field>`,
+    fixed: `<fs-field><label for="navn">Ledetekst</label><input class="fs-input" id="navn"></fs-field>`,
     fixTitle: "Sett inn en ledetekst",
   },
   {
-    name: "ledeteksten får sin egen linje med samme innrykk",
-    html: `<fs-field>\n  <input class="fs-input">\n</fs-field>`,
+    // En `<label>` uten `for` ved siden av feltet er ikke koblet til det.
+    // Uten id finnes ingen rettelse som er én innsetting.
+    name: "et felt uten ledetekst og uten id får ingen rettelse",
+    html: `<fs-field><input class="fs-input"></fs-field>`,
     count: 1,
-    fixed: `<fs-field>\n  <label>Ledetekst</label>\n  <input class="fs-input">\n</fs-field>`,
+    mentions: ["legg <label> rundt feltet"],
+    noFix: true,
+  },
+  {
+    name: "ledeteksten får sin egen linje med samme innrykk",
+    html: `<fs-field>\n  <input class="fs-input" id="navn">\n</fs-field>`,
+    count: 1,
+    fixed: `<fs-field>\n  <label for="navn">Ledetekst</label>\n  <input class="fs-input" id="navn">\n</fs-field>`,
   },
   {
     name: "ledeteksten får sin egen linje også med \\r-linjeskift",
-    html: `<fs-field>\r  <input class="fs-input">\r</fs-field>`,
+    html: `<fs-field>\r  <input class="fs-input" id="navn">\r</fs-field>`,
     count: 1,
-    fixed: `<fs-field>\r  <label>Ledetekst</label>\r  <input class="fs-input">\r</fs-field>`,
+    fixed: `<fs-field>\r  <label for="navn">Ledetekst</label>\r  <input class="fs-input" id="navn">\r</fs-field>`,
   },
   {
     name: "data-required på ledetekst og legend",
@@ -1100,6 +1111,8 @@ for (const c of cases) {
     fail(`funnet begynner på ${first.start}, ikke på ${c.coversAt}`)
   if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
+  if (c.noFix && first.fix)
+    fail(`funnet har en rettelse, «${first.fix.text}», og skulle ikke hatt det`)
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")
     else {

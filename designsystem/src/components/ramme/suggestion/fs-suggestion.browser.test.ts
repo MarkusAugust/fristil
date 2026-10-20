@@ -660,15 +660,17 @@ describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
 })
 
 /*
- * Markup skrevet uten JavaScript: ledetekst, felt, liste med `<li>` og et
- * statuselement, uten roller, id-er eller kobling. Komponenten fyller inn
- * resten. Statuselementet må skrives: det er innhold serveren sender.
+ * Markup skrevet uten JavaScript: ledetekst med `for`, felt med `id`, liste
+ * med `<li>` og et statuselement, uten roller eller kobling ellers. `for` og
+ * `id` er det HTML krever for at feltet skal ha navn uten JavaScript, og
+ * komponenten skriver aldri id på feltet. Den fyller inn resten.
+ * Statuselementet må skrives: det er innhold serveren sender.
  */
 const BAR = `
   <fs-suggestion>
-    <label>Kommune</label>
+    <label for="kommune">Kommune</label>
     <div class="fs-suggestion__field">
-      <input class="fs-input" name="kommune">
+      <input class="fs-input" id="kommune" name="kommune">
       <ul class="fs-suggestion__list">
         ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
       </ul>
@@ -700,8 +702,8 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     expect(input.getAttribute("role")).toBe("combobox")
     expect(input.getAttribute("autocomplete")).toBe("off")
     expect(input.getAttribute("aria-autocomplete")).toBe("list")
-    expect(input.id).not.toBe("")
-    expect(label.htmlFor).toBe(input.id)
+    expect(input.id).toBe("kommune")
+    expect(label.htmlFor).toBe("kommune")
     expect(label.classList.contains("fs-label")).toBe(true)
     expect(liste.getAttribute("role")).toBe("listbox")
     expect(liste.id).not.toBe("")
@@ -730,13 +732,15 @@ describe("fs-suggestion kobler fra bar struktur", () => {
 
   it("lar det serveren skrev stå", async () => {
     monter(
-      BAR.replace(
-        '<input class="fs-input" name="kommune">',
-        '<input class="fs-input" name="kommune" id="egen" aria-expanded="true">',
-      ).replace(
-        '<ul class="fs-suggestion__list">',
-        '<ul class="fs-suggestion__list" id="egen-liste">',
-      ),
+      BAR.replace('<label for="kommune">', '<label for="egen">')
+        .replace(
+          '<input class="fs-input" id="kommune" name="kommune">',
+          '<input class="fs-input" name="kommune" id="egen" aria-expanded="true">',
+        )
+        .replace(
+          '<ul class="fs-suggestion__list">',
+          '<ul class="fs-suggestion__list" id="egen-liste">',
+        ),
     )
     await tegn()
     const { label, input, liste } = deler()
@@ -757,9 +761,9 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     const ider = [input.id, liste.id, valg[0].id]
 
     // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    // Feltets id og ledetekstens `for` sto der, og blir stående.
     for (const navn of [
       "role",
-      "id",
       "aria-controls",
       "aria-expanded",
       "autocomplete",
@@ -767,7 +771,6 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     ]) {
       input.removeAttribute(navn)
     }
-    label.removeAttribute("for")
     for (const navn of ["role", "id", "hidden"]) liste.removeAttribute(navn)
     for (const navn of ["role", "id", "class"]) valg[0].removeAttribute(navn)
     await ventPaTegning()
@@ -891,12 +894,19 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
     defineFsSuggestion()
   })
 
-  it("gir det nye feltet id-en ledeteksten peker på, og lista den feltet peker på", async () => {
+  it("skriver aldri id på et nytt felt, og gir lista den id-en feltet peker på", async () => {
+    /*
+     * Komponenten fant før opp en id til et nytt felt uten id. Det var nettopp
+     * den id-en som gjorde at neste oppdatering fra serveren byttet ut feltet,
+     * med fokus og det brukeren hadde skrevet. Lista har ingen tilstand
+     * brukeren mister, og får fortsatt id-en feltet alt peker på.
+     */
     monter(`
       <fs-suggestion>
-        <label>Kommune</label>
-        <div class="fs-suggestion__field">
+        <label>Kommune
           <input class="fs-input">
+        </label>
+        <div class="fs-suggestion__field">
           <ul class="fs-suggestion__list"><li>Oslo</li></ul>
           <p class="fs-suggestion__empty">Ingen treff</p>
           <span class="fs-suggestion__status" role="status"></span>
@@ -904,8 +914,6 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
       </fs-suggestion>
     `)
     const vert = await tegn()
-    const ledetekst = vert.querySelector("label") as HTMLLabelElement
-    const peker = ledetekst.getAttribute("for")
     const listepeker = (
       vert.querySelector("input") as HTMLElement
     ).getAttribute("aria-controls")
@@ -920,7 +928,7 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
     vert.querySelector("ul")?.replaceWith(nyListe)
     await tegn()
 
-    expect(nyttFelt.id, "ledetekstens for peker på ingenting").toBe(peker)
+    expect(nyttFelt.hasAttribute("id")).toBe(false)
     expect(nyListe.id, "aria-controls peker på ingenting").toBe(listepeker)
   })
 })
@@ -1069,4 +1077,245 @@ describe("fs-suggestion med et felt React styrer", () => {
       expect(endringer).toEqual(["Bergen"])
     })
   }
+})
+
+/*
+ * Markup slik en mal skriver den når skjemaet skal sende koden: alternativene
+ * har `data-value`, og et skjult `.fs-suggestion__value` får koden.
+ */
+const MED_KODE = `
+  <fs-suggestion>
+    <label for="kommune">Kommune</label>
+    <div class="fs-suggestion__field">
+      <input class="fs-input" id="kommune" name="kommune-tekst">
+      <input type="hidden" class="fs-suggestion__value" name="kommune">
+      <ul class="fs-suggestion__list">
+        <li data-value="4601">Bergen</li>
+        <li data-value="1804">Bodø</li>
+        <li data-value="0301">Oslo</li>
+      </ul>
+      <span class="fs-sr-only" role="status"></span>
+    </div>
+  </fs-suggestion>`
+
+function tast(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
+  const hendelse = new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  })
+  input.dispatchEvent(hendelse)
+  return hendelse
+}
+
+describe("fs-suggestion velger riktig", () => {
+  beforeAll(() => {
+    defineFsSuggestion()
+  })
+
+  function deler() {
+    return {
+      input: document.getElementById("kommune") as HTMLInputElement,
+      kode: document.querySelector(".fs-suggestion__value") as HTMLInputElement,
+      liste: document.querySelector("ul") as HTMLElement,
+      valg: [...document.querySelectorAll<HTMLElement>("li")],
+    }
+  }
+
+  it("viser teksten i feltet og legger koden i verdifeltet og hendelsen", async () => {
+    monter(MED_KODE)
+    const vert = await tegn()
+    const { input, kode, valg } = deler()
+    const detaljer: unknown[] = []
+    vert.addEventListener("suggestion-select", (e) =>
+      detaljer.push((e as CustomEvent).detail),
+    )
+
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+
+    expect(input.value).toBe("Bergen")
+    expect(kode.value).toBe("4601")
+    expect(detaljer).toEqual([{ value: "4601", label: "Bergen" }])
+  })
+
+  it("tømmer verdifeltet når brukeren endrer teksten etter et valg", async () => {
+    // Ellers ville skjemaet sendt koden for Bergen med «Bodø» i feltet.
+    monter(MED_KODE)
+    await tegn()
+    const { input, kode, valg } = deler()
+
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+    input.value = "Berge"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    await ventPaTegning()
+
+    expect(kode.value).toBe("")
+  })
+
+  it("setter koden tilbake når en oppdatering tømmer verdifeltet", async () => {
+    // Verdifeltets `value` er et attributt, og en morfing skriver serverens
+    // tomme verdi over koden brukeren valgte.
+    monter(MED_KODE)
+    await tegn()
+    const { input, kode, valg } = deler()
+
+    input.focus()
+    valg[2].click()
+    await ventPaTegning()
+    kode.removeAttribute("value")
+    await ventPaTegning()
+
+    expect(input.value).toBe("Oslo")
+    expect(kode.value).toBe("0301")
+  })
+
+  it("lar en annen kode fra serveren stå", async () => {
+    // Bare en tømt verdi settes tilbake. En kode serveren sender, som etter å
+    // ha slått opp et tvetydig navn, er serverens ord.
+    monter(MED_KODE)
+    await tegn()
+    const { input, kode, valg } = deler()
+
+    input.focus()
+    valg[0].click()
+    await ventPaTegning()
+    kode.setAttribute("value", "4602")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(input.value).toBe("Bergen")
+    expect(kode.value).toBe("4602")
+  })
+
+  it("sender input og change på verdifeltet når koden skrives og tømmes", async () => {
+    // Ellers ser verken `data-bind` i Datastar eller tilstanden i React koden.
+    monter(MED_KODE)
+    await tegn()
+    const { input, kode, valg } = deler()
+    const hendelser: string[] = []
+    for (const type of ["input", "change"])
+      kode.addEventListener(type, () => hendelser.push(`${type}:${kode.value}`))
+
+    input.focus()
+    valg[0].click()
+    input.value = "Berge"
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+
+    expect(hendelser).toEqual([
+      "input:4601",
+      "change:4601",
+      "input:",
+      "change:",
+    ])
+  })
+
+  it("lukker en åpen liste når feltet blir readonly", async () => {
+    // Reparasjonen holdt den åpen, og Escape gjør ingenting i et låst felt.
+    monter(MED_KODE)
+    await tegn()
+    const { input, liste } = deler()
+    input.focus()
+    tast(input, "ArrowDown")
+    await ventPaTegning()
+    expect(liste.hidden).toBe(false)
+
+    input.setAttribute("readonly", "")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(liste.hidden).toBe(true)
+    expect(input.getAttribute("aria-expanded")).toBe("false")
+  })
+
+  it("velger på click alene, og ikke på mousedown alene", async () => {
+    /*
+     * Hjelpemidler som aktiverer et element, sender `click`. Valget skjedde
+     * før på `mousedown`, og en `click` alene valgte ingenting. `mousedown`
+     * holder fortsatt fokus i feltet.
+     */
+    monter(MED_KODE)
+    await tegn()
+    const { input, valg } = deler()
+    input.focus()
+
+    const ned = new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+    valg[1].dispatchEvent(ned)
+    expect(ned.defaultPrevented).toBe(true)
+    expect(input.value).toBe("")
+
+    valg[1].click()
+    expect(input.value).toBe("Bodø")
+  })
+
+  it("hopper over et alternativ med aria-disabled, med tastatur og mus", async () => {
+    monter(
+      MED_KODE.replace(
+        '<li data-value="4601">Bergen</li>',
+        '<li data-value="4601" aria-disabled="true">Bergen</li>',
+      ),
+    )
+    await tegn()
+    const { input, valg } = deler()
+    input.focus()
+
+    valg[0].click()
+    expect(input.value).toBe("")
+
+    tast(input, "ArrowDown")
+    tast(input, "Enter")
+    expect(input.value).toBe("Bodø")
+  })
+
+  it("åpner ikke lista og endrer ikke verdien i et readonly-felt", async () => {
+    monter(
+      MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" readonly'),
+    )
+    await tegn()
+    const { input, liste, valg } = deler()
+
+    input.focus()
+    tast(input, "ArrowDown")
+    tast(input, "Enter")
+    valg[0].click()
+    await ventPaTegning()
+
+    expect(liste.hidden).toBe(true)
+    expect(input.value).toBe("")
+  })
+
+  it("lar tastene under en IME-komposisjon være", async () => {
+    // Enter bekrefter tegnene i komposisjonen, og skal ikke velge noe.
+    monter(MED_KODE)
+    await tegn()
+    const { input } = deler()
+
+    input.focus()
+    tast(input, "ArrowDown")
+    const enter = tast(input, "Enter", { isComposing: true })
+
+    expect(enter.defaultPrevented).toBe(false)
+    expect(input.value).toBe("")
+  })
+
+  it("går til første og siste alternativ med PgUp og PgDn, og rører ikke Home og End", async () => {
+    monter(MED_KODE)
+    await tegn()
+    const { input, valg } = deler()
+
+    input.focus()
+    tast(input, "ArrowDown")
+    tast(input, "PageDown")
+    expect(input.getAttribute("aria-activedescendant")).toBe(valg[2].id)
+    tast(input, "PageUp")
+    expect(input.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+
+    // Home og End flytter markøren i teksten. Komponenten tar dem ikke.
+    expect(tast(input, "Home").defaultPrevented).toBe(false)
+    expect(tast(input, "End").defaultPrevented).toBe(false)
+  })
 })

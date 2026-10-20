@@ -254,6 +254,13 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
         "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
       content: "none",
     },
+    value: {
+      description:
+        "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte. Uten det sendes bare teksten i feltet.",
+      content: "none",
+      unique: true,
+      optional: true,
+    },
   }),
   [FS_DIALOG_TAG]: parts(FS_DIALOG_PARTS, {
     dialog: {
@@ -341,33 +348,10 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsField>(
     FS_FIELD_TAG,
     "field",
-    "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+    "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
     {
-      invalid: flag(
-        "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`.",
-      ),
       disabled: flag("Kontrollen er slått av."),
       optional: flag("Feltet er valgfritt, og ledeteksten sier det."),
-      "required-marker": {
-        description: "Hvordan ledeteksten viser at feltet er påkrevd.",
-        value: {
-          values: [
-            { name: "symbol", description: "En stjerne etter ledeteksten." },
-            {
-              name: "text",
-              description: "Teksten «(påkrevd)» etter ledeteksten.",
-            },
-            {
-              name: "none",
-              description:
-                "Ingen markering, også når serveren har skrevet `data-required` på ledeteksten. Uten attributtet gjelder det ledeteksten sier.",
-            },
-          ],
-        },
-      },
-      "control-id": text(
-        "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`.",
-      ),
       "described-by": text(
         "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom.",
       ),
@@ -1111,9 +1095,16 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "parts",
     parts: {
       control: {
-        selector: "input",
+        selector: "input:not([type='hidden'])",
         description: "Feltet brukeren skriver i.",
         content: "none",
+      },
+      value: {
+        selector: ".fs-suggestion__value",
+        description:
+          "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte.",
+        content: "none",
+        optional: true,
       },
       list: {
         selector: ".fs-suggestion__list",
@@ -1150,6 +1141,7 @@ export const classDocs: Record<string, ClassDoc> = {
   },
   "fs-suggestion__option": { content: "text", partOf: "fs-suggestion__list" },
   "fs-suggestion__empty": { content: "text", partOf: "fs-suggestion__field" },
+  "fs-suggestion__value": { content: "none", partOf: "fs-suggestion__field" },
   "fs-tabs__list": {
     content: "free",
     parts: {

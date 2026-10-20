@@ -5,12 +5,8 @@
   "elements": {
     "fs-field": {
       "link": "https://fristil.sobernetics.no/components/field/",
-      "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `for`, `id`, `aria-describedby` og `aria-invalid` på barna. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+      "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
       "attributes": {
-        "invalid": {
-          "type": "flag",
-          "description": "Feltet har feilet validering. Feilmeldingen vises og kontrollen får `aria-invalid`."
-        },
         "disabled": {
           "type": "flag",
           "description": "Kontrollen er slått av."
@@ -18,19 +14,6 @@
         "optional": {
           "type": "flag",
           "description": "Feltet er valgfritt, og ledeteksten sier det."
-        },
-        "required-marker": {
-          "type": "values",
-          "values": [
-            "symbol",
-            "text",
-            "none"
-          ],
-          "description": "Hvordan ledeteksten viser at feltet er påkrevd."
-        },
-        "control-id": {
-          "type": "text",
-          "description": "Id-en kontrollen skal ha. Uten den brukes id-en som alt står på kontrollen, eller ledetekstens `for`."
         },
         "described-by": {
           "type": "text",
@@ -247,6 +230,13 @@
           "selector": "[role='status']",
           "description": "Opplesningen av antall treff. Elementet står tomt, og komponenten fyller det.",
           "content": "none"
+        },
+        "value": {
+          "selector": "input.fs-suggestion__value",
+          "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte. Uten det sendes bare teksten i feltet.",
+          "content": "none",
+          "unique": true,
+          "optional": true
         }
       },
       "events": {
@@ -1647,9 +1637,15 @@
       "content": "parts",
       "parts": {
         "control": {
-          "selector": "input",
+          "selector": "input:not([type='hidden'])",
           "description": "Feltet brukeren skriver i.",
           "content": "none"
+        },
+        "value": {
+          "selector": ".fs-suggestion__value",
+          "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte.",
+          "content": "none",
+          "optional": true
         },
         "list": {
           "selector": ".fs-suggestion__list",
@@ -1695,6 +1691,15 @@
       "link": "https://fristil.sobernetics.no/components/suggestion/",
       "content": "text",
       "partOf": "fs-suggestion__list",
+      "attributes": {}
+    },
+    "fs-suggestion__value": {
+      "component": "suggestion",
+      "title": "Suggestion",
+      "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "content": "none",
+      "partOf": "fs-suggestion__field",
       "attributes": {}
     },
     "fs-suggestion__empty": {
@@ -4177,6 +4182,9 @@
             "kind": "attributes"
           },
           "status": {
+            "kind": "attributes"
+          },
+          "value": {
             "kind": "attributes"
           },
           "help": {

@@ -110,21 +110,18 @@ describe("morfing river ikke bort det komponenten setter", () => {
   })
 
   /*
-   * Markupen er skrevet slik en Go-mal ville gjort det: ingen id-er, ingen
-   * kobling, og ingen `data-preserve-attr`.
+   * Markupen er skrevet slik en Go-mal skal gjøre det: `for` og `id`, som HTML
+   * krever for at feltet skal ha navn uten JavaScript, og ellers ingen
+   * kobling og ingen `data-preserve-attr`.
    *
-   * Koblingen mellom ledetekst, felt og hjelpetekst er noe komponenten
-   * regner ut, ikke noe serveren sendte, så morfingen river den bort.
-   * Løsningen var lenge at malen måtte liste opp attributtene i
-   * `data-preserve-attr`, og en Go- eller Kotlin-mal måtte skrive lista av
-   * fra dokumentasjonen. Endret Fristil hva komponenten setter, gikk malen
-   * stille i stykker. Komponenten ser nå at attributtene er borte og setter
-   * dem tilbake.
+   * Koblingen mellom feltet, hjelpeteksten og feilmeldingen er noe
+   * komponenten regner ut, ikke noe serveren sendte, så morfingen river den
+   * bort. Komponenten ser at attributtene er borte og setter dem tilbake.
    */
   const FELT = `
     <fs-field>
-      <label class="fs-label">E-post</label>
-      <input class="fs-input" />
+      <label class="fs-label" for="epost">E-post</label>
+      <input class="fs-input" id="epost" />
       <p class="fs-help-text">Vi sender aldri spam.</p>
       <p class="fs-error-text">Skriv en gyldig adresse.</p>
     </fs-field>`
@@ -138,7 +135,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
     const label = felt.querySelector("label") as HTMLLabelElement
     const foer = kontroll.getAttribute("aria-describedby")
     expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
-    expect(label.htmlFor).toBe(kontroll.id)
+    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
 
     morf(felt, FELT)
     // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
@@ -146,6 +143,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
     const etter = kontroll.getAttribute("aria-describedby")
     expect(etter, "koblingen kom ikke tilbake etter patchen").toBe(foer)
+    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
 
     for (const id of (etter ?? "").split(/\s+/).filter(Boolean)) {
       expect(
@@ -154,46 +152,63 @@ describe("morfing river ikke bort det komponenten setter", () => {
       ).not.toBeNull()
     }
 
-    expect(label.htmlFor, "ledeteksten mistet koblingen til feltet").toBe(
-      kontroll.id,
-    )
+    expect(label.htmlFor).toBe("epost")
     expect(document.getElementById(label.htmlFor)).toBe(kontroll)
     expect(label.classList.contains("fs-label")).toBe(true)
   })
 
+  it("skriver ingen id på kontrollen når ledeteksten står rundt den", async () => {
+    /*
+     * En kontroll uten id har ingenting en morfing kan kjenne den igjen på,
+     * og blir derfor beholdt. Skrev komponenten en id på den, ville den
+     * vært en id serveren ikke sendte, og Datastar og idiomorph ville byttet
+     * ut kontrollen ved neste patch, med fokus og det brukeren hadde skrevet.
+     */
+    const RUNDT = `
+      <fs-field>
+        <label class="fs-label">E-post <input class="fs-input" /></label>
+        <p class="fs-help-text">Vi sender aldri spam.</p>
+      </fs-field>`
+    const felt = monterMarkup(RUNDT)
+    await customElements.whenDefined("fs-field")
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    const kontroll = felt.querySelector("input") as HTMLInputElement
+    expect(kontroll.hasAttribute("id")).toBe(false)
+    const foer = kontroll.getAttribute("aria-describedby")
+    expect(foer).toBeTruthy()
+
+    morf(felt, RUNDT)
+    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+
+    expect(kontroll.hasAttribute("id")).toBe(false)
+    expect(kontroll.getAttribute("aria-describedby")).toBe(foer)
+  })
+
   it("kobler feltet på nytt når patchen byttet ut kontrollen", async () => {
     /*
-     * Fredningen holder attributtene på en node som blir stående. Bytter
-     * patchen ut selve kontrollen, finnes det ingen node å frede, og den nye
-     * kommer uten id. Ledeteksten står igjen med sin `for`.
-     *
-     * Komponenten fant da ingen id, fant opp en ny, og skrev den bare på
-     * kontrollen. `for` pekte etter det på et element som ikke fantes, og
-     * ledeteksten var ikke lenger knyttet til feltet. Det ble funnet i
-     * spilldemoen, i appen som sender HTML-biter fra en Kotlin-server, og
-     * det holdt seg helt til siden ble lastet på nytt.
+     * Bytter patchen ut selve kontrollen, kommer serverens node med serverens
+     * id. Koblingen til hjelpeteksten og feilmeldingen skrives på den nye.
      */
     const felt = monterMarkup(FELT)
     await customElements.whenDefined("fs-field")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const label = felt.querySelector("label") as HTMLLabelElement
-    const foer = label.htmlFor
-    expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
-
     const gammel = felt.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
     ny.className = "fs-input"
+    ny.id = "epost"
     gammel.replaceWith(ny)
 
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
-    expect(kontroll.id, "kontrollen fikk ingen id").toBeTruthy()
-    expect(label.htmlFor, "ledeteksten peker på en id som ikke finnes").toBe(
-      kontroll.id,
-    )
+    expect(kontroll).toBe(ny)
+    expect(label.htmlFor).toBe("epost")
     expect(document.getElementById(label.htmlFor)).toBe(kontroll)
+    expect(kontroll.getAttribute("aria-describedby")).toBeTruthy()
+    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
   })
 
   /*
