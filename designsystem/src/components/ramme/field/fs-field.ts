@@ -509,7 +509,7 @@ export class FsField extends HostElement {
         const named = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         if (!named || this.resolveLabel(named)) return false
         // En <label> rundt hele <fs-field> gir også kontrollen et navn.
-        if ((named.labels?.length ?? 0) > 0) return false
+        if (((named as HTMLInputElement).labels?.length ?? 0) > 0) return false
         return (
           !named.hasAttribute("aria-label") &&
           !named.hasAttribute("aria-labelledby")
