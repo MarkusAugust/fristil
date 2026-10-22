@@ -207,10 +207,34 @@ const paaNorsk = norskDato(dato)
 writeFileSync(dekkSti, dekk.replace(merke, `$1${nyVersjon} · ${paaNorsk}`))
 console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
 
+/*
+ * `agent/*.md` og `manifest/*.json` har versjonen i seg, og generatorene
+ * leser den fra `package.json`, som nå står på det nye nummeret. Uten dette
+ * steget var det `build` i `sjekk` som skrev dem, og «Ingenting er ugenerert»
+ * stoppet på filene som da sto på forrige versjon, så hver utgivelse trengte
+ * en commit til.
+ *
+ * Kjøringen står sist, etter alle skrivingene som kan stoppes av en
+ * forhåndskontroll. Feiler en generator, er versjonen alt satt, og meldingen
+ * sier hva som må kjøres for hånd.
+ */
+for (const generator of ["generate-agent.ts", "generate-manifest.ts"]) {
+  const resultat = Bun.spawnSync(["bun", join("scripts", generator)], {
+    cwd: pakke,
+    stdio: ["inherit", "inherit", "inherit"],
+  })
+  if (resultat.exitCode !== 0) {
+    stopp(
+      `${generator} feilet. Versjonen er alt satt til ${nyVersjon}. Kjør bun --filter @fristil/designsystem generate og se hva som stopper.`,
+    )
+  }
+}
+
 console.log(`Versjonen er satt til ${nyVersjon}, med dato ${dato}.
 
-Slik gir du den ut. Commit først: «Ingenting er ugenerert» i sjekk spør git
-om bygget endret noe, og ville ellers stoppet på filene som nettopp ble skrevet.
+Slik gir du den ut. Alle filene som har versjonen i seg, er skrevet, så én
+commit er nok: «Ingenting er ugenerert» i sjekk spør git om bygget endret noe,
+og ville ellers stoppet på filene som nettopp ble skrevet.
 
   git checkout -b slipp-${nyVersjon}
   git commit -am "Slipp ${nyVersjon}"

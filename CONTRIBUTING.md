@@ -115,9 +115,9 @@ bun run sjekk
 git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
-Commiten står før `sjekk`, ikke etter: «Ingenting er ugenerert» spør git om bygget endret noe, og `prepare-version` har nettopp skrevet seks sporede filer, så kjørt før commiten stopper `sjekk` på dem flere minutter ut i kjøringen.
+Commiten står før `sjekk`, ikke etter: «Ingenting er ugenerert» spør git om bygget endret noe, og `prepare-version` har nettopp skrevet fjorten sporede filer, så kjørt før commiten stopper `sjekk` på dem flere minutter ut i kjøringen.
 
-`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` og presentasjonen. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt», og alle kontrollene står før den skriver noe, så et stoppet forsøk etterlater ingen halvferdige filer.
+`prepare-version` døper om overskriften «Ikke utgitt» til nummeret og datoen, legger inn en ny tom over, og setter samme nummer i `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` og presentasjonen. Til slutt kjører den `generate-agent.ts` og `generate-manifest.ts`, så `designsystem/agent/*.md` og `designsystem/manifest/*.json`, som også har versjonen i seg, står på det nye nummeret i samme commit. Den nekter å sette en versjon som ikke er høyere enn den som står der, og å gi ut en tom «Ikke utgitt», og alle kontrollene står før den skriver noe, så et stoppet forsøk etterlater ingen halvferdige filer.
 
 Taggen settes først når versjonen ligger på master:
 
