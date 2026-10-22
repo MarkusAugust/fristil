@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.35.0 (2026-10-22)
+
 ### Brytende
 
 - **`<fs-field>` og `<fs-suggestion>` skriver aldri id på feltet.** Datastar
