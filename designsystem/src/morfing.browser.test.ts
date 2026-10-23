@@ -30,6 +30,7 @@ import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
 import { suggestion } from "./components/ramme/suggestion/suggestion"
 import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
 import { tabs } from "./components/ramme/tabs/tabs"
+import { settAdresse } from "./testing/adresse"
 
 import "./tokens/tokens.css"
 
@@ -105,13 +106,10 @@ function monterMarkup(markup: string): HTMLElement {
 }
 
 describe("morfing river ikke bort det komponenten setter", () => {
-  beforeEach(() => {
-    document.body.innerHTML = ""
+  beforeEach(async () => {
     // Komponenten leser adressen ved lasting, og et klikk på en fane skriver
-    // den. Bare når noe står der: Safari kaster etter hundre kall på ti sekunder.
-    if (location.hash) {
-      history.replaceState(null, "", `${location.pathname}${location.search}`)
-    }
+    // den.
+    await settAdresse("")
   })
 
   /*

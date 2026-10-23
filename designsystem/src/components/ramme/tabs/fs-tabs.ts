@@ -291,8 +291,11 @@ export class FsTabs extends HostElement {
    * Nettleseren fjerner `hidden` selv etter hendelsen, og går så videre til
    * forfedrene, som et ytre panel eller en lukket `<details>`. Men bare så
    * lenge panelet fortsatt har `hidden="until-found"` når hendelsen er ferdig.
-   * Fjernet komponenten det selv i `apply()`, stoppet nettleseren, og treffet
-   * i en fanerad inne i et skjult panel ble stående usynlig.
+   * Kommer søket fra brukeren, kjører nettleseren mikrooppgavene etter hver
+   * lytter, også observatøren, og fjernet komponenten `hidden` i den runden,
+   * stoppet Chromium og WebKit. Treffet i en fanerad inne i et skjult panel
+   * ble stående usynlig. Panelet røres derfor ikke før i neste oppgave,
+   * når nettleseren er ferdig, se `revealed()`.
    */
   private revealing?: Element
   /**
@@ -1022,8 +1025,24 @@ export class FsTabs extends HostElement {
     try {
       this.select(index)
     } finally {
-      this.revealing = undefined
+      // En hendelse fra et skript avdekker ingen nettleser etterpå.
+      if (event.isTrusted) setTimeout(() => this.revealed(panel), 0)
+      else this.revealing = undefined
     }
+  }
+
+  /**
+   * Slipper panelet etter `beforematch`, i oppgaven etter at nettleseren er
+   * ferdig med å avdekke, og skriver raden.
+   *
+   * Som regel har nettleseren fjernet `hidden` da. Det gjør den ikke når
+   * panelet ble tatt ut av dokumentet under hendelsen, og uten denne runden
+   * ble panelet stående skjult selv om fanen var valgt.
+   */
+  private revealed(panel: Element): void {
+    if (this.revealing !== panel) return
+    this.revealing = undefined
+    if (this.isConnected) this.sync()
   }
 
   private handleHashchange = (): void => {

@@ -7,6 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
+import { settAdresse } from "../../../testing/adresse"
 import { attr } from "../../../testing/markup"
 import { defineFsTabs, type FsTabs } from "./fs-tabs"
 import { tabs } from "./tabs"
@@ -76,12 +77,10 @@ async function tegn() {
   await ventPaTegning()
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   // Komponenten leser adressen ved lasting, og adressen lever videre mellom
-  // testene. Bare når noe står der: Safari kaster etter hundre kall på ti sekunder.
-  if (location.hash) {
-    history.replaceState(null, "", `${location.pathname}${location.search}`)
-  }
+  // testene.
+  await settAdresse("")
 })
 
 describe("fs-tabs", () => {
@@ -966,7 +965,7 @@ describe("fs-tabs under server-controlled", () => {
   })
 
   it("lar adressen være, så serveren bestemmer", async () => {
-    history.replaceState(null, "", "#meldinger")
+    await settAdresse("#meldinger")
     monter(TRE)
     await tegn()
 
@@ -1148,7 +1147,7 @@ describe("fs-tabs som lenker", () => {
   })
 
   it("velger fanen adressen peker på ved lasting", async () => {
-    history.replaceState(null, "", "#sak-vedlegg")
+    await settAdresse("#sak-vedlegg")
     monter(fraByggefunksjonen())
     await tegn()
 

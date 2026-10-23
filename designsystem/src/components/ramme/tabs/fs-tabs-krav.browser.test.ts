@@ -27,6 +27,7 @@ import { cdp, server, userEvent } from "vitest/browser"
 
 import { fs as fsReact } from "../../../react"
 import { monter, ventPaTegning } from "../../../testing/a11y"
+import { settAdresse } from "../../../testing/adresse"
 import { rgb } from "../../../testing/farge"
 import { attr } from "../../../testing/markup"
 import { contrastRatio } from "../../../tokens/color"
@@ -123,12 +124,6 @@ async function tegn() {
   await ventPaTegning()
 }
 
-function nullstillAdressen() {
-  // Bare når noe står der: Safari kaster etter hundre kall på ti sekunder.
-  if (location.hash)
-    history.replaceState(null, "", `${location.pathname}${location.search}`)
-}
-
 /**
  * Stopper `hashchange`, slik søk i siden gjør: nettleseren avdekker treffet
  * og sender `beforematch`, men endrer ikke adressen. Uten dette valgte
@@ -159,8 +154,8 @@ beforeAll(() => {
   defineFsTabs()
 })
 
-beforeEach(() => {
-  nullstillAdressen()
+beforeEach(async () => {
+  await settAdresse("")
 })
 
 afterEach(() => {
@@ -272,7 +267,7 @@ describe("A. Tre tilstander av siden", () => {
   })
 
   it("A7 med D11: React hydrerer uten avvik også når adressen peker på en annen fane", async () => {
-    history.replaceState(null, "", "#sak-vedlegg")
+    await settAdresse("#sak-vedlegg")
     const avvik: string[] = []
     const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
       avvik.push(a.map(String).join(" "))
@@ -911,7 +906,7 @@ describe("D. Mus og lenker", () => {
 
 describe("E. Adressen og søk i siden", () => {
   it("E1: en adresse til noe inni et panel velger den fanen ved lasting", async () => {
-    history.replaceState(null, "", "#inne-meldinger")
+    await settAdresse("#inne-meldinger")
     monter(bar())
     await tegn()
 
@@ -928,7 +923,7 @@ describe("E. Adressen og søk i siden", () => {
 
   it("E1: en fane uten panel hindrer ikke adressen i å velge", async () => {
     lyttEtterAdvarsler()
-    history.replaceState(null, "", "#vedlegg")
+    await settAdresse("#vedlegg")
     monter(medFaneUtenPanel(bar()))
     await tegn()
 
@@ -940,7 +935,7 @@ describe("E. Adressen og søk i siden", () => {
     ["s%C3%B8knad-sent", "søknad-sent"],
   ]) {
     it(`E1: innhold adressen peker på, som kommer etter panelet, velger fanen (#${fragment})`, async () => {
-      history.replaceState(null, "", `#${fragment}`)
+      await settAdresse(`#${fragment}`)
       monter(bar({ inni: (i) => (i === 2 ? '<div id="beholder"></div>' : "") }))
       await tegn()
       expect(valgt()).toEqual([true, false, false])
@@ -979,7 +974,7 @@ describe("E. Adressen og søk i siden", () => {
   }
 
   it("G2: en adresse til noe som ikke finnes, står, og et klikk meldes én gang", async () => {
-    history.replaceState(null, "", "#/sak/1")
+    await settAdresse("#/sak/1")
     monter(bar())
     await tegn()
     expect(valgt()).toEqual([true, false, false])
@@ -997,7 +992,7 @@ describe("E. Adressen og søk i siden", () => {
   })
 
   it("E1: raden først og panelene etterpå: adressen velger likevel", async () => {
-    history.replaceState(null, "", "#meldinger")
+    await settAdresse("#meldinger")
     const markup = bar()
     const slutt = markup.indexOf("</ul>") + "</ul>".length
     monter(`${markup.slice(0, slutt)}</fs-tabs>`)
@@ -1078,26 +1073,39 @@ describe("E. Adressen og søk i siden", () => {
     ).toEqual(["vedlegg"])
   })
 
+  /** Faner i faner: treffet `#dypt` står i det indre panelet `ib`, i det ytre `yb`. */
+  const FANER_I_FANER = (indre = "") => `
+    <a href="#dypt" id="til-dypt">Til treffet</a>
+    <fs-tabs id="ytre">
+      <ul class="fs-tabs__list" aria-label="Ytre"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+      <section class="fs-tabs__panel" id="ya"><h2>YA</h2>Ytre a</section>
+      <section class="fs-tabs__panel" id="yb"><h2>YB</h2>
+        <fs-tabs id="indre"${indre}>
+          <ul class="fs-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
+          <section class="fs-tabs__panel" id="ia"><h3>IA</h3>Indre a</section>
+          <section class="fs-tabs__panel" id="ib"><h3>IB</h3><p id="dypt">Dypt inne</p></section>
+        </fs-tabs>
+      </section>
+    </fs-tabs>`
+
+  const skjultI = (...ider: string[]) =>
+    ider.map((id) =>
+      (document.getElementById(id) as HTMLElement).hasAttribute("hidden"),
+    )
+
+  /*
+   * Et ekte klikk, ikke `location.hash` fra skriptet: kommer navigasjonen fra
+   * brukeren, kjører nettleseren mikrooppgavene etter hver lytter, midt i
+   * avdekkingen, slik den gjør ved søk i siden. Fra et skript gjør den ikke
+   * det, og testen kunne ikke feile. `hashchange` er stoppet, som ved søk i
+   * siden, ellers valgte adressen den ytre fanen etterpå.
+   */
   it("E3: søk i siden avdekker et treff i en fanerad inne i et skjult panel", async () => {
-    // Nettleseren går videre til forfedrene bare når panelet fortsatt har
-    // `until-found` etter `beforematch`. Fjernet komponenten det selv, ble
-    // det ytre panelet stående skjult, og treffet usynlig.
     const slipp = somSokISiden()
     try {
-      monter(`
-        <fs-tabs>
-          <ul class="fs-tabs__list" aria-label="Ytre"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-          <section class="fs-tabs__panel" id="ya"><h2>YA</h2>Ytre a</section>
-          <section class="fs-tabs__panel" id="yb"><h2>YB</h2>
-            <fs-tabs>
-              <ul class="fs-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
-              <section class="fs-tabs__panel" id="ia"><h3>IA</h3>Indre a</section>
-              <section class="fs-tabs__panel" id="ib"><h3>IB</h3><p id="dypt">Dypt inne</p></section>
-            </fs-tabs>
-          </section>
-        </fs-tabs>`)
+      monter(FANER_I_FANER())
       await tegn()
-      location.hash = "#dypt"
+      await userEvent.click(document.getElementById("til-dypt") as HTMLElement)
       await tegn()
       await tegn()
     } finally {
@@ -1107,15 +1115,145 @@ describe("E. Adressen og søk i siden", () => {
     expect(
       (document.getElementById("dypt") as HTMLElement).checkVisibility(),
     ).toBe(true)
+    expect(skjultI("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
+  })
+
+  it("E3: det samme når den indre raden er server-controlled, og valget meldes én gang", async () => {
+    const slipp = somSokISiden()
+    const meldt: number[] = []
+    try {
+      monter(FANER_I_FANER(" server-controlled"))
+      await tegn()
+      ;(document.getElementById("indre") as HTMLElement).addEventListener(
+        "tab-select",
+        (e) => {
+          e.stopPropagation()
+          meldt.push((e as CustomEvent<{ index: number }>).detail.index)
+        },
+      )
+      await userEvent.click(document.getElementById("til-dypt") as HTMLElement)
+      await tegn()
+      await tegn()
+    } finally {
+      slipp()
+    }
+
     expect(
-      ["ya", "yb", "ia", "ib"].map((id) =>
-        (document.getElementById(id) as HTMLElement).hasAttribute("hidden"),
-      ),
-    ).toEqual([true, false, true, false])
+      (document.getElementById("dypt") as HTMLElement).checkVisibility(),
+    ).toBe(true)
+    expect(skjultI("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
+    expect(meldt).toEqual([1])
+  })
+
+  it("E3: søk i siden åpner en lukket <details> rundt raden", async (ctx) => {
+    const slipp = somSokISiden()
+    try {
+      // Først uten faner: åpner ikke motoren en <details> selv, er det ikke
+      // komponenten testen kan si noe om.
+      monter(
+        '<a href="#kontroll-treff" id="til-kontroll">Til</a><details id="kontroll"><summary>K</summary><p id="kontroll-treff">Treff</p></details>',
+      )
+      await userEvent.click(
+        document.getElementById("til-kontroll") as HTMLElement,
+      )
+      await tegn()
+      const motorenApner = (
+        document.getElementById("kontroll") as HTMLDetailsElement
+      ).open
+      if (!motorenApner) ctx.skip()
+
+      monter(
+        `<a href="#inne-vedlegg" id="til-treff">Til treffet</a><details id="rundt"><summary>Mer</summary>${bar()}</details>`,
+      )
+      await tegn()
+      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
+      await tegn()
+      await tegn()
+    } finally {
+      slipp()
+    }
+
+    expect((document.getElementById("rundt") as HTMLDetailsElement).open).toBe(
+      true,
+    )
+    expect(
+      (
+        document.getElementById("inne-vedlegg") as HTMLElement
+      ).checkVisibility(),
+    ).toBe(true)
+    expect(valgt()).toEqual([false, true, false])
+  })
+
+  it("E3: tas panelet ut under avdekkingen og settes inn igjen, vises det", async () => {
+    // Nettleseren avdekker ikke et panel som ikke står i dokumentet etter
+    // `beforematch`. Uten en reserve ventet komponenten på det for alltid, og
+    // panelet ble stående skjult selv om fanen var valgt.
+    const slipp = somSokISiden()
+    try {
+      monter(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
+      await tegn()
+      const panel = paneler()[1]
+      const forelder = panel.parentElement as HTMLElement
+      const neste = panel.nextSibling
+      panel.addEventListener(
+        "beforematch",
+        () => {
+          panel.remove()
+          setTimeout(() => forelder.insertBefore(panel, neste), 0)
+        },
+        { once: true },
+      )
+      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
+      await new Promise((r) => setTimeout(r, 10))
+      await tegn()
+    } finally {
+      slipp()
+    }
+
+    expect(valgt()).toEqual([false, true, false])
+    expect(skjult()).toEqual([true, false, true])
+  })
+
+  it("E3: setter noe annet hidden under avdekkingen, vises panelet likevel", async () => {
+    // Nettleseren stopper når panelet ikke lenger har `until-found` etter
+    // `beforematch`. Endringen ga en runde mens komponenten ventet, og ingen
+    // runde kom etterpå, med mindre komponenten skrev raden selv.
+    const slipp = somSokISiden()
+    try {
+      monter(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
+      await tegn()
+      const panel = paneler()[1]
+      panel.addEventListener(
+        "beforematch",
+        () => panel.setAttribute("hidden", ""),
+        { once: true },
+      )
+      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
+      await new Promise((r) => setTimeout(r, 10))
+      await tegn()
+    } finally {
+      slipp()
+    }
+
+    expect(valgt()).toEqual([false, true, false])
+    expect(skjult()).toEqual([true, false, true])
+  })
+
+  it("E3: en beforematch et skript sender, velger med en gang", async () => {
+    // Ingen nettleser avdekker panelet etter en hendelse fra et skript, så
+    // komponenten venter ikke på det.
+    monter(bar())
+    await tegn()
+
+    paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(skjult()).toEqual([true, true, false])
   })
 
   it("E1: en tom <fs-tabs> som fylles etterpå, velger fanen adressen peker på", async () => {
-    history.replaceState(null, "", "#meldinger")
+    await settAdresse("#meldinger")
     monter("<fs-tabs></fs-tabs>")
     await tegn()
 
@@ -1219,7 +1357,7 @@ describe("E. Adressen og søk i siden", () => {
   })
 
   it("D11: serverens aria-selected vinner over adressen når siden lastes", async () => {
-    history.replaceState(null, "", "#vedlegg")
+    await settAdresse("#vedlegg")
     monter(
       bar().replace(
         '<a href="#meldinger">',
@@ -1234,7 +1372,7 @@ describe("E. Adressen og søk i siden", () => {
   })
 
   it("D11: en adresse til noe utenfor raden står når serveren har valgt", async () => {
-    history.replaceState(null, "", "#annet")
+    await settAdresse("#annet")
     monter(
       `<p id="annet">Annet</p>${bar().replace('<a href="#meldinger">', '<a href="#meldinger" aria-selected="true">')}`,
     )
@@ -1421,7 +1559,7 @@ describe("F. Oppdatering fra serveren", () => {
   })
 
   it("F11: det samme når adressen peker på noe som ikke finnes, som i en app med ruting", async () => {
-    history.replaceState(null, "", "#/sak/1")
+    await settAdresse("#/sak/1")
     // I en beholder: det som legges rett i panelet, kan være en overskrift.
     monter(
       bar({ inni: (i) => (i === 1 ? '<div><p id="teller">0</p></div>' : "") }),
@@ -1550,7 +1688,7 @@ describe("G. API og hendelser", () => {
       meldt.push((e as CustomEvent<{ index: number }>).detail.index)
     document.addEventListener("tab-select", lytter)
     try {
-      history.replaceState(null, "", "#vedlegg")
+      await settAdresse("#vedlegg")
       monter(bar())
       await tegn()
       expect(meldt).toEqual([1])

@@ -49,6 +49,7 @@ import {
 } from "vitest"
 
 import { ventPaTegning } from "../../../testing/a11y"
+import { settAdresse } from "../../../testing/adresse"
 import { attr } from "../../../testing/markup"
 import { defineFsField } from "../field/fs-field"
 import { defineFsPopover } from "../popover/fs-popover"
@@ -156,13 +157,10 @@ describe("fs-tabs gjennom Datastars morfing", () => {
     defineFsTabs()
   })
 
-  beforeEach(() => {
-    document.body.innerHTML = ""
+  beforeEach(async () => {
     // Et klikk på en fane skriver adressen, og komponenten leser den ved
-    // lasting. Bare når noe står der: Safari kaster etter hundre kall på ti sekunder.
-    if (location.hash) {
-      history.replaceState(null, "", `${location.pathname}${location.search}`)
-    }
+    // lasting.
+    await settAdresse("")
   })
 
   it("bar markup: lenkene og panelene morfes, og valget står", async () => {
