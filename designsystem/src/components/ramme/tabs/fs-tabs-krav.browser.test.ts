@@ -919,6 +919,83 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#inne-meldinger")
   })
 
+  /** Raden med en fane til, som peker på et panel som ikke finnes. */
+  const medFaneUtenPanel = (markup: string) =>
+    markup.replace(
+      '<li><a href="#vedlegg">',
+      '<li><a href="#finnes-ikke">Mangler</a></li><li><a href="#vedlegg">',
+    )
+
+  it("E1: en fane uten panel hindrer ikke adressen i å velge", async () => {
+    lyttEtterAdvarsler()
+    history.replaceState(null, "", "#vedlegg")
+    monter(medFaneUtenPanel(bar()))
+    await tegn()
+
+    expect(valgt()).toEqual([false, false, true, false])
+  })
+
+  for (const [fragment, id] of [
+    ["sent-innhold", "sent-innhold"],
+    ["s%C3%B8knad-sent", "søknad-sent"],
+  ]) {
+    it(`E1: innhold adressen peker på, som kommer etter panelet, velger fanen (#${fragment})`, async () => {
+      history.replaceState(null, "", `#${fragment}`)
+      monter(bar({ inni: (i) => (i === 2 ? '<div id="beholder"></div>' : "") }))
+      await tegn()
+      expect(valgt()).toEqual([true, false, false])
+
+      // Dypt i panelet, der det som skjer ellers ikke gir en ny runde (F11).
+      ;(document.getElementById("beholder") as HTMLElement).insertAdjacentHTML(
+        "beforeend",
+        `<p id="${id}">Kom senere</p>`,
+      )
+      await tegn()
+
+      expect(valgt()).toEqual([false, false, true])
+      expect(location.hash).toBe(`#${fragment}`)
+    })
+  }
+
+  for (const [hva, lag] of [
+    ["en hel rad", (m: string) => m],
+    ["en rad med en fane uten panel", medFaneUtenPanel],
+  ] as const) {
+    it(`E6: adressen rettes etter en patch, også i ${hva}`, async () => {
+      lyttEtterAdvarsler()
+      monter(lag(bar()))
+      await tegn()
+
+      // Appen flytter adressen uten å velge, og serveren rører et panel.
+      history.replaceState(null, "", "#vedlegg")
+      paneler()[0].setAttribute("data-patch", "1")
+      paneler()[0].setAttribute("hidden", "")
+      paneler()[0].removeAttribute("hidden")
+      await tegn()
+
+      expect(valgt()[0]).toBe(true)
+      expect(location.hash).toBe("#soknaden")
+    })
+  }
+
+  it("G2: en adresse til noe som ikke finnes, står, og et klikk meldes én gang", async () => {
+    history.replaceState(null, "", "#/sak/1")
+    monter(bar())
+    await tegn()
+    expect(valgt()).toEqual([true, false, false])
+    expect(location.hash).toBe("#/sak/1")
+    const meldt: number[] = []
+    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+
+    faner()[1].click()
+    await tegn()
+    await tegn()
+
+    expect(valgt()).toEqual([false, true, false])
+    expect(location.hash).toBe("#vedlegg")
+    expect(meldt).toEqual([1])
+  })
+
   it("E1: raden først og panelene etterpå: adressen velger likevel", async () => {
     history.replaceState(null, "", "#meldinger")
     const markup = bar()
@@ -1338,6 +1415,29 @@ describe("F. Oppdatering fra serveren", () => {
     ;(
       (document.getElementById("teller") as HTMLElement).firstChild as Text
     ).nodeValue = "1"
+    await tegn()
+
+    expect(runder).not.toHaveBeenCalled()
+  })
+
+  it("F11: det samme når adressen peker på noe som ikke finnes, som i en app med ruting", async () => {
+    history.replaceState(null, "", "#/sak/1")
+    // I en beholder: det som legges rett i panelet, kan være en overskrift.
+    monter(
+      bar({ inni: (i) => (i === 1 ? '<div><p id="teller">0</p></div>' : "") }),
+    )
+    await tegn()
+    const runder = vi.spyOn(
+      FsTabs.prototype as unknown as { sync: () => void },
+      "sync",
+    )
+
+    ;(
+      (document.getElementById("teller") as HTMLElement).firstChild as Text
+    ).nodeValue = "1"
+    document
+      .getElementById("teller")
+      ?.insertAdjacentHTML("afterend", "<p>Mer</p>")
     await tegn()
 
     expect(runder).not.toHaveBeenCalled()

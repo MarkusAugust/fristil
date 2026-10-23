@@ -297,8 +297,9 @@ export class FsTabs extends HostElement {
   private revealing?: Element
   /**
    * Om raden er lastet: om adressen eller serverens valg er lest. Det skjer
-   * første gang raden har faner, ikke når elementet kobles til. En
-   * `<fs-tabs>` som serveren fyller etterpå, fikk ellers alltid første fane.
+   * første gang raden har faner og adressen kan besvares, se `sync()`, ikke
+   * når elementet kobles til. En `<fs-tabs>` som serveren fyller etterpå,
+   * fikk ellers alltid første fane.
    */
   private started = false
   /**
@@ -511,7 +512,7 @@ export class FsTabs extends HostElement {
       if (!panel) return true
       const heading = target.closest("h1, h2, h3, h4, h5, h6")
       if (heading && heading.parentElement === panel) return true
-      names ??= this.referencedIds(panels)
+      names ??= this.watchedIds(panels)
       if (this.within(target, names)) return true
       if (record.type === "childList") {
         for (const node of [...record.addedNodes, ...record.removedNodes])
@@ -521,9 +522,19 @@ export class FsTabs extends HostElement {
     return false
   }
 
-  /** Id-ene `aria-labelledby` peker på fra fanene, det som er inni dem, og panelene. */
-  private referencedIds(panels: HTMLElement[]): Set<string> {
+  /**
+   * Id-ene `aria-labelledby` peker på fra fanene, det som er inni dem, og
+   * panelene. Før raden er lastet, også id-en adressen peker på: raden venter
+   * på det elementet, se `sync()`, og det kan komme dypt i et panel.
+   */
+  private watchedIds(panels: HTMLElement[]): Set<string> {
     const ids = new Set<string>()
+    if (!this.started) {
+      const hash = location.hash.slice(1)
+      if (hash !== "") ids.add(hash)
+      const plain = decoded(hash)
+      if (plain !== null) ids.add(plain)
+    }
     const from = (element: Element) => {
       for (const id of (element.getAttribute("aria-labelledby") ?? "").split(
         /\s+/,
@@ -644,16 +655,20 @@ export class FsTabs extends HostElement {
      * hvert attributt den endret. Ellers velger adressen. Serverens ord leses
      * før komponenten skriver noe.
      */
-    // Lastet når fanene har panelene sine: kom raden før panelene, fant
-    // adressen ingenting, og den første fanen ble valgt og skrevet i
-    // adressen over fanen brukeren ba om. Serverens ord leses gjennom
-    // minnet, så en ny tilkobling ikke tar komponentens egen skriving for
-    // serverens.
+    // Lastet når raden har faner og adressen kan besvares: den er tom, eller
+    // elementet den peker på finnes. Kom raden før panelene, eller innholdet
+    // etter panelet, fant adressen ellers ingenting, og den første fanen ble
+    // valgt over den brukeren ba om. Å vente på at alle fanene har panel
+    // holdt ikke: med én lenke som peker på ingenting, ble raden aldri
+    // lastet. Peker adressen på noe som aldri kommer, som `#/sak/1`, er det
+    // heller ingenting å velge. Serverens ord leses gjennom minnet, så en ny
+    // tilkobling ikke tar komponentens egen skriving for serverens.
     const tabs = this.tabs
+    const hash = location.hash.slice(1)
     const loading =
       !this.started &&
       tabs.length > 0 &&
-      tabs.every((tab) => this.panelFor(tab) !== null)
+      (hash === "" || this.byFragment(hash) !== null)
     const serverChose =
       loading && tabs.some((tab) => this.serverSelected(tab) === "true")
     this.wire()
