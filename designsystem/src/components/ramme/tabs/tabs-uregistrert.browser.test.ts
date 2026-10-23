@@ -15,14 +15,14 @@ import "./tabs.css"
  */
 const BAR = `
   <fs-tabs>
-    <div class="fs-tabs__list">
-      <button>Søknaden</button>
-      <button>Vedlegg</button>
-      <button>Meldinger</button>
-    </div>
-    <div class="fs-tabs__panel">Søknaden</div>
-    <div class="fs-tabs__panel">Vedlegg</div>
-    <div class="fs-tabs__panel">Meldinger</div>
+    <ul class="fs-tabs__list">
+      <li><a href="#soknaden">Søknaden</a></li>
+      <li><a href="#vedlegg">Vedlegg</a></li>
+      <li><a href="#meldinger">Meldinger</a></li>
+    </ul>
+    <section class="fs-tabs__panel" id="soknaden">Søknaden</section>
+    <section class="fs-tabs__panel" id="vedlegg">Vedlegg</section>
+    <section class="fs-tabs__panel" id="meldinger">Meldinger</section>
   </fs-tabs>`
 
 function visning(): string[] {
@@ -42,10 +42,7 @@ describe("tabs.css før komponenten er registrert", () => {
 
   it("lar serverens hidden bestemme hvilket panel som er det første synlige", async () => {
     monter(
-      BAR.replace(
-        '<div class="fs-tabs__panel">Søknaden',
-        '<div class="fs-tabs__panel" hidden>Søknaden',
-      ),
+      BAR.replace('id="soknaden">Søknaden', 'id="soknaden" hidden>Søknaden'),
     )
     await ventPaTegning()
 

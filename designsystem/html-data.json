@@ -43,7 +43,7 @@
       "name": "fs-tabs",
       "description": {
         "kind": "markdown",
-        "value": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene."
+        "value": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
       },
       "attributes": [
         {
@@ -53,6 +53,29 @@
             "value": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
           },
           "valueSet": "v"
+        },
+        {
+          "name": "activation",
+          "description": {
+            "kind": "markdown",
+            "value": "Hva piltastene gjør. Standard er at de velger fanen med en gang."
+          },
+          "values": [
+            {
+              "name": "manual",
+              "description": {
+                "kind": "markdown",
+                "value": "Piltastene flytter bare fokus, og Enter eller mellomrom velger. Når innholdet i et panel tar tid å laste."
+              }
+            },
+            {
+              "name": "automatic",
+              "description": {
+                "kind": "markdown",
+                "value": "Piltastene velger fanen, det samme som uten attributtet."
+              }
+            }
+          ]
         }
       ],
       "references": [

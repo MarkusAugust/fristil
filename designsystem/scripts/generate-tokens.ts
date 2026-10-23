@@ -34,6 +34,7 @@ const BARN = [
   ".fs-file-upload-list li",
   ".fs-pagination *",
   ".fs-select option",
+  ".fs-tabs__list a",
 ]
 
 const sections: Record<string, string[]> = {}

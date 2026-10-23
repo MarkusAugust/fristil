@@ -11,7 +11,7 @@
     "build": "bun --filter @fristil/designsystem build && bun --filter fristil-vscode sjekk && bun --filter @fristil/documentation build",
     "typecheck": "tsc -b && bun --filter @fristil/designsystem typecheck:scripts && bun --filter fristil-vscode typecheck",
     "typecheck:tests": "bun --filter @fristil/designsystem typecheck:tests",
-    "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:tailwind",
+    "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:uten-javascript && bun --filter @fristil/designsystem sjekk:tailwind",
     "test:docs": "bun --filter @fristil/documentation test:docs",
     "lint": "biome check .",
     "prepare-version": "bun designsystem/scripts/prepare-version.ts",

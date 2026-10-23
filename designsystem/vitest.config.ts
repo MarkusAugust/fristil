@@ -13,7 +13,18 @@ export default defineConfig({
       // på <input> oppfører seg ulikt.
       instances: [
         { browser: "chromium" },
-        { browser: "firefox" },
+        /*
+         * Firefox kjører én fil om gangen. Hver fil får sin egen side, men
+         * alle sidene deler én Firefox, og Playwright gjør siden som får en
+         * musehandling til det aktive vinduet. Testene står i en iframe, og
+         * der gjelder ikke Playwrights fokusetterligning: de andre sidene får
+         * `blur`, `:focus` slutter å treffe, og `:hover` forsvinner. Testen er
+         * riktig, men en annen fil tok fokus og mus fra den.
+         * https://github.com/microsoft/playwright/issues/42933 (fokus, åpen)
+         * https://github.com/microsoft/playwright/issues/40562 (mus)
+         * Chromium og WebKit etterligner fokus og mus per side.
+         */
+        { browser: "firefox", fileParallelism: false },
         { browser: "webkit" },
       ],
       headless: true,

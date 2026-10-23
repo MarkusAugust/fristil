@@ -49,7 +49,41 @@ const BARN_MED_DISPLAY = [
   ".fs-pagination button",
   '.fs-pagination span[aria-disabled="true"]',
   '.fs-select[data-picker="styled"] option',
+  ".fs-tabs__list a",
 ]
+
+/** Velgerlisten delt på komma, men ikke på dem inni parenteser og klammer. */
+function utenforParenteser(tekst: string): string[] {
+  const deler: string[] = []
+  let dybde = 0
+  let start = 0
+  for (let i = 0; i < tekst.length; i++) {
+    if ("([".includes(tekst[i])) dybde++
+    else if (")]".includes(tekst[i])) dybde--
+    else if (tekst[i] === "," && dybde === 0) {
+      deler.push(tekst.slice(start, i))
+      start = i + 1
+    }
+  }
+  deler.push(tekst.slice(start))
+  return deler
+}
+
+/**
+ * Velgeren uten det som står i klammer og parenteser.
+ *
+ * Mellomrommet i `[hidden="until-found" i]` er ingen etterkommerselektor, og
+ * det som står i `:is(…)` hører ikke til selve velgeren.
+ */
+function utenGrupper(velger: string): string {
+  let forrige = ""
+  let ut = velger
+  while (ut !== forrige) {
+    forrige = ut
+    ut = ut.replace(/\[[^\]]*\]|\([^()]*\)/g, "")
+  }
+  return ut
+}
 
 afterEach(() => {
   document.body.replaceChildren()
@@ -110,9 +144,10 @@ describe("hidden", () => {
       </nav>
       <nav class="fs-breadcrumbs"><ol><li id="ledd" hidden>Mellom</li></ol></nav>
       <ul class="fs-file-upload-list"><li id="fil" hidden>vedlegg.pdf</li></ul>
-      <details class="fs-accordion"><summary id="topp" hidden>Spørsmål</summary></details>`
+      <details class="fs-accordion"><summary id="topp" hidden>Spørsmål</summary></details>
+      <ul class="fs-tabs__list"><li><a id="fane" href="#vedlegg" hidden>Vedlegg</a></li></ul>`
 
-    for (const id of ["valg", "side", "ledd", "fil", "topp"]) {
+    for (const id of ["valg", "side", "ledd", "fil", "topp", "fane"]) {
       const element = document.getElementById(id) as HTMLElement
       expect(getComputedStyle(element).display, id).toBe("none")
     }
@@ -132,10 +167,9 @@ describe("hidden", () => {
         if (!(regel instanceof CSSStyleRule)) continue
         const display = regel.style.getPropertyValue("display")
         if (!display || display === "none") continue
-        for (const velger of regel.selectorText.split(",")) {
+        for (const velger of utenforParenteser(regel.selectorText)) {
           const siste =
-            velger
-              .trim()
+            utenGrupper(velger.trim())
               .split(/\s*[\s>+~]\s*/)
               .pop() ?? ""
           if (/(^|[.:(])fs-|^fs-/.test(siste) || siste.includes(".fs-"))

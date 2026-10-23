@@ -86,12 +86,4 @@ describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
       expect(el["server-controlled"]).toBe(true)
     }
   })
-
-  it("fanene, som har tabIndex", () => {
-    const faner = fs.tabs({ id: "sak", count: 2 })
-    const [forste] = faner.tabs
-    const fane: JSX.IntrinsicElements["button"] = forste ?? {}
-
-    expect(fane.tabIndex).toBe(0)
-  })
 })

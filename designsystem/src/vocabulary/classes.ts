@@ -1255,8 +1255,8 @@ export const classes: Classes = {
     "content": "free",
     "parts": {
       "tab": {
-        "selector": "[role='tab'], > button:not([role])",
-        "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.",
+        "selector": "a[role='tab'][href^='#'], a[href^='#']:not([role])",
+        "description": "En fane: en lenke til panelet sitt, som `<a href=\"#vedlegg\">`. Har serveren skrevet `role=\"tab\"`, er bare lenkene med rollen faner, og raden kan ha andre lenker. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
         "content": "text",
         "multiple": true
       }

@@ -96,7 +96,7 @@ export const isRequiredMarker = createGuard(requiredMarkers)
  */
 const said = new Set<string>()
 
-function warnOnce(message: string): void {
+export function warnOnce(message: string): void {
   if (typeof console === "undefined" || said.has(message)) return
   said.add(message)
   console.warn(message)
@@ -114,6 +114,53 @@ let idCounter = 0
 export function createFieldId(): string {
   idCounter += 1
   return `fs-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+/**
+ * Nøklene en byggefunksjon lager id-er av, sjekket.
+ *
+ * En nøkkel er det samme som `key` i React: en fast verdi fra dataene, som
+ * et kommunenummer. Id-en blir den samme ved hver rendring, og en
+ * oppdatering fra serveren kjenner elementet igjen. En indeks er ingen
+ * nøkkel: setter serveren inn en rad først, peker den samme indeksen på noe
+ * annet.
+ *
+ * Kaster, framfor å si fra og lage en reserve som `idOrFallback` gjør: en
+ * tom nøkkel, en med mellomrom eller to like gir id-er som er tomme, ugyldige
+ * eller like, og det finnes ingen reserve som er riktig. Mellomrom er det
+ * JavaScript regner som mellomrom (`\s`), som Kotlin-utgaven skriver ut.
+ */
+export function checkedKeys(builder: string, keys: unknown): string[] {
+  if (!Array.isArray(keys)) {
+    throw new Error(
+      `${builder}: keys mangler. Gi en liste med én nøkkel per element, fra dataene, som et kommunenummer.`,
+    )
+  }
+  const seen = new Set<string>()
+  for (const key of keys) {
+    if (typeof key !== "string") {
+      throw new Error(
+        `${builder}: en nøkkel i keys er ikke tekst, men ${typeof key}. Nøklene blir id-er; gjør tall om til tekst, som String(kommunenummer).`,
+      )
+    }
+    if (key === "") {
+      throw new Error(
+        `${builder}: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene.`,
+      )
+    }
+    if (/\s/.test(key)) {
+      throw new Error(
+        `${builder}: nøkkelen «${key}» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom.`,
+      )
+    }
+    if (seen.has(key)) {
+      throw new Error(
+        `${builder}: nøkkelen «${key}» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet.`,
+      )
+    }
+    seen.add(key)
+  }
+  return keys
 }
 
 /**

@@ -49,29 +49,37 @@ export const elements: Elements = {
   },
   "fs-tabs": {
     "link": "https://fristil.sobernetics.no/components/tabs/",
-    "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
+    "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
     "attributes": {
       "server-controlled": {
         "type": "flag",
         "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+      },
+      "activation": {
+        "type": "values",
+        "values": [
+          "manual",
+          "automatic"
+        ],
+        "description": "Hva piltastene gjør. Standard er at de velger fanen med en gang."
       }
     },
     "parts": {
       "list": {
         "selector": "[role='tablist'], .fs-tabs__list",
-        "description": "Raden med fanene. Har en fane `role=\"tab\"`, kan raden også ha andre knapper, som en lukkeknapp.",
+        "description": "Raden med fanene, en `<ul>` der hvert `<li>` får `role=\"presentation\"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role=\"tab\"` på lenkene, kan raden også ha andre lenker.",
         "content": "free",
         "unique": true
       },
       "tab": {
-        "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
-        "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n.",
+        "selector": "a[role='tab'][href^='#'], .fs-tabs__list a[href^='#']:not([role])",
+        "description": "En fane: en lenke til panelet sitt, `<a href=\"#vedlegg\">`. Komponenten skriver `aria-controls` fra `href`. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
         "content": "text",
         "multiple": true
       },
       "panel": {
         "selector": "[role='tabpanel'], .fs-tabs__panel:not([role])",
-        "description": "Innholdet til én fane, i samme rekkefølge som fanene.",
+        "description": "Innholdet til én fane, med id-en lenken peker på. Panelet heter det fanen heter: overskriften øverst i panelet er navnet når den sier det samme som fanen.",
         "content": "free",
         "multiple": true
       }

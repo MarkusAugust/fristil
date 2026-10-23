@@ -384,16 +384,20 @@
     "sjekk:ordbruk": "bun scripts/sjekk-ordbruk.ts",
     "sjekk:agent": "bun scripts/sjekk-agent.ts",
     "sjekk:css-vitne": "bun scripts/sjekk-css-vitne.ts",
-    "sjekk:tekster": "bun scripts/sjekk-tekster.ts"
+    "sjekk:tekster": "bun scripts/sjekk-tekster.ts",
+    "sjekk:uten-javascript": "bun scripts/sjekk-uten-javascript.ts"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
     "@types/react": "19",
+    "@types/react-dom": "19",
     "@vitest/browser": "4.1.7",
     "@vitest/browser-playwright": "^4.1.7",
     "axe-core": "^4.13.0",
     "playwright": "1.60.0",
     "publint": "^0.3.24",
+    "react": "19",
+    "react-dom": "19",
     "tailwindcss": "4.3.0",
     "vite": "7.0.0",
     "vitest": "4.1.7"

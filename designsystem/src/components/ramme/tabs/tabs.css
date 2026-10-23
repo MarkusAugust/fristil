@@ -3,62 +3,91 @@
     display: block;
   }
 
-  .fs-tabs__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--fs-tabs-gap, var(--fs-spacing-1));
-    border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
+  /* Raden ser ut som faner bare når skript kjører. Uten JavaScript er den en
+     innholdsfortegnelse: en vanlig liste med lenker til panelene, som står
+     etter hverandre under den. */
+  @media (scripting: enabled) {
+    .fs-tabs__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--fs-tabs-gap, var(--fs-spacing-1));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
+    }
+
+    .fs-tabs__list a {
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      padding: var(--fs-tabs-padding, var(--fs-spacing-2) var(--fs-spacing-4));
+      min-block-size: var(--fs-spacing-10);
+      font-family: inherit;
+      font-size: var(--fs-font-size-m);
+      line-height: var(--fs-line-height-default);
+      color: var(--fs-color-accent-text);
+      text-decoration: none;
+      background: transparent;
+      border: 0;
+      /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
+         ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
+      border-block-end: var(--fs-spacing-0-5) solid transparent;
+      margin-block-end: -1px;
+      cursor: pointer;
+    }
+
+    .fs-tabs__list a:hover {
+      background: var(--fs-color-accent-surface);
+    }
+
+    .fs-tabs__list a:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: -2px;
+    }
+
+    .fs-tabs__list a[aria-selected="true"] {
+      color: var(--fs-color-neutral-text-strong);
+      font-weight: var(--fs-font-weight-semibold);
+      border-block-end-color: var(--fs-color-accent-border);
+    }
+
+    .fs-tabs__list a[aria-disabled="true"] {
+      color: var(--fs-color-disabled-text);
+      cursor: not-allowed;
+    }
+
+    /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
+       komponenten setter det først når den er registrert. Fram til da vises
+       bare det første synlige panelet, så innholdet ikke hopper når resten
+       skjules. Skrev serveren `hidden` selv, er det første synlige det
+       serveren valgte. Bare når skript kjører: uten JavaScript vises alle. */
+    fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
+      ~ .fs-tabs__panel:not([hidden]) {
+      display: none;
+    }
   }
 
-  .fs-tabs__list button {
-    box-sizing: border-box;
-    padding: var(--fs-tabs-padding, var(--fs-spacing-2) var(--fs-spacing-4));
-    min-block-size: var(--fs-spacing-10);
-    font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-accent-text);
-    background: transparent;
-    border: 0;
-    /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
-       ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
-    border-block-end: var(--fs-spacing-0-5) solid transparent;
-    margin-block-end: -1px;
-    cursor: pointer;
-  }
-
-  .fs-tabs__list button:hover {
-    background: var(--fs-color-accent-surface);
-  }
-
-  .fs-tabs__list button:focus-visible {
-    outline: var(--fs-focus-ring);
-    outline-offset: -2px;
-  }
-
-  .fs-tabs__list button[aria-selected="true"] {
-    color: var(--fs-color-neutral-text-strong);
-    font-weight: var(--fs-font-weight-semibold);
-    border-block-end-color: var(--fs-color-accent-border);
-  }
-
-  .fs-tabs__list button:disabled {
-    color: var(--fs-color-disabled-text);
-    cursor: not-allowed;
+  /* Uten JavaScript er lenkene en innholdsfortegnelse, én per linje. Med
+     linjehøyden alene sto de så tett at trykkflaten var under 24 piksler
+     (WCAG 2.5.8). */
+  @media (scripting: none) {
+    .fs-tabs__list a {
+      display: inline-block;
+      min-block-size: var(--fs-spacing-6);
+      line-height: var(--fs-spacing-6);
+    }
   }
 
   .fs-tabs__panel {
     padding-block-start: var(--fs-tabs-panel-space, var(--fs-spacing-4));
   }
 
-  /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
-     komponenten setter det først når den er registrert. Fram til da vises
-     bare det første synlige panelet, så innholdet ikke hopper når resten
-     skjules. Skrev serveren `hidden` selv, er det første synlige det
-     serveren valgte. */
-  fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
-    ~ .fs-tabs__panel:not([hidden]) {
-    display: none;
+  /* Et panel skjult med `until-found` har boksen sin, men ikke innholdet,
+     så søk i siden kan finne det. Luften må bort, ellers står det et tomt
+     felt under det valgte panelet for hver fane. */
+  .fs-tabs__panel[hidden="until-found" i] {
+    padding: 0;
   }
 
   .fs-tabs__panel:focus-visible {
@@ -70,7 +99,7 @@
      de gjennomsiktige strekene under de andre. `Highlight` slipper gjennom,
      og gir tilbake forskjellen. */
   @media (forced-colors: active) {
-    .fs-tabs__list button[aria-selected="true"] {
+    .fs-tabs__list a[aria-selected="true"] {
       border-block-end-color: Highlight;
       color: Highlight;
     }

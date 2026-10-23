@@ -1,4 +1,4 @@
-import { attributes, idOrFallback } from "../../css/shared.js"
+import { attributes, checkedKeys, idOrFallback } from "../../css/shared.js"
 import {
   computeFieldAttributes,
   type FieldOptions,
@@ -12,10 +12,18 @@ export const SUGGESTION_VALUE_CLASS = "fs-suggestion__value" as const
 export const SUGGESTION_STATUS_CLASS = "fs-sr-only" as const
 
 export type SuggestionOptions = Omit<FieldOptions, "id"> & {
-  /** Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`. */
+  /**
+   * Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`, og
+   * alternativene `${id}-option-${nøkkel}`.
+   */
   id: string
-  /** Antall alternativer serveren sender med. Standard: 0. */
-  count?: number
+  /**
+   * Én nøkkel per alternativ serveren sender med, fra dataene, som
+   * kommunenummeret. Nøkkelen gir alternativet id, så en oppdatering som
+   * sender lista på nytt, kjenner alternativene igjen. Tom nøkkel,
+   * mellomrom og to like kaster. Standard: ingen alternativer.
+   */
+  keys?: string[]
   /** Alternativet som er markert med piltastene. Standard: ingen. */
   activeIndex?: number
   /** Lista er åpen. Standard: lukket. */
@@ -45,7 +53,7 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  */
 export const suggestion = ({
   id: givenId,
-  count = 0,
+  keys: givenKeys = [],
   activeIndex = -1,
   open = false,
   pending = false,
@@ -53,14 +61,20 @@ export const suggestion = ({
 }: SuggestionOptions) => {
   // Reserven gjelder bare den som ikke har en typesjekk.
   const id = idOrFallback("fs.suggestion()", givenId)
+  const keys = checkedKeys("fs.suggestion()", givenKeys)
+  const count = keys.length
   const computed = computeFieldAttributes({ ...field, id })
   const listId = `${id}-list`
   const statusId = `${id}-status`
-  const optionId = (index: number) => `${id}-option-${index}`
+  const optionId = (index: number) => `${id}-option-${keys[index]}`
   // Markeringen skrives bare når lista er åpen, begge halvdelene sammen.
   // Komponenten fjerner begge i det lista lukkes, og en lukket liste med et
   // markert alternativ ville pekt `aria-activedescendant` inn i noe skjult.
-  const marked = open && activeIndex >= 0 && activeIndex < count
+  const marked =
+    open &&
+    Number.isInteger(activeIndex) &&
+    activeIndex >= 0 &&
+    activeIndex < count
 
   return {
     label: computed.label,
@@ -87,7 +101,7 @@ export const suggestion = ({
       role: "listbox" as const,
       hidden: open ? undefined : (true as const),
     }),
-    options: Array.from({ length: count }, (_, index) =>
+    options: keys.map((_, index) =>
       attributes({
         class: SUGGESTION_OPTION_CLASS,
         id: optionId(index),

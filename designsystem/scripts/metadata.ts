@@ -189,18 +189,19 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
   [FS_TABS_TAG]: parts(FS_TABS_PARTS, {
     list: {
       description:
-        'Raden med fanene. Har en fane `role="tab"`, kan raden også ha andre knapper, som en lukkeknapp.',
+        'Raden med fanene, en `<ul>` der hvert `<li>` får `role="presentation"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role="tab"` på lenkene, kan raden også ha andre lenker.',
       content: "free",
       unique: true,
     },
     tab: {
       description:
-        'En fane: `role="tab"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n.',
+        'En fane: en lenke til panelet sitt, `<a href="#vedlegg">`. Komponenten skriver `aria-controls` fra `href`. `role="tab"` på noe som ikke er en lenke, er ikke en fane.',
       content: "text",
       multiple: true,
     },
     panel: {
-      description: "Innholdet til én fane, i samme rekkefølge som fanene.",
+      description:
+        "Innholdet til én fane, med id-en lenken peker på. Panelet heter det fanen heter: overskriften øverst i panelet er navnet når den sier det samme som fanen.",
       content: "free",
       multiple: true,
     },
@@ -361,8 +362,28 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsTabs>(
     FS_TABS_TAG,
     "tabs",
-    "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
-    { "server-controlled": serverControlled },
+    'Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role="tab"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden="until-found"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.',
+    {
+      "server-controlled": serverControlled,
+      activation: {
+        description:
+          "Hva piltastene gjør. Standard er at de velger fanen med en gang.",
+        value: {
+          values: [
+            {
+              name: "manual",
+              description:
+                "Piltastene flytter bare fokus, og Enter eller mellomrom velger. Når innholdet i et panel tar tid å laste.",
+            },
+            {
+              name: "automatic",
+              description:
+                "Piltastene velger fanen, det samme som uten attributtet.",
+            },
+          ],
+        },
+      },
+    },
     {
       "tab-select": {
         description: "Brukeren valgte en fane. `index` teller fra 0.",
@@ -1111,9 +1132,9 @@ export const classDocs: Record<string, ClassDoc> = {
     content: "free",
     parts: {
       tab: {
-        selector: "[role='tab'], > button:not([role])",
+        selector: "a[role='tab'][href^='#'], a[href^='#']:not([role])",
         description:
-          'En fane: `role="tab"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.',
+          'En fane: en lenke til panelet sitt, som `<a href="#vedlegg">`. Har serveren skrevet `role="tab"`, er bare lenkene med rollen faner, og raden kan ha andre lenker. `role="tab"` på noe som ikke er en lenke, er ikke en fane.',
         content: "text",
         multiple: true,
       },

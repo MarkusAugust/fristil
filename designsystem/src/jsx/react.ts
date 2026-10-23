@@ -90,7 +90,14 @@ type FsFieldAttributes = Host & {
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = Host & ServerControlled
+type FsTabsAttributes = Host &
+  ServerControlled & {
+    /**
+     * `manual`: piltastene flytter bare fokus, og Enter eller mellomrom
+     * velger. Standard: piltastene velger med en gang.
+     */
+    activation?: "manual" | "automatic"
+  }
 
 type FsErrorSummaryAttributes = Host & {
   /**
