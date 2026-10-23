@@ -59,11 +59,30 @@
 
     /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
        komponenten setter det først når den er registrert. Fram til da vises
-       bare det første synlige panelet, så innholdet ikke hopper når resten
-       skjules. Skrev serveren `hidden` selv, er det første synlige det
-       serveren valgte. Bare når skript kjører: uten JavaScript vises alle. */
+       bare ett panel, det komponenten kommer til å velge, så innholdet ikke
+       hopper når resten skjules:
+       - Skrev serveren `hidden` selv, gjelder det, og det første synlige er
+         det serveren valgte.
+       - Ellers panelet adressen peker på, eller panelet med det inni. Det er
+         også det en lenke i raden fører til når komponenten aldri blir
+         registrert.
+       - Ellers det første.
+       Under `server-controlled` velger adressen ikke, og det første synlige
+       vises. Linjene i regelen er i den rekkefølgen: alle etter det første
+       unntatt treffet, alle etter det første under `server-controlled`, og
+       det første når treffet står lenger ned. `:has()` kan ikke stå inni
+       `:has()`, derfor to former for treffet i den siste. Bare når skript
+       kjører: uten JavaScript vises alle. */
     fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
-      ~ .fs-tabs__panel:not([hidden]) {
+      ~ .fs-tabs__panel:not([hidden]):not(:target, :has(:target)),
+    fs-tabs:not(:defined)[server-controlled]
+      .fs-tabs__panel:not([hidden])
+      ~ .fs-tabs__panel:not([hidden]),
+    fs-tabs:not(:defined)
+      .fs-tabs__panel:not([hidden]):not(fs-tabs[server-controlled] *):has(
+        ~ .fs-tabs__panel:not([hidden]):target,
+        ~ .fs-tabs__panel:not([hidden]) :target
+      ) {
       display: none;
     }
   }

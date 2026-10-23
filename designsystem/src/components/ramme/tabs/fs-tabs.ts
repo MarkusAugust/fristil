@@ -209,8 +209,9 @@ type Word = { written: string | null; server: string | null }
  * Det serveren har skrevet står. Hvilken fane som er valgt leses fra
  * `aria-selected`, og mangler den, fra hvilket panel som ikke er skjult; er
  * ingenting sagt, er det den første. Før komponenten er registrert viser
- * `tabs.css` bare det første synlige panelet, så innholdet ikke hopper når
- * resten skjules.
+ * `tabs.css` bare det panelet komponenten kommer til å velge: det første
+ * synlige, eller det adressen peker på, så innholdet ikke hopper når resten
+ * skjules.
  *
  * Det komponenten gjør etterpå er det nettleseren ikke gjør selv: Tab hopper
  * forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene.

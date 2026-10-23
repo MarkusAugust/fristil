@@ -12,6 +12,17 @@
  */
 export async function settAdresse(hash: string): Promise<void> {
   document.body.innerHTML = ""
+  await gåTil(hash)
+}
+
+/**
+ * Navigerer til et fragment i siden som står, slik nettleseren gjør når siden
+ * lastes med adressen: elementet finnes, og blir `:target`.
+ *
+ * `:target` settes når nettleseren navigerer. Et element som kommer etterpå,
+ * blir det ikke, så en test av `:target` må montere først og navigere etter.
+ */
+export async function gåTil(hash: string): Promise<void> {
   const fragment = hash.replace(/^#/, "")
   if (location.hash.slice(1) === fragment) return
   const endret = new Promise<void>((ferdig) =>
