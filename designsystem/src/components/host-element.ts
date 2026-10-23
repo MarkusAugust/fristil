@@ -210,7 +210,9 @@ export function derivedParts<T extends Element>(
  *
  * Noen ganger er det serveren som skal bestemme: «gå videre til steg 2» er en
  * ekte ting en server vil kunne gjøre. Står `server-controlled` på verten,
- * reparerer komponenten ingenting, og hver patch bestemmer.
+ * setter komponenten ikke tilbake det brukeren gjorde, og hver patch
+ * bestemmer. Koblingen og tastaturet gjør den fortsatt, og hva attributtet
+ * betyr for hver komponent, står i komponenten.
  *
  * Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene
  * på hvert attributt komponenten kom til å røre. Ett attributt å huske i
@@ -222,7 +224,7 @@ export function derivedParts<T extends Element>(
  */
 export const SERVER_CONTROLLED = "server-controlled" as const
 
-/** Om serveren eier tilstanden i dette elementet. */
+/** Om serveren bestemmer tilstanden i dette elementet. */
 export function isServerControlled(element: Element): boolean {
   return element.hasAttribute(SERVER_CONTROLLED)
 }

@@ -341,9 +341,6 @@ const number = (description: string): AttributeDoc => ({
  * tilbake etter en morfing: valgt fane, åpent panel, åpen liste, modal
  * dialog. Koblingen ellers, som `aria-expanded` på knappen, settes uansett.
  */
-const serverControlled = flag(
-  "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den.",
-)
 
 export const elements: readonly ElementDoc[] = [
   element<typeof FsField>(
@@ -364,7 +361,9 @@ export const elements: readonly ElementDoc[] = [
     "tabs",
     'Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role="tab"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden="until-found"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.',
     {
-      "server-controlled": serverControlled,
+      "server-controlled": flag(
+        "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer.",
+      ),
       activation: {
         description:
           "Hva piltastene gjør. Standard er at de velger fanen med en gang.",
@@ -448,7 +447,9 @@ export const elements: readonly ElementDoc[] = [
           ],
         },
       },
-      "server-controlled": serverControlled,
+      "server-controlled": flag(
+        "Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det.",
+      ),
     },
     {
       "popover-toggle": {
@@ -486,7 +487,9 @@ export const elements: readonly ElementDoc[] = [
       "count-other": text(
         "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet.",
       ),
-      "server-controlled": serverControlled,
+      "server-controlled": flag(
+        "Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren.",
+      ),
     },
     {
       "suggestion-select": {
@@ -505,7 +508,9 @@ export const elements: readonly ElementDoc[] = [
       open: flag(
         "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
       ),
-      "server-controlled": serverControlled,
+      "server-controlled": flag(
+        "Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`, i stedet for å sette `open` tilbake.",
+      ),
     },
     {
       "dialog-toggle": {

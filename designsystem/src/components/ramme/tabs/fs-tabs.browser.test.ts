@@ -7,7 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { settAdresse } from "../../../testing/adresse"
+import { gåTil, settAdresse } from "../../../testing/adresse"
 import { attr } from "../../../testing/markup"
 import { defineFsTabs, type FsTabs } from "./fs-tabs"
 import { tabs } from "./tabs"
@@ -848,6 +848,75 @@ describe("fs-tabs under server-controlled", () => {
     })
   })
 
+  it("følger serveren som flytter med bare hidden, etter at server-controlled ble satt etter et klikk", async () => {
+    // Settes attributtet midt i, er det som står utgangspunktet. Men
+    // `aria-selected` på fanene skrev komponenten selv ved klikket. Ble det
+    // regnet som serverens, gikk det foran `hidden`, og serveren kunne ikke
+    // flytte fanen.
+    monter(FIRE.replace("<fs-tabs server-controlled>", "<fs-tabs>"))
+    await tegn()
+    const vert = document.querySelector("fs-tabs") as HTMLElement
+    document.querySelectorAll<HTMLElement>("fs-tabs a")[1].click()
+    await ventPaTegning()
+    vert.setAttribute("server-controlled", "")
+    await ventPaTegning()
+
+    const p = paneler()
+    p[0].removeAttribute("hidden")
+    p[1].setAttribute("hidden", "")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["true", "false"],
+      skjult: [false, true],
+    })
+  })
+
+  it("tar det som står som utgangspunkt når server-controlled settes, og reparerer igjen når det fjernes", async () => {
+    // Uten attributtet fra start, som når en patch setter det.
+    monter(FIRE.replace("<fs-tabs server-controlled>", "<fs-tabs>"))
+    await tegn()
+    const vert = document.querySelector("fs-tabs") as HTMLElement
+    const lenker = [...document.querySelectorAll<HTMLElement>("fs-tabs a")]
+    lenker[1].click()
+    await ventPaTegning()
+
+    // Serveren overtar, og en patch skriver panelet som det står. Uten at
+    // komponenten glemte minnet, hoppet raden tilbake til det serveren sa
+    // før klikket.
+    vert.setAttribute("server-controlled", "")
+    const p = paneler()
+    p[0].setAttribute("hidden", p[0].getAttribute("hidden") ?? "")
+    await ventPaTegning()
+    expect(tilstand()).toEqual({
+      valgt: ["false", "true"],
+      skjult: [true, false],
+    })
+
+    // Serveren slipper igjen og sender den første. Klikket fra før er glemt,
+    // og kommer ikke tilbake.
+    vert.removeAttribute("server-controlled")
+    p[0].removeAttribute("hidden")
+    p[1].setAttribute("hidden", "")
+    await ventPaTegning()
+    expect(tilstand()).toEqual({
+      valgt: ["true", "false"],
+      skjult: [false, true],
+    })
+
+    // Et nytt klikk står gjennom en patch som river det.
+    lenker[1].click()
+    await ventPaTegning()
+    p[0].removeAttribute("hidden")
+    p[1].setAttribute("hidden", "")
+    await ventPaTegning()
+
+    expect(tilstand()).toEqual({
+      valgt: ["false", "true"],
+      skjult: [true, false],
+    })
+  })
+
   it("lar serveren flytte valget etter klikket", async () => {
     monter(FIRE)
     await tegn()
@@ -970,6 +1039,33 @@ describe("fs-tabs under server-controlled", () => {
     await tegn()
 
     expect(tilstand().valgt).toEqual(["true", "false", "false"])
+  })
+
+  it("lar adressen være også når den endres", async () => {
+    monter(TRE)
+    await tegn()
+
+    await gåTil("#meldinger")
+    await tegn()
+
+    expect(tilstand().valgt).toEqual(["true", "false", "false"])
+  })
+
+  it("melder et klikk med tab-select, og skriver det i adressen", async () => {
+    monter(TRE)
+    await tegn()
+    const meldt: number[] = []
+    document
+      .querySelector("fs-tabs")
+      ?.addEventListener("tab-select", (e) =>
+        meldt.push((e as CustomEvent<{ index: number }>).detail.index),
+      )
+
+    document.querySelectorAll<HTMLElement>("fs-tabs a")[2].click()
+    await ventPaTegning()
+
+    expect(meldt).toEqual([2])
+    expect(location.hash).toBe("#meldinger")
   })
 })
 

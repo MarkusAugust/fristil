@@ -291,6 +291,14 @@ Hvilken form et antall har, avgjøres av `Intl.PluralRules` etter `lang` på sid
 
 Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
 
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `prefiltered` | boolsk | Appen har alt filtrert lista, og komponenten lar den stå. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer). |
+| `server-controlled` | boolsk | Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren, slik den gjør uten attributtet. |
+| `count-none`, `count-zero`, `count-one`, `count-two`, `count-few`, `count-many`, `count-other` | tekst | Opplesningen av antall treff. Se [Antall treff på andre språk](#antall-treff-på-andre-språk). |
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |

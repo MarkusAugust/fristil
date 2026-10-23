@@ -552,6 +552,29 @@ describe("fs-suggestion lukker og rydder", () => {
     expect(getComputedStyle(tom).display).toBe("none")
   })
 
+  it("åpner ikke lista igjen når server-controlled settes og fjernes", async () => {
+    monter(markup())
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    tast(input, "ArrowDown")
+    await tegn()
+    expect(liste.hidden).toBe(false)
+
+    // Serveren overtar og lukker lista. Så slipper den igjen. Husket
+    // komponenten at lista var åpen, åpnet den den igjen ved neste patch.
+    felt.setAttribute("server-controlled", "")
+    liste.hidden = true
+    input.setAttribute("aria-expanded", "false")
+    await tegn()
+    felt.removeAttribute("server-controlled")
+    input.setAttribute("aria-expanded", "false")
+    await tegn()
+
+    expect(liste.hidden).toBe(true)
+    expect(input.getAttribute("aria-expanded")).toBe("false")
+  })
+
   it("rydder markeringen når det markerte filtreres bort, også med server-controlled", async () => {
     monter(markup("server-controlled"))
     const felt = await tegn()

@@ -373,11 +373,13 @@ export class FsTabs extends HostElement {
     // og neste patch bestemmer.
     if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.chosenTab = undefined
-      this.pendingTab = undefined
       // Det som står der nå er utgangspunktet. Uten dette hoppet raden
       // tilbake til fanen serveren sa sist, før brukeren valgte en annen.
-      this.selectedMemory = new WeakMap()
-      this.hiddenMemory = new WeakMap()
+      // Men som når serveren svarer på et klikk: `aria-selected` som
+      // komponenten skrev, er ikke serverens. Ble alt regnet som serverens,
+      // gikk det foran `hidden`, og en server som flytter fanen med bare
+      // `hidden`, ble ikke hørt.
+      this.releasePending()
     }
   }
 

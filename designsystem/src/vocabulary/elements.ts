@@ -53,7 +53,7 @@ export const elements: Elements = {
     "attributes": {
       "server-controlled": {
         "type": "flag",
-        "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        "description": "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer."
       },
       "activation": {
         "type": "values",
@@ -143,7 +143,7 @@ export const elements: Elements = {
       },
       "server-controlled": {
         "type": "flag",
-        "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        "description": "Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det."
       }
     },
     "parts": {
@@ -204,7 +204,7 @@ export const elements: Elements = {
       },
       "server-controlled": {
         "type": "flag",
-        "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        "description": "Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren."
       }
     },
     "parts": {
@@ -265,7 +265,7 @@ export const elements: Elements = {
       },
       "server-controlled": {
         "type": "flag",
-        "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+        "description": "Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`, i stedet for å sette `open` tilbake."
       }
     },
     "parts": {

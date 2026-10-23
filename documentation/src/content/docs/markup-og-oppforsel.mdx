@@ -159,7 +159,7 @@ Skal serveren alene bestemme tilstanden, sier du det på host-elementet:
 <fs-tabs server-controlled>
 ```
 
-Da reparerer komponenten ingenting, og hver oppdatering bestemmer. Det er valget en server trenger når den skal kunne flytte fanen selv.
+Da setter komponenten ikke tilbake det brukeren har gjort, og hver oppdatering bestemmer. Det er valget en server trenger når den skal kunne flytte fanen selv. Koblingen og tastaturet gjør komponenten fortsatt. Hva attributtet betyr for hver komponent, står på sidene for [fanene](/components/tabs/#når-serveren-bestemmer-fanen), [dialogen](/components/dialog/#attributter), [sprettoppvinduet](/components/popover/#attributter) og [forslagsfeltet](/components/suggestion/#attributter).
 
 ## Når markupen ikke lages med JavaScript
 
@@ -377,7 +377,10 @@ Ett attributt gjør det, på verten:
 <fs-tabs server-controlled>
 ```
 
-Da reparerer komponenten ingenting, og hver patch bestemmer. Standardvalget
+Da setter komponenten ikke tilbake det brukeren gjorde, og hver patch
+bestemmer. Settes attributtet mens siden lever, glemmer komponenten det
+brukeren har gjort, og det som står i markupen, er utgangspunktet. Det den
+glemte, kommer ikke tilbake når attributtet fjernes igjen. Standardvalget
 er det motsatte, fordi det er riktig nesten alltid: brukeren mister ikke det
 hun nettopp gjorde.
 

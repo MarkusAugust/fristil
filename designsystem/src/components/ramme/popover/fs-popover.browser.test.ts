@@ -393,6 +393,28 @@ describe("fs-popover kobler fra bar struktur", () => {
     vert.hide()
   })
 
+  it("åpner ikke av seg selv når server-controlled settes og fjernes igjen", async () => {
+    monter(BAR)
+    await tegn()
+    const { knapp, panel } = deler()
+    const vert = document.querySelector("fs-popover") as FsPopover
+    knapp.click()
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(true)
+
+    // Serveren overtar og lukker. Så slipper den igjen. Husket komponenten
+    // at brukeren åpnet vinduet, spratt det opp i det attributtet ble fjernet.
+    vert.setAttribute("server-controlled", "")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    vert.removeAttribute("server-controlled")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(vert.open).toBe(false)
+    expect(panel.matches(":popover-open")).toBe(false)
+  })
+
   it("lar det serveren skrev stå", async () => {
     // `popover` uten verdi er `auto`, og det er en annen verdi enn
     // komponentens `manual`. Id-en er også serverens.
