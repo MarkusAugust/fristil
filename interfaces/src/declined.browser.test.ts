@@ -12,13 +12,13 @@ import "./components/css/select/select.css"
 import "./components/css/textarea/textarea.css"
 
 /**
- * At avslått vinner over en tilstand.
+ * That disabled wins over a state.
  *
- * `[data-state]` sto etter `:disabled` med samme spesifisitet, så et ugyldig
- * felt i et skjema som var slått av under innsending, så rødt ut og ikke
- * avslått. Hvert felt sammenlignes med et avslått felt uten tilstand.
+ * `[data-state]` came after `:disabled` with the same specificity, so an
+ * invalid field in a form that was disabled during submission looked red and
+ * not disabled. Each field is compared with a disabled field without a state.
  */
-const FELT = {
+const FIELDS = {
   input: '<input class="lt-input"',
   select: '<select class="lt-select"',
   textarea: '<textarea class="lt-textarea"',
@@ -27,25 +27,29 @@ const FELT = {
   radio: '<input type="radio" class="lt-radio"',
 }
 
-const SLUTT: Record<string, string> = {
-  select: "><option>Valg</option></select>",
+const END: Record<string, string> = {
+  select: "><option>Option</option></select>",
   textarea: "></textarea>",
 }
 
-describe("avslått med tilstand", () => {
-  for (const [navn, start] of Object.entries(FELT)) {
-    for (const tilstand of ["invalid", "success"]) {
-      it(`${navn} med ${tilstand} ser avslått ut`, () => {
-        const slutt = SLUTT[navn] ?? ">"
+describe("disabled with a state", () => {
+  for (const [name, start] of Object.entries(FIELDS)) {
+    for (const state of ["invalid", "success"]) {
+      it(`${name} with ${state} looks disabled`, () => {
+        const end = END[name] ?? ">"
         mount(`
-          ${start} id="ren" aria-label="Ren" disabled${slutt}
-          ${start} id="med" aria-label="Med" disabled data-state="${tilstand}"${slutt}
+          ${start} id="plain" aria-label="Plain" disabled${end}
+          ${start} id="with" aria-label="With" disabled data-state="${state}"${end}
         `)
-        const ren = getComputedStyle(document.getElementById("ren") as Element)
-        const med = getComputedStyle(document.getElementById("med") as Element)
+        const plain = getComputedStyle(
+          document.getElementById("plain") as Element,
+        )
+        const withState = getComputedStyle(
+          document.getElementById("with") as Element,
+        )
 
-        expect(med.backgroundColor).toBe(ren.backgroundColor)
-        expect(med.borderTopColor).toBe(ren.borderTopColor)
+        expect(withState.backgroundColor).toBe(plain.backgroundColor)
+        expect(withState.borderTopColor).toBe(plain.borderTopColor)
       })
     }
   }

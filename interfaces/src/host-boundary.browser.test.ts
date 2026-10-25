@@ -10,17 +10,17 @@ import "./components/css/button/button.css"
 import "./components/frame/field/field.css"
 
 /**
- * At `data-lt-boundary` gir en innebygd komponent stilen tilbake i en
- * vertsside med CSS uten lag.
+ * That `data-lt-boundary` gives an embedded component its style back on a
+ * host page with unlayered CSS.
  *
- * Vertens regler under er de vanlige: en nullstilling av knapper, et utdrag
- * av normalize, og nullstillinger med (0,1,1), som er grunnen til at
- * attributtet står to ganger i `boundary.css`. Alle står uten lag, og slår
- * dermed `@layer lotek` uten grensen.
+ * The host's rules below are the usual ones: a button reset, an excerpt of
+ * normalize, and resets with (0,1,1), which is why the attribute appears
+ * twice in `boundary.css`. All of them are unlayered, and so beat
+ * `@layer lotek` without the boundary.
  */
-const ARV = "body { font-family: Georgia, serif; }"
+const INHERITED = "body { font-family: Georgia, serif; }"
 
-const NULLSTILLING = `
+const RESET = `
   button { background: none; text-decoration: none; border: none; border-radius: 0; cursor: pointer; color: rgb(200, 0, 0); }
   button, input, optgroup, select, textarea { margin: 0; font-family: inherit; font-size: 100%; line-height: 1.15; }
   button:not(:disabled) { padding: 0; }
@@ -29,7 +29,7 @@ const NULLSTILLING = `
   label::after { content: none; }
 `
 
-const EGENSKAPER = [
+const PROPERTIES = [
   "background-color",
   "border-top-width",
   "border-top-style",
@@ -48,118 +48,121 @@ const EGENSKAPER = [
 ] as const
 
 const MARKUP = `
-  <div id="utenfor"><button type="button" class="lt-button">Utenfor</button></div>
+  <div id="outside"><button type="button" class="lt-button">Outside</button></div>
   <div data-lt-boundary data-theme="light">
     ${buttonVariants
       .map(
         (variant) =>
-          `<button type="button" class="lt-button" data-variant="${variant}" data-maal="knapp-${variant}">Lagre</button>`,
+          `<button type="button" class="lt-button" data-variant="${variant}" data-target="button-${variant}">Save</button>`,
       )
       .join("")}
-    <select class="lt-select" data-maal="select"><option>Ti</option></select>
-    <input type="text" class="lt-input" data-maal="input" />
-    <label class="lt-label" data-required data-maal="ledetekst">Navn</label>
-    <lt-field data-maal="felt">
-      <label class="lt-label" data-maal="feltets-ledetekst">Fødselsdato</label>
-      <input type="text" class="lt-input" required data-maal="feltets-input" />
-      <p class="lt-help-text" data-maal="hjelpetekst">Skriv dag, måned og år.</p>
+    <select class="lt-select" data-target="select"><option>Ten</option></select>
+    <input type="text" class="lt-input" data-target="input" />
+    <label class="lt-label" data-required data-target="label">Name</label>
+    <lt-field data-target="field">
+      <label class="lt-label" data-target="field-label">Date of birth</label>
+      <input type="text" class="lt-input" required data-target="field-input" />
+      <p class="lt-help-text" data-target="help-text">Enter day, month and year.</p>
     </lt-field>
   </div>
 `
 
-function verten(css: string): void {
-  const stil = document.createElement("style")
-  stil.dataset.vert = ""
-  stil.textContent = css
-  document.head.append(stil)
+function host(css: string): void {
+  const sheet = document.createElement("style")
+  sheet.dataset.host = ""
+  sheet.textContent = css
+  document.head.append(sheet)
 }
 
-function les(): Record<string, Record<string, string>> {
-  const alle: Record<string, Record<string, string>> = {}
-  for (const el of document.querySelectorAll<HTMLElement>("[data-maal]")) {
-    const stil = getComputedStyle(el)
-    const verdier: Record<string, string> = {}
-    for (const navn of EGENSKAPER) verdier[navn] = stil.getPropertyValue(navn)
-    verdier["::after content"] = getComputedStyle(el, "::after").content
-    alle[el.dataset.maal as string] = verdier
+function read(): Record<string, Record<string, string>> {
+  const all: Record<string, Record<string, string>> = {}
+  for (const el of document.querySelectorAll<HTMLElement>("[data-target]")) {
+    const style = getComputedStyle(el)
+    const values: Record<string, string> = {}
+    for (const name of PROPERTIES) values[name] = style.getPropertyValue(name)
+    values["::after content"] = getComputedStyle(el, "::after").content
+    all[el.dataset.target as string] = values
   }
-  return alle
+  return all
 }
 
-describe("grensen mot en vertsside", () => {
+describe("the boundary with a host page", () => {
   beforeAll(() => defineLtField())
 
   afterEach(() => {
-    for (const stil of document.querySelectorAll("style[data-vert]"))
-      stil.remove()
+    for (const sheet of document.querySelectorAll("style[data-host]"))
+      sheet.remove()
     document.body.innerHTML = ""
   })
 
-  it("gir komponentene de samme verdiene som uten vertens nullstillinger", () => {
+  it("gives the components the same values as without the host's resets", () => {
     /*
-     * Skriften fra vertens `body` er med i begge avlesningene, siden den skal
-     * arves også inne i grensen. Skriftfamilien sjekkes i testen under og
-     * ikke her. Settes skriften på `body` i samme stilberegning som en
-     * `<select>` settes inn, svarer `getComputedStyle` i WebKit med den
-     * gamle verdien, `-webkit-standard`, selv om lista tegnes med riktig
-     * skrift. Sammenligningen ville da handlet om WebKit og ikke om grensen.
+     * The font from the host's `body` is in both readings, since it should be
+     * inherited inside the boundary too. The font family is checked in the
+     * test below and not here. If the font is set on `body` in the same style
+     * recalculation as a `<select>` is inserted, `getComputedStyle` in WebKit
+     * answers with the old value, `-webkit-standard`, even though the list is
+     * drawn with the right font. The comparison would then be about WebKit
+     * and not about the boundary.
      */
     document.body.innerHTML = MARKUP
-    verten(ARV)
-    const uten = les()
-    expect(Object.keys(uten)).toHaveLength(buttonVariants.length + 7)
-    // Markeringen er et pseudoelement, og det må finnes for å kunne sammenlignes
-    expect(uten.ledetekst["::after content"]).not.toBe("none")
+    host(INHERITED)
+    const without = read()
+    expect(Object.keys(without)).toHaveLength(buttonVariants.length + 7)
+    // The marker is a pseudo-element, and it must exist to be compared
+    expect(without.label["::after content"]).not.toBe("none")
 
-    verten(NULLSTILLING)
+    host(RESET)
 
-    expect(les()).toEqual(uten)
+    expect(read()).toEqual(without)
   })
 
-  it("lar skriften komme fra verten", () => {
+  it("lets the font come from the host", () => {
     document.body.innerHTML = MARKUP
-    verten(ARV + NULLSTILLING)
+    host(INHERITED + RESET)
 
-    for (const maal of ["knapp-primary", "input", "ledetekst"]) {
-      const el = document.querySelector(`[data-maal="${maal}"]`) as HTMLElement
-      expect(getComputedStyle(el).fontFamily, maal).toBe("Georgia, serif")
+    for (const target of ["button-primary", "input", "label"]) {
+      const el = document.querySelector(
+        `[data-target="${target}"]`,
+      ) as HTMLElement
+      expect(getComputedStyle(el).fontFamily, target).toBe("Georgia, serif")
     }
   })
 
-  it("lar verten utenfor grensen være som den var", () => {
+  it("leaves the host outside the boundary as it was", () => {
     document.body.innerHTML = MARKUP
-    verten(ARV + NULLSTILLING)
+    host(INHERITED + RESET)
 
-    const utenfor = getComputedStyle(
-      document.querySelector("#utenfor button") as HTMLElement,
+    const outside = getComputedStyle(
+      document.querySelector("#outside button") as HTMLElement,
     )
-    expect(utenfor.backgroundColor).toBe("rgba(0, 0, 0, 0)")
-    expect(utenfor.borderTopStyle).toBe("none")
-    expect(utenfor.color).toBe("rgb(200, 0, 0)")
+    expect(outside.backgroundColor).toBe("rgba(0, 0, 0, 0)")
+    expect(outside.borderTopStyle).toBe("none")
+    expect(outside.color).toBe("rgb(200, 0, 0)")
   })
 
-  it("lar --lt-variablene på rotelementet virke", () => {
+  it("lets the --lt variables on the root element work", () => {
     document.body.innerHTML = MARKUP
-    verten(ARV + NULLSTILLING)
-    const rot = document.querySelector("[data-lt-boundary]") as HTMLElement
-    rot.style.setProperty("--lt-button-radius", "9999px")
+    host(INHERITED + RESET)
+    const root = document.querySelector("[data-lt-boundary]") as HTMLElement
+    root.style.setProperty("--lt-button-radius", "9999px")
 
-    const knapp = document.querySelector(
-      '[data-maal="knapp-primary"]',
+    const button = document.querySelector(
+      '[data-target="button-primary"]',
     ) as HTMLElement
-    expect(getComputedStyle(knapp).borderTopLeftRadius).toBe("9999px")
+    expect(getComputedStyle(button).borderTopLeftRadius).toBe("9999px")
   })
 
-  it("lar verten ta stilen uten grensen", () => {
-    // En kontroll på at sammenligningen over sammenligner noe: uten grensen skal
-    // vertens CSS faktisk ta stilen fra knappen.
+  it("lets the host take the style without the boundary", () => {
+    // A control that the comparison above compares something: without the
+    // boundary the host's CSS must actually take the style from the button.
     document.body.innerHTML = MARKUP
-    const uten = les()
+    const without = read()
     document
       .querySelector("[data-lt-boundary]")
       ?.removeAttribute("data-lt-boundary")
-    verten(NULLSTILLING)
+    host(RESET)
 
-    expect(les()["knapp-primary"]).not.toEqual(uten["knapp-primary"])
+    expect(read()["button-primary"]).not.toEqual(without["button-primary"])
   })
 })

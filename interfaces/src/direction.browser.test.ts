@@ -13,163 +13,169 @@ import "./components/css/select/select.css"
 import "./components/css/tooltip/tooltip.css"
 
 /**
- * At komponentene snur når språket går fra høyre til venstre.
+ * That the components flip when the language goes from right to left.
  *
- * Systemet bruker logiske egenskaper overalt, altså `padding-inline-start` og
- * `inset-inline-end`, og de snur av seg selv. `background-position` har ingen
- * logisk variant, og de tre stedene som tegner et ikon i bakgrunnen måtte
- * derfor snus for hånd. Uten det står forstørrelsesglasset i søkefeltet på
- * feil side, og knappen i bryteren viser motsatt tilstand av den den har.
+ * The system uses logical properties everywhere, that is
+ * `padding-inline-start` and `inset-inline-end`, and they flip by
+ * themselves. `background-position` has no logical variant, so the three
+ * places that draw an icon in the background had to be flipped by hand.
+ * Without that the magnifying glass in the search field is on the wrong side,
+ * and the knob in the switch shows the opposite of its state.
  */
 
-function stil(id: string) {
+function style(id: string) {
   const element = document.getElementById(id)
-  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  if (!(element instanceof HTMLElement)) throw new Error(`Missing #${id}`)
   return getComputedStyle(element)
 }
 
-describe("høyre til venstre", () => {
+describe("right to left", () => {
   beforeEach(() => {
-    // Bryteren glir mellom av og på. Overgangen er ikke det som måles her,
-    // og gjør bare avlesningen avhengig av hvor raskt maskinen er.
-    const uten = document.createElement("style")
-    uten.dataset.test = ""
-    uten.textContent = `.lt-switch { transition: none; }`
-    document.head.append(uten)
+    // The switch slides between off and on. The transition is not what is
+    // being checked here, and only makes the reading depend on how fast the
+    // machine is.
+    const noTransition = document.createElement("style")
+    noTransition.dataset.test = ""
+    noTransition.textContent = `.lt-switch { transition: none; }`
+    document.head.append(noTransition)
 
     mount(`
-      <input class="lt-input lt-search" type="search" id="sok" />
-      <input class="lt-input" type="date" data-variant="date" id="dato" />
-      <input class="lt-switch" type="checkbox" role="switch" id="av" />
-      <input class="lt-switch" type="checkbox" role="switch" id="pa" checked />
-      <select class="lt-select" id="liste"><option>Valg</option></select>
-      <select class="lt-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
+      <input class="lt-input lt-search" type="search" id="search" />
+      <input class="lt-input" type="date" data-variant="date" id="date" />
+      <input class="lt-switch" type="checkbox" role="switch" id="off" />
+      <input class="lt-switch" type="checkbox" role="switch" id="on" checked />
+      <select class="lt-select" id="list"><option>Option</option></select>
+      <select class="lt-select" data-picker="styled" id="list-styled"><option>Option</option></select>
     `)
   })
 
   afterEach(() => {
-    // Retningen må tilbake selv om en test feilet, ellers måler den neste
-    // feil dokument.
+    // The direction must be reset even if a test failed, or the next one
+    // checks the wrong document.
     document.documentElement.dir = "ltr"
-    for (const stil of document.querySelectorAll("style[data-test]")) {
-      stil.remove()
+    for (const sheet of document.querySelectorAll("style[data-test]")) {
+      sheet.remove()
     }
   })
 
-  it("snur ikonet i søkefeltet", async () => {
+  it("flips the icon in the search field", async () => {
     await waitForPaint()
-    const venstre = stil("sok").backgroundPositionX
+    const left = style("search").backgroundPositionX
 
     document.documentElement.dir = "rtl"
     await waitForPaint()
-    const hoyre = stil("sok").backgroundPositionX
+    const right = style("search").backgroundPositionX
 
-    expect(venstre).not.toBe(hoyre)
+    expect(left).not.toBe(right)
   })
 
   /*
-   * Nedtrekkslista testes med to felt side om side, ett i hver retning,
-   * framfor å snu dokumentet mellom avlesningene. WebKit 26.4 svarer med
-   * padding fra forrige retning etter en slik endring, selv etter to
-   * tegninger, mens `background-position` er oppdatert. Med to felt trenger
-   * ingenting å regnes om, og alle tre motorene svarer likt.
+   * The select is tested with two fields side by side, one in each
+   * direction, rather than flipping the document between the readings.
+   * WebKit 26.4 answers with padding from the previous direction after such a
+   * change, even after two paints, while `background-position` is updated.
+   * With two fields nothing needs recomputing, and all three engines answer
+   * the same.
    */
-  it("snur pila i nedtrekkslista, og plassen den ligger i", async () => {
+  it("flips the arrow in the select, and the space it sits in", async () => {
     mount(`
-      <div dir="ltr"><select class="lt-select" id="venstremot"><option>Valg</option></select></div>
-      <div dir="rtl"><select class="lt-select" id="hoyremot"><option>خيار</option></select></div>
+      <div dir="ltr"><select class="lt-select" id="left-to-right"><option>Option</option></select></div>
+      <div dir="rtl"><select class="lt-select" id="right-to-left"><option>خيار</option></select></div>
     `)
     await waitForPaint()
 
-    const ltr = stil("venstremot")
-    const rtl = stil("hoyremot")
+    const ltr = style("left-to-right")
+    const rtl = style("right-to-left")
 
     expect(rtl.backgroundPositionX).not.toBe(ltr.backgroundPositionX)
 
-    // Like langt fra kanten i begge retninger. Fra høyre står avstanden som
-    // `calc(100% - …)`, fra venstre som en lengde. Før sto pila 6 pixels
-    // fra kanten i høyre-til-venstre og 12 ellers.
-    const avstander = (verdi: string) =>
-      [...verdi.matchAll(/(\d+(?:\.\d+)?)px/g)]
-        .map((treff) => Number(treff[1]))
+    // Equally far from the edge in both directions. From the right the
+    // distance is written as `calc(100% - …)`, from the left as a length.
+    // The arrow used to sit 6 pixels from the edge in right-to-left and 12
+    // otherwise.
+    const distances = (value: string) =>
+      [...value.matchAll(/(\d+(?:\.\d+)?)px/g)]
+        .map((match) => Number(match[1]))
         .sort((a, b) => a - b)
-    expect(avstander(rtl.backgroundPositionX)).toEqual(
-      avstander(ltr.backgroundPositionX),
+    expect(distances(rtl.backgroundPositionX)).toEqual(
+      distances(ltr.backgroundPositionX),
     )
 
-    // Plassen pila ligger i må følge med. Sto den igjen på samme fysiske
-    // side, ville pila lagt seg oppå teksten.
+    // The space the arrow sits in must follow. Had it stayed on the same
+    // physical side, the arrow would have lain on top of the text.
     expect(rtl.paddingLeft).toBe(ltr.paddingRight)
     expect(rtl.paddingRight).toBe(ltr.paddingLeft)
   })
 
-  it("gir lista som tegnes i siden like mye plass på begge sider", async () => {
-    // Der tegner nettleseren pila selv, og den tar ekte plass i oppsettet.
-    // Da skal ingen av sidene ha reservert plass i tillegg. Firefox 150 har
-    // ikke `appearance: base-select`, og skal ha feltet som før.
+  it("gives the list drawn in the page equal space on both sides", async () => {
+    // There the browser draws the arrow itself, and it takes real space in
+    // the layout. Neither side should then reserve extra space. Firefox 150
+    // does not have `appearance: base-select`, and should get the field as
+    // before.
     mount(`
-      <div dir="ltr"><select class="lt-select" data-picker="styled" id="stylet-ltr"><option>Valg</option></select></div>
-      <div dir="rtl"><select class="lt-select" data-picker="styled" id="stylet-rtl"><option>خيار</option></select></div>
+      <div dir="ltr"><select class="lt-select" data-picker="styled" id="styled-ltr"><option>Option</option></select></div>
+      <div dir="rtl"><select class="lt-select" data-picker="styled" id="styled-rtl"><option>خيار</option></select></div>
     `)
     await waitForPaint()
 
-    for (const id of ["stylet-ltr", "stylet-rtl"]) {
-      const felt = stil(id)
+    for (const id of ["styled-ltr", "styled-rtl"]) {
+      const field = style(id)
 
       if (CSS.supports("appearance", "base-select")) {
-        expect(felt.paddingLeft, id).toBe(felt.paddingRight)
+        expect(field.paddingLeft, id).toBe(field.paddingRight)
       } else {
-        expect(felt.paddingLeft, id).not.toBe(felt.paddingRight)
+        expect(field.paddingLeft, id).not.toBe(field.paddingRight)
       }
     }
   })
 
-  it("snur ikonet i datofeltet", async () => {
+  it("flips the icon in the date field", async () => {
     await waitForPaint()
-    const foer = stil("dato").backgroundPositionX
+    const before = style("date").backgroundPositionX
 
     document.documentElement.dir = "rtl"
     await waitForPaint()
 
-    expect(stil("dato").backgroundPositionX).not.toBe(foer)
+    expect(style("date").backgroundPositionX).not.toBe(before)
   })
 
-  it("lar bryterknappen bety det samme i begge retninger", async () => {
+  it("keeps the switch knob meaning the same in both directions", async () => {
     await waitForPaint()
-    const avFoer = stil("av").backgroundPositionX
-    const paaFoer = stil("pa").backgroundPositionX
+    const offBefore = style("off").backgroundPositionX
+    const onBefore = style("on").backgroundPositionX
 
-    // Av og på står på hver sin side. Det er hele signalet.
-    expect(avFoer).not.toBe(paaFoer)
+    // Off and on sit on opposite sides. That is the whole signal.
+    expect(offBefore).not.toBe(onBefore)
 
     document.documentElement.dir = "rtl"
     await waitForPaint()
 
-    const avEtter = stil("av").backgroundPositionX
-    const paaEtter = stil("pa").backgroundPositionX
+    const offAfter = style("off").backgroundPositionX
+    const onAfter = style("on").backgroundPositionX
 
-    expect(avEtter).not.toBe(paaEtter)
-    // Sidene har byttet plass: knappen som lå på starten i den ene retningen,
-    // ligger på slutten i den andre.
-    expect(avEtter).toBe(paaFoer)
-    expect(paaEtter).toBe(avFoer)
+    expect(offAfter).not.toBe(onAfter)
+    // The sides have swapped: the knob that was at the start in one
+    // direction is at the end in the other.
+    expect(offAfter).toBe(onBefore)
+    expect(onAfter).toBe(offBefore)
   })
 
-  it("holder hjelpeboblen midt over knappen i begge retninger", async () => {
+  it("keeps the tooltip centred over the button in both directions", async () => {
     /*
-     * `inset-inline-start: 50%` snur, `translateX(-50%)` gjør det ikke, og
-     * boblen sto en hel boblebredde til venstre i RTL. Ett element i hver
-     * retning side om side, av samme grunn som i testene over. Begge boblene
-     * vises med `display: block`, siden bare én knapp kan ha fokus.
+     * `inset-inline-start: 50%` flips, `translateX(-50%)` does not, and the
+     * bubble sat a whole bubble width to the left in RTL. One element in
+     * each direction side by side, for the same reason as in the tests
+     * above. Both bubbles are shown with `display: block`, since only one
+     * button can have focus.
      */
     mount(
       ["ltr", "rtl"]
         .map(
-          (retning) => `
-        <div dir="${retning}" style="padding: 4rem 12rem">
+          (direction) => `
+        <div dir="${direction}" style="padding: 4rem 12rem">
           <span class="lt-tooltip">
-            <button type="button" id="knapp-${retning}" aria-describedby="boble-${retning}">Arkiver</button>
-            <span class="lt-tooltip__bubble" role="tooltip" id="boble-${retning}" style="display: block">Saken flyttes til arkivet</span>
+            <button type="button" id="button-${direction}" aria-describedby="bubble-${direction}">Archive</button>
+            <span class="lt-tooltip__bubble" role="tooltip" id="bubble-${direction}" style="display: block">The case moves to the archive</span>
           </span>
         </div>`,
         )
@@ -177,59 +183,57 @@ describe("høyre til venstre", () => {
     )
     await waitForPaint()
 
-    for (const retning of ["ltr", "rtl"]) {
-      const knapp = document
-        .getElementById(`knapp-${retning}`)
+    for (const direction of ["ltr", "rtl"]) {
+      const button = document
+        .getElementById(`button-${direction}`)
         ?.getBoundingClientRect() as DOMRect
-      const boble = document
-        .getElementById(`boble-${retning}`)
+      const bubble = document
+        .getElementById(`bubble-${direction}`)
         ?.getBoundingClientRect() as DOMRect
-      const avvik =
-        boble.left + boble.width / 2 - (knapp.left + knapp.width / 2)
+      const offset =
+        bubble.left + bubble.width / 2 - (button.left + button.width / 2)
 
-      expect(Math.abs(avvik), retning).toBeLessThan(1)
+      expect(Math.abs(offset), direction).toBeLessThan(1)
     }
   })
 
-  it("lar pila i en accordion peke ned og opp i begge retninger", async () => {
-    // Kantene er logiske og bytter side, men `rotate` er fysisk. Før pekte
-    // pila sidelengs i høyre-til-venstre.
+  it("keeps the arrow in an accordion pointing down and up in both directions", async () => {
+    // The borders are logical and swap sides, but `rotate` is physical. The
+    // arrow used to point sideways in right-to-left.
     mount(
       ["ltr", "rtl"]
         .map(
-          (retning) => `
-        <div dir="${retning}">
-          <details class="lt-accordion" id="lukket-${retning}"><summary>Spørsmål</summary></details>
-          <details class="lt-accordion" id="apen-${retning}" open><summary>Spørsmål</summary></details>
+          (direction) => `
+        <div dir="${direction}">
+          <details class="lt-accordion" id="closed-${direction}"><summary>Question</summary></details>
+          <details class="lt-accordion" id="open-${direction}" open><summary>Question</summary></details>
         </div>`,
         )
         .join(""),
     )
     await waitForPaint()
 
-    const vinkel = (id: string) => {
+    const angle = (id: string) => {
       const summary = document.querySelector(`#${id} summary`) as Element
-      const matrise = new DOMMatrix(
+      const matrix = new DOMMatrix(
         getComputedStyle(summary, "::after").transform,
       )
-      return Math.round((Math.atan2(matrise.b, matrise.a) * 180) / Math.PI)
+      return Math.round((Math.atan2(matrix.b, matrix.a) * 180) / Math.PI)
     }
-    // Speilet: samme vinkel med motsatt fortegn, så spissen peker likt.
-    for (const tilstand of ["lukket", "apen"]) {
-      expect(vinkel(`${tilstand}-rtl`), tilstand).toBe(
-        -vinkel(`${tilstand}-ltr`),
-      )
+    // Mirrored: the same angle with the opposite sign, so the tip points the same way.
+    for (const state of ["closed", "open"]) {
+      expect(angle(`${state}-rtl`), state).toBe(-angle(`${state}-ltr`))
     }
   })
 
-  it("lar de logiske egenskapene snu av seg selv", async () => {
+  it("lets the logical properties flip by themselves", async () => {
     await waitForPaint()
-    const foer = stil("sok").paddingLeft
+    const before = style("search").paddingLeft
 
     document.documentElement.dir = "rtl"
     await waitForPaint()
 
-    // padding-inline-start i CSS-en, altså ingen egen rule for retningen.
-    expect(stil("sok").paddingLeft).not.toBe(foer)
+    // padding-inline-start in the CSS, so no separate rule for the direction.
+    expect(style("search").paddingLeft).not.toBe(before)
   })
 })

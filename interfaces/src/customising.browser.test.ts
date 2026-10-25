@@ -1,25 +1,25 @@
 /// <reference path="./types/css.d.ts" />
 
-import preflightKilde from "tailwindcss/preflight.css?inline"
+import preflightSource from "tailwindcss/preflight.css?inline"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import knappeKilde from "./components/css/button/button.css?inline"
-import listeKilde from "./components/css/list/list.css?inline"
-import tokenKilde from "./tokens/tokens.css?inline"
+import buttonSource from "./components/css/button/button.css?inline"
+import listSource from "./components/css/list/list.css?inline"
+import tokenSource from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/input/input.css"
 
 /**
- * At en konsument faktisk får lov til å tilpasse systemet.
+ * A consumer is actually allowed to customise the system.
  *
- * Dette er et løfte til dem som bruker pakken, og det er lett å bryte uten å
- * merke det: legger noen inn en mer spesifikk selektor, eller tar en verdi ut
- * av en variabel, forsvinner muligheten stille. Testen holder de tre veiene
- * åpne.
+ * This is a promise to the people who use the package, and it is easy to
+ * break without noticing: if someone adds a more specific selector, or takes
+ * a value out of a variable, the option disappears silently. The test keeps
+ * the three ways open.
  */
 
-/** Legger inn CSS som om den kom fra konsumentens eget stilark. */
+/** Adds CSS as if it came from the consumer's own stylesheet. */
 function apply(css: string): void {
   const style = document.createElement("style")
   style.dataset.consumer = ""
@@ -27,53 +27,53 @@ function apply(css: string): void {
   document.head.append(style)
 }
 
-describe("en konsument kan tilpasse systemet", () => {
+describe("a consumer can customise the system", () => {
   beforeEach(() => {
-    // Stilarkene havner i <head> og overlever ellers til neste test
+    // The stylesheets end up in <head> and otherwise survive into the next test
     for (const style of document.querySelectorAll("style[data-consumer]")) {
       style.remove()
     }
     document.documentElement.removeAttribute("data-theme")
     document.body.innerHTML = `
-      <button class="lt-button">Knapp</button>
+      <button class="lt-button">Button</button>
       <input class="lt-input" />
     `
   })
 
-  it("kan sette en komponentvariabel uten noen selektor", () => {
+  it("can set a component variable without any selector", () => {
     apply(":root { --lt-button-radius: 9999px; }")
 
     const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).borderRadius).toBe("9999px")
 
-    // Variabelen er komponentens egen: input skal ikke påvirkes
+    // The variable belongs to the component: input must not be affected
     const input = document.querySelector(".lt-input") as HTMLElement
     expect(getComputedStyle(input).borderRadius).not.toBe("9999px")
   })
 
-  it("faller tilbake til tokenverdien når variabelen ikke er satt", () => {
-    // Standardverdien skal følge --lt-spacing-skalaen, ikke være bakt inn.
-    // Det er grunnen til at @property ikke brukes her: en registrert
-    // initial-value gjør var()-fallbacken uoppnåelig.
+  it("falls back to the token value when the variable is not set", () => {
+    // The default must follow the --lt-spacing scale, not be baked in.
+    // That is why @property is not used here: a registered initial-value
+    // makes the var() fallback unreachable.
     apply(":root { --lt-spacing-1: 20px; }")
 
     const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).borderRadius).toBe("20px")
   })
 
-  it("kan overstyre en regel systemet ikke har eksponert, med lav spesifisitet", () => {
-    document.body.innerHTML = '<button class="lt-button" disabled>Av</button>'
+  it("can override a rule the system has not exposed, with low specificity", () => {
+    document.body.innerHTML = '<button class="lt-button" disabled>Off</button>'
 
-    // Systemets regel er .lt-button:disabled, altså 0,2,0. Konsumentens er
-    // 0,1,0 og ville tapt uten @layer, uansett rekkefølge. Det er nettopp
-    // dette layeret er til for.
+    // The system's rule is .lt-button:disabled, that is 0,2,0. The consumer's
+    // is 0,1,0 and would lose without @layer, whatever the order. This is
+    // exactly what the layer is for.
     apply(".lt-button { background: rgb(1, 2, 3); }")
 
     const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(1, 2, 3)")
   })
 
-  it("kan overstyre en token, også i mørkt tema via systemvalget", () => {
+  it("can override a token, also in the dark theme via the system setting", () => {
     apply(":root { --lt-color-accent-fill: rgb(124, 58, 237); }")
     document.documentElement.setAttribute("data-theme", "dark")
 
@@ -83,64 +83,64 @@ describe("en konsument kan tilpasse systemet", () => {
 })
 
 /**
- * At LO-TEK og Tailwind kan ligge i samme app uten å slåss.
+ * LO-TEK and Tailwind can live in the same app without fighting.
  *
- * Lagene teller i den rekkefølgen de først blir nevnt, og det siste laget
- * vinner uansett spesifisitet. Tailwinds Preflight ligger i `base`, og
- * nullstiller blant annet bakgrunnen på `button` og punktene på `ul` og
- * `ol`. Havner `base` etter `lotek`, forsvinner knappefargen vår, uten at
- * noe sier fra.
+ * Layers count in the order they are first named, and the last layer wins
+ * whatever the specificity. Tailwind's Preflight is in `base`, and resets,
+ * among other things, the background on `button` and the markers on `ul` and
+ * `ol`. If `base` ends up after `lotek`, our button colour disappears without
+ * anything saying so.
  *
- * Rekkefølgen kan ikke endres etter at et lag er nevnt, så hver variant måles
- * i sitt eget dokument.
+ * The order cannot be changed once a layer has been named, so each variant
+ * is checked in its own document.
  */
-async function medStilark(
+async function withStylesheet(
   css: string,
-  markup = '<button class="lt-button" id="knapp">Send søknad</button>',
+  markup = '<button class="lt-button" id="button">Send application</button>',
 ): Promise<Document> {
-  const ramme = document.createElement("iframe")
-  ramme.style.width = "400px"
-  ramme.style.height = "200px"
-  document.body.append(ramme)
+  const frame = document.createElement("iframe")
+  frame.style.width = "400px"
+  frame.style.height = "200px"
+  document.body.append(frame)
 
-  const dok = ramme.contentDocument as Document
-  dok.open()
-  dok.write(`<!doctype html><html><head><style>${css}</style></head>
+  const doc = frame.contentDocument as Document
+  doc.open()
+  doc.write(`<!doctype html><html><head><style>${css}</style></head>
     <body>${markup}</body></html>`)
-  dok.close()
+  doc.close()
 
   await new Promise((resolve) => requestAnimationFrame(resolve))
-  return dok
+  return doc
 }
 
-/** Den stilen et element i dokumentet faktisk får. */
-function stil(dok: Document, id: string): CSSStyleDeclaration {
-  const element = dok.getElementById(id) as HTMLElement
-  return (dok.defaultView as Window).getComputedStyle(element)
+/** The style an element in the document actually gets. */
+function style(doc: Document, id: string): CSSStyleDeclaration {
+  const element = doc.getElementById(id) as HTMLElement
+  return (doc.defaultView as Window).getComputedStyle(element)
 }
 
 /**
- * Tailwinds egen Preflight, i laget `@import "tailwindcss"` legger den i.
+ * Tailwind's own Preflight, in the layer `@import "tailwindcss"` puts it in.
  *
- * Testen hadde en håndskrevet utgave med bare knappereglene, og da så den
- * aldri at Preflight også setter `list-style: none` på hver liste, som tok
- * punktene fra `.lt-list`. Hele fila, så det som nullstilles er det
- * konsumenten får.
+ * The test had a handwritten version with only the button rules, and so it
+ * never saw that Preflight also sets `list-style: none` on every list, which
+ * took the markers from `.lt-list`. The whole file, so what is reset is what
+ * the consumer gets.
  */
-const PREFLIGHT = `@layer base { ${preflightKilde} }`
+const PREFLIGHT = `@layer base { ${preflightSource} }`
 
-/** Rekkefølgen dokumentasjonen ber konsumenten sette på første linje. */
-const LAGLINJE =
+/** The order the documentation asks the consumer to put on the first line. */
+const LAYER_LINE =
   "@layer theme, base, lotek, lotek-theme, components, utilities;"
 
 /**
- * Et utdrag av det `lotek tema` skriver: en farge, skriften og formen, i
- * `:root` i temaets eget lag. Fargen er med fordi tokens.css setter den i
- * `:root` i `lotek`; bare et token som finnes der kan vise at temaet
- * slår det. Temaet erklærer bare sitt eget lag etter `lotek`, og kan ikke
- * vite hvilke lag appen har erklært fra før.
+ * An excerpt of what `lotek theme` writes: a colour, the font and the shape,
+ * in `:root` in the theme's own layer. The colour is there because tokens.css
+ * sets it in `:root` in `lotek`; only a token that exists there can show that
+ * the theme beats it. The theme only declares its own layer after `lotek`,
+ * and cannot know which layers the app has declared already.
  */
-const TEMA = `
+const THEME = `
   @layer lotek, lotek-theme;
   @layer lotek-theme {
     :root {
@@ -154,143 +154,144 @@ const TEMA = `
   }`
 
 /**
- * Det Tailwind lager av `p-4` med temaet vårt: `--spacing` er
- * `--lt-spacing-1`, og `check-tailwind.ts` kontrollerer med en ekte Tailwind
- * at klassen inneholder nettopp dette regnestykket.
+ * What Tailwind makes of `p-4` with our theme: `--spacing` is
+ * `--lt-spacing-1`, and `check-tailwind.ts` checks with a real Tailwind that
+ * the class contains exactly this calculation.
  */
 const P4 =
   "@layer utilities { .p-4 { padding: calc(var(--lt-spacing-1) * 4); } }"
 
-describe("sammen med Tailwind", () => {
+describe("together with Tailwind", () => {
   afterEach(() => {
-    // Rammene må bort. Blir de stående, kan fokus havne i dem, og testene
-    // som måler fokus lenger ned i suiten måler feil dokument.
-    for (const ramme of document.querySelectorAll("iframe")) ramme.remove()
+    // The frames must go. If they stay, focus can end up in them, and the
+    // tests that check focus further down the suite check the wrong document.
+    for (const frame of document.querySelectorAll("iframe")) frame.remove()
   })
 
-  it("beholder knappefargen når lotek står etter base", async () => {
-    const dok = await medStilark(`
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${knappeKilde}
+  it("keeps the button colour when lotek comes after base", async () => {
+    const doc = await withStylesheet(`
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${buttonSource}
       ${PREFLIGHT}
     `)
 
-    expect(stil(dok, "knapp").backgroundColor).not.toBe("rgba(0, 0, 0, 0)")
+    expect(style(doc, "button").backgroundColor).not.toBe("rgba(0, 0, 0, 0)")
   })
 
-  it("mister knappefargen uten rekkefølgen, og det er derfor linja står i dokumentasjonen", async () => {
-    const dok = await medStilark(`
-      ${tokenKilde}
-      ${knappeKilde}
+  it("loses the button colour without the order, which is why the line is in the documentation", async () => {
+    const doc = await withStylesheet(`
+      ${tokenSource}
+      ${buttonSource}
       ${PREFLIGHT}
     `)
 
-    // `base` nevnes her etter `lotek`, og vinner derfor.
-    expect(stil(dok, "knapp").backgroundColor).toBe("rgba(0, 0, 0, 0)")
+    // `base` is named after `lotek` here, and so wins.
+    expect(style(doc, "button").backgroundColor).toBe("rgba(0, 0, 0, 0)")
   })
 
-  it("beholder punktene og tallene i lista når Preflight står i base", async () => {
-    // Preflight setter `list-style: none` på hver liste. Standardvarianten
-    // sa ingenting om punktene og lente seg på nettleseren, så Preflight
-    // vant selv om `base` sto foran `lotek`, og lista mistet punktene og
-    // nummereringen. Variantene uten punkter skal fortsatt være uten.
-    const dok = await medStilark(
+  it("keeps the bullets and numbers in the list when Preflight is in base", async () => {
+    // Preflight sets `list-style: none` on every list. The default variant
+    // said nothing about the markers and relied on the browser, so Preflight
+    // won even though `base` came before `lotek`, and the list lost its
+    // bullets and numbering. The variants without markers must still have none.
+    const doc = await withStylesheet(
       `
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${listeKilde}
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${listSource}
       ${PREFLIGHT}
     `,
-      `<ul class="lt-list" id="punkter"><li>Fødselsattest</li></ul>
-       <ol class="lt-list" id="tall"><li>Fyll ut skjemaet</li></ol>
-       <ul class="lt-list" data-variant="plain" id="ren"><li>Sendt</li></ul>`,
+      `<ul class="lt-list" id="bullets"><li>Birth certificate</li></ul>
+       <ol class="lt-list" id="numbers"><li>Fill in the form</li></ol>
+       <ul class="lt-list" data-variant="plain" id="plain"><li>Sent</li></ul>`,
     )
 
-    expect(stil(dok, "punkter").listStyleType).toBe("disc")
-    expect(stil(dok, "tall").listStyleType).toBe("decimal")
-    expect(stil(dok, "ren").listStyleType).toBe("none")
+    expect(style(doc, "bullets").listStyleType).toBe("disc")
+    expect(style(doc, "numbers").listStyleType).toBe("decimal")
+    expect(style(doc, "plain").listStyleType).toBe("none")
   })
 
-  it("lar en Tailwind-utility slå komponentens egen verdi", async () => {
-    const dok = await medStilark(`
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${knappeKilde}
+  it("lets a Tailwind utility beat the component's own value", async () => {
+    const doc = await withStylesheet(`
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${buttonSource}
       @layer utilities { .p-6 { padding: 1.5rem; } }
     `)
 
-    const knapp = dok.getElementById("knapp") as HTMLElement
-    knapp.classList.add("p-6")
+    const button = doc.getElementById("button") as HTMLElement
+    button.classList.add("p-6")
 
-    expect(stil(dok, "knapp").padding).toBe("24px")
+    expect(style(doc, "button").padding).toBe("24px")
   })
 
-  it("lar komponenten slå utility-klassen når lotek står etter utilities, og det er derfor linja står i dokumentasjonen", async () => {
-    const dok = await medStilark(`
+  it("lets the component beat the utility class when lotek comes after utilities, which is why the line is in the documentation", async () => {
+    const doc = await withStylesheet(`
       @layer utilities { .p-6 { padding: 1.5rem; } }
-      ${tokenKilde}
-      ${knappeKilde}
+      ${tokenSource}
+      ${buttonSource}
     `)
 
-    const knapp = dok.getElementById("knapp") as HTMLElement
-    knapp.classList.add("p-6")
+    const button = doc.getElementById("button") as HTMLElement
+    button.classList.add("p-6")
 
-    // `utilities` nevnes her før `lotek`, så komponentens egen padding
-    // vinner, og klassen gjør ingenting.
-    expect(stil(dok, "knapp").padding).toBe("8px 16px")
+    // `utilities` is named before `lotek` here, so the component's own
+    // padding wins, and the class does nothing.
+    expect(style(doc, "button").padding).toBe("8px 16px")
   })
 
-  it("lar et generert tema vinne over tokens.css, og en utility vinne over temaet", async () => {
-    const dok = await medStilark(`
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${knappeKilde}
-      ${TEMA}
+  it("lets a generated theme win over tokens.css, and a utility win over the theme", async () => {
+    const doc = await withStylesheet(`
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${buttonSource}
+      ${THEME}
       @layer utilities { .font-mono { font-family: monospace; } }
     `)
-    dok.documentElement.classList.add("font-mono")
+    doc.documentElement.classList.add("font-mono")
 
-    // Temaet står etter `lotek` og slår fargen tokens.css setter i
-    // `:root`. Formen er ingen prøve på det: tokens.css setter ingen
-    // `--lt-button-radius`, så den hadde vunnet uansett rekkefølge.
-    expect(stil(dok, "knapp").backgroundColor).toBe("rgb(0, 100, 0)")
-    // `lotek-theme` står foran `utilities`, så klassen slår temaets regel.
+    // The theme comes after `lotek` and beats the colour tokens.css sets in
+    // `:root`. The shape is no test of that: tokens.css sets no
+    // `--lt-button-radius`, so it would have won whatever the order.
+    expect(style(doc, "button").backgroundColor).toBe("rgb(0, 100, 0)")
+    // `lotek-theme` comes before `utilities`, so the class beats the theme's rule.
     expect(
-      dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
+      doc.defaultView?.getComputedStyle(doc.documentElement).fontFamily,
     ).toBe("monospace")
   })
 
-  it("lar temaet slå utility-klassene når tema-laget mangler i linja, og det er derfor det står der", async () => {
-    const dok = await medStilark(`
+  it("lets the theme beat the utility classes when the theme layer is missing from the line, which is why it is there", async () => {
+    const doc = await withStylesheet(`
       @layer theme, base, lotek, components, utilities;
-      ${tokenKilde}
-      ${knappeKilde}
-      ${TEMA}
+      ${tokenSource}
+      ${buttonSource}
+      ${THEME}
       @layer utilities { .font-mono { font-family: monospace; } }
     `)
-    dok.documentElement.classList.add("font-mono")
+    doc.documentElement.classList.add("font-mono")
 
-    // Temaets `@layer lotek, lotek-theme;` oppretter bare lag som ikke
-    // finnes, så `lotek-theme` havner sist, etter `utilities`.
+    // The theme's `@layer lotek, lotek-theme;` only creates layers that do
+    // not exist, so `lotek-theme` ends up last, after `utilities`.
     expect(
-      dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
+      doc.defaultView?.getComputedStyle(doc.documentElement).fontFamily,
     ).toBe("Georgia, serif")
   })
 
-  it("gir p-4 den samme avstanden som --lt-spacing-4 når hele skalaen skrives om", async () => {
+  it("gives p-4 the same spacing as --lt-spacing-4 when the whole scale is rewritten", async () => {
     const markup = `
-      <div class="p-4" id="klasse"></div>
-      <div style="padding: var(--lt-spacing-4)" id="trinn"></div>
-      <button class="lt-button" id="knapp">Send søknad</button>`
+      <div class="p-4" id="class"></div>
+      <div style="padding: var(--lt-spacing-4)" id="step"></div>
+      <button class="lt-button" id="button">Send application</button>`
 
-    // Hele skalaen, slik dokumentasjonen viser det: hvert trinn skrives om,
-    // for trinnene er egne verdier og regnes ikke av enheten.
-    const hele = await medStilark(
+    // The whole scale, as the documentation shows it: every step is
+    // rewritten, because the steps are values of their own and are not
+    // computed from the unit.
+    const whole = await withStylesheet(
       `
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${knappeKilde}
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${buttonSource}
       ${P4}
       :root {
         --lt-spacing-0-5: 0.15rem;
@@ -309,34 +310,35 @@ describe("sammen med Tailwind", () => {
     `,
       markup,
     )
-    // Tallene, ikke strengene: WebKit regner `calc(0.3rem * 4)` i enkel
-    // presisjon og svarer «19.200001px» der de andre svarer «19.2px».
-    const padding = (dok: Document, id: string, ...ventet: number[]) => {
-      const tall = stil(dok, id).padding.split(" ").map(Number.parseFloat)
-      expect(tall).toHaveLength(ventet.length)
-      for (const [i, verdi] of tall.entries()) {
-        expect(verdi).toBeCloseTo(ventet[i], 3)
+    // The numbers, not the strings: WebKit computes `calc(0.3rem * 4)` in
+    // single precision and answers "19.200001px" where the others answer
+    // "19.2px".
+    const padding = (doc: Document, id: string, ...expected: number[]) => {
+      const numbers = style(doc, id).padding.split(" ").map(Number.parseFloat)
+      expect(numbers).toHaveLength(expected.length)
+      for (const [i, value] of numbers.entries()) {
+        expect(value).toBeCloseTo(expected[i], 3)
       }
     }
-    padding(hele, "klasse", 19.2)
-    padding(hele, "trinn", 19.2)
-    padding(hele, "knapp", 9.6, 19.2)
+    padding(whole, "class", 19.2)
+    padding(whole, "step", 19.2)
+    padding(whole, "button", 9.6, 19.2)
 
-    // Skrives bare enheten om, følger klassene med, men ikke trinnene, og
-    // dermed ikke komponentene. Det er derfor dokumentasjonen ber om hele
-    // skalaen.
-    const bare = await medStilark(
+    // If only the unit is rewritten, the classes follow, but not the steps,
+    // and so not the components. That is why the documentation asks for the
+    // whole scale.
+    const onlyUnit = await withStylesheet(
       `
-      ${LAGLINJE}
-      ${tokenKilde}
-      ${knappeKilde}
+      ${LAYER_LINE}
+      ${tokenSource}
+      ${buttonSource}
       ${P4}
       :root { --lt-spacing-1: 0.3rem; }
     `,
       markup,
     )
-    padding(bare, "klasse", 19.2)
-    padding(bare, "trinn", 16)
-    padding(bare, "knapp", 8, 16)
+    padding(onlyUnit, "class", 19.2)
+    padding(onlyUnit, "step", 16)
+    padding(onlyUnit, "button", 8, 16)
   })
 })

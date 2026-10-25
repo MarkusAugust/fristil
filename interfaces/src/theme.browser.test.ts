@@ -1,97 +1,97 @@
 /// <reference path="./types/css.d.ts" />
-/// Uten denne er Vitests `CDPSession` et tomt grensesnitt. Det er leverandøren
-/// som fyller det, og her er det Playwright som gir oss `send`.
+/// Without this, Vitest's `CDPSession` is an empty interface. The provider
+/// fills it, and here it is Playwright that gives us `send`.
 /// <reference types="@vitest/browser-playwright" />
 
 import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server } from "vitest/browser"
 import { waitForPaint } from "./testing/a11y"
-import tokenKilde from "./tokens/tokens.css?inline"
+import tokenSource from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
 
 /**
- * At `data-theme` er en temagrense, og at LO-TEK ikke rører verten.
+ * `data-theme` is a theme boundary, and LO-TEK leaves the host alone.
  *
- * Begge deler kom fra en komponent som legges inn i en vertsside den ikke
- * eier. Den setter `data-theme="light"` på sitt eget rotelement og forventer
- * lyse farger uansett hva maskinen står på.
+ * Both came from a component that is embedded in a host page it does not
+ * own. It sets `data-theme="light"` on its own root element and expects
+ * light colours whatever the machine is set to.
  *
- * To ting sviktet. `[data-theme="light"]` deklarerte bare `color-scheme`,
- * mens `[data-theme="dark"]` deklarerte alle 90 tokenene, så lyst tema virket
- * bare på `<html>`: et barn kan ikke overstyre en variabel det arver uten å
- * deklarere den på nytt. Og `color-scheme: light dark` sto på `:root`, så
- * hele vertssiden fikk mørke rullefelt og skjemakontroller i mørk modus.
+ * Two things failed. `[data-theme="light"]` only declared `color-scheme`,
+ * while `[data-theme="dark"]` declared all 90 tokens, so the light theme only
+ * worked on `<html>`: a child cannot override a variable it inherits without
+ * declaring it again. And `color-scheme: light dark` was on `:root`, so the
+ * whole host page got dark scrollbars and form controls in dark mode.
  *
- * Fila er delt i to. Det som bare handler om attributtene kjører i alle tre
- * motorene, siden det er der reglene bor. Det som må vite hva maskinen står
- * på, må emulere `prefers-color-scheme`, og det går over CDP, som bare
- * Chromium har herfra.
+ * The file is split in two. What is only about the attributes runs in all
+ * three engines, since that is where the rules live. What needs to know what
+ * the machine is set to has to emulate `prefers-color-scheme`, and that goes
+ * through CDP, which only Chromium has from here.
  */
 
-const LYS = "#0d4e8c"
-const MORK = "#99c8ff"
+const LIGHT = "#0d4e8c"
+const DARK = "#99c8ff"
 const TOKEN = "--lt-color-accent-text"
 
-/** Verdien et element faktisk ser, arv medregnet. */
+/** The value an element actually sees, inheritance included. */
 function token(el: Element): string {
   return getComputedStyle(el).getPropertyValue(TOKEN).trim()
 }
 
-function hent(id: string): HTMLElement {
+function get(id: string): HTMLElement {
   const el = document.getElementById(id)
-  if (!el) throw new Error(`fant ikke #${id}`)
+  if (!el) throw new Error(`did not find #${id}`)
   return el
 }
 
-function rydd() {
+function cleanUp() {
   document.documentElement.removeAttribute("data-theme")
   document.body.innerHTML = ""
 }
 
-describe("data-theme er en temagrense i alle motorer", () => {
-  afterEach(rydd)
+describe("data-theme is a theme boundary in every engine", () => {
+  afterEach(cleanUp)
 
-  it("gir lyse tokens i en div, uansett hva maskinen står på", () => {
+  it("gives light tokens in a div, whatever the machine is set to", () => {
     document.body.innerHTML = `<div data-theme="light"><p id="i">i</p></div>`
-    expect(token(hent("i"))).toBe(LYS)
+    expect(token(get("i"))).toBe(LIGHT)
   })
 
-  it("gir mørke tokens i en div, uansett hva maskinen står på", () => {
+  it("gives dark tokens in a div, whatever the machine is set to", () => {
     document.body.innerHTML = `<div data-theme="dark"><p id="i">i</p></div>`
-    expect(token(hent("i"))).toBe(MORK)
+    expect(token(get("i"))).toBe(DARK)
   })
 
-  it("lar et tema ligge inne i et annet, begge veier", () => {
+  it("lets one theme sit inside another, both ways", () => {
     document.body.innerHTML = `
       <div data-theme="dark">
-        <p id="ytre">ytre</p>
-        <div data-theme="light"><p id="indre">indre</p></div>
+        <p id="outer">outer</p>
+        <div data-theme="light"><p id="inner">inner</p></div>
       </div>
     `
-    expect(token(hent("ytre"))).toBe(MORK)
-    expect(token(hent("indre"))).toBe(LYS)
+    expect(token(get("outer"))).toBe(DARK)
+    expect(token(get("inner"))).toBe(LIGHT)
 
     document.body.innerHTML = `
       <div data-theme="light">
-        <p id="ytre">ytre</p>
-        <div data-theme="dark"><p id="indre">indre</p></div>
+        <p id="outer">outer</p>
+        <div data-theme="dark"><p id="inner">inner</p></div>
       </div>
     `
-    expect(token(hent("ytre"))).toBe(LYS)
-    expect(token(hent("indre"))).toBe(MORK)
+    expect(token(get("outer"))).toBe(LIGHT)
+    expect(token(get("inner"))).toBe(DARK)
   })
 
-  it("setter color-scheme der et tema er valgt, og bare der", () => {
-    // Uten dette får et lyst felt en svart nedtrekksliste under seg. Men
-    // egenskapen arves nedover, så en verdi på `:root` gjelder hele
-    // dokumentet. Den skal derfor aldri stå der uten at noen har bedt om det.
+  it("sets color-scheme where a theme is chosen, and only there", () => {
+    // Without this, a light field gets a black dropdown under it. But the
+    // property is inherited, so a value on `:root` applies to the whole
+    // document. It must therefore never be there unless someone asked for it.
     document.body.innerHTML = `
-      <div id="lys" data-theme="light"></div>
-      <div id="mork" data-theme="dark"></div>
+      <div id="light" data-theme="light"></div>
+      <div id="dark" data-theme="dark"></div>
     `
-    expect(getComputedStyle(hent("lys")).colorScheme).toBe("light")
-    expect(getComputedStyle(hent("mork")).colorScheme).toBe("dark")
+    expect(getComputedStyle(get("light")).colorScheme).toBe("light")
+    expect(getComputedStyle(get("dark")).colorScheme).toBe("dark")
     expect(getComputedStyle(document.documentElement).colorScheme).toBe(
       "normal",
     )
@@ -99,217 +99,227 @@ describe("data-theme er en temagrense i alle motorer", () => {
 })
 
 /**
- * Leser én regelblokk ut av kilden, som navn til verdi.
+ * Reads one rule block out of the source, as name to value.
  *
- * Kaster om selektoren ikke finnes. En `indexOf` som gir -1 ville ellers gitt
- * en tom streng, og en påstand om at noe *ikke* står der ville passert uten å
- * ha lest en eneste linje.
+ * Throws if the selector is not found. An `indexOf` that returns -1 would
+ * otherwise give an empty string, and an assertion that something is *not*
+ * there would pass without having read a single line.
  */
-function blokk(velger: string): Map<string, string> {
-  // Selektoren står alene («… {») eller først i en liste («…,»), siden
-  // temablokkene fikk `.lt-theme-control` som en ekstra linje.
-  const start = [`${velger} {`, `${velger},`]
-    .map((m) => tokenKilde.indexOf(m))
+function block(selector: string): Map<string, string> {
+  // The selector stands alone ("… {") or first in a list ("…,"), since the
+  // theme blocks got `.lt-theme-control` as an extra line.
+  const start = [`${selector} {`, `${selector},`]
+    .map((m) => tokenSource.indexOf(m))
     .filter((i) => i >= 0)
     .sort((a, b) => a - b)[0]
-  if (start === undefined) throw new Error(`fant ikke ${velger} i tokens.css`)
-  const apnet = tokenKilde.indexOf("{", start)
-  const slutt = tokenKilde.indexOf("\n  }", apnet)
-  if (slutt < 0) throw new Error(`fant ingen slutt på ${velger}`)
+  if (start === undefined)
+    throw new Error(`did not find ${selector} in tokens.css`)
+  const opened = tokenSource.indexOf("{", start)
+  const end = tokenSource.indexOf("\n  }", opened)
+  if (end < 0) throw new Error(`found no end to ${selector}`)
   return new Map(
-    [...tokenKilde.slice(apnet, slutt).matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(
+    [...tokenSource.slice(opened, end).matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(
       (m) => [m[1], m[2].trim()],
     ),
   )
 }
 
-describe("de to temablokkene er symmetriske", () => {
-  it("deklarerer nøyaktig de samme tokenene", () => {
-    const lys = blokk('[data-theme="light"]')
-    const mork = blokk('[data-theme="dark"]')
+describe("the two theme blocks are symmetric", () => {
+  it("declares exactly the same tokens", () => {
+    const light = block('[data-theme="light"]')
+    const dark = block('[data-theme="dark"]')
 
-    // Asymmetrien var hele feilen: lys hadde null tokens, mørk hadde 90.
-    expect(lys.size).toBeGreaterThan(0)
-    expect([...mork.keys()].filter((t) => !lys.has(t))).toEqual([])
-    expect([...lys.keys()].filter((t) => !mork.has(t))).toEqual([])
+    // The asymmetry was the whole bug: light had zero tokens, dark had 90.
+    expect(light.size).toBeGreaterThan(0)
+    expect([...dark.keys()].filter((t) => !light.has(t))).toEqual([])
+    expect([...light.keys()].filter((t) => !dark.has(t))).toEqual([])
   })
 
-  it("gir lysblokka nøyaktig verdiene fra :root", () => {
-    // Navnene alene holder ikke. Hentet `lightLines` fra feil kilde, eller
-    // fikk `--lt-icon-*` de mørke strekfargene sine, ville navnene fortsatt
-    // stemt mens fargene var gale.
-    const root = blokk("  :root")
-    const avvik = [...blokk('[data-theme="light"]')].filter(
-      ([navn, verdi]) => root.get(navn) !== verdi,
+  it("gives the light block exactly the values from :root", () => {
+    // The names alone are not enough. Had `lightLines` been taken from the
+    // wrong source, or had `--lt-icon-*` got its dark stroke colours, the
+    // names would still have matched while the colours were wrong.
+    const root = block("  :root")
+    const mismatches = [...block('[data-theme="light"]')].filter(
+      ([name, value]) => root.get(name) !== value,
     )
-    expect(avvik).toEqual([])
+    expect(mismatches).toEqual([])
   })
 
-  it("gir mørkblokka nøyaktig verdiene fra mediespørringen", () => {
-    const media = blokk('    :root:not([data-theme="light"])')
-    const avvik = [...blokk('[data-theme="dark"]')].filter(
-      ([navn, verdi]) => media.get(navn) !== verdi,
+  it("gives the dark block exactly the values from the media query", () => {
+    const media = block('    :root:not([data-theme="light"])')
+    const mismatches = [...block('[data-theme="dark"]')].filter(
+      ([name, value]) => media.get(name) !== value,
     )
-    expect(avvik).toEqual([])
+    expect(mismatches).toEqual([])
   })
 
-  it("setter ikke color-scheme på bar :root", () => {
-    // `blokk` kaster om selektoren mangler, så denne kan ikke passere tomt.
-    expect([...blokk("  :root").keys()]).not.toContain("color-scheme")
-    expect(tokenKilde.slice(0, tokenKilde.indexOf("\n  }"))).not.toContain(
+  it("does not set color-scheme on bare :root", () => {
+    // `block` throws if the selector is missing, so this cannot pass empty.
+    expect([...block("  :root").keys()]).not.toContain("color-scheme")
+    expect(tokenSource.slice(0, tokenSource.indexOf("\n  }"))).not.toContain(
       "color-scheme",
     )
   })
 })
 
 /**
- * Skriver en temavelger i body og slår på det ene valget.
+ * Writes a theme picker into body and checks one of the options.
  *
- * `:root:has()` ser hele dokumentet, så kontrollen kan stå hvor som helst.
- * `checked` settes som egenskap og ikke som attributt, for det er egenskapen
- * `:checked` leser, og det er den brukerens klikk endrer.
+ * `:root:has()` sees the whole document, so the control can be anywhere.
+ * `checked` is set as a property and not as an attribute, because the
+ * property is what `:checked` reads, and it is what the user's click changes.
  */
-function velg(tema: "auto" | "light" | "dark" | "ingen"): void {
+function choose(theme: "auto" | "light" | "dark" | "none"): void {
   document.body.innerHTML = `
     <fieldset class="lt-toggle-group">
-      <legend class="lt-sr-only">Tema</legend>
+      <legend class="lt-sr-only">Theme</legend>
       ${["auto", "light", "dark"]
         .map(
           (v) => `<label class="lt-toggle-group__option">
-            <input class="lt-theme-control" type="radio" name="tema"
-                   value="${v}" id="valg-${v}"> ${v}
+            <input class="lt-theme-control" type="radio" name="theme"
+                   value="${v}" id="option-${v}"> ${v}
           </label>`,
         )
         .join("")}
     </fieldset>
-    <p id="ute">ute</p>
+    <p id="outside">outside</p>
   `
-  if (tema !== "ingen")
-    (hent(`valg-${tema}`) as HTMLInputElement).checked = true
+  if (theme !== "none")
+    (get(`option-${theme}`) as HTMLInputElement).checked = true
 }
 
 /**
- * At `.lt-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ * `.lt-theme-control` lets the user choose a theme without a line of
+ * JavaScript.
  *
- * Kontrollen må vinne over `data-theme` på `<html>`, for serveren sender det
- * valget den har lagret, og klikket skal slå igjennom med én gang framfor å
- * vente på at en POST kommer tilbake. Rekkefølgen er en spesifisitetsregning,
- * og den etterprøves her framfor å stå som et resonnement i generatoren.
+ * The control must win over `data-theme` on `<html>`, because the server
+ * sends the choice it has stored, and the click must take effect at once
+ * rather than wait for a POST to come back. The order is a matter of
+ * specificity, and it is checked here rather than argued in the generator.
  *
- * Hver test setter `data-theme` på `<html>` til det motsatte av det den
- * forventer. Uten det ville en test passert bare fordi maskinen tilfeldigvis
- * sto på det samme, og da hadde den ikke påstått noe.
+ * Each test sets `data-theme` on `<html>` to the opposite of what it expects.
+ * Without that, a test would pass just because the machine happened to be set
+ * to the same, and then it would not have asserted anything.
  */
-describe("temavelgeren virker uten JavaScript", () => {
-  afterEach(rydd)
+describe("the theme picker works without JavaScript", () => {
+  afterEach(cleanUp)
 
-  it("slår serverens lyse valg når brukeren velger mørkt", () => {
+  it("beats the server's light choice when the user picks dark", () => {
     document.documentElement.setAttribute("data-theme", "light")
-    velg("dark")
-    expect(token(hent("ute"))).toBe(MORK)
+    choose("dark")
+    expect(token(get("outside"))).toBe(DARK)
   })
 
-  it("slår serverens mørke valg når brukeren velger lyst", () => {
+  it("beats the server's dark choice when the user picks light", () => {
     document.documentElement.setAttribute("data-theme", "dark")
-    velg("light")
-    expect(token(hent("ute"))).toBe(LYS)
+    choose("light")
+    expect(token(get("outside"))).toBe(LIGHT)
   })
 
-  it("lar serveren bestemme når brukeren velger å følge systemet", () => {
-    // «Følg systemet» har ingen rule, og det er hele poenget: tre tilstander
-    // ut av to selektorer. Treffer `auto` noe, er den en rule for mye.
+  it("lets the server decide when the user chooses to follow the system", () => {
+    // "Follow the system" has no rule, and that is the whole point: three
+    // states out of two selectors. If `auto` matches anything, it is one rule
+    // too many.
     document.documentElement.setAttribute("data-theme", "dark")
-    velg("auto")
-    expect(token(hent("ute"))).toBe(MORK)
+    choose("auto")
+    expect(token(get("outside"))).toBe(DARK)
   })
 
-  it("gjør ingenting før noen har valgt", () => {
-    // Uten `:checked` i selektoren ville en urørt gruppe satt tema med én gang.
+  it("does nothing until someone has chosen", () => {
+    // Without `:checked` in the selector, an untouched group would set the
+    // theme at once.
     document.documentElement.setAttribute("data-theme", "dark")
-    velg("ingen")
-    expect(token(hent("ute"))).toBe(MORK)
+    choose("none")
+    expect(token(get("outside"))).toBe(DARK)
   })
 
-  it("lar en temagrense inne i siden stå urørt", () => {
-    // Kontrollen står på `:root`, og en grense lenger ned er nærmere arvingen.
-    // Uten det ville et forhåndsvisningspanel fulgt velgeren mot sin vilje.
-    velg("dark")
+  it("leaves a theme boundary inside the page alone", () => {
+    // The control is on `:root`, and a boundary further down is closer to
+    // the inheriting element. Without that, a preview panel would follow the
+    // picker against its will.
+    choose("dark")
     document.body.insertAdjacentHTML(
       "beforeend",
-      `<div data-theme="light"><p id="inne">inne</p></div>`,
+      `<div data-theme="light"><p id="inside">inside</p></div>`,
     )
-    expect(token(hent("ute"))).toBe(MORK)
-    expect(token(hent("inne"))).toBe(LYS)
+    expect(token(get("outside"))).toBe(DARK)
+    expect(token(get("inside"))).toBe(LIGHT)
   })
 
-  it("står på begge temablokkene i tokens.css", () => {
-    // Sto den bare på den mørke, kom brukeren seg aldri tilbake til lyst.
-    for (const tema of ["light", "dark"]) {
-      const velger = `:root:has(.lt-theme-control[value="${tema}"]:checked)`
-      expect(tokenKilde).toContain(velger)
-      expect(blokk(`  [data-theme="${tema}"]`).size).toBeGreaterThan(0)
+  it("is on both theme blocks in tokens.css", () => {
+    // Had it been only on the dark one, the user could never get back to light.
+    for (const theme of ["light", "dark"]) {
+      const selector = `:root:has(.lt-theme-control[value="${theme}"]:checked)`
+      expect(tokenSource).toContain(selector)
+      expect(block(`  [data-theme="${theme}"]`).size).toBeGreaterThan(0)
     }
   })
 
-  it("lar hvert valg bestemme color-scheme, også «følg systemet»", () => {
+  it('lets each option decide color-scheme, "follow the system" included', () => {
     /*
-     * Dette er den ene regelen `auto` har, og den kom av en felle.
+     * This is the one rule `auto` has, and it came from a trap.
      *
-     * Rådet var at konsumenten skriver `color-scheme: light dark` på `<html>`
-     * selv. Gjør den det utenfor et lag, slår regelen `@layer lotek`, og et
-     * valgt mørkt tema fikk lyse rullefelt. Kontrollen tar det selv i stedet,
-     * så den som bruker den ikke skal skrive `color-scheme` i det hele tatt.
+     * The advice was that the consumer writes `color-scheme: light dark` on
+     * `<html>` themselves. If they do that outside a layer, the rule beats
+     * `@layer lotek`, and a chosen dark theme got light scrollbars. The
+     * control takes care of it instead, so whoever uses it does not write
+     * `color-scheme` at all.
      */
-    const skjema = () => getComputedStyle(document.documentElement).colorScheme
+    const scheme = () => getComputedStyle(document.documentElement).colorScheme
 
-    velg("auto")
-    expect(skjema()).toBe("light dark")
+    choose("auto")
+    expect(scheme()).toBe("light dark")
 
-    velg("light")
-    expect(skjema()).toBe("light")
+    choose("light")
+    expect(scheme()).toBe("light")
 
-    velg("dark")
-    expect(skjema()).toBe("dark")
+    choose("dark")
+    expect(scheme()).toBe("dark")
   })
 
-  it("lar «følg systemet» stå tilbake for serverens data-theme", () => {
+  it('lets "follow the system" give way to the server\'s data-theme', () => {
     /*
-     * Tokenene og `color-scheme` må si det samme, alltid.
+     * The tokens and `color-scheme` must always say the same thing.
      *
-     * `auto` har ingen tokenblokk, så serverens `data-theme="dark"` blir
-     * stående. Uten `:not([data-theme])` på `auto`-regelen vant `auto`
-     * likevel på `color-scheme`, siden `:has()` er mer spesifikk enn
-     * attributtet. Resultatet var mørke farger med lyse rullefelt, altså
-     * nøyaktig spriket temablokkene finnes for å hindre.
+     * `auto` has no token block, so the server's `data-theme="dark"` stays.
+     * Without `:not([data-theme])` on the `auto` rule, `auto` still won on
+     * `color-scheme`, since `:has()` is more specific than the attribute. The
+     * result was dark colours with light scrollbars, exactly the mismatch the
+     * theme blocks exist to prevent.
      */
     document.documentElement.setAttribute("data-theme", "dark")
-    velg("auto")
+    choose("auto")
 
-    expect(token(hent("ute"))).toBe(MORK)
+    expect(token(get("outside"))).toBe(DARK)
     expect(getComputedStyle(document.documentElement).colorScheme).toBe("dark")
 
-    // Og lyst, for å vise at det ikke bare er mørkt som tilfeldigvis stemmer.
+    // And light, to show that it is not only dark that happens to match.
     document.documentElement.setAttribute("data-theme", "light")
-    velg("auto")
+    choose("auto")
 
-    expect(token(hent("ute"))).toBe(LYS)
+    expect(token(get("outside"))).toBe(LIGHT)
     expect(getComputedStyle(document.documentElement).colorScheme).toBe("light")
   })
 
-  it("lar et data-theme uten blokk oppføre seg som ingen data-theme", () => {
+  it("lets a data-theme without a block behave like no data-theme", () => {
     /*
-     * Vilkåret på `auto`-regelen spør på verdi, ikke på om attributtet finnes.
+     * The condition on the `auto` rule asks about the value, not about
+     * whether the attribute exists.
      *
-     * Spurte den `:not([data-theme])`, blokkerte en verdi uten blokk, som
-     * `auto` eller en skrivefeil, hele regelen. Tokenene falt til `:root` og
-     * mediespørringen, mens `color-scheme` sto usatt: samme sprik som over,
-     * utløst av den andre enden.
+     * Had it asked `:not([data-theme])`, a value without a block, such as
+     * `auto` or a typo, blocked the whole rule. The tokens fell back to
+     * `:root` and the media query, while `color-scheme` was left unset: the
+     * same mismatch as above, triggered from the other end.
      */
-    velg("auto")
-    const uten = token(hent("ute"))
+    choose("auto")
+    const without = token(get("outside"))
 
-    document.documentElement.setAttribute("data-theme", "noe-som-ikke-finnes")
-    expect(token(hent("ute"))).toBe(uten)
+    document.documentElement.setAttribute(
+      "data-theme",
+      "something-that-does-not-exist",
+    )
+    expect(token(get("outside"))).toBe(without)
     expect(getComputedStyle(document.documentElement).colorScheme).toBe(
       "light dark",
     )
@@ -317,75 +327,76 @@ describe("temavelgeren virker uten JavaScript", () => {
 })
 
 /*
- * Emuleringen går over CDP og finnes bare i Chromium. Reglene er ren CSS uten
- * skript, så de to andre motorene dekkes av blokken over.
+ * The emulation goes through CDP and only exists in Chromium. The rules are
+ * plain CSS without script, so the block above covers the other two engines.
  */
 describe.skipIf(server.browser !== "chromium")(
-  "mot det maskinen står på",
+  "against what the machine is set to",
   () => {
-    async function settSystemtema(skjema: "light" | "dark") {
+    async function setSystemTheme(scheme: "light" | "dark") {
       await cdp().send("Emulation.setEmulatedMedia", {
-        features: [{ name: "prefers-color-scheme", value: skjema }],
+        features: [{ name: "prefers-color-scheme", value: scheme }],
       })
       await waitForPaint()
     }
 
     afterEach(async () => {
-      // Emuleringen gjelder hele siden og ville ellers fulgt med inn i
-      // testene som kjører etter denne fila.
+      // The emulation applies to the whole page and would otherwise carry
+      // over into the tests that run after this file.
       await cdp().send("Emulation.setEmulatedMedia", { features: [] })
-      rydd()
+      cleanUp()
     })
 
-    it("følger systemet når ingen har valgt tema", async () => {
-      document.body.innerHTML = `<p id="ute">ute</p>`
-      await settSystemtema("light")
-      expect(token(hent("ute"))).toBe(LYS)
+    it("follows the system when nobody has chosen a theme", async () => {
+      document.body.innerHTML = `<p id="outside">outside</p>`
+      await setSystemTheme("light")
+      expect(token(get("outside"))).toBe(LIGHT)
 
-      await settSystemtema("dark")
-      expect(token(hent("ute"))).toBe(MORK)
+      await setSystemTheme("dark")
+      expect(token(get("outside"))).toBe(DARK)
     })
 
-    it("holder en lys komponent lys på en mørk maskin", async () => {
-      // Dette var feilen: før rettelsen arvet div-en den mørke
-      // verdien fra `:root`, fordi blokken ikke deklarerte tokenene på nytt.
+    it("keeps a light component light on a dark machine", async () => {
+      // This was the bug: before the fix, the div inherited the dark value
+      // from `:root`, because the block did not declare the tokens again.
       document.body.innerHTML = `
-        <p id="ute">ute</p>
-        <div data-theme="light"><p id="inne">inne</p></div>
+        <p id="outside">outside</p>
+        <div data-theme="light"><p id="inside">inside</p></div>
       `
-      await settSystemtema("dark")
-      expect(token(hent("inne"))).toBe(LYS)
-      expect(token(hent("ute"))).toBe(MORK)
+      await setSystemTheme("dark")
+      expect(token(get("inside"))).toBe(LIGHT)
+      expect(token(get("outside"))).toBe(DARK)
     })
 
-    it("lar brukeren velge lyst på en mørk maskin", async () => {
+    it("lets the user choose light on a dark machine", async () => {
       /*
-       * Den eneste av velgerens regler som trenger emulering.
+       * The only one of the picker's rules that needs emulation.
        *
-       * Her er motstanderen mediespørringen og ikke et attributt, og den har
-       * en annen spesifisitet. Uten emulering ville testen passert av seg selv
-       * på en lys maskin, altså uten å ha sett det den heter.
+       * Here the opponent is the media query and not an attribute, and it
+       * has a different specificity. Without emulation the test would pass
+       * by itself on a light machine, that is without having seen what it is
+       * named after.
        */
-      velg("light")
-      await settSystemtema("dark")
-      expect(token(hent("ute"))).toBe(LYS)
+      choose("light")
+      await setSystemTheme("dark")
+      expect(token(get("outside"))).toBe(LIGHT)
 
-      // Og tilbake: «følg systemet» gir den mørke maskinen sitt eget svar.
-      ;(hent("valg-auto") as HTMLInputElement).checked = true
+      // And back: "follow the system" gives the dark machine its own answer.
+      ;(get("option-auto") as HTMLInputElement).checked = true
       await waitForPaint()
-      expect(token(hent("ute"))).toBe(MORK)
+      expect(token(get("outside"))).toBe(DARK)
     })
 
-    it("lar en app tvinge lyst tema på hele dokumentet", async () => {
-      document.body.innerHTML = `<p id="ute">ute</p>`
+    it("lets an app force the light theme on the whole document", async () => {
+      document.body.innerHTML = `<p id="outside">outside</p>`
       document.documentElement.setAttribute("data-theme", "light")
-      await settSystemtema("dark")
-      expect(token(hent("ute"))).toBe(LYS)
+      await setSystemTheme("dark")
+      expect(token(get("outside"))).toBe(LIGHT)
     })
 
-    it("lar color-scheme på html stå urørt i begge modi", async () => {
-      for (const skjema of ["light", "dark"] as const) {
-        await settSystemtema(skjema)
+    it("leaves color-scheme on html alone in both modes", async () => {
+      for (const scheme of ["light", "dark"] as const) {
+        await setSystemTheme(scheme)
         expect(getComputedStyle(document.documentElement).colorScheme).toBe(
           "normal",
         )

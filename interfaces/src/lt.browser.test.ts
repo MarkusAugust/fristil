@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest"
 
 import { lt } from "./lt"
 
-describe("lt: felles form", () => {
-  it("gir samme form for alle komponentene: valgobjekt inn, attributter ut", () => {
+describe("lt: the shared shape", () => {
+  it("gives every component the same shape: an options object in, attributes out", () => {
     expect(lt.button()).toEqual({ class: "lt-button" })
     expect(lt.badge()).toEqual({ class: "lt-badge" })
     expect(lt.link()).toEqual({ class: "lt-link" })
@@ -14,7 +14,7 @@ describe("lt: felles form", () => {
     expect(lt.errorText()).toEqual({ class: "lt-error-text" })
   })
 
-  it("utelater attributtet når verdien er standardverdien", () => {
+  it("omits the attribute when the value is the default", () => {
     expect(lt.button({ variant: "primary" })).toEqual({ class: "lt-button" })
     expect(lt.button({ variant: "danger" })).toEqual({
       class: "lt-button",
@@ -22,7 +22,7 @@ describe("lt: felles form", () => {
     })
   })
 
-  it("eksponerer lovlige verdier og en vakt på hver komponent", () => {
+  it("exposes the allowed values and a guard on every component", () => {
     expect(lt.button.variants).toContain("ghost")
     expect(lt.button.isVariant("ghost")).toBe(true)
     expect(lt.button.isVariant("gost")).toBe(false)
@@ -33,9 +33,9 @@ describe("lt: felles form", () => {
 })
 
 describe("lt.input", () => {
-  it("setter type og ikonvariant fra samme verdi", () => {
-    // Den vanligste feilen med håndskrevet markup er at data-variant og
-    // type kommer i utakt. Her er det umulig.
+  it("sets the type and the icon variant from the same value", () => {
+    // The most common mistake in hand-written markup is that data-variant
+    // and type fall out of step. Here it is impossible.
     expect(lt.input({ type: "date" })).toEqual({
       class: "lt-input",
       type: "date",
@@ -43,14 +43,14 @@ describe("lt.input", () => {
     })
   })
 
-  it("gir ikke ikonvariant til typer som ikke har et ikon", () => {
+  it("gives no icon variant to types without an icon", () => {
     expect(lt.input({ type: "email" })).toEqual({
       class: "lt-input",
       type: "email",
     })
   })
 
-  it("setter aria-invalid sammen med data-state", () => {
+  it("sets aria-invalid together with data-state", () => {
     expect(lt.input({ state: "invalid" })).toEqual({
       class: "lt-input",
       type: "text",
@@ -65,16 +65,16 @@ describe("lt.input", () => {
     })
   })
 
-  it("deler tilstandstype med textarea og select", () => {
-    const tilstand = lt.isState("invalid") ? "invalid" : "default"
-    expect(lt.input({ state: tilstand })["data-state"]).toBe("invalid")
-    expect(lt.textarea({ state: tilstand })["data-state"]).toBe("invalid")
-    expect(lt.select({ state: tilstand })["data-state"]).toBe("invalid")
+  it("shares the state type with textarea and select", () => {
+    const state = lt.isState("invalid") ? "invalid" : "default"
+    expect(lt.input({ state })["data-state"]).toBe("invalid")
+    expect(lt.textarea({ state })["data-state"]).toBe("invalid")
+    expect(lt.select({ state })["data-state"]).toBe("invalid")
   })
 })
 
 describe("lt.label", () => {
-  it("lar required vinne over optional, så bare én markering vises", () => {
+  it("lets required win over optional, so only one marker shows", () => {
     expect(lt.label({ required: "text", optional: true })).toEqual({
       class: "lt-label",
       "data-required": "text",
@@ -83,44 +83,44 @@ describe("lt.label", () => {
 })
 
 describe("lt.field", () => {
-  it("kobler ledetekst og kontroll", () => {
-    const felt = lt.field({ id: "epost" })
+  it("wires the label and the control", () => {
+    const field = lt.field({ id: "email" })
 
-    expect(felt.label.for).toBe("epost")
-    expect(felt.control.id).toBe("epost")
+    expect(field.label.for).toBe("email")
+    expect(field.control.id).toBe("email")
   })
 
-  it("tar hjelpeteksten med i aria-describedby", () => {
-    const felt = lt.field({ id: "epost", help: true })
+  it("includes the help text in aria-describedby", () => {
+    const field = lt.field({ id: "email", help: true })
 
-    expect(felt.control["aria-describedby"]).toBe("epost-help")
-    expect(felt.help.id).toBe("epost-help")
+    expect(field.control["aria-describedby"]).toBe("email-help")
+    expect(field.help.id).toBe("email-help")
   })
 
-  it("tar feilmeldingen med bare når feltet er ugyldig", () => {
-    const gyldig = lt.field({ id: "epost", help: true, error: true })
-    const ugyldig = lt.field({
-      id: "epost",
+  it("includes the error text only when the field is invalid", () => {
+    const valid = lt.field({ id: "email", help: true, error: true })
+    const invalid = lt.field({
+      id: "email",
       help: true,
       error: true,
       invalid: true,
     })
 
-    // En skjult feilmelding skal ikke stå i aria-describedby. Da ville
-    // skjermleseren pekt på noe som ikke finnes på skjermen.
-    expect(gyldig.control["aria-describedby"]).toBe("epost-help")
-    expect(gyldig.error.hidden).toBe(true)
-    expect(gyldig.control["aria-invalid"]).toBeUndefined()
+    // A hidden error text must not be in aria-describedby. The screen reader
+    // would then point to something that is not on the screen.
+    expect(valid.control["aria-describedby"]).toBe("email-help")
+    expect(valid.error.hidden).toBe(true)
+    expect(valid.control["aria-invalid"]).toBeUndefined()
 
-    expect(ugyldig.control["aria-describedby"]).toBe("epost-help epost-error")
-    expect(ugyldig.error.hidden).toBeUndefined()
-    expect(ugyldig.control["aria-invalid"]).toBe("true")
+    expect(invalid.control["aria-describedby"]).toBe("email-help email-error")
+    expect(invalid.error.hidden).toBeUndefined()
+    expect(invalid.control["aria-invalid"]).toBe("true")
   })
 
-  it("gir en tilstand som kan sendes rett inn i input()", () => {
-    const felt = lt.field({ id: "epost", invalid: true })
+  it("gives a state that can be passed straight into input()", () => {
+    const field = lt.field({ id: "email", invalid: true })
 
-    expect(lt.input({ type: "email", state: felt.state })).toEqual({
+    expect(lt.input({ type: "email", state: field.state })).toEqual({
       class: "lt-input",
       type: "email",
       "data-state": "invalid",
@@ -128,166 +128,169 @@ describe("lt.field", () => {
     })
   })
 
-  it("tar med ekstra id-er kalleren oppgir", () => {
-    const felt = lt.field({
-      id: "epost",
+  it("includes extra ids the caller passes", () => {
+    const field = lt.field({
+      id: "email",
       help: true,
-      describedBy: ["vilkaar"],
+      describedBy: ["terms"],
     })
 
-    expect(felt.control["aria-describedby"]).toBe("epost-help vilkaar")
+    expect(field.control["aria-describedby"]).toBe("email-help terms")
   })
 
-  it("krever en id i typen", () => {
+  it("requires an id in the type", () => {
     /*
-     * Kravet er en type, og en type kan bare holdes fast av typesjekken.
-     * Tilordningene under er testen, og det er `typecheck:tests` som kjører
-     * den: blir `id` valgfri igjen, forsvinner feilen, og `@ts-expect-error`
-     * blir selv en feil.
+     * The requirement is a type, and a type can only be held in place by the
+     * type check. The assignments below are the test, and it is
+     * `typecheck:tests` that runs it: if `id` becomes optional again, the
+     * error disappears, and `@ts-expect-error` itself becomes an error.
      *
-     * Uten dette sto kravet uten vaktpost. Den forrige testen het «krever en
-     * id» og sa ingenting om kravet: begge påstandene var grønne også med
-     * den gamle, valgfrie id-en.
+     * Without this the requirement had no guard. The previous test was called
+     * "requires an id" and said nothing about the requirement: both assertions
+     * were green with the old, optional id too.
      */
-    // @ts-expect-error id er påkrevd
-    const utenNoe = () => lt.field()
-    // @ts-expect-error id er påkrevd
-    const utenId = () => lt.field({ help: true })
+    // @ts-expect-error id is required
+    const withoutAnything = () => lt.field()
+    // @ts-expect-error id is required
+    const withoutId = () => lt.field({ help: true })
 
-    expect(typeof utenNoe).toBe("function")
-    expect(typeof utenId).toBe("function")
+    expect(typeof withoutAnything).toBe("function")
+    expect(typeof withoutId).toBe("function")
   })
 
-  it("lager id-er likevel, og sier fra, når JavaScript utelater dem", () => {
+  it("creates ids anyway, and says so, when JavaScript leaves them out", () => {
     /*
-     * En konsument uten TypeScript ser ingen type, og ren HTML med
-     * `<script type="module">` er en førsteklasses måte å bruke LO-TEK på.
-     * Uten reserven ble id-ene til strenger som `undefined-help` og
-     * `undefined-list`, og `for`, `aria-controls` og `aria-describedby` pekte
-     * dit. Koblingen var brutt, og den så gyldig ut.
+     * A consumer without TypeScript sees no type, and plain HTML with
+     * `<script type="module">` is a first-class way to use LO-TEK. Without the
+     * fallback, the ids became strings like `undefined-help` and
+     * `undefined-list`, and `for`, `aria-controls` and `aria-describedby`
+     * pointed there. The wiring was broken, and it looked valid.
      *
-     * Hver byggefunksjon som tar en id er med. Første utgave hadde reserven bare i
-     * `lt.field()`, og da sa forslagsfeltet «lt.field()» i meldingen og sendte
-     * utvikleren til feil sted, mens halve id-ene fortsatt ble `undefined-…`.
+     * Every builder function that takes an id is included. The first version
+     * had the fallback only in `lt.field()`, and then the suggestion field
+     * said "lt.field()" in the message and sent the developer to the wrong
+     * place, while half the ids still became `undefined-…`.
      */
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const utenId = <T>(byggefunksjon: (o: unknown) => T, valg: unknown): T =>
-      byggefunksjon(valg)
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const withoutId = <T>(
+      builderFunction: (o: unknown) => T,
+      options: unknown,
+    ): T => builderFunction(options)
 
-    const felt = utenId(
+    const field = withoutId(
       lt.field as (o: unknown) => ReturnType<typeof lt.field>,
       {
         help: true,
         error: true,
       },
     )
-    expect(felt.control.id).toMatch(/^lt-field-/)
-    expect(felt.label.for).toBe(felt.control.id)
-    expect(JSON.stringify(felt)).not.toContain("undefined")
+    expect(field.control.id).toMatch(/^lt-field-/)
+    expect(field.label.for).toBe(field.control.id)
+    expect(JSON.stringify(field)).not.toContain("undefined")
 
-    const forslag = utenId(
+    const suggestion = withoutId(
       lt.suggestion as (o: unknown) => ReturnType<typeof lt.suggestion>,
       { keys: ["a", "b"] },
     )
-    expect(JSON.stringify(forslag)).not.toContain("undefined")
-    expect(forslag.control["aria-controls"]).toBe(forslag.list.id)
+    expect(JSON.stringify(suggestion)).not.toContain("undefined")
+    expect(suggestion.control["aria-controls"]).toBe(suggestion.list.id)
 
-    const faner = utenId(
+    const tabList = withoutId(
       lt.tabs as (o: unknown) => ReturnType<typeof lt.tabs>,
       {
         keys: ["a", "b"],
-        label: "Faner",
+        label: "Tabs",
       },
     )
-    expect(JSON.stringify(faner)).not.toContain("undefined")
+    expect(JSON.stringify(tabList)).not.toContain("undefined")
 
-    const vindu = utenId(
+    const popover = withoutId(
       lt.popover as (o: unknown) => ReturnType<typeof lt.popover>,
       {},
     )
-    expect(vindu.trigger["aria-controls"]).toBe(vindu.panel.id)
+    expect(popover.trigger["aria-controls"]).toBe(popover.panel.id)
 
-    const boks = utenId(
+    const box = withoutId(
       lt.dialog as (o: unknown) => ReturnType<typeof lt.dialog>,
       {},
     )
-    expect(boks.dialog["aria-labelledby"]).toBe(boks.title.id)
+    expect(box.dialog["aria-labelledby"]).toBe(box.title.id)
 
-    const meldinger = advarsel.mock.calls.map((k) => String(k[0])).join("\n")
-    for (const navn of [
+    const messages = warning.mock.calls.map((k) => String(k[0])).join("\n")
+    for (const name of [
       "lt.field()",
       "lt.suggestion()",
       "lt.tabs()",
       "lt.popover()",
       "lt.dialog()",
     ]) {
-      expect(meldinger, `${navn} sa ikke fra`).toContain(navn)
+      expect(messages, `${name} did not say so`).toContain(name)
     }
 
-    advarsel.mockRestore()
+    warning.mockRestore()
   })
 
-  it("regner den tomme strengen som ingen id", () => {
-    // `lt.field({ id: "" })` slapp gjennom både typen og reserven, og ga
-    // `for=""` og `help.id="-help"`. Koblingen var brutt, og ingenting sa fra.
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+  it("treats the empty string as no id", () => {
+    // `lt.field({ id: "" })` got past both the type and the fallback, and gave
+    // `for=""` and `help.id="-help"`. The wiring was broken, and nothing said so.
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
 
-    const felt = lt.field({ id: "  ", help: true })
+    const field = lt.field({ id: "  ", help: true })
 
-    expect(felt.control.id).toMatch(/^lt-field-/)
-    expect(felt.help.id).toBe(`${felt.control.id}-help`)
-    advarsel.mockRestore()
+    expect(field.control.id).toMatch(/^lt-field-/)
+    expect(field.help.id).toBe(`${field.control.id}-help`)
+    warning.mockRestore()
   })
 })
 
-describe("lt.field sammen med feltfunksjonene", () => {
-  it("overlapper ikke med input(), så attributter ikke settes dobbelt", () => {
-    const felt = lt.field({
-      id: "epost",
+describe("lt.field together with the field functions", () => {
+  it("does not overlap with input(), so no attribute is set twice", () => {
+    const field = lt.field({
+      id: "email",
       help: true,
       error: true,
       invalid: true,
     })
     const input = lt.input({ type: "email" })
 
-    const felles = Object.keys(input).filter((navn) => navn in felt.control)
+    const shared = Object.keys(input).filter((name) => name in field.control)
 
-    // I JSX overskriver den siste spredningen den første, men i maler som
-    // skriver ut attributtene bokstavelig, som Astro og ren HTML, blir de
-    // stående dobbelt. Da er markupen ugyldig.
-    expect(felles, "Disse settes av begge").toEqual([])
+    // In JSX the last spread overwrites the first, but in templates that
+    // write the attributes out literally, like Astro and plain HTML, they end
+    // up twice. The markup is then invalid.
+    expect(shared, "These are set by both").toEqual([])
   })
 
-  it("lar control bære både tilstandsfargen og aria-invalid", () => {
-    const felt = lt.field({ id: "epost", invalid: true })
+  it("lets control carry both the state colour and aria-invalid", () => {
+    const field = lt.field({ id: "email", invalid: true })
 
-    expect(felt.control["data-state"]).toBe("invalid")
-    expect(felt.control["aria-invalid"]).toBe("true")
+    expect(field.control["data-state"]).toBe("invalid")
+    expect(field.control["aria-invalid"]).toBe("true")
   })
 
-  it("setter ingen av dem når feltet er gyldig", () => {
-    const felt = lt.field({ id: "epost" })
+  it("sets neither when the field is valid", () => {
+    const field = lt.field({ id: "email" })
 
-    expect(felt.control["data-state"]).toBeUndefined()
-    expect(felt.control["aria-invalid"]).toBeUndefined()
+    expect(field.control["data-state"]).toBeUndefined()
+    expect(field.control["aria-invalid"]).toBeUndefined()
   })
 })
 
 /**
- * Hvor mange byggefunksjoner `lt` har, utenom `setAttributes`, `isState` og
- * `isMarker`.
+ * How many builder functions `lt` has, apart from `setAttributes`, `isState`
+ * and `isMarker`.
  *
- * Tallet står skrevet her framfor å bli lest ut av lista det skal kontrollere.
- * Ellers sammenligner vakten køen med seg selv, og halve settet kan forsvinne
- * uten at noe sier fra. Legg til en byggefunksjon, og tallet skal opp i samme
- * endring. Merk at summen alene ikke fanger et bytte: legger du til en byggefunksjon
- * og en hjelper samtidig, står tallet stille, og et omdøpt navn endrer det
- * ikke i det hele tatt.
+ * The number is written here rather than read from the list it is meant to
+ * check. Otherwise the guard compares the queue with itself, and half the set
+ * could disappear without anything saying so. Add a builder function, and the
+ * number goes up in the same change. Note that the sum alone does not catch a
+ * swap: if you add a builder function and a helper at the same time, the
+ * number stays put, and a renamed name does not change it at all.
  */
-const ANTALL_BYGGEFUNKSJONER = 46
+const BUILDER_FUNCTION_COUNT = 46
 
-/** De som gir attributter per del framfor ett flatt sett. */
-const SAMMENSATTE_NAVN = [
+/** Those that give attributes per part rather than one flat set. */
+const COMPOSITE_NAMES = [
   "dialog",
   "errorSummary",
   "field",
@@ -299,160 +302,162 @@ const SAMMENSATTE_NAVN = [
   "toast",
 ]
 
-describe("formen på navnerommet", () => {
-  /** Byggefunksjonene, altså alt i `lt` som kan kalles uten argumenter. */
-  const byggefunksjoner = Object.entries(lt).filter(
-    ([navn, verdi]) =>
-      typeof verdi === "function" &&
-      navn !== "setAttributes" &&
-      navn !== "isState" &&
-      navn !== "isMarker" &&
-      // De sammensatte byggefunksjonene gir ett attributtsett per element i stedet
-      // for ett flatt sett, og krever en id for å kunne koble dem sammen.
-      !SAMMENSATTE_NAVN.includes(navn),
+describe("the shape of the namespace", () => {
+  /** The builder functions, that is, everything in `lt` that can be called without arguments. */
+  const builderFunctions = Object.entries(lt).filter(
+    ([name, value]) =>
+      typeof value === "function" &&
+      name !== "setAttributes" &&
+      name !== "isState" &&
+      name !== "isMarker" &&
+      // The composite builder functions give one attribute set per element
+      // instead of one flat set, and need an id to wire them together.
+      !COMPOSITE_NAMES.includes(name),
   ) as [string, () => Record<string, unknown>][]
 
-  it("har byggefunksjoner å kontrollere", () => {
-    expect(byggefunksjoner.length).toBe(
-      ANTALL_BYGGEFUNKSJONER - SAMMENSATTE_NAVN.length,
+  it("has builder functions to check", () => {
+    expect(builderFunctions.length).toBe(
+      BUILDER_FUNCTION_COUNT - COMPOSITE_NAMES.length,
     )
   })
 
   it.each(
-    byggefunksjoner,
-  )("lt.%s() gir en lt-prefikset klasse uten argumenter", (_navn, byggefunksjon) => {
-    const attributter = byggefunksjon()
+    builderFunctions,
+  )("lt.%s() gives an lt-prefixed class without arguments", (_name, builderFunction) => {
+    const attributes = builderFunction()
 
-    expect(typeof attributter.class).toBe("string")
-    for (const klasse of String(attributter.class).split(" ")) {
-      expect(klasse.startsWith("lt-")).toBe(true)
+    expect(typeof attributes.class).toBe("string")
+    for (const className of String(attributes.class).split(" ")) {
+      expect(className.startsWith("lt-")).toBe(true)
     }
   })
 
   it.each(
-    byggefunksjoner,
-  )("lt.%s() setter ingen tomme attributter", (_navn, byggefunksjon) => {
-    const tomme = Object.entries(byggefunksjon())
-      .filter(([, verdi]) => verdi === undefined)
-      .map(([navn]) => navn)
+    builderFunctions,
+  )("lt.%s() sets no empty attributes", (_name, builderFunction) => {
+    const empty = Object.entries(builderFunction())
+      .filter(([, value]) => value === undefined)
+      .map(([name]) => name)
 
-    // Et attributt med verdien undefined blir «undefined» som streng i maler
-    // som skriver ut attributtene bokstavelig, som Astro og ren HTML.
-    expect(tomme).toEqual([])
+    // An attribute with the value undefined becomes the string "undefined" in
+    // templates that write the attributes out literally, like Astro and plain
+    // HTML.
+    expect(empty).toEqual([])
   })
 })
 
-describe("attributter bare morferen leser", () => {
+describe("attributes only the morpher reads", () => {
   /*
-   * Fredning og «ikke rør dette» er ikke egenskaper ved morfing. De er
-   * `data-*`-attributter, og et slikt attributt betyr bare noe for koden som
-   * leser det. Reparasjonen trenger ingen av dem: komponenten leser markupen.
+   * Preserving and "do not touch this" are not properties of morphing. They
+   * are `data-*` attributes, and such an attribute only means something to
+   * the code that reads it. The repair needs none of them: the component
+   * reads the markup.
    *
-   * Unntaket er de som eier innholdet sitt selv. En komponent kan sette et
-   * attributt tilbake, men den kan ikke gjette seg fram til meldinger den
-   * selv lagde og en patch tømte. Der må serverens markup si fra, og navnet
-   * på attributtet er morferens.
+   * The exception is the components that create their own content. A
+   * component can set an attribute back, but it cannot guess its way to
+   * messages it created itself and a patch emptied. There the server's markup
+   * has to say so, and the name of the attribute is the morpher's.
    *
-   * Testen er en folketelling og ikke et forbud. Den feller både et nytt sted
-   * attributtet dukker opp, og et sted det forsvinner fra, siden begge er en
-   * endring i hva malen må skrive.
+   * The test is a census and not a ban. It fails both on a new place the
+   * attribute turns up and on a place it disappears from, since both are a
+   * change in what the template must write.
    */
-  const MORFERATTRIBUTTER = ["data-ignore-morph", "data-preserve-attr"]
+  const MORPHER_ATTRIBUTES = ["data-ignore-morph", "data-preserve-attr"]
 
-  /** Alt i `lt` som ikke er en byggefunksjon. */
-  const HJELPERE = ["setAttributes", "isState", "isMarker"]
+  /** Everything in `lt` that is not a builder function. */
+  const HELPERS = ["setAttributes", "isState", "isMarker"]
 
   /**
-   * Ett gyldig kall per byggefunksjon som gir attributter per del framfor ett flatt
-   * sett. De fleste av dem krever argumenter. `toast` gjør ikke det, og står
-   * her for at lista skal være hele settet.
+   * One valid call per builder function that gives attributes per part rather
+   * than one flat set. Most of them require arguments. `toast` does not, and
+   * is here so the list is the whole set.
    */
-  const SAMMENSATTE: Record<string, () => unknown> = Object.assign(
+  const COMPOSITES: Record<string, () => unknown> = Object.assign(
     Object.create(null),
     {
-      dialog: () => lt.dialog({ titleId: "tittel" }),
-      errorSummary: () => lt.errorSummary({ count: 2, id: "feil" }),
-      field: () => lt.field({ id: "epost", help: true, error: true }),
+      dialog: () => lt.dialog({ titleId: "title" }),
+      errorSummary: () => lt.errorSummary({ count: 2, id: "errors" }),
+      field: () => lt.field({ id: "email", help: true, error: true }),
       popover: () => lt.popover({ id: "panel" }),
-      sessionTimeout: () => lt.sessionTimeout({ titleId: "okt" }),
+      sessionTimeout: () => lt.sessionTimeout({ titleId: "session" }),
       suggestion: () =>
-        lt.suggestion({ id: "sok", keys: ["a", "b"], open: true }),
+        lt.suggestion({ id: "search", keys: ["a", "b"], open: true }),
       tableSort: () => lt.tableSort({ direction: "ascending" }),
-      tabs: () => lt.tabs({ id: "faner", keys: ["a", "b"], label: "Faner" }),
+      tabs: () => lt.tabs({ id: "tabs", keys: ["a", "b"], label: "Tabs" }),
       toast: () => lt.toast(),
     },
   )
 
-  const byggefunksjoner = Object.entries(lt).filter(
-    ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
+  const builderFunctions = Object.entries(lt).filter(
+    ([name, value]) => typeof value === "function" && !HELPERS.includes(name),
   ) as [string, () => unknown][]
 
-  const kall = ([navn, byggefunksjon]: [string, () => unknown]) =>
-    (SAMMENSATTE[navn] ?? byggefunksjon)()
+  const call = ([name, builderFunction]: [string, () => unknown]) =>
+    (COMPOSITES[name] ?? builderFunction)()
 
-  /** Hvert attributtnavn i svaret, uansett hvor dypt det ligger. */
-  function attributtnavn(verdi: unknown, ut: string[] = []): string[] {
-    if (Array.isArray(verdi)) {
-      for (const del of verdi) attributtnavn(del, ut)
-      return ut
+  /** Every attribute name in the result, however deep it lies. */
+  function attributeNames(value: unknown, out: string[] = []): string[] {
+    if (Array.isArray(value)) {
+      for (const part of value) attributeNames(part, out)
+      return out
     }
-    if (verdi && typeof verdi === "object") {
-      for (const [navn, del] of Object.entries(verdi)) {
-        ut.push(navn)
-        attributtnavn(del, ut)
+    if (value && typeof value === "object") {
+      for (const [name, part] of Object.entries(value)) {
+        out.push(name)
+        attributeNames(part, out)
       }
     }
-    return ut
+    return out
   }
 
-  it("har hver byggefunksjon i lt, og bare byggefunksjoner", () => {
-    // Uten dette kunne tabellen under vært tom, eller mistet en byggefunksjon som
-    // fikk nytt navn, og folketellingen ville stemt likevel. Og en ny vakt i
-    // `lt`, som `isColor`, ville blitt kalt som en byggefunksjon og gitt `false`,
-    // altså ingen attributter å telle.
-    expect(byggefunksjoner.length).toBe(ANTALL_BYGGEFUNKSJONER)
-    expect(Object.keys(SAMMENSATTE).sort()).toEqual(
-      [...SAMMENSATTE_NAVN].sort(),
-    )
+  it("has every builder function in lt, and only builder functions", () => {
+    // Without this the table below could have been empty, or lost a builder
+    // function that was renamed, and the census would still have matched. And
+    // a new guard in `lt`, like `isColor`, would have been called as a builder
+    // function and given `false`, that is, no attributes to count.
+    expect(builderFunctions.length).toBe(BUILDER_FUNCTION_COUNT)
+    expect(Object.keys(COMPOSITES).sort()).toEqual([...COMPOSITE_NAMES].sort())
 
-    for (const navn of SAMMENSATTE_NAVN) {
+    for (const name of COMPOSITE_NAMES) {
       expect(
-        byggefunksjoner.map(([n]) => n),
-        `lt.${navn} finnes ikke`,
-      ).toContain(navn)
+        builderFunctions.map(([n]) => n),
+        `lt.${name} does not exist`,
+      ).toContain(name)
     }
 
-    for (const byggefunksjon of byggefunksjoner) {
-      // At svaret er et objekt er for lite: `typeof null` er også «object»,
-      // og et tomt objekt ville passert. Påstanden må være at traverseringen
-      // finner noe, for det er den folketellingen under hviler på: «ingen
-      // morferattributter» skal betyde at de ikke er der, ikke at ingen så.
+    for (const builderFunction of builderFunctions) {
+      // That the result is an object is not enough: `typeof null` is also
+      // "object", and an empty object would have passed. The assertion must be
+      // that the traversal finds something, because that is what the census
+      // below rests on: "no morpher attributes" must mean they are not there,
+      // not that nobody looked.
       expect(
-        attributtnavn(kall(byggefunksjon)).length,
-        `lt.${byggefunksjon[0]}() ga ingen attributter`,
+        attributeNames(call(builderFunction)).length,
+        `lt.${builderFunction[0]}() gave no attributes`,
       ).toBeGreaterThan(0)
     }
   })
 
-  it("sender dem ut fra nøyaktig de tre som lager innholdet sitt selv", () => {
-    const funn: Record<string, string[]> = {}
-    let kalt = 0
+  it("emits them from exactly the three that create their own content", () => {
+    const findings: Record<string, string[]> = {}
+    let called = 0
 
-    for (const byggefunksjon of byggefunksjoner) {
-      const svar = kall(byggefunksjon)
-      const treff = [
+    for (const builderFunction of builderFunctions) {
+      const result = call(builderFunction)
+      const hits = [
         ...new Set(
-          attributtnavn(svar).filter((n) => MORFERATTRIBUTTER.includes(n)),
+          attributeNames(result).filter((n) => MORPHER_ATTRIBUTES.includes(n)),
         ),
       ].sort()
-      if (treff.length > 0) funn[byggefunksjon[0]] = treff
-      kalt += 1
+      if (hits.length > 0) findings[builderFunction[0]] = hits
+      called += 1
     }
 
-    expect(kalt).toBe(ANTALL_BYGGEFUNKSJONER)
-    // Forslagsfeltet er ikke med: statuselementet står i serverens markup,
-    // og komponenten skriver antallet på nytt når en oppdatering tømmer det.
-    expect(funn).toEqual({
+    expect(called).toBe(BUILDER_FUNCTION_COUNT)
+    // The suggestion field is not included: the status element is in the
+    // server's markup, and the component writes the count again when an
+    // update empties it.
+    expect(findings).toEqual({
       connectionStatus: ["data-ignore-morph"],
       sessionTimeout: ["data-ignore-morph"],
       toast: ["data-ignore-morph"],

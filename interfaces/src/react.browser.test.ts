@@ -3,21 +3,21 @@ import type { Attributes } from "./dom"
 import { lt } from "./lt"
 import { lt as ltReact, type ReactSet } from "./react"
 
-describe("lt fra /react", () => {
-  it("gir className i stedet for class", () => {
+describe("lt from /react", () => {
+  it("gives className instead of class", () => {
     expect(ltReact.button({ variant: "danger" })).toEqual({
       className: "lt-button",
       "data-variant": "danger",
     })
   })
 
-  it("gir htmlFor i stedet for for på ledeteksten", () => {
-    const felt = ltReact.field({ id: "epost" })
+  it("gives htmlFor instead of for on the label", () => {
+    const field = ltReact.field({ id: "email" })
 
-    expect(felt.label).toEqual({ className: "lt-label", htmlFor: "epost" })
+    expect(field.label).toEqual({ className: "lt-label", htmlFor: "email" })
   })
 
-  it("lar dataattributter og aria stå urørt", () => {
+  it("leaves data attributes and aria untouched", () => {
     expect(ltReact.input({ type: "date", state: "invalid" })).toEqual({
       className: "lt-input",
       type: "date",
@@ -27,42 +27,42 @@ describe("lt fra /react", () => {
     })
   })
 
-  it("beholder lovlige verdier og vaktene fra funksjonen", () => {
+  it("keeps the allowed values and the guards from the function", () => {
     expect(ltReact.button.variants).toEqual(lt.button.variants)
     expect(ltReact.button.isVariant("ghost")).toBe(true)
     expect(ltReact.badge.isColor("neutral")).toBe(true)
     expect(ltReact.input.isType("date")).toBe(true)
   })
 
-  it("gir samme kobling som lt.field for alt som ikke må døpes om", () => {
-    const vanlig = lt.field({
-      id: "epost",
+  it("gives the same wiring as lt.field for everything that need not be renamed", () => {
+    const plain = lt.field({
+      id: "email",
       help: true,
       error: true,
       invalid: true,
     })
     const forReact = ltReact.field({
-      id: "epost",
+      id: "email",
       help: true,
       error: true,
       invalid: true,
     })
 
-    expect(forReact.control).toEqual(vanlig.control)
-    expect(forReact.help).toEqual(vanlig.help)
-    expect(forReact.error).toEqual(vanlig.error)
-    expect(forReact.state).toBe(vanlig.state)
+    expect(forReact.control).toEqual(plain.control)
+    expect(forReact.help).toEqual(plain.help)
+    expect(forReact.error).toEqual(plain.error)
+    expect(forReact.state).toBe(plain.state)
   })
 
   /**
-   * Attributter React staver annerledes enn HTML.
+   * Attributes React spells differently from HTML.
    *
-   * Lista er hentet fra Reacts egen tabell over DOM-egenskaper, og er lengre
-   * enn de fire vi faktisk døper om. Det er poenget: en byggefunksjon som en
-   * dag sender ut `readonly` eller `maxlength` skal stoppe her, ikke i
-   * konsollen hos en konsument.
+   * The list is taken from React's own table of DOM properties, and is longer
+   * than the four we actually rename. That is the point: a builder function
+   * that one day emits `readonly` or `maxlength` must stop here, not in a
+   * consumer's console.
    */
-  const STAVES_ANNERLEDES = [
+  const SPELLED_DIFFERENTLY = [
     "accesskey",
     "autocapitalize",
     "autocomplete",
@@ -88,125 +88,125 @@ describe("lt fra /react", () => {
     "usemap",
   ]
 
-  /** Alle attributtnavn i et svar, også de som ligger i lister og undernivå. */
-  function alleNokler(verdi: unknown, samlet = new Set<string>()): Set<string> {
-    if (Array.isArray(verdi)) {
-      for (const del of verdi) alleNokler(del, samlet)
-    } else if (verdi && typeof verdi === "object") {
-      for (const [navn, under] of Object.entries(verdi)) {
-        samlet.add(navn)
-        alleNokler(under, samlet)
+  /** Every attribute name in a result, including those in lists and nested levels. */
+  function allKeys(value: unknown, collected = new Set<string>()): Set<string> {
+    if (Array.isArray(value)) {
+      for (const part of value) allKeys(part, collected)
+    } else if (value && typeof value === "object") {
+      for (const [name, child] of Object.entries(value)) {
+        collected.add(name)
+        allKeys(child, collected)
       }
     }
-    return samlet
+    return collected
   }
 
   /**
-   * Hvert kall vi klarer å sette sammen av byggefunksjonens egne opplysninger.
+   * Every call we can put together from the builder function's own
+   * information.
    *
-   * Kallet uten argumenter alene er ikke nok: `class` kommer fra hver av dem,
-   * men `for` kommer bare når feltet har en id, og `tabindex` bare når fanene
-   * får et antall. Lovlige verdier henger på funksjonen, så de kan hentes ut
-   * uten en håndskrevet liste.
+   * The call without arguments alone is not enough: `class` comes from each
+   * of them, but `for` only comes when the field has an id, and `tabindex`
+   * only when the tabs get a count. The allowed values hang on the function,
+   * so they can be read without a hand-written list.
    */
-  function kall(
-    byggefunksjon: (valg?: Record<string, unknown>) => unknown,
+  function calls(
+    builder: (options?: Record<string, unknown>) => unknown,
   ): unknown[] {
     /*
-     * Det minste kallet er med fordi de fleste byggefunksjonene skal virke uten
-     * argumenter. `id` sendes likevel, siden byggefunksjonene som tar en id krever
-     * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
-     * advarsel i konsollen i tillegg.
+     * The smallest call is included because most builder functions must work
+     * without arguments. `id` is sent anyway, since the builder functions that
+     * take an id require it: without it the guard would have tried a call that
+     * is not allowed, and got a warning in the console as well.
      */
-    // `label` fordi `lt.tabs()` krever et navn på raden og kaster uten.
-    const ekstra: Record<string, unknown>[] = [
-      { id: "sak" },
+    // `label` because `lt.tabs()` requires a name for the tab list and throws without one.
+    const extra: Record<string, unknown>[] = [
+      { id: "case" },
       {
-        id: "sak",
+        id: "case",
         count: 2,
         keys: ["a", "b"],
-        label: "Deler",
+        label: "Parts",
         help: true,
         error: true,
         invalid: true,
       },
     ]
-    const holder = byggefunksjon as unknown as Record<string, unknown>
-    for (const [navn, verdier] of Object.entries(holder)) {
-      if (!navn.endsWith("s") || !Array.isArray(verdier)) continue
-      const opsjon =
-        { markers: "required", types: "type" }[navn] ?? navn.slice(0, -1)
-      for (const verdi of verdier)
-        ekstra.push({
-          [opsjon]: verdi,
-          id: "sak",
+    const holder = builder as unknown as Record<string, unknown>
+    for (const [name, values] of Object.entries(holder)) {
+      if (!name.endsWith("s") || !Array.isArray(values)) continue
+      const option =
+        { markers: "required", types: "type" }[name] ?? name.slice(0, -1)
+      for (const value of values)
+        extra.push({
+          [option]: value,
+          id: "case",
           count: 2,
           keys: ["a", "b"],
-          label: "Deler",
+          label: "Parts",
         })
     }
 
-    const svar: unknown[] = []
-    for (const valg of ekstra) {
+    const results: unknown[] = []
+    for (const options of extra) {
       try {
-        svar.push(byggefunksjon(valg))
+        results.push(builder(options))
       } catch {
-        // En byggefunksjon som avviser kombinasjonen sier ikke noe om navn.
+        // A builder function that rejects the combination says nothing about names.
       }
     }
-    return svar
+    return results
   }
 
-  /** `setAttributes` tar et element og skriver på det, og bygger ingenting. */
-  const IKKE_BYGGEFUNKSJONER = ["setAttributes"]
+  /** `setAttributes` takes an element and writes on it, and builds nothing. */
+  const NOT_BUILDER_FUNCTIONS = ["setAttributes"]
 
-  const byggefunksjoner = Object.entries(ltReact).filter(
-    ([navn, verdi]) =>
-      typeof verdi === "function" && !IKKE_BYGGEFUNKSJONER.includes(navn),
-  ) as [string, (valg?: Record<string, unknown>) => unknown][]
+  const builders = Object.entries(ltReact).filter(
+    ([name, value]) =>
+      typeof value === "function" && !NOT_BUILDER_FUNCTIONS.includes(name),
+  ) as [string, (options?: Record<string, unknown>) => unknown][]
 
-  it("dekker hver byggefunksjon i /react", () => {
-    // Uten denne kan vaktposten under bli tom uten at noe sier fra.
-    expect(byggefunksjoner.length).toBeGreaterThan(30)
-    for (const [navn, byggefunksjon] of byggefunksjoner) {
-      expect(
-        kall(byggefunksjon).length,
-        `${navn}() svarte aldri`,
-      ).toBeGreaterThan(0)
+  it("covers every builder function in /react", () => {
+    // Without this the guard below can become empty without a word.
+    expect(builders.length).toBeGreaterThan(30)
+    for (const [name, builder] of builders) {
+      expect(calls(builder).length, `${name}() never answered`).toBeGreaterThan(
+        0,
+      )
     }
   })
 
-  it("har ingen nøkler React ville klaget på", () => {
-    for (const [navn, byggefunksjon] of byggefunksjoner) {
-      for (const svar of kall(byggefunksjon)) {
-        for (const nokkel of alleNokler(svar)) {
-          expect(STAVES_ANNERLEDES, `${navn}() gir «${nokkel}»`).not.toContain(
-            nokkel,
+  it("has no keys React would complain about", () => {
+    for (const [name, builder] of builders) {
+      for (const result of calls(builder)) {
+        for (const key of allKeys(result)) {
+          expect(SPELLED_DIFFERENTLY, `${name}() gives "${key}"`).not.toContain(
+            key,
           )
         }
       }
     }
   })
 
-  it("har nøyaktig de samme byggefunksjonene som hovedinngangen", () => {
-    // `react.ts` har sin egen liste, og en ny komponent må inn i begge.
-    // Sjekken går begge veier: en funksjon som bare finnes i den ene er like
-    // gal uansett hvilken av dem det er.
+  it("has exactly the same builder functions as the main entry", () => {
+    // `react.ts` has its own list, and a new component must go into both.
+    // The check goes both ways: a function that only exists in one is just
+    // as wrong whichever of them it is.
     expect(Object.keys(ltReact).sort()).toEqual(Object.keys(lt).sort())
   })
 })
 
 /**
- * `tabindex` er ikke bare et annet navn.
+ * `tabindex` is not just a different name.
  *
- * I HTML er verdien en streng, i React er `tabIndex` et tall. Lot vi
- * strengen stå, kom `lt.tabs()` ut med `tabIndex: "0"`, og TypeScript avviste
- * den i enhver React-app. Den virket i nettleseren, siden React gjør om
- * verdien selv, så feilen viste seg bare som en typefeil hos konsumenten.
- * Det ble funnet i en ekte React-app, ikke her.
+ * In HTML the value is a string, in React `tabIndex` is a number. Had we left
+ * the string, `lt.tabs()` came out with `tabIndex: "0"`, and TypeScript
+ * rejected it in every React app. It worked in the browser, since React
+ * converts the value itself, so the bug only showed as a type error for the
+ * consumer. It was found in a real React app, not here.
  */
-describe("tabIndex kommer ut som et tall", () => {
-  it("på feiloppsummeringen", () => {
+describe("tabIndex comes out as a number", () => {
+  it("on the error summary", () => {
     expect(typeof ltReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
       "number",
     )
@@ -214,54 +214,54 @@ describe("tabIndex kommer ut som et tall", () => {
 })
 
 /**
- * `setAttributes` herfra får sett med React-navnene, og må oversette dem
- * tilbake. Sendt rett til hovedinngangens funksjon ble `className` til
- * attributtet `classname` og `htmlFor` til `htmlfor`, og det nye objektet
- * fra omdøpingen sto ikke i kartet over hva settet forvalter, så
- * `aria-invalid` ble stående etter at feltet var rettet. Funnet med et
- * falskt element i et skript, ikke i en app, men en `ref` i React er nettopp
- * et element å kalle den på.
+ * `setAttributes` from here gets sets with the React names, and must
+ * translate them back. Passed straight to the main entry's function,
+ * `className` became the attribute `classname` and `htmlFor` became
+ * `htmlfor`, and the new object from the renaming was not in the map of what
+ * the set manages, so `aria-invalid` stayed after the field was fixed. Found
+ * with a fake element in a script, not in an app, but a `ref` in React is
+ * exactly an element to call it on.
  */
-describe("lt.setAttributes fra /react", () => {
-  it("skriver class og for, ikke className og htmlFor", () => {
-    const ledetekst = document.createElement("label")
+describe("lt.setAttributes from /react", () => {
+  it("writes class and for, not className and htmlFor", () => {
+    const label = document.createElement("label")
 
     ltReact.setAttributes(
-      ledetekst,
+      label,
       ltReact.label(),
-      ltReact.field({ id: "epost" }).label,
+      ltReact.field({ id: "email" }).label,
     )
 
-    expect(ledetekst.getAttribute("class")).toBe("lt-label")
-    expect(ledetekst.getAttribute("for")).toBe("epost")
-    expect(ledetekst.hasAttribute("classname")).toBe(false)
-    expect(ledetekst.hasAttribute("htmlfor")).toBe(false)
+    expect(label.getAttribute("class")).toBe("lt-label")
+    expect(label.getAttribute("for")).toBe("email")
+    expect(label.hasAttribute("classname")).toBe(false)
+    expect(label.hasAttribute("htmlfor")).toBe(false)
   })
 
-  it("rydder det byggefunksjonen forvalter, som hovedinngangen", () => {
-    const felt = document.createElement("input")
+  it("clears what the builder function manages, as the main entry does", () => {
+    const field = document.createElement("input")
 
-    ltReact.setAttributes(felt, ltReact.input({ state: "invalid" }))
-    expect(felt.getAttribute("aria-invalid")).toBe("true")
-    expect(felt.getAttribute("data-state")).toBe("invalid")
+    ltReact.setAttributes(field, ltReact.input({ state: "invalid" }))
+    expect(field.getAttribute("aria-invalid")).toBe("true")
+    expect(field.getAttribute("data-state")).toBe("invalid")
 
-    ltReact.setAttributes(felt, ltReact.input())
-    expect(felt.hasAttribute("aria-invalid")).toBe(false)
-    expect(felt.hasAttribute("data-state")).toBe(false)
-    expect(felt.className).toBe("lt-input")
+    ltReact.setAttributes(field, ltReact.input())
+    expect(field.hasAttribute("aria-invalid")).toBe(false)
+    expect(field.hasAttribute("data-state")).toBe(false)
+    expect(field.className).toBe("lt-input")
   })
 
-  it("skriver tabIndex som tabindex", () => {
-    const boks = document.createElement("div")
+  it("writes tabIndex as tabindex", () => {
+    const box = document.createElement("div")
     const { host } = ltReact.errorSummary({ count: 1 })
 
-    ltReact.setAttributes(boks, host)
+    ltReact.setAttributes(box, host)
 
-    expect(boks.getAttribute("tabindex")).toBe(String(host.tabIndex))
+    expect(box.getAttribute("tabindex")).toBe(String(host.tabIndex))
   })
 
-  it("gir det samme elementet som hovedinngangen", () => {
-    const par: [Attributes, ReactSet][] = [
+  it("gives the same element as the main entry", () => {
+    const pairs: [Attributes, ReactSet][] = [
       [lt.button({ variant: "danger" }), ltReact.button({ variant: "danger" })],
       [
         lt.input({ type: "date", state: "invalid" }),
@@ -274,10 +274,10 @@ describe("lt.setAttributes fra /react", () => {
       ],
       [lt.suggestion({ id: "s" }).list, ltReact.suggestion({ id: "s" }).list],
     ]
-    for (const [vanlig, forReact] of par) {
+    for (const [plain, forReact] of pairs) {
       const a = document.createElement("div")
       const b = document.createElement("div")
-      lt.setAttributes(a, vanlig)
+      lt.setAttributes(a, plain)
       ltReact.setAttributes(b, forReact)
       expect(b.outerHTML).toBe(a.outerHTML)
     }

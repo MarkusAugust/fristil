@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { defineElement, whenUpgraded } from "./components/host-element"
 import { defineLtToast, LtToast } from "./components/standalone/toast/lt-toast"
-import * as pakke from "./index"
+import * as pkg from "./index"
 import { defineLt } from "./register"
 
 /*
@@ -9,9 +9,9 @@ import { defineLt } from "./register"
  * the test fails on a component added to the package without being included
  * in the registration, which is the mistake that would otherwise be silent.
  */
-const tagger = Object.entries(pakke)
-  .filter(([navn]) => navn.endsWith("_TAG"))
-  .map(([, verdi]) => verdi as string)
+const tags = Object.entries(pkg)
+  .filter(([name]) => name.endsWith("_TAG"))
+  .map(([, value]) => value as string)
 
 describe("defineLt()", () => {
   it("copes with a component already registered under a custom name", () => {
@@ -25,7 +25,7 @@ describe("defineLt()", () => {
 
     expect(() => defineLt()).not.toThrow()
 
-    for (const tag of tagger) {
+    for (const tag of tags) {
       expect(customElements.get(tag), tag).toBeDefined()
     }
     expect(document.createElement("app-toast")).toBeInstanceOf(LtToast)
@@ -33,11 +33,11 @@ describe("defineLt()", () => {
   })
 
   it("registers every web component in the package", () => {
-    expect(tagger.length).toBeGreaterThanOrEqual(9)
+    expect(tags.length).toBeGreaterThanOrEqual(9)
 
     defineLt()
 
-    for (const tag of tagger) {
+    for (const tag of tags) {
       expect(customElements.get(tag), tag).toBeDefined()
     }
   })
@@ -50,33 +50,35 @@ describe("defineLt()", () => {
 
 describe("defineElement()", () => {
   it("registers the same class under two names", () => {
-    class Egen extends HTMLElement {}
-    defineElement("lt-egen-første", Egen)
+    class Custom extends HTMLElement {}
+    defineElement("lt-custom-first", Custom)
 
-    expect(() => defineElement("lt-egen-andre", Egen)).not.toThrow()
+    expect(() => defineElement("lt-custom-second", Custom)).not.toThrow()
 
-    expect(customElements.get("lt-egen-andre")).toBeDefined()
-    expect(document.createElement("lt-egen-andre")).toBeInstanceOf(Egen)
+    expect(customElements.get("lt-custom-second")).toBeDefined()
+    expect(document.createElement("lt-custom-second")).toBeInstanceOf(Custom)
   })
 
   it("works without customElements.getName", () => {
     // Chrome before 117, Firefox before 116 and Safari before 17 lack `getName`.
-    class Egen extends HTMLElement {}
-    defineElement("lt-egen-uten-getname", Egen)
+    class Custom extends HTMLElement {}
+    defineElement("lt-custom-without-getname", Custom)
     Object.defineProperty(customElements, "getName", {
       value: undefined,
       configurable: true,
     })
 
     try {
-      expect(() => defineElement("lt-egen-uten-getname-to", Egen)).not.toThrow()
+      expect(() =>
+        defineElement("lt-custom-without-getname-two", Custom),
+      ).not.toThrow()
     } finally {
       Reflect.deleteProperty(customElements, "getName")
     }
 
-    expect(document.createElement("lt-egen-uten-getname-to")).toBeInstanceOf(
-      Egen,
-    )
+    expect(
+      document.createElement("lt-custom-without-getname-two"),
+    ).toBeInstanceOf(Custom)
   })
 })
 
@@ -88,41 +90,41 @@ describe("whenUpgraded()", () => {
 
   it("warns once about an element nobody registers", async () => {
     vi.useFakeTimers()
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("lt-aldri-registrert")
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const element = document.createElement("lt-never-registered")
 
     void whenUpgraded(element)
     void whenUpgraded(element)
     vi.advanceTimersByTime(2999)
-    expect(advarsel).not.toHaveBeenCalled()
+    expect(warning).not.toHaveBeenCalled()
 
     vi.advanceTimersByTime(1)
-    expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0]?.[0])).toContain(
-      "<lt-aldri-registrert> is not registered",
+    expect(warning).toHaveBeenCalledTimes(1)
+    expect(String(warning.mock.calls[0]?.[0])).toContain(
+      "<lt-never-registered> is not registered",
     )
   })
 
   it("rejects an element that cannot be a component, without warning", async () => {
     vi.useFakeTimers()
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     await expect(whenUpgraded(document.createElement("div"))).rejects.toThrow()
     vi.advanceTimersByTime(3000)
 
-    expect(advarsel).not.toHaveBeenCalled()
+    expect(warning).not.toHaveBeenCalled()
   })
 
   it("stays quiet when the registration comes before the deadline", async () => {
     vi.useFakeTimers()
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("lt-registrert-i-tide")
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const element = document.createElement("lt-registered-in-time")
 
-    const løfte = whenUpgraded(element)
-    customElements.define("lt-registrert-i-tide", class extends HTMLElement {})
-    await løfte
+    const promise = whenUpgraded(element)
+    customElements.define("lt-registered-in-time", class extends HTMLElement {})
+    await promise
     vi.advanceTimersByTime(3000)
 
-    expect(advarsel).not.toHaveBeenCalled()
+    expect(warning).not.toHaveBeenCalled()
   })
 })

@@ -11,45 +11,47 @@ import "./components/css/paragraph/paragraph.css"
 import "./components/standalone/toast/toast.css"
 
 /**
- * At en temagrense gir alt under seg temaet, ikke bare fargetokenene.
+ * A theme boundary gives everything below it the theme, not just the colour
+ * tokens.
  *
- * `mount()` setter sidens flate på `body`, og skjulte dermed at en
- * `<div data-theme="dark">` sto gjennomsiktig. Testene her bygger siden selv,
- * slik «Kom i gang» sier en konsument skal gjøre det.
+ * `mount()` puts the page surface on `body`, and so hid that a
+ * `<div data-theme="dark">` was transparent. The tests here build the page
+ * themselves, the way "Getting started" tells a consumer to.
  */
 
-function kontrast(a: string, b: string): number {
+function contrast(a: string, b: string): number {
   return contrastRatio(rgb(a), rgb(b))
 }
 
-/** Den første bakgrunnen som ikke er gjennomsiktig, oppover fra elementet. */
-function flaten(element: Element | null): string {
+/** The first background that is not transparent, going up from the element. */
+function surfaceOf(element: Element | null): string {
   let node = element
   while (node) {
-    const bakgrunn = getComputedStyle(node).backgroundColor
-    if (rgb(bakgrunn).a > 0) return bakgrunn
+    const background = getComputedStyle(node).backgroundColor
+    if (rgb(background).a > 0) return background
     node = node.parentElement
   }
   return "rgb(255, 255, 255)"
 }
 
 /**
- * Fokusringen slik den tegnes inne i et element, uten at noe får fokus.
+ * The focus ring as it is drawn inside an element, without anything getting
+ * focus.
  *
- * `userEvent.tab()` sto her, men i Firefox kom fokus ikke alltid fram når
- * flere testfiler kjørte samtidig. Det som testes er tokenet der knappen
- * står, så en prøve med samme `outline` holder.
+ * `userEvent.tab()` was used here, but in Firefox focus did not always arrive
+ * when several test files ran at once. What is tested is the token where the
+ * button sits, so a probe with the same `outline` is enough.
  */
-function ringen(inni: Element): string {
-  const prove = document.createElement("span")
-  prove.style.outline = "var(--lt-focus-ring)"
-  inni.append(prove)
-  const color = getComputedStyle(prove).outlineColor
-  prove.remove()
+function ringIn(inside: Element): string {
+  const probe = document.createElement("span")
+  probe.style.outline = "var(--lt-focus-ring)"
+  inside.append(probe)
+  const color = getComputedStyle(probe).outlineColor
+  probe.remove()
   return color
 }
 
-function side(html: string) {
+function page(html: string) {
   document.body.style.background = "var(--lt-color-neutral-canvas)"
   document.body.style.color = "var(--lt-color-neutral-text)"
   document.body.innerHTML = html
@@ -61,112 +63,115 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-theme")
 })
 
-describe("en temagrense", () => {
-  it("gir en mørk seksjon på en lys side mørk flate og lesbar tekst", () => {
-    side(`
-      <div data-theme="dark" id="seksjon">
-        <p class="lt-paragraph" id="avsnitt">Tekst</p>
-        Tekst uten klasse
+describe("a theme boundary", () => {
+  it("gives a dark section on a light page a dark surface and readable text", () => {
+    page(`
+      <div data-theme="dark" id="section">
+        <p class="lt-paragraph" id="paragraph">Text</p>
+        Text without a class
       </div>`)
-    const seksjon = document.getElementById("seksjon") as HTMLElement
-    const avsnitt = document.getElementById("avsnitt") as HTMLElement
+    const section = document.getElementById("section") as HTMLElement
+    const paragraph = document.getElementById("paragraph") as HTMLElement
 
-    // Før var seksjonen gjennomsiktig, og avsnittet 1,23:1 mot sidens hvite.
-    expect(getComputedStyle(seksjon).backgroundColor).toBe(
+    // The section used to be transparent, and the paragraph 1.23:1 against the page's white.
+    expect(getComputedStyle(section).backgroundColor).toBe(
       color("--lt-color-neutral-canvas", "dark"),
     )
     expect(
-      kontrast(getComputedStyle(avsnitt).color, flaten(avsnitt)),
+      contrast(getComputedStyle(paragraph).color, surfaceOf(paragraph)),
     ).toBeGreaterThanOrEqual(4.5)
     expect(
-      kontrast(getComputedStyle(seksjon).color, flaten(seksjon)),
+      contrast(getComputedStyle(section).color, surfaceOf(section)),
     ).toBeGreaterThanOrEqual(4.5)
   })
 
-  it("lar en komponent med data-theme beholde sin egen flate", () => {
-    side(
-      `<div data-theme="dark" class="lt-card" data-variant="filled" id="kort">Kort</div>`,
+  it("lets a component with data-theme keep its own surface", () => {
+    page(
+      `<div data-theme="dark" class="lt-card" data-variant="filled" id="card">Card</div>`,
     )
-    const kort = document.getElementById("kort") as HTMLElement
+    const card = document.getElementById("card") as HTMLElement
 
-    expect(getComputedStyle(kort).backgroundColor).toBe(
+    expect(getComputedStyle(card).backgroundColor).toBe(
       color("--lt-color-neutral-surface", "dark"),
     )
   })
 
-  it("maler ikke roten", () => {
-    // En bakgrunn på `<html>` stopper sidens egen `body`-bakgrunn fra å fylle
-    // vinduet. Pakken kan være gjest på en side den ikke eier.
+  it("does not paint the root", () => {
+    // A background on `<html>` stops the page's own `body` background from
+    // filling the window. The package can be a guest on a page it does not own.
     document.documentElement.setAttribute("data-theme", "dark")
-    side("<p>Tekst</p>")
+    page("<p>Text</p>")
 
     expect(getComputedStyle(document.documentElement).backgroundColor).toBe(
       "rgba(0, 0, 0, 0)",
     )
   })
 
-  it("gir ikke meldingskolonnen en flate", () => {
-    side(`<lt-toast data-theme="dark" id="meldinger"></lt-toast>`)
+  it("does not give the message column a surface", () => {
+    page(`<lt-toast data-theme="dark" id="messages"></lt-toast>`)
 
     expect(
-      getComputedStyle(document.getElementById("meldinger") as Element)
+      getComputedStyle(document.getElementById("messages") as Element)
         .backgroundColor,
     ).toBe("rgba(0, 0, 0, 0)")
   })
 
-  it("rører ikke et data-theme uten temablokk", () => {
-    side(`<div data-theme="auto" id="auto">Tekst</div>`)
+  it("leaves a data-theme without a theme block alone", () => {
+    page(`<div data-theme="auto" id="auto">Text</div>`)
     const auto = document.getElementById("auto") as HTMLElement
 
     expect(getComputedStyle(auto).backgroundColor).toBe("rgba(0, 0, 0, 0)")
   })
 
-  it("gir fokusringen og avslått tilstand temaet til seksjonen", async () => {
-    side(`
+  it("gives the focus ring and the disabled state the theme of the section", async () => {
+    page(`
       <div data-theme="dark">
-        <button class="lt-button" id="knapp" type="button">Knapp</button>
-        <button class="lt-button" id="av" type="button" disabled>Av</button>
+        <button class="lt-button" id="button" type="button">Button</button>
+        <button class="lt-button" id="off" type="button" disabled>Off</button>
       </div>`)
-    const knapp = document.getElementById("knapp") as HTMLElement
+    const button = document.getElementById("button") as HTMLElement
 
-    // Før arvet seksjonen ringen og den avslåtte flaten ferdig utregnet fra
-    // `:root`, altså lyst tema: 2,4:1 mot den mørke flaten.
-    expect(ringen(knapp)).toBe(color("--lt-color-accent-border-strong", "dark"))
+    // The section used to inherit the ring and the disabled surface already
+    // computed from `:root`, that is the light theme: 2.4:1 against the dark
+    // surface.
+    expect(ringIn(button)).toBe(
+      color("--lt-color-accent-border-strong", "dark"),
+    )
     expect(
-      getComputedStyle(document.getElementById("av") as HTMLElement)
+      getComputedStyle(document.getElementById("off") as HTMLElement)
         .backgroundColor,
     ).toBe(color("--lt-color-neutral-raised", "dark"))
   })
 
-  it("gir en lys seksjon på en mørk side den lyse fokusringen", async () => {
+  it("gives a light section on a dark page the light focus ring", async () => {
     document.documentElement.setAttribute("data-theme", "dark")
-    side(`
+    page(`
       <div data-theme="light">
-        <button class="lt-button" id="knapp" type="button">Knapp</button>
+        <button class="lt-button" id="button" type="button">Button</button>
       </div>`)
-    expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
+    expect(ringIn(document.getElementById("button") as HTMLElement)).toBe(
       color("--lt-color-accent-border-strong", "light"),
     )
   })
 
-  it("lar fokusringen følge et generert tema i en seksjon", async () => {
-    const stil = document.createElement("style")
-    stil.textContent = `
+  it("lets the focus ring follow a generated theme in a section", async () => {
+    const style = document.createElement("style")
+    style.textContent = `
       @layer lotek, lotek-theme;
       @layer lotek-theme {
         [data-theme="dark"] { --lt-color-accent-border-strong: #ff0000; }
       }`
-    document.head.append(stil)
+    document.head.append(style)
     try {
-      side(`
+      page(`
         <div data-theme="dark">
-          <button class="lt-button" id="knapp" type="button">Knapp</button>
+          <button class="lt-button" id="button" type="button">Button</button>
         </div>`)
-      expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
+      expect(ringIn(document.getElementById("button") as HTMLElement)).toBe(
         "rgb(255, 0, 0)",
       )
     } finally {
-      stil.remove()
+      style.remove()
     }
   })
 })

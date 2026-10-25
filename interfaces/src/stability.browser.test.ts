@@ -11,38 +11,39 @@ import { tabs } from "./components/frame/tabs/tabs"
 import { mount, waitForPaint } from "./testing/a11y"
 
 /**
- * At en komponent ikke skriver i ring.
+ * That a component does not write in a loop.
  *
- * Komponentene observerer de attributtene de selv setter, for å kunne sette
- * dem tilbake etter en patch. Skriver en av dem en verdi som alt står der,
- * teller det som en endring, observatøren kaller seg selv, og den skriver på
- * nytt. Testkjøringen henger da uten feilmelding, og det er den verste måten
- * å feile på: ingen stakksporing, ingen påstand, bare stillhet.
+ * The components observe the attributes they set themselves, so they can set
+ * them back after a patch. If one of them writes a value that is already
+ * there, it counts as a change, the observer calls itself, and it writes
+ * again. The test run then hangs without an error message, and that is the
+ * worst way to fail: no stack trace, no assertion, only silence.
  *
- * Testen her gjør det brukeren gjør, lar det falle til ro, og teller så
- * mutasjoner over noen tegninger. Står tallet på null, har komponenten
- * sluttet å skrive.
+ * This test does what the user does, lets it settle, and then counts
+ * mutations over a few paints. If the number is zero, the component has
+ * stopped writing.
  *
- * Den fanger en komponent som skriver litt for mye, men ikke en som skriver
- * i ring: da henger kjøringen her også. Selve regelen håndheves derfor av
- * `scripts/check-writes.ts`, som leser kilden og feiler på sekunder.
+ * It catches a component that writes a little too much, but not one that
+ * writes in a loop: then the run hangs here too. The rule itself is therefore
+ * enforced by `scripts/check-writes.ts`, which reads the source and fails in
+ * seconds.
  */
 
-const attr = (verdier: Record<string, unknown>) =>
-  Object.entries(verdier)
-    .map(([navn, verdi]) => (verdi === true ? navn : `${navn}="${verdi}"`))
+const attr = (values: Record<string, unknown>) =>
+  Object.entries(values)
+    .map(([name, value]) => (value === true ? name : `${name}="${value}"`))
     .join(" ")
 
-/** Teller mutasjoner i et undertre over fire tegninger. */
-async function mutasjonerEtterRo(root: Element): Promise<number> {
+/** Counts mutations in a subtree over four paints. */
+async function mutationsAfterSettling(root: Element): Promise<number> {
   await waitForPaint()
   await waitForPaint()
 
-  let antall = 0
-  const observatør = new MutationObserver((poster) => {
-    antall += poster.length
+  let count = 0
+  const observer = new MutationObserver((records) => {
+    count += records.length
   })
-  observatør.observe(root, {
+  observer.observe(root, {
     childList: true,
     subtree: true,
     attributes: true,
@@ -50,11 +51,11 @@ async function mutasjonerEtterRo(root: Element): Promise<number> {
   })
 
   for (let n = 0; n < 4; n += 1) await waitForPaint()
-  observatør.disconnect()
-  return antall
+  observer.disconnect()
+  return count
 }
 
-describe("komponentene faller til ro", () => {
+describe("the components settle", () => {
   beforeAll(() => {
     defineLtField()
     defineLtTabs()
@@ -63,106 +64,106 @@ describe("komponentene faller til ro", () => {
     defineLtDialog()
   })
 
-  it("feltet, etter at koblingen er satt", async () => {
-    const flate = mount(`
+  it("the field, after the wiring is set", async () => {
+    const surface = mount(`
       <lt-field>
-        <label class="lt-label" for="ro-epost" data-required="symbol">E-post</label>
-        <input class="lt-input" id="ro-epost" type="email" />
-        <p class="lt-help-text">Vi sender aldri spam.</p>
-        <p class="lt-error-text">Skriv en gyldig adresse.</p>
+        <label class="lt-label" for="settle-email" data-required="symbol">Email</label>
+        <input class="lt-input" id="settle-email" type="email" />
+        <p class="lt-help-text">We never send spam.</p>
+        <p class="lt-error-text">Enter a valid address.</p>
       </lt-field>
     `)
 
-    expect(await mutasjonerEtterRo(flate)).toBe(0)
+    expect(await mutationsAfterSettling(surface)).toBe(0)
   })
 
-  it("fanene, etter at brukeren har valgt", async () => {
-    const FANER = tabs({
-      id: "sak",
-      keys: ["oversikt", "vedlegg"],
-      label: "Saken",
+  it("the tabs, after the user has chosen", async () => {
+    const TABS = tabs({
+      id: "case",
+      keys: ["overview", "attachments"],
+      label: "The case",
     })
-    const flate = mount(`
+    const surface = mount(`
       <lt-tabs>
-        <ul ${attr(FANER.list)}>
-          <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
-          <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
+        <ul ${attr(TABS.list)}>
+          <li><a ${attr(TABS.tabs[0])}>Overview</a></li>
+          <li><a ${attr(TABS.tabs[1])}>Attachments</a></li>
         </ul>
-        <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
-        <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
+        <section ${attr(TABS.panels[0])}><h2 ${attr(TABS.headings[0])}>Overview</h2>Summary</section>
+        <section ${attr(TABS.panels[1])}><h2 ${attr(TABS.headings[1])}>Attachments</h2>Files</section>
       </lt-tabs>
     `)
     await waitForPaint()
 
-    const lenker = [...flate.querySelectorAll("[role='tab']")] as HTMLElement[]
-    lenker[1].click()
+    const links = [...surface.querySelectorAll("[role='tab']")] as HTMLElement[]
+    links[1].click()
 
-    expect(await mutasjonerEtterRo(flate)).toBe(0)
+    expect(await mutationsAfterSettling(surface)).toBe(0)
   })
 
-  it("sprettoppvinduet, etter at det er åpnet", async () => {
-    const SPRETT = popover({ id: "meny" })
-    const flate = mount(`
-      <lt-popover ${attr(SPRETT.host)}>
-        <button ${attr(SPRETT.trigger)} class="lt-button">Handlinger</button>
-        <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
+  it("the popover, after it is opened", async () => {
+    const POPOVER = popover({ id: "menu" })
+    const surface = mount(`
+      <lt-popover ${attr(POPOVER.host)}>
+        <button ${attr(POPOVER.trigger)} class="lt-button">Actions</button>
+        <ul ${attr(POPOVER.panel)}><li>Archive</li></ul>
       </lt-popover>
     `)
     await waitForPaint()
 
-    const vindu = flate.querySelector("lt-popover") as HTMLElement & {
+    const host = surface.querySelector("lt-popover") as HTMLElement & {
       show(): void
     }
-    vindu.show()
+    host.show()
 
-    expect(await mutasjonerEtterRo(flate)).toBe(0)
+    expect(await mutationsAfterSettling(surface)).toBe(0)
   })
 
-  it("forslagsfeltet, etter at lista er åpnet og et alternativ markert", async () => {
-    const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
-    const flate = mount(`
+  it("the suggestion field, after the list is opened and an option highlighted", async () => {
+    const SUGGESTION = suggestion({ id: "municipality", keys: ["a", "b"] })
+    const surface = mount(`
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune" />
-          <ul ${attr(FORSLAG.list)}>
-            <li ${attr(FORSLAG.options[0])}>Bergen</li>
-            <li ${attr(FORSLAG.options[1])}>Bodø</li>
+          <input ${attr(SUGGESTION.control)} name="municipality" />
+          <ul ${attr(SUGGESTION.list)}>
+            <li ${attr(SUGGESTION.options[0])}>Bergen</li>
+            <li ${attr(SUGGESTION.options[1])}>Bodø</li>
           </ul>
-          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
-          <span ${attr(FORSLAG.status)}></span>
+          <p ${attr(SUGGESTION.empty)}>No matches</p>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
       </lt-suggestion>
     `)
     await waitForPaint()
 
-    const kontroll = flate.querySelector("input") as HTMLInputElement
-    kontroll.focus()
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
-    kontroll.dispatchEvent(
+    const control = surface.querySelector("input") as HTMLInputElement
+    control.focus()
+    control.dispatchEvent(new Event("input", { bubbles: true }))
+    control.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
 
-    expect(await mutasjonerEtterRo(flate)).toBe(0)
+    expect(await mutationsAfterSettling(surface)).toBe(0)
   })
 
-  it("dialogen, etter at den er åpnet", async () => {
-    const BOKS = dialog({ titleId: "tittel", open: true })
-    const flate = mount(`
-      <lt-dialog ${attr(BOKS.host)}>
-        <dialog ${attr(BOKS.dialog)}>
-          <h2 ${attr(BOKS.title)}>Vedtaket er registrert</h2>
-          <div ${attr(BOKS.body)}><p>Saken er ferdigbehandlet.</p></div>
-          <form method="dialog" ${attr(BOKS.footer)}>
-            <button class="lt-button" value="lukk">Lukk</button>
+  it("the dialog, after it is opened", async () => {
+    const BOX = dialog({ titleId: "title", open: true })
+    const surface = mount(`
+      <lt-dialog ${attr(BOX.host)}>
+        <dialog ${attr(BOX.dialog)}>
+          <h2 ${attr(BOX.title)}>The decision is registered</h2>
+          <div ${attr(BOX.body)}><p>The case is closed.</p></div>
+          <form method="dialog" ${attr(BOX.footer)}>
+            <button class="lt-button" value="close">Close</button>
           </form>
         </dialog>
       </lt-dialog>
     `)
 
-    expect(await mutasjonerEtterRo(flate)).toBe(0)
+    expect(await mutationsAfterSettling(surface)).toBe(0)
 
-    const box = flate.querySelector("dialog") as HTMLDialogElement
-    box.close("lukk")
+    const box = surface.querySelector("dialog") as HTMLDialogElement
+    box.close("close")
   })
 })

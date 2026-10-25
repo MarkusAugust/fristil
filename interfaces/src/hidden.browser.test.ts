@@ -6,19 +6,19 @@ import { elements } from "./vocabulary/elements"
 
 import "./tokens/tokens.css"
 
-// Alle komponentstilarkene, slik `lotek.css` har dem.
+// Every component stylesheet, as `lotek.css` has them.
 import.meta.glob("./components/**/*.css", { eager: true })
 
 /**
- * At `hidden` skjuler, også en komponent som setter `display` selv.
+ * That `hidden` hides, also on a component that sets `display` itself.
  *
- * Forfatterstil i et hvilket som helst lag slår nettleserens
- * `[hidden] { display: none }`, og bare tre komponenter hadde en egen regel.
- * `<div class="lt-alert" hidden>` sto synlig, og det samme gjorde 41 andre
- * klasser og åtte av elementene.
+ * Author styles in any layer beat the browser's `[hidden] { display: none }`,
+ * and only three components had a rule of their own.
+ * `<div class="lt-alert" hidden>` was visible, and so were 41 other classes
+ * and eight of the elements.
  */
 
-const TAGGER = [
+const TAGS = [
   "div",
   "span",
   "p",
@@ -40,8 +40,8 @@ const TAGGER = [
   "dialog",
 ]
 
-/** Reglene som gir et barn uten klasse `display`. Hver er dekket av `BARN`. */
-const BARN_MED_DISPLAY = [
+/** The rules that give a child without a class `display`. Each is covered by `CHILDREN`. */
+const CHILDREN_WITH_DISPLAY = [
   ".lt-accordion summary",
   ".lt-breadcrumbs li",
   ".lt-file-upload-list li",
@@ -52,184 +52,183 @@ const BARN_MED_DISPLAY = [
   ".lt-tabs__list a",
 ]
 
-/** Velgerlisten delt på komma, men ikke på dem inni parenteser og klammer. */
-function utenforParenteser(tekst: string): string[] {
-  const deler: string[] = []
-  let dybde = 0
+/** The selector list split on commas, but not on those inside parentheses and brackets. */
+function outsideParentheses(text: string): string[] {
+  const parts: string[] = []
+  let depth = 0
   let start = 0
-  for (let i = 0; i < tekst.length; i++) {
-    if ("([".includes(tekst[i])) dybde++
-    else if (")]".includes(tekst[i])) dybde--
-    else if (tekst[i] === "," && dybde === 0) {
-      deler.push(tekst.slice(start, i))
+  for (let i = 0; i < text.length; i++) {
+    if ("([".includes(text[i])) depth++
+    else if (")]".includes(text[i])) depth--
+    else if (text[i] === "," && depth === 0) {
+      parts.push(text.slice(start, i))
       start = i + 1
     }
   }
-  deler.push(tekst.slice(start))
-  return deler
+  parts.push(text.slice(start))
+  return parts
 }
 
 /**
- * Velgeren uten det som står i klammer og parenteser.
+ * The selector without what is inside brackets and parentheses.
  *
- * Mellomrommet i `[hidden="until-found" i]` er ingen etterkommerselektor, og
- * det som står i `:is(…)` hører ikke til selve velgeren.
+ * The space in `[hidden="until-found" i]` is not a descendant combinator, and
+ * what is inside `:is(…)` does not belong to the selector itself.
  */
-function utenGrupper(velger: string): string {
-  let forrige = ""
-  let ut = velger
-  while (ut !== forrige) {
-    forrige = ut
-    ut = ut.replace(/\[[^\]]*\]|\([^()]*\)/g, "")
+function withoutGroups(selector: string): string {
+  let previous = ""
+  let out = selector
+  while (out !== previous) {
+    previous = out
+    out = out.replace(/\[[^\]]*\]|\([^()]*\)/g, "")
   }
-  return ut
+  return out
 }
 
 afterEach(() => {
   document.body.replaceChildren()
 })
 
-function synlig(element: HTMLElement): boolean {
+function isVisible(element: HTMLElement): boolean {
   document.body.append(element)
-  const synlig = getComputedStyle(element).display !== "none"
+  const visible = getComputedStyle(element).display !== "none"
   element.remove()
-  return synlig
+  return visible
 }
 
 describe("hidden", () => {
-  it("skjuler hver klasse, med hver variant", () => {
-    const synlige = new Set<string>()
-    for (const [klasse, info] of Object.entries(classes)) {
-      const varianter: Array<[string, string] | null> = [null]
-      for (const [navn, attributt] of Object.entries(info.attributes)) {
-        for (const verdi of attributt.values) {
-          varianter.push([navn, verdi])
+  it("hides every class, with every variant", () => {
+    const visibleOnes = new Set<string>()
+    for (const [className, info] of Object.entries(classes)) {
+      const variants: Array<[string, string] | null> = [null]
+      for (const [name, attribute] of Object.entries(info.attributes)) {
+        for (const value of attribute.values) {
+          variants.push([name, value])
         }
-        if (attributt.flag) varianter.push([navn, ""])
+        if (attribute.flag) variants.push([name, ""])
       }
-      for (const tagg of TAGGER) {
-        for (const variant of varianter) {
-          const element = document.createElement(tagg)
-          element.className = klasse
+      for (const tag of TAGS) {
+        for (const variant of variants) {
+          const element = document.createElement(tag)
+          element.className = className
           if (variant) element.setAttribute(...variant)
           element.hidden = true
-          if (synlig(element)) synlige.add(`${tagg}.${klasse}`)
+          if (isVisible(element)) visibleOnes.add(`${tag}.${className}`)
         }
       }
     }
 
-    expect([...synlige]).toEqual([])
+    expect([...visibleOnes]).toEqual([])
   })
 
-  it("skjuler hvert element", () => {
-    const synlige = Object.keys(elements).filter((tagg) => {
-      const element = document.createElement(tagg)
+  it("hides every element", () => {
+    const visibleOnes = Object.keys(elements).filter((tag) => {
+      const element = document.createElement(tag)
       element.hidden = true
-      return synlig(element)
+      return isVisible(element)
     })
 
-    expect(synlige).toEqual([])
+    expect(visibleOnes).toEqual([])
   })
 
-  it("skjuler barn som får display fra komponenten", () => {
-    // Barna har ingen klasse, og får `display` fra komponenten. To av dem med
-    // spesifisitet (0,2,1).
+  it("hides children that get display from the component", () => {
+    // The children have no class, and get `display` from the component. Two of
+    // them with specificity (0,2,1).
     document.body.innerHTML = `
       <select class="lt-select" data-picker="styled">
-        <option id="valg" hidden>Skjult</option>
-        <option>Synlig</option>
+        <option id="option" hidden>Hidden</option>
+        <option>Visible</option>
       </select>
       <nav class="lt-pagination">
-        <span id="side" aria-disabled="true" hidden>Forrige</span>
+        <span id="page" aria-disabled="true" hidden>Previous</span>
       </nav>
-      <nav class="lt-breadcrumbs"><ol><li id="ledd" hidden>Mellom</li></ol></nav>
-      <ul class="lt-file-upload-list"><li id="fil" hidden>vedlegg.pdf</li></ul>
-      <details class="lt-accordion"><summary id="topp" hidden>Spørsmål</summary></details>
-      <ul class="lt-tabs__list"><li><a id="fane" href="#vedlegg" hidden>Vedlegg</a></li></ul>`
+      <nav class="lt-breadcrumbs"><ol><li id="crumb" hidden>Between</li></ol></nav>
+      <ul class="lt-file-upload-list"><li id="file" hidden>attachment.pdf</li></ul>
+      <details class="lt-accordion"><summary id="summary" hidden>Question</summary></details>
+      <ul class="lt-tabs__list"><li><a id="tab" href="#attachments" hidden>Attachments</a></li></ul>`
 
-    for (const id of ["valg", "side", "ledd", "fil", "topp", "fane"]) {
+    for (const id of ["option", "page", "crumb", "file", "summary", "tab"]) {
       const element = document.getElementById(id) as HTMLElement
       expect(getComputedStyle(element).display, id).toBe("none")
     }
   })
 
-  it("kjenner hvert barn uten klasse som får display fra en komponent", () => {
-    // Barn uten egen `lt-`-klasse må stå i `BARN` i generate-tokens.ts.
-    // Testen finner reglene selv, så et nytt barn feiler her og ikke hos
-    // brukeren.
-    const funnet = new Set<string>()
-    const besøk = (regler: CSSRuleList) => {
-      for (const regel of regler) {
-        if ("cssRules" in regel && !(regel instanceof CSSStyleRule)) {
-          besøk((regel as CSSGroupingRule).cssRules)
+  it("knows every child without a class that gets display from a component", () => {
+    // Children without an `lt-` class of their own must be in `CHILDREN` in
+    // generate-tokens.ts. The test finds the rules itself, so a new child
+    // fails here and not for the user.
+    const found = new Set<string>()
+    const visit = (rules: CSSRuleList) => {
+      for (const rule of rules) {
+        if ("cssRules" in rule && !(rule instanceof CSSStyleRule)) {
+          visit((rule as CSSGroupingRule).cssRules)
           continue
         }
-        if (!(regel instanceof CSSStyleRule)) continue
-        const display = regel.style.getPropertyValue("display")
+        if (!(rule instanceof CSSStyleRule)) continue
+        const display = rule.style.getPropertyValue("display")
         if (!display || display === "none") continue
-        for (const velger of utenforParenteser(regel.selectorText)) {
-          const siste =
-            utenGrupper(velger.trim())
+        for (const selector of outsideParentheses(rule.selectorText)) {
+          const last =
+            withoutGroups(selector.trim())
               .split(/\s*[\s>+~]\s*/)
               .pop() ?? ""
-          if (/(^|[.:(])lt-|^lt-/.test(siste) || siste.includes(".lt-"))
-            continue
-          funnet.add(velger.trim().replace(/\s+/g, " "))
+          if (/(^|[.:(])lt-|^lt-/.test(last) || last.includes(".lt-")) continue
+          found.add(selector.trim().replace(/\s+/g, " "))
         }
       }
     }
-    for (const ark of document.styleSheets) besøk(ark.cssRules)
+    for (const sheet of document.styleSheets) visit(sheet.cssRules)
 
-    expect([...funnet].sort()).toEqual(BARN_MED_DISPLAY)
+    expect([...found].sort()).toEqual(CHILDREN_WITH_DISPLAY)
   })
 
-  it("skjuler en klasse med tab eller linjeskift foran", () => {
+  it("hides a class preceded by a tab or a line break", () => {
     document.body.innerHTML = `
-      <div class="mb-4\tfs-alert" id="tab" hidden></div>
-      <div class="mb-4\nfs-alert" id="linje" hidden></div>`
+      <div class="mb-4\tlt-alert" id="tab" hidden></div>
+      <div class="mb-4\nlt-alert" id="newline" hidden></div>`
 
-    for (const id of ["tab", "linje"]) {
+    for (const id of ["tab", "newline"]) {
       const element = document.getElementById(id) as HTMLElement
       expect(getComputedStyle(element).display, id).toBe("none")
     }
   })
 
-  it("rører ikke Bootstraps lt-1 til lt-6", () => {
-    const stil = document.createElement("style")
-    stil.textContent = ".lt-1[hidden] { display: block; }"
-    document.head.append(stil)
+  it("leaves alone a class that only shares the prefix, such as lt-1", () => {
+    const style = document.createElement("style")
+    style.textContent = ".lt-1[hidden] { display: block; }"
+    document.head.append(style)
     try {
-      document.body.innerHTML = '<h1 class="lt-1" id="stor" hidden>Tittel</h1>'
+      document.body.innerHTML = '<h1 class="lt-1" id="large" hidden>Title</h1>'
       expect(
-        getComputedStyle(document.getElementById("stor") as HTMLElement)
+        getComputedStyle(document.getElementById("large") as HTMLElement)
           .display,
       ).toBe("block")
     } finally {
-      stil.remove()
+      style.remove()
     }
   })
 
-  it("rører ikke en klasse som bare inneholder lt-", () => {
-    const stil = document.createElement("style")
-    stil.textContent = ".gifs-grid[hidden] { display: grid; }"
-    document.head.append(stil)
+  it("leaves alone a class that merely contains lt-", () => {
+    const style = document.createElement("style")
+    style.textContent = ".salt-grid[hidden] { display: grid; }"
+    document.head.append(style)
     try {
-      document.body.innerHTML = '<div class="gifs-grid" id="grid" hidden></div>'
+      document.body.innerHTML = '<div class="salt-grid" id="grid" hidden></div>'
       expect(
         getComputedStyle(document.getElementById("grid") as HTMLElement)
           .display,
       ).toBe("grid")
     } finally {
-      stil.remove()
+      style.remove()
     }
   })
 
-  it("lar until-found stå, så nettleseren kan søke i innholdet", () => {
+  it("leaves until-found alone, so the browser can search the content", () => {
     document.body.innerHTML =
-      '<div class="lt-card" id="kort" hidden="until-found">Tekst</div>'
+      '<div class="lt-card" id="card" hidden="until-found">Text</div>'
 
     expect(
-      getComputedStyle(document.getElementById("kort") as HTMLElement).display,
+      getComputedStyle(document.getElementById("card") as HTMLElement).display,
     ).not.toBe("none")
   })
 })

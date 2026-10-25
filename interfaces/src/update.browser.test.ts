@@ -30,9 +30,9 @@
  */
 
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import feltSide from "../../documentation/src/content/docs/components/field.mdx?raw"
-import sprettSide from "../../documentation/src/content/docs/components/popover.mdx?raw"
-import forslagSide from "../../documentation/src/content/docs/components/suggestion.mdx?raw"
+import fieldPage from "../../documentation/src/content/docs/components/field.mdx?raw"
+import popoverPage from "../../documentation/src/content/docs/components/popover.mdx?raw"
+import suggestionPage from "../../documentation/src/content/docs/components/suggestion.mdx?raw"
 import checkboxCss from "./components/css/checkbox/checkbox.css?inline"
 import errorTextCss from "./components/css/error-text/error-text.css?inline"
 import helpTextCss from "./components/css/help-text/help-text.css?inline"
@@ -49,44 +49,44 @@ import tokensCss from "./tokens/tokens.css?inline"
 
 import "./testing/datastar/datastar-v1.0.4.js"
 
-type Maate = "Datastar" | "idiomorph" | "innerHTML"
-const MAATER: Maate[] = ["Datastar", "idiomorph", "innerHTML"]
+type Way = "Datastar" | "idiomorph" | "innerHTML"
+const WAYS: Way[] = ["Datastar", "idiomorph", "innerHTML"]
 
 /**
  * The recipe in the "Plain HTML" tab on a component page: the first html
  * block containing the element, without the scripts.
  */
-function oppskrift(side: string, tag: string): string {
-  const fane = side.slice(side.indexOf('<TabItem label="Plain HTML">'))
-  const blokker = [...fane.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
-  const blokk = blokker.find((b) => b.includes(`<${tag}`))
-  if (!blokk) throw new Error(`found no recipe with <${tag}> on the page`)
-  return blokk.replace(/<script[\s\S]*?<\/script>/g, "")
+function recipe(page: string, tag: string): string {
+  const tab = page.slice(page.indexOf('<TabItem label="Plain HTML">'))
+  const blocks = [...tab.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
+  const block = blocks.find((b) => b.includes(`<${tag}`))
+  if (!block) throw new Error(`found no recipe with <${tag}> on the page`)
+  return block.replace(/<script[\s\S]*?<\/script>/g, "")
 }
 
-const FELT = oppskrift(feltSide, "lt-field")
-const FORSLAG = oppskrift(forslagSide, "lt-suggestion")
+const FIELD = recipe(fieldPage, "lt-field")
+const SUGGESTION = recipe(suggestionPage, "lt-suggestion")
 /** The "Text and code" recipe, with the hidden field for the code. */
-const KODE = oppskrift(forslagSide, 'input class="lt-suggestion__value"')
+const CODE = recipe(suggestionPage, 'input class="lt-suggestion__value"')
 
 /** The recipe with the label wrapping the field, and no id. */
-const FELT_RUNDT = `
+const FIELD_WRAPPED = `
   <lt-field>
-    <label class="lt-label">Fullt navn <input class="lt-input" name="navn" type="text"></label>
-    <p class="lt-help-text">Slik det står i passet.</p>
+    <label class="lt-label">Full name <input class="lt-input" name="name" type="text"></label>
+    <p class="lt-help-text">As it appears in your passport.</p>
   </lt-field>`
 
-const FORSLAG_RUNDT = `
+const SUGGESTION_WRAPPED = `
   <lt-suggestion>
-    <label class="lt-label">Kommune <input class="lt-input" name="kommune" type="text"></label>
-    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
+    <label class="lt-label">City <input class="lt-input" name="city" type="text"></label>
+    <ul class="lt-suggestion__list"><li>Cardiff</li><li>Leeds</li><li>York</li></ul>
     <span class="lt-sr-only" role="status"></span>
   </lt-suggestion>`
 
-const AVKRYSSING = (checked: boolean) => `
+const CHECKBOX = (checked: boolean) => `
   <div>
-    <input class="lt-checkbox" type="checkbox" id="vilkar" name="vilkar"${checked ? " checked" : ""}>
-    <label class="lt-label" for="vilkar">Jeg godtar vilkårene</label>
+    <input class="lt-checkbox" type="checkbox" id="terms" name="terms"${checked ? " checked" : ""}>
+    <label class="lt-label" for="terms">I accept the terms</label>
   </div>`
 
 /**
@@ -94,41 +94,41 @@ const AVKRYSSING = (checked: boolean) => `
  * carries a marker, so each case can see that the patch actually arrived and
  * not just that nothing happened.
  */
-const omraade = (innhold: string, oppdatert = false) =>
-  `<div id="omraade">${oppdatert ? "<span hidden data-oppdatert></span>" : ""}${innhold}</div>`
+const region = (content: string, updated = false) =>
+  `<div id="region">${updated ? "<span hidden data-updated></span>" : ""}${content}</div>`
 
-async function oppdater(maate: Maate, innhold: string): Promise<void> {
-  const root = document.getElementById("omraade") as HTMLElement
+async function update(way: Way, content: string): Promise<void> {
+  const root = document.getElementById("region") as HTMLElement
   // The marker from the previous update is removed, so this one has to bring it.
-  root.querySelector("[data-oppdatert]")?.remove()
-  if (maate === "Datastar") {
+  root.querySelector("[data-updated]")?.remove()
+  if (way === "Datastar") {
     // Like a `datastar-patch-elements` without a selector: `outer` on the id.
     document.dispatchEvent(
       new CustomEvent("datastar-fetch", {
         detail: {
           type: "datastar-patch-elements",
           el: document.body,
-          argsRaw: { elements: omraade(innhold, true) },
+          argsRaw: { elements: region(content, true) },
         },
       }),
     )
-  } else if (maate === "idiomorph") {
-    Idiomorph.morph(root, omraade(innhold, true), {
+  } else if (way === "idiomorph") {
+    Idiomorph.morph(root, region(content, true), {
       morphStyle: "outerHTML",
       ignoreActiveValue: true,
     })
   } else {
-    root.innerHTML = `<span hidden data-oppdatert></span>${innhold}`
+    root.innerHTML = `<span hidden data-updated></span>${content}`
   }
-  await roSeg()
+  await settle()
   expect(
-    document.querySelector("#omraade [data-oppdatert]"),
-    `the update with ${maate} did not arrive`,
+    document.querySelector("#region [data-updated]"),
+    `the update with ${way} did not arrive`,
   ).not.toBeNull()
 }
 
 /** Waits until the observers have run. */
-async function roSeg() {
+async function settle() {
   await waitForPaint()
   await waitForPaint()
 }
@@ -141,14 +141,14 @@ async function roSeg() {
  * waits just as long and would fail, so the run as a whole cannot pass
  * empty.
  */
-const stille = () => new Promise((r) => setTimeout(r, 300))
+const quiet = () => new Promise((r) => setTimeout(r, 300))
 
-async function mount(innhold: string) {
-  document.body.innerHTML = omraade(innhold)
-  await roSeg()
+async function mount(content: string) {
+  document.body.innerHTML = region(content)
+  await settle()
 }
 
-const felt = () =>
+const field = () =>
   document.querySelector("input:not([type='checkbox'])") as HTMLInputElement
 
 describe("fields and suggestion fields through a server update", () => {
@@ -163,167 +163,167 @@ describe("fields and suggestion fields through a server update", () => {
   })
 
   it("reads the recipes from the component pages", () => {
-    expect(FELT).toContain('for="name"')
-    expect(FELT).toContain('id="name"')
-    expect(FORSLAG).toContain('for="airport"')
-    expect(FORSLAG).toContain('id="airport"')
-    expect(KODE).toContain('data-value="BGO"')
+    expect(FIELD).toContain('for="name"')
+    expect(FIELD).toContain('id="name"')
+    expect(SUGGESTION).toContain('for="airport"')
+    expect(SUGGESTION).toContain('id="airport"')
+    expect(CODE).toContain('data-value="BGO"')
   })
 
-  for (const maate of MAATER) {
-    it(`a chosen suggestion with a code: ${maate}`, async () => {
+  for (const way of WAYS) {
+    it(`a chosen suggestion with a code: ${way}`, async () => {
       // The plan's 6.1: choose a suggestion, then update. The server sends
       // the value field empty; with `innerHTML` it must send both values back.
-      const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-      await mount(KODE)
-      const input = felt()
+      const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
+      await mount(CODE)
+      const input = field()
       input.focus()
       ;(document.querySelector("li") as HTMLElement).click()
-      await roSeg()
-      const kode = () =>
+      await settle()
+      const code = () =>
         document.querySelector(".lt-suggestion__value") as HTMLInputElement
       expect(input.value).toBe("Bergen")
-      expect(kode().value).toBe("BGO")
+      expect(code().value).toBe("BGO")
 
-      await oppdater(
-        maate,
-        maate === "innerHTML"
-          ? KODE.replace('type="text"', 'type="text" value="Bergen"').replace(
+      await update(
+        way,
+        way === "innerHTML"
+          ? CODE.replace('type="text"', 'type="text" value="Bergen"').replace(
               'type="hidden"',
               'type="hidden" value="BGO"',
             )
-          : KODE,
+          : CODE,
       )
 
-      expect(felt().value).toBe("Bergen")
-      expect(kode().value).toBe("BGO")
-      await stille()
-      expect(advarsel).not.toHaveBeenCalled()
+      expect(field().value).toBe("Bergen")
+      expect(code().value).toBe("BGO")
+      await quiet()
+      expect(warning).not.toHaveBeenCalled()
     })
   }
 
-  const TILFELLER = [
+  const CASES = [
     {
-      navn: "field from the recipe",
-      markup: FELT,
-      ledetekst: "Full name",
+      name: "field from the recipe",
+      markup: FIELD,
+      label: "Full name",
       id: "name",
     },
     {
-      navn: "field with the label wrapping it, no id",
-      markup: FELT_RUNDT,
-      ledetekst: "Fullt navn",
+      name: "field with the label wrapping it, no id",
+      markup: FIELD_WRAPPED,
+      label: "Full name",
       id: "",
     },
     {
-      navn: "suggestion field from the recipe",
-      markup: FORSLAG,
-      ledetekst: "Airport",
+      name: "suggestion field from the recipe",
+      markup: SUGGESTION,
+      label: "Airport",
       id: "airport",
     },
     {
-      navn: "suggestion field with the label wrapping it, no id",
-      markup: FORSLAG_RUNDT,
-      ledetekst: "Kommune",
+      name: "suggestion field with the label wrapping it, no id",
+      markup: SUGGESTION_WRAPPED,
+      label: "City",
       id: "",
     },
   ]
 
-  for (const maate of MAATER) {
-    for (const t of TILFELLER) {
-      it(`${t.navn}: ${maate}`, async () => {
-        const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+  for (const way of WAYS) {
+    for (const t of CASES) {
+      it(`${t.name}: ${way}`, async () => {
+        const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
         await mount(t.markup)
-        const foer = felt()
-        foer.focus()
-        foer.value = "Kari"
-        foer.dispatchEvent(new Event("input", { bubbles: true }))
-        await roSeg()
+        const before = field()
+        before.focus()
+        before.value = "Alex"
+        before.dispatchEvent(new Event("input", { bubbles: true }))
+        await settle()
 
-        await oppdater(maate, t.markup)
+        await update(way, t.markup)
 
-        const etter = felt()
-        if (maate === "innerHTML") {
-          expect(etter).not.toBe(foer)
+        const after = field()
+        if (way === "innerHTML") {
+          expect(after).not.toBe(before)
         } else {
-          expect(etter).toBe(foer)
-          expect(etter.value).toBe("Kari")
-          expect(document.activeElement).toBe(etter)
+          expect(after).toBe(before)
+          expect(after.value).toBe("Alex")
+          expect(document.activeElement).toBe(after)
         }
-        expect(etter.id).toBe(t.id)
-        expect(etter.labels?.length).toBe(1)
-        expect(etter.labels?.[0]?.textContent).toContain(t.ledetekst)
-        const hjelp = document.querySelector(".lt-help-text")
-        if (hjelp) expect(etter.getAttribute("aria-describedby")).toBe(hjelp.id)
-        if (etter.closest("lt-suggestion")) {
-          expect(etter.getAttribute("role")).toBe("combobox")
-          expect(etter.getAttribute("aria-controls")).toBe(
+        expect(after.id).toBe(t.id)
+        expect(after.labels?.length).toBe(1)
+        expect(after.labels?.[0]?.textContent).toContain(t.label)
+        const help = document.querySelector(".lt-help-text")
+        if (help) expect(after.getAttribute("aria-describedby")).toBe(help.id)
+        if (after.closest("lt-suggestion")) {
+          expect(after.getAttribute("role")).toBe("combobox")
+          expect(after.getAttribute("aria-controls")).toBe(
             document.querySelector("ul")?.id,
           )
         }
-        await stille()
-        expect(advarsel).not.toHaveBeenCalled()
+        await quiet()
+        expect(warning).not.toHaveBeenCalled()
       })
     }
   }
 
   it("idiomorph without ignoreActiveValue also sets the focused field from the server", async () => {
     // The default in idiomorph, and so in htmx without a setting in `hx-swap`.
-    await mount(FELT)
-    const input = felt()
+    await mount(FIELD)
+    const input = field()
     input.focus()
-    input.value = "Kari"
+    input.value = "Alex"
     Idiomorph.morph(
-      document.getElementById("omraade") as HTMLElement,
-      omraade(FELT, true),
+      document.getElementById("region") as HTMLElement,
+      region(FIELD, true),
       { morphStyle: "outerHTML" },
     )
-    await roSeg()
-    expect(felt()).toBe(input)
+    await settle()
+    expect(field()).toBe(input)
     expect(document.activeElement).toBe(input)
     expect(input.value).toBe("")
   })
 
-  for (const maate of ["Datastar", "idiomorph"] as const) {
-    it(`a field without focus: ${maate} and what the server sends back`, async () => {
+  for (const way of ["Datastar", "idiomorph"] as const) {
+    it(`a field without focus: ${way} and what the server sends back`, async () => {
       /*
        * Datastar leaves the text. idiomorph sets it from the server's HTML,
        * so with htmx the server must send the value back. That is the one
        * sentence the documentation gives htmx users, and it is checked here.
        */
-      await mount(FELT)
-      felt().value = "Kari"
-      felt().blur()
+      await mount(FIELD)
+      field().value = "Alex"
+      field().blur()
 
-      await oppdater(maate, FELT)
-      expect(felt().value).toBe(maate === "Datastar" ? "Kari" : "")
+      await update(way, FIELD)
+      expect(field().value).toBe(way === "Datastar" ? "Alex" : "")
 
       // The server sends a different text from what is there. Both morphers
       // set the property when the attribute differs: Datastar in
       // patchElements.ts (`oldElt.value = newValue`), idiomorph always.
-      felt().value = "Ola"
-      await oppdater(maate, FELT.replace('id="name"', 'id="name" value="Kari"'))
-      expect(felt().value).toBe("Kari")
+      field().value = "Sam"
+      await update(way, FIELD.replace('id="name"', 'id="name" value="Alex"'))
+      expect(field().value).toBe("Alex")
     })
 
-    it(`checkbox: ${maate} and what the server sends back`, async () => {
-      await mount(AVKRYSSING(false))
-      const box = document.getElementById("vilkar") as HTMLInputElement
+    it(`checkbox: ${way} and what the server sends back`, async () => {
+      await mount(CHECKBOX(false))
+      const box = document.getElementById("terms") as HTMLInputElement
       box.click()
       expect(box.checked).toBe(true)
 
-      await oppdater(maate, AVKRYSSING(false))
-      expect(document.getElementById("vilkar")).toBe(box)
-      expect(box.checked).toBe(maate === "Datastar")
+      await update(way, CHECKBOX(false))
+      expect(document.getElementById("terms")).toBe(box)
+      expect(box.checked).toBe(way === "Datastar")
 
       // The server sends `checked` while the box is unchecked after the user
       // touched it. Both morphers set the check from the server's HTML.
       box.checked = false
-      await oppdater(maate, AVKRYSSING(true))
+      await update(way, CHECKBOX(true))
       expect(box.checked).toBe(true)
     })
 
-    it(`list with ids from a key: the text stays in the right row (${maate})`, async () => {
+    it(`list with ids from a key: the text stays in the right row (${way})`, async () => {
       /*
        * An id that follows the position moves what the user typed to the
        * wrong row when the server inserts a new one at the top. An id from a
@@ -331,46 +331,44 @@ describe("fields and suggestion fields through a server update", () => {
        * rule the documentation gives templates, not the components: all the
        * ids come from the server.
        */
-      const liste = (navn: string[]) =>
-        navn
+      const list = (names: string[]) =>
+        names
           .map((n) => {
             const k = n.toLowerCase()
             // An id on the row too, as `hx-target` and `hx-swap-oob` need it.
-            return `<lt-field id="rad-${k}"><label class="lt-label" for="merknad-${k}">${n}</label><input class="lt-input" id="merknad-${k}" name="merknad-${k}"></lt-field>`
+            return `<lt-field id="row-${k}"><label class="lt-label" for="note-${k}">${n}</label><input class="lt-input" id="note-${k}" name="note-${k}"></lt-field>`
           })
           .join("")
-      await mount(liste(["Bergen", "Oslo"]))
-      const bergen = document.getElementById(
-        "merknad-bergen",
-      ) as HTMLInputElement
-      const rad = document.getElementById("rad-bergen")
-      bergen.focus()
-      bergen.value = "Vestland"
+      await mount(list(["Leeds", "York"]))
+      const leeds = document.getElementById("note-leeds") as HTMLInputElement
+      const row = document.getElementById("row-leeds")
+      leeds.focus()
+      leeds.value = "West Yorkshire"
 
-      await oppdater(maate, liste(["Arendal", "Bergen", "Oslo"]))
+      await update(way, list(["Bath", "Leeds", "York"]))
 
       expect(
-        (document.getElementById("merknad-arendal") as HTMLInputElement).value,
+        (document.getElementById("note-bath") as HTMLInputElement).value,
       ).toBe("")
-      expect(document.getElementById("merknad-bergen")).toBe(bergen)
-      expect(document.getElementById("rad-bergen")).toBe(rad)
-      expect(bergen.value).toBe("Vestland")
+      expect(document.getElementById("note-leeds")).toBe(leeds)
+      expect(document.getElementById("row-leeds")).toBe(row)
+      expect(leeds.value).toBe("West Yorkshire")
     })
   }
 
   it("writes for on a label without one, from the field's id", async () => {
     // The mutation: take the `for` write out of the component.
-    await mount(FELT.replace(' for="name"', ""))
+    await mount(FIELD.replace(' for="name"', ""))
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.htmlFor).toBe("name")
   })
 
   it("reports once when the recipe has no id on the field", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    await mount(FELT.replace(' id="name"', ""))
-    await stille()
-    expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain("not connected")
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {})
+    await mount(FIELD.replace(' id="name"', ""))
+    await quiet()
+    expect(warning).toHaveBeenCalledTimes(1)
+    expect(String(warning.mock.calls[0][0])).toContain("not connected")
   })
 })
 
@@ -382,12 +380,12 @@ describe("the recipes without JavaScript", () => {
    * `srcdoc`, so each stylesheet the recipe links to is included
    * separately.
    */
-  let dokument: Document
+  let doc: Document
 
   beforeAll(async () => {
     const iframe = document.createElement("iframe")
     iframe.sandbox.add("allow-same-origin")
-    const stil = [
+    const styles = [
       tokensCss,
       labelCss,
       inputCss,
@@ -397,53 +395,49 @@ describe("the recipes without JavaScript", () => {
       srOnlyCss,
       suggestionCss.replace(/@import[^;]*;/g, ""),
     ].join("\n")
-    iframe.srcdoc = `<!doctype html><meta charset="utf-8"><style>${stil}</style>
-      <script>document.documentElement.dataset.skript = "kjorte"</script>
-      ${FELT}
-      <div id="ugyldig">${FELT.replace(" hidden>", ">").replaceAll('"name"', '"name-invalid"')}</div>
-      ${FORSLAG}
-      ${AVKRYSSING(false)}`
+    iframe.srcdoc = `<!doctype html><meta charset="utf-8"><style>${styles}</style>
+      <script>document.documentElement.dataset.script = "ran"</script>
+      ${FIELD}
+      <div id="invalid">${FIELD.replace(" hidden>", ">").replaceAll('"name"', '"name-invalid"')}</div>
+      ${SUGGESTION}
+      ${CHECKBOX(false)}`
     await new Promise((r) => {
       iframe.onload = r
       document.body.append(iframe)
     })
-    dokument = iframe.contentDocument as Document
+    doc = iframe.contentDocument as Document
   })
 
   it("runs no scripts", () => {
     // The script in the sandbox would have set a marker. It is not there.
-    expect(dokument.documentElement.dataset.skript).toBeUndefined()
-    expect(dokument.defaultView?.customElements.get("lt-field")).toBeUndefined()
+    expect(doc.documentElement.dataset.script).toBeUndefined()
+    expect(doc.defaultView?.customElements.get("lt-field")).toBeUndefined()
   })
 
   it("every field has a name from the label", () => {
-    for (const input of dokument.querySelectorAll("input")) {
+    for (const input of doc.querySelectorAll("input")) {
       expect(input.labels?.length, input.outerHTML).toBe(1)
       expect(input.labels?.[0]?.htmlFor).toBe(input.id)
     }
   })
 
   it("the required marker is visible", () => {
-    const label = dokument.querySelector("label[for='name']") as HTMLElement
-    const etter = dokument.defaultView?.getComputedStyle(label, "::after")
-    expect(etter?.content).toContain("*")
+    const label = doc.querySelector("label[for='name']") as HTMLElement
+    const after = doc.defaultView?.getComputedStyle(label, "::after")
+    expect(after?.content).toContain("*")
   })
 
   it("the error text from the server is visible, and the hidden one is not", () => {
-    const vindu = dokument.defaultView as Window
-    const skjult = dokument.querySelector(
-      ".lt-error-text[hidden]",
-    ) as HTMLElement
-    const synlig = dokument.querySelector(
-      "#ugyldig .lt-error-text",
-    ) as HTMLElement
-    expect(vindu.getComputedStyle(skjult).display).toBe("none")
-    expect(vindu.getComputedStyle(synlig).display).toBe("block")
+    const view = doc.defaultView as Window
+    const hidden = doc.querySelector(".lt-error-text[hidden]") as HTMLElement
+    const visible = doc.querySelector("#invalid .lt-error-text") as HTMLElement
+    expect(view.getComputedStyle(hidden).display).toBe("none")
+    expect(view.getComputedStyle(visible).display).toBe("block")
   })
 
   it("the list in the suggestion field is not open", () => {
-    const liste = dokument.querySelector(".lt-suggestion__list") as HTMLElement
-    expect(dokument.defaultView?.getComputedStyle(liste).display).toBe("none")
+    const list = doc.querySelector(".lt-suggestion__list") as HTMLElement
+    expect(doc.defaultView?.getComputedStyle(list).display).toBe("none")
   })
 })
 
@@ -454,8 +448,8 @@ describe("the recipes without JavaScript", () => {
  * When the component wrote an id itself, the panel was replaced.
  * `innerHTML` replaces everything, the host included.
  */
-const SPRETT = oppskrift(sprettSide, "lt-popover")
-const SPRETT_BAR = SPRETT.replace(' id="actions"', "")
+const POPOVER = recipe(popoverPage, "lt-popover")
+const POPOVER_BARE = POPOVER.replace(' id="actions"', "")
 
 describe("the popover through a server update", () => {
   beforeAll(() => {
@@ -468,37 +462,37 @@ describe("the popover through a server update", () => {
   })
 
   it("reads the recipe from the component page, with an id on the panel", () => {
-    expect(SPRETT).toContain('class="lt-popover" id="actions"')
-    expect(SPRETT_BAR).not.toContain('id="actions"')
+    expect(POPOVER).toContain('class="lt-popover" id="actions"')
+    expect(POPOVER_BARE).not.toContain('id="actions"')
   })
 
-  for (const [navn, markup] of [
-    ["the recipe", SPRETT],
-    ["bare markup without an id", SPRETT_BAR],
+  for (const [name, markup] of [
+    ["the recipe", POPOVER],
+    ["bare markup without an id", POPOVER_BARE],
   ] as const) {
-    for (const maate of MAATER) {
-      it(`${navn}: ${maate}`, async () => {
+    for (const way of WAYS) {
+      it(`${name}: ${way}`, async () => {
         await mount(markup)
-        const knapp = document.querySelector(
+        const button = document.querySelector(
           "lt-popover > button",
         ) as HTMLElement
         const panel = document.querySelector(".lt-popover") as HTMLElement
-        knapp.click()
-        await roSeg()
-        const valg = panel.querySelector("button") as HTMLElement
-        valg.focus()
+        button.click()
+        await settle()
+        const option = panel.querySelector("button") as HTMLElement
+        option.focus()
         expect(panel.matches(":popover-open")).toBe(true)
 
-        await oppdater(maate, markup)
+        await update(way, markup)
 
-        const etter = document.querySelector(".lt-popover") as HTMLElement
-        expect(etter.hasAttribute("id")).toBe(markup === SPRETT)
-        if (maate === "innerHTML") {
-          expect(etter).not.toBe(panel)
+        const after = document.querySelector(".lt-popover") as HTMLElement
+        expect(after.hasAttribute("id")).toBe(markup === POPOVER)
+        if (way === "innerHTML") {
+          expect(after).not.toBe(panel)
         } else {
-          expect(etter).toBe(panel)
-          expect(etter.matches(":popover-open")).toBe(true)
-          expect(document.activeElement).toBe(valg)
+          expect(after).toBe(panel)
+          expect(after.matches(":popover-open")).toBe(true)
+          expect(document.activeElement).toBe(option)
         }
         ;(
           document.querySelector("lt-popover") as HTMLElement & { hide(): void }

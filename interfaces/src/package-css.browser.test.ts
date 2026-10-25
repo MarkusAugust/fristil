@@ -5,28 +5,28 @@ import { beforeAll, describe, expect, it } from "vitest"
 import { lt } from "./lt"
 
 /**
- * At stilarkene pakken sender ut holder seg innenfor sitt eget navnerom.
+ * The stylesheets the package ships stay within their own namespace.
  *
- * En pakke som skal inn i vilkårlige apper kan ikke eie vanlige ord. Vi hadde
- * `.link` og `.srOnly` liggende i `utilities.css`, uten prefiks og utenfor
- * laget. Begge deler er stille feil hos konsumenten: klassen kolliderer med
- * deres egen, og en regel utenfor laget slår deres uansett spesifisitet.
+ * A package that goes into arbitrary apps cannot claim ordinary words. We had
+ * `.link` and `.srOnly` in `utilities.css`, without a prefix and outside the
+ * layer. Both are silent bugs for the consumer: the class collides with their
+ * own, and a rule outside the layer beats theirs whatever the specificity.
  *
- * Testene her leser stilarkene som tekst, så en ny komponent blir fanget av
- * seg selv uten at noen husker å legge den til.
+ * The tests here read the stylesheets as text, so a new component is caught
+ * by itself without anyone remembering to add it.
  */
 
-const stilark = import.meta.glob("./**/*.css", {
+const stylesheets = import.meta.glob("./**/*.css", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>
 
 /**
- * Fjerner kommentarer, tekststrenger og `url(...)`.
+ * Removes comments, strings and `url(...)`.
  *
- * Uten det leses `w3.org` inne i en innebygd SVG som klassen `.org`, og
- * testen sier fra om noe som ikke finnes.
+ * Without that, `w3.org` inside an inline SVG is read as the class `.org`,
+ * and the test reports something that does not exist.
  */
 function onlyRules(source: string): string {
   return source
@@ -37,10 +37,11 @@ function onlyRules(source: string): string {
 }
 
 /**
- * Det som står etter klammen som lukker den første blokken. For et stilark
- * som starter med `@layer lotek {`, er det alt utenfor laget. Strenger og
- * kommentarer må være tatt bort først, som `onlyRules` gjør. Blir blokken
- * aldri lukket, svarer den med en melding om det, så sjekken feiler.
+ * What comes after the brace that closes the first block. For a stylesheet
+ * that starts with `@layer lotek {`, that is everything outside the layer.
+ * Strings and comments must already be removed, as `onlyRules` does. If the
+ * block is never closed, it answers with a message saying so, and the check
+ * fails.
  */
 function afterFirstBlock(rules: string): string {
   let depth = 0
@@ -48,10 +49,10 @@ function afterFirstBlock(rules: string): string {
     if (rules[i] === "{") depth++
     else if (rules[i] === "}" && --depth === 0) return rules.slice(i + 1)
   }
-  return "(blokken lukkes aldri)"
+  return "(the block is never closed)"
 }
 
-/** Stilark som bare samler andre filer, og derfor ikke har regler selv. */
+/** Stylesheets that only collect other files, and so have no rules of their own. */
 function isBundle(source: string): boolean {
   return onlyRules(source)
     .split("\n")
@@ -59,443 +60,460 @@ function isBundle(source: string): boolean {
 }
 
 /**
- * Teller verdiene i en kortform, uten å telle inni `var()` og `calc()`.
+ * Counts the values in a shorthand, without counting inside `var()` and
+ * `calc()`.
  *
- * `padding: var(--lt-spacing-2) calc(var(--lt-spacing-4) + var(--lt-spacing-2))` er to verdier,
- * ikke fem.
+ * `padding: var(--lt-spacing-2) calc(var(--lt-spacing-4) + var(--lt-spacing-2))` is two values,
+ * not five.
  */
-function antallVerdier(verdi: string): number {
-  let dybde = 0
-  let antall = 0
-  let ihvit = true
+function valueCount(value: string): number {
+  let depth = 0
+  let count = 0
+  let inWhitespace = true
 
-  for (const tegn of verdi.trim()) {
-    if (tegn === "(") dybde += 1
-    else if (tegn === ")") dybde -= 1
+  for (const char of value.trim()) {
+    if (char === "(") depth += 1
+    else if (char === ")") depth -= 1
 
-    const hvit = /\s/.test(tegn)
-    if (dybde === 0 && !hvit && ihvit) antall += 1
-    if (dybde === 0) ihvit = hvit
+    const whitespace = /\s/.test(char)
+    if (depth === 0 && !whitespace && inWhitespace) count += 1
+    if (depth === 0) inWhitespace = whitespace
   }
 
-  return antall
+  return count
 }
 
-/** Klasseselektorene i en fil, uten duplikater. */
+/** The class selectors in a file, without duplicates. */
 function classNames(source: string): string[] {
   const found = onlyRules(source).match(/\.[a-zA-Z_][\w-]*/g) ?? []
   return [...new Set(found.map((name) => name.slice(1)))]
 }
 
 /**
- * Tailwind-temaet er ikke et komponentstilark.
+ * The Tailwind theme is not a component stylesheet.
  *
- * Det er en `@theme`-blokk som gir Tailwind LO-TEKs verdier, så det ligger
- * med vilje utenfor laget og definerer variabler i Tailwinds navnerom.
- * Reglene under gjelder derfor ikke der, men fila har sine egne lenger nede.
+ * It is a `@theme` block that gives Tailwind LO-TEK's values, so it is
+ * outside the layer on purpose and defines variables in Tailwind's
+ * namespace. The rules below therefore do not apply to it, but the file has
+ * its own further down.
  */
-const erTailwindtema = (navn: string) => navn.includes("/tailwind/")
+const isTailwindTheme = (name: string) => name.includes("/tailwind/")
 
-const filer = Object.entries(stilark).filter(
-  ([navn, source]) => !isBundle(source) && !erTailwindtema(navn),
+const files = Object.entries(stylesheets).filter(
+  ([name, source]) => !isBundle(source) && !isTailwindTheme(name),
 )
 
-describe("stilarkene pakken sender ut", () => {
-  it("har stilark å kontrollere", () => {
-    expect(filer.length).toBeGreaterThan(5)
+describe("the stylesheets the package ships", () => {
+  it("has stylesheets to check", () => {
+    expect(files.length).toBeGreaterThan(5)
   })
 
   /*
-   * Grensen mot en vertsside er unntaket. Den virker bare fordi den står
-   * utenfor laget, på samme nivå som vertens CSS; se `boundary.css`.
+   * The boundary against a host page is the exception. It only works because
+   * it is outside the layer, at the same level as the host's CSS; see
+   * `boundary.css`.
    */
-  const lagdelte = filer.filter(([navn]) => !navn.endsWith("/boundary.css"))
+  const layered = files.filter(([name]) => !name.endsWith("/boundary.css"))
 
-  it.each(lagdelte)("%s ligger i @layer lotek", (_navn, source) => {
-    // `@import` må stå først i en CSS-fil, så den delen hoppes over.
-    const utenImport = onlyRules(source)
+  it.each(layered)("%s is in @layer lotek", (_name, source) => {
+    // `@import` must come first in a CSS file, so that part is skipped.
+    const withoutImport = onlyRules(source)
       .split("\n")
       .filter((line) => !line.trim().startsWith("@import"))
       .join("\n")
 
-    expect(utenImport.trimStart().startsWith("@layer lotek")).toBe(true)
-    // Og ingenting etter at laget er lukket: en regel der står utenfor
-    // laget og slår konsumentens CSS uansett spesifisitet.
-    expect(afterFirstBlock(utenImport).trim()).toBe("")
+    expect(withoutImport.trimStart().startsWith("@layer lotek")).toBe(true)
+    // And nothing after the layer is closed: a rule there is outside the
+    // layer and beats the consumer's CSS whatever the specificity.
+    expect(afterFirstBlock(withoutImport).trim()).toBe("")
   })
 
-  it("finner en regel etter at laget er lukket", () => {
-    const regler = onlyRules(
+  it("finds a rule after the layer is closed", () => {
+    const rules = onlyRules(
       '@layer lotek { .lt-a { color: red } }\n/* } */ .lt-b { content: "}" }',
     )
-    expect(afterFirstBlock(regler).trim()).toMatch(/^\.lt-b/)
+    expect(afterFirstBlock(rules).trim()).toMatch(/^\.lt-b/)
     expect(
       afterFirstBlock("@layer lotek { .lt-a { color: red } }\n").trim(),
     ).toBe("")
     expect(afterFirstBlock("@layer lotek { .lt-a { color: red }")).not.toBe("")
   })
 
-  it("har ingen tegn utenfor ASCII utenom kommentarene", () => {
+  it("has no characters outside ASCII except in comments", () => {
     /*
-     * `content: " (påkrevd)"` kom ut som «pÃ¥krevd» på en side uten
-     * `<meta charset>` fra en tjener som ikke sender tegnsettet: et stilark
-     * uten `@charset` arver tegnsettet fra siden som lenker det. Tegnet
-     * skrives som en escape, `\e5`. En test i nettleseren ser ikke
-     * forskjellen, siden den får fila som UTF-8, så regelen leses av kilden.
-     * Kommentarene strykes av `build-css.ts` og er uten betydning.
+     * `content: " (påkrevd)"` came out as "pÃ¥krevd" on a page without
+     * `<meta charset>` from a server that does not send the charset: a
+     * stylesheet without `@charset` inherits the charset of the page that
+     * links it. The character is written as an escape, `\e5`. A test in the
+     * browser does not see the difference, since it gets the file as UTF-8,
+     * so the rule is read from the source. The comments are stripped by
+     * `build-css.ts` and do not matter.
      */
-    const funn: string[] = []
-    let lest = 0
-    for (const [navn, kilde] of Object.entries(stilark)) {
-      const utenKommentarer = kilde.replace(/\/\*[\s\S]*?\*\//g, "")
-      for (const linje of utenKommentarer.split("\n")) {
-        // biome-ignore lint/suspicious/noControlCharactersInRegex: ASCII er nettopp det som letes etter
-        if (/[^\x00-\x7f]/.test(linje)) funn.push(`${navn}: ${linje.trim()}`)
+    const findings: string[] = []
+    let read = 0
+    for (const [name, source] of Object.entries(stylesheets)) {
+      const withoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "")
+      for (const line of withoutComments.split("\n")) {
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: ASCII is exactly what is being looked for
+        if (/[^\x00-\x7f]/.test(line)) findings.push(`${name}: ${line.trim()}`)
       }
-      lest++
+      read++
     }
 
-    expect(lest).toBeGreaterThan(30)
-    expect(funn).toEqual([])
+    expect(read).toBeGreaterThan(30)
+    expect(findings).toEqual([])
   })
 
-  it.each(filer)("%s bruker bare lt-prefikserte klasser", (_navn, source) => {
-    const uprefiksert = classNames(source).filter(
+  it.each(files)("%s only uses lt-prefixed classes", (_name, source) => {
+    const unprefixed = classNames(source).filter(
       (name) => !name.startsWith("lt-"),
     )
-    expect(uprefiksert).toEqual([])
+    expect(unprefixed).toEqual([])
   })
 
   /*
-   * Komponentene skal speilvende seg selv i språk som skrives høyre mot
-   * venstre. Det krever logiske egenskaper hele veien: `margin-inline-start`
-   * framfor `margin-left`. En enkelt `padding-left` er nok til at en
-   * komponent står feil, og det synes ikke før noen bytter språk.
+   * The components must mirror themselves in languages written right to
+   * left. That takes logical properties all the way: `margin-inline-start`
+   * rather than `margin-left`. A single `padding-left` is enough to put a
+   * component wrong, and it does not show until someone switches language.
    *
-   * `background-position` har ingen logisk variant, og snus med `:dir(rtl)`.
+   * `background-position` has no logical variant, and is flipped with
+   * `:dir(rtl)`.
    */
   it.each(
-    filer,
-  )("%s bruker logiske egenskaper, ikke venstre og høyre", (_navn, source) => {
-    const fysiske = [
+    files,
+  )("%s uses logical properties, not left and right", (_name, source) => {
+    const physical = [
       ...onlyRules(source).matchAll(
         /(?:^|[\s;{])((?:margin|padding|border)-(?:left|right)|left|right|text-align)\s*:\s*([^;}]+)/g,
       ),
     ]
-      .filter(([, egenskap, verdi]) =>
-        egenskap === "text-align" ? /\b(left|right)\b/.test(verdi) : true,
+      .filter(([, property, value]) =>
+        property === "text-align" ? /\b(left|right)\b/.test(value) : true,
       )
-      .map(([, egenskap]) => egenskap)
+      .map(([, property]) => property)
 
-    expect([...new Set(fysiske)]).toEqual([])
+    expect([...new Set(physical)]).toEqual([])
   })
 
   /*
-   * Fire verdier i `padding`, `margin` eller `inset` er over, høyre, under,
-   * venstre. To av dem er fysiske sider, og de snur ikke med språket.
-   * `.lt-select` hadde `padding: … calc(…) … var(--lt-spacing-3)` for å holde av
-   * plass til pila si, og i RTL ble plassen liggende på feil side mens
-   * teksten la seg oppå pila. Tre verdier er trygt: da er den midterste
-   * begge de fysiske sidene, og lik på begge.
+   * Four values in `padding`, `margin` or `inset` are top, right, bottom,
+   * left. Two of them are physical sides, and they do not flip with the
+   * language. `.lt-select` had `padding: … calc(…) … var(--lt-spacing-3)` to
+   * keep room for its arrow, and in RTL the room ended up on the wrong side
+   * while the text lay on top of the arrow. Three values are safe: the middle
+   * one is then both physical sides, and equal on both.
    */
-  it.each(filer)("%s bruker ikke fysiske firverdier", (_navn, source) => {
-    const feil = [
+  it.each(
+    files,
+  )("%s uses no physical four-value shorthands", (_name, source) => {
+    const wrong = [
       ...onlyRules(source).matchAll(
         /(?:^|[\s;{])(padding|margin|inset|border-width|border-color|border-style)\s*:\s*([^;}]+)/g,
       ),
     ]
-      .filter(([, , verdi]) => antallVerdier(verdi) >= 4)
-      .map(([, egenskap, verdi]) => `${egenskap}: ${verdi.trim()}`)
+      .filter(([, , value]) => valueCount(value) >= 4)
+      .map(([, property, value]) => `${property}: ${value.trim()}`)
 
-    expect(feil).toEqual([])
+    expect(wrong).toEqual([])
   })
 
   /*
-   * Fokusringen skal komme fra `--lt-focus-ring`, ikke skrives ut.
+   * The focus ring must come from `--lt-focus-ring`, not be written out.
    *
-   * Den sto med bredde og farge i tjue regler fordelt på atten stilark.
-   * Selektorene er forskjellige i hver komponent, så det lot seg ikke samle
-   * i én regel, men verdien er den samme overalt og hører i et token. En
-   * komponent som trenger en annen farge, som hopplenken, skriver
-   * `outline-color` etter kortformen og arver bredden.
+   * It was written with width and colour in twenty rules spread over
+   * eighteen stylesheets. The selectors differ in each component, so it
+   * could not be collected in one rule, but the value is the same everywhere
+   * and belongs in a token. A component that needs a different colour, like
+   * the skip link, writes `outline-color` after the shorthand and inherits
+   * the width.
    */
-  it.each(filer)("%s skriver ikke ut fokusringen for hånd", (navn, source) => {
-    if (navn.includes("/tokens/")) return
+  it.each(
+    files,
+  )("%s does not write out the focus ring by hand", (name, source) => {
+    if (name.includes("/tokens/")) return
 
-    const skrevet = [
+    const written = [
       ...onlyRules(source).matchAll(/outline:\s*([^;}]*\bsolid\b[^;}]*)/g),
-    ].map((treff) => treff[1].trim())
+    ].map((match) => match[1].trim())
 
-    expect(skrevet).toEqual([])
+    expect(written).toEqual([])
   })
 
-  it.each(filer)("%s navngir klassene i kebab-case", (_navn, source) => {
-    const feilform = classNames(source).filter(
+  it.each(files)("%s names the classes in kebab-case", (_name, source) => {
+    const wrongForm = classNames(source).filter(
       (name) =>
         !/^lt-[a-z0-9]+(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?$/.test(name),
     )
-    expect(feilform).toEqual([])
+    expect(wrongForm).toEqual([])
   })
 })
 
 /**
- * `tokens.css` som tekst, kilden både tokennavnene og slagene leses av.
+ * `tokens.css` as text, the source both the token names and the kinds are
+ * read from.
  *
- * Finner globben den ikke, kastes det her. Et `?? ""` sto her, og da ble
- * `TOKENSLAG` tom, `erToken()` alltid usann, og hvert `--lt-*`-navn regnet som
- * en komponentvariabel. Sjekken var da tilbake i nøyaktig tilstanden den ble
- * skrevet for å komme ut av, uten et ord.
+ * If the glob does not find it, it throws here. A `?? ""` used to be here,
+ * and then `TOKEN_KINDS` was empty, `isToken()` always false, and every
+ * `--lt-*` name counted as a component variable. The check was then back in
+ * exactly the state it was written to get out of, without a word.
  */
-const tokenkilde = Object.entries(stilark).find(([navn]) =>
-  navn.endsWith("/tokens/tokens.css"),
+const tokenSource = Object.entries(stylesheets).find(([name]) =>
+  name.endsWith("/tokens/tokens.css"),
 )?.[1]
 
-if (!tokenkilde) throw new Error("Fant ikke tokens.css blant stilarkene")
+if (!tokenSource)
+  throw new Error("Did not find tokens.css among the stylesheets")
 
-/** Alt som faktisk er definert i `tokens.css`, begge temaer. */
-const definerteTokens = new Set(
-  [...tokenkilde.matchAll(/^\s*(--[\w-]+)\s*:/gm)].map((treff) => treff[1]),
+/** Everything actually defined in `tokens.css`, both themes. */
+const definedTokens = new Set(
+  [...tokenSource.matchAll(/^\s*(--[\w-]+)\s*:/gm)].map((match) => match[1]),
 )
 
-describe("variablene komponentene leser", () => {
-  const komponentfiler = filer.filter(([navn]) => !navn.includes("/tokens/"))
+describe("the variables the components read", () => {
+  const componentFiles = files.filter(([name]) => !name.includes("/tokens/"))
 
   it.each(
-    komponentfiler,
-  )("%s definerer ingen egne variabler utenfor lt-navnerommet", (_navn, source) => {
-    const definert = [
-      ...onlyRules(source).matchAll(/^\s*(--[\w-]+)\s*:/gm),
-    ].map((treff) => treff[1])
-    expect(definert.filter((name) => !name.startsWith("--lt-"))).toEqual([])
+    componentFiles,
+  )("%s defines no variables of its own outside the lt namespace", (_name, source) => {
+    const defined = [...onlyRules(source).matchAll(/^\s*(--[\w-]+)\s*:/gm)].map(
+      (match) => match[1],
+    )
+    expect(defined.filter((name) => !name.startsWith("--lt-"))).toEqual([])
   })
 
   it.each(
-    komponentfiler,
-  )("%s leser bare tokens og egne komponentvariabler", (_navn, source) => {
-    const lest = [...onlyRules(source).matchAll(/var\((--[\w-]+)/g)].map(
-      (treff) => treff[1],
+    componentFiles,
+  )("%s only reads tokens and its own component variables", (_name, source) => {
+    const read = [...onlyRules(source).matchAll(/var\((--[\w-]+)/g)].map(
+      (match) => match[1],
     )
 
     /*
-     * Lista over lovlige navn hentes fra `tokens.css`, ikke fra en liste med
-     * prefikser skrevet her.
+     * The list of allowed names is taken from `tokens.css`, not from a list
+     * of prefixes written here.
      *
-     * Prefikslista sto her lenge, og sa `--semantic-`, `--size` og
-     * `--font-size`. Da `--font-weight-medium` ble et token, feilet testen
-     * på en komponent som gjorde nøyaktig det den skulle, og feilmeldingen
-     * pekte på komponenten framfor på lista. Med tokenfila som fasit kan et
-     * nytt token tas i bruk uten at en test må endres, og et navn som ikke
-     * finnes blir fortsatt fanget.
+     * The prefix list was here for a long time, and said `--semantic-`,
+     * `--size` and `--font-size`. When `--font-weight-medium` became a token,
+     * the test failed on a component that did exactly what it should, and the
+     * failure pointed at the component rather than at the list. With the
+     * token file as the reference, a new token can be used without a test
+     * having to change, and a name that does not exist is still caught.
      *
-     * Unntaket er komponentvariabler, som er konsumentens å sette og med
-     * vilje står utenfor `tokens.css`. Unntaket sto en gang på hele
-     * `--lt-`-prefikset, og den dagen tokenene byttet navn fra `--semantic-*`
-     * til `--lt-color-*` sluttet testen i stillhet å se på tokens i det hele
-     * tatt. `--lt-color-accent-fill-hover`, som ikke finnes, sto da i
-     * `button.css` og gjorde primærknappen usynlig ved hover uten at noen av
-     * vaktpostene sa fra. Unntaket er derfor `erToken`, ikke prefikset.
+     * The exception is component variables, which are the consumer's to set
+     * and are outside `tokens.css` on purpose. The exception once covered the
+     * whole `--lt-` prefix, and the day the tokens were renamed from
+     * `--semantic-*` to `--lt-color-*` the test silently stopped looking at
+     * tokens at all. `--lt-color-accent-fill-hover`, which does not exist,
+     * was then in `button.css` and made the primary button invisible on
+     * hover without any of the guards saying so. The exception is therefore
+     * `isToken`, not the prefix.
      */
-    const ukjente = lest.filter((navn) => {
-      if (navn.startsWith("--lt-") && !erToken(navn)) return false
-      return !definerteTokens.has(navn)
+    const unknown = read.filter((name) => {
+      if (name.startsWith("--lt-") && !isToken(name)) return false
+      return !definedTokens.has(name)
     })
-    expect([...new Set(ukjente)]).toEqual([])
+    expect([...new Set(unknown)]).toEqual([])
   })
 })
 
-describe("reservene komponentene har", () => {
-  const komponentfiler = filer.filter(([navn]) => !navn.includes("/tokens/"))
+describe("the fallbacks the components have", () => {
+  const componentFiles = files.filter(([name]) => !name.includes("/tokens/"))
 
   it.each(
-    komponentfiler,
-  )("%s gir hver komponentvariabel en reserve", (_navn, source) => {
+    componentFiles,
+  )("%s gives every component variable a fallback", (_name, source) => {
     /*
-     * `var(--lt-x)` uten reserve gir ingenting når konsumenten ikke har satt
-     * den, og da faller hele erklæringen bort. Regelen i prosjektet er at
-     * form og størrelse leses fra en komponentvariabel *med tokenverdien som
-     * reserve*, og det er reserven denne testen ser etter.
+     * `var(--lt-x)` without a fallback gives nothing when the consumer has
+     * not set it, and then the whole declaration drops out. The rule in the
+     * project is that shape and size are read from a component variable
+     * *with the token value as the fallback*, and the fallback is what this
+     * test looks for.
      *
-     * Testen over sier at hvert navn finnes. Denne sier at det står noe bak
-     * kommaet. De to sto en gang som samme sjekk skrevet to ganger.
+     * The test above says that every name exists. This one says that there
+     * is something after the comma. The two were once the same check written
+     * twice.
      */
     /*
-     * Tokens trenger ingen reserve, komponentvariabler gjør.
+     * Tokens need no fallback, component variables do.
      *
-     * Et token er alltid satt av `tokens.css`, mens `--lt-button-padding` er
-     * konsumentens å sette og står tom til de gjør det. Slaget i navnet
-     * skiller dem: `--lt-color-*` er et token, `--lt-<komponent>-*` er ikke.
+     * A token is always set by `tokens.css`, while `--lt-button-padding` is
+     * the consumer's to set and is empty until they do. The kind in the name
+     * tells them apart: `--lt-color-*` is a token, `--lt-<component>-*` is
+     * not.
      */
-    const uten = [
+    const without = [
       ...onlyRules(source).matchAll(/var\(\s*(--lt-[\w-]+)\s*([,)])/g),
     ]
-      .filter((treff) => treff[2] === ")")
-      .map((treff) => treff[1])
-      .filter((navn) => !erToken(navn))
+      .filter((match) => match[2] === ")")
+      .map((match) => match[1])
+      .filter((name) => !isToken(name))
 
-    expect([...new Set(uten)]).toEqual([])
+    expect([...new Set(without)]).toEqual([])
   })
 })
 
 /**
- * Slagene et token kan ha. Alt annet er en komponentvariabel.
+ * The kinds a token can have. Everything else is a component variable.
  *
- * Lista leses ut av `tokens.css` framfor å stå skrevet her. Sto den skrevet,
- * ville et nytt slag sluppet gjennom som komponentvariabler, og et navn som
- * ikke finnes ville aldri blitt fanget: det er nøyaktig slik
- * `--lt-color-accent-fill-hover` kom inn.
+ * The list is read out of `tokens.css` rather than written here. Had it been
+ * written here, a new kind would have slipped through as component
+ * variables, and a name that does not exist would never have been caught:
+ * that is exactly how `--lt-color-accent-fill-hover` got in.
  *
- * Slaget er første ledd etter `--lt-`, så `--lt-line-height-default` gir
- * `line`. Grovere enn navnet, og med vilje: en komponentvariabel som het
- * `--lt-line-noe` ville da bli krevd i `tokens.css`, og det er riktig, for
- * navnet ville lest som et token.
+ * The kind is the first segment after `--lt-`, so `--lt-line-height-default`
+ * gives `line`. Coarser than the name, and on purpose: a component variable
+ * called `--lt-line-something` would then be required in `tokens.css`, and
+ * that is right, because the name would read as a token.
  */
-const TOKENSLAG = [
+const TOKEN_KINDS = [
   ...new Set(
-    [...tokenkilde.matchAll(/^\s*--lt-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm)].map(
-      (treff) => treff[1],
+    [...tokenSource.matchAll(/^\s*--lt-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm)].map(
+      (match) => match[1],
     ),
   ),
 ]
 
-function erToken(navn: string): boolean {
-  return TOKENSLAG.some(
-    (slag) => navn === `--lt-${slag}` || navn.startsWith(`--lt-${slag}-`),
+function isToken(name: string): boolean {
+  return TOKEN_KINDS.some(
+    (kind) => name === `--lt-${kind}` || name.startsWith(`--lt-${kind}-`),
   )
 }
 
-describe("Tailwind-temaet", () => {
-  const tema = Object.entries(stilark).find(([navn]) =>
-    erTailwindtema(navn),
+describe("the Tailwind theme", () => {
+  const theme = Object.entries(stylesheets).find(([name]) =>
+    isTailwindTheme(name),
   )?.[1]
 
-  it("finnes", () => {
-    expect(tema).toBeTypeOf("string")
+  it("exists", () => {
+    expect(theme).toBeTypeOf("string")
   })
 
-  it("legger bare til navn i lt-navnerommet", () => {
-    const definert = [
-      ...onlyRules(tema ?? "").matchAll(/^\s*(--[\w-]+)\s*:/gm),
-    ].map((treff) => treff[1])
+  it("only adds names in the lt namespace", () => {
+    const defined = [
+      ...onlyRules(theme ?? "").matchAll(/^\s*(--[\w-]+)\s*:/gm),
+    ].map((match) => match[1])
 
-    // `--spacing` er unntaket, og med vilje: det er Tailwinds avstandsenhet,
-    // og hele poenget er at `p-4` skal bli `--lt-spacing-4`.
-    const utenfor = definert.filter(
-      (navn) =>
-        navn !== "--spacing" &&
+    // `--spacing` is the exception, on purpose: it is Tailwind's spacing
+    // unit, and the whole point is that `p-4` becomes `--lt-spacing-4`.
+    const outside = defined.filter(
+      (name) =>
+        name !== "--spacing" &&
         !/^--(color|text|container|shadow|font|radius|leading|tracking|breakpoint)-lt-/.test(
-          navn,
+          name,
         ),
     )
 
-    expect(utenfor).toEqual([])
+    expect(outside).toEqual([])
   })
 
-  it("henter alle verdiene fra LO-TEKs tokens", () => {
-    const lest = [...onlyRules(tema ?? "").matchAll(/var\((--[\w-]+)/g)].map(
-      (treff) => treff[1],
+  it("takes every value from LO-TEK's tokens", () => {
+    const read = [...onlyRules(theme ?? "").matchAll(/var\((--[\w-]+)/g)].map(
+      (match) => match[1],
     )
 
-    const fremmede = lest.filter((navn) => !erToken(navn))
+    const foreign = read.filter((name) => !isToken(name))
 
-    expect([...new Set(fremmede)]).toEqual([])
+    expect([...new Set(foreign)]).toEqual([])
   })
 })
 
 /**
- * At hver lovlige verdi en byggefunksjon reklamerer med, finnes i CSS-en.
+ * Every allowed value a builder function advertises exists in the CSS.
  *
- * `lt.fieldset.states` oppga `success` fra dagen komponenten kom, mens
- * `fieldset.css` bare hadde en regel for `invalid`. Attributtet ble skrevet,
- * og ingenting skjedde. Byggefunksjonen lovet altså noe pakken ikke leverte,
- * og ingen test så det: `dom.browser.test.ts` sjekker at verdien kan settes
- * og fjernes, ikke at den betyr noe.
+ * `lt.fieldset.states` listed `success` from the day the component arrived,
+ * while `fieldset.css` only had a rule for `invalid`. The attribute was
+ * written, and nothing happened. The builder function promised something the
+ * package did not deliver, and no test saw it: `dom.browser.test.ts` checks
+ * that the value can be set and removed, not that it means anything.
  *
- * Verdier som ikke sender ut noe attributt hoppes over. Det er standarden,
- * som CSS-en alt har, og verdier som ikke er ment å se annerledes ut, som de
- * fleste `input.types`. To egne tester passer på at hoppelista ikke blir en
- * bakdør: opsjonsnavnet må være et byggefunksjonen kjenner, og hver liste må
- * gi minst ett tilfelle.
+ * Values that write no attribute are skipped. That is the default, which the
+ * CSS already has, and values that are not meant to look different, like
+ * most `input.types`. Two separate tests make sure the skip list does not
+ * become a back door: the option name must be one the builder function
+ * knows, and every list must give at least one case.
  */
-describe("hver lovlig verdi finnes i CSS-en", () => {
-  // Stilarkene må stå i dokumentet for at beregnet stil skal si noe. De
-  // hentes fra den samme glob-en som resten av fila leser som tekst, så
-  // ingen liste kan komme i utakt.
+describe("every allowed value exists in the CSS", () => {
+  // The stylesheets must be in the document for the computed style to mean
+  // anything. They are taken from the same glob the rest of the file reads as
+  // text, so no list can get out of step.
   /*
-   * `onlyRules` fjerner tekststrenger, og en attributtverdi i en selektor er
-   * nettopp det: `[data-color="success"]` ble til `[data-color= ]`. Her
-   * fjernes bare kommentarer og `url(...)`, som er det som ellers gir falske
-   * treff.
+   * `onlyRules` removes strings, and an attribute value in a selector is
+   * exactly that: `[data-color="success"]` became `[data-color= ]`. Here only
+   * comments and `url(...)` are removed, which is what otherwise gives false
+   * matches.
    */
-  const alleRegler = Object.values(stilark)
-    .map((kilde) =>
-      kilde.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/url\([^)]*\)/g, " "),
+  const allRules = Object.values(stylesheets)
+    .map((source) =>
+      source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/url\([^)]*\)/g, " "),
     )
     .join("\n")
 
   /**
-   * Selektorene som faktisk gjelder i denne motoren, hentet fra CSSOM.
+   * The selectors that actually apply in this engine, taken from CSSOM.
    *
-   * En regel kan stå i stilarket uten å gjøre noe her: `@supports
-   * (appearance: base-select)` finnes ikke i Firefox, og `@media
-   * (forced-colors: active)` gjelder ikke før modusen er på. Den stylede
-   * nedtrekkslista står i begge, og et tekstsøk ser ingen forskjell på dem og
-   * en regel som gjelder. Da meldte testen feil i én av tre motorer på noe
-   * som er helt riktig. Nettleseren vet svaret selv, så vi spør den.
+   * A rule can be in the stylesheet without doing anything here: `@supports
+   * (appearance: base-select)` does not hold in Firefox, and `@media
+   * (forced-colors: active)` does not apply until the mode is on. The styled
+   * dropdown is in both, and a text search sees no difference between them
+   * and a rule that applies. The test then reported a failure in one of
+   * three engines on something that is entirely correct. The browser knows
+   * the answer itself, so we ask it.
    */
-  const virksomme: { selektor: string; regel: CSSStyleRule }[] = []
+  const active: { selector: string; rule: CSSStyleRule }[] = []
 
-  function samle(regler: CSSRuleList, gjelder: boolean): void {
-    for (const regel of Array.from(regler)) {
-      if (regel instanceof CSSStyleRule) {
-        if (gjelder) {
-          for (const del of regel.selectorText.split(",")) {
-            virksomme.push({ selektor: del.trim(), regel })
+  function collect(rules: CSSRuleList, applies: boolean): void {
+    for (const rule of Array.from(rules)) {
+      if (rule instanceof CSSStyleRule) {
+        if (applies) {
+          for (const part of rule.selectorText.split(",")) {
+            active.push({ selector: part.trim(), rule })
           }
         }
-        samle(regel.cssRules, gjelder)
-      } else if (regel instanceof CSSSupportsRule) {
-        samle(regel.cssRules, gjelder && CSS.supports(regel.conditionText))
-      } else if (regel instanceof CSSMediaRule) {
-        samle(
-          regel.cssRules,
-          gjelder && matchMedia(regel.conditionText).matches,
+        collect(rule.cssRules, applies)
+      } else if (rule instanceof CSSSupportsRule) {
+        collect(rule.cssRules, applies && CSS.supports(rule.conditionText))
+      } else if (rule instanceof CSSMediaRule) {
+        collect(
+          rule.cssRules,
+          applies && matchMedia(rule.conditionText).matches,
         )
-      } else if (regel instanceof CSSGroupingRule) {
-        samle(regel.cssRules, gjelder)
+      } else if (rule instanceof CSSGroupingRule) {
+        collect(rule.cssRules, applies)
       }
     }
   }
 
   beforeAll(() => {
-    for (const [sti, kilde] of Object.entries(stilark)) {
-      const ark = document.createElement("style")
-      ark.dataset.fra = sti
+    for (const [path, source] of Object.entries(stylesheets)) {
+      const sheet = document.createElement("style")
+      sheet.dataset.from = path
       /*
-       * `@import` må bort. Hver fil legges inn for seg, så naboen er alt
-       * med, og en relativ sti ville uansett gitt 404 herfra. I WebKit er
-       * det ikke ufarlig: et stilark med en uløst `@import` blir ikke tatt i
-       * bruk i det hele tatt, og `.lt-legend[data-required]::after` fra
-       * `fieldset.css` regnet seg til `content: none` mens den identiske
-       * regelen i `label.css` virket. Chromium og Firefox hoppet bare over
-       * den døde importen.
+       * `@import` must go. Each file is added on its own, so the neighbour is
+       * already there, and a relative path would give a 404 from here anyway.
+       * In WebKit it is not harmless: a stylesheet with an unresolved
+       * `@import` is not applied at all, and `.lt-legend[data-required]::after`
+       * from `fieldset.css` computed to `content: none` while the identical
+       * rule in `label.css` worked. Chromium and Firefox just skipped the
+       * dead import.
        */
-      ark.textContent = kilde.replace(/@import[^;]*;/g, "")
-      document.head.append(ark)
-      if (ark.sheet) samle(ark.sheet.cssRules, true)
+      sheet.textContent = source.replace(/@import[^;]*;/g, "")
+      document.head.append(sheet)
+      if (sheet.sheet) collect(sheet.sheet.cssRules, true)
     }
   })
 
   /**
-   * Lista på byggefunksjonen, opsjonen som velger verdien, og attributtet den
-   * havner i.
+   * The list on the builder function, the option that picks the value, and
+   * the attribute it ends up in.
    *
-   * Alle tre står skrevet ut. Utledet vi opsjonsnavnet av flertalls-s-en,
-   * ble `markers` til `marker`, mens opsjonen heter `required`. Kallet ga da
-   * ingen attributter, og løkka under tolket det som «dette er
-   * standardverdien» og hoppet over. Fire verdier ble aldri kontrollert, og
-   * ingenting sa fra.
+   * All three are written out. When we derived the option name from the
+   * plural s, `markers` became `marker`, while the option is called
+   * `required`. The call then gave no attributes, and the loop below read
+   * that as "this is the default" and skipped it. Four values were never
+   * checked, and nothing said so.
    */
-  const LISTER: [liste: string, opsjon: string, attributt: string][] = [
+  const LISTS: [list: string, option: string, attribute: string][] = [
     ["variants", "variant", "data-variant"],
     ["colors", "color", "data-color"],
     ["sizes", "size", "data-size"],
@@ -505,260 +523,260 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     ["types", "type", "data-variant"],
   ]
 
-  type Byggefunksjon = ((
-    valg?: Record<string, unknown>,
+  type BuilderFunction = ((
+    options?: Record<string, unknown>,
   ) => Record<string, unknown>) &
     Record<string, unknown>
 
   /**
-   * En fast id til byggefunksjonene som krever en. Uten den lager `idOrFallback` en
-   * tilfeldig id per kall, og to kall gir aldri det samme svaret, så
-   * standardverdien lot seg ikke kjenne igjen. De flate byggefunksjonene ignorerer
-   * nøklene.
+   * A fixed id for the builder functions that require one. Without it
+   * `idOrFallback` makes a random id per call, and two calls never give the
+   * same answer, so the default could not be recognised. The flat builder
+   * functions ignore the keys.
    */
-  const STABIL_ID = { id: "vakt", titleId: "vakt" }
+  const STABLE_ID = { id: "guard", titleId: "guard" }
 
-  /** Attributtsettet som bærer attributtet, i et flatt eller sammensatt svar. */
-  function delMed(
-    svar: Record<string, unknown>,
-    attributt: string,
+  /** The attribute set that carries the attribute, in a flat or composite answer. */
+  function partWith(
+    answer: Record<string, unknown>,
+    attribute: string,
   ): Record<string, unknown> | undefined {
-    if (svar[attributt] !== undefined) return svar
-    for (const del of Object.values(svar)) {
-      if (del && typeof del === "object" && !Array.isArray(del)) {
-        const funnet = delMed(del as Record<string, unknown>, attributt)
-        if (funnet) return funnet
+    if (answer[attribute] !== undefined) return answer
+    for (const part of Object.values(answer)) {
+      if (part && typeof part === "object" && !Array.isArray(part)) {
+        const found = partWith(part as Record<string, unknown>, attribute)
+        if (found) return found
       }
     }
     return undefined
   }
 
-  /** Ett tilfelle: en byggefunksjon, en verdi, og elementet den skal treffe. */
-  type Tilfelle = {
-    navn: string
-    liste: string
-    klasser: string[]
-    attributt: string
-    verdi: string
+  /** One case: a builder function, a value, and the element it must match. */
+  type Case = {
+    name: string
+    list: string
+    classes: string[]
+    attribute: string
+    value: string
   }
 
-  const tilfeller: Tilfelle[] = []
-  const hoppet: string[] = []
+  const cases: Case[] = []
+  const skipped: string[] = []
 
-  for (const [navn, verdi] of Object.entries(lt)) {
-    if (typeof verdi !== "function") continue
-    const byggefunksjon = verdi as unknown as Byggefunksjon
+  for (const [name, value] of Object.entries(lt)) {
+    if (typeof value !== "function") continue
+    const builder = value as unknown as BuilderFunction
 
-    for (const [liste, opsjon, attributt] of LISTER) {
-      const verdier = byggefunksjon[liste]
-      if (!Array.isArray(verdier)) continue
+    for (const [list, option, attribute] of LISTS) {
+      const values = builder[list]
+      if (!Array.isArray(values)) continue
 
-      for (const v of verdier) {
-        // De sammensatte byggefunksjonene gir ett attributtsett per del, som
-        // `lt.dialog()` med `host`, `dialog` og `header`. Attributtet ligger
-        // da på den delen som bærer det, og det er den som rendres.
-        const ut = delMed(
-          byggefunksjon({ ...STABIL_ID, [opsjon]: v }),
-          attributt,
-        )
+      for (const v of values) {
+        // The composite builder functions give one attribute set per part,
+        // like `lt.dialog()` with `host`, `dialog` and `header`. The attribute
+        // is then on the part that carries it, and that is the one rendered.
+        const out = partWith(builder({ ...STABLE_ID, [option]: v }), attribute)
 
-        // Verdier som ikke gir noe attributt har ingen regel å kontrollere.
-        // Det er to slag: standardverdien, som CSS-en alt har, og verdier
-        // som ikke er ment å se annerledes ut, som `input.types=text`, der
-        // bare noen få typer får et ikon.
-        if (ut === undefined) {
-          hoppet.push(`${navn}.${liste}=${v}`)
+        // Values that give no attribute have no rule to check. There are two
+        // kinds: the default, which the CSS already has, and values that are
+        // not meant to look different, like `input.types=text`, where only a
+        // few types get an icon.
+        if (out === undefined) {
+          skipped.push(`${name}.${list}=${v}`)
           continue
         }
 
-        tilfeller.push({
-          navn,
-          liste: `${navn}.${liste}`,
-          klasser: String(ut.class ?? "")
+        cases.push({
+          name,
+          list: `${name}.${list}`,
+          classes: String(out.class ?? "")
             .split(" ")
             .filter(Boolean),
-          attributt,
-          verdi: String(ut[attributt]),
+          attribute,
+          value: String(out[attribute]),
         })
       }
     }
   }
 
-  it("har verdier å kontrollere", () => {
-    expect(tilfeller.length).toBeGreaterThan(30)
+  it("has values to check", () => {
+    expect(cases.length).toBeGreaterThan(30)
   })
 
-  it("bruker et opsjonsnavn byggefunksjonen faktisk kjenner", () => {
+  it("uses an option name the builder function actually knows", () => {
     /*
-     * Står feil opsjonsnavn i `LISTER`, tar byggefunksjonen ikke imot noe,
-     * og svarer det samme som den gjør uten argumenter, uansett verdi. Løkka
-     * over leser det som «dette er standardverdien» og hopper over hele
-     * lista uten å si fra. Slik ble `markers` borte: opsjonen heter
-     * `required`, ikke `marker`.
+     * If `LISTS` has the wrong option name, the builder function takes
+     * nothing in, and answers the same as it does without arguments, whatever
+     * the value. The loop above reads that as "this is the default" and skips
+     * the whole list without saying so. That is how `markers` went missing:
+     * the option is called `required`, not `marker`.
      *
-     * Bare én verdi i en liste kan gi det samme som standardkallet, nemlig
-     * standardverdien selv. Gjør to det, er navnet feil.
+     * Only one value in a list can give the same as the default call, namely
+     * the default itself. If two do, the name is wrong.
      */
-    for (const [navn, verdi] of Object.entries(lt)) {
-      if (typeof verdi !== "function") continue
-      const byggefunksjon = verdi as unknown as Byggefunksjon
+    for (const [name, value] of Object.entries(lt)) {
+      if (typeof value !== "function") continue
+      const builder = value as unknown as BuilderFunction
 
-      for (const [liste, opsjon] of LISTER) {
-        const verdier = byggefunksjon[liste]
-        if (!Array.isArray(verdier)) continue
+      for (const [list, option] of LISTS) {
+        const values = builder[list]
+        if (!Array.isArray(values)) continue
 
-        const standard = JSON.stringify(byggefunksjon(STABIL_ID))
-        const like = verdier.filter(
+        const standard = JSON.stringify(builder(STABLE_ID))
+        const same = values.filter(
           (v) =>
-            JSON.stringify(byggefunksjon({ ...STABIL_ID, [opsjon]: v })) ===
-            standard,
+            JSON.stringify(builder({ ...STABLE_ID, [option]: v })) === standard,
         )
         expect(
-          like,
-          `${navn}.${liste} svarer likt for ${like.join(", ")}`,
-        ).toHaveLength(like.length > 1 ? 0 : like.length)
+          same,
+          `${name}.${list} answers the same for ${same.join(", ")}`,
+        ).toHaveLength(same.length > 1 ? 0 : same.length)
       }
     }
   })
 
-  it("kontrollerer hver liste en byggefunksjon har", () => {
+  it("checks every list a builder function has", () => {
     /*
-     * `LISTER` er skrevet for hånd, og en liste som mangler der blir aldri
-     * kontrollert uten at noe sier fra. Det er den samme feilklassen som
-     * lista `setAttributes` ryddet etter før var innom: et attributt som ikke
-     * står i en håndskrevet tabell er usynlig for testen, ikke for brukeren.
+     * `LISTS` is written by hand, and a list missing there is never checked
+     * without anything saying so. It is the same class of bug as the list
+     * `setAttributes` used to clean up after: an attribute that is not in a
+     * handwritten table is invisible to the test, not to the user.
      */
-    const kjente = new Set(LISTER.map(([liste]) => liste))
-    const ukjente: string[] = []
+    const known = new Set(LISTS.map(([list]) => list))
+    const unknown: string[] = []
 
-    for (const [navn, verdi] of Object.entries(lt)) {
-      if (typeof verdi !== "function") continue
-      const byggefunksjon = verdi as unknown as Byggefunksjon
-      for (const [liste, verdier] of Object.entries(byggefunksjon)) {
-        // `Object.assign` henger både lovlige verdier og vakter på
-        // funksjonen. Det er listene vi er ute etter.
-        if (!Array.isArray(verdier)) continue
-        if (!kjente.has(liste)) ukjente.push(`${navn}.${liste}`)
+    for (const [name, value] of Object.entries(lt)) {
+      if (typeof value !== "function") continue
+      const builder = value as unknown as BuilderFunction
+      for (const [list, values] of Object.entries(builder)) {
+        // `Object.assign` hangs both allowed values and guards on the
+        // function. The lists are what we are after.
+        if (!Array.isArray(values)) continue
+        if (!known.has(list)) unknown.push(`${name}.${list}`)
       }
     }
 
-    expect(ukjente).toEqual([])
+    expect(unknown).toEqual([])
   })
 
-  it("dekker hver liste med minst ett tilfelle", () => {
-    const lister = new Set<string>()
-    for (const [navn, verdi] of Object.entries(lt)) {
-      if (typeof verdi !== "function") continue
-      const byggefunksjon = verdi as unknown as Byggefunksjon
-      for (const [liste] of LISTER) {
-        if (Array.isArray(byggefunksjon[liste])) lister.add(`${navn}.${liste}`)
+  it("covers every list with at least one case", () => {
+    const lists = new Set<string>()
+    for (const [name, value] of Object.entries(lt)) {
+      if (typeof value !== "function") continue
+      const builder = value as unknown as BuilderFunction
+      for (const [list] of LISTS) {
+        if (Array.isArray(builder[list])) lists.add(`${name}.${list}`)
       }
     }
 
-    const dekket = new Set(tilfeller.map((t) => t.liste))
-    expect([...lister].filter((l) => !dekket.has(l))).toEqual([])
+    const covered = new Set(cases.map((c) => c.list))
+    expect([...lists].filter((l) => !covered.has(l))).toEqual([])
   })
 
   /**
-   * At verdien faktisk gjør noe, ikke bare at selektoren finnes.
+   * The value actually does something, not just that the selector exists.
    *
-   * Et tekstsøk passerer på en regel med tom blokk, på en som bare gjelder i
-   * høykontrastmodus, og på en som blir overstyrt lenger nede. Derfor rendres
-   * elementet to ganger, med og uten attributtet, og noe i den beregnede
-   * stilen må være forskjellig. Pseudoelementene er med, for `data-required`
-   * vises bare gjennom `::after`.
+   * A text search passes on a rule with an empty block, on one that only
+   * applies in forced colours mode, and on one that is overridden further
+   * down. So the element is rendered twice, with and without the attribute,
+   * and something in the computed style must differ. The pseudo-elements are
+   * included, because `data-required` only shows through `::after`.
    *
-   * Noen tilstander farger et barn framfor elementet selv: feltsettet farger
-   * `.lt-legend`, og den stripete tabellen farger radene. Da finnes det
-   * ingen regel på elementet å sammenligne, og testen faller tilbake på at
-   * selektoren står i et stilark. Fallet er begrenset til nettopp de
-   * tilfellene: finnes det en regel på elementet selv, kreves forskjellen.
+   * Some states colour a child rather than the element itself: the fieldset
+   * colours `.lt-legend`, and the striped table colours the rows. Then there
+   * is no rule on the element to compare, and the test falls back to the
+   * selector being in a stylesheet. The fallback is limited to exactly those
+   * cases: if there is a rule on the element itself, the difference is
+   * required.
    */
   it.each(
-    tilfeller.map((t) => [t.liste, t.verdi, t] as const),
-  )("%s=%s endrer noe", (_liste, _verdi, tilfelle) => {
-    // Den nakne selektoren er med fordi noen regler dekker alle verdiene
-    // på én gang: `.lt-label[data-required]` gir stjernen uansett om
-    // verdien er `symbol` eller `text`.
-    const selektorer = tilfelle.klasser.flatMap((klasse) => [
-      `.${klasse}[${tilfelle.attributt}="${tilfelle.verdi}"]`,
-      `.${klasse}[${tilfelle.attributt}]`,
+    cases.map((c) => [c.list, c.value, c] as const),
+  )("%s=%s changes something", (_list, _value, testCase) => {
+    // The bare selector is included because some rules cover all the values
+    // at once: `.lt-label[data-required]` gives the asterisk whether the
+    // value is `symbol` or `text`.
+    const selectors = testCase.classes.flatMap((cls) => [
+      `.${cls}[${testCase.attribute}="${testCase.value}"]`,
+      `.${cls}[${testCase.attribute}]`,
     ])
 
-    const finnes = selektorer.some((s) => alleRegler.includes(s))
-    expect(finnes, `ingen regel for ${selektorer[0]}`).toBe(true)
+    const exists = selectors.some((s) => allRules.includes(s))
+    expect(exists, `no rule for ${selectors[0]}`).toBe(true)
 
     /*
-     * Treffer en regel som gjelder her elementet selv, skal den kunne sees:
-     * elementet rendres to ganger, med og uten attributtet, og noe i den
-     * beregnede stilen må være forskjellig. Pseudoelementene er med hver for
-     * seg, for `data-required` vises bare gjennom `::after`.
+     * If a rule that applies here matches the element itself, it must be
+     * visible: the element is rendered twice, with and without the
+     * attribute, and something in the computed style must differ. The
+     * pseudo-elements are included one by one, because `data-required` only
+     * shows through `::after`.
      */
-    const pseudoer = ["", "::after", "::before"]
-    const treffSelv = pseudoer.filter((pseudo) =>
-      virksomme.some(({ selektor }) =>
-        selektorer.some((s) => selektor === `${s}${pseudo}`),
+    const pseudos = ["", "::after", "::before"]
+    const matchesSelf = pseudos.filter((pseudo) =>
+      active.some(({ selector }) =>
+        selectors.some((s) => selector === `${s}${pseudo}`),
       ),
     )
 
-    if (treffSelv.length === 0) {
+    if (matchesSelf.length === 0) {
       /*
-       * Ellers farger regelen et barn: feltsettet farger `.lt-legend`, og
-       * den stripete tabellen farger annenhver rad. Da finnes det ingenting
-       * på elementet selv å sammenligne, og kravet er i stedet at en regel
-       * som gjelder her faktisk erklærer noe. Et tekstsøk alene passerte på
-       * en tom blokk, og det var nettopp en tom regel jeg klarte å legge inn
-       * uten at testen sa fra.
+       * Otherwise the rule colours a child: the fieldset colours
+       * `.lt-legend`, and the striped table colours every other row. Then
+       * there is nothing on the element itself to compare, and the
+       * requirement is instead that a rule that applies here actually
+       * declares something. A text search alone passed on an empty block,
+       * and an empty rule was exactly what I managed to add without the test
+       * saying so.
        *
-       * En regel i en `@supports` motoren ikke har, eller i en `@media` som
-       * ikke slår til, er ikke med i `virksomme`, og skal heller ikke telle.
+       * A rule in a `@supports` the engine does not have, or in a `@media`
+       * that does not match, is not in `active`, and must not count either.
        */
-      const erklaerer = virksomme.filter(
-        ({ selektor, regel }) =>
-          selektorer.some((s) => selektor.startsWith(s)) &&
-          regel.style.length > 0,
+      const declaring = active.filter(
+        ({ selector, rule }) =>
+          selectors.some((s) => selector.startsWith(s)) &&
+          rule.style.length > 0,
       )
-      if (erklaerer.length > 0) return
+      if (declaring.length > 0) return
 
-      // Har motoren ingen virksom regel i det hele tatt, er det fordi
-      // regelen står bak en betingelse den ikke oppfyller. Da er det riktig
-      // at den ikke gjør noe her.
-      const noenSomHelst = virksomme.some(({ selektor }) =>
-        selektorer.some((s) => selektor.startsWith(s)),
+      // If the engine has no active rule at all, it is because the rule is
+      // behind a condition it does not meet. Then it is right that it does
+      // nothing here.
+      const anyAtAll = active.some(({ selector }) =>
+        selectors.some((s) => selector.startsWith(s)),
       )
       expect(
-        noenSomHelst,
-        `${selektorer[0]} treffer bare barn, og regelen erklærer ingenting`,
+        anyAtAll,
+        `${selectors[0]} only matches children, and the rule declares nothing`,
       ).toBe(false)
       return
     }
 
-    const uten = document.createElement("span")
-    uten.className = tilfelle.klasser.join(" ")
-    const med = document.createElement("span")
-    med.className = tilfelle.klasser.join(" ")
-    med.setAttribute(tilfelle.attributt, tilfelle.verdi)
+    const without = document.createElement("span")
+    without.className = testCase.classes.join(" ")
+    const withAttribute = document.createElement("span")
+    withAttribute.className = testCase.classes.join(" ")
+    withAttribute.setAttribute(testCase.attribute, testCase.value)
 
-    document.body.append(uten, med)
+    document.body.append(without, withAttribute)
     try {
-      const ulik = (pseudo: string) => {
-        const a = getComputedStyle(uten, pseudo || undefined)
-        const b = getComputedStyle(med, pseudo || undefined)
+      const differs = (pseudo: string) => {
+        const a = getComputedStyle(without, pseudo || undefined)
+        const b = getComputedStyle(withAttribute, pseudo || undefined)
         for (let i = 0; i < a.length; i += 1) {
-          const navn = a.item(i)
-          if (a.getPropertyValue(navn) !== b.getPropertyValue(navn)) return true
+          const name = a.item(i)
+          if (a.getPropertyValue(name) !== b.getPropertyValue(name)) return true
         }
         return false
       }
 
-      for (const pseudo of treffSelv) {
-        expect(ulik(pseudo), `${selektorer[0]}${pseudo} endrer ingenting`).toBe(
-          true,
-        )
+      for (const pseudo of matchesSelf) {
+        expect(
+          differs(pseudo),
+          `${selectors[0]}${pseudo} changes nothing`,
+        ).toBe(true)
       }
     } finally {
-      uten.remove()
-      med.remove()
+      without.remove()
+      withAttribute.remove()
     }
   })
 })

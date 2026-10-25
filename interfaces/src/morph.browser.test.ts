@@ -1,23 +1,24 @@
 /**
- * At en morfing fra serveren ikke river bort det komponenten har satt.
+ * That a morph from the server does not strip what the web component has set.
  *
- * Datastar synkroniserer attributter slik, der `r` står i siden og `s` er
- * serverens node:
+ * Datastar synchronises attributes like this, where `r` is in the page and `s`
+ * is the server's node:
  *
  * ```js
  * for (let {name: l} of Array.from(r.attributes))
  *   !s.hasAttribute(l) && !o.includes(l) && r.removeAttribute(l)
  * ```
  *
- * `o` er lista fra `data-preserve-attr`, og den leses fra serverens node.
- * Setter en komponent et attributt som ikke står der, forsvinner det ved
- * hver patch. Testen her kjører nøyaktig den løkka mot ekte markup, etter at
- * komponenten har gjort jobben sin, og krever at tilstanden står igjen.
+ * `o` is the list from `data-preserve-attr`, and it is read from the server's
+ * node. If a component sets an attribute that is not there, it disappears on
+ * every patch. This test runs exactly that loop against real markup, after the
+ * component has done its work, and requires the state to remain.
  *
- * Løkka forutsetter at nodene er de samme, og det er de ikke alltid. Datastar
- * morfer ikke et element med id inn i et uten, det byttes ut, og det rammer
- * bar markup der komponenten har laget id-ene selv. Det testes mot den ekte
- * bundlen i `components/frame/tabs/lt-tabs-morph.browser.test.ts`.
+ * The loop assumes the nodes are the same, and they are not always. Datastar
+ * does not morph an element with an id into one without; it replaces it, and
+ * that affects bare markup where the component created the ids itself. That is
+ * tested against the real bundle in
+ * `components/frame/tabs/lt-tabs-morph.browser.test.ts`.
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
@@ -40,732 +41,755 @@ defineLtPopover()
 defineLtTabs()
 defineLtDialog()
 
-/** Datastars attributtsynkronisering, på ett element. */
-function morfElement(live: Element, server: Element): void {
-  // Fredningslista er med for at hjelperen skal være den samme løkka vi
-  // siterer, og påstanden under holder den tom. Står et navn der, fjerner
-  // løkka ingenting for nettopp det attributtet, og testen etterprøver
-  // ingenting. Fixturene kommer to veier, og hver vei har sin vakt: noen
-  // bygges av `dialog()`, `popover()`, `suggestion()` og `tabs()`, og der
-  // feller folketellingen i `lt.browser.test.ts` en byggefunksjon som begynner
-  // å sende ut lista. Andre er skrevet for hånd, som en Go-mal ville gjort, og
-  // der er det denne linja som feller den.
-  const bevar = (server.getAttribute("data-preserve-attr") ?? "")
+/** Datastar's attribute synchronisation, on one element. */
+function morphElement(live: Element, server: Element): void {
+  // The preserve list is here so the helper is the same loop we quote, and
+  // the assertion below keeps it empty. If a name were in it, the loop would
+  // remove nothing for exactly that attribute, and the test would check
+  // nothing. The fixtures come two ways, and each way has its guard: some are
+  // built by `dialog()`, `popover()`, `suggestion()` and `tabs()`, and there
+  // the census in `lt.browser.test.ts` fails a builder function that starts
+  // emitting the list. Others are written by hand, as a Go template would,
+  // and there this line fails it.
+  const preserve = (server.getAttribute("data-preserve-attr") ?? "")
     .split(/\s+/)
     .filter(Boolean)
-  expect(bevar).toEqual([])
+  expect(preserve).toEqual([])
 
   for (const { name } of [...live.attributes]) {
-    if (!server.hasAttribute(name) && !bevar.includes(name)) {
+    if (!server.hasAttribute(name) && !preserve.includes(name)) {
       live.removeAttribute(name)
     }
   }
 
-  // Bare når verdien faktisk er en annen. En morfing som skriver hvert
-  // attributt på nytt ville lukket et åpent `popover` av seg selv, og da
-  // hadde testen etterprøvd sin egen skrivemåte framfor morfingen.
+  // Only when the value is actually different. A morph that rewrote every
+  // attribute would close an open `popover` by itself, and the test would
+  // then check its own way of writing rather than the morph.
   for (const { name, value } of [...server.attributes]) {
-    if (!bevar.includes(name) && live.getAttribute(name) !== value) {
+    if (!preserve.includes(name) && live.getAttribute(name) !== value) {
       live.setAttribute(name, value)
     }
   }
 }
 
-/** Samme, gjennom hele treet. Nodene står i samme rekkefølge. */
-function morf(live: Element, markup: string): void {
-  const mal = document.createElement("div")
-  mal.innerHTML = markup
-  const root = mal.firstElementChild
-  if (!root) throw new Error("Markupen har ingen root")
+/** The same, through the whole tree. The nodes are in the same order. */
+function morph(live: Element, markup: string): void {
+  const template = document.createElement("div")
+  template.innerHTML = markup
+  const root = template.firstElementChild
+  if (!root) throw new Error("The markup has no root")
 
-  const levende = [live, ...live.querySelectorAll("*")]
-  const sendte = [root, ...root.querySelectorAll("*")]
+  const living = [live, ...live.querySelectorAll("*")]
+  const sent = [root, ...root.querySelectorAll("*")]
 
-  if (levende.length !== sendte.length) {
+  if (living.length !== sent.length) {
     throw new Error(
-      `Komponenten la til eller fjernet noder: ${levende.length} i siden mot ${sendte.length} fra serveren`,
+      `The component added or removed nodes: ${living.length} in the page against ${sent.length} from the server`,
     )
   }
 
-  for (let i = 0; i < levende.length; i++) {
-    // Uten dette kunne en komponent som setter inn en node forskyve hele
-    // sammenligningen, og testen ville stilt krav til feil elements uten å
-    // si fra.
-    if (levende[i].tagName !== sendte[i].tagName) {
+  for (let i = 0; i < living.length; i++) {
+    // Without this, a component that inserts a node could shift the whole
+    // comparison, and the test would make demands of the wrong elements
+    // without saying so.
+    if (living[i].tagName !== sent[i].tagName) {
       throw new Error(
-        `Nodene står ikke i samme rekkefølge: ${levende[i].tagName} mot ${sendte[i].tagName}`,
+        `The nodes are not in the same order: ${living[i].tagName} against ${sent[i].tagName}`,
       )
     }
-    morfElement(levende[i], sendte[i])
+    morphElement(living[i], sent[i])
   }
 }
 
-function monterMarkup(markup: string): HTMLElement {
+function mountMarkup(markup: string): HTMLElement {
   document.body.innerHTML = markup
   return document.body.firstElementChild as HTMLElement
 }
 
-describe("morfing river ikke bort det komponenten setter", () => {
+describe("a morph does not strip what the component sets", () => {
   beforeEach(async () => {
-    // Komponenten leser adressen ved lasting, og et klikk på en fane skriver
-    // den.
+    // The component reads the address on load, and a click on a tab writes
+    // it.
     await setAddress("")
   })
 
   /*
-   * Markupen er skrevet slik en Go-mal skal gjøre det: `for` og `id`, som HTML
-   * krever for at feltet skal ha navn uten JavaScript, og ellers ingen
-   * kobling og ingen `data-preserve-attr`.
+   * The markup is written the way a Go template should write it: `for` and
+   * `id`, which HTML requires for the field to have a name without
+   * JavaScript, and otherwise no wiring and no `data-preserve-attr`.
    *
-   * Koblingen mellom feltet, hjelpeteksten og feilmeldingen er noe
-   * komponenten regner ut, ikke noe serveren sendte, så morfingen river den
-   * bort. Komponenten ser at attributtene er borte og setter dem tilbake.
+   * The wiring between the field, the help text and the error text is
+   * something the component computes, not something the server sent, so the
+   * morph strips it. The component sees that the attributes are gone and sets
+   * them back.
    */
-  const FELT = `
+  const FIELD = `
     <lt-field>
-      <label class="lt-label" for="epost">E-post</label>
-      <input class="lt-input" id="epost" />
-      <p class="lt-help-text">Vi sender aldri spam.</p>
-      <p class="lt-error-text">Skriv en gyldig adresse.</p>
+      <label class="lt-label" for="email">Email</label>
+      <input class="lt-input" id="email" />
+      <p class="lt-help-text">We never send spam.</p>
+      <p class="lt-error-text">Enter a valid address.</p>
     </lt-field>`
 
-  it("holder feltet koblet gjennom en patch, uten en bevaringsliste", async () => {
-    const felt = monterMarkup(FELT)
+  it("keeps the field wired through a patch, without a preserve list", async () => {
+    const field = mountMarkup(FIELD)
     await customElements.whenDefined("lt-field")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    const label = felt.querySelector("label") as HTMLLabelElement
-    const foer = kontroll.getAttribute("aria-describedby")
-    expect(foer, "koblingen fantes ikke engang før patchen").toBeTruthy()
-    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
+    const control = field.querySelector("input") as HTMLInputElement
+    const label = field.querySelector("label") as HTMLLabelElement
+    const before = control.getAttribute("aria-describedby")
+    expect(
+      before,
+      "the wiring did not even exist before the patch",
+    ).toBeTruthy()
+    expect(control.getAttribute("aria-invalid")).toBe("true")
 
-    morf(felt, FELT)
-    // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, FIELD)
+    // The repair happens in an observer, that is, in the next turn of the loop.
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const etter = kontroll.getAttribute("aria-describedby")
-    expect(etter, "koblingen kom ikke tilbake etter patchen").toBe(foer)
-    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
+    const after = control.getAttribute("aria-describedby")
+    expect(after, "the wiring did not come back after the patch").toBe(before)
+    expect(control.getAttribute("aria-invalid")).toBe("true")
 
-    for (const id of (etter ?? "").split(/\s+/).filter(Boolean)) {
+    for (const id of (after ?? "").split(/\s+/).filter(Boolean)) {
       expect(
         document.getElementById(id),
-        `aria-describedby peker på «${id}», som ikke finnes etter patchen`,
+        `aria-describedby points to "${id}", which does not exist after the patch`,
       ).not.toBeNull()
     }
 
-    expect(label.htmlFor).toBe("epost")
-    expect(document.getElementById(label.htmlFor)).toBe(kontroll)
+    expect(label.htmlFor).toBe("email")
+    expect(document.getElementById(label.htmlFor)).toBe(control)
     expect(label.classList.contains("lt-label")).toBe(true)
   })
 
-  it("skriver ingen id på kontrollen når ledeteksten står rundt den", async () => {
+  it("writes no id on the control when the label wraps it", async () => {
     /*
-     * En kontroll uten id har ingenting en morfing kan kjenne den igjen på,
-     * og blir derfor beholdt. Skrev komponenten en id på den, ville den
-     * vært en id serveren ikke sendte, og Datastar og idiomorph ville byttet
-     * ut kontrollen ved neste patch, med fokus og det brukeren hadde skrevet.
+     * A control without an id has nothing a morph can recognise it by, and is
+     * therefore kept. If the component wrote an id on it, that would be an id
+     * the server did not send, and Datastar and idiomorph would replace the
+     * control on the next patch, along with focus and what the user had typed.
      */
-    const RUNDT = `
+    const WRAPPED = `
       <lt-field>
-        <label class="lt-label">E-post <input class="lt-input" /></label>
-        <p class="lt-help-text">Vi sender aldri spam.</p>
+        <label class="lt-label">Email <input class="lt-input" /></label>
+        <p class="lt-help-text">We never send spam.</p>
       </lt-field>`
-    const felt = monterMarkup(RUNDT)
+    const field = mountMarkup(WRAPPED)
     await customElements.whenDefined("lt-field")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    expect(kontroll.hasAttribute("id")).toBe(false)
-    const foer = kontroll.getAttribute("aria-describedby")
-    expect(foer).toBeTruthy()
+    const control = field.querySelector("input") as HTMLInputElement
+    expect(control.hasAttribute("id")).toBe(false)
+    const before = control.getAttribute("aria-describedby")
+    expect(before).toBeTruthy()
 
-    morf(felt, RUNDT)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, WRAPPED)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(kontroll.hasAttribute("id")).toBe(false)
-    expect(kontroll.getAttribute("aria-describedby")).toBe(foer)
+    expect(control.hasAttribute("id")).toBe(false)
+    expect(control.getAttribute("aria-describedby")).toBe(before)
   })
 
-  it("kobler feltet på nytt når patchen byttet ut kontrollen", async () => {
+  it("rewires the field when the patch replaced the control", async () => {
     /*
-     * Bytter patchen ut selve kontrollen, kommer serverens node med serverens
-     * id. Koblingen til hjelpeteksten og feilmeldingen skrives på den nye.
+     * If the patch replaces the control itself, the server's node arrives with
+     * the server's id. The wiring to the help text and the error text is
+     * written on the new one.
      */
-    const felt = monterMarkup(FELT)
+    const field = mountMarkup(FIELD)
     await customElements.whenDefined("lt-field")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const label = felt.querySelector("label") as HTMLLabelElement
-    const gammel = felt.querySelector("input") as HTMLInputElement
-    const ny = document.createElement("input")
-    ny.className = "lt-input"
-    ny.id = "epost"
-    gammel.replaceWith(ny)
+    const label = field.querySelector("label") as HTMLLabelElement
+    const old = field.querySelector("input") as HTMLInputElement
+    const replacement = document.createElement("input")
+    replacement.className = "lt-input"
+    replacement.id = "email"
+    old.replaceWith(replacement)
 
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    expect(kontroll).toBe(ny)
-    expect(label.htmlFor).toBe("epost")
-    expect(document.getElementById(label.htmlFor)).toBe(kontroll)
-    expect(kontroll.getAttribute("aria-describedby")).toBeTruthy()
-    expect(kontroll.getAttribute("aria-invalid")).toBe("true")
+    const control = field.querySelector("input") as HTMLInputElement
+    expect(control).toBe(replacement)
+    expect(label.htmlFor).toBe("email")
+    expect(document.getElementById(label.htmlFor)).toBe(control)
+    expect(control.getAttribute("aria-describedby")).toBeTruthy()
+    expect(control.getAttribute("aria-invalid")).toBe("true")
   })
 
   /*
-   * Dialogen er serverens. `open` er derfor ikke fredet, i motsetning til på
-   * sprettoppvinduet: hadde det vært det, kunne serveren aldri åpnet
-   * dialogen igjen etter at brukeren hadde lukket den én gang.
+   * The server decides the dialog. `open` is therefore not preserved, unlike
+   * on the popover: if it were, the server could never open the dialog again
+   * after the user had closed it once.
    */
-  it("lar serveren åpne en dialog brukeren har lukket", async () => {
-    const box = dialog({ titleId: "tittel", open: true })
+  it("lets the server open a dialog the user has closed", async () => {
+    const box = dialog({ titleId: "title", open: true })
     const MARKUP = `
       <lt-dialog ${attr(box.host)}>
         <dialog ${attr(box.dialog)}>
-          <h2 ${attr(box.title)}>Vedtaket er registrert</h2>
-          <div ${attr(box.body)}><p>Saken er ferdigbehandlet.</p></div>
+          <h2 ${attr(box.title)}>The decision is registered</h2>
+          <div ${attr(box.body)}><p>The case is closed.</p></div>
         </dialog>
       </lt-dialog>`
 
-    const vert = monterMarkup(MARKUP)
+    const host = mountMarkup(MARKUP)
     await customElements.whenDefined("lt-dialog")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const d = vert.querySelector("dialog") as HTMLDialogElement
-    expect(d.open, "dialogen åpnet seg ikke i det hele tatt").toBe(true)
+    const d = host.querySelector("dialog") as HTMLDialogElement
+    expect(d.open, "the dialog did not open at all").toBe(true)
 
-    // Vent på `close`, ikke på en tegning: hendelsen er en køet oppgave, og
-    // i Firefox kom en tegning før den én gang av åtte.
-    const lukket = new Promise((ferdig) =>
-      d.addEventListener("close", ferdig, { once: true }),
+    // Wait for `close`, not for a paint: the event is a queued task, and in
+    // Firefox a paint came before it one time in eight.
+    const closed = new Promise((done) =>
+      d.addEventListener("close", done, { once: true }),
     )
     d.close()
-    await lukket
-    expect(vert.hasAttribute("open")).toBe(false)
+    await closed
+    expect(host.hasAttribute("open")).toBe(false)
 
-    morf(vert, MARKUP)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(host, MARKUP)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(d.open, "patchen fikk ikke åpnet dialogen igjen").toBe(true)
+    expect(d.open, "the patch did not open the dialog again").toBe(true)
     d.close()
   })
 
   /*
-   * Nettleseren setter `open` på selve `<dialog>` når `showModal()` kalles.
+   * The browser sets `open` on the `<dialog>` itself when `showModal()` is
+   * called.
    *
-   * Serveren skriver riktignok `open` selv når den vet at dialogen skal
-   * vises, men den vet det ikke alltid. Åpnes dialogen av et signal i
-   * nettleseren, eller av en bruker, står `open` bare i den levende siden,
-   * og da er det bare komponenten som kan sette det tilbake. Testen sender
-   * derfor serverens `<dialog>` **uten** `open`. Gjorde den ikke det, hadde
-   * morfingen latt attributtet stå uansett, siden den bare fjerner det
-   * serverens node mangler, og testen kunne ikke feile.
+   * The server does write `open` itself when it knows the dialog should be
+   * shown, but it does not always know. If the dialog is opened by a signal
+   * in the browser, or by a user, `open` exists only in the live page, and
+   * then only the component can set it back. The test therefore sends the
+   * server's `<dialog>` **without** `open`. If it did not, the morph would
+   * have left the attribute alone anyway, since it only removes what the
+   * server's node lacks, and the test could not fail.
    */
-  it("lukker ikke en åpen dialog i en patch", async () => {
-    const box = dialog({ titleId: "tittel", open: true })
-    const { open: _serverensOpen, ...dialogUtenOpen } = box.dialog
+  it("does not close an open dialog in a patch", async () => {
+    const box = dialog({ titleId: "title", open: true })
+    const { open: _serverOpen, ...dialogWithoutOpen } = box.dialog
     const MARKUP = `
       <lt-dialog ${attr(box.host)}>
-        <dialog ${attr(dialogUtenOpen)}>
-          <h2 ${attr(box.title)}>Vedtaket er registrert</h2>
-          <div ${attr(box.body)}><p>Saken er ferdigbehandlet.</p></div>
+        <dialog ${attr(dialogWithoutOpen)}>
+          <h2 ${attr(box.title)}>The decision is registered</h2>
+          <div ${attr(box.body)}><p>The case is closed.</p></div>
         </dialog>
       </lt-dialog>`
 
-    const vert = monterMarkup(MARKUP)
+    const host = mountMarkup(MARKUP)
     await customElements.whenDefined("lt-dialog")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const d = vert.querySelector("dialog") as HTMLDialogElement
-    expect(d.matches(":modal"), "dialogen åpnet seg ikke modalt").toBe(true)
+    const d = host.querySelector("dialog") as HTMLDialogElement
+    expect(d.matches(":modal"), "the dialog did not open as a modal").toBe(true)
 
-    // Serveren patcher området mens dialogen står åpen, for eksempel fordi
-    // poengtavla ved siden av har endret seg.
-    morf(vert, MARKUP)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    // The server patches the region while the dialog is open, for example
+    // because the scoreboard next to it has changed.
+    morph(host, MARKUP)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    // `open` og `:modal` er ikke det samme her heller: fjernes attributtet
-    // fra en modal dialog, forsvinner den fra skjermen mens `:modal`
-    // fortsatt er sann. Det er attributtet som må stå igjen.
-    expect(d.open, "patchen rev bort open og skjulte dialogen").toBe(true)
+    // `open` and `:modal` are not the same here either: if the attribute is
+    // removed from a modal dialog, it disappears from the screen while
+    // `:modal` is still true. It is the attribute that must remain.
+    expect(d.open, "the patch stripped open and hid the dialog").toBe(true)
     expect(d.matches(":modal")).toBe(true)
     d.close()
   })
 
   /*
-   * Forslagsfeltet skjuler «Ingen treff» når noe passer. Det gjør det med
-   * `hidden`, og serveren sender ikke den tilstanden, for den følger av hva
-   * brukeren har skrevet.
+   * The suggestion field hides "No matches" when something matches. It does
+   * so with `hidden`, and the server does not send that state, because it
+   * follows from what the user has typed.
    */
-  const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
-  const attr = (verdier: Record<string, unknown>) =>
-    Object.entries(verdier)
-      .map(([navn, verdi]) => (verdi === true ? navn : `${navn}="${verdi}"`))
+  const SUGGESTION = suggestion({ id: "municipality", keys: ["a", "b"] })
+  const attr = (values: Record<string, unknown>) =>
+    Object.entries(values)
+      .map(([name, value]) => (value === true ? name : `${name}="${value}"`))
       .join(" ")
 
-  const FELT_MED_FORSLAG = `
+  const FIELD_WITH_SUGGESTIONS = `
     <lt-suggestion>
-      <label ${attr(FORSLAG.label)}>Kommune</label>
+      <label ${attr(SUGGESTION.label)}>Municipality</label>
       <div>
-        <input ${attr(FORSLAG.control)} name="kommune">
-        <ul ${attr(FORSLAG.list)}>
-          <li ${attr(FORSLAG.options[0])}>Bergen</li>
-          <li ${attr(FORSLAG.options[1])}>Bodø</li>
+        <input ${attr(SUGGESTION.control)} name="municipality">
+        <ul ${attr(SUGGESTION.list)}>
+          <li ${attr(SUGGESTION.options[0])}>Bergen</li>
+          <li ${attr(SUGGESTION.options[1])}>Bodø</li>
         </ul>
-        <p ${attr(FORSLAG.empty)}>Ingen treff</p>
-        <span ${attr(FORSLAG.status)}></span>
+        <p ${attr(SUGGESTION.empty)}>No matches</p>
+        <span ${attr(SUGGESTION.status)}></span>
       </div>
     </lt-suggestion>`
 
-  it("holder forslagslista åpen og markeringen gjennom en patch", async () => {
+  it("keeps the suggestion list open and the highlight through a patch", async () => {
     /*
-     * Alt brukeren har gjort i et forslagsfelt er komponentens eget: at lista
-     * er utvidet, hva filtreringen skjuler, og hvilket alternativ hun har
-     * blitt med piltastene. Ingenting av det står i serverens utgave, og
-     * ingenting er fredet. Morfingen river det bort, og komponenten setter
-     * det tilbake.
+     * Everything the user has done in a suggestion field comes from the
+     * component: that the list is expanded, what the filter hides, and which
+     * option she has moved to with the arrow keys. None of it is in the
+     * server's version, and none of it is preserved. The morph strips it, and
+     * the component sets it back.
      */
-    const felt = monterMarkup(FELT_MED_FORSLAG)
+    const field = mountMarkup(FIELD_WITH_SUGGESTIONS)
     await customElements.whenDefined("lt-suggestion")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
-    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    const control = field.querySelector("input") as HTMLInputElement
+    const list = field.querySelector("[role='listbox']") as HTMLElement
+    const options = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
 
-    kontroll.focus()
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
-    kontroll.dispatchEvent(
+    control.focus()
+    control.dispatchEvent(new Event("input", { bubbles: true }))
+    control.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
 
-    expect(liste.hidden, "lista åpnet seg ikke").toBe(false)
-    expect(kontroll.getAttribute("aria-expanded")).toBe("true")
-    expect(valg[0].getAttribute("aria-selected")).toBe("true")
+    expect(list.hidden, "the list did not open").toBe(false)
+    expect(control.getAttribute("aria-expanded")).toBe("true")
+    expect(options[0].getAttribute("aria-selected")).toBe("true")
 
-    morf(felt, FELT_MED_FORSLAG)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, FIELD_WITH_SUGGESTIONS)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(liste.hidden, "lista lukket seg i patchen").toBe(false)
+    expect(list.hidden, "the list closed in the patch").toBe(false)
     expect(
-      kontroll.getAttribute("aria-expanded"),
-      "skjermleseren fikk beskjed om at lista var lukket mens den sto framme",
+      control.getAttribute("aria-expanded"),
+      "the screen reader was told the list was closed while it was showing",
     ).toBe("true")
     expect(
-      valg[0].getAttribute("aria-selected"),
-      "markeringen forsvant i patchen",
+      options[0].getAttribute("aria-selected"),
+      "the highlight disappeared in the patch",
     ).toBe("true")
-    expect(kontroll.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+    expect(control.getAttribute("aria-activedescendant")).toBe(options[0].id)
   })
 
-  it("lar serveren styre forslagslista når den sier at den eier den", async () => {
-    const SERVERENS = FELT_MED_FORSLAG.replace(
+  it("lets the server control the suggestion list when it says it decides it", async () => {
+    const SERVERS = FIELD_WITH_SUGGESTIONS.replace(
       "<lt-suggestion>",
       "<lt-suggestion server-controlled>",
     )
-    const felt = monterMarkup(SERVERENS)
+    const field = mountMarkup(SERVERS)
     await customElements.whenDefined("lt-suggestion")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const control = field.querySelector("input") as HTMLInputElement
+    const list = field.querySelector("[role='listbox']") as HTMLElement
 
-    kontroll.focus()
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
-    expect(liste.hidden).toBe(false)
+    control.focus()
+    control.dispatchEvent(new Event("input", { bubbles: true }))
+    expect(list.hidden).toBe(false)
 
-    morf(felt, SERVERENS)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, SERVERS)
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      liste.hidden,
-      "serveren sa at den eier lista, men komponenten åpnet den igjen",
+      list.hidden,
+      "the server said it decides the list, but the component opened it again",
     ).toBe(true)
   })
 
-  it("setter tilbake lesepunktet når bare aria-activedescendant blir revet bort", async () => {
+  it("restores the reading position when only aria-activedescendant is stripped", async () => {
     /*
-     * Markeringen kan stå igjen mens pekeren er borte. Da ser ingenting galt
-     * ut i markupen, men skjermleseren har mistet lesepunktet sitt, og
-     * brukeren får ikke lest opp alternativet hun står på.
+     * The highlight can remain while the pointer is gone. Then nothing looks
+     * wrong in the markup, but the screen reader has lost its reading
+     * position, and the user does not hear the option she is on.
      */
-    const felt = monterMarkup(FELT_MED_FORSLAG)
+    const field = mountMarkup(FIELD_WITH_SUGGESTIONS)
     await customElements.whenDefined("lt-suggestion")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    kontroll.focus()
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
-    kontroll.dispatchEvent(
+    const control = field.querySelector("input") as HTMLInputElement
+    control.focus()
+    control.dispatchEvent(new Event("input", { bubbles: true }))
+    control.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
-    expect(kontroll.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+    const options = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
+    expect(control.getAttribute("aria-activedescendant")).toBe(options[0].id)
 
-    kontroll.removeAttribute("aria-activedescendant")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    control.removeAttribute("aria-activedescendant")
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      kontroll.getAttribute("aria-activedescendant"),
-      "lesepunktet kom ikke tilbake",
-    ).toBe(valg[0].id)
+      control.getAttribute("aria-activedescendant"),
+      "the reading position did not come back",
+    ).toBe(options[0].id)
   })
 
-  it("glemmer markeringen når serveren sender en helt ny liste", async () => {
+  it("forgets the highlight when the server sends an entirely new list", async () => {
     /*
-     * Id-ene fra `lt.suggestion()` er posisjonelle, så en ny liste gjenbruker
-     * dem. Husket komponenten bare id-en, satte den markeringen tilbake på
-     * alternativ nummer to i en helt annen liste, og skjermleseren leste opp
-     * en kommune brukeren aldri navigerte til. Teksten er identiteten.
+     * The ids from `lt.suggestion()` are positional, so a new list reuses
+     * them. If the component remembered only the id, it set the highlight
+     * back on option number two in an entirely different list, and the screen
+     * reader announced a municipality the user never navigated to. The text
+     * is the identity.
      */
-    const felt = monterMarkup(FELT_MED_FORSLAG)
+    const field = mountMarkup(FIELD_WITH_SUGGESTIONS)
     await customElements.whenDefined("lt-suggestion")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    kontroll.focus()
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
-    kontroll.dispatchEvent(
+    const control = field.querySelector("input") as HTMLInputElement
+    control.focus()
+    control.dispatchEvent(new Event("input", { bubbles: true }))
+    control.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
-    kontroll.dispatchEvent(
+    control.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
 
-    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
-    expect(valg[1].getAttribute("aria-selected")).toBe("true")
+    const options = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
+    expect(options[1].getAttribute("aria-selected")).toBe("true")
 
     /*
-     * `morf()` her etterligner Datastars attributtsynkronisering, og en ekte
-     * patch bytter også teksten. Den delen settes derfor for hånd, slik at
-     * lista faktisk blir en annen liste og ikke bare de samme navnene med
-     * nye attributter.
+     * `morph()` here imitates Datastar's attribute synchronisation, and a real
+     * patch also replaces the text. That part is therefore set by hand, so the
+     * list actually becomes a different list and not just the same names with
+     * new attributes.
      */
-    const NY_LISTE = FELT_MED_FORSLAG.replace(">Bergen<", ">Alta<").replace(
-      ">Bodø<",
-      ">Asker<",
-    )
-    valg[0].textContent = "Alta"
-    valg[1].textContent = "Asker"
-    morf(felt, NY_LISTE)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    const NEW_LIST = FIELD_WITH_SUGGESTIONS.replace(
+      ">Bergen<",
+      ">Alta<",
+    ).replace(">Bodø<", ">Asker<")
+    options[0].textContent = "Alta"
+    options[1].textContent = "Asker"
+    morph(field, NEW_LIST)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const etter = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    const after = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
     expect(
-      etter.map((o) => o.getAttribute("aria-selected")),
-      "markeringen ble satt på et alternativ brukeren aldri navigerte til",
+      after.map((o) => o.getAttribute("aria-selected")),
+      "the highlight was set on an option the user never navigated to",
     ).toEqual(["false", "false"])
-    expect(kontroll.hasAttribute("aria-activedescendant")).toBe(false)
+    expect(control.hasAttribute("aria-activedescendant")).toBe(false)
   })
 
-  it("lar «Ingen treff» bli skjult gjennom en patch", async () => {
-    const felt = monterMarkup(FELT_MED_FORSLAG)
+  it("lets “No matches” stay hidden through a patch", async () => {
+    const field = mountMarkup(FIELD_WITH_SUGGESTIONS)
     await customElements.whenDefined("lt-suggestion")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const kontroll = felt.querySelector("input") as HTMLInputElement
-    kontroll.value = "Be"
-    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    const control = field.querySelector("input") as HTMLInputElement
+    control.value = "Be"
+    control.dispatchEvent(new Event("input", { bubbles: true }))
 
-    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
-    expect(tom.hidden, "«Ingen treff» sto framme selv om Bergen passet").toBe(
-      true,
-    )
+    const empty = field.querySelector(".lt-suggestion__empty") as HTMLElement
+    expect(
+      empty.hidden,
+      "“No matches” was showing although Bergen matched",
+    ).toBe(true)
 
-    morf(felt, FELT_MED_FORSLAG)
+    morph(field, FIELD_WITH_SUGGESTIONS)
 
-    expect(tom.hidden, "«Ingen treff» dukket opp igjen i patchen").toBe(true)
+    expect(empty.hidden, "“No matches” reappeared in the patch").toBe(true)
   })
 
   /*
-   * Fanene bærer valget i `aria-selected` og `tabindex` på lenkene, og i
-   * `hidden` på panelene. Serverens utgave sier bare hva som var valgt da
-   * den ble skrevet, ikke hva brukeren har gjort etterpå, og ingen av delene
-   * er fredet: byggefunksjonen skriver ingen `data-preserve-attr`. Morfingen
-   * river dem altså bort, og komponenten setter dem tilbake.
+   * The tabs carry the selection in `aria-selected` and `tabindex` on the
+   * links, and in `hidden` on the panels. The server's version only says
+   * what was selected when it was written, not what the user has done since,
+   * and none of the parts is preserved: the builder function writes no
+   * `data-preserve-attr`. So the morph strips them, and the component sets
+   * them back.
    */
-  const FANER = tabs({
-    id: "sak",
-    keys: ["oversikt", "vedlegg"],
-    label: "Saken",
+  const TABS = tabs({
+    id: "case",
+    keys: ["overview", "attachments"],
+    label: "The case",
   })
 
-  const FANEMARKUP = `
+  const TAB_MARKUP = `
     <lt-tabs>
-      <ul ${attr(FANER.list)}>
-        <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
-        <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
+      <ul ${attr(TABS.list)}>
+        <li><a ${attr(TABS.tabs[0])}>Overview</a></li>
+        <li><a ${attr(TABS.tabs[1])}>Attachments</a></li>
       </ul>
-      <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
-      <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
+      <section ${attr(TABS.panels[0])}><h2 ${attr(TABS.headings[0])}>Overview</h2>Summary</section>
+      <section ${attr(TABS.panels[1])}><h2 ${attr(TABS.headings[1])}>Attachments</h2>Files</section>
     </lt-tabs>`
 
-  it("holder på hvilken fane som er valgt gjennom en patch", async () => {
-    const felt = monterMarkup(FANEMARKUP)
+  it("keeps the selected tab through a patch", async () => {
+    const field = mountMarkup(TAB_MARKUP)
     await customElements.whenDefined("lt-tabs")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    const paneler = [
-      ...felt.querySelectorAll("[role='tabpanel']"),
+    const links = [...field.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const panels = [
+      ...field.querySelectorAll("[role='tabpanel']"),
     ] as HTMLElement[]
 
-    lenker[1].click()
-    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
+    links[1].click()
+    expect(links[1].getAttribute("aria-selected")).toBe("true")
 
-    morf(felt, FANEMARKUP)
-    // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, TAB_MARKUP)
+    // The repair happens in an observer, that is, in the next turn of the loop.
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      lenker[1].getAttribute("aria-selected"),
-      "den valgte fanen ble den første igjen",
+      links[1].getAttribute("aria-selected"),
+      "the selected tab became the first one again",
     ).toBe("true")
-    expect(lenker[1].tabIndex, "tabbestoppet fulgte ikke med").toBe(0)
+    expect(links[1].tabIndex, "the tab stop did not follow").toBe(0)
     expect(
-      paneler[1].hasAttribute("hidden"),
-      "panelet til den valgte fanen ble skjult",
+      panels[1].hasAttribute("hidden"),
+      "the panel of the selected tab was hidden",
     ).toBe(false)
-    expect(paneler[0].hasAttribute("hidden")).toBe(true)
+    expect(panels[0].hasAttribute("hidden")).toBe(true)
   })
 
-  it("lar brukeren bytte fane i markup uten id på fanene", async () => {
+  it("lets the user switch tabs in markup without ids on the tabs", async () => {
     /*
-     * Håndskrevet markup fra en Go- eller Kotlin-mal har ingen id på
-     * fanene, og det skal den ikke ha: lenken peker på panelets id, og en id
-     * på fanen ville fått den byttet ut ved neste patch.
+     * Hand-written markup from a Go or Kotlin template has no id on the tabs,
+     * and it should not have one: the link points to the panel's id, and an
+     * id on the tab would get it replaced on the next patch.
      *
-     * Husket komponenten valget som en id, ble den tomme strengen en
-     * identitet som traff den første fanen, og reparasjonen satte valget
-     * tilbake i neste mikrotask. Brukeren fikk da ikke byttet fane i det
-     * hele tatt, og ingenting sa fra.
+     * If the component remembered the selection as an id, the empty string
+     * became an identity that matched the first tab, and the repair set the
+     * selection back in the next microtask. The user then could not switch
+     * tabs at all, and nothing said so.
      */
-    const UTEN_IDER = `
+    const WITHOUT_IDS = `
       <lt-tabs>
         <ul class="lt-tabs__list" role="tablist">
-          <li role="presentation"><a href="#oversikt" role="tab" aria-selected="true" tabindex="0">Oversikt</a></li>
-          <li role="presentation"><a href="#vedlegg" role="tab" aria-selected="false" tabindex="-1">Vedlegg</a></li>
+          <li role="presentation"><a href="#overview" role="tab" aria-selected="true" tabindex="0">Overview</a></li>
+          <li role="presentation"><a href="#attachments" role="tab" aria-selected="false" tabindex="-1">Attachments</a></li>
         </ul>
-        <section class="lt-tabs__panel" id="oversikt" role="tabpanel" tabindex="0">Sammendrag</section>
-        <section class="lt-tabs__panel" id="vedlegg" role="tabpanel" tabindex="0" hidden>Filer</section>
+        <section class="lt-tabs__panel" id="overview" role="tabpanel" tabindex="0">Summary</section>
+        <section class="lt-tabs__panel" id="attachments" role="tabpanel" tabindex="0" hidden>Files</section>
       </lt-tabs>`
 
-    const felt = monterMarkup(UTEN_IDER)
+    const field = mountMarkup(WITHOUT_IDS)
     await customElements.whenDefined("lt-tabs")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    const paneler = [
-      ...felt.querySelectorAll("[role='tabpanel']"),
+    const links = [...field.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const panels = [
+      ...field.querySelectorAll("[role='tabpanel']"),
     ] as HTMLElement[]
 
-    lenker[1].click()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    links[1].click()
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      lenker[1].getAttribute("aria-selected"),
-      "valget hoppet tilbake til den første fanen",
+      links[1].getAttribute("aria-selected"),
+      "the selection jumped back to the first tab",
     ).toBe("true")
-    expect(paneler[1].hasAttribute("hidden")).toBe(false)
+    expect(panels[1].hasAttribute("hidden")).toBe(false)
 
-    morf(felt, UTEN_IDER)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, WITHOUT_IDS)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
-    expect(paneler[1].hasAttribute("hidden")).toBe(false)
+    expect(links[1].getAttribute("aria-selected")).toBe("true")
+    expect(panels[1].hasAttribute("hidden")).toBe(false)
   })
 
-  it("lar fanene stå i takt når patchen fjerner den valgte", async () => {
+  it("keeps the tabs consistent when the patch removes the selected one", async () => {
     /*
-     * Serveren kan sende en kortere rad. Komponenten glemmer da valget, for
-     * fanen finnes ikke lenger, men markupen må henge sammen etterpå.
+     * The server can send a shorter list. The component then forgets the
+     * selection, because the tab no longer exists, but the markup must hang
+     * together afterwards.
      *
-     * Uten opprydningen sto raden igjen uten en eneste `aria-selected="true"`,
-     * med alle panelene skjult, og et klikk på den ene fanen som var igjen
-     * gjorde ingenting: `select(0)` sammenlignet mot en `selected` som svarer
-     * 0 også når ingenting er markert. Brukeren fikk en fanerad som ikke
-     * svarte.
+     * Without the clean-up, the list was left without a single
+     * `aria-selected="true"`, with every panel hidden, and a click on the one
+     * remaining tab did nothing: `select(0)` compared against a `selected`
+     * that answers 0 also when nothing is highlighted. The user got a tab
+     * list that did not respond.
      */
-    const felt = monterMarkup(FANEMARKUP)
+    const field = mountMarkup(TAB_MARKUP)
     await customElements.whenDefined("lt-tabs")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    lenker[1].click()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
+    const links = [...field.querySelectorAll("[role='tab']")] as HTMLElement[]
+    links[1].click()
+    await new Promise((done) => requestAnimationFrame(done))
+    expect(links[1].getAttribute("aria-selected")).toBe("true")
 
-    const meldte: number[] = []
-    felt.addEventListener("tab-select", (e) => meldte.push(e.detail.index))
+    const reported: number[] = []
+    field.addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    // Patchen fjerner fanen brukeren valgte, og panelet dens.
-    lenker[1].closest("li")?.remove()
-    ;(felt.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    // The patch removes the tab the user selected, and its panel.
+    links[1].closest("li")?.remove()
+    ;(field.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const igjen = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    const paneler = [
-      ...felt.querySelectorAll("[role='tabpanel']"),
+    const remaining = [
+      ...field.querySelectorAll("[role='tab']"),
+    ] as HTMLElement[]
+    const panels = [
+      ...field.querySelectorAll("[role='tabpanel']"),
     ] as HTMLElement[]
 
     expect(
-      igjen.map((k) => k.getAttribute("aria-selected")),
-      "ingen fane var markert etter patchen",
+      remaining.map((k) => k.getAttribute("aria-selected")),
+      "no tab was highlighted after the patch",
     ).toEqual(["true"])
     expect(
-      meldte,
-      "opprydningen tok et nytt valg uten å si fra, så en app som laster panelinnhold fikk aldri vite det",
+      reported,
+      "the clean-up made a new selection without saying so, so an app that loads panel content never found out",
     ).toContain(0)
     expect(
-      paneler[0].hasAttribute("hidden"),
-      "ingen paneler var synlige etter patchen",
+      panels[0].hasAttribute("hidden"),
+      "no panels were visible after the patch",
     ).toBe(false)
   })
 
-  it("lar serveren flytte fanen når den sier at den eier valget", async () => {
+  it("lets the server move the tab when it says it decides the selection", async () => {
     /*
-     * Det fredningen ga, og som reparasjonen måtte erstatte.
+     * What preserving gave, and what the repair had to replace.
      *
-     * «Gå videre til steg 2» er en ekte ting en server vil kunne gjøre. Med
-     * `data-preserve-attr` kunne den aldri det: lista gjaldt begge veier.
-     * `server-controlled` sier at serveren eier valget, og da bestemmer hver
-     * patch.
+     * "Go on to step 2" is a real thing a server will want to do. With
+     * `data-preserve-attr` it never could: the list applied both ways.
+     * `server-controlled` says the server decides the selection, and then
+     * every patch decides.
      */
-    const SERVERENS = FANEMARKUP.replace(
+    const SERVERS = TAB_MARKUP.replace(
       "<lt-tabs>",
       "<lt-tabs server-controlled>",
     )
-    const felt = monterMarkup(SERVERENS)
+    const field = mountMarkup(SERVERS)
     await customElements.whenDefined("lt-tabs")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    lenker[1].click()
-    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
+    const links = [...field.querySelectorAll("[role='tab']")] as HTMLElement[]
+    links[1].click()
+    expect(links[1].getAttribute("aria-selected")).toBe("true")
 
-    morf(felt, SERVERENS)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(field, SERVERS)
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      lenker[0].getAttribute("aria-selected"),
-      "serveren sa at den eier valget, men komponenten satte det tilbake",
+      links[0].getAttribute("aria-selected"),
+      "the server said it decides the selection, but the component set it back",
     ).toBe("true")
-    expect(lenker[1].getAttribute("aria-selected")).toBe("false")
+    expect(links[1].getAttribute("aria-selected")).toBe("false")
   })
 
   /*
-   * Sprettoppvinduet bærer tilstanden på verten, og posisjonen i `style` på
-   * panelet. Patchen må utløses fra noe inne i vinduet; et klikk utenfor
-   * lukker det, og da etterprøver man sin egen klikking.
+   * The popover carries its state on the host, and the position in `style` on
+   * the panel. The patch must be triggered from something inside the popover;
+   * a click outside closes it, and then you are checking your own clicking.
    */
-  const SPRETT = popover({ id: "meny" })
+  const POPOVER = popover({ id: "menu" })
 
-  const SPRETTMARKUP = `
-    <lt-popover ${attr(SPRETT.host)}>
-      <button ${attr(SPRETT.trigger)}>Handlinger</button>
-      <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
+  const POPOVER_MARKUP = `
+    <lt-popover ${attr(POPOVER.host)}>
+      <button ${attr(POPOVER.trigger)}>Actions</button>
+      <ul ${attr(POPOVER.panel)}><li>Archive</li></ul>
     </lt-popover>`
 
-  it("holder sprettoppvinduet åpent gjennom en patch", async () => {
-    const felt = monterMarkup(SPRETTMARKUP)
+  it("keeps the popover open through a patch", async () => {
+    const field = mountMarkup(POPOVER_MARKUP)
     await customElements.whenDefined("lt-popover")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    const knapp = felt.querySelector("button") as HTMLButtonElement
-    const panel = felt.querySelector("ul") as HTMLElement
+    const button = field.querySelector("button") as HTMLButtonElement
+    const panel = field.querySelector("ul") as HTMLElement
 
-    knapp.click()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(panel.matches(":popover-open"), "vinduet åpnet seg ikke").toBe(true)
-
-    morf(felt, SPRETTMARKUP)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-
-    expect(felt.hasAttribute("open"), "verten mistet tilstanden sin").toBe(true)
-    expect(
-      knapp.getAttribute("aria-expanded"),
-      "knappen meldte lukket til skjermleseren",
-    ).toBe("true")
-    expect(panel.matches(":popover-open"), "vinduet lukket seg i patchen").toBe(
+    button.click()
+    await new Promise((done) => requestAnimationFrame(done))
+    expect(panel.matches(":popover-open"), "the popover did not open").toBe(
       true,
     )
+
+    morph(field, POPOVER_MARKUP)
+    await new Promise((done) => requestAnimationFrame(done))
+
+    expect(field.hasAttribute("open"), "the host lost its state").toBe(true)
+    expect(
+      button.getAttribute("aria-expanded"),
+      "the button reported closed to the screen reader",
+    ).toBe("true")
+    expect(
+      panel.matches(":popover-open"),
+      "the popover closed in the patch",
+    ).toBe(true)
   })
 
-  it("lar serveren lukke sprettoppvinduet når den sier at den eier det", async () => {
-    const SERVERENS = SPRETTMARKUP.replace(
+  it("lets the server close the popover when it says it decides it", async () => {
+    const SERVERS = POPOVER_MARKUP.replace(
       "<lt-popover ",
       "<lt-popover server-controlled ",
     )
-    const vindu = monterMarkup(SERVERENS) as HTMLElement & { show(): void }
+    const host = mountMarkup(SERVERS) as HTMLElement & { show(): void }
     await customElements.whenDefined("lt-popover")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    vindu.show()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(vindu.hasAttribute("open")).toBe(true)
+    host.show()
+    await new Promise((done) => requestAnimationFrame(done))
+    expect(host.hasAttribute("open")).toBe(true)
 
-    morf(vindu, SERVERENS)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    morph(host, SERVERS)
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      vindu.hasAttribute("open"),
-      "serveren sa at den eier vinduet, men komponenten åpnet det igjen",
+      host.hasAttribute("open"),
+      "the server said it decides the popover, but the component opened it again",
     ).toBe(false)
   })
 
-  it("lukker seg når patchen både fjerner open og overlater tilstanden", async () => {
+  it("closes when the patch both removes open and hands over the state", async () => {
     /*
-     * En morfing setter ett attributt om gangen, og `open` kommer før
-     * `server-controlled` i dokumentrekkefølgen. Reparerte komponenten med en
-     * gang, satte den `open` tilbake mens serveren var midt i å si at den
-     * overtar tilstanden, og vinduet ble stående åpent etterpå.
+     * A morph sets one attribute at a time, and `open` comes before
+     * `server-controlled` in document order. If the component repaired
+     * immediately, it set `open` back while the server was in the middle of
+     * saying it takes over the state, and the popover stayed open afterwards.
      */
-    const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & { show(): void }
+    const host = mountMarkup(POPOVER_MARKUP) as HTMLElement & { show(): void }
     await customElements.whenDefined("lt-popover")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    vindu.show()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(vindu.hasAttribute("open")).toBe(true)
+    host.show()
+    await new Promise((done) => requestAnimationFrame(done))
+    expect(host.hasAttribute("open")).toBe(true)
 
-    vindu.removeAttribute("open")
-    vindu.setAttribute("server-controlled", "")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    host.removeAttribute("open")
+    host.setAttribute("server-controlled", "")
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(
-      vindu.hasAttribute("open"),
-      "vinduet åpnet seg igjen fordi reparasjonen kom før hele patchen hadde landet",
+      host.hasAttribute("open"),
+      "the popover opened again because the repair came before the whole patch had landed",
     ).toBe(false)
   })
 
-  it("lar en app lukke sprettoppvinduet med egenskapen", async () => {
+  it("lets an app close the popover with the property", async () => {
     /*
-     * Reparasjonen må ikke stå i veien for en app som styrer vinduet selv.
-     * Første utgave husket bare «brukeren åpnet det», og satte da `open`
-     * rett tilbake når appen fjernet det. Datastar-eksempelet i
-     * dokumentasjonen lukker menyen fra en handling inne i panelet, og den
-     * ble stående åpen.
+     * The repair must not get in the way of an app that controls the popover
+     * itself. The first version remembered only "the user opened it", and
+     * then set `open` straight back when the app removed it. The Datastar
+     * example in the documentation closes the menu from an action inside the
+     * panel, and it stayed open.
      */
-    const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & {
+    const host = mountMarkup(POPOVER_MARKUP) as HTMLElement & {
       show(): void
       open: boolean
     }
     await customElements.whenDefined("lt-popover")
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    vindu.show()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(vindu.hasAttribute("open")).toBe(true)
+    host.show()
+    await new Promise((done) => requestAnimationFrame(done))
+    expect(host.hasAttribute("open")).toBe(true)
 
-    vindu.open = false
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    host.open = false
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(vindu.hasAttribute("open"), "vinduet lot seg ikke lukke").toBe(false)
-    const panel = vindu.querySelector("[popover]") as HTMLElement
+    expect(host.hasAttribute("open"), "the popover would not close").toBe(false)
+    const panel = host.querySelector("[popover]") as HTMLElement
     expect(panel.matches(":popover-open")).toBe(false)
   })
 })

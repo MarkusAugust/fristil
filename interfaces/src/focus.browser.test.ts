@@ -25,90 +25,92 @@ import "./components/css/textarea/textarea.css"
 import "./components/css/toggle-group/toggle-group.css"
 
 /**
- * At alt som kan få tastaturfokus, viser det.
+ * Everything that can get keyboard focus shows it.
  *
- * WCAG 2.4.7 krever en synlig markering av hvor fokuset står, og 1.4.11 at
- * markeringen holder 3:1 mot flaten rundt. Systemet løser det med én ring,
- * `--lt-focus-ring`, brukt i tjue regler fordelt på atten stilark.
+ * WCAG 2.4.7 requires a visible indicator of where focus is, and 1.4.11 that
+ * the indicator holds 3:1 against the surface around it. The system does it
+ * with one ring, `--lt-focus-ring`, used in twenty rules spread over eighteen
+ * stylesheets.
  *
- * Fram til nå fantes det ikke én eneste påstand om `outline` i hele
- * testrekka. Ringen kunne altså forsvinne fra en komponent uten at noe sa
- * fra, og `package-css.browser.test.ts` leser bare teksten i stilarkene: den
- * ser at ingen skriver ringen ut for hånd, ikke at fokus er synlig.
+ * Until now there was not a single assertion about `outline` in the whole
+ * test suite. The ring could disappear from a component without anything
+ * saying so, and `package-css.browser.test.ts` only reads the text of the
+ * stylesheets: it sees that nobody writes the ring out by hand, not that
+ * focus is visible.
  *
- * Testen tabber seg gjennom siden slik en tastaturbruker gjør. Et
- * programmert `focus()` duger ikke: `:focus-visible` treffer bare når
- * nettleseren mener fokuset skal vises, og et fokus satt fra kode etter et
- * museklikk teller ikke.
+ * The test tabs through the page the way a keyboard user does. A programmatic
+ * `focus()` is not enough: `:focus-visible` only matches when the browser
+ * thinks focus should be shown, and focus set from code after a mouse click
+ * does not count.
  */
 
-/** Ett av hvert som kan få fokus, med markupen serveren ville sendt. */
-const SIDEN = `
-  <a class="lt-skip-link" href="#hoved">Hopp til innhold</a>
+/** One of everything that can get focus, with the markup the server would send. */
+const PAGE = `
+  <a class="lt-skip-link" href="#main">Skip to content</a>
 
-  <nav class="lt-breadcrumbs" aria-label="Du er her">
-    <ol><li><a href="#start">Start</a></li><li><a href="#sak">Saken din</a></li></ol>
+  <nav class="lt-breadcrumbs" aria-label="You are here">
+    <ol><li><a href="#start">Start</a></li><li><a href="#case">Your case</a></li></ol>
   </nav>
 
-  <a class="lt-link" href="#vilkar">Les vilkårene</a>
-  <button class="lt-button" type="button">Send søknad</button>
+  <a class="lt-link" href="#terms">Read the terms</a>
+  <button class="lt-button" type="button">Send application</button>
 
-  <label class="lt-label" for="epost">E-postadresse</label>
-  <input class="lt-input" id="epost" type="email" />
+  <label class="lt-label" for="email">Email address</label>
+  <input class="lt-input" id="email" type="email" />
 
-  <label class="lt-label" for="melding">Melding</label>
-  <textarea class="lt-textarea" id="melding"></textarea>
+  <label class="lt-label" for="message">Message</label>
+  <textarea class="lt-textarea" id="message"></textarea>
 
-  <label class="lt-label" for="fylke">Fylke</label>
-  <select class="lt-select" id="fylke"><option>Vestland</option></select>
+  <label class="lt-label" for="county">County</label>
+  <select class="lt-select" id="county"><option>Yorkshire</option></select>
 
-  <label class="lt-label" for="samtykke">Jeg samtykker</label>
-  <input class="lt-checkbox" id="samtykke" type="checkbox" />
+  <label class="lt-label" for="consent">I consent</label>
+  <input class="lt-checkbox" id="consent" type="checkbox" />
 
   <label class="lt-label" for="post">Post</label>
-  <input class="lt-radio" id="post" type="radio" name="levering" />
+  <input class="lt-radio" id="post" type="radio" name="delivery" />
 
-  <label class="lt-label" for="varsler">Varsler</label>
-  <input class="lt-switch" id="varsler" type="checkbox" role="switch" />
+  <label class="lt-label" for="notifications">Notifications</label>
+  <input class="lt-switch" id="notifications" type="checkbox" role="switch" />
 
-  <label class="lt-label" for="vedlegg">Vedlegg</label>
-  <input class="lt-file-upload" id="vedlegg" type="file" />
+  <label class="lt-label" for="attachment">Attachment</label>
+  <input class="lt-file-upload" id="attachment" type="file" />
 
-  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Innvilget</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Approved</button>
 
-  <a class="lt-card" data-interactive href="#saken">Saken din</a>
+  <a class="lt-card" data-interactive href="#your-case">Your case</a>
 
-  <details class="lt-accordion"><summary>Hva betyr dette?</summary><p>Svaret.</p></details>
+  <details class="lt-accordion"><summary>What does this mean?</summary><p>The answer.</p></details>
 
-  <nav class="lt-pagination" aria-label="Sider">
+  <nav class="lt-pagination" aria-label="Pages">
     <ul><li><button type="button">1</button></li><li><button type="button">2</button></li></ul>
   </nav>
 
   <table class="lt-table">
-    <thead><tr><th scope="col" aria-sort="ascending"><button class="lt-table__sort" type="button">Dato</button></th></tr></thead>
+    <thead><tr><th scope="col" aria-sort="ascending"><button class="lt-table__sort" type="button">Date</button></th></tr></thead>
   </table>
 
   <fieldset class="lt-toggle-group">
     <label class="lt-toggle-group__option">
-      <input type="radio" name="visning" /> Kart
+      <input type="radio" name="view" /> Map
     </label>
   </fieldset>
 `
 
 /**
- * Ringen brukeren faktisk ser når dette elementet har fokus.
+ * The ring the user actually sees when this element has focus.
  *
- * Som rule står den på elementet selv. Ligger den på en forelder, som når
- * et valg tegner ringen med `:has(input:focus-visible)`, er det den som
- * gjelder.
+ * As a rule it is on the element itself. When it is on a parent, as when an
+ * option draws the ring with `:has(input:focus-visible)`, that is the one
+ * that counts.
  */
-function ringenSomVises(element: HTMLElement): CSSStyleDeclaration {
+function visibleRing(element: HTMLElement): CSSStyleDeclaration {
   let node: HTMLElement | null = element
 
   while (node) {
-    const stil = getComputedStyle(node)
-    if (stil.outlineStyle === "solid" && stil.outlineWidth === "2px") {
-      return stil
+    const style = getComputedStyle(node)
+    if (style.outlineStyle === "solid" && style.outlineWidth === "2px") {
+      return style
     }
     node = node.parentElement
   }
@@ -117,68 +119,70 @@ function ringenSomVises(element: HTMLElement): CSSStyleDeclaration {
 }
 
 /**
- * Alt som kan få fokus, med ringen hvert av dem har.
+ * Everything that can get focus, with the ring each of them has.
  *
- * Ett ekte Tab, og så `focus()` fra kode på resten. Nettleseren regner fokus
- * som tastaturstyrt etter et tastetrykk, så et programmert `focus()` etterpå
- * får `:focus-visible` også. Det er etterprøvd i alle tre motorene. Første
- * utgave tabbet seg gjennom med 24 rundturer til nettleseren, og på en
- * travel maskin tok de over femten sekunder i Firefox: testen feilet på
- * klokka, ikke på noe den sjekker.
+ * One real Tab, and then `focus()` from code on the rest. The browser treats
+ * focus as keyboard driven after a key press, so a programmatic `focus()`
+ * afterwards gets `:focus-visible` too. That has been checked in all three
+ * engines. The first version tabbed through with 24 round trips to the
+ * browser, and on a busy machine they took over fifteen seconds in Firefox:
+ * the test failed on the clock, not on anything it checks.
  */
-async function fokuserGjennom() {
-  const funnet: Array<{ hvem: string; bredde: string; stil: string }> = []
+async function focusThrough() {
+  const found: Array<{ who: string; width: string; style: string }> = []
 
   await userEvent.tab()
 
-  const kandidater = [
+  const candidates = [
     ...document.querySelectorAll<HTMLElement>(
       "a[href], button, input, select, textarea, summary, [tabindex]",
     ),
   ]
 
-  for (const kandidat of kandidater) {
-    kandidat.focus()
-    if (document.activeElement !== kandidat) continue
-    if (!kandidat.matches(":focus-visible")) continue
-    const aktiv = kandidat
+  for (const candidate of candidates) {
+    candidate.focus()
+    if (document.activeElement !== candidate) continue
+    if (!candidate.matches(":focus-visible")) continue
+    const active = candidate
 
-    // Ringen ligger ikke alltid på elementet som har fokus. I
-    // `.lt-toggle-group` er radioknappen usynlig, og valget rundt den tegner
-    // ringen med `:has(input:focus-visible)`. Det er ringen brukeren ser som
-    // teller, så vi går oppover til vi finner den.
-    const ring = ringenSomVises(aktiv)
+    // The ring is not always on the element that has focus. In
+    // `.lt-toggle-group` the radio button is invisible, and the option around
+    // it draws the ring with `:has(input:focus-visible)`. The ring the user
+    // sees is what counts, so we go up until we find it.
+    const ring = visibleRing(active)
 
-    funnet.push({
-      hvem: `${aktiv.tagName.toLowerCase()}${aktiv.id ? `#${aktiv.id}` : `.${String(aktiv.className).split(" ")[0]}`}`,
-      bredde: ring.outlineWidth,
-      stil: ring.outlineStyle,
+    found.push({
+      who: `${active.tagName.toLowerCase()}${active.id ? `#${active.id}` : `.${String(active.className).split(" ")[0]}`}`,
+      width: ring.outlineWidth,
+      style: ring.outlineStyle,
     })
   }
 
-  return funnet
+  return found
 }
 
-describe("tastaturfokus er synlig", () => {
-  it("gir hver kontroll en ring på to pixels", async () => {
-    mount(SIDEN)
+describe("keyboard focus is visible", () => {
+  it("gives every control a two-pixel ring", async () => {
+    mount(PAGE)
     await waitForPaint()
 
-    const funnet = await fokuserGjennom()
+    const found = await focusThrough()
 
-    // Uten dette kunne en endring i markupen gjort sveipet tomt, og en tom
-    // liste ville meldt grønt.
-    expect(funnet.length, "fant ingenting med synlig fokus").toBeGreaterThan(12)
+    // Without this, a change in the markup could have left the sweep empty,
+    // and an empty list would have reported green.
+    expect(found.length, "found nothing with visible focus").toBeGreaterThan(12)
 
-    const uten = funnet.filter((f) => f.stil !== "solid" || f.bredde !== "2px")
+    const without = found.filter(
+      (f) => f.style !== "solid" || f.width !== "2px",
+    )
 
     expect(
-      uten.map((f) => `${f.hvem}: ${f.bredde} ${f.stil}`),
-      "disse mangler fokusringen",
+      without.map((f) => `${f.who}: ${f.width} ${f.style}`),
+      "these are missing the focus ring",
     ).toEqual([])
   })
 
-  it("henter ringen fra tokenet, ikke fra hver komponent", async () => {
+  it("takes the ring from the token, not from each component", async () => {
     mount(`<button class="lt-button" type="button">Send</button>`)
     await waitForPaint()
 
@@ -187,15 +191,15 @@ describe("tastaturfokus er synlig", () => {
       .trim()
 
     /*
-     * Verdien er regnet ut her, så `var()` er alt løst opp.
+     * The value is computed here, so `var()` is already resolved.
      *
-     * Fargen leses av matrisen framfor å skrives av: ringen skal følge
-     * `accent-border-strong`, og en test som gjentar heksverdien ville måttet
-     * rettes hver gang kontrakten flytter en lyshet.
+     * The colour is read from the matrix rather than copied: the ring must
+     * follow `accent-border-strong`, and a test that repeated the hex value
+     * would have to be fixed every time the contract moves a lightness.
      */
-    const forventet = lightCells["--lt-color-accent-border-strong"]
+    const expected = lightCells["--lt-color-accent-border-strong"]
 
     expect(ring).toMatch(/^2px solid /)
-    expect(ring.toLowerCase()).toContain(forventet.toLowerCase())
+    expect(ring.toLowerCase()).toContain(expected.toLowerCase())
   })
 })

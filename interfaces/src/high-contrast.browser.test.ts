@@ -1,6 +1,6 @@
 /// <reference path="./types/css.d.ts" />
-/// Uten denne er Vitests `CDPSession` et tomt grensesnitt. Det er leverandøren
-/// som fyller det, og her er det Playwright som gir oss `send`.
+/// Without this, Vitest's `CDPSession` is an empty interface. The provider
+/// fills it in, and here it is Playwright that gives us `send`.
 /// <reference types="@vitest/browser-playwright" />
 
 import { afterEach, describe, expect, it } from "vitest"
@@ -25,225 +25,237 @@ import "./components/css/table/table.css"
 import "./components/frame/suggestion/suggestion.css"
 
 /**
- * At komponentene fortsatt viser tilstanden sin i høykontrastmodus.
+ * That the components still show their state in high contrast mode.
  *
- * Windows' høykontrast bytter ut fargene på siden med brukerens eget sett.
- * Testet i modusen: egne farger overstyres, gradienter og `box-shadow` fjernes,
- * mens systemfargene, rammer, masker og data-URL-bilder overlever.
+ * Windows' high contrast replaces the colours on the page with the user's own
+ * set. Tested in the mode: custom colours are overridden, gradients and
+ * `box-shadow` are removed, while system colours, borders, masks and data URL
+ * images survive.
  *
- * Det rammer nettopp de kontrollene som viser tilstanden sin med farge eller
- * en gradient: haken i avkryssingsboksen, prikken i radioknappen, knappen i
- * bryteren og den valgte fanen i en gruppe. Uten reglene som testes her ser
- * på og av helt like ut.
+ * That hits exactly the controls that show their state with a colour or a
+ * gradient: the tick in the checkbox, the dot in the radio button, the knob in
+ * the switch and the selected option in a group. Without the rules tested
+ * here, on and off look exactly the same.
  *
- * Modusen kan bare slås på i Chromium herfra, så testene hopper over de to
- * andre. Reglene er ren CSS og oppfører seg likt.
+ * The mode can only be turned on in Chromium from here, so the tests skip the
+ * other two. The rules are plain CSS and behave the same.
  */
 
-async function settHoeykontrast(på: boolean) {
+async function setHighContrast(on: boolean) {
   await cdp().send("Emulation.setEmulatedMedia", {
-    features: på ? [{ name: "forced-colors", value: "active" }] : [],
+    features: on ? [{ name: "forced-colors", value: "active" }] : [],
   })
   await waitForPaint()
 }
 
-function stil(id: string) {
+function style(id: string) {
   const element = document.getElementById(id)
-  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  if (!(element instanceof HTMLElement)) throw new Error(`Missing #${id}`)
   return getComputedStyle(element)
 }
 
-describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
+describe.skipIf(server.browser !== "chromium")("in high contrast mode", () => {
   afterEach(async () => {
-    // Modusen gjelder hele siden, og ville ellers blitt stående og påvirket
-    // testene som kjører etterpå.
-    await settHoeykontrast(false)
+    // The mode applies to the whole page, and would otherwise stay on and
+    // affect the tests that run afterwards.
+    await setHighContrast(false)
   })
 
-  it("holder skillelinja og skjelettet synlige", async () => {
-    // Begge var bare bakgrunn, og bakgrunner tvinges til sideflatens farge.
+  it("keeps the divider and the skeleton visible", async () => {
+    // Both were only a background, and backgrounds are forced to the page
+    // surface colour.
     mount(`
-      <hr class="lt-divider" id="linje" />
-      <hr class="lt-divider" data-variant="subtle" id="svak" />
-      <div class="lt-skeleton" id="skjelett"></div>
+      <hr class="lt-divider" id="line" />
+      <hr class="lt-divider" data-variant="subtle" id="subtle" />
+      <div class="lt-skeleton" id="skeleton"></div>
     `)
-    await settHoeykontrast(true)
-    const flate = getComputedStyle(document.body).backgroundColor
+    await setHighContrast(true)
+    const surface = getComputedStyle(document.body).backgroundColor
 
-    expect(stil("linje").backgroundColor).not.toBe(flate)
-    expect(stil("svak").backgroundColor).not.toBe(flate)
-    expect(stil("skjelett").borderTopStyle).toBe("solid")
-    expect(stil("skjelett").borderTopWidth).toBe("1px")
+    expect(style("line").backgroundColor).not.toBe(surface)
+    expect(style("subtle").backgroundColor).not.toBe(surface)
+    expect(style("skeleton").borderTopStyle).toBe("solid")
+    expect(style("skeleton").borderTopWidth).toBe("1px")
   })
 
-  it("lar nettleseren tegne avkryssingsboksen, radioknappen og bryteren", async () => {
+  it("lets the browser draw the checkbox, the radio button and the switch", async () => {
     mount(`
       <input class="lt-checkbox" type="checkbox" id="box" checked />
       <input class="lt-radio" type="radio" id="radio" checked />
-      <input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />
-      <select class="lt-select" id="liste"><option>Valg</option></select>
-      <select class="lt-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
+      <input class="lt-switch" type="checkbox" role="switch" id="switch" checked />
+      <select class="lt-select" id="list"><option>Option</option></select>
+      <select class="lt-select" data-picker="styled" id="list-styled"><option>Option</option></select>
     `)
 
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    for (const id of ["box", "radio", "bryter", "liste", "liste-stylet"]) {
-      // `appearance: auto` gir tilbake nettleserens egen tegning, som er
-      // riktig i alle temaene brukeren kan velge.
-      expect(stil(id).appearance, id).toBe("auto")
-      expect(stil(id).backgroundImage, id).toBe("none")
+    for (const id of ["box", "radio", "switch", "list", "list-styled"]) {
+      // `appearance: auto` gives back the browser's own drawing, which is
+      // right in every theme the user can choose.
+      expect(style(id).appearance, id).toBe("auto")
+      expect(style(id).backgroundImage, id).toBe("none")
     }
   })
 
-  it("beholder rollen på bryteren selv om formen forsvinner", async () => {
+  it("keeps the role on the switch even though its shape disappears", async () => {
     mount(
-      `<input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />`,
+      `<input class="lt-switch" type="checkbox" role="switch" id="switch" checked />`,
     )
 
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    const bryter = document.getElementById("bryter") as HTMLInputElement
-    expect(bryter.getAttribute("role")).toBe("switch")
-    expect(bryter.checked).toBe(true)
+    const toggle = document.getElementById("switch") as HTMLInputElement
+    expect(toggle.getAttribute("role")).toBe("switch")
+    expect(toggle.checked).toBe(true)
   })
 
-  it("skiller det valgte alternativet med systemfargene", async () => {
+  it("distinguishes the selected option with the system colours", async () => {
     mount(`
       <fieldset class="lt-toggle-group">
-        <legend>Visning</legend>
-        <label class="lt-toggle-group__option" id="valgt">
-          <input type="radio" name="visning" checked /> Liste
+        <legend>View</legend>
+        <label class="lt-toggle-group__option" id="selected">
+          <input type="radio" name="view" checked /> List
         </label>
-        <label class="lt-toggle-group__option" id="uvalgt">
-          <input type="radio" name="visning" /> Kart
+        <label class="lt-toggle-group__option" id="unselected">
+          <input type="radio" name="view" /> Map
         </label>
       </fieldset>
 
-      <button class="lt-tag" data-selectable aria-pressed="true" id="lapp-på" type="button">Innvilget</button>
-      <button class="lt-tag" data-selectable aria-pressed="false" id="lapp-av" type="button">Avslått</button>
+      <button class="lt-tag" data-selectable aria-pressed="true" id="tag-on" type="button">Approved</button>
+      <button class="lt-tag" data-selectable aria-pressed="false" id="tag-off" type="button">Rejected</button>
 
       <ul class="lt-pagination">
-        <li><a href="#" aria-current="page" id="side-na">2</a></li>
-        <li><a href="#" id="side-annen">3</a></li>
+        <li><a href="#" aria-current="page" id="page-current">2</a></li>
+        <li><a href="#" id="page-other">3</a></li>
       </ul>
 
       <ul class="lt-suggestion__list" role="listbox">
-        <li class="lt-suggestion__option" role="option" aria-selected="true" id="forslag-på">Bergen</li>
-        <li class="lt-suggestion__option" role="option" aria-selected="false" id="forslag-av">Bodø</li>
+        <li class="lt-suggestion__option" role="option" aria-selected="true" id="suggestion-on">Bergen</li>
+        <li class="lt-suggestion__option" role="option" aria-selected="false" id="suggestion-off">Bodø</li>
       </ul>
     `)
 
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    for (const [på, av] of [
-      ["valgt", "uvalgt"],
-      ["lapp-på", "lapp-av"],
-      ["side-na", "side-annen"],
-      ["forslag-på", "forslag-av"],
+    for (const [on, off] of [
+      ["selected", "unselected"],
+      ["tag-on", "tag-off"],
+      ["page-current", "page-other"],
+      ["suggestion-on", "suggestion-off"],
     ]) {
-      expect(stil(på).backgroundColor, på).not.toBe(stil(av).backgroundColor)
-      expect(stil(på).color, på).not.toBe(stil(av).color)
+      expect(style(on).backgroundColor, on).not.toBe(style(off).backgroundColor)
+      expect(style(on).color, on).not.toBe(style(off).color)
     }
   })
 
-  it("holder gjeldende side lesbar under musa", async () => {
-    // Hover-regelen slo høykontrastregelen på spesifisitet, og bakgrunnen
-    // ble tvunget til `Canvas` under `HighlightText`: samme farge på begge.
+  it("keeps the current page readable under the mouse", async () => {
+    // The hover rule beat the high contrast rule on specificity, and the
+    // background was forced to `Canvas` under `HighlightText`: the same
+    // colour on both.
     mount(`
       <ul class="lt-pagination">
-        <li><a href="#" aria-current="page" id="side-na">2</a></li>
+        <li><a href="#" aria-current="page" id="page-current">2</a></li>
       </ul>
     `)
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    await userEvent.hover(document.getElementById("side-na") as HTMLElement)
+    await userEvent.hover(
+      document.getElementById("page-current") as HTMLElement,
+    )
     await waitForPaint()
 
-    expect(stil("side-na").backgroundColor).not.toBe(stil("side-na").color)
-    await userEvent.unhover(document.getElementById("side-na") as HTMLElement)
+    expect(style("page-current").backgroundColor).not.toBe(
+      style("page-current").color,
+    )
+    await userEvent.unhover(
+      document.getElementById("page-current") as HTMLElement,
+    )
   })
 
-  it("gir hjelpeboblen en kant, så den ikke flyter oppå innholdet", async () => {
+  it("gives the tooltip bubble a border, so it does not float on the content", async () => {
     mount(`
       <span class="lt-tooltip">
-        <button type="button" aria-describedby="hint">Arkiver</button>
-        <span class="lt-tooltip__bubble" role="tooltip" id="hint">Flyttes til arkivet</span>
+        <button type="button" aria-describedby="hint">Archive</button>
+        <span class="lt-tooltip__bubble" role="tooltip" id="hint">Moved to the archive</span>
       </span>
     `)
 
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    // Uten modusen har boblen mørk flate og lys tekst, og trenger ingen kant.
-    expect(stil("hint").borderTopWidth).toBe("1px")
+    // Outside the mode the bubble has a dark surface and light text, and
+    // needs no border.
+    expect(style("hint").borderTopWidth).toBe("1px")
   })
 
-  it("tegner pila i en sorterbar kolonne i systemets tekstfarge", async () => {
-    // Pila er en maske med bakgrunnsfarge, og bakgrunner tvinges til
-    // sideflatens farge. Uten regelen ble den usynlig.
+  it("draws the arrow in a sortable column in the system text colour", async () => {
+    // The arrow is a mask with a background colour, and backgrounds are
+    // forced to the page surface colour. Without the rule it became
+    // invisible.
     mount(`
       <table class="lt-table">
         <thead><tr>
-          <th scope="col" aria-sort="ascending"><button type="button" class="lt-table__sort" id="sortert">Dato</button></th>
-          <th scope="col"><button type="button" class="lt-table__sort" id="usortert">Beløp</button></th>
+          <th scope="col" aria-sort="ascending"><button type="button" class="lt-table__sort" id="sorted">Date</button></th>
+          <th scope="col"><button type="button" class="lt-table__sort" id="unsorted">Amount</button></th>
         </tr></thead>
       </table>
     `)
-    await settHoeykontrast(true)
-    const flate = getComputedStyle(document.body).backgroundColor
+    await setHighContrast(true)
+    const surface = getComputedStyle(document.body).backgroundColor
 
-    for (const id of ["sortert", "usortert"]) {
-      const pil = getComputedStyle(
+    for (const id of ["sorted", "unsorted"]) {
+      const arrow = getComputedStyle(
         document.getElementById(id) as HTMLElement,
         "::after",
       )
-      expect(pil.backgroundColor, id).not.toBe(flate)
-      expect(pil.maskImage, id).toContain("svg")
+      expect(arrow.backgroundColor, id).not.toBe(surface)
+      expect(arrow.maskImage, id).toContain("svg")
     }
   })
 
-  it("viser at noe pågår i en ubestemt fremdriftsindikator", async () => {
-    // Stripen som sveiper over, er en gradient, og gradienter fjernes i
-    // modusen. Uten unntaket sto en tom ramme igjen.
+  it("shows that something is in progress in an indeterminate progress bar", async () => {
+    // The stripe that sweeps across is a gradient, and gradients are removed
+    // in the mode. Without the exception an empty frame was left.
     mount(`
-      <progress class="lt-progress" id="ubestemt" aria-label="Laster opp"></progress>
-      <span id="markering" style="color: Highlight">x</span>
-      <span id="tekst" style="color: CanvasText">x</span>
+      <progress class="lt-progress" id="indeterminate" aria-label="Uploading"></progress>
+      <span id="highlight" style="color: Highlight">x</span>
+      <span id="text" style="color: CanvasText">x</span>
     `)
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    const ubestemt = stil("ubestemt")
-    expect(ubestemt.backgroundImage).toContain("gradient")
-    // Stripen er i systemets markeringsfarge, så den skiller seg fra flaten.
-    expect(ubestemt.backgroundImage).toContain(stil("markering").color)
-    expect(ubestemt.outlineStyle).toBe("solid")
-    expect(ubestemt.outlineColor).toBe(stil("tekst").color)
+    const indeterminate = style("indeterminate")
+    expect(indeterminate.backgroundImage).toContain("gradient")
+    // The stripe is in the system highlight colour, so it stands out from
+    // the surface.
+    expect(indeterminate.backgroundImage).toContain(style("highlight").color)
+    expect(indeterminate.outlineStyle).toBe("solid")
+    expect(indeterminate.outlineColor).toBe(style("text").color)
   })
 
-  it("viser hvor langt en bestemt fremdriftsindikator har kommet", async () => {
-    // Den fylte delen er et pseudoelement som leste `currentColor`, og
-    // modusen tvang bakgrunnen til `Canvas`. Stilen på verten så riktig ut,
-    // men stolpen var tom, så det er pikslene som må leses.
+  it("shows how far a determinate progress bar has come", async () => {
+    // The filled part is a pseudo-element that read `currentColor`, and the
+    // mode forced the background to `Canvas`. The style on the host looked
+    // right, but the bar was empty, so it is the pixels that must be read.
     mount(`
-      <progress class="lt-progress" id="bestemt" value="50" max="100"
-        aria-label="Lastet opp" style="--lt-progress-height: 16px"></progress>
-      <progress class="lt-progress" id="farget" value="50" max="100"
-        data-color="danger" aria-label="Lastet opp" style="--lt-progress-height: 16px"></progress>
+      <progress class="lt-progress" id="determinate" value="50" max="100"
+        aria-label="Uploaded" style="--lt-progress-height: 16px"></progress>
+      <progress class="lt-progress" id="coloured" value="50" max="100"
+        data-color="danger" aria-label="Uploaded" style="--lt-progress-height: 16px"></progress>
     `)
-    await settHoeykontrast(true)
+    await setHighContrast(true)
 
-    for (const id of ["bestemt", "farget"]) {
-      const stolpe = document.getElementById(id) as HTMLElement
-      const fylt = await pixel(stolpe, 0.25)
-      const tom = await pixel(stolpe, 0.75)
-      expect(fylt, id).not.toEqual(tom)
+    for (const id of ["determinate", "coloured"]) {
+      const bar = document.getElementById(id) as HTMLElement
+      const filled = await pixel(bar, 0.25)
+      const empty = await pixel(bar, 0.75)
+      expect(filled, id).not.toEqual(empty)
     }
   })
 
-  it("lar tilstanden være uendret utenfor modusen", async () => {
+  it("leaves the state unchanged outside the mode", async () => {
     mount(`<input class="lt-checkbox" type="checkbox" id="box" checked />`)
     await waitForPaint()
 
-    expect(stil("box").appearance).toBe("none")
-    expect(stil("box").backgroundImage).toContain("svg")
+    expect(style("box").appearance).toBe("none")
+    expect(style("box").backgroundImage).toContain("svg")
   })
 })

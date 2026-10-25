@@ -14,54 +14,54 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
-import inputKilde from "./components/css/input/input.css?inline"
-import sokKilde from "./components/css/search/search.css?inline"
+import inputSource from "./components/css/input/input.css?inline"
+import searchSource from "./components/css/search/search.css?inline"
 import { mount, waitForPaint } from "./testing/a11y"
 import { contrastRatio } from "./tokens/color.js"
-import tokenKilde from "./tokens/tokens.css?inline"
+import tokenSource from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/label/label.css"
 import "./components/css/fieldset/fieldset.css"
 
-function stil(id: string, pseudo?: string) {
+function style(id: string, pseudo?: string) {
   const element = document.getElementById(id)
   if (!(element instanceof HTMLElement)) throw new Error(`Missing #${id}`)
   return getComputedStyle(element, pseudo)
 }
 
 /** `rgb(r, g, b)` from the browser to the numbers the contrast calculation takes. */
-function tilRgb(verdi: string) {
-  const [r, g, b] = (verdi.match(/[\d.]+/g) ?? []).map(Number)
+function toRgb(value: string) {
+  const [r, g, b] = (value.match(/[\d.]+/g) ?? []).map(Number)
   return { r, g, b }
 }
 
-function utseende(id: string) {
-  const s = stil(id)
+function appearance(id: string) {
+  const s = style(id)
   return [s.backgroundColor, s.color, s.borderTopColor].join(" / ")
 }
 
 describe("disabled button", () => {
-  const VARIANTER = ["secondary", "ghost", "danger"] as const
+  const VARIANTS = ["secondary", "ghost", "danger"] as const
 
   beforeEach(() => {
     mount(`
       <button class="lt-button" id="primary" disabled>Send</button>
-      ${VARIANTER.map(
+      ${VARIANTS.map(
         (v) => `
-        <button class="lt-button" data-variant="${v}" id="${v}-pa">Aktiv</button>
-        <button class="lt-button" data-variant="${v}" id="${v}-av" disabled>Av</button>
-        <button class="lt-button" data-variant="${v}" id="${v}-aria" aria-disabled="true">Av</button>`,
+        <button class="lt-button" data-variant="${v}" id="${v}-on">Active</button>
+        <button class="lt-button" data-variant="${v}" id="${v}-off" disabled>Off</button>
+        <button class="lt-button" data-variant="${v}" id="${v}-aria" aria-disabled="true">Off</button>`,
       ).join("")}
     `)
   })
 
-  for (const variant of VARIANTER) {
+  for (const variant of VARIANTS) {
     it(`looks disabled also as ${variant}`, () => {
-      expect(utseende(`${variant}-av`)).toBe(utseende("primary"))
-      expect(utseende(`${variant}-aria`)).toBe(utseende("primary"))
-      expect(utseende(`${variant}-av`)).not.toBe(utseende(`${variant}-pa`))
+      expect(appearance(`${variant}-off`)).toBe(appearance("primary"))
+      expect(appearance(`${variant}-aria`)).toBe(appearance("primary"))
+      expect(appearance(`${variant}-off`)).not.toBe(appearance(`${variant}-on`))
     })
   }
 })
@@ -74,51 +74,51 @@ describe("the search field when input.css loads last", () => {
      * already has `input.css` in it first, and then it is added once more
      * afterwards.
      */
-    const ramme = document.createElement("iframe")
-    document.body.append(ramme)
-    const dokument = ramme.contentDocument as Document
-    dokument.open()
-    dokument.write(`<!doctype html>
-      <style>${tokenKilde}</style>
-      <style>${sokKilde}</style>
-      <style>${inputKilde}</style>
-      <input class="lt-input lt-search" id="vanlig" />
-      <input class="lt-input lt-search" id="ugyldig" data-state="invalid" />
-      <input class="lt-input lt-search" id="gyldig" data-state="success" />
-      <input class="lt-input lt-search" id="av" disabled />`)
-    dokument.close()
+    const frame = document.createElement("iframe")
+    document.body.append(frame)
+    const doc = frame.contentDocument as Document
+    doc.open()
+    doc.write(`<!doctype html>
+      <style>${tokenSource}</style>
+      <style>${searchSource}</style>
+      <style>${inputSource}</style>
+      <input class="lt-input lt-search" id="plain" />
+      <input class="lt-input lt-search" id="invalid" data-state="invalid" />
+      <input class="lt-input lt-search" id="valid" data-state="success" />
+      <input class="lt-input lt-search" id="off" disabled />`)
+    doc.close()
     await waitForPaint()
 
-    for (const id of ["vanlig", "ugyldig", "gyldig", "av"]) {
-      const felt = dokument.getElementById(id) as HTMLElement
-      expect(getComputedStyle(felt).backgroundImage, id).not.toBe("none")
+    for (const id of ["plain", "invalid", "valid", "off"]) {
+      const field = doc.getElementById(id) as HTMLElement
+      expect(getComputedStyle(field).backgroundImage, id).not.toBe("none")
     }
     // The state must still colour the surface.
     expect(
-      getComputedStyle(dokument.getElementById("ugyldig") as HTMLElement)
+      getComputedStyle(doc.getElementById("invalid") as HTMLElement)
         .backgroundColor,
     ).not.toBe(
-      getComputedStyle(dokument.getElementById("vanlig") as HTMLElement)
+      getComputedStyle(doc.getElementById("plain") as HTMLElement)
         .backgroundColor,
     )
-    ramme.remove()
+    frame.remove()
   })
 })
 
 describe("the markers on label and legend", () => {
   beforeEach(() => {
     mount(`
-      <label class="lt-label" id="l-tekst" data-required="text">Navn</label>
-      <label class="lt-label" id="l-valgfri" data-optional>Navn</label>
-      <label class="lt-label" id="l-begge" data-required="symbol" data-optional>Navn</label>
+      <label class="lt-label" id="l-text" data-required="text">Name</label>
+      <label class="lt-label" id="l-optional" data-optional>Name</label>
+      <label class="lt-label" id="l-both" data-required="symbol" data-optional>Name</label>
       <fieldset class="lt-fieldset">
-        <legend class="lt-legend" id="g-tekst" data-required="text">Kontakt</legend>
+        <legend class="lt-legend" id="g-text" data-required="text">Contact</legend>
       </fieldset>
       <fieldset class="lt-fieldset">
-        <legend class="lt-legend" id="g-valgfri" data-optional>Kontakt</legend>
+        <legend class="lt-legend" id="g-optional" data-optional>Contact</legend>
       </fieldset>
       <fieldset class="lt-fieldset">
-        <legend class="lt-legend" id="g-begge" data-required="text" data-optional>Kontakt</legend>
+        <legend class="lt-legend" id="g-both" data-required="text" data-optional>Contact</legend>
       </fieldset>
     `)
   })
@@ -126,25 +126,25 @@ describe("the markers on label and legend", () => {
   it("shows the required text on both label and legend", () => {
     // That the stylesheet stays ASCII outside comments is guarded by
     // `package-css`.
-    expect(stil("l-tekst", "::after").content).toBe('" (required)"')
-    expect(stil("g-tekst", "::after").content).toBe('" (required)"')
+    expect(style("l-text", "::after").content).toBe('" (required)"')
+    expect(style("g-text", "::after").content).toBe('" (required)"')
   })
 
   it("shows required when the markup has both markers", () => {
     // The builder function picks required. The CSS picked "(optional)",
     // because that rule came last.
-    expect(stil("l-begge", "::after").content).toBe('" *"')
-    expect(stil("g-begge", "::after").content).toBe('" (required)"')
+    expect(style("l-both", "::after").content).toBe('" *"')
+    expect(style("g-both", "::after").content).toBe('" (required)"')
   })
 
   it('gives "(optional)" enough contrast to be read', () => {
-    for (const id of ["l-valgfri", "g-valgfri"]) {
-      const label = stil(id, "::after")
+    for (const id of ["l-optional", "g-optional"]) {
+      const label = style(id, "::after")
       expect(label.content).toBe('" (optional)"')
 
-      const tekst = tilRgb(label.color)
-      const flate = tilRgb(getComputedStyle(document.body).backgroundColor)
-      expect(contrastRatio(tekst, flate), id).toBeGreaterThanOrEqual(4.5)
+      const text = toRgb(label.color)
+      const surface = toRgb(getComputedStyle(document.body).backgroundColor)
+      expect(contrastRatio(text, surface), id).toBeGreaterThanOrEqual(4.5)
     }
   })
 })
