@@ -86,7 +86,7 @@ exports.run = async () => {
 
   // The snippet for the field: the id is typed once, and `for` follows.
   const extension = vscode.extensions.all.find(
-    (e) => e.packageJSON.name === "interfaces",
+    (e) => e.packageJSON.name === "vscode",
   )
   assert.ok(extension, "did not find the extension")
   const snippets = JSON.parse(
