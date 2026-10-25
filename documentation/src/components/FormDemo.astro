@@ -3,7 +3,7 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview
-	id="demo-skjema"
+	id="demo-form"
 	styles={[
 		"error-summary",
 		"list",
@@ -20,7 +20,7 @@ import Preview from "./Preview.astro"
 		/* The layout is the app's choice, not the system's. LO-TEK provides
 		   the fields, while the spacing between them belongs to the form that
 		   puts them together. Two fields stuck together read as one. */
-		#demo-soknad {
+		#demo-application {
 			display: flex;
 			flex-direction: column;
 			gap: var(--lt-spacing-5);
@@ -28,14 +28,14 @@ import Preview from "./Preview.astro"
 
 		/* The button gets more space above it than the fields have between
 		   them, so it does not look like part of the last field. */
-		.demo-knapperad {
+		.demo-button-row {
 			margin-block-start: var(--lt-spacing-2);
 		}
 	`}
 >
-	<form id="demo-soknad" novalidate>
+	<form id="demo-application" novalidate>
 		<lt-error-summary
-			id="demo-feil"
+			id="demo-errors"
 			class="lt-error-summary"
 			role="alert"
 			tabindex="-1"
@@ -47,24 +47,24 @@ import Preview from "./Preview.astro"
 		</lt-error-summary>
 
 		<div>
-			<label class="lt-label" data-required="symbol" for="demo-epost">Email address</label>
+			<label class="lt-label" data-required="symbol" for="demo-email">Email address</label>
 			<input
 				class="lt-input"
-				id="demo-epost"
+				id="demo-email"
 				name="epost"
 				type="email"
 				required
-				aria-describedby="demo-epost-hjelp"
+				aria-describedby="demo-email-help"
 			/>
-			<p class="lt-help-text" id="demo-epost-hjelp">We send the receipt here.</p>
-			<p class="lt-error-text" id="demo-epost-feil" hidden></p>
+			<p class="lt-help-text" id="demo-email-help">We send the receipt here.</p>
+			<p class="lt-error-text" id="demo-email-error" hidden></p>
 		</div>
 
 		<div>
-			<label class="lt-label" data-required="symbol" for="demo-fodselsdato">Date of birth</label>
+			<label class="lt-label" data-required="symbol" for="demo-birth-date">Date of birth</label>
 			<input
 				class="lt-input"
-				id="demo-fodselsdato"
+				id="demo-birth-date"
 				name="fodselsdato"
 				type="date"
 				data-variant="date"
@@ -72,10 +72,10 @@ import Preview from "./Preview.astro"
 				min="1900-01-01"
 				max="2026-12-31"
 			/>
-			<p class="lt-error-text" id="demo-fodselsdato-feil" hidden></p>
+			<p class="lt-error-text" id="demo-birth-date-error" hidden></p>
 		</div>
 
-		<div class="demo-knapperad">
+		<div class="demo-button-row">
 			<button class="lt-button" type="submit">Send the application</button>
 		</div>
 
@@ -89,10 +89,10 @@ import Preview from "./Preview.astro"
 	defineLtErrorSummary()
 
 	// The preview sits in a shadow root, so we go through the host element.
-	const flate = document.getElementById("demo-skjema")?.shadowRoot
-	const skjema = flate?.getElementById("demo-soknad") as HTMLFormElement | null
-	const oppsummering = flate?.getElementById("demo-feil")
-	const status = flate?.getElementById("demo-status")
+	const surface = document.getElementById("demo-form")?.shadowRoot
+	const skjema = surface?.getElementById("demo-application") as HTMLFormElement | null
+	const oppsummering = surface?.getElementById("demo-errors")
+	const status = surface?.getElementById("demo-status")
 	const felter = skjema ? [...skjema.querySelectorAll("input")] : []
 
 	/** Fields the user has typed in, and which can therefore get an error message. */
@@ -127,7 +127,7 @@ import Preview from "./Preview.astro"
 
 	/** Shows or removes the error message for one field. */
 	function vis(felt: HTMLInputElement, melding: string) {
-		const feiltekst = flate?.getElementById(`${felt.id}-feil`)
+		const feiltekst = surface?.getElementById(`${felt.id}-feil`)
 		if (feiltekst) {
 			feiltekst.textContent = melding
 			feiltekst.hidden = melding === ""
@@ -176,7 +176,7 @@ import Preview from "./Preview.astro"
 			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
 			.map((felt) => ({
 				id: felt.id,
-				melding: flate?.getElementById(`${felt.id}-feil`)?.textContent ?? "",
+				melding: surface?.getElementById(`${felt.id}-feil`)?.textContent ?? "",
 			}))
 
 		const liste = oppsummering?.querySelector("ul")

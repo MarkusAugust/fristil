@@ -17,25 +17,25 @@
 
 import type { APIRoute, GetStaticPaths } from "astro"
 
-const BØKER = import.meta.glob("../../../../designsystem/agent/*.md", {
+const BOOKS = import.meta.glob("../../../../designsystem/agent/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>
 
-const navnet = (sti: string) => sti.replace(/^.*\/|\.md$/g, "")
+const nameOf = (path: string) => path.replace(/^.*\/|\.md$/g, "")
 
 export const getStaticPaths: GetStaticPaths = () =>
-  Object.keys(BØKER).map((sti) => ({ params: { navn: navnet(sti) } }))
+  Object.keys(BOOKS).map((path) => ({ params: { name: nameOf(path) } }))
 
 export const GET: APIRoute = ({ params }) => {
-  const sti = Object.keys(BØKER).find(
-    (kandidat) => navnet(kandidat) === params.navn,
+  const path = Object.keys(BOOKS).find(
+    (candidate) => nameOf(candidate) === params.name,
   )
 
-  if (!sti) return new Response("Not found", { status: 404 })
+  if (!path) return new Response("Not found", { status: 404 })
 
-  return new Response(BØKER[sti], {
+  return new Response(BOOKS[path], {
     headers: { "content-type": "text/markdown; charset=utf-8" },
   })
 }

@@ -168,7 +168,7 @@ async function visibleInBox(
       // sees, and with `maxWidth` it is narrower than the host element. No
       // fallback to the host: if someone renames the class, the check should
       // say so rather than silently get more lenient.
-      const surface = host?.shadowRoot?.querySelector(".flate")
+      const surface = host?.shadowRoot?.querySelector(".surface")
       if (!host || !el || !surface)
         return {
           found: Boolean(el),
@@ -194,7 +194,7 @@ async function visibleInBox(
   )
 
   expect(result.found, `could not find "${selector}" in the preview`)
-  expect(result.surface, "found no .flate in the preview to compare against")
+  expect(result.surface, "found no .surface in the preview to compare against")
   expect(result.visible, `"${selector}" has no extent`)
   expect(
     result.inside,
@@ -248,7 +248,7 @@ await on(
     expect(result.role === "alert", "the box is not an alert")
     expect(result.title.length > 0, "the heading is empty")
     expect(
-      result.focus === "demo-epost",
+      result.focus === "demo-email",
       `a link gave focus to "${result.focus}", expected the field`,
     )
   },
@@ -316,7 +316,7 @@ await on("popover", "demo-popover", "lt-popover", async (page, id) => {
 await on("dialog", "demo-dialog", "lt-dialog", async (page, id) => {
   const result = await page.evaluate((id) => {
     const root = document.getElementById(id)?.shadowRoot
-    const button = root?.querySelector("[data-apne]") as HTMLElement | null
+    const button = root?.querySelector("[data-open]") as HTMLElement | null
     const dialog = root?.querySelector("dialog") as HTMLDialogElement | null
     button?.click()
     return {
@@ -351,7 +351,7 @@ await on("field", "demo-field", "lt-field", async (page, id) => {
 await on("toast", "demo-toast", "lt-toast", async (page, id) => {
   const result = await page.evaluate((id) => {
     const root = document.getElementById(id)?.shadowRoot
-    ;(root?.getElementById("demo-toast-knapp") as HTMLElement | null)?.click()
+    ;(root?.getElementById("demo-toast-button") as HTMLElement | null)?.click()
     const region = root?.querySelector("lt-toast")
     return {
       role: region?.getAttribute("role") ?? "",
@@ -368,12 +368,12 @@ await on("toast", "demo-toast", "lt-toast", async (page, id) => {
 
 await on(
   "connection-status",
-  "demo-samband",
+  "demo-connection",
   "lt-connection-status",
   async (page, id) => {
     await page.evaluate((id) => {
       const root = document.getElementById(id)?.shadowRoot
-      ;(root?.getElementById("demo-samband-av") as HTMLElement | null)?.click()
+      ;(root?.getElementById("demo-connection-off") as HTMLElement | null)?.click()
     }, id)
     // The bar is inserted empty and filled on the next frame, so the live
     // region exists before the content arrives. Wait for the text, not the
@@ -411,7 +411,7 @@ await on(
 
 await on(
   "session-timeout",
-  "demo-okt",
+  "demo-session",
   "lt-session-timeout",
   async (page, id) => {
     // The demo warns after five seconds. Here we wait for the dialog to

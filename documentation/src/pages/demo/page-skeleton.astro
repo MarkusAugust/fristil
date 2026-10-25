@@ -49,11 +49,11 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 		/>
 	</head>
 	<body>
-		<a {...lt.skipLink()} href="#hovedinnhold">Skip to main content</a>
+		<a {...lt.skipLink()} href="#main-content">Skip to main content</a>
 
-		<header class="skjelett-topp">
-			<div class="skjelett-bredde skjelett-toppinnhold">
-				<a class="skjelett-merke" href="#" aria-label="Example Council, home page">
+		<header class="skeleton-top">
+			<div class="skeleton-width skeleton-top-content">
+				<a class="skeleton-mark" href="#" aria-label="Example Council, home page">
 					Example Council
 				</a>
 
@@ -67,7 +67,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			</div>
 		</header>
 
-		<div class="skjelett-bredde skjelett-sti">
+		<div class="skeleton-width skeleton-path">
 			<nav aria-label="You are here">
 				<ol {...lt.breadcrumbs()}>
 					<li><a {...lt.link()} href="#">Home</a></li>
@@ -77,15 +77,15 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			</nav>
 		</div>
 
-		<main id="hovedinnhold" tabindex="-1" class="skjelett-bredde skjelett-hoved">
+		<main id="main-content" tabindex="-1" class="skeleton-width skeleton-main">
 			<h1 {...lt.heading({ size: "xl" })}>My cases</h1>
 
 			<p {...lt.paragraph({ variant: "lead" })}>
 				Here you find your cases, and what is happening with them.
 			</p>
 
-			<section aria-labelledby="til-behandling">
-				<h2 {...lt.heading({ size: "m" })} id="til-behandling">Under review</h2>
+			<section aria-labelledby="under-review-status">
+				<h2 {...lt.heading({ size: "m" })} id="under-review-status">Under review</h2>
 
 				<ul {...liste} class={`${listeKlasse} skjelett-saker`}>
 					<li>
@@ -117,8 +117,8 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 
 			<hr {...lt.divider()} />
 
-			<section aria-labelledby="ny-soknad">
-				<h2 {...lt.heading({ size: "m" })} id="ny-soknad">New application</h2>
+			<section aria-labelledby="new-application">
+				<h2 {...lt.heading({ size: "m" })} id="new-application">New application</h2>
 				<p {...lt.paragraph()}>
 					You can apply for housing benefit every month. The deadline is the 25th.
 				</p>
@@ -126,8 +126,8 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			</section>
 		</main>
 
-		<footer class="skjelett-bunn">
-			<div class="skjelett-bredde">
+		<footer class="skeleton-bottom">
+			<div class="skeleton-width">
 				<p {...lt.paragraph({ size: "small" })}>
 					Example Council, PO Box 1, Exampletown 0000. Telephone 00 00 00 00.
 				</p>
@@ -163,7 +163,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 					sans-serif;
 			}
 
-			.skjelett-bredde {
+			.skeleton-width {
 				box-sizing: border-box;
 				/* LO-TEK has no CSS token for column width. It is the app's choice. */
 				max-inline-size: 60rem;
@@ -176,12 +176,12 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			 * LO-TEK's link colour. That is possible because the system's CSS is
 			 * in @layer lotek: the rules here win without !important.
 			 */
-			.skjelett-topp {
+			.skeleton-top {
 				background: var(--lt-color-accent-fill);
 				color: var(--lt-color-accent-content);
 			}
 
-			.skjelett-toppinnhold {
+			.skeleton-top-content {
 				display: flex;
 				flex-wrap: wrap;
 				align-items: center;
@@ -193,21 +193,21 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			/* The colour is set, not inherited: the menu is in an `.lt-list`, which
 			   sets the text colour itself, and `inherit` would have taken it from
 			   there and given dark text on the blue surface. */
-			.skjelett-topp a {
+			.skeleton-top a {
 				color: var(--lt-color-accent-content);
 				text-decoration: none;
 			}
 
-			.skjelett-topp a:hover {
+			.skeleton-top a:hover {
 				text-decoration: underline;
 			}
 
-			.skjelett-topp a:focus-visible {
+			.skeleton-top a:focus-visible {
 				outline: 2px solid var(--lt-color-accent-content);
 				outline-offset: 3px;
 			}
 
-			.skjelett-merke {
+			.skeleton-mark {
 				font-size: var(--lt-font-size-l);
 				font-weight: 700;
 				letter-spacing: -0.01em;
@@ -230,11 +230,11 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				text-decoration-thickness: 2px;
 			}
 
-			.skjelett-sti {
+			.skeleton-path {
 				padding-block: var(--lt-spacing-4) 0;
 			}
 
-			.skjelett-hoved {
+			.skeleton-main {
 				display: flex;
 				flex-direction: column;
 				gap: var(--lt-spacing-5);
@@ -243,11 +243,11 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 
 			/* The heading and the lead paragraph belong together, and sit closer to
 			   each other than to the sections below. */
-			.skjelett-hoved > h1 {
+			.skeleton-main > h1 {
 				margin-block-end: calc(var(--lt-spacing-5) * -1 + var(--lt-spacing-2));
 			}
 
-			.skjelett-hoved section {
+			.skeleton-main section {
 				display: flex;
 				flex-direction: column;
 				gap: var(--lt-spacing-3);
@@ -262,7 +262,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				margin-block-start: 0;
 			}
 
-			.skjelett-bunn {
+			.skeleton-bottom {
 				margin-block-start: var(--lt-spacing-6);
 				padding-block: var(--lt-spacing-5);
 				background: var(--lt-color-neutral-surface);

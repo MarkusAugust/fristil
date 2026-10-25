@@ -11,10 +11,10 @@ import Preview from "./Preview.astro"
 		/* Only for the preview: the messages sit in the corner of the box, as
 		   they sit in the corner of the window in an app. The height gives them
 		   room. */
-		.flate { min-block-size: 10rem; }
+		.surface { min-block-size: 10rem; }
 	`}
 >
-	<button class="lt-button" id="demo-toast-knapp" type="button">Save the application</button>
+	<button class="lt-button" id="demo-toast-button" type="button">Save the application</button>
 	<lt-toast id="demo-toast-queue" label="Notifications"></lt-toast>
 </Preview>
 
@@ -24,9 +24,9 @@ import Preview from "./Preview.astro"
 	defineLtToast()
 
 	// The preview sits in a shadow root, so we go through the host element.
-	const flate = document.getElementById("demo-toast")?.shadowRoot
-	const knapp = flate?.getElementById("demo-toast-knapp")
-	const meldinger = flate?.getElementById("demo-toast-queue")
+	const surface = document.getElementById("demo-toast")?.shadowRoot
+	const knapp = surface?.getElementById("demo-toast-button")
+	const meldinger = surface?.getElementById("demo-toast-queue")
 
 	knapp?.addEventListener("click", () => {
 		meldinger?.show("The application has been saved", { color: "success" })

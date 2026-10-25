@@ -213,17 +213,17 @@
      and it is what carries the card look. The table itself must not clip
      anything: if it does, the columns beyond the edge are gone with no way
      back. */
-  .sl-markdown-content .tabell-rull {
+  .sl-markdown-content .table-scroll {
     max-inline-size: 100%;
     overflow-x: auto;
   }
 
-  .sl-markdown-content .tabell-rull:focus-visible {
+  .sl-markdown-content .table-scroll:focus-visible {
     outline: 2px solid var(--lt-color-accent-fill);
     outline-offset: 2px;
   }
 
-  .sl-markdown-content .tabell-rull table {
+  .sl-markdown-content .table-scroll table {
     display: table;
     inline-size: 100%;
     margin-block: 0;
@@ -233,18 +233,18 @@
   /* A shadow at the edge with more table behind it. The attributes are set by
      MarkdownContent.astro. The background stays put while the content
      scrolls, so the shadow stays at the edge. */
-  .sl-markdown-content .tabell-rull {
+  .sl-markdown-content .table-scroll {
     --tabell-skygge: rgb(15 23 42 / 0.16);
 
     background-repeat: no-repeat;
     background-size: 1.5rem 100%;
   }
 
-  :root[data-theme="dark"] .sl-markdown-content .tabell-rull {
+  :root[data-theme="dark"] .sl-markdown-content .table-scroll {
     --tabell-skygge: rgb(0 0 0 / 0.5);
   }
 
-  .sl-markdown-content .tabell-rull[data-mer-hoyre] {
+  .sl-markdown-content .table-scroll[data-mer-hoyre] {
     background-image: linear-gradient(
       to left,
       var(--tabell-skygge),
@@ -253,7 +253,7 @@
     background-position: right;
   }
 
-  .sl-markdown-content .tabell-rull[data-mer-venstre] {
+  .sl-markdown-content .table-scroll[data-mer-venstre] {
     background-image: linear-gradient(
       to right,
       var(--tabell-skygge),
@@ -262,7 +262,7 @@
     background-position: left;
   }
 
-  .sl-markdown-content .tabell-rull[data-mer-venstre][data-mer-hoyre] {
+  .sl-markdown-content .table-scroll[data-mer-venstre][data-mer-hoyre] {
     background-image:
       linear-gradient(to right, var(--tabell-skygge), transparent),
       linear-gradient(to left, var(--tabell-skygge), transparent);
@@ -315,7 +315,7 @@
       ol,
       pre,
       table,
-      .tabell-rull,
+      .table-scroll,
       .expressive-code,
       .sl-tabs,
       .starlight-aside
@@ -345,7 +345,7 @@
   /* The card look belongs on the scroll container. Were it on the table, the
      table would need `overflow: hidden` to clip the rounded corners, and wide
      tables were then cut off instead of scrolling. */
-  .sl-markdown-content .tabell-rull {
+  .sl-markdown-content .table-scroll {
     @apply rounded-2xl border border-zinc-200/70 bg-white/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:bg-zinc-900/50 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
   }
 

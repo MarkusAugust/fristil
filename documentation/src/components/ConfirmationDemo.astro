@@ -3,19 +3,19 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview
-	id="demo-bekreft"
+	id="demo-confirm"
 	styles={["dialog", "button", "toast", "paragraph"]}
 	layout="stack"
 	maxWidth="34rem"
 >
 	<p class="lt-paragraph">Application 2026-0481, sent 4 March.</p>
 
-	<button class="lt-button" data-variant="danger" type="button" id="demo-slett">
+	<button class="lt-button" data-variant="danger" type="button" id="demo-delete">
 		Delete the application
 	</button>
 
-	<dialog class="lt-dialog" id="demo-dialog" aria-labelledby="demo-dialog-tittel">
-		<h2 class="lt-dialog__title" id="demo-dialog-tittel">Delete the application?</h2>
+	<dialog class="lt-dialog" id="demo-dialog" aria-labelledby="demo-dialog-title">
+		<h2 class="lt-dialog__title" id="demo-dialog-title">Delete the application?</h2>
 
 		<div class="lt-dialog__body">
 			<p class="lt-paragraph">
@@ -29,7 +29,7 @@ import Preview from "./Preview.astro"
 		</form>
 	</dialog>
 
-	<lt-toast id="demo-meldinger" label="Notifications"></lt-toast>
+	<lt-toast id="demo-messages" label="Notifications"></lt-toast>
 </Preview>
 
 <script>
@@ -37,13 +37,13 @@ import Preview from "./Preview.astro"
 
 	defineLtToast()
 
-	const flate = document.getElementById("demo-bekreft")?.shadowRoot
-	const dialog = flate?.getElementById("demo-dialog") as HTMLDialogElement | null
-	const meldinger = flate?.getElementById("demo-meldinger") as
+	const surface = document.getElementById("demo-confirm")?.shadowRoot
+	const dialog = surface?.getElementById("demo-dialog") as HTMLDialogElement | null
+	const meldinger = surface?.getElementById("demo-messages") as
 		| (HTMLElement & { show(tekst: string, valg?: { color?: string }): void })
 		| null
 
-	flate?.getElementById("demo-slett")?.addEventListener("click", () => {
+	surface?.getElementById("demo-delete")?.addEventListener("click", () => {
 		if (!dialog) return
 		// Escape and close() without a value leave the previous value in place.
 		dialog.returnValue = ""

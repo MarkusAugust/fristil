@@ -3,7 +3,7 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview
-	id="demo-samband"
+	id="demo-connection"
 	styles={["connection-status", "button"]}
 	maxWidth="34rem"
 	layout="stack"
@@ -12,12 +12,12 @@ import Preview from "./Preview.astro"
 		/* Only for the preview: the bar sits at the top of the box, as it sits
 		   at the top of the window in an app. The space here keeps it from
 		   covering the buttons. A consumer needs none of this. */
-		.flate { padding-block-start: var(--lt-spacing-12); }
+		.surface { padding-block-start: var(--lt-spacing-12); }
 	`}
 >
-	<div class="demo-samband-knapper">
-		<button class="lt-button" id="demo-samband-av" type="button">Simulate a failed request</button>
-		<button class="lt-button" data-variant="secondary" id="demo-samband-pa" type="button">Simulate it working again</button>
+	<div class="demo-connection-buttons">
+		<button class="lt-button" id="demo-connection-off" type="button">Simulate a failed request</button>
+		<button class="lt-button" data-variant="secondary" id="demo-connection-on" type="button">Simulate it working again</button>
 	</div>
 	<lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 </Preview>
@@ -28,13 +28,13 @@ import Preview from "./Preview.astro"
 	defineLtConnectionStatus()
 
 	// The preview sits in a shadow root, so we go through the host element.
-	const flate = document.getElementById("demo-samband")?.shadowRoot
-	const status = flate?.querySelector("lt-connection-status")
+	const surface = document.getElementById("demo-connection")?.shadowRoot
+	const status = surface?.querySelector("lt-connection-status")
 
-	flate?.getElementById("demo-samband-av")?.addEventListener("click", () => {
+	surface?.getElementById("demo-connection-off")?.addEventListener("click", () => {
 		status?.reportFailure()
 	})
-	flate?.getElementById("demo-samband-pa")?.addEventListener("click", () => {
+	surface?.getElementById("demo-connection-on")?.addEventListener("click", () => {
 		status?.reportSuccess()
 	})
 </script>

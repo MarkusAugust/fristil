@@ -4,11 +4,11 @@ import Preview from "./Preview.astro"
 
 // The server writes the whole dialog and says whether it is open. The
 // component calls showModal(), which a server cannot do itself.
-const boks = lt.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
+const boks = lt.dialog({ titleId: "demo-dialog-title", color: "danger" })
 ---
 
 <Preview id="demo-dialog" styles={["dialog", "button"]} maxWidth="30rem">
-	<button {...lt.button({ variant: "danger" })} type="button" data-apne>
+	<button {...lt.button({ variant: "danger" })} type="button" data-open>
 		Delete the application
 	</button>
 
@@ -44,6 +44,6 @@ const boks = lt.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
 
 	document
 		.getElementById("demo-dialog")
-		?.shadowRoot?.querySelector("[data-apne]")
+		?.shadowRoot?.querySelector("[data-open]")
 		?.addEventListener("click", () => vert?.setAttribute("open", ""))
 </script>

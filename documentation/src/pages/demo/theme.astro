@@ -40,15 +40,15 @@ const VALG = [
     <title>Theme picker</title>
   </head>
   <body>
-    <main class="demo__innhold">
+    <main class="demo__content">
       <h1 class="lt-heading" data-size="xl">Appearance</h1>
       <p class="lt-paragraph">
         The choice takes effect at once. Nothing on this page runs
         JavaScript.
       </p>
 
-      <div class="demo__skjema">
-        <fieldset class="lt-toggle-group" aria-describedby="demo-tema-bytte">
+      <div class="demo__form">
+        <fieldset class="lt-toggle-group" aria-describedby="demo-theme-switch">
           <legend class="lt-sr-only">Theme</legend>
           {
             VALG.map(({ verdi, tekst }) => (
@@ -65,14 +65,14 @@ const VALG = [
             ))
           }
         </fieldset>
-        <p class="lt-help-text" id="demo-tema-bytte">
+        <p class="lt-help-text" id="demo-theme-switch">
           The switch is pure CSS. Making the choice last is a different job, and
           it is the app's: here there is no server and no storage, so the choice
           holds until you reload the page.
         </p>
       </div>
 
-      <section class="lt-card demo__kort">
+      <section class="lt-card demo__card">
         <h2 class="lt-heading" data-size="m">
           Grant application
           <span class="lt-badge" data-color="warning">Under review</span>
@@ -81,15 +81,15 @@ const VALG = [
           The surfaces, borders and text all read their colours from the same
           tokens, so they follow the choice without any of them knowing about it.
         </p>
-        <label class="lt-label" for="demo-tema-sum">Amount applied for</label>
+        <label class="lt-label" for="demo-theme-sum">Amount applied for</label>
         <input
           class="lt-input"
-          id="demo-tema-sum"
+          id="demo-theme-sum"
           type="text"
           value="48,000"
-          aria-describedby="demo-tema-hjelp"
+          aria-describedby="demo-theme-help"
         />
-        <p class="lt-help-text" id="demo-tema-hjelp">
+        <p class="lt-help-text" id="demo-theme-help">
           The browser's own surfaces follow along, because the blocks set
           <code>color-scheme</code>.
         </p>
@@ -116,7 +116,7 @@ const VALG = [
           sans-serif;
       }
 
-      .demo__innhold {
+      .demo__content {
         display: flex;
         flex-direction: column;
         gap: var(--lt-spacing-5);
@@ -125,7 +125,7 @@ const VALG = [
         margin-inline: auto;
       }
 
-      .demo__skjema {
+      .demo__form {
         display: flex;
         flex-direction: column;
         gap: var(--lt-spacing-3);
@@ -140,7 +140,7 @@ const VALG = [
        * would have overridden the card's own spacing, which is exactly what the
        * customising page warns against.
        */
-      .demo__kort {
+      .demo__card {
         align-self: stretch;
       }
     </style>

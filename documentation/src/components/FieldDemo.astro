@@ -4,21 +4,21 @@ import Preview from "./Preview.astro"
 
 <Preview id="demo-field" styles={["field"]} layout="stack" maxWidth="34rem">
 	<lt-field>
-		<label class="lt-label" for="demo-epost-input" data-required="text">Email address</label>
+		<label class="lt-label" for="demo-email-input" data-required="text">Email address</label>
 		<input
-			id="demo-epost-input"
+			id="demo-email-input"
 			class="lt-input"
 			type="email"
 			placeholder="jo@example.com"
 			required
 		/>
 		<p class="lt-help-text">We send the receipt to this address.</p>
-		<p class="lt-error-text" id="demo-epost-feil" hidden>Enter an email address with an @ sign.</p>
+		<p class="lt-error-text" id="demo-email-error" hidden>Enter an email address with an @ sign.</p>
 	</lt-field>
 
 	<lt-field optional="">
-		<label for="demo-melding">Message to the caseworker</label>
-		<textarea id="demo-melding" class="lt-textarea" rows="3" placeholder="Write a short message"></textarea>
+		<label for="demo-message">Message to the caseworker</label>
+		<textarea id="demo-message" class="lt-textarea" rows="3" placeholder="Write a short message"></textarea>
 		<p class="lt-help-text">You can write up to 500 characters.</p>
 	</lt-field>
 </Preview>
@@ -30,9 +30,9 @@ import Preview from "./Preview.astro"
 
 	// The preview sits in a shadow root, so document.getElementById does
 	// not reach inside. We go through the host element.
-	const flate = document.getElementById("demo-field")?.shadowRoot
-	const feil = flate?.getElementById("demo-epost-feil")
-	const input = flate?.getElementById("demo-epost-input") as HTMLInputElement | null
+	const surface = document.getElementById("demo-field")?.shadowRoot
+	const feil = surface?.getElementById("demo-email-error")
+	const input = surface?.getElementById("demo-email-input") as HTMLInputElement | null
 
 	if (feil && input) {
 		const erGyldig = () =>

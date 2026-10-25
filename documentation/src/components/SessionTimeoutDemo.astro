@@ -2,7 +2,7 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-okt" styles={["session-timeout", "button", "sr-only"]} maxWidth="34rem">
+<Preview id="demo-session" styles={["session-timeout", "button", "sr-only"]} maxWidth="34rem">
 	<p class="lt-paragraph">
 		Here the session is set to five seconds, so you do not have to wait 25 minutes.
 		Stop touching the keyboard and mouse, and the warning appears.
@@ -12,8 +12,8 @@ import Preview from "./Preview.astro"
 		warn-at="5"
 		expires-at="65"
 		data-ignore-morph>
-		<dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="demo-okt-tittel">
-			<h2 class="lt-session-timeout__title" id="demo-okt-tittel">You will soon be signed out</h2>
+		<dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="demo-session-title">
+			<h2 class="lt-session-timeout__title" id="demo-session-title">You will soon be signed out</h2>
 			<p class="lt-session-timeout__text">
 				We will sign you out in <span class="lt-session-timeout__count" aria-hidden="true"></span>
 				to protect your information.

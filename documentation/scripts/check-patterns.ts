@@ -85,7 +85,7 @@ async function open(path: string) {
 async function typeInField(id: string, value: string) {
   await page.evaluate(
     ([id, value]) => {
-      const root = document.getElementById("demo-skjema")?.shadowRoot
+      const root = document.getElementById("demo-form")?.shadowRoot
       const field = root?.getElementById(id) as HTMLInputElement
       field.focus()
       field.value = value
@@ -98,7 +98,7 @@ async function typeInField(id: string, value: string) {
 
 function readForm() {
   return page.evaluate(() => {
-    const root = document.getElementById("demo-skjema")?.shadowRoot
+    const root = document.getElementById("demo-form")?.shadowRoot
     return {
       links: root?.querySelectorAll("lt-error-summary li a").length ?? 0,
       marked: root?.querySelectorAll("[aria-invalid='true']").length ?? 0,
@@ -113,14 +113,14 @@ function readForm() {
   await open("/patterns/form/")
 
   await page.evaluate(() => {
-    const root = document.getElementById("demo-skjema")?.shadowRoot
+    const root = document.getElementById("demo-form")?.shadowRoot
     const button = root?.querySelector("button[type=submit]") as HTMLElement
     button.click()
   })
   await page.waitForTimeout(300)
 
   const result = await page.evaluate(() => {
-    const root = document.getElementById("demo-skjema")?.shadowRoot
+    const root = document.getElementById("demo-form")?.shadowRoot
     return {
       links: root?.querySelectorAll("lt-error-summary li a").length ?? 0,
       marked: root?.querySelectorAll("[aria-invalid='true']").length ?? 0,
@@ -128,9 +128,9 @@ function readForm() {
         root?.querySelector(".lt-error-summary__title")?.textContent ?? "",
       pointsToError:
         root
-          ?.getElementById("demo-epost")
+          ?.getElementById("demo-email")
           ?.getAttribute("aria-describedby")
-          ?.includes("demo-epost-feil") ?? false,
+          ?.includes("demo-email-error") ?? false,
     }
   })
 
@@ -149,7 +149,7 @@ function readForm() {
   )
 
   // If the user fixes one of two errors, the other should remain on its own.
-  await typeInField("demo-epost", "jo@example.com")
+  await typeInField("demo-email", "jo@example.com")
   await page.waitForTimeout(200)
 
   const afterFix = await readForm()
@@ -165,7 +165,7 @@ function readForm() {
 
   // An address without a top-level domain is accepted by the browser, but
   // not by the form.
-  await typeInField("demo-epost", "jo@example")
+  await typeInField("demo-email", "jo@example")
   await page.waitForTimeout(200)
 
   expect(
@@ -179,7 +179,7 @@ function readForm() {
 {
   await open("/patterns/form/")
 
-  await typeInField("demo-epost", "jo")
+  await typeInField("demo-email", "jo")
   await page.waitForTimeout(200)
 
   const afterBlur = await readForm()
@@ -200,10 +200,10 @@ function readForm() {
   await page.waitForTimeout(700)
 
   const initial = await page.evaluate(() => {
-    const root = document.getElementById("demo-liste")?.shadowRoot
+    const root = document.getElementById("demo-list")?.shadowRoot
     return {
       rows: root?.querySelectorAll("tbody tr").length ?? 0,
-      status: root?.getElementById("demo-treff")?.textContent ?? "",
+      status: root?.getElementById("demo-matches")?.textContent ?? "",
     }
   })
 
@@ -216,10 +216,10 @@ function readForm() {
   // Sorting: a click on "Case number" reverses the order, moves `aria-sort`
   // and leaves focus on the button, even though the table is redrawn.
   await page
-    .locator("#demo-liste .lt-table__sort", { hasText: "Case number" })
+    .locator("#demo-list .lt-table__sort", { hasText: "Case number" })
     .click()
   const sorted = await page.evaluate(() => {
-    const root = document.getElementById("demo-liste")?.shadowRoot
+    const root = document.getElementById("demo-list")?.shadowRoot
     return {
       first: root?.querySelector("tbody th")?.textContent?.trim() ?? "",
       sorted: [...(root?.querySelectorAll("th[aria-sort]") ?? [])].map(
@@ -243,19 +243,19 @@ function readForm() {
   )
 
   await page.evaluate(() => {
-    const root = document.getElementById("demo-liste")?.shadowRoot
-    const field = root?.getElementById("demo-sok") as HTMLInputElement
+    const root = document.getElementById("demo-list")?.shadowRoot
+    const field = root?.getElementById("demo-search") as HTMLInputElement
     field.value = "does not exist"
     field.dispatchEvent(new Event("input", { bubbles: true }))
   })
   await page.waitForTimeout(1100)
 
   const empty = await page.evaluate(() => {
-    const root = document.getElementById("demo-liste")?.shadowRoot
+    const root = document.getElementById("demo-list")?.shadowRoot
     return {
-      text: root?.getElementById("demo-resultat")?.textContent ?? "",
-      status: root?.getElementById("demo-treff")?.textContent ?? "",
-      hasReset: Boolean(root?.getElementById("demo-nullstill")),
+      text: root?.getElementById("demo-result")?.textContent ?? "",
+      status: root?.getElementById("demo-matches")?.textContent ?? "",
+      hasReset: Boolean(root?.getElementById("demo-reset")),
     }
   })
 
@@ -275,13 +275,13 @@ function readForm() {
   await open("/patterns/confirmation/")
 
   await page.evaluate(() => {
-    const root = document.getElementById("demo-bekreft")?.shadowRoot
-    ;(root?.getElementById("demo-slett") as HTMLElement).click()
+    const root = document.getElementById("demo-confirm")?.shadowRoot
+    ;(root?.getElementById("demo-delete") as HTMLElement).click()
   })
   await page.waitForTimeout(200)
 
   const opened = await page.evaluate(() => {
-    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    const root = document.getElementById("demo-confirm")?.shadowRoot
     const dialog = root?.getElementById("demo-dialog") as HTMLDialogElement
     return {
       open: dialog.open,
@@ -293,14 +293,14 @@ function readForm() {
   expect(opened.focusInside, "focus did not end up inside the dialog")
 
   await page.evaluate(() => {
-    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    const root = document.getElementById("demo-confirm")?.shadowRoot
     const dialog = root?.getElementById("demo-dialog") as HTMLDialogElement
     dialog.close("delete")
   })
   await page.waitForTimeout(200)
 
   const message = await page.evaluate(() => {
-    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    const root = document.getElementById("demo-confirm")?.shadowRoot
     return root?.querySelector(".lt-toast__message")?.textContent ?? ""
   })
 
@@ -376,7 +376,7 @@ function readForm() {
 
   const structure = await page.evaluate(() => ({
     skipLink: document.body.firstElementChild?.className ?? "",
-    main: Boolean(document.querySelector("main#hovedinnhold[tabindex='-1']")),
+    main: Boolean(document.querySelector("main#main-content[tabindex='-1']")),
     namedNavs: document.querySelectorAll("nav[aria-label]").length,
     h1: document.querySelectorAll("h1").length,
     landmarks: ["header", "main", "footer"].filter((t) =>

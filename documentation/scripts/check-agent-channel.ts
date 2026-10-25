@@ -32,7 +32,7 @@ for (const file of books) {
     onSite = readFileSync(`${SITE}${file}`, "utf8")
   } catch {
     problems.push(
-      `/agent/${file} was not built. The route is src/pages/agent/[navn].md.ts`,
+      `/agent/${file} was not built. The route is src/pages/agent/[name].md.ts`,
     )
     continue
   }
@@ -51,7 +51,7 @@ for (const file of books) {
 const build = `${ROOT}documentation/dist/llms.txt`
 const sources = [
   `${ROOT}documentation/src/pages/llms.txt.ts`,
-  `${ROOT}documentation/src/pages/agent/[navn].md.ts`,
+  `${ROOT}documentation/src/pages/agent/[name].md.ts`,
   ...books.map((file) => `${PACKAGE}${file}`),
 ]
 

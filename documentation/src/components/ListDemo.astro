@@ -3,7 +3,7 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview
-	id="demo-liste"
+	id="demo-list"
 	styles={[
 		"search",
 		"tag",
@@ -22,53 +22,53 @@ import Preview from "./Preview.astro"
 		/* The layout is the app's, not the system's: LO-TEK provides the
 		   search field, the tags and the table, while the space between them
 		   belongs to the page that puts them together. */
-		#demo-liste-rot {
+		#demo-list-root {
 			display: flex;
 			flex-direction: column;
 			gap: var(--lt-spacing-5);
 		}
 
-		.demo-filtre {
+		.demo-filters {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--lt-spacing-2);
 		}
 
-		.demo-filtre h3 {
+		.demo-filters h3 {
 			flex-basis: 100%;
 			margin: 0 0 var(--lt-spacing-1);
 		}
 
-		#demo-last-om-igjen {
+		#demo-reload {
 			align-self: start;
 		}
 	`}
 >
-	<div id="demo-liste-rot">
-		<form role="search" class="lt-search-row" id="demo-sok-skjema">
-			<label class="lt-label lt-sr-only" for="demo-sok">Search cases</label>
+	<div id="demo-list-root">
+		<form role="search" class="lt-search-row" id="demo-search-form">
+			<label class="lt-label lt-sr-only" for="demo-search">Search cases</label>
 			<input
 				class="lt-input lt-search"
 				type="search"
-				id="demo-sok"
+				id="demo-search"
 				name="q"
 				placeholder="Search cases"
 			/>
 		</form>
 
-		<div role="group" aria-labelledby="demo-filtre" class="demo-filtre">
-			<h3 class="lt-heading" data-size="xs" id="demo-filtre">Status</h3>
+		<div role="group" aria-labelledby="demo-filters" class="demo-filters">
+			<h3 class="lt-heading" data-size="xs" id="demo-filters">Status</h3>
 			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Approved">Approved</button>
 			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Under review">Under review</button>
 			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Rejected">Rejected</button>
 		</div>
 
-		<p class="lt-sr-only" role="status" id="demo-treff"></p>
+		<p class="lt-sr-only" role="status" id="demo-matches"></p>
 
-		<div id="demo-resultat"></div>
+		<div id="demo-result"></div>
 
-		<button class="lt-button" data-variant="secondary" type="button" id="demo-last-om-igjen">
+		<button class="lt-button" data-variant="secondary" type="button" id="demo-reload">
 			Reload the list
 		</button>
 	</div>
@@ -92,32 +92,32 @@ import Preview from "./Preview.astro"
 	 */
 	type Kolonne = "nummer" | "sendt"
 	type Retning = "ascending" | "descending"
-	let sortering: { kolonne: Kolonne; retning: Retning } = {
-		kolonne: "sendt",
+	let sortering: { column: Kolonne; retning: Retning } = {
+		column: "sendt",
 		retning: "descending",
 	}
 	let viste: Sak[] = []
 
 	function sorter(saker: Sak[]): Sak[] {
-		const { kolonne, retning } = sortering
+		const { column, retning } = sortering
 		const fortegn = retning === "ascending" ? 1 : -1
 		return [...saker].sort(
-			(a, b) => fortegn * a[kolonne].localeCompare(b[kolonne]),
+			(a, b) => fortegn * a[column].localeCompare(b[column]),
 		)
 	}
 
-	function overskrift(kolonne: Kolonne, tekst: string): string {
-		const sortert = sortering.kolonne === kolonne
+	function overskrift(column: Kolonne, tekst: string): string {
+		const sortert = sortering.column === column
 		return `<th scope="col"${sortert ? ` aria-sort="${sortering.retning}"` : ""}>
-			<button type="button" class="lt-table__sort" data-kolonne="${kolonne}">${tekst}</button>
+			<button type="button" class="lt-table__sort" data-kolonne="${column}">${tekst}</button>
 		</th>`
 	}
 
-	const flate = document.getElementById("demo-liste")?.shadowRoot
-	const rot = flate?.getElementById("demo-liste-rot")
-	const resultat = flate?.getElementById("demo-resultat")
-	const treff = flate?.getElementById("demo-treff")
-	const sok = flate?.getElementById("demo-sok") as HTMLInputElement | null
+	const surface = document.getElementById("demo-list")?.shadowRoot
+	const rot = surface?.getElementById("demo-list-root")
+	const resultat = surface?.getElementById("demo-result")
+	const treff = surface?.getElementById("demo-matches")
+	const sok = surface?.getElementById("demo-search") as HTMLInputElement | null
 
 	/** The demo fails on purpose every third load, to show the error state. */
 	let lastinger = 0
@@ -153,22 +153,22 @@ import Preview from "./Preview.astro"
 		if (!resultat) return
 		resultat.innerHTML = `
 			<div>
-				<p class="lt-paragraph"><strong id="demo-tomt"></strong></p>
+				<p class="lt-paragraph"><strong id="demo-empty"></strong></p>
 				<p class="lt-paragraph" data-size="small">Try another search term, or remove the filters.</p>
-				<button class="lt-button" data-variant="secondary" type="button" id="demo-nullstill">
+				<button class="lt-button" data-variant="secondary" type="button" id="demo-reset">
 					Clear the search
 				</button>
 			</div>`
 		// `textContent` and not straight into `innerHTML`: the search text is
 		// written by the user, and `<img onerror=…>` in the search field would
 		// have run.
-		const tomt = flate?.getElementById("demo-tomt")
+		const tomt = surface?.getElementById("demo-empty")
 		if (tomt) {
 			tomt.textContent = `No cases match${sokeord ? ` “${sokeord}”` : ""}.`
 		}
 		if (treff) treff.textContent = "No matches"
 
-		flate?.getElementById("demo-nullstill")?.addEventListener("click", () => {
+		surface?.getElementById("demo-reset")?.addEventListener("click", () => {
 			if (sok) sok.value = ""
 			for (const knapp of rot?.querySelectorAll(".lt-tag") ?? []) {
 				knapp.setAttribute("aria-pressed", "false")
@@ -242,7 +242,7 @@ import Preview from "./Preview.astro"
 		tidsavbrudd = window.setTimeout(tegn, 300)
 	})
 
-	flate?.getElementById("demo-sok-skjema")?.addEventListener("submit", (hendelse) => {
+	surface?.getElementById("demo-search-form")?.addEventListener("submit", (hendelse) => {
 		hendelse.preventDefault()
 		tegn()
 	})
@@ -255,26 +255,26 @@ import Preview from "./Preview.astro"
 		})
 	}
 
-	flate?.getElementById("demo-last-om-igjen")?.addEventListener("click", tegn)
+	surface?.getElementById("demo-reload")?.addEventListener("click", tegn)
 
 	// Sorting fetches nothing again, it draws the same cases in a new order.
 	// The table is replaced, so focus has to be put back on the button the
 	// user pressed, or it lands on `<body>`.
 	resultat?.addEventListener("click", (hendelse) => {
 		const knapp = (hendelse.target as Element).closest<HTMLElement>(".lt-table__sort")
-		const kolonne = knapp?.dataset.kolonne as Kolonne | undefined
-		if (!kolonne) return
+		const column = knapp?.dataset.column as Kolonne | undefined
+		if (!column) return
 
 		sortering = {
-			kolonne,
+			column,
 			retning:
-				sortering.kolonne === kolonne && sortering.retning === "ascending"
+				sortering.column === column && sortering.retning === "ascending"
 					? "descending"
 					: "ascending",
 		}
 		visSaker(viste)
 		resultat
-			.querySelector<HTMLElement>(`.lt-table__sort[data-kolonne="${kolonne}"]`)
+			.querySelector<HTMLElement>(`.lt-table__sort[data-kolonne="${column}"]`)
 			?.focus()
 	})
 

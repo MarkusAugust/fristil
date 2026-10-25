@@ -38,7 +38,7 @@ export function rehypeTabellrull() {
         type: "element",
         tagName: "div",
         properties: {
-          className: ["tabell-rull"],
+          className: ["table-scroll"],
           tabIndex: 0,
           role: "region",
           ariaLabel: tilstand.overskrift

@@ -88,12 +88,12 @@ if (plassert !== sider.length) {
 
 {
   grupper.map((gruppe) => (
-    <section class="oversikt">
+    <section class="overview">
       <h2 id={gruppe.kategori}>{gruppe.title}</h2>
       <p>{gruppe.forklaring}</p>
-      <ul class="oversikt__liste">
+      <ul class="overview__list">
         {gruppe.sider.map((side) => (
-          <li class="oversikt__kort">
+          <li class="overview__card">
             <a href={side.adresse}>{side.title}</a>
             <span>{side.beskrivelse}</span>
           </li>
@@ -104,7 +104,7 @@ if (plassert !== sider.length) {
 }
 
 <style>
-  .oversikt__liste {
+  .overview__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: var(--lt-spacing-3);
@@ -113,7 +113,7 @@ if (plassert !== sider.length) {
     list-style: none;
   }
 
-  .oversikt__kort {
+  .overview__card {
     display: flex;
     flex-direction: column;
     gap: var(--lt-spacing-1);
@@ -123,11 +123,11 @@ if (plassert !== sider.length) {
     background: var(--lt-color-neutral-surface);
   }
 
-  .oversikt__kort a {
+  .overview__card a {
     font-weight: 600;
   }
 
-  .oversikt__kort span {
+  .overview__card span {
     font-size: var(--lt-font-size-s);
     line-height: var(--lt-line-height-default);
     color: var(--lt-color-neutral-text-subtle);

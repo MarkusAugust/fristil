@@ -2,13 +2,13 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-dato" styles={["field", "button", "paragraph"]} maxWidth="26rem" layout="kolonne">
+<Preview id="demo-date" styles={["field", "button", "paragraph"]} maxWidth="26rem" layout="column">
 	<lt-field>
-		<label class="lt-label" for="demo-dato-fodt">Date of birth</label>
+		<label class="lt-label" for="demo-date-born">Date of birth</label>
 		<input
 			class="lt-input"
 			data-variant="date"
-			id="demo-dato-fodt"
+			id="demo-date-born"
 			name="fodselsdato"
 			type="date"
 			min="1900-01-01"
@@ -17,7 +17,7 @@ import Preview from "./Preview.astro"
 		<p class="lt-help-text">Type the date as 31/05/2026, or pick it in the calendar.</p>
 	</lt-field>
 
-	<p class="lt-paragraph" id="demo-dato-svar">No date chosen yet.</p>
+	<p class="lt-paragraph" id="demo-date-answer">No date chosen yet.</p>
 </Preview>
 
 <script>
@@ -26,9 +26,9 @@ import Preview from "./Preview.astro"
 	defineLtField()
 
 	// The preview sits in a shadow root, so we go through the host element.
-	const flate = document.getElementById("demo-dato")?.shadowRoot
-	const felt = flate?.getElementById("demo-dato-fodt") as HTMLInputElement | null
-	const svar = flate?.getElementById("demo-dato-svar")
+	const surface = document.getElementById("demo-date")?.shadowRoot
+	const felt = surface?.getElementById("demo-date-born") as HTMLInputElement | null
+	const svar = surface?.getElementById("demo-date-answer")
 
 	felt?.addEventListener("change", () => {
 		if (!svar) return

@@ -13,13 +13,13 @@ const { version } = pakke
 
 <a
   href="/changelog/"
-  class="versjonsmerke"
+  class="version-badge"
   aria-label={`v${version}, changelog`}
   translate="no"
 >v{version}</a>
 
 <style>
-  .versjonsmerke {
+  .version-badge {
     display: inline-flex;
     align-items: center;
     padding: 0.125rem 0.5rem;
@@ -36,12 +36,12 @@ const { version } = pakke
     transition: opacity 150ms, border-color 150ms;
   }
 
-  .versjonsmerke:hover {
+  .version-badge:hover {
     opacity: 1;
     border-color: rgb(148 163 184 / 0.7);
   }
 
-  .versjonsmerke:focus-visible {
+  .version-badge:focus-visible {
     opacity: 1;
     outline: 2px solid currentColor;
     outline-offset: 2px;
