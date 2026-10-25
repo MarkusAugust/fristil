@@ -122,12 +122,12 @@ if (!inDeck) {
  * disappearing silently.
  */
 const checked = new RegExp(
-  `class="[^"]*\\bavh-maalt\\b[^"]*"\\s*>\\s*Checked (\\d{1,2} (?:${MONTHS.join("|")}) \\d{4})`,
+  `class="[^"]*\\bdeps-checked\\b[^"]*"\\s*>\\s*Checked (\\d{1,2} (?:${MONTHS.join("|")}) \\d{4})`,
 ).exec(deck)
 
 if (!checked) {
   errors.push(
-    'The dependency graph in the presentation does not say when the numbers were checked. It must have "Checked <day> <Month> <year>", for example "Checked 12 October 2026", in an element with the class avh-maalt.',
+    'The dependency graph in the presentation does not say when the numbers were checked. It must have "Checked <day> <Month> <year>", for example "Checked 12 October 2026", in an element with the class deps-checked.',
   )
 }
 
