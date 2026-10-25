@@ -23,6 +23,84 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+### Brytende
+
+- **Fanene i `<fs-tabs>` er lenker til panelene, ikke knapper.** Raden er en
+  `<ul class="fs-tabs__list">` med `<li><a href="#panel">`, og hvert
+  `.fs-tabs__panel` har den id-en lenken peker på. Uten JavaScript er raden
+  en innholdsfortegnelse, og panelene står etter hverandre under den. Med
+  JavaScript skriver komponenten rollene, `aria-selected`, `aria-controls` fra
+  `href`, tabbestoppene og `hidden="until-found"` på panelene som ikke er
+  valgt, så søk i siden og en lenke til noe inni et panel velger fanen.
+  Lenkene har ingen id, og komponenten skriver aldri en, så en oppdatering fra
+  serveren kjenner dem igjen og valget står. Hvert valg skrives i adressen,
+  som `#sak-vedlegg`, uten ny historikkoppføring, og adressen velger fane når
+  siden lastes. En `role="tab"` på noe som ikke er en lenke til et panel, er
+  ikke lenger en fane, og komponenten sier fra i konsollen. **Slik oppdaterer
+  du:** bytt `<div class="fs-tabs__list">` med knapper til en `<ul>` med
+  lenker, gi hvert panel en id og la lenken peke på den.
+- **`fs.tabs()` og `Fs.tabs` tar `keys` i stedet for `count`, og `selected`
+  er borte.** Nøklene kommer fra dataene, én per fane, og gir panelene
+  `${id}-${nøkkel}` og overskriftene `${id}-${nøkkel}-heading`. En nøkkel som
+  er tom, har mellomrom eller står to ganger, kaster, likt i TypeScript og
+  Kotlin. Den første fanen er utgangspunktet; et annet valg kommer fra
+  adressen, fra `hidden="until-found"` på de andre panelene, eller fra appen
+  gjennom `selected` og `select()` på elementet. **Slik oppdaterer du:**
+  `fs.tabs({ id, count: 3, selected: 1, label })` blir
+  `fs.tabs({ id, keys: ["soknaden", "vedlegg", "meldinger"], label })`.
+- **`fs.tabs()` og `Fs.tabs` skriver bare lenker, id-er og klasser.** `list`
+  har klassen og `aria-label`, `tabs` har `href`, `panels` har `id` og
+  klassen, og `headings` har `id`. Ingen roller, `aria-*`, `tabindex` eller
+  `hidden`, og `item` er borte: uten JavaScript skal raden være en liste med
+  lenker, og en `<section>` med navn ville blitt et landemerke. Komponenten
+  skriver resten når den registreres. **Slik oppdaterer du:** spre
+  `faner.tabs[i]` på en `<a>` i en `<li>`, og `faner.headings[i]` på
+  overskriften i panelet.
+- **En tom `label` kaster i `fs.tabs()`, i React-inngangen og i `Fs.tabs`.**
+  Raden må ha et navn som sier hva fanene velger mellom; uten det sier
+  skjermleseren bare «faneliste». `label` sjekkes før `keys`, med samme
+  melding i TypeScript og Kotlin. **Slik oppdaterer du:** gi raden et navn,
+  som `label: "Deler av saken"`.
+- **`fs.tabs()` i `@fristil/designsystem/react` gir hele tilstanden.** Den tar
+  `selected` (standard 0) og skriver rollene, `aria-selected`, `aria-controls`,
+  `tabIndex`, `hidden` og `aria-labelledby` fra panelet til lenken, som får id
+  `${id}-${nøkkel}-tab`. `item` gir `role="presentation"` til hvert `<li>`.
+  Da har komponenten ingenting å skrive når den registreres, og React
+  hydrerer uten avvik. `hidden` er boolsk, fordi React 19 skriver
+  `hidden="until-found"` som `hidden=""`; søk i siden åpner derfor ikke et
+  skjult panel i en React-app. Har markupen `aria-selected` fra serveren,
+  gjelder den når siden lastes, og adressen velger ingen fane. **Slik
+  oppdaterer du:** importer `fs` fra `@fristil/designsystem/react` og spre
+  `faner.item` på `<li>`.
+- **`fs.suggestion()` og `Fs.suggestion` tar `keys` i stedet for `count`.**
+  Alternativene får id fra nøkkelen, `${id}-option-${nøkkel}`, ikke fra
+  plassen i lista, så en oppdatering fra serveren kjenner dem igjen. Antall
+  nøkler avgjør om tommeldingen har `hidden`, som `count` gjorde. Nøklene
+  sjekkes som i `fs.tabs()`. **Slik oppdaterer du:**
+  `fs.suggestion({ id, count: kommuner.length })` blir
+  `fs.suggestion({ id, keys: kommuner.map((k) => k.nr) })`.
+
+### Rettet
+
+- **`server-controlled` satt etter et klikk lot ikke serveren flytte fanen
+  med bare `hidden`.** `aria-selected` komponenten selv hadde skrevet, ble
+  regnet som serverens ord. Nå gjør komponenten det samme som når serveren
+  svarer på et klikk, og attributtet kan også fjernes igjen mens siden lever.
+- **Søk i siden velger fanen også i faner i faner.** Komponenten venter til
+  nettleseren er ferdig med å avdekke treffet før den skriver raden; før
+  stoppet Chromium og WebKit før det ytre panelet.
+- **Serverens `aria-selected` vinner over adressen når siden lastes.** En
+  React-app rendrer på serveren uten å se fragmentet, og valgte komponenten
+  fra adressen før React hydrerte, meldte React avvik. Peker adressen på en
+  annen fane i raden, rettes den til den valgte.
+- **`hidden` skrives tilbake i formen serveren brukte**, `hidden=""` eller
+  `hidden="until-found"`, og i én form per rad.
+- **Før registrering viser `tabs.css` panelet adressen peker på**, eller
+  panelet med det inni, i stedet for alltid det første, så innholdet ikke
+  hopper når komponenten registreres. Serverens `hidden` går foran, og under
+  `server-controlled` vises det første. Regelen står bak
+  `@media (scripting: enabled)`: uten JavaScript vises alle panelene.
+
 ## 0.35.0 (2026-10-22)
 
 ### Brytende
