@@ -236,7 +236,7 @@ Every cell in the matrix becomes a class with the same name: `bg-lt-accent-fill`
 | `max-w-lt-aside` | 384px |
 | `shadow-lt-overlay` | `--lt-shadow-overlay` |
 
-The spacing is tied to the base unit: Tailwind computes `p-4` as `calc(var(--spacing) * 4)`, and `--spacing` is set to `--lt-spacing-1`. `p-4` is thus four times the unit, which is `--lt-spacing-4`. The steps are separate values and are not computed from the unit, so if you change the scale, rewrite every step and not just `--lt-spacing-1`. Otherwise the Tailwind classes, and whatever in the components uses the unit directly, follow along, while the rest of the components stay where they were. [Tailwind](../tailwind/#the-spacing-is-the-same) shows how.
+The spacing is tied to the base unit: Tailwind computes `p-4` as `calc(var(--spacing) * 4)`, and `--spacing` is set to `--lt-spacing-1`. `p-4` is thus four times the unit, which is `--lt-spacing-4`. The steps are separate values and are not computed from the unit, so if you change the scale, rewrite every step and not just `--lt-spacing-1`. Otherwise the Tailwind classes, and whatever in the components uses the unit directly, follow along, while the rest of the components stay where they were. [Tailwind](../tailwind/#spacing-is-the-same) shows how.
 
 The breakpoints are left out on purpose. LO-TEK's `sm` to `2xl` have the same values Tailwind already uses, so `md:` works as before.
 

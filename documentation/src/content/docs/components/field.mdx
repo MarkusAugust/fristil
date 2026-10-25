@@ -306,7 +306,7 @@ If the code that produces the HTML cannot call a TypeScript function, `<lt-field
 
 The component never writes an id on the field. Datastar and idiomorph recognise an element by its id, and a field with an id the server did not send would be replaced on the next update, along with focus and what the user has typed. Without an id from the component the field stays.
 
-If the server sends the same region again while the user is working, as in a Datastar app, the morph tears the wiring away: none of it was in the HTML the server sent. The component sees that and puts it back, so your template needs no `data-preserve-attr`. The reasoning is in [Markup and behaviour](/markup-and-behaviour/#when-the-markup-is-not-produced-with-javascript).
+If the server sends the same region again while the user is working, as in a Datastar app, the morph tears the wiring away: none of it was in the HTML the server sent. The component sees that and puts it back, so your template needs no `data-preserve-attr`. The reasoning is in [Markup and behaviour](/markup-and-behaviour/#when-the-markup-is-not-made-with-javascript).
 
 In a loop you make the id from a key in the data, like `note-{{.Code}}`, never from the index or a counter. An id that follows the position moves what the user typed to the wrong row when the server inserts a new one. If the template makes the id from something that changes between renders, the component warns in the console when an update replaced the field for that reason.
 
