@@ -70,7 +70,7 @@ defineFsTabs()                                                                  
 | --- | --- | --- |
 | `<fs-field>` | koblingen | den samme koblingen, så velg én |
 | `<fs-tabs>` | lenkene, id på panelene og overskriftene, klassene | rollene, `aria-selected`, `aria-controls`, `hidden` og tabbestoppene, og piltaster, Home og End. I React skriver `fs.tabs()` fra `/react` også rollene og valget |
-| `<fs-popover>` | koblingen, id-en, `popover`-attributtet | det samme når markupen kom uten, og posisjon, Escape, klikk utenfor |
+| `<fs-popover>` | koblingen, id-en, `popover`-attributtet | `popover` og `aria-controls` når markupen kom uten, men aldri id-en, og posisjon, Escape, klikk utenfor |
 | `<fs-suggestion>` | rollene, koblingen og id på lista og alternativene | det samme når markupen kom uten, og filtrering, piltaster, antall treff |
 | `<fs-error-summary>` | klassen, `role="alert"`, `tabindex="-1"` | det samme når markupen kom uten, og fokus hit og videre til feltet |
 | `<fs-dialog>` | dialogen og koblingen til overskriften | det samme når markupen kom uten, og `showModal()`, som en server ikke kan kalle |

@@ -343,11 +343,11 @@ skriver derfor aldri id på det brukeren rører: feltet i `<fs-field>` og
 `<fs-suggestion>`, og fanene i `<fs-tabs>`. Skriv `for` på ledeteksten og `id`
 på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten id, og
 panelene har den id-en lenken peker på, den samme ved hver rendring. Panelet i
-`<fs-popover>` trenger id på samme måte, for `popovertarget` og
-`aria-controls`. Lista og alternativene i `<fs-suggestion>` kan byttes ut;
-komponenten kobler dem på nytt og finner det markerte alternativet igjen på
-teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
-brukeren hadde rørt.
+`<fs-popover>` trenger id på samme måte, for `aria-controls` på knappen;
+komponenten lager ingen. Lista og alternativene i `<fs-suggestion>` kan byttes
+ut; komponenten kobler dem på nytt og finner det markerte alternativet igjen
+på teksten. Komponenten sier fra i konsollen første gang en patch bytter ut
+noe brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å
