@@ -131,15 +131,15 @@
       "types": "./dist/tokens/color.d.ts",
       "import": "./dist/tokens/color.js"
     },
-    "./kontrakt": {
+    "./contract": {
       "types": "./dist/tokens/contract.d.ts",
       "import": "./dist/tokens/contract.js"
     },
-    "./matrix-cells": {
+    "./matrix": {
       "types": "./dist/tokens/matrix.d.ts",
       "import": "./dist/tokens/matrix.js"
     },
-    "./tema-sjekk": {
+    "./theme-check": {
       "types": "./dist/tokens/theme-check.d.ts",
       "import": "./dist/tokens/theme-check.js"
     },

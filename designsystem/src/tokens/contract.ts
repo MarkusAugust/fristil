@@ -1,5 +1,5 @@
 /**
- * Fargekontrakten, som `@lo-tek/interfaces/kontrakt`: hva hver rolle er, og
+ * Fargekontrakten, som `@lo-tek/interfaces/contract`: hva hver rolle er, og
  * hva den lover.
  *
  * Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie** (hva
@@ -10,7 +10,7 @@
  * Tallene står i `color-contract.json`, som kjernen leser, og regningen skjer
  * der. Her er dataene, for den som vil lese dem. Et tema bygges med
  * `buildTheme` fra `@lo-tek/interfaces/theme`, og et håndskrevet tema
- * kontrolleres med `inspectTheme` fra `@lo-tek/interfaces/tema-sjekk`.
+ * kontrolleres med `inspectTheme` fra `@lo-tek/interfaces/theme-check`.
  */
 
 export {

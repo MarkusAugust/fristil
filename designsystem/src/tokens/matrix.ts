@@ -1,5 +1,5 @@
 /**
- * Matrisen, som `@lo-tek/interfaces/matrix-cells`: familie ganger rolle, som
+ * Matrisen, som `@lo-tek/interfaces/matrix`: familie ganger rolle, som
  * ferdige tokens.
  *
  * Ingen palett, ingen trinn, ingen pinner: rollen *er* fargen. Navnene følger
