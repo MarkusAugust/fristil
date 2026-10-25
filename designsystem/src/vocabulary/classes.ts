@@ -1250,7 +1250,7 @@ export const classes: Classes = {
   "fs-tabs__list": {
     "component": "tabs",
     "title": "Tabs",
-    "description": "Fanerad koblet til panelene sine. Rammekomponent.",
+    "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/tabs/",
     "content": "free",
     "parts": {
@@ -1266,7 +1266,7 @@ export const classes: Classes = {
   "fs-tabs__panel": {
     "component": "tabs",
     "title": "Tabs",
-    "description": "Fanerad koblet til panelene sine. Rammekomponent.",
+    "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
     "link": "https://fristil.sobernetics.no/components/tabs/",
     "content": "free",
     "attributes": {}

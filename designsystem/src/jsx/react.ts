@@ -83,7 +83,7 @@ type FsFieldAttributes = Host & {
 }
 
 /**
- * `<fs-tabs>` har bare `server-controlled`.
+ * `<fs-tabs>` har `server-controlled` og `activation`, og ingen `selected`.
  *
  * Hvilken fane som er valgt står i markupen serveren sendte, som
  * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det

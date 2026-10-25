@@ -2,12 +2,21 @@
 import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
 
-const kommuner = ["Bergen", "Bodø", "Oslo", "Stavanger", "Tromsø", "Trondheim"]
+// Nøkkelen er kommunenummeret: den gir hvert alternativ en fast id, så en
+// oppdatering fra serveren kjenner alternativet igjen.
+const kommuner = [
+  { nr: "4601", navn: "Bergen" },
+  { nr: "1804", navn: "Bodø" },
+  { nr: "0301", navn: "Oslo" },
+  { nr: "1103", navn: "Stavanger" },
+  { nr: "5501", navn: "Tromsø" },
+  { nr: "5001", navn: "Trondheim" },
+]
 
 // Serveren skriver feltet og lista. Komponenten filtrerer og tar tastaturet.
 const forslag = fs.suggestion({
   id: "demo-kommune",
-  count: kommuner.length,
+  keys: kommuner.map((k) => k.nr),
   help: true,
 })
 ---
@@ -17,9 +26,9 @@ const forslag = fs.suggestion({
 		<label {...forslag.label}>Kommune</label>
 		<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
 		<ul {...forslag.list}>
-			{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+			{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i].navn}</li>)}
 		</ul>
-		<p class="fs-suggestion__empty">Ingen treff</p>
+		<p {...forslag.empty}>Ingen treff</p>
 		<span {...forslag.status}></span>
 		<p class="fs-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
 	</fs-suggestion>

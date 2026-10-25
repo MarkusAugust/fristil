@@ -82,10 +82,16 @@ defineFsSuggestion()
 
     defineFsSuggestion()
 
-    const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+    // Nøkkelen er kommunenummeret: den gir alternativet en fast id.
+    const KOMMUNER = [
+      { nr: "4601", navn: "Bergen" },
+      { nr: "1804", navn: "Bodø" },
+      { nr: "0301", navn: "Oslo" },
+      { nr: "5501", navn: "Tromsø" },
+    ]
 
     export function Kommunesok() {
-      const forslag = fs.suggestion({ id: "kommune", count: KOMMUNER.length })
+      const forslag = fs.suggestion({ id: "kommune", keys: KOMMUNER.map((k) => k.nr) })
 
       return (
         <fs-suggestion>
@@ -93,7 +99,7 @@ defineFsSuggestion()
           <input {...forslag.control} name="kommune" />
           <ul {...forslag.list}>
             {forslag.options.map((valg, i) => (
-              <li key={valg.id} {...valg}>{KOMMUNER[i]}</li>
+              <li key={valg.id} {...valg}>{KOMMUNER[i].navn}</li>
             ))}
           </ul>
           <p {...forslag.empty}>Ingen treff</p>
@@ -112,8 +118,13 @@ defineFsSuggestion()
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/suggestion.css"
 
-    const kommuner = ["Bergen", "Bodø", "Oslo", "Tromsø"]
-    const forslag = fs.suggestion({ id: "kommune", count: kommuner.length })
+    const kommuner = [
+      { nr: "4601", navn: "Bergen" },
+      { nr: "1804", navn: "Bodø" },
+      { nr: "0301", navn: "Oslo" },
+      { nr: "5501", navn: "Tromsø" },
+    ]
+    const forslag = fs.suggestion({ id: "kommune", keys: kommuner.map((k) => k.nr) })
 
     ---
 
@@ -121,7 +132,7 @@ defineFsSuggestion()
       <label {...forslag.label}>Kommune</label>
       <input {...forslag.control} name="kommune" />
       <ul {...forslag.list}>
-        {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i]}</li>)}
+        {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i].navn}</li>)}
       </ul>
       <p {...forslag.empty}>Ingen treff</p>
       <span {...forslag.status}></span>
@@ -173,7 +184,7 @@ defineFsSuggestion()
 ## Markupen
 
 ```ts
-const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: true })
+const forslag = fs.suggestion({ id: "kommune", keys: ["4601", "1804"], help: true })
 ```
 
 ```html
@@ -184,9 +195,9 @@ const forslag = fs.suggestion({ id: "kommune", count: kommuner.length, help: tru
          aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
 
   <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
-    <li class="fs-suggestion__option" id="kommune-option-0" role="option"
+    <li class="fs-suggestion__option" id="kommune-option-4601" role="option"
         aria-selected="false">Bergen</li>
-    <li class="fs-suggestion__option" id="kommune-option-1" role="option"
+    <li class="fs-suggestion__option" id="kommune-option-1804" role="option"
         aria-selected="false">Bodø</li>
   </ul>
 
@@ -200,7 +211,7 @@ Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skr
 
 Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<fs-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Lista og alternativene får id av komponenten når de mangler. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<fs-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Alternativene får id fra nøkkelen i `keys`, som kommunenummeret, så en oppdatering kjenner dem igjen. En nøkkel som er tom, har mellomrom eller står to ganger, kaster, i TypeScript som i Kotlin. Mangler id-ene, som i en mal uten byggefunksjon, gir komponenten lista og alternativene id. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
 
 ### Tekst og kode
 
@@ -246,21 +257,22 @@ Det gjelder like mye i React som i Datastar. I React er det lett å overse, for 
 
 ```tsx
 // Søk uten diakritikk. Komponentens eget filter ville skjult Bodø igjen.
-const treff = kommuner.filter((k) => utenTegn(k).includes(utenTegn(sok)))
+const treff = kommuner.filter((k) => utenTegn(k.navn).includes(utenTegn(sok)))
+const forslag = fs.suggestion({ id: "kommune", keys: treff.map((k) => k.nr) })
 
 <fs-suggestion prefiltered>
   …
   <ul {...forslag.list}>
-    {treff.map((navn, i) => <li {...forslag.options[i]} key={navn}>{navn}</li>)}
+    {treff.map((k, i) => <li {...forslag.options[i]} key={k.nr}>{k.navn}</li>)}
   </ul>
 </fs-suggestion>
 ```
 
-Bygg da `fs.suggestion({ id: "kommune", count: treff.length })`, ikke med hele lista. `count` avgjør om «Ingen treff» har `hidden`: den har det så lenge du har treff.
+Bygg da med nøklene til treffene, ikke til hele lista. Antall nøkler avgjør om «Ingen treff» har `hidden`: den har det så lenge du har treff.
 
 ### Hvem viser «Ingen treff»
 
-Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, count, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, keys, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
 
 **Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer bare når antallet er et annet enn sist. Med `prefiltered` kommer den når du har rendret lista på nytt, ikke ved tastetrykket, og det første antallet leses ikke opp, siden det er utgangspunktet. Uten `prefiltered` filtrerer komponenten selv ved hvert tastetrykk, når feltet får fokus, og når en oppdatering endrer en åpen liste, og antallet leses opp da.
 

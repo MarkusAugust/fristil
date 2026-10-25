@@ -756,12 +756,12 @@
         },
         {
           "name": "fs-tabs__list",
-          "description": "**Tabs**\n\nFanerad koblet til panelene sine. Rammekomponent.",
+          "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/tabs/"
         },
         {
           "name": "fs-tabs__panel",
-          "description": "**Tabs**\n\nFanerad koblet til panelene sine. Rammekomponent.",
+          "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
           "doc-url": "https://fristil.sobernetics.no/components/tabs/"
         },
         {

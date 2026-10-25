@@ -1,17 +1,17 @@
 ---
 title: Tabs
-description: Fanerad koblet til panelene sine. Rammekomponent.
+description: Fanerad av lenker til panelene sine. Rammekomponent.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
 
-Komponenten tar piltastene, og kobler fanene til panelene når markupen kommer uten koblingen.
-
-I en fanerad skal Tab hoppe forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene. Et sett knapper uten den koblingen gir én tabbestopp per fane, og skjermleseren sier «knapp» der den skulle sagt «fane, 2 av 3, valgt».
+Fanene er lenker til panelene sine. Uten JavaScript er raden en innholdsfortegnelse, og panelene står etter hverandre under den. Med JavaScript gjør komponenten lenkene til faner: Tab hopper forbi hele raden og inn i det valgte panelet, piltastene flytter mellom fanene, og skjermleseren sier «fane, 2 av 3, valgt» der den ellers hadde sagt «lenke».
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvilke paneler som er skjult, ferdig i HTML-en. Blir den til uten JavaScript, i en Go-mal eller ren HTML, holder det med strukturen: en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp. Komponenten setter resten, og lar det serveren skrev stå. Piltastene, Home og End kommer fra komponenten i begge tilfeller. Ett unntak: sender serveren raden på nytt i en patch, må den skrive id på fanene og panelene, ellers byttes de ut og fanevalget går tapt. Se [Markup og oppførsel](/markup-og-oppforsel/#id-er-som-overlever-en-oppdatering).
+Lages markupen med JavaScript, skriver `fs.tabs()` lenkene, id-ene på panelene og overskriftene, og klassene. Blir den til uten JavaScript, i en Go-mal eller ren HTML, skriver du det samme for hånd: en `.fs-tabs__list` med lenker og ett `.fs-tabs__panel` per lenke, med den id-en lenken peker på. Komponenten skriver resten i begge tilfeller: rollene, `aria-selected`, `aria-controls` fra `href`, tabbestoppene, `hidden="until-found"` på panelene som ikke er valgt, og panelets navn. Bare panelene trenger id, og den kommer fra `href`. Lenkene har ingen, og komponenten skriver aldri en: en oppdatering fra serveren kjenner dem derfor igjen, og valget står. Se [Markup og oppførsel](/markup-og-oppforsel/#id-er-som-overlever-en-oppdatering).
+
+Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hele tilstanden, se React-fanen under.
 :::
 
 ## Slik tar du den i bruk
@@ -30,15 +30,21 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
     ```
 
     ```html
-    <!-- Rollene, id-ene og koblingen setter komponenten. Vil du at en annen
-         fane enn den første skal være valgt, sett `hidden` på de andre panelene. -->
+    <!-- Lenkene peker på panelene. Rollene, valget og `hidden` skriver
+         komponenten. Uten JavaScript er dette en innholdsfortegnelse. -->
     <fs-tabs id="saksfaner">
-      <div class="fs-tabs__list" aria-label="Deler av saken">
-        <button>Søknaden</button>
-        <button>Vedlegg</button>
-      </div>
-      <div class="fs-tabs__panel">Søknaden</div>
-      <div class="fs-tabs__panel">Vedlegg</div>
+      <ul class="fs-tabs__list" aria-label="Deler av saken">
+        <li><a href="#soknaden">Søknaden</a></li>
+        <li><a href="#vedlegg">Vedlegg</a></li>
+      </ul>
+      <section class="fs-tabs__panel" id="soknaden">
+        <h2>Søknaden</h2>
+        <p>Søknaden ble sendt 4. mars 2026.</p>
+      </section>
+      <section class="fs-tabs__panel" id="vedlegg">
+        <h2>Vedlegg</h2>
+        <p>Tre vedlegg er lastet opp.</p>
+      </section>
     </fs-tabs>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
@@ -55,6 +61,8 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
       })
     </script>
     ```
+
+    Overskriften i panelet gir panelet navnet sitt når den sier det samme som fanen. Sier den noe annet, får panelet fanens navn som `aria-label`.
   </TabItem>
   <TabItem label="React">
     ```ts
@@ -70,27 +78,47 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
 
     defineFsTabs()
 
-    const TITLER = ["Søknaden", "Vedlegg", "Meldinger"]
+    const DELER = [
+      { key: "soknaden", tittel: "Søknaden" },
+      { key: "vedlegg", tittel: "Vedlegg" },
+      { key: "meldinger", tittel: "Meldinger" },
+    ]
 
-    export function Saksfaner() {
-      const faner = fs.tabs({ id: "sak", count: TITLER.length, label: "Deler av saken" })
+    export function Saksfaner({ valgt = 0 }: { valgt?: number }) {
+      const faner = fs.tabs({
+        id: "sak",
+        keys: DELER.map((del) => del.key),
+        label: "Deler av saken",
+        selected: valgt,
+      })
 
       return (
         <fs-tabs>
-          <div {...faner.list}>
+          <ul {...faner.list}>
             {faner.tabs.map((fane, i) => (
-              <button key={fane.id} {...fane}>{TITLER[i]}</button>
+              <li key={fane.id} {...faner.item}>
+                <a {...fane}>{DELER[i].tittel}</a>
+              </li>
             ))}
-          </div>
+          </ul>
           {faner.panels.map((panel, i) => (
-            <div key={panel.id} {...panel}>Innhold for {TITLER[i]}</div>
+            <section key={panel.id} {...panel}>
+              <h2>{DELER[i].tittel}</h2>
+              <p>Innhold for {DELER[i].tittel.toLowerCase()}.</p>
+            </section>
           ))}
         </fs-tabs>
       )
     }
     ```
 
-    Importen fra `@fristil/designsystem/react` gir `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
+    `fs.tabs()` fra `@fristil/designsystem/react` skriver hele tilstanden: rollene, `aria-selected`, `aria-controls`, tabbestoppene og `hidden`, og gir lenkene id så panelet kan peke på fanen sin med `aria-labelledby`. Da har komponenten ingenting å skrive når den registreres, og React hydrerer uten avvik. Importen gir også `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
+
+    `selected` gjelder når siden lastes, og er indeksen i `keys`. Serveren ser ikke fragmentet i adressen, så en delt lenke til `#sak-vedlegg` åpner den første fanen i en React-app. Vil du følge adressen, les den selv etter at siden er lastet, og send indeksen inn som `selected`. Skal appen flytte valget etter at brukeren har klikket, sett `server-controlled` på `<fs-tabs>`, se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen).
+
+    React 19 skriver `hidden="until-found"` som `hidden=""`. Søk i siden og lenker inn i et skjult panel åpner derfor ikke fanen i en React-app, før React støtter verdien.
+
+    Skriver du fanene for hånd i JSX, uten `fs.tabs()`, skriver komponenten rollene før React hydrerer, og React melder et avvik per element. Sett da `suppressHydrationWarning` på raden, listepunktene, lenkene og panelene. Bruk heller `fs.tabs()`.
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -99,16 +127,28 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
     import "@fristil/designsystem/tokens.css"
     import "@fristil/designsystem/tabs.css"
 
-    const titler = ["Søknaden", "Vedlegg", "Meldinger"]
-    const faner = fs.tabs({ id: "sak", count: titler.length, label: "Deler av saken" })
-
+    const deler = [
+      { key: "soknaden", tittel: "Søknaden" },
+      { key: "vedlegg", tittel: "Vedlegg" },
+      { key: "meldinger", tittel: "Meldinger" },
+    ]
+    const faner = fs.tabs({
+      id: "sak",
+      keys: deler.map((del) => del.key),
+      label: "Deler av saken",
+    })
     ---
 
     <fs-tabs>
-      <div {...faner.list}>
-        {faner.tabs.map((fane, i) => <button {...fane}>{titler[i]}</button>)}
-      </div>
-      {faner.panels.map((panel, i) => <div {...panel}>Innhold for {titler[i]}</div>)}
+      <ul {...faner.list}>
+        {faner.tabs.map((fane, i) => <li><a {...fane}>{deler[i].tittel}</a></li>)}
+      </ul>
+      {faner.panels.map((panel, i) => (
+        <section {...panel}>
+          <h2 {...faner.headings[i]}>{deler[i].tittel}</h2>
+          <p>Innhold for {deler[i].tittel.toLowerCase()}.</p>
+        </section>
+      ))}
     </fs-tabs>
 
     <script>
@@ -116,6 +156,8 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
       defineFsTabs()
     </script>
     ```
+
+    En Astro-side hydrerer ingenting, så her er det den vanlige `fs.tabs()` som gjelder, og komponenten skriver rollene når den registreres. `headings` gir overskriftene en fast id, så panelets navn peker på det samme etter en oppdatering.
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -138,34 +180,43 @@ Lages markupen med JavaScript, gir `fs.tabs()` rollene, id-ene, koblingen og hvi
     </script>
 
     <fs-tabs server-controlled data-signals__ifmissing="{valgtFane: 0}" data-on:tab-select="$valgtFane = evt.detail.index">
-      <div class="fs-tabs__list" aria-label="Deler av saken">
-        <button>Søknaden</button>
-        <button>Vedlegg</button>
-      </div>
-      <div class="fs-tabs__panel">Søknaden</div>
-      <div class="fs-tabs__panel" hidden>Vedlegg</div>
+      <ul class="fs-tabs__list" aria-label="Deler av saken">
+        <li><a href="#soknaden">Søknaden</a></li>
+        <li><a href="#vedlegg">Vedlegg</a></li>
+      </ul>
+      <section class="fs-tabs__panel" id="soknaden">
+        <h2>Søknaden</h2>
+        <p>Søknaden ble sendt 4. mars 2026.</p>
+      </section>
+      <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">
+        <h2>Vedlegg</h2>
+        <p>Tre vedlegg er lastet opp.</p>
+      </section>
     </fs-tabs>
     ```
 
-    Signalet `$valgtFane` sendes med neste handling Datastar gjør mot serveren, som `@get` eller `@post`, så serveren vet hvilken fane brukeren valgte og rendrer `hidden` på panelene etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
+    Signalet `$valgtFane` sendes med neste handling Datastar gjør mot serveren, som `@get` eller `@post`, så serveren vet hvilken fane brukeren valgte og skriver `hidden` på panelene etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
+
+    Skjul panelene med `hidden="until-found"`, ikke bar `hidden`, så søk i siden kan finne teksten i dem. Komponenten skriver `hidden` tilbake i den formen serveren brukte.
   </TabItem>
 </Tabs>
 
-Skriver serveren `hidden` på panelene, står det. Kommer markupen uten, viser `tabs.css` bare det første synlige panelet til komponenten er registrert, og komponenten skjuler resten i det den kobles til. Innholdet hopper derfor ikke i noen av tilfellene.
+## Faner eller trekkspill
+
+Faner passer når den første delen er viktigst for de fleste, og ingen trenger alt på én gang. Skal innholdet leses i rekkefølge, eller sammenlignes del mot del, bruk heller et [trekkspill](/components/accordion/): der kan flere paneler stå åpne, og `name` gir deg ett om gangen når det er poenget. Faner skjuler alt annet enn det valgte, også for den som skriver ut siden.
 
 ## Hvilken fane som er valgt
 
-`selected` sier hvilken fane som er valgt når markupen lages, og er indeksen i lista:
+Den første fanen er valgt når siden lastes, med to unntak: adressen peker på et panel eller noe inni det, eller serveren har skrevet valget i markupen. Komponenten leser i denne rekkefølgen:
 
-```ts
-const faner = fs.tabs({ id: "sak", count: 3, selected: 1, label: "Deler av saken" })
-```
+1. `aria-selected="true"` på en fane, slik `fs.tabs()` fra React-inngangen skriver det. Da velger adressen ingen fane, og peker den på en annen fane i raden, rettes den til den valgte.
+2. Adressen, når den peker på et panel eller noe inni det.
+3. Det første panelet uten `hidden`. Serveren kan altså velge en fane i markup uten roller ved å skrive `hidden="until-found"` på de andre panelene.
+4. Ellers den første.
 
-Serveren bestemmer altså utgangspunktet. Etterpå er det `aria-selected` i markupen som gjelder, og komponenten leser derfra. Mangler `aria-selected`, som i markup skrevet uten JavaScript, leser den valget fra panelene: det første som ikke har `hidden` hører til den valgte fanen. Sier markupen ingenting, eller skjuler den alle panelene, er det den første. Det komponenten selv har skrevet teller ikke som markupens svar: bytter serveren fane ved bare å flytte `hidden`, følger markeringen med.
+Det komponenten selv har skrevet, teller ikke som markupens svar: bytter serveren fane ved bare å flytte `hidden`, følger markeringen med.
 
-Med `server-controlled` bestemmer serveren valget, se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen).
-
-Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
+Den vanlige `fs.tabs()` har ingen `selected`. Et annet utgangspunkt kommer fra adressen eller fra serverens `hidden`, og etterpå fra appen gjennom `selected` og `select()` på elementet:
 
 ```ts
 const faner = document.querySelector("fs-tabs")
@@ -176,15 +227,42 @@ faner.select(1) // velger «Vedlegg» og sender `tab-select`
 faner.selected = 2 // det samme som select(2)
 ```
 
-Komponenten finner panelet til hver fane gjennom `aria-controls`. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en patch `hidden` av det, kommer det ikke tilbake av seg selv. Peker `aria-controls` på en id som ikke finnes, sier komponenten fra i konsollen. Markup uten `aria-controls` kobles etter rekkefølgen, og komponenten skriver da koblingen inn, med id-er den lager selv og husker: en patch som river dem bort får de samme tilbake. Men en morfing kjenner ikke igjen et element som har en id serveren ikke sendte, og bytter det ut. Skal fanevalget overleve en patch som sender raden på nytt, må serveren skrive id på fanene og panelene selv, slik `fs.tabs()` gjør. Komponenten sier fra i konsollen første gang det går galt.
+Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
+
+Panelet finnes på id-en i `href`, og `aria-controls` skrives fra den. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en oppdatering `hidden` av det, kommer det ikke tilbake av seg selv. Peker en lenke på en id som ikke finnes, kan fanen velges uten at noe vises, og komponenten sier fra i konsollen.
+
+`tab-select` sendes når brukeren eller komponenten endrer valget: klikk, piltaster, `select()`, adressen og søk i siden. Den sendes ikke når serveren flytter valget i en oppdatering, så appen ikke reagerer på sitt eget ekko, og ikke når fanen som velges alt er valgt.
+
+## Adressen og søk i siden
+
+Hvert valg skrives i adressen, som `#sak-vedlegg`, uten ny oppføring i historikken. En delt lenke åpner derfor den fanen leseren sto på, og en lenke til noe inni et panel, som `#vedlegg-liste`, velger fanen og ruller dit. Den adressen skrives ikke om, så lenken inn til innholdet går ikke tapt. Endres adressen mens siden lever, velges fanen.
+
+Søk i siden finner tekst i panelene som er skjult, fordi de er skjult med `hidden="until-found"`. Treffer søket et skjult panel, velger komponenten den fanen, og bare det panelet vises. Søket endrer ikke adressen.
+
+Kan adressen ikke skrives, som i Safari etter mange raske valg eller i en `<iframe srcdoc>`, velges fanen likevel.
+
+To begrensninger følger av at adressen er én:
+
+- To fanerader på samme side deler den. Et valg i den ene skriver over adressen til den andre, og bare den siste kan gjenopprettes fra en delt lenke.
+- En app som ruter på fragmentet, som `#/sak/1`, får adressen skrevet over av fanene. Da hører `server-controlled` med, se under: der velger adressen ingen fane, og komponenten skriver den heller ikke.
+
+## Hvorfor panelene skjules med `hidden="until-found"`
+
+HTML-standarden sier at `hidden` ikke skal brukes til å skjule panelene i en fanerad, og at et synlig element ikke skal lenke til et skjult. Fristil avviker fra det, med vilje. `until-found` er laget nettopp for at lenker til fragmenter og søk i siden skal kunne avdekke innhold som er lagt bort, og det er det en fanerad gjør: innholdet finnes, leseren har bare ikke bedt om det ennå. Med en klasse og `display: none` i stedet ville søk i siden ikke funnet teksten, og serveren kunne ikke lenger velge fane med `hidden`.
+
+Et panel skjult med `until-found` beholder boksen sin, så stilarket nuller luften rundt det. Innholdet i et skjult panel kan ikke få fokus, og panelet selv har ikke tabbestopp.
 
 ## Før komponenten er registrert
 
-Panelene står i siden før `defineFsTabs()` har kjørt. `fs.tabs()` skriver `hidden` på alle unntatt det valgte, så markupen er riktig fra første tegning.
+Panelene står i siden før `defineFsTabs()` har kjørt. Den vanlige `fs.tabs()` skriver ikke `hidden`, så uten JavaScript vises alle panelene under hverandre, som en innholdsfortegnelse skal. Med JavaScript viser `tabs.css` bare ett panel til komponenten er registrert, det komponenten kommer til å velge, så innholdet ikke hopper:
 
-Er markupen bar, viser `fs-tabs:not(:defined)` i `tabs.css` bare det første panelet som ikke er skjult. Regelen rekker bare panelene inne i `<fs-tabs>`: et panel utenfor må ha `hidden` fra serveren.
+- Skrev serveren `hidden` selv, gjelder det.
+- Ellers panelet adressen peker på, eller panelet med det inni. Det er også det en lenke i raden fører til når komponenten aldri blir registrert.
+- Ellers det første.
 
-Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
+Under `server-controlled` velger adressen ikke, og det første synlige panelet vises. Regelen rekker bare panelene inne i `<fs-tabs>`: et panel utenfor må ha `hidden` fra serveren. Og den kan ikke koble `aria-selected` på en fane til panelet dens, så markup med `aria-selected`, som fra React-inngangen, må også ha `hidden` på panelene som ikke er valgt. React-inngangen skriver begge.
+
+Se [Markup og oppførsel](/markup-og-oppforsel/#før-komponenten-er-registrert).
 
 ## Når serveren bestemmer fanen
 
@@ -209,10 +287,10 @@ Settes attributtet mens siden lever, er det som står i markupen utgangspunktet,
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tabs__list` | Raden med knapper. Får `role="tablist"` av serveren eller komponenten |
-| `.fs-tabs__panel` | Ett panel. Den valgte er uten `hidden` |
+| `.fs-tabs__list` | Lista med lenker. Får `role="tablist"` av komponenten, eller av `fs.tabs()` i React-inngangen |
+| `.fs-tabs__panel` | Ett panel. De som ikke er valgt, har `hidden="until-found"` |
 
-Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
+Lenkene har ingen egen klasse, de styles som `.fs-tabs__list a`. Den valgte har `aria-selected="true"`, og en deaktivert fane har `aria-disabled="true"`.
 
 | Variabel | Reserve |
 | --- | --- |
@@ -225,17 +303,24 @@ Knappene har ingen egen klasse, de styles som `.fs-tabs__list button`.
   --fs-tabs-gap: 0;
 }
 ```
+
 ## Tilgjengelighet
 
-Fanene er `role="tab"` i en `role="tablist"`, og panelene er `role="tabpanel"` pekt til med `aria-labelledby`. Skriver serveren dem med `fs.tabs()`, står de i HTML-en før skriptet har kjørt. Kommer markupen uten, setter komponenten dem i det den registreres, og setter dem tilbake om en patch tar dem.
+Fanene er `role="tab"` i en `role="tablist"`, listepunktene rundt dem er `role="presentation"` så skjermleseren ikke teller dem som liste, og panelene er `role="tabpanel"`. Skriver du dem med `fs.tabs()` fra React-inngangen, står rollene i HTML-en før skriptet har kjørt. Ellers setter komponenten dem i det den registreres, og setter dem tilbake om en oppdatering tar dem.
+
+Panelet får navnet sitt fra overskriften i det, når den sier det samme som fanen. Sier den noe annet, eller finnes den ikke, får panelet fanens navn som `aria-label`. En kobling serveren selv skrev, `aria-label` eller `aria-labelledby`, rører komponenten aldri.
+
+Raden må ha et navn: `aria-label` på `.fs-tabs__list`, eller `aria-labelledby` mot en overskrift. `label` er derfor påkrevd i `fs.tabs()`, og komponenten sier fra i konsollen når navnet mangler. Uten det sier skjermleseren bare «faneliste».
 
 | Tast | Gjør |
 | --- | --- |
-| Piltastene | Flytter mellom fanene, og går rundt fra siste til første |
+| Piltastene | Flytter mellom fanene, og går rundt fra siste til første. Med `automatic` velger de fanen med en gang |
 | Home og End | Første og siste fane |
-| Tab | Ut av raden og inn i det valgte panelet |
+| Enter og mellomrom | Velger fanen som har fokus, når `activation="manual"` |
+| Tab | Ut av raden og inn i det valgte panelet. Ingenting i et panel som ikke er valgt, kan nås med Tab |
 
-En fane med `disabled` hoppes over, og i en side med `dir="rtl"` bytter venstre og høyre pil retning, slik at neste fane alltid er den som står ved siden av i leseretningen.
+Høyre- og venstrepil flytter i en vannrett rad. Har lista `aria-orientation="vertical"`, er det opp- og nedpil, og i en vannrett rad ruller de siden som vanlig. I en side med `dir="rtl"` bytter venstre og høyre pil retning, slik at neste fane alltid er den som står ved siden av i leseretningen. En tast med Alt, Ctrl eller Cmd holdt nede er nettleserens: Cmd-klikk og midtklikk på en fane åpner panelet i en ny fane i nettleseren, som en lenke.
 
-Én fane har `tabindex="0"`, normalt den valgte. Er den valgte deaktivert, flyttes tabbestoppet til den neste aktive. Panelet har `tabindex="0"` slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist.
+En fane med `aria-disabled="true"` hoppes over, og kan ikke velges. Én fane har `tabindex="0"`, normalt den valgte. Er den valgte deaktivert, flyttes tabbestoppet til den neste aktive. Det valgte panelet har `tabindex="0"`, slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist. De skjulte panelene har det ikke.
 
+Uten JavaScript er raden en vanlig liste med lenker, uten faneroller, og hver lenke kan nås med Tab. Stilarket gir dem minst 24 piksler trykkflate.

@@ -48,7 +48,7 @@ Dette er spørsmålet folk stopper på. Svaret avhenger av om koden som lager ma
 
 ### Koblingen: enten byggefunksjonen eller komponenten
 
-Koblingen mellom delene er markup: `for` og `id` i et felt, `aria-controls` og `role="tab"` i en fanerad, `popover` og `aria-controls` i et sprettoppvindu, `role="combobox"` og `role="listbox"` i et forslagsfelt, `aria-labelledby` på en dialog, `role="alert"` og `tabindex="-1"` på en feiloppsummering. Byggefunksjonen og komponenten skriver den samme koblingen, så du bruker den ene.
+Koblingen mellom delene er markup: `for` og `id` i et felt, `href` fra fanen til panelet i en fanerad, `popover` og `aria-controls` i et sprettoppvindu, `role="combobox"` og `role="listbox"` i et forslagsfelt, `aria-labelledby` på en dialog, `role="alert"` og `tabindex="-1"` på en feiloppsummering. Byggefunksjonen og komponenten skriver den samme koblingen, så du bruker den ene.
 
 | Lager du markupen med JavaScript? | Bruk |
 | --- | --- |
@@ -62,14 +62,14 @@ Byggefunksjonene er TypeScript. Kan koden som lager HTML-en kalle dem, er det de
 Piltaster, fokus og posisjon kan ingen funksjon gi. Det kommer fra komponenten, uansett hvem som skrev koblingen.
 
 ```ts
-const faner = fs.tabs({ id: "sak", count: 3 })   // markupen, fra byggefunksjonen
-defineFsTabs()                                    // piltastene, fra komponenten
+const faner = fs.tabs({ id: "sak", keys: ["soknaden", "vedlegg"], label: "Deler av saken" }) // markupen
+defineFsTabs()                                                                              // piltastene
 ```
 
 | Komponent | Byggefunksjonen gir deg | Komponenten gir deg |
 | --- | --- | --- |
 | `<fs-field>` | koblingen | den samme koblingen, så velg én |
-| `<fs-tabs>` | roller, id-er, kobling, `hidden`, tabbestopp | det samme når markupen kom uten, og piltaster, Home og End |
+| `<fs-tabs>` | lenkene, id på panelene og overskriftene, klassene | rollene, `aria-selected`, `aria-controls`, `hidden` og tabbestoppene, og piltaster, Home og End. I React skriver `fs.tabs()` fra `/react` også rollene og valget |
 | `<fs-popover>` | koblingen, id-en, `popover`-attributtet | det samme når markupen kom uten, og posisjon, Escape, klikk utenfor |
 | `<fs-suggestion>` | rollene, koblingen og id på lista og alternativene | det samme når markupen kom uten, og filtrering, piltaster, antall treff |
 | `<fs-error-summary>` | klassen, `role="alert"`, `tabindex="-1"` | det samme når markupen kom uten, og fokus hit og videre til feltet |
@@ -214,12 +214,12 @@ det brukeren skrev når elementet byttes ut eller verdien settes på nytt.
 Men morfingen fjerner også alt den nye versjonen ikke har:
 
 ```
-Serveren sendte:   <button aria-selected="false">Vedlegg</button>
+Serveren sendte:   <a href="#vedlegg">Vedlegg</a>
 Brukeren klikker, og <fs-tabs> setter:
-I siden står nå:   <button aria-selected="true">Vedlegg</button>
+I siden står nå:   <a href="#vedlegg" role="tab" aria-selected="true">Vedlegg</a>
 
 Serveren oppdaterer området, og sender fortsatt:
-                   <button aria-selected="false">Vedlegg</button>
+                   <a href="#vedlegg">Vedlegg</a>
 
 Fanevalget er borte.
 ```
@@ -319,7 +319,7 @@ markupen, og det avhenger ikke av hvem som morfer.
 #### Id-er som overlever en oppdatering
 
 Reparasjonen forutsetter én ting: at morfingen beholder elementene. Fanevalget
-er knyttet til selve knappen, og teksten brukeren skrev står i selve feltet.
+er knyttet til selve lenken, og teksten brukeren skrev står i selve feltet.
 Byttes elementet ut, er det borte, og ingen komponent kan hente det tilbake.
 
 Morfingen kjenner et element igjen på id. Et element uten id beholdes. Et
@@ -333,18 +333,19 @@ finner det igjen på id, og en morfing kjenner feltet igjen på plassen sin.
 Setter serveren inn et felt av samme slag foran, kan teksten brukeren skrev
 havne i det.
 
-Fanene og sprettoppvinduet trenger id for koblingen, og der skriver serveren
-dem:
+Panelene i en fanerad og panelet i et sprettoppvindu trenger id for koblingen,
+og der skriver serveren dem:
 
 | Komponent | Skriv id på |
 | --- | --- |
-| `<fs-tabs>` | hver fane og hvert panel |
+| `<fs-tabs>` | hvert panel, den id-en lenken peker på. Fanene selv har ingen id, og komponenten skriver aldri en |
 | `<fs-field>` | kontrollen, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
 | `<fs-suggestion>` | feltet, med `for` på ledeteksten (eller ledeteksten rundt feltet) |
 | `<fs-popover>` | panelet |
 
-Byggefunksjonene gjør det alt: `fs.tabs({ id })` skriver `sak-tab-0` og
-`sak-panel-0`, og Kotlin-bindingen det samme. Skriver du malen for hånd,
+Byggefunksjonene gjør det alt: `fs.tabs({ id: "sak", keys: ["vedlegg"], label })`
+skriver `sak-vedlegg` på panelet og `sak-vedlegg-heading` på overskriften, og
+Kotlin-bindingen det samme. Skriver du malen for hånd,
 skriver du id-ene selv, og de må være de samme ved hver rendring.
 
 I en løkke lager du id-en av en nøkkel i dataene, aldri av noe som følger
@@ -422,7 +423,7 @@ dytter en oppdatering av seg selv fordi en annen bruker gjorde noe.
    språk.
 3. **Det brukeren gjorde setter komponenten tilbake,** så lenge patchen
    beholder elementene. Sender du hele området på nytt, må serveren skrive id
-   på fanene, panelene og panelet i sprettoppvinduet, ellers byttes de ut, og
+   på panelene i faneraden og panelet i sprettoppvinduet, ellers byttes de ut, og
    id-ene i en løkke kommer fra en nøkkel i dataene. Lista og alternativene i
    forslagsfeltet kan byttes ut; komponenten kobler dem på nytt. Skal serveren alene bestemme tilstanden, sier du det
    med `server-controlled`.
@@ -447,16 +448,11 @@ Meldingen kommer én gang per element, ikke én gang per oppdatering, og bare n�
 
 ## Før komponenten er registrert
 
-Markupen er serverens, så den står der og er lesbar lenge før `defineFs*()` har kjørt. Bruker du byggefunksjonene, er det hele saken: `fs.tabs()` skriver `hidden` på hvert panel som ikke er valgt, og `fs.suggestion()` på en lukket liste, så markupen er riktig fra første tegning.
+Markupen er serverens, så den står der og er lesbar lenge før `defineFs*()` har kjørt. `fs.suggestion()` skriver `hidden` på en lukket liste, så markupen er riktig fra første tegning. `fs.tabs()` skriver ikke `hidden`: uten JavaScript skal alle panelene vises, som en innholdsfortegnelse med innholdet under.
 
-Skriver du den bar, altså uten `hidden`, viser fanene alle panelene under hverandre, og forslagslista står åpen under et felt ingen har rørt. To regler i stilarkene tar det:
+Med JavaScript ville alle panelene stått under hverandre til komponenten var registrert, og forslagslista åpen under et felt ingen har rørt. Reglene i stilarkene tar det. For forslagsfeltet er den enkel:
 
 ```css
-fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
-  ~ .fs-tabs__panel:not([hidden]) {
-  display: none;
-}
-
 fs-suggestion:not(:defined) .fs-suggestion__list {
   display: none;
 }
@@ -464,7 +460,7 @@ fs-suggestion:not(:defined) .fs-suggestion__list {
 
 Tommeldingen i forslagsfeltet har en tilsvarende regel, og den gjelder også etter registreringen: `.fs-suggestion__empty` vises ikke etter en liste med `hidden`.
 
-Fanereglen viser det første panelet som ikke er skjult, så den overstyrer ikke et `hidden` serveren har skrevet. Den rekker bare panelene som står inne i `<fs-tabs>`: ligger et panel utenfor, må serveren skrive `hidden` på det selv.
+Fanereglen i `tabs.css` står bak `@media (scripting: enabled)`, og viser ett panel til komponenten er registrert, det komponenten kommer til å velge: serverens `hidden` gjelder når det finnes, ellers panelet adressen peker på (`:target`, eller panelet med det inni), ellers det første. Under `server-controlled` velger adressen ikke, og det første synlige vises. Den rekker bare panelene som står inne i `<fs-tabs>`: ligger et panel utenfor, må serveren skrive `hidden` på det selv. Og den kan ikke koble `aria-selected` på en fane til panelet dens, så markup med `aria-selected` fra serveren må også ha `hidden` på de andre panelene. Se [fanesiden](/components/tabs/#før-komponenten-er-registrert).
 
 Reglene er nevnt her fordi `:not(:defined)` er lett å ta for en feil når du leser CSS-en.
 
