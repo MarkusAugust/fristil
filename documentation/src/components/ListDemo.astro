@@ -109,7 +109,7 @@ import Preview from "./Preview.astro"
 	function overskrift(column: Kolonne, tekst: string): string {
 		const sortert = sortering.column === column
 		return `<th scope="col"${sortert ? ` aria-sort="${sortering.retning}"` : ""}>
-			<button type="button" class="lt-table__sort" data-kolonne="${column}">${tekst}</button>
+			<button type="button" class="lt-table__sort" data-column="${column}">${tekst}</button>
 		</th>`
 	}
 
@@ -274,7 +274,7 @@ import Preview from "./Preview.astro"
 		}
 		visSaker(viste)
 		resultat
-			.querySelector<HTMLElement>(`.lt-table__sort[data-kolonne="${column}"]`)
+			.querySelector<HTMLElement>(`.lt-table__sort[data-column="${column}"]`)
 			?.focus()
 	})
 

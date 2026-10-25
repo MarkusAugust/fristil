@@ -127,7 +127,7 @@ import Preview from "./Preview.astro"
 
 	/** Shows or removes the error message for one field. */
 	function vis(felt: HTMLInputElement, melding: string) {
-		const feiltekst = surface?.getElementById(`${felt.id}-feil`)
+		const feiltekst = surface?.getElementById(`${felt.id}-error`)
 		if (feiltekst) {
 			feiltekst.textContent = melding
 			feiltekst.hidden = melding === ""
@@ -135,12 +135,12 @@ import Preview from "./Preview.astro"
 
 		const beskrevetAv = (felt.getAttribute("aria-describedby") ?? "")
 			.split(/\s+/)
-			.filter((id) => id && id !== `${felt.id}-feil`)
+			.filter((id) => id && id !== `${felt.id}-error`)
 
 		if (melding) {
 			felt.setAttribute("aria-invalid", "true")
 			felt.dataset.state = "invalid"
-			beskrevetAv.push(`${felt.id}-feil`)
+			beskrevetAv.push(`${felt.id}-error`)
 		} else {
 			felt.removeAttribute("aria-invalid")
 			delete felt.dataset.state
@@ -176,7 +176,7 @@ import Preview from "./Preview.astro"
 			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
 			.map((felt) => ({
 				id: felt.id,
-				melding: surface?.getElementById(`${felt.id}-feil`)?.textContent ?? "",
+				melding: surface?.getElementById(`${felt.id}-error`)?.textContent ?? "",
 			}))
 
 		const liste = oppsummering?.querySelector("ul")
