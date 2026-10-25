@@ -94,9 +94,9 @@ for (const rel of new Glob(SIDER).scanSync(ROT)) {
     const [, versjon, filsti] = treff
     const hvor = `${rel}:${linjen(tekst, treff.index ?? 0)}`
 
-    if (versjon !== "VERSJON") {
+    if (versjon !== "VERSION") {
       funn.push(
-        `${hvor} peker på @lo-tek/interfaces@${versjon}. Skriv @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut når siden bygges.`,
+        `${hvor} peker på @lo-tek/interfaces@${versjon}. Skriv @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut når siden bygges.`,
       )
     }
 

@@ -1,14 +1,14 @@
 /**
  * At versjonen faktisk ble satt inn i det bygde resultatet.
  *
- * Adressene i eksemplene står som `@lo-tek/interfaces@VERSJON` i kilden, og
+ * Adressene i eksemplene står som `@lo-tek/interfaces@VERSION` i kilden, og
  * `remark-version.mjs` bytter plassholderen når siden bygges. To vaktposter
  * passer på kilden, og ingen passet på resultatet.
  *
  * Det er ikke en teoretisk mangel. `astro.config.mjs` sier selv at
  * `markdown.remarkPlugins` er merket som utfaset, og at MDX-veien er det eneste
  * som holder den i live. Slutter plugin-en å kjøre, går alle adressene ut med
- * ordet VERSJON i seg, «Plain HTML»- og Datastar-sporet er dødt for leseren, og
+ * ordet VERSION i seg, «Plain HTML»- og Datastar-sporet er dødt for leseren, og
  * `bun run check` er grønn hele veien.
  *
  * Kjør med: bun documentation/scripts/check-built-version.ts
@@ -25,7 +25,7 @@ const { version } = JSON.parse(
   readFileSync(`${ROT}designsystem/package.json`, "utf8"),
 ) as { version: string }
 
-const PLASSHOLDER = "@lo-tek/interfaces@VERSJON"
+const PLASSHOLDER = "@lo-tek/interfaces@VERSION"
 const MED_VERSJON = `@lo-tek/interfaces@${version}`
 
 const funn: string[] = []
@@ -52,7 +52,7 @@ for (const rel of new Glob("documentation/src/**/*.{mdx,md,astro}").scanSync(
   const tekst = readFileSync(ROT + rel, "utf8")
 
   for (const treff of tekst.matchAll(
-    /@lo-tek\/interfaces@VERSJON(\/[^"'`\s)]+)/g,
+    /@lo-tek\/interfaces@VERSION(\/[^"'`\s)]+)/g,
   )) {
     iKilden.add(treff[1])
   }
@@ -66,14 +66,14 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
   const tekst = readFileSync(ROT + rel, "utf8")
   bygget.push(tekst)
 
-  // Starlight rømmer `@` i noen sammenhenger, så det er ordet VERSJON rett
+  // Starlight rømmer `@` i noen sammenhenger, så det er ordet VERSION rett
   // etter pakkenavnet som letes etter, ikke plassholderen tegn for tegn.
   // Versjonsloggen er unntatt ved navn: den rendres fra CHANGELOG.md, som
   // nevner plassholderen der den ble innført, og har ingen CDN-adresser.
   if (
     rel !== "documentation/dist/changelog/index.html" &&
     (tekst.includes(PLASSHOLDER) ||
-      /designsystem[@-]?(?:&#\d+;)?VERSJON/.test(tekst))
+      /designsystem[@-]?(?:&#\d+;)?VERSION/.test(tekst))
   )
     funn.push(`${rel} har en plassholder som ikke ble byttet ut`)
 
@@ -89,7 +89,7 @@ for (const filsti of iKilden) {
 /*
  * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
  * og `remark-version.mjs` bytter dem for seg. Regexen over ser bare
- * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSJON
+ * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSION
  * i seg mens sjekken var grønn. Hver av de tre formene kontrolleres begge
  * veier: at den står med versjonen i det bygde, og at plassholderen ikke
  * står igjen.
@@ -99,15 +99,15 @@ for (const filsti of iKilden) {
  * `version ` og `"0.33.0"` i hvert sitt `<span>`, og en søkestreng med
  * anførselstegnet rett etter ordet kan aldri treffe der, verken med versjon
  * eller med plassholder. I `data-code` står linja samlet, med `"` som
- * `&#x22;`. Første utgave lette etter `version "VERSJON"` og var død.
+ * `&#x22;`. Første utgave lette etter `version "VERSION"` og var død.
  */
 const MAVEN = [
   [
-    "markusaugust:lo-tek-interfaces:VERSJON",
+    "markusaugust:lo-tek-interfaces:VERSION",
     `markusaugust:lo-tek-interfaces:${version}`,
   ],
-  ["version &#x22;VERSJON&#x22;", `version &#x22;${version}&#x22;`],
-  ["webjars/lo-tek/VERSJON/", `webjars/lo-tek/${version}/`],
+  ["version &#x22;VERSION&#x22;", `version &#x22;${version}&#x22;`],
+  ["webjars/lo-tek/VERSION/", `webjars/lo-tek/${version}/`],
 ]
 for (const [igjen, medVersjon] of MAVEN) {
   if (!bygget.some((tekst) => tekst.includes(medVersjon))) {

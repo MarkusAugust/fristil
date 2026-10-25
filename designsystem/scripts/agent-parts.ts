@@ -36,8 +36,8 @@ export const pakke = JSON.parse(
   readFileSync(join(PAKKE, "package.json"), "utf8"),
 ) as Pakke
 
-export const VERSJON = pakke.version
-export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSJON}`
+export const VERSION = pakke.version
+export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSION}`
 
 /**
  * The size of `lotek.css`, as the rulebooks state it.

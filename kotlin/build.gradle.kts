@@ -49,7 +49,7 @@ java {
  */
 val hentPakke = tasks.register<no.lotek.build.FetchPackage>("hentPakke") {
     packageVersion.set(version.toString())
-    tarball.set(layout.buildDirectory.file("npm/designsystem-$version.tgz"))
+    tarball.set(layout.buildDirectory.file("npm/interfaces-$version.tgz"))
 }
 
 /*

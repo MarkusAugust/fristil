@@ -26,9 +26,9 @@ defineLtConnectionStatus()
     ```html
     <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
          `import`: a browser does not resolve a package name. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
-    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/standalone/connection-status/connection-status.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
     ```
 
     ```html
@@ -37,7 +37,7 @@ defineLtConnectionStatus()
     <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtConnectionStatus } from
-        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/standalone/connection-status/lt-connection-status.js"
 
       defineLtConnectionStatus()
     </script>
@@ -103,14 +103,14 @@ defineLtConnectionStatus()
 
     <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
          `import`: a browser does not resolve a package name. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
-    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/standalone/connection-status/connection-status.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
 
     <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtConnectionStatus } from
-        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/standalone/connection-status/lt-connection-status.js"
 
       defineLtConnectionStatus()
     </script>
@@ -119,7 +119,7 @@ defineLtConnectionStatus()
 
     <script type="module">
       import { reportFailure, reportSuccess } from
-        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/standalone/connection-status/lt-connection-status.js"
 
       const bar = document.querySelector("lt-connection-status")
 

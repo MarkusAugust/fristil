@@ -8,7 +8,7 @@ LO-TEK for Kotlin gives you three things: the builder functions from `lt`, where
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.markusaugust:lo-tek-interfaces:VERSJON")
+    implementation("io.github.markusaugust:lo-tek-interfaces:VERSION")
 }
 ```
 
@@ -16,7 +16,7 @@ The version is the same as the npm package's, so a version number means the same
 
 ## The CSS and the web components
 
-The package is also a [WebJar](https://www.webjars.org): `lotek.css`, the stylesheet for each component and the JavaScript modules for the browser are under `META-INF/resources/webjars/lo-tek/VERSJON/`, with the same paths as in the npm package. Spring Boot and Servlet containers serve that folder without setup. In Ktor it is one line:
+The package is also a [WebJar](https://www.webjars.org): `lotek.css`, the stylesheet for each component and the JavaScript modules for the browser are under `META-INF/resources/webjars/lo-tek/VERSION/`, with the same paths as in the npm package. Spring Boot and Servlet containers serve that folder without setup. In Ktor it is one line:
 
 ```kotlin
 routing {
@@ -39,7 +39,7 @@ routing {
 An address from the component pages keeps its path and only changes the beginning. This one:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/css/button/button.css">
 ```
 
 becomes `${LotekWebJar.ROOT}/src/components/css/button/button.css`. What is only for Node or React is not included.
@@ -220,7 +220,7 @@ The template files themselves can be checked as part of the build, without a tes
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("io.github.markusaugust.lo-tek") version "VERSJON"
+    id("io.github.markusaugust.lo-tek") version "VERSION"
 }
 
 lotek {

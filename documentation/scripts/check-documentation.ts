@@ -566,7 +566,7 @@ for (const fil of [
  * bytte den, så en fil som hadde glidd ble stående og pekte på en eldre pakke
  * enn teksten rundt beskrev. Plassholderen kan ikke gli.
  *
- * Kravet er at versjonsleddet er nøyaktig `VERSJON`, ikke bare at det lar være
+ * Kravet er at versjonsleddet er nøyaktig `VERSION`, ikke bare at det lar være
  * å være siffer: `@latest` ville ellers passert og gitt en adresse jsdelivr
  * svarer annerledes på enn teksten lover.
  */
@@ -576,18 +576,18 @@ for (const fil of [
   const innhold = les(`${DOKUMENTASJON}${fil}`)
 
   for (const treff of innhold.matchAll(/@lo-tek\/interfaces@([^/\s"'`)]+)/g)) {
-    // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
+    // `VERSION` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
     // der er den riktige formen å lese versjonen av `package.json` i koden.
     // Unntaket må være bundet til filtypen: uten det slapp
     // `@lo-tek/interfaces@${versjon}` gjennom i en mdx-kodeblokk også, der
     // ingen bytter den ut og ingen annen vakt ser etter den.
-    if (treff[1] === "VERSJON") continue
+    if (treff[1] === "VERSION") continue
     if (fil.endsWith(".astro") && treff[1].startsWith("${")) continue
 
     const linje = innhold.slice(0, treff.index).split("\n").length
     avvik.push({
       hvor: `${fil}:${linje}`,
-      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut.`,
+      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut.`,
     })
   }
 }

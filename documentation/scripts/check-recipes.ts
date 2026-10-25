@@ -727,16 +727,16 @@ for (const fil of readdirSync(SIDER).filter(
       /cdn\.jsdelivr\.net\/npm\/@lo-tek\/interfaces@([^/]+)\/([^"'\s]+)/g,
     )) {
       /*
-       * Versjonen skal stå som plassholderen `VERSJON`, som
+       * Versjonen skal stå som plassholderen `VERSION`, som
        * `remark-version.mjs` bytter med den fra `package.json` når siden
        * bygges. Sto tallet her i kilden, måtte alle 74 adressene endres ved
        * hver utgivelse, og en som ble glemt pekte på en eldre pakke enn teksten
        * rundt den beskrev.
        */
-      if (m[1] !== "VERSJON")
+      if (m[1] !== "VERSION")
         si(
           side,
-          `${hvor} peker på @lo-tek/interfaces@${m[1]}. Skriv @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut.`,
+          `${hvor} peker på @lo-tek/interfaces@${m[1]}. Skriv @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut.`,
         )
       if (!FILER.has(m[2]))
         si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)

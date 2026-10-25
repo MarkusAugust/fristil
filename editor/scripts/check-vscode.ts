@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url"
 import { runTests } from "@vscode/test-electron"
 
 const utvidelse = fileURLToPath(new URL("..", import.meta.url))
-const VERSJON = (
+const VERSION = (
   JSON.parse(readFileSync(join(utvidelse, "package.json"), "utf8")) as {
     engines: { vscode: string }
   }
@@ -24,7 +24,7 @@ try {
   await runTests({
     // Den laveste versjonen utvidelsen lover å virke på, `engines.vscode`.
     // Den nyeste endrer seg uten varsel, og arkivet for 1.141.0 kom avkuttet.
-    version: VERSJON,
+    version: VERSION,
     extensionDevelopmentPath: utvidelse,
     extensionTestsPath: fileURLToPath(
       new URL("../test/suite.cjs", import.meta.url),

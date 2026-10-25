@@ -5,7 +5,7 @@
  * and they were written by hand in 74 places across 12 files. Every release
  * meant changing all 74, and one that was forgotten would have sent the reader
  * to an old package without anything saying so. Now the placeholder
- * `@lo-tek/interfaces@VERSJON` is in the source, and the version is read from
+ * `@lo-tek/interfaces@VERSION` is in the source, and the version is read from
  * `designsystem/package.json` when the site is built.
  *
  * `check-documentation.ts` fails if someone writes the number by hand anyway.
@@ -22,7 +22,7 @@
 
 import { readFileSync } from "node:fs"
 
-const PLASSHOLDER = "@lo-tek/interfaces@VERSJON"
+const PLASSHOLDER = "@lo-tek/interfaces@VERSION"
 
 const { version } = JSON.parse(
   readFileSync(new URL("../../../designsystem/package.json", import.meta.url)),
@@ -31,12 +31,12 @@ const { version } = JSON.parse(
 const MED_VERSJON = `@lo-tek/interfaces@${version}`
 
 // The tarball in the npm registry, for anyone fetching the package without npm.
-const TARBALL = "designsystem-VERSJON.tgz"
+const TARBALL = "interfaces-VERSION.tgz"
 
 /*
  * The Maven coordinates and the WebJar path on the Kotlin page have the same
  * version as the npm package, and were written as `{versjon}` in the source,
- * which the reader saw literally. The word VERSJON is replaced where it comes
+ * which the reader saw literally. The word VERSION is replaced where it comes
  * right after `markusaugust:lo-tek-interfaces:`, `markusaugust.lotek") version "`
  * and `webjars/lo-tek/`, and nowhere else. `check-built-version.ts` requires
  * each of the three to appear with the version in the build, and none of them
@@ -44,14 +44,14 @@ const TARBALL = "designsystem-VERSJON.tgz"
  */
 const MAVEN = [
   [
-    "io.github.markusaugust:lo-tek-interfaces:VERSJON",
+    "io.github.markusaugust:lo-tek-interfaces:VERSION",
     `io.github.markusaugust:lo-tek-interfaces:${version}`,
   ],
   [
-    'io.github.markusaugust.lo-tek") version "VERSJON"',
+    'io.github.markusaugust.lo-tek") version "VERSION"',
     `io.github.markusaugust.lo-tek") version "${version}"`,
   ],
-  ["webjars/lo-tek/VERSJON/", `webjars/lo-tek/${version}/`],
+  ["webjars/lo-tek/VERSION/", `webjars/lo-tek/${version}/`],
 ]
 
 const bytt = (tekst) => {
@@ -60,7 +60,7 @@ const bytt = (tekst) => {
     .split(PLASSHOLDER)
     .join(MED_VERSJON)
     .split(TARBALL)
-    .join(`designsystem-${version}.tgz`)
+    .join(`interfaces-${version}.tgz`)
   for (const [fra, til] of MAVEN) ut = ut.split(fra).join(til)
   return ut
 }
