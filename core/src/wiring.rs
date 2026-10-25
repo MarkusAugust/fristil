@@ -281,7 +281,7 @@ impl Host<'_> {
                 out.extend(self.control(n));
             } else if matches!(id_of(node), Id::Missing) {
                 out.push(finding(
-                    "panel-uten-id",
+                    "panel-without-id",
                     node,
                     self.link(),
                     format!(
@@ -298,7 +298,7 @@ impl Host<'_> {
         out
     }
 
-    /// `kontroll-uten-kobling`: ledeteksten verken peker på feltet med `for`
+    /// `control-without-wiring`: ledeteksten verken peker på feltet med `for`
     /// eller står rundt det.
     fn control(&self, n: usize) -> Option<Finding> {
         let nodes = self.nodes();
@@ -318,7 +318,7 @@ impl Host<'_> {
         {
             return None;
         }
-        // Uten en ledetekst i det hele tatt sier `felt-uten-ledetekst` fra
+        // Uten en ledetekst i det hele tatt sier `field-without-label` fra
         // om <lt-field>. Forslagsfeltet har ingen slik regel, så der meldes
         // det her.
         if labels.is_empty() && self.tag() == "lt-field" {
@@ -346,7 +346,7 @@ impl Host<'_> {
         };
         let fix = self.link_fix(n, &labels, id.is_none());
         Some(finding(
-            "kontroll-uten-kobling",
+            "control-without-wiring",
             control,
             self.link(),
             message,
@@ -421,7 +421,7 @@ impl Host<'_> {
                 continue;
             }
             out.push(finding(
-                "fanelenke-uten-panel",
+                "tab-link-without-panel",
                 tab,
                 self.link(),
                 format!(
@@ -440,7 +440,7 @@ impl Host<'_> {
                 || has_attribute(list, "aria-labelledby");
             if !named && !templated_node(list) {
                 out.push(finding(
-                    "fanerad-uten-navn",
+                    "tab-list-without-name",
                     list,
                     self.link(),
                     format!(
@@ -476,7 +476,7 @@ impl Host<'_> {
                     continue;
                 }
                 out.push(finding(
-                    "fane-uten-lenke",
+                    "tab-without-link",
                     node,
                     self.link(),
                     format!(
@@ -506,7 +506,7 @@ impl Host<'_> {
         let field = self.first("value");
         match (with_value.first(), field) {
             (Some(&n), None) => vec![finding(
-                "verdi-uten-felt",
+                "value-without-field",
                 &nodes[n],
                 self.link(),
                 format!(
@@ -516,7 +516,7 @@ impl Host<'_> {
                 None,
             )],
             (None, Some(f)) => vec![finding(
-                "verdi-uten-felt",
+                "value-without-field",
                 &nodes[f],
                 self.link(),
                 format!(
@@ -545,7 +545,7 @@ impl Host<'_> {
             return Vec::new();
         }
         vec![finding(
-            "feilmelding-motsier",
+            "error-text-contradicts",
             error,
             self.link(),
             format!(
@@ -557,7 +557,7 @@ impl Host<'_> {
     }
 }
 
-/// `tekst-i-ledetekst`: hjelpeteksten eller feilmeldingen står inni `<label>`.
+/// `text-in-label`: hjelpeteksten eller feilmeldingen står inni `<label>`.
 fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     let link = vocabulary
         .elements
@@ -580,7 +580,7 @@ fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
             "Feilmeldingen"
         };
         out.push(finding(
-            "tekst-i-ledetekst",
+            "text-in-label",
             node,
             link,
             format!(
@@ -592,7 +592,7 @@ fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     out
 }
 
-/// `id-fra-komponenten`: en id komponenten lagde selv i nettleseren, kopiert
+/// `id-from-component`: en id komponenten lagde selv i nettleseren, kopiert
 /// inn i malen fra DevTools. Bare i markupmodus: på en rendret side er den
 /// riktig.
 fn generated_ids(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
@@ -620,7 +620,7 @@ fn generated_ids(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
                 "id=\"{text}\" er en id komponenten lagde selv i nettleseren, og ser ut som kopiert fra DevTools. Komponenten lager en ny ved hver sidelasting, så ingenting kan peke på denne. Skriv din egen id, fra det elementet står for, eller la den stå tom."
             ),
             fix: None,
-            rule: "id-fra-komponenten",
+            rule: "id-from-component",
         });
     }
     out

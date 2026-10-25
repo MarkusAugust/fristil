@@ -104,7 +104,7 @@ try {
 
   const uten = await funn("/uten-stilark")
   krev(
-    uten.filter((f) => f.rule === "ustylet-klasse").length === 2,
+    uten.filter((f) => f.rule === "unstyled-class").length === 2,
     `siden uten stilark skulle gitt to ustylede klasser: ${JSON.stringify(uten.map((f) => f.message))}`,
   )
 
@@ -117,7 +117,7 @@ try {
   const skript = await funn("/skript")
   krev(
     skript.some(
-      (f) => f.rule === "ukjent-klasse" && f.message.includes("lt-kort"),
+      (f) => f.rule === "unknown-class" && f.message.includes("lt-kort"),
     ),
     `klassen skriptet satte, ble ikke sjekket: ${JSON.stringify(skript.map((f) => f.message))}`,
   )
@@ -166,7 +166,7 @@ try {
 const dist = join(pakke, "../documentation/dist")
 const filer = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
 const egenKlasse = (f: { rule: string; message: string }) =>
-  f.rule === "ukjent-klasse" && f.message.includes("«lt-preview»")
+  f.rule === "unknown-class" && f.message.includes("«lt-preview»")
 let antallSider = 0
 let antallForhandsvisninger = 0
 for (const fil of filer) {

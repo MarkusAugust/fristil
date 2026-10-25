@@ -167,7 +167,7 @@ const cases: Case[] = [
   },
   {
     name: "en del til kan undertrykkes",
-    html: `<lt-field><label for="a">A</label><input name="a" id="a"><!-- lotek-ignore-next del-flere-ganger --><input name="b"></lt-field>`,
+    html: `<lt-field><label for="a">A</label><input name="a" id="a"><!-- lotek-ignore-next part-repeated --><input name="b"></lt-field>`,
     count: 0,
   },
   {

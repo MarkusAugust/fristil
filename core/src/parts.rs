@@ -1,4 +1,4 @@
-//! `del-flere-ganger`: en del med `unique` som står mer enn én gang.
+//! `part-repeated`: en del med `unique` som står mer enn én gang.
 //!
 //! Regelen er drevet av `parts` i manifestet, både for elementene og for
 //! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. Den
@@ -530,7 +530,7 @@ pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node
                         .trim_end()
                         .to_string(),
                         fix: None,
-                        rule: "del-flere-ganger",
+                        rule: "part-repeated",
                     });
                 }
             }

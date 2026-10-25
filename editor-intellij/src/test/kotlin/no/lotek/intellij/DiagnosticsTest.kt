@@ -27,7 +27,7 @@ class DiagnosticsTest : BasePlatformTestCase() {
     }
 
     fun `test melder en ikonknapp uten navn i en fil uten lt-`() {
-        // Regelen ikon-uten-navn trenger ingen LO-TEK-klasse. Annotatoren
+        // Regelen icon-without-name trenger ingen LO-TEK-klasse. Annotatoren
         // hoppet før over hver fil uten «lt-» i teksten, så `lotek sjekk`
         // og VS Code meldte knappen mens IntelliJ tidde.
         val ut = funn("test.html", """<button><svg aria-hidden="true"></svg></button>""")
@@ -60,7 +60,7 @@ class DiagnosticsTest : BasePlatformTestCase() {
             funn(
                 "test.html",
                 """
-                <!-- lotek-ignore-next ukjent-klasse -->
+                <!-- lotek-ignore-next unknown-class -->
                 <div class="lt-eksperiment"></div>
                 """.trimIndent(),
             )

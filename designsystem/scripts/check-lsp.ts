@@ -170,7 +170,7 @@ try {
     `ventet ett funn, fikk ${første.diagnostics.length}`,
   )
   krev(
-    første.diagnostics[0]?.code === "ukjent-klasse",
+    første.diagnostics[0]?.code === "unknown-class",
     "funnet har ikke regelnavnet som kode",
   )
   krev(

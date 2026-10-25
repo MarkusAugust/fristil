@@ -32,7 +32,7 @@ exports.run = async () => {
   assert.strictEqual(found[0].range.start.character, 15)
   assert.strictEqual(
     typeof found[0].code === "object" ? found[0].code.value : found[0].code,
-    "ukjent-klasse",
+    "unknown-class",
   )
 
   const actions = await vscode.commands.executeCommand(

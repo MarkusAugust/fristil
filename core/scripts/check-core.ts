@@ -336,11 +336,11 @@ for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
 // skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
 const MALER = join(ROT, "core/templates")
 const SKRIVEFEILEN: Record<string, string> = {
-  "thymeleaf.html": "ukjent-klasse",
-  "jte.kte": "ugyldig-klasseverdi",
-  "go.tmpl": "ukjent-klasse",
-  "razor.cshtml": "ugyldig-klasseverdi",
-  "blade.blade.php": "ukjent-element",
+  "thymeleaf.html": "unknown-class",
+  "jte.kte": "invalid-class-value",
+  "go.tmpl": "unknown-class",
+  "razor.cshtml": "invalid-class-value",
+  "blade.blade.php": "unknown-element",
 }
 for (const navn of readdirSync(MALER)) {
   antall += 1

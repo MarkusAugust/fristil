@@ -57,7 +57,7 @@ export type Finding = {
   column: number
   message: string
   severity: Severity
-  /** Navnet på regelen, som `ukjent-klasse`. Det er det `lotek-ignore-next` tar. */
+  /** Navnet på regelen, som `unknown-class`. Det er det `lotek-ignore-next` tar. */
   rule: string
   /** Komponentsiden, som lenke i meldingen. */
   link: string

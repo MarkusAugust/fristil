@@ -53,7 +53,7 @@ class ParityTest {
             assertLotek("""<button class="lt-buton">Lagre</button>""", fragment = true)
         }
         assertEquals(
-            "LO-TEK fant ett funn:\n1:16: advarsel: ${Lotek.diagnoseMarkup("<button class=\"lt-buton\">").single().message} [ukjent-klasse]",
+            "LO-TEK fant ett funn:\n1:16: advarsel: ${Lotek.diagnoseMarkup("<button class=\"lt-buton\">").single().message} [unknown-class]",
             error.message,
         )
     }

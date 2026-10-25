@@ -555,7 +555,7 @@ fn check_attribute(
             .find(|(k, _)| normalized(&utf16(k)) == norm)
         {
             return Some(findings(
-                "ukjent-attributt",
+                "unknown-attribute",
                 Severity::Warning,
                 format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
                 Some(Fix::one(
@@ -571,7 +571,7 @@ fn check_attribute(
             return None;
         }
         return Some(findings(
-            "ukjent-attributt",
+            "unknown-attribute",
             Severity::Warning,
             format!(
                 "<{tag}> har ikke attributtet «{name}», og komponenten leser det ikke. Attributtene er {}.",
@@ -586,7 +586,7 @@ fn check_attribute(
             && a.value.as_deref().is_some_and(is_text_template)
         {
             return Some(findings(
-                "boolsk-med-verdi",
+                "boolean-with-value",
                 Severity::Warning,
                 format!(
                     "{name} er et boolsk attributt, og malen skriver verdien som tekst: også «false» og en tom verdi slår det på. Skriv hele attributtet i en betingelse i malen."
@@ -605,7 +605,7 @@ fn check_attribute(
             if !value.is_empty() && lowercase(value) != a.name {
                 let v = lossy(value);
                 return Some(findings(
-                    "boolsk-med-verdi",
+                    "boolean-with-value",
                     Severity::Warning,
                     format!(
                         "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
@@ -631,7 +631,7 @@ true,
             }
             let v = a.value.as_deref().map(lossy).unwrap_or_default();
             Some(findings(
-                "ugyldig-verdi",
+                "invalid-value",
                 Severity::Error,
                 format!(
                     "{name} kan ikke være «{v}». Lovlige verdier: {}.",
@@ -642,7 +642,7 @@ true,
         }
         Attribute::Number => match a.value.as_deref() {
             Some(v) if !is_number(v) => Some(findings(
-                "ikke-tall",
+                "not-a-number",
                 Severity::Error,
                 format!("{name} skal være et tall, ikke «{}».", lossy(v)),
                 None,
@@ -793,7 +793,7 @@ fn check_field(
     let indent = content.iter().take_while(|&&c| is_space(c)).count();
     let Some(control) = find_control(content) else {
         return vec![findings(
-            "felt-uten-kontroll",
+            "field-without-control",
             format!(
                 "<{tag}> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
             ),
@@ -828,7 +828,7 @@ fn check_field(
     // mer enn én innsetting, så da står bare meldingen.
     let Some(id) = id.filter(|id| !id.is_empty()) else {
         return vec![findings(
-            "felt-uten-ledetekst",
+            "field-without-label",
             format!(
                 "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
             ),
@@ -836,7 +836,7 @@ fn check_field(
         )];
     };
     vec![findings(
-        "felt-uten-ledetekst",
+        "field-without-label",
         format!(
             "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
         ),
@@ -875,7 +875,7 @@ fn check_session_timeout(
             "<{tag}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
         ),
         fix: None,
-        rule: "tidsavbrudd-uten-dialog",
+        rule: "timeout-without-dialog",
     }]
 }
 
@@ -986,7 +986,7 @@ fn check_classes(
             fix: meant.map(|(m, sure)| {
                 Fix::one(format!("Bytt til {m}"), start, start + token.len(), m, sure)
             }),
-            rule: "ukjent-klasse",
+            rule: "unknown-class",
         });
     }
     for a in attributes {
@@ -1012,7 +1012,7 @@ fn check_classes(
                             lossy(&lowercase(&utf16(&info.title)))
                         ),
                         fix: None,
-                        rule: "boolsk-med-verdi",
+                        rule: "boolean-with-value",
                     });
                 }
             }
@@ -1044,7 +1044,7 @@ fn check_classes(
                             String::new(),
                             true,
                         )),
-                        rule: "boolsk-med-verdi",
+                        rule: "boolean-with-value",
                     });
                 }
                 break;
@@ -1085,7 +1085,7 @@ fn check_classes(
                         sure,
                     )
                 }),
-                rule: "ugyldig-klasseverdi",
+                rule: "invalid-class-value",
             });
             break;
         }
@@ -1122,7 +1122,7 @@ fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Opti
             info.name
         ),
         fix: None,
-        rule: "deaktivert-med-href",
+        rule: "disabled-with-href",
     })
 }
 
@@ -1468,7 +1468,7 @@ name_end,
 " aria-label=\"Beskriv handlingen\"".into(),
 true,
 )),
-            rule: "ikon-uten-navn",
+            rule: "icon-without-name",
         });
     }
     findings
@@ -1583,7 +1583,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
                     list(vocabulary.elements.iter().map(|e| e.tag.as_str()))
                 ),
                 fix: None,
-                rule: "ukjent-element",
+                rule: "unknown-element",
             });
             continue;
         };
@@ -1596,7 +1596,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
         let conditional = has_condition(b, name_end, &attributes);
         for a in &attributes {
             // Et attributt som er tatt ut, med beskjed om hva som gjelder i
-            // stedet, fra `removed` i manifestet. Foran `ukjent-attributt`,
+            // stedet, fra `removed` i manifestet. Foran `unknown-attribute`,
             // som ellers ville foreslått det nærmeste navnet.
             // Også bundet, som `data-attr:invalid` i Datastar eller `:invalid`
             // i Vue: det var slik den gamle oppskriften skrev det.
@@ -1619,7 +1619,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
                         String::new(),
                         true,
                     )),
-                    rule: "utgatt-attributt",
+                    rule: "removed-attribute",
                 });
                 continue;
             }
@@ -1746,7 +1746,7 @@ pub fn check_styles_visible(
                     lossy(&lowercase(&utf16(&info.title)))
                 ),
                 fix: None,
-                rule: "ustylet-klasse",
+                rule: "unstyled-class",
             });
         }
         for a in &attributes {
@@ -1799,7 +1799,7 @@ pub fn check_styles_visible(
                         lossy(&lowercase(&utf16(&info.title)))
                     ),
                     fix: None,
-                    rule: "ustylet-verdi",
+                    rule: "unstyled-value",
                 });
                 break;
             }

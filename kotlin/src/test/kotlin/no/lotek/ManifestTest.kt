@@ -21,15 +21,15 @@ class ManifestTest {
 
     @Test
     fun `checks against the manifest it is given`() {
-        assertEquals(listOf("ukjent-klasse"), rules("""<div class="lt-kort">x</div>"""))
+        assertEquals(listOf("unknown-class"), rules("""<div class="lt-kort">x</div>"""))
         assertEquals(emptyList(), rules("""<div class="lt-kort">x</div>""", takenOver))
-        assertEquals(listOf("ukjent-klasse"), rules("""<div class="lt-card">x</div>""", takenOver))
+        assertEquals(listOf("unknown-class"), rules("""<div class="lt-card">x</div>""", takenOver))
         assertEquals(
             emptyList(),
             Lotek.diagnosePage("""<div class="lt-kort">x</div>""", manifest = takenOver).map { it.rule },
         )
         assertEquals(
-            listOf("ustylet-klasse"),
+            listOf("unstyled-class"),
             Lotek
                 .diagnoseMarkup("""<div class="lt-kort">x</div>""", css = emptyList(), manifest = takenOver)
                 .map { it.rule },
@@ -50,7 +50,7 @@ class ManifestTest {
     fun `the package manifest applies again without one`() {
         val core = Core()
         assertEquals(emptyList(), core.rules("""<div class="lt-kort">x</div>""", takenOver))
-        assertEquals(listOf("ukjent-klasse"), core.rules("""<div class="lt-kort">x</div>"""))
+        assertEquals(listOf("unknown-class"), core.rules("""<div class="lt-kort">x</div>"""))
     }
 
     @Test
@@ -59,6 +59,6 @@ class ManifestTest {
         core.rules("<p>x</p>", takenOver)
         val error = assertFailsWith<IllegalArgumentException> { core.rules("<p>x</p>", "{\"classes\": 3}") }
         assertContains(error.message.orEmpty(), "schemaVersion")
-        assertEquals(listOf("ukjent-klasse"), core.rules("""<div class="lt-kort">x</div>"""))
+        assertEquals(listOf("unknown-class"), core.rules("""<div class="lt-kort">x</div>"""))
     }
 }

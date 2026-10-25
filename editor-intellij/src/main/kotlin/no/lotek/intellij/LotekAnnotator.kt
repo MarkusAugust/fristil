@@ -41,7 +41,7 @@ class LotekAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is XmlDocument) return
         val file = element.containingFile ?: return
-        // Ingen snarvei på «lt-» i teksten: regelen ikon-uten-navn gjelder
+        // Ingen snarvei på «lt-» i teksten: regelen icon-without-name gjelder
         // markup uten en eneste LO-TEK-klasse, og kjernen bruker
         // millisekunder på en fil. Med snarveien tidde IntelliJ om en
         // ikonknapp uten navn som `lotek sjekk` og VS Code meldte.

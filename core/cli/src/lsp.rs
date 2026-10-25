@@ -892,7 +892,7 @@ mod tests {
         let diagnostic = &params.get("diagnostics").unwrap().as_array().unwrap()[0];
         assert_eq!(
             diagnostic.get("code").unwrap().as_str(),
-            Some("ukjent-klasse")
+            Some("unknown-class")
         );
         let start = diagnostic.get("range").unwrap().get("start").unwrap();
         assert_eq!(start.get("line").unwrap().as_f64(), Some(1.0));

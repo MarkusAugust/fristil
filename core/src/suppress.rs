@@ -4,7 +4,7 @@
 //! <!-- lotek-ignore-next -->
 //! <lt-ny-ting>…</lt-ny-ting>
 //!
-//! <!-- lotek-ignore-next ukjent-klasse ugyldig-klasseverdi -->
+//! <!-- lotek-ignore-next unknown-class invalid-class-value -->
 //! <div class="lt-eksperiment">…</div>
 //! ```
 //!
@@ -84,20 +84,20 @@ mod tests {
     #[test]
     fn suppresses_the_next_tag_only() {
         let html = r#"<!-- lotek-ignore-next --><b class="lt-buton"></b><i class="lt-buton"></i>"#;
-        assert_eq!(rules(html), ["ukjent-klasse"]);
+        assert_eq!(rules(html), ["unknown-class"]);
     }
 
     #[test]
     fn suppresses_only_the_named_rules() {
         let tag = r#"<button class="lt-button lt-buton" data-variant="x"></button>"#;
-        assert_eq!(rules(tag), ["ukjent-klasse", "ugyldig-klasseverdi"]);
-        let html = format!("<!-- lotek-ignore-next ugyldig-klasseverdi -->\n{tag}");
-        assert_eq!(rules(&html), ["ukjent-klasse"]);
+        assert_eq!(rules(tag), ["unknown-class", "invalid-class-value"]);
+        let html = format!("<!-- lotek-ignore-next invalid-class-value -->\n{tag}");
+        assert_eq!(rules(&html), ["unknown-class"]);
     }
 
     #[test]
     fn ignores_other_comments() {
         let html = r#"<!-- lotek-ignore-nextish --><b class="lt-buton"></b>"#;
-        assert_eq!(rules(html), ["ukjent-klasse"]);
+        assert_eq!(rules(html), ["unknown-class"]);
     }
 }

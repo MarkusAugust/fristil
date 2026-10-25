@@ -522,7 +522,7 @@ mod tests {
         assert!(markup(r#"<label class="lt-label" data-optional="">Navn</label>"#).is_empty());
         let found = markup(r#"<label class="lt-label" data-optional="false">Navn</label>"#);
         assert_eq!(found.len(), 1, "{found:?}");
-        assert_eq!(found[0].rule, "boolsk-med-verdi");
+        assert_eq!(found[0].rule, "boolean-with-value");
         assert!(
             found[0].message.contains("flagg på label"),
             "{}",
@@ -557,7 +557,7 @@ mod tests {
         assert!(markup(r#"<dialog class="lt-dialog" data-color="danger"></dialog>"#).is_empty());
         let found = markup(r#"<dialog class="lt-dialog" data-color="red"></dialog>"#);
         assert_eq!(found.len(), 1, "{found:?}");
-        assert_eq!(found[0].rule, "ugyldig-klasseverdi");
+        assert_eq!(found[0].rule, "invalid-class-value");
     }
 
     #[test]
@@ -630,7 +630,7 @@ mod tests {
     #[test]
     fn names_the_rule() {
         let findings = check(r#"<button class="lt-buton">Send</button>"#);
-        assert_eq!(findings[0].rule, "ukjent-klasse");
+        assert_eq!(findings[0].rule, "unknown-class");
         assert!(findings.iter().all(|f| types::RULES.contains(&f.rule)));
     }
 
@@ -644,7 +644,7 @@ mod tests {
         let rules: Vec<&str> = in_textarea.iter().map(|f| f.rule).collect();
         assert_eq!(
             rules,
-            ["kontroll-uten-ledetekst", "ukjent-klasse"],
+            ["kontroll-uten-ledetekst", "unknown-class"],
             "{rules:?}"
         );
         // En ekte kommentar undertrykker som før.
@@ -656,7 +656,7 @@ mod tests {
         let html = utf16("<lt-kart sone=\"oslo\"></lt-kart>");
         assert_eq!(
             diagnose_markup(&html, &manifest::for_tests())[0].rule,
-            "ukjent-element"
+            "unknown-element"
         );
         let mut vocabulary = (*manifest::for_tests()).clone();
         vocabulary.elements.push(types::Element {
@@ -686,7 +686,7 @@ mod tests {
                 .is_empty()
         );
         let wrong = found(r#"<button class="app-button__ikon">x</button>"#);
-        assert_eq!(wrong[0].rule, "ukjent-klasse");
+        assert_eq!(wrong[0].rule, "unknown-class");
         assert_eq!(
             wrong[0].fix.as_ref().unwrap().edits[0].text,
             "app-button__icon"
@@ -714,10 +714,10 @@ mod tests {
 
         let unstyled = found(r#"<button class="lt-button" data-variant="danger">x</button>"#);
         assert_eq!(unstyled.len(), 1);
-        assert_eq!(unstyled[0].rule, "ustylet-verdi");
+        assert_eq!(unstyled[0].rule, "unstyled-value");
 
         let missing = found(r#"<div class="lt-card">x</div>"#);
-        assert_eq!(missing[0].rule, "ustylet-klasse");
+        assert_eq!(missing[0].rule, "unstyled-class");
         assert!(missing[0].message.contains("lt-card"));
 
         // Tilstanden på lt-search styles på lt-input, på det samme elementet.
@@ -734,11 +734,11 @@ mod tests {
             .all(|f| !f.rule.starts_with("ustylet")));
         assert_eq!(
             page(r#"<div class="lt-card"></div>"#)[0].rule,
-            "ustylet-klasse"
+            "unstyled-class"
         );
         // Og en kommentar undertrykker, som for de andre reglene.
         assert!(
-            found("<!-- lotek-ignore-next ustylet-klasse -->\n<div class=\"lt-card\">x</div>")
+            found("<!-- lotek-ignore-next unstyled-class -->\n<div class=\"lt-card\">x</div>")
                 .is_empty()
         );
     }
@@ -771,7 +771,7 @@ mod tests {
                 r#"<label class="lt-label" data-optional="{value}">Navn</label>"#
             ));
             assert_eq!(found.len(), 1, "{value}: {found:?}");
-            assert_eq!(found[0].rule, "boolsk-med-verdi");
+            assert_eq!(found[0].rule, "boolean-with-value");
             assert!(
                 found[0].message.contains("flagg på label"),
                 "{}",
@@ -780,7 +780,7 @@ mod tests {
 
             let found = markup(&format!(r#"<lt-popover open="{value}"></lt-popover>"#));
             assert_eq!(found.len(), 1, "{value}: {found:?}");
-            assert_eq!(found[0].rule, "boolsk-med-verdi");
+            assert_eq!(found[0].rule, "boolean-with-value");
         }
     }
 
@@ -839,7 +839,7 @@ mod tests {
         ] {
             let found = check(html);
             assert_eq!(found.len(), 1, "{html}: {found:?}");
-            assert_eq!(found[0].rule, "deaktivert-med-href");
+            assert_eq!(found[0].rule, "disabled-with-href");
         }
         for html in [
             r#"<a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>"#,
@@ -856,7 +856,7 @@ mod tests {
             diagnose_markup(&utf16(html), &manifest::for_tests())
                 .iter()
                 .map(|f| f.rule)
-                .filter(|r| *r == "ikon-uten-navn")
+                .filter(|r| *r == "icon-without-name")
                 .collect()
         };
         let svg = r#"<svg class="lt-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
@@ -873,7 +873,7 @@ mod tests {
             ),
             format!(r#"<button data-testid="slett">{svg}</button>"#),
         ] {
-            assert_eq!(rules(&html), ["ikon-uten-navn"], "{html}");
+            assert_eq!(rules(&html), ["icon-without-name"], "{html}");
         }
         for html in [
             format!("<button>{svg} Slett</button>"),
