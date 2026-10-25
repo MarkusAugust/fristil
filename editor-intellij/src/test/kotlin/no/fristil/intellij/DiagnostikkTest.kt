@@ -118,7 +118,7 @@ class DiagnostikkTest : BasePlatformTestCase() {
         // «Gi feltet id «epost»» skriver id på feltet og for på ledeteksten.
         myFixture.configureByText(
             "test.html",
-            """<fs-field><label class="fs-label">E-post</label><input class="fs-input<caret>" name="epost"></fs-field>""",
+            """<fs-field><label class="fs-label">E-post</label><inp<caret>ut class="fs-input" name="epost"></fs-field>""",
         )
         val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }
         assertTrue("kjernen skal foreslå en rettelse, fikk ${myFixture.availableIntentions.map { it.text }}", rettelser.isNotEmpty())
@@ -136,7 +136,7 @@ class DiagnostikkTest : BasePlatformTestCase() {
             "Visning.kt",
             """
             // language=HTML
-            val rad = "<fs-tabs><ul class=\"fs-tabs__list<caret>\"><li><a href=\"#a\">A</a></li></ul><section class=\"fs-tabs__panel\" id=\"a\"></section></fs-tabs>"
+            val rad = "<fs-tabs><u<caret>l class=\"fs-tabs__list\"><li><a href=\"#a\">A</a></li></ul><section class=\"fs-tabs__panel\" id=\"a\"></section></fs-tabs>"
             """.trimIndent(),
         )
         val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }
