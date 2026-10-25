@@ -54,7 +54,7 @@ let blokker = 0
  * nettleser.
  */
 const GJERDE = /^[ \t]*```html[^\n]*\n([\s\S]*?)^[ \t]*```/gim
-const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lotek\/[^"']*)["']/g
+const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lo-tek\/[^"']*)["']/g
 
 /*
  * En hardkodet CDN-adresse skal peke på en fil pakken faktisk sender ut, på den
@@ -69,7 +69,7 @@ const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lotek\/[^"']*)["']/g
  * bytter den når siden bygges, og `check-built-version.ts` kontrollerer at det
  * faktisk skjedde.
  */
-const CDN = /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g
+const CDN = /cdn\.jsdelivr\.net\/npm\/@lo-tek\/interfaces@([^/]+)\/([^"'\s]+)/g
 
 const linjen = (tekst: string, indeks: number) =>
   tekst.slice(0, indeks).split("\n").length

@@ -177,7 +177,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // 4. Hver import peker på noe pakken lover. En sti som ikke finnes er kode
   // som ser riktig ut og feiler hos konsumenten.
   for (const treff of innhold.matchAll(
-    /(node_modules\/)?@lotek\/designsystem\/([a-z0-9-]+(?:\.css)?)/g,
+    /(node_modules\/)?@lo-tek\/interfaces\/([a-z0-9-]+(?:\.css)?)/g,
   )) {
     // En sti under node_modules er en filsti inn i pakken, ikke et pakkenavn
     // `exports` svarer for. `dist/lotek.css` finnes, men `./dist` gjør ikke.
@@ -199,7 +199,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   }
 
   // 6. Hver byggefunksjon finnes i `lt`.
-  for (const treff of innhold.matchAll(/\bfs\.([a-zA-Z]+)\(/g)) {
+  for (const treff of innhold.matchAll(/\blt\.([a-zA-Z]+)\(/g)) {
     krev(treff[1] in lt, `${sti} bruker lt.${treff[1]}(), som ikke finnes i lt`)
   }
 
@@ -312,7 +312,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   ].entries()) {
     // Bivirkningsimport uten `from`, dynamisk import og enkeltfnutter feiler
     // like stille i en nettleser som den ene formen som sto her før.
-    const naken = /(?:from|import)\s*\(?\s*\n?\s*["']@lotek\/designsystem/.test(
+    const naken = /(?:from|import)\s*\(?\s*\n?\s*["']@lo-tek\/interfaces/.test(
       blokk[1],
     )
     krev(

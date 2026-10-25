@@ -480,11 +480,11 @@ for (const variabel of [...alleVariabler].sort()) {
  * falsk alarm på riktig kode er verre enn et hull.
  */
 const KODEKALL =
-  /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
+  /\blt\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
 
 /** Det samme, men bare når kallet har en argumentliste. Se `inlineKode`. */
 const KODEKALL_MED_ARGUMENT =
-  /\bfs\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g
+  /\blt\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g
 
 /**
  * Bare koden.
@@ -575,7 +575,7 @@ for (const fil of [
 ]) {
   const innhold = les(`${DOKUMENTASJON}${fil}`)
 
-  for (const treff of innhold.matchAll(/@lotek\/designsystem@([^/\s"'`)]+)/g)) {
+  for (const treff of innhold.matchAll(/@lo-tek\/interfaces@([^/\s"'`)]+)/g)) {
     // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
     // der er den riktige formen å lese versjonen av `package.json` i koden.
     // Unntaket må være bundet til filtypen: uten det slapp

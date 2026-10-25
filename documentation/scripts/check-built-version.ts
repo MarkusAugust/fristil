@@ -52,7 +52,7 @@ for (const rel of new Glob("documentation/src/**/*.{mdx,md,astro}").scanSync(
   const tekst = readFileSync(ROT + rel, "utf8")
 
   for (const treff of tekst.matchAll(
-    /@lotek\/designsystem@VERSJON(\/[^"'`\s)]+)/g,
+    /@lo-tek\/interfaces@VERSJON(\/[^"'`\s)]+)/g,
   )) {
     iKilden.add(treff[1])
   }

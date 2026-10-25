@@ -437,7 +437,7 @@ for (const fil of readdirSync(SIDER).filter(
       )
 
     for (const m of fane.kode.matchAll(
-      /@lotek\/designsystem(?:\/([a-z0-9/.-]+))?/g,
+      /@lo-tek\/interfaces(?:\/([a-z0-9/.-]+))?/g,
     )) {
       const inn = m[1] ?? ""
       if (!inngangspunkter.has(inn))
@@ -462,7 +462,7 @@ for (const fil of readdirSync(SIDER).filter(
      * `className={undefined}`, altså et element uten klasse, og ingenting sa
      * fra. Vaktene, som `lt.button.isVariant`, falt mellom begge regler.
      */
-    for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
+    for (const m of fane.kode.matchAll(/\blt\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
       const bygger = (lt as Record<string, unknown>)[m[1]]
       if (typeof bygger !== "function") {
         si(side, `${hvor} bruker lt.${m[1]}, som ikke finnes i lt`)
@@ -472,7 +472,7 @@ for (const fil of readdirSync(SIDER).filter(
         si(side, `${hvor} bruker lt.${m[1]}.${m[2]}, som ikke finnes`)
     }
 
-    for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\s*\(/g)) {
+    for (const m of fane.kode.matchAll(/\blt\.([a-zA-Z]+)\s*\(/g)) {
       if (!byggefunksjoner.has(m[1]))
         si(side, `${hvor} kaller lt.${m[1]}(), som ikke finnes i lt`)
     }
@@ -575,7 +575,7 @@ for (const fil of readdirSync(SIDER).filter(
       for (const m of fraImporter[1].matchAll(/"([^"]+)"/g)) oppgitt.add(m[1])
     for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
       oppgitt.add(m[1])
-    for (const m of fane.kode.matchAll(/@lotek\/designsystem\/([a-z-]+\.css)/g))
+    for (const m of fane.kode.matchAll(/@lo-tek\/interfaces\/([a-z-]+\.css)/g))
       oppgitt.add(m[1])
 
     const brukteKlasser = new Set<string>()
@@ -712,10 +712,10 @@ for (const fil of readdirSync(SIDER).filter(
       let importert = false
       for (const gjerde of gjerder(fane.kode)) {
         if (
-          /import \{[^}]*\bfs\b[^}]*\} from "@lotek\/designsystem/.test(gjerde)
+          /import \{[^}]*\blt\b[^}]*\} from "@lo-tek\/interfaces/.test(gjerde)
         )
           importert = true
-        if (!importert && /\bfs\.[a-zA-Z]/.test(gjerde)) {
+        if (!importert && /\blt\.[a-zA-Z]/.test(gjerde)) {
           si(side, `${hvor} bruker lt. uten å importere lt`)
           break
         }
@@ -724,7 +724,7 @@ for (const fil of readdirSync(SIDER).filter(
 
     // Hele CDN-adressen: versjonen og stien, ikke bare filnavnet.
     for (const m of fane.kode.matchAll(
-      /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g,
+      /cdn\.jsdelivr\.net\/npm\/@lo-tek\/interfaces@([^/]+)\/([^"'\s]+)/g,
     )) {
       /*
        * Versjonen skal stå som plassholderen `VERSJON`, som
@@ -742,7 +742,7 @@ for (const fil of readdirSync(SIDER).filter(
         si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
     }
 
-    const pakkenavnIImport = /from\s+\n?\s*"@lotek\/designsystem/.test(
+    const pakkenavnIImport = /from\s+\n?\s*"@lo-tek\/interfaces/.test(
       fane.kode,
     )
     const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)

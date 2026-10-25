@@ -312,7 +312,7 @@ pub fn plan_takeover(files: &[SourceFile], entries: &[(String, String)]) -> Plan
             if specifier.starts_with('.') {
                 continue;
             }
-            if specifier.starts_with("@lotek/") {
+            if specifier.starts_with("@lo-tek/") {
                 kept.push(specifier);
                 continue;
             }
